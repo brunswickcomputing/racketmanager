@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Templates;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Club_Player;
 use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
@@ -12,6 +13,43 @@ use Racketmanager\Tests\Helpers\Player_Test_Factory;
 
 final class Entry_Tournament_Template_Test extends TestCase {
     use Manages_Wordpress_Globals;
+
+    private const string ALERT_WARNING = 'alert--warning';
+    private const string ALERT_INFO    = 'alert--info';
+    private const string ALERT_BASE    = 'alert_rm mt-3 alert--';
+
+    private const string MSG_ENTRIES_CLOSED      = 'Tournament entries are now closed.';
+    private const string MSG_STILL_WITHDRAW      = 'You can still withdraw from events.';
+    private const string MSG_LATEST_DETAILS      = 'These are the latest entry details.';
+    private const string MSG_NOT_CURRENTLY_OPEN  = 'Tournament not currently open for entries';
+    private const string MSG_THIRD_PARTY_CHANGES = 'You can not make changes to a entry form for someone else.';
+
+    private const string ID_ENTRY_SUBMIT         = 'entrySubmit';
+    private const string ID_TOURNAMENT_WITHDRAW  = 'tournamentWithdraw';
+    private const string ID_CONTACT_NO           = 'contactno';
+    private const string ID_ACCEPTANCE           = 'acceptance';
+    private const string ID_CLUB_ID              = 'clubId';
+    private const string ID_EVENT_101            = 'event-101';
+    private const string ID_EVENT_102            = 'event-102';
+
+    private const string ATTR_READONLY           = 'readonly';
+    private const string ATTR_DISABLED           = 'disabled';
+    private const string ATTR_CHECKED            = 'checked';
+
+    private const string CLUB_LEIGH              = 'Leigh';
+    private const string CLUB_WESTCLIFF          = 'Westcliff';
+    private const string CLUB_LEIGH_FULL         = 'Leigh Tennis Club';
+    private const string CLUB_WESTCLIFF_FULL     = 'Westcliff Tennis Club';
+    private const string CLUB_CODE_LTC           = 'LTC';
+    private const string CLUB_CODE_WTC           = 'WTC';
+
+    private const string EVENT_MENS_SINGLES      = "Men's Singles";
+    private const string EVENT_MENS_DOUBLES      = "Men's Doubles";
+    private const string EVENT_CODE_MS           = 'MS';
+    private const string EVENT_CODE_MD           = 'MD';
+
+    private const string PLAYER_ROGER_FEDERER    = 'Roger Federer';
+    private const string REGEX_OPTION_CLOSE      = '\s*<\/option>/';
 
     private string $template_path;
 
@@ -29,7 +67,7 @@ final class Entry_Tournament_Template_Test extends TestCase {
         $GLOBALS['wp_stubs_clubs'] = [
             1 => (object) [
                 'id'   => 1,
-                'name' => 'Leigh Tennis Club',
+                'name' => self::CLUB_LEIGH_FULL,
             ],
         ];
     }
@@ -52,12 +90,12 @@ final class Entry_Tournament_Template_Test extends TestCase {
     private function render_template( array $context = [] ): string {
         $tournament       = $context['tournament'] ?? $this->create_default_tournament();
         $player           = $context['player'] ?? $this->create_default_player();
-        $club_memberships = $context['club_memberships'] ?? [ $this->create_club_player_dto( 1, 'Leigh Tennis Club', 'LTC' ) ];
+        $club_memberships = $context['club_memberships'] ?? [ $this->create_club_player_dto( 1, self::CLUB_LEIGH_FULL, self::CLUB_CODE_LTC ) ];
         $events           = $context['events'] ?? [
             (object) [
                 'id'   => 101,
-                'name' => "Men's Singles",
-                'type' => 'MS',
+                'name' => self::EVENT_MENS_SINGLES,
+                'type' => self::EVENT_CODE_MS,
             ],
         ];
         $player_entries   = $context['player_entries'] ?? [];
@@ -116,7 +154,7 @@ final class Entry_Tournament_Template_Test extends TestCase {
             'id'           => 42,
             'firstname'    => 'Roger',
             'surname'      => 'Federer',
-            'display_name' => 'Roger Federer',
+            'display_name' => self::PLAYER_ROGER_FEDERER,
             'gender'       => 'M',
             'age'          => 40,
             'wtn'          => [ 'S' => '1.0', 'D' => '1.5' ],
@@ -130,171 +168,190 @@ final class Entry_Tournament_Template_Test extends TestCase {
         return $player;
     }
 
-    public function test_own_player_open_tournament_is_editable_without_alerts(): void {
-        $GLOBALS['wp_stubs_current_user_id']  = 42;
-        $GLOBALS['wp_stubs_current_user_can'] = false;
+    #[DataProvider( 'tournament_permission_state_provider' )]
+    public function test_tournament_entry_permissions_and_alerts(
+        int $user_id,
+        bool $user_can,
+        bool $is_open,
+        bool $is_closed,
+        array $entries,
+        ?string $expected_alert_class,
+        array $expected_alert_texts,
+        bool $expected_readonly,
+        bool $expected_acceptance_disabled,
+        bool $can_submit,
+        bool $can_withdraw,
+        array $expected_events_checked = [],
+        array $expected_events_disabled = [],
+        array $expected_custom_patterns = []
+    ): void {
+        $GLOBALS['wp_stubs_current_user_id']  = $user_id;
+        $GLOBALS['wp_stubs_current_user_can'] = $user_can;
 
         $tournament = $this->create_default_tournament( [
-            'is_open'   => true,
-            'is_closed' => false,
+            'is_open'   => $is_open,
+            'is_closed' => $is_closed,
         ] );
 
-        $html = $this->render_template( [ 'tournament' => $tournament ] );
+        $html = $this->render_template( [
+            'tournament'     => $tournament,
+            'player_entries' => $entries,
+        ] );
 
-        self::assertStringNotContainsString( 'alert_rm mt-3 alert--', $html );
-        $this->assert_element_attribute( $html, 'contactno', 'readonly', false );
-        $this->assert_element_attribute( $html, 'acceptance', 'disabled', false );
-        self::assertMatchesRegularExpression( '/<span class="tag-pair__value">\s*1\.0\s*<\/span>/', $html );
-        self::assertStringContainsString( 'id="entrySubmit"', $html );
-        self::assertStringContainsString( 'id="tournamentWithdraw"', $html );
+        if ( null === $expected_alert_class ) {
+            self::assertStringNotContainsString( self::ALERT_BASE, $html );
+        } else {
+            self::assertStringContainsString( $expected_alert_class, $html );
+            foreach ( $expected_alert_texts as $alert_text ) {
+                self::assertStringContainsString( $alert_text, $html );
+            }
+        }
+
+        $this->assert_element_attribute( $html, self::ID_CONTACT_NO, self::ATTR_READONLY, $expected_readonly );
+        $this->assert_element_attribute( $html, self::ID_ACCEPTANCE, self::ATTR_DISABLED, $expected_acceptance_disabled );
+
+        if ( $can_submit ) {
+            self::assertStringContainsString( 'id="' . self::ID_ENTRY_SUBMIT . '"', $html );
+        } else {
+            self::assertStringNotContainsString( 'id="' . self::ID_ENTRY_SUBMIT . '"', $html );
+        }
+
+        if ( $can_withdraw ) {
+            self::assertStringContainsString( 'id="' . self::ID_TOURNAMENT_WITHDRAW . '"', $html );
+        } else {
+            self::assertStringNotContainsString( 'id="' . self::ID_TOURNAMENT_WITHDRAW . '"', $html );
+        }
+
+        foreach ( $expected_events_checked as $event_id => $checked ) {
+            $this->assert_element_attribute( $html, "event-{$event_id}", self::ATTR_CHECKED, $checked );
+        }
+
+        foreach ( $expected_events_disabled as $event_id => $disabled ) {
+            $this->assert_element_attribute( $html, "event-{$event_id}", self::ATTR_DISABLED, $disabled );
+        }
+
+        foreach ( $expected_custom_patterns as $pattern ) {
+            self::assertMatchesRegularExpression( $pattern, $html );
+        }
     }
 
-    public function test_own_player_closed_tournament_allows_withdrawal_with_warning_alert(): void {
-        $GLOBALS['wp_stubs_current_user_id']  = 42;
-        $GLOBALS['wp_stubs_current_user_can'] = false;
-
-        $tournament = $this->create_default_tournament( [
-            'is_open'   => false,
-            'is_closed' => true,
-        ] );
-
-        $html = $this->render_template( [ 'tournament' => $tournament ] );
-
-        self::assertStringContainsString( 'alert--warning', $html );
-        self::assertStringContainsString( 'Tournament entries are now closed.', $html );
-        self::assertStringContainsString( 'You can still withdraw from events.', $html );
-        $this->assert_element_attribute( $html, 'contactno', 'readonly', true );
-        $this->assert_element_attribute( $html, 'acceptance', 'disabled', false );
-        self::assertStringContainsString( 'id="tournamentWithdraw"', $html );
-        self::assertStringContainsString( 'id="entrySubmit"', $html );
-    }
-
-    public function test_own_player_not_open_entered_shows_info_alert_and_disables_actions(): void {
-        $GLOBALS['wp_stubs_current_user_id']  = 42;
-        $GLOBALS['wp_stubs_current_user_can'] = false;
-
-        $tournament = $this->create_default_tournament( [
-            'is_open'   => false,
-            'is_closed' => false,
-        ] );
-
-        $player_entries = [
-            101 => (object) [
-                'partner_id'   => null,
-                'partner_name' => null,
+    public static function tournament_permission_state_provider(): array {
+        return [
+            'own player open tournament is editable without alerts' => [
+                'user_id'                      => 42,
+                'user_can'                     => false,
+                'is_open'                      => true,
+                'is_closed'                    => false,
+                'entries'                      => [],
+                'expected_alert_class'         => null,
+                'expected_alert_texts'         => [],
+                'expected_readonly'            => false,
+                'expected_acceptance_disabled' => false,
+                'can_submit'                   => true,
+                'can_withdraw'                 => true,
+                'expected_events_checked'      => [],
+                'expected_events_disabled'     => [],
+                'expected_custom_patterns'     => [ '/<span class="tag-pair__value">\s*1\.0\s*<\/span>/' ],
+            ],
+            'own player closed tournament allows withdrawal with warning alert' => [
+                'user_id'                      => 42,
+                'user_can'                     => false,
+                'is_open'                      => false,
+                'is_closed'                    => true,
+                'entries'                      => [],
+                'expected_alert_class'         => self::ALERT_WARNING,
+                'expected_alert_texts'         => [ self::MSG_ENTRIES_CLOSED, self::MSG_STILL_WITHDRAW ],
+                'expected_readonly'            => true,
+                'expected_acceptance_disabled' => false,
+                'can_submit'                   => true,
+                'can_withdraw'                 => true,
+            ],
+            'own player not open entered shows info alert and disables actions' => [
+                'user_id'                      => 42,
+                'user_can'                     => false,
+                'is_open'                      => false,
+                'is_closed'                    => false,
+                'entries'                      => [
+                    101 => (object) [
+                        'partner_id'   => null,
+                        'partner_name' => null,
+                    ],
+                ],
+                'expected_alert_class'         => self::ALERT_INFO,
+                'expected_alert_texts'         => [ self::MSG_ENTRIES_CLOSED, self::MSG_LATEST_DETAILS ],
+                'expected_readonly'            => true,
+                'expected_acceptance_disabled' => true,
+                'can_submit'                   => false,
+                'can_withdraw'                 => false,
+                'expected_events_checked'      => [ 101 => true ],
+                'expected_events_disabled'     => [ 101 => true ],
+            ],
+            'own player not open not entered shows warning alert and disables actions' => [
+                'user_id'                      => 42,
+                'user_can'                     => false,
+                'is_open'                      => false,
+                'is_closed'                    => false,
+                'entries'                      => [],
+                'expected_alert_class'         => self::ALERT_WARNING,
+                'expected_alert_texts'         => [ self::MSG_NOT_CURRENTLY_OPEN ],
+                'expected_readonly'            => true,
+                'expected_acceptance_disabled' => true,
+                'can_submit'                   => false,
+                'can_withdraw'                 => false,
+            ],
+            'manager not open tournament is editable without alerts' => [
+                'user_id'                      => 99,
+                'user_can'                     => true,
+                'is_open'                      => false,
+                'is_closed'                    => false,
+                'entries'                      => [],
+                'expected_alert_class'         => null,
+                'expected_alert_texts'         => [],
+                'expected_readonly'            => false,
+                'expected_acceptance_disabled' => false,
+                'can_submit'                   => true,
+                'can_withdraw'                 => false,
+            ],
+            'manager closed tournament is editable without alerts' => [
+                'user_id'                      => 99,
+                'user_can'                     => true,
+                'is_open'                      => false,
+                'is_closed'                    => true,
+                'entries'                      => [],
+                'expected_alert_class'         => null,
+                'expected_alert_texts'         => [],
+                'expected_readonly'            => false,
+                'expected_acceptance_disabled' => false,
+                'can_submit'                   => true,
+                'can_withdraw'                 => true,
+            ],
+            'third party open tournament shows info alert and disables changes' => [
+                'user_id'                      => 99,
+                'user_can'                     => false,
+                'is_open'                      => true,
+                'is_closed'                    => false,
+                'entries'                      => [],
+                'expected_alert_class'         => self::ALERT_INFO,
+                'expected_alert_texts'         => [ self::MSG_THIRD_PARTY_CHANGES ],
+                'expected_readonly'            => true,
+                'expected_acceptance_disabled' => true,
+                'can_submit'                   => false,
+                'can_withdraw'                 => false,
+            ],
+            'third party closed tournament keeps warning but disables actions' => [
+                'user_id'                      => 99,
+                'user_can'                     => false,
+                'is_open'                      => false,
+                'is_closed'                    => true,
+                'entries'                      => [],
+                'expected_alert_class'         => self::ALERT_WARNING,
+                'expected_alert_texts'         => [ self::MSG_ENTRIES_CLOSED, self::MSG_STILL_WITHDRAW ],
+                'expected_readonly'            => true,
+                'expected_acceptance_disabled' => true,
+                'can_submit'                   => false,
+                'can_withdraw'                 => false,
             ],
         ];
-
-        $html = $this->render_template( [
-            'tournament'     => $tournament,
-            'player_entries' => $player_entries,
-        ] );
-
-        self::assertStringContainsString( 'alert--info', $html );
-        self::assertStringContainsString( 'Tournament entries are now closed.', $html );
-        self::assertStringContainsString( 'These are the latest entry details.', $html );
-        $this->assert_element_attribute( $html, 'contactno', 'readonly', true );
-        $this->assert_element_attribute( $html, 'acceptance', 'disabled', true );
-        $this->assert_element_attribute( $html, 'event-101', 'checked', true );
-        $this->assert_element_attribute( $html, 'event-101', 'disabled', true );
-        self::assertStringNotContainsString( 'id="entrySubmit"', $html );
-        self::assertStringNotContainsString( 'id="tournamentWithdraw"', $html );
-    }
-
-    public function test_own_player_not_open_not_entered_shows_warning_alert_and_disables_actions(): void {
-        $GLOBALS['wp_stubs_current_user_id']  = 42;
-        $GLOBALS['wp_stubs_current_user_can'] = false;
-
-        $tournament = $this->create_default_tournament( [
-            'is_open'   => false,
-            'is_closed' => false,
-        ] );
-
-        $html = $this->render_template( [
-            'tournament'     => $tournament,
-            'player_entries' => [],
-        ] );
-
-        self::assertStringContainsString( 'alert--warning', $html );
-        self::assertStringContainsString( 'Tournament not currently open for entries', $html );
-        $this->assert_element_attribute( $html, 'contactno', 'readonly', true );
-        $this->assert_element_attribute( $html, 'acceptance', 'disabled', true );
-        self::assertStringNotContainsString( 'id="entrySubmit"', $html );
-        self::assertStringNotContainsString( 'id="tournamentWithdraw"', $html );
-    }
-
-    public function test_manager_not_open_tournament_is_editable_without_alerts(): void {
-        $GLOBALS['wp_stubs_current_user_id']  = 99; // Different user ID
-        $GLOBALS['wp_stubs_current_user_can'] = true; // Manager
-
-        $tournament = $this->create_default_tournament( [
-            'is_open'   => false,
-            'is_closed' => false,
-        ] );
-
-        $html = $this->render_template( [ 'tournament' => $tournament ] );
-
-        self::assertStringNotContainsString( 'alert_rm mt-3 alert--', $html );
-        $this->assert_element_attribute( $html, 'contactno', 'readonly', false );
-        $this->assert_element_attribute( $html, 'acceptance', 'disabled', false );
-        self::assertStringContainsString( 'id="entrySubmit"', $html );
-    }
-
-    public function test_manager_closed_tournament_is_editable_without_alerts(): void {
-        $GLOBALS['wp_stubs_current_user_id']  = 99;
-        $GLOBALS['wp_stubs_current_user_can'] = true;
-
-        $tournament = $this->create_default_tournament( [
-            'is_open'   => false,
-            'is_closed' => true,
-        ] );
-
-        $html = $this->render_template( [ 'tournament' => $tournament ] );
-
-        self::assertStringNotContainsString( 'alert_rm mt-3 alert--', $html );
-        $this->assert_element_attribute( $html, 'contactno', 'readonly', false );
-        $this->assert_element_attribute( $html, 'acceptance', 'disabled', false );
-        self::assertStringContainsString( 'id="entrySubmit"', $html );
-        self::assertStringContainsString( 'id="tournamentWithdraw"', $html );
-    }
-
-    public function test_third_party_open_tournament_shows_info_alert_and_disables_changes(): void {
-        $GLOBALS['wp_stubs_current_user_id']  = 99; // Different user ID
-        $GLOBALS['wp_stubs_current_user_can'] = false; // Not manager
-
-        $tournament = $this->create_default_tournament( [
-            'is_open'   => true,
-            'is_closed' => false,
-        ] );
-
-        $html = $this->render_template( [ 'tournament' => $tournament ] );
-
-        self::assertStringContainsString( 'alert--info', $html );
-        self::assertStringContainsString( 'You can not make changes to a entry form for someone else.', $html );
-        $this->assert_element_attribute( $html, 'contactno', 'readonly', true );
-        $this->assert_element_attribute( $html, 'acceptance', 'disabled', true );
-        self::assertStringNotContainsString( 'id="entrySubmit"', $html );
-        self::assertStringNotContainsString( 'id="tournamentWithdraw"', $html );
-    }
-
-    public function test_third_party_closed_tournament_keeps_warning_but_disables_actions(): void {
-        $GLOBALS['wp_stubs_current_user_id']  = 99;
-        $GLOBALS['wp_stubs_current_user_can'] = false;
-
-        $tournament = $this->create_default_tournament( [
-            'is_open'   => false,
-            'is_closed' => true,
-        ] );
-
-        $html = $this->render_template( [ 'tournament' => $tournament ] );
-
-        self::assertStringContainsString( 'alert--warning', $html );
-        self::assertStringContainsString( 'Tournament entries are now closed.', $html );
-        self::assertStringContainsString( 'You can still withdraw from events.', $html );
-        $this->assert_element_attribute( $html, 'contactno', 'readonly', true );
-        $this->assert_element_attribute( $html, 'acceptance', 'disabled', true );
-        self::assertStringNotContainsString( 'id="entrySubmit"', $html );
-        self::assertStringNotContainsString( 'id="tournamentWithdraw"', $html );
     }
 
     public function test_player_profile_and_contact_details_rendering(): void {
@@ -304,7 +361,7 @@ final class Entry_Tournament_Template_Test extends TestCase {
         $player = $this->create_default_player( [
             'firstname'    => 'Roger',
             'surname'      => 'Federer',
-            'display_name' => 'Roger Federer',
+            'display_name' => self::PLAYER_ROGER_FEDERER,
             'gender'       => 'M',
             'age'          => 40,
             'contactno'    => '07123456789',
@@ -315,7 +372,7 @@ final class Entry_Tournament_Template_Test extends TestCase {
         $html = $this->render_template( [ 'player' => $player ] );
 
         self::assertStringContainsString( 'RF', $html );
-        self::assertStringContainsString( 'Roger Federer', $html );
+        self::assertStringContainsString( self::PLAYER_ROGER_FEDERER, $html );
         self::assertMatchesRegularExpression( '/data-bs-title="Gender"[^>]*>\s*<span>Male<\/span>/', $html );
         self::assertMatchesRegularExpression( '/data-bs-title="Playing age for tournament"[^>]*>\s*<span>40<\/span>/', $html );
         self::assertMatchesRegularExpression( '/<input[^>]*id="contactno"[^>]*value="07123456789"/', $html );
@@ -356,99 +413,130 @@ final class Entry_Tournament_Template_Test extends TestCase {
         self::assertMatchesRegularExpression( '/<span class="tag-pair__title">Doubles<\/span>\s*<span class="tag-pair__value"><\/span>/', $html );
     }
 
-    public function test_single_club_membership_rendering(): void {
-        $GLOBALS['wp_stubs_current_user_id']  = 42;
-        $GLOBALS['wp_stubs_current_user_can'] = false;
-
-        $html = $this->render_template( [
-            'club_memberships' => [ $this->create_club_player_dto( 10, 'Custom Tennis Club', 'CTC' ) ],
-        ] );
-
-        self::assertStringContainsString( 'Custom Tennis Club', $html );
-        self::assertMatchesRegularExpression( '/<input type="hidden" id="clubId" name="clubId" value="10"\s*\/>/', $html );
+    private static function option_pattern( string $value, string $label, bool $selected = false ): string {
+        $selected_attr = $selected ? '[^>]*selected=[\'"]selected[\'"]' : '';
+        return '/<option value="' . preg_quote( $value, '/' ) . '"' . $selected_attr . '[^>]*>\s*' . preg_quote( $label, '/' ) . self::REGEX_OPTION_CLOSE;
     }
 
-    public function test_multiple_club_memberships_rendering(): void {
+    #[DataProvider( 'provide_club_membership_rendering_cases' )]
+    public function test_club_membership_rendering(
+        array $memberships_config,
+        ?object $tournament_entry,
+        ?string $expected_contained_text,
+        string $expected_element_pattern,
+        array $expected_option_patterns = []
+    ): void {
         $GLOBALS['wp_stubs_current_user_id']  = 42;
         $GLOBALS['wp_stubs_current_user_can'] = false;
 
+        $memberships = array_map(
+            fn( array $cfg ) => $this->create_club_player_dto( $cfg['id'], $cfg['name'], $cfg['shortcode'] ?? '' ),
+            $memberships_config
+        );
+
+        $context = [ 'club_memberships' => $memberships ];
+        if ( null !== $tournament_entry ) {
+            $context['tournament_entry'] = $tournament_entry;
+        }
+
+        $html = $this->render_template( $context );
+
+        if ( null !== $expected_contained_text ) {
+            self::assertStringContainsString( $expected_contained_text, $html );
+        }
+
+        self::assertMatchesRegularExpression( $expected_element_pattern, $html );
+
+        foreach ( $expected_option_patterns as $pattern ) {
+            self::assertMatchesRegularExpression( $pattern, $html );
+        }
+    }
+
+    public static function provide_club_membership_rendering_cases(): array {
+        return [
+            'single club membership rendering' => [
+                'memberships_config'       => [
+                    [ 'id' => 10, 'name' => 'Custom Tennis Club', 'shortcode' => 'CTC' ],
+                ],
+                'tournament_entry'         => null,
+                'expected_contained_text'  => 'Custom Tennis Club',
+                'expected_element_pattern' => '/<input type="hidden" id="clubId" name="clubId" value="10"\s*\/>/',
+                'expected_option_patterns' => [],
+            ],
+            'single club membership hidden id distinct from get club' => [
+                'memberships_config'       => [
+                    [ 'id' => 30, 'name' => 'Different Club Name', 'shortcode' => 'DCN' ],
+                ],
+                'tournament_entry'         => null,
+                'expected_contained_text'  => 'Different Club Name',
+                'expected_element_pattern' => '/<input type="hidden" id="clubId" name="clubId" value="30"\s*\/>/',
+                'expected_option_patterns' => [],
+            ],
+            'zero club memberships rendering' => [
+                'memberships_config'       => [],
+                'tournament_entry'         => null,
+                'expected_contained_text'  => 'No club',
+                'expected_element_pattern' => '/<input type="hidden" id="clubId" name="clubId" value=""\s*\/>/',
+                'expected_option_patterns' => [],
+            ],
+            'multiple club memberships rendering' => [
+                'memberships_config'       => [
+                    [ 'id' => 1, 'name' => self::CLUB_LEIGH_FULL, 'shortcode' => self::CLUB_CODE_LTC ],
+                    [ 'id' => 2, 'name' => self::CLUB_WESTCLIFF_FULL, 'shortcode' => self::CLUB_CODE_WTC ],
+                ],
+                'tournament_entry'         => (object) [ 'club_id' => 2 ],
+                'expected_contained_text'  => null,
+                'expected_element_pattern' => '/<select class="form-select" size="1" name="clubId" id="clubId"/',
+                'expected_option_patterns' => [
+                    '/<option value="" disabled[^>]*>\s*Select club' . self::REGEX_OPTION_CLOSE,
+                    self::option_pattern( '1', self::CLUB_LEIGH_FULL ),
+                    self::option_pattern( '2', self::CLUB_WESTCLIFF_FULL, true ),
+                ],
+            ],
+        ];
+    }
+
+    #[DataProvider( 'provide_empty_tournament_entry_cases' )]
+    public function test_multiple_club_memberships_empty_tournament_entry_selects_placeholder( ?object $entry ): void {
         $html = $this->render_template( [
             'club_memberships' => [
-                $this->create_club_player_dto( 1, 'Leigh Tennis Club', 'LTC' ),
-                $this->create_club_player_dto( 2, 'Westcliff Tennis Club', 'WTC' ),
+                $this->create_club_player_dto( 1, self::CLUB_LEIGH, self::CLUB_CODE_LTC ),
+                $this->create_club_player_dto( 2, self::CLUB_WESTCLIFF, self::CLUB_CODE_WTC ),
             ],
-            'tournament_entry' => (object) [ 'club_id' => 2 ],
+            'tournament_entry' => $entry,
         ] );
 
-        self::assertMatchesRegularExpression( '/<select class="form-select" size="1" name="clubId" id="clubId"/', $html );
-        self::assertMatchesRegularExpression( '/<option value="" disabled[^>]*>\s*Select club\s*<\/option>/', $html );
-        self::assertMatchesRegularExpression( '/<option value="1"[^>]*>\s*Leigh Tennis Club\s*<\/option>/', $html );
-        self::assertMatchesRegularExpression( '/<option value="2"[^>]*selected=[\'"]selected[\'"][^>]*>\s*Westcliff Tennis Club\s*<\/option>/', $html );
+        self::assertMatchesRegularExpression( '/<option value="" disabled\s+selected=[\'"]selected[\'"][^>]*>\s*Select club' . self::REGEX_OPTION_CLOSE, $html );
+        self::assertDoesNotMatchRegularExpression( '/<option value="1"[^>]*selected/', $html );
+        self::assertDoesNotMatchRegularExpression( '/<option value="2"[^>]*selected/', $html );
     }
 
-    public function test_zero_club_memberships_rendering(): void {
-        $GLOBALS['wp_stubs_current_user_id']  = 42;
-        $GLOBALS['wp_stubs_current_user_can'] = false;
-
-        $html = $this->render_template( [
-            'club_memberships' => [],
-        ] );
-
-        self::assertStringContainsString( 'No club', $html );
-        self::assertMatchesRegularExpression( '/<input type="hidden" id="clubId" name="clubId" value=""\s*\/>/', $html );
-    }
-
-    public function test_single_club_membership_hidden_id_distinct_from_get_club(): void {
-        // membership club_id 30 with distinct name and shortcode
-        $html = $this->render_template( [
-            'club_memberships' => [ $this->create_club_player_dto( 30, 'Different Club Name', 'DCN' ) ],
-        ] );
-
-        self::assertStringContainsString( 'Different Club Name', $html );
-        // Should use club_id 30 for the hidden input
-        self::assertMatchesRegularExpression( '/<input type="hidden" id="clubId" name="clubId" value="30"\s*\/>/', $html );
-    }
-
-    public function test_multiple_club_memberships_empty_tournament_entry_selects_placeholder(): void {
-        $entries_to_test = [
-            null,
-            (object) [ 'club_id' => null ],
-            (object) [ 'club_id' => '' ],
-            (object) [ 'club_id' => 0 ],
-            (object) [],
+    public static function provide_empty_tournament_entry_cases(): array {
+        return [
+            'null tournament entry'       => [ null ],
+            'null club_id object'         => [ (object) [ 'club_id' => null ] ],
+            'empty string club_id object' => [ (object) [ 'club_id' => '' ] ],
+            'zero club_id object'         => [ (object) [ 'club_id' => 0 ] ],
+            'empty object'                => [ (object) [] ],
         ];
-
-        foreach ( $entries_to_test as $entry ) {
-            $html = $this->render_template( [
-                'club_memberships' => [
-                    $this->create_club_player_dto( 1, 'Leigh', 'LTC' ),
-                    $this->create_club_player_dto( 2, 'Westcliff', 'WTC' ),
-                ],
-                'tournament_entry' => $entry,
-            ] );
-
-            self::assertMatchesRegularExpression( '/<option value="" disabled\s+selected=[\'"]selected[\'"][^>]*>\s*Select club\s*<\/option>/', $html );
-            self::assertDoesNotMatchRegularExpression( '/<option value="1"[^>]*selected/', $html );
-            self::assertDoesNotMatchRegularExpression( '/<option value="2"[^>]*selected/', $html );
-        }
     }
 
     public function test_multiple_club_memberships_numeric_string_id_match(): void {
         $html = $this->render_template( [
             'club_memberships' => [
-                $this->create_club_player_dto( 1, 'Leigh', 'LTC' ),
-                $this->create_club_player_dto( 2, 'Westcliff', 'WTC' ),
+                $this->create_club_player_dto( 1, self::CLUB_LEIGH, self::CLUB_CODE_LTC ),
+                $this->create_club_player_dto( 2, self::CLUB_WESTCLIFF, self::CLUB_CODE_WTC ),
             ],
             'tournament_entry' => (object) [ 'club_id' => '2' ],
         ] );
 
-        self::assertMatchesRegularExpression( '/<option value="2"[^>]*selected=[\'"]selected[\'"][^>]*>\s*Westcliff\s*<\/option>/', $html );
+        self::assertMatchesRegularExpression( self::option_pattern( '2', self::CLUB_WESTCLIFF, true ), $html );
     }
 
     public function test_multiple_club_memberships_readonly_attribute(): void {
         $memberships = [
-            $this->create_club_player_dto( 1, 'Leigh', 'LTC' ),
-            $this->create_club_player_dto( 2, 'Westcliff', 'WTC' ),
+            $this->create_club_player_dto( 1, self::CLUB_LEIGH, self::CLUB_CODE_LTC ),
+            $this->create_club_player_dto( 2, self::CLUB_WESTCLIFF, self::CLUB_CODE_WTC ),
         ];
 
         // Test readonly (changes NOT allowed: own player on closed/not-open tournament)
@@ -458,7 +546,7 @@ final class Entry_Tournament_Template_Test extends TestCase {
             'tournament'       => $this->create_default_tournament( [ 'is_open' => false, 'is_closed' => false ] ),
             'club_memberships' => $memberships,
         ] );
-        $this->assert_element_attribute( $html_readonly, 'clubId', 'readonly', true );
+        $this->assert_element_attribute( $html_readonly, self::ID_CLUB_ID, self::ATTR_READONLY, true );
 
         // Test NOT readonly (changes allowed: own player on open tournament)
         $GLOBALS['wp_stubs_current_user_id']  = 42;
@@ -467,7 +555,7 @@ final class Entry_Tournament_Template_Test extends TestCase {
             'tournament'       => $this->create_default_tournament( [ 'is_open' => true ] ),
             'club_memberships' => $memberships,
         ] );
-        $this->assert_element_attribute( $html_editable, 'clubId', 'readonly', false );
+        $this->assert_element_attribute( $html_editable, self::ID_CLUB_ID, self::ATTR_READONLY, false );
     }
 
     public function test_singles_and_doubles_event_rendering_when_editable(): void {
@@ -477,13 +565,13 @@ final class Entry_Tournament_Template_Test extends TestCase {
         $events = [
             (object) [
                 'id'   => 101,
-                'name' => "Men's Singles",
-                'type' => 'MS',
+                'name' => self::EVENT_MENS_SINGLES,
+                'type' => self::EVENT_CODE_MS,
             ],
             (object) [
                 'id'   => 102,
-                'name' => "Men's Doubles",
-                'type' => 'MD',
+                'name' => self::EVENT_MENS_DOUBLES,
+                'type' => self::EVENT_CODE_MD,
             ],
         ];
 
@@ -492,16 +580,16 @@ final class Entry_Tournament_Template_Test extends TestCase {
         ] );
 
         // Singles event (101): not doubles, enabled checkbox, no partner controls
-        self::assertMatchesRegularExpression( '/<input class="form-check-input form-check--event hasModal" id="event-101" name="event\[101]" type="checkbox" value="101" aria-controls="conditional-event-101"/', $html );
-        $this->assert_element_attribute( $html, 'event-101', 'disabled', false );
-        $this->assert_element_attribute( $html, 'event-101', 'checked', false );
+        self::assertMatchesRegularExpression( '/<input class="form-check-input form-check--event hasModal" id="' . preg_quote( self::ID_EVENT_101, '/' ) . '" name="event\[101]" type="checkbox" value="101" aria-controls="conditional-event-101"/', $html );
+        $this->assert_element_attribute( $html, self::ID_EVENT_101, self::ATTR_DISABLED, false );
+        $this->assert_element_attribute( $html, self::ID_EVENT_101, self::ATTR_CHECKED, false );
         self::assertMatchesRegularExpression( '/<div class="col-6\s*" id="conditional-event-101">/', $html );
         self::assertStringNotContainsString( 'id="partner-101"', $html );
         self::assertStringNotContainsString( 'id="partnerId-101"', $html );
 
         // Doubles event (102): is-doubles class, enabled checkbox, partner modal trigger and hidden inputs
-        self::assertMatchesRegularExpression( '/<input class="form-check-input form-check--event hasModal" id="event-102" name="event\[102]" type="checkbox" value="102" aria-controls="conditional-event-102"/', $html );
-        $this->assert_element_attribute( $html, 'event-102', 'disabled', false );
+        self::assertMatchesRegularExpression( '/<input class="form-check-input form-check--event hasModal" id="' . preg_quote( self::ID_EVENT_102, '/' ) . '" name="event\[102]" type="checkbox" value="102" aria-controls="conditional-event-102"/', $html );
+        $this->assert_element_attribute( $html, self::ID_EVENT_102, self::ATTR_DISABLED, false );
         self::assertMatchesRegularExpression( '/<div class="col-6 is-doubles" id="conditional-event-102">/', $html );
         self::assertMatchesRegularExpression( '/<input type="hidden" name="partner\[102]" id="partner-102" value=""\s*\/>/', $html );
         self::assertMatchesRegularExpression( '/<input type="hidden" name="partnerId\[102]" id="partnerId-102" value=""\s*\/>/', $html );
@@ -516,13 +604,13 @@ final class Entry_Tournament_Template_Test extends TestCase {
         $events = [
             (object) [
                 'id'   => 101,
-                'name' => "Men's Singles",
-                'type' => 'MS',
+                'name' => self::EVENT_MENS_SINGLES,
+                'type' => self::EVENT_CODE_MS,
             ],
             (object) [
                 'id'   => 102,
-                'name' => "Men's Doubles",
-                'type' => 'MD',
+                'name' => self::EVENT_MENS_DOUBLES,
+                'type' => self::EVENT_CODE_MD,
             ],
         ];
 
@@ -531,8 +619,8 @@ final class Entry_Tournament_Template_Test extends TestCase {
         ] );
 
         // Both checkboxes should be disabled
-        $this->assert_element_attribute( $html, 'event-101', 'disabled', true );
-        $this->assert_element_attribute( $html, 'event-102', 'disabled', true );
+        $this->assert_element_attribute( $html, self::ID_EVENT_101, self::ATTR_DISABLED, true );
+        $this->assert_element_attribute( $html, self::ID_EVENT_102, self::ATTR_DISABLED, true );
 
         // Doubles event has hidden partner inputs and span, but NO modal anchor
         self::assertMatchesRegularExpression( '/<div class="col-6 is-doubles" id="conditional-event-102">/', $html );
@@ -554,13 +642,13 @@ final class Entry_Tournament_Template_Test extends TestCase {
         $events = [
             (object) [
                 'id'   => 101,
-                'name' => "Men's Singles",
-                'type' => 'MS',
+                'name' => self::EVENT_MENS_SINGLES,
+                'type' => self::EVENT_CODE_MS,
             ],
             (object) [
                 'id'   => 102,
-                'name' => "Men's Doubles",
-                'type' => 'MD',
+                'name' => self::EVENT_MENS_DOUBLES,
+                'type' => self::EVENT_CODE_MD,
             ],
         ];
 
@@ -578,14 +666,14 @@ final class Entry_Tournament_Template_Test extends TestCase {
         ] );
 
         // Event 101 is entered: checked, and NOT disabled because withdrawal is allowed
-        $this->assert_element_attribute( $html, 'event-101', 'checked', true );
-        $this->assert_element_attribute( $html, 'event-101', 'disabled', false );
+        $this->assert_element_attribute( $html, self::ID_EVENT_101, self::ATTR_CHECKED, true );
+        $this->assert_element_attribute( $html, self::ID_EVENT_101, self::ATTR_DISABLED, false );
         self::assertMatchesRegularExpression( '/<span class="event-price" id="event-price-fmt-101">\s*£10\s*<\/span>/', $html );
         self::assertMatchesRegularExpression( '/<input type="hidden" class="event-price-amt" name="event-price\[101]" id="event-price-101" value="10"\s*\/>/', $html );
 
         // Event 102 is NOT entered: unchecked, and disabled because tournament is closed
-        $this->assert_element_attribute( $html, 'event-102', 'checked', false );
-        $this->assert_element_attribute( $html, 'event-102', 'disabled', true );
+        $this->assert_element_attribute( $html, self::ID_EVENT_102, self::ATTR_CHECKED, false );
+        $this->assert_element_attribute( $html, self::ID_EVENT_102, self::ATTR_DISABLED, true );
         self::assertMatchesRegularExpression( '/<span class="event-price" id="event-price-fmt-102">\s*<\/span>/', $html );
         self::assertMatchesRegularExpression( '/<input type="hidden" class="event-price-amt" name="event-price\[102]" id="event-price-102" value=""\s*\/>/', $html );
 
@@ -610,8 +698,8 @@ final class Entry_Tournament_Template_Test extends TestCase {
         $events = [
             (object) [
                 'id'   => 102,
-                'name' => "Men's Doubles",
-                'type' => 'MD',
+                'name' => self::EVENT_MENS_DOUBLES,
+                'type' => self::EVENT_CODE_MD,
             ],
         ];
 
@@ -629,7 +717,7 @@ final class Entry_Tournament_Template_Test extends TestCase {
         ] );
 
         // Checkbox checked
-        $this->assert_element_attribute( $html, 'event-102', 'checked', true );
+        $this->assert_element_attribute( $html, self::ID_EVENT_102, self::ATTR_CHECKED, true );
 
         // Partner inputs and display
         self::assertMatchesRegularExpression( '/<input type="hidden" name="partner\[102]" id="partner-102" value="88"\s*\/>/', $html );
@@ -642,24 +730,26 @@ final class Entry_Tournament_Template_Test extends TestCase {
         self::assertMatchesRegularExpression( '/<input type="hidden" name="pricePaidTotal" id="pricePaidTotal" value="15"\s*\/>/', $html );
     }
 
-    public function test_event_fee_visibility_preserves_zero_and_empty_comparison_semantics(): void {
+    #[DataProvider( 'provide_event_fee_visibility_cases' )]
+    public function test_event_fee_visibility_preserves_zero_and_empty_comparison_semantics( mixed $event_fee, bool $expected_visible ): void {
         $GLOBALS['wp_stubs_current_user_id']  = 42;
         $GLOBALS['wp_stubs_current_user_can'] = false;
 
-        foreach ( [ 0 => true, 'null' => false, 'empty' => false ] as $fee_key => $expected_visible ) {
-            $event_fee = match ( $fee_key ) {
-                0       => 0,
-                'null'  => null,
-                'empty' => '',
-            };
-            $tournament = $this->create_default_tournament();
-            $tournament->fees->event = $event_fee;
+        $tournament = $this->create_default_tournament();
+        $tournament->fees->event = $event_fee;
 
-            $html = $this->render_template( [ 'tournament' => $tournament ] );
-            $fee_markup_pattern = '/<span class="event-price" id="event-price-fmt-101">/';
+        $html = $this->render_template( [ 'tournament' => $tournament ] );
+        $fee_markup_pattern = '/<span class="event-price" id="event-price-fmt-101">/';
 
-            self::assertSame( $expected_visible, 1 === preg_match( $fee_markup_pattern, $html ), sprintf( 'Unexpected event fee visibility for %s.', var_export( $event_fee, true ) ) );
-        }
+        self::assertSame( $expected_visible, 1 === preg_match( $fee_markup_pattern, $html ), sprintf( 'Unexpected event fee visibility for %s.', var_export( $event_fee, true ) ) );
+    }
+
+    public static function provide_event_fee_visibility_cases(): array {
+        return [
+            'zero numeric fee is visible'     => [ 0, true ],
+            'null fee is not visible'         => [ null, false ],
+            'empty string fee is not visible' => [ '', false ],
+        ];
     }
 
     public function test_empty_events_list_renders_warning(): void {

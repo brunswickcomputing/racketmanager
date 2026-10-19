@@ -7,9 +7,18 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Player\Players_List_DTO;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+use wpdb;
 
 final class Player_Repository_Summary_Test extends TestCase {
     use Manages_Wordpress_Globals;
+
+    private const string SQL_ACTIVE_PLAYERS_SUBQUERY  = 'u.ID IN (SELECT DISTINCT player_id FROM wp_racketmanager_rubber_players UNION SELECT DISTINCT player_id FROM wp_racketmanager_tournament_entries)';
+    private const string SQL_GENDER_FILTER            = "meta_key = '" . Player_Repository::META_KEY_GENDER . "' AND meta_value IN ('M', 'F')";
+    private const string SQL_GENDER_VALUE_FILTER      = "meta_value IN ('M', 'F')";
+    private const string SQL_DISPLAY_NAME_LIKE        = 'u.display_name LIKE';
+    private const string SQL_ORDER_BY_ID_ASC          = 'ORDER BY u.ID ASC';
+    private const string SQL_RUBBER_PLAYERS_TABLE     = 'wp_racketmanager_rubber_players';
+    private const string SQL_TOURNAMENT_ENTRIES_TABLE = 'wp_racketmanager_tournament_entries';
 
     protected function setUp(): void {
         parent::setUp();
@@ -22,9 +31,9 @@ final class Player_Repository_Summary_Test extends TestCase {
     }
 
     private function create_recording_wpdb( array $return_rows = [] ): object {
-        return new class( $return_rows ) extends \wpdb {
-            public string $base_prefix = 'wp_';
-            public array $queries = [];
+        return new class( $return_rows ) extends wpdb {
+            public $base_prefix = 'wp_';
+            public $queries = [];
             public array $prepares = [];
             public array $esc_likes = [];
             private array $return_rows;
@@ -35,12 +44,12 @@ final class Player_Repository_Summary_Test extends TestCase {
                 $this->return_rows = $return_rows;
             }
 
-            public function esc_like( $text ) {
+            public function esc_like( $text ): string {
                 $this->esc_likes[] = (string) $text;
                 return addcslashes( (string) $text, '_%\\' );
             }
 
-            public function prepare( $query, ...$args ) {
+            public function prepare( $query, ...$args ): string {
                 $this->prepares[] = [ 'query' => $query, 'args' => $args ];
                 $flat_args = ( isset( $args[0] ) && is_array( $args[0] ) ) ? $args[0] : $args;
                 foreach ( $flat_args as $arg ) {
@@ -49,11 +58,20 @@ final class Player_Repository_Summary_Test extends TestCase {
                 return $query;
             }
 
-            public function get_results( $query = null, $output = 'OBJECT' ) {
+            public function get_results( $query = null, $output = 'OBJECT' ): array {
                 $this->queries[] = $query;
                 return $this->return_rows;
             }
         };
+    }
+
+    private function assert_active_players_filter_applied( string $sql ): void {
+        $this->assertStringContainsString( self::SQL_RUBBER_PLAYERS_TABLE, $sql );
+        $this->assertStringContainsString( self::SQL_TOURNAMENT_ENTRIES_TABLE, $sql );
+        $this->assertStringContainsString( self::SQL_ACTIVE_PLAYERS_SUBQUERY, $sql );
+        $this->assertStringNotContainsString( self::SQL_GENDER_VALUE_FILTER, $sql );
+        $this->assertStringNotContainsString( self::SQL_DISPLAY_NAME_LIKE, $sql );
+        $this->assertStringContainsString( self::SQL_ORDER_BY_ID_ASC, $sql );
     }
 
     public function test_find_players_summary_text_search_sql_shape_and_escaping(): void {
@@ -86,7 +104,7 @@ final class Player_Repository_Summary_Test extends TestCase {
         $this->assertStringContainsString( 'wp_users u', $sql );
         $this->assertStringContainsString( 'wp_usermeta m', $sql );
         $this->assertStringContainsString( "u.display_name LIKE '%Smi\\_th%'", $sql );
-        $this->assertStringContainsString( "meta_key = '" . Player_Repository::META_KEY_GENDER . "' AND meta_value IN ('M', 'F')", $sql );
+        $this->assertStringContainsString( self::SQL_GENDER_FILTER, $sql );
         $this->assertStringContainsString( 'GROUP BY u.ID, u.display_name, u.user_nicename, u.user_email', $sql );
         $this->assertStringContainsString( 'ORDER BY u.display_name ASC', $sql );
 
@@ -121,47 +139,37 @@ final class Player_Repository_Summary_Test extends TestCase {
 
         $sql = $wpdb->queries[0];
         $this->assertStringContainsString( "meta_key = '" . Player_Repository::META_KEY_BTM . "' AND meta_value = '88888'", $sql );
-        $this->assertStringNotContainsString( "meta_key = '" . Player_Repository::META_KEY_GENDER . "' AND meta_value IN ('M', 'F')", $sql );
+        $this->assertStringNotContainsString( self::SQL_GENDER_FILTER, $sql );
     }
 
     public function test_find_players_summary_empty_search_applies_gender_filter_only(): void {
-        $wpdb = $this->create_recording_wpdb( [] );
+        $wpdb = $this->create_recording_wpdb();
         $repo = new Player_Repository( $wpdb );
-        $results = $repo->find_players_summary( [] );
+        $results = $repo->find_players_summary();
 
         $this->assertSame( [], $results );
         $this->assertCount( 1, $wpdb->queries );
         $sql = $wpdb->queries[0];
-        $this->assertStringContainsString( "meta_key = '" . Player_Repository::META_KEY_GENDER . "' AND meta_value IN ('M', 'F')", $sql );
-        $this->assertStringNotContainsString( 'u.display_name LIKE', $sql );
+        $this->assertStringContainsString( self::SQL_GENDER_FILTER, $sql );
+        $this->assertStringNotContainsString( self::SQL_DISPLAY_NAME_LIKE, $sql );
     }
 
     public function test_find_players_summary_active_flag_adds_subquery(): void {
-        $wpdb = $this->create_recording_wpdb( [] );
+        $wpdb = $this->create_recording_wpdb();
         $repo = new Player_Repository( $wpdb );
         $results = $repo->find_players_summary( [ 'active' => true ] );
 
         $this->assertSame( [], $results );
-        $sql = $wpdb->queries[0];
-        $this->assertStringContainsString( 'wp_racketmanager_rubber_players', $sql );
-        $this->assertStringContainsString( 'wp_racketmanager_tournament_entries', $sql );
-        $this->assertStringContainsString( 'u.ID IN (SELECT DISTINCT player_id FROM wp_racketmanager_rubber_players UNION SELECT DISTINCT player_id FROM wp_racketmanager_tournament_entries)', $sql );
-        $this->assertStringNotContainsString( "meta_value IN ('M', 'F')", $sql );
-        $this->assertStringNotContainsString( 'u.display_name LIKE', $sql );
-        $this->assertStringContainsString( 'ORDER BY u.ID ASC', $sql );
+        $this->assert_active_players_filter_applied( $wpdb->queries[0] );
     }
 
     public function test_find_players_summary_active_flag_overrides_name_and_gender_filters(): void {
-        $wpdb = $this->create_recording_wpdb( [] );
+        $wpdb = $this->create_recording_wpdb();
         $repo = new Player_Repository( $wpdb );
         $results = $repo->find_players_summary( [ 'active' => true, 'name' => 'John' ] );
 
         $this->assertSame( [], $results );
-        $sql = $wpdb->queries[0];
-        $this->assertStringContainsString( 'u.ID IN (SELECT DISTINCT player_id FROM wp_racketmanager_rubber_players UNION SELECT DISTINCT player_id FROM wp_racketmanager_tournament_entries)', $sql );
-        $this->assertStringNotContainsString( 'u.display_name LIKE', $sql );
-        $this->assertStringNotContainsString( "meta_value IN ('M', 'F')", $sql );
-        $this->assertStringContainsString( 'ORDER BY u.ID ASC', $sql );
+        $this->assert_active_players_filter_applied( $wpdb->queries[0] );
     }
 
     public function test_find_players_summary_group_by_maps_distinct_dto_records(): void {
@@ -189,7 +197,7 @@ final class Player_Repository_Summary_Test extends TestCase {
         ] );
 
         $repo = new Player_Repository( $wpdb );
-        $results = $repo->find_players_summary( [] );
+        $results = $repo->find_players_summary();
 
         $this->assertCount( 2, $results );
         $this->assertSame( 1, $results[0]->id );

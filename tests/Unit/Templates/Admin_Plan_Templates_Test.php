@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Templates;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Admin_League;
 use Racketmanager\Admin\Presenters\Admin_League_Schedule_Presenter;
@@ -23,6 +24,7 @@ use Racketmanager\Domain\Club;
 use Racketmanager\Domain\Team;
 use Racketmanager\Presentation\View_Models\Order_Of_Play_Match_View_Model;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
@@ -34,6 +36,34 @@ use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 class Admin_Plan_Templates_Test extends TestCase {
     use Creates_Admin_Delivery_Container;
     use Manages_Wordpress_Globals;
+
+    private const string TEMPLATE_CUP_PLAN = '/templates/admin/cup/plan.php';
+    private const string TEMPLATE_TOURNAMENT_PLAN = '/templates/admin/tournament/plan.php';
+    private const string TEMPLATE_SHOW_SCHEDULE = '/templates/admin/league/show-schedule.php';
+    private const string TEMPLATE_ORDER_OF_PLAY_COURT = '/templates/includes/order-of-play-court.php';
+
+    private const string COURT_1 = 'Court 1';
+    private const string COURT_2 = 'Court 2';
+    private const string TIME_0900 = '09:00';
+    private const string TIME_1000 = '10:00';
+
+    private const string TEXT_POTENTIAL_CLASHES = 'Potential clashes';
+    private const string CLASS_FINALS_MATCH = 'finals-match';
+    private const string CLASS_BTN_SUCCESS_FINALS_MATCH = 'btn btn-success finals-match';
+    private const string CLASS_BTN_WARNING_FINALS_MATCH = 'btn btn-warning finals-match';
+    private const string TAB_CONFIG_SCRIPT = "activaTab('config')";
+    private const string CLASS_IS_INVALID = 'is-invalid';
+    private const string SELECTOR_SCHEDULE_FILTER = "id='schedule-filter'";
+    private const string FORM_CUP_DETAILS = 'id="cupDetails"';
+    private const string FORM_CUP_PLANNER = 'id="cup-planner"';
+    private const string FORM_TOURNAMENT_DETAILS = 'id="tournamentDetails"';
+    private const string FORM_TOURNAMENT_PLANNER = 'id="tournament-planner"';
+    private const string ACTION_SAVE_CUP = 'name="saveCup"';
+    private const string WINNER_SEMI_FINAL_1 = 'Winner Semi Final 1';
+    private const string LOSER_SEMI_FINAL_1 = 'Loser Semi Final 1';
+    private const string SEMI_FINAL_1_HOME = '1_semi_1';
+    private const string SEMI_FINAL_1_AWAY = '2_semi_1';
+    private const string WINNER_PREFIX = 'Winner ';
 
     /** @var array<int, Player> */
     private array $players = [];
@@ -55,90 +85,148 @@ class Admin_Plan_Templates_Test extends TestCase {
     // Cup planner
     // ------------------------------------------------------------------
 
-    public function test_cup_plan_renders_with_numeric_teams_and_clash_detection(): void {
-        $this->stub_player( 101, 'Alice', 'Smith' );
-        $this->stub_player( 102, 'Bob', 'Jones' );
+    #[DataProvider( 'provide_cup_plan_clash_cases' )]
+    public function test_cup_plan_renders_clash_detection_scenarios(
+        array $players,
+        array $order_of_play,
+        array $match_players,
+        ?array $finals_spec,
+        bool $expect_clashes,
+        array $expected_contained_names,
+        array $expected_exact_name_counts = [],
+    ): void {
+        foreach ( $players as $id => $name_parts ) {
+            $this->stub_player( $id, $name_parts[0], $name_parts[1] );
+        }
+
+        $finals = null;
+        if ( null !== $finals_spec ) {
+            $finals = [
+                $this->make_fixture( $finals_spec['id'], $finals_spec['home'], $finals_spec['away'] ),
+            ];
+        }
 
         $output = $this->render_cup_plan(
-            order_of_play: [
-                [ 'court' => 'Court 1', 'start_time' => '10:00', 'matches' => [ 1 ] ],
-                [ 'court' => 'Court 2', 'start_time' => '10:00', 'matches' => [ 2 ] ],
-            ],
+            order_of_play: $order_of_play,
             courts: 2,
-            player_ids: fn( $id ) => match ( (int) $id ) {
-                1, 2    => [ 101, 102 ],
-                default => [],
-            },
+            player_ids: fn( $id ) => $match_players[ (int) $id ] ?? [],
+            finals: $finals,
         );
 
-        $this->assertStringContainsString( 'Potential clashes', $output );
-        $this->assertStringContainsString( 'Alice Smith', $output );
-        $this->assertStringContainsString( 'Bob Jones', $output );
+        $this->assert_clash_report( $output, $expect_clashes, $expected_contained_names, $expected_exact_name_counts );
     }
 
-    public function test_cup_plan_renders_with_placeholder_teams_and_clash_detection(): void {
-        $this->stub_player( 201, 'Charlie', 'Brown' );
-
-        $output = $this->render_cup_plan(
-            order_of_play: [
-                [ 'court' => 'Court 1', 'start_time' => '10:00', 'matches' => [ 10 ] ],
-                [ 'court' => 'Court 2', 'start_time' => '10:00', 'matches' => [ 10 ] ],
-            ],
-            courts: 2,
-            player_ids: fn( $id ) => 10 === (int) $id ? [ 201 ] : [],
-            finals: [ $this->make_fixture( 10, '1_semi_1', '5' ) ],
-        );
-
-        $this->assertStringContainsString( 'Potential clashes', $output );
-        $this->assertStringContainsString( 'Charlie Brown', $output );
-        $this->assertSame( 1, substr_count( $output, 'Charlie Brown' ) );
+    private function assert_clash_report( string $output, bool $expect_clashes, array $names = [], array $exact_counts = [] ): void {
+        if ( $expect_clashes ) {
+            $this->assertStringContainsString( self::TEXT_POTENTIAL_CLASHES, $output );
+            foreach ( $names as $name ) {
+                $this->assertStringContainsString( $name, $output );
+            }
+            foreach ( $exact_counts as $name => $count ) {
+                $this->assertSame( $count, substr_count( $output, $name ) );
+            }
+        } else {
+            $this->assertStringNotContainsString( self::TEXT_POTENTIAL_CLASHES, $output );
+        }
     }
 
-    public function test_cup_plan_renders_cleanly_when_no_clashes(): void {
-        $this->stub_player( 101, 'Alice', 'Smith' );
-        $this->stub_player( 102, 'Bob', 'Jones' );
-
-        $output = $this->render_cup_plan(
-            order_of_play: [
-                [ 'court' => 'Court 1', 'start_time' => '10:00', 'matches' => [ 1 ] ],
-                [ 'court' => 'Court 2', 'start_time' => '10:00', 'matches' => [ 2 ] ],
+    /**
+     * @return array<string, array{
+     *     players: array<int, array{string, string}>,
+     *     order_of_play: array<int, array<string, mixed>>,
+     *     match_players: array<int, list<int>>,
+     *     finals_spec: array{id: int, home: string, away: string}|null,
+     *     expect_clashes: bool,
+     *     expected_contained_names: list<string>,
+     *     expected_exact_name_counts?: array<string, int>
+     * }>
+     */
+    public static function provide_cup_plan_clash_cases(): array {
+        return [
+            'numeric teams with clash detection' => [
+                'players'                    => [
+                    101 => [ 'Alice', 'Smith' ],
+                    102 => [ 'Bob', 'Jones' ],
+                ],
+                'order_of_play'              => [
+                    [ 'court' => self::COURT_1, 'start_time' => self::TIME_1000, 'matches' => [ 1 ] ],
+                    [ 'court' => self::COURT_2, 'start_time' => self::TIME_1000, 'matches' => [ 2 ] ],
+                ],
+                'match_players'              => [
+                    1 => [ 101, 102 ],
+                    2 => [ 101, 102 ],
+                ],
+                'finals_spec'                => null,
+                'expect_clashes'             => true,
+                'expected_contained_names'   => [ 'Alice Smith', 'Bob Jones' ],
+                'expected_exact_name_counts' => [],
             ],
-            courts: 2,
-            player_ids: fn( $id ) => match ( (int) $id ) {
-                1       => [ 101 ],
-                2       => [ 102 ],
-                default => [],
-            },
-        );
-
-        $this->assertStringNotContainsString( 'Potential clashes', $output );
+            'placeholder teams with clash detection' => [
+                'players'                    => [
+                    201 => [ 'Charlie', 'Brown' ],
+                ],
+                'order_of_play'              => [
+                    [ 'court' => self::COURT_1, 'start_time' => self::TIME_1000, 'matches' => [ 10 ] ],
+                    [ 'court' => self::COURT_2, 'start_time' => self::TIME_1000, 'matches' => [ 10 ] ],
+                ],
+                'match_players'              => [
+                    10 => [ 201 ],
+                ],
+                'finals_spec'                => [
+                    'id'   => 10,
+                    'home' => self::SEMI_FINAL_1_HOME,
+                    'away' => '5',
+                ],
+                'expect_clashes'             => true,
+                'expected_contained_names'   => [ 'Charlie Brown' ],
+                'expected_exact_name_counts' => [ 'Charlie Brown' => 1 ],
+            ],
+            'clean rendering when no clashes' => [
+                'players'                    => [
+                    101 => [ 'Alice', 'Smith' ],
+                    102 => [ 'Bob', 'Jones' ],
+                ],
+                'order_of_play'              => [
+                    [ 'court' => self::COURT_1, 'start_time' => self::TIME_1000, 'matches' => [ 1 ] ],
+                    [ 'court' => self::COURT_2, 'start_time' => self::TIME_1000, 'matches' => [ 2 ] ],
+                ],
+                'match_players'              => [
+                    1 => [ 101 ],
+                    2 => [ 102 ],
+                ],
+                'finals_spec'                => null,
+                'expect_clashes'             => false,
+                'expected_contained_names'   => [],
+                'expected_exact_name_counts' => [],
+            ],
+        ];
     }
 
     public function test_cup_plan_preserves_dispatcher_and_drag_drop_contract_with_fixture_finals(): void {
         $finals = [
             $this->make_fixture( 10, '5', '6', home_club: 'WCC', away_club: 'LTC' ),
-            $this->make_fixture( 11, '1_semi_1', '2_semi_1' ),
+            $this->make_fixture( 11, self::SEMI_FINAL_1_HOME, self::SEMI_FINAL_1_AWAY ),
         ];
 
         $output = $this->render_cup_plan(
             order_of_play: [
-                [ 'court' => 'Court 1', 'start_time' => '10:00', 'matches' => [ 10 ] ],
-                [ 'court' => 'Court 2', 'start_time' => '10:30', 'matches' => [ 11 ] ],
+                [ 'court' => self::COURT_1, 'start_time' => '10:00', 'matches' => [ 10 ] ],
+                [ 'court' => self::COURT_2, 'start_time' => '10:30', 'matches' => [ 11 ] ],
             ],
             courts: 2,
             finals: $finals,
         );
 
         // Config form (Cup_Plan_Action_Dispatcher::handle_save_cup_config).
-        $this->assertStringContainsString( 'id="cupDetails"', $output );
-        $this->assertStringContainsString( 'name="saveCup"', $output );
+        $this->assertStringContainsString( self::FORM_CUP_DETAILS, $output );
+        $this->assertStringContainsString( self::ACTION_SAVE_CUP, $output );
         $this->assertStringContainsString( 'name="racketmanager_cup-nonce"', $output );
         $this->assertStringContainsString( 'data-action="racketmanager_cup"', $output );
         $this->assertStringContainsString( 'name="numCourtsAvailable"', $output );
         $this->assertStringContainsString( 'name="timeIncrement"', $output );
 
         // Planner form (handle_save_plan / handle_reset_plan).
-        $this->assertStringContainsString( 'id="cup-planner"', $output );
+        $this->assertStringContainsString( self::FORM_CUP_PLANNER, $output );
         $this->assertStringContainsString( 'name="racketmanager_cup-planner-nonce"', $output );
         $this->assertStringContainsString( 'data-action="racketmanager_cup-planner"', $output );
         $this->assertStringContainsString( 'name="numFinals" value="2"', $output );
@@ -159,13 +247,13 @@ class Admin_Plan_Templates_Test extends TestCase {
         $this->assertStringContainsString( 'name="matchtime[0][0]" id="matchtime-0-0" value="0"', $output );
 
         // Final cards: known teams are success, placeholders are warning and pending (italic).
-        $this->assertStringContainsString( 'btn btn-success finals-match', $output );
-        $this->assertStringContainsString( 'btn btn-warning finals-match', $output );
+        $this->assertStringContainsString( self::CLASS_BTN_SUCCESS_FINALS_MATCH, $output );
+        $this->assertStringContainsString( self::CLASS_BTN_WARNING_FINALS_MATCH, $output );
         $this->assertStringContainsString( 'Team 5', $output );
         $this->assertStringContainsString( '(WCC)', $output );
         $this->assertStringContainsString( '(LTC)', $output );
-        $this->assertStringContainsString( 'Winner 1_semi_1', $output );
-        $this->assertStringContainsString( 'Winner 2_semi_1', $output );
+        $this->assertStringContainsString( self::WINNER_PREFIX . self::SEMI_FINAL_1_HOME, $output );
+        $this->assertStringContainsString( self::WINNER_PREFIX . self::SEMI_FINAL_1_AWAY, $output );
         $this->assertStringContainsString( '<div class="fst-italic">', $output );
     }
 
@@ -201,7 +289,7 @@ class Admin_Plan_Templates_Test extends TestCase {
         $this->assertSame( 'Court 3', $vm->order_of_play[2]['court'] );
         $this->assertSame( '10:00:00', $vm->order_of_play[2]['start_time'] );
 
-        $output = $this->render_template( '/templates/admin/cup/plan.php', [ 'vm' => $vm ] );
+        $output = $this->render_template( self::TEMPLATE_CUP_PLAN, [ 'vm' => $vm ] );
 
         $this->assertSame( 12, substr_count( $output, 'tournament-match" name="schedule[' ) );
         $this->assertSame( 12, substr_count( $output, 'class="col-6 tournament-match"' ) );
@@ -221,7 +309,7 @@ class Admin_Plan_Templates_Test extends TestCase {
 
     public function test_cup_plan_renders_config_errors(): void {
         $output = $this->render_template(
-            '/templates/admin/cup/plan.php',
+            self::TEMPLATE_CUP_PLAN,
             [
                 'vm' => $this->cup_vm(
                     order_of_play: [],
@@ -234,8 +322,8 @@ class Admin_Plan_Templates_Test extends TestCase {
             ]
         );
 
-        $this->assertStringContainsString( "activaTab('config')", $output );
-        $this->assertStringContainsString( 'is-invalid', $output );
+        $this->assertStringContainsString( self::TAB_CONFIG_SCRIPT, $output );
+        $this->assertStringContainsString( self::CLASS_IS_INVALID, $output );
         $this->assertStringContainsString( 'Start time is invalid.', $output );
     }
 
@@ -253,98 +341,147 @@ class Admin_Plan_Templates_Test extends TestCase {
         $this->assertSame( [], $vm->schedule_slots );
         $this->assertSame( [], $vm->final_cards );
 
-        $output = $this->render_template( '/templates/admin/cup/plan.php', [ 'vm' => $vm ] );
+        $output = $this->render_template( self::TEMPLATE_CUP_PLAN, [ 'vm' => $vm ] );
 
-        $this->assertStringContainsString( 'id="cupDetails"', $output );
-        $this->assertStringContainsString( 'name="saveCup"', $output );
-        $this->assertStringNotContainsString( 'id="cup-planner"', $output );
-        $this->assertStringNotContainsString( 'finals-match', $output );
-        $this->assertStringNotContainsString( 'Potential clashes', $output );
+        $this->assertStringContainsString( self::FORM_CUP_DETAILS, $output );
+        $this->assertStringContainsString( self::ACTION_SAVE_CUP, $output );
+        $this->assertStringNotContainsString( self::FORM_CUP_PLANNER, $output );
+        $this->assertStringNotContainsString( self::CLASS_FINALS_MATCH, $output );
+        $this->assertStringNotContainsString( self::TEXT_POTENTIAL_CLASHES, $output );
     }
 
     // ------------------------------------------------------------------
     // Tournament planner
     // ------------------------------------------------------------------
 
-    public function test_tournament_plan_renders_with_clash_detection(): void {
-        $this->stub_player( 301, 'David', 'Miller' );
+    #[DataProvider( 'provide_tournament_plan_clash_cases' )]
+    public function test_tournament_plan_renders_clash_detection_scenarios(
+        array $players,
+        array $order_of_play,
+        array $match_players,
+        ?array $finals_spec,
+        bool $expect_clashes,
+        array $expected_contained_names,
+    ): void {
+        foreach ( $players as $id => $name_parts ) {
+            $this->stub_player( $id, $name_parts[0], $name_parts[1] );
+        }
+
+        $finals = null;
+        if ( null !== $finals_spec ) {
+            $finals = [
+                $this->make_fixture_details(
+                    $finals_spec['id'],
+                    $finals_spec['home'],
+                    $finals_spec['away'],
+                    $finals_spec['prev_home'] ?? null,
+                    $finals_spec['prev_away'] ?? null,
+                ),
+            ];
+        }
 
         $output = $this->render_tournament_plan(
-            order_of_play: [
-                [ 'court' => 'Court 1', 'start_time' => '09:00', 'fixtures' => [ 1 ] ],
-                [ 'court' => 'Court 2', 'start_time' => '09:00', 'fixtures' => [ 2 ] ],
-            ],
+            order_of_play: $order_of_play,
             courts: 2,
-            player_ids: fn( $id ) => match ( (int) $id ) {
-                1, 2    => [ 301 ],
-                default => [],
-            },
+            player_ids: fn( $id ) => $match_players[ (int) $id ] ?? [],
+            finals: $finals,
         );
 
-        $this->assertStringContainsString( 'Potential clashes', $output );
-        $this->assertStringContainsString( 'David Miller', $output );
+        $this->assert_clash_report( $output, $expect_clashes, $expected_contained_names );
     }
 
-    public function test_tournament_plan_renders_with_placeholder_fixtures_and_clash_detection(): void {
-        $this->stub_player( 401, 'Eva', 'Green' );
-
-        $output = $this->render_tournament_plan(
-            order_of_play: [
-                [ 'court' => 'Court 1', 'start_time' => '09:00', 'fixtures' => [ 20 ] ],
-                [ 'court' => 'Court 2', 'start_time' => '09:00', 'fixtures' => [ 20 ] ],
+    /**
+     * @return array<string, array{
+     *     players: array<int, array{string, string}>,
+     *     order_of_play: array<int, array<string, mixed>>,
+     *     match_players: array<int, list<int>>,
+     *     finals_spec: array{id: int, home: string, away: string, prev_home?: string, prev_away?: string}|null,
+     *     expect_clashes: bool,
+     *     expected_contained_names: list<string>
+     * }>
+     */
+    public static function provide_tournament_plan_clash_cases(): array {
+        return [
+            'numeric fixtures with clash detection' => [
+                'players'                  => [
+                    301 => [ 'David', 'Miller' ],
+                ],
+                'order_of_play'            => [
+                    [ 'court' => self::COURT_1, 'start_time' => self::TIME_0900, 'fixtures' => [ 1 ] ],
+                    [ 'court' => self::COURT_2, 'start_time' => self::TIME_0900, 'fixtures' => [ 2 ] ],
+                ],
+                'match_players'            => [
+                    1 => [ 301 ],
+                    2 => [ 301 ],
+                ],
+                'finals_spec'              => null,
+                'expect_clashes'           => true,
+                'expected_contained_names' => [ 'David Miller' ],
             ],
-            courts: 2,
-            player_ids: fn( $id ) => 20 === (int) $id ? [ 401 ] : [],
-            finals: [ $this->make_fixture_details( 20, '1_semi_1', '2_semi_1', 'Winner Semi Final 1', 'Loser Semi Final 1' ) ],
-        );
-
-        $this->assertStringContainsString( 'Potential clashes', $output );
-        $this->assertStringContainsString( 'Eva Green', $output );
-    }
-
-    public function test_tournament_plan_renders_cleanly_when_no_clashes(): void {
-        $this->stub_player( 501, 'Frank', 'Sinatra' );
-        $this->stub_player( 502, 'Grace', 'Kelly' );
-
-        $output = $this->render_tournament_plan(
-            order_of_play: [
-                [ 'court' => 'Court 1', 'start_time' => '09:00', 'fixtures' => [ 1 ] ],
-                [ 'court' => 'Court 2', 'start_time' => '09:00', 'fixtures' => [ 2 ] ],
+            'placeholder fixtures with clash detection' => [
+                'players'                  => [
+                    401 => [ 'Eva', 'Green' ],
+                ],
+                'order_of_play'            => [
+                    [ 'court' => self::COURT_1, 'start_time' => self::TIME_0900, 'fixtures' => [ 20 ] ],
+                    [ 'court' => self::COURT_2, 'start_time' => self::TIME_0900, 'fixtures' => [ 20 ] ],
+                ],
+                'match_players'            => [
+                    20 => [ 401 ],
+                ],
+                'finals_spec'              => [
+                    'id'        => 20,
+                    'home'      => self::SEMI_FINAL_1_HOME,
+                    'away'      => self::SEMI_FINAL_1_AWAY,
+                    'prev_home' => self::WINNER_SEMI_FINAL_1,
+                    'prev_away' => self::LOSER_SEMI_FINAL_1,
+                ],
+                'expect_clashes'           => true,
+                'expected_contained_names' => [ 'Eva Green' ],
             ],
-            courts: 2,
-            player_ids: fn( $id ) => match ( (int) $id ) {
-                1       => [ 501 ],
-                2       => [ 502 ],
-                default => [],
-            },
-        );
-
-        $this->assertStringNotContainsString( 'Potential clashes', $output );
+            'clean rendering when no clashes' => [
+                'players'                  => [
+                    501 => [ 'Frank', 'Sinatra' ],
+                    502 => [ 'Grace', 'Kelly' ],
+                ],
+                'order_of_play'            => [
+                    [ 'court' => self::COURT_1, 'start_time' => self::TIME_0900, 'fixtures' => [ 1 ] ],
+                    [ 'court' => self::COURT_2, 'start_time' => self::TIME_0900, 'fixtures' => [ 2 ] ],
+                ],
+                'match_players'            => [
+                    1 => [ 501 ],
+                    2 => [ 502 ],
+                ],
+                'finals_spec'              => null,
+                'expect_clashes'           => false,
+                'expected_contained_names' => [],
+            ],
+        ];
     }
 
     public function test_tournament_plan_preserves_controller_and_drag_drop_contract_with_details_dtos(): void {
         $finals = [
             $this->make_fixture_details( 5, '7', '8', home_name: 'Team Seven', away_name: 'Team Eight', home_club: 'WCC', away_club: 'LTC' ),
-            $this->make_fixture_details( 6, '1_semi_1', '2_semi_1', 'Winner Semi Final 1', 'Loser Semi Final 1' ),
+            $this->make_fixture_details( 6, self::SEMI_FINAL_1_HOME, self::SEMI_FINAL_1_AWAY, self::WINNER_SEMI_FINAL_1, self::LOSER_SEMI_FINAL_1 ),
         ];
 
         $output = $this->render_tournament_plan(
             order_of_play: [
-                [ 'court' => 'Court 1', 'start_time' => '09:00', 'fixtures' => [ 5 ] ],
-                [ 'court' => 'Court 2', 'start_time' => '09:30', 'fixtures' => [ 6 ] ],
+                [ 'court' => self::COURT_1, 'start_time' => '09:00', 'fixtures' => [ 5 ] ],
+                [ 'court' => self::COURT_2, 'start_time' => '09:30', 'fixtures' => [ 6 ] ],
             ],
             courts: 2,
             finals: $finals,
         );
 
         // Config form (Tournament_Plan_Admin_Controller::handle_save_tournament_finals_config).
-        $this->assertStringContainsString( 'id="tournamentDetails"', $output );
+        $this->assertStringContainsString( self::FORM_TOURNAMENT_DETAILS, $output );
         $this->assertStringContainsString( 'data-action="racketmanager_tournament-finals-config"', $output );
         $this->assertStringContainsString( 'name="saveTournamentFinalsConfig"', $output );
         $this->assertStringContainsString( 'name="tournamentId" value="5"', $output );
 
         // Planner form (handle_save_tournament_plan / handle_reset_tournament_plan).
-        $this->assertStringContainsString( 'id="tournament-planner"', $output );
+        $this->assertStringContainsString( self::FORM_TOURNAMENT_PLANNER, $output );
         $this->assertStringContainsString( 'data-action="racketmanager_tournament-planner"', $output );
         $this->assertStringContainsString( 'name="racketmanager_nonce"', $output );
         $this->assertStringContainsString( 'name="numFinals" value="2"', $output );
@@ -361,14 +498,14 @@ class Admin_Plan_Templates_Test extends TestCase {
         $this->assertStringContainsString( 'class="matchId" name="match[1][0]" id="match-1-0" value="6"', $output );
 
         // Real Fixture_Details_DTO finals: names, clubs and placeholder titles.
-        $this->assertStringContainsString( 'btn btn-success finals-match', $output );
-        $this->assertStringContainsString( 'btn btn-warning finals-match', $output );
+        $this->assertStringContainsString( self::CLASS_BTN_SUCCESS_FINALS_MATCH, $output );
+        $this->assertStringContainsString( self::CLASS_BTN_WARNING_FINALS_MATCH, $output );
         $this->assertStringContainsString( 'Team Seven', $output );
         $this->assertStringContainsString( 'Team Eight', $output );
         $this->assertStringContainsString( '(WCC)', $output );
         $this->assertStringContainsString( '(LTC)', $output );
-        $this->assertStringContainsString( 'Winner Semi Final 1', $output );
-        $this->assertStringContainsString( 'Loser Semi Final 1', $output );
+        $this->assertStringContainsString( self::WINNER_SEMI_FINAL_1, $output );
+        $this->assertStringContainsString( self::LOSER_SEMI_FINAL_1, $output );
         $this->assertStringContainsString( 'Mens Open', $output );
     }
 
@@ -396,10 +533,10 @@ class Admin_Plan_Templates_Test extends TestCase {
             tab: 'config',
         );
 
-        $output = $this->render_template( '/templates/admin/tournament/plan.php', [ 'vm' => $vm ] );
+        $output = $this->render_template( self::TEMPLATE_TOURNAMENT_PLAN, [ 'vm' => $vm ] );
 
-        $this->assertStringContainsString( "activaTab('config')", $output );
-        $this->assertStringContainsString( 'is-invalid', $output );
+        $this->assertStringContainsString( self::TAB_CONFIG_SCRIPT, $output );
+        $this->assertStringContainsString( self::CLASS_IS_INVALID, $output );
         $this->assertStringContainsString( 'Tournament start time is required.', $output );
         $this->assertStringContainsString( 'name="timeIncrement" id="timeIncrement" value="00:45:00"', $output );
         $this->assertStringContainsString( 'name="numCourtsAvailable" id="numCourtsAvailable" value="6"', $output );
@@ -411,11 +548,11 @@ class Admin_Plan_Templates_Test extends TestCase {
         $this->assertSame( 0, $vm->max_schedules );
         $this->assertSame( [], $vm->schedule_slots );
 
-        $output = $this->render_template( '/templates/admin/tournament/plan.php', [ 'vm' => $vm ] );
+        $output = $this->render_template( self::TEMPLATE_TOURNAMENT_PLAN, [ 'vm' => $vm ] );
 
-        $this->assertStringContainsString( 'id="tournamentDetails"', $output );
-        $this->assertStringNotContainsString( 'id="tournament-planner"', $output );
-        $this->assertStringNotContainsString( 'finals-match', $output );
+        $this->assertStringContainsString( self::FORM_TOURNAMENT_DETAILS, $output );
+        $this->assertStringNotContainsString( self::FORM_TOURNAMENT_PLANNER, $output );
+        $this->assertStringNotContainsString( self::CLASS_FINALS_MATCH, $output );
     }
 
     // ------------------------------------------------------------------
@@ -450,11 +587,11 @@ class Admin_Plan_Templates_Test extends TestCase {
         );
 
         $output = $this->render_template(
-            '/templates/admin/league/show-schedule.php',
+            self::TEMPLATE_SHOW_SCHEDULE,
             [ 'vm' => $vm ]
         );
 
-        $this->assertStringContainsString( "id='schedule-filter'", $output );
+        $this->assertStringContainsString( self::SELECTOR_SCHEDULE_FILTER, $output );
         $this->assertStringContainsString( 'name="actionSchedule"', $output );
         $this->assertStringContainsString( 'Men Division 1', $output );
         $this->assertStringContainsString( 'Men Division 2', $output );
@@ -473,10 +610,10 @@ class Admin_Plan_Templates_Test extends TestCase {
             events: [],
         );
         $league_output = $this->render_template(
-            '/templates/admin/league/show-schedule.php',
+            self::TEMPLATE_SHOW_SCHEDULE,
             [ 'vm' => $league_vm ]
         );
-        $this->assertStringContainsString( "id='schedule-filter'", $league_output );
+        $this->assertStringContainsString( self::SELECTOR_SCHEDULE_FILTER, $league_output );
         $this->assertStringNotContainsString( '<button class="btn btn-secondary sendFixtures"', $league_output );
 
         // 2. Order of play court with empty time slots
@@ -486,7 +623,7 @@ class Admin_Plan_Templates_Test extends TestCase {
         $is_expanded = false;
 
         $oop_output = $this->render_template(
-            '/templates/includes/order-of-play-court.php',
+            self::TEMPLATE_ORDER_OF_PLAY_COURT,
             [ 'court_times' => $court_times, 'is_expanded' => $is_expanded ]
         );
         $this->assertStringContainsString( 'match-group__item-wrapper', $oop_output );
@@ -497,7 +634,7 @@ class Admin_Plan_Templates_Test extends TestCase {
         $match_vm = new Order_Of_Play_Match_View_Model(
             id: 99,
             league_title: 'Championship Semi Final',
-            home_match_title: '1_semi_1',
+            home_match_title: self::SEMI_FINAL_1_HOME,
             away_match_title: 'Westcliff 1',
             is_home_pending: true,
             is_away_pending: false,
@@ -509,12 +646,12 @@ class Admin_Plan_Templates_Test extends TestCase {
         $is_expanded = false;
 
         $output = $this->render_template(
-            '/templates/includes/order-of-play-court.php',
+            self::TEMPLATE_ORDER_OF_PLAY_COURT,
             [ 'court_times' => $court_times, 'is_expanded' => $is_expanded ]
         );
 
         $this->assertStringContainsString( 'Championship Semi Final', $output );
-        $this->assertStringContainsString( '1_semi_1', $output );
+        $this->assertStringContainsString( self::SEMI_FINAL_1_HOME, $output );
         $this->assertStringContainsString( 'Westcliff 1', $output );
         $this->assertStringContainsString( 'is_pending', $output );
     }
@@ -548,7 +685,7 @@ class Admin_Plan_Templates_Test extends TestCase {
             ->with( 55 )
             ->willReturn( $competition );
 
-        $event_repo = $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class );
+        $event_repo = $this->createStub( Event_Repository_Interface::class );
         $event_repo->method( 'count_by_event_season' )->willReturnCallback(
             static function ( int $event_id, string $season, bool $completed_only ): int {
                 if ( 101 === $event_id && '2026' === $season ) {
@@ -562,33 +699,7 @@ class Admin_Plan_Templates_Test extends TestCase {
             }
         );
 
-        $container = $this->create_admin_delivery_container(
-            services: [
-                'competition_service' => $comp_service,
-                'event_repository'    => $event_repo,
-            ]
-        );
-
-        $racketmanager = $this->createStub( RacketManager::class );
-        $racketmanager->container = $container;
-        $GLOBALS['racketmanager'] = $racketmanager;
-
-        $admin_league = new Admin_League( $racketmanager );
-
-        $GLOBALS['wp_stubs_current_user_can'] = true;
-        $_GET['competition_id']               = '55';
-        unset( $_GET['season'], $_POST['scheduleAction'] );
-
-        ob_start();
-        try {
-            $admin_league->display_schedule_page();
-            $output = (string) ob_get_clean();
-        } catch ( \Throwable $e ) {
-            if ( ob_get_level() > 0 ) {
-                ob_end_clean();
-            }
-            throw $e;
-        }
+        $output = $this->execute_admin_league_schedule_page( $comp_service, $event_repo );
 
         $this->assertStringContainsString( 'Premier League', $output );
         $this->assertStringContainsString( 'Division 1', $output );
@@ -616,8 +727,19 @@ class Admin_Plan_Templates_Test extends TestCase {
             ->with( 55 )
             ->willReturn( $competition );
 
-        $event_repo = $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class );
+        $event_repo = $this->createStub( Event_Repository_Interface::class );
 
+        $output = $this->execute_admin_league_schedule_page( $comp_service, $event_repo );
+
+        $this->assertStringContainsString( 'Empty Competition', $output );
+        $this->assertStringNotContainsString( 'data-event-id=', $output );
+    }
+
+    private function execute_admin_league_schedule_page(
+        Competition_Service $comp_service,
+        Event_Repository_Interface $event_repo,
+        string $competition_id = '55',
+    ): string {
         $container = $this->create_admin_delivery_container(
             services: [
                 'competition_service' => $comp_service,
@@ -632,22 +754,19 @@ class Admin_Plan_Templates_Test extends TestCase {
         $admin_league = new Admin_League( $racketmanager );
 
         $GLOBALS['wp_stubs_current_user_can'] = true;
-        $_GET['competition_id']               = '55';
+        $_GET['competition_id']               = $competition_id;
         unset( $_GET['season'], $_POST['scheduleAction'] );
 
         ob_start();
         try {
             $admin_league->display_schedule_page();
-            $output = (string) ob_get_clean();
+            return (string) ob_get_clean();
         } catch ( \Throwable $e ) {
             if ( ob_get_level() > 0 ) {
                 ob_end_clean();
             }
             throw $e;
         }
-
-        $this->assertStringContainsString( 'Empty Competition', $output );
-        $this->assertStringNotContainsString( 'data-event-id=', $output );
     }
 
     private function stub_player( int $id, string $first_name, string $last_name ): void {
@@ -666,7 +785,7 @@ class Admin_Plan_Templates_Test extends TestCase {
         $detail_service->method( 'collect_fixture_player_ids' )
             ->willReturnCallback( $player_ids ?? static fn( $id ): array => [] );
         $detail_service->method( 'resolve_placeholder_title' )
-            ->willReturnCallback( static fn( string $team_ref ): string => 'Winner ' . $team_ref );
+            ->willReturnCallback( static fn( string $team_ref ): string => self::WINNER_PREFIX . $team_ref );
 
         $player_repository = $this->createStub( Player_Repository_Interface::class );
         $player_repository->method( 'find_by_id' )
@@ -799,7 +918,7 @@ class Admin_Plan_Templates_Test extends TestCase {
      */
     private function render_cup_plan( array $order_of_play, int $courts, ?callable $player_ids = null, ?array $finals = null ): string {
         return $this->render_template(
-            '/templates/admin/cup/plan.php',
+            self::TEMPLATE_CUP_PLAN,
             [ 'vm' => $this->cup_vm( order_of_play: $order_of_play, courts: $courts, finals: $finals, player_ids: $player_ids ) ]
         );
     }
@@ -832,7 +951,7 @@ class Admin_Plan_Templates_Test extends TestCase {
      */
     private function render_tournament_plan( array $order_of_play, int $courts, ?callable $player_ids = null, ?array $finals = null ): string {
         return $this->render_template(
-            '/templates/admin/tournament/plan.php',
+            self::TEMPLATE_TOURNAMENT_PLAN,
             [ 'vm' => $this->tournament_vm( order_of_play: $order_of_play, courts: $courts, finals: $finals, player_ids: $player_ids ) ]
         );
     }

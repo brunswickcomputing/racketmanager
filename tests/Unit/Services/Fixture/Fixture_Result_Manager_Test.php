@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Services\Fixture;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\League;
@@ -200,243 +201,94 @@ class Fixture_Result_Manager_Test extends TestCase {
         $this->permission_service       = $this->createMock( Fixture_Permission_Service::class );
         $this->score_validator          = $this->createMock( Score_Validation_Service::class );
         $this->result_service           = $this->createMock( Result_Service::class );
-        $player_validator               = $this->createMock( Player_Validation_Service::class );
-        $settings_service               = $this->createMock( Settings_Service::class );
-        $registration_service       = $this->createMock( Registration_Service::class );
-        $notification_service       = $this->createMock( Notification_Service::class );
-        $this->progression_service  = $this->createMock( Knockout_Progression_Service::class );
-        $rubber_manager             = $this->createMock( Rubber_Result_Manager::class );
-
-        $service_provider                  = $this->createStub( Service_Provider::class );
-        $this->finalization_service = $this->createMock( Fixture_Finalization_Service::class );
-        $service_provider->method( 'get_fixture_finalization_service' )->willReturn( $this->finalization_service );
+        $this->progression_service      = $this->createMock( Knockout_Progression_Service::class );
+        $this->finalization_service     = $this->createMock( Fixture_Finalization_Service::class );
         $this->fixture_maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
-        $service_provider->method( 'get_fixture_maintenance_service' )->willReturn( $this->fixture_maintenance_service );
-        $service_provider->method( 'get_league_service' )->willReturn( $this->league_service );
-        $service_provider->method( 'get_result_reporting_service' )->willReturn( $this->result_reporting_service );
-        $service_provider->method( 'get_fixture_permission_service' )->willReturn( $this->permission_service );
-        $service_provider->method( 'get_score_validator' )->willReturn( $this->score_validator );
-        $service_provider->method( 'get_result_service' )->willReturn( $this->result_service );
-        $service_provider->method( 'get_player_validator' )->willReturn( $player_validator );
-        $service_provider->method( 'get_registration_service' )->willReturn( $registration_service );
-        $service_provider->method( 'get_notification_service' )->willReturn( $notification_service );
-        $service_provider->method( 'get_settings_service' )->willReturn( $settings_service );
-        $service_provider->method( 'get_progression_service' )->willReturn( $this->progression_service );
-        $service_provider->method( 'get_rubber_manager' )->willReturn( $rubber_manager );
+
+        $service_provider = $this->create_service_provider_with_test_doubles();
 
         $this->manager = new Fixture_Result_Manager( $service_provider, $repository_provider );
     }
 
     public function test_construct_happy_path_with_all_injected_services(): void {
-        $service_provider = $this->createStub( Service_Provider::class );
-        $service_provider->method( 'get_result_reporting_service' )->willReturn( $this->createStub( Result_Reporting_Service::class ) );
-        $service_provider->method( 'get_result_service' )->willReturn( $this->createStub( Result_Service::class ) );
-        $service_provider->method( 'get_progression_service' )->willReturn( $this->createStub( Knockout_Progression_Service::class ) );
-        $service_provider->method( 'get_fixture_finalization_service' )->willReturn( $this->createStub( Fixture_Finalization_Service::class ) );
-        $service_provider->method( 'get_league_service' )->willReturn( $this->createStub( League_Service::class ) );
-        $service_provider->method( 'get_score_validator' )->willReturn( $this->createStub( Score_Validation_Service::class ) );
-        $service_provider->method( 'get_settings_service' )->willReturn( $this->createStub( Settings_Service::class ) );
-        $service_provider->method( 'get_registration_service' )->willReturn( $this->createStub( Registration_Service::class ) );
-        $service_provider->method( 'get_player_validator' )->willReturn( $this->createStub( Player_Validation_Service::class ) );
-        $service_provider->method( 'get_notification_service' )->willReturn( $this->createStub( Notification_Service::class ) );
-        $service_provider->method( 'get_rubber_manager' )->willReturn( $this->createStub( Rubber_Result_Manager::class ) );
-        $service_provider->method( 'get_fixture_permission_service' )->willReturn( $this->createStub( Fixture_Permission_Service::class ) );
-        $service_provider->method( 'get_fixture_maintenance_service' )->willReturn( $this->createStub( Fixture_Maintenance_Service::class ) );
+        $service_provider = $this->create_stub_service_provider();
 
         $manager = new Fixture_Result_Manager( $service_provider, $this->createStub( Repository_Provider::class ) );
         $this->assertSame( $service_provider, $manager->get_service_provider() );
     }
 
-    public function test_construct_throws_when_result_reporting_service_is_missing(): void {
-        $service_provider = $this->createStub( Service_Provider::class );
-        $service_provider->method( 'get_result_reporting_service' )
-            ->willThrowException( new \LogicException( 'Result_Reporting_Service has not been configured.' ) );
+    #[DataProvider( 'provide_missing_dependency_cases' )]
+    public function test_construct_throws_when_required_service_is_missing( string $service_getter, string $expected_message ): void {
+        $override = 'get_result_reporting_service' === $service_getter
+            ? new \LogicException( 'Result_Reporting_Service has not been configured.' )
+            : null;
+
+        $service_provider = $this->create_stub_service_provider( [
+            $service_getter => $override,
+        ] );
 
         $this->expectException( \LogicException::class );
-        $this->expectExceptionMessage( 'Result_Reporting_Service has not been configured' );
+        $this->expectExceptionMessage( $expected_message );
         new Fixture_Result_Manager( $service_provider, $this->createStub( Repository_Provider::class ) );
     }
 
-    public function test_construct_throws_when_result_service_is_missing(): void {
-        $service_provider = $this->createStub( Service_Provider::class );
-        $service_provider->method( 'get_result_reporting_service' )->willReturn( $this->createStub( Result_Reporting_Service::class ) );
-        $service_provider->method( 'get_result_service' )->willReturn( null );
-
-        $this->expectException( \LogicException::class );
-        $this->expectExceptionMessage( 'Result_Service has not been configured' );
-        new Fixture_Result_Manager( $service_provider, $this->createStub( Repository_Provider::class ) );
-    }
-
-    public function test_construct_throws_when_progression_service_is_missing(): void {
-        $service_provider = $this->createStub( Service_Provider::class );
-        $service_provider->method( 'get_result_reporting_service' )->willReturn( $this->createStub( Result_Reporting_Service::class ) );
-        $service_provider->method( 'get_result_service' )->willReturn( $this->createStub( Result_Service::class ) );
-        $service_provider->method( 'get_progression_service' )->willReturn( null );
-
-        $this->expectException( \LogicException::class );
-        $this->expectExceptionMessage( 'Knockout_Progression_Service has not been configured' );
-        new Fixture_Result_Manager( $service_provider, $this->createStub( Repository_Provider::class ) );
-    }
-
-    public function test_construct_throws_when_finalization_service_is_missing(): void {
-        $service_provider = $this->createStub( Service_Provider::class );
-        $service_provider->method( 'get_result_reporting_service' )->willReturn( $this->createStub( Result_Reporting_Service::class ) );
-        $service_provider->method( 'get_result_service' )->willReturn( $this->createStub( Result_Service::class ) );
-        $service_provider->method( 'get_progression_service' )->willReturn( $this->createStub( Knockout_Progression_Service::class ) );
-        $service_provider->method( 'get_fixture_finalization_service' )->willReturn( null );
-
-        $this->expectException( \LogicException::class );
-        $this->expectExceptionMessage( 'Fixture_Finalization_Service has not been configured' );
-        new Fixture_Result_Manager( $service_provider, $this->createStub( Repository_Provider::class ) );
-    }
-
-    public function test_construct_throws_when_league_service_is_missing(): void {
-        $service_provider = $this->createStub( Service_Provider::class );
-        $service_provider->method( 'get_result_reporting_service' )->willReturn( $this->createStub( Result_Reporting_Service::class ) );
-        $service_provider->method( 'get_result_service' )->willReturn( $this->createStub( Result_Service::class ) );
-        $service_provider->method( 'get_progression_service' )->willReturn( $this->createStub( Knockout_Progression_Service::class ) );
-        $service_provider->method( 'get_fixture_finalization_service' )->willReturn( $this->createStub( Fixture_Finalization_Service::class ) );
-        $service_provider->method( 'get_league_service' )->willReturn( null );
-
-        $this->expectException( \LogicException::class );
-        $this->expectExceptionMessage( 'League_Service has not been configured' );
-        new Fixture_Result_Manager( $service_provider, $this->createStub( Repository_Provider::class ) );
-    }
-
-    public function test_construct_throws_when_score_validator_is_missing(): void {
-        $service_provider = $this->createStub( Service_Provider::class );
-        $service_provider->method( 'get_result_reporting_service' )->willReturn( $this->createStub( Result_Reporting_Service::class ) );
-        $service_provider->method( 'get_result_service' )->willReturn( $this->createStub( Result_Service::class ) );
-        $service_provider->method( 'get_progression_service' )->willReturn( $this->createStub( Knockout_Progression_Service::class ) );
-        $service_provider->method( 'get_fixture_finalization_service' )->willReturn( $this->createStub( Fixture_Finalization_Service::class ) );
-        $service_provider->method( 'get_league_service' )->willReturn( $this->createStub( League_Service::class ) );
-        $service_provider->method( 'get_score_validator' )->willReturn( null );
-
-        $this->expectException( \LogicException::class );
-        $this->expectExceptionMessage( 'Score_Validation_Service has not been configured' );
-        new Fixture_Result_Manager( $service_provider, $this->createStub( Repository_Provider::class ) );
-    }
-
-    public function test_construct_throws_when_settings_service_is_missing(): void {
-        $service_provider = $this->createStub( Service_Provider::class );
-        $service_provider->method( 'get_result_reporting_service' )->willReturn( $this->createStub( Result_Reporting_Service::class ) );
-        $service_provider->method( 'get_result_service' )->willReturn( $this->createStub( Result_Service::class ) );
-        $service_provider->method( 'get_progression_service' )->willReturn( $this->createStub( Knockout_Progression_Service::class ) );
-        $service_provider->method( 'get_fixture_finalization_service' )->willReturn( $this->createStub( Fixture_Finalization_Service::class ) );
-        $service_provider->method( 'get_league_service' )->willReturn( $this->createStub( League_Service::class ) );
-        $service_provider->method( 'get_score_validator' )->willReturn( $this->createStub( Score_Validation_Service::class ) );
-        $service_provider->method( 'get_settings_service' )->willReturn( null );
-
-        $this->expectException( \LogicException::class );
-        $this->expectExceptionMessage( 'Settings_Service has not been configured' );
-        new Fixture_Result_Manager( $service_provider, $this->createStub( Repository_Provider::class ) );
-    }
-
-    public function test_construct_throws_when_registration_service_is_missing(): void {
-        $service_provider = $this->createStub( Service_Provider::class );
-        $service_provider->method( 'get_result_reporting_service' )->willReturn( $this->createStub( Result_Reporting_Service::class ) );
-        $service_provider->method( 'get_result_service' )->willReturn( $this->createStub( Result_Service::class ) );
-        $service_provider->method( 'get_progression_service' )->willReturn( $this->createStub( Knockout_Progression_Service::class ) );
-        $service_provider->method( 'get_fixture_finalization_service' )->willReturn( $this->createStub( Fixture_Finalization_Service::class ) );
-        $service_provider->method( 'get_league_service' )->willReturn( $this->createStub( League_Service::class ) );
-        $service_provider->method( 'get_score_validator' )->willReturn( $this->createStub( Score_Validation_Service::class ) );
-        $service_provider->method( 'get_settings_service' )->willReturn( $this->createStub( Settings_Service::class ) );
-        $service_provider->method( 'get_registration_service' )->willReturn( null );
-
-        $this->expectException( \LogicException::class );
-        $this->expectExceptionMessage( 'Registration_Service has not been configured' );
-        new Fixture_Result_Manager( $service_provider, $this->createStub( Repository_Provider::class ) );
-    }
-
-    public function test_construct_throws_when_player_validator_is_missing(): void {
-        $service_provider = $this->createStub( Service_Provider::class );
-        $service_provider->method( 'get_result_reporting_service' )->willReturn( $this->createStub( Result_Reporting_Service::class ) );
-        $service_provider->method( 'get_result_service' )->willReturn( $this->createStub( Result_Service::class ) );
-        $service_provider->method( 'get_progression_service' )->willReturn( $this->createStub( Knockout_Progression_Service::class ) );
-        $service_provider->method( 'get_fixture_finalization_service' )->willReturn( $this->createStub( Fixture_Finalization_Service::class ) );
-        $service_provider->method( 'get_league_service' )->willReturn( $this->createStub( League_Service::class ) );
-        $service_provider->method( 'get_score_validator' )->willReturn( $this->createStub( Score_Validation_Service::class ) );
-        $service_provider->method( 'get_settings_service' )->willReturn( $this->createStub( Settings_Service::class ) );
-        $service_provider->method( 'get_registration_service' )->willReturn( $this->createStub( Registration_Service::class ) );
-        $service_provider->method( 'get_player_validator' )->willReturn( null );
-
-        $this->expectException( \LogicException::class );
-        $this->expectExceptionMessage( 'Player_Validation_Service has not been configured' );
-        new Fixture_Result_Manager( $service_provider, $this->createStub( Repository_Provider::class ) );
-    }
-
-    public function test_construct_throws_when_notification_service_is_missing(): void {
-        $service_provider = $this->createStub( Service_Provider::class );
-        $service_provider->method( 'get_result_reporting_service' )->willReturn( $this->createStub( Result_Reporting_Service::class ) );
-        $service_provider->method( 'get_result_service' )->willReturn( $this->createStub( Result_Service::class ) );
-        $service_provider->method( 'get_progression_service' )->willReturn( $this->createStub( Knockout_Progression_Service::class ) );
-        $service_provider->method( 'get_fixture_finalization_service' )->willReturn( $this->createStub( Fixture_Finalization_Service::class ) );
-        $service_provider->method( 'get_league_service' )->willReturn( $this->createStub( League_Service::class ) );
-        $service_provider->method( 'get_score_validator' )->willReturn( $this->createStub( Score_Validation_Service::class ) );
-        $service_provider->method( 'get_settings_service' )->willReturn( $this->createStub( Settings_Service::class ) );
-        $service_provider->method( 'get_registration_service' )->willReturn( $this->createStub( Registration_Service::class ) );
-        $service_provider->method( 'get_player_validator' )->willReturn( $this->createStub( Player_Validation_Service::class ) );
-        $service_provider->method( 'get_notification_service' )->willReturn( null );
-
-        $this->expectException( \LogicException::class );
-        $this->expectExceptionMessage( 'Notification_Service has not been configured' );
-        new Fixture_Result_Manager( $service_provider, $this->createStub( Repository_Provider::class ) );
-    }
-
-    public function test_construct_throws_when_rubber_manager_is_missing(): void {
-        $service_provider = $this->createStub( Service_Provider::class );
-        $service_provider->method( 'get_result_reporting_service' )->willReturn( $this->createStub( Result_Reporting_Service::class ) );
-        $service_provider->method( 'get_result_service' )->willReturn( $this->createStub( Result_Service::class ) );
-        $service_provider->method( 'get_progression_service' )->willReturn( $this->createStub( Knockout_Progression_Service::class ) );
-        $service_provider->method( 'get_fixture_finalization_service' )->willReturn( $this->createStub( Fixture_Finalization_Service::class ) );
-        $service_provider->method( 'get_league_service' )->willReturn( $this->createStub( League_Service::class ) );
-        $service_provider->method( 'get_score_validator' )->willReturn( $this->createStub( Score_Validation_Service::class ) );
-        $service_provider->method( 'get_settings_service' )->willReturn( $this->createStub( Settings_Service::class ) );
-        $service_provider->method( 'get_registration_service' )->willReturn( $this->createStub( Registration_Service::class ) );
-        $service_provider->method( 'get_player_validator' )->willReturn( $this->createStub( Player_Validation_Service::class ) );
-        $service_provider->method( 'get_notification_service' )->willReturn( $this->createStub( Notification_Service::class ) );
-        $service_provider->method( 'get_rubber_manager' )->willReturn( null );
-
-        $this->expectException( \LogicException::class );
-        $this->expectExceptionMessage( 'Rubber_Result_Manager has not been configured' );
-        new Fixture_Result_Manager( $service_provider, $this->createStub( Repository_Provider::class ) );
-    }
-
-    public function test_construct_throws_when_permission_service_is_missing(): void {
-        $service_provider = $this->createStub( Service_Provider::class );
-        $service_provider->method( 'get_result_reporting_service' )->willReturn( $this->createStub( Result_Reporting_Service::class ) );
-        $service_provider->method( 'get_result_service' )->willReturn( $this->createStub( Result_Service::class ) );
-        $service_provider->method( 'get_progression_service' )->willReturn( $this->createStub( Knockout_Progression_Service::class ) );
-        $service_provider->method( 'get_fixture_finalization_service' )->willReturn( $this->createStub( Fixture_Finalization_Service::class ) );
-        $service_provider->method( 'get_league_service' )->willReturn( $this->createStub( League_Service::class ) );
-        $service_provider->method( 'get_score_validator' )->willReturn( $this->createStub( Score_Validation_Service::class ) );
-        $service_provider->method( 'get_settings_service' )->willReturn( $this->createStub( Settings_Service::class ) );
-        $service_provider->method( 'get_registration_service' )->willReturn( $this->createStub( Registration_Service::class ) );
-        $service_provider->method( 'get_player_validator' )->willReturn( $this->createStub( Player_Validation_Service::class ) );
-        $service_provider->method( 'get_notification_service' )->willReturn( $this->createStub( Notification_Service::class ) );
-        $service_provider->method( 'get_rubber_manager' )->willReturn( $this->createStub( Rubber_Result_Manager::class ) );
-        $service_provider->method( 'get_fixture_permission_service' )->willReturn( null );
-
-        $this->expectException( \LogicException::class );
-        $this->expectExceptionMessage( 'Fixture_Permission_Service has not been configured' );
-        new Fixture_Result_Manager( $service_provider, $this->createStub( Repository_Provider::class ) );
+    public static function provide_missing_dependency_cases(): array {
+        return [
+            'missing result reporting service' => [
+                'get_result_reporting_service',
+                'Result_Reporting_Service has not been configured',
+            ],
+            'missing result service'           => [
+                'get_result_service',
+                'Result_Service has not been configured',
+            ],
+            'missing progression service'      => [
+                'get_progression_service',
+                'Knockout_Progression_Service has not been configured',
+            ],
+            'missing finalization service'     => [
+                'get_fixture_finalization_service',
+                'Fixture_Finalization_Service has not been configured',
+            ],
+            'missing league service'           => [
+                'get_league_service',
+                'League_Service has not been configured',
+            ],
+            'missing score validator'          => [
+                'get_score_validator',
+                'Score_Validation_Service has not been configured',
+            ],
+            'missing settings service'         => [
+                'get_settings_service',
+                'Settings_Service has not been configured',
+            ],
+            'missing registration service'     => [
+                'get_registration_service',
+                'Registration_Service has not been configured',
+            ],
+            'missing player validator'         => [
+                'get_player_validator',
+                'Player_Validation_Service has not been configured',
+            ],
+            'missing notification service'     => [
+                'get_notification_service',
+                'Notification_Service has not been configured',
+            ],
+            'missing rubber manager'           => [
+                'get_rubber_manager',
+                'Rubber_Result_Manager has not been configured',
+            ],
+            'missing permission service'       => [
+                'get_fixture_permission_service',
+                'Fixture_Permission_Service has not been configured',
+            ],
+        ];
     }
 
     public function test_set_fixture_maintenance_service_sets_instance(): void {
-        $service_provider = $this->createStub( Service_Provider::class );
-        $service_provider->method( 'get_result_reporting_service' )->willReturn( $this->result_reporting_service );
-        $service_provider->method( 'get_result_service' )->willReturn( $this->result_service );
-        $service_provider->method( 'get_progression_service' )->willReturn( $this->progression_service );
-        $service_provider->method( 'get_fixture_finalization_service' )->willReturn( $this->finalization_service );
-        $service_provider->method( 'get_league_service' )->willReturn( $this->league_service );
-        $service_provider->method( 'get_score_validator' )->willReturn( $this->score_validator );
-        $service_provider->method( 'get_settings_service' )->willReturn( $this->createStub( Settings_Service::class ) );
-        $service_provider->method( 'get_registration_service' )->willReturn( $this->createStub( Registration_Service::class ) );
-        $service_provider->method( 'get_player_validator' )->willReturn( $this->createStub( Player_Validation_Service::class ) );
-        $service_provider->method( 'get_notification_service' )->willReturn( $this->createStub( Notification_Service::class ) );
-        $service_provider->method( 'get_rubber_manager' )->willReturn( $this->createStub( Rubber_Result_Manager::class ) );
-        $service_provider->method( 'get_fixture_permission_service' )->willReturn( $this->permission_service );
-        $service_provider->method( 'get_fixture_maintenance_service' )->willReturn( null );
+        $service_provider = $this->create_service_provider_with_test_doubles( [
+            'get_fixture_maintenance_service' => null,
+        ] );
 
         $manager = new Fixture_Result_Manager( $service_provider, $this->createStub( Repository_Provider::class ) );
         $this->assertNull( $manager->get_fixture_maintenance_service() );
@@ -460,20 +312,9 @@ class Fixture_Result_Manager_Test extends TestCase {
     }
 
     public function test_confirm_result_throws_when_maintenance_service_not_set(): void {
-        $service_provider = $this->createStub( Service_Provider::class );
-        $service_provider->method( 'get_result_reporting_service' )->willReturn( $this->result_reporting_service );
-        $service_provider->method( 'get_result_service' )->willReturn( $this->result_service );
-        $service_provider->method( 'get_progression_service' )->willReturn( $this->progression_service );
-        $service_provider->method( 'get_fixture_finalization_service' )->willReturn( $this->finalization_service );
-        $service_provider->method( 'get_league_service' )->willReturn( $this->league_service );
-        $service_provider->method( 'get_score_validator' )->willReturn( $this->score_validator );
-        $service_provider->method( 'get_settings_service' )->willReturn( $this->createStub( Settings_Service::class ) );
-        $service_provider->method( 'get_registration_service' )->willReturn( $this->createStub( Registration_Service::class ) );
-        $service_provider->method( 'get_player_validator' )->willReturn( $this->createStub( Player_Validation_Service::class ) );
-        $service_provider->method( 'get_notification_service' )->willReturn( $this->createStub( Notification_Service::class ) );
-        $service_provider->method( 'get_rubber_manager' )->willReturn( $this->createStub( Rubber_Result_Manager::class ) );
-        $service_provider->method( 'get_fixture_permission_service' )->willReturn( $this->permission_service );
-        $service_provider->method( 'get_fixture_maintenance_service' )->willReturn( null );
+        $service_provider = $this->create_service_provider_with_test_doubles( [
+            'get_fixture_maintenance_service' => null,
+        ] );
 
         $manager = new Fixture_Result_Manager( $service_provider, $this->createStub( Repository_Provider::class ) );
 
@@ -485,5 +326,51 @@ class Fixture_Result_Manager_Test extends TestCase {
         $this->expectExceptionMessage( 'Fixture_Maintenance_Service has not been set.' );
 
         $manager->confirm_result( $fixture, 'admin' );
+    }
+
+    private function create_service_provider_with_test_doubles( array $overrides = [] ): Service_Provider {
+        $test_doubles = [
+            'get_fixture_finalization_service' => $this->finalization_service,
+            'get_fixture_maintenance_service'  => $this->fixture_maintenance_service,
+            'get_league_service'               => $this->league_service,
+            'get_result_reporting_service'     => $this->result_reporting_service,
+            'get_fixture_permission_service'   => $this->permission_service,
+            'get_score_validator'              => $this->score_validator,
+            'get_result_service'               => $this->result_service,
+            'get_progression_service'          => $this->progression_service,
+        ];
+
+        return $this->create_stub_service_provider( array_merge( $test_doubles, $overrides ) );
+    }
+
+    private function create_stub_service_provider( array $overrides = [] ): Service_Provider {
+        $defaults = [
+            'get_result_reporting_service'     => $this->createStub( Result_Reporting_Service::class ),
+            'get_result_service'               => $this->createStub( Result_Service::class ),
+            'get_progression_service'          => $this->createStub( Knockout_Progression_Service::class ),
+            'get_fixture_finalization_service' => $this->createStub( Fixture_Finalization_Service::class ),
+            'get_league_service'               => $this->createStub( League_Service::class ),
+            'get_score_validator'              => $this->createStub( Score_Validation_Service::class ),
+            'get_settings_service'             => $this->createStub( Settings_Service::class ),
+            'get_registration_service'         => $this->createStub( Registration_Service::class ),
+            'get_player_validator'             => $this->createStub( Player_Validation_Service::class ),
+            'get_notification_service'         => $this->createStub( Notification_Service::class ),
+            'get_rubber_manager'               => $this->createStub( Rubber_Result_Manager::class ),
+            'get_fixture_permission_service'   => $this->createStub( Fixture_Permission_Service::class ),
+            'get_fixture_maintenance_service'  => $this->createStub( Fixture_Maintenance_Service::class ),
+        ];
+
+        $configured       = array_merge( $defaults, $overrides );
+        $service_provider = $this->createStub( Service_Provider::class );
+
+        foreach ( $configured as $method => $return_value ) {
+            if ( $return_value instanceof \Throwable ) {
+                $service_provider->method( $method )->willThrowException( $return_value );
+            } else {
+                $service_provider->method( $method )->willReturn( $return_value );
+            }
+        }
+
+        return $service_provider;
     }
 }

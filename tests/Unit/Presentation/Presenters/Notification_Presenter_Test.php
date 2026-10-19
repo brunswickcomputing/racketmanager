@@ -112,7 +112,6 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
             ];
 
             $tournament       = $this->createStub( Tournament::class );
-            $tournament->link = '/tournament/123/';
             $tournament->name = 'Mock Tournament';
             $this->tournament_repository->expects( $this->once() )->method( 'find_by_id' )->with( '123,2024', 'shortcode' )->willReturn( $tournament );
 

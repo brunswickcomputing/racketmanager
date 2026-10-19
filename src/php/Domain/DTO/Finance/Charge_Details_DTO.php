@@ -9,6 +9,9 @@
 
 namespace Racketmanager\Domain\DTO\Finance;
 
+use Racketmanager\Domain\Enums\Charge_Status;
+use Racketmanager\Domain\Value_Objects\Currency;
+use Racketmanager\Domain\Value_Objects\Money;
 use stdClass;
 
 /**
@@ -21,8 +24,8 @@ class Charge_Details_DTO {
     public int $competition_id;
     public string $season;
     public string $date;
-    public int $fee_competition;
-    public int $fee_event;
+    public ?string $fee_competition;
+    public ?string $fee_event;
     public string $competition_type;
     public bool $competition_is_team_entry;
 
@@ -37,8 +40,8 @@ class Charge_Details_DTO {
         $this->season           = $data->season;
         $this->status           = $data->status;
         $this->date             = $data->date;
-        $this->fee_competition  = $data->fee_competition;
-        $this->fee_event        = $data->fee_event;
+        $this->fee_competition  = isset( $data->fee_competition ) ? (string) $data->fee_competition : null;
+        $this->fee_event        = isset( $data->fee_event ) ? (string) $data->fee_event : null;
         $this->charge_name      = $data->season . ' ' . $data->competition_name;
         $this->competition_type = $data->competition_type;
         if ( 'tournament' === $data->competition_type ) {
@@ -46,6 +49,22 @@ class Charge_Details_DTO {
         } else {
             $this->competition_is_team_entry = true;
         }
+    }
+
+    public function get_competition_fee_money( ?Currency $currency = null ): Money {
+        return Money::from_string( $this->fee_competition ?? '0', $currency );
+    }
+
+    public function get_event_fee_money( ?Currency $currency = null ): Money {
+        return Money::from_string( $this->fee_event ?? '0', $currency );
+    }
+
+    public function get_total_money( ?Currency $currency = null ): Money {
+        return $this->get_competition_fee_money( $currency )->add( $this->get_event_fee_money( $currency ) );
+    }
+
+    public function get_status_enum(): ?Charge_Status {
+        return Charge_Status::try_from_value( $this->status );
     }
 
 }

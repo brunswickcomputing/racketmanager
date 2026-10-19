@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
+use Racketmanager\Presentation\View_Models\Competition_List_Item_View_Model;
 
 class Player_Presenter_Test extends TestCase {
     private Player_Presenter $presenter;
@@ -42,6 +43,52 @@ class Player_Presenter_Test extends TestCase {
 
         $this->assertEmpty( $this->presenter->get_wtn_badges( null ) );
         $this->assertEmpty( $this->presenter->get_wtn_badges( 'invalid' ) );
+    }
+
+    public function test_get_wtn_badges_preserves_display_strings_and_precision(): void {
+        $wtn = array(
+            'singles' => '40',
+            'doubles' => '24.53',
+        );
+
+        $badges = $this->presenter->get_wtn_badges( $wtn );
+        $this->assertCount( 2, $badges );
+        $this->assertEquals( '40', $badges[0]['value'] );
+        $this->assertEquals( '24.53', $badges[1]['value'] );
+
+        $wtn_whitespace = array(
+            'S' => ' 12.3',
+            'D' => '-1',
+        );
+        $badges_ws = $this->presenter->get_wtn_badges( $wtn_whitespace );
+        $this->assertCount( 2, $badges_ws );
+        $this->assertEquals( ' 12.3', $badges_ws[0]['value'] );
+        $this->assertEquals( '-1', $badges_ws[1]['value'] );
+    }
+
+    public function test_get_wtn_badges_handles_non_numeric_and_unknown_ratings(): void {
+        $wtn_placeholder = array(
+            'singles' => '-',
+            'doubles' => 'N/A',
+        );
+
+        $badges = $this->presenter->get_wtn_badges( $wtn_placeholder );
+        $this->assertCount( 2, $badges );
+        $this->assertEquals( 'S', $badges[0]['type'] );
+        $this->assertEquals( '-', $badges[0]['value'] );
+        $this->assertEquals( 'D', $badges[1]['type'] );
+        $this->assertEquals( 'N/A', $badges[1]['value'] );
+    }
+
+    public function test_get_wtn_badges_handles_mixed_keys_and_single_entries(): void {
+        $wtn_single = array(
+            'S' => '15.5',
+        );
+
+        $badges = $this->presenter->get_wtn_badges( $wtn_single );
+        $this->assertCount( 1, $badges );
+        $this->assertEquals( 'S', $badges[0]['type'] );
+        $this->assertEquals( '15.5', $badges[0]['value'] );
     }
 
     public function test_get_win_loss_summary(): void {
@@ -131,6 +178,29 @@ class Player_Presenter_Test extends TestCase {
         $this->assertEquals( 'RF', $vars['player_initials'] );
     }
 
+    public function test_present_player_fails_fast_for_raw_competitions_without_a_competition_presenter(): void {
+        $this->expectException( \LogicException::class );
+
+        ( new Player_Presenter() )->present_player(
+            player: (object) [ 'display_name' => 'John Smith' ],
+            player_competitions: [
+                'cup' => [ (object) [ 'name' => 'County Cup', 'season' => '2026' ] ],
+            ]
+        );
+    }
+
+    public function test_present_player_accepts_empty_or_prebuilt_competition_view_models_without_a_competition_presenter(): void {
+        $presenter = new Player_Presenter();
+        $player    = (object) [ 'display_name' => 'John Smith' ];
+
+        $empty_list = $presenter->present_player( $player, player_competitions: [ 'cup' => [] ] );
+        $this->assertSame( [ 'cup' => [] ], $empty_list->player_competitions );
+
+        $item = new Competition_List_Item_View_Model( 'County Cup 2026', '/county-cup/2026/' );
+        $prebuilt_list = $presenter->present_player( $player, player_competitions: [ 'cup' => [ $item ] ] );
+        $this->assertSame( [ 'cup' => [ $item ] ], $prebuilt_list->player_competitions );
+    }
+
     public function test_error_view_model(): void {
         $error_vm = \Racketmanager\Presentation\View_Models\Player_View_Model::for_error( 'Player not found' );
         $this->assertEquals( 'alert', $error_vm->template );
@@ -156,5 +226,58 @@ class Player_Presenter_Test extends TestCase {
         $this->assertTrue( $list_vm->alphabet_nav[0]['is_active'] );
         $this->assertTrue( $list_vm->alphabet_nav[1]['is_active'] );
         $this->assertFalse( $list_vm->alphabet_nav[2]['is_active'] );
+    }
+
+    public function test_format_date_with_option_gateway(): void {
+        $option_gateway = new class implements \Racketmanager\Gateways\Option\Option_Gateway_Interface {
+            public function get_option( string $option, mixed $default = false ): mixed {
+                return 'Y-m-d';
+            }
+            public function update_option( string $option, mixed $value, mixed $autoload = null ): bool {
+                return true;
+            }
+            public function delete_option( string $option ): bool {
+                return true;
+            }
+        };
+
+        $presenter = new Player_Presenter( option_gateway: $option_gateway );
+        $this->assertSame( '2026-06-15', $presenter->format_date( '2026-06-15 19:00:00' ) );
+        $this->assertSame( '', $presenter->format_date( null ) );
+        $this->assertSame( '', $presenter->format_date( '' ) );
+        $this->assertSame( '', $presenter->format_date( '0000-00-00 00:00:00' ) );
+    }
+
+    public function test_present_club_membership_formats_dates(): void {
+        $option_gateway = new class implements \Racketmanager\Gateways\Option\Option_Gateway_Interface {
+            public function get_option( string $option, mixed $default = false ): mixed {
+                return 'd/m/Y';
+            }
+            public function update_option( string $option, mixed $value, mixed $autoload = null ): bool {
+                return true;
+            }
+            public function delete_option( string $option ): bool {
+                return true;
+            }
+        };
+
+        $presenter   = new Player_Presenter( option_gateway: $option_gateway );
+        $membership  = (object) [
+            'club_name'         => 'LTC',
+            'club_display_name' => 'Leigh Tennis Club',
+            'approval_date'     => '2026-01-10',
+            'removal_date'      => '2026-05-20',
+            'registration_date' => '2026-01-01',
+        ];
+
+        $presented = $presenter->present_club_membership( $membership );
+
+        $this->assertSame( 'LTC', $presented->club_name );
+        $this->assertSame( 'Leigh Tennis Club', $presented->club_display_name );
+        $this->assertSame( '2026-01-10', $presented->approval_date );
+        $this->assertSame( '10/01/2026', $presented->approval_date_display );
+        $this->assertSame( '2026-05-20', $presented->removal_date );
+        $this->assertSame( '20/05/2026', $presented->removal_date_display );
+        $this->assertSame( '2026-01-01', $presented->registration_date );
     }
 }

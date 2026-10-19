@@ -8,6 +8,7 @@
 
 namespace Racketmanager\Services;
 
+use Racketmanager\Domain\Fixture\Fixture_Status_Policy;
 use Racketmanager\Domain\Result\Result;
 use Racketmanager\Domain\Scoring\Set_Score;
 
@@ -82,7 +83,7 @@ class Result_Factory {
             winner_id: $winner_id,
             loser_id: $loser_id,
             status: $status,
-            is_walkover: (bool) ( $data['is_walkover'] ?? ( 1 === $status ) ),
+            is_walkover: (bool) ( $data['is_walkover'] ?? Fixture_Status_Policy::is_walkover( $status ) ),
             sets: $sets,
             custom: $custom
         );

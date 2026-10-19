@@ -13,6 +13,9 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Player;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Presentation\Presenters\Match_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Fixture_Presenter;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
@@ -25,6 +28,7 @@ use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Infrastructure\Persistence\Legacy_Fixture_Listing_Finder;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Matches_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Matches_List_Presenter;
+use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Public\Shortcodes;
 use Racketmanager\Public\Shortcodes_Match;
 use Racketmanager\RacketManager;
@@ -34,12 +38,14 @@ use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use Racketmanager\Tests\Helpers\Creates_Test_Container;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class Matches_Shortcode_Adapter_Test extends TestCase {
     use Creates_Test_Container;
+    use Creates_Team_Match_Row_Presenter;
     use Manages_Wordpress_Globals;
 
     /** @var array<int, array> Recorded get_matches() calls. */
@@ -332,9 +338,11 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
     }
 
     public function test_show_match_detail_passes_round_type_and_player_as_template_vars_without_mutating_fixture(): void {
-        $fixture = $this->createStub( Fixture::class );
-        $fixture->method( 'get_final' )->willReturn( 'semi' );
-        $fixture->method( 'get_rubbers' )->willReturn( [ 'rubber' ] );
+        $fixture = \Racketmanager\Domain\Fixture\Fixture_Factory::from_array( [ 'id' => 42, 'final' => 'semi' ] );
+        $rubber = ( new \ReflectionClass( \Racketmanager\Domain\Fixture\Rubber::class ) )->newInstanceWithoutConstructor();
+        $rubber->id = 101;
+        $rubber->players = [ 'home' => [ 1 => (object) [ 'user_id' => 9 ] ] ];
+        $rubbers = $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );
         $league              = $this->createStub( League::class );
         $league->num_rubbers = 4;
         $dto                 = $this->details_dto( $fixture, $league );
@@ -354,7 +362,15 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
             }
         );
 
-        $adapter = $this->build_native_adapter( $this->details_service( $dto ), $players, $renderer );
+        $service = $this->createMock( Fixture_Detail_Service::class );
+        $service->expects( $this->once() )->method( 'get_fixture_with_details' )
+            ->with( 42, false, 9 )
+            ->willReturnCallback( function () use ( $fixture, $rubber, $dto ) {
+                $fixture->set_rubbers( [ $rubber ] );
+
+                return $dto;
+            } );
+        $adapter = $this->build_native_adapter( $service, $players, $renderer, $rubbers );
         $output  = $adapter->show_match_detail( [ 'id' => 42, 'player' => '9' ] );
 
         $this->assertSame( 'rendered-detail', $output );
@@ -364,7 +380,7 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
         $this->assertSame( $player, $captured['vars']['match_player'] );
         $this->assertSame( $fixture, $captured['vars']['match'] );
         $this->assertFalse( ( new \ReflectionClass( Fixture::class ) )->hasProperty( 'round' ), 'Fixture must not be given a dynamic round property' );
-        $this->assertSame( [ 'rubber' ], $fixture->rubbers );
+        $this->assertSame( [ $rubber ], $fixture->rubbers );
     }
 
     public function test_show_match_detail_league_fixture_uses_plain_template_and_ignores_unknown_player(): void {
@@ -392,7 +408,7 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
         $this->assertSame( 'match/detail-custom', $captured['path'] );
         $this->assertSame( '', $captured['vars']['match_round'] );
         $this->assertSame( 'league', $captured['vars']['match_type'] );
-        $this->assertArrayNotHasKey( 'match_player', $captured['vars'] );
+        $this->assertNull( $captured['vars']['match_player'] );
     }
 
     public function test_missing_match_template_renders_alert_naming_the_template(): void {
@@ -459,6 +475,8 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
 
         $competition_service = $container->get( 'competition_service' );
         $team_service        = $container->get( 'team_service' );
+        $tournament_presenter = new Tournament_Presenter( team_match_row_presenter: $this->create_team_match_row_presenter( $can_update ) );
+        $container->set( 'tournament_presenter', fn() => $tournament_presenter );
 
         $app = $this->createStub( RacketManager::class );
         $app->method( 'get_matches' )->willReturnCallback( static function ( array $args ) use ( &$calls, $fixtures ) {
@@ -485,18 +503,19 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
             $this->createStub( Player_Service::class ),
             new Get_Daily_Matches_Handler( $finder ),
             new Get_Latest_Results_Handler( $finder, $clubs, $this->createStub( Competition_Repository_Interface::class ) ),
-            new Matches_List_Presenter( $competition_service, $team_service, $renderer, null, $permission_service )
+            new Matches_List_Presenter( $competition_service, $team_service, $renderer, $tournament_presenter, null, $permission_service )
         );
     }
 
-    private function build_native_adapter( Fixture_Detail_Service $service, ?Player_Service $players = null, ?View_Renderer_Interface $renderer = null ): Matches_Shortcode_Adapter {
+    private function build_native_adapter( Fixture_Detail_Service $service, ?Player_Service $players = null, ?View_Renderer_Interface $renderer = null, ?\Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface $rubbers = null ): Matches_Shortcode_Adapter {
         return $this->new_adapter(
             $renderer ?? new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ),
             $service,
             $players ?? $this->createStub( Player_Service::class ),
             $this->createStub( Get_Daily_Matches_Handler::class ),
             $this->createStub( Get_Latest_Results_Handler::class ),
-            $this->createStub( Matches_List_Presenter::class )
+            $this->createStub( Matches_List_Presenter::class ),
+            $rubbers
         );
     }
 
@@ -506,7 +525,8 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
         Player_Service $players,
         Get_Daily_Matches_Handler $daily,
         Get_Latest_Results_Handler $latest,
-        Matches_List_Presenter $list_presenter
+        Matches_List_Presenter $list_presenter,
+        ?\Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface $rubbers = null
     ): Matches_Shortcode_Adapter {
         return new Matches_Shortcode_Adapter(
             $daily,
@@ -514,8 +534,8 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
             $list_presenter,
             new Get_Match_Score_Handler( $service ),
             new Get_Match_Header_Handler( $service ),
-            new Get_Match_Detail_Handler( $service, $players ),
-            new Match_Shortcode_Presenter( new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $renderer ) ) )
+            new Get_Match_Detail_Handler( $service, $players, $rubbers ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class ) ),
+            new Match_Shortcode_Presenter( new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $renderer ) ), new Fixture_Presenter( new Fixture_Link_Service(), $this->createStub( Option_Gateway_Interface::class ) ), $players )
         );
     }
 

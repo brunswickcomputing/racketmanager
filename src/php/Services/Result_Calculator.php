@@ -2,6 +2,7 @@
 
 namespace Racketmanager\Services;
 
+use Racketmanager\Domain\Fixture\Fixture_Status_Policy;
 use Racketmanager\Domain\Scoring\Set_Score;
 
 /**
@@ -78,6 +79,8 @@ class Result_Calculator {
             $status    = isset( $rubber->status ) ? (int) $rubber->status : 0;
             $winner_id = isset( $rubber->winner_id ) ? (string) $rubber->winner_id : '0';
 
+            // Rubber statuses are stored by Rubber_Result_Manager with the same
+            // codes as Fixture_Status (1 = walkover, 3 = shared).
             switch ( $status ) {
                 case 1: // Walkover
                     if ( $home_id_str === $winner_id ) {
@@ -158,10 +161,10 @@ class Result_Calculator {
         $walkover_penalty   = empty( $point_rule['forwalkover_match'] ) ? 0.0 : (float) $point_rule['forwalkover_match'];
 
         if ( ! empty( $point_rule['match_result'] ) && 'rubber_count' === $point_rule['match_result'] ) {
-            if ( 1 === $status ) { // Walkover
+            if ( Fixture_Status_Policy::is_walkover( $status ) ) {
                 $home_points = $home_win * $rubber_win - $forwalkover_rubber * $home_walkover - $walkover_penalty * $home_walkover;
                 $away_points = $away_win * $rubber_win - $forwalkover_rubber * $away_walkover - $walkover_penalty * $away_walkover;
-            } elseif ( 3 === $status ) { // Shared
+            } elseif ( Fixture_Status_Policy::is_shared( $status ) ) {
                 $home_points = $shared_match_rule * $num_rubbers;
                 $away_points = $shared_match_rule * $num_rubbers;
             } else {
@@ -171,7 +174,7 @@ class Result_Calculator {
         } elseif ( ! empty( $point_rule['match_result'] ) && 'games' === $point_rule['match_result'] ) {
             $home_points = $stats_result['stats']['games']['home'];
             $away_points = $stats_result['stats']['games']['away'];
-            if ( 1 === $status ) { // Walkover
+            if ( Fixture_Status_Policy::is_walkover( $status ) ) {
                 $home_points -= $walkover_penalty * $home_walkover;
                 $away_points -= $walkover_penalty * $away_walkover;
             }
@@ -185,7 +188,7 @@ class Result_Calculator {
                 $away_points += $matches_draw;
             }
 
-            if ( 1 === $status ) { // Walkover
+            if ( Fixture_Status_Policy::is_walkover( $status ) ) {
                 $home_points -= $walkover_penalty * $home_walkover;
                 $away_points -= $walkover_penalty * $away_walkover;
             }
@@ -219,10 +222,10 @@ class Result_Calculator {
         $winner_id = 0;
         $loser_id  = 0;
 
-        if ( 7 === $status || ( ! empty( $custom['withdrawn'] ) ) ) {
+        if ( Fixture_Status_Policy::is_withdrawn( $status ) || ( ! empty( $custom['withdrawn'] ) ) ) {
             $winner_id = -1;
             $loser_id  = -1;
-        } elseif ( 1 === $status || ( ! empty( $custom['walkover'] ) ) ) {
+        } elseif ( Fixture_Status_Policy::is_walkover( $status ) || ( ! empty( $custom['walkover'] ) ) ) {
             if ( ( $custom['walkover'] ?? '' ) === 'home' ) {
                 $winner_id = $home_team_id;
                 $loser_id  = $away_team_id;
@@ -242,7 +245,7 @@ class Result_Calculator {
                     $loser_id  = -1;
                 }
             }
-        } elseif ( 2 === $status || ( ! empty( $custom['retired'] ) ) ) {
+        } elseif ( Fixture_Status_Policy::is_retired( $status ) || ( ! empty( $custom['retired'] ) ) ) {
             if ( ( $custom['retired'] ?? '' ) === 'away' ) {
                 $winner_id = $home_team_id;
                 $loser_id  = $away_team_id;
@@ -250,7 +253,7 @@ class Result_Calculator {
                 $winner_id = $away_team_id;
                 $loser_id  = $home_team_id;
             }
-        } elseif ( 3 === $status || ( ! empty( $custom['share'] ) ) ) {
+        } elseif ( Fixture_Status_Policy::is_shared( $status ) || ( ! empty( $custom['share'] ) ) ) {
             $winner_id = -1;
             $loser_id  = -1;
         } elseif ( '-1' === (string) $home_team_id ) {

@@ -235,4 +235,68 @@ if ( ! $ev_nonnum instanceof \Racketmanager\Domain\Competition\Event || 'Event M
 	exit( 1 );
 }
 
+// 5. Test get_match deprecation notice
+$match_deprecated_triggered = false;
+set_error_handler( function ( $errno, $errstr ) use ( &$match_deprecated_triggered ) {
+	if ( E_USER_DEPRECATED === $errno && str_contains( $errstr, 'get_match() is deprecated' ) ) {
+		$match_deprecated_triggered = true;
+		return true;
+	}
+	return false;
+} );
+try {
+	\Racketmanager\get_match( 999999 );
+} finally {
+	restore_error_handler();
+}
+if ( ! $match_deprecated_triggered ) {
+	fwrite( STDERR, "get_match() did not trigger E_USER_DEPRECATED notice.\n" );
+	exit( 1 );
+}
+
+// 6. Test get_rubber deprecation notice
+$rubber_deprecated_triggered = false;
+set_error_handler( function ( $errno, $errstr ) use ( &$rubber_deprecated_triggered ) {
+	if ( E_USER_DEPRECATED === $errno && str_contains( $errstr, 'get_rubber() is deprecated' ) ) {
+		$rubber_deprecated_triggered = true;
+		return true;
+	}
+	return false;
+} );
+try {
+	\Racketmanager\get_rubber( 999999 );
+} finally {
+	restore_error_handler();
+}
+if ( ! $rubber_deprecated_triggered ) {
+	fwrite( STDERR, "get_rubber() did not trigger E_USER_DEPRECATED notice.\n" );
+	exit( 1 );
+}
+
+// 7. Test the deprecated compatibility helper's legacy match contract.
+$legacy_match = (object) [
+	'teams' => [
+		'home' => (object) [ 'players' => [ (object) [ 'ID' => 30 ] ] ],
+		'away' => (object) [ 'players' => [ (object) [ 'ID' => 40 ] ] ],
+	],
+];
+
+$helper_deprecated_triggered = false;
+set_error_handler( function ( $errno, $errstr ) use ( &$helper_deprecated_triggered ) {
+	if ( E_USER_DEPRECATED === $errno && str_contains( $errstr, 'match_add_players() is deprecated' ) ) {
+		$helper_deprecated_triggered = true;
+		return true;
+	}
+	return false;
+} );
+try {
+	$players_legacy = \Racketmanager\match_add_players( [], $legacy_match );
+} finally {
+	restore_error_handler();
+}
+if ( [ 30, 40 ] !== $players_legacy || ! $helper_deprecated_triggered ) {
+	fwrite( STDERR, "match_add_players legacy contract or deprecation failed: " . json_encode( $players_legacy ) . "\n" );
+	exit( 1 );
+}
+
 echo 'ok';

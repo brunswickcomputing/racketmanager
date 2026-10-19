@@ -31,17 +31,23 @@ export async function createPaymentRequest(tournamentEntry, invoiceId, tournamen
       return;
     }
     let output;
+    const data = {
+      tournament_entry: tournamentEntry,
+      invoiceId: invoiceId,
+      action: 'racketmanager_tournament_payment_create',
+      security: getAjaxNonce(),
+    };
+    if (tournamentId) {
+      data.tournamentId = tournamentId;
+      data.tournament_id = tournamentId;
+    }
+    if (playerId) {
+      data.playerId = playerId;
+    }
     jQuery.ajax({
       url: getAjaxUrl(),
       type: 'POST',
-      data: {
-        tournament_entry: tournamentEntry,
-        invoiceId: invoiceId,
-        playerId: playerId,
-        tournament_id: tournamentId,
-        action: 'racketmanager_tournament_payment_create',
-        security: getAjaxNonce(),
-      },
+      data: data,
       success: function (response) {
         // Legacy placed response.data into output regardless of type
         output = response?.data;
@@ -71,6 +77,13 @@ export async function createPaymentRequest(tournamentEntry, invoiceId, tournamen
   const formData = new URLSearchParams();
   formData.set('tournament_entry', tournamentEntry);
   formData.set('invoiceId', invoiceId);
+  if (tournamentId) {
+    formData.set('tournamentId', tournamentId);
+    formData.set('tournament_id', tournamentId);
+  }
+  if (playerId) {
+    formData.set('playerId', playerId);
+  }
   formData.set('action', 'racketmanager_tournament_payment_create');
   formData.set('security', ajaxNonce || '');
 
@@ -96,15 +109,23 @@ export async function createPaymentRequest(tournamentEntry, invoiceId, tournamen
     // Fallback: try jQuery Ajax if available
     if (typeof jQuery !== 'undefined' && jQuery?.ajax) {
       const jqResult = await new Promise((resolve, reject) => {
+        const postData = {
+          tournament_entry: tournamentEntry,
+          invoiceId: invoiceId,
+          action: 'racketmanager_tournament_payment_create',
+          security: getAjaxNonce(),
+        };
+        if (tournamentId) {
+          postData.tournamentId = tournamentId;
+          postData.tournament_id = tournamentId;
+        }
+        if (playerId) {
+          postData.playerId = playerId;
+        }
         jQuery.ajax({
           url: getAjaxUrl(),
           type: 'POST',
-          data: {
-            tournament_entry: tournamentEntry,
-            invoiceId: invoiceId,
-            action: 'racketmanager_tournament_payment_create',
-            security: getAjaxNonce(),
-          },
+          data: postData,
           success: function (response) {
             if (response && response.success) {
               resolve(response.data);

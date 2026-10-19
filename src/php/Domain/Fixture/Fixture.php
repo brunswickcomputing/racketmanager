@@ -10,12 +10,8 @@
 namespace Racketmanager\Domain\Fixture;
 
 use Racketmanager\Domain\DTO\Fixture\Fixture_Hydration_DTO;
+use Racketmanager\Domain\Enums\Fixture_Status;
 use Racketmanager\Domain\Result\Result;
-use Racketmanager\Exceptions\Club_Not_Found_Exception;
-use Racketmanager\Exceptions\Invalid_Argument_Exception;
-use Racketmanager\Exceptions\Team_Not_Found_Exception;
-use Racketmanager\Repositories\Rubber_Repository;
-use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 
 /**
  * Class Fixture
@@ -24,10 +20,6 @@ use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
  * @package Racketmanager\Domain
  */
 class Fixture {
-
-    private ?League_Repository_Interface $league_repository = null;
-    private ?Fixture_Team_Resolver_Interface $team_service = null;
-    private ?Fixture_Update_Authorizer_Interface $update_authorizer = null;
 
     /**
      * Fixture title
@@ -378,15 +370,8 @@ class Fixture {
      * @param Fixture_Hydration_DTO|null $dto Typed hydration DTO. Use Fixture_Factory for raw rows.
      */
     public function __construct(
-        ?Fixture_Hydration_DTO $dto = null,
-        ?League_Repository_Interface $league_repository = null,
-        ?Fixture_Team_Resolver_Interface $team_service = null,
-        ?Fixture_Update_Authorizer_Interface $update_authorizer = null
+        ?Fixture_Hydration_DTO $dto = null
     ) {
-        $this->league_repository = $league_repository;
-        $this->team_service = $team_service;
-        $this->update_authorizer = $update_authorizer;
-
         if ( is_null( $dto ) ) {
             return;
         }
@@ -599,13 +584,34 @@ class Fixture {
      * @return object|null
      */
     public function get_league(): ?object {
-        if ( is_object( $this->league ) ) {
-            return $this->league;
-        }
-        if ( $this->league_id && $this->league_repository ) {
-            $this->league = $this->league_repository->find_by_id( $this->league_id );
-        }
         return is_object( $this->league ) ? $this->league : null;
+    }
+
+    /**
+     * Attach the league read relation (loaded by Fixture_Relation_Loader).
+     *
+     * @param object|null $league
+     */
+    public function set_league( ?object $league ): void {
+        $this->league = $league;
+    }
+
+    /**
+     * Attach home/away team read data (loaded by Fixture_Relation_Loader).
+     *
+     * @param array|null $teams Array keyed by 'home' and 'away'.
+     */
+    public function set_teams( ?array $teams ): void {
+        $this->teams = $teams;
+    }
+
+    /**
+     * Get the team read data that has been attached, without any fallback.
+     *
+     * @return array
+     */
+    public function get_loaded_teams(): array {
+        return is_array( $this->teams ) ? $this->teams : array();
     }
 
     /**
@@ -621,71 +627,51 @@ class Fixture {
         $home_val = $this->get_home_team();
         $away_val = $this->get_away_team();
 
-        $home_dtls = null;
-        $away_dtls = null;
-        if ( $this->team_service ) {
-            try {
-                $home_dtls = is_numeric( $home_val ) ? $this->team_service->get_team_details( (int) $home_val ) : ( ! empty( $home_val ) ? $this->team_service->derive_team_details( (string) $home_val ) : null );
-            } catch ( Team_Not_Found_Exception | Club_Not_Found_Exception | Invalid_Argument_Exception ) {
-                $home_dtls = null;
-            }
-
-            try {
-                $away_dtls = is_numeric( $away_val ) ? $this->team_service->get_team_details( (int) $away_val ) : ( ! empty( $away_val ) ? $this->team_service->derive_team_details( (string) $away_val ) : null );
-            } catch ( Team_Not_Found_Exception | Club_Not_Found_Exception | Invalid_Argument_Exception ) {
-                $away_dtls = null;
-            }
-        }
-
         $home_name = '-1' === (string) $home_val
             ? __( 'Bye', 'racketmanager' )
-            : ( $home_dtls && $home_dtls->team ? $home_dtls->team->get_name() : __( 'Unknown', 'racketmanager' ) );
+            : __( 'Unknown', 'racketmanager' );
         $away_name = '-1' === (string) $away_val
             ? __( 'Bye', 'racketmanager' )
-            : ( $away_dtls && $away_dtls->team ? $away_dtls->team->get_name() : __( 'Unknown', 'racketmanager' ) );
-        $home_name = '' !== $home_name ? $home_name : __( 'Unknown', 'racketmanager' );
-        $away_name = '' !== $away_name ? $away_name : __( 'Unknown', 'racketmanager' );
+            : __( 'Unknown', 'racketmanager' );
 
         $home_team_obj                  = new \stdClass();
         $home_team_obj->id              = $home_val;
         $home_team_obj->title           = $home_name;
         $home_team_obj->name            = $home_name;
-        $home_team_obj->team_type       = $home_dtls && $home_dtls->team && method_exists( $home_dtls->team, 'get_team_type' ) ? $home_dtls->team->get_team_type() : ( is_numeric( $home_val ) ? 'T' : 'P' );
+        $home_team_obj->team_type       = is_numeric( $home_val ) ? 'T' : 'P';
         $home_team_obj->club            = new \stdClass();
-        $home_team_obj->club->id        = $home_dtls && $home_dtls->club ? $home_dtls->club->get_id() : null;
-        $home_team_obj->club->shortcode = $home_dtls && $home_dtls->club && method_exists( $home_dtls->club, 'get_shortcode' ) ? $home_dtls->club->get_shortcode() : '';
-        $home_team_obj->players         = $home_dtls->players ?? array();
-        $home_team_obj->player          = $home_team_obj->players;
-        $home_team_obj->captain         = $home_dtls->captain ?? '';
-        $home_team_obj->contactemail    = $home_dtls->captain_email ?? '';
-        $home_team_obj->contactno       = $home_dtls->captain_tel ?? '';
-        $home_team_obj->match_day       = $home_dtls->match_day ?? '';
-        $home_team_obj->match_time      = $home_dtls->match_time ?? '';
-        $home_team_obj->is_withdrawn    = $home_dtls->is_withdrawn ?? false;
+        $home_team_obj->club->id        = null;
+        $home_team_obj->club->shortcode = '';
+        $home_team_obj->players         = array();
+        $home_team_obj->player          = array();
+        $home_team_obj->captain         = '';
+        $home_team_obj->contactemail    = '';
+        $home_team_obj->contactno       = '';
+        $home_team_obj->match_day       = '';
+        $home_team_obj->match_time      = '';
+        $home_team_obj->is_withdrawn    = false;
 
         $away_team_obj                  = new \stdClass();
         $away_team_obj->id              = $away_val;
         $away_team_obj->title           = $away_name;
         $away_team_obj->name            = $away_name;
-        $away_team_obj->team_type       = $away_dtls && $away_dtls->team && method_exists( $away_dtls->team, 'get_team_type' ) ? $away_dtls->team->get_team_type() : ( is_numeric( $away_val ) ? 'T' : 'P' );
+        $away_team_obj->team_type       = is_numeric( $away_val ) ? 'T' : 'P';
         $away_team_obj->club            = new \stdClass();
-        $away_team_obj->club->id        = $away_dtls && $away_dtls->club ? $away_dtls->club->get_id() : null;
-        $away_team_obj->club->shortcode = $away_dtls && $away_dtls->club && method_exists( $away_dtls->club, 'get_shortcode' ) ? $away_dtls->club->get_shortcode() : '';
-        $away_team_obj->players         = $away_dtls->players ?? array();
-        $away_team_obj->player          = $away_team_obj->players;
-        $away_team_obj->captain         = $away_dtls->captain ?? '';
-        $away_team_obj->contactemail    = $away_dtls->captain_email ?? '';
-        $away_team_obj->contactno       = $away_dtls->captain_tel ?? '';
-        $away_team_obj->match_day       = $away_dtls->match_day ?? '';
-        $away_team_obj->match_time      = $away_dtls->match_time ?? '';
-        $away_team_obj->is_withdrawn    = $away_dtls->is_withdrawn ?? false;
+        $away_team_obj->club->id        = null;
+        $away_team_obj->club->shortcode = '';
+        $away_team_obj->players         = array();
+        $away_team_obj->player          = array();
+        $away_team_obj->captain         = '';
+        $away_team_obj->contactemail    = '';
+        $away_team_obj->contactno       = '';
+        $away_team_obj->match_day       = '';
+        $away_team_obj->match_time      = '';
+        $away_team_obj->is_withdrawn    = false;
 
-        $this->teams = array(
+        return array(
             'home' => $home_team_obj,
             'away' => $away_team_obj,
         );
-
-        return $this->teams;
     }
 
     /**
@@ -765,12 +751,20 @@ class Fixture {
         return $this->status;
     }
 
+    public function get_status_enum(): ?Fixture_Status {
+        return Fixture_Status::try_from_value( $this->status );
+    }
+
     /**
      * @param int|null $status
      */
     public function set_status( ?int $status ): void {
         $this->status = $status;
         $this->set_status_flags();
+    }
+
+    public function set_status_enum( ?Fixture_Status $status ): void {
+        $this->set_status( $status?->value );
     }
 
     /**
@@ -972,6 +966,20 @@ class Fixture {
     /**
      * @return int|null
      */
+    public function get_home_captain(): ?int {
+        return $this->home_captain;
+    }
+
+    /**
+     * @param int|null $home_captain
+     */
+    public function set_home_captain( ?int $home_captain ): void {
+        $this->home_captain = $home_captain;
+    }
+
+    /**
+     * @return int|null
+     */
     public function get_away_approver(): ?int {
         return $this->away_captain;
     }
@@ -980,6 +988,20 @@ class Fixture {
      * @param int|null $away_captain
      */
     public function set_away_approver( ?int $away_captain ): void {
+        $this->away_captain = $away_captain;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function get_away_captain(): ?int {
+        return $this->away_captain;
+    }
+
+    /**
+     * @param int|null $away_captain
+     */
+    public function set_away_captain( ?int $away_captain ): void {
         $this->away_captain = $away_captain;
     }
 
@@ -1188,18 +1210,6 @@ class Fixture {
     }
 
     /**
-     * Check whether update is allowed for this fixture.
-     *
-     * @return object
-     */
-    public function is_update_allowed(): object {
-        if ( $this->update_authorizer ) {
-            return $this->update_authorizer->is_update_allowed( $this );
-        }
-        return (object) array( 'user_can_update' => false );
-    }
-
-    /**
      * Get match title.
      *
      * @return string
@@ -1217,11 +1227,18 @@ class Fixture {
     /**
      * Get rubbers for this fixture.
      *
-     * @param int|null $player_id
      * @return Rubber[]
      */
-    public function get_rubbers( ?int $player_id = null ): array {
-        $rubber_repository = new Rubber_Repository();
-        return $rubber_repository->find_by_fixture_id( (int) $this->id, $player_id );
+    public function get_rubbers(): array {
+        return $this->rubbers ?? array();
+    }
+
+    /**
+     * Attach rubbers to this fixture.
+     *
+     * @param array|null $rubbers
+     */
+    public function set_rubbers( ?array $rubbers ): void {
+        $this->rubbers = $rubbers;
     }
 }

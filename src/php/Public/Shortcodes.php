@@ -14,12 +14,14 @@ use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\General_Shortcode_Adapter;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Fixture_Presentation_Adapter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
@@ -33,7 +35,6 @@ use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Util\Util_Lookup;
-use stdClass;
 use function Racketmanager\get_club;
 use function Racketmanager\get_league;
 use function Racketmanager\get_player;
@@ -78,6 +79,7 @@ class Shortcodes {
     protected ?Fixture_Detail_Service $fixture_detail_service = null;
     protected ?Competition_Repository_Interface $competition_repository = null;
     protected ?Fixture_Repository_Interface $fixture_repository = null;
+    protected ?Rubber_Repository_Interface $rubber_repository = null;
     protected ?Fixture_Link_Service $fixture_link_service = null;
     protected ?Fixture_Permission_Service $fixture_permission_service = null;
     protected ?Club_Presenter $club_presenter = null;
@@ -122,6 +124,7 @@ class Shortcodes {
             $this->fixture_detail_service    = $c->has( 'fixture_detail_service' ) ? $c->get( 'fixture_detail_service' ) : null;
             $this->competition_repository    = $c->has( 'competition_repository' ) ? $c->get( 'competition_repository' ) : null;
             $this->fixture_repository        = $c->has( 'fixture_repository' ) ? $c->get( 'fixture_repository' ) : null;
+            $this->rubber_repository         = $c->has( 'rubber_repository' ) ? $c->get( 'rubber_repository' ) : null;
             $this->fixture_link_service       = $c->has( 'fixture_link_service' ) ? $c->get( 'fixture_link_service' ) : null;
             $this->fixture_permission_service = $c->has( 'fixture_permission_service' ) ? $c->get( 'fixture_permission_service' ) : null;
             $this->club_presenter             = $c->has( 'club_presenter' ) ? $c->get( 'club_presenter' ) : new Club_Presenter();
@@ -182,7 +185,8 @@ class Shortcodes {
                     $this->competition_service,
                     $this->team_service,
                     $this->fixture_link_service,
-                    $this->fixture_permission_service
+                    $this->fixture_permission_service,
+                    rubber_repository: $this->rubber_repository
                 );
             }
             $match_league = method_exists( $match, 'get_league' ) ? $match->get_league() : ( $match->league ?? null );
@@ -208,9 +212,38 @@ class Shortcodes {
         $filename = ( ! empty( $template ) ) ? 'matches-' . $template : 'matches-daily';
 
         return $this->load_template( $filename, array(
-                'matches_list' => $matches_list,
+                'matches_list' => $this->present_match_groups( $matches_list ),
                 'match_date'   => $match_date,
             ) );
+    }
+
+    /**
+     * Convert league keyed match lists into the immutable group view models the match list templates require.
+     *
+     * @param array $matches_list Matches keyed by league name.
+     *
+     * @return array<string, \Racketmanager\Presentation\View_Models\Team_Matches_Group_View_Model>
+     */
+    private function present_match_groups( array $matches_list ): array {
+        $container = $this->racketmanager->container ?? null;
+        if ( ! $container || ! $container->has( 'tournament_presenter' ) ) {
+            throw new \LogicException( 'The tournament_presenter service is required to render match lists.' );
+        }
+        $presenter = $container->get( 'tournament_presenter' );
+        $groups    = array();
+        foreach ( $matches_list as $key => $matches ) {
+            $groups[ $key ] = $presenter->present_match_group(
+                $key,
+                $matches,
+                null,
+                array(
+                    'show_header' => false,
+                    'matches_key' => 'league',
+                )
+            );
+        }
+
+        return $groups;
     }
 
     /**
@@ -344,7 +377,8 @@ class Shortcodes {
                     $this->competition_service,
                     $this->team_service,
                     $this->fixture_link_service,
-                    $this->fixture_permission_service
+                    $this->fixture_permission_service,
+                    rubber_repository: $this->rubber_repository
                 );
             }
             $match_league = method_exists( $match, 'get_league' ) ? $match->get_league() : ( $match->league ?? null );
@@ -375,7 +409,7 @@ class Shortcodes {
         }
 
         return $this->load_template( $filename, array(
-                'matches_list' => $matches_list,
+                'matches_list' => $this->present_match_groups( $matches_list ),
                 'header_level' => $header_level,
             ) );
     }
@@ -599,100 +633,11 @@ class Shortcodes {
      * @return string the content
      */
     public function show_order_of_play( array $atts ): string {
-        wp_verify_nonce( 'order-of-play' );
-        $args           = shortcode_atts( array(
-                'id'             => '',
-                'competition_id' => null,
-                'season'         => null,
-                'template'       => '',
-            ), $atts );
-        $tournament_id  = $args['id'];
-        $competition_id = $args['competition_id'];
-        $season         = $args['season'];
-        $template       = $args['template'];
-        $msg            = null;
-        if ( $tournament_id ) {
-            try {
-                $tournament   = $this->tournament_service->get_tournament( $tournament_id );
-                $finals_order = $tournament->get_order_of_play();
-            } catch ( Tournament_Not_Found_Exception $e ) {
-                return $this->return_error( $e->getMessage() );
-            }
-        } elseif ( $competition_id ) {
-            $competition = $this->competition_repository->find_by_id( $competition_id );
-            if ( $competition ) {
-                if ( $season ) {
-                    $competition_season = $competition->get_season_by_name( $season );
-                    if ( $competition_season ) {
-                        $finals_order = $competition_season['orderofplay'] ?? array();
-                    } else {
-                        $msg = $this->season_not_found_for_competition;
-                    }
-                } else {
-                    $msg = $this->season_not_found;
-                }
-            } else {
-                $msg = $this->competition_not_found;
-            }
-        } else {
-            $msg = $this->competition_not_found;
-        }
-        if ( $msg ) {
-            return $this->return_error( $msg );
-        }
-        $order_of_play = array();
-        $times         = array();
-        $courts        = array();
-        foreach ( $finals_order as $final_courts ) {
-            $court            = $final_courts['court'];
-            $courts[ $court ] = array();
-            foreach ( $final_courts['matches'] as $match_id ) {
-                if ( $match_id ) {
-                    $match = $this->fixture_repository->find_by_id( (int) $match_id );
-                    if ( $match ) {
-                        $league    = $match->get_league_id() ? $this->competition_service->get_league_repository()->find_by_id( (int) $match->get_league_id() ) : null;
-                        $home_val  = $match->get_home_team();
-                        $away_val  = $match->get_away_team();
-                        $home_dtls = is_numeric( $home_val ) ? $this->team_service->get_team_details( (int) $home_val ) : ( ! empty( $home_val ) ? $this->team_service->derive_team_details( (string) $home_val ) : null );
-                        $away_dtls = is_numeric( $away_val ) ? $this->team_service->get_team_details( (int) $away_val ) : ( ! empty( $away_val ) ? $this->team_service->derive_team_details( (string) $away_val ) : null );
+        return $this->tournament_adapter()->show_order_of_play( $atts );
+    }
 
-                        $final_match             = new stdClass();
-                        $final_match->id         = $match_id;
-                        $final_match->time       = $match->get_date() ? (string) mysql2date( get_option( 'time_format', 'H:i' ), $match->get_date() ) : '';
-                        $final_match->league     = $league ? $league->get_name() : '';
-                        $final_match->location   = $match->get_location() ?? '';
-                        $final_match->winner     = $match->get_winner_id();
-                        $final_match->home_team   = $home_val;
-                        $final_match->away_team   = $away_val;
-                        $final_match->home_title = $home_dtls && $home_dtls->team ? $home_dtls->team->get_name() : (string) $home_val;
-                        $final_match->away_title = $away_dtls && $away_dtls->team ? $away_dtls->team->get_name() : (string) $away_val;
-                        $time                    = $final_match->time;
-                        if ( ! in_array( $time, $times, true ) ) {
-                            $times[] = $time;
-                        }
-                        $order_of_play['match_time'][ $time ][ $court ] = $final_match;
-                        // now just add the row data.
-                        $courts[ $court ][ $time ][] = $final_match;
-                    }
-                }
-            }
-        }
-        sort( $times );
-        foreach ( $times as $time ) {
-            foreach ( $courts as $court => $court_matches ) {
-                if ( ! isset( $court_matches[ $time ] ) ) {
-                    $courts[ $court ][ $time ] = array();
-                }
-                ksort( $courts[ $court ] );
-            }
-        }
-        $order_of_play['courts'] = $courts;
-        $order_of_play['times']  = $times;
-        $filename                = ( ! empty( $template ) ) ? 'orderofplay-' . $template : 'orderofplay';
-
-        return $this->load_template( $filename, array(
-                'order_of_play' => $order_of_play,
-            ) );
+    private function tournament_adapter(): Tournament_Shortcode_Adapter {
+        return $this->racketmanager->container->get( 'tournament_shortcode_adapter' );
     }
 
     /**

@@ -132,7 +132,8 @@ class Frontend_Ajax_Controller {
             $c->get( 'registration_service' ),
             $c->get( 'club_service' ),
             $c->get( 'tournament_service' ),
-            $c->get( 'fixture_repository' )
+            $c->get( 'fixture_repository' ),
+            $c->get( 'rubber_repository' )
         );
     }
 

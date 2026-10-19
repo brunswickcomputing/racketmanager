@@ -7,41 +7,34 @@
 
 namespace RacketManager;
 
-use Racketmanager\Util\Util;
-use Racketmanager\Util\Util_Lookup;
+use Racketmanager\Presentation\View_Models\Team_Match_Row_View_Model;
 
-/** @var object $match */
-/** @var string $match_status_class */
-/** @var string $match_status_text */
-/** @var string $match_link */
-global $racketmanager;
-$match_pending = false;
-if ( empty( $match->get_winner_id() ) ) {
-    $match_pending = true;
+/** @var Team_Match_Row_View_Model|object|null $match */
+/** @var Team_Match_Row_View_Model|null $vm */
+if ( isset( $vm ) && $vm instanceof Team_Match_Row_View_Model ) {
+    $row_vm = $vm;
+} elseif ( isset( $match ) && $match instanceof Team_Match_Row_View_Model ) {
+    $row_vm = $match;
+} else {
+    throw new \UnexpectedValueException( 'Expected Team_Match_Row_View_Model, got ' . ( isset( $vm ) ? get_debug_type( $vm ) : ( isset( $match ) ? get_debug_type( $match ) : 'null' ) ) );
 }
 ?>
-<div class="match match--team-match <?php echo empty( $selected_match ) ? '' : 'is-selected'; ?>">
+<div class="match match--team-match <?php echo $row_vm->is_selected ? 'is-selected' : ''; ?>">
     <?php
-    if ( ! empty( $show_header ) ) {
-        $league_title = '';
-        if ( isset( $dto ) ) {
-            $league_title = $dto->league->title;
-        } elseif ( isset( $match->league ) ) {
-            $league_title = $match->league->title;
-        }
+    if ( $row_vm->show_header && '' !== $row_vm->league_title ) {
         ?>
         <div class="match__header match__header--up">
             <div class="match__header-title">
                 <div class="match__header-title-main">
-                    <span><?php echo esc_html( $league_title ); ?></span>
+                    <span><?php echo esc_html( $row_vm->league_title ); ?></span>
                 </div>
             </div>
         </div>
         <?php
     }
-    if ( ! empty( $match_link ) ) {
+    if ( ! empty( $row_vm->match_link ) ) {
         ?>
-        <a class="team-match__wrapper" href="<?php echo esc_url( $match_link ); ?>">
+        <a class="team-match__wrapper" href="<?php echo esc_url( $row_vm->match_link ); ?>">
         <?php
     } else {
         ?>
@@ -52,41 +45,39 @@ if ( empty( $match->get_winner_id() ) ) {
     <div class="match__header">
         <span class="match__header-title">
             <?php
-            if ( ! empty( $match->get_final() ) ) {
+            if ( ! empty( $row_vm->final_name ) ) {
                 ?>
-                <span><?php echo esc_html( Util::get_final_name( $match->get_final() ) ); ?></span>
+                <span><?php echo esc_html( $row_vm->final_name ); ?></span>
                 <?php
-            } elseif ( ! empty( $match->get_match_day() ) ) {
+            } elseif ( ! empty( $row_vm->match_day_text ) ) {
                 ?>
-                <span><?php echo esc_html__( 'Match Day', 'racketmanager' ) . ' ' . esc_html( $match->get_match_day() ); ?></span>
-                <?php
-            }
-            if ( ! empty( $match->get_leg() ) ) {
-                ?>
-                <span>&nbsp;&#8226&nbsp;<?php echo esc_html__( 'Leg', 'racketmanager' ) . ' ' . esc_html( $match->get_leg() ); ?></span>
+                <span><?php echo esc_html( $row_vm->match_day_text ); ?></span>
                 <?php
             }
-            if ( empty( $by_date ) ) {
+            if ( ! empty( $row_vm->leg_text ) ) {
+                ?>
+                <span>&nbsp;&#8226&nbsp;<?php echo esc_html( $row_vm->leg_text ); ?></span>
+                <?php
+            }
+            if ( $row_vm->show_date && ! empty( $row_vm->formatted_date ) ) {
                 ?>
                 &nbsp;&#8226;&nbsp;
                 <span>
-                    <time
-                        datetime="<?php echo esc_attr( $match->get_date() ); ?>"><?php echo esc_html( mysql2date( $racketmanager->date_format, $match->get_date() ) ); ?></time>
+                    <time datetime="<?php echo esc_attr( (string) $row_vm->date ); ?>"><?php echo esc_html( $row_vm->formatted_date ); ?></time>
                 </span>
                 <?php
             }
             ?>
         </span>
         <?php
-        if ( $match->get_status() ) {
-            $match_message = Util_Lookup::get_match_status( $match->get_status() );
+        if ( ! empty( $row_vm->status_message ) ) {
             ?>
-            <span class="match__message match-warning"><?php echo esc_html( $match_message ); ?></span>
+            <span class="match__message match-warning"><?php echo esc_html( $row_vm->status_message ); ?></span>
             <?php
         }
-        if ( ! $match_pending && ! empty( $highlight_match ) ) {
+        if ( $row_vm->is_highlighted && ! empty( $row_vm->status_text ) ) {
             ?>
-            <span class="match__status <?php echo esc_attr( $match_status_class ); ?>"><?php echo esc_attr( $match_status_text ); ?></span>
+            <span class="match__status <?php echo esc_attr( (string) $row_vm->status_class ); ?>"><?php echo esc_attr( $row_vm->status_text ); ?></span>
             <?php
         }
         ?>
@@ -97,36 +88,13 @@ if ( empty( $match->get_winner_id() ) ) {
                 <span class="nav--link">
                     <span class="nav-link__value">
                         <?php
-                        $home_withdrawn = false;
-                        $home_name = '';
-                        if ( isset( $dto ) && isset( $dto->home_team ) && is_object( $dto->home_team ) && isset( $dto->home_team->team ) && method_exists( $dto->home_team->team, 'get_name' ) ) {
-                            $home_name = $dto->home_team->team->get_name();
-                            // withdrawn logic here if needed
-                        } elseif ( isset( $match->teams['home'] ) ) {
-                            $home_name = $match->teams['home']->title ?? $match->teams['home']->name ?? '';
-                            $home_withdrawn = ! empty( $match->teams['home']->is_withdrawn );
-                        } elseif ( method_exists( $match, 'get_teams' ) ) {
-                            $teams = $match->get_teams();
-                            if ( isset( $teams['home'] ) ) {
-                                $home_name = $teams['home']->title ?? $teams['home']->name ?? '';
-                                $home_withdrawn = ! empty( $teams['home']->is_withdrawn );
-                            }
-                        }
-                        if ( empty( $home_name ) && method_exists( $match, 'get_home_team' ) ) {
-                            $home_val = $match->get_home_team();
-                            $home_name = is_numeric( $home_val ) && isset( $racketmanager->container ) && $racketmanager->container->has( 'team_service' )
-                                ? ( $racketmanager->container->get( 'team_service' )->get_team_details( (int) $home_val )->team?->get_name() ?? (string) $home_val )
-                                : (string) ( $home_val ?? '' );
-                        }
-
-                        if ( $home_withdrawn ) {
-                            $title_text = $home_name . ' ' . __( 'has withdrawn', 'racketmanager' );
+                        if ( $row_vm->home_is_withdrawn ) {
                             ?>
-                            <s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="right" title="<?php echo esc_attr( $title_text ); ?>">
+                            <s aria-label="<?php echo esc_attr( (string) $row_vm->home_withdrawn_title ); ?>" data-bs-toggle="tooltip" data-bs-placement="right" title="<?php echo esc_attr( (string) $row_vm->home_withdrawn_title ); ?>">
                             <?php
                         }
-                        echo esc_html( $home_name );
-                        if ( $home_withdrawn ) {
+                        echo esc_html( $row_vm->home_name );
+                        if ( $row_vm->home_is_withdrawn ) {
                             ?>
                             </s>
                             <?php
@@ -135,22 +103,17 @@ if ( empty( $match->get_winner_id() ) ) {
                     </span>
                 </span>
             </div>
-            <div class="score <?php echo empty( $score_class ) ? '' : esc_attr( $score_class ); ?>">
+            <div class="score <?php echo esc_attr( (string) $row_vm->score_class ); ?>">
                 <?php
-                if ( $match_pending ) {
-                    if ( empty( $match->get_start_time() ) ) {
-                        $score_filler = __( 'vs', 'racketmanager' );
-                    } else {
-                        $score_filler = $match->get_start_time();
-                    }
+                if ( $row_vm->is_pending ) {
                     ?>
-                    <time datetime="<?php echo esc_attr( $match->get_date() ); ?>"><?php echo esc_html( $score_filler ); ?></time>
+                    <time datetime="<?php echo esc_attr( (string) $row_vm->date ); ?>"><?php echo esc_html( (string) $row_vm->score_text ); ?></time>
                     <?php
                 } else {
                     ?>
-                    <span class="is-team-1"><?php echo esc_html( sprintf( '%g', $match->get_home_points() ) ); ?></span>
+                    <span class="is-team-1"><?php echo esc_html( (string) $row_vm->home_points ); ?></span>
                     <span class="score-separator">-</span>
-                    <span class="is-team-2"><?php echo esc_html( sprintf( '%g', $match->get_away_points() ) ); ?></span>
+                    <span class="is-team-2"><?php echo esc_html( (string) $row_vm->away_points ); ?></span>
                     <?php
                 }
                 ?>
@@ -159,35 +122,13 @@ if ( empty( $match->get_winner_id() ) ) {
                 <span class="nav--link">
                     <span class="nav-link__value">
                         <?php
-                        $away_withdrawn = false;
-                        $away_name = '';
-                        if ( isset( $dto ) && isset( $dto->away_team ) && is_object( $dto->away_team ) && isset( $dto->away_team->team ) && method_exists( $dto->away_team->team, 'get_name' ) ) {
-                            $away_name = $dto->away_team->team->get_name();
-                        } elseif ( isset( $match->teams['away'] ) ) {
-                            $away_name = $match->teams['away']->title ?? $match->teams['away']->name ?? '';
-                            $away_withdrawn = ! empty( $match->teams['away']->is_withdrawn );
-                        } elseif ( method_exists( $match, 'get_teams' ) ) {
-                            $teams = $match->get_teams();
-                            if ( isset( $teams['away'] ) ) {
-                                $away_name = $teams['away']->title ?? $teams['away']->name ?? '';
-                                $away_withdrawn = ! empty( $teams['away']->is_withdrawn );
-                            }
-                        }
-                        if ( empty( $away_name ) && method_exists( $match, 'get_away_team' ) ) {
-                            $away_val = $match->get_away_team();
-                            $away_name = is_numeric( $away_val ) && isset( $racketmanager->container ) && $racketmanager->container->has( 'team_service' )
-                                ? ( $racketmanager->container->get( 'team_service' )->get_team_details( (int) $away_val )->team?->get_name() ?? (string) $away_val )
-                                : (string) ( $away_val ?? '' );
-                        }
-
-                        if ( $away_withdrawn ) {
-                            $title_text = $away_name . ' ' . __( 'has withdrawn', 'racketmanager' );
+                        if ( $row_vm->away_is_withdrawn ) {
                             ?>
-                            <s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo esc_attr( $title_text ); ?>">
+                            <s aria-label="<?php echo esc_attr( (string) $row_vm->away_withdrawn_title ); ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo esc_attr( (string) $row_vm->away_withdrawn_title ); ?>">
                             <?php
                         }
-                        echo esc_html( $away_name );
-                        if ( $away_withdrawn ) {
+                        echo esc_html( $row_vm->away_name );
+                        if ( $row_vm->away_is_withdrawn ) {
                             ?>
                             </s>
                             <?php
@@ -199,7 +140,7 @@ if ( empty( $match->get_winner_id() ) ) {
         </div>
     </div>
     <?php
-    if ( ! empty( $match_link ) ) {
+    if ( ! empty( $row_vm->match_link ) ) {
         ?>
         </a>
         <?php
@@ -208,13 +149,12 @@ if ( empty( $match->get_winner_id() ) ) {
         </div>
         <?php
     }
-    if ( ! empty( $user_can_update ) && ! empty( $match_link ) ) {
-        $match_link_result = trailingslashit( $match_link ) . 'result/';
+    if ( $row_vm->user_can_update && ! empty( $row_vm->update_link ) ) {
         ?>
         <div class="match__button">
-            <a href="<?php echo esc_url( $match_link_result ); ?>" class="btn match__btn">
+            <a href="<?php echo esc_url( $row_vm->update_link ); ?>" class="btn match__btn">
                 <svg width="16" height="16" class="icon ">
-                    <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#pencil' ); ?>"></use>
+                    <use xlink:href="<?php echo esc_url( $row_vm->pencil_icon_url ); ?>"></use>
                 </svg>
             </a>
         </div>

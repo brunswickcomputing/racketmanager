@@ -2,14 +2,6 @@
 declare( strict_types=1 );
 
 namespace Racketmanager {
-    if ( ! function_exists( 'Racketmanager\get_match' ) ) {
-        function get_match( $id ) {
-            if ( isset( $GLOBALS['wp_stubs_matches'][ $id ] ) ) {
-                return $GLOBALS['wp_stubs_matches'][ $id ];
-            }
-            return $GLOBALS['match'] ?? null;
-        }
-    }
     if ( ! function_exists( 'Racketmanager\get_player' ) ) {
         function get_player( $id ) {
             if ( isset( $GLOBALS['wp_stubs_players'][ $id ] ) ) {

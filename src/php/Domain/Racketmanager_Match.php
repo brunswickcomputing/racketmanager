@@ -1714,7 +1714,6 @@ class Racketmanager_Match {
             if ( $this->num_rubbers ) {
                 $rubbers = $this->get_rubbers();
                 foreach ( $rubbers as $rubber ) {
-                    $rubber       = get_rubber( $rubber );
                     $rubber->date = $match_date;
                     $rubber->update_date();
                 }
@@ -2352,10 +2351,18 @@ class Racketmanager_Match {
             if ( ! empty( $this->final_round ) ) {
                 $round_data = $league->championship->get_finals( $this->final_round );
                 $round      = $round_data['round'];
-                $championship_manager = new Championship_Manager();
-                $championship_manager->proceed( $league->championship, $round );
-                $return->msg     = __( 'Match saved and draw updated', 'racketmanager' );
-                $return->updated = true;
+                global $racketmanager;
+                $championship_manager = isset( $racketmanager->container ) && $racketmanager->container->has( 'championship_manager' )
+                    ? $racketmanager->container->get( 'championship_manager' )
+                    : null;
+                if ( $championship_manager ) {
+                    $championship_manager->proceed( $league->championship, $round );
+                    $return->msg     = __( 'Match saved and draw updated', 'racketmanager' );
+                    $return->updated = true;
+                } else {
+                    $return->msg     = __( 'Championship manager not available', 'racketmanager' );
+                    $return->updated = false;
+                }
             } else {
                 $return->msg     = __( 'No round specified', 'racketmanager' );
                 $return->updated = false;

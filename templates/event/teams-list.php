@@ -7,4 +7,4 @@
 
 namespace Racketmanager;
 
-require_once RACKETMANAGER_PATH . 'templates/teams-list.php';
+require RACKETMANAGER_PATH . 'templates/teams-list.php';

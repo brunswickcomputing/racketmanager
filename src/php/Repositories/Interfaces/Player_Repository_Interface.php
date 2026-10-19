@@ -22,6 +22,7 @@ interface Player_Repository_Interface extends Repository_Interface {
     public function save_opt_in( int $player_id, string $opt_in ): bool;
     public function update( Player $player, array $updates ): bool;
     public function find_all( array $args = array() ): array;
+    public function find_players_summary( array $args = array() ): array;
     public function get_active_players(): array;
     public function find( int|string $player_id, string $search_type = 'id' ): ?Player;
     public function find_by_btm( $player_id ): mixed;
@@ -35,5 +36,4 @@ interface Player_Repository_Interface extends Repository_Interface {
     public function get_titles( $player_id ): array;
     public function find_active_players_by_competition_and_season( int $competition_id, string $season ): array;
     public function find_by_team( int $team_id ): array;
-    public function wire_player_collaborators( Player $player ): void;
 }

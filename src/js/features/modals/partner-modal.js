@@ -40,7 +40,7 @@ export function openPartnerModal(event, eventId) {
   const gender = jQuery('#playerGender').val();
   const season = jQuery('#season').val();
   const dateEnd = jQuery('#tournamentDateEnd').val();
-  const tournamentId = jQuery('#tournament_id').val();
+  const tournamentId = jQuery('#tournamentId').val() || jQuery('#tournament_id').val();
 
   // Clear prior content/errors
   jQuery(ALERT_ID).hide();

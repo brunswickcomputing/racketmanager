@@ -21,6 +21,7 @@ use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interf
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\Infrastructure\Security\Target_Season_Validator;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
@@ -57,7 +58,8 @@ class Frontend_Ajax_Adapter {
         private Registration_Service $registration_service,
         private Club_Service $club_service,
         private Tournament_Service $tournament_service,
-        private Fixture_Repository_Interface $fixture_repository
+        private Fixture_Repository_Interface $fixture_repository,
+        private Rubber_Repository_Interface $rubber_repository
     ) {}
 
     public function logged_out(): Response {
@@ -109,18 +111,18 @@ class Frontend_Ajax_Adapter {
         }
         if ( empty( $validator->error ) ) {
             try {
-                $team = $this->team_service->get_team_by_id( (int) $team_id );
-                $msg  = $team->update_event(
+                $msg = $this->team_service->update_team_event(
+                    (int) $team_id,
                     $event_id,
                     (int) $team_details->captain_id,
-                    $team_details->contactno,
-                    $team_details->contactemail,
+                    (string) $team_details->contactno,
+                    (string) $team_details->contactemail,
                     $team_details->match_day,
                     $team_details->match_time
                 );
 
                 return $this->response_factory->create_success_response( $msg );
-            } catch ( Team_Not_Found_Exception ) {
+            } catch ( Event_Not_Found_Exception|Team_Not_Found_Exception ) {
                 $validator->error = true;
             }
         }
@@ -493,7 +495,7 @@ class Frontend_Ajax_Adapter {
                                 $opponent = null;
                             }
                             if ( $opponent ) {
-                                $match_rubbers = $match->get_rubbers();
+                                $match_rubbers = $this->rubber_repository->find_by_fixture_id( (int) $match->get_id() );
                                 foreach ( $match_rubbers as $match_rubber ) {
                                     $rubber = $rubbers[ $match_rubber->rubber_number ] ?? null;
                                     if ( $rubber ) {

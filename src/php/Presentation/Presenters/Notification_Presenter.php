@@ -10,6 +10,7 @@ use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Tournament_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Export\DTO\Export_Criteria;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
@@ -21,7 +22,7 @@ use function Racketmanager\seo_url;
 readonly class Notification_Presenter {
 
     public function __construct(
-        private Team_Repository_Interface $team_repository, private Club_Repository_Interface $club_repository, private Tournament_Repository_Interface $tournament_repository, private Fixture_Repository_Interface $fixture_repository, private Fixture_Link_Service $fixture_link_service, private Team_Service $team_service, private Competition_Service $competition_service, private Fixture_Permission_Service $permission_service, private string $site_url, private string $site_name
+        private Team_Repository_Interface $team_repository, private Club_Repository_Interface $club_repository, private Tournament_Repository_Interface $tournament_repository, private Fixture_Repository_Interface $fixture_repository, private Fixture_Link_Service $fixture_link_service, private Team_Service $team_service, private Competition_Service $competition_service, private Fixture_Permission_Service $permission_service, private string $site_url, private string $site_name, private ?Rubber_Repository_Interface $rubber_repository = null
     ) {
     }
 
@@ -62,6 +63,7 @@ readonly class Notification_Presenter {
 
         $competition_data = $this->prepare_competition_data( $fixture, $fixture_details, $args );
         $team_data        = $this->prepare_team_data( $fixture, $fixture_details );
+        $this->load_rubbers( $fixture );
         $match_adapter    = new Fixture_Presentation_Adapter( $fixture, $league, $event, $competition_obj, $home_team_dtls, $away_team_dtls, $link, $is_update_allowed, $prev_home_fixture_title, $prev_away_fixture_title );
 
         return array_merge( array(
@@ -195,9 +197,10 @@ readonly class Notification_Presenter {
             $tournament = $this->tournament_repository->find_by_id( $tournament_id, $tournament_search );
             if ( $tournament ) {
                 $data['tournament']      = $tournament;
-                $data['tournament_link'] = '<a href="' . $this->site_url . $tournament->link . '">' . $tournament->name . '</a>';
-                $data['draw_link']       = '<a href="' . $this->site_url . $tournament->link . 'draw/' . seo_url( $fixture_details->event->get_name() ) . '/">' . $fixture_details->event->get_name() . '</a>';
-                $data['action_url']      = $this->site_url . $tournament->link . '/match/' . seo_url( $fixture_details->league->get_name() ) . '/' . seo_url( $fixture_details->home_team->team->get_name() ) . '-vs-' . seo_url( $fixture_details->away_team->team->get_name() ) . '/' . $fixture->get_id() . '/';
+                $tournament_path         = ( new Tournament_Presenter() )->get_link( (object) $tournament );
+                $data['tournament_link'] = '<a href="' . $this->site_url . $tournament_path . '">' . $tournament->name . '</a>';
+                $data['draw_link']       = '<a href="' . $this->site_url . $tournament_path . 'draw/' . seo_url( $fixture_details->event->get_name() ) . '/">' . $fixture_details->event->get_name() . '</a>';
+                $data['action_url']      = $this->site_url . $tournament_path . 'match/' . seo_url( $fixture_details->league->get_name() ) . '/' . seo_url( $fixture_details->home_team->team->get_name() ) . '-vs-' . seo_url( $fixture_details->away_team->team->get_name() ) . '/' . $fixture->get_id() . '/';
             }
 
             $suffix                     = str_contains( $fixture_details->event->get_type() ?? '', 'D' ) ? ' Players' : ' Player';
@@ -282,7 +285,7 @@ readonly class Notification_Presenter {
      * Prepare variables for the result-notification template.
      */
     public function present_result_notification( Fixture $fixture, array $args ): array {
-        $match_adapter = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service, $this->fixture_link_service, $this->permission_service );
+        $match_adapter = $this->present_fixture( $fixture );
         $action_url    = $this->site_url;
 
         if ( $match_adapter->league->event->competition->is_championship ) {
@@ -304,7 +307,7 @@ readonly class Notification_Presenter {
      * Prepare variables for captain result approval notification.
      */
     public function present_captain_result_approval_notification( Fixture $fixture, array $args ): array {
-        $match_adapter = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service, $this->fixture_link_service, $this->permission_service );
+        $match_adapter = $this->present_fixture( $fixture );
         $action_url    = $this->site_url;
 
         if ( $match_adapter->league->event->competition->is_championship ) {
@@ -344,7 +347,7 @@ readonly class Notification_Presenter {
      * Prepare variables for the date-change-notification template.
      */
     public function present_date_change_notification( Fixture $fixture, array $args ): array {
-        $match_adapter    = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service, $this->fixture_link_service, $this->permission_service );
+        $match_adapter    = $this->present_fixture( $fixture );
         $competition_type = $args['competition_type'] ?? '';
         $tournament_id    = $args['tournament'] ?? false;
         $tournament_link  = '';
@@ -356,9 +359,10 @@ readonly class Notification_Presenter {
         if ( 'tournament' === $competition_type && $tournament_id ) {
             $tournament = $this->tournament_repository->find_by_id( $tournament_id );
             if ( $tournament ) {
-                $tournament_link = '<a href="' . $this->site_url . $tournament->link . '">' . $tournament->name . '</a>';
-                $draw_link       = '<a href="' . $this->site_url . $tournament->link . 'draw/' . seo_url( $match_adapter->league->event->name ?? '' ) . '/">' . ( $match_adapter->league->event->name ?? '' ) . '</a>';
-                $match_link      = $this->site_url . $tournament->link . 'match/' . seo_url( $match_adapter->league->title ?? '' ) . '/' . seo_url( $match_adapter->teams['home']->title ?? '' ) . '-vs-' . seo_url( $match_adapter->teams['away']->title ?? '' ) . '/' . $fixture->get_id() . '/';
+                $tournament_path = ( new Tournament_Presenter() )->get_link( (object) $tournament );
+                $tournament_link = '<a href="' . $this->site_url . $tournament_path . '">' . $tournament->name . '</a>';
+                $draw_link       = '<a href="' . $this->site_url . $tournament_path . 'draw/' . seo_url( $match_adapter->league->event->name ?? '' ) . '/">' . ( $match_adapter->league->event->name ?? '' ) . '</a>';
+                $match_link      = $this->site_url . $tournament_path . 'match/' . seo_url( $match_adapter->league->title ?? '' ) . '/' . seo_url( $match_adapter->teams['home']->title ?? '' ) . '-vs-' . seo_url( $match_adapter->teams['away']->title ?? '' ) . '/' . $fixture->get_id() . '/';
             }
         } elseif ( 'cup' === $competition_type ) {
             $competition_link = '<a href="' . $this->site_url . '/cups/' . seo_url( $match_adapter->league->title ?? '' ) . '/' . $match_adapter->season . '/">' . ( $match_adapter->league->title ?? '' ) . '</a>';
@@ -447,7 +451,7 @@ readonly class Notification_Presenter {
      * Prepare variables for the team-withdrawn-notification template.
      */
     public function present_team_withdrawn_notification( Fixture $fixture, array $args ): array {
-        $match_adapter = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service, $this->fixture_link_service, $this->permission_service );
+        $match_adapter = $this->present_fixture( $fixture );
 
         return array_merge( $args, array(
             'match'        => $match_adapter,
@@ -460,7 +464,7 @@ readonly class Notification_Presenter {
      * Prepare variables for the result-outstanding-notification template.
      */
     public function present_result_outstanding_notification( Fixture $fixture, array $args ): array {
-        $match_adapter = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service, $this->fixture_link_service, $this->permission_service );
+        $match_adapter = $this->present_fixture( $fixture );
         $action_url    = $args['action_url'] ?? $this->site_url;
 
         if ( $this->site_url === $action_url ) {
@@ -477,5 +481,16 @@ readonly class Notification_Presenter {
             'organisation' => $this->site_name,
             'action_url'   => $action_url,
         ) );
+    }
+
+    private function load_rubbers( Fixture $fixture ): void {
+        if ( $this->rubber_repository && null === $fixture->rubbers && $fixture->get_id() > 0 ) {
+            $fixture->set_rubbers( $this->rubber_repository->find_by_fixture_id( $fixture->get_id() ) );
+        }
+    }
+
+    private function present_fixture( Fixture $fixture ): Fixture_Presentation_Adapter {
+        $this->load_rubbers( $fixture );
+        return Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service, $this->fixture_link_service, $this->permission_service );
     }
 }

@@ -6,6 +6,10 @@ namespace Racketmanager\Tests\Unit\Controllers\Admin;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Admin_Cup;
+use Racketmanager\Admin\Presenters\Admin_Plan_Presenter;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
+use Racketmanager\Services\Fixture\Fixture_Detail_Service;
+use Racketmanager\Services\Fixture\Fixture_Relation_Loader;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
@@ -23,6 +27,7 @@ use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Admin_Delivery_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 
 #[AllowMockObjectsWithoutExpectations]
 final class Admin_Cup_Delivery_Test extends TestCase {
@@ -76,7 +81,12 @@ final class Admin_Cup_Delivery_Test extends TestCase {
             $this->container->get( 'admin_action_adapter' ),
             $this->cup_setup_dispatcher,
             $this->cup_plan_dispatcher,
-            $this->draw_action_dispatcher
+            $this->draw_action_dispatcher,
+            new Admin_Plan_Presenter(
+                $this->createStub( Fixture_Detail_Service::class ),
+                $this->createStub( Player_Repository_Interface::class ),
+                new Fixture_Relation_Loader()
+            )
         );
     }
 
@@ -513,6 +523,8 @@ final class Admin_Cup_Delivery_Test extends TestCase {
     public function test_display_cup_plan_page_renders_with_season_and_flash_errors(): void {
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $_GET                      = array( 'page' => 'racketmanager-cups', 'view' => 'plan', 'competition_id' => '5', 'season' => '2024' );
+
+        $this->container->set( 'fixture_relation_loader', new Fixture_Relation_Loader( $this->createStub( League_Repository_Interface::class ) ) );
 
         $competition = $this->create_test_competition( 5, '2024' );
         $this->competition_service->expects( self::once() )->method( 'get_competition_by_season' )->with( 5, 2024 )->willReturn( $competition );

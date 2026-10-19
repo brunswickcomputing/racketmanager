@@ -9,6 +9,10 @@
 
 namespace Racketmanager\Domain;
 
+use Racketmanager\Domain\Enums\Invoice_Status;
+use Racketmanager\Domain\Value_Objects\Currency;
+use Racketmanager\Domain\Value_Objects\Money;
+
 /**
  * Class to implement the invoice object
  *
@@ -113,11 +117,17 @@ class Invoice {
      */
     public function __construct( ?object $invoice = null ) {
         if ( ! is_null( $invoice ) ) {
-            if ( isset( $invoice->details ) ) {
+            if ( isset( $invoice->details ) && is_string( $invoice->details ) ) {
                 $invoice->details = json_decode( $invoice->details );
             }
             foreach ( get_object_vars( $invoice ) as $key => $value ) {
-                $this->$key = $value;
+                if ( 'id' === $key || 'invoice_number' === $key || 'billable_id' === $key || 'charge_id' === $key ) {
+                    $this->$key = ( null === $value || '' === $value ) ? null : (int) $value;
+                } elseif ( 'amount' === $key ) {
+                    $this->$key = (string) $value;
+                } else {
+                    $this->$key = $value;
+                }
             }
         }
     }
@@ -153,21 +163,27 @@ class Invoice {
     /**
      * Set the invoice amount
      *
-     * @param string $amount amount value.
+     * @param string|float|int|Money $amount amount value.
      */
-    public function set_amount(string $amount ):  void {
-        $this->amount = $amount;
+    public function set_amount( string|float|int|Money $amount ): void {
+        if ( $amount instanceof Money ) {
+            $this->set_money( $amount );
+            return;
+        }
+        $this->amount = (string) $amount;
     }
     /**
      * Set invoice status
      *
-     * @param string $status status value.
+     * @param string|Invoice_Status $status status value.
      */
-    public function set_status( string $status ): void {
-        if ( 'resend' === $status ) {
-            $status = 'sent';
+    public function set_status( string|Invoice_Status $status ): void {
+        if ( $status instanceof Invoice_Status ) {
+            $this->status = $status->value;
+            return;
         }
-        $this->status = $status;
+        $enum = Invoice_Status::try_from_value( $status );
+        $this->status = $enum ? $enum->value : $status;
     }
     /**
      * Set payment reference status
@@ -226,8 +242,55 @@ class Invoice {
         return $this->status;
     }
 
-    public function get_amount(): null|int {
+    public function get_amount(): null|int|string {
         return $this->amount;
+    }
+
+    public function get_money( ?Currency $currency = null ): ?Money {
+        if ( ! isset( $this->amount ) || '' === (string) $this->amount ) {
+            return null;
+        }
+        return Money::from_string( (string) $this->amount, $currency );
+    }
+
+    public function set_money( Money $money ): void {
+        $this->amount = $money->get_amount_string();
+    }
+
+    public function get_status_enum(): ?Invoice_Status {
+        return Invoice_Status::try_from_value( $this->status ?? 'draft' );
+    }
+
+    public function set_status_enum( Invoice_Status $status ): void {
+        $this->status = $status->value;
+    }
+
+    public function is_paid(): bool {
+        return $this->get_status_enum()?->is_paid() ?? false;
+    }
+
+    public function is_draft(): bool {
+        return $this->get_status_enum()?->is_draft() ?? false;
+    }
+
+    public function is_final(): bool {
+        return $this->get_status_enum()?->is_final() ?? false;
+    }
+
+    public function is_sent(): bool {
+        return $this->get_status_enum()?->is_sent() ?? false;
+    }
+
+    public function is_cancelled(): bool {
+        return $this->get_status_enum()?->is_cancelled() ?? false;
+    }
+
+    public function is_new(): bool {
+        return $this->get_status_enum()?->is_new() ?? false;
+    }
+
+    public function can_be_sent(): bool {
+        return $this->get_status_enum()?->can_be_sent() ?? false;
     }
 
     public function get_payment_reference(): null|string {

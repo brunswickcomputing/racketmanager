@@ -5,6 +5,7 @@ namespace Racketmanager\Presentation\Presenters;
 
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
@@ -30,7 +31,8 @@ readonly class Email_Shortcode_Presenter {
         private Fixture_Link_Service $fixture_link_service,
         private Fixture_Permission_Service $permission_service,
         private string $site_url,
-        private string $site_name
+        private string $site_name,
+        private ?Rubber_Repository_Interface $rubber_repository = null
     ) {
     }
 
@@ -55,7 +57,8 @@ readonly class Email_Shortcode_Presenter {
             $this->competition_service,
             $this->team_service,
             $this->fixture_link_service,
-            $this->permission_service
+            $this->permission_service,
+            rubber_repository: $this->rubber_repository
         );
 
         $teams = [
@@ -74,9 +77,10 @@ readonly class Email_Shortcode_Presenter {
 
         if ( 'tournament' === $competition_type ) {
             $tournament      = $this->tournament_service->get_tournament( $tournament_param );
-            $tournament_link = '<a href="' . $this->site_url . $tournament->link . '">' . $tournament->name . '</a>';
-            $draw_link       = '<a href="' . $this->site_url . $tournament->link . 'draw/' . seo_url( $match->league->event->name ?? '' ) . '/">' . ( $match->league->event->name ?? '' ) . '</a>';
-            $match_link      = $this->site_url . $tournament->link . '/match/' . seo_url( $match->league->title ?? '' ) . '/' . seo_url( $match->teams['home']->title ?? '' ) . '-vs-' . seo_url( $match->teams['away']->title ?? '' ) . '/' . $match->id . '/';
+            $tournament_path = ( new Tournament_Presenter() )->get_link( $tournament );
+            $tournament_link = '<a href="' . $this->site_url . $tournament_path . '">' . $tournament->name . '</a>';
+            $draw_link       = '<a href="' . $this->site_url . $tournament_path . 'draw/' . seo_url( $match->league->event->name ?? '' ) . '/">' . ( $match->league->event->name ?? '' ) . '</a>';
+            $match_link      = $this->site_url . $tournament_path . '/match/' . seo_url( $match->league->title ?? '' ) . '/' . seo_url( $match->teams['home']->title ?? '' ) . '-vs-' . seo_url( $match->teams['away']->title ?? '' ) . '/' . $match->id . '/';
 
             $league_type = $match->league->type ?? '';
             if ( is_string( $league_type ) && strlen( $league_type ) >= 2 && 'D' === substr( $league_type, 1, 1 ) ) {
@@ -174,7 +178,8 @@ readonly class Email_Shortcode_Presenter {
             $this->competition_service,
             $this->team_service,
             $this->fixture_link_service,
-            $this->permission_service
+            $this->permission_service,
+            rubber_repository: $this->rubber_repository
         );
 
         $league    = $args['league'] ?? false;
@@ -214,7 +219,8 @@ readonly class Email_Shortcode_Presenter {
         $match = Fixture_Presentation_Adapter::from_fixture(
             $fixture,
             $this->competition_service,
-            $this->team_service
+            $this->team_service,
+            rubber_repository: $this->rubber_repository
         );
 
         $action_url  = $this->site_url;
@@ -258,7 +264,8 @@ readonly class Email_Shortcode_Presenter {
             $this->competition_service,
             $this->team_service,
             $this->fixture_link_service,
-            $this->permission_service
+            $this->permission_service,
+            rubber_repository: $this->rubber_repository
         );
 
         $action_url  = $this->site_url;
@@ -326,7 +333,8 @@ readonly class Email_Shortcode_Presenter {
         $match = Fixture_Presentation_Adapter::from_fixture(
             $fixture,
             $this->competition_service,
-            $this->team_service
+            $this->team_service,
+            rubber_repository: $this->rubber_repository
         );
 
         $competition_type = $args['competition_type'] ?? '';
@@ -339,7 +347,7 @@ readonly class Email_Shortcode_Presenter {
 
         if ( 'tournament' === $competition_type ) {
             $tournament      = $this->tournament_service->get_tournament( $tournament_param );
-            $tournament_path = $tournament->link ?? '';
+            $tournament_path = ( new Tournament_Presenter() )->get_link( $tournament );
             $draw_link       = '<a href="' . $this->site_url . $tournament_path . 'draw/' . seo_url( $match->league->event->name ?? '' ) . '/">' . ( $match->league->event->name ?? '' ) . '</a>';
             $match_link      = $this->site_url . $tournament_path . 'match/' . seo_url( $match->league->title ?? '' ) . '/' . seo_url( $match->teams['home']->title ?? '' ) . '-vs-' . seo_url( $match->teams['away']->title ?? '' ) . '/' . $match->id . '/';
         } elseif ( 'cup' === $competition_type ) {

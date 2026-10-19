@@ -7,10 +7,12 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Tournament\Queries\Get_Order_Of_Play_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Order_Of_Play_Query;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
+use Racketmanager\Domain\Team;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Gateways\Option\Option_Gateway_Interface;
-use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
+use Racketmanager\Presentation\Presenters\Order_Of_Play_Presenter;
+use Racketmanager\Presentation\View_Models\Order_Of_Play_View_Model;
 use Racketmanager\Repositories\Competition_Repository;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Services\Competition_Service;
@@ -25,6 +27,7 @@ class Get_Order_Of_Play_Handler_Test extends TestCase
     private $competition_service;
     private $team_service;
     private $option_gateway;
+    private $order_of_play_presenter;
     private $handler;
 
     protected function setUp(): void
@@ -41,13 +44,17 @@ class Get_Order_Of_Play_Handler_Test extends TestCase
             }
         );
 
-        $this->handler = new Get_Order_Of_Play_Handler(
-            $this->tournament_service,
-            $this->competition_repository,
+        $this->order_of_play_presenter = new Order_Of_Play_Presenter(
             $this->fixture_repository,
             $this->competition_service,
             $this->team_service,
             $this->option_gateway
+        );
+
+        $this->handler = new Get_Order_Of_Play_Handler(
+            $this->tournament_service,
+            $this->competition_repository,
+            $this->order_of_play_presenter
         );
     }
 
@@ -127,7 +134,117 @@ class Get_Order_Of_Play_Handler_Test extends TestCase
         
         $this->assertFalse($result->is_error());
         $this->assertArrayHasKey('order_of_play', $result->vars);
-        $this->assertContains('10:00', $result->vars['order_of_play']['times']);
-        $this->assertSame('10:00', $result->vars['order_of_play']['match_time']['10:00']['1']->time);
+        $order_of_play = $result->vars['order_of_play'];
+        $this->assertInstanceOf(Order_Of_Play_View_Model::class, $order_of_play);
+        $this->assertContains('10:00', $order_of_play->times);
+        $this->assertSame('10:00', $order_of_play->match_time['10:00']['1']->time);
+    }
+
+    public function test_handle_and_render_templates_with_placeholder_and_empty_slots(): void
+    {
+        $tournament = $this->createStub('Racketmanager\Domain\Tournament');
+        $tournament->method('get_order_of_play')->willReturn([
+            ['court' => 'Court 1', 'fixtures' => ['101', '102']],
+            ['court' => 'Court 2', 'fixtures' => ['103']],
+        ]);
+        $this->tournament_service->method('get_tournament')->willReturn($tournament);
+
+        $fixture1 = $this->createStub(Fixture::class);
+        $fixture1->method('get_league_id')->willReturn(null);
+        $fixture1->method('get_date')->willReturn('2026-10-14 10:00:00');
+        $fixture1->method('get_location')->willReturn('Court 1');
+        $fixture1->method('get_home_team')->willReturn('1_semi_1');
+        $fixture1->method('get_away_team')->willReturn('Westcliff 1');
+
+        $fixture2 = $this->createStub(Fixture::class);
+        $fixture2->method('get_league_id')->willReturn(null);
+        $fixture2->method('get_date')->willReturn('2026-10-14 12:00:00');
+        $fixture2->method('get_location')->willReturn('Court 1');
+        $fixture2->method('get_home_team')->willReturn('Player A');
+        $fixture2->method('get_away_team')->willReturn('Player B');
+
+        $fixture3 = $this->createStub(Fixture::class);
+        $fixture3->method('get_league_id')->willReturn(null);
+        $fixture3->method('get_date')->willReturn('2026-10-14 10:00:00');
+        $fixture3->method('get_location')->willReturn('Court 2');
+        $fixture3->method('get_home_team')->willReturn('Player C');
+        $fixture3->method('get_away_team')->willReturn('Player D');
+
+        $this->fixture_repository->method('find_by_id')->willReturnCallback(function (int $id) use ($fixture1, $fixture2, $fixture3) {
+            return match ($id) {
+                101 => $fixture1,
+                102 => $fixture2,
+                103 => $fixture3,
+                default => null,
+            };
+        });
+
+        $this->team_service->method('derive_team_details')->willReturnCallback(function (string $val) {
+            $team = $this->createStub(Team::class);
+            if ('1_semi_1' === $val) {
+                $team->method('get_name')->willReturn('Winner Semi 1');
+            } else {
+                $team->method('get_name')->willReturn($val);
+            }
+            return new Team_Details_DTO($team);
+        });
+
+        $query = Get_Order_Of_Play_Query::from_atts(['id' => 1]);
+        $result = $this->handler->handle($query);
+
+        $this->assertFalse($result->is_error());
+        $order_of_play = $result->vars['order_of_play'];
+        $this->assertInstanceOf(Order_Of_Play_View_Model::class, $order_of_play);
+
+        $output = $this->render_order_of_play($order_of_play);
+
+        $this->assertStringContainsString('Order of play', $output);
+        $this->assertStringContainsString('Court 1', $output);
+        $this->assertStringContainsString('Court 2', $output);
+        $this->assertStringContainsString('Winner Semi 1', $output);
+        $this->assertStringContainsString('is_pending', $output);
+        $this->assertStringContainsString('Westcliff 1', $output);
+    }
+
+    public function test_handle_and_render_templates_no_order_of_play(): void
+    {
+        $tournament = $this->createStub('Racketmanager\Domain\Tournament');
+        $tournament->method('get_order_of_play')->willReturn([]);
+        $this->tournament_service->method('get_tournament')->willReturn($tournament);
+
+        $query = Get_Order_Of_Play_Query::from_atts(['id' => 1]);
+        $result = $this->handler->handle($query);
+
+        $this->assertFalse($result->is_error());
+        $order_of_play = $result->vars['order_of_play'];
+        $this->assertInstanceOf(Order_Of_Play_View_Model::class, $order_of_play);
+        $this->assertEmpty($order_of_play->courts);
+
+        $output = $this->render_order_of_play($order_of_play);
+
+        $this->assertStringContainsString('No order of play', $output);
+    }
+
+    private function render_order_of_play(Order_Of_Play_View_Model $order_of_play): string
+    {
+        $had_previous_order = array_key_exists('order_of_play', $GLOBALS);
+        $previous_order = $GLOBALS['order_of_play'] ?? null;
+        $buffer_level = ob_get_level();
+        $GLOBALS['order_of_play'] = $order_of_play;
+        ob_start();
+
+        try {
+            include dirname(__DIR__, 5) . '/templates/orderofplay.php';
+            return (string) ob_get_clean();
+        } finally {
+            while (ob_get_level() > $buffer_level) {
+                ob_end_clean();
+            }
+            if ($had_previous_order) {
+                $GLOBALS['order_of_play'] = $previous_order;
+            } else {
+                unset($GLOBALS['order_of_play']);
+            }
+        }
     }
 }

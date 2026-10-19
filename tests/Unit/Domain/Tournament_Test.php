@@ -11,7 +11,6 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\DTO\Competition\Competition_Hydration_DTO;
 use Racketmanager\Domain\Tournament;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Request_DTO;
-use Racketmanager\Domain\View_Models\Tournament_Email_View_Model;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
@@ -26,18 +25,6 @@ final class Tournament_Test extends TestCase {
     use Manages_Wordpress_Globals;
 
     public function test_set_tournament_info_sets_correct_data(): void {
-        global $racketmanager;
-        // Ensure $racketmanager has the expected properties to avoid dynamic property warnings in PHP 8.2+
-        if ( ! isset( $racketmanager ) || ! property_exists( $racketmanager, 'site_url' ) ) {
-            $racketmanager = new class() {
-                public $site_url;
-                public $date_format;
-                public function get_options() { return []; }
-            };
-        }
-        $racketmanager->site_url = 'http://example.com';
-        $racketmanager->date_format = 'Y-m-d';
-
         $data = new stdClass();
         $data->id = 1;
         $data->name = 'Test Tournament';
@@ -48,11 +35,12 @@ final class Tournament_Test extends TestCase {
         $data->date_withdrawal = '2026-12-05';
         $data->season = '2026';
 
-        $tournament = new Tournament( $data, site_url: 'http://example.com', date_format: 'Y-m-d' );
-        $view_model = new Tournament_Email_View_Model($tournament);
+        $tournament = new Tournament( $data );
+        $presenter = new \Racketmanager\Presentation\Presenters\Tournament_Presenter( 'Y-m-d' );
+        $view_model = $presenter->present_dates( $tournament );
 
-        $this->assertEquals('/tournament/test-tournament/', $tournament->link);
-        $this->assertEquals('http://example.com/entry-form/test-tournament-tournament/', $tournament->entry_link);
+        $this->assertEquals('/tournament/test-tournament/', $presenter->get_link( $tournament ));
+        $this->assertEquals('http://example.com/entry-form/test-tournament-tournament/', $presenter->get_entry_link( $tournament, 'http://example.com' ));
         $this->assertEquals('2026-12-31', $view_model->date_display);
         $this->assertEquals('2026-11-30', $view_model->date_closing_display);
         $this->assertEquals('2026-12-05', $view_model->date_withdrawal_display);
@@ -150,6 +138,7 @@ final class Tournament_Test extends TestCase {
         parent::tearDown();
     }
 
+    private array $competitions_by_id = [];
     private ?Competition_Service $competition_service = null;
 
     /**
@@ -159,6 +148,7 @@ final class Tournament_Test extends TestCase {
      * @param Competition[] $competitions Competitions keyed by id.
      */
     private function register_competitions( array $competitions ): void {
+        $this->competitions_by_id = $competitions;
         $this->competition_service = new class( $competitions, $this->service_calls ) extends Competition_Service {
             public function __construct( private array $competitions, private array &$calls ) {}
 
@@ -233,7 +223,12 @@ final class Tournament_Test extends TestCase {
         if ( null !== $information ) {
             $data->information = json_encode( $information );
         }
-        return new Tournament( $data, competition_service: $this->competition_service );
+        $tournament = new Tournament( $data );
+        if ( isset( $this->competitions_by_id[ $competition_id ] ) ) {
+            $tournament->set_competition( $this->competitions_by_id[ $competition_id ] );
+        }
+
+        return $tournament;
     }
 
     public function test_get_allowlist_event_ids_semantics(): void {
@@ -262,7 +257,7 @@ final class Tournament_Test extends TestCase {
         $this->assertSame( [], $tournament->get_allowlist_event_ids( true ) );
     }
 
-    public function test_is_event_allowed_resolves_competition_through_service_once(): void {
+    public function test_is_event_allowed_with_attached_competition(): void {
         $this->register_competitions( [ 10 => $this->create_competition() ] );
         $this->register_events( [ $this->create_event( 101 ), $this->create_event( 102, 'Ladies Doubles' ) ] );
         $tournament = $this->create_tournament( [ 'entry_events' => [ 101 ] ] );
@@ -271,7 +266,6 @@ final class Tournament_Test extends TestCase {
         $this->assertTrue( $tournament->is_event_allowed( 101, false ) );
         $this->assertFalse( $tournament->is_event_allowed( 102, true ) );
         $this->assertFalse( $tournament->is_event_allowed( 102, false ) );
-        $this->assertSame( [ 10 ], $this->service_calls );
     }
 
     public function test_is_event_allowed_entry_closed_but_viewing_open_for_empty_allowlist(): void {
@@ -316,7 +310,7 @@ final class Tournament_Test extends TestCase {
         $this->assertSame( [], $tournament->get_entry_events() );
     }
 
-    public function test_competition_cache_is_not_reused_for_a_different_competition_id(): void {
+    public function test_competition_is_cleared_when_competition_id_changed(): void {
         $this->register_competitions( [ 100 => $this->create_competition( 100 ), 200 => $this->create_competition( 200 ) ] );
         $own_event = $this->create_event( 101, 'Men Doubles', 100 );
         $this->register_events( [ $own_event ] );
@@ -328,8 +322,10 @@ final class Tournament_Test extends TestCase {
 
         $this->assertFalse( $tournament->is_event_allowed( $own_event, true ) );
         $this->assertFalse( $tournament->is_event_allowed( 101, true ) );
+        $this->assertNull( $tournament->get_competition_object() );
+
+        $tournament->set_competition( $this->competitions_by_id[200] );
         $this->assertSame( 200, $tournament->get_competition_object()->id );
-        $this->assertSame( [ 100, 200 ], $this->service_calls );
     }
 
     public function test_competition_cache_is_revalidated_when_competition_id_is_assigned_directly(): void {
@@ -339,7 +335,7 @@ final class Tournament_Test extends TestCase {
 
         $tournament->competition_id = 200;
 
-        $this->assertSame( 200, $tournament->get_competition_object()->id );
+        $this->assertNull( $tournament->get_competition_object() );
     }
 
     public function test_get_entry_events_lists_configured_events_before_any_team_has_entered(): void {
@@ -376,5 +372,230 @@ final class Tournament_Test extends TestCase {
 
         $this->assertSame( [ 5, 7 ], $tournament->get_allowlist_event_ids( true ) );
         $this->assertSame( 'kept', $tournament->information->other );
+    }
+
+    public function test_tournament_windows_return_date_range_value_objects(): void {
+        $data = new stdClass();
+        $data->id = 1;
+        $data->name = 'Summer Championship';
+        $data->date_start = '2026-07-01';
+        $data->date_end = '2026-07-15';
+        $data->date_open = '2026-05-01';
+        $data->date_closing = '2026-06-15';
+        $data->date_withdrawal = '2026-06-20';
+        $data->season = '2026';
+
+        $tournament = new Tournament( $data );
+
+        $tournament_window = $tournament->get_tournament_window();
+        $this->assertInstanceOf( \Racketmanager\Domain\Value_Objects\Date_Range::class, $tournament_window );
+        $this->assertSame( '2026-07-01', $tournament_window->get_start_string() );
+        $this->assertSame( '2026-07-15', $tournament_window->get_end_string() );
+
+        $entry_window = $tournament->get_entry_window();
+        $this->assertInstanceOf( \Racketmanager\Domain\Value_Objects\Date_Range::class, $entry_window );
+        $this->assertSame( '2026-05-01', $entry_window->get_start_string() );
+        $this->assertSame( '2026-06-15', $entry_window->get_end_string() );
+        $this->assertTrue( $entry_window->contains( '2026-05-15' ) );
+
+        $withdrawal_window = $tournament->get_withdrawal_window();
+        $this->assertInstanceOf( \Racketmanager\Domain\Value_Objects\Date_Range::class, $withdrawal_window );
+        $this->assertSame( '2026-05-01', $withdrawal_window->get_start_string() );
+        $this->assertSame( '2026-06-20', $withdrawal_window->get_end_string() );
+    }
+
+    public function test_tournament_windows_handle_null_zero_and_inverted_dates(): void {
+        $data = new stdClass();
+        $data->id = 2;
+        $data->date_start = null;
+        $data->date_end = '0000-00-00';
+        $data->date_open = '';
+        $data->date_closing = 'invalid-date';
+        $data->date_withdrawal = null;
+
+        $tournament = new Tournament( $data );
+
+        $this->assertNull( $tournament->get_tournament_window() );
+        $this->assertNull( $tournament->get_entry_window() );
+        $this->assertNull( $tournament->get_withdrawal_window() );
+        $this->assertFalse( $tournament->is_active() );
+        $this->assertTrue( $tournament->is_complete() ); // HEAD equivalence: '0000-00-00' is treated as elapsed
+
+        // HEAD equivalence: a null/missing end date is normalised to '' and treated as elapsed
+        $data_null = new stdClass();
+        $data_null->date_end = null;
+        $tournament_null = new Tournament( $data_null );
+        $this->assertTrue( $tournament_null->is_complete() );
+        $this->assertSame( 'end', $tournament_null->get_current_phase() );
+
+        // Inverted dates (start > end)
+        $data_inverted = new stdClass();
+        $data_inverted->date_start = '2026-08-01';
+        $data_inverted->date_end = '2026-07-01';
+        $tournament_inverted = new Tournament( $data_inverted );
+        $this->assertNull( $tournament_inverted->get_tournament_window() );
+    }
+
+    public function test_tournament_phase_boundary_transitions(): void {
+        // Build dates around today
+        $today = gmdate( 'Y-m-d' );
+        $yesterday = gmdate( 'Y-m-d', strtotime( '-1 day' ) );
+        $tomorrow = gmdate( 'Y-m-d', strtotime( '+1 day' ) );
+        $past_2 = gmdate( 'Y-m-d', strtotime( '-2 days' ) );
+        $past_10 = gmdate( 'Y-m-d', strtotime( '-10 days' ) );
+        $future_10 = gmdate( 'Y-m-d', strtotime( '+10 days' ) );
+        $future_20 = gmdate( 'Y-m-d', strtotime( '+20 days' ) );
+
+        // 1. Ended phase: today > date_end
+        $t_end = new Tournament( (object) [
+            'date_open' => $past_10,
+            'date_closing' => $past_10,
+            'date_withdrawal' => $past_2,
+            'date_start' => $past_2,
+            'date_end' => $yesterday,
+        ] );
+        $this->assertSame( 'end', $t_end->get_current_phase() );
+        $this->assertTrue( $t_end->is_complete() );
+
+        // 2. Started phase: today >= date_start and today <= date_end
+        $t_start = new Tournament( (object) [
+            'date_open' => $past_10,
+            'date_closing' => $past_10,
+            'date_withdrawal' => $past_2,
+            'date_start' => $today,
+            'date_end' => $future_10,
+        ] );
+        $this->assertSame( 'start', $t_start->get_current_phase() );
+        $this->assertTrue( $t_start->is_started() );
+        $this->assertFalse( $t_start->is_complete() );
+
+        // 3. Withdraw phase: today > date_withdrawal, before date_start
+        $t_withdraw = new Tournament( (object) [
+            'date_open' => $past_10,
+            'date_closing' => $past_10,
+            'date_withdrawal' => $yesterday,
+            'date_start' => $tomorrow,
+            'date_end' => $future_10,
+        ] );
+        $this->assertSame( 'withdraw', $t_withdraw->get_current_phase() );
+        $this->assertTrue( $t_withdraw->is_withdrawal() );
+
+        // 4. Closed phase: today > date_closing, before date_withdrawal
+        $t_close = new Tournament( (object) [
+            'date_open' => $past_10,
+            'date_closing' => $yesterday,
+            'date_withdrawal' => $tomorrow,
+            'date_start' => $future_10,
+            'date_end' => $future_20,
+        ] );
+        $this->assertSame( 'close', $t_close->get_current_phase() );
+        $this->assertTrue( $t_close->is_closed() );
+        $this->assertTrue( $t_close->is_active() );
+
+        // 5. Open phase: today >= date_open and today <= date_closing
+        $t_open = new Tournament( (object) [
+            'date_open' => $today,
+            'date_closing' => $tomorrow,
+            'date_withdrawal' => $future_10,
+            'date_start' => $future_10,
+            'date_end' => $future_20,
+        ] );
+        $this->assertSame( 'open', $t_open->get_current_phase() );
+        $this->assertTrue( $t_open->is_open() );
+        $this->assertFalse( $t_open->is_active() );
+
+        // 6. Before open / unconfigured
+        $t_future = new Tournament( (object) [
+            'date_open' => $tomorrow,
+            'date_closing' => $future_10,
+            'date_end' => $future_20,
+        ] );
+        $this->assertSame( '', $t_future->get_current_phase() );
+        $this->assertFalse( $t_future->is_open() );
+    }
+
+    public function test_tournament_phase_full_head_equivalence_matrix(): void {
+        $today = gmdate( 'Y-m-d' );
+        $yesterday = gmdate( 'Y-m-d', strtotime( '-1 day' ) );
+        $tomorrow = gmdate( 'Y-m-d', strtotime( '+1 day' ) );
+
+        $values = [ null, '', '0000-00-00', $yesterday, $today, $tomorrow ];
+
+        $head_evaluator = function( array $dates ) use ( $today ): array {
+            $date_end = $dates['date_end'] ?? ( $dates['date'] ?? '' );
+            $date_end = $date_end ?? '';
+            $date_start = $dates['date_start'] ?? null;
+            $date_withdrawal = $dates['date_withdrawal'] ?? null;
+            $date_closing = $dates['date_closing'] ?? null;
+            $date_open = $dates['date_open'] ?? null;
+
+            $phase = '';
+            $is_complete = false;
+            $is_started = false;
+            $is_withdrawal = false;
+            $is_closed = false;
+            $is_open = false;
+            $is_active = false;
+
+            if ( $today > $date_end ) {
+                $phase = 'end';
+                $is_complete = true;
+            } else {
+                if ( ! empty( $date_start ) && $today >= $date_start ) {
+                    $phase = 'start';
+                    $is_started = true;
+                } elseif ( ! empty( $date_withdrawal ) && $today > $date_withdrawal ) {
+                    $phase = 'withdraw';
+                    $is_withdrawal = true;
+                } elseif ( ! empty( $date_closing ) && $today > $date_closing ) {
+                    $phase = 'close';
+                    $is_closed = true;
+                } elseif ( ! empty( $date_open ) && $today >= $date_open ) {
+                    $phase = 'open';
+                    $is_open = true;
+                }
+            }
+            if ( isset( $date_closing ) && $date_closing <= $today ) {
+                $is_active = true;
+            }
+
+            return [
+                'phase' => $phase,
+                'is_complete' => $is_complete,
+                'is_started' => $is_started,
+                'is_withdrawal' => $is_withdrawal,
+                'is_closed' => $is_closed,
+                'is_open' => $is_open,
+                'is_active' => $is_active,
+            ];
+        };
+
+        foreach ( $values as $v_end ) {
+            foreach ( $values as $v_start ) {
+                foreach ( $values as $v_with ) {
+                    foreach ( $values as $v_close ) {
+                        foreach ( $values as $v_open ) {
+                            $dates = [
+                                'date_end' => $v_end,
+                                'date_start' => $v_start,
+                                'date_withdrawal' => $v_with,
+                                'date_closing' => $v_close,
+                                'date_open' => $v_open,
+                            ];
+                            $expected = $head_evaluator( $dates );
+                            $tournament = new Tournament( (object) $dates );
+
+                            $this->assertSame( $expected['phase'], $tournament->get_current_phase() );
+                            $this->assertSame( $expected['is_complete'], $tournament->is_complete() );
+                            $this->assertSame( $expected['is_started'], $tournament->is_started() );
+                            $this->assertSame( $expected['is_withdrawal'], $tournament->is_withdrawal() );
+                            $this->assertSame( $expected['is_closed'], $tournament->is_closed() );
+                            $this->assertSame( $expected['is_open'], $tournament->is_open() );
+                            $this->assertSame( $expected['is_active'], $tournament->is_active() );
+                        }
+                    }
+                }
+            }
+        }
     }
 }

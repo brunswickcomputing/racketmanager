@@ -28,13 +28,28 @@ readonly class Tournament_Partner_Request_DTO {
      * @param array $data
      */
     public function __construct( array $data ) {
-        $this->player_id     = isset( $data['playerId'] ) ? intval( $data['playerId'] ) : null;
-        $this->partner_id    = isset( $data['partnerId'] ) ? intval( $data['partnerId'] ) : null;
+        $this->player_id     = self::parse_int_fallback( $data['playerId'] ?? null, $data['player_id'] ?? null );
+        $this->partner_id    = self::parse_int_fallback( $data['partnerId'] ?? null, $data['partner_id'] ?? null );
         $this->modal         = isset( $data['modal'] ) ? sanitize_text_field( wp_unslash( $data['modal'] ) ) : null;
         $this->partner_name  = isset( $data['partner'] ) ? sanitize_text_field( wp_unslash( $data['partner'] ) ) : null;
-        $this->event_id      = isset( $data['eventId'] ) ? intval( $data['eventId'] ) : null;
-        $this->tournament_id = isset( $data['tournament_id'] ) ? intval( $data['tournament_id'] ) : null;
+        $this->event_id      = self::parse_int_fallback( $data['eventId'] ?? null, $data['event_id'] ?? null );
+        $this->tournament_id = self::parse_int_fallback( $data['tournamentId'] ?? null, $data['tournament_id'] ?? null, $data['tournament'] ?? null );
+    }
 
+    /**
+     * Return the integer value of the first non-null and non-empty string argument.
+     *
+     * @param mixed ...$values
+     * @return int|null
+     */
+    private static function parse_int_fallback( mixed ...$values ): ?int {
+        foreach ( $values as $value ) {
+            if ( null !== $value && '' !== $value ) {
+                return intval( $value );
+            }
+        }
+
+        return null;
     }
 
 }

@@ -7,8 +7,10 @@
 
 namespace Racketmanager\Services\Result;
 
+use Racketmanager\Domain\Enums\Fixture_Status;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Scoring\Set_Score;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Repositories\Repository_Provider;
 use stdClass;
 
@@ -18,19 +20,17 @@ use stdClass;
 class Result_Reporting_Service {
 
     /**
-     * Repository Provider
-     *
-     * @var Repository_Provider
-     */
-    private Repository_Provider $repository_provider;
-
-    /**
      * Result_Reporting_Service constructor.
      *
-     * @param Repository_Provider|null $repository_provider The repository provider.
+     * @param Repository_Provider $repository_provider The repository provider.
+     * @param Option_Gateway_Interface $option_gateway The option gateway.
+     * @param string|null $site_name Optional site name override.
      */
-    public function __construct( ?Repository_Provider $repository_provider = null ) {
-        $this->repository_provider = $repository_provider ?? new Repository_Provider();
+    public function __construct(
+        private Repository_Provider $repository_provider,
+        private Option_Gateway_Interface $option_gateway,
+        private ?string $site_name = null
+    ) {
     }
 
     /**
@@ -85,10 +85,16 @@ class Result_Reporting_Service {
      * @return object Initialized result object.
      */
     private function initialize_result_object( object $competition, array $competition_season, string $competition_code, object $event, string $fixture_season ): object {
-        global $racketmanager;
+        $site_name = $this->site_name;
+        if ( null === $site_name ) {
+            $raw_site_name = (string) $this->option_gateway->get_option( 'blogname', '' );
+            $site_name     = function_exists( 'wp_specialchars_decode' )
+                ? wp_specialchars_decode( $raw_site_name, ENT_QUOTES )
+                : htmlspecialchars_decode( $raw_site_name, ENT_QUOTES );
+        }
 
         $result             = new stdClass();
-        $result->tournament = $racketmanager->site_name . ' ' . $competition->name;
+        $result->tournament = trim( $site_name . ' ' . $competition->name );
         $result->code       = $competition_code;
         $result->organiser  = '';
         $result->venue      = '';
@@ -302,7 +308,7 @@ class Result_Reporting_Service {
             $this->populate_player_info( $result_match, $rubber->players, $event, $sides );
 
             $result_match->score      = '';
-            $result_match->score_code = $rubber->get_status() === 3 ? 'Retired' : '';
+            $result_match->score_code = $rubber->get_status() === Fixture_Status::RETIRED->value ? 'Retired' : '';
             $result_match->match_date = mysql2date( 'Y-m-d', $fixture->get_date() );
             $result_match             = $this->report_result_scores( $result_match, $rubber->get_custom()['sets'] ?? [], $winning_player, $losing_player );
             $result->matches[]        = $result_match;

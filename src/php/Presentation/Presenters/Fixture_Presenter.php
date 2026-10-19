@@ -2,6 +2,7 @@
 
 namespace Racketmanager\Presentation\Presenters;
 
+use BackedEnum;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Date_Update_Read_Model;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Details_DTO as Application_Fixture_Details_DTO;
@@ -21,20 +22,38 @@ use Racketmanager\Domain\Enums\Fixture_Reset_Status;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Scoring\Set_Score;
 use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Presentation\View_Models\Team_Match_Row_View_Model;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 
+use function __;
+use function function_exists;
+use function is_numeric;
+use function is_object;
+use function is_string;
+use function mysql2date;
 use function Racketmanager\seo_url;
 
 readonly class Fixture_Presenter {
 
     public function __construct(
         private Fixture_Link_Service $link_service,
-        private Option_Gateway_Interface $option_gateway
+        private Option_Gateway_Interface $option_gateway,
+        private ?Team_Match_Row_Presenter $team_match_row_presenter = null
     ) {
     }
+
+	public function get_date_format(): string {
+		$format = $this->option_gateway->get_option( 'date_format', 'Y-m-d' );
+		return is_string( $format ) && $format !== '' ? $format : 'Y-m-d';
+	}
+
+	public function get_time_format(): string {
+		$format = $this->option_gateway->get_option( 'time_format', 'H:i' );
+		return is_string( $format ) && $format !== '' ? $format : 'H:i';
+	}
 
     public function map_to_status_read_model(
         Fixture $fixture, Fixture_Status_Update_Request $request, int $num_rubbers = 0
@@ -251,12 +270,21 @@ readonly class Fixture_Presenter {
         ];
     }
 
+    public function present_team_match_row( mixed $match, array $options = [] ): Team_Match_Row_View_Model {
+        $options['date_format'] = $options['date_format'] ?? $this->get_date_format();
+        if ( null === $this->team_match_row_presenter ) {
+            throw new \LogicException( 'Fixture_Presenter requires a Team_Match_Row_Presenter to present team match rows.' );
+        }
+        return $this->team_match_row_presenter->present( $match, $options );
+    }
+
     public function map_to_fixture_option_vars(
         Fixture_Details_DTO $dto, Fixture_Option_Request $request, string $title, string $button, string $action
     ): array {
         return array(
             'dto'    => $dto,
             'match'  => $dto->fixture,
+            'vm'     => $this->present_team_match_row( $dto, [ 'show_header' => true, 'allow_user_update' => false ] ),
             'title'  => $title,
             'modal'  => $request->modal,
             'option' => $request->option,
@@ -327,7 +355,7 @@ readonly class Fixture_Presenter {
         return ob_get_clean();
     }
 
-    public function map_to_header_read_model( Application_Fixture_Details_DTO $dto, bool $edit_mode = false, bool $is_shortcode = false ): Fixture_Header_Read_Model {
+    public function map_to_header_read_model( Application_Fixture_Details_DTO|Fixture_Details_DTO $dto, bool $edit_mode = false, bool $is_shortcode = false ): Fixture_Header_Read_Model {
         $fixture = $dto->fixture;
 
         $is_update_allowed = $dto->is_update_allowed ?? (object) [ 'user_can_update' => false, 'match_approval_mode' => false, 'user_type' => '' ];
@@ -403,12 +431,15 @@ readonly class Fixture_Presenter {
         $date_format = (string) $this->option_gateway->get_option( 'date_format', 'Y-m-d' );
         $time_format = (string) $this->option_gateway->get_option( 'time_format', 'H:i' );
 
+        $match_time = (string) mysql2date( $time_format, $fixture->get_date() );
+        $start_time = $fixture->get_start_time();
+
         return new Fixture_Header_Read_Model(
             id: (int) $fixture->get_id(),
             event_name: $event->name,
             event_url: '/' . $comp_type . 's/' . seo_url( $event->name ) . '/' . $fixture->get_season() . '/',
-            league_title: $league->title,
-            league_url: '/' . $comp_type . '/' . seo_url( $league->title ) . '/' . $fixture->get_season() . '/',
+            league_title: ( 'cup' === $comp_type ) ? '' : ( $league->title ?? '' ),
+            league_url: '/' . $comp_type . '/' . seo_url( $league->title ?? '' ) . '/' . $fixture->get_season() . '/',
             season: $fixture->get_season(),
             round_name: $fixture->get_final() ? Util::get_final_name( $fixture->get_final() ) : null,
             match_day: $fixture->get_match_day() ? (int) $fixture->get_match_day() : null,
@@ -417,19 +448,23 @@ readonly class Fixture_Presenter {
             formatted_date: (string) mysql2date( $date_format, $fixture->get_date() ),
             original_date_formatted: $fixture->get_date_original() ? (string) mysql2date( 'j F Y H:i', $fixture->get_date_original() ) : null,
             home_team_name: $home_name,
-            home_team_url: '/' . $comp_type . '/' . seo_url( $league->title ) . '/' . $fixture->get_season() . '/team/' . seo_url( $home_name ) . '/',
+            home_team_url: '/' . $comp_type . '/' . seo_url( $league->title ?? '' ) . '/' . $fixture->get_season() . '/team/' . seo_url( $home_name ) . '/',
             home_team_withdrawn: $home_team_dto->is_withdrawn ?? false,
             away_team_name: $away_name,
-            away_team_url: '/' . $comp_type . '/' . seo_url( $league->title ) . '/' . $fixture->get_season() . '/team/' . seo_url( $away_name ) . '/',
+            away_team_url: '/' . $comp_type . '/' . seo_url( $league->title ?? '' ) . '/' . $fixture->get_season() . '/team/' . seo_url( $away_name ) . '/',
             away_team_withdrawn: $away_team_dto->is_withdrawn ?? false,
+            show_home_away_labels: empty( $fixture->get_host() ),
             is_pending: $fixture->is_pending(),
             score_class: $fixture->is_pending() ? 'is-not-played' : '',
             home_points: sprintf( '%g', $fixture->get_home_points() ),
             away_points: sprintf( '%g', $fixture->get_away_points() ),
-            match_time: (string) mysql2date( $time_format, $fixture->get_date() ),
+            match_time: $match_time,
+            start_time_display: '00:00' === $start_time ? '' : (string) $start_time,
+            pencil_icon_url: RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#pencil-fill',
+            plus_icon_url: RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#plus-lg',
             status_message: $status_message,
             status_description: $status_description,
-            show_menu: $show_menu,
+            show_menu: $is_shortcode ? ( is_user_logged_in() && $show_menu ) : $show_menu,
             allow_amend_score: $allow_amend_score,
             allow_schedule_match: $allow_schedule_match,
             allow_switch_match: $allow_switch_match,
@@ -735,5 +770,4 @@ readonly class Fixture_Presenter {
             'sets' => $sets,
         ];
     }
-
 }

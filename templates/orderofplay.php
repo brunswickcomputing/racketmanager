@@ -7,17 +7,13 @@
 
 namespace Racketmanager;
 
-/** @var array $order_of_play */
-$num_courts = count( $order_of_play['courts'] );
-if ( $num_courts ) {
-    $col_width = floor( 12 / $num_courts );
-} else {
-    $col_width = 12;
-}
-$is_expanded = false;
-if ( 2 === intval( $col_width ) ) {
-    $is_expanded = true;
-}
+use Racketmanager\Presentation\View_Models\Order_Of_Play_View_Model;
+
+/** @var Order_Of_Play_View_Model $order_of_play */
+$col_width   = $order_of_play instanceof Order_Of_Play_View_Model ? $order_of_play->col_width : 12;
+$is_expanded = $order_of_play instanceof Order_Of_Play_View_Model && $order_of_play->is_expanded;
+$times       = $order_of_play instanceof Order_Of_Play_View_Model ? $order_of_play->times : array();
+$courts      = $order_of_play instanceof Order_Of_Play_View_Model ? $order_of_play->courts : array();
 ?>
 <script>
     jQuery(document).ready(function() {
@@ -31,7 +27,7 @@ if ( 2 === intval( $col_width ) ) {
         <div class="module__content">
             <div class="module-container">
                 <?php
-                if ( ! empty( $order_of_play ) ) {
+                if ( ! empty( $courts ) ) {
                     ?>
                     <div id="order-of-play" class="container">
                         <div class="d-none d-md-block">
@@ -43,7 +39,7 @@ if ( 2 === intval( $col_width ) ) {
                                                 <span><?php esc_html_e( 'Time', 'racketmanager' ); ?></span>
                                             </h4>
                                             <?php
-                                            foreach ( $order_of_play['times'] as $time ) {
+                                            foreach ( $times as $time ) {
                                                 ?>
                                                 <div class="match-group__item-wrapper time-display<?php echo empty( $is_expanded ) ? null : ' is-expanded'; ?>" id="<?php echo esc_html( $time ); ?>"><?php echo esc_html( $time ); ?>
                                                 </div>
@@ -56,7 +52,7 @@ if ( 2 === intval( $col_width ) ) {
                                 <div class="col-10 col-md-11">
                                     <div class="row">
                                         <?php
-                                        foreach ( $order_of_play['courts'] as $court => $court_times ) {
+                                        foreach ( $courts as $court => $court_times ) {
                                             ?>
                                             <div class="col-12 col-md-<?php echo esc_attr( $col_width ); ?>" id="<?php echo esc_html( $court ); ?>">
                                                 <h4 class="match-group__header">
@@ -78,7 +74,7 @@ if ( 2 === intval( $col_width ) ) {
                                 <div class="col-2">
                                     <div class="match-group__header"></div>
                                     <?php
-                                    foreach ( $order_of_play['times'] as $time ) {
+                                    foreach ( $times as $time ) {
                                         ?>
                                         <div class="match-group__item-wrapper time-display<?php echo empty( $is_expanded ) ? null : ' is-expanded'; ?>" id="<?php echo esc_html( $time ); ?>"><?php echo esc_html( $time ); ?>
                                         </div>
@@ -102,7 +98,7 @@ if ( 2 === intval( $col_width ) ) {
                                             <div class="row">
                                                 <?php
                                                 $c = 1;
-                                                foreach ( $order_of_play['courts'] as $court => $court_times ) {
+                                                foreach ( $courts as $court => $court_times ) {
                                                     ?>
                                                     <div class="carousel-item <?php echo 1 === $c ? 'active' : ''; ?>">
                                                         <div class="row">

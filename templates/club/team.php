@@ -15,8 +15,8 @@ use Racketmanager\Util\Util_Lookup;
 $match_days   = Util_Lookup::get_match_days();
 $header_level = 1;
 require_once RACKETMANAGER_PATH . 'templates/includes/club-header.php';
-$team  = $club->team;
-$event = $club->event;
+/** @var object $team */
+/** @var object $event */
 ?>
     <div class="module module--card">
         <div class="module__banner">

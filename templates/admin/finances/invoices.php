@@ -8,44 +8,33 @@
 
 namespace Racketmanager;
 
-/** @var string $racketmanager_tab */
-/** @var array  $finance_invoices */
-/** @var int    $club_id */
-/** @var int    $charge_id */
-/** @var string $status */
-/** @var array  $clubs */
-/** @var array  $charges */
-if ( isset( $vm ) && $vm instanceof \Racketmanager\Admin\View_Models\Finances_Invoices_Page_View_Model ) {
-    $finance_invoices  = $vm->invoices;
-    $club_id           = $vm->club_id;
-    $charge_id         = $vm->charge_id;
-    $status            = $vm->status;
-    $clubs             = $vm->clubs;
-    $charges           = $vm->charges;
-    $racketmanager_tab = $vm->racketmanager_tab;
-}
-$invoices = $finance_invoices;
-if ( 'club-invoices' === $racketmanager_tab ) {
-    $billable_type = __( 'Club', 'racketmanager' );
-} else {
-    $billable_type = __( 'Player', 'racketmanager' );
-}
+use Racketmanager\Admin\View_Models\Finances_Invoices_Page_View_Model;
+
+/** @var Finances_Invoices_Page_View_Model $vm */
+$invoices          = $vm->invoices;
+$club_id           = $vm->club_id;
+$charge_id         = $vm->charge_id;
+$status            = $vm->status;
+$clubs             = $vm->clubs;
+$charges           = $vm->charges;
+$racketmanager_tab = $vm->racketmanager_tab;
+$billable_type     = $vm->billable_type;
 ?>
 <div class="container">
     <div class="row gx-3 align-items-center mb-3">
         <form id="invoices-filter" method="get" action="" class="form-control">
             <input type="hidden" name="page" value="racketmanager-finances" />
-            <input type="hidden" name="view" value="<?php echo esc_attr( $racketmanager_tab ) ; ?>" />
-            <input type="hidden" name="tab" value="<?php echo esc_attr( $racketmanager_tab ) ; ?>" />
+            <input type="hidden" name="view" value="<?php echo esc_attr( $racketmanager_tab ); ?>" />
+            <input type="hidden" name="tab" value="<?php echo esc_attr( $racketmanager_tab ); ?>" />
             <div class="row gx-3 align-items-center">
                 <div class="col-12 col-md-4 col-lg-auto mb-3 mb-md-0">
                     <label>
                         <select class="form-select" name="charge" id="charge">
-                            <option value="" <?php selected( '', $club_id ); ?>><?php esc_html_e( 'All charges', 'racketmanager' ); ?></option>
+                            <option value="" <?php selected( '', $club_id ?? '' ); ?>><?php esc_html_e( 'All charges', 'racketmanager' ); ?></option>
                             <?php
                             foreach ( $charges as $charge ) {
                                 ?>
-                                <option value="<?php echo esc_html( $charge->id ); ?>" <?php selected( $charge->id, $charge_id ); ?>><?php echo esc_html( $charge->name ); ?></option>
+                                <option value="<?php echo esc_html( $charge->id ); ?>" <?php selected( $charge->id, $charge_id ?? '' ); ?>><?php echo esc_html( $charge->name ); ?></option>
                                 <?php
                             }
                             ?>
@@ -58,11 +47,11 @@ if ( 'club-invoices' === $racketmanager_tab ) {
                     <div class="col-12 col-md-4 col-lg-auto mb-3 mb-md-0">
                         <label>
                             <select class="form-select" name="club" id="club">
-                                <option value="" <?php selected( '', $club_id ); ?>><?php esc_html_e( 'All clubs', 'racketmanager' ); ?></option>
+                                <option value="" <?php selected( '', $club_id ?? '' ); ?>><?php esc_html_e( 'All clubs', 'racketmanager' ); ?></option>
                                 <?php
                                 foreach ( $clubs as $club ) {
                                     ?>
-                                    <option value="<?php echo esc_html( $club->id ); ?>" <?php selected( $club->id, $club_id ); ?>><?php echo esc_html( $club->shortcode ); ?></option>
+                                    <option value="<?php echo esc_html( $club->id ); ?>" <?php selected( $club->id, $club_id ?? '' ); ?>><?php echo esc_html( $club->shortcode ); ?></option>
                                     <?php
                                 }
                                 ?>
@@ -90,8 +79,7 @@ if ( 'club-invoices' === $racketmanager_tab ) {
     </div>
     <div class="row gx-3 mb-3">
         <?php
-        if ( $invoices ) {
-            $invoices_total = 0;
+        if ( ! empty( $invoices ) ) {
             ?>
             <form id="invoices-action" method="post" action="" class="form-control">
                 <?php wp_nonce_field( 'racketmanager_invoices-bulk', 'racketmanager_nonce' ); ?>
@@ -135,16 +123,15 @@ if ( 'club-invoices' === $racketmanager_tab ) {
                     <tbody>
                         <?php
                         foreach ( $invoices as $invoice ) {
-                            $invoices_total += $invoice->amount;
                             ?>
                             <tr>
                                 <td class="check-column"><label for="invoice-<?php echo esc_html( $invoice->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $invoice->id ); ?>" name="invoice[<?php echo esc_html( $invoice->id ); ?>]" id="invoice-<?php echo esc_html( $invoice->id ); ?>" /></td>
-                                <td class="text-center"><a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=invoice&amp;invoice=<?php echo esc_html( $invoice->id ); ?>"><?php echo esc_html( $invoice->invoice_number ); ?></a></td>
-                                <td class=""><?php echo esc_html( ucfirst( $invoice->charge_name ) ); ?></td>
+                                <td class="text-center"><a href="<?php echo esc_url( $invoice->edit_url ); ?>"><?php echo esc_html( $invoice->invoice_number ); ?></a></td>
+                                <td class=""><?php echo esc_html( $invoice->charge_name ); ?></td>
                                 <td class=""><?php echo esc_html( $invoice->billable_name ); ?></td>
-                                <td class="text-end"><?php the_currency_amount( $invoice->amount ); ?></td>
+                                <td class="text-end"><?php echo esc_html( $invoice->amount_formatted ); ?></td>
                                 <td class="d-none d-lg-table-cell text-center"><?php echo esc_html( $invoice->status ); ?></td>
-                                <td class="d-none d-lg-table-cell text-center"><?php echo esc_html( $invoice->date_due ); ?></td>
+                                <td class="d-none d-lg-table-cell text-center"><?php echo esc_html( $invoice->date_due_formatted ); ?></td>
                             </tr>
                             <?php
                         }
@@ -153,7 +140,7 @@ if ( 'club-invoices' === $racketmanager_tab ) {
                     <tfoot class="table-footer">
                         <tr>
                             <td colspan="4"></td>
-                            <td class="text-end"><?php the_currency_amount( $invoices_total ); ?></td>
+                            <td class="text-end"><?php echo esc_html( $vm->total_amount_formatted ); ?></td>
                         </tr>
                     </tfoot>
                 </table>

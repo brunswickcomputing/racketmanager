@@ -42,10 +42,12 @@ namespace Racketmanager;
                     ?>
                     <div class="tournament-matches">
                         <?php
-                        foreach ( $matches as $no => $match ) {
-                            ?>
-                            <?php require RACKETMANAGER_PATH . 'templates/tournament/match.php'; ?>
-                            <?php
+                        foreach ( $matches as $card ) {
+                            if ( $card instanceof \Racketmanager\Presentation\View_Models\Tournament_Match_Card_View_Model ) {
+                                require RACKETMANAGER_PATH . 'templates/tournament/match.php';
+                            } else {
+                                require RACKETMANAGER_PATH . 'templates/tournament/match-unavailable.php';
+                            }
                         }
                         ?>
                     </div>

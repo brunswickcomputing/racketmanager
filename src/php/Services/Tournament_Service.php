@@ -38,6 +38,7 @@ use Racketmanager\Exceptions\Tournament_Not_Updated_Exception;
 use Racketmanager\Gateways\Mail\Mailer_Interface;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\RacketManager;
+use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Repositories\Interfaces\Charge_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
@@ -65,6 +66,7 @@ class Tournament_Service {
     private Tournament_Entry_Repository_Interface $tournament_entry_repository;
     private Competition_Service $competition_service;
     private Player_Service $player_service;
+    private Player_Stats_Service $player_stats_service;
     private Club_Service $club_service;
     private Finance_Service $finance_service;
     private League_Service $league_service;
@@ -84,6 +86,7 @@ class Tournament_Service {
         Tournament_Entry_Repository_Interface $tournament_entry_repository,
         Competition_Service $competition_service,
         Player_Service $player_service,
+        Player_Stats_Service $player_stats_service,
         Club_Service $club_service,
         Finance_Service $finance_service,
         League_Service $league_service,
@@ -98,6 +101,7 @@ class Tournament_Service {
         $this->tournament_entry_repository = $tournament_entry_repository;
         $this->competition_service         = $competition_service;
         $this->player_service              = $player_service;
+        $this->player_stats_service        = $player_stats_service;
         $this->club_service                = $club_service;
         $this->finance_service             = $finance_service;
         $this->league_service              = $league_service;
@@ -607,7 +611,7 @@ class Tournament_Service {
         }
         sort( $times );
         $headers    = array();
-        $action_url = $this->racketmanager->site_url . $tournament->link . 'order_of_play/';
+        $action_url = $this->racketmanager->site_url . ( new Tournament_Presenter() )->get_link( $tournament ) . 'order_of_play/';
         $from_email = $this->racketmanager->get_confirmation_email( 'tournament' );
         if ( ! $from_email ) {
             throw new Invalid_Argument_Exception( Util_Messages::secretary_email_not_found( 'tournament' ) );
@@ -888,7 +892,7 @@ class Tournament_Service {
             }
         }
 
-        return $player->get_stats( $statistics );
+        return $this->player_stats_service->get_stats( $player, $statistics );
     }
 
     public function get_winners_for_tournament( Tournament $tournament ): array {

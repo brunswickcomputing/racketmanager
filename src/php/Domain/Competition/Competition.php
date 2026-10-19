@@ -1062,22 +1062,7 @@ class Competition {
         }
 
         if ( is_array( $competition_players ) ) {
-            // Stats logic if needed (matching original get_players line 996-1006)
-            if ( ! empty( $args['stats'] ) ) {
-                foreach ( $competition_players as $player ) {
-                    $player->matches      = $player->get_matches( $this, $this->current_season['name'], 'competition' );
-                    $player->stats        = $player->get_stats();
-                    $player->win_pct      = $player->stats['total']->win_pct;
-                    $player->matches_won  = $player->stats['total']->matches_won;
-                    $player->matches_lost = $player->stats['total']->matches_lost;
-                    $player->played       = $player->stats['total']->played;
-                }
-                $won    = array_column( $competition_players, 'matches_won' );
-                $played = array_column( $competition_players, 'played' );
-                array_multisort( $won, SORT_DESC, $played, SORT_ASC, $competition_players );
-            } else {
-                asort( $competition_players );
-            }
+            asort( $competition_players );
             $this->players = $competition_players;
         }
 

@@ -7,9 +7,17 @@
 
 namespace Racketmanager;
 
-global $racketmanager;
-/** @var object $competition */
-/** @var object $overview */
+use Racketmanager\Presentation\View_Models\Competition_Overview_View_Model;
+
+/** @var object|null $competition */
+/** @var object|null $overview */
+/** @var array|null $competition_season */
+/** @var Competition_Overview_View_Model|null $overview_vm */
+
+$vm = $overview_vm ?? null;
+if ( ! $vm instanceof Competition_Overview_View_Model ) {
+    return;
+}
 ?>
     <div class="module module--card">
         <div class="module__banner">
@@ -19,9 +27,7 @@ global $racketmanager;
             <div class="module-container">
                 <div class="container tournament-meta">
                     <ul class="module tournament-meta__info">
-                        <?php
-                        if ( ! empty( $competition_season['venue_name'] ) ) {
-                            ?>
+                        <?php if ( ! empty( $vm->venue_name ) ) : ?>
                             <li class="tournament-meta__info_block">
                                 <div class="text--low-opacity text--small">
                                     <?php esc_html_e( 'Venue', 'racketmanager' ); ?>
@@ -29,14 +35,12 @@ global $racketmanager;
                                 <div class="tournament-meta__title">
                                     <span class="meta-link">
                                         <span class="meta-link__value">
-                                            <?php echo esc_html( $competition_season['venue_name'] ); ?>
+                                            <?php echo esc_html( $vm->venue_name ); ?>
                                         </span>
                                     </span>
                                 </div>
                             </li>
-                            <?php
-                        }
-                        ?>
+                        <?php endif; ?>
                         <li class="tournament-meta__info_block">
                             <div class="text--low-opacity text--small">
                                 <?php esc_html_e( 'Events', 'racketmanager' ); ?>
@@ -44,7 +48,7 @@ global $racketmanager;
                             <div class="tournament-meta__title">
                                 <span class="meta-link">
                                     <span class="meta-link__value">
-                                        <?php echo esc_html( $overview->num_events ); ?>
+                                        <?php echo esc_html( (string) $vm->num_events ); ?>
                                     </span>
                                 </span>
                             </div>
@@ -56,14 +60,12 @@ global $racketmanager;
                             <div class="tournament-meta__title">
                                 <span class="meta-link">
                                     <span class="meta-link__value">
-                                        <?php echo esc_html( $overview->num_teams ); ?>
+                                        <?php echo esc_html( (string) $vm->num_teams ); ?>
                                     </span>
                                 </span>
                             </div>
                         </li>
-                        <?php
-                        if ( ! empty( $overview->num_players ) ) {
-                            ?>
+                        <?php if ( ! empty( $vm->num_players ) ) : ?>
                             <li class="tournament-meta__info_block">
                                 <div class="text--low-opacity text--small">
                                     <?php esc_html_e( 'Players', 'racketmanager' ); ?>
@@ -71,17 +73,13 @@ global $racketmanager;
                                 <div class="tournament-meta__title">
                                     <span class="meta-link">
                                         <span class="meta-link__value">
-                                            <?php echo esc_html( $overview->num_players ); ?>
+                                            <?php echo esc_html( (string) $vm->num_players ); ?>
                                         </span>
                                     </span>
                                 </div>
                             </li>
-                            <?php
-                        }
-                        ?>
-                        <?php
-                        if ( ! empty( $overview->grade ) ) {
-                            ?>
+                        <?php endif; ?>
+                        <?php if ( ! empty( $vm->grade ) ) : ?>
                             <li class="tournament-meta__info_block">
                                 <div class="text--low-opacity text--small">
                                     <?php esc_html_e( 'Grade', 'racketmanager' ); ?>
@@ -89,65 +87,25 @@ global $racketmanager;
                                 <div class="tournament-meta__title">
                                     <span class="meta-link">
                                         <span class="meta-link__value">
-                                            <?php echo esc_html( $overview->grade ); ?>
+                                            <?php echo esc_html( $vm->grade ); ?>
                                         </span>
                                     </span>
                                 </div>
                             </li>
-                            <?php
-                        }
-                        ?>
+                        <?php endif; ?>
                     </ul>
                     <div class="tournament-meta__timeline">
                         <ol class="list--timeline-labelled list--timeline list has-custom-icon">
-                            <?php
-                            if ( ! empty( $competition_season['date_end'] ) ) {
-                                if ( ! empty( $competition_season['date_open'] ) ) {
-                                    ?>
-                                    <li class="list__item is-entry-open <?php echo ( $competition->is_open ) ? 'is-current is-success' : null; ?>">
-                                        <div class="list__value">
-                                            <?php esc_html_e( 'Entry opens', 'racketmanager' ); ?>
-                                        </div>
-                                        <div class="list__meta">
-                                            <?php echo esc_html( mysql2date( $racketmanager->date_format, $competition_season['date_open'] ) ); ?>
-                                        </div>
-                                    </li>
-                                    <?php
-                                }
-                                ?>
-                                <?php
-                                if ( ! empty( $competition_season['date_closing'] ) ) {
-                                    ?>
-                                    <li class="list__item is-entry-closed <?php echo ( $competition->is_closed ) ? 'is-current is-warning' : null; ?>">
-                                        <div class="list__value">
-                                            <?php esc_html_e( 'Closing deadline', 'racketmanager' ); ?>
-                                        </div>
-                                        <div class="list__meta">
-                                            <?php echo esc_html( mysql2date( $racketmanager->date_format, $competition_season['date_closing'] ) ); ?>
-                                        </div>
-                                    </li>
-                                    <?php
-                                }
-                                ?>
-                                <li class="list__item is-started <?php echo $competition->is_started ? ' is-current is-success' : null; ?>">
+                            <?php foreach ( $vm->timeline_items as $item ) : ?>
+                                <li class="list__item <?php echo esc_attr( $item['item_class'] ); ?> <?php echo ! empty( $item['current_class'] ) ? esc_attr( $item['current_class'] ) : ''; ?>">
                                     <div class="list__value">
-                                        <?php esc_html_e( 'Start competition', 'racketmanager' ); ?>
+                                        <?php echo esc_html( $item['label'] ); ?>
                                     </div>
                                     <div class="list__meta">
-                                        <?php echo esc_html( mysql2date( $racketmanager->date_format, $competition_season['date_start'] ) ); ?>
+                                        <?php echo esc_html( $item['date'] ); ?>
                                     </div>
                                 </li>
-                                <li class="list__item is-finished <?php echo $competition->is_complete ? ' is-current is-danger' : null; ?>">
-                                    <div class="list__value">
-                                        <?php esc_html_e( 'End of competition', 'racketmanager' ); ?>
-                                    </div>
-                                    <div class="list__meta">
-                                        <?php echo esc_html( mysql2date( $racketmanager->date_format, $competition_season['date_end'] ) ); ?>
-                                    </div>
-                                </li>
-                                <?php
-                            }
-                            ?>
+                            <?php endforeach; ?>
                         </ol>
                     </div>
                 </div>

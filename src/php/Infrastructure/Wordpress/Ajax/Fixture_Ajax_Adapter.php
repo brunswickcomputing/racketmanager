@@ -22,12 +22,10 @@ use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
-use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
-use Racketmanager\Services\Fixture\Service_Provider as Fixture_Service_Provider;
 use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Services\Validator\Validator_Fixture;
 use Racketmanager\Util\Util_Messages;
@@ -620,39 +618,7 @@ class Fixture_Ajax_Adapter {
             return $this->container->get( 'fixture_result_manager' );
         }
 
-        $c = $this->container;
-
-        $repository_provider = new Repository_Provider(
-            $c->get( 'league_repository' ),
-            $c->get( 'event_repository' ),
-            $c->get( 'competition_repository' ),
-            $c->get( 'league_team_repository' ),
-            $c->get( 'team_repository' ),
-            $c->get( 'player_repository' ),
-            $c->get( 'rubber_repository' ),
-            $c->get( 'results_checker_repository' ),
-            $c->get( 'results_report_repository' ),
-            $c->get( 'fixture_repository' ),
-            $c->get( 'club_repository' )
-        );
-
-        $service_provider = new Fixture_Service_Provider(
-            $c->get( 'result_service' ),
-            $c->get( 'knockout_progression_service' ),
-            $c->get( 'league_service' ),
-            $c->get( 'score_validation_service' ),
-            $c->get( 'player_validation_service' ),
-            $c->get( 'notification_service' ),
-            $c->get( 'registration_service' )
-        );
-
-        $service_provider->set_settings_service( $c->get( 'settings_service' ) );
-        $service_provider->set_fixture_permission_service( $c->get( 'fixture_permission_service' ) );
-        $service_provider->set_fixture_detail_service( $c->get( 'fixture_detail_service' ) );
-        $service_provider->set_team_service( $c->get( 'team_service' ) );
-        $service_provider->set_competition_service( $c->get( 'competition_service' ) );
-
-        return new Fixture_Result_Manager( $service_provider, $repository_provider );
+        throw new \LogicException( 'fixture_result_manager has not been configured in the container.' );
     }
 
     /**

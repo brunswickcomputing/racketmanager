@@ -5,10 +5,12 @@ namespace Racketmanager\Tests\Unit\Public;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Public\Shortcodes;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
+use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use Racketmanager\Tests\Helpers\Creates_Test_Container;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
@@ -16,6 +18,7 @@ use wpdb;
 
 class Shortcodes_Test extends TestCase {
     use Creates_Test_Container;
+    use Creates_Team_Match_Row_Presenter;
     use Manages_Wordpress_Globals;
 
     protected function setUp(): void {
@@ -99,6 +102,10 @@ class Shortcodes_Test extends TestCase {
         global $racketmanager;
 
         $container ??= $this->create_test_container();
+        if ( ! $container->has( 'tournament_presenter' ) ) {
+            $presenter = new Tournament_Presenter( team_match_row_presenter: $this->create_team_match_row_presenter() );
+            $container->set( 'tournament_presenter', fn() => $presenter );
+        }
         $app_mock              = $this->createStub( RacketManager::class );
         $app_mock->container   = $container;
         $app_mock->date_format = 'Y-m-d';

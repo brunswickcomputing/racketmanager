@@ -236,16 +236,6 @@ class Rubber_Test extends TestCase {
         $this->assertSame( '102', (string) $res->loser );
     }
 
-    public function test_is_walkover_and_is_shared(): void {
-        $rubber = $this->create_dummy_rubber();
-        $rubber->status = 2;
-        $this->assertTrue( $rubber->is_walkover() );
-        $this->assertFalse( $rubber->is_shared() );
-
-        $rubber->status = 4;
-        $this->assertFalse( $rubber->is_walkover() );
-        $this->assertTrue( $rubber->is_shared() );
-    }
 
     public function test_calculate_result_with_mixed_type_team_ids(): void {
         $rubber = $this->create_dummy_rubber();
@@ -312,5 +302,23 @@ class Rubber_Test extends TestCase {
         $res3 = $rubber->calculate_result( $points_both_invalid );
         $this->assertSame( -1, $res3->winner );
         $this->assertSame( -1, $res3->loser );
+    }
+
+    public function test_is_walkover_and_is_shared_match_stored_status_codes(): void {
+        $rubber = $this->create_dummy_rubber();
+
+        $rubber->status = 1;
+        $this->assertTrue( $rubber->is_walkover() );
+        $this->assertFalse( $rubber->is_shared() );
+
+        $rubber->status = 3;
+        $this->assertTrue( $rubber->is_shared() );
+        $this->assertFalse( $rubber->is_walkover() );
+
+        foreach ( [ 0, 2, 4, null ] as $status ) {
+            $rubber->status = $status;
+            $this->assertFalse( $rubber->is_walkover() );
+            $this->assertFalse( $rubber->is_shared() );
+        }
     }
 }

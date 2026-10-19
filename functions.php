@@ -302,6 +302,7 @@ function get_league( object|int|string|null $league = null ): ?League {
  * @return Racketmanager_Match|null Racketmanager_Match|null
  */
 function get_match( object|int|null $match = null ): Racketmanager_Match|null {
+    trigger_error( 'get_match() is deprecated since version 2.0.0! Use \Racketmanager\Repositories\Fixture_Repository::find_by_id() instead.', E_USER_DEPRECATED ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error
     if ( empty( $match ) && isset( $GLOBALS['match'] ) ) {
         $match = $GLOBALS['match'];
     }
@@ -331,6 +332,7 @@ function get_match( object|int|null $match = null ): Racketmanager_Match|null {
  * @return Rubber|null Rubber|null
  */
 function get_rubber( object|int|null $rubber = null ): Rubber|null {
+    trigger_error( 'get_rubber() is deprecated since version 2.0.0! Use \Racketmanager\Repositories\Rubber_Repository::find_by_id() instead.', E_USER_DEPRECATED ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error
     if ( empty( $rubber ) && isset( $GLOBALS['rubber'] ) ) {
         $rubber = $GLOBALS['rubber'];
     }
@@ -408,7 +410,8 @@ function get_team( object|int|string|null $team = null ): ?object {
             $team_repo = $racketmanager->container->get( 'team_repository' );
             $_team     = $team_repo->find_by_id( $team );
         } else {
-            $_team = Team::get_instance( $team );
+            $team_repo = new \Racketmanager\Repositories\Team_Repository();
+            $_team     = $team_repo->find_by_id( $team );
         }
     }
 
@@ -442,10 +445,8 @@ function get_player( int|string|object|null $player = null, string $search_term 
     $player_repository = $player_repository ?? new Player_Repository();
     if ( $player instanceof Player ) {
         $_player = $player;
-        $player_repository->wire_player_collaborators( $_player );
     } elseif ( is_object( $player ) ) {
         $_player = Player_Factory::from_object( $player );
-        $player_repository->wire_player_collaborators( $_player );
     } else {
         $_player = $player_repository->find( $player, $search_term );
     }
@@ -562,17 +563,18 @@ function get_message( ?int $message = null ): Message|null {
     return $_message;
 }
 /**
- * Undocumented function
+ * Add player IDs from a legacy match's home and away teams.
  *
  * @param array $match_players array of players.
  * @param object $match match details.
  *
  * @return array
+ * @deprecated 2.0.0 Use Fixture_Detail_Service::collect_fixture_player_ids().
  */
 function match_add_players( array $match_players, object $match ): array {
-    $teams = array( 'home', 'away' );
-    foreach ( $teams as $team ) {
-        $team = $match->teams[ $team ];
+    trigger_error( 'match_add_players() is deprecated since version 2.0.0! Use Fixture_Detail_Service::collect_fixture_player_ids() instead.', E_USER_DEPRECATED ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error
+    foreach ( array( 'home', 'away' ) as $side ) {
+        $team = $match->teams[ $side ];
         if ( ! empty( $team->players ) ) {
             foreach ( $team->players as $player ) {
                 $match_players[] = $player->ID;

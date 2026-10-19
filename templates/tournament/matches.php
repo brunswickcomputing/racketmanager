@@ -7,9 +7,9 @@
 
 namespace Racketmanager;
 
-/** @var object $tournament */
-/** @var string $current_match_date */
-/** @var array  $match_dates */
+use Racketmanager\Presentation\View_Models\Tournament_Matches_View_Model;
+
+/** @var Tournament_Matches_View_Model $vm */
 ?>
 <script>
     jQuery(document).ready(function() {
@@ -23,12 +23,10 @@ namespace Racketmanager;
         <div class="module__content">
             <div class="module-container">
                 <div class="container">
-                    <input type="hidden" id="tournamentId" value="<?php echo esc_attr( $tournament->id ); ?>" />
+                    <input type="hidden" id="tournamentId" value="<?php echo esc_attr( $vm->tournament_id ); ?>" />
                     <?php
-                    if ( count( $match_dates ) > 8 ) {
+                    if ( $vm->has_many_dates ) {
                         require RACKETMANAGER_PATH . 'templates/includes/tournament-date-selection.php';
-                        ?>
-                        <?php
                     } else {
                         ?>
                         <div class="d-block d-md-none">
@@ -36,24 +34,18 @@ namespace Racketmanager;
                         </div>
                         <ul class="d-none d-md-flex nav nav-tabs frontend match-date-list" id="match_date_tabs" role="tablist">
                             <?php
-                            foreach ( $match_dates as $match_date ) {
-                                if ( $current_match_date === $match_date ) {
-                                    $selected_class = 'is_selected';
-                                } else {
-                                    $selected_class = '';
-                                }
-                                $matches_link = '/tournament/' . seo_url( $tournament->name ) . '/matches/' . $match_date . '/';
+                            foreach ( $vm->match_dates as $tab ) {
                                 ?>
-                                <li class="nav-item nav-link <?php echo esc_html( $selected_class ); ?>" role="presentation">
-                                    <a href="<?php echo esc_attr( $matches_link ); ?>" data-value="<?php echo esc_html( $match_date ); ?>" class="nav-link__value tabDataLink" data-type="tournament" data-type-id="<?php echo esc_attr( $tournament->id ); ?>" data-season="" data-link="<?php echo esc_attr( $matches_link ); ?>" data-link-id="<?php echo esc_attr( $match_date ); ?>" data-link-type="matches">
+                                <li class="nav-item nav-link <?php echo esc_attr( $tab->selected_class ); ?>" role="presentation">
+                                    <a href="<?php echo esc_attr( $tab->matches_link ); ?>" data-value="<?php echo esc_attr( $tab->date ); ?>" class="nav-link__value tabDataLink" data-type="tournament" data-type-id="<?php echo esc_attr( $vm->tournament_id ); ?>" data-season="" data-link="<?php echo esc_attr( $tab->matches_link ); ?>" data-link-id="<?php echo esc_attr( $tab->date ); ?>" data-link-type="matches">
                                         <span class="date__weekday">
-                                            <?php echo esc_html( mysql2date( 'D', $match_date ) ); ?>
+                                            <?php echo esc_html( $tab->weekday ); ?>
                                         </span>
                                         <span class="date__day">
-                                            <?php echo esc_html( mysql2date( 'j', $match_date ) ); ?>
+                                            <?php echo esc_html( $tab->day ); ?>
                                         </span>
                                         <span class="date__month">
-                                            <?php echo esc_html( mysql2date( 'M', $match_date ) ); ?>
+                                            <?php echo esc_html( $tab->month ); ?>
                                         </span>
                                     </a>
                                 </li>
@@ -66,24 +58,20 @@ namespace Racketmanager;
                     ?>
                 </div>
                 <?php
-                if ( ! empty( $tournament_matches ) ) {
+                if ( $vm->has_matches ) {
                     ?>
                     <h3 class="header"><?php esc_html_e( 'Match Schedule', 'racketmanager' ); ?></h3>
                     <?php require RACKETMANAGER_PATH . 'templates/includes/nav-pills.php'; ?>
                     <ul class="match-group">
                         <?php
-                        foreach ( $tournament_matches as $key => $fixtures ) {
-                            if ( '99:99' === $key ) {
-                                $key = __( 'Unscheduled', 'racketmanager' );
-                            }
+                        foreach ( $vm->match_groups as $group ) {
                             ?>
                             <li class="match-group__item">
                                 <div class="match-group__wrapper">
-                                    <h5 class="match-group__header"><?php echo esc_html( $key ); ?></h5>
+                                    <h5 class="match-group__header"><?php echo esc_html( $group->header ); ?></h5>
                                     <ul class="match-group">
                                         <?php
-                                        foreach ( $fixtures as $fixture_detail ) {
-                                            $match_display = 'list';
+                                        foreach ( $group->fixtures as $card ) {
                                             require RACKETMANAGER_PATH . 'templates/tournament/match.php';
                                         }
                                         ?>

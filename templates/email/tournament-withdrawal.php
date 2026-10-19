@@ -11,6 +11,7 @@ namespace Racketmanager;
 /** @var object $player */
 /** @var string $tournament_link */
 /** @var object $tournament */
+/** @var \Racketmanager\Presentation\View_Models\Tournament_Date_View_Model $tournament_dates */
 /** @var string $salutation */
 /** @var string $paragraph */
 /** @var string $contact */
@@ -30,7 +31,7 @@ require $paragraph;
 $paragraph_imbed = false;
 if ( $tournament->is_open ) {
     /* translators: $s: tournament closing date */
-    $paragraph_text  = sprintf( __( 'If you would like to enter the tournament again, please do so before the entry deadline of %s.', 'racketmanager' ), $tournament->date_closing_display );
+    $paragraph_text  = sprintf( __( 'If you would like to enter the tournament again, please do so before the entry deadline of %s.', 'racketmanager' ), $tournament_dates->date_closing_display );
     $paragraph_imbed = true;
     require $paragraph;
     $paragraph_imbed  = false;

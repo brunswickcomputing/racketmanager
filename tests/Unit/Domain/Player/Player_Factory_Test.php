@@ -102,4 +102,36 @@ class Player_Factory_Test extends TestCase {
 		$this->assertNull( $player->fullname );
 		$this->assertSame( '', $player->get_fullname() );
 	}
+
+	public function test_player_get_ranking_integration(): void {
+		$player = Player_Factory::from_array( array(
+			'id'  => 10,
+			'wtn' => array(
+				'singles' => '22.5',
+				'doubles' => '-',
+			),
+		) );
+
+		$singles_ranking = $player->get_ranking( 'singles' );
+		$this->assertInstanceOf( \Racketmanager\Domain\Value_Objects\Player_Ranking::class, $singles_ranking );
+		$this->assertTrue( $singles_ranking->has_rating() );
+		$this->assertSame( 22.5, $singles_ranking->get_rating() );
+		$this->assertSame( '22.5', $singles_ranking->get_raw_value() );
+
+		$doubles_ranking = $player->get_ranking( 'doubles' );
+		$this->assertInstanceOf( \Racketmanager\Domain\Value_Objects\Player_Ranking::class, $doubles_ranking );
+		$this->assertFalse( $doubles_ranking->has_rating() );
+		$this->assertNull( $doubles_ranking->get_rating() );
+		$this->assertSame( '-', $doubles_ranking->get_raw_value() );
+
+		// Discipline lookup by single letter 'S'
+		$s_ranking = $player->get_ranking( 'S' );
+		$this->assertTrue( $s_ranking->has_rating() );
+		$this->assertSame( 22.5, $s_ranking->get_rating() );
+
+		// Unset discipline
+		$unknown_ranking = $player->get_ranking( 'mixed' );
+		$this->assertFalse( $unknown_ranking->has_rating() );
+		$this->assertNull( $unknown_ranking->get_rating() );
+	}
 }

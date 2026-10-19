@@ -24,6 +24,7 @@ class Club_Player_DTO {
     public ?string $btm = null;
     public ?int $club_id = null;
     public ?string $club_name = null;
+    public ?string $club_display_name = null;
     public ?string $registration_date = null;
     public ?string $approval_date = null;
     public ?string $removal_date = null;
@@ -102,6 +103,7 @@ class Club_Player_DTO {
         $this->wtn                   = is_array( $player->wtn ) ? $player->wtn : array();
         $this->age                   = $player->age ?? null;
         $this->club_name             = $club->shortcode ?? $club->name ?? '';
+        $this->club_display_name     = $club->name ?? $club->shortcode ?? '';
     }
 
 }

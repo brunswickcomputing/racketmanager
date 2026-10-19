@@ -5,13 +5,15 @@ namespace Racketmanager\Application\Tournament\Queries;
 
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Tournament_Service;
 use function __;
 
 class Get_Tournament_Draws_Handler {
     public function __construct(
-        private readonly Tournament_Service $tournament_service
+        private readonly Tournament_Service $tournament_service,
+        private readonly Tournament_Presenter $tournament_presenter
     ) {}
 
     public function handle( Get_Tournament_Draws_Query $query ): Shortcode_View_Model {
@@ -30,6 +32,11 @@ class Get_Tournament_Draws_Handler {
                 $draw = $this->tournament_service->get_draw_details_for_tournament( $tournament, $query->draw_id );
             } catch ( Event_Not_Found_Exception $e ) {
                 return Shortcode_View_Model::for_error( $e->getMessage() );
+            }
+
+            $raw_fixtures = $draw->get_meta( 'fixtures' ) ?? [];
+            if ( is_array( $raw_fixtures ) ) {
+                $draw->set_meta( 'fixtures', $this->tournament_presenter->present_match_cards( $raw_fixtures, $tournament ) );
             }
 
             return Shortcode_View_Model::for_template(

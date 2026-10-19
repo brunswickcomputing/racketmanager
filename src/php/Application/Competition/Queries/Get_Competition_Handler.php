@@ -12,9 +12,9 @@ use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Settings_Service;
+use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
-use function Racketmanager\seo_url;
-use function Racketmanager\un_seo_url;
+use function __;
 
 /**
  * Query handler for resolving [competition] shortcode data into a view model.
@@ -37,7 +37,7 @@ class Get_Competition_Handler {
         }
 
         if ( is_string( $comp_id ) ) {
-            $comp_id = un_seo_url( $comp_id );
+            $comp_id = Util::un_seo_url( $comp_id );
         }
 
         try {
@@ -82,24 +82,74 @@ class Get_Competition_Handler {
             }
         }
 
-        $tab = Util_Lookup::get_tab();
+        $tab                  = $query->tab ?: ( Util_Lookup::get_tab() ?: 'overview' );
+        $is_singular          = $query->is_singular;
+        $competition_seo_name = Util::seo_url( (string) ( $competition->name ?? '' ) );
+        $post_id              = $query->post_id;
+        $pagename             = $query->pagename ?: $competition_seo_name;
+
+        $menu_options             = [];
+        $menu_options['overview'] = [
+            'name'        => 'overview',
+            'selected'    => 'overview' === $tab,
+            'available'   => true,
+            'description' => __( 'Overview', 'racketmanager' ),
+        ];
+        $menu_options['events']   = [
+            'name'        => 'events',
+            'selected'    => 'events' === $tab,
+            'available'   => true,
+            'description' => __( 'Events', 'racketmanager' ),
+        ];
+        $menu_options['clubs']    = [
+            'name'        => 'clubs',
+            'selected'    => 'clubs' === $tab,
+            'available'   => true,
+            'description' => __( 'Clubs', 'racketmanager' ),
+        ];
+        $menu_options['teams']    = [
+            'name'        => 'teams',
+            'selected'    => 'teams' === $tab,
+            'available'   => true,
+            'description' => __( 'Teams', 'racketmanager' ),
+        ];
+        $menu_options['players']  = [
+            'name'        => 'players',
+            'selected'    => 'players' === $tab,
+            'available'   => true,
+            'description' => __( 'Players', 'racketmanager' ),
+        ];
+        if ( ! empty( $competition->is_cup ) ) {
+            $menu_options['order_of_play'] = [
+                'name'        => 'order_of_play',
+                'selected'    => 'order_of_play' === $tab,
+                'available'   => ! empty( $competition_season['orderofplay'] ),
+                'description' => __( 'Order of play', 'racketmanager' ),
+            ];
+        }
+        $menu_options['winners']  = [
+            'name'        => 'winners',
+            'selected'    => 'winners' === $tab,
+            'available'   => empty( $competition_season['date_end'] ) || gmdate( 'Y-m-d' ) >= $competition_season['date_end'],
+            'description' => __( 'Winners', 'racketmanager' ),
+        ];
 
         $is_logged_in = $this->security_service->is_user_logged_in();
 
         if ( ! empty( $competition->is_open ) && $is_logged_in ) {
             $comp_name  = (string) ( $competition->name ?? '' );
-            $entry_link = '/entry-form/' . seo_url( $comp_name ) . '/' . $season . '/';
+            $entry_link = '/entry-form/' . Util::seo_url( $comp_name ) . '/' . $season . '/';
             $clubs      = $this->club_selection_available( $competition );
             if ( $clubs ) {
                 if ( is_array( $clubs ) ) {
                     if ( 1 === count( $clubs ) ) {
                         $first_club = reset( $clubs );
                         if ( is_object( $first_club ) && isset( $first_club->shortcode ) ) {
-                            $entry_link .= seo_url( (string) $first_club->shortcode ) . '/';
+                            $entry_link .= Util::seo_url( (string) $first_club->shortcode ) . '/';
                         }
                     }
                 } elseif ( is_object( $clubs ) && isset( $clubs->shortcode ) ) {
-                    $entry_link .= seo_url( (string) $clubs->shortcode ) . '/';
+                    $entry_link .= Util::seo_url( (string) $clubs->shortcode ) . '/';
                 }
                 $competition->entry_link = $entry_link;
             }
@@ -112,7 +162,12 @@ class Get_Competition_Handler {
             competition: $competition,
             competition_season: $competition_season,
             tab: $tab,
-            seasons: $seasons
+            seasons: $seasons,
+            menu_options: $menu_options,
+            is_singular: $is_singular,
+            post_id: $post_id,
+            pagename: $pagename,
+            competition_seo_name: $competition_seo_name
         );
     }
 

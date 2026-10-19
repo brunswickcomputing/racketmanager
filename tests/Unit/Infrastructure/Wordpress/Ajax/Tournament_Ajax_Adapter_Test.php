@@ -527,4 +527,163 @@ class Tournament_Ajax_Adapter_Test extends TestCase {
         $this->assertNotNull( $received_args );
         $this->assertSame( '2026', $received_args['season'] );
     }
+
+    public function test_tournament_entry_request_success_with_camel_case_form_payload(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+
+        $tournament = $this->createMock( Tournament::class );
+        $tournament->expects( $this->once() )
+            ->method( 'is_event_allowed' )
+            ->with( 42, true )
+            ->willReturn( true );
+
+        $tournament_service = $this->createMock( Tournament_Service::class );
+        $tournament_service->expects( $this->once() )
+            ->method( 'get_tournament' )
+            ->with( 8 )
+            ->willReturn( $tournament );
+
+        $entry_response = new Tournament_Entry_Response_DTO(
+            200,
+            'Entry successful',
+            'success',
+            '/tournament/8/',
+            false
+        );
+
+        $this->competition_entry_service = $this->createMock( Competition_Entry_Service::class );
+        $this->competition_entry_service->expects( $this->once() )
+            ->method( 'request_tournament_entry' )
+            ->with( $this->callback( static function ( Tournament_Entry_Request_DTO $dto ): bool {
+                return 8 === $dto->tournament_id
+                    && 3 === $dto->player_id
+                    && 2 === $dto->club_id
+                    && '2026' === $dto->season
+                    && [ 42 ] === array_keys( $dto->entries );
+            } ) )
+            ->willReturn( $entry_response );
+
+        $adapter = $this->make_adapter( $tournament_service );
+
+        // Exact camelCase payload serialized from templates/entry/entry-tournament.php
+        $post = [
+            'racketmanager_nonce' => 'valid',
+            'tournamentId'        => 8,
+            'playerId'            => 3,
+            'clubId'              => 2,
+            'season'              => '2026',
+            'event'               => [ 42 ],
+            'eventFee'            => [ 42 => '10.00' ],
+        ];
+
+        $response = $adapter->tournament_entry_request( $post );
+        $this->assertSame( 200, $response->get_status_code() );
+        $content = $response->get_content();
+        $this->assertSame( 'Entry successful', $content[0] );
+        $this->assertSame( 'success', $content[1] );
+        $this->assertFalse( $content[2] );
+        $this->assertSame( '/tournament/8/', $content[3] );
+    }
+
+    public function test_validate_partner_with_camel_case_tournament_id(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+        $post = [
+            'racketmanager_nonce' => 'valid',
+            'modal'               => 'partner-modal',
+            'tournamentId'        => 8,
+            'partnerId'           => 15,
+            'partner'             => 'Jane Doe',
+            'playerId'            => 3,
+            'eventId'             => 4,
+        ];
+        $this->competition_entry_service = $this->createMock( Competition_Entry_Service::class );
+        $this->competition_entry_service->expects( $this->once() )
+            ->method( 'validate_tournament_partner' )
+            ->with( $this->callback( static function ( Tournament_Partner_Request_DTO $dto ): bool {
+                return 8 === $dto->tournament_id
+                    && 3 === $dto->player_id
+                    && 15 === $dto->partner_id
+                    && 4 === $dto->event_id
+                    && 'Jane Doe' === $dto->partner_name
+                    && 'partner-modal' === $dto->modal;
+            } ) )
+            ->willReturn( true );
+        $adapter = $this->make_adapter();
+
+        $response = $adapter->validate_partner( $post );
+        $data     = $response->get_content();
+        $this->assertSame( 200, $response->get_status_code() );
+        $this->assertSame( 'partner-modal', $data[0] );
+        $this->assertSame( 15, $data[1] );
+        $this->assertSame( 'Jane Doe', $data[2] );
+        $this->assertSame( 4, $data[3] );
+    }
+
+    public function test_payment_create_with_camel_case_payload(): void {
+        $post = [
+            'invoiceId'    => 11,
+            'tournamentId' => 8,
+            'playerId'     => 3,
+        ];
+        $this->finance_service = $this->createMock( Finance_Service::class );
+        $this->finance_service->expects( $this->once() )
+            ->method( 'create_tournament_payment_request' )
+            ->with( 8, 3, 11 )
+            ->willReturn( 'pi_test_secret_camel' );
+        $adapter = $this->make_adapter();
+
+        $response = $adapter->tournament_payment_create( $post );
+        $this->assertSame( 200, $response->get_status_code() );
+        $this->assertSame( 'pi_test_secret_camel', $response->get_content() );
+    }
+
+    public function test_confirm_withdrawal_with_camel_case_tournament_id(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+        $post = [
+            'security'     => 'valid',
+            'tournamentId' => 8,
+            'playerId'     => 3,
+        ];
+        $this->competition_entry_service = $this->createMock( Competition_Entry_Service::class );
+        $this->competition_entry_service->expects( $this->once() )
+            ->method( 'confirm_tournament_withdrawal' )
+            ->with( 8, 3 )
+            ->willReturn( 1 );
+        $adapter = $this->make_adapter();
+
+        $response = $adapter->confirm_tournament_withdrawal( $post );
+        $this->assertSame( 200, $response->get_status_code() );
+        $this->assertStringContainsString( 'refund will be issued', $response->get_content() );
+    }
+
+    public function test_team_partner_with_camel_case_tournament_id_resolves_season(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+
+        $tournament = $this->createStub( Tournament::class );
+        $tournament->season = '2026';
+        $tournament_service = $this->createStub( Tournament_Service::class );
+        $tournament_service->method( 'get_tournament' )
+            ->willReturn( $tournament );
+
+        $adapter = $this->make_adapter( $tournament_service );
+
+        $received_args = null;
+        $GLOBALS['racketmanager_event_partner_modal_callback'] = function ( $event_id, $args ) use ( &$received_args ) {
+            $received_args = $args;
+            return 'modal-content';
+        };
+
+        $post = [
+            'security'     => 'ok',
+            'tournamentId' => 8,
+            'eventId'      => 4,
+            'season'       => '2026',
+        ];
+
+        $response = $adapter->team_partner( $post );
+        $this->assertSame( 200, $response->get_status_code() );
+        $this->assertNotNull( $received_args );
+        $this->assertSame( 8, $received_args['tournament_id'] );
+        $this->assertSame( '2026', $received_args['season'] );
+    }
 }

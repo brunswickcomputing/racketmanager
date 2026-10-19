@@ -54,7 +54,9 @@ class Fixture_Maintenance_Service_Integration_Test extends TestCase {
 
         $repository_provider = new Repository_Provider(
             league_repository: $this->league_repository,
-            results_checker_repository: $this->results_checker_repository
+            fixture_repository: $this->createMock(\Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class),
+            results_checker_repository: $this->results_checker_repository,
+            results_report_repository: $this->createMock(\Racketmanager\Repositories\Interfaces\Results_Report_Repository_Interface::class)
         );
 
         $this->service = new Fixture_Maintenance_Service(

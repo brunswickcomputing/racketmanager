@@ -12,12 +12,9 @@ namespace Racketmanager\Domain;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Hydration_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Request_DTO;
-use Racketmanager\Exceptions\Competition_Not_Found_Exception;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
-use Racketmanager\Services\Competition_Service;
+use Racketmanager\Domain\Value_Objects\Date_Range;
 use Racketmanager\Util\Util;
 use stdClass;
-use function Racketmanager\seo_url;
 
 /**
  * Class to implement the Tournament object
@@ -67,23 +64,11 @@ class Tournament {
      */
     public string $date_end = '';
     /**
-     * Date display
-     *
-     * @var string|int|false
-     */
-    public string|int|false $date_display = '';
-    /**
      * Closing Date
      *
      * @var ?string
      */
     public ?string $date_closing = null;
-    /**
-     * Closing Date display
-     *
-     * @var string|false
-     */
-    public string|false $date_closing_display = '';
     /**
      * Date withdrawal variable
      *
@@ -91,35 +76,17 @@ class Tournament {
      */
     public ?string $date_withdrawal = null;
     /**
-     * Date withdrawal display
-     *
-     * @var string|false
-     */
-    public string|false $date_withdrawal_display = '';
-    /**
      * Date open variable
      *
      * @var string|null
      */
     public ?string $date_open = null;
     /**
-     * Date open display variable
-     *
-     * @var string|false
-     */
-    public string|false $date_open_display = '';
-    /**
      * Date start variable
      *
      * @var string|null
      */
     public ?string $date_start = null;
-    /**
-     * Date start display variable
-     *
-     * @var string|false
-     */
-    public string|false $date_start_display = '';
     /**
      * Venue
      *
@@ -211,12 +178,6 @@ class Tournament {
      */
     public bool $is_open = false;
     /**
-     * Link variable
-     *
-     * @var string
-     */
-    public string $link;
-    /**
      * Competition code variable
      *
      * @var string|null
@@ -277,12 +238,6 @@ class Tournament {
      */
     public array $match_dates;
     /**
-     * Entry link.
-     *
-     * @var string
-     */
-    public string $entry_link;
-    /**
      * Information.
      *
      * @var object|null
@@ -291,159 +246,162 @@ class Tournament {
     /** @var array<string, mixed> Storage for non-table data */
     private array $meta = [];
 
-    private ?string $site_url = null;
-    private ?string $date_format = null;
-    private ?Competition_Service $competition_service = null;
-    private ?Option_Gateway_Interface $option_gateway = null;
-
     /**
      * Constructor
      *
-     * @param object|null $tournament Tournament object.
-     * @param Competition_Service|null $competition_service Competition service collaborator.
-     * @param Option_Gateway_Interface|null $option_gateway Option gateway collaborator.
-     * @param string|null $site_url Site base URL.
-     * @param string|null $date_format Date format string.
+     * @param Tournament_Hydration_DTO|object|null $tournament Hydration DTO or raw tournament row.
      */
-    public function __construct(
-        ?object $tournament = null,
-        ?Competition_Service $competition_service = null,
-        ?Option_Gateway_Interface $option_gateway = null,
-        ?string $site_url = null,
-        ?string $date_format = null
-    ) {
-        $this->competition_service = $competition_service;
-        $this->option_gateway       = $option_gateway;
-        $this->site_url            = $site_url;
-        $this->date_format          = $date_format ?? ( $option_gateway ? (string) $option_gateway->get_option( 'date_format', 'Y-m-d' ) : null );
-
+    public function __construct( ?object $tournament = null ) {
         if ( is_null( $tournament ) ) {
             return;
         }
 
-        if ( $tournament instanceof Tournament_Hydration_DTO ) {
-            $tournament = $tournament->to_std_class();
-        }
+        $dto = $tournament instanceof Tournament_Hydration_DTO ? $tournament : Tournament_Hydration_DTO::from_object( $tournament );
 
-        $this->id               = $tournament->id ?? null;
-        $this->name             = $tournament->name ?? '';
-        $this->competition_id   = $tournament->competition_id ?? null;
-        $this->season           = $tournament->season ?? null;
-        $this->competition_code = $tournament->competition_code ?? null;
-        $this->grade            = $tournament->grade ?? null;
-        $this->date_end         = $tournament->date_end ?? ( $tournament->date ?? '' );
-        $this->date_closing     = $tournament->date_closing ?? null;
-        $this->date_start       = $tournament->date_start ?? null;
-        $this->date_open        = $tournament->date_open ?? null;
-        $this->date_withdrawal  = $tournament->date_withdrawal ?? null;
-        $this->venue            = $tournament->venue ?? null;
-        $this->num_entries      = $tournament->num_entries ?? null;
-        if ( isset( $tournament->information ) ) {
-            $this->information = is_string( $tournament->information ) ? json_decode( $tournament->information ) : ( is_array( $tournament->information ) ? (object) $tournament->information : $tournament->information );
-        } else {
-            $this->information = null;
-        }
-        $order_of_play          = $tournament->order_of_play ?? ( $tournament->orderofplay ?? null );
-        $this->order_of_play    = is_array( $order_of_play ) ? $order_of_play : ( is_string( $order_of_play ) && ( str_starts_with( $order_of_play, 'a:' ) || str_starts_with( $order_of_play, 'O:' ) ) ? (array) @unserialize( $order_of_play ) : (array) $order_of_play );
-        $this->time_increment   = $tournament->time_increment ?? ( $tournament->timeincrement ?? null );
-        $this->num_courts       = $tournament->num_courts ?? ( $tournament->numcourts ?? null );
-        $this->start_time       = $tournament->start_time ?? ( $tournament->starttime ?? null );
+        $this->id               = $dto->id;
+        $this->name             = $dto->name;
+        $this->competition_id   = $dto->competition_id;
+        $this->season           = $dto->season;
+        $this->competition_code = $dto->competition_code;
+        $this->grade            = $dto->grade;
+        $this->date_end         = $dto->date_end;
+        $this->date_closing     = $dto->date_closing;
+        $this->date_start       = $dto->date_start;
+        $this->date_open        = $dto->date_open;
+        $this->date_withdrawal  = $dto->date_withdrawal;
+        $this->venue            = $dto->venue;
+        $this->num_entries      = $dto->num_entries;
+        $this->information      = $dto->information;
+        $order_of_play          = $dto->order_of_play;
+        $this->order_of_play    = is_array( $order_of_play ) ? $order_of_play : ( null === $order_of_play ? array() : (array) $order_of_play );
+        $this->time_increment   = $dto->time_increment;
+        $this->num_courts       = $dto->num_courts;
+        $this->start_time       = $dto->start_time;
         $this->set_tournament_info();
     }
 
-    public function set_competition_service( Competition_Service $competition_service ): void {
-        $this->competition_service = $competition_service;
-    }
-
-    public function get_competition_service(): ?Competition_Service {
-        return $this->competition_service;
-    }
-
-    public function set_option_gateway( Option_Gateway_Interface $option_gateway ): void {
-        $this->option_gateway = $option_gateway;
-        $this->date_format    = (string) $option_gateway->get_option( 'date_format', 'Y-m-d' );
-        $this->set_tournament_display_dates();
-    }
-
-    public function get_option_gateway(): ?Option_Gateway_Interface {
-        return $this->option_gateway;
-    }
-
-    public function set_site_url( string $site_url ): void {
-        $this->site_url = $site_url;
-        $this->set_tournament_links();
-    }
-
-    public function get_site_url(): ?string {
-        return $this->site_url;
-    }
-
-    public function set_date_format( string $date_format ): void {
-        $this->date_format = $date_format;
-        $this->set_tournament_display_dates();
-    }
-
-    public function get_date_format(): ?string {
-        return $this->date_format;
-    }
-
     public function set_tournament_info(): void {
-        $this->set_tournament_links();
-        $this->set_tournament_display_dates();
         $this->set_tournament_phase();
         $this->set_tournament_finals_config();
     }
 
-    private function set_tournament_links(): void {
-        $site_url         = $this->site_url ?? '';
-        $this->link       = '/tournament/' . seo_url( $this->name ) . '/';
-        $this->entry_link = $site_url . '/entry-form/' . seo_url( $this->name ) . '-tournament/';
-    }
+    private function set_tournament_phase(): void {
+        $today_str = gmdate( 'Y-m-d' );
+        $today_dt  = new \DateTimeImmutable( $today_str . ' 00:00:00', new \DateTimeZone( 'UTC' ) );
 
-    private function set_tournament_display_dates(): void {
-        $date_format = $this->date_format ?? 'Y-m-d';
+        $this->is_complete   = false;
+        $this->is_started    = false;
+        $this->is_withdrawal = false;
+        $this->is_closed     = false;
+        $this->is_open       = false;
+        $this->is_active     = false;
 
-        $format_date = static function ( ?string $date, string $empty_fallback ) use ( $date_format ): string {
-            if ( empty( $date ) || '0000-00-00' === $date ) {
-                return $empty_fallback;
+        $check_elapsed = function( ?string $date, bool $inclusive = false ) use ( $today_dt, $today_str ): bool {
+            if ( empty( $date ) ) {
+                return false;
             }
-            try {
-                $dt = new \DateTimeImmutable( $date );
-                return $dt->format( $date_format );
-            } catch ( \Exception ) {
-                return $empty_fallback;
+            $dt = Date_Range::try_parse_date( $date );
+            if ( null !== $dt ) {
+                return $inclusive ? ( $dt <= $today_dt ) : ( $dt < $today_dt );
             }
+            return $inclusive ? ( $today_str >= $date ) : ( $today_str > $date );
         };
 
-        $this->date_display            = empty( $this->date_end ) || '0000-00-00' === $this->date_end ? 'TBC' : $format_date( $this->date_end, 'TBC' );
-        $this->date_closing_display    = $format_date( $this->date_closing, 'N/A' );
-        $this->date_withdrawal_display = $format_date( $this->date_withdrawal, 'N/A' );
-        $this->date_open_display       = $format_date( $this->date_open, 'N/A' );
-        $this->date_start_display      = $format_date( $this->date_start, 'N/A' );
-    }
+        $tournament_window = $this->get_tournament_window();
+        $is_end_elapsed    = ( null !== $tournament_window )
+            ? $tournament_window->is_past( $today_dt )
+            : $this->is_end_date_elapsed( $today_str, $today_dt );
 
-    private function set_tournament_phase(): void {
-        $today = gmdate( 'Y-m-d' );
-        if ( $today > $this->date_end ) {
+        if ( $is_end_elapsed ) {
             $this->current_phase = 'end';
             $this->is_complete   = true;
         } else {
             $this->current_phase = '';
-            if ( ! empty( $this->date_start ) && $today >= $this->date_start ) {
+            if ( $check_elapsed( $this->date_start, true ) ) {
                 $this->current_phase = 'start';
                 $this->is_started    = true;
-            } elseif ( ! empty( $this->date_withdrawal ) && $today > $this->date_withdrawal ) {
+            } elseif ( $check_elapsed( $this->date_withdrawal, false ) ) {
                 $this->current_phase = 'withdraw';
                 $this->is_withdrawal = true;
-            } elseif ( ! empty( $this->date_closing ) && $today > $this->date_closing ) {
+            } elseif ( $check_elapsed( $this->date_closing, false ) ) {
                 $this->current_phase = 'close';
                 $this->is_closed     = true;
-            } elseif ( ! empty( $this->date_open ) && $today >= $this->date_open ) {
+            } elseif ( $check_elapsed( $this->date_open, true ) ) {
                 $this->current_phase = 'open';
                 $this->is_open       = true;
             }
         }
-        $this->is_active = ( isset( $this->date_closing ) && $this->date_closing <= $today );
+
+        if ( isset( $this->date_closing ) ) {
+            $closing_dt = Date_Range::try_parse_date( $this->date_closing );
+            if ( null !== $closing_dt ) {
+                $this->is_active = ( $closing_dt <= $today_dt );
+            } else {
+                $this->is_active = ( $this->date_closing <= $today_str );
+            }
+        }
+    }
+
+    /**
+     * Legacy end-date check, preserved from the original behaviour: a missing/empty/non-standard end date
+     * is compared as a raw string (so an empty end date counts as elapsed).
+     */
+    private function is_end_date_elapsed( string $today_str, \DateTimeImmutable $today_dt ): bool {
+        $end    = (string) $this->date_end;
+        $end_dt = Date_Range::try_parse_date( $end );
+        if ( null !== $end_dt ) {
+            return $end_dt < $today_dt;
+        }
+        return $today_str > $end;
+    }
+
+    /**
+     * Get the tournament match play window as a Date_Range Value Object.
+     */
+    public function get_tournament_window(): ?Date_Range {
+        return Date_Range::try_create( $this->date_start, $this->date_end );
+    }
+
+    /**
+     * Get the tournament entry registration window as a Date_Range Value Object.
+     */
+    public function get_entry_window(): ?Date_Range {
+        return Date_Range::try_create( $this->date_open, $this->date_closing );
+    }
+
+    /**
+     * Get the tournament withdrawal window as a Date_Range Value Object.
+     */
+    public function get_withdrawal_window(): ?Date_Range {
+        return Date_Range::try_create( $this->date_open, $this->date_withdrawal );
+    }
+
+    public function is_active(): bool {
+        return $this->is_active;
+    }
+
+    public function is_complete(): bool {
+        return $this->is_complete;
+    }
+
+    public function is_started(): bool {
+        return $this->is_started;
+    }
+
+    public function is_open(): bool {
+        return $this->is_open;
+    }
+
+    public function is_closed(): bool {
+        return $this->is_closed;
+    }
+
+    public function is_withdrawal(): bool {
+        return $this->is_withdrawal;
+    }
+
+    public function get_current_phase(): string {
+        return $this->current_phase;
     }
 
     private function set_tournament_finals_config(): void {
@@ -602,19 +560,16 @@ class Tournament {
 
     public function __serialize(): array {
         $data = get_object_vars( $this );
-        unset(
-            $data['competition_service'],
-            $data['option_gateway']
-        );
+        unset( $data['competition'] );
         return $data;
     }
 
     public function __unserialize( array $data ): void {
         foreach ( $data as $key => $value ) {
-            $this->$key = $value;
+            if ( property_exists( $this, $key ) ) {
+                $this->$key = $value;
+            }
         }
-        $this->competition_service = null;
-        $this->option_gateway       = null;
     }
 
     /**
@@ -630,17 +585,28 @@ class Tournament {
             if ( (int) $this->competition->id === (int) $this->competition_id ) {
                 return $this->competition;
             }
-            $this->competition = null;
-        }
-        if ( $this->competition_service ) {
-            try {
-                $this->competition = $this->competition_service->get_by_id( (int) $this->competition_id );
-            } catch ( Competition_Not_Found_Exception ) {
-                return null;
-            }
-            return $this->competition;
+            return null;
         }
         return null;
+    }
+
+    /**
+     * Set associated Competition entity.
+     *
+     * @param Competition|null $competition
+     * @return void
+     */
+    public function set_competition( ?Competition $competition ): void {
+        $this->competition = $competition;
+    }
+
+    /**
+     * Get associated Competition entity.
+     *
+     * @return Competition|null
+     */
+    public function get_competition(): ?Competition {
+        return $this->get_competition_object();
     }
 
     /**

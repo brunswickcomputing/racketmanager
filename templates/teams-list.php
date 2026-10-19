@@ -6,7 +6,7 @@
  *
  * The following variables are usable:
  *  $league league object
- *  $teams: all teams of league
+ *  $team_rows: precomputed team row view models
  *
  * You can check the content of a variable when you insert the tag <?php var_dump($variable) ?>
  */
@@ -15,15 +15,8 @@ namespace Racketmanager;
 
 /** @var string $curr_season */
 /** @var object $object */
-if ( ! empty( $event ) ) {
-    $object           = $event;
-    $competition_type = $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
-    $item_link        = '/' . $competition_type . '/' . seo_url( $event->name ) . '/' . $curr_season;
-} elseif ( ! empty( $league ) ) {
-    $object           = $league;
-    $competition_type = $league->event->competition->type instanceof \BackedEnum ? $league->event->competition->type->value : (string) ( $league->event->competition->type ?? '' );
-    $item_link        = '/' . $competition_type . '/' . seo_url( $league->title ) . '/' . $league->current_season['name'];
-}
+$object = $league ?? ( $event ?? ( $object ?? null ) );
+
 if ( empty( $object->team ) ) {
     ?>
     <div class="module module--card">
@@ -33,12 +26,12 @@ if ( empty( $object->team ) ) {
         <div class="module__content">
             <div class="module-container">
                 <?php
-                if ( $object->teams ) {
-                    $teams = $object->teams;
+                $rows = $team_rows ?? [];
+                if ( ! empty( $rows ) ) {
                     ?>
                     <ol class="list list--bordered">
                         <?php
-                        foreach ( $teams as $team ) {
+                        foreach ( $rows as $team ) {
                             ?>
                             <li class="list__item">
                                 <?php require RACKETMANAGER_PATH . 'templates/includes/team.php'; ?>

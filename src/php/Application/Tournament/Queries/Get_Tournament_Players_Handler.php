@@ -6,13 +6,16 @@ namespace Racketmanager\Application\Tournament\Queries;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Entry_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Tournament_Service;
 use function __;
+use function is_array;
 
 class Get_Tournament_Players_Handler {
     public function __construct(
-        private readonly Tournament_Service $tournament_service
+        private readonly Tournament_Service $tournament_service,
+        private readonly Tournament_Presenter $tournament_presenter
     ) {}
 
     public function handle( Get_Tournament_Players_Query $query ): Shortcode_View_Model {
@@ -31,6 +34,14 @@ class Get_Tournament_Players_Handler {
                 $tournament_player = $this->tournament_service->get_player_details_for_tournament( $tournament, $query->player_id );
             } catch ( Player_Not_Found_Exception|Tournament_Entry_Not_Found_Exception $e ) {
                 return Shortcode_View_Model::for_error( $e->getMessage() );
+            }
+
+            if ( ! empty( $tournament_player->matches ) && is_array( $tournament_player->matches ) ) {
+                $tournament_player->matches = $this->tournament_presenter->present_match_cards(
+                    $tournament_player->matches,
+                    $tournament,
+                    $tournament_player
+                );
             }
 
             return Shortcode_View_Model::for_template(

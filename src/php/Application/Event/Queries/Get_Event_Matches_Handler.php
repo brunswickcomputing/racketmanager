@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Event\Queries;
 
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
+use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\League_Service;
@@ -16,6 +17,7 @@ use function method_exists;
 class Get_Event_Matches_Handler {
     public function __construct(
         private readonly Competition_Service $competition_service,
+        private readonly Tournament_Presenter $tournament_presenter,
         private readonly ?League_Service $league_service = null
     ) {}
 
@@ -73,7 +75,11 @@ class Get_Event_Matches_Handler {
                         ],
                     ] ) : [];
                     if ( count( $matches ) ) {
-                        $final['matches'] = $matches;
+                        $final['matches'] = $this->tournament_presenter->present_match_list(
+                            $matches,
+                            $this->tournament_presenter->is_tournament_competition( $event->competition ?? null ),
+                            [ 'show_header' => false ]
+                        );
                         $finals[ $f ]     = (object) $final;
                     } else {
                         unset( $finals[ $f ] );

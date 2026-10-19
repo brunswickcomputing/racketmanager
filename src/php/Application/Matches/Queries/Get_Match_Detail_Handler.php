@@ -24,16 +24,6 @@ class Get_Match_Detail_Handler {
             return Match_Detail_Result::error( __( 'Match id not found', 'racketmanager' ) );
         }
 
-        $details = $this->fixture_detail_service->get_fixture_with_details( $query->match_id );
-        if ( ! $details ) {
-            return Match_Detail_Result::error( __( 'Match not found', 'racketmanager' ) );
-        }
-
-        $match = $details->fixture;
-        $final = $match->get_final();
-        $round = null === $final ? '' : (string) $final;
-        $type  = null === $final ? 'league' : 'tournament';
-
         $player      = null;
         $rubber_for  = null;
         if ( $query->player_id ) {
@@ -45,7 +35,15 @@ class Get_Match_Detail_Handler {
             }
         }
 
-        $match->rubbers = $match->get_rubbers( $rubber_for );
+        $details = $this->fixture_detail_service->get_fixture_with_details( $query->match_id, false, $rubber_for ? (int) $rubber_for : null );
+        if ( ! $details ) {
+            return Match_Detail_Result::error( __( 'Match not found', 'racketmanager' ) );
+        }
+
+        $match = $details->fixture;
+        $final = $match->get_final();
+        $round = null === $final ? '' : (string) $final;
+        $type  = null === $final ? 'league' : 'tournament';
 
         $template = $query->template;
         if ( ! empty( $details->league->num_rubbers ) ) {

@@ -92,4 +92,36 @@ class Event_Repository_Sql_Test extends TestCase {
 		$this->assertStringContainsString( 'wp_racketmanager_leagues', $sql );
 		$this->assertStringNotContainsString( 'FROM wp_racketmanager ', $sql );
 	}
+
+	public function test_find_all_builds_expected_sql_with_filters(): void {
+		$this->db->get_results_return = array();
+		$this->repository->find_all( array(
+			'name'             => 'Premier',
+			'competition_type' => 'league',
+			'entry_type'       => 'team',
+			'reverse_rubbers'  => true,
+		) );
+
+		$sql = $this->db->last_sql();
+		$this->assertStringContainsString( 'wp_racketmanager_events', $sql );
+		$this->assertStringContainsString( '`name` like', $sql );
+		$this->assertStringContainsString( 'racketmanager_competitions', $sql );
+		$this->assertStringContainsString( "'league', 'cup'", $sql );
+	}
+
+	public function test_count_by_event_season_sql_no_rubbers_join_and_completed_predicate(): void {
+		$this->db->get_var_return = 5;
+		$count = $this->repository->count_by_event_season( 7, '2026', false );
+
+		$this->assertSame( 5, $count );
+		$sql = $this->db->last_sql();
+		$this->assertStringContainsString( 'SELECT COUNT( distinct m.id ) FROM wp_racketmanager_matches AS m, wp_racketmanager_leagues AS l', $sql );
+		$this->assertStringNotContainsString( 'wp_racketmanager_rubbers', $sql );
+		$this->assertStringNotContainsString( 'home_points', $sql );
+
+		$this->repository->count_by_event_season( 7, '2026', true );
+		$sql_completed = $this->db->last_sql();
+		$this->assertStringContainsString( 'AND (m.`home_points` != \'\' OR m.`away_points` != \'\')', $sql_completed );
+		$this->assertStringNotContainsString( 'wp_racketmanager_rubbers', $sql_completed );
+	}
 }

@@ -29,6 +29,7 @@ use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\League_Service;
+use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Tournament_Service;
 
@@ -75,6 +76,7 @@ final class Tournament_Service_Draw_View_Model_Test extends TestCase {
             tournament_entry_repository: $this->createStub( Tournament_Entry_Repository_Interface::class ),
             competition_service: $competition_service,
             player_service: $this->createStub( Player_Service::class ),
+            player_stats_service: $this->createStub( Player_Stats_Service::class ),
             club_service: $this->createStub( Club_Service::class ),
             finance_service: $this->createStub( Finance_Service::class ),
             league_service: $league_service,

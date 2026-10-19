@@ -8,7 +8,6 @@
 namespace Racketmanager;
 
 use Racketmanager\Domain\Season;
-use Racketmanager\Util\Util_Lookup;
 
 /** @var object $charge */
 /** @var string $form_title */
@@ -38,7 +37,6 @@ if ( isset( $errors ) && $errors instanceof \Racketmanager\Admin\View_Models\Err
         $validator->err_msgs[] = $err_msg;
     }
 }
-global $racketmanager;
 $is_invalid = false;
 $msg        = null;
 ?>
@@ -256,14 +254,14 @@ $msg        = null;
                         <div class="row mt-3">
                             <div class="col-5"><?php echo esc_html( $club_charge->name ); ?></div>
                             <div class="col-2"><?php echo esc_html( $club_charge->num_teams ); ?></div>
-                            <div class="col-2"><?php the_currency_amount( $club_charge->fee ); ?></div>
+                            <div class="col-2"><?php echo esc_html( $club_charge->fee_formatted ); ?></div>
                             <?php
                             foreach ( $club_charge->events as $event ) {
                                 ?>
                                 <div class="col-2"></div>
-                                <div class="col-3"><?php echo esc_html( Util_Lookup::get_event_type( $event->type ) ); ?></div>
+                                <div class="col-3"><?php echo esc_html( $event->type_name ); ?></div>
                                 <div class="col-2"><?php echo esc_html( $event->count ); ?></div>
-                                <div class="col-2"><?php the_currency_amount( $event->fee ); ?></div>
+                                <div class="col-2"><?php echo esc_html( $event->fee_formatted ); ?></div>
                                 <div class="col-3"></div>
                                 <?php
                             }

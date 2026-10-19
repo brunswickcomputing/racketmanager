@@ -11,6 +11,7 @@ namespace Racketmanager;
 use NumberFormatter;
 use Racketmanager\Infrastructure\Wordpress\Export\Export_Delivery_Adapter;
 use Racketmanager\Domain\Message;
+use Racketmanager\Repositories\Rubber_Repository;
 use Racketmanager\Rest\Rest_Routes;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
@@ -1921,9 +1922,11 @@ class RacketManager {
         }
         foreach ( $matches as $i => $match ) {
             $fixture_repo = isset( $this->container ) && $this->container->has( 'fixture_repository' ) ? $this->container->get( 'fixture_repository' ) : null;
-            $match        = $fixture_repo ? $fixture_repo->find_by_id( (int) ( is_object( $match ) ? $match->id : $match ) ) : null;
-            if ( $player ) {
-                $match->rubbers = $match?->get_rubbers( $player );
+            $match_id     = (int) ( is_object( $match ) ? $match->id : $match );
+            $match        = $fixture_repo ? $fixture_repo->find_by_id( $match_id ) : null;
+            if ( $player && $match ) {
+                $rubber_repo = isset( $this->container ) && $this->container->has( 'rubber_repository' ) ? $this->container->get( 'rubber_repository' ) : new Rubber_Repository();
+                $match->set_rubbers( $rubber_repo->find_by_fixture_id( (int) $match->get_id(), (int) $player ) );
             }
             $matches[ $i ] = $match;
         }

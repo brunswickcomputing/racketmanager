@@ -24,73 +24,24 @@ $event   = $fixture_details->event;
 $competition = $fixture_details->competition;
 $home_team = $fixture_details->home_team;
 $away_team = $fixture_details->away_team;
-global $racketmanager;
-$tournament_link    = empty( $tournament ) ? null : '/tournament/' . seo_url( $tournament->name ) . '/';
-$winner             = null;
-$winner_set         = null;
-$loser              = null;
-$is_tie             = false;
-$user_can_update    = $is_update_allowed->user_can_update;
-$tournament_head    = empty( $tournament ) ? null : $tournament->name . ' ';
-$tournament_head    .= __( 'Tournament', 'racketmanager' );
-$player_team        = null;
-$player_team_status = null;
-$match_editable     = false;
-$is_edit_mode       = $is_edit_mode ?? false;
-if ( $user_can_update ) {
-    $match_editable = 'is-editable';
-}
-$allow_schedule_match     = false;
-$allow_reset_match_result = false;
-$show_menu                = false;
-$image = match ( $competition->get_type() ) {
-    'league'     => 'assets/icons/bootstrap-icons.svg#table',
-    'cup'        => 'assets/icons/bootstrap-icons.svg#trophy-fill',
-    'tournament' => 'assets/icons/lta-icons.svg#icon-bracket',
-    default => null,
-};
-$match = $fixture;
+$tournament_link          = $tournament_link ?? null;
+$winner_set               = null;
+$winner                   = $winner ?? null;
+$loser                    = $loser ?? null;
+$is_tie                   = $is_tie ?? false;
+$user_can_update          = $user_can_update ?? false;
+$tournament_head          = $tournament_head ?? '';
+$player_team              = $player_team ?? null;
+$player_team_status       = $player_team_status ?? null;
+$match_editable           = $match_editable ?? false;
+$is_edit_mode             = $is_edit_mode ?? false;
+$allow_schedule_match     = $allow_schedule_match ?? false;
+$allow_reset_match_result = $allow_reset_match_result ?? false;
+$show_menu                = $show_menu ?? false;
+$image                    = $image ?? null;
+$match_status             = $match_status ?? null;
+$match                    = $fixture;
 if ( $match ) {
-    $match_status = null;
-    if ( ! empty( $match->winner_id ) ) {
-        if ( 'admin' === $is_update_allowed->user_type ) {
-            $allow_reset_match_result = true;
-            $show_menu                = true;
-        }
-        $match_complete = true;
-        if ( $match->winner_id === $home_team->team->get_id() ) {
-            $winner = 'home';
-            $loser  = 'away';
-        } elseif ( $match->winner_id === $away_team->team->get_id() ) {
-            $winner = 'away';
-            $loser  = 'home';
-        } elseif ( '-1' === $match->winner_id ) {
-            $is_tie = true;
-        }
-        if ( $winner === $player_team ) {
-            $player_team_status = 'winner';
-        } elseif ( $loser === $player_team ) {
-            $player_team_status = 'loser';
-        }
-        if ( $match->is_walkover && ! empty( $match->custom['walkover'] ) ) {
-            if ( 'home' === $match->custom['walkover'] ) {
-                $match_status = 'walkover_player1';
-            } elseif ( 'away' === $match->custom['walkover'] ) {
-                $match_status = 'walkover_player2';
-            }
-        } elseif ( $match->is_retired ) {
-            if ( 'home' === $match->custom['retired'] ) {
-                $match_status = 'retired_player1';
-            } elseif ( 'away' === $match->custom['retired'] ) {
-                $match_status = 'retired_player2';
-            }
-        } elseif ( $match->is_shared ) {
-            $match_status = 'share';
-        }
-    } elseif ( $user_can_update ) {
-        $allow_schedule_match = true;
-        $show_menu            = true;
-    }
     ?>
     <div class="tournament__match">
         <div class="page-subhead competition">
@@ -110,7 +61,7 @@ if ( $match ) {
                                     if ( ! empty( $tournament ) ) {
                                         ?>
                                         <li class="match__header-title-item">
-                                            <a href="<?php echo esc_html( $tournament->link ); ?>">
+                                            <a href="<?php echo esc_html( $tournament_link ); ?>">
                                                 <span class="nav--link">
                                                     <span class="nav-link__value">
                                                         <?php echo esc_html( $tournament->name ) . ' ' . esc_html__( 'Tournament', 'racketmanager' ); ?>
@@ -131,7 +82,7 @@ if ( $match ) {
                                 </ul>
                             </div>
                             <?php
-                            if ( ! empty( $tournament->date_start ) && ! empty( $tournament->date ) ) {
+                            if ( ! empty( $tournament_date_range_display ) ) {
                                 ?>
                                 <small class="media__subheading">
                                     <span class="nav--link">
@@ -139,7 +90,7 @@ if ( $match ) {
                                         <svg width="32" height="32" class="icon ">
                                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar-range-fill' ); ?>"></use>
                                         </svg>
-                                            <?php echo esc_html( mysql2date( $racketmanager->date_format, $tournament->date_start ) ); ?> <?php esc_html_e( 'to', 'racketmanager' ); ?> <?php echo esc_html( mysql2date( $racketmanager->date_format, $tournament->date ) ); ?>
+                                            <?php echo esc_html( $tournament_date_range_display ); ?>
                                         </span>
                                     </span>
                                 </small>
@@ -204,22 +155,11 @@ if ( $match ) {
                 <div class="col-6 col-sm-4">
                     <svg width="20" height="20" class="match-info-meta__icon">
                         <?php
-                        if ( $league->is_championship ) {
-                            $svg_link_text     = __( 'Draw', 'racketmanager' );
-                            $svg_link          = $event->name;
-                            $svg_link_location = $tournament_link . 'draw/' . seo_url( $event->name ) . '/';
+                        if ( ! empty( $league->is_championship ) ) {
                             ?>
                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/lta-icons.svg#icon-bracket' ); ?>"></use>
                             <?php
                         } else {
-                            if ( $event->is_box ) {
-                                $season_text = __( 'round', 'racketmanager' ) . '-' . $match->season;
-                            } else {
-                                $season_text = $match->season;
-                            }
-                            $svg_link_text     = __( 'League', 'racketmanager' );
-                            $svg_link          = $league->title;
-                            $svg_link_location = '/league/' . seo_url( $league->title ) . '/' . $season_text . '/';
                             ?>
                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#table' ); ?>"></use>
                             <?php
@@ -240,7 +180,7 @@ if ( $match ) {
                     </div>
                 </div>
                 <?php
-                if ( ! empty( $match->date ) ) {
+                if ( ! empty( $match_date_formatted ) ) {
                     ?>
                     <div class="col-6 col-sm-4">
                         <svg width="20" height="20" class="match-info-meta__icon">
@@ -255,13 +195,13 @@ if ( $match ) {
                             <span class="text--muted-small">
                                 <time datetime="<?php echo esc_html( $match->date ); ?>">
                                     <span class="match_date" id="match-tournament-date-header">
-                                        <?php echo esc_html( mysql2date( 'D j M', $match->date ) ); ?>
+                                        <?php echo esc_html( $match_date_formatted ); ?>
                                     </span>
                                     <?php
-                                    if ( ! empty( $match->start_time ) ) {
+                                    if ( ! empty( $match_time_formatted ) ) {
                                         ?>
                                         <span class="match_time">
-                                            <?php echo esc_html__( 'at', 'racketmanager' ) . ' ' . esc_html( mysql2date( 'G:i', $match->date ) ); ?>
+                                            <?php echo esc_html__( 'at', 'racketmanager' ) . ' ' . esc_html( $match_time_formatted ); ?>
                                         </span>
                                         <?php
                                     }
@@ -319,16 +259,16 @@ if ( $match ) {
                 <input type="hidden" name="updateMatch" id="updateMatch" value="results" />
                 <input name="match_status" type="hidden" id="match_status" value="<?php echo esc_attr( $match_status ); ?>" />
                 <?php
-                if ( ! empty( $tournament ) ) {
+                if ( ! empty( $tournament_seo_name ) ) {
                     ?>
-                    <input type="hidden" id="tournamentName" value="<?php echo esc_attr( seo_url( $tournament->name ) ); ?>" />
+                    <input type="hidden" id="tournamentName" value="<?php echo esc_attr( $tournament_seo_name ); ?>" />
                     <?php
                 }
                 ?>
                 <?php
                 $page_referrer = wp_get_referer();
                 if ( ! $page_referrer && ! empty( $tournament ) ) {
-                    $page_referrer = $tournament->link . 'matches/';
+                    $page_referrer = $tournament_link . 'matches/';
                 }
                 ?>
                 <div class="alert_rm <?php echo empty( $message ) ? null : 'alert--success'; ?>" id="matchAlert" <?php echo empty( $message ) ? 'style="display:none;"' : null; ?>>
@@ -354,10 +294,10 @@ if ( $match ) {
                     <div class="match__header">
                         <ul class="match__header-title">
                             <?php
-                            if ( $league->is_championship ) {
+                            if ( ! empty( $round_name ) ) {
                                 ?>
                                 <li class="match__header-title-item">
-                                    <?php echo esc_html( Util::get_final_name( $fixture->final ) ); ?>
+                                    <?php echo esc_html( $round_name ); ?>
                                 </li>
                                 <?php
                             }
@@ -411,12 +351,17 @@ if ( $match ) {
                                             <?php
                                         } else {
                                             foreach ( $team->players as $team_player ) {
+                                                $player_id   = method_exists( $team_player, 'get_id' ) ? $team_player->get_id() : ( $team_player->id ?? $team_player->ID ?? null );
+                                                $fullname    = method_exists( $team_player, 'get_fullname' ) ? $team_player->get_fullname() : ( $team_player->fullname ?? '' );
+                                                $player_link = ( isset( $player_urls ) && is_array( $player_urls ) )
+                                                    ? ( ( $player_id && isset( $player_urls[ $player_id ] ) ) ? $player_urls[ $player_id ] : ( $player_urls[ $fullname ] ?? null ) )
+                                                    : ( $team_player->url ?? $team_player->profile_url ?? null );
                                                 ?>
                                                 <div class="match__row-title-value">
                                                     <?php
-                                                    if ( ! empty( $tournament ) ) {
+                                                    if ( ! empty( $player_link ) ) {
                                                         ?>
-                                                        <a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/player/<?php echo esc_html( seo_url( trim( $team_player->get_fullname() ) ) ); ?>">
+                                                        <a href="<?php echo esc_url( $player_link ); ?>">
                                                         <?php
                                                     }
                                                     ?>
@@ -437,7 +382,7 @@ if ( $match ) {
                                                     }
                                                     ?>
                                                     <?php
-                                                    if ( ! empty( $tournament ) ) {
+                                                    if ( ! empty( $player_link ) ) {
                                                         ?>
                                                         </a>
                                                         <?php

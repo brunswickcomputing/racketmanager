@@ -1,646 +1,431 @@
 <?php
 /**
- * Team API: Team class (moved to PSR-4)
+ * Team API: Team class
  *
- * @author Kolja Schleich
  * @package RacketManager
  * @subpackage Team
  */
 
+declare( strict_types=1 );
+
 namespace Racketmanager\Domain;
 
-use Racketmanager\Services\Player_Service;
+use Racketmanager\Domain\DTO\Team\Team_Hydration_DTO;
+use Racketmanager\Domain\Enums\Team_Profile;
 use Racketmanager\Util\Util;
-use Racketmanager\Util\Util_Lookup;
-use stdClass;
-use function Racketmanager\get_club;
-use function Racketmanager\get_event;
-use function Racketmanager\get_player;
 
 /**
- * Class to implement the Team object
+ * Class to implement the Team domain entity
  */
 class Team {
-    /**
-     * ID variable
-     *
-     * @var ?int
-     */
-    public ?int $id = null;
-    /**
-     * Title variable
-     *
-     * @var string
-     */
-    public string $title;
-    /**
-     * Stadium variable
-     *
-     * @var string|null
-     */
-    public ?string $stadium = null;
-    /**
-     * Roster variable
-     *
-     * @var array
-     */
-    public mixed $roster;
-    /**
-     * Profile variable
-     *
-     * @var string|int
-     */
-    public string|int $profile;
-    /**
-     * Club id variable
-     *
-     * @var int|null
-     */
-    public ?int $club_id = null;
-    /**
-     * Club object variable
-     *
-     * @var object|null
-     */
-    public null|object $club = null;
-    /**
-     * Status variable
-     *
-     * @var string
-     */
-    public string $status;
-    /**
-     * Player variable
-     *
-     * @var string
-     */
-    public string $player;
-    /**
-     * Player 1 name variable
-     *
-     * @var string
-     */
-    public string $player_1;
-    /**
-     * Player2 name variable
-     *
-     * @var string|null
-     */
-    public ?string $player_2;
-    /**
-     * Player 1 id variable
-     *
-     * @var int
-     */
-    public int $player_1_id;
-    /**
-     * Player 2 ID variable
-     *
-     * @var int|null
-     */
-    public ?int $player_2_id;
-    /**
-     * Team type variable
-     *
-     * @var string
-     */
-    public string $type;
-    /**
-     * Team type variable
-     *
-     * @var string|null
-     */
-    public ?string $team_type = null;
-    /**
-     * Home variable
-     *
-     * @var string
-     */
-    public string $home;
-    /**
-     * Player id variable
-     *
-     * @var array
-     */
-    public array $player_ids;
-    /**
-     * Players variable
-     *
-     * @var array
-     */
-    public array $players = array();
-    /**
-     * Team ref variable
-     *
-     * @var string
-     */
-    public string $team_ref;
-    /**
-     * Team updated variable
-     *
-     * @var string|null
-     */
-    private ? string $msg_team_updated;
-    /**
-     * Team added variable
-     *
-     * @var string|null
-     */
-    private ? string $msg_team_added;
-    /**
-     * Team update error variable
-     *
-     * @var string|null
-     */
-    private ? string $msg_team_update_error;
-    /**
-     * Team add error variable
-     *
-     * @var string|null
-     */
-    private ? string $msg_team_add_error;
-    /**
-     * No updates variable
-     *
-     * @var string|null
-     */
-    private ? string $msg_no_update;
-    /**
-     * Team details missing message variable
-     *
-     * @var string|null
-     */
-    private ? string $msg_details_missing;
-    /**
-     * Error updating team contact variable
-     *
-     * @var string|null
-     */
-    private ? string $msg_team_contact_error;
-    /**
-     * Player not found error message variable
-     *
-     * @var string|null
-     */
-    private ? string $player_not_found_error;
-    /**
-     * Info variable
-     *
-     * @var object
-     */
-    public object $info;
-    /**
-     * Standings variable
-     *
-     * @var array|object
-     */
-    public array|object $standings;
-    /**
-     * Matches variable
-     *
-     * @var array
-     */
-    public array $matches;
-    private Player_Service $player_service;
+	/**
+	 * ID variable
+	 *
+	 * @var int|null
+	 */
+	public ?int $id = null;
 
-    /**
-     * Retrieve team instance
-     *
-     * @param int|string $team_id team id.
-     * @return object|boolean
-     */
-    public static function get_instance( int|string $team_id ): object|bool {
-        global $wpdb;
-        if ( is_numeric( $team_id ) ) {
-            $search = $wpdb->prepare(
-                '`id` = %d',
-                $team_id
-            );
-        } else {
-            $search = $wpdb->prepare(
-                '`title` = %s',
-                $team_id
-            );
-        }
-        if ( ! $team_id ) {
-            return false;
-        }
-        $team = wp_cache_get( $team_id, 'teams' );
+	/**
+	 * Title variable
+	 *
+	 * @var string
+	 */
+	public string $title = '';
 
-        if ( ! $team ) {
-            if ( -1 === $team_id ) {
-                $team = (object) array(
-                    'id'     => $team_id,
-                    'title'  => __( 'Bye', 'racketmanager' ),
-                    'player' => array(),
-                );
-            } else {
-                $team = $wpdb->get_row(
-                    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                    "SELECT `id`, `title`, `stadium`, `home`, `roster`, `profile`, `status`, `club_id`, `type`, `team_type` FROM $wpdb->racketmanager_teams WHERE " . $search . ' LIMIT 1',
-                ); // db call ok.
-            }
-            if ( ! $team ) {
-                return false;
-            }
-            $team = new Team( $team );
-            wp_cache_set( $team->id, $team, 'teams' );
-        }
+	/**
+	 * Stadium variable
+	 *
+	 * @var string|null
+	 */
+	public ?string $stadium = null;
 
-        return $team;
-    }
+	/**
+	 * Roster variable
+	 *
+	 * @var mixed
+	 */
+	public mixed $roster = null;
 
-    /**
-     * Constructor
-     *
-     * @param object|null $team Team object.
-     */
-    public function __construct( ?object $team = null ) {
-        global $racketmanager;
-        $c                    = $racketmanager->container;
-        $this->player_service = $c->get( 'player_service' );
+	/**
+	 * Profile variable
+	 *
+	 * @var string|int|null
+	 */
+	public string|int|null $profile = null;
 
-        $this->msg_team_updated       = __( 'Team updated', 'racketmanager' );
-        $this->msg_team_added         = __( 'Team added', 'racketmanager' );
-        $this->msg_team_update_error  = __( 'Team update error', 'racketmanager' );
-        $this->msg_team_add_error     = __( 'Team add error', 'racketmanager' );
-        $this->msg_no_update          = __( 'No updates', 'racketmanager' );
-        $this->msg_details_missing    = __( 'Team details missing', 'racketmanager' );
-        $this->msg_team_contact_error = __( 'Error updating team contact', 'racketmanager' );
-        $this->player_not_found_error = __( 'Player not found', 'racketmanager' );
+	/**
+	 * Club id variable
+	 *
+	 * @var int|null
+	 */
+	public ?int $club_id = null;
 
-        if ( is_null( $team ) ) {
-            return;
-        }
-        foreach ( get_object_vars( $team ) as $key => $value ) {
-            $this->$key = $value;
-        }
-        if ( 'P' === $this->team_type && ! empty( $this->roster ) ) {
-            $players = $this->get_players();
-            $i       = 1;
-            foreach ( $players as $player ) {
-                $this->player_ids[ $i ] = $player->id;
-                ++$i;
-            }
-        }
-        if ( str_contains( $this->title, '_' ) ) {
-            $team_name = Util::generate_team_name( $this->title );
-            if ( ! empty( $team_name ) ) {
-                $this->team_ref = $this->title;
-                $this->title    = $team_name;
-            }
-        }
-    }
+	/**
+	 * Club object variable
+	 *
+	 * @var object|null
+	 */
+	public ?object $club = null;
 
-    public function set_name( string $name ):void {
-        $this->title = $name;
-    }
+	/**
+	 * Status variable
+	 *
+	 * @var string|null
+	 */
+	public ?string $status = null;
 
-    public function set_type( string $type ): void {
-        $this->type = $type;
-    }
+	/**
+	 * Player variable
+	 *
+	 * @var string|null
+	 */
+	public ?string $player = null;
 
-    public function set_team_type( string $team_type ): void {
-        $this->team_type = $team_type;
-    }
+	/**
+	 * Player 1 name variable
+	 *
+	 * @var string|null
+	 */
+	public ?string $player_1 = null;
 
-    /**
-     * Update team
-     *
-     * @param string $title team name.
-     * @param int $club_id affiliated club id.
-     * @param string $type team type (mens/ladies/mixed/singles/doubles).
-     */
-    public function update( string $title, int $club_id, string $type ): void {
-        global $wpdb, $racketmanager;
+	/**
+	 * Player 2 name variable
+	 *
+	 * @var string|null
+	 */
+	public ?string $player_2 = null;
 
-        $club    = get_club( $club_id );
-        $stadium = $club->name;
-        if ( $this->title !== $title || $this->club_id !== $club_id || $this->type !== $type || $this->stadium !== $stadium ) {
-            $result = $wpdb->query(
-                $wpdb->prepare(
-                    "UPDATE $wpdb->racketmanager_teams SET `title` = %s, `club_id` = %d, `stadium` = %s, `type` = %s WHERE `id` = %d",
-                    $title,
-                    $club_id,
-                    $stadium,
-                    $type,
-                    $this->id
-                )
-            ); // db call ok, no cache ok.
-            if ( $result ) {
-                wp_cache_delete( $this->id, 'teams' );
-                $racketmanager->set_message( $this->msg_team_updated );
-            } else {
-                $racketmanager->set_message( $this->msg_team_update_error, true );
-                error_log( 'error with team update' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-                error_log( $wpdb->last_error ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-            }
-        } else {
-            $racketmanager->set_message( $this->msg_no_update );
-        }
-    }
+	/**
+	 * Player 1 id variable
+	 *
+	 * @var int|null
+	 */
+	public ?int $player_1_id = null;
 
-    /**
-     * Update team for players
-     *
-     * @param string $player_1
-     * @param int $player_1_id
-     * @param string $player_2
-     * @param int $player_2_id
-     * @param int $club_id affiliated club id.
-     */
-    public function update_player( string $player_1, int $player_1_id, string $player_2, int $player_2_id, int $club_id ): void {
-        global $wpdb, $racketmanager;
+	/**
+	 * Player 2 ID variable
+	 *
+	 * @var int|null
+	 */
+	public ?int $player_2_id = null;
 
-        $players   = array();
-        $players[] = $player_1_id;
-        $title     = $player_1;
-        if ( $player_2_id ) {
-            $title    .= ' / ' . $player_2;
-            $players[] = $player_2_id;
-        }
+	/**
+	 * Team type variable
+	 *
+	 * @var string
+	 */
+	public string $type = '';
 
-        $club    = get_club( $club_id );
-        $stadium = $club->name;
-        if ( $this->title !== $title || $this->club_id !== $club_id || $this->roster !== $players || $this->stadium !== $stadium ) {
-            $result = $wpdb->query(
-                $wpdb->prepare(
-                    "UPDATE $wpdb->racketmanager_teams SET `title` = %s, `club_id` = %d, `stadium` = %s, `roster` = %s WHERE `id` = %d",
-                    $title,
-                    $club_id,
-                    $stadium,
-                    maybe_serialize( $players ),
-                    $this->id
-                )
-            ); // db call ok, no cache ok.
-            if ( $result ) {
-                wp_cache_delete( $this->id, 'teams' );
-                $racketmanager->set_message( $this->msg_team_updated );
-                $wpdb->query(
-                    $wpdb->prepare(
-                        "DELETE FROM $wpdb->racketmanager_team_players WHERE `id` = %d",
-                        $this->id
-                    )
-                ); // db call ok, no cache ok.
-                foreach ( $players as $player ) {
-                    $this->add_team_player( $player );
-                }
-            } else {
-                $racketmanager->set_message( $this->msg_team_update_error, true );
-                error_log( 'Error with player team update' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-                error_log( $wpdb->last_error ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-            }
-        } else {
-            $racketmanager->set_message( $this->msg_no_update );
-        }
-    }
+	/**
+	 * Team type variable
+	 *
+	 * @var string|null
+	 */
+	public ?string $team_type = null;
 
-    /**
-     * Update event details
-     *
-     * @param int $event_id event id.
-     * @param int $captain captain id.
-     * @param string $contactno optional contact number.
-     * @param string $contactemail optional contact email.
-     * @param int|null $matchday optional match day.
-     * @param string|null $matchtime optional match time.
-     * @return false|string|null $team_event_id
-     */
-    public function update_event( int $event_id, int $captain, string $contactno, string $contactemail, ?int $matchday, ?string $matchtime ): false|string|null {
-        global $wpdb;
-        $updates = false;
-        $msg     = false;
-        if ( is_null( $matchday) ) {
-            $match_day = '';
-        } else {
-            $match_day = Util_Lookup::get_match_day( $matchday );
-        }
-        $event   = get_event( $event_id );
-        $current = $event->get_team_info( $this->id );
-        if ( $current && ( $current->captain_id !== $captain || $current->match_day !== $match_day || $current->match_time !== $matchtime ) ) {
-            if ( $captain && ( ( $event->competition->is_team_entry && $match_day && $matchtime ) || $event->competition->is_player_entry ) ) {
-                // Update values on the league table rows for this event's leagues in current season
-                $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                    $wpdb->prepare(
-                        "UPDATE $wpdb->racketmanager_league_teams SET `captain` = %s, `match_day` = %s, `match_time` = %s WHERE `team_id` = %d AND `season` = %s AND `league_id` IN (SELECT `id` FROM $wpdb->racketmanager WHERE `event_id` = %d)",
-                        $captain,
-                        $match_day,
-                        $matchtime,
-                        $this->id,
-                        $event->get_season(),
-                        $event_id
-                    )
-                );
-                $updates = true;
-            } else {
-                $msg = $this->msg_details_missing;
-            }
-        }
-        if ( $current->contactno !== $contactno || $current->contactemail !== $contactemail ) {
-            $response = $this->update_captain_details( $captain, $contactno, $contactemail );
-            if ( $response->updates ) {
-                $updates = true;
-            }
-        }
-        if ( $updates ) {
-            $msg = $this->msg_team_updated;
-        } elseif ( empty( $msg ) ) {
-            $msg = $this->msg_no_update;
-        }
-        return $msg;
-    }
-    /**
-     * Update captain details
-     *
-     * @param $captain
-     * @param $telephone
-     * @param $email
-     *
-     * @return object
-     */
-    private function update_captain_details( $captain, $telephone, $email ): object {
-        $player = get_player( $captain );
-        if ( $player ) {
-            $updates = $this->player_service->update_contact_details( $captain, $telephone, $email );
-            if ( ! $updates ) {
-                $msg = $this->msg_team_contact_error;
-            } else {
-                $msg = null;
-            }
-        } else {
-            $updates = false;
-            $msg     = $this->player_not_found_error;
-        }
-        $response          = new stdClass();
-        $response->updates = $updates;
-        $response->msg     = $msg;
-        return $response;
-    }
-    /**
-     * Delete team
-     */
-    public function delete(): void {
-        global $wpdb, $racketmanager;
+	/**
+	 * Home variable
+	 *
+	 * @var string|null
+	 */
+	public ?string $home = null;
 
-        // remove matches and rubbers.
-        $fixture_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
-            ? $racketmanager->container->get( 'fixture_repository' )
-            : new \Racketmanager\Repositories\Fixture_Repository();
+	/**
+	 * Player id variable
+	 *
+	 * @var array
+	 */
+	public array $player_ids = [];
 
-        $matches = $racketmanager->get_matches( array( 'team' => $this->id ) );
-        foreach ( $matches as $match ) {
-            $fixture_repository->delete( (int) $match->id );
-        }
-        // remove tables.
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "DELETE FROM $wpdb->racketmanager_league_teams WHERE `team_id` = %d",
-                $this->id
-            )
-        );
-        // remove team.
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "DELETE FROM $wpdb->racketmanager_teams WHERE `id` = %d",
-                $this->id
-            )
-        );
-    }
+	/**
+	 * Players variable
+	 *
+	 * @var array
+	 */
+	public array $players = [];
 
-    /**
-     * Add team player
-     *
-     * @param int $player player id.
-     */
-    public function add_team_player( int $player ): void {
-        global $wpdb;
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "INSERT INTO $wpdb->racketmanager_team_players ( `team_id`, `player_id` ) VALUES ( %d, %d )",
-                $this->id,
-                $player,
-            )
-        );
-    }
-    /**
-     * Get team players
-     *
-     * @return array
-     */
-    public function get_players(): array {
-        global $wpdb;
-        $players = $wpdb->get_results(  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "SELECT `player_id` FROM $wpdb->racketmanager_team_players WHERE `team_id` = %d",
-                $this->id,
-            )
-        );
-        $i       = 0;
-        foreach ( $players as $team_player ) {
-            $player = get_player( $team_player->player_id );
-            if ( $player ) {
-                $players[ $i ] = $player;
-            } else {
-                unset( $players[ $i ] );
-            }
-            ++$i;
-        }
-        $this->players = $players;
-        return $players;
-    }
+	/**
+	 * Team ref variable
+	 *
+	 * @var string|null
+	 */
+	public ?string $team_ref = null;
 
-    /**
-     * Check if team has player
-     *
-     * @param int $player_id
-     * @return bool
-     */
-    public function has_player( int $player_id ): bool {
-        if ( -1 === $this->id ) {
-            return false;
-        }
-        if ( empty( $this->players ) ) {
-            $this->get_players();
-        }
-        foreach ( $this->players as $player ) {
-            if ( (int) $player->get_id() === $player_id ) {
-                return true;
-            }
-        }
-        return false;
-    }
+	/**
+	 * Info variable
+	 *
+	 * @var object|null
+	 */
+	public ?object $info = null;
 
-    /**
-     * Get row id
-     *
-     * @return int|null
-     */
-    public function get_id(): ?int {
-        return $this->id;
-    }
+	/**
+	 * Standings variable
+	 *
+	 * @var array|object
+	 */
+	public array|object $standings = [];
 
-    /**
-     * Get team name
-     *
-     * @return string
-     */
-    public function get_name(): string {
-        return $this->title;
-    }
+	/**
+	 * Matches variable
+	 *
+	 * @var array
+	 */
+	public array $matches = [];
 
-    /**
-     * Get club id
-     *
-     * @return int|null
-     */
-    public function get_club_id(): ?int {
-        return $this->club_id;
-    }
+	/**
+	 * Constructor
+	 *
+	 * @param object|null $team Team object or hydration DTO.
+	 */
+	public function __construct( ?object $team = null ) {
+		if ( is_null( $team ) ) {
+			return;
+		}
 
-    /**
-     * Get stadium name
-     *
-     * @return string|null
-     */
-    public function get_stadium(): ?string {
-        return $this->stadium;
-    }
+		$dto = $team instanceof Team_Hydration_DTO ? $team : Team_Hydration_DTO::from_object( $team );
 
-    /**
-     * Get team type
-     *
-     * @return string
-     */
-    public function get_type(): string {
-        return $this->type;
-    }
+		$this->id          = $dto->id;
+		$this->title       = $dto->title;
+		$this->stadium     = $dto->stadium;
+		$this->roster      = $dto->roster;
+		$this->profile     = $dto->profile;
+		$this->club_id     = $dto->club_id;
+		$this->club        = $dto->club;
+		$this->status      = $dto->status;
+		$this->player      = $dto->player;
+		$this->player_1    = $dto->player_1;
+		$this->player_2    = $dto->player_2;
+		$this->player_1_id = $dto->player_1_id;
+		$this->player_2_id = $dto->player_2_id;
+		$this->type        = $dto->type;
+		$this->team_type   = $dto->team_type;
+		$this->home        = $dto->home;
+		$this->player_ids  = $dto->player_ids;
+		$this->players     = $dto->players;
+		$this->team_ref    = $dto->team_ref;
+		$this->info        = $dto->info;
+		$this->standings   = $dto->standings;
+		$this->matches     = $dto->matches;
 
-    /**
-     * Get team type
-     *
-     * @return string|null
-     */
-    public function get_team_type(): ?string {
-    return $this->team_type;
-    }
+		if ( ! empty( $this->title ) && str_contains( $this->title, '_' ) ) {
+			$team_name = Util::generate_team_name( $this->title );
+			if ( ! empty( $team_name ) ) {
+				$this->team_ref = $this->title;
+				$this->title    = $team_name;
+			}
+		}
+	}
 
-    /**
-     * Set team id
-     *
-     * @param int $insert_id
-     *
-     * @return void
-     */
-    public function set_id( int $insert_id ): void {
-        $this->id = $insert_id;
-    }
+	/**
+	 * Get row id
+	 *
+	 * @return int|null
+	 */
+	public function get_id(): ?int {
+		return $this->id;
+	}
 
-    public function set_club_id( ?int $club_id ): void {
-        $this->club_id = $club_id;
-    }
+	/**
+	 * Set team id
+	 *
+	 * @param int $insert_id
+	 * @return void
+	 */
+	public function set_id( int $insert_id ): void {
+		$this->id = $insert_id;
+	}
 
-    public function set_stadium( ?string $club ): void {
-        $this->stadium = $club;
-    }
+	/**
+	 * Get team name
+	 *
+	 * @return string
+	 */
+	public function get_name(): string {
+		return $this->title;
+	}
 
+	/**
+	 * Set team name
+	 *
+	 * @param string $name
+	 * @return void
+	 */
+	public function set_name( string $name ): void {
+		$this->title = $name;
+	}
+
+	/**
+	 * Set title
+	 *
+	 * @param string $title
+	 * @return void
+	 */
+	public function set_title( string $title ): void {
+		$this->title = $title;
+	}
+
+	/**
+	 * Get club id
+	 *
+	 * @return int|null
+	 */
+	public function get_club_id(): ?int {
+		return $this->club_id;
+	}
+
+	/**
+	 * Set club id
+	 *
+	 * @param int|null $club_id
+	 * @return void
+	 */
+	public function set_club_id( ?int $club_id ): void {
+		$this->club_id = $club_id;
+	}
+
+	/**
+	 * Get stadium name
+	 *
+	 * @return string|null
+	 */
+	public function get_stadium(): ?string {
+		return $this->stadium;
+	}
+
+	/**
+	 * Set stadium name
+	 *
+	 * @param string|null $stadium
+	 * @return void
+	 */
+	public function set_stadium( ?string $stadium ): void {
+		$this->stadium = $stadium;
+	}
+
+	/**
+	 * Get team type
+	 *
+	 * @return string
+	 */
+	public function get_type(): string {
+		return $this->type;
+	}
+
+	/**
+	 * Set team type
+	 *
+	 * @param string $type
+	 * @return void
+	 */
+	public function set_type( string $type ): void {
+		$this->type = $type;
+	}
+
+	/**
+	 * Get team type
+	 *
+	 * @return string|null
+	 */
+	public function get_team_type(): ?string {
+		return $this->team_type;
+	}
+
+	/**
+	 * Set team type
+	 *
+	 * @param string|null $team_type
+	 * @return void
+	 */
+	public function set_team_type( ?string $team_type ): void {
+		$this->team_type = $team_type;
+	}
+
+	/**
+	 * Get team players
+	 *
+	 * @return array
+	 */
+	public function get_players(): array {
+		return $this->players;
+	}
+
+	/**
+	 * Set team players
+	 *
+	 * @param array $players
+	 * @return void
+	 */
+	public function set_players( array $players ): void {
+		$this->players = $players;
+	}
+
+	/**
+	 * Set player IDs
+	 *
+	 * @param array $player_ids
+	 * @return void
+	 */
+	public function set_player_ids( array $player_ids ): void {
+		$this->player_ids = $player_ids;
+	}
+
+	/**
+	 * Get status
+	 *
+	 * @return string|null
+	 */
+	public function get_status(): ?string {
+		return $this->status;
+	}
+
+	/**
+	 * Set status
+	 *
+	 * @param string|null $status
+	 * @return void
+	 */
+	public function set_status( ?string $status ): void {
+		$this->status = $status;
+	}
+
+	/**
+	 * Get profile as typed backed Enum
+	 *
+	 * @return Team_Profile|null
+	 */
+	public function get_profile_enum(): ?Team_Profile {
+		return null !== $this->profile ? Team_Profile::from_value( (int) $this->profile ) : null;
+	}
+
+	/**
+	 * Set profile from typed backed Enum
+	 *
+	 * @param Team_Profile $profile
+	 * @return void
+	 */
+	public function set_profile_enum( Team_Profile $profile ): void {
+		$this->profile = $profile->value;
+	}
+
+	/**
+	 * Check if team has player
+	 *
+	 * @param int $player_id
+	 * @return bool
+	 */
+	public function has_player( int $player_id ): bool {
+		if ( -1 === $this->id ) {
+			return false;
+		}
+		foreach ( $this->players as $player ) {
+			$id = is_object( $player ) && method_exists( $player, 'get_id' ) ? $player->get_id() : ( $player->id ?? null );
+			if ( (int) $id === $player_id ) {
+				return true;
+			}
+		}
+		if ( ! empty( $this->player_ids ) ) {
+			return in_array( $player_id, array_map( 'intval', $this->player_ids ), true );
+		}
+		return false;
+	}
 }

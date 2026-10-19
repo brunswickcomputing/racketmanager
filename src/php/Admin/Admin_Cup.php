@@ -11,6 +11,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Admin;
 
+use Racketmanager\Admin\Presenters\Admin_Error_Bag_Mapper;
+use Racketmanager\Admin\Presenters\Admin_Plan_Presenter;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
@@ -43,6 +45,7 @@ final class Admin_Cup extends Admin_Championship {
     private Cup_Setup_Action_Dispatcher $cup_setup_action_dispatcher;
     private Cup_Plan_Action_Dispatcher $cup_plan_action_dispatcher;
     private Draw_Action_Dispatcher $draw_action_dispatcher;
+    private Admin_Plan_Presenter $admin_plan_presenter;
 
     public function __construct(
         $plugin_instance,
@@ -50,6 +53,7 @@ final class Admin_Cup extends Admin_Championship {
         ?Cup_Setup_Action_Dispatcher $cup_setup_action_dispatcher = null,
         ?Cup_Plan_Action_Dispatcher $cup_plan_action_dispatcher = null,
         ?Draw_Action_Dispatcher $draw_action_dispatcher = null,
+        ?Admin_Plan_Presenter $admin_plan_presenter = null,
     ) {
         parent::__construct( $plugin_instance );
         $c                                 = $this->racketmanager->container;
@@ -57,6 +61,7 @@ final class Admin_Cup extends Admin_Championship {
         $this->cup_setup_action_dispatcher = $cup_setup_action_dispatcher ?? $c->get( 'cup_setup_action_dispatcher' );
         $this->cup_plan_action_dispatcher  = $cup_plan_action_dispatcher ?? $c->get( 'cup_plan_action_dispatcher' );
         $this->draw_action_dispatcher      = $draw_action_dispatcher ?? $c->get( 'draw_action_dispatcher' );
+        $this->admin_plan_presenter        = $admin_plan_presenter ?? $c->get( 'admin_plan_presenter' );
     }
 
     /**
@@ -466,6 +471,18 @@ final class Admin_Cup extends Admin_Championship {
             )
         );
         $tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'matches';
+
+        $errors = Admin_Error_Bag_Mapper::from_validator( $validator );
+
+        $vm = $this->admin_plan_presenter->present_cup_plan(
+            competition: $competition,
+            cup_season: $cup_season,
+            season: (string) $season,
+            final_matches: $final_matches,
+            tab: $tab,
+            num_events: $num_events,
+            errors: $errors,
+        );
 
         $this->show_message();
         require RACKETMANAGER_PATH . 'templates/admin/cup/plan.php';

@@ -30,6 +30,7 @@ use Racketmanager\Application\Competition\Queries\Get_Competitions_Query;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Entry_Service;
@@ -80,11 +81,12 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly ?Get_Competitions_Handler $competitions_handler = null,
         private readonly ?Get_Competition_Payment_Handler $payment_handler = null,
         private readonly ?Club_Entry_Selection_Service $club_entry_selection = null,
-        ?Get_Competition_Entry_Handler $entry_handler = null
+        ?Get_Competition_Entry_Handler $entry_handler = null,
+        private readonly ?Tournament_Presenter $tournament_presenter = null
     ) {
         $this->view_presenter = $view_presenter ?? ( $template_renderer ? new Shortcode_View_Presenter( $template_renderer ) : null );
         $selection_service = $club_entry_selection ?? ( ( $club_service && $player_service ) ? new Club_Entry_Selection_Service( $club_service, $player_service ) : null );
-        $entry_services_available = $selection_service && $competition_service && $tournament_service && $player_service && $club_service && $team_service && $registration_service && $competition_entry_service && $finance_service;
+        $entry_services_available = $selection_service && $competition_service && $tournament_service && $player_service && $club_service && $team_service && $registration_service && $competition_entry_service && $finance_service && $competition_shortcode_presenter && $this->tournament_presenter;
         $this->entry_handler = $entry_handler ?? ( $entry_services_available ? new Get_Competition_Entry_Handler(
             club_entry_selection: $selection_service,
             competition_service: $competition_service,
@@ -94,7 +96,9 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             team_service: $team_service,
             registration_service: $registration_service,
             competition_entry_service: $competition_entry_service,
-            finance_service: $finance_service
+            finance_service: $finance_service,
+            competition_presenter: $competition_shortcode_presenter,
+            tournament_presenter: $this->tournament_presenter
         ) : null );
     }
 

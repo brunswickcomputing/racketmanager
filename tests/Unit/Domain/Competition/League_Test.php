@@ -87,8 +87,19 @@ class League_Test extends TestCase {
         ], $attributes );
     }
 
-    private function create_match( array $attributes = [], array $rubbers = [] ): \Racketmanager\Domain\Racketmanager_Match {
-        $match = new class extends \Racketmanager\Domain\Racketmanager_Match {
+    private function create_match( array $attributes = [], array $rubbers = [] ): object {
+        $match = new class {
+            public int $id = 1;
+            public string $home_team = '10';
+            public string $away_team = '20';
+            public float $home_points = 2.0;
+            public float $away_points = 0.0;
+            public int $winner_id = 10;
+            public int $loser_id = 20;
+            public int|string $status = 0;
+            public bool $is_cancelled = false;
+            public array $teams = [];
+            public ?object $league = null;
             private array $rubbers_list = [];
 
             public function __construct() {

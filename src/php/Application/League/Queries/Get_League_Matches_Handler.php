@@ -3,7 +3,9 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\League\Queries;
 
+use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
+use Racketmanager\Presentation\View_Models\Team_Matches_Group_View_Model;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use function __;
@@ -13,6 +15,7 @@ use function intval;
 use function is_array;
 use function is_iterable;
 use function is_numeric;
+use function iterator_to_array;
 use function wp_verify_nonce;
 
 /**
@@ -21,7 +24,8 @@ use function wp_verify_nonce;
 class Get_League_Matches_Handler {
     public function __construct(
         private readonly League_Service $league_service,
-        private readonly Shortcode_Template_Renderer $template_renderer
+        private readonly Shortcode_Template_Renderer $template_renderer,
+        private readonly Tournament_Presenter $tournament_presenter
     ) {}
 
     public function handle( Get_League_Matches_Query $query ): Shortcode_View_Model {
@@ -62,19 +66,40 @@ class Get_League_Matches_Handler {
         $matches = $league->get_matches( $match_args );
         $league->set_num_matches();
 
-        if ( -1 === (int) $league->match_day ) {
+        $competition   = $league->event?->competition ?? null;
+        // Same condition as templates/matches.php, which renders match cards for non team-entry competitions.
+        $is_team_entry = $competition?->is_team_entry ?? true;
+        $raw_matches   = is_array( $matches ) ? $matches : ( is_iterable( $matches ) ? iterator_to_array( $matches ) : [] );
+
+        if ( ! $is_team_entry ) {
+            // League pages have no Tournament context: cards link to the league match page, like the legacy template.
+            $league_matches = $this->tournament_presenter->present_match_cards(
+                $raw_matches,
+                null,
+                null,
+                '',
+                false,
+                $this->tournament_presenter->is_tournament_competition( $competition )
+            );
+        } elseif ( -1 === (int) $league->match_day ) {
             $league_matches = [];
-            if ( is_iterable( $matches ) ) {
-                foreach ( $matches as $match ) {
-                    $key = $match->match_day ?? 0;
-                    if ( ! array_key_exists( $key, $league_matches ) ) {
-                        $league_matches[ $key ] = [];
-                    }
-                    $league_matches[ $key ][] = $match;
+            foreach ( $raw_matches as $match ) {
+                $key = $match->match_day ?? 0;
+                if ( ! array_key_exists( $key, $league_matches ) ) {
+                    $league_matches[ $key ] = [];
                 }
+                $league_matches[ $key ][] = $match;
+            }
+            foreach ( $league_matches as $key => $day_matches ) {
+                $presented = $this->tournament_presenter->present_match_list( $day_matches, options: [ 'show_header' => false, 'matches_key' => 'match_day' ] );
+                $league_matches[ $key ] = new Team_Matches_Group_View_Model(
+                    key: (string) $key,
+                    header: sprintf( __( 'Match Day %d', 'racketmanager' ), (int) $key ),
+                    matches: $presented
+                );
             }
         } else {
-            $league_matches = is_array( $matches ) ? $matches : [];
+            $league_matches = $this->tournament_presenter->present_match_list( $raw_matches, options: [ 'show_header' => false ] );
         }
 
         $teams = $league->get_league_teams( [

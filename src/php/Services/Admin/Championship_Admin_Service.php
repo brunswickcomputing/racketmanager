@@ -22,7 +22,7 @@ use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface;
 use Racketmanager\Services\Admin\Overview\Tournament_Overview_Action_Handler_Interface;
-use Racketmanager\Repositories\Fixture_Repository;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
@@ -32,12 +32,7 @@ use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Tournament_Service;
 use stdClass;
 
-use function Racketmanager\get_event;
-use function Racketmanager\get_league;
-use function Racketmanager\get_team;
-
 readonly final class Championship_Admin_Service implements Draw_Action_Handler_Interface, Tournament_Overview_Action_Handler_Interface {
-    private Fixture_Repository_Interface $fixture_repository;
 
     public function __construct(
         private League_Service $league_service,
@@ -45,9 +40,14 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         private Tournament_Service $tournament_service,
         private League_Team_Repository_Interface $league_team_repository,
         private Team_Repository_Interface $team_repository,
-        ?Fixture_Repository_Interface $fixture_repository = null,
+        private Fixture_Repository_Interface $fixture_repository,
+        private Championship_Manager $championship_manager,
+        private Event_Repository_Interface $event_repository,
     ) {
-        $this->fixture_repository = $fixture_repository ?? new Fixture_Repository();
+    }
+
+    private function get_championship_manager(): Championship_Manager {
+        return $this->championship_manager;
     }
 
     public function contact_teams( Tournament_Overview_Action_Request_DTO $dto ): Action_Result_DTO {
@@ -78,7 +78,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
     }
 
     public function handle_league_teams_action( Draw_Action_Request_DTO $dto ): Action_Result_DTO {
-        $league = get_league( $dto->league_id );
+        $league = $this->league_service->get_league( $dto->league_id );
         $result = $this->result_league_not_found_if_missing( $league );
 
         if ( null === $result ) {
@@ -147,7 +147,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
                     continue;
                 }
                 $team_id = $league_team->get_team_id();
-                $team    = get_team( $team_id );
+                $team    = $this->team_repository->find_by_id( $team_id );
                 $league->withdraw_team( $team_id, $season );
                 $title      = $team ? $team->title : strval( $team_id );
                 $messages[] = $title . ' ' . __( 'withdrawn', 'racketmanager' );
@@ -206,7 +206,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
     }
 
     public function rank_teams( Draw_Action_Request_DTO $dto, string $mode ): Action_Result_DTO {
-        $league = get_league( $dto->league_id );
+        $league = $this->league_service->get_league( $dto->league_id );
         $result = $this->result_league_not_found_if_missing( $league );
 
         if ( null === $result ) {
@@ -236,7 +236,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
     }
 
     public function manage_fixtures_in_league( Draw_Action_Request_DTO $dto ): Action_Result_DTO {
-        $league = get_league( $dto->league_id );
+        $league = $this->league_service->get_league( $dto->league_id );
         if ( ! $league ) {
             return $this->result_league_not_found();
         }
@@ -260,8 +260,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         $final  = isset( $post['final'] ) ? sanitize_text_field( wp_unslash( strval( $post['final'] ) ) ) : null;
 
         if ( $final ) {
-            $fixture_repository = new Fixture_Repository();
-            $final_exists = $fixture_repository->find_by_league_and_final(
+            $final_exists = $this->fixture_repository->find_by_league_and_final(
                 $league->get_id(),
                 $season,
                 $final
@@ -396,7 +395,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
     }
 
     public function start_finals( Draw_Action_Request_DTO $dto ): Action_Result_DTO {
-        $league = get_league( $dto->league_id );
+        $league = $this->league_service->get_league( $dto->league_id );
         if ( ! $league ) {
             return $this->result_league_not_found();
         }
@@ -410,7 +409,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
     }
 
     private function start_final_rounds( object $league ): bool {
-        $championship_manager = new Championship_Manager();
+        $championship_manager = $this->get_championship_manager();
         $updates       = false;
         $multiple_legs = false;
         $round_name    = $league->championship->get_final_keys( 1 );
@@ -428,8 +427,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         }
 
         $fixtures_list = array();
-        $fixture_repository = new Fixture_Repository();
-        $fixtures = $fixture_repository->find_by_league_and_final(
+        $fixtures = $this->fixture_repository->find_by_league_and_final(
             $league->get_id(),
             $league->get_season(),
             $round_name,
@@ -509,7 +507,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
     }
 
     public function update_final_results( Draw_Action_Request_DTO $dto ): Action_Result_DTO {
-        $league = get_league( $dto->league_id );
+        $league = $this->league_service->get_league( $dto->league_id );
         if ( ! $league ) {
             return $this->result_league_not_found();
         }
@@ -522,14 +520,17 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         $away_points = $post['away_points'] ?? array();
         $round       = isset( $post['round'] ) ? intval( $post['round'] ) : null;
 
-        $championship_manager = new Championship_Manager();
-        $championship_manager->update_final_results( $league->championship, $fixtures, $home_points, $away_points, $custom, $round );
+        $championship_manager = $this->get_championship_manager();
+        $num_updated = $championship_manager->update_final_results( $league->championship, $fixtures, $home_points, $away_points, $custom, $round );
 
-        return new Action_Result_DTO( __( 'Final results updated', 'racketmanager' ), Admin_Message_Type::SUCCESS );
+        return new Action_Result_DTO(
+            sprintf( __( 'Updated Results of %d fixtures', 'racketmanager' ), $num_updated ),
+            Admin_Message_Type::SUCCESS
+        );
     }
 
     public function set_championship_fixtures( Draw_Action_Request_DTO $dto ): Action_Result_DTO {
-        $league = get_league( $dto->league_id );
+        $league = $this->league_service->get_league( $dto->league_id );
         if ( ! $league ) {
             return $this->result_league_not_found();
         }
@@ -760,7 +761,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         }
 
         $event_season['num_match_days'] = count( $event_season['match_dates'] );
-        $event                          = get_event( $league->event_id );
+        $event                          = $this->event_repository->find_by_id( (int) $league->event_id );
         if ( ! $event ) {
             return;
         }

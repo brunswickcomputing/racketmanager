@@ -46,6 +46,12 @@ class Validator {
      */
     public array $err_msgs;
     /**
+     * Error statuses
+     *
+     * @var array
+     */
+    public array $err_statuses;
+    /**
      * Status
      *
      * @var int|null
@@ -68,10 +74,11 @@ class Validator {
      */
     public function __construct() {
         global $racketmanager;
-        $this->error    = false;
-        $this->err_flds = array();
-        $this->err_msgs = array();
-        $this->status   = null;
+        $this->error        = false;
+        $this->err_flds     = array();
+        $this->err_msgs     = array();
+        $this->err_statuses = array();
+        $this->status       = null;
         $this->msg      = null;
         $this->err      = new WP_Error();
 
@@ -413,8 +420,6 @@ class Validator {
                 } catch ( \Throwable ) {
                     $competition = null;
                 }
-            } elseif ( function_exists( 'Racketmanager\get_competition' ) ) {
-                $competition = \Racketmanager\get_competition( $competition );
             } else {
                 $competition = null;
             }
@@ -722,9 +727,10 @@ class Validator {
     }
 
     public function set_errors( string $error_field, string $error_message, int $status = 400 ): void {
-        $this->error      = true;
-        $this->err_flds[] = $error_field;
-        $this->err_msgs[] = $error_message;
-        $this->status     = $status;
+        $this->error                                             = true;
+        $this->err_flds[]                                        = $error_field;
+        $this->err_msgs[]                                        = $error_message;
+        $this->err_statuses[ array_key_last( $this->err_flds ) ] = $status;
+        $this->status                                            = $status;
     }
 }

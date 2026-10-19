@@ -41,9 +41,12 @@ class Tournament_Entry_Request_DTO {
      */
     public function __construct( array $data ) {
         // 1. Primary Identity & Contact
-        $this->tournament_id = absint( $data['tournament_id'] ?? 0 );
-        $this->player_id     = absint( $data['playerId'] ?? 0 );
-        $this->club_id       = absint( $data['clubId'] ?? 0 );
+        // Note: Snake-first precedence (tournament_id before tournamentId) is deliberately preserved
+        // because existing adapter tests specifically test conflicting tournament_id and tournamentId.
+        // Non-empty checks ensure blank aliases (such as empty strings from serialized inputs) do not shadow valid values.
+        $this->tournament_id = absint( self::parse_int_fallback( $data['tournament_id'] ?? null, $data['tournamentId'] ?? null, $data['tournament'] ?? null ) ?? 0 );
+        $this->player_id     = absint( self::parse_int_fallback( $data['playerId'] ?? null, $data['player_id'] ?? null ) ?? 0 );
+        $this->club_id       = absint( self::parse_int_fallback( $data['clubId'] ?? null, $data['club_id'] ?? null ) ?? 0 );
         $this->season        = sanitize_text_field( $data['season'] ?? '' );
         $this->email         = sanitize_email( $data['contactemail'] ?? '' );
         $this->phone         = sanitize_text_field( $data['contactno'] ?? '' );
@@ -85,5 +88,21 @@ class Tournament_Entry_Request_DTO {
         }
 
         return $items;
+    }
+
+    /**
+     * Return the integer value of the first non-null and non-empty string argument.
+     *
+     * @param mixed ...$values
+     * @return int|null
+     */
+    private static function parse_int_fallback( mixed ...$values ): ?int {
+        foreach ( $values as $value ) {
+            if ( null !== $value && '' !== $value ) {
+                return intval( $value );
+            }
+        }
+
+        return null;
     }
 }

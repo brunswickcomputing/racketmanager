@@ -4,14 +4,26 @@ declare( strict_types=1 );
 namespace Racketmanager\Presentation\Presenters;
 
 use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Value_Objects\Player_Ranking;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Presentation\View_Models\Club_Membership_View_Model;
+use Racketmanager\Presentation\View_Models\Competition_List_Item_View_Model;
 use Racketmanager\Presentation\View_Models\Player_View_Model;
 use Racketmanager\Util\Util_Lookup;
+use function get_option;
+use function mysql2date;
 use function Racketmanager\seo_url;
+use function str_starts_with;
 
 /**
  * Presenter for Player domain objects and templates.
  */
 readonly class Player_Presenter {
+
+    public function __construct(
+        private readonly ?Competition_Shortcode_Presenter $competition_presenter = null,
+        private readonly ?Option_Gateway_Interface $option_gateway = null
+    ) {}
 
     /**
      * Present full immutable Player view model for player profile and details.
@@ -40,6 +52,26 @@ readonly class Player_Presenter {
         $link         = isset( $player->link ) ? (string) $player->link : $this->get_player_link( $display_name );
         $stats        = isset( $player->stats ) && is_array( $player->stats ) ? $player->stats : ( isset( $player->statistics ) ? (array) $player->statistics : null );
 
+        $presented_competitions = [];
+        foreach ( $player_competitions as $competition_type => $competitions ) {
+            if ( ! empty( $competitions ) ) {
+                $first = reset( $competitions );
+                if ( $first instanceof Competition_List_Item_View_Model ) {
+                    $presented_competitions[ $competition_type ] = $competitions;
+                } elseif ( $this->competition_presenter ) {
+                    $presented_competitions[ $competition_type ] = $this->competition_presenter->present_competition_list(
+                        competitions: (array) $competitions,
+                        competition_type: (string) $competition_type,
+                        player: $player
+                    );
+                } else {
+                    throw new \LogicException( 'A Competition_Shortcode_Presenter is required to present raw player competitions.' );
+                }
+            } else {
+                $presented_competitions[ $competition_type ] = [];
+            }
+        }
+
         return new Player_View_Model(
             template: $template,
             id: $id,
@@ -61,7 +93,7 @@ readonly class Player_Presenter {
             win_loss_summary: $this->get_win_loss_summary( $player->statistics ?? $stats ),
             clubs: $clubs,
             titles: $titles,
-            player_competitions: $player_competitions,
+            player_competitions: $presented_competitions,
             stats: $stats,
             user_can_update: $user_can_update,
             player: $player
@@ -133,18 +165,25 @@ readonly class Player_Presenter {
 
         $help_text   = function_exists( '__' ) ? __( 'World Tennis Number for', 'racketmanager' ) : 'World Tennis Number for';
         $match_types = class_exists( Util_Lookup::class ) ? Util_Lookup::get_match_types() : array(
-            'singles' => 'Singles',
-            'doubles' => 'Doubles',
+            'S' => 'Singles',
+            'D' => 'Doubles',
         );
 
         $badges = array();
         foreach ( $match_types as $match_type => $description ) {
-            $val = $wtn[ $match_type ] ?? $wtn[ strtolower( $description ) ] ?? $wtn[ $description ] ?? null;
+            $val = $wtn[ $match_type ] 
+                ?? $wtn[ strtolower( (string) $match_type ) ] 
+                ?? $wtn[ strtolower( $description ) ] 
+                ?? $wtn[ $description ] 
+                ?? null;
+
             if ( null !== $val ) {
+                $ranking = Player_Ranking::from_raw( $val, (string) $match_type );
+
                 $badges[] = array(
                     'type'        => $match_type,
                     'description' => $description,
-                    'value'       => (string) $val,
+                    'value'       => $ranking->get_raw_value(),
                     'tooltip'     => trim( $help_text . ' ' . $description ),
                 );
             }
@@ -220,5 +259,49 @@ readonly class Player_Presenter {
         }
 
         return $navigation;
+    }
+
+    /**
+     * Format a date string using the configured date format.
+     */
+    public function format_date( ?string $date ): string {
+        if ( empty( $date ) || str_starts_with( (string) $date, '0000-00-00' ) ) {
+            return '';
+        }
+        $date_format = $this->option_gateway?->get_option( 'date_format', 'd/m/Y' );
+        if ( empty( $date_format ) || ! is_string( $date_format ) ) {
+            $date_format = function_exists( 'get_option' ) ? get_option( 'date_format', 'd/m/Y' ) : 'd/m/Y';
+        }
+        if ( empty( $date_format ) || ! is_string( $date_format ) ) {
+            $date_format = 'd/m/Y';
+        }
+        return (string) mysql2date( $date_format, (string) $date );
+    }
+
+    /**
+     * Present a single club membership item with preformatted display dates.
+     */
+    public function present_club_membership( object|array $club_player ): Club_Membership_View_Model {
+        $club_name         = is_object( $club_player ) ? ( $club_player->club_name ?? '' ) : ( $club_player['club_name'] ?? '' );
+        $club_display_name = is_object( $club_player ) ? ( $club_player->club_display_name ?? $club_name ) : ( $club_player['club_display_name'] ?? $club_name );
+        $approval_date     = is_object( $club_player ) ? ( $club_player->approval_date ?? null ) : ( $club_player['approval_date'] ?? null );
+        $removal_date      = is_object( $club_player ) ? ( $club_player->removal_date ?? null ) : ( $club_player['removal_date'] ?? null );
+        $registration_date = is_object( $club_player ) ? ( $club_player->registration_date ?? null ) : ( $club_player['registration_date'] ?? null );
+        $club_id           = is_object( $club_player ) ? ( $club_player->club_id ?? null ) : ( $club_player['club_id'] ?? null );
+        $user_id           = is_object( $club_player ) ? ( $club_player->user_id ?? null ) : ( $club_player['user_id'] ?? null );
+        $registration_id   = is_object( $club_player ) ? ( $club_player->registration_id ?? null ) : ( $club_player['registration_id'] ?? null );
+
+        return new Club_Membership_View_Model(
+            club_name: (string) $club_name,
+            club_display_name: (string) $club_display_name,
+            approval_date: $approval_date ? (string) $approval_date : null,
+            approval_date_display: $this->format_date( $approval_date ? (string) $approval_date : null ),
+            removal_date: $removal_date ? (string) $removal_date : null,
+            removal_date_display: $this->format_date( $removal_date ? (string) $removal_date : null ),
+            registration_date: $registration_date ? (string) $registration_date : null,
+            club_id: null !== $club_id ? (int) $club_id : null,
+            user_id: null !== $user_id ? (int) $user_id : null,
+            registration_id: null !== $registration_id ? (int) $registration_id : null,
+        );
     }
 }

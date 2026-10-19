@@ -10,8 +10,10 @@
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Club_Factory;
 use Racketmanager\Domain\DTO\Club\Club_Competition_DTO;
 use Racketmanager\Domain\Team;
+use Racketmanager\Domain\Team_Factory;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Util\Util;
 use wpdb;
@@ -140,7 +142,7 @@ class Club_Repository implements Club_Repository_Interface {
 
         if ( $club_data ) {
             // Instantiate and return a new Club object with the fetched data
-            return new Club( $club_data );
+            return Club_Factory::from_object( $club_data );
         }
 
         return null; // Club not found
@@ -209,7 +211,7 @@ class Club_Repository implements Club_Repository_Interface {
 
         return array_map(
             function( $row ) {
-                return new Team( $row );
+                return Team_Factory::from_object( $row );
                 },
             $teams
         );
@@ -275,7 +277,7 @@ class Club_Repository implements Club_Repository_Interface {
             $results = $this->wpdb->get_results( $sql );
             $clubs   = array_map(
                 function( $row ) {
-                    return new Club( $row );
+                    return Club_Factory::from_object( $row );
                     },
                 $results
             );
@@ -399,6 +401,51 @@ class Club_Repository implements Club_Repository_Interface {
         );
 
         return $this->wpdb->get_results( $query );
+    }
+
+    /**
+     * Check if a player is in a club associated with a team or club id.
+     *
+     * @param array $args
+     * @return bool
+     */
+    public function is_player_in_club( array $args = array() ): bool {
+        $defaults = array(
+            'team'   => false,
+            'player' => false,
+            'active' => false,
+            'type'   => false,
+        );
+        $args   = array_merge( $defaults, $args );
+        $team   = $args['team'];
+        $type   = $args['type'];
+        $player = $args['player'];
+        $active = $args['active'];
+
+        $search_terms = array();
+        if ( $team ) {
+            $teams_table    = $this->wpdb->prefix . 'racketmanager_teams';
+            $search_terms[] = $this->wpdb->prepare( "`club_id` in (select `club_id` from $teams_table where `id` = %d)", (int) $team );
+        }
+
+        if ( $player ) {
+            $search_terms[] = $this->wpdb->prepare( '`player_id` = %d', (int) $player );
+        }
+
+        if ( $type ) {
+            $search_terms[] = '`system_record` IS NULL';
+        }
+
+        if ( $active ) {
+            $search_terms[] = '`removed_date` IS NULL';
+        }
+
+        $search = Util::search_string( $search_terms, true );
+        $club_players_table = $this->wpdb->prefix . 'racketmanager_club_players';
+        $sql    = "SELECT COUNT(ID) FROM $club_players_table " . $search;
+        $count  = $this->wpdb->get_var( $sql );
+
+        return (int) $count > 0;
     }
 
 }

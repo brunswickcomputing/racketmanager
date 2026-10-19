@@ -28,6 +28,7 @@ use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
+use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
@@ -344,8 +345,8 @@ class Ajax_Adapter_Test extends TestCase {
         $comp_service = $this->createStub( Competition_Service::class );
         $club_service = $this->createStub( Club_Service::class );
         $reg_service  = $this->createMock( Registration_Service::class );
-        $rm           = $this->createStub( RacketManager::class );
-        $rm->method( 'get_options' )->willReturn( [ 'ageLimitCheck' => true ] );
+        $settings_service = $this->createStub( Settings_Service::class );
+        $settings_service->method( 'get_category' )->willReturn( [ 'ageLimitCheck' => true ] );
 
         $comp = $this->createStub( Competition::class );
         $comp->id = 10;
@@ -378,7 +379,7 @@ class Ajax_Adapter_Test extends TestCase {
             ->with( 'active', null, 100, null, true, null, 45 )
             ->willReturn( [ (object) [ 'id' => 1, 'name' => 'Senior Player' ] ] );
 
-        $handler = new Get_Team_Order_Players_Handler( $comp_service, $club_service, $reg_service, $rm );
+        $handler = new Get_Team_Order_Players_Handler( $comp_service, $club_service, $reg_service, $settings_service );
         $vm = $handler->handle( new Get_Team_Order_Players_Query( event_id: 77, club_id: 100 ) );
 
         $this->assertFalse( $vm->is_error() );
@@ -390,8 +391,8 @@ class Ajax_Adapter_Test extends TestCase {
         $comp_service = $this->createStub( Competition_Service::class );
         $club_service = $this->createStub( Club_Service::class );
         $reg_service  = $this->createMock( Registration_Service::class );
-        $rm           = $this->createStub( RacketManager::class );
-        $rm->method( 'get_options' )->willReturn( [ 'ageLimitCheck' => false ] );
+        $settings_service = $this->createStub( Settings_Service::class );
+        $settings_service->method( 'get_category' )->willReturn( [ 'ageLimitCheck' => false ] );
 
         $comp = $this->createStub( Competition::class );
         $comp->id = 10;
@@ -421,7 +422,7 @@ class Ajax_Adapter_Test extends TestCase {
             ->with( 'active', null, 100, null, true, null, null )
             ->willReturn( [ (object) [ 'id' => 2, 'name' => 'Open Player' ] ] );
 
-        $handler = new Get_Team_Order_Players_Handler( $comp_service, $club_service, $reg_service, $rm );
+        $handler = new Get_Team_Order_Players_Handler( $comp_service, $club_service, $reg_service, $settings_service );
         $vm = $handler->handle( new Get_Team_Order_Players_Query( event_id: 88, club_id: 100 ) );
 
         $this->assertFalse( $vm->is_error() );
@@ -508,7 +509,8 @@ class Ajax_Adapter_Test extends TestCase {
             $reg_service,
             $club_service,
             $tourn_service,
-            $fixture_repo
+            $fixture_repo,
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class )
         );
     }
 }

@@ -874,11 +874,11 @@ class Rubber {
         }
     }
     public function is_walkover(): bool {
-        return 2 === $this->status;
+        return \Racketmanager\Domain\Enums\Fixture_Status::WALKOVER->value === $this->status;
     }
 
     public function is_shared(): bool {
-        return 4 === $this->status;
+        return \Racketmanager\Domain\Enums\Fixture_Status::SHARED->value === $this->status;
     }
 
     /**

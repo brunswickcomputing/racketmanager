@@ -5,14 +5,15 @@ namespace Racketmanager\Application\Login\Queries;
 
 use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
-use Racketmanager\RacketManager;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Util\Util;
 use function esc_url;
 use function esc_url_raw;
+use function htmlspecialchars_decode;
 use function home_url;
 use function str_starts_with;
 use function strpos;
+use function wp_specialchars_decode;
 use function wp_unslash;
 use function wp_validate_redirect;
 use function __;
@@ -20,8 +21,7 @@ use function __;
 class Get_Login_Form_Handler {
     public function __construct(
         private readonly Option_Gateway_Interface $option_gateway,
-        private readonly Settings_Service $settings_service,
-        private readonly ?RacketManager $racketmanager = null
+        private readonly Settings_Service $settings_service
     ) {}
 
     public function handle( Get_Login_Form_Query $query ): Shortcode_View_Model {
@@ -40,8 +40,11 @@ class Get_Login_Form_Handler {
             );
         }
 
-        $site_name = $this->racketmanager->site_name ?? '';
-        $site_url  = $this->racketmanager->site_url ?? '';
+        $raw_site_name = (string) $this->option_gateway->get_option( 'blogname', '' );
+        $site_name     = function_exists( 'wp_specialchars_decode' )
+            ? wp_specialchars_decode( $raw_site_name, ENT_QUOTES )
+            : htmlspecialchars_decode( $raw_site_name, ENT_QUOTES );
+        $site_url      = (string) $this->option_gateway->get_option( 'siteurl', '' );
         $keys      = $this->settings_service->get_category( 'keys' );
         $recaptcha_site_key = $keys['recaptchaSiteKey'] ?? '';
 

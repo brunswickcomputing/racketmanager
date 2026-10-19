@@ -13,7 +13,7 @@ use Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response;
 use Racketmanager\Domain\DTO\Fixture\Team_Result_Response;
 use Racketmanager\Domain\DTO\Player\Player_Warnings_Response;
 use Racketmanager\Domain\DTO\Rubber\Rubber_Update_Request;
-use Racketmanager\Repositories\Event_Repository;
+use Racketmanager\Domain\Enums\Fixture_Status;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Result\Rubber_Result_Manager;
@@ -133,7 +133,7 @@ class Fixture_Result_Manager {
 
     /** @var Result_Reporting_Service */
     private Result_Reporting_Service $result_reporting_service;
-    private Fixture_Maintenance_Service $fixture_maintenance_service;
+    private ?Fixture_Maintenance_Service $fixture_maintenance_service = null;
     private Fixture_Finalization_Service $finalization_service;
 
     private Service_Provider $service_provider;
@@ -141,31 +141,68 @@ class Fixture_Result_Manager {
     /**
      * @param Service_Provider $service_provider
      * @param Repository_Provider $repository_provider
-     * @param Simple_Container|null $container
      */
     public function __construct(
         Service_Provider $service_provider,
-        Repository_Provider $repository_provider,
-        ?Simple_Container $container = null
+        Repository_Provider $repository_provider
     ) {
         $this->service_provider = $service_provider;
-        $this->result_reporting_service = $service_provider->get_result_reporting_service() ?? new Result_Reporting_Service( $repository_provider );
-        $this->fixture_maintenance_service = $service_provider->get_fixture_maintenance_service() ?? new Fixture_Maintenance_Service( $service_provider, $repository_provider, $this );
-        $container = $container ?? $GLOBALS['racketmanager']->container ?? null;
-        $this->progression_service = $service_provider->get_progression_service( $container ) ?? new Knockout_Progression_Service(
-            $repository_provider->get_fixture_repository(),
-            $repository_provider->get_league_repository(),
-            $repository_provider->get_event_repository()
-        );
-        $this->finalization_service = $service_provider->get_fixture_finalization_service() ?? new Fixture_Finalization_Service( null, $this->progression_service, $this->result_reporting_service );
-        $this->result_service      = $service_provider->get_result_service() ?? new Result_Service( $repository_provider->get_fixture_repository(), $repository_provider->get_team_repository() );
-        $this->league_service      = $service_provider->get_league_service() ?? new League_Service( $GLOBALS['racketmanager'], $repository_provider->get_league_repository(), new Event_Repository(), $repository_provider->get_league_team_repository(), $repository_provider->get_team_repository() );
-        $this->score_validator     = $service_provider->get_score_validator() ?? new Score_Validation_Service();
-        $this->settings_service    = $service_provider->get_settings_service() ?? new Settings_Service();
 
-        $this->registration_service = $service_provider->get_registration_service();
-        $this->player_validator     = $service_provider->get_player_validator() ?? new Player_Validation_Service( $this->registration_service, $repository_provider->get_results_checker_repository(), $repository_provider->get_fixture_repository() );
-        $this->rubber_manager       = $service_provider->get_rubber_manager() ?? new Rubber_Result_Manager( $this->score_validator, $this->league_service, $repository_provider->get_rubber_repository(), $this->player_validator );
+        $this->result_reporting_service = $service_provider->get_result_reporting_service();
+
+        $result_service = $service_provider->get_result_service();
+        if ( null === $result_service ) {
+            throw new \LogicException( 'Result_Service has not been configured on Service_Provider.' );
+        }
+        $this->result_service = $result_service;
+
+        $progression_service = $service_provider->get_progression_service();
+        if ( null === $progression_service ) {
+            throw new \LogicException( 'Knockout_Progression_Service has not been configured on Service_Provider.' );
+        }
+        $this->progression_service = $progression_service;
+
+        $finalization_service = $service_provider->get_fixture_finalization_service();
+        if ( null === $finalization_service ) {
+            throw new \LogicException( 'Fixture_Finalization_Service has not been configured on Service_Provider or Container.' );
+        }
+        $this->finalization_service = $finalization_service;
+
+        $league_service = $service_provider->get_league_service();
+        if ( null === $league_service ) {
+            throw new \LogicException( 'League_Service has not been configured on Service_Provider.' );
+        }
+        $this->league_service = $league_service;
+
+        $score_validator = $service_provider->get_score_validator();
+        if ( null === $score_validator ) {
+            throw new \LogicException( 'Score_Validation_Service has not been configured on Service_Provider.' );
+        }
+        $this->score_validator = $score_validator;
+
+        $settings_service = $service_provider->get_settings_service();
+        if ( null === $settings_service ) {
+            throw new \LogicException( 'Settings_Service has not been configured on Service_Provider or Container.' );
+        }
+        $this->settings_service = $settings_service;
+
+        $registration_service = $service_provider->get_registration_service();
+        if ( null === $registration_service ) {
+            throw new \LogicException( 'Registration_Service has not been configured on Service_Provider.' );
+        }
+        $this->registration_service = $registration_service;
+
+        $player_validator = $service_provider->get_player_validator();
+        if ( null === $player_validator ) {
+            throw new \LogicException( 'Player_Validation_Service has not been configured on Service_Provider.' );
+        }
+        $this->player_validator = $player_validator;
+
+        $notification_service = $service_provider->get_notification_service();
+        if ( null === $notification_service ) {
+            throw new \LogicException( 'Notification_Service has not been configured on Service_Provider or Container.' );
+        }
+        $this->notification_service = $notification_service;
 
         $this->team_repository            = $repository_provider->get_team_repository();
         $this->league_team_repository     = $repository_provider->get_league_team_repository();
@@ -174,17 +211,32 @@ class Fixture_Result_Manager {
         $this->results_checker_repository = $repository_provider->get_results_checker_repository();
         $this->fixture_repository         = $repository_provider->get_fixture_repository();
 
-        $this->permission_service = $service_provider->get_fixture_permission_service() ?? new Fixture_Permission_Service( $repository_provider, $this->registration_service, $this->settings_service->get_options() );
+        $rubber_manager = $service_provider->get_rubber_manager();
+        if ( null === $rubber_manager ) {
+            throw new \LogicException( 'Rubber_Result_Manager has not been configured on Service_Provider or Container.' );
+        }
+        $this->rubber_manager = $rubber_manager;
 
-        $this->notification_service = $service_provider->get_notification_service();
-        if ( ! $this->notification_service && $container ) {
-            $this->notification_service = new Notification_Service(
-                $repository_provider,
-                $this->settings_service,
-                $container->get( 'notification_presenter' ),
-                $container->get( 'view_renderer' ),
-                $GLOBALS['racketmanager']
-            );
+        $permission_service = $service_provider->get_fixture_permission_service();
+        if ( null === $permission_service ) {
+            throw new \LogicException( 'Fixture_Permission_Service has not been configured on Service_Provider or Container.' );
+        }
+        $this->permission_service = $permission_service;
+
+        $this->fixture_maintenance_service = $service_provider->get_fixture_maintenance_service();
+    }
+
+    public function get_fixture_maintenance_service(): ?Fixture_Maintenance_Service {
+        return $this->fixture_maintenance_service;
+    }
+
+    public function set_fixture_maintenance_service( Fixture_Maintenance_Service $fixture_maintenance_service ): void {
+        $this->fixture_maintenance_service = $fixture_maintenance_service;
+    }
+
+    private function ensure_maintenance_service(): void {
+        if ( ! isset( $this->fixture_maintenance_service ) ) {
+            throw new \LogicException( 'Fixture_Maintenance_Service has not been set.' );
         }
     }
 
@@ -235,37 +287,37 @@ class Fixture_Result_Manager {
             );
         }
 
-        $status = 0;
+        $status = Fixture_Status::COMPLETE->value;
         $custom = $fixture->get_custom() ?: [];
 
         switch ($request->match_status) {
             case 'walkover_player1':
                 $custom['walkover'] = 'home';
-                $status = 1;
+                $status = Fixture_Status::WALKOVER->value;
                 break;
             case 'walkover_player2':
                 $custom['walkover'] = 'away';
-                $status = 1;
+                $status = Fixture_Status::WALKOVER->value;
                 break;
             case 'retired_player1':
                 $custom['retired'] = 'home';
-                $status = 2;
+                $status = Fixture_Status::RETIRED->value;
                 break;
             case 'retired_player2':
                 $custom['retired'] = 'away';
-                $status = 2;
+                $status = Fixture_Status::RETIRED->value;
                 break;
             case 'share':
                 $custom['share'] = 'true';
-                $status = 3;
+                $status = Fixture_Status::SHARED->value;
                 break;
             case 'abandoned':
                 $custom['abandoned'] = 'true';
-                $status = 6;
+                $status = Fixture_Status::ABANDONED->value;
                 break;
             case 'cancelled':
                 $custom['cancelled'] = 'true';
-                $status = 8;
+                $status = Fixture_Status::CANCELLED->value;
                 break;
             default:
                 break;
@@ -873,6 +925,7 @@ class Fixture_Result_Manager {
         }
 
         if ( 'Y' === $fixture->get_confirmed() ) {
+            $this->ensure_maintenance_service();
             $this->fixture_maintenance_service->delete_result_report( (int) $fixture->get_id() );
             $report_data = $this->result_reporting_service->report_result( $fixture );
             if ( $report_data ) {

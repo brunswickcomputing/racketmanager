@@ -7,7 +7,6 @@
 
 namespace Racketmanager;
 
-global $racketmanager;
 /** @var object $event */
 $competition_type = $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
 if ( empty( $event->player ) ) {

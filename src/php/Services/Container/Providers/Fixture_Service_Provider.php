@@ -9,7 +9,6 @@ use Racketmanager\Application\Matches\Queries\Get_Latest_Results_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Match_Detail_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Match_Header_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Match_Score_Handler;
-use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Services\Fixture_Detail_Service as Domain_Fixture_Detail_Service;
 use Racketmanager\Infrastructure\Persistence\Legacy_Fixture_Listing_Finder;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Fixture_Ajax_Adapter;
@@ -22,6 +21,7 @@ use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Presentation\Presenters\Match_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Matches_List_Presenter;
 use Racketmanager\Presentation\Presenters\Results_Checker_Presenter;
+use Racketmanager\Presentation\Presenters\Team_Match_Row_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Interfaces\Result_Repository_Interface;
@@ -37,12 +37,14 @@ use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
-use Racketmanager\Services\Fixture\Lazy_Fixture_Update_Authorizer;
+use Racketmanager\Services\Fixture\Fixture_Relation_Loader;
+use Racketmanager\Services\Fixture\Lazy_Fixture_Team_Resolver;
 use Racketmanager\Services\Fixture\Service_Provider as Internal_Fixture_Service_Provider;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Result\Result_Reporting_Service;
 use Racketmanager\Services\Result\Results_Checker_Manager;
 use Racketmanager\Services\Result_Service;
+use Racketmanager\Services\Result\Rubber_Result_Manager;
 use Racketmanager\Services\Validator\Score_Validation_Service;
 
 /**
@@ -57,12 +59,16 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
         $app = $this->app;
 
         // Repositories
+        $container->set( 'fixture_team_resolver', fn( Simple_Container $c ) => new Lazy_Fixture_Team_Resolver(
+                fn(): \Racketmanager\Domain\Fixture\Fixture_Team_Resolver_Interface => $c->get( 'team_service' )
+        ) );
+        $container->set( 'fixture_relation_loader', fn( Simple_Container $c ) => new Fixture_Relation_Loader(
+            $c->get( 'league_repository' ),
+            $c->get( 'fixture_team_resolver' )
+        ) );
         $container->set( 'fixture_repository', fn( Simple_Container $c ) => new Fixture_Repository(
-            league_repository: $c->get( 'league_repository' ),
-            team_service: $c->get( 'team_service' ),
-            update_authorizer: new Lazy_Fixture_Update_Authorizer(
-                fn( Fixture $fixture ): object => $c->get( 'fixture_permission_service' )->is_update_allowed( $fixture )
-            )
+            relation_loader: $c->get( 'fixture_relation_loader' ),
+            rubber_repository: $c->get( 'rubber_repository' )
         ) );
 
         $container->set( 'rubber_repository', fn() => new Rubber_Repository() );
@@ -93,6 +99,13 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             $c->get( 'result_reporting_service' )
         ) );
 
+        $container->set( 'rubber_result_manager', fn( Simple_Container $c ) => new Rubber_Result_Manager(
+            $c->get( 'score_validation_service' ),
+            $c->get( 'league_service' ),
+            $c->get( 'rubber_repository' ),
+            $c->get( 'player_validation_service' )
+        ) );
+
         $container->set( 'fixture_service_provider', function ( Simple_Container $c ) {
             $service_provider = new Internal_Fixture_Service_Provider(
                 $c->get( 'result_service' ),
@@ -108,6 +121,9 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             $service_provider->set_fixture_permission_service( $c->get( 'fixture_permission_service' ) );
             $service_provider->set_fixture_detail_service( $c->get( 'fixture_detail_service' ) );
             $service_provider->set_fixture_finalization_service( $c->get( 'fixture_finalization_service' ) );
+            $service_provider->set_result_reporting_service( $c->get( 'result_reporting_service' ) );
+            $service_provider->set_settings_service( $c->get( 'settings_service' ) );
+            $service_provider->set_rubber_manager( $c->get( 'rubber_result_manager' ) );
 
             return $service_provider;
         } );
@@ -121,16 +137,19 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
 
         $container->set( 'fixture_result_manager', function ( Simple_Container $c ) {
             $service_provider = $c->get( 'fixture_service_provider' );
-            $service_provider->set_settings_service( $c->get( 'settings_service' ) );
 
-            return new Fixture_Result_Manager( $service_provider, $c->get( 'repository_provider' ), $c );
+            $result_manager      = new Fixture_Result_Manager( $service_provider, $c->get( 'repository_provider' ) );
+            $maintenance_service = new Fixture_Maintenance_Service( $service_provider, $c->get( 'repository_provider' ), $result_manager );
+            $result_manager->set_fixture_maintenance_service( $maintenance_service );
+            $service_provider->set_fixture_maintenance_service( $maintenance_service );
+
+            return $result_manager;
         } );
 
         $container->set( 'fixture_maintenance_service', function ( Simple_Container $c ) {
-            $service_provider = $c->get( 'fixture_service_provider' );
-            $service_provider->set_settings_service( $c->get( 'settings_service' ) );
+            $result_manager = $c->get( 'fixture_result_manager' );
 
-            return new Fixture_Maintenance_Service( $service_provider, $c->get( 'repository_provider' ), $c->get( 'fixture_result_manager' ) );
+            return $result_manager->get_fixture_maintenance_service();
         } );
 
         $container->set( 'fixture_lifecycle_service', fn( Simple_Container $c ) => new Fixture_Lifecycle_Service(
@@ -154,7 +173,8 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
         ) );
 
         $container->set( 'result_reporting_service', fn( Simple_Container $c ) => new Result_Reporting_Service(
-            $c->get( 'repository_provider' )
+            $c->get( 'repository_provider' ),
+            $c->get( 'option_gateway' )
         ) );
 
         $container->set( 'result_service', fn( Simple_Container $c ) => new Result_Service(
@@ -178,9 +198,19 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
         } );
 
         // Presenters
+        $container->set( 'team_match_row_presenter', fn( Simple_Container $c ) => new Team_Match_Row_Presenter(
+            $c->get( 'option_gateway' ),
+            $c->get( 'fixture_relation_loader' ),
+            $c->get( 'fixture_permission_service' ),
+            $c->get( 'fixture_link_service' ),
+            $c->get( 'club_repository' ),
+            $c->get( 'league_repository' )
+        ) );
+
         $container->set( 'fixture_presenter', fn( Simple_Container $c ) => new Fixture_Presenter(
             $c->get( 'fixture_link_service' ),
-            $c->get( 'option_gateway' )
+            $c->get( 'option_gateway' ),
+            $c->get( 'team_match_row_presenter' )
         ) );
 
         $container->set( 'results_checker_presenter', fn( Simple_Container $c ) => new Results_Checker_Presenter(
@@ -195,14 +225,18 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             $c->get( 'competition_service' ),
             $c->get( 'team_service' ),
             $c->get( 'view_renderer' ),
+            $c->get( 'tournament_presenter' ),
             $c->get( 'fixture_link_service' ),
             $c->get( 'fixture_permission_service' ),
             $c->get( 'club_presenter' ),
-            $c->get( 'player_presenter' )
+            $c->get( 'player_presenter' ),
+            $c->get( 'rubber_repository' )
         ) );
 
         $container->set( 'match_shortcode_presenter', fn( Simple_Container $c ) => new Match_Shortcode_Presenter(
-            $c->get( 'shortcode_view_presenter' )
+            $c->get( 'shortcode_view_presenter' ),
+            $c->get( 'fixture_presenter' ),
+            $c->get( 'player_service' )
         ) );
 
         // Finder

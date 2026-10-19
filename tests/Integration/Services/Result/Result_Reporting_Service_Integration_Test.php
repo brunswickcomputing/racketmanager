@@ -14,6 +14,7 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Settings;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Team;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
@@ -31,8 +32,6 @@ class Result_Reporting_Service_Integration_Test extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 		$this->backup_globals();
-		$GLOBALS['racketmanager']            = new stdClass();
-		$GLOBALS['racketmanager']->site_name = 'Integration Site';
 	}
 
 	protected function tearDown(): void {
@@ -135,7 +134,9 @@ class Result_Reporting_Service_Integration_Test extends TestCase {
 			rubber_repository: $rubber_repo
 		);
 
-		$service = new Result_Reporting_Service( $repository_provider );
+		$option_gateway = $this->createStub( Option_Gateway_Interface::class );
+		$option_gateway->method( 'get_option' )->willReturn( 'Integration Site' );
+		$service = new Result_Reporting_Service( $repository_provider, $option_gateway );
 		$result = $service->report_result( $fixture );
 
 		$this->assertEquals( 'INT-COMP', $result->code );

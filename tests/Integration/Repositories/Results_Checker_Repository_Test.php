@@ -3,27 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager;
 
-if ( ! function_exists( 'Racketmanager\get_match' ) ) {
-    function get_match( $id ) {
-        return (object) [
-            'home_team' => 10,
-            'away_team' => 20,
-            'teams'     => [
-                'home' => (object) [ 'id' => 10 ],
-                'away' => (object) [ 'id' => 20 ],
-            ],
-        ];
-    }
-}
-
 if ( ! function_exists( 'Racketmanager\get_player' ) ) {
     function get_player( $id ) {
-        return (object) [ 'id' => $id ];
-    }
-}
-
-if ( ! function_exists( 'Racketmanager\get_rubber' ) ) {
-    function get_rubber( $id ) {
         return (object) [ 'id' => $id ];
     }
 }

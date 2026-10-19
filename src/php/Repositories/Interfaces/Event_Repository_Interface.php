@@ -19,6 +19,7 @@ interface Event_Repository_Interface extends Repository_Interface {
     public function find_by_id( $id ): ?Event;
     public function find_by_name( string $name ): ?Event;
     public function find_by_competition_id( int $competition_id ): array;
+    public function find_all( array $args = [] ): array;
     public function delete( int $id ): bool;
     public function find_events_by_competition_with_counts( int $competition_id, int $season, ?int $min_fixtures = 1): array;
 
@@ -39,6 +40,7 @@ interface Event_Repository_Interface extends Repository_Interface {
     public function mark_teams_withdrawn( int $event_id, string $season, int $club, false|int $team = false ): bool;
     public function mark_teams_entered( int $event_id, int $team, string $season ): bool;
     public function query_matches( int $event_id, array $match_args = [] ): array|int;
+    public function count_by_event_season( int $event_id, string $season, bool $completed_only = false ): int;
     public function update_seasons( int $id, array $seasons ): bool;
     public function delete_league_teams_for_season( int $league_id, string $season ): bool;
 }

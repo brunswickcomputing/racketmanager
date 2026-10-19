@@ -8,10 +8,10 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
-use Racketmanager\Domain\Fixture\Fixture_Update_Authorizer_Interface;
 use Racketmanager\Domain\Team;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Services\Fixture\Fixture_Relation_Loader;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use wpdb;
@@ -47,13 +47,6 @@ final class Fixture_Container_Isolation_Test extends TestCase {
 			->method( 'get_team_details' )
 			->willReturn( $team_details );
 
-		$permission_response = (object) array( 'user_can_update' => true );
-		$update_authorizer = $this->createMock( Fixture_Update_Authorizer_Interface::class );
-		$update_authorizer->expects( $this->once() )
-			->method( 'is_update_allowed' )
-			->with( $this->isInstanceOf( Fixture::class ) )
-			->willReturn( $permission_response );
-
 		$wpdb = $this->createStub( wpdb::class );
 		$wpdb->prefix = 'wp_';
 		$wpdb->method( 'prepare' )->willReturnCallback( static fn( string $query ): string => $query );
@@ -66,16 +59,43 @@ final class Fixture_Container_Isolation_Test extends TestCase {
 		$GLOBALS['wpdb'] = $wpdb;
 
 		$repository = new Fixture_Repository(
-			league_repository: $league_repository,
-			team_service: $team_service,
-			update_authorizer: $update_authorizer
+			relation_loader: new Fixture_Relation_Loader( $league_repository, $team_service )
 		);
-		$fixture = $repository->find_by_id( 998123 );
+		$fixture = $repository->find_by_id_with_relations( 998123 );
 
 		$this->assertInstanceOf( Fixture::class, $fixture );
 		$this->assertSame( $league, $fixture->get_league() );
 		$this->assertSame( 'Home Team', $fixture->get_teams()['home']->title );
-		$this->assertSame( $permission_response, $fixture->is_update_allowed() );
+		$this->assertFalse( method_exists( $fixture, 'is_update_allowed' ) );
+	}
+
+	public function test_plain_find_by_id_is_cheap_and_does_not_load_relations(): void {
+		$league_repository = $this->createMock( League_Repository_Interface::class );
+		$league_repository->expects( $this->never() )->method( 'find_by_id' );
+		$team_service = $this->createMock( Team_Service::class );
+		$team_service->expects( $this->never() )->method( 'get_team_details' );
+
+		$wpdb = $this->createStub( wpdb::class );
+		$wpdb->prefix = 'wp_';
+		$wpdb->method( 'prepare' )->willReturnCallback( static fn( string $query ): string => $query );
+		$wpdb->method( 'get_row' )->willReturn(
+			(object) array(
+				'id'        => 998123,
+				'league_id' => 7,
+				'home_team' => '11',
+				'away_team' => '22',
+			)
+		);
+		$GLOBALS['wpdb'] = $wpdb;
+
+		$repository = new Fixture_Repository(
+			relation_loader: new Fixture_Relation_Loader( $league_repository, $team_service )
+		);
+		$fixture = $repository->find_by_id( 998123 );
+
+		$this->assertInstanceOf( Fixture::class, $fixture );
+		$this->assertNull( $fixture->get_league() );
+		$this->assertSame( array(), $fixture->get_loaded_teams() );
 	}
 
 	public function test_fixture_domain_methods_are_safe_without_global_container_or_injected_services(): void {
@@ -89,6 +109,28 @@ final class Fixture_Container_Isolation_Test extends TestCase {
 
 		$this->assertNull( $fixture->get_league() );
 		$this->assertSame( 'Unknown', $fixture->get_teams()['home']->title );
-		$this->assertFalse( $fixture->is_update_allowed()->user_can_update );
+		$this->assertFalse( method_exists( $fixture, 'is_update_allowed' ) );
+		$this->assertSame( array(), $fixture->get_loaded_teams() );
+	}
+
+	public function test_bulk_team_lookup_for_deletion_does_not_load_relations(): void {
+		$league_repository = $this->createMock( League_Repository_Interface::class );
+		$league_repository->expects( $this->never() )->method( 'find_by_id' );
+		$team_service = $this->createMock( Team_Service::class );
+		$team_service->expects( $this->never() )->method( 'get_team_details' );
+
+		$wpdb = $this->createStub( wpdb::class );
+		$wpdb->prefix = 'wp_';
+		$wpdb->method( 'prepare' )->willReturnCallback( static fn( string $query ): string => $query );
+		$wpdb->method( 'get_results' )->willReturn(
+			array( (object) array( 'id' => 5, 'league_id' => 7, 'home_team' => '11', 'away_team' => '22' ) )
+		);
+
+		$repository = new Fixture_Repository( $wpdb, new Fixture_Relation_Loader( $league_repository, $team_service ) );
+		$fixtures   = $repository->find_by_team( 11 );
+
+		$this->assertCount( 1, $fixtures );
+		$this->assertSame( array(), $fixtures[0]->get_loaded_teams() );
+		$this->assertNull( $fixtures[0]->get_league() );
 	}
 }

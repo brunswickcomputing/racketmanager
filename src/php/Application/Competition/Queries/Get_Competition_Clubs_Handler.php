@@ -6,10 +6,14 @@ namespace Racketmanager\Application\Competition\Queries;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
+use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
+use Racketmanager\Presentation\View_Models\Team_Matches_Group_View_Model;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
+use Racketmanager\Services\Player_Stats_Service;
 use function is_numeric;
+use function method_exists;
 use function Racketmanager\un_seo_url;
 use function substr;
 use function __;
@@ -20,7 +24,9 @@ use function __;
 class Get_Competition_Clubs_Handler {
     public function __construct(
         private readonly Competition_Service $competition_service,
-        private readonly Club_Service $club_service
+        private readonly Club_Service $club_service,
+        private readonly Player_Stats_Service $player_stats_service,
+        private readonly Tournament_Presenter $tournament_presenter
     ) {}
 
     public function handle( Get_Competition_Clubs_Query $query ): Shortcode_View_Model {
@@ -114,12 +120,42 @@ class Get_Competition_Clubs_Handler {
                     $competition_club->results[ $key ][] = $match;
                 }
 
+                foreach ( $competition_club->matches as $key => $group_matches ) {
+                    $competition_club->matches[ $key ] = $this->tournament_presenter->present_match_group(
+                        $key,
+                        $group_matches,
+                        $this->tournament_presenter->is_tournament_competition( $competition ),
+                        [
+                            'current_club' => $club_id,
+                            'show_header'  => true,
+                            'by_date'      => true,
+                        ]
+                    );
+                }
+                foreach ( $competition_club->results as $key => $group_matches ) {
+                    $competition_club->results[ $key ] = $this->tournament_presenter->present_match_group(
+                        $key,
+                        $group_matches,
+                        $this->tournament_presenter->is_tournament_competition( $competition ),
+                        [
+                            'current_club' => $club_id,
+                            'show_header'  => true,
+                            'by_date'      => true,
+                        ]
+                    );
+                }
+
                 $competition_club->players = $competition->get_players(
                     [
                         'club'   => $club_id,
                         'season' => $season_name,
-                        'stats'  => true,
                     ]
+                );
+                $competition_club->players = $this->player_stats_service->populate_players_stats(
+                    $competition_club->players,
+                    $competition,
+                    $season_name,
+                    'competition'
                 );
             } else {
                 return Shortcode_View_Model::error( __( 'Club not found', 'racketmanager' ) );

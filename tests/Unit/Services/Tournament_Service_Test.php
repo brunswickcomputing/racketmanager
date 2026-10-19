@@ -19,6 +19,7 @@ use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Util\Util_Messages;
 
@@ -58,6 +59,7 @@ class Tournament_Service_Test extends TestCase {
                         $this->createMock( Tournament_Entry_Repository_Interface::class ),
                         $this->createMock( Competition_Service::class ),
                         $this->createMock( Player_Service::class ),
+                        $this->createMock( Player_Stats_Service::class ),
                         $this->createMock( Club_Service::class ),
                         $this->createMock( Finance_Service::class ),
                         $this->createMock( League_Service::class )

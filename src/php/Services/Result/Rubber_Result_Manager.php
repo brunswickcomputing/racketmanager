@@ -5,6 +5,7 @@ namespace Racketmanager\Services\Result;
 
 use Racketmanager\Domain\DTO\Rubber\Rubber_Update_Request;
 use Racketmanager\Domain\DTO\Rubber\Rubber_Update_Result;
+use Racketmanager\Domain\Enums\Fixture_Status;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Exceptions\Fixture_Validation_Exception;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
@@ -113,48 +114,48 @@ class Rubber_Result_Manager {
         $points = $this->score_validator->get_points();
 
         // 4. Determine Status and Custom data
-        $status = 0;
+        $status = Fixture_Status::COMPLETE->value;
         $custom = [ 'sets' => $sets, 'stats' => $stats ];
 
         switch ( $request->rubber_status ) {
             case 'share':
-                $status          = 3;
+                $status          = Fixture_Status::SHARED->value;
                 $custom['share'] = true;
                 break;
             case 'walkover_player1':
-                $status             = 1;
+                $status             = Fixture_Status::WALKOVER->value;
                 $custom['walkover'] = 'home';
                 break;
             case 'walkover_player2':
-                $status             = 1;
+                $status             = Fixture_Status::WALKOVER->value;
                 $custom['walkover'] = 'away';
                 break;
             case 'retired_player1':
-                $status            = 2;
+                $status            = Fixture_Status::RETIRED->value;
                 $custom['retired'] = 'home';
                 break;
             case 'retired_player2':
-                $status            = 2;
+                $status            = Fixture_Status::RETIRED->value;
                 $custom['retired'] = 'away';
                 break;
             case 'abandoned':
-                $status              = 6;
+                $status              = Fixture_Status::ABANDONED->value;
                 $custom['abandoned'] = true;
                 break;
             case 'cancelled':
-                $status              = 8;
+                $status              = Fixture_Status::CANCELLED->value;
                 $custom['cancelled'] = true;
                 break;
             case 'invalid_player1':
-                $status            = 9;
+                $status            = Fixture_Status::INVALID->value;
                 $custom['invalid'] = 'home';
                 break;
             case 'invalid_player2':
-                $status            = 9;
+                $status            = Fixture_Status::INVALID->value;
                 $custom['invalid'] = 'away';
                 break;
             case 'invalid_players':
-                $status            = 9;
+                $status            = Fixture_Status::INVALID->value;
                 $custom['invalid'] = 'both';
                 break;
             default:

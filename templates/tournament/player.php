@@ -70,7 +70,7 @@ $player = $tournament_player;
                         ?>
                         <div class="tournament-matches">
                             <?php
-                            foreach ( $fixtures as $fixture_detail ) {
+                            foreach ( $fixtures as $card ) {
                                 ?>
                                 <?php require RACKETMANAGER_PATH . 'templates/tournament/match.php'; ?>
                                 <?php

@@ -27,9 +27,21 @@ enum Team_Profile: int {
     /**
      * Safely creates an enum from a raw value with a fallback.
      */
-    public static function from_value( int $value ): self {
-        // try_from returns NULL if the value (e.g. 99) isn't found.
-        return self::tryFrom( $value ) ?? self::ACTIVE;
+    public static function from_value( int|string|self $value ): self {
+        if ( $value instanceof self ) {
+            return $value;
+        }
+        return self::tryFrom( (int) $value ) ?? self::ACTIVE;
+    }
+
+    public static function try_from_value( int|string|self|null $value ): ?self {
+        if ( null === $value ) {
+            return null;
+        }
+        if ( $value instanceof self ) {
+            return $value;
+        }
+        return self::tryFrom( (int) $value );
     }
 
 }

@@ -5,12 +5,16 @@ namespace Racketmanager\Services\Standings;
 
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Stage;
+use Racketmanager\Domain\Enums\Fixture_Status;
+use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
+use Racketmanager\Repositories\Rubber_Repository;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Util\Util;
 use function Racketmanager\get_league_team;
@@ -23,17 +27,20 @@ class Standings_Service {
 	private ?League_Team_Repository_Interface $league_team_repository = null;
 	private ?League_Service $league_service = null;
 	private ?Fixture_Repository_Interface $fixture_repository = null;
+	private ?Rubber_Repository_Interface $rubber_repository = null;
 
 	public function __construct(
 		?League_Repository_Interface $league_repository = null,
 		?League_Team_Repository_Interface $league_team_repository = null,
 		?League_Service $league_service = null,
-		?Fixture_Repository_Interface $fixture_repository = null
+		?Fixture_Repository_Interface $fixture_repository = null,
+		?Rubber_Repository_Interface $rubber_repository = null
 	) {
 		$this->league_repository      = $league_repository;
 		$this->league_team_repository = $league_team_repository;
 		$this->league_service         = $league_service;
 		$this->fixture_repository     = $fixture_repository;
+		$this->rubber_repository      = $rubber_repository;
 	}
 
 	private function get_fixture_repository(): Fixture_Repository_Interface {
@@ -115,6 +122,7 @@ class Standings_Service {
 		$league->set_match_query_arg( 'limit', false );
 		$league->set_match_query_arg( 'mode', $mode );
 
+		$rubbers_by_fixture = [];
 		foreach ( $teams as $i => $team ) {
 			$team       = get_league_team( $team );
 			$match_args = array();
@@ -153,6 +161,15 @@ class Standings_Service {
 
 			// get matches.
 			$matches = $league->get_matches( $match_args );
+			if ( $league->num_rubbers > 0 ) {
+				foreach ( $matches as $match ) {
+					if ( $match instanceof Fixture && null === $match->rubbers ) {
+						$this->rubber_repository ??= new Rubber_Repository();
+						$rubbers_by_fixture[ $match->get_id() ] ??= $this->rubber_repository->find_by_fixture_id( $match->get_id() );
+						$match->set_rubbers( $rubbers_by_fixture[ $match->get_id() ] );
+					}
+				}
+			}
 			foreach ( $matches as $match ) {
 				if ( '' !== $match->home_points && '' !== $match->away_points ) {
 					$team->done_matches += 1;
@@ -509,7 +526,7 @@ class Standings_Service {
 			$player_ref_alt = 'player1' === $player_ref ? 'player2' : 'player1';
 			$match          = is_object( $match ) && method_exists( $match, 'get_rubbers' ) ? $match : $this->get_fixture_repository()->find_by_id( is_numeric( $match ) ? (int) $match : (int) $match->id );
 			if ( $match && ! empty( $match->winner_id ) && ! empty( $match->loser_id ) && ( $match->teams['home']->status ?? '' ) !== 'W' && ( $match->teams['away']->status ?? '' ) !== 'W' && empty( $match->is_cancelled ) ) {
-				if ( ! empty( $match->status ) && 3 === $match->status ) {
+				if ( Fixture_Status::SHARED === Fixture_Status::try_from_value( $match->status ?? null ) ) {
 					++$data['matches_shared'];
 				}
 				if ( ! empty( $league->num_rubbers ) ) {

@@ -9,9 +9,9 @@
 
 namespace Racketmanager\Admin;
 
+use Racketmanager\Domain\Competition\League;
 use Racketmanager\Services\Championship_Manager;
 use Racketmanager\Services\Validator\Validator;
-use function Racketmanager\get_league;
 
 /**
  * RacketManager Championship Admin functions
@@ -29,8 +29,15 @@ class Admin_Championship extends Admin_Display {
      */
     public function handle_championship_admin_page( ?object $league = null ): string {
         $validator = new Validator();
-        $league = get_league( $league );
         $tab    = 'finalResults'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+        if ( ! ( $league instanceof League ) ) {
+            $league = $this->racketmanager->container->get( 'league_service' )->get_league( $league->id ?? null );
+        }
+        if ( ! $league ) {
+            $this->set_message( __( 'League not found', 'racketmanager' ), true );
+            $this->show_message();
+            return $tab;
+        }
         if ( isset( $_POST['action'] ) ) {
             $action = sanitize_text_field( wp_unslash( $_POST['action'] ) );
             if ( 'startFinals' === $action ) {
@@ -61,8 +68,15 @@ class Admin_Championship extends Admin_Display {
                     $away_points = $_POST['away_points'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
                     $round       = isset( $_POST['round'] ) ? intval( $_POST['round'] ) : null;
 
-                    $championship_manager = new Championship_Manager();
-                    $championship_manager->update_final_results( $league->championship, $matches, $home_points, $away_points, $custom, $round );
+                    $championship_manager = isset( $this->racketmanager->container ) && $this->racketmanager->container->has( 'championship_manager' )
+                        ? $this->racketmanager->container->get( 'championship_manager' )
+                        : null;
+                    if ( $championship_manager ) {
+                        $num_updated = $championship_manager->update_final_results( $league->championship, $matches, $home_points, $away_points, $custom, $round );
+                        $this->set_message( sprintf( __( 'Updated Results of %d fixtures', 'racketmanager' ), $num_updated ) );
+                    } else {
+                        $this->set_message( __( 'Championship manager not found', 'racketmanager' ), true );
+                    }
                 }
                 if ( ! empty( $validator->error ) ) {
                     if ( empty( $validator->msg ) ) {

@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Tournament\Queries;
 
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Util\Util;
@@ -14,6 +15,7 @@ use function esc_url;
 class Get_Tournament_Handler {
     public function __construct(
         private readonly Tournament_Service $tournament_service,
+        private readonly Tournament_Presenter $tournament_presenter,
         private readonly ?Get_Latest_Tournament_Handler $latest_tournament_handler = null
     ) {}
 
@@ -57,16 +59,89 @@ class Get_Tournament_Handler {
             $wp->set_query_var( 'season', $tournament_details->tournament->season );
         }
 
-        $tab      = Util_Lookup::get_tab();
-        $filename = ( '' !== $query->template ) ? 'tournament-' . $query->template : 'tournament';
+        $tab = $query->tab;
+        if ( ! empty( $query->match_day ) || ! empty( $query->team_id ) ) {
+            $tab = 'matches';
+        }
+        if ( empty( $tab ) ) {
+            if ( ! empty( $query->event ) ) {
+                $tab = 'events';
+            } elseif ( ! empty( $query->match_day ) ) {
+                $tab = 'matches';
+            } else {
+                $tab = Util_Lookup::get_tab() ?: 'overview';
+            }
+        }
+
+        $tournament_end_date        = method_exists( $tournament_details->tournament, 'get_end_date' ) ? $tournament_details->tournament->get_end_date() : ( $tournament_details->tournament->date_end ?? '' );
+        $is_order_of_play_available = ! empty( $tournament_end_date ) && gmdate( 'Y-m-d' ) <= $tournament_end_date && ! empty( $tournament_details->tournament->order_of_play );
+        $is_winners_available       = ! empty( $tournament_end_date ) && gmdate( 'Y-m-d' ) >= $tournament_end_date;
+
+        $menu_options = [
+            'overview'      => [
+                'name'        => 'overview',
+                'selected'    => 'overview' === $tab,
+                'available'   => true,
+                'description' => __( 'Overview', 'racketmanager' ),
+            ],
+            'events'        => [
+                'name'        => 'events',
+                'selected'    => 'events' === $tab,
+                'available'   => true,
+                'description' => __( 'Events', 'racketmanager' ),
+            ],
+            'draws'         => [
+                'name'        => 'draws',
+                'selected'    => 'draws' === $tab,
+                'available'   => true,
+                'description' => __( 'Draws', 'racketmanager' ),
+            ],
+            'matches'       => [
+                'name'        => 'matches',
+                'selected'    => 'matches' === $tab,
+                'available'   => true,
+                'description' => __( 'Matches', 'racketmanager' ),
+            ],
+            'players'       => [
+                'name'        => 'players',
+                'selected'    => 'players' === $tab,
+                'available'   => true,
+                'description' => __( 'Players', 'racketmanager' ),
+            ],
+            'order_of_play' => [
+                'name'        => 'order_of_play',
+                'selected'    => 'order_of_play' === $tab || 'orderofplay' === $tab,
+                'available'   => $is_order_of_play_available,
+                'description' => __( 'Order of play', 'racketmanager' ),
+            ],
+            'winners'       => [
+                'name'        => 'winners',
+                'selected'    => 'winners' === $tab,
+                'available'   => $is_winners_available,
+                'description' => __( 'Winners', 'racketmanager' ),
+            ],
+        ];
+
+        $post_id             = $query->post_id ?: ( function_exists( 'get_the_ID' ) && false !== get_the_ID() ? (int) get_the_ID() : '' );
+        $tournament_seo_name = Util::seo_url( (string) $tournament_details->tournament->name );
+        $filename            = ( '' !== $query->template ) ? 'tournament-' . $query->template : 'tournament';
+
+        $vars = [
+            'tournament_details'  => $tournament_details,
+            'tournaments'         => $tournaments,
+            'tab'                 => $tab,
+            'menu_options'        => $menu_options,
+            'post_id'             => $post_id,
+            'tournament_seo_name' => $tournament_seo_name,
+            'season'              => $tournament_details->tournament->season,
+            'entry_option'        => true,
+        ];
+
+        $vars['tournament_header'] = $this->tournament_presenter->present_header( $tournament_details->tournament, true );
 
         return Shortcode_View_Model::for_template(
             $filename,
-            [
-                'tournament_details' => $tournament_details,
-                'tournaments'        => $tournaments,
-                'tab'                => $tab,
-            ],
+            $vars,
             false
         );
     }

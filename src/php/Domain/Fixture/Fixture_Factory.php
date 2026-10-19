@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Racketmanager\Domain\Fixture;
 
 use Racketmanager\Domain\DTO\Fixture\Fixture_Hydration_DTO;
-use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 
 /**
  * Factory for creating Fixture entities from hydration DTOs or database objects.
@@ -17,12 +16,9 @@ final class Fixture_Factory {
 	 * @return Fixture
 	 */
 	public static function create_from_dto(
-		Fixture_Hydration_DTO $dto,
-		?League_Repository_Interface $league_repository = null,
-		?Fixture_Team_Resolver_Interface $team_service = null,
-		?Fixture_Update_Authorizer_Interface $update_authorizer = null
+		Fixture_Hydration_DTO $dto
 	): Fixture {
-		return new Fixture( $dto, $league_repository, $team_service, $update_authorizer );
+		return new Fixture( $dto );
 	}
 
 	/**
@@ -32,13 +28,10 @@ final class Fixture_Factory {
 	 * @return Fixture
 	 */
 	public static function from_object(
-		object $row,
-		?League_Repository_Interface $league_repository = null,
-		?Fixture_Team_Resolver_Interface $team_service = null,
-		?Fixture_Update_Authorizer_Interface $update_authorizer = null
+		object $row
 	): Fixture {
 		$dto = Fixture_Hydration_DTO::from_object( $row );
-		return self::create_from_dto( $dto, $league_repository, $team_service, $update_authorizer );
+		return self::create_from_dto( $dto );
 	}
 
 	/**
@@ -48,12 +41,9 @@ final class Fixture_Factory {
 	 * @return Fixture
 	 */
 	public static function from_array(
-		array $data,
-		?League_Repository_Interface $league_repository = null,
-		?Fixture_Team_Resolver_Interface $team_service = null,
-		?Fixture_Update_Authorizer_Interface $update_authorizer = null
+		array $data
 	): Fixture {
 		$dto = Fixture_Hydration_DTO::from_array( $data );
-		return self::create_from_dto( $dto, $league_repository, $team_service, $update_authorizer );
+		return self::create_from_dto( $dto );
 	}
 }

@@ -9,8 +9,10 @@
 
 namespace Racketmanager\Repositories;
 
+use LogicException;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\DTO\Competition\Competition_Overview_DTO;
+use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use wpdb;
 
@@ -585,11 +587,22 @@ class Competition_Repository implements Competition_Repository_Interface {
 			? $racketmanager->container->get( 'fixture_repository' )
 			: new Fixture_Repository();
 
-		return array_map(
-			function ( $row ) use ( $fixture_repo ) {
-				return $fixture_repo->find_by_id( (int) $row->id );
+		$relation_loader = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_relation_loader' )
+			? $racketmanager->container->get( 'fixture_relation_loader' )
+			: null;
+		if ( ! $relation_loader ) {
+			throw new LogicException( 'Competition match queries require a fixture relation loader.' );
+		}
+
+		$fixtures = array_map(
+			function ( $row ) use ( $fixture_repo, $relation_loader ): ?Fixture {
+				$fixture = $fixture_repo->find_by_id( (int) $row->id );
+
+				return $fixture ? $relation_loader->load_league( $fixture ) : null;
 			},
 			$rows
 		);
+
+		return array_values( array_filter( $fixtures, static fn( ?Fixture $fixture ): bool => null !== $fixture ) );
 	}
 }

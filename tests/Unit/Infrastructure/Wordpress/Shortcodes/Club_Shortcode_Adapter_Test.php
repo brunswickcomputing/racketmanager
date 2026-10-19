@@ -20,6 +20,8 @@ use Racketmanager\Domain\DTO\Club\Club_Details_DTO;
 use Racketmanager\Domain\DTO\Competition\Competition_Hydration_DTO;
 use Racketmanager\Domain\Invoice;
 use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Value_Objects\Currency;
+use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
 use ReflectionClass;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
@@ -28,8 +30,12 @@ use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Club_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Club_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Invoice_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
+use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Presentation\View_Models\Event_Header_View_Model;
 use Racketmanager\Public\Shortcodes_Club;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
@@ -267,7 +273,14 @@ class Club_Shortcode_Adapter_Test extends TestCase {
 
     public function test_show_club_competitions_named_competition_from_query_var(): void {
         $GLOBALS['query_vars']['competition_name'] = 'summer-cup';
-        $competition                               = $this->createStub( Competition::class );
+        $event_with_teams = $this->createStub( Event::class );
+        $event_with_teams->method( 'get_teams_info' )->willReturn( [ 'team-a' ] );
+        $event_without    = $this->createStub( Event::class );
+        $event_without->method( 'get_teams_info' )->willReturn( [] );
+
+        $competition = $this->createStub( Competition::class );
+        $competition->method( 'get_events' )->willReturn( [ $event_with_teams, $event_without ] );
+
         $repository                                = $this->createMock( Competition_Repository_Interface::class );
         $repository->expects( $this->once() )->method( 'find_by_name' )->with( 'summer cup' )->willReturn( $competition );
 
@@ -275,7 +288,28 @@ class Club_Shortcode_Adapter_Test extends TestCase {
             [ 'club_service' => $this->club_service_for( $this->club() ), 'competition_repository' => $repository, 'renderer' => $this->capturing_renderer() ]
         )->show_club_competitions( [] );
 
-        $this->assertSame( $competition, $this->rendered[0]['vars']['club']->competition );
+        $this->assertCount( 1, $this->rendered[0]['vars']['club']->competitions );
+        $this->assertSame( $competition, $this->rendered[0]['vars']['club']->competitions[0] );
+        $this->assertSame( [ $event_with_teams ], array_values( $this->rendered[0]['vars']['club']->competitions[0]->events ) );
+        $this->assertSame( [ 'team-a' ], $event_with_teams->teams );
+    }
+
+    public function test_show_club_competitions_named_competition_without_teams_renders_empty_competitions(): void {
+        $GLOBALS['query_vars']['competition_name'] = 'summer-cup';
+        $event_without = $this->createStub( Event::class );
+        $event_without->method( 'get_teams_info' )->willReturn( [] );
+
+        $competition = $this->createStub( Competition::class );
+        $competition->method( 'get_events' )->willReturn( [ $event_without ] );
+
+        $repository = $this->createMock( Competition_Repository_Interface::class );
+        $repository->expects( $this->once() )->method( 'find_by_name' )->with( 'summer cup' )->willReturn( $competition );
+
+        $this->adapter(
+            [ 'club_service' => $this->club_service_for( $this->club() ), 'competition_repository' => $repository, 'renderer' => $this->capturing_renderer() ]
+        )->show_club_competitions( [] );
+
+        $this->assertSame( [], $this->rendered[0]['vars']['club']->competitions );
     }
 
     public function test_show_club_competitions_unknown_competition_renders_alert(): void {
@@ -303,7 +337,8 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         )->show_club_invoices( [] );
 
         $this->assertSame( 'club/invoices', $this->rendered[0]['path'] );
-        $this->assertSame( [ 'inv-1' ], $this->rendered[0]['vars']['invoices'] );
+        $this->assertInstanceOf( \Racketmanager\Presentation\View_Models\Club_Invoices_List_View_Model::class, $this->rendered[0]['vars']['invoices'] );
+        $this->assertCount( 1, $this->rendered[0]['vars']['invoices'] );
         $this->assertNull( $this->rendered[0]['vars']['invoice'] );
         $this->assertFalse( $this->rendered[0]['vars']['user_can_manage']->club );
     }
@@ -486,7 +521,20 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $GLOBALS['query_vars']['event'] = 'mens-doubles';
         $adapter->show_club_event( [] );
         $this->assertSame( 'club/event', $this->rendered[0]['path'] );
-        $this->assertSame( 101, $this->rendered[0]['vars']['club']->event->id );
+        $this->assertSame( 101, $this->rendered[0]['vars']['event']->id );
+        $event_header = $this->rendered[0]['vars']['event_header'];
+        $this->assertInstanceOf( Event_Header_View_Model::class, $event_header );
+        $this->assertSame( 2, $event_header->header_level );
+        $this->assertSame( '/clubs/leigh-ltc/event/mens-doubles/', $event_header->pagename );
+        $this->assertSame( 'Mens Doubles', $event_header->name );
+        $this->assertSame( '/test-competition-10/2026/', $event_header->competition_link );
+
+        $event_header_html = ( new Shortcode_Template_Renderer(
+            new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' )
+        ) )->render( 'event-header', [ 'event_header' => $event_header ], 'includes' );
+        $this->assertStringContainsString( '<h2', $event_header_html );
+        $this->assertStringContainsString( 'id="pagename" value="/clubs/leigh-ltc/event/mens-doubles/"', $event_header_html );
+        $this->assertStringContainsString( 'href="/test-competition-10/2026/"', $event_header_html );
 
         // 3. Unconfigured season on competition
         $this->rendered                  = [];
@@ -523,7 +571,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $GLOBALS['query_vars']['event'] = 'mens-doubles';
         $adapter->show_club_team( [] );
         $this->assertSame( 'club/team', $this->rendered[0]['path'] );
-        $this->assertSame( 101, $this->rendered[0]['vars']['club']->event->id );
+        $this->assertSame( 101, $this->rendered[0]['vars']['event']->id );
     }
 
     public function test_show_team_edit_modal_enforces_allowlist(): void {
@@ -703,7 +751,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $finance      = $overrides['finance'] ?? $this->createStub( Finance_Service::class );
 
         $template_renderer = new Shortcode_Template_Renderer( $renderer, new Club_Presenter(), new Player_Presenter() );
-        $settings          = $overrides['settings'] ?? new Settings_Service( [] );
+        $settings          = $overrides['settings'] ?? new Settings_Service( [ 'billing' => [ 'billingCurrency' => Currency::GBP->value ] ] );
         if ( is_array( $settings ) ) {
             $settings = new Settings_Service( $settings );
         }
@@ -717,9 +765,10 @@ class Club_Shortcode_Adapter_Test extends TestCase {
             new Get_Club_Players_Handler( $club_service, $players, $registration ),
             new Get_Club_Roles_Handler( $club_service ),
             new Get_Club_Role_Modal_Handler( $club_service ),
-            new Get_Club_Competitions_Handler( $club_service, $competitions, $repository ),
-            new Get_Club_Invoices_Handler( $club_service, $finance ),
-            new Shortcode_View_Presenter( $template_renderer )
+            new Get_Club_Competitions_Handler( $club_service, $competitions, $repository, new Team_Details_Presenter( new Wp_Option_Gateway(), $settings ) ),
+            new Get_Club_Invoices_Handler( $club_service, $finance, new Invoice_Presenter(), $club_presenter, $settings ),
+            new Shortcode_View_Presenter( $template_renderer ),
+            $overrides['competition_presenter'] ?? new Competition_Shortcode_Presenter( $renderer )
         );
     }
 }

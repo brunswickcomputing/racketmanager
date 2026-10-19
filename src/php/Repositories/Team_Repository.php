@@ -13,6 +13,8 @@ use QM_DB;
 use Racketmanager\Domain\DTO\Team\Team_Competition_DTO;
 use Racketmanager\Domain\DTO\Team\Team_Fixture_Settings_DTO;
 use Racketmanager\Domain\Team;
+use Racketmanager\Domain\Team_Factory;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use wpdb;
 
@@ -23,15 +25,22 @@ class Team_Repository implements Team_Repository_Interface {
     private QM_DB|wpdb $wpdb;
     private string $table_name;
     private string $team_players_table;
+    private ?Player_Repository_Interface $player_repository;
 
     /**
      * Create a new Team_Repository instance
+     *
+     * @param QM_DB|wpdb|null $wpdb
+     * @param Player_Repository_Interface|null $player_repository
      */
-    public function __construct() {
-        global $wpdb;
+    public function __construct( QM_DB|wpdb|null $wpdb = null, ?Player_Repository_Interface $player_repository = null ) {
+        if ( null === $wpdb ) {
+            global $wpdb;
+        }
         $this->wpdb               = $wpdb;
         $this->table_name         = $this->wpdb->prefix . 'racketmanager_teams';
         $this->team_players_table = $this->wpdb->prefix . 'racketmanager_team_players';
+        $this->player_repository  = $player_repository;
     }
 
     /**
@@ -65,7 +74,30 @@ class Team_Repository implements Team_Repository_Interface {
             if ( ! $team ) {
                 return null;
             }
-            $team = new Team( $team );
+            $team = Team_Factory::from_object( $team );
+            if ( $team->id && ( 'P' === $team->team_type || ! empty( $team->roster ) ) ) {
+                $players = $this->wpdb->get_results(
+                    $this->wpdb->prepare(
+                        "SELECT `player_id` FROM $this->team_players_table WHERE `team_id` = %d",
+                        $team->id
+                    )
+                );
+                if ( ! empty( $players ) ) {
+                    $player_objects = [];
+                    $player_ids     = [];
+                    $i              = 1;
+                    foreach ( $players as $team_player ) {
+                        $player = $this->player_repository ? $this->player_repository->find( (int) $team_player->player_id ) : null;
+                        if ( $player ) {
+                            $player_objects[] = $player;
+                        }
+                        $player_ids[ $i ] = (int) $team_player->player_id;
+                        ++$i;
+                    }
+                    $team->players    = $player_objects;
+                    $team->player_ids = $player_ids;
+                }
+            }
             wp_cache_set( $team->id, $team, 'teams' );
         }
 
@@ -90,7 +122,7 @@ class Team_Repository implements Team_Repository_Interface {
         $query   .= " AND team_type IS NULL ORDER BY title";
         $results = $this->wpdb->get_results( $this->wpdb->prepare( $query, $params ) );
 
-        return array_map( fn ( $row ) => new Team( $row ), $results );
+        return array_map( fn ( $row ) => Team_Factory::from_object( $row ), $results );
     }
 
     /**
@@ -112,7 +144,7 @@ class Team_Repository implements Team_Repository_Interface {
             )
         );
 
-        return array_map( fn ( $row ) => new Team( $row ), $results );
+        return array_map( fn ( $row ) => Team_Factory::from_object( $row ), $results );
     }
 
     /**
@@ -304,7 +336,43 @@ class Team_Repository implements Team_Repository_Interface {
                 $success = false;
             }
         }
+        wp_cache_delete( $team_id, 'teams' );
         return $success;
+    }
+
+    /**
+     * Update team settings for leagues belonging to an event and season.
+     *
+     * @param int $team_id
+     * @param int $event_id
+     * @param string $season
+     * @param string $captain
+     * @param string $match_day
+     * @param string|null $match_time
+     * @return bool
+     */
+    public function update_event_settings( int $team_id, int $event_id, string $season, string $captain, string $match_day, ?string $match_time ): bool {
+        $leagues_table      = $this->wpdb->prefix . 'racketmanager_leagues';
+        $league_teams_table = $this->wpdb->prefix . 'racketmanager_league_teams';
+
+        $query = $this->wpdb->prepare(
+            "UPDATE `$league_teams_table`
+             SET `captain` = %d, `match_day` = %s, `match_time` = %s
+             WHERE `team_id` = %d
+               AND `season` = %s
+               AND `league_id` IN (
+                   SELECT `id` FROM `$leagues_table` WHERE `event_id` = %d
+               )",
+            (int) $captain,
+            $match_day,
+            $match_time ?? '',
+            $team_id,
+            $season,
+            $event_id
+        );
+
+        $result = $this->wpdb->query( $query );
+        return false !== $result;
     }
 
     /**
@@ -315,6 +383,20 @@ class Team_Repository implements Team_Repository_Interface {
      * @return bool True on success, false on failure.
      */
     public function delete( int $id ): bool {
-        return $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) ) !== false;
+        $del_players = $this->wpdb->delete( $this->team_players_table, array( 'team_id' => $id ), array( '%d' ) );
+        if ( false === $del_players ) {
+            return false;
+        }
+        $league_teams_table = $this->wpdb->prefix . 'racketmanager_league_teams';
+        $del_league_teams   = $this->wpdb->delete( $league_teams_table, array( 'team_id' => $id ), array( '%d' ) );
+        if ( false === $del_league_teams ) {
+            return false;
+        }
+        $del_team = $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) );
+        if ( false === $del_team ) {
+            return false;
+        }
+        wp_cache_delete( $id, 'teams' );
+        return true;
     }
 }

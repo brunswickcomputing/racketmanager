@@ -115,4 +115,61 @@ final class Club_Team_Action_Dispatcher_Test extends TestCase {
         self::assertSame( 'Permission denied', $result->message );
         self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
     }
+
+    public function test_delete_teams_empty_selection(): void {
+        $club_service = $this->createMock( Club_Service::class );
+        $team_service = $this->createMock( Team_Service::class );
+        $guard        = $this->createStub( Action_Guard_Interface::class );
+
+        $dispatcher = new Club_Team_Action_Dispatcher( $club_service, $team_service, $guard );
+        $result     = $dispatcher->handle(
+            array(),
+            array(
+                'doTeamDel' => '1',
+                'action'    => 'delete',
+                'team'      => array(),
+            )
+        );
+
+        self::assertSame( 'No teams selected', $result->message );
+        self::assertSame( Admin_Message_Type::WARNING, $result->message_type );
+    }
+
+    public function test_delete_teams_success_and_failure(): void {
+        $club_service = $this->createMock( Club_Service::class );
+        $team_service = $this->createMock( Team_Service::class );
+        $guard        = $this->createStub( Action_Guard_Interface::class );
+
+        $team1 = new \Racketmanager\Domain\Team();
+        $team1->set_name( 'Team One' );
+        $team2 = new \Racketmanager\Domain\Team();
+        $team2->set_name( 'Team Two' );
+
+        $team_service->expects( self::exactly( 2 ) )
+            ->method( 'get_team_by_id' )
+            ->willReturnMap( [
+                [ 10, $team1 ],
+                [ 20, $team2 ],
+            ] );
+
+        $team_service->expects( self::exactly( 2 ) )
+            ->method( 'delete_team' )
+            ->willReturnMap( [
+                [ 10, true ],
+                [ 20, false ],
+            ] );
+
+        $dispatcher = new Club_Team_Action_Dispatcher( $club_service, $team_service, $guard );
+        $result     = $dispatcher->handle(
+            array(),
+            array(
+                'doTeamDel' => '1',
+                'action'    => 'delete',
+                'team'      => array( 10, 20 ),
+            )
+        );
+
+        self::assertSame( 'Team One deleted<br>Team Two failed to delete', $result->message );
+        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
+    }
 }

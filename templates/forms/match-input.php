@@ -12,7 +12,6 @@ use Racketmanager\Util\Util;
 /** @var object $match */
 /** @var string $match_type */
 /** @var object $is_update_allowed */
-global $racketmanager;
 $user_can_update = $is_update_allowed->user_can_update;
 $user_message    = $is_update_allowed->message;
 $tab_base        = 0;
@@ -107,7 +106,10 @@ $tab_base        = 0;
                             Updated By:
                         </div>
                         <div class="col-auto">
-                            <?php echo esc_html( $racketmanager->get_player_name( $match->updated_user ) ); ?>
+                            <?php
+                            $updated_by_name = $match->updated_user_name ?? ( isset( $GLOBALS['racketmanager'] ) && method_exists( $GLOBALS['racketmanager'], 'get_player_name' ) ? $GLOBALS['racketmanager']->get_player_name( $match->updated_user ) : (string) $match->updated_user );
+                            echo esc_html( $updated_by_name );
+                            ?>
                         </div>
                     </div>
                     <?php

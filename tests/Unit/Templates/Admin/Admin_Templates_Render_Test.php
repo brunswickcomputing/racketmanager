@@ -15,6 +15,7 @@ use Racketmanager\Admin\View_Models\Players_Page_View_Model;
 use Racketmanager\Admin\View_Models\Season_Modify_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model;
+use Racketmanager\Presentation\Presenters\Invoice_Presenter;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Settings;
 use Racketmanager\Domain\Competition\Competition_Type;
@@ -298,7 +299,8 @@ final class Admin_Templates_Render_Test extends TestCase {
             'status' => 'Status error occurred',
         ) );
 
-        $vm = new Finances_Invoice_Page_View_Model(
+        $presenter = new Invoice_Presenter();
+        $vm = $presenter->present_admin_invoice_page(
             invoice: $invoice_dto,
             invoice_view: '<div class="test-inv-view">INVOICE HTML BODY</div>',
             errors: $errors,

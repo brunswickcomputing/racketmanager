@@ -15,6 +15,8 @@ use Racketmanager\Repositories\Event_Repository;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\Rubber_Repository;
 use Racketmanager\Services\Competition\Competition_Notification_Service;
@@ -336,9 +338,9 @@ class Event {
     /**
      * Scoring
      *
-     * @var string
+     * @var string|null
      */
-    public string $scoring;
+    public ?string $scoring = null;
     /**
      * Offset
      *
@@ -914,12 +916,12 @@ class Event {
         $league_index = array();
         foreach ( $leagues as $i => $league ) {
             $league_index[ $league->id ] = $i;
-            $league                      = get_league( $league->id );
-            if ( $consolation && ! $league->championship->is_consolation ) {
+            $loaded_league               = get_league( $league->id );
+            if ( $consolation && ( ! $loaded_league || ! $loaded_league->championship->is_consolation ) ) {
                 unset( $leagues[ $i ] );
             }
-            if ( isset( $leagues[ $i ] ) ) {
-                $leagues[ $i ] = $league;
+            if ( isset( $leagues[ $i ] ) && $loaded_league ) {
+                $leagues[ $i ] = $loaded_league;
             }
         }
         if ( ! $consolation ) {
@@ -928,6 +930,55 @@ class Event {
         }
 
         return $leagues;
+    }
+
+    /**
+     * Get primary league ID.
+     *
+     * @return int|null
+     */
+    public function get_primary_league_id(): ?int {
+        if ( ! empty( $this->primary_league ) && (int) $this->primary_league > 0 ) {
+            return (int) $this->primary_league;
+        }
+
+        $leagues = ! empty( $this->leagues ) ? $this->leagues : ( ! empty( $this->id ) ? $this->get_leagues() : [] );
+        if ( is_array( $leagues ) && ! empty( $leagues ) ) {
+            $first_league = reset( $leagues );
+            if ( is_object( $first_league ) && ! empty( $first_league->id ) ) {
+                return (int) $first_league->id;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get primary league.
+     *
+     * @return League|null
+     */
+    public function get_primary_league(): ?League {
+        $primary_league_id = $this->get_primary_league_id();
+        if ( ! $primary_league_id ) {
+            return null;
+        }
+
+        if ( is_array( $this->leagues ) ) {
+            if ( isset( $this->league_index[ $primary_league_id ] ) && isset( $this->leagues[ $this->league_index[ $primary_league_id ] ] ) ) {
+                $league = $this->leagues[ $this->league_index[ $primary_league_id ] ];
+                if ( $league instanceof League ) {
+                    return $league;
+                }
+            }
+            foreach ( $this->leagues as $league ) {
+                if ( $league instanceof League && isset( $league->id ) && (int) $league->id === $primary_league_id ) {
+                    return $league;
+                }
+            }
+        }
+
+        return get_league( $primary_league_id );
     }
 
     /**
@@ -1225,11 +1276,9 @@ class Event {
             'club'    => false,
             'team'    => false,
             'count'   => false,
-            'stats'   => false,
         );
         $args     = array_merge( $defaults, (array) $args );
         $count    = $args['count'];
-        $stats    = $args['stats'];
         if ( empty( $args['season'] ) ) {
             $args['season'] = is_array( $this->current_season ) ? ( $this->current_season['name'] ?? '' ) : '';
         }
@@ -1246,23 +1295,9 @@ class Event {
             if ( $player->system_record ) {
                 continue;
             }
-            if ( $stats ) {
-                $player->matches      = $player->get_matches( $this, $this->current_season['name'], 'event' );
-                $player->stats        = $player->get_stats();
-                $player->win_pct      = $player->stats['total']->win_pct;
-                $player->matches_won  = $player->stats['total']->matches_won;
-                $player->matches_lost = $player->stats['total']->matches_lost;
-                $player->played       = $player->stats['total']->played;
-            }
             $event_players[] = $player;
         }
-        if ( $stats ) {
-            $won    = array_column( $event_players, 'matches_won' );
-            $played = array_column( $event_players, 'played' );
-            array_multisort( $won, SORT_DESC, $played, SORT_ASC, $event_players );
-        } else {
-            asort( $event_players );
-        }
+        asort( $event_players );
         $this->players = $event_players;
         return $this->players;
     }
@@ -1327,14 +1362,14 @@ class Event {
 
         foreach ( $matches as $match ) {
             $match_id = is_object( $match ) ? (int) ( $match->id ?? 0 ) : (int) $match;
-            $fixture  = $fixture_repository->find_by_id( $match_id );
+            $fixture  = $fixture_repository->find_by_id_with_relations( $match_id );
             if ( ! $fixture ) {
                 continue;
             }
             $class          = ( 'alternate' === $class ) ? '' : 'alternate';
             $fixture->class = $class;
             if ( $player ) {
-                $fixture->rubbers = $fixture->get_rubbers( (int) $player );
+                $fixture->set_rubbers( $this->get_rubber_repository()->find_by_fixture_id( (int) $fixture->get_id(), (int) $player ) );
             }
             if ( ! empty( $fixture->date ) && 19 === strlen( $fixture->date ) && preg_match( '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $fixture->date ) ) {
                 $fixture->date = substr( $fixture->date, 0, 16 );
@@ -1649,29 +1684,50 @@ class Event {
     public function set_config(object $config ): bool {
         $updates   = false;
         $settings = new stdClass();
-        if ( empty( $this->age_limit ) || $this->age_limit !== $config->age_limit ) {
+        $age_limit = isset( $config->age_limit ) ? $config->age_limit : ( $this->age_limit ?? null );
+        if ( ( $this->age_limit ?? null ) !== $age_limit ) {
             $updates = true;
         }
-        $settings->age_limit = $config->age_limit;
-        if ( empty( $this->age_offset ) || $this->age_offset !== $config->age_offset ) {
+        $settings->age_limit = $age_limit;
+        $this->age_limit     = $age_limit;
+
+        $age_offset = isset( $config->age_offset ) ? $config->age_offset : ( $this->age_offset ?? null );
+        if ( ( $this->age_offset ?? null ) !== $age_offset ) {
             $updates = true;
         }
-        $settings->age_offset = $config->age_offset;
-        if ( empty( $this->scoring ) || $this->scoring !== $config->scoring ) {
+        $settings->age_offset = $age_offset;
+        $this->age_offset     = $age_offset;
+
+        $scoring = isset( $config->scoring ) ? $config->scoring : ( $this->scoring ?? null );
+        if ( ( $this->scoring ?? null ) !== $scoring ) {
             $updates = true;
         }
-        $settings->scoring = $config->scoring;
+        $settings->scoring = $scoring;
+        $this->scoring     = $scoring;
+
         if ( ! $this->competition->is_tournament ) {
-            if ( empty( $this->offset ) || $this->offset !== $config->offset ) {
+            $offset = isset( $config->offset ) ? $config->offset : ( $this->offset ?? null );
+            if ( ( $this->offset ?? null ) !== $offset ) {
                 $updates = true;
             }
-            $settings->offset = $config->offset;
+            $settings->offset = $offset;
+            $this->offset     = $offset;
         }
-        if ( $this->competition->is_championship ) {
-            if ( empty( $this->primary_league ) || $this->primary_league !== $config->primary_league ) {
+
+        if ( ! empty( $config->primary_league ) && (int) $config->primary_league > 0 ) {
+            $primary_league = (int) $config->primary_league;
+        } elseif ( $this->competition->is_championship || $this->competition->is_tournament ) {
+            $primary_league = ( ! empty( $this->primary_league ) && (int) $this->primary_league > 0 ) ? (int) $this->primary_league : null;
+        } else {
+            $primary_league = null;
+        }
+
+        if ( null !== $primary_league ) {
+            if ( (int) ( $this->primary_league ?? 0 ) !== $primary_league ) {
                 $updates = true;
             }
-            $settings->primary_league = $config->primary_league;
+            $settings->primary_league = $primary_league;
+            $this->primary_league     = $primary_league;
         }
         if ( $this->competition->is_league ) {
             $match_days = Util_Lookup::get_match_days();
@@ -1780,7 +1836,6 @@ class Event {
             array(
                 'club'   => $club->id,
                 'season' => $this->current_season['name'],
-                'stats'  => true,
             )
         );
         return $club;
@@ -1814,5 +1869,15 @@ class Event {
         return isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
             ? $racketmanager->container->get( 'fixture_repository' )
             : new Fixture_Repository();
+    }
+
+    /**
+     * Resolve Rubber_Repository instance from container or fallback.
+     */
+    private function get_rubber_repository(): Rubber_Repository_Interface {
+        global $racketmanager;
+        return isset( $racketmanager->container ) && $racketmanager->container->has( 'rubber_repository' )
+            ? $racketmanager->container->get( 'rubber_repository' )
+            : new Rubber_Repository();
     }
 }

@@ -71,6 +71,7 @@ final class Admin_Result_Delivery_Test extends TestCase {
             services: array(
                 'competition_service' => $this->competition_service,
                 'season_service'      => $this->season_service,
+                'league_repository'   => $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class ),
             ),
             redirector: $this->redirector,
             flash_store: $this->flash_store,

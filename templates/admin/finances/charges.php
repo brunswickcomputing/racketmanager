@@ -7,27 +7,23 @@
 
 namespace Racketmanager;
 
-/** @var array  $finance_charges */
-/** @var int    $competition_id */
-/** @var string $season */
-/** @var array  $competitions */
-/** @var Season[]  $seasons */
-if ( isset( $vm ) && $vm instanceof \Racketmanager\Admin\View_Models\Finances_Charges_Page_View_Model ) {
-    $finance_charges   = $vm->charges;
-    $competition_id    = $vm->competition_id;
-    $season            = $vm->season;
-    $competitions      = $vm->competitions;
-    $seasons           = $vm->seasons;
-    $racketmanager_tab = $vm->racketmanager_tab;
-}
-$charges = $finance_charges;
+use Racketmanager\Admin\View_Models\Finances_Charges_Page_View_Model;
+use Racketmanager\Domain\Season;
+
+/** @var Finances_Charges_Page_View_Model $vm */
+$competition_id    = $vm->competition_id;
+$season            = $vm->season;
+$competitions      = $vm->competitions;
+$seasons           = $vm->seasons;
+$racketmanager_tab = $vm->racketmanager_tab;
+$charges           = $vm->charges;
 ?>
 <div class="container">
     <div class="row gx-3 align-items-center mb-3">
         <form id="invoices-filter" method="get" action="" class="form-control">
-            <input type="hidden" name="page" value="<?php echo 'racketmanager-finances'; ?>" />
-            <input type="hidden" name="tab" value="<?php echo 'charges'; ?>" />
-            <input type="hidden" name="view" value="<?php echo 'charges'; ?>" />
+            <input type="hidden" name="page" value="racketmanager-finances" />
+            <input type="hidden" name="tab" value="charges" />
+            <input type="hidden" name="view" value="charges" />
             <div class="row gx-3 align-items-center">
                 <div class="col-12 col-md-4 col-lg-auto mb-3 mb-md-0">
                     <label>
@@ -65,7 +61,7 @@ $charges = $finance_charges;
     </div>
     <div class="row gx-3 align-items-center mb-3">
         <form id="charges-action" method="post" action="" class="form-control mb-3">
-            <?php wp_nonce_field( 'racketmanager_charges-bulk', 'racketmanager_nonce'); ?>
+            <?php wp_nonce_field( 'racketmanager_charges-bulk', 'racketmanager_nonce' ); ?>
             <div class="row g-3 mb-3 align-items-center">
                 <!-- Bulk Actions -->
                 <div class="col-auto">
@@ -94,30 +90,20 @@ $charges = $finance_charges;
                 </thead>
 
                 <?php
-                if ( $charges ) {
+                if ( ! empty( $charges ) ) {
                     ?>
                     <tbody>
                         <?php
-                        $total_amount = 0;
                         foreach ( $charges as $charge ) {
-                            $total_amount += $charge->total;
                             ?>
                             <tr>
                                 <td class="check-column">
                                     <label for="charge-<?php echo esc_html( $charge->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label>
                                     <input type="checkbox" value="<?php echo esc_html( $charge->id ); ?>" name="charge[<?php echo esc_html( $charge->id ); ?>]" id="charge-<?php echo esc_html( $charge->id ); ?>" />
                                 </td>
-                                <td class=""><a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=charge&amp;charges=<?php echo esc_html( $charge->id ); ?>"><?php echo esc_html( $charge->name ); ?></a></td>
+                                <td class=""><a href="<?php echo esc_url( $charge->edit_url ); ?>"><?php echo esc_html( $charge->name ); ?></a></td>
                                 <td class=""><?php echo esc_html( $charge->status ); ?></td>
-                                <td class="text-end">
-                                    <?php
-                                    if ( empty( $charge->total ) ) {
-                                        echo '-';
-                                    } else {
-                                        the_currency_amount( $charge->total );
-                                    }
-                                    ?>
-                                </td>
+                                <td class="text-end"><?php echo esc_html( $charge->total_formatted ); ?></td>
                             </tr>
                             <?php
                         }
@@ -126,7 +112,7 @@ $charges = $finance_charges;
                     <tfoot class="table-footer">
                         <tr>
                             <td colspan="3"></td>
-                            <td class="text-end"><?php the_currency_amount( $total_amount ); ?></td>
+                            <td class="text-end"><?php echo esc_html( $vm->total_amount_formatted ); ?></td>
                         </tr>
                     </tfoot>
                     <?php

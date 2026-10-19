@@ -8,18 +8,21 @@ use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Services\Player_Query_Service;
+use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Util\Util;
 use function __;
 use function asort;
 use function is_array;
 use function is_numeric;
 use function is_object;
-use function method_exists;
 
 class Get_Event_Players_Handler {
     public function __construct(
         private readonly Competition_Service $competition_service,
-        private readonly Player_Service $player_service
+        private readonly Player_Service $player_service,
+        private readonly Player_Query_Service $player_query_service,
+        private readonly Player_Stats_Service $player_stats_service
     ) {}
 
     public function handle( Get_Event_Players_Query $query ): Shortcode_View_Model {
@@ -77,15 +80,11 @@ class Get_Event_Players_Handler {
 
         if ( $player ) {
             $season = $event->current_season['name'] ?? null;
-            if ( method_exists( $player, 'get_matches' ) ) {
-                $player->matches = $player->get_matches( $event, $season, 'event' );
-                if ( is_array( $player->matches ) ) {
-                    asort( $player->matches );
-                }
+            $player->matches = $this->player_query_service->get_matches( $player, $event, $season, 'event' );
+            if ( is_array( $player->matches ) ) {
+                asort( $player->matches );
             }
-            if ( method_exists( $player, 'get_stats' ) ) {
-                $player->stats = $player->get_stats();
-            }
+            $player->stats = $this->player_stats_service->get_stats( $player );
         }
 
         return $player;

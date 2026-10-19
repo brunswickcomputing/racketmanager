@@ -6,6 +6,7 @@ namespace Racketmanager\Application\Competition\Queries;
 use Racketmanager\Exceptions\Charge_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Finance_Service;
@@ -19,7 +20,8 @@ class Get_Competition_Payment_Handler {
         private readonly Tournament_Service $tournament_service,
         private readonly Player_Service $player_service,
         private readonly Finance_Service $finance_service,
-        private readonly Competition_Entry_Service $entry_service
+        private readonly Competition_Entry_Service $entry_service,
+        private readonly Tournament_Presenter $tournament_presenter
     ) {}
 
     public function handle( Get_Competition_Payment_Query $query ): Shortcode_View_Model {
@@ -36,6 +38,7 @@ class Get_Competition_Payment_Handler {
                 'player'           => $player,
                 'tournament_entry' => $entry,
             ];
+            $vars['tournament_header'] = $this->tournament_presenter->present_header( $tournament, false );
             if ( $query->complete ) {
                 $vars['total_due'] = null;
                 $vars['stripe'] = new Stripe_Settings( $query->billing_options );

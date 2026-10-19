@@ -40,6 +40,7 @@ class Club_Player_DTO_Test extends TestCase {
 		$this->assertSame( 2, $club_player_dto->club_id );
 		$this->assertSame( '', $club_player_dto->display_name );
 		$this->assertSame( 'TST', $club_player_dto->club_name );
+		$this->assertSame( 'Test Club', $club_player_dto->club_display_name );
 	}
 
 	public function test_construct_with_valid_display_name(): void {
@@ -72,6 +73,7 @@ class Club_Player_DTO_Test extends TestCase {
 		$this->assertSame( 'John', $club_player_dto->firstname );
 		$this->assertSame( 'Doe', $club_player_dto->surname );
 		$this->assertSame( 'ABC', $club_player_dto->club_name );
+		$this->assertSame( 'Test Club', $club_player_dto->club_display_name );
 		$this->assertSame( 'Admin User', $club_player_dto->registered_by_user );
 		$this->assertSame( 'Approver User', $club_player_dto->approved_by_user );
 	}

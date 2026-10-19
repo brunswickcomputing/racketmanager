@@ -21,6 +21,7 @@ use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Public\Shortcodes_Competition;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
@@ -95,11 +96,16 @@ class Shortcodes_Competition_Integration_Test extends TestCase {
         $presenter         = new Competition_Shortcode_Presenter( $renderer, new Club_Presenter(), new Player_Presenter() );
         $view_presenter    = new Shortcode_View_Presenter( $template_renderer );
 
-        $overview_handler = new Get_Competition_Overview_Handler( $comp_service );
+        $overview_handler = new Get_Competition_Overview_Handler( $comp_service, $presenter );
         $events_handler   = new Get_Competition_Events_Handler( $comp_service );
         $teams_handler    = new Get_Competition_Teams_Handler( $comp_service );
-        $clubs_handler    = new Get_Competition_Clubs_Handler( $comp_service, $club_service );
-        $players_handler  = new Get_Competition_Players_Handler( $comp_service, $player_service );
+        $clubs_handler    = new Get_Competition_Clubs_Handler( $comp_service, $club_service, new \Racketmanager\Services\Player_Stats_Service(), new Tournament_Presenter() );
+        $players_handler  = new Get_Competition_Players_Handler(
+            $comp_service,
+            $player_service,
+            new \Racketmanager\Services\Player_Query_Service(),
+            new \Racketmanager\Services\Player_Stats_Service()
+        );
         $winners_handler  = new Get_Competition_Winners_Handler( $comp_service );
 
         $this->adapter = new Competition_Shortcode_Adapter(
@@ -121,7 +127,13 @@ class Shortcodes_Competition_Integration_Test extends TestCase {
             players_handler: $players_handler,
             winners_handler: $winners_handler,
             dropdown_handler: new Get_Competition_Dropdown_Handler( $comp_service ),
-            competitions_handler: new Get_Competitions_Handler( $comp_service, $tournament_svc, $player_service ),
+            competitions_handler: new Get_Competitions_Handler(
+                $comp_service,
+                $tournament_svc,
+                $player_service,
+                new \Racketmanager\Services\Player_Query_Service(),
+                $presenter
+            ),
             view_presenter: $view_presenter,
             racketmanager: $this->plugin
         );

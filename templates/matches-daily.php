@@ -36,12 +36,7 @@ $post_id = $wp_query->post->ID; // phpcs:ignore WordPress.WP.GlobalVariablesOver
                 <div class="module">
                     <?php
                     if ( $matches_list ) {
-                        ?>
-                        <?php
-                        $matches_key = 'league';
                         require RACKETMANAGER_PATH . 'templates/includes/matches-team-list-group.php';
-                        ?>
-                        <?php
                     } else {
                         ?>
                         <p><?php esc_html_e( 'No Matches on selected day', 'racketmanager' ); ?></p>

@@ -8,7 +8,6 @@
 namespace Racketmanager;
 
 /** @var string $favourite_name */
-global$racketmanager;
 ?>
 <ul class="list list--grid list--bordered">
     <?php
@@ -19,7 +18,7 @@ global$racketmanager;
     } else {
         foreach ( $favourites as $favourite ) {
             if ( is_user_logged_in() ) {
-                $is_favourite = $racketmanager->is_user_favourite( $favourite_name, $favourite->id );
+                $is_favourite = $favourite->is_favourite ?? ( isset( $GLOBALS['racketmanager'] ) && method_exists( $GLOBALS['racketmanager'], 'is_user_favourite' ) ? $GLOBALS['racketmanager']->is_user_favourite( $favourite_name, $favourite->id ) : false );
                 if ( $is_favourite ) {
                     $link_title = __( 'Remove favourite', 'racketmanager' );
                 } else {

@@ -25,6 +25,47 @@ class Player_Stats_Service {
     }
 
     /**
+     * Populate calculated stats and match breakdown on a Player entity.
+     *
+     * @param Player $player
+     * @param object|null $grouping
+     * @param string|null $season
+     * @param string $match_source
+     */
+    public function populate_player_stats( Player $player, ?object $grouping, ?string $season, string $match_source ): void {
+        $player->matches = $this->query_service->get_matches( $player, $grouping, $season, $match_source );
+        $player->stats        = $this->get_stats( $player );
+        $total                = $player->stats['total'] ?? null;
+        $player->win_pct      = $total->win_pct ?? 0;
+        $player->matches_won  = $total->matches_won ?? 0;
+        $player->matches_lost = $total->matches_lost ?? 0;
+        $player->played       = $total->played ?? 0;
+    }
+
+    /**
+     * Populate calculated stats for an array of Player entities and sort them by matches won / played.
+     *
+     * @param array $players
+     * @param object|null $grouping
+     * @param string|null $season
+     * @param string $match_source
+     * @return array
+     */
+    public function populate_players_stats( array $players, ?object $grouping, ?string $season, string $match_source ): array {
+        foreach ( $players as $player ) {
+            if ( $player instanceof Player ) {
+                $this->populate_player_stats( $player, $grouping, $season, $match_source );
+            }
+        }
+        $won    = array_column( $players, 'matches_won' );
+        $played = array_column( $players, 'played' );
+        if ( ! empty( $won ) && ! empty( $played ) ) {
+            array_multisort( $won, SORT_DESC, $played, SORT_ASC, $players );
+        }
+        return $players;
+    }
+
+    /**
      * Get player statistics function.
      *
      * @param Player $player

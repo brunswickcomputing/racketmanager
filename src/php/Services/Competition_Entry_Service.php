@@ -22,6 +22,8 @@ use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Player;
 use Racketmanager\Domain\Team;
 use Racketmanager\Domain\Tournament;
+use Racketmanager\Presentation\Presenters\Tournament_Presenter;
+use Racketmanager\Presentation\View_Models\Tournament_Date_View_Model;
 use Racketmanager\Domain\Tournament_Entry;
 use Racketmanager\Exceptions\Charge_Not_Found_Exception;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
@@ -30,6 +32,7 @@ use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Database_Operation_Exception;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
+use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Update_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
@@ -835,10 +838,10 @@ class Competition_Entry_Service {
                 $validator = $validator->match_day( $match_day, $field_ref );
                 $validator = $validator->match_time( $match_time, $field_ref, $match_day, $start_times );
                 $validator = $validator->captain( $captain, $contactno, $contactemail, $field_ref );
-                if ( isset( $event->primary_league ) ) {
-                    $league = get_league( $event->primary_league );
-                } else {
-                    $league = get_league( array_key_first( $event->league_index ) );
+                $league_id = $event->get_primary_league_id();
+                if ( empty( $league_id ) || (int) $league_id <= 0 ) {
+                    $validator->set_errors( 'event-' . $event_id, __( 'No league configured for event', 'racketmanager' ) );
+                    continue;
                 }
 
                 $event_entry          = new stdClass();
@@ -854,7 +857,7 @@ class Competition_Entry_Service {
                     'captain'    => $captain,
                     'telephone'  => $contactno,
                     'email'      => $contactemail,
-                    'league_id'  => $league->id,
+                    'league_id'  => $league_id,
                 ) );
                 $club_entry->events[] = $event_entry;
 
@@ -894,7 +897,18 @@ class Competition_Entry_Service {
             throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
         }
         $club_entry->club_name = $club->get_name();
-        $cup_entries           = array();
+
+        foreach ( $club_entry->events as $event_entry ) {
+            $event_id     = $event_entry->id;
+            $team         = $event_entry->team;
+            $team_id      = $team->id;
+            $league_teams = $this->league_team_repository->find_by_event_id( $event_id, $club_entry->season, $team_id );
+            if ( ! $league_teams && ( empty( $team->league_id ) || (int) $team->league_id <= 0 ) ) {
+                throw new League_Not_Found_Exception( Util_Messages::league_not_found_for_event( (int) $event_id ) );
+            }
+        }
+
+        $cup_entries = array();
         foreach ( $club_entry->events as $event_entry ) {
             $event_id     = $event_entry->id;
             $event_name   = $event_entry->name;
@@ -913,7 +927,7 @@ class Competition_Entry_Service {
             } else {
                 $league_team             = new stdClass();
                 $league_team->team_id    = $team->id;
-                $league_team->league_id  = $team->league_id;
+                $league_team->league_id  = (int) $team->league_id;
                 $league_team->season     = $club_entry->season;
                 $league_team->captain    = $team->captain_id;
                 $league_team->match_day  = $match_day;
@@ -960,7 +974,7 @@ class Competition_Entry_Service {
         if ( ! $from_email ) {
             throw new Invalid_Argument_Exception( Util_Messages::secretary_email_not_found( 'tournament' ) );
         }
-        $url              = $tournament->entry_link;
+        $url              = ( new Tournament_Presenter() )->get_entry_link( $tournament, (string) $this->racketmanager->site_url );
         $competition_name = $tournament->name . ' ' . __( 'Tournament', 'racketmanager' );
 
         switch ( $type ) {
@@ -1002,6 +1016,7 @@ class Competition_Entry_Service {
                     'action_url'     => $action_url,
                     'organisation'   => $organisation_name,
                     'tournament'     => $tournament,
+                    'tournament_dates' => $this->present_tournament_dates( $tournament ),
                     'addressee'      => $player->fullname,
                     'days_remaining' => $remaining,
                     'type'           => $type,
@@ -1023,6 +1038,7 @@ class Competition_Entry_Service {
                         'action_url'    => $action_url,
                         'organisation'  => $organisation_name,
                         'tournament'    => $tournament,
+                        'tournament_dates' => $this->present_tournament_dates( $tournament ),
                         'addressee'     => $club->match_secretary->display_name,
                         'type'          => 'club',
                     ), 'email' );
@@ -1083,10 +1099,15 @@ class Competition_Entry_Service {
             }
             $validator = $validator->email( $request->email, $player_id );
             $validator = $validator->btm( $request->lta_number, $player_id );
-            try {
-                $club = $this->club_service->get_club( $request->club_id );
-            } catch ( Club_Not_Found_Exception $e ) {
-                $validator->set_errors( 'clubId', $e->getMessage(), 404 );
+            $club = null;
+            if ( ! empty( $request->club_id ) ) {
+                try {
+                    $club = $this->club_service->get_club( $request->club_id );
+                } catch ( Club_Not_Found_Exception $e ) {
+                    $validator->set_errors( 'clubId', $e->getMessage(), 404 );
+                }
+            } else {
+                $validator = $validator->club_membership( null );
             }
 
             $allowed_event_ids   = [];
@@ -1113,9 +1134,12 @@ class Competition_Entry_Service {
                     $validator = $validator->event();
                     continue;
                 }
-                $primary_league   = $event->primary_league ?? ( ! empty( $event->league_index ) ? array_key_first( $event->league_index ) : 0 );
-                $league           = function_exists( 'Racketmanager\get_league' ) ? get_league( $primary_league ) : null;
-                $league_id        = $league->id ?? (int) $primary_league;
+                $league_id = $event->get_primary_league_id();
+                if ( empty( $league_id ) || (int) $league_id <= 0 ) {
+                    $validator->set_errors( 'event', __( 'No league configured for event', 'racketmanager' ) );
+                    continue;
+                }
+                $league_id        = (int) $league_id;
                 $entry->league_id = $league_id;
                 $player_team      = $this->league_team_repository->player_already_entered_league( $player_id, $league_id, $season );
                 if ( substr( $event->type, 1, 1 ) === 'D' ) {
@@ -1174,12 +1198,12 @@ class Competition_Entry_Service {
             }
         }
 
-        $status = $validator->status ?? 400;
         foreach ( $validator->err_flds as $index => $error_field ) {
             if ( in_array( $error_field, $validator->err->get_error_codes(), true ) ) {
                 continue;
             }
-            $validator->err->add( $error_field, $validator->err_msgs[ $index ] ?? __( 'Invalid tournament entry', 'racketmanager' ), [ 'status' => $status ] );
+            $field_status = $validator->err_statuses[ $index ] ?? 400;
+            $validator->err->add( $error_field, $validator->err_msgs[ $index ] ?? __( 'Invalid tournament entry', 'racketmanager' ), [ 'status' => $field_status ] );
         }
 
         return $validator->err;
@@ -1199,28 +1223,19 @@ class Competition_Entry_Service {
         return (bool) $result['eligible'];
     }
 
-    private function tournament_entry_valid( Tournament $tournament, Player $player, Club $club, stdclass $tournament_entry ): Tournament_Entry_Response_DTO {
+    private function tournament_entry_valid( Tournament $tournament, Player $player, ?Club $club, stdclass $tournament_entry ): Tournament_Entry_Response_DTO|WP_Error {
         $updates       = false;
         $player_id     = $player->get_id();
         $tournament_id = $tournament->get_id();
-        try {
-            $this->player_service->handle_tournament_entry_personal_information( $player_id, $tournament_entry->btm, $tournament_entry->contactno, $tournament_entry->contactemail );
-        } catch ( Player_Update_Exception|Exception $e ) {
-            error_log( $e->getMessage() );
-        }
-        if ( ! empty( $tournament_entry->missed_events ) ) {
-            $entries_to_withdraw = $this->league_team_repository->find_player_teams_by_player_for_events( $player_id, $tournament_entry->missed_events, $tournament->season );
-            foreach ( $entries_to_withdraw as $entry_to_withdraw ) {
-                $entry_to_withdraw->set_entered_state( Team_Profile::WITHDRAWN );
-                $this->league_team_repository->save( $entry_to_withdraw );
-                $updates = true;
-            }
-        }
-        $fees               = $this->tournament_service->get_fees( $tournament_id );
-        $tournament_entries = array();
-        $invoice_entries    = array();
+
+        $prepared_entries = array();
         foreach ( $tournament_entry->entries as $entry ) {
-            $entry_details = array();
+            if ( empty( $entry->league_id ) || (int) $entry->league_id <= 0 ) {
+                return new WP_Error( 'entry_error', __( 'No league configured for event', 'racketmanager' ), array( 'status' => 500 ) );
+            }
+            $entry_details         = array();
+            $delete_league_team_id = null;
+
             if ( empty( $entry->team_id ) ) {
                 $team_id        = null;
                 $existing_entry = false;
@@ -1228,14 +1243,14 @@ class Competition_Entry_Service {
                 $team_id        = $entry->team_id;
                 $existing_entry = true;
             }
+
             if ( $entry->is_doubles ) {
                 $partner_id               = $entry->partner->get_id();
                 $entry_details['partner'] = $entry->partner->get_fullname();
                 if ( $existing_entry ) {
                     if ( $entry->new_partner ) {
-                        $existing_entry = false;
-                        // delete existing league team entry
-                        $this->league_team_repository->delete( $entry->league_team_id );
+                        $existing_entry        = false;
+                        $delete_league_team_id = $entry->league_team_id;
                         // check if the new team exists
                         $team_id = $this->team_repository->find_team_by_players( array( $player_id, $partner_id ) );
                     }
@@ -1255,19 +1270,68 @@ class Competition_Entry_Service {
                     $team_id = $this->add_team_with_players( array( $player ), $entry->event_type );
                 }
             }
+
+            if ( ! $existing_entry && empty( $team_id ) ) {
+                return new WP_Error( 'entry_error', __( 'Unable to create team for entry', 'racketmanager' ), array( 'status' => 500 ) );
+            }
+
+            $entry_details['event_name'] = $entry->event_name;
+
+            $prepared_entries[] = (object) array(
+                'entry'                 => $entry,
+                'team_id'               => $team_id,
+                'existing_entry'        => $existing_entry,
+                'delete_league_team_id' => $delete_league_team_id,
+                'entry_details'         => $entry_details,
+            );
+        }
+
+        try {
+            $this->player_service->handle_tournament_entry_personal_information( $player_id, $tournament_entry->btm, $tournament_entry->contactno, $tournament_entry->contactemail );
+        } catch ( Player_Update_Exception|Exception $e ) {
+            error_log( $e->getMessage() );
+        }
+
+        if ( ! empty( $tournament_entry->missed_events ) ) {
+            $entries_to_withdraw = $this->league_team_repository->find_player_teams_by_player_for_events( $player_id, $tournament_entry->missed_events, $tournament->season );
+            foreach ( $entries_to_withdraw as $entry_to_withdraw ) {
+                $entry_to_withdraw->set_entered_state( Team_Profile::WITHDRAWN );
+                $this->league_team_repository->save( $entry_to_withdraw );
+                $updates = true;
+            }
+        }
+
+        $fees               = $this->tournament_service->get_fees( $tournament_id );
+        $tournament_entries = array();
+        $invoice_entries    = array();
+
+        foreach ( $prepared_entries as $item ) {
+            $entry                 = $item->entry;
+            $team_id               = $item->team_id;
+            $existing_entry        = $item->existing_entry;
+            $delete_league_team_id = $item->delete_league_team_id;
+            $entry_details         = $item->entry_details;
+
+            if ( $delete_league_team_id ) {
+                $this->league_team_repository->delete( $delete_league_team_id );
+            }
+
             if ( ! $existing_entry ) {
+                if ( empty( $entry->league_id ) || (int) $entry->league_id <= 0 ) {
+                    return new WP_Error( 'entry_error', __( 'No league configured for event', 'racketmanager' ), array( 'status' => 500 ) );
+                }
                 // add team to league team table
                 $league_team = new League_Team();
                 $league_team->set_team_id( $team_id );
-                $league_team->set_league_id( $entry->league_id );
+                $league_team->set_league_id( (int) $entry->league_id );
                 $league_team->set_season( $tournament->season );
                 $league_team->set_captain( $player_id );
                 $league_team->set_entered_state( Team_Profile::ACTIVE );
                 $this->league_team_repository->save( $league_team );
                 $updates = true;
             }
-            $entry_details['event_name'] = $entry->event_name;
-            $tournament_entries[]        = $entry_details;
+
+            $tournament_entries[] = $entry_details;
 
             $invoice_event        = new stdClass();
             $invoice_event->name  = $entry->event_name;
@@ -1279,7 +1343,7 @@ class Competition_Entry_Service {
         $paid_total      = $this->finance_service->get_tournament_paid_total_for_player( $player_id, $tournament_id );
         $invoice_details = new Tournament_Invoice_Details_DTO( $player_id, $player->get_fullname(), $invoice_entries, $fees->event, $fees->competition, $paid_total );
         $fee_due         = $invoice_details->total;
-        $this->set_tournament_entry( $tournament_id, $player_id, $club->get_id(), $fee_due );
+        $this->set_tournament_entry( $tournament_id, $player_id, $club?->get_id(), $fee_due );
         if ( empty( $fee_due ) ) {
             $status = 0;
             $this->finance_service->cancel_player_invoices_by_tournament( $player_id, $tournament );
@@ -1304,8 +1368,8 @@ class Competition_Entry_Service {
             $email_to                            = $player->display_name . ' <' . $player->email . '>';
             $email_from                          = $this->racketmanager->get_confirmation_email( 'tournament' );
             $email_subject                       = $this->racketmanager->site_name . ' - ' . $tournament_name . ' ' . __( 'Tournament Entry', 'racketmanager' );
-            $action_url                          = $tournament->entry_link;
-            $tournament_link                     = '<a href="' . $this->racketmanager->site_url . ( $tournament->link ) . '/">' . $tournament_name . '</a>';
+            $action_url                          = ( new Tournament_Presenter() )->get_entry_link( $tournament, (string) $this->racketmanager->site_url );
+            $tournament_link                     = '<a href="' . $this->racketmanager->site_url . ( new Tournament_Presenter() )->get_link( $tournament ) . '">' . $tournament_name . '</a>';
             $headers                             = array();
             $secretary_email                     = __( 'Tournament Secretary', 'racketmanager' ) . ' <' . $email_from . '>';
             $headers[]                           = RACKETMANAGER_FROM_EMAIL . $secretary_email;
@@ -1320,7 +1384,7 @@ class Competition_Entry_Service {
             $template_args['contactno']          = $player->get_contactno();
             $template_args['contactemail']       = $player->get_email();
             $template_args['player']             = $player;
-            $template_args['club']               = $club->get_name();
+            $template_args['club']               = $club ? $club->get_name() : __( 'No club', 'racketmanager' );
             $template_args['comments']           = $tournament_entry->comments;
             $template_args['contact_email']      = $email_from;
             $this->notify_service->email_entry_form( $template, $template_args, $email_to, $email_subject, $headers );
@@ -1357,7 +1421,7 @@ class Competition_Entry_Service {
         return new Tournament_Entry_Response_DTO( $status, $msg, $message_type, $return_link, $payment_required );
     }
 
-    public function add_team_with_players( array $players, string $type ): int {
+    public function add_team_with_players( array $players, string $type ): int|false {
         global $wpdb;
         // 1. Generate name (First Last / First Last)
         $names      = [];
@@ -1378,7 +1442,10 @@ class Competition_Entry_Service {
                 throw new Database_Operation_Exception( __( 'Unable to save team', 'racketmanager' ) );
             }
             // 4. Batch insert the current players
-            $this->team_repository->save_team_players( $team_id, $player_ids );
+            $saved_players = $this->team_repository->save_team_players( $team_id, $player_ids );
+            if ( ! $saved_players ) {
+                throw new Database_Operation_Exception( __( 'Unable to save team players', 'racketmanager' ) );
+            }
             $wpdb->query( 'COMMIT' );
 
             return $team_id;
@@ -1389,28 +1456,31 @@ class Competition_Entry_Service {
         }
     }
 
-    private function set_tournament_entry( int $tournament_id, int $player_id, false|int $club_id = false, null|string $payment_required = null ): void {
-        if ( $club_id ) {
+    private function set_tournament_entry( int $tournament_id, int $player_id, ?int $club_id = null, null|int|float|string $payment_required = null ): void {
+        if ( ! empty( $club_id ) ) {
             $status = 2;
         } else {
             $status = 0;
         }
+        $fee              = ! is_null( $payment_required ) ? (int) $payment_required : null;
         $tournament_entry = $this->get_tournament_entry_by_tournament_and_player( $tournament_id, $player_id );
         if ( $tournament_entry ) {
-            if ( $club_id ) {
-                if ( empty( $tournament_entry->get_club_id() ) ) {
-                    $tournament_entry->set_club_id( $club_id );
-                }
-                $tournament_entry->set_status( $status );
-                $tournament_entry->set_fee( $payment_required );
+            $tournament_entry->set_club_id( ! empty( $club_id ) ? (int) $club_id : null );
+            $tournament_entry->set_status( $status );
+            if ( ! is_null( $fee ) ) {
+                $tournament_entry->set_fee( $fee );
             }
         } else {
             $tournament_entry = new Tournament_Entry();
             $tournament_entry->set_status( $status );
             $tournament_entry->set_tournament_id( $tournament_id );
             $tournament_entry->set_player_id( $player_id );
-            $tournament_entry->set_fee( $payment_required );
-            $tournament_entry->set_club_id( $club_id );
+            if ( ! is_null( $fee ) ) {
+                $tournament_entry->set_fee( $fee );
+            }
+            if ( ! empty( $club_id ) ) {
+                $tournament_entry->set_club_id( (int) $club_id );
+            }
         }
         $this->tournament_entry_repository->save( $tournament_entry );
     }
@@ -1434,15 +1504,28 @@ class Competition_Entry_Service {
             $validator->set_errors( $err_field, $e->getMessage(), 404 );
         }
         if ( empty( $validator->error ) ) {
-            $league_id    = $event->primary_league ?? array_key_first( $event->league_index );
-            $season       = $tournament->get_season();
-            $player_team  = $this->league_team_repository->player_already_entered_league( $player_id, $league_id, $season );
-            $partner_team = $this->league_team_repository->player_already_entered_league( $partner->get_id(), $league_id, $season );
-            if ( ! empty( $partner_team ) && ( $player_team->team_id ?? null ) !== $partner_team->team_id ) {
-                $validator->set_errors( $err_field, __( 'Partner is in another team in this event', 'racketmanager' ) );
+            $league_id = $event->get_primary_league_id();
+            if ( empty( $league_id ) || (int) $league_id <= 0 ) {
+                $validator->set_errors( $err_field, __( 'No league configured for event', 'racketmanager' ) );
+            } else {
+                $league_id    = (int) $league_id;
+                $season       = $tournament->get_season();
+                $player_team  = $this->league_team_repository->player_already_entered_league( $player_id, $league_id, $season );
+                $partner_team = $this->league_team_repository->player_already_entered_league( $partner->get_id(), $league_id, $season );
+                if ( ! empty( $partner_team ) && ( $player_team->team_id ?? null ) !== $partner_team->team_id ) {
+                    $validator->set_errors( $err_field, __( 'Partner is in another team in this event', 'racketmanager' ) );
+                }
             }
         }
-        if ( $validator->error ) {
+        if ( ! empty( $validator->error ) ) {
+            foreach ( $validator->err_flds as $index => $error_field ) {
+                if ( in_array( $error_field, $validator->err->get_error_codes(), true ) ) {
+                    continue;
+                }
+                $field_status = $validator->err_statuses[ $index ] ?? 400;
+                $validator->err->add( $error_field, $validator->err_msgs[ $index ] ?? __( 'Invalid partner selection', 'racketmanager' ), [ 'status' => $field_status ] );
+            }
+
             return $validator->err;
         }
 
@@ -1489,14 +1572,16 @@ class Competition_Entry_Service {
         $email_to                         = $player->display_name . ' <' . $player->email . '>';
         $email_from                       = $this->racketmanager->get_confirmation_email( 'tournament' );
         $email_subject                    = $this->racketmanager->site_name . ' - ' . $tournament->name . ' ' . __( 'Tournament Withdrawal', 'racketmanager' );
-        $action_url                       = $tournament->entry_link;
-        $tournament_link                  = '<a href="' . $this->racketmanager->site_url . ( $tournament->link ) . '">' . $tournament->name . '</a>';
+        $action_url                       = ( new Tournament_Presenter() )->get_entry_link( $tournament, (string) $this->racketmanager->site_url );
+        $t_link                           = ( new Tournament_Presenter() )->get_link( $tournament );
+        $tournament_link                  = '<a href="' . $this->racketmanager->site_url . $t_link . '">' . $tournament->name . '</a>';
         $headers                          = array();
         $secretary_email                  = __( 'Tournament Secretary', 'racketmanager' ) . ' <' . $email_from . '>';
         $headers[]                        = RACKETMANAGER_FROM_EMAIL . $secretary_email;
         $headers[]                        = RACKETMANAGER_CC_EMAIL . $secretary_email;
         $template                         = 'tournament-withdrawal';
         $template_args['tournament']      = $tournament;
+        $template_args['tournament_dates'] = $this->present_tournament_dates( $tournament );
         $template_args['tournament_name'] = $tournament->name;
         $template_args['tournament_link'] = $tournament_link;
         $template_args['action_url']      = $action_url;
@@ -1512,6 +1597,12 @@ class Competition_Entry_Service {
     public function get_player_teams_for_event( int $event_id, int $player_id, int $season ): array {
         return $this->league_team_repository->find_player_teams_by_player_for_events( $player_id, array( $event_id ), $season );
 
+    }
+
+    private function present_tournament_dates( Tournament $tournament ): Tournament_Date_View_Model {
+        $date_format = (string) ( $this->racketmanager->date_format ?? 'Y-m-d' );
+
+        return ( new Tournament_Presenter( $date_format ) )->present_dates( $tournament );
     }
 
 }

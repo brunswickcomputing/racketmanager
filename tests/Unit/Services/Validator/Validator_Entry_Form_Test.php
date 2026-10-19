@@ -3,8 +3,9 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Services\Validator;
 
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
 use Racketmanager\Services\Validator\Validator_Entry_Form;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
@@ -49,10 +50,17 @@ class Validator_Entry_Form_Test extends TestCase {
         $this->validator->club_membership( null );
         $this->assertTrue( $this->validator->error );
         $this->assertContains( 'clubId', $this->validator->err_flds );
+        $this->assertContains( 'Select the club you are a member of', $this->validator->err_msgs );
+
+        $empty_validator = new Validator_Entry_Form();
+        $empty_validator->club_membership( '' );
+        $this->assertTrue( $empty_validator->error );
+        $this->assertContains( 'clubId', $empty_validator->err_flds );
 
         $fresh_validator = new Validator_Entry_Form();
         $fresh_validator->club_membership( '10' );
         $this->assertFalse( $fresh_validator->error );
+        $this->assertEmpty( $fresh_validator->err_flds );
     }
 
     public function test_events_entry_empty_fails(): void {
@@ -231,6 +239,235 @@ class Validator_Entry_Form_Test extends TestCase {
         $this->assertSame( 'missing_tournament_year', $res_no_year['reason'] );
     }
 
+    #[DataProvider( 'junior_age_boundary_provider' )]
+    public function test_check_player_event_eligibility_junior_boundary( int $birth_year, int $tournament_end_year, int $age_limit, bool $expected_eligible, string $expected_reason ): void {
+        $event  = (object) [
+            'type'       => 'BS',
+            'age_limit'  => $age_limit,
+            'age_offset' => 0,
+        ];
+        $player = (object) [
+            'gender'        => 'M',
+            'year_of_birth' => $birth_year,
+        ];
+
+        $result = Validator_Entry_Form::check_player_event_eligibility( $player, $event, $tournament_end_year );
+
+        $this->assertSame( $expected_eligible, $result['eligible'] );
+        $this->assertSame( $expected_reason, $result['reason'] );
+
+        $validator = new Validator_Entry_Form();
+        $validator->partner_eligibility( $player, $event, $tournament_end_year, 'partner-test' );
+        if ( $expected_eligible ) {
+            $this->assertFalse( $validator->error );
+        } else {
+            $this->assertTrue( $validator->error );
+            $this->assertContains( 'Partner is too old', $validator->err_msgs );
+        }
+    }
+
+    public static function junior_age_boundary_provider(): array {
+        return [
+            'Junior U18 - Age 17 (1 year below threshold) is eligible' => [
+                'birth_year'          => 2009,
+                'tournament_end_year' => 2026,
+                'age_limit'           => 18,
+                'expected_eligible'   => true,
+                'expected_reason'     => '',
+            ],
+            'Junior U18 - Age 18 (exact threshold) is eligible'       => [
+                'birth_year'          => 2008,
+                'tournament_end_year' => 2026,
+                'age_limit'           => 18,
+                'expected_eligible'   => true,
+                'expected_reason'     => '',
+            ],
+            'Junior U18 - Age 19 (1 year above threshold) is too old'  => [
+                'birth_year'          => 2007,
+                'tournament_end_year' => 2026,
+                'age_limit'           => 18,
+                'expected_eligible'   => false,
+                'expected_reason'     => 'too_old',
+            ],
+        ];
+    }
+
+    #[DataProvider( 'senior_age_boundary_provider' )]
+    public function test_check_player_event_eligibility_senior_boundary( string $gender, int $birth_year, int $tournament_end_year, int $age_limit, int $age_offset, bool $expected_eligible, string $expected_reason ): void {
+        $event  = (object) [
+            'type'       => 'SD',
+            'age_limit'  => $age_limit,
+            'age_offset' => $age_offset,
+        ];
+        $player = (object) [
+            'gender'        => $gender,
+            'year_of_birth' => $birth_year,
+        ];
+
+        $result = Validator_Entry_Form::check_player_event_eligibility( $player, $event, $tournament_end_year );
+
+        $this->assertSame( $expected_eligible, $result['eligible'] );
+        $this->assertSame( $expected_reason, $result['reason'] );
+
+        $validator = new Validator_Entry_Form();
+        $validator->partner_eligibility( $player, $event, $tournament_end_year, 'partner-test' );
+        if ( $expected_eligible ) {
+            $this->assertFalse( $validator->error );
+        } else {
+            $this->assertTrue( $validator->error );
+            $this->assertContains( 'Partner is too young', $validator->err_msgs );
+        }
+    }
+
+    public static function senior_age_boundary_provider(): array {
+        return [
+            'Senior 45+ Male - Age 44 (1 year below threshold) is too young' => [
+                'gender'              => 'M',
+                'birth_year'          => 1982,
+                'tournament_end_year' => 2026,
+                'age_limit'           => 45,
+                'age_offset'          => 0,
+                'expected_eligible'   => false,
+                'expected_reason'     => 'too_young',
+            ],
+            'Senior 45+ Male - Age 45 (exact threshold) is eligible'         => [
+                'gender'              => 'M',
+                'birth_year'          => 1981,
+                'tournament_end_year' => 2026,
+                'age_limit'           => 45,
+                'age_offset'          => 0,
+                'expected_eligible'   => true,
+                'expected_reason'     => '',
+            ],
+            'Senior 45+ Male - Age 46 (1 year above threshold) is eligible'  => [
+                'gender'              => 'M',
+                'birth_year'          => 1980,
+                'tournament_end_year' => 2026,
+                'age_limit'           => 45,
+                'age_offset'          => 0,
+                'expected_eligible'   => true,
+                'expected_reason'     => '',
+            ],
+            'Senior 45+ Female (5y offset -> min age 40) - Age 39 is too young' => [
+                'gender'              => 'F',
+                'birth_year'          => 1987,
+                'tournament_end_year' => 2026,
+                'age_limit'           => 45,
+                'age_offset'          => 5,
+                'expected_eligible'   => false,
+                'expected_reason'     => 'too_young',
+            ],
+            'Senior 45+ Female (5y offset -> min age 40) - Age 40 (exact threshold) is eligible' => [
+                'gender'              => 'F',
+                'birth_year'          => 1986,
+                'tournament_end_year' => 2026,
+                'age_limit'           => 45,
+                'age_offset'          => 5,
+                'expected_eligible'   => true,
+                'expected_reason'     => '',
+            ],
+            'Senior 45+ Female (5y offset -> min age 40) - Age 41 is eligible' => [
+                'gender'              => 'F',
+                'birth_year'          => 1985,
+                'tournament_end_year' => 2026,
+                'age_limit'           => 45,
+                'age_offset'          => 5,
+                'expected_eligible'   => true,
+                'expected_reason'     => '',
+            ],
+            'Senior 45+ Male with 5y offset (offset applies to female only -> min age 45) - Age 44 is too young' => [
+                'gender'              => 'M',
+                'birth_year'          => 1982,
+                'tournament_end_year' => 2026,
+                'age_limit'           => 45,
+                'age_offset'          => 5,
+                'expected_eligible'   => false,
+                'expected_reason'     => 'too_young',
+            ],
+            'Senior 45+ Male with 5y offset - Age 45 is eligible'           => [
+                'gender'              => 'M',
+                'birth_year'          => 1981,
+                'tournament_end_year' => 2026,
+                'age_limit'           => 45,
+                'age_offset'          => 5,
+                'expected_eligible'   => true,
+                'expected_reason'     => '',
+            ],
+        ];
+    }
+
+    #[DataProvider( 'missing_birth_year_or_end_year_provider' )]
+    public function test_check_player_event_eligibility_missing_birth_year_and_tournament_year( int|null $birth_year, int $tournament_end_year, mixed $age_limit, bool $expected_eligible, string $expected_reason ): void {
+        $event  = (object) [
+            'type'       => 'MS',
+            'age_limit'  => $age_limit,
+            'age_offset' => 0,
+        ];
+        $player = (object) [
+            'gender'        => 'M',
+            'year_of_birth' => $birth_year,
+        ];
+
+        $result = Validator_Entry_Form::check_player_event_eligibility( $player, $event, $tournament_end_year );
+
+        $this->assertSame( $expected_eligible, $result['eligible'] );
+        $this->assertSame( $expected_reason, $result['reason'] );
+    }
+
+    public static function missing_birth_year_or_end_year_provider(): array {
+        return [
+            'Missing birth year (0) in age-restricted event -> no_age_specified' => [
+                'birth_year'          => 0,
+                'tournament_end_year' => 2026,
+                'age_limit'           => 45,
+                'expected_eligible'   => false,
+                'expected_reason'     => 'no_age_specified',
+            ],
+            'Missing birth year (null) in age-restricted event -> no_age_specified' => [
+                'birth_year'          => null,
+                'tournament_end_year' => 2026,
+                'age_limit'           => 18,
+                'expected_eligible'   => false,
+                'expected_reason'     => 'no_age_specified',
+            ],
+            'Missing birth year in open event (null age_limit) -> eligible' => [
+                'birth_year'          => 0,
+                'tournament_end_year' => 2026,
+                'age_limit'           => null,
+                'expected_eligible'   => true,
+                'expected_reason'     => '',
+            ],
+            'Missing birth year in open event ("open" age_limit) -> eligible' => [
+                'birth_year'          => 0,
+                'tournament_end_year' => 2026,
+                'age_limit'           => 'open',
+                'expected_eligible'   => true,
+                'expected_reason'     => '',
+            ],
+            'Zero tournament end year in age-restricted event -> missing_tournament_year' => [
+                'birth_year'          => 1980,
+                'tournament_end_year' => 0,
+                'age_limit'           => 45,
+                'expected_eligible'   => false,
+                'expected_reason'     => 'missing_tournament_year',
+            ],
+            'Negative tournament end year in age-restricted event -> missing_tournament_year' => [
+                'birth_year'          => 1980,
+                'tournament_end_year' => -1,
+                'age_limit'           => 45,
+                'expected_eligible'   => false,
+                'expected_reason'     => 'missing_tournament_year',
+            ],
+            'Zero tournament end year in open event -> eligible' => [
+                'birth_year'          => 1980,
+                'tournament_end_year' => 0,
+                'age_limit'           => 'open',
+                'expected_eligible'   => true,
+                'expected_reason'     => '',
+            ],
+        ];
+    }
+
     public function test_events_missing_teams_and_has_teams(): void {
         $this->validator->events_missing_teams( [ 5, 8 ] );
 
@@ -253,16 +490,20 @@ class Validator_Entry_Form_Test extends TestCase {
         $this->assertContains( 'numCourtsAvailable', $this->validator->err_flds );
     }
 
-    public function test_entry_acceptance(): void {
-        $this->validator->entry_acceptance( false );
+    public function test_entry_acceptance_fails_when_false(): void {
+        $result = $this->validator->entry_acceptance( false );
 
-        $this->assertTrue( $this->validator->error );
-        $this->assertContains( 'acceptance', $this->validator->err_flds );
-        $this->assertContains( 'You must agree to the rules', $this->validator->err_msgs );
+        $this->assertTrue( $result->error );
+        $this->assertContains( 'acceptance', $result->err_flds );
+        $this->assertContains( 'You must agree to the rules', $result->err_msgs );
+    }
 
-        $fresh = new Validator_Entry_Form();
-        $fresh->entry_acceptance( true );
-        $this->assertFalse( $fresh->error );
+    public function test_entry_acceptance_passes_when_true(): void {
+        $result = $this->validator->entry_acceptance( true );
+
+        $this->assertFalse( $result->error );
+        $this->assertEmpty( $result->err_flds );
+        $this->assertEmpty( $result->err_msgs );
     }
 
     public function test_match_overlap_within_two_hours_fails(): void {
@@ -297,18 +538,181 @@ class Validator_Entry_Form_Test extends TestCase {
         $this->assertFalse( $fresh->error );
     }
 
-    public function test_competition_open_and_tournament_open(): void {
-        $comp = new stdClass();
-        $comp->is_open = false;
-        $this->validator->competition_open( $comp );
-        $this->assertTrue( $this->validator->error );
-        $this->assertContains( 'Competition not open for entries', $this->validator->err_msgs );
+    public function test_season_set_fails_when_season_is_empty(): void {
+        $seasons = [ '2026' => (object) [ 'name' => '2026' ] ];
 
-        $tourn = new stdClass();
-        $tourn->date_closing = '';
-        $fresh = new Validator_Entry_Form();
-        $fresh->tournament_open( $tourn );
-        $this->assertTrue( $fresh->error );
-        $this->assertContains( 'Tournament close date not set', $fresh->err_msgs );
+        $result_null = $this->validator->season_set( null, $seasons );
+        $this->assertTrue( $result_null->error );
+        $this->assertContains( 'season', $result_null->err_flds );
+        $this->assertContains( 'Season is required', $result_null->err_msgs );
+
+        $fresh        = new Validator_Entry_Form();
+        $result_empty = $fresh->season_set( '', $seasons );
+        $this->assertTrue( $result_empty->error );
+        $this->assertContains( 'season', $result_empty->err_flds );
+        $this->assertContains( 'Season is required', $result_empty->err_msgs );
+    }
+
+    public function test_season_set_fails_when_seasons_list_is_empty(): void {
+        $result_empty_array = $this->validator->season_set( '2026', [] );
+        $this->assertTrue( $result_empty_array->error );
+        $this->assertContains( 'season', $result_empty_array->err_flds );
+        $this->assertContains( 'No seasons found', $result_empty_array->err_msgs );
+
+        $fresh       = new Validator_Entry_Form();
+        $result_null = $fresh->season_set( '2026', null );
+        $this->assertTrue( $result_null->error );
+        $this->assertContains( 'season', $result_null->err_flds );
+        $this->assertContains( 'No seasons found', $result_null->err_msgs );
+    }
+
+    public function test_season_set_fails_when_season_not_found_in_list(): void {
+        $seasons = [ '2026' => (object) [ 'name' => '2026' ] ];
+
+        $result = $this->validator->season_set( '2025', $seasons );
+
+        $this->assertTrue( $result->error );
+        $this->assertContains( 'season', $result->err_flds );
+        $this->assertContains( 'Season not found', $result->err_msgs );
+    }
+
+    public function test_season_set_passes_when_season_exists_in_list(): void {
+        $seasons = [
+            '2025' => (object) [ 'name' => '2025' ],
+            '2026' => (object) [ 'name' => '2026' ],
+        ];
+
+        $result = $this->validator->season_set( '2026', $seasons );
+
+        $this->assertFalse( $result->error );
+        $this->assertEmpty( $result->err_flds );
+        $this->assertEmpty( $result->err_msgs );
+    }
+
+    public function test_tournament_open_fails_when_closing_date_empty(): void {
+        $tournament               = new stdClass();
+        $tournament->date_closing = '';
+        $tournament->is_open      = true;
+        $tournament->is_closed    = false;
+        $tournament->is_started   = false;
+
+        $result = $this->validator->tournament_open( $tournament );
+
+        $this->assertTrue( $result->error );
+        $this->assertContains( 'tournament', $result->err_flds );
+        $this->assertContains( 'Tournament close date not set', $result->err_msgs );
+    }
+
+    public function test_tournament_open_fails_for_non_admin_when_tournament_not_open_and_not_started(): void {
+        $GLOBALS['wp_stubs_current_user_can'] = false;
+
+        $tournament               = new stdClass();
+        $tournament->date_closing = '2026-10-31';
+        $tournament->is_open      = false;
+        $tournament->is_closed    = false;
+        $tournament->is_started   = false;
+
+        $result = $this->validator->tournament_open( $tournament );
+
+        $this->assertTrue( $result->error );
+        $this->assertContains( 'tournament', $result->err_flds );
+        $this->assertContains( 'Tournament not open for entries', $result->err_msgs );
+    }
+
+    public function test_tournament_open_fails_for_non_admin_when_tournament_started_but_not_open(): void {
+        $GLOBALS['wp_stubs_current_user_can'] = false;
+
+        $tournament               = new stdClass();
+        $tournament->date_closing = '2026-10-31';
+        $tournament->is_open      = false;
+        $tournament->is_closed    = false;
+        $tournament->is_started   = true;
+
+        $result = $this->validator->tournament_open( $tournament );
+
+        $this->assertTrue( $result->error );
+        $this->assertContains( 'tournament', $result->err_flds );
+        $this->assertContains( 'Tournament not open for entries', $result->err_msgs );
+    }
+
+    public function test_tournament_open_passes_for_admin_when_tournament_started_and_not_open(): void {
+        $GLOBALS['wp_stubs_current_user_can'] = true;
+
+        $tournament               = new stdClass();
+        $tournament->date_closing = '2026-10-31';
+        $tournament->is_open      = false;
+        $tournament->is_closed    = false;
+        $tournament->is_started   = true;
+
+        $result = $this->validator->tournament_open( $tournament );
+
+        $this->assertFalse( $result->error );
+        $this->assertEmpty( $result->err_flds );
+        $this->assertEmpty( $result->err_msgs );
+    }
+
+    public function test_tournament_open_fails_for_admin_when_tournament_not_started_and_not_open(): void {
+        $GLOBALS['wp_stubs_current_user_can'] = true;
+
+        $tournament               = new stdClass();
+        $tournament->date_closing = '2026-10-31';
+        $tournament->is_open      = false;
+        $tournament->is_closed    = false;
+        $tournament->is_started   = false;
+
+        $result = $this->validator->tournament_open( $tournament );
+
+        $this->assertTrue( $result->error );
+        $this->assertContains( 'tournament', $result->err_flds );
+        $this->assertContains( 'Tournament not open for entries', $result->err_msgs );
+    }
+
+    public function test_tournament_open_passes_when_tournament_is_open(): void {
+        $GLOBALS['wp_stubs_current_user_can'] = false;
+
+        $tournament               = new stdClass();
+        $tournament->date_closing = '2026-10-31';
+        $tournament->is_open      = true;
+        $tournament->is_closed    = false;
+        $tournament->is_started   = false;
+
+        $result = $this->validator->tournament_open( $tournament );
+
+        $this->assertFalse( $result->error );
+        $this->assertEmpty( $result->err_flds );
+        $this->assertEmpty( $result->err_msgs );
+    }
+
+    public function test_tournament_open_passes_when_tournament_is_closed(): void {
+        $GLOBALS['wp_stubs_current_user_can'] = false;
+
+        $tournament               = new stdClass();
+        $tournament->date_closing = '2026-10-31';
+        $tournament->is_open      = false;
+        $tournament->is_closed    = true;
+        $tournament->is_started   = false;
+
+        $result = $this->validator->tournament_open( $tournament );
+
+        $this->assertFalse( $result->error );
+        $this->assertEmpty( $result->err_flds );
+        $this->assertEmpty( $result->err_msgs );
+    }
+
+    public function test_competition_open_validation(): void {
+        $comp          = new stdClass();
+        $comp->is_open = false;
+
+        $result = $this->validator->competition_open( $comp );
+        $this->assertTrue( $result->error );
+        $this->assertContains( 'acceptance', $result->err_flds );
+        $this->assertContains( 'Competition not open for entries', $result->err_msgs );
+
+        $fresh_validator          = new Validator_Entry_Form();
+        $comp_open                = new stdClass();
+        $comp_open->is_open       = true;
+        $result_open              = $fresh_validator->competition_open( $comp_open );
+        $this->assertFalse( $result_open->error );
+        $this->assertEmpty( $result_open->err_flds );
     }
 }

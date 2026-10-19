@@ -11,6 +11,9 @@ namespace Racketmanager\Admin;
 
 use Racketmanager\Admin\Presenters\Admin_Date_Presenter;
 use Racketmanager\Admin\Presenters\Admin_League_Matches_Presenter;
+use Racketmanager\Admin\Presenters\Admin_League_Schedule_Presenter;
+use Racketmanager\Admin\View_Models\Admin_League_Schedule_Event_View_Model;
+use Racketmanager\Admin\View_Models\Admin_League_Schedule_Page_View_Model;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
@@ -469,9 +472,51 @@ final class Admin_League extends Admin_Display {
         $club_id        = 0;
         if ( ! isset( $season ) ) {
             $event_season = $competition->current_season['name'] ?? '';
-            $season       = ( isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : $event_season );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $season       = ( isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : (string) $event_season );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         }
-        require_once RACKETMANAGER_PATH . 'templates/admin/league/show-schedule.php';
+
+        if ( ! $this->event_repository ) {
+            throw new \RuntimeException( 'Event_Repository_Interface not found in container.' );
+        }
+
+        $raw_events  = method_exists( $competition, 'get_events' ) ? $competition->get_events() : ( $competition->events ?? array() );
+        $events_data = array();
+        foreach ( ( is_array( $raw_events ) ? $raw_events : array() ) as $event_item ) {
+            $event = is_object( $event_item )
+                ? $event_item
+                : $this->event_repository->find_by_id( (int) $event_item );
+            if ( ! $event ) {
+                continue;
+            }
+
+            $event_id     = (int) ( method_exists( $event, 'get_id' ) ? $event->get_id() : ( $event->id ?? 0 ) );
+            $event_name   = (string) ( method_exists( $event, 'get_name' ) ? $event->get_name() : ( $event->name ?? '' ) );
+            $event_season = (string) ( method_exists( $event, 'get_season' ) ? $event->get_season() : ( $event->season ?? $season ) );
+            if ( '' === $event_season ) {
+                $event_season = (string) $season;
+            }
+
+            $match_count            = $this->event_repository->count_by_event_season( $event_id, $event_season, false );
+            $match_completion_count = $this->event_repository->count_by_event_season( $event_id, $event_season, true );
+
+            $events_data[] = array(
+                'id'                     => $event_id,
+                'name'                   => $event_name,
+                'season'                 => $event_season,
+                'match_count'            => $match_count,
+                'match_completion_count' => $match_completion_count,
+            );
+        }
+
+        $vm = $this->resolve_league_schedule_presenter()->present(
+            competition: $competition,
+            season: (string) $season,
+            events: $events_data,
+        );
+
+        $events = $vm->events;
+
+        require RACKETMANAGER_PATH . 'templates/admin/league/show-schedule.php';
     }
     /**
      * Action promotion and relegation function
@@ -1092,5 +1137,18 @@ final class Admin_League extends Admin_Display {
         }
 
         return new Admin_League_Matches_Presenter( new Admin_Date_Presenter() );
+    }
+
+    private function resolve_league_schedule_presenter(): Admin_League_Schedule_Presenter {
+        if ( $this->admin_league_schedule_presenter instanceof Admin_League_Schedule_Presenter ) {
+            return $this->admin_league_schedule_presenter;
+        }
+
+        $container = $this->racketmanager->container ?? null;
+        if ( $container instanceof Simple_Container && $container->has( 'admin_league_schedule_presenter' ) ) {
+            return $container->get( 'admin_league_schedule_presenter' );
+        }
+
+        throw new \RuntimeException( 'Admin_League_Schedule_Presenter not found in container.' );
     }
 }

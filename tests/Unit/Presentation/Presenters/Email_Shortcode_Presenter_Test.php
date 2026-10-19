@@ -175,7 +175,6 @@ class Email_Shortcode_Presenter_Test extends TestCase {
 
         $tournament       = $this->createStub( Tournament::class );
         $tournament->name = 'Wimbledon 2026';
-        $tournament->link = '/tournament/wimbledon-2026/';
 
         $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
 
@@ -206,7 +205,6 @@ class Email_Shortcode_Presenter_Test extends TestCase {
 
         $tournament       = $this->createStub( Tournament::class );
         $tournament->name = 'Doubles Championship';
-        $tournament->link = '/tournament/doubles/';
 
         $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
 
@@ -407,7 +405,6 @@ class Email_Shortcode_Presenter_Test extends TestCase {
 
         $tournament       = $this->createStub( Tournament::class );
         $tournament->name = 'County Championship';
-        $tournament->link = '/tournament/county/';
         $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
 
         $vars_tourn = $this->presenter->present_match_date_change_notification( $fixture_tourn, [

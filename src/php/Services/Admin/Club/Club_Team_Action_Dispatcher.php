@@ -20,7 +20,6 @@ use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Team_Service;
-use function Racketmanager\get_team;
 
 /**
  * Handles club team mutations (add/edit team for club, delete teams).
@@ -144,18 +143,28 @@ readonly final class Club_Team_Action_Dispatcher {
             );
         }
 
-        $messages = array();
+        $messages  = array();
+        $has_error = false;
         foreach ( $teams as $team_id ) {
-            $team = get_team( (int) $team_id );
-            if ( null !== $team && method_exists( $team, 'delete' ) ) {
-                $team->delete();
-                $messages[] = ( $team->title ?? (string) $team_id ) . ' ' . __( 'deleted', 'racketmanager' );
+            try {
+                $team = $this->team_service->get_team_by_id( (int) $team_id );
+            } catch ( Team_Not_Found_Exception ) {
+                $team = null;
+            }
+            if ( null !== $team ) {
+                $deleted = $this->team_service->delete_team( (int) $team_id );
+                if ( $deleted ) {
+                    $messages[] = ( $team->get_name() ?: (string) $team_id ) . ' ' . __( 'deleted', 'racketmanager' );
+                } else {
+                    $has_error  = true;
+                    $messages[] = ( $team->get_name() ?: (string) $team_id ) . ' ' . __( 'failed to delete', 'racketmanager' );
+                }
             }
         }
 
         return new Action_Result_DTO(
             message: implode( '<br>', $messages ),
-            message_type: Admin_Message_Type::SUCCESS,
+            message_type: $has_error ? Admin_Message_Type::ERROR : Admin_Message_Type::SUCCESS,
         );
     }
 }

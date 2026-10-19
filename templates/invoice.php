@@ -5,21 +5,14 @@
  * @package Racketmanager
  */
 
+declare( strict_types=1 );
+
 namespace Racketmanager;
 
-use Racketmanager\Util\Util_Lookup;
-
-/** @var array  $billing */
-/** @var object $invoice */
-/** @var string $organisation_name */
-/** @var object $target */
-global $racketmanager;
-if ( ! isset( $invoice_number ) ) {
-    $invoice_number = $billing['invoiceNumber']; // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
-}
+/** @var \Racketmanager\Presentation\View_Models\Invoice_View_Model $invoice */
 ?>
 <?php
-if ( is_user_logged_in() ) {
+if ( ! empty( $invoice->is_user_logged_in ) ) {
     ?>
     <style>
     .invoice-item-detail {
@@ -143,35 +136,31 @@ if ( is_user_logged_in() ) {
     <div id="invoice" class="page-style">
         <div id="invoice-header">
             <div id="company-address">
-                <div class="org"><h2><?php echo esc_html( $organisation_name ); ?></h2></div>
+                <div class="org"><h2><?php echo esc_html( $invoice->organisation_name ); ?></h2></div>
                 <div class="address">
-                    <div class="street-address"><?php echo str_replace( ',', '<br />', $billing['billingAddress'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
-                    <div class="email"><?php echo esc_html( $billing['billingEmail'] ); ?></div>
-                    <div class="url"><?php echo esc_html( trim( str_replace( array( 'https://' ), '', $racketmanager->site_url ), '/' ) ); ?></div>
-                    <div class="tel"><?php echo esc_html( $billing['billingTelephone'] ); ?></div>
+                    <div class="street-address"><?php echo $invoice->billing_address; // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
+                    <div class="email"><?php echo esc_html( $invoice->billing_email ); ?></div>
+                    <div class="url"><?php echo esc_html( $invoice->billing_url ); ?></div>
+                    <div class="tel"><?php echo esc_html( $invoice->billing_telephone ); ?></div>
                 </div>
             </div>
         </div>
         <div id="invoice-info">
             <div class="invoice-no">
-                <h2><?php esc_html_e( 'Invoice', 'racketmanager' ); ?>&nbsp;<?php echo esc_html( $invoice_number ); ?></h2>
+                <h2><?php esc_html_e( 'Invoice', 'racketmanager' ); ?>&nbsp;<?php echo esc_html( $invoice->invoice_number ); ?></h2>
             </div>
-            <div class="invoice-date"><?php echo esc_html( mysql2date( $racketmanager->date_format, $invoice->date ) ); ?></div>
+            <div class="invoice-date"><?php echo esc_html( $invoice->date_formatted ); ?></div>
             <div class="invoice-due">
             <?php
-            if ( $invoice->date_due === $invoice->date ) {
-                esc_html_e( 'Payment due on receipt', 'racketmanager' );
-            } else {
-                echo esc_html( __( 'Payment Due', 'racketmanager' ) . ': ' . mysql2date( $racketmanager->date_format, $invoice->date_due ) );
-            }
-            if ( $invoice->purchase_order ) {
+            echo esc_html( $invoice->due_text );
+            if ( ! empty( $invoice->purchase_order_display ) ) {
                 ?>
-                <div class="text-end"><?php echo esc_html( __( 'Purchase Order', 'racketmanager' ) . ': ' . strtoupper( $invoice->purchase_order ) ); ?></div>
+                <div class="text-end"><?php echo esc_html( $invoice->purchase_order_display ); ?></div>
                 <?php
             }
-            if ( 'paid' === $invoice->status ) {
+            if ( ! empty( $invoice->status_display ) ) {
                 ?>
-                <div class="text-end"><?php echo esc_html( strtoupper( $invoice->status ) ); ?></div>
+                <div class="text-end"><?php echo esc_html( $invoice->status_display ); ?></div>
                 <?php
             }
             ?>
@@ -180,10 +169,10 @@ if ( is_user_logged_in() ) {
         <div id="client-details">
             <div class="org"><h2><?php echo esc_html( $invoice->billable_name ); ?></h2></div>
             <?php
-            if ( ! empty( $invoice->billable_address ) ) {
+            if ( ! empty( $invoice->billable_address_formatted ) ) {
                 ?>
                 <div class="address">
-                    <div class="street-address"><?php echo str_replace( ',', '<br />', $invoice->billable_address ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
+                    <div class="street-address"><?php echo $invoice->billable_address_formatted; // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
                 </div>
                 <?php
             }
@@ -191,7 +180,7 @@ if ( is_user_logged_in() ) {
         </div>
         <div id="invoice-amount">
             <?php
-            if ( isset( $invoice->details->events ) || isset( $invoice->details->fee_competition ) ) {
+            if ( $invoice->has_breakdown ) {
                 ?>
                 <div id="header-row">
                     <div class="invoice-item-detail"><?php echo esc_html( ucwords( __( 'description', 'racketmanager' ) ) ); ?></div>
@@ -201,38 +190,28 @@ if ( is_user_logged_in() ) {
                 </div>
                 <div id="invoice-items">
                     <div class="invoice-item">
-                        <h2 class="invoice-item-detail"><?php echo esc_html( ucfirst( $invoice->charge_name ) ); ?></h2>
+                        <h2 class="invoice-item-detail"><?php echo esc_html( $invoice->charge_name ); ?></h2>
                     </div>
                     <?php
-                    if ( ! empty( $invoice->details->fee_competition ) ) {
+                    if ( ! empty( $invoice->fee_competition_formatted ) ) {
                         ?>
                         <div class="invoice-item">
                             <div class="invoice-item-detail"><?php echo esc_html( ucwords( __( 'Competition entry fee', 'racketmanager' ) ) ); ?></div>
                             <div class="invoice-item-quantity"></div>
-                            <div class="invoice-item-unit-price"><?php the_currency_amount( $invoice->details->fee_competition ); ?></div>
-                            <div class="invoice-item-net-price"><?php the_currency_amount( $invoice->details->fee_competition ); ?></div>
+                            <div class="invoice-item-unit-price"><?php echo esc_html( $invoice->fee_competition_formatted ); ?></div>
+                            <div class="invoice-item-net-price"><?php echo esc_html( $invoice->fee_competition_formatted ); ?></div>
                         </div>
                         <?php
                     }
                     ?>
                     <?php
-                    foreach ( $invoice->details->events as $racketmanager_event ) {
+                    foreach ( $invoice->items as $item ) {
                         ?>
                         <div class="invoice-item">
-                            <?php
-                            if ( isset( $racketmanager_event->name ) ) {
-                                ?>
-                                <div class="invoice-item-detail"><?php echo esc_html( $racketmanager_event->name ); ?></div>
-                                <?php
-                            } else {
-                                ?>
-                                <div class="invoice-item-detail"><?php echo esc_html( Util_Lookup::get_event_type( $racketmanager_event->type ) ); ?></div>
-                                <?php
-                            }
-                            ?>
-                            <div class="invoice-item-quantity"><?php echo esc_html( $racketmanager_event->count ); ?></div>
-                            <div class="invoice-item-unit-price"><?php the_currency_amount( $invoice->details->fee_events ); ?></div>
-                            <div class="invoice-item-net-price"><?php the_currency_amount( $racketmanager_event->fee ); ?></div>
+                            <div class="invoice-item-detail"><?php echo esc_html( $item->description ); ?></div>
+                            <div class="invoice-item-quantity"><?php echo esc_html( $item->quantity ); ?></div>
+                            <div class="invoice-item-unit-price"><?php echo esc_html( $item->unit_price_formatted ); ?></div>
+                            <div class="invoice-item-net-price"><?php echo esc_html( $item->net_price_formatted ); ?></div>
                         </div>
                         <?php
                     }
@@ -243,23 +222,18 @@ if ( is_user_logged_in() ) {
             ?>
             <div id="invoice-totals">
                 <div class="invoice-total-desc">Total</div>
-                <div class="invoice-item-net-price"><?php the_currency_amount( $invoice->details->fee ); ?></div>
+                <div class="invoice-item-net-price"><?php echo esc_html( $invoice->fee_total_formatted ); ?></div>
             </div>
             <?php
-            if ( ! empty( $invoice->details->paid ) ) {
-                if ( empty( $invoice->details->total ) ) {
-                    $amount_due = $invoice->details->fee - $invoice->details->paid;
-                } else {
-                    $amount_due = $invoice->details->total;
-                }
+            if ( $invoice->has_paid ) {
                 ?>
                 <div class="invoice-totals">
                     <div class="invoice-total-desc">Paid</div>
-                    <div class="invoice-item-net-price"><?php the_currency_amount( $invoice->details->paid ); ?></div>
+                    <div class="invoice-item-net-price"><?php echo esc_html( $invoice->paid_formatted ); ?></div>
                 </div>
                 <div class="invoice-totals">
                 <div class="invoice-total-desc"><?php esc_html_e( 'Due', 'racketmanager' ); ?></div>
-                    <div class="invoice-item-net-price"><?php the_currency_amount( $amount_due ); ?></div>
+                    <div class="invoice-item-net-price"><?php echo esc_html( $invoice->amount_due_formatted ); ?></div>
                 </div>
                 <?php
             }
@@ -267,19 +241,19 @@ if ( is_user_logged_in() ) {
             <div id="payment-details">
                 <h2><?php esc_html_e( 'Payment Details', 'racketmanager' ); ?></h2>
                 <div id="bank-name">
-                    <?php echo esc_html( $billing['bankName'] ); ?>
+                    <?php echo esc_html( $invoice->bank_name ); ?>
                 </div>
                 <div id="sort-code">
                     <strong><?php esc_html_e( 'Sort Code', 'racketmanager' ); ?></strong>
-                    <?php echo esc_html( $billing['sortCode'] ); ?>
+                    <?php echo esc_html( $invoice->sort_code ); ?>
                 </div>
                 <div id="account-number">
                     <strong><?php esc_html_e( 'Account Number', 'racketmanager' ); ?></strong>
-                    <?php echo esc_html( $billing['accountNumber'] ); ?>
+                    <?php echo esc_html( $invoice->account_number ); ?>
                 </div>
                 <div id="payment-reference">
                     <strong><?php esc_html_e( 'Payment Reference', 'racketmanager' ); ?></strong>
-                    <?php echo esc_html( $invoice_number ); ?>
+                    <?php echo esc_html( $invoice->payment_reference ); ?>
                 </div>
             </div>
         </div>
@@ -287,7 +261,7 @@ if ( is_user_logged_in() ) {
     <?php
 } else {
     ?>
-    <p class="contact-login-msg">You need to <a href="<?php echo esc_html( wp_login_url() ); ?>">login</a> to view invoices</p>
+    <p class="contact-login-msg">You need to <a href="<?php echo esc_html( $invoice->login_url ); ?>">login</a> to view invoices</p>
     <?php
 }
 ?>

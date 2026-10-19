@@ -7,10 +7,24 @@
 
 namespace Racketmanager;
 
-global $racketmanager;
+use Racketmanager\Admin\View_Models\Admin_League_Schedule_Page_View_Model;
+use Racketmanager\Admin\View_Models\Admin_League_Schedule_Event_View_Model;
+
+// Preferred input.
+$vm = isset( $vm ) && ( $vm instanceof Admin_League_Schedule_Page_View_Model ) ? $vm : null;
+
+// BC fallback.
+if ( $vm ) {
+    $competition    = $vm->competition;
+    $season         = $vm->season;
+    $competition_id = $vm->competition_id;
+    $events         = $vm->events;
+}
+
 /** @var object $competition */
 /** @var string $season */
 /** @var int $competition_id */
+/** @var array $events */
 ?>
 <div class="container">
     <div class="row justify-content-end">
@@ -30,7 +44,7 @@ global $racketmanager;
         </div>
     </div>
 
-    <?php $this->show_message(); ?>
+    <?php if ( isset( $this ) && method_exists( $this, 'show_message' ) ) { $this->show_message(); } ?>
     <div id="">
         <form id='schedule-filter' method='post' action='' class='form-control mb-3'>
             <?php wp_nonce_field( 'racketmanager_schedule-matches', 'racketmanager_nonce' ); ?>
@@ -61,43 +75,30 @@ global $racketmanager;
                 </thead>
                 <tbody>
                     <?php
-                    $events = $competition->get_events();
-                    if ( $events ) {
-                        foreach ( $events as $event ) {
-                            $event                  = get_event( $event );
-                            $match_count            = $racketmanager->get_matches(
-                                array(
-                                    'count'    => true,
-                                    'event_id' => $event->id,
-                                    'season'   => $event->get_season(),
-                                )
-                            );
-                            $match_completion_count = $racketmanager->get_matches(
-                                array(
-                                    'count'    => true,
-                                    'event_id' => $event->id,
-                                    'season'   => $event->get_season(),
-                                    'time'     => 'latest',
-                                )
-                            );
-                            $event_link             = 'admin.php?page=racketmanager-' . $competition->get_type() . 's&amp;view=event&amp;competition_id=' . $competition->id . '&amp;event_id=' . $event->id . '&amp;season=' . $event->get_season();
+                    $events_list = $events ?? array();
+                    if ( $events_list ) {
+                        foreach ( $events_list as $event ) {
+                            $event_id          = $event->id ?? 0;
+                            $event_name        = $event->name ?? '';
+                            $event_link        = $event->event_link ?? '';
+                            $can_send_fixtures = ! empty( $event->can_send_fixtures );
                             ?>
                             <tr>
-                                <td class="check-column"><label for="event-<?php echo esc_attr( $event->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $event->id ); ?>" id="event-<?php echo esc_attr( $event->id ); ?>" name="event[<?php echo esc_html( $event->id ); ?>]" onclick="Racketmanager.checkAll(document.getElementById('schedule-filter'));" /></td>
-                                <td><a href="<?php echo esc_html( $event_link ); ?>"><?php echo esc_html( $event->name ); ?></a></td>
+                                <td class="check-column"><label for="event-<?php echo esc_attr( $event_id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $event_id ); ?>" id="event-<?php echo esc_attr( $event_id ); ?>" name="event[<?php echo esc_html( $event_id ); ?>]" onclick="Racketmanager.checkAll(document.getElementById('schedule-filter'));" /></td>
+                                <td><a href="<?php echo esc_html( $event_link ); ?>"><?php echo esc_html( $event_name ); ?></a></td>
                                 <td>
                                     <?php
-                                    if ( ! empty( $match_count ) && empty( $match_completion_count ) ) {
+                                    if ( $can_send_fixtures ) {
                                         ?>
-                                        <button class="btn btn-secondary sendFixtures" data-event-id=<?php echo esc_html( $event->id ); ?>><?php esc_html_e( 'Send fixtures', 'racketmanager' ); ?></button>
+                                        <button class="btn btn-secondary sendFixtures" data-event-id="<?php echo esc_html( $event_id ); ?>"><?php esc_html_e( 'Send fixtures', 'racketmanager' ); ?></button>
                                         <?php
                                     }
                                     ?>
                                 </td>
                             </tr>
                             <?php
-                            }
                         }
+                    }
                     ?>
                 </tbody>
             </table>

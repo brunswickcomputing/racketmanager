@@ -4,9 +4,11 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Competition\Queries;
 
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
+use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Tournament_Service;
 use function Racketmanager\un_seo_url;
 use function __;
@@ -15,7 +17,9 @@ class Get_Competitions_Handler {
     public function __construct(
         private readonly Competition_Service $competition_service,
         private readonly Tournament_Service $tournament_service,
-        private readonly Player_Service $player_service
+        private readonly Player_Service $player_service,
+        private readonly Player_Query_Service $player_query_service,
+        private readonly Competition_Shortcode_Presenter $presenter
     ) {}
 
     public function handle( Get_Competitions_Query $query ): Shortcode_View_Model {
@@ -49,7 +53,7 @@ class Get_Competitions_Handler {
             }
         } else {
             $competitions      = $this->competition_service->get_by_criteria( $args );
-            $user_competitions = $player?->get_competitions( $args ) ?? [];
+            $user_competitions = $player ? $this->player_query_service->get_competitions( $player, $args ) : [];
         }
 
         $competition_type = match ( $type ) {
@@ -59,11 +63,16 @@ class Get_Competitions_Handler {
             default      => __( 'Competitions', 'racketmanager' ),
         };
 
+        $user_competition_items = $this->presenter->present_competition_list( $user_competitions, $type, null );
+        $competition_items      = $this->presenter->present_competition_list( $competitions, $type, null );
+
         return new Shortcode_View_Model( template: 'competitions', vars: [
-            'competitions'      => $competitions,
-            'type'              => $competition_type,
-            'competition_type'  => $type,
-            'user_competitions' => $user_competitions,
+            'competitions'           => $competitions,
+            'competition_items'      => $competition_items,
+            'type'                   => $competition_type,
+            'competition_type'       => $type,
+            'user_competitions'      => $user_competitions,
+            'user_competition_items' => $user_competition_items,
         ] );
     }
 }

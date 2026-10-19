@@ -4,8 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Domain;
 
 use Racketmanager\Domain\DTO\Player\Player_Hydration_DTO;
-use Racketmanager\Services\Player_Query_Service;
-use Racketmanager\Services\Player_Stats_Service;
+use Racketmanager\Util\Player_Link_Util;
 use Racketmanager\Util\Util;
 use RuntimeException;
 
@@ -17,16 +16,12 @@ final class Player_Factory {
 	 * Create a Player entity from a hydration DTO.
 	 *
 	 * @param Player_Hydration_DTO $dto
-	 * @param Player_Query_Service|null $player_query_service
-	 * @param Player_Stats_Service|null $player_stats_service
 	 * @return Player
 	 */
 	public static function create_from_dto(
-		Player_Hydration_DTO $dto,
-		?Player_Query_Service $player_query_service = null,
-		?Player_Stats_Service $player_stats_service = null
+		Player_Hydration_DTO $dto
 	): Player {
-		$player = new Player( $dto, $player_query_service, $player_stats_service );
+		$player = new Player( $dto );
 		self::apply_derived_fields( $player );
 
 		return $player;
@@ -49,10 +44,7 @@ final class Player_Factory {
 			$player->locked_user_name = '';
 		}
 		if ( empty( $player->link ) && ! empty( $player->display_name ) ) {
-			$player->link = '/player/' . Util::seo_url( $player->display_name ) . '/';
-			if ( ! empty( $player->btm ) ) {
-				$player->link .= $player->btm . '/';
-			}
+			$player->link = Player_Link_Util::generate_link( $player->display_name, $player->btm ?? null );
 		}
 	}
 
@@ -60,33 +52,25 @@ final class Player_Factory {
 	 * Create a Player entity from a generic object (e.g. database row or WP_User).
 	 *
 	 * @param object $row
-	 * @param Player_Query_Service|null $player_query_service
-	 * @param Player_Stats_Service|null $player_stats_service
 	 * @return Player
 	 */
 	public static function from_object(
-		object $row,
-		?Player_Query_Service $player_query_service = null,
-		?Player_Stats_Service $player_stats_service = null
+		object $row
 	): Player {
 		$dto = Player_Hydration_DTO::from_object( $row );
-		return self::create_from_dto( $dto, $player_query_service, $player_stats_service );
+		return self::create_from_dto( $dto );
 	}
 
 	/**
 	 * Create a Player entity from an array.
 	 *
 	 * @param array $data
-	 * @param Player_Query_Service|null $player_query_service
-	 * @param Player_Stats_Service|null $player_stats_service
 	 * @return Player
 	 */
 	public static function from_array(
-		array $data,
-		?Player_Query_Service $player_query_service = null,
-		?Player_Stats_Service $player_stats_service = null
+		array $data
 	): Player {
 		$dto = Player_Hydration_DTO::from_array( $data );
-		return self::create_from_dto( $dto, $player_query_service, $player_stats_service );
+		return self::create_from_dto( $dto );
 	}
 }

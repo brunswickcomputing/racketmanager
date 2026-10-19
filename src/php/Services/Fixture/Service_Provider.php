@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Fixture;
 
+use LogicException;
+
 use Racketmanager\Services\Competition\Knockout_Progression_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\League_Service;
@@ -50,7 +52,10 @@ class Service_Provider {
         $this->registration_service = $registration_service;
     }
 
-    public function get_result_reporting_service(): ?Result_Reporting_Service {
+    public function get_result_reporting_service(): Result_Reporting_Service {
+        if ( null === $this->result_reporting_service ) {
+            throw new LogicException( 'Result_Reporting_Service has not been configured.' );
+        }
         return $this->result_reporting_service;
     }
 

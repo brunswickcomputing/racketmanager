@@ -4,12 +4,14 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\League\Queries;
 
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\League_Service;
+use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use function __;
 use function is_numeric;
-use function method_exists;
 use Throwable;
 
 /**
@@ -18,8 +20,11 @@ use Throwable;
 class Get_League_Players_Handler {
     public function __construct(
         private readonly League_Service $league_service,
+        private readonly League_Repository_Interface $league_repository,
         private readonly Player_Service $player_service,
-        private readonly Shortcode_Template_Renderer $template_renderer
+        private readonly Shortcode_Template_Renderer $template_renderer,
+        private readonly Player_Query_Service $player_query_service,
+        private readonly Player_Stats_Service $player_stats_service
     ) {}
 
     public function handle( Get_League_Players_Query $query ): Shortcode_View_Model {
@@ -32,6 +37,7 @@ class Get_League_Players_Handler {
         }
 
         $league->set_season( $query->season ?? false );
+        $season_name = $league->current_season['name'] ?? null;
 
         if ( $query->player_id ) {
             $player = null;
@@ -49,12 +55,19 @@ class Get_League_Players_Handler {
                 return Shortcode_View_Model::for_error( __( 'Player not found', 'racketmanager' ) );
             }
 
-            $season_name     = $league->current_season['name'] ?? null;
-            $player->matches = method_exists( $player, 'get_matches' ) ? $player->get_matches( $league, $season_name, 'league' ) : [];
-            $player->stats   = method_exists( $player, 'get_stats' ) ? $player->get_stats() : null;
+            $player->matches = $this->player_query_service->get_matches( $player, $league, $season_name, 'league' );
+            $player->stats   = $this->player_stats_service->get_stats( $player );
             $league->player  = $player;
         } else {
-            $league->players = $league->get_players( [ 'stats' => true ] );
+            $league->players = $this->player_stats_service->populate_players_stats(
+                $league->get_players(),
+                $league,
+                $season_name,
+                'league'
+            );
+            foreach ( $league->players as $player ) {
+                $player->team = $this->league_repository->get_player_team( $league->get_id(), [ 'player' => $player->get_id(), 'season' => $season_name ] ) ?? new \stdClass();
+            }
         }
 
         if ( empty( $query->template ) && ! empty( $league->sport ) && $this->template_renderer->template_exists( 'players-' . $league->sport, 'league' ) ) {

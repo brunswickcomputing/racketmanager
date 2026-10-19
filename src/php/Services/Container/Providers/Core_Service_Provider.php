@@ -14,6 +14,7 @@ use Racketmanager\Application\Login\Queries\Get_Password_Lost_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Handler;
 use Racketmanager\Application\Message\Queries\Get_Message_Handler;
 use Racketmanager\Application\Message\Queries\Get_Messages_Handler;
+use Racketmanager\Presentation\Presenters\Message_Presenter;
 use Racketmanager\Domain\Ports\Rating_Gateway_Interface;
 use Racketmanager\Gateways\Mail\Mailer_Interface;
 use Racketmanager\Gateways\Option\Option_Gateway_Interface;
@@ -22,6 +23,8 @@ use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
 use Racketmanager\Infrastructure\Gateways\Payment\Stripe_Payment_Gateway;
 use Racketmanager\Infrastructure\Gateways\Rating\Lta_Wtn_Gateway_Adapter;
+use Racketmanager\Repositories\Message_Repository;
+use Racketmanager\Repositories\User_Repository;
 use Racketmanager\Infrastructure\Security\Security_Service;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Account_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Account_Ajax_Controller;
@@ -36,6 +39,7 @@ use Racketmanager\Infrastructure\Wordpress\Shortcodes\General_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Login_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Message_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Email_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Invoice_Presenter;
 use Racketmanager\Presentation\Presenters\Notification_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
@@ -84,6 +88,8 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->set( 'season_repository', fn() => new Season_Repository() );
         $container->set( 'charge_repository', fn() => new Charge_Repository() );
         $container->set( 'invoice_repository', fn() => new Invoice_Repository() );
+        $container->set( 'user_repository', fn() => new User_Repository() );
+        $container->set( 'message_repository', fn() => new Message_Repository() );
 
         // Repository Provider Aggregate
         $container->set( 'repository_provider', fn( Simple_Container $c ) => new Repository_Provider(
@@ -131,7 +137,8 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             $c->get( 'competition_service' ),
             $c->get( 'fixture_permission_service' ),
             $app?->site_url ?? '',
-            $app?->site_name ?? ''
+            $app?->site_name ?? '',
+            $c->get( 'rubber_repository' )
         ) );
 
         $container->set( 'notification_service', fn( Simple_Container $c ) => new Notification_Service(
@@ -185,7 +192,8 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             fixture_link_service: $c->get( 'fixture_link_service' ),
             permission_service: $c->get( 'fixture_permission_service' ),
             site_url: $app?->site_url ?? '',
-            site_name: $app?->site_name ?? ''
+            site_name: $app?->site_name ?? '',
+            rubber_repository: $c->get( 'rubber_repository' )
         ) );
         $container->set( 'email_shortcode_adapter', fn( Simple_Container $c ) => new Email_Shortcode_Adapter(
             fixture_repository: $c->get( 'fixture_repository' ),
@@ -198,10 +206,10 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         ) );
 
         // General / Auth / Message Queries & Shortcodes
-        $container->set( 'get_login_form_handler', fn( Simple_Container $c ) => new Get_Login_Form_Handler( $c->get( 'option_gateway' ), $c->get( 'settings_service' ), $app ) );
+        $container->set( 'get_login_form_handler', fn( Simple_Container $c ) => new Get_Login_Form_Handler( $c->get( 'option_gateway' ), $c->get( 'settings_service' ) ) );
         $container->set( 'get_password_lost_form_handler', fn() => new Get_Password_Lost_Form_Handler() );
         $container->set( 'get_password_reset_form_handler', fn() => new Get_Password_Reset_Form_Handler() );
-        $container->set( 'get_member_account_form_handler', fn( Simple_Container $c ) => new Get_Member_Account_Form_Handler( $c->get( 'player_service' ) ) );
+        $container->set( 'get_member_account_form_handler', fn( Simple_Container $c ) => new Get_Member_Account_Form_Handler( $c->get( 'user_repository' ) ) );
 
         $container->set( 'login_shortcode_adapter', fn( Simple_Container $c ) => new Login_Shortcode_Adapter(
             $app,
@@ -214,8 +222,9 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             security_service: $c->get( 'security_service' )
         ) );
 
-        $container->set( 'get_messages_handler', fn() => new Get_Messages_Handler() );
-        $container->set( 'get_message_handler', fn() => new Get_Message_Handler() );
+        $container->set( 'message_presenter', fn() => new Message_Presenter() );
+        $container->set( 'get_messages_handler', fn( Simple_Container $c ) => new Get_Messages_Handler( $c->get( 'user_repository' ), $c->get( 'message_presenter' ) ) );
+        $container->set( 'get_message_handler', fn( Simple_Container $c ) => new Get_Message_Handler( $c->get( 'message_repository' ), $c->get( 'message_presenter' ) ) );
 
         $container->set( 'message_shortcode_adapter', fn( Simple_Container $c ) => new Message_Shortcode_Adapter(
             $app,
@@ -226,17 +235,21 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             security_service: $c->get( 'security_service' )
         ) );
 
-        $container->set( 'get_favourites_handler', fn() => new Get_Favourites_Handler() );
+        $container->set( 'get_favourites_handler', fn( Simple_Container $c ) => new Get_Favourites_Handler( $c->get( 'user_repository' ) ) );
+        $container->set( 'invoice_presenter', fn() => new Invoice_Presenter() );
         $container->set( 'get_invoice_handler', fn( Simple_Container $c ) => new Get_Invoice_Handler(
             $c->get( 'finance_service' ),
-            $app
+            $c->get( 'settings_service' ),
+            $c->get( 'option_gateway' ),
+            $c->get( 'invoice_presenter' )
         ) );
         $container->set( 'get_purchase_order_handler', fn( Simple_Container $c ) => new Get_Purchase_Order_Handler(
             $c->get( 'finance_service' )
         ) );
         $container->set( 'get_memberships_handler', fn( Simple_Container $c ) => new Get_Memberships_Handler(
             $c->get( 'player_service' ),
-            $c->get( 'registration_service' )
+            $c->get( 'registration_service' ),
+            $c->get( 'player_presenter' )
         ) );
         $container->set( 'get_alert_handler', fn() => new Get_Alert_Handler() );
 

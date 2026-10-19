@@ -96,7 +96,9 @@ use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
+use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
@@ -365,7 +367,8 @@ class Shortcode_Adapters_Bootstrap_Test extends TestCase {
             $overrides['role_modal'] ?? $this->createStub( Get_Club_Role_Modal_Handler::class ),
             $overrides['competitions'] ?? $this->createStub( Get_Club_Competitions_Handler::class ),
             $overrides['invoices'] ?? $this->createStub( Get_Club_Invoices_Handler::class ),
-            $overrides['view_presenter'] ?? $this->createStub( Shortcode_View_Presenter::class )
+            $overrides['view_presenter'] ?? $this->createStub( Shortcode_View_Presenter::class ),
+            $overrides['competition_presenter'] ?? $this->createStub( Competition_Shortcode_Presenter::class )
         );
     }
 
@@ -423,11 +426,16 @@ class Shortcode_Adapters_Bootstrap_Test extends TestCase {
             template_renderer: $renderer,
             get_competition_handler: $overrides['get_competition_handler'] ?? $this->createStub( Get_Competition_Handler::class ),
             competition_shortcode_presenter: $overrides['competition_shortcode_presenter'] ?? $this->createStub( Competition_Shortcode_Presenter::class ),
-            overview_handler: $overrides['overview_handler'] ?? new \Racketmanager\Application\Competition\Queries\Get_Competition_Overview_Handler( $comp_service ),
+            overview_handler: $overrides['overview_handler'] ?? new \Racketmanager\Application\Competition\Queries\Get_Competition_Overview_Handler( $comp_service, $overrides['competition_shortcode_presenter'] ?? $this->createStub( Competition_Shortcode_Presenter::class ) ),
             events_handler: $overrides['events_handler'] ?? new \Racketmanager\Application\Competition\Queries\Get_Competition_Events_Handler( $comp_service ),
             teams_handler: $overrides['teams_handler'] ?? new \Racketmanager\Application\Competition\Queries\Get_Competition_Teams_Handler( $comp_service ),
-            clubs_handler: $overrides['clubs_handler'] ?? new \Racketmanager\Application\Competition\Queries\Get_Competition_Clubs_Handler( $comp_service, $club_service ),
-            players_handler: $overrides['players_handler'] ?? new \Racketmanager\Application\Competition\Queries\Get_Competition_Players_Handler( $comp_service, $player_service ),
+            clubs_handler: $overrides['clubs_handler'] ?? new \Racketmanager\Application\Competition\Queries\Get_Competition_Clubs_Handler( $comp_service, $club_service, $this->createStub( Player_Stats_Service::class ), new \Racketmanager\Presentation\Presenters\Tournament_Presenter( 'd/m/Y' ) ),
+            players_handler: $overrides['players_handler'] ?? new \Racketmanager\Application\Competition\Queries\Get_Competition_Players_Handler(
+                $comp_service,
+                $player_service,
+                $this->createStub( Player_Query_Service::class ),
+                $this->createStub( Player_Stats_Service::class )
+            ),
             winners_handler: $overrides['winners_handler'] ?? new \Racketmanager\Application\Competition\Queries\Get_Competition_Winners_Handler( $comp_service ),
             view_presenter: $view_presenter,
             racketmanager: $overrides['racketmanager'] ?? $this->racketmanager

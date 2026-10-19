@@ -1,0 +1,128 @@
+<?php
+declare( strict_types=1 );
+
+namespace Racketmanager\Tests\Unit\Presentation\Presenters;
+
+use PHPUnit\Framework\TestCase;
+use Racketmanager\Domain\Tournament;
+use Racketmanager\Presentation\Presenters\Tournament_Presenter;
+
+final class Tournament_Presenter_Test extends TestCase {
+	public function test_formats_dates_with_configured_format(): void {
+		$tournament = new Tournament( (object) [ 'name' => 'Cup', 'date_end' => '2026-08-20', 'date_closing' => '2026-08-01' ] );
+
+		$dates = ( new Tournament_Presenter( 'd/m/Y' ) )->present_dates( $tournament );
+
+		$this->assertSame( '20/08/2026', $dates->date_display );
+		$this->assertSame( '01/08/2026', $dates->date_closing_display );
+	}
+
+	public function test_uses_fallbacks_for_missing_dates(): void {
+		$tournament = new Tournament( (object) [ 'name' => 'Cup', 'date_end' => '0000-00-00', 'date_start' => '0000-00-00' ] );
+
+		$dates = ( new Tournament_Presenter() )->present_dates( $tournament );
+
+		$this->assertSame( 'TBC', $dates->date_display );
+		$this->assertSame( 'N/A', $dates->date_closing_display );
+		$this->assertSame( 'N/A', $dates->date_withdrawal_display );
+		$this->assertSame( 'N/A', $dates->date_open_display );
+		$this->assertSame( 'N/A', $dates->date_start_display );
+	}
+
+	public function test_get_link_builds_relative_url_from_tournament_name(): void {
+		$tournament = new Tournament( (object) [ 'name' => 'Leigh Summer Open 2026' ] );
+		$presenter  = new Tournament_Presenter();
+
+		$this->assertSame( '/tournament/leigh-summer-open-2026/', $presenter->get_link( $tournament ) );
+	}
+
+	public function test_get_entry_link_formats_url_handling_trailing_slashes_in_site_url(): void {
+		$tournament = new Tournament( (object) [ 'name' => 'Winter Closed 2026' ] );
+		$presenter  = new Tournament_Presenter();
+
+		$this->assertSame( 'https://tennis.org/entry-form/winter-closed-2026-tournament/', $presenter->get_entry_link( $tournament, 'https://tennis.org' ) );
+		$this->assertSame( 'https://tennis.org/entry-form/winter-closed-2026-tournament/', $presenter->get_entry_link( $tournament, 'https://tennis.org/' ) );
+		$this->assertSame( '/entry-form/winter-closed-2026-tournament/', $presenter->get_entry_link( $tournament, '' ) );
+	}
+
+	public function test_present_dates_integrates_with_date_range_windows_and_boundaries(): void {
+		$tournament = new Tournament( (object) [
+			'name'            => 'Championships 2026',
+			'date_start'      => '2026-07-01',
+			'date_end'        => '2026-07-15',
+			'date_open'       => '2026-05-01',
+			'date_closing'    => '2026-06-20',
+			'date_withdrawal' => '2026-06-25',
+		] );
+
+		$presenter = new Tournament_Presenter( 'd/m/Y' );
+		$dates     = $presenter->present_dates( $tournament );
+
+		$this->assertSame( '15/07/2026', $dates->date_display );
+		$this->assertSame( '01/07/2026', $dates->date_start_display );
+		$this->assertSame( '01/05/2026', $dates->date_open_display );
+		$this->assertSame( '20/06/2026', $dates->date_closing_display );
+		$this->assertSame( '25/06/2026', $dates->date_withdrawal_display );
+
+		$header = $presenter->present_header( $tournament );
+		$this->assertTrue( $header->has_date_range );
+		$this->assertSame( '01/07/2026', $header->date_start_display );
+		$this->assertSame( '15/07/2026', $header->date_end_display );
+	}
+
+	public function test_present_header_and_dates_with_partial_and_invalid_date_boundaries(): void {
+		$presenter = new Tournament_Presenter( 'd/m/Y' );
+
+		// 1. Partial dates: missing date_start
+		$partial_tournament = new Tournament( (object) [
+			'name'       => 'Partial Tournament',
+			'date_start' => null,
+			'date_end'   => '2026-07-15',
+		] );
+		$dates   = $presenter->present_dates( $partial_tournament );
+		$header  = $presenter->present_header( $partial_tournament );
+		$this->assertSame( '15/07/2026', $dates->date_display );
+		$this->assertSame( 'N/A', $dates->date_start_display );
+		$this->assertFalse( $header->has_date_range );
+		$this->assertNull( $header->date_start_display );
+		$this->assertNull( $header->date_end_display );
+
+		// 2. Reversed dates: start > end
+		$reversed_tournament = new Tournament( (object) [
+			'name'       => 'Reversed Tournament',
+			'date_start' => '2026-08-20',
+			'date_end'   => '2026-08-01',
+		] );
+		$rev_dates  = $presenter->present_dates( $reversed_tournament );
+		$rev_header = $presenter->present_header( $reversed_tournament );
+		$this->assertSame( '01/08/2026', $rev_dates->date_display );
+		$this->assertSame( '20/08/2026', $rev_dates->date_start_display );
+		$this->assertTrue( $rev_header->has_date_range );
+		$this->assertSame( '20/08/2026', $rev_header->date_start_display );
+		$this->assertSame( '01/08/2026', $rev_header->date_end_display );
+
+		// 3. Zero / empty dates
+		$zero_tournament = new Tournament( (object) [
+			'name'       => 'Zero Tournament',
+			'date_start' => '0000-00-00',
+			'date_end'   => '',
+		] );
+		$zero_dates  = $presenter->present_dates( $zero_tournament );
+		$zero_header = $presenter->present_header( $zero_tournament );
+		$this->assertSame( 'TBC', $zero_dates->date_display );
+		$this->assertSame( 'N/A', $zero_dates->date_start_display );
+		$this->assertFalse( $zero_header->has_date_range );
+
+		// 4. Datetime formatted inputs
+		$datetime_tournament = (object) [
+			'name'       => 'Datetime Tournament',
+			'date_start' => '2026-07-01 10:00:00',
+			'date_end'   => '2026-07-15 18:00:00',
+			'is_open'    => false,
+		];
+		$dt_header = $presenter->present_header( $datetime_tournament );
+		$this->assertTrue( $dt_header->has_date_range );
+		$this->assertSame( '01/07/2026', $dt_header->date_start_display );
+		$this->assertSame( '15/07/2026', $dt_header->date_end_display );
+	}
+}

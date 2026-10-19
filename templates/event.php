@@ -1,95 +1,29 @@
 <?php
 /**
- *
  * Template page for the Event
  *
  * @package Racketmanager/Templates
  *
  * The following variables are usable:
- *
- *  $leagues: array of all leagues
- *  $curr_league: current league
+ *  $event: current event
  *  $seasons: array of all seasons
- *
- * You can check the content of a variable when you insert the tag <?php var_dump($variable) ?>
+ *  $curr_season: current season
+ *  $tab: current tab
+ *  $menu_options: array of menu options
+ *  $is_singular: bool
+ *  $competition_type: string
+ *  $event_seo_name: string
  */
 
 namespace Racketmanager;
 
 /** @var object $event */
-global $wp;
+/** @var array $menu_options */
+/** @var bool $is_singular */
+/** @var string $competition_type */
+/** @var string $event_seo_name */
 
-$competition_type = $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
-
-$is_singular = false;
-if ( empty( $tab ) ) {
-    if ( isset( $wp->query_vars['player_id'] ) ) {
-        $is_singular = true;
-        $tab         = 'players'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-    } elseif ( isset( $wp->query_vars['club_name'] ) ) {
-        $is_singular = true;
-        $tab         = 'clubs'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-    } elseif ( isset( $wp->query_vars['team'] ) ) {
-        $is_singular = true;
-        $tab         = 'teams'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-    } elseif ( $event->competition->is_championship ) {
-        $tab = 'draw'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-    } else {
-        $tab = 'standings'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-    }
-}
-$menu_options = array();
-if ( $event->competition->is_championship ) {
-    $menu_options['draw'] = array(
-        'name'        => 'draw',
-        'selected'    => 'draw' === $tab,
-        'available'   => true,
-        'template'    => null,
-        'description' => __( 'Draw', 'racketmanager' ),
-    );
-} else {
-    $menu_options['standings'] = array(
-        'name'        => 'standings',
-        'selected'    => 'standings' === $tab,
-        'available'   => true,
-        'template'    => null,
-        'description' => __( 'Standings', 'racketmanager' ),
-    );
-}
-if ( $event->competition->is_championship ) {
-    $menu_options['matches'] = array(
-        'name'        => 'matches',
-        'selected'    => 'matches' === $tab,
-        'available'   => true,
-        'template'    => null,
-        'description' => __( 'Matches', 'racketmanager' ),
-    );
-} elseif ( ! $event->is_box ) {
-    $menu_options['clubs'] = array(
-        'name'        => 'clubs',
-        'selected'    => 'clubs' === $tab,
-        'available'   => true,
-        'template'    => null,
-        'description' => __( 'Clubs', 'racketmanager' ),
-    );
-}
-$menu_options['teams'] = array(
-    'name'        => 'teams',
-    'selected'    => 'teams' === $tab,
-    'available'   => true,
-    'template'    => $event->competition->is_championship ? 'list' : null,
-    'description' => __( 'Teams', 'racketmanager' ),
-);
-if ( ! $event->is_box ) {
-    $menu_options['players'] = array(
-        'name'        => 'players',
-        'selected'    => 'players' === $tab,
-        'available'   => true,
-        'template'    => null,
-        'description' => __( 'Players', 'racketmanager' ),
-    );
-}
-
+$is_singular      = $is_singular ?? false;
 ?>
 <div id="league-tables">
     <?php
@@ -106,10 +40,10 @@ if ( ! $event->is_box ) {
                         <?php
                         foreach ( $menu_options as $option ) {
                             if ( $option['available'] ) {
-                                $singular_class = $option['selected'] && $is_singular ? 'is-singular' : null;
+                                $singular_class = $option['selected'] && ! empty( $is_singular ) ? 'is-singular' : null;
                                 ?>
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link tabData <?php echo $option['selected'] ? 'active' : null; ?> <?php echo esc_attr( $singular_class ); ?>" id="<?php echo esc_attr( $option['name'] ); ?>-tab" data-bs-toggle="pill" data-bs-target="#<?php echo esc_attr( $option['name'] ); ?>" type="button" role="tab" aria-controls="<?php echo esc_attr( $option['name'] ); ?>" aria-selected="<?php echo esc_attr( $option['selected'] ); ?>" data-type="event" data-type-id="<?php echo esc_attr( $event->id ); ?>" data-season="<?php echo esc_attr( $event->current_season['name'] ); ?>" data-name="<?php echo esc_attr( seo_url( $event->name ) ); ?>" data-competition-type="<?php echo esc_attr( $competition_type ); ?>"><?php echo esc_attr( $option['description'] ); ?></button>
+                                    <button class="nav-link tabData <?php echo $option['selected'] ? 'active' : null; ?> <?php echo esc_attr( $singular_class ); ?>" id="<?php echo esc_attr( $option['name'] ); ?>-tab" data-bs-toggle="pill" data-bs-target="#<?php echo esc_attr( $option['name'] ); ?>" type="button" role="tab" aria-controls="<?php echo esc_attr( $option['name'] ); ?>" aria-selected="<?php echo esc_attr( $option['selected'] ); ?>" data-type="event" data-type-id="<?php echo esc_attr( $event->id ); ?>" data-season="<?php echo esc_attr( $event->current_season['name'] ); ?>" data-name="<?php echo esc_attr( $event_seo_name ?? '' ); ?>" data-competition-type="<?php echo esc_attr( $competition_type ); ?>"><?php echo esc_attr( $option['description'] ); ?></button>
                                 </li>
                                 <?php
                             }

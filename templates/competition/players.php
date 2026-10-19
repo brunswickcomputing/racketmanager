@@ -7,7 +7,6 @@
 
 namespace Racketmanager;
 
-global $racketmanager;
 /** @var object $competition */
 if ( empty( $competition->player ) ) {
     $player_list     = $competition->players;

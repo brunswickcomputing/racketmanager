@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Admin\Presenters;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Presenters\Admin_Date_Presenter;
 use Racketmanager\Admin\Presenters\Admin_Results_Match_Presenter;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use stdClass;
 
 require_once dirname( __DIR__, 3 ) . '/wp-stubs.php';
@@ -13,10 +14,12 @@ require_once dirname( __DIR__, 3 ) . '/wp-stubs.php';
 final class Admin_Results_Match_Presenter_Test extends TestCase {
 
     private Admin_Results_Match_Presenter $presenter;
+    private League_Repository_Interface $league_repository;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->presenter = new Admin_Results_Match_Presenter( new Admin_Date_Presenter() );
+        $this->league_repository = $this->createStub( League_Repository_Interface::class );
+        $this->presenter = new Admin_Results_Match_Presenter( new Admin_Date_Presenter(), $this->league_repository );
     }
 
     public function test_present_builds_referrer_links_without_literal_php_terminator(): void {
@@ -98,5 +101,40 @@ final class Admin_Results_Match_Presenter_Test extends TestCase {
 
         $this->assertCount( 1, $rows );
         $this->assertSame( 'https://example.test/m/result/?referrer=results', $rows[0]->result_link );
+    }
+
+    public function test_present_resolves_missing_league_via_repository(): void {
+        $match            = new stdClass();
+        $match->league_id = 12;
+        $match->date      = '2026-05-01 10:00:00';
+
+        $league = $this->createStub( \Racketmanager\Domain\Competition\League::class );
+        $league->id = 12;
+        $league->title = 'Division 1';
+        $repository = $this->createMock( League_Repository_Interface::class );
+        $repository->expects( $this->once() )->method( 'find_by_id' )->with( 12 )->willReturn( $league );
+        $presenter = new Admin_Results_Match_Presenter( new Admin_Date_Presenter(), $repository );
+
+        $row = $presenter->present( $match, 'results' );
+
+        $this->assertSame( 'Division 1', $row->league_title );
+    }
+
+    public function test_real_fixture_without_league_falls_back_to_repository_with_cache(): void {
+        $fixture = ( new \ReflectionClass( \Racketmanager\Domain\Fixture\Fixture::class ) )->newInstanceWithoutConstructor();
+        $fixture->set_league_id( 7 );
+
+        $league = $this->createStub( \Racketmanager\Domain\Competition\League::class );
+        $league->id    = 7;
+        $league->title = 'Division 7';
+        $repository = $this->createMock( League_Repository_Interface::class );
+        $repository->expects( $this->once() )->method( 'find_by_id' )->with( 7 )->willReturn( $league );
+        $presenter = new Admin_Results_Match_Presenter( new Admin_Date_Presenter(), $repository );
+
+        $rows = $presenter->present_collection( array( $fixture, $fixture ), 'results' );
+
+        $this->assertSame( 7, $rows[0]->league_id );
+        $this->assertSame( 'Division 7', $rows[0]->league_title );
+        $this->assertSame( 'Division 7', $rows[1]->league_title );
     }
 }

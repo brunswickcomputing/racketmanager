@@ -18,8 +18,12 @@ use Racketmanager\Domain\Club;
 use Racketmanager\Domain\DTO\Finance\Charge_Details_DTO;
 use Racketmanager\Domain\DTO\Finance\Invoice_Full_Details_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Invoice_Details_DTO;
+use Racketmanager\Domain\Enums\Charge_Status;
+use Racketmanager\Domain\Enums\Invoice_Status;
 use Racketmanager\Domain\Invoice;
 use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Value_Objects\Currency;
+use Racketmanager\Domain\Value_Objects\Money;
 use Racketmanager\Exceptions\Charge_Not_Deleted_Exception;
 use Racketmanager\Exceptions\Charge_Not_Found_Exception;
 use Racketmanager\Exceptions\Charge_Not_Updated_Exception;
@@ -209,7 +213,7 @@ class Finance_Service {
                 continue;
             }
             if ( $sent ) {
-                $invoice->set_status( 'sent' );
+                $invoice->set_status_enum( Invoice_Status::SENT );
             }
         }
 
@@ -249,22 +253,31 @@ class Finance_Service {
             $teams     = $this->competition_service->get_teams_for_event( $event->get_id(), $charge->get_season(), $club->id );
             $num_teams = count( $teams );
             if ( $num_teams > 0 ) {
+                $currency          = $this->get_currency();
+                $event_fee_money   = $charge->get_event_fee_money( $currency );
                 $club_event        = new stdClass();
                 $club_event->type  = $event->type;
                 $club_event->count = $num_teams;
-                $club_event->fee   = $charge->fee_event * $num_teams;
+                $club_event->fee   = $event_fee_money ? $event_fee_money->multiply( $num_teams )->get_amount() : (float) ( $charge->fee_event * $num_teams );
                 $club_events[]     = $club_event;
             }
             $club_teams += $num_teams;
         }
         if ( $club_teams > 0 ) {
+            $currency                    = $this->get_currency();
+            $comp_fee_money              = $charge->get_competition_fee_money( $currency );
+            $event_fee_money             = $charge->get_event_fee_money( $currency );
+            $events_total_money          = $event_fee_money ? $event_fee_money->multiply( $club_teams ) : Money::zero( $currency );
+            $comp_total_money            = $comp_fee_money ?? Money::zero( $currency );
+            $total_money                 = $comp_total_money->add( $events_total_money );
+
             $club_entry                  = new stdClass();
             $club_entry->id              = $club->id;
             $club_entry->name            = $club->name;
             $club_entry->num_teams       = $club_teams;
             $club_entry->fee_competition = $charge->fee_competition;
-            $club_entry->fee_events      = $charge->fee_event * $club_teams;
-            $club_entry->fee             = $club_entry->fee_competition + $club_entry->fee_events;
+            $club_entry->fee_events      = $events_total_money->get_amount();
+            $club_entry->fee             = $total_money->get_amount();
             $club_entry->events          = $club_events;
 
             return $club_entry;
@@ -273,7 +286,7 @@ class Finance_Service {
         }
     }
 
-    public function add_invoice( string $type, int $charge_id, string $invoice_date, stdClass|Tournament_Invoice_Details_DTO $entry, string $status = 'draft' ): Invoice|bool {
+    public function add_invoice( string $type, int $charge_id, string $invoice_date, stdClass|Tournament_Invoice_Details_DTO $entry, string|Invoice_Status $status = Invoice_Status::DRAFT ): Invoice|bool {
         $billing = $this->racketmanager->get_options( 'billing' );
         if ( ! $billing ) {
             throw new Invoice_Not_Created_Exception( Util_Messages::no_billing_details() );
@@ -325,7 +338,7 @@ class Finance_Service {
         } catch ( Charge_Not_Found_Exception ) {
             return false;
         }
-        return $this->add_invoice( 'player', $charge->get_id(), $date, $entry, 'final' );
+        return $this->add_invoice( 'player', $charge->get_id(), $date, $entry, Invoice_Status::FINAL );
     }
 
     public function add_club_invoice( Charge $charge, stdclass $entry ): Invoice|bool {
@@ -441,8 +454,16 @@ class Finance_Service {
         if ( is_wp_error( $validator ) ) {
             return $validator;
         }
-        $invoice->set_status( $status );
-        $invoice->set_purchase_order( $purchase_order );
+        $status_enum = Invoice_Status::try_from_value( $status );
+        if ( ! $status_enum ) {
+            $invalid     = new Validator_Finance();
+            $message     = Util_Messages::invalid_parameter( (string) $status );
+            $invalid->set_errors( 'status', $message, 400 );
+            $invalid->err->add( 'status', $message );
+            return $invalid->err;
+        }
+        $invoice->set_status_enum( $status_enum );
+        $invoice->set_purchase_order( (string) $purchase_order );
         $updates = $this->invoice_repository->save( $invoice );
         if ( $updates ) {
             return $invoice;
@@ -510,12 +531,22 @@ class Finance_Service {
         return $this->invoice_repository->delete( $invoice_id );
     }
 
-    private function invoice_status_change( Invoice $invoice, bool $status ): string {
-        $valid_status = array( 'draft', 'final', 'paid', 'cancelled' );
-        if ( ! in_array( $status, $valid_status, true ) ) {
-            return Util_Messages::invalid_parameter( $status );
+    public function get_currency(): Currency {
+        $billing = $this->racketmanager->get_options( 'billing' );
+        $code    = is_array( $billing ) ? ( $billing['billingCurrency'] ?? null ) : null;
+        if ( ! is_string( $code ) || '' === trim( $code ) ) {
+            $code = $this->racketmanager->currency_code ?? 'GBP';
         }
-        $invoice->set_status( $status );
+        return Currency::try_from_symbol_or_code( (string) $code ) ?? Currency::GBP;
+    }
+
+    private function invoice_status_change( Invoice $invoice, Invoice_Status|string $status ): string {
+        $status_enum    = Invoice_Status::try_from_value( $status );
+        $valid_statuses = [ Invoice_Status::DRAFT, Invoice_Status::FINAL, Invoice_Status::PAID, Invoice_Status::CANCELLED ];
+        if ( ! $status_enum || ! in_array( $status_enum, $valid_statuses, true ) ) {
+            return Util_Messages::invalid_parameter( is_scalar( $status ) ? (string) $status : '' );
+        }
+        $invoice->set_status_enum( $status_enum );
         $result = $this->invoice_repository->save( $invoice );
         if ( $result ) {
             $msg = sprintf( __( 'Invoice %d status updated', 'racketmanager' ), $invoice->get_id() );
@@ -531,10 +562,10 @@ class Finance_Service {
         if ( ! $charge ) {
             throw new Charge_Not_Found_Exception( Util_Messages::charge_not_found( $key ) );
         }
-        if ( 'final' === $charge->get_status() ) {
+        if ( $charge->is_final() ) {
             return false;
         }
-        $charge->set_status( 'final' );
+        $charge->set_status_enum( Charge_Status::FINAL );
 
         return $this->charge_repository->save( $charge );
     }
@@ -566,9 +597,11 @@ class Finance_Service {
         } catch ( Player_Not_Found_Exception $e ) {
             throw new Player_Not_Found_Exception( $e->getMessage() );
         }
+        $currency                            = $this->get_currency();
+        $money                               = $invoice->get_money( $currency );
         $args['description']                 = $player->get_fullname() . ' - ' . $tournament_name;
-        $args['amount']                      = intval( round( floatval( $invoice->amount ) * 100 ) );
-        $args['currency']                    = $this->racketmanager->currency_code;
+        $args['amount']                      = $money ? $money->get_cents() : intval( round( floatval( $invoice->amount ) * 100 ) );
+        $args['currency']                    = $this->racketmanager->currency_code ?? 'GBP';
         $args['payment_method_types']        = array('card');
         $args['statement_descriptor_suffix'] = $tournament_name;
         $args['receipt_email']               = $player->get_email();

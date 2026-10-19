@@ -7,35 +7,18 @@
 
 namespace Racketmanager;
 
-/** @var array $final_matches */
-/** @var object $competition */
-/** @var object $cup_season */
-/** @var string $tab */
-/** @var string $season */
-/** @var array $order_of_play */
-/** @var object $validator */
-$num_matches = count( $final_matches );
-if ( empty( $num_events ) ) {
-    $num_courts    = 1;
-    $max_schedules = 0;
-} else {
-    $num_courts    = $num_events;
-    $max_schedules = ceil( $num_matches / $num_courts ) + 1;
-}
-if ( '01:00:00' === $cup_season->time_increment ) {
-    $max_schedules = $max_schedules * 2;
-}
-$column_width = floor( 12 / $num_courts );
-$match_length = empty( $cup_season->time_increment ) ? 0 : strtotime( $cup_season->time_increment );
-if ( ! is_array( $cup_season->orderofplay ) || count( $cup_season->orderofplay ) !== intval( $cup_season->num_courts ) ) {
-    for ( $i = 0; $i < $cup_season->num_courts; $i++ ) {
-        $order_of_play[ $i ]['court']      = 'Court ' . ( $i + 1 );
-        $order_of_play[ $i ]['start_time'] = $cup_season->starttime;
-        $order_of_play[ $i ]['matches']    = array();
-    }
-} else {
-    $order_of_play = $cup_season->orderofplay;
-}
+use Racketmanager\Admin\View_Models\Cup_Plan_Page_View_Model;
+
+/** @var Cup_Plan_Page_View_Model $vm */
+$competition    = $vm->competition;
+$cup_season     = $vm->cup_season;
+$season         = $vm->season;
+$tab            = $vm->tab;
+$errors         = $vm->errors;
+$order_of_play  = $vm->order_of_play;
+$column_width   = $vm->column_width;
+$max_schedules  = $vm->max_schedules;
+$schedule_slots = $vm->schedule_slots;
 ?>
 <script type='text/javascript'>
 jQuery(document).ready(function(){
@@ -63,7 +46,7 @@ jQuery(document).ready(function(){
                     </tr>
                     <tr>
                         <th scope="row" class="col-6 col-md-3"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></th>
-                        <td class="col-auto"><?php echo esc_html( count( $final_matches ) ); ?></td>
+                        <td class="col-auto"><?php echo esc_html( count( $vm->final_matches ) ); ?></td>
                     </tr>
                 </tbody>
             </table>
@@ -81,19 +64,15 @@ jQuery(document).ready(function(){
         <div class="tab-pane fade" id="config" role="tabpanel" aria-labelledby="config-tab">
             <form id="cupDetails" class="form-control" method="POST">
                 <?php wp_nonce_field( 'racketmanager_cup', 'racketmanager_cup-nonce' ); ?>
-                <input type="hidden" name="competition_id" value=<?php echo esc_html( $competition->id ); ?> />
-                <input type="hidden" name="season" value=<?php echo esc_attr( $season ); ?> />
+                <input type="hidden" name="competition_id" value="<?php echo esc_attr( $competition->id ); ?>" />
+                <input type="hidden" name="season" value="<?php echo esc_attr( $season ); ?>" />
                 <div class="row g-3">
                     <div class="col">
                         <div class="form-floating mb-3">
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
-                            if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'start_time', $validator->err_flds, true ) ) ) {
-                                $is_invalid = true;
-                                $msg_id     = array_search( 'start_time', $validator->err_flds, true );
-                                $msg        = $validator->err_msgs[ $msg_id ] ?? null;
-                            }
+                            $field_key  = 'start_time';
+                            $is_invalid = $errors->has( $field_key );
+                            $msg        = $is_invalid ? (string) $errors->message( $field_key ) : null;
                             ?>
                             <input type="time" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="startTime" id="startTime" value="<?php echo esc_html( $cup_season->starttime ); ?>" size="20" />
                             <label for="startTime"><?php esc_html_e( 'Start Time', 'racketmanager' ); ?></label>
@@ -109,13 +88,9 @@ jQuery(document).ready(function(){
                     <div class="col">
                         <div class="form-floating mb-3">
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
-                            if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'timeIncrement', $validator->err_flds, true ) ) ) {
-                                $is_invalid = true;
-                                $msg_id     = array_search( 'timeIncrement', $validator->err_flds, true );
-                                $msg        = $validator->err_msgs[ $msg_id ] ?? null;
-                            }
+                            $field_key  = 'timeIncrement';
+                            $is_invalid = $errors->has( $field_key );
+                            $msg        = $is_invalid ? (string) $errors->message( $field_key ) : null;
                             ?>
                             <input type="time" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="timeIncrement" id="timeIncrement" value="<?php echo esc_html( $cup_season->time_increment ); ?>" size="20" />
                             <label for="timeIncrement"><?php esc_html_e( 'Time Increment', 'racketmanager' ); ?></label>
@@ -133,13 +108,9 @@ jQuery(document).ready(function(){
                     <div class="col-12 col-md-6">
                         <div class="form-floating mb-3">
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
-                            if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'numCourtsAvailable', $validator->err_flds, true ) ) ) {
-                                $is_invalid = true;
-                                $msg_id     = array_search( 'numCourtsAvailable', $validator->err_flds, true );
-                                $msg        = $validator->err_msgs[ $msg_id ] ?? null;
-                            }
+                            $field_key  = 'numCourtsAvailable';
+                            $is_invalid = $errors->has( $field_key );
+                            $msg        = $is_invalid ? (string) $errors->message( $field_key ) : null;
                             ?>
                             <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="numCourtsAvailable" id="numCourtsAvailable" value="<?php echo esc_html( $cup_season->num_courts ); ?>" />
                             <label for="numCourtsAvailable"><?php esc_html_e( 'Number of courts', 'racketmanager' ); ?></label>
@@ -164,48 +135,33 @@ jQuery(document).ready(function(){
             <div class="col-10 col-sm-11">
                 <div class="row text-center">
                     <?php
-                    foreach ( $final_matches as $match ) {
-                        if ( ! is_numeric( $match->home_team ) || ! is_numeric( $match->away_team ) ) {
-                            $btn_type = 'warning';
-                        } else {
-                            $btn_type = 'success';
-                        }
-                        if ( is_numeric( $match->home_team ) ) {
-                            $home_match_title = $match->teams['home']->title;
-                        } else {
-                            $home_match_title = $match->prev_home_match->match_title;
-                        }
-                        if ( is_numeric( $match->away_team ) ) {
-                            $away_match_title = $match->teams['away']->title;
-                        } else {
-                            $away_match_title = $match->prev_away_match->match_title;
-                        }
+                    foreach ( $vm->final_cards as $card ) {
                         ?>
                         <div class="col-3 mb-3">
-                            <div class="btn btn-<?php echo esc_attr( $btn_type ); ?> finals-match" name="match-<?php echo esc_html( $match->id ); ?>" id="match-<?php echo esc_html( $match->id ); ?>" draggable="true">
+                            <div class="btn btn-<?php echo esc_attr( $card->btn_type ); ?> finals-match" name="match-<?php echo esc_html( $card->id ); ?>" id="match-<?php echo esc_html( $card->id ); ?>" draggable="true">
                                 <div class="fw-bold">
-                                    <?php echo esc_html( $match->league->title ); ?>
+                                    <?php echo esc_html( $card->league_title ); ?>
                                 </div>
-                                <div <?php echo is_numeric( $match->home_team ) ? null : 'class="fst-italic"'; ?>>
-                                    <?php echo esc_html( $home_match_title ); ?>
+                                <div <?php echo $card->is_home_pending ? 'class="fst-italic"' : null; ?>>
+                                    <?php echo esc_html( $card->home_title ); ?>
                                 </div>
                                 <?php
-                                if ( is_numeric( $match->home_team ) ) {
+                                if ( null !== $card->home_club ) {
                                     ?>
-                                    <div class="fst-italic">(<?php echo esc_html( $match->teams['home']->club->shortcode ); ?>)</div>
+                                    <div class="fst-italic">(<?php echo esc_html( $card->home_club ); ?>)</div>
                                     <?php
                                 }
                                 ?>
                                 <div>
                                     <?php esc_html_e( 'vs', 'racketmanager' ); ?>
                                 </div>
-                                <div <?php echo is_numeric( $match->away_team ) ? null : 'class="fst-italic"'; ?>>
-                                    <?php echo esc_html( $away_match_title ); ?>
+                                <div <?php echo $card->is_away_pending ? 'class="fst-italic"' : null; ?>>
+                                    <?php echo esc_html( $card->away_title ); ?>
                                 </div>
                                 <?php
-                                if ( is_numeric( $match->away_team ) ) {
+                                if ( null !== $card->away_club ) {
                                     ?>
-                                    <div class="fst-italic">(<?php echo esc_html( $match->teams['away']->club->shortcode ); ?>)</div>
+                                    <div class="fst-italic">(<?php echo esc_html( $card->away_club ); ?>)</div>
                                     <?php
                                 }
                                 ?>
@@ -222,24 +178,24 @@ jQuery(document).ready(function(){
                 <h2><?php esc_html_e( 'Schedule', 'racketmanager' ); ?></h2>
                 <form id="cup-planner" method="post" action="">
                     <?php wp_nonce_field( 'racketmanager_cup-planner', 'racketmanager_cup-planner-nonce' ); ?>
-                    <input type="hidden" name="numFinals" value=<?php echo esc_attr( $num_matches ); ?> />
-                    <input type="hidden" name="numCourts" value=<?php echo esc_attr( $cup_season->num_courts ); ?> />
-                    <input type="hidden" name="startTime" value=<?php echo esc_attr( $cup_season->starttime ); ?> />
-                    <input type="hidden" name="competition_id" value=<?php echo esc_attr( $competition->id ); ?> />
-                    <input type="hidden" name="season" value=<?php echo esc_attr( $season ); ?> />
+                    <input type="hidden" name="numFinals" value="<?php echo esc_attr( count( $vm->final_matches ) ); ?>" />
+                    <input type="hidden" name="numCourts" value="<?php echo esc_attr( $cup_season->num_courts ); ?>" />
+                    <input type="hidden" name="startTime" value="<?php echo esc_attr( $cup_season->starttime ); ?>" />
+                    <input type="hidden" name="competition_id" value="<?php echo esc_attr( $competition->id ); ?>" />
+                    <input type="hidden" name="season" value="<?php echo esc_attr( $season ); ?>" />
                     <div class="row text-center mb-3">
                         <div class="col-2 col-sm-1"><?php esc_html_e( 'Time', 'racketmanager' ); ?></div>
                         <div class="col-10 col-sm-11">
                             <div class="row">
                                 <?php
-                                for ( $i = 0; $i < $cup_season->num_courts; $i++ ) {
+                                foreach ( $order_of_play as $i => $court_plan ) {
                                     ?>
                                     <div class="col-<?php echo esc_html( $column_width ); ?>">
                                         <div class="form-group mb-2">
-                                            <label for="court-<?php echo esc_html( $i ); ?>"></label><input type="text" class="form-control" name="court[<?php echo esc_html( $i ); ?>]" id="court-<?php echo esc_html( $i ); ?>" value="<?php echo esc_html( $order_of_play[ $i ]['court'] ); ?>" />
+                                            <label for="court-<?php echo esc_html( $i ); ?>"></label><input type="text" class="form-control" name="court[<?php echo esc_html( $i ); ?>]" id="court-<?php echo esc_html( $i ); ?>" value="<?php echo esc_html( $court_plan['court'] ); ?>" />
                                         </div>
                                         <div class="form-group">
-                                            <label for="startTime-<?php echo esc_html( $i ); ?>" class="visually-hidden"><?php esc_html_e( 'Start time', 'racketmanager' ); ?></label><input type="time" class="form-control" name="startTime[<?php echo esc_html( $i ); ?>]" id="startTime-<?php echo esc_html( $i ); ?>" value="<?php echo esc_html( $order_of_play[ $i ]['start_time'] ); ?>" />
+                                            <label for="startTime-<?php echo esc_html( $i ); ?>" class="visually-hidden"><?php esc_html_e( 'Start time', 'racketmanager' ); ?></label><input type="time" class="form-control" name="startTime[<?php echo esc_html( $i ); ?>]" id="startTime-<?php echo esc_html( $i ); ?>" value="<?php echo esc_html( $court_plan['start_time'] ); ?>" />
                                         </div>
                                     </div>
                                     <?php
@@ -250,60 +206,20 @@ jQuery(document).ready(function(){
                     </div>
                     <div class="mb-3">
                         <?php
-                        $start_time  = empty( $cup_season->starttime ) ? 0 : strtotime( $cup_season->starttime );
-                        $time_offset = 0;
-                        for ( $i = 0; $i < $max_schedules; $i++ ) {
-                            $scheduled_players = array();
-                            $player_warnings   = array();
+                        foreach ( $schedule_slots as $slot ) {
                             ?>
                             <div class="row align-items-center text-center mb-3">
                                 <div class="col-2 col-sm-1">
-                                    <?php echo esc_html( gmdate( 'H:i', $start_time ) ); ?>
+                                    <?php echo esc_html( $slot->time_formatted ); ?>
                                 </div>
                                 <div class="col-10 col-sm-11">
                                     <div class="row">
                                         <?php
-                                        for ( $c = 0; $c < $cup_season->num_courts; $c++ ) {
-                                            if ( isset( $order_of_play[ $c ]['matches'][ $i ] ) ) {
-                                                $match_players = array();
-                                                $match_id      = intval( $order_of_play[ $c ]['matches'][ $i ] );
-                                                global $racketmanager;
-                                                $fixture_repo  = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' ) ? $racketmanager->container->get( 'fixture_repository' ) : null;
-                                                $match         = $fixture_repo ? $fixture_repo->find_by_id( $match_id ) : ( function_exists( 'Racketmanager\get_match' ) ? get_match( $match_id ) : null );
-                                                if ( $match ) {
-                                                    $match_players = match_add_players( $match_players, $match );
-                                                    if ( ! empty( $match->prev_home_match ) ) {
-                                                        $prev_id    = is_object( $match->prev_home_match ) ? (int) $match->prev_home_match->id : (int) $match->prev_home_match;
-                                                        $prev_match = $fixture_repo ? $fixture_repo->find_by_id( $prev_id ) : ( function_exists( 'Racketmanager\get_match' ) ? get_match( $prev_id ) : null );
-                                                        if ( $prev_match ) {
-                                                            $match_players = match_add_players( $match_players, $prev_match );
-                                                        }
-                                                    }
-                                                    if ( ! empty( $match->prev_away_match ) ) {
-                                                        $prev_id    = is_object( $match->prev_away_match ) ? (int) $match->prev_away_match->id : (int) $match->prev_away_match;
-                                                        $prev_match = $fixture_repo ? $fixture_repo->find_by_id( $prev_id ) : ( function_exists( 'Racketmanager\get_match' ) ? get_match( $prev_id ) : null );
-                                                        if ( $prev_match ) {
-                                                            $match_players = match_add_players( $match_players, $prev_match );
-                                                        }
-                                                    }
-                                                    foreach ( $match_players as $player_id ) {
-                                                        $player_found = in_array($player_id, $scheduled_players, true);
-                                                        if ( false !== $player_found ) {
-                                                            $player = get_player( $player_id );
-                                                            if ( $player ) {
-                                                                $player_warnings[] = $player->get_fullname();
-                                                            }
-                                                        }
-                                                        $scheduled_players[] = $player_id;
-                                                    }
-                                                }
-                                            } else {
-                                                $match_id = null;
-                                            }
+                                        foreach ( $slot->courts as $cell ) {
                                             ?>
-                                            <div class="col-<?php echo esc_html( $column_width ); ?> tournament-match" name="schedule[<?php echo esc_html( $c ); ?>][<?php echo esc_html( $i ); ?>]" id="schedule-<?php echo esc_html( $c ); ?>-<?php echo esc_html( $i ); ?>">
-                                                <input type="hidden" class="matchId" name="match[<?php echo esc_html( $c ); ?>][<?php echo esc_html( $i ); ?>]" id="match-<?php echo esc_html( $c ); ?>-<?php echo esc_html( $i ); ?>" value="<?php echo esc_html( $match_id ); ?>" />
-                                                <input type="hidden" class="" name="matchtime[<?php echo esc_html( $c ); ?>][<?php echo esc_html( $i ); ?>]" id="matchtime-<?php echo esc_html( $c ); ?>-<?php echo esc_html( $i ); ?>" value="<?php echo esc_html( $time_offset ); ?>" />
+                                            <div class="col-<?php echo esc_html( $column_width ); ?> tournament-match" name="schedule[<?php echo esc_html( $cell->court ); ?>][<?php echo esc_html( $cell->slot ); ?>]" id="schedule-<?php echo esc_html( $cell->court ); ?>-<?php echo esc_html( $cell->slot ); ?>">
+                                                <input type="hidden" class="matchId" name="match[<?php echo esc_html( $cell->court ); ?>][<?php echo esc_html( $cell->slot ); ?>]" id="match-<?php echo esc_html( $cell->court ); ?>-<?php echo esc_html( $cell->slot ); ?>" value="<?php echo esc_html( $cell->fixture_id ); ?>" />
+                                                <input type="hidden" class="" name="matchtime[<?php echo esc_html( $cell->court ); ?>][<?php echo esc_html( $cell->slot ); ?>]" id="matchtime-<?php echo esc_html( $cell->court ); ?>-<?php echo esc_html( $cell->slot ); ?>" value="<?php echo esc_html( $cell->time_offset ); ?>" />
                                             </div>
                                             <?php
                                         }
@@ -311,12 +227,12 @@ jQuery(document).ready(function(){
                                     </div>
                                 </div>
                                 <?php
-                                if ( $player_warnings ) {
+                                if ( $slot->player_warnings ) {
                                     ?>
                                     <div class="mb-3 mt-3">
                                         <span class="fw-bold"><?php esc_html_e( 'Potential clashes', 'racketmanager' ); ?></span>
                                         <?php
-                                        foreach ( $player_warnings as $player_warning ) {
+                                        foreach ( $slot->player_warnings as $player_warning ) {
                                             ?>
                                             <div class="">
                                                 <span><?php echo esc_html( $player_warning ); ?></span>
@@ -330,8 +246,6 @@ jQuery(document).ready(function(){
                                 ?>
                             </div>
                             <?php
-                            $start_time  = $start_time + $match_length;
-                            $time_offset = $time_offset + $match_length;
                         }
                         ?>
                     </div>

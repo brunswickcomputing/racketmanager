@@ -44,7 +44,7 @@ namespace Racketmanager;
                     <div class="tab-pane fade" id="draw-matches" role="tabpanel" aria-labelledby="draw-matches-tab">
                         <div class="container tournament-matches">
                             <?php
-                            foreach ( $fixtures as $fixture_detail ) {
+                            foreach ( $fixtures as $card ) {
                                 ?>
                                 <?php require RACKETMANAGER_PATH . 'templates/tournament/match.php'; ?>
                                 <?php

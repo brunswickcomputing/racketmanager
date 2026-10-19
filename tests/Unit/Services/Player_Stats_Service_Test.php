@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Services;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Player_Factory;
+use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Player_Stats_Service;
 
 final class Player_Stats_Service_Test extends TestCase {
@@ -86,6 +87,49 @@ final class Player_Stats_Service_Test extends TestCase {
 
 		$this->assertSame( 3, $result['total']->played );
 		$this->assertSame( 67.0, (float) $result['total']->win_pct );
+	}
+
+	public function test_populate_player_stats_maps_totals_and_handles_no_matches(): void {
+		$player         = Player_Factory::from_array( [ 'id' => 4, 'display_name' => 'No Matches' ] );
+		$player->statistics = [];
+		$query_service  = $this->createMock( Player_Query_Service::class );
+		$query_service->expects( $this->once() )
+			->method( 'get_matches' )
+			->with( $player, null, '2025', 'league' )
+			->willReturn( [] );
+		$service = new Player_Stats_Service( $query_service );
+
+		$service->populate_player_stats( $player, null, '2025', 'league' );
+
+		$this->assertSame( [], $player->matches );
+		$this->assertSame( 0, $player->matches_won );
+		$this->assertSame( 0, $player->matches_lost );
+		$this->assertSame( 0, $player->played );
+		$this->assertSame( 0.0, $player->win_pct );
+	}
+
+	public function test_populate_players_stats_sorts_by_wins_then_played(): void {
+		$query_service = $this->createStub( Player_Query_Service::class );
+		$query_service->method( 'get_matches' )->willReturn( [] );
+		$service = new Player_Stats_Service( $query_service );
+
+		$three_wins_five_played = Player_Factory::from_array( [ 'id' => 1, 'display_name' => 'A' ] );
+		$three_wins_four_played = Player_Factory::from_array( [ 'id' => 2, 'display_name' => 'B' ] );
+		$two_wins_three_played  = Player_Factory::from_array( [ 'id' => 3, 'display_name' => 'C' ] );
+		$three_wins_five_played->statistics = [ 'season' => [ 'played' => [ 'winner' => 3, 'loser' => 2 ] ] ];
+		$three_wins_four_played->statistics = [ 'season' => [ 'played' => [ 'winner' => 3, 'loser' => 1 ] ] ];
+		$two_wins_three_played->statistics  = [ 'season' => [ 'played' => [ 'winner' => 2, 'loser' => 1 ] ] ];
+
+		$players = $service->populate_players_stats(
+			[ $three_wins_five_played, $two_wins_three_played, $three_wins_four_played ],
+			null,
+			null,
+			'league'
+		);
+
+		$this->assertSame( [ $three_wins_four_played, $three_wins_five_played, $two_wins_three_played ], $players );
+		$this->assertSame( 3, $three_wins_four_played->matches_won );
+		$this->assertSame( 4, $three_wins_four_played->played );
 	}
 
 	public function test_calculate_career_stats_maps_results_types_and_sorts_seasons(): void {

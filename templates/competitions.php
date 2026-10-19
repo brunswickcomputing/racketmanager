@@ -25,7 +25,7 @@ namespace Racketmanager;
                         <li class="list__item col-12 text-center"><?php printf( esc_html__( 'This will show %s that you have played in.', 'racketmanager' ), esc_html( strtolower( $type ) ) ); ?></li>
                         <?php
                     } else {
-                        $competition_list = $user_competitions;
+                        $competition_list = $user_competition_items ?? $user_competitions;
                         require 'includes/competition-list.php';
                         ?>
                         <?php
@@ -49,7 +49,7 @@ namespace Racketmanager;
                         <li class="list__item col-12 text-center"><?php printf( esc_html__( 'No %s found', 'racketmanager' ), esc_html( strtolower( $type ) ) ); ?></li>
                         <?php
                     } else {
-                        $competition_list = $competitions;
+                        $competition_list = $competition_items ?? $competitions;
                         require 'includes/competition-list.php';
                     }
                     ?>

@@ -14,6 +14,7 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Factory;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Competition\Competition_Notification_Service;
 use Racketmanager\Services\Competition\League_Schedule_Service;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
@@ -35,6 +36,7 @@ class League_Repository implements League_Repository_Interface {
     private Fixture_Service|Closure|null $fixture_service = null;
     private Fixture_Result_Manager|Closure|null $fixture_result_manager = null;
     private Notification_Service|Closure|null $notification_service = null;
+    private Rubber_Repository_Interface|Closure|null $rubber_repository = null;
 
     public function __construct(
         ?object $db = null,
@@ -44,7 +46,8 @@ class League_Repository implements League_Repository_Interface {
         Competition_Notification_Service|Closure|null $competition_notification_service = null,
         Fixture_Service|Closure|null $fixture_service = null,
         Fixture_Result_Manager|Closure|null $fixture_result_manager = null,
-        Notification_Service|Closure|null $notification_service = null
+        Notification_Service|Closure|null $notification_service = null,
+        Rubber_Repository_Interface|Closure|null $rubber_repository = null
     ) {
         $this->wpdb = $db ?? ( $GLOBALS['wpdb'] ?? null );
         if ( $this->wpdb ) {
@@ -58,6 +61,7 @@ class League_Repository implements League_Repository_Interface {
         $this->fixture_service = $fixture_service;
         $this->fixture_result_manager = $fixture_result_manager;
         $this->notification_service = $notification_service;
+        $this->rubber_repository = $rubber_repository;
     }
 
     public function save( object $entity ): bool|int {
@@ -168,6 +172,11 @@ class League_Repository implements League_Repository_Interface {
     public function wire_league_collaborators( League $league ): void {
         $league->set_league_repository( $this );
 
+        $rubber_repo = $this->resolve_rubber_repository();
+        if ( $rubber_repo ) {
+            $league->set_rubber_repository( $rubber_repo );
+        }
+
         $fixture_repo = $this->resolve_fixture_repository();
         if ( $fixture_repo ) {
             $league->set_fixture_repository( $fixture_repo );
@@ -199,7 +208,7 @@ class League_Repository implements League_Repository_Interface {
     }
 
     private function hydrate_league( object $row ): ?League {
-        return League_Factory::from_object(
+        $league = League_Factory::from_object(
             $row,
             null,
             $this,
@@ -211,6 +220,10 @@ class League_Repository implements League_Repository_Interface {
             $this->resolve_fixture_result_manager(),
             $this->resolve_notification_service()
         );
+        if ( $league ) {
+            $league->set_rubber_repository( $this->resolve_rubber_repository() );
+        }
+        return $league;
     }
 
     private function resolve_collaborator( mixed &$collaborator ): mixed {
@@ -223,6 +236,11 @@ class League_Repository implements League_Repository_Interface {
     private function resolve_fixture_repository(): ?Fixture_Repository_Interface {
         $resolved = $this->resolve_collaborator( $this->fixture_repository );
         return $resolved instanceof Fixture_Repository_Interface ? $resolved : null;
+    }
+
+    private function resolve_rubber_repository(): ?Rubber_Repository_Interface {
+        $resolved = $this->resolve_collaborator( $this->rubber_repository );
+        return $resolved instanceof Rubber_Repository_Interface ? $resolved : null;
     }
 
     private function resolve_standings_service(): ?Standings_Service {

@@ -38,6 +38,7 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
     private Club_Service|MockObject|Stub $club_service;
     private Tournament_Service|MockObject|Stub $tournament_service;
     private Fixture_Repository_Interface|MockObject|Stub $fixture_repository;
+    private \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface|MockObject|Stub $rubber_repository;
     private Frontend_Ajax_Adapter $adapter;
 
     protected function setUp(): void {
@@ -51,6 +52,7 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         $this->club_service              = $this->createStub( Club_Service::class );
         $this->tournament_service        = $this->createStub( Tournament_Service::class );
         $this->fixture_repository        = $this->createStub( Fixture_Repository_Interface::class );
+        $this->rubber_repository         = $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );
         $this->adapter                   = $this->make_adapter();
         $_POST                           = [];
         $_GET                            = [];
@@ -85,7 +87,8 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
             $this->registration_service,
             $this->club_service,
             $this->tournament_service,
-            $this->fixture_repository
+            $this->fixture_repository,
+            $this->rubber_repository
         );
     }
 
@@ -470,10 +473,10 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         ] );
 
         $rubber1_players_called = null;
-        $match = $this->createStub( \Racketmanager\Domain\Fixture\Fixture::class );
-        $match->home_team = '100';
-        $match->away_team = '200';
-        $match->method( 'get_rubbers' )->willReturn( [ $this->create_rubber_with_recorder( 1, $rubber1_players_called ) ] );
+        $match = \Racketmanager\Domain\Fixture\Fixture_Factory::from_array( [ 'id' => 555, 'home_team' => '100', 'away_team' => '200' ] );
+        $rubber = $this->create_rubber_with_recorder( 1, $rubber1_players_called );
+        $this->rubber_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );
+        $this->rubber_repository->expects( $this->once() )->method( 'find_by_fixture_id' )->with( 555 )->willReturn( [ $rubber ] );
 
         $this->setup_fixture_repo_for_match( 555, $match );
         $this->adapter = $this->make_adapter();
@@ -504,10 +507,10 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         ] );
 
         $rubber1_players_called = null;
-        $match = $this->createStub( \Racketmanager\Domain\Fixture\Fixture::class );
-        $match->home_team = '100';
-        $match->away_team = '200';
-        $match->method( 'get_rubbers' )->willReturn( [ $this->create_rubber_with_recorder( 1, $rubber1_players_called ) ] );
+        $match = \Racketmanager\Domain\Fixture\Fixture_Factory::from_array( [ 'id' => 555, 'home_team' => '100', 'away_team' => '200' ] );
+        $rubber = $this->create_rubber_with_recorder( 1, $rubber1_players_called );
+        $this->rubber_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );
+        $this->rubber_repository->expects( $this->once() )->method( 'find_by_fixture_id' )->with( 555 )->willReturn( [ $rubber ] );
 
         $this->setup_fixture_repo_for_match( 555, $match );
         $this->adapter = $this->make_adapter();
@@ -654,17 +657,11 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
         $GLOBALS['wp_stubs_teams'][20] = (object) [ 'id' => 20 ];
 
-        $team = $this->createMock( Team::class );
-        $team->expects( $this->once() )
-            ->method( 'update_event' )
-            ->with( 10, 5, '07700900111', 'capt@example.com', 1, '19:00' )
-            ->willReturn( 'Team successfully updated' );
-
         $team_service = $this->createMock( Team_Service::class );
         $team_service->expects( $this->once() )
-            ->method( 'get_team_by_id' )
-            ->with( 20 )
-            ->willReturn( $team );
+            ->method( 'update_team_event' )
+            ->with( 20, 10, 5, '07700900111', 'capt@example.com', 1, '19:00' )
+            ->willReturn( 'Team successfully updated' );
 
         $this->team_service = $team_service;
         $this->adapter      = $this->make_adapter();

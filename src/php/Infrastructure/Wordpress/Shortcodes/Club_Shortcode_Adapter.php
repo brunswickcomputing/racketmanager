@@ -18,6 +18,7 @@ use Racketmanager\Application\Club\Queries\Get_Club_Roles_Query;
 use Racketmanager\Application\Event\Queries\Event_Allowlist_Guard;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Presentation\Presenters\Club_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Club_Service;
@@ -53,7 +54,8 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly Get_Club_Role_Modal_Handler $role_modal_handler,
         private readonly Get_Club_Competitions_Handler $competitions_handler,
         private readonly Get_Club_Invoices_Handler $invoices_handler,
-        private readonly Shortcode_View_Presenter $view_presenter
+        private readonly Shortcode_View_Presenter $view_presenter,
+        private readonly Competition_Shortcode_Presenter $competition_shortcode_presenter
     ) {}
 
     /**
@@ -200,22 +202,39 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $this->view_presenter->render_error( __( 'Event not found for competition', 'racketmanager' ) );
         }
 
-        $club->event        = $event;
-        $club->player_stats = $event->get_player_stats(
+        $player_stats = $event->get_player_stats(
             [
                 'season' => $season_name ?? '',
                 'club'   => $club->id,
             ]
         );
 
+        $vars = [
+            'club'           => $club,
+            'event'          => $event,
+            'player_stats'   => $player_stats,
+            'seasons'        => $event->get_seasons(),
+            'current_season' => $event->current_season ?? [],
+        ];
+
+        $post_id = function_exists( 'get_the_ID' ) ? get_the_ID() : '';
+        if ( ! is_int( $post_id ) && ! is_string( $post_id ) ) {
+            $post_id = '';
+        }
+        $vars['event_header'] = $this->competition_shortcode_presenter->present_event_header(
+            event: $event,
+            club: $club,
+            curr_season: (string) ( $season_name ?? '' ),
+            seasons: (array) $event->get_seasons(),
+            header_level: 2,
+            post_id: $post_id,
+            pagename_query: 'club/event'
+        );
+
         return $this->view_presenter->render(
             new Shortcode_View_Model(
                 template: '' !== $template ? 'event-' . $template : 'event',
-                vars: [
-                    'club'           => $club,
-                    'seasons'        => $event->get_seasons(),
-                    'current_season' => $event->current_season ?? [],
-                ],
+                vars: $vars,
                 template_type: 'club'
             )
         );
@@ -258,14 +277,15 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $this->view_presenter->render_error( __( 'Event not found for competition', 'racketmanager' ) );
         }
 
-        $club->event = $event;
-        $club->team  = (object) array_merge( (array) $team, (array) $event->get_team_info( $team->id ) );
+        $team_view = (object) array_merge( (array) $team, (array) $event->get_team_info( $team->id ) );
 
         return $this->view_presenter->render(
             new Shortcode_View_Model(
                 template: '' !== $template ? 'team-' . $template : 'team',
                 vars: [
                     'club'            => $club,
+                    'event'           => $event,
+                    'team'            => $team_view,
                     'user_can_update' => $this->club_service->can_user_update( (int) $club->get_id() ),
                 ],
                 template_type: 'club'

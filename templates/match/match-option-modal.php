@@ -33,7 +33,7 @@ use Racketmanager\Domain\Fixture\Fixture;
             <div class="modal-body">
                 <div class="container">
                     <?php
-                    require_once RACKETMANAGER_PATH . 'templates/includes/matches-teams-match.php';
+                    require RACKETMANAGER_PATH . 'templates/includes/matches-teams-match.php';
                     if ( 'schedule_match' === $option ) {
                         if ( empty( $match->get_start_time() ) ) {
                             $date_input_type = 'date';

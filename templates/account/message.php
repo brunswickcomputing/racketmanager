@@ -7,7 +7,7 @@
 
 namespace Racketmanager;
 
-/** @var object $message_dtl */
+/** @var \Racketmanager\Presentation\View_Models\Message_View_Model $message_dtl */
 ?>
 <div class="message_header">
     <div class="message_header_wrapper">
@@ -16,7 +16,7 @@ namespace Racketmanager;
                 <dt class="list__label"><?php esc_html_e( 'From', 'racketmanager' ); ?></dt>
                 <dd class="list__value">
                     <?php
-                    if ( $message_dtl->from_name ) {
+                    if ( ! empty( $message_dtl->from_name ) ) {
                         echo esc_html( $message_dtl->from_name ) . ' ';
                     }
                     echo '[<a href="mailto:' . esc_attr( $message_dtl->from_email ) . '">' . esc_html( $message_dtl->from_email ) . '</a>]';
@@ -32,7 +32,7 @@ namespace Racketmanager;
         </dl>
     </div>
     <div class="suffix_wrapper">
-        <div class="time"><?php echo esc_html( mysql2date( 'd-m-Y G:i:s', $message_dtl->date ) ); ?></div>
+        <div class="time"><?php echo esc_html( $message_dtl->date_formatted ); ?></div>
         <div class="message-button"><a id="deleteMessage" data-msg-id="<?php echo esc_attr( $message_dtl->id ); ?>" class="btn btn-primary"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></a></div>
     </div>
 </div>

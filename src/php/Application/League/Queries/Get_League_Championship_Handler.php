@@ -3,9 +3,11 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\League\Queries;
 
+use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Presentation\Presenters\Fixture_Presentation_Adapter;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
@@ -33,7 +35,9 @@ class Get_League_Championship_Handler {
         private readonly Team_Service $team_service,
         private readonly Fixture_Link_Service $fixture_link_service,
         private readonly Fixture_Permission_Service $fixture_permission_service,
-        private readonly Shortcode_Template_Renderer $template_renderer
+        private readonly Shortcode_Template_Renderer $template_renderer,
+        private readonly Rubber_Repository_Interface $rubber_repository,
+        private readonly Tournament_Presenter $tournament_presenter
     ) {}
 
     public function handle( Get_League_Championship_Query $query ): Shortcode_View_Model {
@@ -78,6 +82,16 @@ class Get_League_Championship_Handler {
                                 continue;
                             }
 
+                            if ( null === $fixture->rubbers && ( $league->num_rubbers ?? 0 ) > 0 ) {
+                                $fixture->set_rubbers( $this->rubber_repository->find_by_fixture_id( $match_id ) );
+                            }
+
+                            if ( $this->tournament_presenter->is_tournament_competition( $league->event?->competition ?? null ) ) {
+                                $matches[ $i ] = $this->tournament_presenter->present_match_card( $fixture, null, null, 'list', false, true );
+                                ++$i;
+                                continue;
+                            }
+
                             $match             = Fixture_Presentation_Adapter::from_fixture(
                                 $fixture,
                                 $this->competition_service,
@@ -94,7 +108,7 @@ class Get_League_Championship_Handler {
                             $match->num_rubbers = $league->num_rubbers ?? null;
                             $match->num_sets    = $league->num_sets ?? null;
 
-                            if ( isset( $match->num_rubbers ) && $match->num_rubbers > 0 && method_exists( $match, 'get_rubbers' ) ) {
+                            if ( isset( $match->num_rubbers ) && $match->num_rubbers > 0 ) {
                                 $rubbers = $match->get_rubbers();
                                 $r       = 1;
                                 if ( is_iterable( $rubbers ) ) {
@@ -113,7 +127,11 @@ class Get_League_Championship_Handler {
                     }
 
                     if ( count( $matches ) > 0 ) {
-                        $data->matches = $matches;
+                        $data->matches = $this->tournament_presenter->present_match_list(
+                            $matches,
+                            $this->tournament_presenter->is_tournament_competition( $league->event?->competition ?? null ),
+                            [ 'show_header' => false ]
+                        );
                         $finals[ $f ]  = $data;
                     }
                 }

@@ -161,6 +161,93 @@ class Event_Repository implements Event_Repository_Interface {
         return $event;
     }
 
+    public function find_all( array $args = [] ): array {
+        if ( ! $this->wpdb ) {
+            return [];
+        }
+
+        $defaults = [
+            'offset'           => 0,
+            'limit'            => 99999999,
+            'competition_type' => false,
+            'entry_type'       => false,
+            'name'             => false,
+            'season'           => false,
+            'reverse_rubbers'  => false,
+            'orderby'          => [ 'name' => 'ASC' ],
+        ];
+        $args             = array_merge( $defaults, $args );
+        $offset           = (int) $args['offset'];
+        $limit            = (int) $args['limit'];
+        $competition_type = $args['competition_type'];
+        $entry_type       = $args['entry_type'];
+        $name             = $args['name'];
+        $season           = $args['season'];
+        $reverse_rubbers  = $args['reverse_rubbers'];
+        $orderby          = (array) $args['orderby'];
+
+        $search_terms = [];
+        if ( $name ) {
+            $escaped_name   = method_exists( $this->wpdb, 'esc_like' ) ? $this->wpdb->esc_like( stripslashes( (string) $name ) ) : addcslashes( stripslashes( (string) $name ), '_%\\' );
+            $name_like      = $escaped_name . '%';
+            $search_terms[] = $this->wpdb->prepare( '`name` like %s', $name_like );
+        }
+        $competitions_table = $this->table( 'racketmanager_competitions' );
+        if ( $competition_type ) {
+            $search_terms[] = $this->wpdb->prepare( "`competition_id` in (select `id` from $competitions_table WHERE `type` = %s)", $competition_type );
+        }
+        switch ( $entry_type ) {
+            case 'team':
+                $search_terms[] = "`competition_id` in (select `id` from $competitions_table WHERE `type` in ( 'league', 'cup' ) )";
+                break;
+            case 'player':
+            case 'individual':
+                $search_terms[] = "`competition_id` in (select `id` from $competitions_table WHERE `type` = 'tournament' )";
+                break;
+            default:
+                break;
+        }
+
+        $search = Util::search_string( $search_terms, true );
+        $order  = Util::order_by_string( $orderby );
+
+        $sql = $this->wpdb->prepare(
+            "SELECT `name`, `id`, `num_sets`, `num_rubbers`, `type`, `settings`, `seasons`, `competition_id` FROM $this->table_name $search $order LIMIT %d, %d",
+            $offset,
+            $limit
+        );
+
+        $results = wp_cache_get( md5( $sql ), 'events' );
+        if ( ! $results ) {
+            $results = $this->wpdb->get_results( $sql );
+            wp_cache_set( md5( $sql ), $results, 'events' );
+        }
+
+        if ( empty( $results ) ) {
+            return [];
+        }
+
+        $events = [];
+        foreach ( $results as $row ) {
+            $event = $this->find_by_id( $row->id ) ?? Event_Factory::from_object( $row );
+            if ( ! $event ) {
+                continue;
+            }
+
+            if ( $season && empty( $event->get_season_by_name( $season ) ) ) {
+                continue;
+            }
+
+            if ( $reverse_rubbers && ! empty( $event->reverse_rubbers ) ) {
+                continue;
+            }
+
+            $events[] = $event;
+        }
+
+        return $events;
+    }
+
     /**
      * Find all events for a competition.
      *
@@ -1121,6 +1208,32 @@ class Event_Repository implements Event_Repository_Interface {
             $matches = $this->wpdb->get_results( $sql );
             return $matches ?: [];
         }
+    }
+
+    /**
+     * Count matches for an event and season directly from matches and leagues without requiring rubbers.
+     *
+     * @param int $event_id
+     * @param string $season
+     * @param bool $completed_only Whether to only count finished matches with a score.
+     *
+     * @return int
+     */
+    public function count_by_event_season( int $event_id, string $season, bool $completed_only = false ): int {
+        if ( ! $this->wpdb ) {
+            return 0;
+        }
+        $leagues_table = $this->get_leagues_table();
+        $matches_table = $this->table( 'racketmanager_matches' );
+
+        $sql = "SELECT COUNT( distinct m.id ) FROM $matches_table AS m, $leagues_table AS l WHERE m.`league_id` = l.`id` AND l.`event_id` = %d AND m.`season` = %s";
+        if ( $completed_only ) {
+            $sql .= " AND (m.`home_points` != '' OR m.`away_points` != '')";
+        }
+
+        return (int) $this->wpdb->get_var(
+            $this->wpdb->prepare( $sql, $event_id, $season )
+        );
     }
 
     public function update_seasons( int $id, array $seasons ): bool {

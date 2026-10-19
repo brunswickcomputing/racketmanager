@@ -11,11 +11,11 @@ namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
-use Racketmanager\Domain\Fixture\Fixture_Team_Resolver_Interface;
-use Racketmanager\Domain\Fixture\Fixture_Update_Authorizer_Interface;
-use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
+use Racketmanager\Services\Fixture\Fixture_Relation_Loader;
 use Racketmanager\Services\Export\DTO\Export_Criteria;
+use RuntimeException;
 use wpdb;
 
 
@@ -25,22 +25,19 @@ use wpdb;
 class Fixture_Repository implements Fixture_Repository_Interface {
     private wpdb $wpdb;
     private string $table_name;
-    private ?League_Repository_Interface $league_repository;
-    private ?Fixture_Team_Resolver_Interface $team_service;
-    private ?Fixture_Update_Authorizer_Interface $update_authorizer;
+    private ?Fixture_Relation_Loader $relation_loader;
+    private ?Rubber_Repository_Interface $rubber_repository;
 
     public function __construct(
         ?wpdb $db = null,
-        ?League_Repository_Interface $league_repository = null,
-        ?Fixture_Team_Resolver_Interface $team_service = null,
-        ?Fixture_Update_Authorizer_Interface $update_authorizer = null
+        ?Fixture_Relation_Loader $relation_loader = null,
+        ?Rubber_Repository_Interface $rubber_repository = null
     ) {
         global $wpdb;
         $this->wpdb       = $db ?? $wpdb;
         $this->table_name = $this->wpdb->prefix . 'racketmanager_matches';
-        $this->league_repository = $league_repository;
-        $this->team_service = $team_service;
-        $this->update_authorizer = $update_authorizer;
+        $this->relation_loader = $relation_loader;
+        $this->rubber_repository = $rubber_repository;
     }
 
     public function save( object $entity ): bool|int {
@@ -151,12 +148,15 @@ class Fixture_Repository implements Fixture_Repository_Interface {
      */
     public function delete( int $id ): bool {
         // Delete associated rubbers first
-        $rubbers_table = $this->wpdb->prefix . 'racketmanager_rubbers';
-        $this->wpdb->delete(
+        $rubbers_table   = $this->wpdb->prefix . 'racketmanager_rubbers';
+        $rubbers_deleted = $this->wpdb->delete(
             $rubbers_table,
             array( 'match_id' => $id ),
             array( '%d' )
         );
+        if ( false === $rubbers_deleted ) {
+            return false;
+        }
 
         $deleted = $this->wpdb->delete(
             $this->table_name,
@@ -191,7 +191,23 @@ class Fixture_Repository implements Fixture_Repository_Interface {
             return null;
         }
 
-        return $this->hydrate_fixture( $row );
+        return $this->hydrate_fixture( $row, false );
+    }
+
+    /**
+     * Find a fixture by ID and attach league and team relations.
+     *
+     * @param int $id
+     * @return Fixture|null
+     */
+    public function find_by_id_with_relations( int $id ): ?Fixture {
+        $row = $this->find_raw_by_id( $id );
+
+        if ( ! $row ) {
+            return null;
+        }
+
+        return $this->hydrate_fixture( $row, true );
     }
 
     /**
@@ -255,7 +271,7 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         $results           = $this->wpdb->get_results( $query );
 
         return array_map(
-            fn( $row ) => $this->hydrate_fixture( $row ),
+            fn( $row ) => $this->hydrate_fixture( $row, true ),
             $results
         );
     }
@@ -286,7 +302,7 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         );
         $results = $this->wpdb->get_results( $query );
         foreach ( $results as &$row ) {
-            $row = $this->hydrate_fixture( $row );
+            $row = $this->hydrate_fixture( $row, true );
         }
 
         return $results;
@@ -350,9 +366,52 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         $results = $this->wpdb->get_results( $query );
 
         return array_map(
-            fn( $row ) => $this->hydrate_fixture( $row ),
+            fn( $row ) => $this->hydrate_fixture( $row, true ),
             $results
         );
+    }
+
+    /**
+     * Find fixtures by team ID (either home or away).
+     *
+     * @param int $team_id
+     * @return Fixture[]
+     */
+    public function find_by_team( int $team_id ): array {
+        if ( ! $this->wpdb ) {
+            return array();
+        }
+        $query   = $this->wpdb->prepare(
+            "SELECT * FROM $this->table_name WHERE `home_team` = %s OR `away_team` = %s",
+            (string) $team_id,
+            (string) $team_id
+        );
+        $results = $this->wpdb->get_results( $query );
+
+        return array_map(
+            fn( $row ) => $this->hydrate_fixture( $row ),
+            $results ?: array()
+        );
+    }
+
+    /**
+     * Delete all fixtures and their rubbers for a given team ID.
+     *
+     * @param int $team_id
+     * @return bool
+     */
+    public function delete_by_team( int $team_id ): bool {
+        if ( ! $this->wpdb ) {
+            return false;
+        }
+        $fixtures    = $this->find_by_team( $team_id );
+        $all_deleted = true;
+        foreach ( $fixtures as $fixture ) {
+            if ( ! $this->delete( (int) $fixture->get_id() ) ) {
+                $all_deleted = false;
+            }
+        }
+        return $all_deleted;
     }
 
     /**
@@ -593,13 +652,89 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         return null;
     }
 
-    private function hydrate_fixture( object $row ): Fixture {
-        return Fixture_Factory::from_object(
-            $row,
-            $this->league_repository,
-            $this->team_service,
-            $this->update_authorizer
-        );
+    /**
+     * Find all confirmed fixtures played by a specific player with optional filters.
+     *
+     * @param int $player_id
+     * @param array $args
+     * @return Fixture[]
+     */
+    public function find_player_matches( int $player_id, array $args = [] ): array {
+        if ( ! $this->rubber_repository ) {
+            throw new RuntimeException( 'Fixture_Repository::find_player_matches requires a Rubber_Repository_Interface.' );
+        }
+
+        $defaults = [
+            'season'  => null,
+            'time'    => null,
+            'type'    => null,
+            'status'  => null,
+        ];
+        $args = array_merge( $defaults, $args );
+
+        $matches_table        = $this->table_name;
+        $leagues_table        = $this->wpdb->prefix . 'racketmanager';
+        $rubbers_table        = $this->wpdb->prefix . 'racketmanager_rubbers';
+        $rubber_players_table = $this->wpdb->prefix . 'racketmanager_rubber_players';
+        $events_table         = $this->wpdb->prefix . 'racketmanager_events';
+
+        $sql_from = " FROM `$matches_table` AS m, `$leagues_table` AS l, `$rubbers_table` AS r, `$rubber_players_table` AS rp";
+        $where    = [
+            'm.`league_id` = l.`id`',
+            'm.`id` = r.`match_id`',
+            'r.`id` = rp.`rubber_id`',
+            $this->wpdb->prepare( 'rp.`player_id` = %d', $player_id ),
+        ];
+
+        if ( ! empty( $args['season'] ) ) {
+            $where[] = $this->wpdb->prepare( 'm.`season` = %s', $args['season'] );
+        }
+        if ( ! empty( $args['status'] ) ) {
+            $where[] = $this->wpdb->prepare( 'm.`confirmed` = %s', $args['status'] );
+        }
+        if ( ! empty( $args['time'] ) ) {
+            if ( 'latest' === $args['time'] ) {
+                $where[] = "(m.`home_points` != '' OR m.`away_points` != '')";
+            } elseif ( is_numeric( $args['time'] ) ) {
+                $where[] = $this->wpdb->prepare( 'm.`date` > NOW() - INTERVAL %d DAY', (int) $args['time'] );
+            }
+        }
+        if ( ! empty( $args['type'] ) ) {
+            $escaped_type = method_exists( $this->wpdb, 'esc_like' ) ? $this->wpdb->esc_like( $args['type'] ) : addcslashes( $args['type'], '_%\\' );
+            $type_like    = '%' . $escaped_type . '%';
+            $where[]      = $this->wpdb->prepare(
+                "m.`league_id` IN (SELECT id FROM `$leagues_table` WHERE `event_id` IN (SELECT e.`id` FROM `$events_table` e WHERE e.`type` LIKE %s))",
+                $type_like
+            );
+        }
+
+        $sql = "SELECT DISTINCT m.*" . $sql_from . ' WHERE ' . implode( ' AND ', $where ) . ' ORDER BY m.`date` ASC';
+        $results = $this->wpdb->get_results( $sql );
+        if ( ! is_array( $results ) ) {
+            return [];
+        }
+
+        return array_map( function( $row ) use ( $player_id ) {
+            $fixture = $this->hydrate_fixture( $row, true );
+            $rubbers = $this->rubber_repository->find_by_fixture_id( (int) $fixture->id, $player_id );
+            $fixture->set_rubbers( $rubbers );
+            return $fixture;
+        }, $results );
+    }
+
+    /**
+     * Hydrate a fixture aggregate from a row, optionally attaching league and team relations.
+     *
+     * Relations are loaded outside the entity by the relation loader so that the
+     * aggregate itself stays free of repository and service collaborators.
+     */
+    private function hydrate_fixture( object $row, bool $with_relations = false ): Fixture {
+        $fixture = Fixture_Factory::from_object( $row );
+        if ( $with_relations && $this->relation_loader ) {
+            $this->relation_loader->load( $fixture );
+        }
+
+        return $fixture;
     }
 
     /**

@@ -20,6 +20,7 @@ use Racketmanager\Exceptions\Charge_Not_Found_Exception;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
+use Racketmanager\Presentation\Presenters\Invoice_Presenter;
 use Racketmanager\Services\Admin\Finance\Finance_Charge_Action_Dispatcher;
 use Racketmanager\Services\Admin\Finance\Finance_Invoice_Action_Dispatcher;
 use Racketmanager\Services\Validator\Validator_Finance;
@@ -37,6 +38,7 @@ final class Admin_Finances extends Admin_Display {
     private Admin_Screen_Presenter $screens;
     private Finance_Charge_Action_Dispatcher $finance_charge_dispatcher;
     private Finance_Invoice_Action_Dispatcher $finance_invoice_dispatcher;
+    private Invoice_Presenter $invoice_presenter;
 
     public function __construct(
         $plugin_instance,
@@ -44,6 +46,7 @@ final class Admin_Finances extends Admin_Display {
         ?Admin_Screen_Presenter $screens = null,
         ?Finance_Charge_Action_Dispatcher $finance_charge_dispatcher = null,
         ?Finance_Invoice_Action_Dispatcher $finance_invoice_dispatcher = null,
+        ?Invoice_Presenter $invoice_presenter = null,
     ) {
         parent::__construct( $plugin_instance );
         $c                                 = $this->racketmanager->container;
@@ -51,7 +54,16 @@ final class Admin_Finances extends Admin_Display {
         $this->screens                     = $screens ?? $c->get( 'admin_screen_presenter' );
         $this->finance_charge_dispatcher  = $finance_charge_dispatcher ?? $c->get( 'finance_charge_action_dispatcher' );
         $this->finance_invoice_dispatcher = $finance_invoice_dispatcher ?? $c->get( 'finance_invoice_action_dispatcher' );
+        $this->invoice_presenter          = $invoice_presenter ?? $c->get( 'invoice_presenter' );
         $this->admin_action_adapter        = $this->actions;
+    }
+
+    /**
+     * Resolve currency code safely.
+     */
+    private function get_currency_code(): string {
+        $currency_enum = $this->finance_service->get_currency();
+        return $currency_enum->value;
     }
 
     /**
@@ -144,14 +156,16 @@ final class Admin_Finances extends Admin_Display {
         $clubs            = ( 'club-invoices' === $tab ) ? (array) $this->club_service->get_clubs() : array();
         $charges          = $this->get_finance_charges_for_invoices( 'club-invoices' === $tab ? 'team' : 'player' );
 
-        $vm = new Finances_Invoices_Page_View_Model(
+        $currency_code = $this->get_currency_code();
+        $vm            = $this->invoice_presenter->present_admin_invoices_list(
             invoices: $finance_invoices,
             charges: $charges,
             clubs: $clubs,
-            racketmanager_tab: $tab,
+            tab: $tab,
             club_id: $club_id,
             charge_id: $charge_id,
             status: $status,
+            currency_code: $currency_code,
         );
 
         $this->screens->present(
@@ -215,13 +229,15 @@ final class Admin_Finances extends Admin_Display {
         $competitions    = $this->competition_service->get_all();
         $seasons         = $this->season_service->get_all_seasons();
 
-        $vm = new Finances_Charges_Page_View_Model(
+        $currency_code = $this->get_currency_code();
+        $vm            = $this->invoice_presenter->present_admin_charges_list(
             charges: $finance_charges,
             competitions: $competitions,
             seasons: $seasons,
             competition_id: $competition_id,
             season: $season ? (string) $season : null,
-            racketmanager_tab: 'charges',
+            tab: 'charges',
+            currency_code: $currency_code,
         );
 
         $this->screens->present(
@@ -316,7 +332,8 @@ final class Admin_Finances extends Admin_Display {
         $competitions          = $this->competition_service->get_all();
         $racketmanager_seasons = $this->season_service->get_all_seasons();
 
-        $vm = new Finances_Charge_Page_View_Model(
+        $currency_code = $this->get_currency_code();
+        $vm            = $this->invoice_presenter->present_admin_charge_detail(
             charge: $charge,
             competitions: $competitions,
             seasons: $racketmanager_seasons,
@@ -325,6 +342,7 @@ final class Admin_Finances extends Admin_Display {
             form_title: $form_title,
             form_action: $form_action,
             errors: $errors,
+            currency_code: $currency_code,
         );
 
         $this->screens->present(
@@ -382,7 +400,7 @@ final class Admin_Finances extends Admin_Display {
 
             $invoice_view = show_invoice( $invoice->invoice->get_id() );
 
-            $vm = new Finances_Invoice_Page_View_Model(
+            $vm = $this->invoice_presenter->present_admin_invoice_page(
                 invoice: $invoice,
                 invoice_view: $invoice_view,
                 errors: $errors,

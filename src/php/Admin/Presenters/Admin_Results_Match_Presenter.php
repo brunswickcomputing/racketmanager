@@ -11,14 +11,18 @@ declare( strict_types=1 );
 namespace Racketmanager\Admin\Presenters;
 
 use Racketmanager\Admin\View_Models\Admin_Results_Match_View_Model;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 
 /**
  * Maps match entities to preformatted admin results rows.
  */
 final class Admin_Results_Match_Presenter {
+    /** @var array<int, ?object> */
+    private array $league_cache = array();
 
     public function __construct(
         private Admin_Date_Presenter $date_presenter,
+        private League_Repository_Interface $league_repository,
     ) {
     }
 
@@ -61,7 +65,17 @@ final class Admin_Results_Match_Presenter {
         }
         if ( method_exists( $match, 'get_league' ) ) {
             $league = $match->get_league();
-            return is_object( $league ) ? $league : null;
+            if ( is_object( $league ) ) {
+                return $league;
+            }
+        }
+        $league_id = (int) ( $match->league_id ?? 0 );
+        if ( $league_id > 0 ) {
+            if ( ! array_key_exists( $league_id, $this->league_cache ) ) {
+                $found                           = $this->league_repository->find_by_id( $league_id );
+                $this->league_cache[ $league_id ] = is_object( $found ) ? $found : null;
+            }
+            return $this->league_cache[ $league_id ];
         }
 
         return null;

@@ -176,9 +176,6 @@ class Tournament_Fixtures_Admin_Controller_Test extends TestCase {
         );
 
         // Mock global functions
-        if ( ! function_exists( 'Racketmanager\get_match' ) ) {
-            eval( 'namespace Racketmanager; function get_match($id) { return $GLOBALS["test_fixture"] ?? null; }' );
-        }
         if ( ! function_exists( 'Racketmanager\get_team' ) ) {
             eval( 'namespace Racketmanager; function get_team($id) { return $GLOBALS["test_team"] ?? null; }' );
         }

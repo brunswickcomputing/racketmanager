@@ -14,7 +14,9 @@ use Racketmanager\Admin\View_Models\Finances_Invoices_Page_View_Model;
 use Racketmanager\Domain\DTO\Finance\Charge_Details_DTO;
 use Racketmanager\Domain\DTO\Finance\Invoice_Full_Details_DTO;
 use Racketmanager\Domain\Invoice;
+use Racketmanager\Domain\Value_Objects\Currency;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
+use Racketmanager\Presentation\Presenters\Invoice_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Competition_Service;
@@ -51,6 +53,7 @@ final class Admin_Finances_Delivery_Test extends TestCase {
         $this->flash_store         = $this->createMock( Admin_Flash_Message_Store::class );
         $this->guard               = $this->createMock( Action_Guard_Interface::class );
         $this->finance_service     = $this->createMock( Finance_Service::class );
+        $this->finance_service->method( 'get_currency' )->willReturn( Currency::GBP );
         $this->competition_service = $this->createMock( Competition_Service::class );
         $this->season_service      = $this->createMock( Season_Service::class );
 
@@ -59,6 +62,7 @@ final class Admin_Finances_Delivery_Test extends TestCase {
                 'finance_service'     => $this->finance_service,
                 'competition_service' => $this->competition_service,
                 'season_service'      => $this->season_service,
+                'invoice_presenter'   => new Invoice_Presenter(),
             ),
             guard: $this->guard,
             redirector: $this->redirector,
@@ -163,13 +167,30 @@ final class Admin_Finances_Delivery_Test extends TestCase {
 
         $this->finance_service->expects( self::once() )
             ->method( 'get_charges_by_criteria' )
-            ->willReturn( array() );
+            ->willReturn( array(
+                (object) array(
+                    'id'     => 10,
+                    'name'   => 'Summer 2026 League',
+                    'status' => 'final',
+                    'total'  => '120.50',
+                ),
+                (object) array(
+                    'id'     => 11,
+                    'name'   => 'Winter 2026 Cup',
+                    'status' => 'draft',
+                    'total'  => '0.00',
+                ),
+            ) );
 
         $holder = $this->expect_render_capturing( 'admin/finances/show-charges', Finances_Charges_Page_View_Model::class );
 
         $this->screen->display_charges_page();
 
         self::assertInstanceOf( Finances_Charges_Page_View_Model::class, $holder->vm );
+        self::assertCount( 2, $holder->vm->charges );
+        self::assertSame( '£120.50', $holder->vm->charges[0]->total_formatted );
+        self::assertSame( '-', $holder->vm->charges[1]->total_formatted );
+        self::assertSame( '£120.50', $holder->vm->total_amount_formatted );
     }
 
     public function test_display_club_invoices_page_renders_get_view_model(): void {
@@ -177,7 +198,17 @@ final class Admin_Finances_Delivery_Test extends TestCase {
 
         $this->finance_service->expects( self::once() )
             ->method( 'get_invoices_by_criteria' )
-            ->willReturn( array() );
+            ->willReturn( array(
+                (object) array(
+                    'id'             => 201,
+                    'invoice_number' => 1001,
+                    'charge_name'    => 'summer league',
+                    'billable_name'  => 'Westcliff Hardcourt',
+                    'amount'         => '75.25',
+                    'status'         => 'paid',
+                    'date_due'       => '2026-06-15',
+                ),
+            ) );
         $this->finance_service->expects( self::once() )
             ->method( 'get_charges_by_criteria' )
             ->willReturn( array() );
@@ -187,7 +218,9 @@ final class Admin_Finances_Delivery_Test extends TestCase {
         $this->screen->display_club_invoices_page();
 
         self::assertInstanceOf( Finances_Invoices_Page_View_Model::class, $holder->vm );
-        self::assertSame( 'club-invoices', $holder->vm->racketmanager_tab );
+        self::assertCount( 1, $holder->vm->invoices );
+        self::assertSame( '£75.25', $holder->vm->invoices[0]->amount_formatted );
+        self::assertSame( '£75.25', $holder->vm->total_amount_formatted );
     }
 
     public function test_display_charge_page_renders_add_mode_view_model(): void {
@@ -259,7 +292,7 @@ final class Admin_Finances_Delivery_Test extends TestCase {
                 'id'               => 5,
                 'competition_id'   => 2,
                 'status'           => 'final',
-                'competition_name' => '2026 League',
+                'competition_name' => 'League',
             )
         );
 
@@ -288,7 +321,14 @@ final class Admin_Finances_Delivery_Test extends TestCase {
 
         self::assertInstanceOf( Finances_Invoice_Page_View_Model::class, $holder->vm );
         self::assertSame( 'PO-999', $holder->vm->invoice->invoice->get_purchase_order() );
+        self::assertSame( 'PO-999', $holder->vm->purchase_order );
         self::assertSame( 'sent', $holder->vm->invoice->invoice->get_status() );
+        self::assertSame( 'sent', $holder->vm->invoice_status );
+        self::assertSame( 101, $holder->vm->invoice_id );
+        self::assertSame( 'Invoice 1001 (sent)', $holder->vm->title );
+        self::assertSame( '2026 League - Test Club', $holder->vm->subtitle );
+        self::assertSame( 'club-invoices', $holder->vm->view );
+        self::assertSame( 'Club invoices', $holder->vm->breadcrumb );
         self::assertTrue( $holder->vm->errors->has( 'status' ) );
     }
 }

@@ -7,33 +7,20 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Presentation\View_Models\Team_Matches_Group_View_Model;
+
 /** @var array $matches_list */
-global $racketmanager;
-if ( empty( $matches_key ) ) {
-    $matches_key = null;
-}
-if ( ! isset( $show_header ) ) {
-    $show_header = true;
-    if ( 'league' === $matches_key ) {
-        $show_header = false;
+foreach ( $matches_list as $key => $group ) {
+    if ( $group instanceof Team_Matches_Group_View_Model ) {
+        $header_text = $group->header;
+        $matches     = $group->matches;
+    } else {
+        throw new \UnexpectedValueException( 'Expected Team_Matches_Group_View_Model, got ' . get_debug_type( $group ) );
     }
-}
-if ( ! isset( $by_date ) ) {
-    $by_date = false;
-}
-foreach ( $matches_list as $key => $matches ) {
     ?>
     <h4 class="module-divider">
         <span class="module-divider__body">
-            <?php
-            if ( empty( $matches_key ) ) {
-                echo esc_html( mysql2date( $racketmanager->date_format, $key ) );
-            } elseif ( 'match_day' === $matches_key ) {
-                echo esc_html__( 'Match Day', 'racketmanager' ) . ' ' . esc_html( $key );
-            } else {
-                echo esc_html( $key );
-            }
-            ?>
+            <?php echo esc_html( $header_text ); ?>
         </span>
     </h4>
     <?php

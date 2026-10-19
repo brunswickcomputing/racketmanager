@@ -8,6 +8,8 @@ use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Services\Player_Query_Service;
+use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Util\Util;
 use function asort;
 use function is_numeric;
@@ -20,7 +22,9 @@ use function __;
 class Get_Competition_Players_Handler {
     public function __construct(
         private readonly Competition_Service $competition_service,
-        private readonly Player_Service $player_service
+        private readonly Player_Service $player_service,
+        private readonly Player_Query_Service $player_query_service,
+        private readonly Player_Stats_Service $player_stats_service
     ) {}
 
     public function handle( Get_Competition_Players_Query $query ): Shortcode_View_Model {
@@ -63,9 +67,9 @@ class Get_Competition_Players_Handler {
             }
 
             if ( $player ) {
-                $player->matches = $player->get_matches( $competition, $season_str, 'competition' );
+                $player->matches = $this->player_query_service->get_matches( $player, $competition, $season_str, 'competition' );
                 asort( $player->matches );
-                $player->stats       = $player->get_stats();
+                $player->stats       = $this->player_stats_service->get_stats( $player );
                 $competition->player = $player;
             } else {
                 return Shortcode_View_Model::error( __( 'Player not found', 'racketmanager' ) );

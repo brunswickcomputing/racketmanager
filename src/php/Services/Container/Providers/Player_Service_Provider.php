@@ -6,6 +6,7 @@ namespace Racketmanager\Services\Container\Providers;
 use Racketmanager\Application\General\Queries\Get_Player_Handler;
 use Racketmanager\Application\General\Queries\Get_Player_Search_Handler;
 use Racketmanager\Application\General\Queries\Get_Players_Handler;
+use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Player_Error_Repository_Interface;
@@ -32,10 +33,7 @@ final readonly class Player_Service_Provider implements Service_Provider_Interfa
         $app = $this->app;
 
         // Repositories
-        $container->set( 'player_repository', fn( Simple_Container $c ) => new Player_Repository(
-            player_query_service: fn() => $c->get( 'player_query_service' ),
-            player_stats_service: fn() => $c->get( 'player_stats_service' )
-        ) );
+        $container->set( 'player_repository', fn() => new Player_Repository() );
 
         $container->set( 'player_error_repository', fn(): Player_Error_Repository_Interface => new Player_Error_Repository() );
 
@@ -46,7 +44,7 @@ final readonly class Player_Service_Provider implements Service_Provider_Interfa
                 throw new RuntimeException( 'Player_Query_Service requires a wpdb instance.' );
             }
 
-            return new Player_Query_Service( $wpdb, $c->get( 'competition_repository' ) );
+            return new Player_Query_Service( $wpdb, $c->get( 'competition_repository' ), $c->get( 'fixture_repository' ) );
         } );
 
         $container->set( 'player_stats_service', fn( Simple_Container $c ) => new Player_Stats_Service(
@@ -72,20 +70,28 @@ final readonly class Player_Service_Provider implements Service_Provider_Interfa
         ) );
 
         // Presenters
-        $container->set( 'player_presenter', fn() => new Player_Presenter() );
+        $container->set( 'player_presenter', fn( Simple_Container $c ) => new Player_Presenter(
+            $c->get( 'competition_shortcode_presenter' ),
+            $c->get( 'option_gateway' )
+        ) );
 
         // Query Handlers
         $container->set( 'get_players_handler', fn( Simple_Container $c ) => new Get_Players_Handler(
+            $c->get( 'player_repository' ),
+            $c->get( 'user_repository' ),
+            $c->get( 'shortcode_template_renderer' ),
             $c->get( 'player_presenter' )
         ) );
 
         $container->set( 'get_player_handler', fn( Simple_Container $c ) => new Get_Player_Handler(
-            $c->get( 'registration_service' ),
+            $c->get( 'player_presenter' ),
+            $c->get( 'player_query_service' ),
+            $c->get( 'player_stats_service' ),
             $c->get( 'player_service' ),
-            $c->get( 'tournament_service' ),
-            $c->get( 'player_presenter' )
+            $c->get( 'registration_service' ),
+            $c->get( 'tournament_service' )
         ) );
 
-        $container->set( 'get_player_search_handler', fn() => new Get_Player_Search_Handler( $app ) );
+        $container->set( 'get_player_search_handler', fn( Simple_Container $c ) => new Get_Player_Search_Handler( $c->get( 'player_repository' ) ) );
     }
 }

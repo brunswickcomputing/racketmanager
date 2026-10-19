@@ -7,7 +7,6 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Competition\League;
-use Racketmanager\Domain\Racketmanager_Match;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Result_Service;
@@ -551,11 +550,6 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $league = $this->create_league_mock( id: 456 );
         $this->league_service->method( 'get_league' )->willReturn( $league );
 
-        $legacy_match = $this->getMockBuilder( Racketmanager_Match::class )
-                             ->disableOriginalConstructor()
-                             ->getMock();
-        $GLOBALS['wp_stubs_matches'][123] = $legacy_match;
-
         $request = Result_Test_Factory::create_team_confirmation_request(
             match_id: 123,
             result_confirm: 'A',
@@ -574,8 +568,6 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $comments = maybe_unserialize( $fixture->get_comments() );
         $this->assertArrayHasKey( 'home_confirm', $comments );
         $this->assertEquals( 'Looks good', $comments['home_confirm'] );
-
-        unset( $GLOBALS['wp_stubs_matches'][123] );
     }
 
     public function test_handle_team_result_update_blocks_unauthorized_user(): void {

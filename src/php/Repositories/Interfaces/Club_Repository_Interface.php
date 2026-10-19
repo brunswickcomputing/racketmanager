@@ -22,4 +22,5 @@ interface Club_Repository_Interface extends Repository_Interface {
     public function delete( int $id ): bool;
     public function find_clubs_by_competition_and_season( int $competition_id, string $season, int $min_fixtures ): array;
     public function find_clubs_not_entered( int $competition_id, string $season ): array;
+    public function is_player_in_club( array $args = array() ): bool;
 }

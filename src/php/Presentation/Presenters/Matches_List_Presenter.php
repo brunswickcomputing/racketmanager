@@ -4,8 +4,10 @@ declare( strict_types=1 );
 namespace Racketmanager\Presentation\Presenters;
 
 use Racketmanager\Application\Matches\DTOs\Match_List_Result;
+use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Exceptions\Template_Not_Found_Exception;
 use Racketmanager\Presentation\View_Models\Matches_List_View_Model;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
@@ -23,10 +25,12 @@ class Matches_List_Presenter {
         private readonly Competition_Service $competition_service,
         private readonly Team_Service $team_service,
         private readonly View_Renderer_Interface $renderer,
+        private readonly Tournament_Presenter $tournament_presenter,
         private readonly ?Fixture_Link_Service $link_service = null,
         private readonly ?Fixture_Permission_Service $permission_service = null,
         private readonly ?Club_Presenter $club_presenter = null,
-        private readonly ?Player_Presenter $player_presenter = null
+        private readonly ?Player_Presenter $player_presenter = null,
+        private readonly ?Rubber_Repository_Interface $rubber_repository = null
     ) {}
 
     public function present_daily( Match_List_Result $result, string $template ): Matches_List_View_Model {
@@ -74,20 +78,41 @@ class Matches_List_Presenter {
      *
      * @param array $fixtures Fixture entities.
      *
-     * @return array<string, Fixture_Presentation_Adapter[]>
+     * @return array<string, array<Fixture_Presentation_Adapter|\Racketmanager\Presentation\View_Models\Tournament_Match_Card_View_Model>>
      */
     public function group_by_league( array $fixtures ): array {
         $matches_list = [];
         foreach ( $fixtures as $fixture ) {
+            if ( $fixture instanceof Fixture && $this->tournament_presenter->is_tournament_competition_match( $fixture ) ) {
+                $league = $fixture->get_league();
+                $title  = is_object( $league )
+                    ? (string) ( method_exists( $league, 'get_name' ) ? $league->get_name() : ( $league->title ?? '' ) )
+                    : '';
+                $key = '' !== $title ? $title : (string) $fixture->get_league_id();
+                $matches_list[ $key ][] = $this->tournament_presenter->present_match_card( $fixture, null, null, 'list', false, true );
+                continue;
+            }
+
             $match = Fixture_Presentation_Adapter::from_fixture(
                 $fixture,
                 $this->competition_service,
                 $this->team_service,
                 $this->link_service,
-                $this->permission_service
+                $this->permission_service,
+                rubber_repository: $this->rubber_repository
             );
 
             $matches_list[ $this->league_key( $match ) ][] = $match;
+        }
+
+        // Tournament fixtures are rendered by templates/tournament/match.php from pre-built match cards.
+        foreach ( $matches_list as $key => $matches ) {
+            $matches_list[ $key ] = $this->tournament_presenter->present_match_group(
+                $key,
+                $matches,
+                null,
+                [ 'show_header' => false, 'matches_key' => 'league' ]
+            );
         }
 
         return $matches_list;

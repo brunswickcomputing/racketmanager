@@ -9,17 +9,17 @@ namespace Racketmanager;
 
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Util\Util;
 
 /** @var Fixture_Details_DTO $dto */
 /** @var Fixture $match */
 /** @var string $match_type */
-global $racketmanager;
-$opponents        = array( 'home', 'away' );
-$opponents_points = array( 'player1', 'player2' );
-if ( ! empty( $match_player ) ) {
-    $match->player = $match_player;
-}
+$opponents               = array( 'home', 'away' );
+$opponents_points        = array( 'player1', 'player2' );
+$match_player            = $match_player ?? null;
+$rubber_player_urls      = is_array( $rubber_player_urls ?? null ) ? $rubber_player_urls : array();
+$approval_captain_names  = is_array( $approval_captain_names ?? null ) ? $approval_captain_names : array();
+$final_name              = $final_name ?? '';
+$match_date_formatted    = $match_date_formatted ?? '';
 $team        = null;
 $team_status = null;
 $winner      = null;
@@ -45,7 +45,7 @@ if ( ! empty( $match->get_winner_id() ) ) {
 <div id="matchRubbers">
     <ul class="match-group">
         <?php
-        if ( ! empty( $match->player ) ) {
+        if ( ! empty( $match_player ) ) {
             $match_link = $dto->link;
             ?>
             <div class="match match--team-match">
@@ -53,18 +53,19 @@ if ( ! empty( $match->get_winner_id() ) ) {
                     <div class="match__header">
                         <span class="match__header-title">
                             <?php
-                            if ( ! empty( $match->get_final() ) ) {
+                            if ( ! empty( $final_name ) ) {
                                 ?>
-                                <span><?php echo esc_html( Util::get_final_name( $match->get_final() ) ); ?>&nbsp;&#8226;&nbsp;</span>
+                                <span><?php echo esc_html( $final_name ); ?>&nbsp;&#8226;&nbsp;</span>
                                 <?php
                             } elseif ( ! empty( $match->get_match_day() ) ) {
                                 ?>
                                 <span><?php echo esc_html__( 'Match Day', 'racketmanager' ) . ' ' . esc_html( $match->get_match_day() ); ?>&nbsp;&#8226;&nbsp;</span>
                                 <?php
                             }
+                            $match_date_display = $match_date_formatted ?? '';
                             ?>
                             <span>
-                                <time datetime="<?php echo esc_attr( $match->get_date() ); ?>"><?php echo esc_html( mysql2date( $racketmanager->date_format, $match->get_date() ) ); ?></time>
+                                <time datetime="<?php echo esc_attr( $match->get_date() ); ?>"><?php echo esc_html( $match_date_display ); ?></time>
                             </span>
                         </span>
                     </div>
@@ -97,7 +98,7 @@ if ( ! empty( $match->get_winner_id() ) ) {
         }
         ?>
         <?php
-        foreach ( $match->rubbers as $rubber ) {
+        foreach ( $match->get_rubbers() as $rubber ) {
             $player_team        = null;
             $player_team_status = null;
             $winner             = null;
@@ -142,10 +143,11 @@ if ( ! empty( $match->get_winner_id() ) ) {
                 $rubber_players['1']['gender'] = 'm';
                 $rubber_players['2']['gender'] = 'f';
             }
-            if ( ! empty( $match->player ) ) {
+            if ( ! empty( $match_player ) ) {
                 foreach ( $opponents as $opponent ) {
                     foreach ( $rubber_players as $p => $rubber_player ) {
-                        if ( $rubber->players[ $opponent ][ $p ]->display_name === $match->player->display_name ) {
+                        $slot_player = $rubber->players[ $opponent ][ $p ] ?? null;
+                        if ( is_object( $slot_player ) && ( $slot_player->display_name ?? '' ) === $match_player->display_name ) {
                             $player_team = $opponent;
                             break 2;
                         }
@@ -192,7 +194,7 @@ if ( ! empty( $match->get_winner_id() ) ) {
                                     <div class="match__row-title">
                                         <div class="match__row-title-header">
                                             <?php
-                                            if ( $team && $team->team->get_instance( $team->team->get_id() )->is_withdrawn ) {
+                                            if ( $team && ! empty( $team->team->is_withdrawn ) ) {
                                                 // Skipping complex withdrawn logic for now as noted before.
                                             }
                                             ?>
@@ -207,24 +209,27 @@ if ( ! empty( $match->get_winner_id() ) ) {
                                                         <?php
                                                         if ( ! empty( $rubber->players[ $opponent ][ $player_number ] ) ) {
                                                             $player_detail = $rubber->players[ $opponent ][ $player_number ];
-                                                            $competition_type = $dto->competition->type instanceof \BackedEnum ? $dto->competition->type->value : (string) ( $dto->competition->type ?? '' );
-                                                            if ( empty( $player_detail->system_record ) ) {
+                                                            $rubber_id     = method_exists( $rubber, 'get_id' ) ? $rubber->get_id() : ( $rubber->id ?? null );
+                                                            $player_url    = ( null !== $rubber_id )
+                                                                ? ( $rubber_player_urls[ $rubber_id ][ $opponent ][ $player_number ] ?? null )
+                                                                : null;
+                                                            if ( ! empty( $player_url ) ) {
                                                                 ?>
-                                                                <a href="/<?php echo esc_attr( $competition_type ); ?>s/<?php echo esc_attr( seo_url( $dto->event->name ) ); ?>/<?php echo esc_attr( $match->get_season() ); ?>/player/<?php echo esc_attr( seo_url( $player_detail->display_name ) ); ?>/">
+                                                                <a href="<?php echo esc_url( $player_url ); ?>">
                                                                 <?php
                                                             }
                                                             ?>
-                                                            <span class="<?php echo esc_attr( $player_detail->class ); ?>"
+                                                            <span class="<?php echo esc_attr( $player_detail->class ?? '' ); ?>"
                                                             <?php
                                                             if ( ! empty( $player_detail->class ) ) {
                                                                 ?>
-                                                                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="<?php echo esc_attr( $player_detail->description ); ?>"
+                                                                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="<?php echo esc_attr( $player_detail->description ?? '' ); ?>"
                                                                 <?php
                                                             }
                                                             ?>
-                                                            ><?php echo esc_html( $player_detail->display_name ); ?></span>
+                                                            ><?php echo esc_html( $player_detail->display_name ?? '' ); ?></span>
                                                             <?php
-                                                            if ( empty( $player_detail->system_record ) ) {
+                                                            if ( ! empty( $player_url ) ) {
                                                                 ?>
                                                                 </a>
                                                                 <?php
@@ -246,7 +251,7 @@ if ( ! empty( $match->get_winner_id() ) ) {
                                     $match_status_class  = null;
                                     $match_status_text   = null;
                                     if ( $is_winner ) {
-                                        if ( ! empty( $match->player ) ) {
+                                        if ( ! empty( $match_player ) ) {
                                             if ( empty( $player_team_status ) || 'winner' === $player_team_status ) {
                                                 $match_status_class = 'winner';
                                                 $match_status_text  = 'W';
@@ -260,7 +265,7 @@ if ( ! empty( $match->get_winner_id() ) ) {
                                             $match_message_text  = __( 'Abandoned', 'racketmanager' );
                                         }
                                     } elseif ( $is_loser ) {
-                                        if ( ! empty( $match->player ) ) {
+                                        if ( ! empty( $match_player ) ) {
                                             if ( 'loser' === $player_team_status ) {
                                                 $match_status_class = 'loser';
                                                 $match_status_text  = 'L';
@@ -430,22 +435,23 @@ if ( ! empty( $match->get_winner_id() ) ) {
                                     </div>
                                     <div class="match__row-title-value">
                                         <?php
-                                        $approval_captain_method = 'get_' . $opponent . '_captain';
-                                        if ( method_exists( $match, $approval_captain_method ) && ! empty( $match->$approval_captain_method() ) ) {
+                                        $captain_name = $approval_captain_names[ $opponent ] ?? '';
+                                        if ( ! empty( $captain_name ) ) {
                                             ?>
                                             <span class="match__row-title-value-content">
-                                                <span class="nav-link__value"><?php echo esc_html( $racketmanager->get_player_name( $match->$approval_captain_method() ) ); ?></span>
+                                                <span class="nav-link__value"><?php echo esc_html( $captain_name ); ?></span>
                                             </span>
                                             <?php
                                         }
                                         ?>
                                     </div>
                                     <?php
-                                    if ( ! empty( $match->get_custom()['comments'][ $opponent ] ) ) {
+                                    $opponent_comment = ( $match->get_custom() ?? [] )['comments'][ $opponent ] ?? '';
+                                    if ( ! empty( $opponent_comment ) ) {
                                         ?>
                                         <div class="match__row-title-value">
                                             <span class="match__row-title-value-content">
-                                                <span class="nav-link__value match-comments" title="<?php esc_attr_e( 'Match comments', 'racketmanager' ); ?>"><?php echo esc_html( $match->get_custom()['comments'][ $opponent ] ); ?></span>
+                                                <span class="nav-link__value match-comments" title="<?php esc_attr_e( 'Match comments', 'racketmanager' ); ?>"><?php echo esc_html( $opponent_comment ); ?></span>
                                             </span>
                                         </div>
                                         <?php
@@ -457,7 +463,8 @@ if ( ! empty( $match->get_winner_id() ) ) {
                         }
                         ?>
                         <?php
-                        if ( ! empty( $match->get_custom()['comments']['result'] ) ) {
+                        $result_comment = ( $match->get_custom() ?? [] )['comments']['result'] ?? '';
+                        if ( ! empty( $result_comment ) ) {
                             ?>
                             <div class="match__row match__row-comments">
                                 <div class="match__row-title">
@@ -466,7 +473,7 @@ if ( ! empty( $match->get_winner_id() ) ) {
                                     </div>
                                     <div class="match__row-title-value">
                                         <span class="match__row-title-value-content">
-                                            <span class="nav-link__value match-comments" title="<?php esc_attr_e( 'Match comments', 'racketmanager' ); ?>"><?php echo esc_html( $match->get_custom()['comments']['result'] ); ?></span>
+                                            <span class="nav-link__value match-comments" title="<?php esc_attr_e( 'Match comments', 'racketmanager' ); ?>"><?php echo esc_html( $result_comment ); ?></span>
                                         </span>
                                     </div>
                                 </div>

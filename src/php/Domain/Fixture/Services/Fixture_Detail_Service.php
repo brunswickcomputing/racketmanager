@@ -5,6 +5,7 @@ namespace Racketmanager\Domain\Fixture\Services;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Details_DTO;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
+use Racketmanager\Domain\Enums\Club_Role;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
@@ -292,7 +293,7 @@ class Fixture_Detail_Service {
 
         $match_secretary = null;
         if ( $club ) {
-            $roles = $this->club_role_repository->search( array( 'club' => $club->get_id(), 'role' => 1 ) );
+            $roles = $this->club_role_repository->search( array( 'club' => $club->get_id(), 'role' => Club_Role::MATCH_SECRETARY->value ) );
             foreach ( $roles as $role ) {
                 if ( $role->get_user_id() ) {
                     $match_secretary = $this->player_repository->find( $role->get_user_id() );

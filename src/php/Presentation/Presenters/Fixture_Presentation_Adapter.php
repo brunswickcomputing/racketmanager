@@ -9,6 +9,8 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Presentation\View_Models\Team_Match_Row_View_Model;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
@@ -203,10 +205,14 @@ class Fixture_Presentation_Adapter {
         Team_Service $team_service,
         ?Fixture_Link_Service $link_service = null,
         ?Fixture_Permission_Service $permission_service = null,
-        ?Option_Gateway_Interface $option_gateway = null
+        ?Option_Gateway_Interface $option_gateway = null,
+        ?Rubber_Repository_Interface $rubber_repository = null
     ): self {
         $league_id = (int) $fixture->get_league_id();
         $league    = $league_id ? $competition_service->get_league_repository()->find_by_id( $league_id ) : ( method_exists( $fixture, 'get_league' ) ? $fixture->get_league() : ( $fixture->league ?? null ) );
+        if ( null === $fixture->rubbers && $rubber_repository && $fixture->get_id() > 0 && ( ! $league || (int) ( $league->num_rubbers ?? 0 ) > 0 ) ) {
+            $fixture->set_rubbers( $rubber_repository->find_by_fixture_id( $fixture->get_id() ) );
+        }
         $event     = ( $league && method_exists( $league, 'get_event_id' ) && $league->get_event_id() ) ? $competition_service->get_event_by_id( $league->get_event_id() ) : ( $league->event ?? null );
         $competition = ( $event && method_exists( $event, 'get_competition_id' ) && $event->get_competition_id() ) ? $competition_service->get_by_id( $event->get_competition_id() ) : ( $event->competition ?? null );
 
@@ -220,7 +226,7 @@ class Fixture_Presentation_Adapter {
         if ( empty( $link ) && $fixture->get_link() ) {
             $link = $fixture->get_link();
         }
-        $is_update_allowed = $permission_service ? $permission_service->is_update_allowed( $fixture ) : ( method_exists( $fixture, 'is_update_allowed' ) ? $fixture->is_update_allowed() : (object) array( 'user_can_update' => false ) );
+        $is_update_allowed = $permission_service ? $permission_service->is_update_allowed( $fixture ) : (object) array( 'user_can_update' => false );
 
         return new self( $fixture, $league, $event, $competition, $home_dtls, $away_dtls, $link, $is_update_allowed, option_gateway: $option_gateway );
     }

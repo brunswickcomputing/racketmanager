@@ -4,6 +4,10 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Shortcodes;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
+use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
+use Racketmanager\Presentation\Presenters\Tournament_Presenter;
+use Racketmanager\Services\Settings_Service;
 use Racketmanager\Application\League\Queries\Get_League_Archive_Handler;
 use Racketmanager\Application\League\Queries\Get_League_Archive_Query;
 use Racketmanager\Application\League\Queries\Get_League_Championship_Handler;
@@ -42,17 +46,22 @@ use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\League_Service;
+use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use Racketmanager\Tests\Helpers\Creates_Test_Container;
+use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
 class League_Shortcode_Handlers_Test extends TestCase {
     use Creates_Test_Container;
+    use Creates_Team_Match_Row_Presenter;
     use Manages_Wordpress_Globals;
 
     protected function setUp(): void {
@@ -88,7 +97,9 @@ class League_Shortcode_Handlers_Test extends TestCase {
             $team_service,
             $link_service,
             $perm_service,
-            $renderer
+            $renderer,
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class ),
+            new Tournament_Presenter( 'd/m/Y' )
         );
 
         // Error path: league not found
@@ -114,6 +125,65 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'championship-custom', $vm->template );
         $this->assertFalse( $vm->template_type );
+    }
+
+    public function test_championship_draw_attaches_rubbers_to_plain_fixture(): void {
+        $fixture = \Racketmanager\Domain\Fixture\Fixture_Factory::from_array( [ 'id' => 78, 'league_id' => 4, 'home_team' => '10', 'away_team' => '20' ] );
+        $rubber = ( new \ReflectionClass( \Racketmanager\Domain\Fixture\Rubber::class ) )->newInstanceWithoutConstructor();
+        $rubber->id = 91;
+
+        $championship = $this->createStub( \Racketmanager\Domain\Championship::class );
+        $championship->method( '__get' )->willReturnMap( [
+            [ 'num_teams_first_round', 2 ]
+        ] );
+        $championship->method( 'get_finals' )->willReturn( [ [ 'key' => 'final', 'name' => 'Final', 'num_matches' => 1 ] ] );
+        $league = new class extends League {
+            public function __construct() {
+                $this->id = 4;
+                $this->event_id = 0;
+                $this->num_rubbers = 1;
+                $this->num_sets = 3;
+            }
+            public function get_season(): string { return '2026'; }
+            public function set_template( string $type, string $template ): void {}
+            public function get_matches( array $args = array() ): array|int { return [ (object) [ 'id' => 78 ] ]; }
+        };
+        $league->championship = $championship;
+
+        $leagues = $this->createStub( League_Service::class );
+        $leagues->method( 'get_league' )->willReturn( $league );
+        $fixtures = $this->createMock( Fixture_Repository_Interface::class );
+        $fixtures->expects( $this->once() )->method( 'find_by_id' )->with( 78 )->willReturn( $fixture );
+        $rubbers = $this->createMock( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );
+        $rubbers->expects( $this->once() )->method( 'find_by_fixture_id' )->with( 78 )->willReturn( [ $rubber ] );
+        $competition = $this->createStub( Competition_Service::class );
+        $league_repository = $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );
+        $league_repository->method( 'find_by_id' )->willReturn( $league );
+        $competition->method( 'get_league_repository' )->willReturn( $league_repository );
+        $teams = $this->createStub( Team_Service::class );
+        $teams->method( 'get_team_details' )->willReturnCallback( static function ( int $id ) {
+            return new \Racketmanager\Domain\DTO\Team\Team_Details_DTO( new Team( (object) [ 'id' => $id, 'title' => 'Team ' . $id ] ) );
+        } );
+
+        $handler = new Get_League_Championship_Handler(
+            $leagues, $fixtures, $competition, $teams,
+            $this->createStub( Fixture_Link_Service::class ), $this->createStub( Fixture_Permission_Service::class ),
+            $this->create_renderer(), $rubbers,
+            new Tournament_Presenter( 'd/m/Y', team_match_row_presenter: $this->create_team_match_row_presenter() )
+        );
+
+        $view = $handler->handle( new Get_League_Championship_Query( league_id: 4, template: 'custom' ) );
+        $row = $view->vars['finals'][0]->matches[1];
+        $this->assertInstanceOf( \Racketmanager\Presentation\View_Models\Team_Match_Row_View_Model::class, $row );
+        $this->assertFalse( $row->show_header );
+        $this->assertSame( $rubber, $row->match->rubbers[1] );
+
+        $league = $view->vars['league'];
+        $finals = $view->vars['finals'];
+        ob_start();
+        require RACKETMANAGER_PATH . 'templates/championship-matches.php';
+        $html = (string) ob_get_clean();
+        $this->assertStringNotContainsString( 'match__header--up', $html );
     }
 
     public function test_archive_handler_success_and_by_name(): void {
@@ -167,7 +237,14 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $league_service = $this->createStub( League_Service::class );
         $team_service   = $this->createStub( Team_Service::class );
 
-        $handler = new Get_League_Teams_Handler( $league_service, $team_service );
+        $team_presenter = new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() );
+        $handler = new Get_League_Teams_Handler(
+            $league_service,
+            $team_service,
+            $this->createStub( Player_Stats_Service::class ),
+            new Tournament_Presenter( team_match_row_presenter: $this->create_team_match_row_presenter() ),
+            $team_presenter
+        );
 
         // Error: league not found
         $query_error = new Get_League_Teams_Query( league_id: 999 );
@@ -176,6 +253,8 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'League not found', $vm_error->error_message );
 
         $league_obj = new class extends League {
+            public array $stub_matches = [];
+
             public function __construct() {
                 $this->id    = 1;
                 $this->title = 'Test League';
@@ -190,9 +269,17 @@ class League_Shortcode_Handlers_Test extends TestCase {
                 }
                 return (object) [ 'rank' => 1 ];
             }
-            public function get_matches( array $query_args = [] ): array|int|object { return []; }
+            public function get_matches( array $query_args = [] ): array|int|object { return $this->stub_matches; }
             public function get_players( array $args = [] ): array { return []; }
         };
+
+        $fixture         = Fixture_Test_Factory::create( id: 901, league_id: 1, home_team: 7, away_team: 8 );
+        $fixture->teams  = [
+            'home' => (object) [ 'id' => 7, 'title' => 'Westcliff 1', 'club' => (object) [ 'id' => 11 ] ],
+            'away' => (object) [ 'id' => 8, 'title' => 'Leigh 1', 'club' => (object) [ 'id' => 12 ] ],
+        ];
+        $fixture->league = (object) [ 'id' => 1, 'title' => 'Test League' ];
+        $league_obj->stub_matches = [ $fixture ];
         $league_service->method( 'get_league' )->willReturn( $league_obj );
 
         // Teams list
@@ -221,6 +308,15 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'team-details', $vm_detail->template );
         $this->assertFalse( $vm_detail->template_type );
         $this->assertSame( $team_details, $vm_detail->vars['team_details'] );
+        $row = $league_obj->team->matches[0];
+        $this->assertFalse( $row->show_header );
+
+        $matches = $league_obj->team->matches;
+        ob_start();
+        require RACKETMANAGER_PATH . 'templates/includes/matches-team-list.php';
+        $html = (string) ob_get_clean();
+        $this->assertStringNotContainsString( 'match__header--up', $html );
+        $this->assertStringNotContainsString( 'Test League', $html );
 
         // Team rank guard error (empty rank in league standings)
         $query_unranked = new Get_League_Teams_Query( league_id: 1, team_id: '8' );
@@ -229,12 +325,127 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'Team not found in league', $vm_unranked->error_message );
     }
 
+    public function test_teams_handler_decorates_nonempty_players(): void {
+        $league_service = $this->createStub( League_Service::class );
+        $team_service   = $this->createStub( Team_Service::class );
+
+        $league_obj = new class extends League {
+            public array $stub_players = [];
+            public function __construct() {
+                $this->id             = 1;
+                $this->title          = 'Test League';
+                $this->current_season = [ 'name' => '2025' ];
+            }
+            public function set_template( string $type, string $template ): void {}
+            public function set_group( string $group = '', bool $force_overwrite = false ): void {}
+            public function get_team_dtls( int $team_id, ?string $season = null ): object|false { return (object) [ 'name' => 'T' ]; }
+            public function get_league_team( int $team_id ): object|false { return (object) [ 'rank' => 1 ]; }
+            public function get_matches( array $query_args = [] ): array|int|object { return []; }
+            public function get_players( array $args = [] ): array { return $this->stub_players; }
+        };
+        $league_service->method( 'get_league' )->willReturn( $league_obj );
+
+        $team_obj = new class extends Team { public function __construct() { $this->id = 7; $this->title = 'Westcliff 1'; } };
+        $team_service->method( 'get_team_details' )->willReturn( new Team_Details_DTO( team: $team_obj ) );
+
+        [ $low, $high, $stats ] = $this->build_stat_players( $league_obj, '2025', 'league' );
+        $league_obj->stub_players = [ $low, $high ];
+
+        $team_presenter = new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() );
+        $handler = new Get_League_Teams_Handler( $league_service, $team_service, $stats, new Tournament_Presenter(), $team_presenter );
+        $vm      = $handler->handle( new Get_League_Teams_Query( league_id: 1, team_id: '7' ) );
+
+        $this->assertFalse( $vm->is_error() );
+        $this->assert_decorated_and_sorted( $low, $high, $team_obj->players );
+    }
+
+    public function test_players_handler_list_decorates_stats_and_team_by_season(): void {
+        $league_service = $this->createStub( League_Service::class );
+        $player_service = $this->createStub( Player_Service::class );
+        $renderer       = $this->create_renderer();
+
+        $league_obj = new class extends League {
+            public array $stub_players = [];
+            public function __construct() {
+                $this->id             = 1;
+                $this->title          = 'Test League';
+                $this->sport          = 'tennis';
+                $this->current_season = [ 'name' => '2025' ];
+            }
+            public function set_season( false|string $season = false, bool $force_overwrite = false ): void {}
+            public function get_players( array $args = [] ): array { return $this->stub_players; }
+        };
+        $league_service->method( 'get_league' )->willReturn( $league_obj );
+
+        [ $low, $high, $stats ] = $this->build_stat_players( $league_obj, '2025', 'league' );
+        $league_obj->stub_players = [ $low, $high ];
+
+        $found_team = (object) [ 'id' => 55, 'title' => 'Found Team' ];
+        $repo       = $this->createMock( League_Repository_Interface::class );
+        $repo->expects( $this->exactly( 2 ) )
+            ->method( 'get_player_team' )
+            ->willReturnCallback(
+                function ( $league_id, $args ) use ( $found_team, $high ) {
+                    $this->assertSame( 1, $league_id );
+                    $this->assertSame( '2025', $args['season'] );
+                    return $args['player'] === $high->get_id() ? $found_team : null;
+                }
+            );
+
+        $handler = new Get_League_Players_Handler( $league_service, $repo, $player_service, $renderer, $this->createStub( Player_Query_Service::class ), $stats );
+        $vm      = $handler->handle( new Get_League_Players_Query( league_id: 1 ) );
+
+        $this->assertFalse( $vm->is_error() );
+        $this->assert_decorated_and_sorted( $low, $high, $league_obj->players );
+        $this->assertSame( $found_team, $high->team );
+        $this->assertInstanceOf( \stdClass::class, $low->team );
+        $this->assertEquals( new \stdClass(), $low->team );
+    }
+
+
+    /**
+     * Build two players (low wins first) and a real stats service over a mocked query service.
+     *
+     * @return array{0: Player, 1: Player, 2: Player_Stats_Service, 3: \PHPUnit\Framework\MockObject\MockObject}
+     */
+    private function build_stat_players( object $grouping, string $season, string $source ): array {
+        $low             = new Player();
+        $low->id         = 31;
+        $low->statistics = [ 's' => [ 'played' => [ 'winner' => 1, 'loser' => 2 ] ] ];
+        $high             = new Player();
+        $high->id         = 32;
+        $high->statistics = [ 's' => [ 'played' => [ 'winner' => 4, 'loser' => 0 ] ] ];
+
+        $query_service = $this->createMock( Player_Query_Service::class );
+        $query_service->expects( $this->exactly( 2 ) )
+            ->method( 'get_matches' )
+            ->with( $this->isInstanceOf( Player::class ), $grouping, $season, $source )
+            ->willReturn( [] );
+
+        return [ $low, $high, new Player_Stats_Service( $query_service ), $query_service ];
+    }
+
+    private function assert_decorated_and_sorted( Player $low, Player $high, array $players ): void {
+        $this->assertSame( [ $high, $low ], $players );
+        $this->assertSame( 4, $high->matches_won );
+        $this->assertSame( 4, $high->played );
+        $this->assertSame( 1, $low->matches_won );
+        $this->assertSame( 3, $low->played );
+        $this->assertArrayHasKey( 'total', $high->stats );
+        $this->assertSame( [], $high->matches );
+    }
+
     public function test_players_handler_numeric_id_and_name(): void {
         $league_service = $this->createStub( League_Service::class );
         $player_service = $this->createStub( Player_Service::class );
         $renderer       = $this->create_renderer();
 
-        $handler = new Get_League_Players_Handler( $league_service, $player_service, $renderer );
+        $query_service = $this->createStub( Player_Query_Service::class );
+        $query_service->method( 'get_matches' )->willReturn( [] );
+        $stats_service = $this->createStub( Player_Stats_Service::class );
+        $stats_service->method( 'get_stats' )->willReturn( [] );
+        $league_repo   = $this->createStub( League_Repository_Interface::class );
+        $handler       = new Get_League_Players_Handler( $league_service, $league_repo, $player_service, $renderer, $query_service, $stats_service );
 
         $league_obj = new class extends League {
             public function __construct() {
@@ -247,10 +458,9 @@ class League_Shortcode_Handlers_Test extends TestCase {
         };
         $league_service->method( 'get_league' )->willReturn( $league_obj );
 
-        $player_obj = new class extends Player {
-            public function get_matches( ?object $grouping, ?string $season, string $match_source, ?int $period = null, ?string $type = null ): array { return []; }
-            public function get_stats( false|array $stats = false ): array { return []; }
-        };
+        $player_obj = new Player();
+        $player_obj->id = 12;
+        $player_obj->display_name = 'John Doe';
 
         $player_service->method( 'get_player' )->willReturnCallback(
             function( int $id ) use ( $player_obj ) {
@@ -274,6 +484,8 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $this->assertFalse( $vm_num->is_error() );
         $this->assertSame( 'players-tennis', $vm_num->template );
         $this->assertSame( 'league', $vm_num->template_type );
+        $this->assertSame( [], $league_obj->player->matches );
+        $this->assertSame( [], $league_obj->player->stats );
 
         // Player by name
         $query_name = new Get_League_Players_Query( league_id: 1, player_id: 'John Doe' );
@@ -292,7 +504,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $league_service = $this->createStub( League_Service::class );
         $renderer       = $this->create_renderer();
 
-        $handler = new Get_League_Matches_Handler( $league_service, $renderer );
+        $handler = new Get_League_Matches_Handler( $league_service, $renderer, new Tournament_Presenter() );
 
         $league_obj = new class extends League {
             public int $set_match_day_calls = 0;

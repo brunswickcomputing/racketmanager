@@ -10,9 +10,10 @@ namespace Racketmanager;
 
 /** @var object $club */
 /** @var array $current_season */
-$event          = $club->event;
+/** @var object $event */
+/** @var mixed $player_stats */
 $competition_type = $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
-$playerstats    = $club->player_stats;
+$playerstats    = $player_stats;
 $rounds         = array();
 $primary_league = null;
 $header_level   = 1;

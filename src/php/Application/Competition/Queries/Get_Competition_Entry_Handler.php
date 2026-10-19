@@ -11,6 +11,8 @@ use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Entry_Service;
@@ -41,7 +43,9 @@ final readonly class Get_Competition_Entry_Handler {
         private Team_Service $team_service,
         private Registration_Service $registration_service,
         private Competition_Entry_Service $competition_entry_service,
-        private Finance_Service $finance_service
+        private Finance_Service $finance_service,
+        private Competition_Shortcode_Presenter $competition_presenter,
+        private Tournament_Presenter $tournament_presenter
     ) {}
 
     public function handle( Get_Competition_Entry_Query $query ): Shortcode_View_Model {
@@ -149,14 +153,21 @@ final readonly class Get_Competition_Entry_Handler {
             );
 
             if ( $clubs ) {
+                $vars = [
+                    'competition'        => $competition,
+                    'season'             => $query->season,
+                    'competition_season' => $competition_season,
+                    'clubs'              => $clubs,
+                ];
+                $vars['competition_header'] = $this->competition_presenter->present_header(
+                    competition: $competition,
+                    competition_season: (array) $competition_season,
+                    season: $query->season,
+                    seasons: method_exists( $competition, 'get_seasons' ) ? $competition->get_seasons() : []
+                );
                 return new Shortcode_View_Model(
                     'entry-form-clubs-list',
-                    [
-                        'competition'        => $competition,
-                        'season'             => $query->season,
-                        'competition_season' => $competition_season,
-                        'clubs'              => $clubs,
-                    ]
+                    $vars
                 );
             }
 
@@ -173,6 +184,11 @@ final readonly class Get_Competition_Entry_Handler {
             'cup'    => $this->build_cup_entry( $competition, $query->season, (array) $competition_season, $club, $query->template ),
             default  => Shortcode_View_Model::error( __( 'Invalid competition type specified', 'racketmanager' ) ),
         };
+    }
+
+    private function resolve_closing_date( array $competition_season ): ?string {
+        $date = $competition_season['date_closing'] ?? null;
+        return is_string( $date ) && '' !== $date ? $date : null;
     }
 
     private function build_cup_entry( object $competition, string $season, array $competition_season, object $club, string $template ): Shortcode_View_Model {
@@ -214,19 +230,31 @@ final readonly class Get_Competition_Entry_Handler {
 
         $filename = ( ! empty( $template ) ) ? 'entry-cup-' . $template : 'entry-cup';
 
+        $vars = [
+            'club'               => $club,
+            'events'             => $events,
+            'ladies_teams'       => $ladies_teams,
+            'mens_teams'         => $mens_teams,
+            'mixed_teams'        => $mixed_teams,
+            'season'             => $season,
+            'competition'        => $competition,
+            'competition_season' => $competition_season,
+            'match_days'         => $match_days,
+        ];
+
+        $vars['competition_header'] = $this->competition_presenter->present_header(
+            competition: $competition,
+            competition_season: $competition_season,
+            season: $season,
+            seasons: method_exists( $competition, 'get_seasons' ) ? $competition->get_seasons() : []
+        );
+        $date_closing                 = $this->resolve_closing_date( $competition_season );
+        $vars['date_closing']         = $date_closing;
+        $vars['date_closing_display'] = $this->competition_presenter->present_closing_date( $date_closing );
+
         return new Shortcode_View_Model(
             $filename,
-            [
-                'club'               => $club,
-                'events'             => $events,
-                'ladies_teams'       => $ladies_teams,
-                'mens_teams'         => $mens_teams,
-                'mixed_teams'        => $mixed_teams,
-                'season'             => $season,
-                'competition'        => $competition,
-                'competition_season' => $competition_season,
-                'match_days'         => $match_days,
-            ],
+            $vars,
             'entry'
         );
     }
@@ -305,15 +333,28 @@ final readonly class Get_Competition_Entry_Handler {
 
         $filename = ( ! empty( $template ) ) ? 'entry-league-' . $template : 'entry-league';
 
+        $vars = [
+            'club'               => $club,
+            'competition'        => $competition,
+            'events'             => $events,
+            'season'             => $season,
+            'competition_season' => $competition_season,
+            'match_days'         => Util_Lookup::get_match_days(),
+        ];
+
+        $vars['competition_header'] = $this->competition_presenter->present_header(
+            competition: $competition,
+            competition_season: $competition_season,
+            season: $season,
+            seasons: method_exists( $competition, 'get_seasons' ) ? $competition->get_seasons() : []
+        );
+        $date_closing                 = $this->resolve_closing_date( $competition_season );
+        $vars['date_closing']         = $date_closing;
+        $vars['date_closing_display'] = $this->competition_presenter->present_closing_date( $date_closing );
+
         return new Shortcode_View_Model(
             $filename,
-            [
-                'club'               => $club,
-                'competition'        => $competition,
-                'events'             => $events,
-                'season'             => $season,
-                'competition_season' => $competition_season,
-            ],
+            $vars,
             'entry'
         );
     }
@@ -395,17 +436,24 @@ final readonly class Get_Competition_Entry_Handler {
 
         $filename = ( ! empty( $template ) ) ? 'entry-tournament-' . $template : 'entry-tournament';
 
+        $vars = [
+            'tournament'       => $tournament,
+            'events'           => $events,
+            'player'           => $player,
+            'player_entries'   => $player_entries,
+            'club_memberships' => $club_memberships,
+            'tournament_entry' => $tournament_entry,
+            'season'           => $tournament->season,
+        ];
+
+        $vars['tournament_header'] = $this->tournament_presenter->present_header( $tournament, false );
+        $tournament_dates          = $this->tournament_presenter->present_dates( $tournament );
+        $vars['tournament_dates']  = $tournament_dates;
+        $vars['date_closing_display'] = $tournament_dates->date_closing_display;
+
         return new Shortcode_View_Model(
             $filename,
-            [
-                'tournament'       => $tournament,
-                'events'           => $events,
-                'player'           => $player,
-                'player_entries'   => $player_entries,
-                'club_memberships' => $club_memberships,
-                'tournament_entry' => $tournament_entry,
-                'season'           => $tournament->season,
-            ],
+            $vars,
             'entry'
         );
     }

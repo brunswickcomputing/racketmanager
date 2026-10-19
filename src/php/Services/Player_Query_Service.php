@@ -14,6 +14,7 @@ namespace Racketmanager\Services;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Player;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Util\Util;
 use RuntimeException;
 use wpdb;
@@ -26,10 +27,16 @@ use function Racketmanager\get_league;
 class Player_Query_Service {
 	private ?wpdb $wpdb;
 	private ?Competition_Repository_Interface $competition_repository;
+	private ?Fixture_Repository_Interface $fixture_repository;
 
-	public function __construct( ?wpdb $wpdb = null, ?Competition_Repository_Interface $competition_repository = null ) {
+	public function __construct(
+		?wpdb $wpdb = null,
+		?Competition_Repository_Interface $competition_repository = null,
+		?Fixture_Repository_Interface $fixture_repository = null
+	) {
 		$this->wpdb                   = $wpdb;
 		$this->competition_repository = $competition_repository;
+		$this->fixture_repository     = $fixture_repository;
 	}
 
 	private function get_wpdb(): wpdb {
@@ -49,13 +56,15 @@ class Player_Query_Service {
 			return $this->competition_repository;
 		}
 
-		global $racketmanager;
-		if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'competition_repository' ) ) {
-			$this->competition_repository = $racketmanager->container->get( 'competition_repository' );
-			return $this->competition_repository;
+		throw new RuntimeException( 'Player_Query_Service requires a Competition_Repository_Interface.' );
+	}
+
+	private function get_fixture_repository(): Fixture_Repository_Interface {
+		if ( $this->fixture_repository ) {
+			return $this->fixture_repository;
 		}
 
-		throw new RuntimeException( 'Player_Query_Service requires a Competition_Repository_Interface.' );
+		throw new RuntimeException( 'Player_Query_Service requires a Fixture_Repository_Interface.' );
 	}
 
 	/**
@@ -70,7 +79,6 @@ class Player_Query_Service {
 	 * @return array
 	 */
 	public function get_matches( Player $player, ?object $grouping, ?string $season, string $match_source, ?int $period = null, ?string $type = null ): array {
-		global $racketmanager;
 		$statistics = array();
 		if ( 'league' === $match_source ) {
 			$league  = $grouping ? get_league( $grouping ) : null;
@@ -116,13 +124,10 @@ class Player_Query_Service {
 				)
 			) : array();
 		} elseif ( 'all' === $match_source ) {
-			if ( ! isset( $racketmanager ) || ! method_exists( $racketmanager, 'get_matches' ) ) {
-				throw new RuntimeException( 'Player_Query_Service requires $racketmanager->get_matches() when match_source is "all".' );
-			}
-			$matches = $racketmanager->get_matches(
+			$matches = $this->get_fixture_repository()->find_player_matches(
+				(int) $player->id,
 				array(
 					'season'  => $season,
-					'player'  => $player->id,
 					'time'    => $period,
 					'type'    => $type,
 					'status'  => 'Y',

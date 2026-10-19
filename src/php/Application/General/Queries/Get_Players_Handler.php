@@ -5,40 +5,39 @@ namespace Racketmanager\Application\General\Queries;
 
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
-use function function_exists;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
+use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use function is_object;
 use function method_exists;
-use function Racketmanager\get_user;
-use function Racketmanager\player_search;
 
 class Get_Players_Handler {
     public function __construct(
-        private readonly ?Player_Presenter $player_presenter = null
+        private readonly Player_Repository_Interface $player_repository,
+        private readonly User_Repository_Interface $user_repository,
+        private readonly Shortcode_Template_Renderer $template_renderer,
+        private readonly Player_Presenter $player_presenter
     ) {}
 
     public function handle( Get_Players_Query $query ): Shortcode_View_Model {
         $search_results = null;
         if ( ! empty( $query->search_string ) ) {
-            $search_results = function_exists( 'Racketmanager\player_search' )
-                ? player_search( $query->search_string )
-                : ( function_exists( 'player_search' ) ? \player_search( $query->search_string ) : null );
+            $players = $this->player_repository->find_players_summary( [ 'name' => $query->search_string ] );
+            $search_results = $this->template_renderer->render( 'players-list', [ 'players' => $players ] );
         }
 
         $favourites = [];
         if ( $query->is_logged_in && $query->user_id ) {
-            $user = function_exists( 'Racketmanager\get_user' )
-                ? get_user( $query->user_id )
-                : ( function_exists( 'get_user' ) ? \get_user( $query->user_id ) : null );
+            $user = $this->user_repository->find( $query->user_id );
 
             if ( is_object( $user ) && method_exists( $user, 'get_favourites' ) ) {
                 $favourites = $user->get_favourites( 'player' ) ?: [];
             }
         }
 
-        $filename  = ! empty( $query->template ) ? 'players-' . $query->template : 'players';
-        $presenter = $this->player_presenter ?? new Player_Presenter();
+        $filename = ! empty( $query->template ) ? 'players-' . $query->template : 'players';
 
-        $player_vm = $presenter->present_players_directory(
+        $player_vm = $this->player_presenter->present_players_directory(
             search_string: $query->search_string ?? '',
             search_results: $search_results,
             favourites: $favourites,

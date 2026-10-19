@@ -13,13 +13,10 @@
 
 namespace Racketmanager;
 
-use Racketmanager\Util\Util_Lookup;
-
 /** @var object $object */
 /** @var object $team_details */
 $team = $team_details->team;
 $club = $team_details->club;
-global $racketmanager;
 $envelope           = RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#envelope-fill';
 $telephone          = RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#telephone-fill';
 $user_can_edit_team = false;
@@ -29,7 +26,7 @@ if ( is_user_logged_in() ) {
     } else {
         $user   = wp_get_current_user();
         $userid = $user->ID;
-        if ( intval( $team_details->match_secretary->id ) === $userid ) {
+        if ( ! empty( $team_details->match_secretary->id ) && intval( $team_details->match_secretary->id ) === $userid ) {
             $user_can_edit_team = true;
         }
     }
@@ -44,24 +41,12 @@ if ( isset( $object->competition ) ) {
     $object_type        = 'league';
 }
 $competition_type = $object_competition->type instanceof \BackedEnum ? $object_competition->type->value : (string) ( $object_competition->type ?? '' );
-$display_opt = $racketmanager->get_options( 'display' );
-if ( ! empty( $display_opt['wtn'] ) ) {
-    $help_text   = __( 'World Tennis Number', 'racketmanager');
-    $format      = substr( $object_event->type, 1, 1 );
-    if ( $format !== 'S' && $format !== 'D' ) {
-        $format = 'S';
-    }
-    $format_type = Util_Lookup::get_match_type( $format );
-    if ( $format_type ) {
-        $help_text = $format_type . ' ' . $help_text;
-    }
-    $show_wtn    = true;
-} else {
-    $format      = null;
-    $help_text   = null;
-    $format_type = null;
-    $show_wtn    = false;
-}
+$show_wtn         = $vm->show_wtn;
+$format           = $vm->format;
+$help_text        = $vm->help_text;
+$standings_link   = $vm->standings_link;
+$club_link        = $vm->club_link;
+$match_time_val   = $vm->match_time_formatted ?? '';
 ?>
     <div class="page-subhead">
         <div class="media">
@@ -97,7 +82,6 @@ if ( ! empty( $display_opt['wtn'] ) ) {
         <div class="page-content__main col-12 col-lg-7">
             <?php
             if ( ! $object->is_championship ) {
-                $standings_link = '/' . $competition_type . '/' . seo_url( $object->title ) . '/' . $object->current_season['name'] . '/';
                 ?>
                 <div class="module module--card">
                     <div class="module__banner">
@@ -174,11 +158,14 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                 <?php
                                 $matches = $object->team->matches;
                                 if ( $object_competition->is_player_entry ) {
-                                    foreach ( $matches as $match ) {
-                                        require RACKETMANAGER_PATH . 'templates/tournament/match.php';
+                                    foreach ( $matches as $card ) {
+                                        if ( $card instanceof \Racketmanager\Presentation\View_Models\Tournament_Match_Card_View_Model ) {
+                                            require RACKETMANAGER_PATH . 'templates/tournament/match.php';
+                                        } else {
+                                            require RACKETMANAGER_PATH . 'templates/tournament/match-unavailable.php';
+                                        }
                                     }
                                 } else {
-                                    $show_header = false;
                                     require RACKETMANAGER_PATH . 'templates/includes/matches-team-list.php';
                                 }
                                 ?>
@@ -327,7 +314,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#clock-fill' ); ?>"></use>
                                         </svg>
                                         <span class="nav-link__value" id="team-match-time-<?php echo esc_attr( $object_event->id ); ?>-<?php echo esc_attr( $team->get_id() ); ?>">
-                                            <?php echo esc_html( mysql2date( $racketmanager->time_format, $object->team->info->match_time ) ); ?>
+                                            <?php echo esc_html( $match_time_val ); ?>
                                         </span>
                                     </span>
                                 </li>
@@ -350,7 +337,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                     <div class="module__content">
                         <div class="module-container">
                             <h4 class="subheading">
-                                <a href="/clubs/<?php echo esc_attr( seo_url( $team_details->club->shortcode ) ); ?>/">
+                                <a href="<?php echo esc_attr( ! empty( $club_link ) ? $club_link : '#' ); ?>">
                                     <span><?php echo esc_html( $team_details->club->name ); ?></span>
                                 </a>
                             </h4>
@@ -365,6 +352,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                         </span>
                                     </span>
                                 </li>
+                                <?php if ( ! empty( $team_details->match_secretary->display_name ) ) : ?>
                                 <li class="list__item">
                                     <span class="nav--link">
                                         <svg width="16" height="16" class="icon-captain">
@@ -375,6 +363,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                         </span>
                                     </span>
                                 </li>
+                                <?php endif; ?>
                                 <?php
                                 if ( is_user_logged_in() ) {
                                     if ( ! empty( $team_details->match_secretary->contactno ) ) {
@@ -446,10 +435,11 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                     <?php
                                     foreach ( $object->team->players as $player ) {
                                         $selected_player = false;
-                                        if ( intval( $player->get_id() ) === get_current_user_id() ) {
+                                        $player_id = method_exists( $player, 'get_id' ) ? $player->get_id() : ( $player->id ?? null );
+                                        if ( intval( $player_id ) === get_current_user_id() ) {
                                             $selected_player = true;
                                         }
-                                        $player_link = '/' . $competition_type . '/' . seo_url( $object->name ) . '/' . $object->current_season['name'] . '/player/' . seo_url( $player->get_fullname() ) . '/';
+                                        $player_link = $vm->player_links[ $player_id ] ?? '';
                                         ?>
                                         <li class="list__item <?php echo empty( $selected_player ) ? null : 'is-selected'; ?>">
                                             <div class="media">

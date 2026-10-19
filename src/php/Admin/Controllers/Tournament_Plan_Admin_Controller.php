@@ -9,6 +9,7 @@
 namespace Racketmanager\Admin\Controllers;
 
 use Racketmanager\Admin\Presenters\Admin_Error_Bag_Mapper;
+use Racketmanager\Admin\Presenters\Admin_Plan_Presenter;
 use Racketmanager\Admin\View_Models\Tournament_Plan_Page_View_Model;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Finals_Config_Request_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Finals_Request_DTO;
@@ -23,6 +24,7 @@ readonly final class Tournament_Plan_Admin_Controller {
     public function __construct(
         private Tournament_Service $tournament_service,
         private Action_Guard_Interface $action_guard,
+        private Admin_Plan_Presenter $plan_presenter,
     ) {
     }
 
@@ -125,7 +127,8 @@ readonly final class Tournament_Plan_Admin_Controller {
                     tab: 'finals',
                     validator: $validator,
                     message: __( 'Error updating tournament finals', 'racketmanager' ),
-                    message_type: true
+                    message_type: true,
+                    submitted: $post
                 );
             }
 
@@ -208,7 +211,8 @@ readonly final class Tournament_Plan_Admin_Controller {
                 tab: 'config',
                 validator: $validator,
                 message: __( 'Invalid request', 'racketmanager' ),
-                message_type: true
+                message_type: true,
+                submitted: $post
             );
         }
 
@@ -226,7 +230,8 @@ readonly final class Tournament_Plan_Admin_Controller {
                     tab: 'config',
                     validator: $validator,
                     message: __( 'Error updating tournament finals config', 'racketmanager' ),
-                    message_type: true
+                    message_type: true,
+                    submitted: $post
                 );
             }
 
@@ -252,13 +257,14 @@ readonly final class Tournament_Plan_Admin_Controller {
      * @param Validator_Tournament $validator
      * @param string|null          $message
      * @param bool|string          $message_type
+     * @param array<string, mixed> $submitted Submitted config values to redisplay after a failed save.
      *
      * @return array{view_model:Tournament_Plan_Page_View_Model, message?:string, message_type?:bool|string}
      *
      * @throws Tournament_Not_Found_Exception
      */
     private function render(
-        ?int $tournament_id, string $tab, Validator_Tournament $validator, ?string $message = null, bool|string $message_type = false
+        ?int $tournament_id, string $tab, Validator_Tournament $validator, ?string $message = null, bool|string $message_type = false, array $submitted = array()
     ): array {
         try {
             $tournament_details = $this->tournament_service->get_tournament_with_details( $tournament_id );
@@ -270,13 +276,12 @@ readonly final class Tournament_Plan_Admin_Controller {
 
         $errors = Admin_Error_Bag_Mapper::from_validator( $validator );
 
-        $vm = new Tournament_Plan_Page_View_Model(
+        $vm = $this->plan_presenter->present_tournament_plan(
             tournament: $tournament,
             final_matches: $final_matches,
             tab: $tab,
-            order_of_play: array(),
             errors: $errors,
-            validator: $validator
+            submitted: $submitted,
         );
 
         $result = array(

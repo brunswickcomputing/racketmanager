@@ -190,7 +190,7 @@ class Util_Messages {
         return __( 'Action parameter missing', 'racketmanager' );
     }
 
-    public static function invalid_parameter( bool $status ): string {
+    public static function invalid_parameter( string $status ): string {
         return sprintf( __( 'Status %s is an invalid value', 'racketmanager' ), $status );
     }
 
@@ -244,6 +244,10 @@ class Util_Messages {
 
     public static function league_not_found_for_fixture( ?int $fixture_id = null ): string {
         return sprintf( __( 'League not found for fixture: %d', 'racketmanager' ), $fixture_id );
+    }
+
+    public static function league_not_found_for_event( ?int $event_id = null ): string {
+        return sprintf( __( 'League not found for event: %d', 'racketmanager' ), $event_id );
     }
 
 }

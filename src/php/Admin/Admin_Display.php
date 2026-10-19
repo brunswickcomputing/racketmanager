@@ -12,6 +12,7 @@ namespace Racketmanager\Admin;
 use Racketmanager\Admin\Controllers\Admin_Redirect_Url_Builder;
 use Racketmanager\Admin\Presenters\Admin_Championship_Finals_Presenter;
 use Racketmanager\Admin\Presenters\Admin_Date_Presenter;
+use Racketmanager\Admin\Presenters\Admin_League_Schedule_Presenter;
 use Racketmanager\Admin\Presenters\Admin_Message_Mapper;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Updated_Exception;
@@ -21,6 +22,7 @@ use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Services\Admin\Admin_Message_Service;
@@ -107,6 +109,8 @@ class Admin_Display {
     protected Tournament_Service $tournament_service;
     protected Admin_Club $admin_club;
     protected Fixture_Repository_Interface $fixture_repository;
+    protected ?Event_Repository_Interface $event_repository = null;
+    protected ?Admin_League_Schedule_Presenter $admin_league_schedule_presenter = null;
     protected Admin_Action_Adapter $admin_action_adapter;
     protected Admin_Message_Service $admin_message_service;
     protected League_Contact_Action_Dispatcher $league_contact_dispatcher;
@@ -142,6 +146,12 @@ class Admin_Display {
         $this->season_service       = $c->get( 'season_service' );
         $this->tournament_service   = $c->get( 'tournament_service' );
         $this->fixture_repository   = $c->get( 'fixture_repository' );
+        if ( $c->has( 'event_repository' ) ) {
+            $this->event_repository = $c->get( 'event_repository' );
+        }
+        if ( $c->has( 'admin_league_schedule_presenter' ) ) {
+            $this->admin_league_schedule_presenter = $c->get( 'admin_league_schedule_presenter' );
+        }
         $this->admin_action_adapter      = $c->get( 'admin_action_adapter' );
         $this->admin_message_service     = $c->get( 'admin_message_service' );
         $this->league_contact_dispatcher = $c->get( 'league_contact_action_dispatcher' );

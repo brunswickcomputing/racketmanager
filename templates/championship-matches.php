@@ -32,8 +32,7 @@ namespace Racketmanager;
         ?>
         <div class="tab-pane fade <?php echo empty( $i ) ? 'show active' : ''; ?>" id="final-<?php echo esc_html( $final->key ); ?>-<?php echo esc_html( $league->id ); ?>" role="tabpanel" aria-labelledby="final-<?php echo esc_html( $final->key ); ?>-<?php echo esc_html( $league->id ); ?>-tab">
             <?php
-            $matches     = $final->matches;
-            $show_header = false;
+            $matches = $final->matches;
             require RACKETMANAGER_PATH . 'templates/includes/matches-team-list.php';
             ?>
         </div>

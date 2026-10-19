@@ -6,10 +6,10 @@ namespace Racketmanager\Application\Event\Queries;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
-use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Registration_Service;
+use Racketmanager\Services\Settings_Service;
 use function __;
 use function is_numeric;
 use function method_exists;
@@ -19,7 +19,7 @@ class Get_Team_Order_Players_Handler {
         private readonly Competition_Service $competition_service,
         private readonly Club_Service $club_service,
         private readonly Registration_Service $registration_service,
-        private readonly ?RacketManager $racketmanager = null
+        private readonly Settings_Service $settings_service
     ) {}
 
     public function handle( Get_Team_Order_Players_Query $query ): Shortcode_View_Model {
@@ -78,7 +78,7 @@ class Get_Team_Order_Players_Handler {
         $max_age        = null;
         $min_age        = null;
         $min_age_female = null;
-        $options        = $this->racketmanager ? $this->racketmanager->get_options( 'rosters' ) : [];
+        $options        = $this->settings_service->get_category( 'rosters', [] ) ?: [];
         $age_limit      = $event->age_limit ?? null;
         $age_offset     = 0;
         if ( $age_limit ) {

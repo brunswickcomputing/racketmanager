@@ -11,6 +11,7 @@ namespace Racketmanager\Services;
 
 use Exception;
 use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Enums\Club_Role;
 use Racketmanager\Domain\Player;
 use Racketmanager\Domain\Player_Factory;
 use Racketmanager\Domain\Player_Error;
@@ -636,7 +637,7 @@ class Player_Service {
      * @return Player
      */
     public function get_match_secretary_details( int $club_id ): Player {
-        $roles             = $this->club_role_repository->search( array( 'club' => $club_id, 'role' => 1 ) );
+        $roles             = $this->club_role_repository->search( array( 'club' => $club_id, 'role' => Club_Role::MATCH_SECRETARY->value ) );
         $secretary_user_id = null;
         foreach ( $roles as $role ) {
             if ( $role->get_user_id() ) {

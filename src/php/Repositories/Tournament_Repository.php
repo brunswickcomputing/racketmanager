@@ -16,7 +16,6 @@ use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Tournament;
 use Racketmanager\Domain\Tournament_Factory;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Repositories\Interfaces\Tournament_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Util\Util;
@@ -31,52 +30,38 @@ class Tournament_Repository implements Tournament_Repository_Interface {
     private string $table_name;
     private string $competition_table;
     private Competition_Service|Closure|null $competition_service = null;
-    private Option_Gateway_Interface|Closure|null $option_gateway = null;
-    private string|Closure|null $site_url = null;
-    private string|Closure|null $date_format = null;
 
     public function __construct(
         ?wpdb $db = null,
-        Competition_Service|Closure|null $competition_service = null,
-        Option_Gateway_Interface|Closure|null $option_gateway = null,
-        string|Closure|null $site_url = null,
-        string|Closure|null $date_format = null
+        Competition_Service|Closure|null $competition_service = null
     ) {
         global $wpdb;
         $this->wpdb                = $db ?? $wpdb;
         $this->table_name          = $this->wpdb->prefix . 'racketmanager_tournaments';
         $this->competition_table   = $this->wpdb->prefix . 'racketmanager_competitions';
         $this->competition_service = $competition_service;
-        $this->option_gateway      = $option_gateway;
-        $this->site_url            = $site_url;
-        $this->date_format         = $date_format;
     }
 
     public function wire_tournament_collaborators( Tournament $tournament ): void {
-        [ $comp_svc, $opt_gw, $site_url, $date_format ] = $this->resolve_collaborators_tuple();
-        if ( $comp_svc ) {
-            $tournament->set_competition_service( $comp_svc );
-        }
-        if ( $opt_gw ) {
-            $tournament->set_option_gateway( $opt_gw );
-        }
-        if ( $site_url ) {
-            $tournament->set_site_url( $site_url );
-        }
-        if ( $date_format ) {
-            $tournament->set_date_format( $date_format );
+        if ( null === $tournament->get_competition() && ! empty( $tournament->competition_id ) ) {
+            $comp_svc = $this->resolve_competition_service();
+            if ( $comp_svc ) {
+                try {
+                    $competition = $comp_svc->get_by_id( (int) $tournament->competition_id );
+                    if ( $competition ) {
+                        $tournament->set_competition( $competition );
+                    }
+                } catch ( \Throwable ) {
+                }
+            }
         }
     }
 
-    private function resolve_collaborators_tuple(): array {
-        $comp_svc    = $this->resolve_competition_service();
-        $opt_gw      = $this->resolve_option_gateway();
-        $site_url    = $this->resolve_site_url();
-        $date_format = $this->resolve_date_format();
-        if ( null === $date_format && $opt_gw ) {
-            $date_format = (string) $opt_gw->get_option( 'date_format', 'Y-m-d' );
-        }
-        return [ $comp_svc, $opt_gw, $site_url, $date_format ];
+    private function hydrate_tournament( object $row ): Tournament {
+        $tournament = Tournament_Factory::from_object( $row );
+        $this->wire_tournament_collaborators( $tournament );
+
+        return $tournament;
     }
 
     private function resolve_collaborator( mixed &$collaborator ): mixed {
@@ -89,21 +74,6 @@ class Tournament_Repository implements Tournament_Repository_Interface {
     private function resolve_competition_service(): ?Competition_Service {
         $resolved = $this->resolve_collaborator( $this->competition_service );
         return $resolved instanceof Competition_Service ? $resolved : null;
-    }
-
-    private function resolve_option_gateway(): ?Option_Gateway_Interface {
-        $resolved = $this->resolve_collaborator( $this->option_gateway );
-        return $resolved instanceof Option_Gateway_Interface ? $resolved : null;
-    }
-
-    private function resolve_site_url(): ?string {
-        $resolved = $this->resolve_collaborator( $this->site_url );
-        return is_string( $resolved ) ? $resolved : null;
-    }
-
-    private function resolve_date_format(): ?string {
-        $resolved = $this->resolve_collaborator( $this->date_format );
-        return is_string( $resolved ) ? $resolved : null;
     }
 
     public function save( object $entity ): bool|int {
@@ -196,8 +166,7 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         if ( ! $row ) {
             return null;
         }
-        [ $comp_svc, $opt_gw, $site_url, $date_format ] = $this->resolve_collaborators_tuple();
-        $tournament = Tournament_Factory::from_object( $row, $comp_svc, $opt_gw, $site_url, $date_format );
+        $tournament = $this->hydrate_tournament( $row );
         wp_cache_set( $id, $tournament, 'tournaments' );
 
         return $tournament;
@@ -251,8 +220,7 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         if ( ! $row ) {
             return null;
         }
-        [ $comp_svc, $opt_gw, $site_url, $date_format ] = $this->resolve_collaborators_tuple();
-        $tournament = Tournament_Factory::from_object( $row, $comp_svc, $opt_gw, $site_url, $date_format );
+        $tournament = $this->hydrate_tournament( $row );
         wp_cache_set( $tournament->get_id(), $tournament, 'tournaments' );
 
         return $tournament;
@@ -313,10 +281,7 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         }
 
         $results     = $this->wpdb->get_results( $sql );
-        [ $comp_svc, $opt_gw, $site_url, $date_format ] = $this->resolve_collaborators_tuple();
-        $tournaments = array_map( function ( $row ) use ( $comp_svc, $opt_gw, $site_url, $date_format ) {
-            return Tournament_Factory::from_object( $row, $comp_svc, $opt_gw, $site_url, $date_format );
-        }, $results );
+        $tournaments = array_map( fn( $row ) => $this->hydrate_tournament( $row ), $results );
         wp_cache_set( $cachekey, $tournaments, 'tournaments', HOUR_IN_SECONDS );
 
         return $tournaments;
@@ -776,11 +741,8 @@ class Tournament_Repository implements Tournament_Repository_Interface {
             $player_id
         );
         $results = $this->wpdb->get_results( $query );
-        [ $comp_svc, $opt_gw, $site_url, $date_format ] = $this->resolve_collaborators_tuple();
 
-        return array_map( function ( $row ) use ( $comp_svc, $opt_gw, $site_url, $date_format ) {
-            return Tournament_Factory::from_object( $row, $comp_svc, $opt_gw, $site_url, $date_format );
-        }, $results );
+        return array_map( fn( $row ) => $this->hydrate_tournament( $row ), $results );
     }
 
 }

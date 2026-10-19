@@ -11,7 +11,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Admin;
 
-use Racketmanager\Admin\Presenters\Admin_Date_Presenter;
+use LogicException;
 use Racketmanager\Admin\Presenters\Admin_Results_Match_Presenter;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
@@ -230,12 +230,6 @@ class Admin_Result extends Admin_Display {
                 }
             }
         }
-        if ( function_exists( '\Racketmanager\get_match' ) ) {
-            $hydrated = \Racketmanager\get_match( $match );
-            if ( is_object( $hydrated ) ) {
-                return $hydrated;
-            }
-        }
 
         return is_object( $match ) ? $match : null;
     }
@@ -249,10 +243,10 @@ class Admin_Result extends Admin_Display {
 
     private function resolve_results_match_presenter(): Admin_Results_Match_Presenter {
         $container = $this->racketmanager->container ?? null;
-        if ( $container instanceof Simple_Container && $container->has( 'admin_results_match_presenter' ) ) {
-            return $container->get( 'admin_results_match_presenter' );
+        if ( ! $container instanceof Simple_Container || ! $container->has( 'admin_results_match_presenter' ) ) {
+            throw new LogicException( 'The admin results match presenter is not registered.' );
         }
 
-        return new Admin_Results_Match_Presenter( new Admin_Date_Presenter() );
+        return $container->get( 'admin_results_match_presenter' );
     }
 }

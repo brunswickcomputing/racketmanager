@@ -7,9 +7,9 @@
 
 namespace Racketmanager;
 
-global $racketmanager;
 /** @var object $event */
 $email_subject = $event->name;
+$site_url      = $site_url ?? ( isset( $GLOBALS['racketmanager']->site_url ) ? $GLOBALS['racketmanager']->site_url : site_url() );
 require RACKETMANAGER_PATH . 'templates/email/email-header.php';
 require RACKETMANAGER_PATH . 'templates/email/div-top.php';
 ?>
@@ -17,7 +17,7 @@ require RACKETMANAGER_PATH . 'templates/email/div-top.php';
     <h1><?php echo esc_html( $event->name ) . ' - ' . esc_html( $event->current_season['name'] ); ?></h1>
     <?php
     foreach ( $event->leagues as $league ) {
-        $href = $racketmanager->site_url . '/' . __( 'league', 'racketmanager' ) . '/' . seo_url( $league->title ) . '/';
+        $href = $site_url . '/' . __( 'league', 'racketmanager' ) . '/' . seo_url( $league->title ) . '/';
         if ( $event->is_box ) {
             $href .= __( 'round', 'racketmanager' ) . '-';
         }

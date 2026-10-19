@@ -16,9 +16,11 @@ use Racketmanager\Domain\Team;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
+use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Event_Repository;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
@@ -33,16 +35,24 @@ class Team_Service implements Fixture_Team_Resolver_Interface {
     private Club_Repository $club_repository;
     private Event_Repository $event_repository;
     private Player_Service $player_service;
+    private Fixture_Repository_Interface $fixture_repository;
 
     /**
      * Constructor
      *
      */
-    public function __construct( Team_Repository $team_repository, Club_Repository $club_repository, Event_Repository $event_repository, Player_Service $player_service ) {
-        $this->team_repository  = $team_repository;
-        $this->club_repository  = $club_repository;
-        $this->event_repository = $event_repository;
-        $this->player_service   = $player_service;
+    public function __construct(
+        Team_Repository $team_repository,
+        Club_Repository $club_repository,
+        Event_Repository $event_repository,
+        Player_Service $player_service,
+        Fixture_Repository_Interface $fixture_repository
+    ) {
+        $this->team_repository    = $team_repository;
+        $this->club_repository    = $club_repository;
+        $this->event_repository   = $event_repository;
+        $this->player_service     = $player_service;
+        $this->fixture_repository = $fixture_repository;
     }
 
     /**
@@ -175,10 +185,117 @@ class Team_Service implements Fixture_Team_Resolver_Interface {
     public function get_team_by_id( null|string|int $team_id ): Team {
         $team = $this->team_repository->find_by_id( $team_id );
         if ( ! $team ) {
-            throw new Team_Not_Found_Exception( Util_Messages::team_not_found( $team->$team_id ) );
+            throw new Team_Not_Found_Exception( Util_Messages::team_not_found( (string) $team_id ) );
         }
 
         return $team;
+    }
+
+    /**
+     * Delete a team, cascading to its fixtures in a transaction.
+     *
+     * @param int|string|null $team_id
+     * @return bool
+     */
+    public function delete_team( int|string|null $team_id ): bool {
+        if ( ! $team_id ) {
+            return false;
+        }
+        $team_id = (int) $team_id;
+        global $wpdb;
+
+        if ( $wpdb ) {
+            $wpdb->query( 'START TRANSACTION' );
+        }
+        try {
+            $fixtures_deleted = $this->fixture_repository->delete_by_team( $team_id );
+            if ( ! $fixtures_deleted ) {
+                if ( $wpdb ) {
+                    $wpdb->query( 'ROLLBACK' );
+                }
+                return false;
+            }
+
+            $deleted = $this->team_repository->delete( $team_id );
+            if ( $deleted && $wpdb ) {
+                $wpdb->query( 'COMMIT' );
+            } elseif ( $wpdb ) {
+                $wpdb->query( 'ROLLBACK' );
+            }
+            return (bool) $deleted;
+        } catch ( \Throwable $e ) {
+            if ( $wpdb ) {
+                $wpdb->query( 'ROLLBACK' );
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Update team settings and captain contact details for an event.
+     *
+     * @param int $team_id
+     * @param int $event_id
+     * @param int $captain
+     * @param string $contactno
+     * @param string $contactemail
+     * @param int|null $matchday
+     * @param string|null $matchtime
+     * @return false|string|null
+     */
+    public function update_team_event(
+        int $team_id,
+        int $event_id,
+        int $captain,
+        string $contactno,
+        string $contactemail,
+        ?int $matchday = null,
+        ?string $matchtime = null
+    ): false|string|null {
+        $event = $this->event_repository->find_by_id( $event_id );
+        if ( ! $event ) {
+            throw new Event_Not_Found_Exception( Util_Messages::event_not_found( $event_id ) );
+        }
+
+        $match_day = is_null( $matchday ) ? '' : (string) Util_Lookup::get_match_day( $matchday );
+        $current   = $event->get_team_info( $team_id );
+        $updates   = false;
+        $msg       = null;
+
+        if ( $current && ( (int) $current->captain_id !== $captain || (string) $current->match_day !== $match_day || (string) $current->match_time !== (string) $matchtime ) ) {
+            if ( $captain && ( ( ! empty( $event->competition->is_team_entry ) && $match_day && $matchtime ) || ! empty( $event->competition->is_player_entry ) ) ) {
+                $saved = $this->team_repository->update_event_settings( $team_id, $event_id, (string) $event->get_season(), (string) $captain, $match_day, $matchtime );
+                if ( $saved ) {
+                    $updates = true;
+                } else {
+                    $msg = __( 'Team update error', 'racketmanager' );
+                }
+            } else {
+                $msg = __( 'Team details missing', 'racketmanager' );
+            }
+        }
+
+        if ( $current && ( (string) $current->contactno !== $contactno || (string) $current->contactemail !== $contactemail ) ) {
+            try {
+                $player = $this->player_service->get_player( $captain );
+                $contact_updates = $this->player_service->update_contact_details( $captain, $contactno, $contactemail );
+                if ( ! $contact_updates ) {
+                    $msg = __( 'Error updating team contact', 'racketmanager' );
+                } else {
+                    $updates = true;
+                }
+            } catch ( Player_Not_Found_Exception ) {
+                $msg = __( 'Player not found', 'racketmanager' );
+            }
+        }
+
+        if ( $updates ) {
+            $msg = __( 'Team updated', 'racketmanager' );
+        } elseif ( empty( $msg ) ) {
+            $msg = __( 'No updates', 'racketmanager' );
+        }
+
+        return $msg;
     }
 
     /**

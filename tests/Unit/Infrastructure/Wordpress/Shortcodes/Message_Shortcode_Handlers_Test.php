@@ -15,6 +15,9 @@ use Racketmanager\Infrastructure\Wordpress\Shortcodes\Message_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Public\Shortcodes_Message;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
+use Racketmanager\Repositories\Message_Repository;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Services\View\View_Renderer_Interface;
@@ -47,8 +50,9 @@ class Message_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_messages_handler_when_logged_out(): void {
-        $handler = new Get_Messages_Handler();
-        $query   = new Get_Messages_Query(
+        $user_repository = $this->createStub( User_Repository_Interface::class );
+        $handler         = new Get_Messages_Handler( $user_repository );
+        $query           = new Get_Messages_Query(
             is_logged_in: false,
             user_id: null
         );
@@ -59,7 +63,26 @@ class Message_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_messages_handler_when_logged_in(): void {
-        $handler = new Get_Messages_Handler();
+        $user = $this->createMock( User::class );
+        $details = [ (object) [ 'id' => 15 ] ];
+        $message_calls = [];
+        $user->expects( $this->exactly( 3 ) )
+            ->method( 'get_messages' )
+            ->willReturnCallback( static function ( array $args ) use ( &$message_calls, $details ): array|int {
+                $message_calls[] = $args;
+                return match ( count( $message_calls ) ) {
+                    1 => 3,
+                    2 => $details,
+                    3 => 2,
+                };
+            } );
+        $user_repository = $this->createMock( User_Repository_Interface::class );
+        $user_repository->expects( $this->once() )
+            ->method( 'find' )
+            ->with( 101 )
+            ->willReturn( $user );
+
+        $handler = new Get_Messages_Handler( $user_repository );
         $query   = new Get_Messages_Query(
             template: 'custom',
             is_logged_in: true,
@@ -70,11 +93,20 @@ class Message_Shortcode_Handlers_Test extends TestCase {
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'messages-custom', $vm->template );
         $this->assertSame( 'account', $vm->template_type );
+        $this->assertInstanceOf( \Racketmanager\Presentation\View_Models\Messages_List_View_Model::class, $vm->vars['messages'] );
+        $this->assertSame( 3, $vm->vars['messages']->total );
+        $this->assertSame( 2, $vm->vars['messages']->unread );
+        $this->assertSame( [
+            [ 'count' => true ],
+            [],
+            [ 'count' => true, 'status' => 'unread' ],
+        ], $message_calls );
     }
 
     public function test_message_handler_when_logged_out(): void {
-        $handler = new Get_Message_Handler();
-        $query   = new Get_Message_Query(
+        $message_repository = $this->createStub( Message_Repository_Interface::class );
+        $handler            = new Get_Message_Handler( $message_repository );
+        $query              = new Get_Message_Query(
             message_id: 42,
             is_logged_in: false,
             user_id: null
@@ -86,8 +118,9 @@ class Message_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_message_handler_missing_id(): void {
-        $handler = new Get_Message_Handler();
-        $query   = new Get_Message_Query(
+        $message_repository = $this->createStub( Message_Repository_Interface::class );
+        $handler            = new Get_Message_Handler( $message_repository );
+        $query              = new Get_Message_Query(
             message_id: null,
             is_logged_in: true,
             user_id: 101
@@ -99,9 +132,13 @@ class Message_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_message_handler_not_found(): void {
-        $GLOBALS['message'] = null;
+        $message_repository = $this->createMock( Message_Repository_Interface::class );
+        $message_repository->expects( $this->once() )
+            ->method( 'find' )
+            ->with( 99999 )
+            ->willReturn( null );
 
-        $handler = new Get_Message_Handler();
+        $handler = new Get_Message_Handler( $message_repository );
         $query   = new Get_Message_Query(
             message_id: 99999,
             is_logged_in: true,
@@ -121,10 +158,14 @@ class Message_Shortcode_Handlers_Test extends TestCase {
         $message->userid = 999;
         $message->status = '1';
         $message->expects( $this->never() )->method( 'set_status' );
-        $GLOBALS['message'] = $message;
-        $GLOBALS['wp_stubs_messages'][42] = $message;
 
-        $handler = new Get_Message_Handler();
+        $message_repository = $this->createMock( Message_Repository_Interface::class );
+        $message_repository->expects( $this->once() )
+            ->method( 'find' )
+            ->with( 42 )
+            ->willReturn( $message );
+
+        $handler = new Get_Message_Handler( $message_repository );
         $query   = new Get_Message_Query(
             message_id: 42,
             is_logged_in: true,
@@ -140,16 +181,20 @@ class Message_Shortcode_Handlers_Test extends TestCase {
         $message = $this->getMockBuilder( Message::class )
             ->disableOriginalConstructor()
             ->getMock();
+        $message->id     = 42;
         $message->userid = 101;
         $message->status = '1';
         $message->expects( $this->once() )
             ->method( 'set_status' )
             ->with( '0' );
 
-        $GLOBALS['message'] = $message;
-        $GLOBALS['wp_stubs_messages'][42] = $message;
+        $message_repository = $this->createMock( Message_Repository_Interface::class );
+        $message_repository->expects( $this->once() )
+            ->method( 'find' )
+            ->with( 42 )
+            ->willReturn( $message );
 
-        $handler = new Get_Message_Handler();
+        $handler = new Get_Message_Handler( $message_repository );
         $query   = new Get_Message_Query(
             message_id: 42,
             template: 'custom',
@@ -161,7 +206,8 @@ class Message_Shortcode_Handlers_Test extends TestCase {
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'message-custom', $vm->template );
         $this->assertSame( 'account', $vm->template_type );
-        $this->assertSame( $message, $vm->vars['message_dtl'] );
+        $this->assertInstanceOf( \Racketmanager\Presentation\View_Models\Message_View_Model::class, $vm->vars['message_dtl'] );
+        $this->assertSame( 42, $vm->vars['message_dtl']->id );
     }
 
     public function test_message_handler_renders_real_template_with_message_details(): void {
@@ -174,9 +220,11 @@ class Message_Shortcode_Handlers_Test extends TestCase {
         $message->subject        = 'Court booking update';
         $message->date           = '2026-10-12 09:30:00';
         $message->message_object = '<p>New court booking details</p>';
-        $GLOBALS['wp_stubs_messages'][42] = $message;
 
-        $vm = ( new Get_Message_Handler() )->handle(
+        $message_repository = $this->createStub( Message_Repository_Interface::class );
+        $message_repository->method( 'find' )->willReturn( $message );
+
+        $vm = ( new Get_Message_Handler( $message_repository ) )->handle(
             new Get_Message_Query(
                 message_id: 42,
                 is_logged_in: true,
@@ -193,11 +241,75 @@ class Message_Shortcode_Handlers_Test extends TestCase {
 
         $this->assertStringContainsString( 'Court booking update', $output );
         $this->assertStringContainsString( 'data-msg-id="42"', $output );
+        $this->assertStringContainsString( '12-10-2026 9:30:00', $output );
+        $this->assertStringContainsString( 'Tennis Admin [<a href="mailto:admin@example.com">admin@example.com</a>]', $output );
+        $this->assertStringContainsString( "srcdoc='<p>New court booking details</p>'", $output );
+    }
+
+    public function test_messages_handler_renders_real_list_template(): void {
+        $make = static function ( int $id, string $status, string $date, string $subject ): object {
+            return (object) [
+                'id' => $id, 'status' => $status, 'date' => $date, 'subject' => $subject,
+                'from_name' => 'Admin', 'from_email' => 'a@example.com', 'message_object' => '',
+            ];
+        };
+        $user = $this->createStub( User::class );
+        $user->method( 'get_messages' )->willReturnCallback(
+            static function ( array $args ) use ( $make ) {
+                if ( ! empty( $args['count'] ) ) {
+                    return isset( $args['status'] ) ? 1 : 2;
+                }
+                return [
+                    $make( 1, '1', '2026-03-05 10:00:00', 'Unread one' ),
+                    $make( 2, '0', '2026-12-25 11:00:00', 'Read one' ),
+                ];
+            }
+        );
+        $user_repository = $this->createStub( User_Repository_Interface::class );
+        $user_repository->method( 'find' )->willReturn( $user );
+
+        $vm        = ( new Get_Messages_Handler( $user_repository ) )->handle( new Get_Messages_Query( is_logged_in: true, user_id: 101 ) );
+        $presenter = new Shortcode_View_Presenter(
+            new Shortcode_Template_Renderer( new Php_View_Renderer( dirname( __DIR__, 5 ) . '/templates/' ) )
+        );
+        $output = $presenter->render( $vm );
+
+        $this->assertMatchesRegularExpression( '/id="message-summary-1" class="message-summary unread"/', $output );
+        $this->assertMatchesRegularExpression( '/id="message-summary-2" class="message-summary read"/', $output );
+        $this->assertStringContainsString( '<span id="read-messages">1</span>', $output );
+        $this->assertStringContainsString( '<span id="unread-messages">1</span>', $output );
+        $this->assertStringContainsString( '<span class="date__month">Mar</span>', $output );
+        $this->assertStringContainsString( '<span class="date__day">5</span>', $output );
+        $this->assertStringContainsString( '<span class="date__year">2026</span>', $output );
+        $this->assertStringContainsString( '<span class="date__month">Dec</span>', $output );
+    }
+
+    public function test_messages_handler_without_messages_passes_empty_view_model_and_renders(): void {
+        $user = $this->createStub( User::class );
+        $user->method( 'get_messages' )->willReturn( 0 );
+        $user_repository = $this->createStub( User_Repository_Interface::class );
+        $user_repository->method( 'find' )->willReturn( $user );
+
+        $vm = ( new Get_Messages_Handler( $user_repository ) )->handle( new Get_Messages_Query( is_logged_in: true, user_id: 101 ) );
+        $this->assertInstanceOf( \Racketmanager\Presentation\View_Models\Messages_List_View_Model::class, $vm->vars['messages'] );
+        $this->assertSame( 0, $vm->vars['messages']->total );
+        $this->assertSame( [], $vm->vars['messages']->detail );
+
+        $presenter = new Shortcode_View_Presenter(
+            new Shortcode_Template_Renderer( new Php_View_Renderer( dirname( __DIR__, 5 ) . '/templates/' ) )
+        );
+        $output = $presenter->render( $vm );
+        $this->assertStringContainsString( 'My messages', $output );
+        $this->assertStringNotContainsString( 'message-summary', $output );
     }
 
     public function test_adapter_and_facade_delegation(): void {
-        $messages_handler = new Get_Messages_Handler();
-        $message_handler  = new Get_Message_Handler();
+        $messages_handler = new Get_Messages_Handler(
+            $this->createStub( User_Repository_Interface::class )
+        );
+        $message_handler  = new Get_Message_Handler(
+            $this->createStub( Message_Repository_Interface::class )
+        );
 
         $adapter = new Message_Shortcode_Adapter(
             $this->racketmanager,

@@ -8,6 +8,7 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Player_Factory;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use RuntimeException;
@@ -63,29 +64,19 @@ final class Player_Query_Service_Test extends TestCase {
 	}
 
 	private function get_matches_with_global_manager( \Racketmanager\Domain\Player $player, array $matches ): array {
-		$original = $GLOBALS['racketmanager'] ?? null;
-		$GLOBALS['racketmanager'] = new class( $matches ) {
-			private array $matches;
+		$repository = $this->createMock( Fixture_Repository_Interface::class );
+		$repository->expects( $this->once() )
+			->method( 'find_player_matches' )
+			->with(
+				(int) $player->id,
+				$this->callback(
+					static fn( array $args ): bool => '2026' === $args['season'] && 'Y' === $args['status'] && array_key_exists( 'time', $args ) && array_key_exists( 'type', $args )
+				)
+			)
+			->willReturn( $matches );
 
-			public function __construct( array $matches ) {
-				$this->matches = $matches;
-			}
-
-			public function get_matches( array $args ): array {
-				return $this->matches;
-			}
-		};
-
-		try {
-			$service = new Player_Query_Service( $this->make_wpdb( array() ) );
-			return $service->get_matches( $player, null, '2026', 'all' );
-		} finally {
-			if ( null === $original ) {
-				unset( $GLOBALS['racketmanager'] );
-			} else {
-				$GLOBALS['racketmanager'] = $original;
-			}
-		}
+		$service = new Player_Query_Service( $this->make_wpdb( array() ), null, $repository );
+		return $service->get_matches( $player, null, '2026', 'all' );
 	}
 
 	private function make_wpdb( array $rows ): wpdb {
@@ -278,19 +269,11 @@ final class Player_Query_Service_Test extends TestCase {
 		}
 	}
 
-	public function test_get_matches_all_throws_without_racketmanager(): void {
-		$original = $GLOBALS['racketmanager'] ?? null;
-		unset( $GLOBALS['racketmanager'] );
-		try {
-			$service = new Player_Query_Service( $this->make_wpdb( array() ) );
-			$this->expectException( RuntimeException::class );
-			$this->expectExceptionMessage( 'Player_Query_Service requires $racketmanager->get_matches()' );
-			$service->get_matches( $this->make_player(), null, '2026', 'all' );
-		} finally {
-			if ( null !== $original ) {
-				$GLOBALS['racketmanager'] = $original;
-			}
-		}
+	public function test_get_matches_all_throws_without_fixture_repository(): void {
+		$service = new Player_Query_Service( $this->make_wpdb( array() ) );
+		$this->expectException( RuntimeException::class );
+		$this->expectExceptionMessage( 'Player_Query_Service requires a Fixture_Repository_Interface.' );
+		$service->get_matches( $this->make_player(), null, '2026', 'all' );
 	}
 
 	public function test_get_matches_unknown_source_returns_empty(): void {

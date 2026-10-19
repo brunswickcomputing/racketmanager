@@ -7,13 +7,18 @@
 
 namespace Racketmanager;
 
-/** @var object $invoice */
-/** @var string $invoice_view */
-if ( isset( $vm ) && $vm instanceof \Racketmanager\Admin\View_Models\Finances_Invoice_Page_View_Model ) {
-    $invoice      = $vm->invoice;
-    $invoice_view = $vm->invoice_view;
-    $errors       = $vm->errors;
-}
+use Racketmanager\Admin\View_Models\Finances_Invoice_Page_View_Model;
+
+/** @var Finances_Invoice_Page_View_Model $vm */
+$errors         = $vm->errors;
+$view           = $vm->view;
+$breadcrumb     = $vm->breadcrumb;
+$title          = $vm->title;
+$subtitle       = $vm->subtitle;
+$invoice_status = $vm->invoice_status;
+$purchase_order = $vm->purchase_order;
+$invoice_id     = $vm->invoice_id;
+$invoice_view   = $vm->invoice_view;
 if ( ! isset( $validator ) ) {
     $validator           = new \stdClass();
     $validator->err_flds = array();
@@ -25,15 +30,6 @@ if ( isset( $errors ) && $errors instanceof \Racketmanager\Admin\View_Models\Err
         $validator->err_msgs[] = $err_msg;
     }
 }
-$inv_name   = $invoice->billable_name;
-if ( 'club' === $invoice->invoice->billable_type ) {
-    $view       = 'club-invoices';
-    $breadcrumb = __( 'Club invoices', 'racketmanager' );
-} else {
-    $view       = 'player-invoices';
-    $breadcrumb = __( 'Player invoices', 'racketmanager' );
-}
-$invoice_status = $invoice->invoice->get_status();
 ?>
 <div class="container">
     <div class="row justify-content-end">
@@ -42,8 +38,8 @@ $invoice_status = $invoice->invoice->get_status();
         </div>
     </div>
     <div class="row mb-3">
-        <h1><?php echo esc_html( __( 'Invoice', 'racketmanager' ) . ' ' . $invoice->invoice->get_invoice_number() . ' (' . $invoice_status . ')' ); ?></h1>
-        <h2><?php echo esc_html( ucfirst( $invoice->charge_name ) . ' - ' . $inv_name ); ?><h2>
+        <h1><?php echo esc_html( $title ); ?></h1>
+        <h2><?php echo esc_html( $subtitle ); ?></h2>
     </div>
     <form method="post" enctype="multipart/form-data" name="invoice_edit" class="form-control mb-3">
         <?php wp_nonce_field( 'racketmanager_manage-invoice', 'racketmanager_nonce' ); ?>
@@ -78,11 +74,11 @@ $invoice_status = $invoice->invoice->get_status();
                 ?>
             </div>
             <div class="form-floating col-4">
-                <input class="form-control" type="text" id="purchaseOrder" name="purchaseOrder" placeholder="Purchase Order" value="<?php echo esc_html( $invoice->invoice->get_purchase_order() ); ?>" />
+                <input class="form-control" type="text" id="purchaseOrder" name="purchaseOrder" placeholder="Purchase Order" value="<?php echo esc_html( $purchase_order ); ?>" />
                 <label for="purchaseOrder"><?php esc_html_e( 'Purchase Order', 'racketmanager' ); ?></label>
             </div>
             <div class="col-auto">
-                <input type="hidden" name="invoice_id" id="invoice_id" value="<?php echo esc_html( $invoice->invoice->get_id() ); ?>" />
+                <input type="hidden" name="invoice_id" id="invoice_id" value="<?php echo esc_html( (string) $invoice_id ); ?>" />
                 <button type="submit" name="saveInvoice" class="btn btn-primary"><?php esc_html_e( 'Update', 'racketmanager' ); ?></button>
             </div>
         </div>

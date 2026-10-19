@@ -4,19 +4,15 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\General\Queries;
 
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
-use Racketmanager\RacketManager;
-use function method_exists;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 
 class Get_Player_Search_Handler {
     public function __construct(
-        private readonly ?RacketManager $racketmanager = null
+        private readonly Player_Repository_Interface $player_repository
     ) {}
 
     public function handle( Get_Player_Search_Query $query ): Shortcode_View_Model {
-        $players = [];
-        if ( $this->racketmanager && method_exists( $this->racketmanager, 'get_all_players' ) ) {
-            $players = $this->racketmanager->get_all_players( [ 'name' => $query->search ] ) ?: [];
-        }
+        $players = $this->player_repository->find_players_summary( [ 'name' => $query->search ] );
 
         $filename = ! empty( $query->template ) ? 'players-list-' . $query->template : 'players-list';
 

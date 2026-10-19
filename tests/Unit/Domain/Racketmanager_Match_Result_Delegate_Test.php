@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Domain;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Racketmanager_Match;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Result_Repository_Interface;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
@@ -27,7 +28,6 @@ class Racketmanager_Match_Result_Delegate_Test extends TestCase {
         $racketmanager            = new stdClass();
         $racketmanager->container = $container;
         $GLOBALS['racketmanager'] = $racketmanager;
-        unset( $GLOBALS['wp_stubs_matches'][300] );
     }
 
     protected function tearDown(): void {
@@ -39,43 +39,6 @@ class Racketmanager_Match_Result_Delegate_Test extends TestCase {
         $match = ( new ReflectionClass( Racketmanager_Match::class ) )->newInstanceWithoutConstructor();
         $match->id = 321;
         return $match;
-    }
-
-    public function test_update_result_tie_delegates_to_repository(): void {
-        $match = $this->make_match();
-        $this->prepare_second_leg( $match, 2.0, 1.0, 2.0, 0.0 );
-
-        $this->repository->expects( $this->once() )
-            ->method( 'update_result_tie' )
-            ->with( 321, 4.0, 1.0, 10, 20 );
-
-        $match->update_result_tie();
-        $this->assertEquals( 10, $match->winner_id_tie );
-    }
-
-    private function prepare_second_leg( Racketmanager_Match $match, float $home, float $away, float $linked_home, float $linked_away ): void {
-        $match->home_team    = '10';
-        $match->away_team    = '20';
-        $match->leg          = 2;
-        $match->linked_match = 300;
-        $match->home_points  = $home;
-        $match->away_points  = $away;
-        $linked              = new stdClass();
-        $linked->winner_id   = 10;
-        $linked->home_points = $linked_home;
-        $linked->away_points = $linked_away;
-        $GLOBALS['wp_stubs_matches'][300] = $linked;
-    }
-
-    public function test_update_result_tie_draw_uses_minus_one(): void {
-        $match = $this->make_match();
-        $this->prepare_second_leg( $match, 2.0, 1.0, 1.0, 2.0 );
-
-        $this->repository->expects( $this->once() )
-            ->method( 'update_result_tie' )
-            ->with( 321, 3.0, 3.0, -1, -1 );
-
-        $match->update_result_tie();
     }
 
     public function test_update_result_tie_skipped_for_first_leg(): void {

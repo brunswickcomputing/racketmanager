@@ -4,28 +4,24 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\General\Queries;
 
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
-use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Util\Util_Lookup;
 use function __;
-use function method_exists;
 
 class Get_Team_Order_Handler {
     public function __construct(
-        private readonly ?Club_Service $club_service = null,
-        private readonly ?RacketManager $racketmanager = null
+        private readonly Club_Service $club_service,
+        private readonly Event_Repository_Interface $event_repository
     ) {}
 
     public function handle( Get_Team_Order_Query $query ): Shortcode_View_Model {
-        $clubs = $this->club_service ? $this->club_service->get_clubs( [ 'type' => 'affiliated' ] ) : [];
+        $clubs = $this->club_service->get_clubs( [ 'type' => 'affiliated' ] );
         if ( empty( $clubs ) ) {
             return Shortcode_View_Model::for_error( __( 'No clubs found', 'racketmanager' ) );
         }
 
-        $events = ( $this->racketmanager && method_exists( $this->racketmanager, 'get_events' ) )
-            ? $this->racketmanager->get_events( [ 'entry_type' => 'team', 'reverse_rubbers' => true ] )
-            : [];
-
+        $events = $this->event_repository->find_all( [ 'entry_type' => 'team', 'reverse_rubbers' => true ] );
         if ( empty( $events ) ) {
             return Shortcode_View_Model::for_error( __( 'No events found', 'racketmanager' ) );
         }

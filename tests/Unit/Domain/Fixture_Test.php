@@ -166,4 +166,17 @@ final class Fixture_Test extends TestCase {
         $this->assertTrue( $reset_changed );
         $this->assertSame( '2026-06-20 10:00:00', $fixture->get_date() );
     }
+
+    public function test_get_and_set_rubbers_pure_in_memory(): void {
+        $fixture = Fixture_Factory::from_array( array( 'id' => 10 ) );
+        $this->assertSame( array(), $fixture->get_rubbers() );
+
+        $rubber1 = $this->createStub( \Racketmanager\Domain\Fixture\Rubber::class );
+        $rubber2 = $this->createStub( \Racketmanager\Domain\Fixture\Rubber::class );
+
+        $fixture->set_rubbers( array( $rubber1, $rubber2 ) );
+        $this->assertSame( array( $rubber1, $rubber2 ), $fixture->get_rubbers() );
+        $fixture->set_rubbers( array() );
+        $this->assertSame( array(), $fixture->get_rubbers() );
+    }
 }

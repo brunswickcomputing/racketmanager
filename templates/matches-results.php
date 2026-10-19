@@ -25,12 +25,7 @@ namespace Racketmanager;
             <div class="module">
                 <?php
                 if ( $matches_list ) {
-                    ?>
-                    <?php
-                    $matches_key = 'league';
                     require RACKETMANAGER_PATH . 'templates/includes/matches-team-list-group.php';
-                    ?>
-                    <?php
                 } else {
                     ?>
                     <p><?php esc_html_e( 'No recent results', 'racketmanager' ); ?></p>

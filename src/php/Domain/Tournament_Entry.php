@@ -35,13 +35,13 @@ class Tournament_Entry {
      *
      * @var int|null
      */
-    public ?int $fee;
+    public ?int $fee = null;
     /**
      * Club id
      *
      * @var int|null
      */
-    public ?int $club_id;
+    public ?int $club_id = null;
     /**
      * Club
      *
@@ -161,9 +161,9 @@ class Tournament_Entry {
     /**
      * Set tournament entry fee
      *
-     * @param int $fee tournament fee.
+     * @param int|null $fee tournament fee.
      */
-    public function set_fee( int $fee ): void {
+    public function set_fee( ?int $fee ): void {
         $this->fee = $fee;
     }
 
@@ -171,7 +171,7 @@ class Tournament_Entry {
         return $this->club_id;
     }
 
-    public function set_club_id( int $club_id ): void {
+    public function set_club_id( ?int $club_id ): void {
         $this->club_id = $club_id;
     }
 

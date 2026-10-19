@@ -5,6 +5,7 @@ namespace Racketmanager\Application\Competition\Queries;
 
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
+use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Competition_Service;
 use function is_numeric;
@@ -16,7 +17,8 @@ use function __;
  */
 class Get_Competition_Overview_Handler {
     public function __construct(
-        private readonly Competition_Service $competition_service
+        private readonly Competition_Service $competition_service,
+        private readonly Competition_Shortcode_Presenter $presenter
     ) {}
 
     public function handle( Get_Competition_Overview_Query $query ): Shortcode_View_Model {
@@ -57,12 +59,19 @@ class Get_Competition_Overview_Handler {
 
         $template = '' !== $query->template ? 'overview-' . $query->template : 'overview';
 
+        $overview_vm = $this->presenter->present_overview(
+            competition: $competition,
+            overview: $overview,
+            competition_season: (array) $competition->current_season
+        );
+
         return new Shortcode_View_Model(
             template: $template,
             vars: [
                 'competition'        => $competition,
                 'overview'           => $overview,
                 'competition_season' => $competition->current_season,
+                'overview_vm'        => $overview_vm,
             ],
             template_type: 'competition'
         );

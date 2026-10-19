@@ -5,13 +5,18 @@ namespace Racketmanager\Application\Club\Queries;
 
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
+use Racketmanager\Presentation\Presenters\Invoice_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Finance_Service;
+use Racketmanager\Services\Settings_Service;
 use stdClass;
 use function __;
 use function function_exists;
 use function Racketmanager\show_invoice;
+use function trim;
 
 /**
  * Handles the [club-invoices] query: invoice list or single invoice, with club ownership
@@ -20,7 +25,11 @@ use function Racketmanager\show_invoice;
 class Get_Club_Invoices_Handler {
     public function __construct(
         private readonly Club_Service $club_service,
-        private readonly Finance_Service $finance_service
+        private readonly Finance_Service $finance_service,
+        private readonly Invoice_Presenter $invoice_presenter,
+        private readonly Club_Presenter $club_presenter,
+        private readonly ?Settings_Service $settings_service = null,
+        private readonly ?Option_Gateway_Interface $option_gateway = null
     ) {}
 
     public function handle( Get_Club_Invoices_Query $query ): Shortcode_View_Model {
@@ -34,9 +43,16 @@ class Get_Club_Invoices_Handler {
         $user_can_manage->club = $query->is_admin
             || ( null !== $query->user_id && $this->club_service->is_user_match_secretary( $query->user_id, (int) $club->id ) );
 
-        $invoices     = [];
-        $invoice      = null;
+        $invoices_vm  = null;
+        $invoice_vm   = null;
         $template_ref = 'invoices';
+
+        $billing       = $this->settings_service ? ( $this->settings_service->get_category( 'billing', [] ) ?: [] ) : [];
+        $currency_code = isset( $billing['billingCurrency'] ) && '' !== trim( (string) $billing['billingCurrency'] )
+            ? (string) $billing['billingCurrency']
+            : $this->finance_service->get_currency()->value;
+        $billing['billingCurrency'] = $currency_code;
+        $date_format   = $this->option_gateway ? (string) $this->option_gateway->get_option( 'date_format', 'd-m-Y' ) : 'd-m-Y';
 
         if ( ! empty( $query->invoice_ref ) ) {
             try {
@@ -47,10 +63,22 @@ class Get_Club_Invoices_Handler {
             if ( $invoice->billable_id !== $club->id ) {
                 return Shortcode_View_Model::error( __( 'Invoice not for this club', 'racketmanager' ) );
             }
-            $invoice->details = function_exists( '\Racketmanager\show_invoice' ) ? show_invoice( $invoice->id ) : '';
-            $template_ref     = 'invoice';
+            $return_url = $this->club_presenter->get_link( $club, 'invoices' );
+            $details    = function_exists( '\Racketmanager\show_invoice' ) ? show_invoice( $invoice->id ) : '';
+            $invoice_vm = $this->invoice_presenter->present_club_invoice_detail(
+                invoice: $invoice,
+                club: $club,
+                return_url: $return_url,
+                details: $details
+            );
+            $template_ref = 'invoice';
         } else {
-            $invoices = $this->finance_service->get_invoices_by_criteria( [ 'billable' => $club->id ] );
+            $invoices_data = $this->finance_service->get_invoices_by_criteria( [ 'billable' => $club->id ] );
+            $invoices_vm   = $this->invoice_presenter->present_club_invoices_list(
+                invoices: $invoices_data,
+                currency_code: $currency_code,
+                date_format: $date_format
+            );
         }
 
         return new Shortcode_View_Model(
@@ -58,8 +86,8 @@ class Get_Club_Invoices_Handler {
             vars: [
                 'club'            => $club,
                 'user_can_manage' => $user_can_manage,
-                'invoices'        => $invoices,
-                'invoice'         => $invoice,
+                'invoices'        => $invoices_vm,
+                'invoice'         => $invoice_vm,
             ],
             template_type: 'club'
         );

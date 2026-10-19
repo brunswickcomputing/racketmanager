@@ -5,13 +5,17 @@ namespace Racketmanager\Tests\Unit\Templates;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Competition_Type;
+use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
+use Racketmanager\Services\View\Php_View_Renderer;
 
 class Event_Template_Test extends TestCase {
     private string $template_path;
+    private Competition_Shortcode_Presenter $presenter;
 
     protected function setUp(): void {
         parent::setUp();
         $this->template_path = dirname( __DIR__, 3 ) . '/templates/event.php';
+        $this->presenter     = new Competition_Shortcode_Presenter( new Php_View_Renderer( dirname( __DIR__, 3 ) . '/templates/' ) );
     }
 
     public function test_renders_with_enum_competition_type() {
@@ -48,6 +52,18 @@ class Event_Template_Test extends TestCase {
         $seasons = [
             ['name' => '2026'],
         ];
+
+        $event_header = $this->presenter->present_event_header(
+            event: $event,
+            curr_season: $curr_season,
+            seasons: $seasons,
+            header_level: 1
+        );
+
+        $menu_options     = [ [ 'name' => 'standings', 'selected' => true, 'available' => true, 'description' => 'Standings' ] ];
+        $competition_type = $event->competition->type->value;
+        $event_seo_name   = 'event';
+        $is_singular      = false;
 
         ob_start();
         include $this->template_path;
@@ -90,6 +106,18 @@ class Event_Template_Test extends TestCase {
         $seasons = [
             ['name' => '2026'],
         ];
+
+        $event_header = $this->presenter->present_event_header(
+            event: $event,
+            curr_season: $curr_season,
+            seasons: $seasons,
+            header_level: 1
+        );
+
+        $menu_options     = [ [ 'name' => 'standings', 'selected' => true, 'available' => true, 'description' => 'Standings' ] ];
+        $competition_type = $event->competition->type->value;
+        $event_seo_name   = 'event';
+        $is_singular      = false;
 
         ob_start();
         include $this->template_path;

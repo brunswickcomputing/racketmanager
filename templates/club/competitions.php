@@ -13,7 +13,7 @@
 namespace Racketmanager;
 
 /** @var object $club */
-require_once RACKETMANAGER_PATH . 'templates/includes/club-header.php';
+require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 
 foreach ( $club->competitions as $competition ) {
     ?>
@@ -51,11 +51,12 @@ foreach ( $club->competitions as $competition ) {
                         }
                         ?>
                         <?php
-                        if ( $event->teams ) {
+                        $event_teams = ( $event_team_rows ?? [] )[ $event->id ?? 0 ] ?? [];
+                        if ( ! empty( $event_teams ) ) {
                             ?>
                             <ol class="list list--naked list--indent">
                             <?php
-                            foreach ( $event->teams as $team ) {
+                            foreach ( $event_teams as $team ) {
                                 ?>
                                 <li class="list__item">
                                     <?php require RACKETMANAGER_PATH . 'templates/includes/team.php'; ?>

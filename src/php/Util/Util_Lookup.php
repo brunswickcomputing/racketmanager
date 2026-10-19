@@ -9,6 +9,8 @@
 
 namespace Racketmanager\Util;
 
+use Racketmanager\Domain\Enums\Club_Role;
+use Racketmanager\Domain\Enums\Fixture_Status;
 use function Racketmanager\un_seo_url;
 
 class Util_Lookup {
@@ -211,15 +213,15 @@ class Util_Lookup {
      */
     private static function get_match_statuses(): array {
         $match_status      = array();
-        $match_status['0'] = __( 'Complete', 'racketmanager' );
-        $match_status['1'] = __( 'Not played', 'racketmanager' );
-        $match_status['2'] = __( 'Retired', 'racketmanager' );
-        $match_status['3'] = __( 'Not played', 'racketmanager' );
-        $match_status['5'] = __( 'Rescheduled', 'racketmanager' );
-        $match_status['6'] = __( 'Abandoned', 'racketmanager' );
-        $match_status['7'] = __( 'Withdrawn', 'racketmanager' );
-        $match_status['8'] = __( 'Cancelled', 'racketmanager' );
-        $match_status['9'] = __( 'Invalid', 'racketmanager' );
+        $match_status[ (string) Fixture_Status::COMPLETE->value ]    = __( 'Complete', 'racketmanager' );
+        $match_status[ (string) Fixture_Status::WALKOVER->value ]    = __( 'Not played', 'racketmanager' );
+        $match_status[ (string) Fixture_Status::RETIRED->value ]     = __( 'Retired', 'racketmanager' );
+        $match_status[ (string) Fixture_Status::SHARED->value ]      = __( 'Not played', 'racketmanager' );
+        $match_status[ (string) Fixture_Status::RESCHEDULED->value ] = __( 'Rescheduled', 'racketmanager' );
+        $match_status[ (string) Fixture_Status::ABANDONED->value ]   = __( 'Abandoned', 'racketmanager' );
+        $match_status[ (string) Fixture_Status::WITHDRAWN->value ]   = __( 'Withdrawn', 'racketmanager' );
+        $match_status[ (string) Fixture_Status::CANCELLED->value ]   = __( 'Cancelled', 'racketmanager' );
+        $match_status[ (string) Fixture_Status::INVALID->value ]     = __( 'Invalid', 'racketmanager' );
         return $match_status;
     }
     /**
@@ -415,9 +417,9 @@ class Util_Lookup {
      */
     public static function get_club_roles(): array {
         $club_roles      = array();
-        $club_roles['1'] = (object) [ 'desc' => __( 'Match secretary', 'racketmanager' ), 'limit' => 1 ];
-        $club_roles['2'] = (object) [ 'desc' => __( 'Coach', 'racketmanager' ), 'limit' => null ];
-        $club_roles['3'] = (object) [ 'desc' => __( 'Treasurer', 'racketmanager' ), 'limit' => 1 ];
+        $club_roles[ (string) Club_Role::MATCH_SECRETARY->value ] = (object) [ 'desc' => __( 'Match secretary', 'racketmanager' ), 'limit' => Club_Role::MATCH_SECRETARY->limit() ];
+        $club_roles[ (string) Club_Role::COACH->value ]           = (object) [ 'desc' => __( 'Coach', 'racketmanager' ), 'limit' => Club_Role::COACH->limit() ];
+        $club_roles[ (string) Club_Role::TREASURER->value ]       = (object) [ 'desc' => __( 'Treasurer', 'racketmanager' ), 'limit' => Club_Role::TREASURER->limit() ];
         return $club_roles;
     }
     /**

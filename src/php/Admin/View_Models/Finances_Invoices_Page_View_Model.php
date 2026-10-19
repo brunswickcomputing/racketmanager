@@ -20,16 +20,22 @@ final readonly class Finances_Invoices_Page_View_Model {
      * @param int|string|null       $club_id
      * @param int|string|null       $charge_id
      * @param string                $status
+     * @param string                $billable_type
+     * @param string                $total_amount_formatted
+     * @param float                 $total_amount
      * @param Error_Bag             $errors
      */
     public function __construct(
         public array $invoices,
         public array $charges,
+        public string $billable_type,
+        public string $total_amount_formatted,
         public array $clubs = array(),
         public string $racketmanager_tab = 'club-invoices',
         public int|string|null $club_id = null,
         public int|string|null $charge_id = null,
         public string $status = 'open',
+        public float $total_amount = 0.0,
         public Error_Bag $errors = new Error_Bag(),
     ) {
     }

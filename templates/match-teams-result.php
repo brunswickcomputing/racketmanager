@@ -12,7 +12,7 @@ use Racketmanager\Util\Util;
 /** @var object $match */
 /** @var string $match_type */
 /** @var object $is_update_allowed */
-global $racketmanager;
+$tournament_link = empty( $tournament ) ? null : ( new \Racketmanager\Presentation\Presenters\Tournament_Presenter() )->get_link( $tournament );
 $user_can_update     = $is_update_allowed->user_can_update;
 $user_type           = $is_update_allowed->user_type;
 $user_team           = $is_update_allowed->user_team;
@@ -142,7 +142,7 @@ if ( $match->is_walkover ) {
                                             if ( ! $page_referrer ) {
                                                 $page_referrer = $match->league->event->competition->get_type() . '/' . seo_url( $match->league->title ) . '/' . $match->season . '/';
                                                 if ( ! empty( $tournament ) ) {
-                                                    $page_referrer = $tournament->link . 'matches/';
+                                                    $page_referrer = $tournament_link . 'matches/';
                                                 }
                                             }
                                             ?>
@@ -200,9 +200,10 @@ if ( $match->is_walkover ) {
                                                                             <?php
                                                                             $approval_captain = $opponent . '_captain';
                                                                             if ( isset( $match->$approval_captain ) ) {
+                                                                                $captain_name = $match->captain_names[ $opponent ] ?? ( isset( $GLOBALS['racketmanager'] ) && method_exists( $GLOBALS['racketmanager'], 'get_player_name' ) ? $GLOBALS['racketmanager']->get_player_name( $match->$approval_captain ) : (string) $match->$approval_captain );
                                                                                 ?>
                                                                                 <span class="match__row-title-value-content">
-                                                                                    <span class="nav-link__value"><?php echo esc_html( $racketmanager->get_player_name( $match->$approval_captain ) ); ?></span>
+                                                                                    <span class="nav-link__value"><?php echo esc_html( $captain_name ); ?></span>
                                                                                 </span>
                                                                                 <?php
                                                                             } else {

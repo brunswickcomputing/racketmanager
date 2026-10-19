@@ -7,14 +7,20 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
+use Racketmanager\Domain\Championship;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Team;
+use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Team;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Admin\Championship_Admin_Service;
+use Racketmanager\Services\Championship_Manager;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\League_Service;
+use Racketmanager\Services\Result_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use ReflectionClass;
@@ -44,14 +50,28 @@ class Championship_Admin_Integration_Test extends TestCase {
         ?Fixture_Service $fixture_service = null,
         ?Tournament_Service $tournament_service = null,
         ?League_Team_Repository_Interface $league_team_repository = null,
-        ?Team_Repository_Interface $team_repository = null
+        ?Team_Repository_Interface $team_repository = null,
+        ?Fixture_Repository_Interface $fixture_repository = null,
+        ?Championship_Manager $championship_manager = null,
+        ?Event_Repository_Interface $event_repository = null
     ): Championship_Admin_Service {
+        $fixture_repo = $fixture_repository ?? $this->createStub( Fixture_Repository_Interface::class );
+        $league_service = $league_service ?? $this->createMock( League_Service::class );
+        $event_repo = $event_repository ?? $this->createStub( Event_Repository_Interface::class );
         return new Championship_Admin_Service(
-            $league_service ?? $this->createMock( League_Service::class ),
+            $league_service,
             $fixture_service ?? $this->createMock( Fixture_Service::class ),
             $tournament_service ?? $this->createMock( Tournament_Service::class ),
             $league_team_repository ?? $this->createStub( League_Team_Repository_Interface::class ),
-            $team_repository ?? $this->createStub( Team_Repository_Interface::class )
+            $team_repository ?? $this->createStub( Team_Repository_Interface::class ),
+            $fixture_repo,
+            $championship_manager ?? new Championship_Manager(
+                $this->createStub( Result_Service::class ),
+                $fixture_repo,
+                $league_service,
+                $event_repo
+            ),
+            $event_repo
         );
     }
 
@@ -72,9 +92,11 @@ class Championship_Admin_Integration_Test extends TestCase {
         $league = $this->create_real_instance_without_constructor( League::class );
         $league->id = $league_id;
 
-        $GLOBALS['wp_stubs_leagues'][$league_id] = $league;
-
         $league_service = $this->createMock( League_Service::class );
+        $league_service->expects( self::once() )
+            ->method( 'get_league' )
+            ->with( $league_id )
+            ->willReturn( $league );
         $league_service->expects( self::once() )
                        ->method( 'remove_teams_from_league' )
                        ->with( [$league_team_id], $league_id, $season )
@@ -102,17 +124,6 @@ class Championship_Admin_Integration_Test extends TestCase {
     }
 
     public function test_add_teams_to_league_creates_team_if_not_exists_by_name(): void {
-        global $racketmanager;
-        // Do not overwrite global $racketmanager if it is already set by stubs with necessary methods
-        if ( ! isset( $racketmanager ) || ! method_exists( $racketmanager, 'get_options' ) ) {
-            $racketmanager = new stdClass();
-        }
-        $container = $this->createMock( \Racketmanager\Services\Container\Simple_Container::class );
-        $racketmanager->container = $container;
-
-        $player_service = $this->createMock( \Racketmanager\Services\Player_Service::class );
-        $container->expects( self::once() )->method( 'get' )->with( 'player_service' )->willReturn( $player_service );
-
         $league_id = 123;
         $season = 2024;
         $team_name = '2_round_match_456';
@@ -193,5 +204,54 @@ class Championship_Admin_Integration_Test extends TestCase {
         );
 
         $admin_service->add_teams_to_league( $dto );
+    }
+
+    public function test_update_final_results_includes_updated_fixture_count_in_message(): void {
+        $championship = $this->createStub( Championship::class );
+        $league = $this->createMock( League::class );
+        $league->championship = $championship;
+
+        $league_service = $this->createMock( League_Service::class );
+        $league_service->expects( self::once() )
+            ->method( 'get_league' )
+            ->with( 123 )
+            ->willReturn( $league );
+
+        $championship->method( 'num_rounds' )->willReturn( 1 );
+        $fixture = $this->createStub( Fixture::class );
+        $fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
+        $fixture_repository->expects( self::once() )
+            ->method( 'find_by_id' )
+            ->with( 10 )
+            ->willReturn( $fixture );
+        $result_service = $this->createMock( Result_Service::class );
+        $result_service->expects( self::once() )
+            ->method( 'apply_to_fixture' )
+            ->with( $fixture, self::isInstanceOf( \Racketmanager\Domain\Result\Result::class ) );
+        $championship_manager = new Championship_Manager(
+            $result_service,
+            $fixture_repository,
+            $league_service,
+            $this->createStub( Event_Repository_Interface::class )
+        );
+
+        $admin_service = $this->create_admin_service(
+            league_service: $league_service,
+            fixture_repository: $fixture_repository,
+            championship_manager: $championship_manager
+        );
+        $result = $admin_service->update_final_results( $this->create_draw_dto(
+            league_id: 123,
+            post: [
+                'fixtures'    => [ 10 ],
+                'home_points' => [ 10 => 6 ],
+                'away_points' => [ 10 => 3 ],
+                'custom'      => [ 10 => [] ],
+                'round'       => 1,
+            ]
+        ) );
+
+        self::assertSame( 'Updated Results of 1 fixtures', $result->message );
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
     }
 }

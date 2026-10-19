@@ -72,10 +72,15 @@ final class Tournament_Event_Config_Admin_Controller {
         }
 
         $event_id = isset( $_GET['event_id'] ) ? intval( $_GET['event_id'] ) : null;
-        try {
-            $event     = $this->competition_service->get_event_by_id( $event_id );
-            $new_event = false;
-        } catch ( Event_Not_Found_Exception ) {
+        if ( $event_id ) {
+            try {
+                $event     = $this->competition_service->get_event_by_id( $event_id );
+                $new_event = false;
+            } catch ( Event_Not_Found_Exception ) {
+                $event     = new stdClass();
+                $new_event = true;
+            }
+        } else {
             $event     = new stdClass();
             $new_event = true;
         }
@@ -171,10 +176,12 @@ final class Tournament_Event_Config_Admin_Controller {
         }
 
         $league_id = $event->add_league( $event->name );
-        if ( $league_id && $competition->is_championship ) {
+        if ( $league_id ) {
             $config->primary_league = $league_id;
-            $league_title = $event->name . ' ' . __( 'Plate', 'racketmanager' );
-            $event->add_league( $league_title );
+            if ( $competition->is_championship ) {
+                $league_title = $event->name . ' ' . __( 'Plate', 'racketmanager' );
+                $event->add_league( $league_title );
+            }
         }
 
         $event->config = $config;
@@ -231,6 +238,13 @@ final class Tournament_Event_Config_Admin_Controller {
             );
         }
 
+        if ( empty( $config->primary_league ) || (int) $config->primary_league <= 0 ) {
+            $primary_league_id = $event->get_primary_league_id();
+            if ( $primary_league_id ) {
+                $config->primary_league = $primary_league_id;
+            }
+        }
+
         $event->config = $config;
         $updates       = $event->set_config( $config );
 
@@ -260,6 +274,9 @@ final class Tournament_Event_Config_Admin_Controller {
         $config->num_sets    = isset( $_POST['num_sets'] ) ? intval( $_POST['num_sets'] ) : null;
         $config->num_rubbers = isset( $_POST['num_rubbers'] ) ? intval( $_POST['num_rubbers'] ) : null;
         $config->is_active   = isset( $_POST['is_active'] ) ? filter_var( wp_unslash( $_POST['is_active'] ), FILTER_VALIDATE_BOOLEAN ) : null;
+        if ( ! empty( $_POST['primary_league'] ) && intval( $_POST['primary_league'] ) > 0 ) {
+            $config->primary_league = intval( $_POST['primary_league'] );
+        }
         return $config;
     }
 
@@ -276,9 +293,15 @@ final class Tournament_Event_Config_Admin_Controller {
         if ( empty( $config->name ) ) {
             $validator->error = true;
             $validator->msg   = __( 'Event name required', 'racketmanager' );
-        } elseif ( $new && $competition->get_event( $config->name ) ) {
-            $validator->error = true;
-            $validator->msg   = __( 'Event already exists', 'racketmanager' );
+        } elseif ( $new ) {
+            $events = $competition->get_events();
+            foreach ( $events as $event ) {
+                if ( is_object( $event ) && isset( $event->name ) && $event->name === $config->name ) {
+                    $validator->error = true;
+                    $validator->msg   = __( 'Event already exists', 'racketmanager' );
+                    break;
+                }
+            }
         }
         return $validator;
     }

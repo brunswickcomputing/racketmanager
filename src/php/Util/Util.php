@@ -493,7 +493,8 @@ class Util {
      * @return object || null
      */
     public static function get_currency_format(): object {
-        return numfmt_create( get_locale(), NumberFormatter::CURRENCY );
+        $locale = function_exists( 'get_locale' ) ? \get_locale() : 'en_GB';
+        return numfmt_create( $locale, NumberFormatter::CURRENCY );
     }
     /**
      * Get currency code
@@ -501,7 +502,8 @@ class Util {
      * @return string
      */
     public static function get_currency_code(): string {
-        setlocale( LC_ALL, get_locale() );
+        $locale = function_exists( 'get_locale' ) ? \get_locale() : 'en_GB';
+        setlocale( LC_ALL, $locale );
         $locale_info = localeconv();
         return empty( $locale_info['int_curr_symbol'] ) ? 'GBP' : trim( $locale_info['int_curr_symbol'] ) ;
     }

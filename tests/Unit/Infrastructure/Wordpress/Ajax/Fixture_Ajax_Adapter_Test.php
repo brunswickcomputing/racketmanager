@@ -22,19 +22,43 @@ use Racketmanager\Infrastructure\Wordpress\Ajax\Fixture_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Result_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Results_Report_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
+use Racketmanager\Repositories\Repository_Provider;
+use Racketmanager\Services\Competition\Knockout_Progression_Service;
+use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
+use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
+use Racketmanager\Services\League_Service;
+use Racketmanager\Services\Notification\Notification_Service;
+use Racketmanager\Services\Registration_Service;
+use Racketmanager\Services\Result\Result_Reporting_Service;
+use Racketmanager\Services\Result_Service;
+use Racketmanager\Services\Settings_Service;
+use Racketmanager\Services\Team_Service;
+use Racketmanager\Services\Validator\Player_Validation_Service;
+use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class Fixture_Ajax_Adapter_Test extends TestCase {
     use Manages_Wordpress_Globals;
+    use Creates_Team_Match_Row_Presenter;
 
     private Simple_Container $container;
     private MockObject|Security_Service_Interface $security_service;
@@ -334,12 +358,9 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
 
         $rubber           = new \Racketmanager\Domain\Fixture\Rubber();
         $rubber->match_id = 123;
-
-        // Eval-based stub for get_rubber since it is a global function
-        $GLOBALS['wp_stubs_rubbers'] = [ 456 => $rubber ];
-        if ( ! function_exists( 'Racketmanager\get_rubber' ) ) {
-            eval( 'namespace Racketmanager { function get_rubber($id) { return $GLOBALS["wp_stubs_rubbers"][$id] ?? null; } }' );
-        }
+        $rubber_repo      = $this->createMock( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );
+        $rubber_repo->expects( $this->once() )->method( 'find_by_id' )->with( 456 )->willReturn( $rubber );
+        $this->container->set( 'rubber_repository', $rubber_repo );
 
         $league      = $this->createStub( League::class );
         $fixture     = $this->createStub( Fixture::class );
@@ -394,7 +415,9 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
             'modal'     => 'someModal',
         ];
 
-        $GLOBALS['wp_stubs_rubbers'] = [];
+        $rubber_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );
+        $rubber_repo->expects( $this->once() )->method( 'find_by_id' )->with( 999 )->willReturn( null );
+        $this->container->set( 'rubber_repository', $rubber_repo );
 
         $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with( 'alert-modal', $this->callback( function ( $vars ) {
                 return $vars['msg'] === 'Rubber not found' && $vars['class'] === 'danger';
@@ -416,9 +439,11 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
 
         $rubber                      = new \Racketmanager\Domain\Fixture\Rubber();
         $rubber->match_id            = 123;
-        $GLOBALS['wp_stubs_rubbers'] = [ 456 => $rubber ];
+        $rubber_repo                 = $this->createMock( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );
+        $rubber_repo->expects( $this->once() )->method( 'find_by_id' )->with( 456 )->willReturn( $rubber );
+        $this->container->set( 'rubber_repository', $rubber_repo );
 
-        $this->fixture_detail_service->method( 'get_fixture_with_details' )->willReturn( null );
+        $this->fixture_detail_service->expects( $this->once() )->method( 'get_fixture_with_details' )->willReturn( null );
 
         $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with( 'alert-modal', $this->callback( function ( $vars ) {
                 return $vars['msg'] === 'Fixture not found' && $vars['class'] === 'danger';
@@ -440,9 +465,11 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
 
         $rubber                      = new \Racketmanager\Domain\Fixture\Rubber();
         $rubber->match_id            = 123;
-        $GLOBALS['wp_stubs_rubbers'] = [ 456 => $rubber ];
+        $rubber_repo                 = $this->createMock( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );
+        $rubber_repo->expects( $this->once() )->method( 'find_by_id' )->with( 456 )->willReturn( $rubber );
+        $this->container->set( 'rubber_repository', $rubber_repo );
 
-        $this->fixture_detail_service->method( 'get_fixture_with_details' )->willThrowException( new Exception( 'Boom' ) );
+        $this->fixture_detail_service->expects( $this->once() )->method( 'get_fixture_with_details' )->willThrowException( new Exception( 'Boom' ) );
 
         $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with( 'alert-modal', $this->callback( function ( $vars ) {
                 return $vars['msg'] === 'An unexpected error occurred' && $vars['class'] === 'danger';
@@ -497,19 +524,20 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
             'security' => 'valid',
         ];
         
-        // Ensure get_match(123) returns something so Validator_Fixture doesn't fail
-        $GLOBALS['wp_stubs_matches'][123] = (object) [ 'id' => 123 ];
-
         $fixture = $this->createStub( Fixture::class );
+        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+        $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $fixture );
+        $this->container->set( 'fixture_repository', $fixture_repo );
+
         $dto = new App_Fixture_Details_DTO( $fixture );
         
-        $fixture_details_handler = $this->createStub( Get_Fixture_Details_Handler::class );
-        $fixture_details_handler->method( 'handle' )->willReturn( $dto );
+        $fixture_details_handler = $this->createMock( Get_Fixture_Details_Handler::class );
+        $fixture_details_handler->expects( $this->once() )->method( 'handle' )->willReturn( $dto );
 
         $presenter = $this->createMock( Fixture_Presenter::class );
         $header_model = $this->createStub( Fixture_Header_Read_Model::class );
-        $presenter->method( 'map_to_header_read_model' )->willReturn( $header_model );
-        $presenter->method( 'render_header' )->willReturn( 'match header content' );
+        $presenter->expects( $this->once() )->method( 'map_to_header_read_model' )->willReturn( $header_model );
+        $presenter->expects( $this->once() )->method( 'render_header' )->willReturn( 'match header content' );
 
         // Inject modified presenter and handler for this test
         $this->adapter = new Fixture_Ajax_Adapter( 
@@ -676,14 +704,6 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
             'updateRubber'        => 'results',
         ];
 
-        $league = (object) [ 'id' => 1 ];
-
-        $match                            = (object) [
-            'id'     => 123,
-            'league' => $league
-        ];
-        $GLOBALS['wp_stubs_matches'][123] = $match;
-
         $fixture = $this->getMockBuilder( Fixture::class )->disableOriginalConstructor()->onlyMethods( [ 'get_id' ] )->getMock();
         $fixture->method( 'get_id' )->willReturn( 123 );
         $fixture->league_id = 1;
@@ -726,6 +746,9 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         parent::setUp();
         $this->backup_globals();
         $this->container        = new Simple_Container();
+        $racketmanager            = new \stdClass();
+        $racketmanager->container = $this->container;
+        $GLOBALS['racketmanager'] = $racketmanager;
         $this->security_service = $this->createMock( Security_Service_Interface::class );
         $response_factory = $this->createStub( Json_Response_Factory_Interface::class );
 
@@ -741,16 +764,13 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $this->container->set( 'fixture_ajax_adapter_response_factory', $response_factory );
 
         $rubber_repo = $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );
-        $rubber_repo->method( 'find_by_id' )->willReturnCallback( function( $id ) {
-            return $GLOBALS['wp_stubs_rubbers'][$id] ?? null;
-        } );
         $this->container->set( 'rubber_repository', $rubber_repo );
 
         $this->fixture_detail_service = $this->createMock( Fixture_Detail_Service::class );
         $this->view_renderer          = $this->createMock( View_Renderer_Interface::class );
         $link_service                 = $this->createStub( Fixture_Link_Service::class );
         $option_gateway               = $this->createStub( \Racketmanager\Gateways\Option\Option_Gateway_Interface::class );
-        $presenter                    = new Fixture_Presenter( $link_service, $option_gateway );
+        $presenter                    = new Fixture_Presenter( $link_service, $option_gateway, team_match_row_presenter: $this->create_team_match_row_presenter() );
         $fixture_details_handler      = $this->createStub( Get_Fixture_Details_Handler::class );
         $this->adapter                = new Fixture_Ajax_Adapter( $this->container, $this->security_service, $response_factory, $this->fixture_detail_service, $this->view_renderer, $presenter, $fixture_details_handler );
     }
@@ -786,5 +806,54 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $this->assertSame( 400, $response->get_status_code() );
         $data = $response->get_content();
         $this->assertContains( 'Either confirm or challenge result', $data->err_msgs );
+    }
+
+    #[AllowMockObjectsWithoutExpectations]
+    public function test_get_fixture_result_manager_returns_registered_manager(): void {
+        $c = new Simple_Container();
+        $expected_manager = $this->createStub( Fixture_Result_Manager::class );
+        $c->set( 'fixture_result_manager', $expected_manager );
+
+        $response_factory = $this->createStub( Json_Response_Factory_Interface::class );
+        $presenter        = new Fixture_Presenter(
+            $this->createStub( Fixture_Link_Service::class ),
+            $this->createStub( \Racketmanager\Gateways\Option\Option_Gateway_Interface::class )
+        );
+        $adapter = new Fixture_Ajax_Adapter(
+            $c,
+            $this->security_service,
+            $response_factory,
+            $this->fixture_detail_service,
+            $this->view_renderer,
+            $presenter,
+            $this->createStub( Get_Fixture_Details_Handler::class )
+        );
+
+        $manager = $adapter->get_fixture_result_manager();
+        $this->assertSame( $expected_manager, $manager );
+    }
+
+    #[AllowMockObjectsWithoutExpectations]
+    public function test_get_fixture_result_manager_throws_when_not_registered(): void {
+        $c = new Simple_Container();
+
+        $response_factory = $this->createStub( Json_Response_Factory_Interface::class );
+        $presenter        = new Fixture_Presenter(
+            $this->createStub( Fixture_Link_Service::class ),
+            $this->createStub( \Racketmanager\Gateways\Option\Option_Gateway_Interface::class )
+        );
+        $adapter = new Fixture_Ajax_Adapter(
+            $c,
+            $this->security_service,
+            $response_factory,
+            $this->fixture_detail_service,
+            $this->view_renderer,
+            $presenter,
+            $this->createStub( Get_Fixture_Details_Handler::class )
+        );
+
+        $this->expectException( \LogicException::class );
+        $this->expectExceptionMessage( 'fixture_result_manager has not been configured' );
+        $adapter->get_fixture_result_manager();
     }
 }

@@ -46,6 +46,10 @@ class Fixture_Header_Read_Model {
         public bool $edit_mode,
         public bool $user_can_update,
         public bool $match_approval_mode,
-        public bool $is_shortcode = false
+        public bool $is_shortcode = false,
+        public bool $show_home_away_labels = true,
+        public string $start_time_display = '',
+        public string $pencil_icon_url = '',
+        public string $plus_icon_url = ''
     ) {}
 }

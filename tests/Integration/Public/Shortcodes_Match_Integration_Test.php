@@ -31,10 +31,12 @@ namespace Racketmanager\Tests\Integration\Public {
     use Racketmanager\Domain\Competition\Event;
     use Racketmanager\Domain\Competition\League;
     use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
+    use Racketmanager\Gateways\Option\Option_Gateway_Interface;
     use Racketmanager\Domain\Fixture\Fixture;
     use Racketmanager\Domain\Fixture\Fixture_Factory;
     use Racketmanager\Infrastructure\Wordpress\Shortcodes\Matches_Shortcode_Adapter;
     use Racketmanager\Presentation\Presenters\Match_Shortcode_Presenter;
+    use Racketmanager\Presentation\Presenters\Fixture_Presenter;
     use Racketmanager\Presentation\Presenters\Matches_List_Presenter;
     use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
     use Racketmanager\Public\Shortcodes_Match;
@@ -70,9 +72,10 @@ namespace Racketmanager\Tests\Integration\Public {
 
             $this->assertEquals( 'header_html', $result );
             $this->assertSame( 'match/match-header', $this->rendered['path'] );
+            $this->assertSame( 'Premier League', $this->rendered['vars']['model']->league_title );
+            $this->assertSame( 123, $this->rendered['vars']['model']->id );
             $this->assertInstanceOf( Fixture_Details_DTO::class, $this->rendered['vars']['dto'] );
             $this->assertInstanceOf( Fixture::class, $this->rendered['vars']['match'] );
-            $this->assertSame( 'Premier League', $this->rendered['vars']['dto']->league->title );
         }
 
         protected function setUp(): void {
@@ -148,8 +151,8 @@ namespace Racketmanager\Tests\Integration\Public {
                 $this->createStub( Matches_List_Presenter::class ),
                 new Get_Match_Score_Handler( $detail_service ),
                 new Get_Match_Header_Handler( $detail_service ),
-                new Get_Match_Detail_Handler( $detail_service, $this->createStub( Player_Service::class ) ),
-                new Match_Shortcode_Presenter( new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $renderer ) ) )
+                new Get_Match_Detail_Handler( $detail_service, $this->createStub( Player_Service::class ), $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class ) ),
+                new Match_Shortcode_Presenter( new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $renderer ) ), new Fixture_Presenter( $link_service, $this->createStub( Option_Gateway_Interface::class ) ), $this->createStub( Player_Service::class ) )
             ) );
 
             $this->shortcode = new Shortcodes_Match( $this->plugin );

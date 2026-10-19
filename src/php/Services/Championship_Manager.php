@@ -12,36 +12,21 @@ namespace Racketmanager\Services;
 use Racketmanager\Domain\Championship;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Repositories\Fixture_Repository;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
-use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Services\Notification\Notification_Service;
+use Racketmanager\Services\Result_Factory;
 use Racketmanager\Services\Result_Service;
-use function Racketmanager\get_event;
-use function Racketmanager\get_league;
 
 final class Championship_Manager {
-    /**
-     * @var Result_Service
-     */
-    private Result_Service $result_service;
-    private Fixture_Repository_Interface $fixture_repository;
-    private ?Notification_Service $notification_service;
 
     public function __construct(
-        ?Result_Service $result_service = null,
-        ?Fixture_Repository_Interface $fixture_repository = null,
-        ?Notification_Service $notification_service = null
+        private Result_Service $result_service,
+        private Fixture_Repository_Interface $fixture_repository,
+        private League_Service $league_service,
+        private Event_Repository_Interface $event_repository,
+        private ?Notification_Service $notification_service = null
     ) {
-        $this->fixture_repository   = $fixture_repository ?? new Fixture_Repository();
-        $this->result_service       = $result_service ?? new Result_Service( $this->fixture_repository, new Team_Repository() );
-        if ( null === $notification_service ) {
-            global $racketmanager;
-            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'notification_service' ) ) {
-                $notification_service = $racketmanager->container->get( 'notification_service' );
-            }
-        }
-        $this->notification_service = $notification_service;
     }
 
     /**
@@ -54,7 +39,7 @@ final class Championship_Manager {
      * @param array $custom custom values.
      * @param int $round round.
      *
-     * @return void
+     * @return int Number of updated fixtures.
      */
     public function update_final_results(
         Championship $championship,
@@ -63,14 +48,11 @@ final class Championship_Manager {
         array $away_points,
         array $custom,
         int $round
-    ): void {
-        global $racketmanager;
-
-        $fixture_repository = new Fixture_Repository();
+    ): int {
         $num_updated = 0;
 
         foreach ( $matches as $match_id ) {
-            $fixture = $fixture_repository->find_by_id( (int) $match_id );
+            $fixture = $this->fixture_repository->find_by_id( (int) $match_id );
             if ( ! $fixture ) {
                 continue;
             }
@@ -91,8 +73,7 @@ final class Championship_Manager {
             $this->proceed( $championship, $round );
         }
 
-        /* translators: %d: number of fixtures */
-        $racketmanager->set_message( sprintf( __( 'Updated Results of %d fixtures', 'racketmanager' ), $num_updated ) );
+        return $num_updated;
     }
 
     /**
@@ -115,11 +96,10 @@ final class Championship_Manager {
         $prev_home  = null;
         $prev_away  = null;
         if ( ! $league ) {
-            $league = get_league( $championship->league_id() );
+            $league = $this->league_service->get_league( $championship->league_id() );
         }
 
-        $fixture_repository = new Fixture_Repository();
-        $matches = $fixture_repository->find_by_league_and_final(
+        $matches = $this->fixture_repository->find_by_league_and_final(
             $league->get_id(),
             $league->get_season(),
             $next,
@@ -174,7 +154,7 @@ final class Championship_Manager {
                     $prev_match_args['leg'] = 2;
                 }
 
-                $prev = $fixture_repository->find_by_league_and_final(
+                $prev = $this->fixture_repository->find_by_league_and_final(
                     $league->get_id(),
                     $league->get_season(),
                     $current,
@@ -210,7 +190,7 @@ final class Championship_Manager {
                     }
 
                     if ( 'third' === $next ) {
-                        $final_matches = $fixture_repository->find_by_league_and_final(
+                        $final_matches = $this->fixture_repository->find_by_league_and_final(
                             $league->get_id(),
                             $league->get_season(),
                             'final'
@@ -297,8 +277,7 @@ final class Championship_Manager {
             $team_switch = '-1';
         } else {
             $team_switch = $match->loser_id;
-            $fixture_repository = new Fixture_Repository();
-            $matches = $fixture_repository->find_by_league_and_team(
+            $matches = $this->fixture_repository->find_by_league_and_team(
                 $league->get_id(),
                 $league->get_season(),
                 (string)$match->loser_id
@@ -318,14 +297,18 @@ final class Championship_Manager {
         }
 
         $team_ref = '2_' . $round . '_' . $match->id;
-        $event    = get_event( $league->event->id );
+        $event_id = isset( $league->event->id ) ? (int) $league->event->id : (int) ( method_exists( $league, 'get_event_id' ) ? $league->get_event_id() : 0 );
+        $event = $this->event_repository->find_by_id( $event_id );
 
         if ( $event ) {
-            $event_leagues = $event->get_leagues( array( 'consolation' => true ) );
+            $event_leagues = $this->event_repository->query_leagues( $event_id, array( 'consolation' => true ) );
 
-            if ( $event_leagues ) {
+            if ( is_array( $event_leagues ) ) {
                 foreach ( $event_leagues as $event_league ) {
-                    $consolation_league = get_league( $event_league );
+                    $consolation_league = $this->league_service->get_league( (int) ( $event_league->id ?? $event_league ) );
+                    if ( ! $consolation_league ) {
+                        continue;
+                    }
 
                     if ( '-1' !== $team_switch ) {
                         $switch_teams = $consolation_league->get_league_teams(

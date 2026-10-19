@@ -9,15 +9,12 @@
 
 namespace Racketmanager\Repositories;
 
-use Closure;
 use Racketmanager\Domain\DTO\Player\Players_List_DTO;
 use Racketmanager\Domain\Player;
 use Racketmanager\Domain\Player_Factory;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Update_Exception;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
-use Racketmanager\Services\Player_Query_Service;
-use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use WP_User;
@@ -31,53 +28,17 @@ class Player_Repository implements Player_Repository_Interface {
     const string META_KEY_BTM = 'btm';
     const string META_KEY_YOB = 'year_of_birth';
     private wpdb $wpdb;
-    private Player_Query_Service|Closure|null $player_query_service = null;
-    private Player_Stats_Service|Closure|null $player_stats_service = null;
 
     /**
      * Create a new Player_Repository instance.
      *
      * @param wpdb|null $db
-     * @param Player_Query_Service|Closure|null $player_query_service
-     * @param Player_Stats_Service|Closure|null $player_stats_service
      */
     public function __construct(
-        ?wpdb $db = null,
-        Player_Query_Service|Closure|null $player_query_service = null,
-        Player_Stats_Service|Closure|null $player_stats_service = null
+        ?wpdb $db = null
     ) {
         global $wpdb;
         $this->wpdb = $db ?? $wpdb;
-        $this->player_query_service = $player_query_service;
-        $this->player_stats_service = $player_stats_service;
-    }
-
-    public function wire_player_collaborators( Player $player ): void {
-        $query_svc = $this->resolve_player_query_service();
-        if ( $query_svc ) {
-            $player->set_player_query_service( $query_svc );
-        }
-        $stats_svc = $this->resolve_player_stats_service();
-        if ( $stats_svc ) {
-            $player->set_player_stats_service( $stats_svc );
-        }
-    }
-
-    private function resolve_collaborator( mixed &$collaborator ): mixed {
-        if ( $collaborator instanceof Closure ) {
-            $collaborator = $collaborator();
-        }
-        return $collaborator;
-    }
-
-    private function resolve_player_query_service(): ?Player_Query_Service {
-        $resolved = $this->resolve_collaborator( $this->player_query_service );
-        return $resolved instanceof Player_Query_Service ? $resolved : null;
-    }
-
-    private function resolve_player_stats_service(): ?Player_Stats_Service {
-        $resolved = $this->resolve_collaborator( $this->player_stats_service );
-        return $resolved instanceof Player_Stats_Service ? $resolved : null;
     }
 
     /**
@@ -278,6 +239,95 @@ class Player_Repository implements Player_Repository_Interface {
     }
 
     /**
+     * Find lightweight player listing projections.
+     *
+     * When 'active' is true, matches find_all(['active' => true]) semantics by querying
+     * active players without gender or name filters and ordering by player ID.
+     *
+     * @param array $args
+     *
+     * @return Players_List_DTO[]
+     */
+    public function find_players_summary( array $args = array() ): array {
+        $defaults = array(
+            'active' => false,
+            'name'   => false,
+        );
+        $args     = array_merge( $defaults, $args );
+        $active   = (bool) $args['active'];
+        $name     = $args['name'];
+
+        $cache_key = 'players_summary_' . md5( (string) wp_json_encode( $args ) );
+        $cached    = wp_cache_get( $cache_key, 'players' );
+        if ( false !== $cached && null !== $cached ) {
+            return $cached;
+        }
+
+        $user_table     = $this->wpdb->base_prefix . 'users';
+        $usermeta_table = $this->wpdb->base_prefix . 'usermeta';
+
+        $where_clauses = array( '1=1' );
+        $params        = array();
+        $order_by      = 'u.display_name ASC';
+
+        if ( $active ) {
+            $rubber_players_table     = $this->wpdb->prefix . 'racketmanager_rubber_players';
+            $tournament_entries_table = $this->wpdb->prefix . 'racketmanager_tournament_entries';
+            $where_clauses[]          = "u.ID IN (SELECT DISTINCT player_id FROM $rubber_players_table UNION SELECT DISTINCT player_id FROM $tournament_entries_table)";
+            $order_by                 = 'u.ID ASC';
+        } elseif ( ! empty( $name ) ) {
+            if ( is_numeric( $name ) ) {
+                $where_clauses[] = "u.ID IN (SELECT user_id FROM $usermeta_table WHERE meta_key = %s AND meta_value = %s)";
+                $params[]        = self::META_KEY_BTM;
+                $params[]        = (string) $name;
+            } else {
+                $where_clauses[] = 'u.display_name LIKE %s';
+                $params[]        = '%' . $this->wpdb->esc_like( (string) $name ) . '%';
+
+                $where_clauses[] = "u.ID IN (SELECT user_id FROM $usermeta_table WHERE meta_key = %s AND meta_value IN ('M', 'F'))";
+                $params[]        = self::META_KEY_GENDER;
+            }
+        } else {
+            $where_clauses[] = "u.ID IN (SELECT user_id FROM $usermeta_table WHERE meta_key = %s AND meta_value IN ('M', 'F'))";
+            $params[]        = self::META_KEY_GENDER;
+        }
+
+        $where_sql = implode( ' AND ', $where_clauses );
+
+        $sql = "
+            SELECT
+                u.ID AS player_id,
+                u.display_name,
+                u.user_nicename,
+                u.user_email AS email,
+                MAX(CASE WHEN m.meta_key = 'first_name' THEN m.meta_value END) AS firstName,
+                MAX(CASE WHEN m.meta_key = 'last_name' THEN m.meta_value END) AS surname,
+                MAX(CASE WHEN m.meta_key = '" . self::META_KEY_BTM . "' THEN m.meta_value END) AS btm,
+                MAX(CASE WHEN m.meta_key = '" . self::META_KEY_GENDER . "' THEN m.meta_value END) AS gender
+            FROM $user_table u
+            LEFT JOIN $usermeta_table m ON u.ID = m.user_id AND m.meta_key IN ('first_name', 'last_name', '" . self::META_KEY_BTM . "', '" . self::META_KEY_GENDER . "')
+            WHERE $where_sql
+            GROUP BY u.ID, u.display_name, u.user_nicename, u.user_email
+            ORDER BY $order_by
+        ";
+
+        if ( ! empty( $params ) ) {
+            $sql = $this->wpdb->prepare( $sql, $params ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        }
+
+        $rows = $this->wpdb->get_results( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        $players = array();
+        if ( ! empty( $rows ) ) {
+            foreach ( $rows as $row ) {
+                $players[] = new Players_List_DTO( $row );
+            }
+        }
+
+        wp_cache_set( $cache_key, $players, 'players' );
+        return $players;
+    }
+
+    /**
      * Get active players
      *
      * @return array
@@ -316,9 +366,6 @@ class Player_Repository implements Player_Repository_Interface {
         }
         $player = wp_cache_get( $player_id, 'players' );
         if ( $player ) {
-            if ( $player instanceof Player ) {
-                $this->wire_player_collaborators( $player );
-            }
             return $player;
         }
 
@@ -367,9 +414,7 @@ class Player_Repository implements Player_Repository_Interface {
 
         // Create a new Player object from the retrieved user data.
         $player = Player_Factory::from_object(
-            $player->data,
-            $this->resolve_player_query_service(),
-            $this->resolve_player_stats_service()
+            $player->data
         );
         wp_cache_set( $player_id, $player, 'players' );
 

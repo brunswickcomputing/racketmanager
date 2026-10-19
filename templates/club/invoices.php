@@ -1,6 +1,5 @@
 <?php
 /**
- *
  * Template page to show invoices for a club
  *
  * @package Racketmanager/Templates
@@ -8,12 +7,15 @@
  * The following variables are usable:
  *
  *  $club: club object
+ *  $invoices: invoices list view model
  */
+
+declare( strict_types=1 );
 
 namespace Racketmanager;
 
 /** @var object $club */
-/** @var array $invoices */
+/** @var \Racketmanager\Presentation\View_Models\Club_Invoices_List_View_Model $invoices */
 $header_level = 1;
 require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 ?>
@@ -42,25 +44,23 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
                     </div>
                 </div>
                 <?php
-                $total_amount = 0;
                 foreach ( $invoices as $invoice ) {
-                    $total_amount += $invoice->amount;
                     ?>
                     <div class="row mb-2 row-list">
                         <div class="col-2 col-md-1">
-                            <a href="<?php echo esc_attr( $invoice->id ); ?>/"><?php echo esc_html( $invoice->invoice_number ); ?></a>
+                            <a href="<?php echo esc_attr( (string) $invoice->id ); ?>/"><?php echo esc_html( (string) $invoice->invoice_number ); ?></a>
                         </div>
                         <div class="col-6 col-md-3">
-                            <span class=""><?php echo esc_html( ucfirst( $invoice->charge_name ) ); ?></span>
+                            <span class=""><?php echo esc_html( $invoice->charge_name ); ?></span>
                         </div>
                         <div class="col-2 text-end">
-                            <span class=""><?php the_currency_amount( $invoice->amount ); ?></span>
+                            <span class=""><?php echo esc_html( $invoice->amount_formatted ); ?></span>
                         </div>
                         <div class="col-2 col-md-1">
                             <span class=""><?php echo esc_html( $invoice->status ); ?></span>
                         </div>
                         <div class="d-none d-lg-block col-2">
-                            <span class=""><?php echo esc_html( $invoice->date_due ); ?></span>
+                            <span class=""><?php echo esc_html( $invoice->date_due_formatted ); ?></span>
                         </div>
                     </div>
                     <?php
@@ -69,7 +69,7 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
                 <div class="row mb-2 row-footer">
                     <div class="col-8 col-md-4 text-end"><?php esc_html_e( 'Total', 'racketmanager' ); ?></div>
                     <div class="col-2 text-end">
-                        <span class=""><?php the_currency_amount( $total_amount ); ?></span>
+                        <span class=""><?php echo esc_html( $invoices->total_amount_formatted ); ?></span>
                     </div>
                 </div>
             </div>

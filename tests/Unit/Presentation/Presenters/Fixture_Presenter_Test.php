@@ -17,9 +17,12 @@ use Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Option_Request;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
+use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use ReflectionClass;
 
 class Fixture_Presenter_Test extends TestCase {
+    use Creates_Team_Match_Row_Presenter;
+
     private Fixture_Presenter $presenter;
     private Fixture_Link_Service $link_service;
     private Option_Gateway_Interface $option_gateway;
@@ -28,7 +31,7 @@ class Fixture_Presenter_Test extends TestCase {
         parent::setUp();
         $this->link_service   = $this->createStub( Fixture_Link_Service::class );
         $this->option_gateway = $this->createStub( Option_Gateway_Interface::class );
-        $this->presenter      = new Fixture_Presenter( $this->link_service, $this->option_gateway );
+        $this->presenter      = new Fixture_Presenter( $this->link_service, $this->option_gateway, team_match_row_presenter: $this->create_team_match_row_presenter() );
     }
 
     public function test_map_to_result_read_model(): void {

@@ -370,7 +370,7 @@ class Club_Service {
         if ( ! $this->club_repository->find_by_id( $club_id ) ) {
             return false;
         }
-        $role_assignment = $this->club_role_repository->search( array( 'club' => $club_id, 'role' => 1, 'user' => $user_id ) );
+        $role_assignment = $this->club_role_repository->search( array( 'club' => $club_id, 'role' => \Racketmanager\Domain\Enums\Club_Role::MATCH_SECRETARY->value, 'user' => $user_id ) );
 
         // If a role object is returned, the assignment exists
         return $role_assignment !== null;

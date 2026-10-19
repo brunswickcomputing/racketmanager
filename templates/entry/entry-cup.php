@@ -20,8 +20,8 @@ use stdClass;
 /** @var array  $mixed_teams */
 /** @var array  $match_days */
 /** @var string $season */
-global $racketmanager;
 $no_entry_link = true;
+$match_days    = $match_days ?? [];
 if ( $competition->is_open ) {
     $changes_allowed = true;
 } else {
@@ -38,7 +38,7 @@ $additional_information = __( 'Additional information', 'racketmanager' );
 ?>
 <div class="container">
     <?php
-    require_once RACKETMANAGER_PATH . 'templates/includes/competition-header.php';
+    require RACKETMANAGER_PATH . 'templates/includes/competition-header.php';
     ?>
     <form id="form-entry" action="" method="post">
         <?php wp_nonce_field( 'racketmanager_cup-entry', 'racketmanager_nonce' ); ?>
@@ -54,11 +54,11 @@ $additional_information = __( 'Additional information', 'racketmanager' );
                                 <?php echo esc_html( $form_title ); ?>
                             </h3>
                             <?php
-                            if ( ! empty( $competition->date_closing ) ) {
+                            if ( ! empty( $date_closing ) && ! empty( $date_closing_display ) ) {
                                 ?>
                                 <span class="hgroup__subheading">
                                     <?php esc_html_e( 'Entry deadline', 'racketmanager' ); ?>
-                                    <time datetime="<?php echo esc_attr( $competition->date_closing ); ?>"><?php echo esc_html( mysql2date( $racketmanager->date_format, $competition->date_closing ) ); ?></time>
+                                    <time datetime="<?php echo esc_attr( $date_closing ); ?>"><?php echo esc_html( $date_closing_display ); ?></time>
                                 </span>
                                 <?php
                             }
@@ -254,7 +254,7 @@ $additional_information = __( 'Additional information', 'racketmanager' );
                                     </div>
                                 </div>
                             </li>
-                            <?php require_once RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
+                            <?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
                         </ol>
                         <div id="entry-acceptance" class="col-12 col-md-8">
                             <div class="form-check form-switch form-check-reverse mb-3">

@@ -19,9 +19,10 @@ use Racketmanager\Infrastructure\Wordpress\Shortcodes\Login_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Public\Shortcodes_Login;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\View\View_Renderer_Interface;
-use Racketmanager\Services\Player_Service;
+use Racketmanager\Util\Util;
 
 class Login_Shortcode_Handlers_Test extends TestCase {
     use Creates_Test_Container;
@@ -186,8 +187,9 @@ class Login_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_member_account_form_handler_logged_out(): void {
-        $handler = new Get_Member_Account_Form_Handler();
-        $query   = new Get_Member_Account_Form_Query(
+        $user_repository = $this->createStub( User_Repository_Interface::class );
+        $handler         = new Get_Member_Account_Form_Handler( $user_repository );
+        $query           = new Get_Member_Account_Form_Query(
             is_logged_in: false,
             user_id: null
         );
@@ -198,7 +200,14 @@ class Login_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_member_account_form_handler_logged_in(): void {
-        $handler = new Get_Member_Account_Form_Handler();
+        $user = $this->createStub( User::class );
+        $user_repository = $this->createMock( User_Repository_Interface::class );
+        $user_repository->expects( $this->once() )
+            ->method( 'find' )
+            ->with( 123 )
+            ->willReturn( $user );
+
+        $handler = new Get_Member_Account_Form_Handler( $user_repository );
         $query   = new Get_Member_Account_Form_Query(
             is_logged_in: true,
             user_id: 123
@@ -208,16 +217,17 @@ class Login_Shortcode_Handlers_Test extends TestCase {
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'form-member-account', $vm->template );
         $this->assertSame( 'form', $vm->template_type );
-        $this->assertArrayHasKey( 'user', $vm->vars );
-        $this->assertArrayHasKey( 'opt_in_choices', $vm->vars );
-        $this->assertIsArray( $vm->vars['opt_in_choices'] );
+        $this->assertSame( $user, $vm->vars['user'] );
+        $this->assertSame( Util::get_email_opt_ins(), $vm->vars['opt_in_choices'] );
     }
 
     public function test_adapter_and_facade_delegation(): void {
         $login_handler          = $this->login_form_handler( users_can_register: 0 );
         $password_lost_handler  = new Get_Password_Lost_Form_Handler();
         $password_reset_handler = new Get_Password_Reset_Form_Handler();
-        $member_account_handler = new Get_Member_Account_Form_Handler();
+        $member_account_handler = new Get_Member_Account_Form_Handler(
+            $this->createStub( User_Repository_Interface::class )
+        );
 
         $adapter = new Login_Shortcode_Adapter(
             $this->racketmanager,
@@ -248,22 +258,39 @@ class Login_Shortcode_Handlers_Test extends TestCase {
         $this->assertNotEmpty( $facade->generate_member_account_form() );
     }
 
+    public function test_login_form_handler_decodes_html_entities_in_site_name(): void {
+        $handler = $this->login_form_handler( site_name: 'Leigh &amp; Westcliff Tennis' );
+        $query   = new Get_Login_Form_Query( is_logged_in: false );
+
+        $vm = $handler->handle( $query );
+        $this->assertFalse( $vm->is_error() );
+        $this->assertSame( 'Leigh & Westcliff Tennis', $vm->vars['site_name'] );
+    }
+
     /**
      * @param mixed $users_can_register
      * @param array<string, mixed> $keys
      */
-    private function login_form_handler( mixed $users_can_register = false, array $keys = [] ): Get_Login_Form_Handler {
+    private function login_form_handler( mixed $users_can_register = false, array $keys = [], string $site_name = 'Leigh Tennis' ): Get_Login_Form_Handler {
         $option_gateway = $this->createStub( Option_Gateway_Interface::class );
         $option_gateway->method( 'get_option' )->willReturnCallback(
-            static function ( string $name, mixed $default = false ) use ( $users_can_register ) {
-                return 'users_can_register' === $name ? $users_can_register : $default;
+            static function ( string $name, mixed $default = false ) use ( $users_can_register, $site_name ) {
+                if ( 'users_can_register' === $name ) {
+                    return $users_can_register;
+                }
+                if ( 'blogname' === $name ) {
+                    return $site_name;
+                }
+                if ( 'siteurl' === $name ) {
+                    return 'http://example.com';
+                }
+                return $default;
             }
         );
 
         return new Get_Login_Form_Handler(
             $option_gateway,
-            new Settings_Service( [ 'keys' => $keys ] ),
-            $this->racketmanager
+            new Settings_Service( [ 'keys' => $keys ] )
         );
     }
 }

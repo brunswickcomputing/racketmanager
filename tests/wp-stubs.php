@@ -18,6 +18,14 @@ namespace Racketmanager {
         }
     }
 
+    if ( ! function_exists( 'Racketmanager\the_currency_amount' ) ) {
+        function the_currency_amount( $amount ): void {
+            if ( null !== $amount && '' !== $amount ) {
+                echo '£' . (string) $amount;
+            }
+        }
+    }
+
     if ( ! function_exists( 'Racketmanager\latest_results' ) ) {
         function latest_results( int $club_id = 0, array $args = array() ): void {}
     }
@@ -253,7 +261,7 @@ namespace {
 
     if ( ! function_exists( 'wp_nonce_field' ) ) {
         function wp_nonce_field( $action = -1, $name = '_wpnonce', $referer = true, $echo = true ): string {
-            $html = '<input type="hidden" name="' . htmlspecialchars( (string) $name ) . '" value="test_nonce" />';
+            $html = '<input type="hidden" name="' . htmlspecialchars( (string) $name ) . '" value="test_nonce" data-action="' . htmlspecialchars( (string) $action ) . '" />';
             if ( $echo ) {
                 echo $html;
             }
@@ -477,9 +485,43 @@ namespace {
         }
     }
 
+    if ( ! function_exists( 'is_email' ) ) {
+        function is_email( $email ) {
+            if ( ! is_string( $email ) ) {
+                return false;
+            }
+            $email = trim( $email );
+            return filter_var( $email, FILTER_VALIDATE_EMAIL ) ? $email : false;
+        }
+    }
+
     if ( ! function_exists( 'sanitize_email' ) ) {
         function sanitize_email( $email ) {
-            return is_string( $email ) ? trim( $email ) : $email;
+            if ( ! is_string( $email ) ) {
+                return '';
+            }
+            $email = trim( $email );
+            if ( strlen( $email ) < 6 || strpos( $email, '@', 1 ) === false ) {
+                return '';
+            }
+            list( $local, $domain ) = explode( '@', $email, 2 );
+            $local = preg_replace( '/[^a-zA-Z0-9!#$%&\'*+\/=?^_`{|}~\.-]/', '', $local );
+            if ( '' === $local ) {
+                return '';
+            }
+            $domain = preg_replace( '/\.{2,}/', '', $domain );
+            $domain = preg_replace( '/[^a-zA-Z0-9\.\-]/', '', $domain );
+            if ( '' === $domain || strpos( $domain, '.' ) === false || str_ends_with( $domain, '.' ) ) {
+                return '';
+            }
+            $sanitized = $local . '@' . $domain;
+            return is_email( $sanitized ) ? $sanitized : '';
+        }
+    }
+
+    if ( ! function_exists( 'get_locale' ) ) {
+        function get_locale(): string {
+            return $GLOBALS['wp_stubs_locale'] ?? 'en_GB';
         }
     }
 
@@ -971,10 +1013,33 @@ namespace {
 
     if ( ! function_exists( 'get_userdata' ) ) {
         function get_userdata( $user_id ) {
-            return (object) [
+            $user_id = (int) $user_id;
+            if ( ! empty( $GLOBALS['wp_stubs_users_not_found'][ $user_id ] ) ) {
+                return false;
+            }
+            $data = (object) [
+                'ID'           => $user_id,
                 'display_name' => 'User ' . $user_id,
                 'user_email'   => 'user' . $user_id . '@example.test',
             ];
+            return (object) [
+                'data'         => $data,
+                'ID'           => $user_id,
+                'display_name' => 'User ' . $user_id,
+                'user_email'   => 'user' . $user_id . '@example.test',
+            ];
+        }
+    }
+
+    if ( ! function_exists( 'get_user_by' ) ) {
+        function get_user_by( $field, $value ) {
+            if ( isset( $GLOBALS['wp_stubs_users'][ $field ][ $value ] ) ) {
+                return $GLOBALS['wp_stubs_users'][ $field ][ $value ];
+            }
+            if ( 'id' === $field && isset( $GLOBALS['wp_stubs_users'][ $value ] ) ) {
+                return $GLOBALS['wp_stubs_users'][ $value ];
+            }
+            return false;
         }
     }
 
@@ -1360,25 +1425,6 @@ namespace Racketmanager {
         }
     }
 
-    if ( ! function_exists( 'Racketmanager\get_match' ) ) {
-        function get_match( $id ) {
-            if ( isset( $GLOBALS['wp_stubs_matches'][ $id ] ) ) {
-                return $GLOBALS['wp_stubs_matches'][ $id ];
-            }
-            return null;
-        }
-    }
-
-    if ( ! function_exists( 'Racketmanager\get_rubber' ) ) {
-        function get_rubber( $id ) {
-            if ( isset( $GLOBALS['wp_stubs_rubbers'][ $id ] ) ) {
-                return $GLOBALS['wp_stubs_rubbers'][ $id ];
-            }
-            return null;
-        }
-    }
-
-
     if ( ! function_exists( 'Racketmanager\get_team' ) ) {
         function get_team( $id ) {
             if ( isset( $GLOBALS['wp_stubs_teams'][ $id ] ) ) {
@@ -1592,43 +1638,6 @@ namespace Racketmanager {
     function match_header( int $match_id, array $args = array() ): string {
         return "match header content";
     }
-
-    if ( ! function_exists( 'Racketmanager\get_match' ) ) {
-        function get_match( $match_id ): object {
-            if ( isset( $GLOBALS['wp_stubs_matches'][ $match_id ] ) ) {
-                return $GLOBALS['wp_stubs_matches'][ $match_id ];
-            }
-            $match        = new stdClass();
-            $match->id    = $match_id;
-            $match->date  = '2023-01-01';
-            $match->link  = 'https://example.com';
-            $match->home_team = 'Home';
-            $match->away_team = 'Away';
-            $match->season = '2023';
-            $match->match_day = 1;
-            $match->league = new stdClass();
-            $match->league->event = new stdClass();
-            $match->league->event->get_season_by_name = function($season) {
-                return ['match_dates' => ['2023-01-01']];
-            };
-            // Mocking method call on object
-            return new class($match) {
-                private array $properties = [];
-                public function __construct($match) {
-                    foreach(get_object_vars($match) as $k => $v) {
-                        $this->properties[$k] = $v;
-                    }
-                }
-                public function __get($name) {
-                    return $this->properties[$name] ?? null;
-                }
-                public function __isset($name) {
-                    return isset($this->properties[$name]);
-                }
-                public function get_season_by_name($name): array { return [ 'match_dates' => ['2023-01-01']]; }
-            };
-        }
-    }
 }
 
 namespace {
@@ -1756,6 +1765,11 @@ namespace {
                 return '';
             }
             return $response['body'] ?? '';
+        }
+    }
+    if ( ! function_exists( 'wp_get_referer' ) ) {
+        function wp_get_referer() {
+            return $GLOBALS['wp_stubs_wp_get_referer'] ?? false;
         }
     }
     if ( ! defined( 'RACKETMANAGER_VERSION' ) ) {

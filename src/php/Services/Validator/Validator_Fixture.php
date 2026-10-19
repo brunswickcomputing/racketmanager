@@ -114,7 +114,7 @@ class Validator_Fixture extends Validator {
             $this->err_flds[] = $error_field;
             $this->err_msgs[] = __( 'Match id not supplied', 'racketmanager' );
         } else {
-            $match = $this->fixture_repository ? $this->fixture_repository->find_by_id( (int) $match_id ) : ( function_exists( 'Racketmanager\get_match' ) ? \Racketmanager\get_match( (int) $match_id ) : ( $GLOBALS['wp_stubs_matches'][(int) $match_id] ?? null ) );
+            $match = $this->fixture_repository ? $this->fixture_repository->find_by_id( (int) $match_id ) : null;
             if ( ! $match ) {
                 $this->error      = true;
                 $this->err_flds[] = $error_field;

@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+$tournament_link = ( new \Racketmanager\Presentation\Presenters\Tournament_Presenter() )->get_link( $tournament );
+
 /** @var object $tournament */
 /** @var array  $events */
 ?>
@@ -33,7 +35,7 @@ namespace Racketmanager;
                         <div class="row mb-2 row-list">
                             <div class="col-1" name="<?php esc_html_e( 'Favourite', 'racketmanager' ); ?>">
                                 <?php
-                                $url_link       = $tournament->link . 'event/' . seo_url( $event->name ) . '/';
+                                $url_link       = $tournament_link . 'event/' . seo_url( $event->name ) . '/';
                                 $hidden         = true;
                                 $favourite_type = 'competition';
                                 $favourite_id   = $event->id;

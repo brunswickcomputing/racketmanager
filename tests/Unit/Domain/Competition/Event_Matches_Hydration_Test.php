@@ -22,8 +22,10 @@ use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Container\Simple_Container;
+use Racketmanager\Services\Fixture\Fixture_Relation_Loader;
 use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
@@ -36,6 +38,7 @@ class Event_Matches_Hydration_Test extends TestCase {
 	private Simple_Container $container;
 	private $event_repository;
 	private $fixture_repository;
+	private $rubber_repository;
 	private Event $event;
 
 	protected function setUp(): void {
@@ -45,9 +48,11 @@ class Event_Matches_Hydration_Test extends TestCase {
 		$this->container          = new Simple_Container();
 		$this->event_repository   = $this->createMock( Event_Repository_Interface::class );
 		$this->fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
+		$this->rubber_repository  = $this->createMock( Rubber_Repository_Interface::class );
 
 		$this->container->set( 'event_repository', $this->event_repository );
 		$this->container->set( 'fixture_repository', $this->fixture_repository );
+		$this->container->set( 'rubber_repository', $this->rubber_repository );
 
 		$competition_service = $this->createMock( Competition_Service::class );
 		$this->container->set( 'competition_service', $competition_service );
@@ -115,7 +120,7 @@ class Event_Matches_Hydration_Test extends TestCase {
 			->willReturn( array( $row_one, $row_two ) );
 
 		$this->fixture_repository->expects( $this->exactly( 2 ) )
-			->method( 'find_by_id' )
+			->method( 'find_by_id_with_relations' )
 			->willReturnCallback(
 				static function ( $id ) use ( $fixture_one, $fixture_two ): ?Fixture {
 					return match ( (int) $id ) {
@@ -152,7 +157,7 @@ class Event_Matches_Hydration_Test extends TestCase {
 			->willReturn( 3 );
 
 		$this->fixture_repository->expects( $this->never() )
-			->method( 'find_by_id' );
+			->method( 'find_by_id_with_relations' );
 
 		$result = $this->event->get_matches( array( 'count' => true ) );
 
@@ -162,14 +167,10 @@ class Event_Matches_Hydration_Test extends TestCase {
 	public function test_get_matches_loads_player_rubbers_on_hydrated_fixtures(): void {
 		$row     = (object) array( 'id' => 21 );
 		$rubber  = $this->createStub( Rubber::class );
-		$fixture = $this->getMockBuilder( Fixture::class )
-			->disableOriginalConstructor()
-			->onlyMethods( array( 'get_rubbers' ) )
-			->getMock();
-		$fixture->id = 21;
-		$fixture->expects( $this->once() )
-			->method( 'get_rubbers' )
-			->with( 7 )
+		$fixture = Fixture_Factory::from_array( array( 'id' => 21 ) );
+		$this->rubber_repository->expects( $this->once() )
+			->method( 'find_by_fixture_id' )
+			->with( 21, 7 )
 			->willReturn( array( $rubber ) );
 
 		$this->event_repository->expects( $this->once() )
@@ -185,7 +186,7 @@ class Event_Matches_Hydration_Test extends TestCase {
 			->willReturn( array( $row ) );
 
 		$this->fixture_repository->expects( $this->once() )
-			->method( 'find_by_id' )
+			->method( 'find_by_id_with_relations' )
 			->with( 21 )
 			->willReturn( $fixture );
 
@@ -212,7 +213,7 @@ class Event_Matches_Hydration_Test extends TestCase {
 			->willReturn( array( $row_found, $row_miss ) );
 
 		$this->fixture_repository->expects( $this->exactly( 2 ) )
-			->method( 'find_by_id' )
+			->method( 'find_by_id_with_relations' )
 			->willReturnCallback(
 				static function ( $id ) use ( $fixture ): ?Fixture {
 					return 10 === (int) $id ? $fixture : null;
@@ -274,17 +275,16 @@ class Event_Matches_Hydration_Test extends TestCase {
 				'away_team' => '102',
 				'date'      => '2026-06-15 19:30:45',
 				'match_day' => 1,
-			),
-			$league_repo,
-			$team_service
+			)
 		);
+		( new Fixture_Relation_Loader( $league_repo, $team_service ) )->load( $fixture );
 
 		$this->event_repository->expects( $this->once() )
 			->method( 'query_matches' )
 			->willReturn( array( $row ) );
 
 		$this->fixture_repository->expects( $this->once() )
-			->method( 'find_by_id' )
+			->method( 'find_by_id_with_relations' )
 			->with( 50 )
 			->willReturn( $fixture );
 
@@ -402,7 +402,7 @@ class Event_Matches_Hydration_Test extends TestCase {
 		$player_query_service = new Player_Query_Service();
 
 		$this->event_repository->method( 'query_matches' )->willReturn( array( (object) array( 'id' => 70 ) ) );
-		$this->fixture_repository->expects( $this->once() )->method( 'find_by_id' )->with( 70 )->willReturn( $fixture );
+		$this->fixture_repository->expects( $this->once() )->method( 'find_by_id_with_relations' )->with( 70 )->willReturn( $fixture );
 
 		$result = $player_query_service->get_matches( $player, $this->event, '2026', 'event' );
 
@@ -446,16 +446,14 @@ class Event_Matches_Hydration_Test extends TestCase {
 			),
 		);
 
-		$fixture = $this->getMockBuilder( Fixture::class )
-			->disableOriginalConstructor()
-			->onlyMethods( array( 'get_rubbers', 'get_league' ) )
-			->getMock();
-		$fixture->id        = 80;
-		$fixture->season    = '2026';
-		$fixture->home_team = '1';
-		$fixture->away_team = '2';
-		$fixture->method( 'get_league' )->willReturn( $league_mock );
-		$fixture->method( 'get_rubbers' )->willReturn( array( $rubber ) );
+		$fixture = Fixture_Factory::from_array( array(
+			'id' => 80, 'season' => '2026', 'home_team' => '1', 'away_team' => '2',
+		) );
+		$fixture->set_league( $league_mock );
+		$this->rubber_repository->expects( $this->once() )
+			->method( 'find_by_fixture_id' )
+			->with( 80, 5 )
+			->willReturn( array( $rubber ) );
 
 		$player               = $this->getMockBuilder( Player::class )
 			->disableOriginalConstructor()
@@ -467,7 +465,7 @@ class Event_Matches_Hydration_Test extends TestCase {
 		$player_query_service = new Player_Query_Service();
 
 		$this->event_repository->method( 'query_matches' )->willReturn( array( (object) array( 'id' => 80 ) ) );
-		$this->fixture_repository->expects( $this->once() )->method( 'find_by_id' )->with( 80 )->willReturn( $fixture );
+		$this->fixture_repository->expects( $this->once() )->method( 'find_by_id_with_relations' )->with( 80 )->willReturn( $fixture );
 
 		$player_query_service->get_matches( $player, $this->event, '2026', 'event' );
 
@@ -548,13 +546,12 @@ class Event_Matches_Hydration_Test extends TestCase {
 				'league_id' => $fixture->get_league_id(),
 				'home_team' => $fixture->get_home_team(),
 				'away_team' => $fixture->get_away_team(),
-			),
-			$league_repository,
-			$team_service
+			)
 		);
+		( new Fixture_Relation_Loader( $league_repository, $team_service ) )->load( $fixture );
 
 		$this->event_repository->method( 'query_matches' )->willReturn( array( (object) array( 'id' => $fixture->id ) ) );
-		$this->fixture_repository->expects( $this->once() )->method( 'find_by_id' )->with( $fixture->id )->willReturn( $fixture );
+		$this->fixture_repository->expects( $this->once() )->method( 'find_by_id_with_relations' )->with( $fixture->id )->willReturn( $fixture );
 
 		$matches = $this->event->get_matches( array() );
 		$this->assertInstanceOf( Fixture::class, $matches[0] );

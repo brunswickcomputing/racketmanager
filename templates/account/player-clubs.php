@@ -7,7 +7,6 @@
 
 namespace Racketmanager;
 
-global $racketmanager;
 ?>
 <div class="container">
     <div class="module module--card">
@@ -42,13 +41,13 @@ global $racketmanager;
                                                 </a>
                                             </h4>
                                             <?php
-                                            if ( ! empty( $player_club->approval_date ) ) {
+                                            if ( ! empty( $player_club->approval_date_display ) ) {
                                                 ?>
                                                 <div class="media__content-subinfo">
                                                     <small class="media__subheading">
                                                         <span class="nav--link">
                                                             <span class="nav-link__value">
-                                                                <?php echo esc_html__( 'Added', 'racketmanager' ) . ': ' . esc_html( mysql2date( $racketmanager->date_format, $player_club->approval_date ) ); ?>
+                                                                <?php echo esc_html__( 'Added', 'racketmanager' ) . ': ' . esc_html( $player_club->approval_date_display ); ?>
                                                             </span>
                                                         </span>
                                                     </small>
@@ -100,13 +99,13 @@ global $racketmanager;
                                                 </a>
                                             </h4>
                                             <?php
-                                            if ( ! empty( $player_club->removal_date ) ) {
+                                            if ( ! empty( $player_club->removal_date_display ) ) {
                                                 ?>
                                                 <div class="media__content-subinfo">
                                                     <small class="media__subheading">
                                                         <span class="nav--link">
                                                             <span class="nav-link__value">
-                                                                <?php echo esc_html__( 'Removed', 'racketmanager' ) . ': ' . esc_html( mysql2date( $racketmanager->date_format, $player_club->removal_date ) ); ?>
+                                                                <?php echo esc_html__( 'Removed', 'racketmanager' ) . ': ' . esc_html( $player_club->removal_date_display ); ?>
                                                             </span>
                                                         </span>
                                                     </small>
@@ -115,13 +114,13 @@ global $racketmanager;
                                             }
                                             ?>
                                             <?php
-                                            if ( ! empty( $player_club->approval_date ) ) {
+                                            if ( ! empty( $player_club->approval_date_display ) ) {
                                                 ?>
                                                 <div class="media__content-subinfo">
                                                     <small class="media__subheading">
                                                         <span class="nav--link">
                                                             <span class="nav-link__value">
-                                                                <?php echo esc_html__( 'Added', 'racketmanager' ) . ': ' . esc_html( mysql2date( $racketmanager->date_format, $player_club->approval_date ) ); ?>
+                                                                <?php echo esc_html__( 'Added', 'racketmanager' ) . ': ' . esc_html( $player_club->approval_date_display ); ?>
                                                             </span>
                                                         </span>
                                                     </small>

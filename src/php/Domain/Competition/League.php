@@ -17,6 +17,7 @@ use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Team;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Services\Championship_Factory;
 use Racketmanager\Services\Competition\Competition_Notification_Service;
@@ -33,7 +34,6 @@ use function get_query_var;
 use function Racketmanager\get_club;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league_team;
-use function Racketmanager\get_match;
 use function Racketmanager\get_player;
 use function Racketmanager\get_team;
 use function Racketmanager\show_score;
@@ -646,6 +646,7 @@ class League {
         unset(
             $data['league_repository'],
             $data['fixture_repository'],
+            $data['rubber_repository'],
             $data['standings_service'],
             $data['league_schedule_service'],
             $data['competition_notification_service'],
@@ -662,6 +663,7 @@ class League {
         }
         $this->league_repository = null;
         $this->fixture_repository = null;
+        $this->rubber_repository = null;
         $this->standings_service = null;
         $this->league_schedule_service = null;
         $this->competition_notification_service = null;
@@ -672,6 +674,7 @@ class League {
 
     private ?League_Repository_Interface $league_repository = null;
     private ?Fixture_Repository_Interface $fixture_repository = null;
+    private ?Rubber_Repository_Interface $rubber_repository = null;
     private ?Standings_Service $standings_service = null;
     private ?League_Schedule_Service $league_schedule_service = null;
     private ?Competition_Notification_Service $competition_notification_service = null;
@@ -797,6 +800,11 @@ class League {
 
     public function set_fixture_repository( ?Fixture_Repository_Interface $fixture_repository ): self {
         $this->fixture_repository = $fixture_repository;
+        return $this;
+    }
+
+    public function set_rubber_repository( ?Rubber_Repository_Interface $rubber_repository ): self {
+        $this->rubber_repository = $rubber_repository;
         return $this;
     }
 
@@ -1712,8 +1720,8 @@ class League {
                     if ( $match ) {
                         $match->class = $class;
                     }
-                    if ( $player && $match ) {
-                        $match->rubbers = $match->get_rubbers( $player );
+                    if ( $player && $match && $this->rubber_repository ) {
+                        $match->set_rubbers( $this->rubber_repository->find_by_fixture_id( (int) $match->get_id(), (int) $player ) );
                     }
 
                     $matches[ $i ] = $match;
@@ -2487,13 +2495,10 @@ class League {
             'team'    => false,
             'count'   => false,
             'group'   => false,
-            'stats'   => false,
         );
         $args     = array_merge( $defaults, $args );
         $count    = $args['count'];
         $group    = $args['group'];
-        $stats    = $args['stats'];
-        $team     = $args['team'];
 
         if ( ! $args['season'] ) {
             $args['season'] = $this->current_season['name'] ?? '';
@@ -2510,32 +2515,12 @@ class League {
             if ( $player->system_record ) {
                 continue;
             }
-            if ( ! $stats ) {
-                $league_players[] = $player->get_fullname();
-            } else {
-                $player->matches = $player->get_matches( $this, $this->current_season['name'], 'league' );
-                $player->stats   = $player->get_stats();
-                if ( ! $team ) {
-                    $player->team = $this->get_player_team( array( 'player' => $player->get_id() ) );
-                }
-                $player->win_pct      = $player->stats['total']->win_pct;
-                $player->matches_won  = $player->stats['total']->matches_won;
-                $player->matches_lost = $player->stats['total']->matches_lost;
-                $player->played       = $player->stats['total']->played;
-                $league_players[]     = $player;
-            }
-        }
-        if ( ! $stats ) {
-            asort( $league_players );
-        } else {
-            $won    = array_column( $league_players, 'matches_won' );
-            $played = array_column( $league_players, 'played' );
-            array_multisort( $won, SORT_DESC, $played, SORT_ASC, $league_players );
+            $league_players[] = $player;
         }
         if ( $group ) {
             $this->players = array();
             foreach ( $league_players as $player ) {
-                $key = strtoupper( substr( $player, 0, 1 ) );
+                $key = strtoupper( substr( $player->get_fullname(), 0, 1 ) );
                 if ( false === array_key_exists( $key, $this->players ) ) {
                     $this->players[ $key ] = array();
                 }
@@ -2547,26 +2532,6 @@ class League {
         }
 
         return $this->players;
-    }
-    /**
-     * Get Player team function
-     *
-     * @param array $args array of parameters.
-     *
-     * @return object team
-     */
-    private function get_player_team( array $args = array() ): object {
-        $defaults = array(
-            'season' => false,
-            'team'   => false,
-            'player' => false,
-        );
-        $args     = array_merge( $defaults, $args );
-        if ( ! $args['season'] ) {
-            $args['season'] = $this->current_season['name'] ?? '';
-        }
-        $team = $this->league_repository ? $this->league_repository->get_player_team( $this->id, $args ) : null;
-        return $team ?? new stdClass();
     }
     /**
      * Set rounds function

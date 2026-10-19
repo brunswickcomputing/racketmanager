@@ -6,6 +6,10 @@ namespace Racketmanager\Tests\Unit\Controllers\Admin;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Admin\Controllers\Tournament_Plan_Admin_Controller;
+use Racketmanager\Admin\Presenters\Admin_Plan_Presenter;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
+use Racketmanager\Services\Fixture\Fixture_Detail_Service;
+use Racketmanager\Services\Fixture\Fixture_Relation_Loader;
 use Racketmanager\Admin\View_Models\Tournament_Plan_Page_View_Model;
 use Racketmanager\Domain\Tournament;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Details_DTO;
@@ -24,6 +28,18 @@ class Tournament_Plan_Admin_Controller_Test extends TestCase {
     protected function tearDown(): void {
         unset( $_SERVER['REQUEST_METHOD'] );
         parent::tearDown();
+    }
+
+    private function make_controller( Tournament_Service $tournament_service, Action_Guard_Interface $guard ): Tournament_Plan_Admin_Controller {
+        return new Tournament_Plan_Admin_Controller(
+            $tournament_service,
+            $guard,
+            new Admin_Plan_Presenter(
+                $this->createStub( Fixture_Detail_Service::class ),
+                $this->createStub( Player_Repository_Interface::class ),
+                new Fixture_Relation_Loader()
+            )
+        );
     }
 
     public function test_plan_page_get_renders_view_model(): void {
@@ -48,7 +64,7 @@ class Tournament_Plan_Admin_Controller_Test extends TestCase {
             ->with( $tournament_id )
             ->willReturn( [] );
 
-        $controller = new Tournament_Plan_Admin_Controller( $tournament_service, $guard );
+        $controller = $this->make_controller( $tournament_service, $guard );
 
         $result = $controller->plan_page( [ 'tournament' => (string) $tournament_id, 'tab' => 'fixtures' ], [] );
 
@@ -75,7 +91,7 @@ class Tournament_Plan_Admin_Controller_Test extends TestCase {
             ->with( $tournament_id, self::isInstanceOf( \Racketmanager\Domain\DTO\Tournament\Tournament_Finals_Request_DTO::class ) )
             ->willReturn( true );
 
-        $controller = new Tournament_Plan_Admin_Controller( $tournament_service, $guard );
+        $controller = $this->make_controller( $tournament_service, $guard );
 
         $result = $controller->plan_page( [ 'page' => 'racketmanager-tournaments' ], $post_data );
 
@@ -94,6 +110,7 @@ class Tournament_Plan_Admin_Controller_Test extends TestCase {
         $post_data = [
             'saveTournamentPlan' => '1',
             'tournamentId' => (string) $tournament_id,
+            'startTime' => '14:30',
         ];
 
         $wp_error = new WP_Error( 'error_code', 'Error message' );
@@ -108,13 +125,14 @@ class Tournament_Plan_Admin_Controller_Test extends TestCase {
         $tournament_service->method( 'get_tournament_with_details' )->willReturn( $tournament_details );
         $tournament_service->method( 'get_finals_matches_for_tournament' )->willReturn( [] );
 
-        $controller = new Tournament_Plan_Admin_Controller( $tournament_service, $guard );
+        $controller = $this->make_controller( $tournament_service, $guard );
 
         $result = $controller->plan_page( [], $post_data );
 
         self::assertArrayHasKey( 'view_model', $result );
-        self::assertTrue( $result['view_model']->validator->error );
-        self::assertContains( 'Error message', $result['view_model']->validator->err_msgs );
+        self::assertTrue( $result['view_model']->errors->has( 'error_code' ) );
+        self::assertSame( 'Error message', $result['view_model']->errors->message( 'error_code' ) );
+        self::assertSame( '14:30', $result['view_model']->config_values['start_time'] );
     }
 
     public function test_plan_page_reset_plan_redirects(): void {
@@ -134,7 +152,7 @@ class Tournament_Plan_Admin_Controller_Test extends TestCase {
             ->with( $tournament_id )
             ->willReturn( true );
 
-        $controller = new Tournament_Plan_Admin_Controller( $tournament_service, $guard );
+        $controller = $this->make_controller( $tournament_service, $guard );
 
         $result = $controller->plan_page( [ 'page' => 'racketmanager-tournaments' ], $post_data );
 
@@ -159,7 +177,7 @@ class Tournament_Plan_Admin_Controller_Test extends TestCase {
             ->with( $tournament_id, self::isInstanceOf( \Racketmanager\Domain\DTO\Tournament\Tournament_Finals_Config_Request_DTO::class ) )
             ->willReturn( true );
 
-        $controller = new Tournament_Plan_Admin_Controller( $tournament_service, $guard );
+        $controller = $this->make_controller( $tournament_service, $guard );
 
         $result = $controller->plan_page( [ 'page' => 'racketmanager-tournaments' ], $post_data );
 
@@ -179,7 +197,7 @@ class Tournament_Plan_Admin_Controller_Test extends TestCase {
             ->with( $tournament_id )
             ->willThrowException( new Tournament_Not_Found_Exception( 'Not found' ) );
 
-        $controller = new Tournament_Plan_Admin_Controller( $tournament_service, $guard );
+        $controller = $this->make_controller( $tournament_service, $guard );
 
         $this->expectException( Tournament_Not_Found_Exception::class );
         $controller->plan_page( [ 'tournament' => (string) $tournament_id ], [] );

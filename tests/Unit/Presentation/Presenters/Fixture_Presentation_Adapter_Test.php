@@ -12,9 +12,11 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
+use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Domain\Team;
 use Racketmanager\Presentation\Presenters\Fixture_Presentation_Adapter;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Team_Service;
 use stdClass;
@@ -44,6 +46,7 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
         $league->method( 'get_id' )->willReturn( 10 );
         $league->method( 'get_name' )->willReturn( 'Division 1' );
         $league->method( 'get_event_id' )->willReturn( 20 );
+        $league->num_rubbers = 2;
 
         $event = $this->createMock( Event::class );
         $event->method( 'get_id' )->willReturn( 20 );
@@ -78,7 +81,17 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
             [ 2, $team2_dto ],
         ] );
 
-        $adapter = Fixture_Presentation_Adapter::from_fixture( $fixture, $comp_service, $team_service );
+        $rubber = ( new \ReflectionClass( Rubber::class ) )->newInstanceWithoutConstructor();
+        $rubber->id = 1;
+        $rubber_repository = $this->createMock( Rubber_Repository_Interface::class );
+        $rubber_repository->expects( $this->once() )->method( 'find_by_fixture_id' )->with( 101 )->willReturn( [ $rubber ] );
+
+        $adapter = Fixture_Presentation_Adapter::from_fixture(
+            $fixture,
+            $comp_service,
+            $team_service,
+            rubber_repository: $rubber_repository
+        );
 
         $this->assertSame( 101, $adapter->id );
         $this->assertSame( 2, $adapter->leg );
@@ -92,6 +105,7 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
         $this->assertSame( 'Club A 1', $adapter->home_title );
         $this->assertSame( 'Club B 1', $adapter->away_title );
         $this->assertSame( 'Club A 1 - Club B 1', $adapter->title );
+        $this->assertSame( [ $rubber ], $adapter->get_rubbers() );
     }
 
     public function test_adapter_uses_option_gateway_for_date_format(): void {

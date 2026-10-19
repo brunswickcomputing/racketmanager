@@ -60,6 +60,32 @@ class Container_Bootstrap_Services_Test extends TestCase {
         $this->assertInstanceOf( Fixture_Lifecycle_Service::class, $service );
     }
 
+    public function test_container_resolves_fixture_result_manager_first_and_wires_maintenance(): void {
+        $app_mock = $this->createStub( RacketManager::class );
+        $app_mock->method( 'get_options' )->willReturn( [] );
+        $c = Container_Bootstrap::boot( $app_mock );
+
+        $manager = $c->get( 'fixture_result_manager' );
+        $this->assertInstanceOf( \Racketmanager\Services\Fixture\Fixture_Result_Manager::class, $manager );
+        $this->assertInstanceOf( \Racketmanager\Services\Fixture\Fixture_Maintenance_Service::class, $manager->get_fixture_maintenance_service() );
+
+        $maintenance = $c->get( 'fixture_maintenance_service' );
+        $this->assertSame( $manager->get_fixture_maintenance_service(), $maintenance );
+    }
+
+    public function test_container_resolves_fixture_maintenance_service_first_and_shares_instances(): void {
+        $app_mock = $this->createStub( RacketManager::class );
+        $app_mock->method( 'get_options' )->willReturn( [] );
+        $c = Container_Bootstrap::boot( $app_mock );
+
+        $maintenance = $c->get( 'fixture_maintenance_service' );
+        $this->assertInstanceOf( \Racketmanager\Services\Fixture\Fixture_Maintenance_Service::class, $maintenance );
+
+        $manager = $c->get( 'fixture_result_manager' );
+        $this->assertInstanceOf( \Racketmanager\Services\Fixture\Fixture_Result_Manager::class, $manager );
+        $this->assertSame( $maintenance, $manager->get_fixture_maintenance_service() );
+    }
+
     public function test_fixture_repository_and_permission_service_resolve_without_cycle(): void {
         $repository = $this->container->get( 'fixture_repository' );
         $this->assertInstanceOf( Fixture_Repository::class, $repository );
@@ -77,6 +103,22 @@ class Container_Bootstrap_Services_Test extends TestCase {
 
         $this->assertSame( $league_repository, $this->container->get( 'league_repository' ) );
         $this->assertSame( $fixture_repository, $this->container->get( 'fixture_repository' ) );
+    }
+
+    public function test_team_service_and_fixture_repository_resolve_without_cycle(): void {
+        $team_service = $this->container->get( 'team_service' );
+        $this->assertInstanceOf( \Racketmanager\Services\Team_Service::class, $team_service );
+
+        $fixture_repository = $this->container->get( 'fixture_repository' );
+        $this->assertInstanceOf( Fixture_Repository::class, $fixture_repository );
+    }
+
+    public function test_fixture_repository_and_team_service_resolve_without_cycle_reverse_order(): void {
+        $fixture_repository = $this->container->get( 'fixture_repository' );
+        $this->assertInstanceOf( Fixture_Repository::class, $fixture_repository );
+
+        $team_service = $this->container->get( 'team_service' );
+        $this->assertInstanceOf( \Racketmanager\Services\Team_Service::class, $team_service );
     }
 
     public function test_container_resolves_player_query_and_stats_services(): void {
@@ -146,6 +188,17 @@ class Container_Bootstrap_Services_Test extends TestCase {
 
         $this->assertTrue( $this->container->has( 'rest_controller_adapter' ) );
         $this->assertInstanceOf( \Racketmanager\Infrastructure\Wordpress\Rest\Rest_Controller_Adapter::class, $this->container->get( 'rest_controller_adapter' ) );
+    }
+
+    public function test_match_presenters_carry_the_shared_team_match_row_presenter(): void {
+        $row_presenter = $this->container->get( 'team_match_row_presenter' );
+        $this->assertInstanceOf( \Racketmanager\Presentation\Presenters\Team_Match_Row_Presenter::class, $row_presenter );
+
+        foreach ( [ 'tournament_presenter', 'fixture_presenter' ] as $id ) {
+            $presenter = $this->container->get( $id );
+            $property  = new \ReflectionProperty( $presenter, 'team_match_row_presenter' );
+            $this->assertSame( $row_presenter, $property->getValue( $presenter ), $id . ' must be wired with the row presenter.' );
+        }
     }
 
     public function test_container_resolves_matches_shortcode_query_chain(): void {
@@ -252,6 +305,11 @@ class Container_Bootstrap_Services_Test extends TestCase {
     }
 
     public function test_container_resolves_message_shortcode_components(): void {
+        $this->assertTrue( $this->container->has( 'message_repository' ) );
+        $this->assertInstanceOf( \Racketmanager\Repositories\Interfaces\Message_Repository_Interface::class, $this->container->get( 'message_repository' ) );
+        $this->assertTrue( $this->container->has( 'user_repository' ) );
+        $this->assertInstanceOf( \Racketmanager\Repositories\Interfaces\User_Repository_Interface::class, $this->container->get( 'user_repository' ) );
+
         $handlers = [
             'get_messages_handler',
             'get_message_handler',
@@ -284,5 +342,7 @@ class Container_Bootstrap_Services_Test extends TestCase {
         }
 
         $this->assertInstanceOf( \Racketmanager\Infrastructure\Wordpress\Shortcodes\General_Shortcode_Adapter::class, $this->container->get( 'general_shortcode_adapter' ) );
+        $this->assertTrue( $this->container->has( 'championship_manager' ) );
+        $this->assertInstanceOf( \Racketmanager\Services\Championship_Manager::class, $this->container->get( 'championship_manager' ) );
     }
 }

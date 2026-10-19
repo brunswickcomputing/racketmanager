@@ -11,6 +11,7 @@ use Racketmanager\Application\General\Queries\Get_Favourites_Handler;
 use Racketmanager\Application\General\Queries\Get_Favourites_Query;
 use Racketmanager\Application\General\Queries\Get_Invoice_Handler;
 use Racketmanager\Application\General\Queries\Get_Invoice_Query;
+use Racketmanager\Presentation\Presenters\Invoice_Presenter;
 use Racketmanager\Application\General\Queries\Get_Memberships_Handler;
 use Racketmanager\Application\General\Queries\Get_Memberships_Query;
 use Racketmanager\Application\General\Queries\Get_Player_Handler;
@@ -18,32 +19,51 @@ use Racketmanager\Application\General\Queries\Get_Player_Query;
 use Racketmanager\Application\General\Queries\Get_Player_Search_Handler;
 use Racketmanager\Application\General\Queries\Get_Player_Search_Query;
 use Racketmanager\Application\General\Queries\Get_Players_Handler;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
 use Racketmanager\Application\General\Queries\Get_Players_Query;
 use Racketmanager\Application\General\Queries\Get_Purchase_Order_Handler;
 use Racketmanager\Application\General\Queries\Get_Purchase_Order_Query;
 use Racketmanager\Application\General\Queries\Get_Team_Order_Handler;
 use Racketmanager\Application\General\Queries\Get_Team_Order_Query;
+use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Club_Player;
+use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
 use Racketmanager\Domain\DTO\Finance\Invoice_Full_Details_DTO;
+use Racketmanager\Domain\DTO\Player\Players_List_DTO;
 use Racketmanager\Domain\Invoice;
 use Racketmanager\Domain\Player;
+use Racketmanager\Domain\User;
+use Racketmanager\Domain\Value_Objects\Currency;
+use Racketmanager\Presentation\View_Models\Club_Membership_View_Model;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\General_Shortcode_Adapter;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Presentation\View_Models\Competition_List_Item_View_Model;
 use Racketmanager\Public\Shortcodes;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Services\Player_Query_Service;
+use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Registration_Service;
+use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
 class General_Shortcode_Handlers_Test extends TestCase {
     use Creates_Test_Container;
+    use Manages_Wordpress_Globals;
 
     private RacketManager $racketmanager;
     private View_Renderer_Interface $renderer;
@@ -51,6 +71,7 @@ class General_Shortcode_Handlers_Test extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        $this->backup_globals();
 
         $this->racketmanager             = $this->createStub( RacketManager::class );
         $this->racketmanager->site_name  = 'Test Club';
@@ -78,19 +99,114 @@ class General_Shortcode_Handlers_Test extends TestCase {
         $this->view_presenter = new Shortcode_View_Presenter( $template_renderer );
     }
 
-    public function test_get_players_handler_success(): void {
-        $handler = new Get_Players_Handler();
+    protected function tearDown(): void {
+        $this->restore_globals();
+        parent::tearDown();
+    }
+
+    public function test_get_players_handler_with_search_and_favourites(): void {
+        $player = new Players_List_DTO( [
+            'id'           => 42,
+            'firstname'    => 'John',
+            'surname'      => 'Smith',
+            'display_name' => 'John Smith',
+        ] );
+
+        $player_repository = $this->createMock( Player_Repository_Interface::class );
+        $player_repository->expects( $this->once() )
+            ->method( 'find_players_summary' )
+            ->with( [ 'name' => 'Smith' ] )
+            ->willReturn( [ $player ] );
+
+        $user = $this->createMock( User::class );
+        $user->expects( $this->once() )
+            ->method( 'get_favourites' )
+            ->with( 'player' )
+            ->willReturn( [ 42 ] );
+
+        $user_repository = $this->createMock( User_Repository_Interface::class );
+        $user_repository->expects( $this->once() )
+            ->method( 'find' )
+            ->with( 10 )
+            ->willReturn( $user );
+
+        $template_renderer = new Shortcode_Template_Renderer( $this->renderer );
+
+        $handler = new Get_Players_Handler(
+            $player_repository,
+            $user_repository,
+            $template_renderer,
+            new Player_Presenter()
+        );
         $query   = new Get_Players_Query(
             template: 'custom',
             search_string: 'Smith',
-            is_logged_in: false,
-            user_id: null
+            is_logged_in: true,
+            user_id: 10
         );
 
         $vm = $handler->handle( $query );
 
         $this->assertSame( 'players-custom', $vm->template );
         $this->assertSame( 'Smith', $vm->vars['search_string'] );
+        $this->assertIsString( $vm->vars['search_results'] );
+        $this->assertSame( 'rendered:players-list', $vm->vars['search_results'] );
+        $this->assertSame( [ 42 ], $vm->vars['favourites'] );
+    }
+
+    public function test_get_players_handler_without_search_and_guest(): void {
+        $player_repository = $this->createMock( Player_Repository_Interface::class );
+        $player_repository->expects( $this->never() )->method( 'find_players_summary' );
+
+        $user_repository = $this->createMock( User_Repository_Interface::class );
+        $user_repository->expects( $this->never() )->method( 'find' );
+
+        $handler = new Get_Players_Handler(
+            $player_repository,
+            $user_repository,
+            new Shortcode_Template_Renderer( $this->renderer ),
+            new Player_Presenter()
+        );
+        $query   = new Get_Players_Query(
+            template: null,
+            search_string: '',
+            is_logged_in: false,
+            user_id: null
+        );
+
+        $vm = $handler->handle( $query );
+
+        $this->assertSame( 'players', $vm->template );
+        $this->assertSame( '', $vm->vars['search_string'] );
+        $this->assertNull( $vm->vars['search_results'] );
+        $this->assertSame( [], $vm->vars['favourites'] );
+    }
+
+    public function test_get_players_handler_user_not_found(): void {
+        $player_repository = $this->createMock( Player_Repository_Interface::class );
+        $player_repository->expects( $this->never() )->method( 'find_players_summary' );
+
+        $user_repository = $this->createMock( User_Repository_Interface::class );
+        $user_repository->expects( $this->once() )
+            ->method( 'find' )
+            ->with( 999 )
+            ->willReturn( null );
+
+        $handler = new Get_Players_Handler(
+            $player_repository,
+            $user_repository,
+            new Shortcode_Template_Renderer( $this->renderer ),
+            new Player_Presenter()
+        );
+        $query   = new Get_Players_Query(
+            template: null,
+            search_string: '',
+            is_logged_in: true,
+            user_id: 999
+        );
+
+        $vm = $handler->handle( $query );
+
         $this->assertSame( [], $vm->vars['favourites'] );
     }
 
@@ -105,8 +221,79 @@ class General_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'Jones', $query->search_string );
     }
 
+    public function test_get_players_handler_renders_real_players_list_template(): void {
+        $GLOBALS['wp_stubs_is_user_logged_in'] = false;
+        $GLOBALS['racketmanager'] = new class {
+            public function is_user_favourite( string $type, int $id ): bool {
+                return false;
+            }
+        };
+
+        $player = new Players_List_DTO( [
+            'ID'           => 42,
+            'firstname'    => 'Jane',
+            'surname'      => 'Smith',
+            'display_name' => 'Jane Smith',
+        ] );
+
+        $player_repository = $this->createMock( Player_Repository_Interface::class );
+        $player_repository->expects( $this->once() )
+            ->method( 'find_players_summary' )
+            ->with( [ 'name' => 'Smith' ] )
+            ->willReturn( [ $player ] );
+
+        $handler = new Get_Players_Handler(
+            $player_repository,
+            $this->createStub( User_Repository_Interface::class ),
+            new Shortcode_Template_Renderer( new Php_View_Renderer( dirname( __DIR__, 5 ) . '/templates/' ) ),
+            new Player_Presenter()
+        );
+        $vm = $handler->handle( new Get_Players_Query( template: null, search_string: 'Smith', is_logged_in: false, user_id: null ) );
+
+        $this->assertIsString( $vm->vars['search_results'] );
+        $this->assertStringContainsString( '1 results', $vm->vars['search_results'] );
+        $this->assertStringContainsString( 'id="searchResults"', $vm->vars['search_results'] );
+        $this->assertStringContainsString( 'Jane Smith', $vm->vars['search_results'] );
+        $this->assertStringContainsString( '/player/jane-smith/', $vm->vars['search_results'] );
+    }
+
+    public function test_get_player_handler_not_found_by_btm(): void {
+        $player_service = $this->createMock( Player_Service::class );
+        $player_service->expects( $this->once() )
+            ->method( 'find_player_by_btm' )
+            ->with( 'BTM404' )
+            ->willReturn( null );
+        $player_service->expects( $this->never() )->method( 'get_player_by_name' );
+
+        $handler = new Get_Player_Handler(
+            $this->createStub( Player_Presenter::class ),
+            $this->createStub( Player_Query_Service::class ),
+            $this->createStub( Player_Stats_Service::class ),
+            $player_service,
+            null,
+            null
+        );
+        $vm = $handler->handle( new Get_Player_Query( template: null, player_name: null, btm: 'BTM404' ) );
+
+        $this->assertTrue( $vm->is_error() );
+        $this->assertSame( 'Player not found', $vm->error_message );
+    }
+
     public function test_get_player_handler_not_found(): void {
-        $handler = new Get_Player_Handler();
+        $player_service = $this->createMock( Player_Service::class );
+        $player_service->expects( $this->once() )
+            ->method( 'get_player_by_name' )
+            ->with( 'non-existent' )
+            ->willReturn( null );
+
+        $handler = new Get_Player_Handler(
+            $this->createStub( Player_Presenter::class ),
+            $this->createStub( Player_Query_Service::class ),
+            $this->createStub( Player_Stats_Service::class ),
+            $player_service,
+            null,
+            null
+        );
         $query   = new Get_Player_Query(
             template: null,
             player_name: 'non-existent',
@@ -120,26 +307,35 @@ class General_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_get_player_handler_success(): void {
-        $player = new class {
-            public int $id = 42;
-            public ?object $stats = null;
-            public function get_id(): int { return 42; }
-            public function get_career_stats(): object { return (object) [ 'played' => 10, 'won' => 8 ]; }
-            public function get_competitions( array $args = [] ): array { return [ 'comp1' ]; }
-        };
-
-        $GLOBALS['wp_stubs_players']['btm']['BTM123'] = $player;
+        $player = new Player();
+        $player->id = 42;
+        $player->display_name = 'John Smith';
 
         $registration_service = $this->createStub( Registration_Service::class );
         $registration_service->method( 'get_clubs_for_player' )->willReturn( [ 'Club A' ] );
 
         $player_service = $this->createStub( Player_Service::class );
         $player_service->method( 'get_titles_for_player' )->willReturn( [ 'Title 1' ] );
+        $player_service->method( 'find_player_by_btm' )->willReturn( $player );
 
         $tournament_service = $this->createStub( Tournament_Service::class );
-        $tournament_service->method( 'get_tournaments_for_player' )->willReturn( [ 'Tourn 1' ] );
+        $tournament_service->method( 'get_tournaments_for_player' )->willReturn( [ (object) [ 'name' => 'Summer Open', 'date_start' => '2026-06-01', 'date_end' => '2026-06-07' ] ] );
 
-        $handler = new Get_Player_Handler( $registration_service, $player_service, $tournament_service );
+        $player_query_service = $this->createStub( Player_Query_Service::class );
+        $player_query_service->method( 'get_competitions' )->willReturn( [ (object) [ 'name' => 'County Cup', 'season' => '2026' ] ] );
+        $player_stats_service = $this->createStub( Player_Stats_Service::class );
+        $player_stats_service->method( 'get_career_stats' )->willReturn( [ 'played' => 10, 'won' => 8 ] );
+
+        $player_presenter = new Player_Presenter( new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ) );
+
+        $handler = new Get_Player_Handler(
+            $player_presenter,
+            $player_query_service,
+            $player_stats_service,
+            $player_service,
+            $registration_service,
+            $tournament_service
+        );
         $query   = new Get_Player_Query( template: 'profile', player_name: null, btm: 'BTM123' );
 
         $vm = $handler->handle( $query );
@@ -149,10 +345,48 @@ class General_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( $player, $vm->vars['player'] );
         $this->assertSame( [ 'Club A' ], $vm->vars['clubs'] );
         $this->assertSame( [ 'Title 1' ], $vm->vars['titles'] );
-        $this->assertSame( [ 'Tourn 1' ], $vm->vars['player_competitions']['tournament'] );
-        $this->assertSame( [ 'comp1' ], $vm->vars['player_competitions']['cup'] );
-        $this->assertSame( [ 'comp1' ], $vm->vars['player_competitions']['league'] );
-        $this->assertSame( 10, $player->stats->played );
+        $this->assertCount( 1, $vm->vars['player_competitions']['tournament'] );
+        $this->assertInstanceOf( Competition_List_Item_View_Model::class, $vm->vars['player_competitions']['tournament'][0] );
+        $this->assertSame( 'Summer Open', $vm->vars['player_competitions']['tournament'][0]->name );
+        $this->assertSame( '/tournament/summer-open/player/john-smith/', $vm->vars['player_competitions']['tournament'][0]->link );
+        $this->assertCount( 1, $vm->vars['player_competitions']['cup'] );
+        $this->assertInstanceOf( Competition_List_Item_View_Model::class, $vm->vars['player_competitions']['cup'][0] );
+        $this->assertSame( 'County Cup 2026', $vm->vars['player_competitions']['cup'][0]->name );
+        $this->assertSame( '/county-cup/2026/player/john-smith/', $vm->vars['player_competitions']['cup'][0]->link );
+        $this->assertCount( 1, $vm->vars['player_competitions']['league'] );
+        $this->assertInstanceOf( Competition_List_Item_View_Model::class, $vm->vars['player_competitions']['league'][0] );
+        $this->assertSame( 'County Cup 2026', $vm->vars['player_competitions']['league'][0]->name );
+        $this->assertSame( 10, $player->stats['played'] );
+    }
+
+    public function test_get_player_handler_success_by_name(): void {
+        $player = new Player();
+        $player->id = 55;
+
+        $player_service = $this->createStub( Player_Service::class );
+        $player_service->method( 'get_player_by_name' )->willReturn( $player );
+        $player_service->method( 'get_titles_for_player' )->willReturn( [] );
+
+        $player_query_service = $this->createStub( Player_Query_Service::class );
+        $player_query_service->method( 'get_competitions' )->willReturn( [] );
+        $player_stats_service = $this->createStub( Player_Stats_Service::class );
+        $player_stats_service->method( 'get_career_stats' )->willReturn( [] );
+
+        $handler = new Get_Player_Handler(
+            new Player_Presenter( new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ) ),
+            $player_query_service,
+            $player_stats_service,
+            $player_service,
+            null,
+            null
+        );
+        $query   = new Get_Player_Query( template: null, player_name: 'John Doe', btm: null );
+
+        $vm = $handler->handle( $query );
+
+        $this->assertFalse( $vm->is_error() );
+        $this->assertSame( 'player', $vm->template );
+        $this->assertSame( $player, $vm->vars['player'] );
     }
 
     public function test_get_player_query_parsing(): void {
@@ -167,8 +401,9 @@ class General_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_get_favourites_handler_requires_login(): void {
-        $handler = new Get_Favourites_Handler();
-        $query   = new Get_Favourites_Query(
+        $user_repository = $this->createStub( User_Repository_Interface::class );
+        $handler         = new Get_Favourites_Handler( $user_repository );
+        $query           = new Get_Favourites_Query(
             template: null,
             is_logged_in: false,
             user_id: null
@@ -180,12 +415,40 @@ class General_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'You must be logged in to view favourites', $vm->error_message );
     }
 
+    public function test_get_favourites_handler_when_logged_in(): void {
+        $favourite_types = [ [ 'name' => 'player', 'favourites' => [ 10, 20 ] ] ];
+        $user = $this->createStub( \Racketmanager\Domain\User::class );
+        $user->method( 'get_favourites' )->willReturn( $favourite_types );
+
+        $user_repository = $this->createMock( User_Repository_Interface::class );
+        $user_repository->expects( $this->once() )
+            ->method( 'find' )
+            ->with( 42 )
+            ->willReturn( $user );
+
+        $handler = new Get_Favourites_Handler( $user_repository );
+        $query   = new Get_Favourites_Query(
+            template: 'custom',
+            is_logged_in: true,
+            user_id: 42
+        );
+
+        $vm = $handler->handle( $query );
+
+        $this->assertFalse( $vm->is_error() );
+        $this->assertSame( 'form-favourites-custom', $vm->template );
+        $this->assertSame( 'form', $vm->template_type );
+        $this->assertSame( $favourite_types, $vm->vars['favourite_types'] );
+    }
+
     public function test_get_invoice_handler_not_found(): void {
         $finance_service = $this->createStub( Finance_Service::class );
         $finance_service->method( 'get_full_invoice_details' )
             ->willThrowException( new Invoice_Not_Found_Exception( 'Invoice missing' ) );
+        $settings_service = $this->createStub( Settings_Service::class );
+        $option_gateway   = $this->createStub( Option_Gateway_Interface::class );
 
-        $handler = new Get_Invoice_Handler( $finance_service, $this->racketmanager );
+        $handler = new Get_Invoice_Handler( $finance_service, $settings_service, $option_gateway, new Invoice_Presenter() );
         $query   = new Get_Invoice_Query( id: 999 );
 
         $vm = $handler->handle( $query );
@@ -204,8 +467,26 @@ class General_Shortcode_Handlers_Test extends TestCase {
         $finance_service = $this->createStub( Finance_Service::class );
         $finance_service->method( 'get_full_invoice_details' )
             ->willReturn( $invoice_dto );
+        $finance_service->method( 'get_currency' )->willReturn( Currency::GBP );
 
-        $handler = new Get_Invoice_Handler( $finance_service, $this->racketmanager );
+        $settings_service = $this->createMock( Settings_Service::class );
+        $settings_service->expects( $this->once() )
+            ->method( 'get_category' )
+            ->with( 'billing', [] )
+            ->willReturn( [ 'billingCurrency' => 'GBP', 'vat_rate' => 20 ] );
+
+        $option_gateway = $this->createStub( Option_Gateway_Interface::class );
+        $option_gateway->method( 'get_option' )
+            ->willReturnCallback( function ( $key, $default = null ) {
+                return match ( $key ) {
+                    'blogname'    => 'Leigh &amp; Westcliff Tennis',
+                    'siteurl'     => 'https://leighleague.org',
+                    'date_format' => 'd-m-Y',
+                    default       => $default,
+                };
+            } );
+
+        $handler = new Get_Invoice_Handler( $finance_service, $settings_service, $option_gateway, new Invoice_Presenter() );
         $query   = new Get_Invoice_Query( id: 10 );
 
         $vm = $handler->handle( $query );
@@ -213,7 +494,50 @@ class General_Shortcode_Handlers_Test extends TestCase {
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'invoice', $vm->template );
         $this->assertSame( 2026001, $vm->vars['invoice_number'] );
-        $this->assertSame( 'Test Club', $vm->vars['organisation_name'] );
+        $this->assertSame( [ 'billingCurrency' => 'GBP', 'vat_rate' => 20 ], $vm->vars['billing'] );
+        $this->assertSame( 'Leigh & Westcliff Tennis', $vm->vars['organisation_name'] );
+        $this->assertInstanceOf( \Racketmanager\Presentation\View_Models\Invoice_View_Model::class, $vm->vars['invoice'] );
+    }
+
+    public function test_get_invoice_handler_with_injected_settings_and_gateway(): void {
+        $invoice = $this->createStub( Invoice::class );
+        $invoice->method( 'get_invoice_number' )->willReturn( 2026002 );
+
+        $invoice_dto          = $this->createStub( Invoice_Full_Details_DTO::class );
+        $invoice_dto->invoice = $invoice;
+
+        $finance_service = $this->createStub( Finance_Service::class );
+        $finance_service->method( 'get_full_invoice_details' )
+            ->willReturn( $invoice_dto );
+        $finance_service->method( 'get_currency' )->willReturn( Currency::GBP );
+
+        $settings_service = $this->createMock( Settings_Service::class );
+        $settings_service->expects( $this->once() )
+            ->method( 'get_category' )
+            ->with( 'billing', [] )
+            ->willReturn( [ 'vat_number' => 'GB123456789' ] );
+
+        $option_gateway = $this->createStub( Option_Gateway_Interface::class );
+        $option_gateway->method( 'get_option' )
+            ->willReturnCallback( function ( $key, $default = null ) {
+                return match ( $key ) {
+                    'blogname'    => 'Leigh & Westcliff Tennis Club',
+                    'siteurl'     => 'https://leighleague.org',
+                    'date_format' => 'd-m-Y',
+                    default       => $default,
+                };
+            } );
+
+        $handler = new Get_Invoice_Handler( $finance_service, $settings_service, $option_gateway, new Invoice_Presenter() );
+        $query   = new Get_Invoice_Query( id: 20 );
+
+        $vm = $handler->handle( $query );
+
+        $this->assertFalse( $vm->is_error() );
+        $this->assertSame( 'invoice', $vm->template );
+        $this->assertSame( 'Leigh & Westcliff Tennis Club', $vm->vars['organisation_name'] );
+        $this->assertSame( [ 'vat_number' => 'GB123456789', 'billingCurrency' => 'GBP' ], $vm->vars['billing'] );
+        $this->assertInstanceOf( \Racketmanager\Presentation\View_Models\Invoice_View_Model::class, $vm->vars['invoice'] );
     }
 
     public function test_get_invoice_query_parsing_with_non_numeric_id(): void {
@@ -281,9 +605,40 @@ class General_Shortcode_Handlers_Test extends TestCase {
         $player_service = $this->createStub( Player_Service::class );
         $player_service->method( 'get_player' )->willReturn( $player );
 
+        $player_entity = new Player();
+        $player_entity->id = 42;
+        $player_entity->display_name = 'John Doe';
+
+        $club_active = new Club();
+        $club_active->id = 1;
+        $club_active->name = 'Current Club Display';
+        $club_active->shortcode = 'Current Club';
+
+        $reg_active = new Club_Player( (object) [
+            'id'           => 10,
+            'player_id'    => 42,
+            'club_id'      => 1,
+            'created_date' => '2026-01-10 10:00:00',
+        ] );
+        $dto_active = new Club_Player_DTO( $player_entity, $club_active, $reg_active );
+
+        $club_removed = new Club();
+        $club_removed->id = 2;
+        $club_removed->name = 'Old Club Display';
+        $club_removed->shortcode = 'Old Club';
+
+        $reg_removed = new Club_Player( (object) [
+            'id'           => 11,
+            'player_id'    => 42,
+            'club_id'      => 2,
+            'created_date' => '2025-01-10 10:00:00',
+            'removed_date' => '2025-12-01 12:00:00',
+        ] );
+        $dto_removed = new Club_Player_DTO( $player_entity, $club_removed, $reg_removed );
+
         $reg_service = $this->createStub( Registration_Service::class );
-        $reg_service->method( 'get_clubs_for_player' )->willReturnCallback( function ( $id, $type = null ) {
-            return 'removed' === $type ? [ 'Old Club' ] : [ 'Current Club' ];
+        $reg_service->method( 'get_clubs_for_player' )->willReturnCallback( function ( $id, $type = null ) use ( $dto_active, $dto_removed ) {
+            return 'removed' === $type ? [ $dto_removed ] : [ $dto_active ];
         } );
 
         $handler = new Get_Memberships_Handler( $player_service, $reg_service );
@@ -294,14 +649,24 @@ class General_Shortcode_Handlers_Test extends TestCase {
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'player-clubs-compact', $vm->template );
         $this->assertSame( 'account', $vm->template_type );
-        $this->assertSame( [ 'Current Club' ], $vm->vars['clubs'] );
-        $this->assertSame( [ 'Old Club' ], $vm->vars['clubs_archive'] );
+        $this->assertCount( 1, $vm->vars['clubs'] );
+        $this->assertInstanceOf( Club_Membership_View_Model::class, $vm->vars['clubs'][0] );
+        $this->assertSame( 'Current Club', $vm->vars['clubs'][0]->club_name );
+        $this->assertSame( 'Current Club Display', $vm->vars['clubs'][0]->club_display_name );
+        $this->assertCount( 1, $vm->vars['clubs_archive'] );
+        $this->assertInstanceOf( Club_Membership_View_Model::class, $vm->vars['clubs_archive'][0] );
+        $this->assertSame( 'Old Club', $vm->vars['clubs_archive'][0]->club_name );
+        $this->assertSame( 'Old Club Display', $vm->vars['clubs_archive'][0]->club_display_name );
     }
 
     public function test_get_player_search_handler_success(): void {
-        $this->racketmanager->method( 'get_all_players' )->willReturn( [ 'player1', 'player2' ] );
+        $player_repo = $this->createMock( Player_Repository_Interface::class );
+        $player_repo->expects( $this->once() )
+            ->method( 'find_players_summary' )
+            ->with( [ 'name' => 'Roger' ] )
+            ->willReturn( [ 'player1', 'player2' ] );
 
-        $handler = new Get_Player_Search_Handler( $this->racketmanager );
+        $handler = new Get_Player_Search_Handler( $player_repo );
         $query   = new Get_Player_Search_Query( search: 'Roger' );
 
         $vm = $handler->handle( $query );
@@ -315,7 +680,9 @@ class General_Shortcode_Handlers_Test extends TestCase {
         $club_service = $this->createStub( Club_Service::class );
         $club_service->method( 'get_clubs' )->willReturn( [] );
 
-        $handler = new Get_Team_Order_Handler( $club_service, $this->racketmanager );
+        $event_repo = $this->createStub( Event_Repository_Interface::class );
+
+        $handler = new Get_Team_Order_Handler( $club_service, $event_repo );
         $query   = new Get_Team_Order_Query();
 
         $vm = $handler->handle( $query );
@@ -328,9 +695,13 @@ class General_Shortcode_Handlers_Test extends TestCase {
         $club_service = $this->createStub( Club_Service::class );
         $club_service->method( 'get_clubs' )->willReturn( [ new stdClass() ] );
 
-        $this->racketmanager->method( 'get_events' )->willReturn( [ new stdClass() ] );
+        $event_repo = $this->createMock( Event_Repository_Interface::class );
+        $event_repo->expects( $this->once() )
+            ->method( 'find_all' )
+            ->with( [ 'entry_type' => 'team', 'reverse_rubbers' => true ] )
+            ->willReturn( [ new stdClass() ] );
 
-        $handler = new Get_Team_Order_Handler( $club_service, $this->racketmanager );
+        $handler = new Get_Team_Order_Handler( $club_service, $event_repo );
         $query   = new Get_Team_Order_Query( template: 'entry' );
 
         $vm = $handler->handle( $query );
@@ -341,6 +712,27 @@ class General_Shortcode_Handlers_Test extends TestCase {
         $this->assertNotEmpty( $vm->vars['events'] );
         $this->assertIsArray( $vm->vars['event_types'] );
         $this->assertIsArray( $vm->vars['age_groups'] );
+    }
+
+    public function test_get_team_order_handler_with_injected_event_repository(): void {
+        $club_service = $this->createStub( Club_Service::class );
+        $club_service->method( 'get_clubs' )->willReturn( [ new stdClass() ] );
+
+        $event_repo = $this->createMock( Event_Repository_Interface::class );
+        $event_repo->expects( $this->once() )
+            ->method( 'find_all' )
+            ->with( [ 'entry_type' => 'team', 'reverse_rubbers' => true ] )
+            ->willReturn( [ (object) [ 'id' => 10, 'name' => 'Men Division 1' ] ] );
+
+        $handler = new Get_Team_Order_Handler( $club_service, $event_repo );
+        $query   = new Get_Team_Order_Query( template: 'entry' );
+
+        $vm = $handler->handle( $query );
+
+        $this->assertFalse( $vm->is_error() );
+        $this->assertSame( 'team-order-entry', $vm->template );
+        $this->assertCount( 1, $vm->vars['clubs'] );
+        $this->assertCount( 1, $vm->vars['events'] );
     }
 
     public function test_get_alert_handler_success(): void {
@@ -375,8 +767,13 @@ class General_Shortcode_Handlers_Test extends TestCase {
         $template_renderer = new Shortcode_Template_Renderer( $real_renderer );
         $presenter         = new Shortcode_View_Presenter( $template_renderer );
 
-        $handler = new Get_Player_Search_Handler( $this->racketmanager );
-        $this->racketmanager->method( 'get_all_players' )->willReturn( [] );
+        $player_repo = $this->createMock( Player_Repository_Interface::class );
+        $player_repo->expects( $this->once() )
+            ->method( 'find_players_summary' )
+            ->with( [ 'name' => null ] )
+            ->willReturn( [] );
+
+        $handler = new Get_Player_Search_Handler( $player_repo );
 
         $query = new Get_Player_Search_Query();
         $vm    = $handler->handle( $query );
@@ -387,14 +784,38 @@ class General_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_adapter_and_facade_delegation(): void {
-        $players_handler        = new Get_Players_Handler();
-        $player_handler         = new Get_Player_Handler();
-        $favourites_handler     = new Get_Favourites_Handler();
-        $invoice_handler        = new Get_Invoice_Handler( null, $this->racketmanager );
+        $players_handler        = new Get_Players_Handler(
+            $this->createStub( Player_Repository_Interface::class ),
+            $this->createStub( User_Repository_Interface::class ),
+            new Shortcode_Template_Renderer( $this->renderer ),
+            new Player_Presenter()
+        );
+        $player_handler         = new Get_Player_Handler(
+            $this->createStub( Player_Presenter::class ),
+            $this->createStub( Player_Query_Service::class ),
+            $this->createStub( Player_Stats_Service::class ),
+            $this->createStub( Player_Service::class ),
+            null,
+            null
+        );
+        $favourites_handler     = new Get_Favourites_Handler(
+            $this->createStub( User_Repository_Interface::class )
+        );
+        $invoice_handler        = new Get_Invoice_Handler(
+            $this->createStub( Finance_Service::class ),
+            $this->createStub( Settings_Service::class ),
+            $this->createStub( Option_Gateway_Interface::class ),
+            new Invoice_Presenter()
+        );
         $purchase_order_handler = new Get_Purchase_Order_Handler();
         $memberships_handler    = new Get_Memberships_Handler();
-        $player_search_handler  = new Get_Player_Search_Handler( $this->racketmanager );
-        $team_order_handler     = new Get_Team_Order_Handler( null, $this->racketmanager );
+        $player_search_handler  = new Get_Player_Search_Handler(
+            $this->createStub( Player_Repository_Interface::class )
+        );
+        $team_order_handler     = new Get_Team_Order_Handler(
+            $this->createStub( Club_Service::class ),
+            $this->createStub( Event_Repository_Interface::class )
+        );
         $alert_handler          = new Get_Alert_Handler();
 
         $adapter = new General_Shortcode_Adapter(

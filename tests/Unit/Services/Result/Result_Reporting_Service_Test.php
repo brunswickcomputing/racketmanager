@@ -22,6 +22,7 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Settings;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Team;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
@@ -35,8 +36,8 @@ class Result_Reporting_Service_Test extends TestCase {
 
 	protected function setUp(): void {
 		parent::setUp();
-		if ( ! isset( $GLOBALS['racketmanager'] ) ) {
-			$GLOBALS['racketmanager']            = new stdClass();
+		if ( ! isset( $GLOBALS['racketmanager'] ) || ! ( $GLOBALS['racketmanager'] instanceof stdClass ) ) {
+			$GLOBALS['racketmanager'] = new stdClass();
 		}
 		$GLOBALS['racketmanager']->site_name = 'Test Site';
 	}
@@ -112,7 +113,7 @@ class Result_Reporting_Service_Test extends TestCase {
 		] );
 
 		$repository_provider = $this->setup_repository_provider_mock( $league, $event, $competition );
-		$service = new Result_Reporting_Service( $repository_provider );
+		$service = new Result_Reporting_Service( $repository_provider, $this->create_option_gateway() );
 		
 		$result = $service->report_result( $fixture );
 		$this->assertNull( $result );
@@ -134,7 +135,7 @@ class Result_Reporting_Service_Test extends TestCase {
 		$away_team->method('get_players')->willReturn([$player2]);
 
 		$repository_provider = $this->setup_repository_provider_mock( $league, $event, $competition, $home_team, $away_team );
-		$service = new Result_Reporting_Service( $repository_provider );
+		$service = new Result_Reporting_Service( $repository_provider, $this->create_option_gateway() );
 		
 		$result = $service->report_result( $fixture );
 
@@ -167,13 +168,34 @@ class Result_Reporting_Service_Test extends TestCase {
 		];
 
 		$repository_provider = $this->setup_repository_provider_mock( $league, $event, $competition, null, null, [ $rubber ] );
-		$service = new Result_Reporting_Service($repository_provider);
+		$service = new Result_Reporting_Service( $repository_provider, $this->create_option_gateway() );
 		
 		$result = $service->report_result( $fixture );
 
 		$this->assertNotNull( $result );
 		$this->assertCount( 1, $result->matches );
 		$this->assertEquals( 'Rubber Winner', $result->matches[0]->winner_name );
+	}
+
+	public function test_report_rubber_status_codes_skip_walkover_and_shared_and_mark_retired(): void {
+		$fixture     = $this->create_reporting_fixture();
+		$competition = $this->create_standard_competition();
+		$event       = $this->create_standard_event();
+		$league      = $this->create_standard_league( [ 'num_rubbers' => 3 ] );
+		$rubbers     = [
+			$this->create_rubber_entity( 1, 1 ),
+			$this->create_rubber_entity( 2, 3 ),
+			$this->create_rubber_entity( 3, 2 ),
+		];
+
+		$repository_provider = $this->setup_repository_provider_mock( $league, $event, $competition, null, null, $rubbers );
+		$service             = new Result_Reporting_Service( $repository_provider, $this->create_option_gateway() );
+		$result              = $service->report_result( $fixture );
+
+		$this->assertNotNull( $result );
+		$this->assertCount( 1, $result->matches );
+		$this->assertSame( 3, $result->matches[0]->match );
+		$this->assertSame( 'Retired', $result->matches[0]->score_code );
 	}
 
 	public function test_report_result_with_scores(): void {
@@ -196,7 +218,7 @@ class Result_Reporting_Service_Test extends TestCase {
 		$away_team->method('get_players')->willReturn([ (object) [ 'display_name' => 'Loser' ] ]);
 
 		$repository_provider = $this->setup_repository_provider_mock( $league, $event, $competition, $home_team, $away_team );
-		$service = new Result_Reporting_Service( $repository_provider );
+		$service = new Result_Reporting_Service( $repository_provider, $this->create_option_gateway() );
 		$result = $service->report_result( $fixture );
 
 		$this->assertNotNull( $result );
@@ -231,7 +253,7 @@ class Result_Reporting_Service_Test extends TestCase {
 
 		$repository_provider = $this->setup_repository_provider_mock($league, $event, $competition, $home_team, $away_team);
 
-		$service = new Result_Reporting_Service($repository_provider);
+		$service = new Result_Reporting_Service( $repository_provider, $this->create_option_gateway() );
 		$result = $service->report_result( $fixture );
 
 		$this->assertNotNull( $result );
@@ -249,7 +271,7 @@ class Result_Reporting_Service_Test extends TestCase {
 		$league = $this->create_standard_league( [ 'title' => 'League' ] );
 
 		$repository_provider = $this->setup_repository_provider_mock($league, $event, $competition);
-		$service = new Result_Reporting_Service($repository_provider);
+		$service = new Result_Reporting_Service( $repository_provider, $this->create_option_gateway() );
 		
 		$result = $service->report_result( $fixture );
 		$this->assertEquals( 'R', $result->matches[0]->score_code );
@@ -262,7 +284,7 @@ class Result_Reporting_Service_Test extends TestCase {
 		$league = $this->create_standard_league( [ 'title' => 'League' ] );
 
 		$repository_provider = $this->setup_repository_provider_mock($league, $event, $competition);
-		$service = new Result_Reporting_Service($repository_provider);
+		$service = new Result_Reporting_Service( $repository_provider, $this->create_option_gateway() );
 		
 		$result = $service->report_result( $fixture );
 		$this->assertNotNull( $result );
@@ -289,7 +311,7 @@ class Result_Reporting_Service_Test extends TestCase {
 		$away_team->method('get_players')->willReturn([$p3, $p4]);
 
 		$repository_provider = $this->setup_repository_provider_mock($league, $event, $competition, $home_team, $away_team);
-		$service = new Result_Reporting_Service($repository_provider);
+		$service = new Result_Reporting_Service( $repository_provider, $this->create_option_gateway() );
 		
 		$result = $service->report_result( $fixture );
 
@@ -310,10 +332,78 @@ class Result_Reporting_Service_Test extends TestCase {
 		$league = $this->create_standard_league( [ 'title' => 'League' ] );
 
 		$repository_provider = $this->setup_repository_provider_mock($league, $event, $competition);
-		$service = new Result_Reporting_Service($repository_provider);
+		$service = new Result_Reporting_Service( $repository_provider, $this->create_option_gateway() );
 		
 		$result = $service->report_result( $fixture );
 		$this->assertEquals( 'N', $result->matches[0]->score_code );
+	}
+
+	public function test_report_result_uses_option_gateway_for_site_name(): void {
+		$fixture = $this->create_reporting_fixture( [
+			'custom' => [ 'sets' => [ 1 => [ 'player1' => 6, 'player2' => 4 ] ] ],
+		] );
+
+		$competition = $this->create_standard_competition( [ 'name' => 'Championship 2026' ] );
+		$event       = $this->create_standard_event( [ 'name' => 'Men Singles' ] );
+		$league      = $this->create_standard_league( [ 'title' => 'Division 1' ] );
+
+		$repository_provider = $this->setup_repository_provider_mock( $league, $event, $competition );
+		$option_gateway      = $this->createMock( Option_Gateway_Interface::class );
+		$option_gateway->expects( $this->once() )
+			->method( 'get_option' )
+			->with( 'blogname', '' )
+			->willReturn( 'Leigh &amp; Westcliff Tennis' );
+
+		$service = new Result_Reporting_Service( $repository_provider, $option_gateway );
+		$result  = $service->report_result( $fixture );
+
+		$this->assertNotNull( $result );
+		$this->assertSame( 'Leigh & Westcliff Tennis Championship 2026', $result->tournament );
+	}
+
+	public function test_report_result_uses_explicit_site_name(): void {
+		$fixture = $this->create_reporting_fixture( [
+			'custom' => [ 'sets' => [ 1 => [ 'player1' => 6, 'player2' => 4 ] ] ],
+		] );
+
+		$competition = $this->create_standard_competition( [ 'name' => 'Championship 2026' ] );
+		$event       = $this->create_standard_event( [ 'name' => 'Men Singles' ] );
+		$league      = $this->create_standard_league( [ 'title' => 'Division 1' ] );
+
+		$repository_provider = $this->setup_repository_provider_mock( $league, $event, $competition );
+
+		$service = new Result_Reporting_Service( $repository_provider, $this->create_option_gateway(), 'Custom Club' );
+		$result  = $service->report_result( $fixture );
+
+		$this->assertNotNull( $result );
+		$this->assertSame( 'Custom Club Championship 2026', $result->tournament );
+	}
+
+	private function create_option_gateway( string $site_name = 'Test Site' ): Option_Gateway_Interface {
+		$option_gateway = $this->createStub( Option_Gateway_Interface::class );
+		$option_gateway->method( 'get_option' )->willReturn( $site_name );
+
+		return $option_gateway;
+	}
+
+	private function create_rubber_entity( int $id, int $status ): Rubber {
+		return new class( $id, $status ) extends Rubber {
+			public function __construct( int $id, int $status ) {
+				parent::__construct();
+				$this->id        = $id;
+				$this->status    = $status;
+				$this->winner_id = 1;
+				$this->loser_id  = 2;
+				$this->custom    = [ 'sets' => [ 1 => [ 'player1' => 6, 'player2' => 4 ] ] ];
+				$this->players   = [
+					'home' => [ '1' => (object) [ 'display_name' => 'Rubber Winner' ] ],
+					'away' => [ '1' => (object) [ 'display_name' => 'Rubber Loser' ] ],
+				];
+			}
+
+			public function get_players(): void {
+			}
+		};
 	}
 
 	private function setup_repository_provider_mock($league, $event, $competition, $home_team = null, $away_team = null, array $rubbers = []): Repository_Provider {

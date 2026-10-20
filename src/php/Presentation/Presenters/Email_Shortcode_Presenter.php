@@ -89,7 +89,7 @@ readonly class Email_Shortcode_Presenter {
             $tournament_path = ( new Tournament_Presenter() )->get_link( $tournament );
             $tournament_link = '<a href="' . $this->site_url . $tournament_path . '">' . $tournament->name . '</a>';
             $draw_link       = '<a href="' . $this->site_url . $tournament_path . 'draw/' . seo_url( $match->league->event->name ?? '' ) . '/">' . ( $match->league->event->name ?? '' ) . '</a>';
-            $match_link      = $this->site_url . $tournament_path . '/match/' . seo_url( $match->league->title ?? '' ) . '/' . seo_url( $match->teams['home']->title ?? '' ) . '-vs-' . seo_url( $match->teams['away']->title ?? '' ) . '/' . $match->id . '/';
+            $match_link      = $this->site_url . $tournament_path . 'match/' . seo_url( $match->league->title ?? '' ) . '/' . seo_url( $match->teams['home']->title ?? '' ) . '-vs-' . seo_url( $match->teams['away']->title ?? '' ) . '/' . $match->id . '/';
 
             $league_type = $match->league->type ?? '';
             if ( is_string( $league_type ) && strlen( $league_type ) >= 2 && 'D' === substr( $league_type, 1, 1 ) ) {
@@ -365,11 +365,13 @@ readonly class Email_Shortcode_Presenter {
         $draw_link        = '';
         $match_link       = '';
         $competition_link = '';
+        $tournament_link  = '';
         $rules_link       = $this->site_url . '/rules/' . $competition_type . '-rules/';
 
         if ( 'tournament' === $competition_type ) {
             $tournament      = $this->tournament_service->get_tournament( $tournament_param );
             $tournament_path = ( new Tournament_Presenter() )->get_link( $tournament );
+            $tournament_link = '<a href="' . $this->site_url . $tournament_path . '">' . $tournament->name . '</a>';
             $draw_link       = '<a href="' . $this->site_url . $tournament_path . 'draw/' . seo_url( $match->league->event->name ?? '' ) . '/">' . ( $match->league->event->name ?? '' ) . '</a>';
             $match_link      = $this->site_url . $tournament_path . 'match/' . seo_url( $match->league->title ?? '' ) . '/' . seo_url( $match->teams['home']->title ?? '' ) . '-vs-' . seo_url( $match->teams['away']->title ?? '' ) . '/' . $match->id . '/';
         } elseif ( 'cup' === $competition_type ) {
@@ -409,7 +411,7 @@ readonly class Email_Shortcode_Presenter {
             'action_url'       => $match_link,
             'rules_link'       => $rules_link,
             'competition_link' => $competition_link,
-            'tournament_link'  => $tournament_link ?? '',
+            'tournament_link'  => $tournament_link,
             'delay'            => $args['delay'] ?? false,
             'email_subject'    => $args['email_subject'] ?? '',
         ];

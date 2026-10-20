@@ -194,6 +194,7 @@ class Email_Shortcode_Presenter_Test extends TestCase {
         $this->assertSame( '<a href="https://example.com/tournament/wimbledon-2026/">Wimbledon 2026</a>', $vars['tournament_link'] );
         $this->assertStringContainsString( 'draw/men-singles', $vars['draw_link'] );
         $this->assertStringContainsString( 'match/main-draw/roger-federer-vs-rafael-nadal/100/', $vars['action_url'] );
+        $this->assertStringNotContainsString( '//match/', $vars['action_url'] );
         $this->assertSame( '', $vars['template'] );
     }
 
@@ -415,7 +416,9 @@ class Email_Shortcode_Presenter_Test extends TestCase {
             'delay'            => true,
         ] );
 
+        $this->assertSame( '<a href="https://example.com/tournament/county-championship/">County Championship</a>', $vars_tourn['tournament_link'] );
         $this->assertStringContainsString( 'match/md-draw/pair-1-vs-pair-2/88/', $vars_tourn['action_url'] );
+        $this->assertStringNotContainsString( '//match/', $vars_tourn['action_url'] );
         $this->assertStringContainsString( 'draw/men-doubles', $vars_tourn['draw_link'] );
         $this->assertTrue( $vars_tourn['delay'] );
 
@@ -431,8 +434,24 @@ class Email_Shortcode_Presenter_Test extends TestCase {
         $vars_cup = $this->presenter->present_match_date_change_notification( $fixture_cup, [
             'competition_type' => 'cup',
         ] );
+        $this->assertSame( '', $vars_cup['tournament_link'] );
         $this->assertStringContainsString( '/cups/challenge-cup/2026/', $vars_cup['competition_link'] );
         $this->assertStringEndsWith( 'leg-2/', $vars_cup['action_url'] );
+
+        // League branch
+        $fixture_league = $this->create_test_fixture( [
+            'comp_type'    => 'league',
+            'event_name'   => 'Premier Event',
+            'league_title' => 'Premier Division',
+            'season'       => '2026',
+        ] );
+        $this->fixture_link_service->method( 'get_fixture_link' )->willReturn( '/leagues/premier-division/match/101/' );
+
+        $vars_league = $this->presenter->present_match_date_change_notification( $fixture_league, [
+            'competition_type' => 'league',
+        ] );
+        $this->assertSame( '', $vars_league['tournament_link'] );
+        $this->assertStringContainsString( '/leagues/premier-event/2026/', $vars_league['competition_link'] );
     }
 
     public function test_present_team_withdrawn_and_withdrawn_team_match_and_constitution(): void {

@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Repositories;
 
-use Racketmanager\Domain\Results_Report;
+use Racketmanager\Domain\Communication\Results_Report;
 use Racketmanager\Repositories\Interfaces\Results_Report_Repository_Interface;
 use wpdb;
 

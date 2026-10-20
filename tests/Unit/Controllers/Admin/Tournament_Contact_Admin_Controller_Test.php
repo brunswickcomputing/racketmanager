@@ -6,7 +6,7 @@ namespace Racketmanager\Tests\Unit\Controllers\Admin;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Controllers\Tournament_Contact_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Contact_Page_View_Model;
-use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Admin\Tournament\Tournament_Contact_Action_Dispatcher;
 use Racketmanager\Services\Tournament_Service;

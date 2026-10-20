@@ -10,7 +10,7 @@ use Racketmanager\Admin\Presenters\Admin_Entry_Link_Presenter;
 use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
-use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Services\Admin\Overview\Tournament_Overview_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Tournament_Service;
@@ -114,7 +114,7 @@ class Tournament_Overview_Admin_Controller_Test extends TestCase {
         $dispatcher = $this->createMock( Tournament_Overview_Action_Dispatcher::class );
         $action_guard = $this->createMock( Action_Guard_Interface::class );
 
-        $tournament = unserialize( sprintf( 'O:%d:"Racketmanager\Domain\Tournament":0:{}', strlen( 'Racketmanager\Domain\Tournament' ) ) );
+        $tournament = unserialize( sprintf( 'O:%d:"Racketmanager\Domain\Tournament\Tournament":0:{}', strlen( 'Racketmanager\Domain\Tournament\Tournament' ) ) );
         $tournament_service->method( 'get_tournament' )->willReturn( $tournament );
         $tournament_service->method( 'get_tournament_overview' )->willReturn( new stdClass() );
         $tournament_service->method( 'get_leagues_by_event_for_tournament' )->willReturn( [] );

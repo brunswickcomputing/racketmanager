@@ -16,7 +16,7 @@ use Racketmanager\Admin\View_Models\Plan_Final_Card_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Plan_Page_View_Model;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Player\Player;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\Fixture\Fixture_Relation_Loader;

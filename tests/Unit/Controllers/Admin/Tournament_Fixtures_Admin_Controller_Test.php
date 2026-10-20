@@ -9,7 +9,7 @@ use Racketmanager\Admin\Controllers\Tournament_Fixtures_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Fixtures_Page_View_Model;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Response_DTO;
-use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Admin\Tournament\Tournament_Fixtures_Admin_Service;

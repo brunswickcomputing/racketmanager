@@ -5,6 +5,9 @@ namespace Racketmanager\Tests\Unit\Services\Competition;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Events\Competition_Season_Cascaded_Event;
+use Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface;
+use Racketmanager\Domain\Events\Domain_Event_Interface;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
@@ -158,6 +161,52 @@ class Competition_Season_Service_Test extends TestCase {
 		$season       = new \stdClass();
 		$season->name = '2026';
 		$service->cascade_season_to_events( Competition_Test_Factory::create( id: 31 ), $season );
+	}
+
+	public function test_cascade_season_to_events_dispatches_domain_event(): void {
+		$league_team_repo = $this->createStub( League_Team_Repository_Interface::class );
+		$club_repo        = $this->createStub( Club_Repository_Interface::class );
+		$event_repo       = $this->createMock( Event_Repository_Interface::class );
+		$dispatcher       = $this->createMock( Domain_Event_Dispatcher_Interface::class );
+
+		$competition = Competition_Test_Factory::create( id: 10 );
+
+		$mock_event = new class {
+			public function add_season( array $season, League_Team_Repository_Interface $repo ): void {
+			}
+		};
+
+		$event_repo->expects( $this->once() )
+			->method( 'find_by_competition_id' )
+			->with( 10 )
+			->willReturn( [ $mock_event ] );
+
+		$dispatched_events = [];
+		$dispatcher->expects( $this->once() )
+			->method( 'dispatch' )
+			->willReturnCallback( function ( Domain_Event_Interface $event ) use ( &$dispatched_events ) {
+				$dispatched_events[] = $event;
+			} );
+
+		$service = new Competition_Season_Service(
+			league_team_repository: $league_team_repo,
+			club_repository: $club_repo,
+			event_repository: $event_repo,
+			event_dispatcher: $dispatcher
+		);
+
+		$season                 = new \stdClass();
+		$season->name           = 'Summer 2026';
+		$season->home_away      = 1;
+		$season->num_match_days = 10;
+		$season->match_dates    = [];
+
+		$service->cascade_season_to_events( $competition, $season );
+
+		$this->assertCount( 1, $dispatched_events );
+		$this->assertInstanceOf( Competition_Season_Cascaded_Event::class, $dispatched_events[0] );
+		$this->assertSame( 10, $dispatched_events[0]->competition_id );
+		$this->assertSame( 'Summer 2026', $dispatched_events[0]->season_name );
 	}
 
 	// ---------------------------------------------------------------------

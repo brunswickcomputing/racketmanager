@@ -16,7 +16,7 @@ use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Domain\DTO\Admin\Overview\Tournament_Overview_Action_Request_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
-use Racketmanager\Domain\Team;
+use Racketmanager\Domain\Team\Team;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;

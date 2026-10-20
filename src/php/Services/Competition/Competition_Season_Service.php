@@ -4,6 +4,8 @@ declare( strict_types=1 );
 namespace Racketmanager\Services\Competition;
 
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Events\Competition_Season_Cascaded_Event;
+use Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
@@ -16,6 +18,7 @@ class Competition_Season_Service {
 		private League_Team_Repository_Interface $league_team_repository,
 		private Club_Repository_Interface $club_repository,
 		private Event_Repository_Interface $event_repository,
+		private ?Domain_Event_Dispatcher_Interface $event_dispatcher = null,
 	) {
 	}
 
@@ -121,5 +124,9 @@ class Competition_Season_Service {
 				$event->add_season( $event_season, $this->league_team_repository );
 			}
 		}
+
+		$this->event_dispatcher?->dispatch(
+			new Competition_Season_Cascaded_Event( (int) $competition->get_id(), (string) $season->name )
+		);
 	}
 }

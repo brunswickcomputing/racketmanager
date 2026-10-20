@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Helpers;
 
-use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Club\Club;
 
 /**
  * Builds real Club aggregates for tests.

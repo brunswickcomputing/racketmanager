@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Repositories\Interfaces;
 
-use Racketmanager\Domain\Season;
+use Racketmanager\Domain\Season\Season;
 
 /**
  * Interface to implement the Season repository

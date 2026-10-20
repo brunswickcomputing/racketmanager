@@ -6,7 +6,7 @@ namespace Racketmanager\Tests\Unit\Services;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
-use Racketmanager\Domain\Player_Factory;
+use Racketmanager\Domain\Player\Player_Factory;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Player_Query_Service;
@@ -15,7 +15,7 @@ use RuntimeException;
 use wpdb;
 
 final class Player_Query_Service_Test extends TestCase {
-	private function make_player(): \Racketmanager\Domain\Player {
+	private function make_player(): \Racketmanager\Domain\Player\Player {
 		return Player_Factory::from_object(
 			(object) array(
 				'ID'           => '7',
@@ -63,7 +63,7 @@ final class Player_Query_Service_Test extends TestCase {
 		);
 	}
 
-	private function get_matches_with_global_manager( \Racketmanager\Domain\Player $player, array $matches ): array {
+	private function get_matches_with_global_manager( \Racketmanager\Domain\Player\Player $player, array $matches ): array {
 		$repository = $this->createMock( Fixture_Repository_Interface::class );
 		$repository->expects( $this->once() )
 			->method( 'find_player_matches' )

@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Repositories;
 
-use Racketmanager\Domain\Club_Role;
+use Racketmanager\Domain\Club\Club_Role;
 use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;

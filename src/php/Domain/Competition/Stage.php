@@ -3,7 +3,7 @@
 namespace Racketmanager\Domain\Competition;
 
 use Racketmanager\Domain\Competition\League;
-use Racketmanager\Domain\Championship;
+use Racketmanager\Domain\Tournament\Championship;
 
 /**
  * Domain model representing a stage within a competition (division, draw, etc).

@@ -10,8 +10,8 @@
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\DTO\Player\Players_List_DTO;
-use Racketmanager\Domain\Player;
-use Racketmanager\Domain\Player_Factory;
+use Racketmanager\Domain\Player\Player;
+use Racketmanager\Domain\Player\Player_Factory;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Update_Exception;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;

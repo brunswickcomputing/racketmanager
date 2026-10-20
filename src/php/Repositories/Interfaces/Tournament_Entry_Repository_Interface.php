@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Repositories\Interfaces;
 
-use Racketmanager\Domain\Tournament_Entry;
+use Racketmanager\Domain\Tournament\Tournament_Entry;
 
 /**
  * Interface for Tournament_Entry_Repository.

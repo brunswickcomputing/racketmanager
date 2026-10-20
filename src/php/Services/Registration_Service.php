@@ -9,8 +9,10 @@
 
 namespace Racketmanager\Services;
 
-use Racketmanager\Domain\Club_Player;
+use Racketmanager\Domain\Club\Club_Player;
+use Racketmanager\Domain\Club\Events\Club_Player_Registered_Event;
 use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
+use Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Already_Registered_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
@@ -35,6 +37,7 @@ class Registration_Service {
     private Player_Service $player_service;
     private ?RacketManager $racketmanager;
     private Mailer_Interface $mailer;
+    private ?Domain_Event_Dispatcher_Interface $event_dispatcher;
 
     /**
      * Constructor
@@ -45,14 +48,16 @@ class Registration_Service {
      * @param Club_Repository $club_repository
      * @param Player_Service $player_service
      * @param Mailer_Interface|null $mailer
+     * @param Domain_Event_Dispatcher_Interface|null $event_dispatcher
      */
-    public function __construct( $plugin_instance, Registration_Repository_Interface $club_player_repository, Player_Repository $player_repository, Club_Repository $club_repository, Player_Service $player_service, ?Mailer_Interface $mailer = null ) {
+    public function __construct( $plugin_instance, Registration_Repository_Interface $club_player_repository, Player_Repository $player_repository, Club_Repository $club_repository, Player_Service $player_service, ?Mailer_Interface $mailer = null, ?Domain_Event_Dispatcher_Interface $event_dispatcher = null ) {
         $this->racketmanager          = $plugin_instance;
         $this->club_player_repository = $club_player_repository;
         $this->player_repository      = $player_repository;
         $this->club_repository        = $club_repository;
         $this->player_service         = $player_service;
         $this->mailer                 = $mailer ?? new Wp_Mailer();
+        $this->event_dispatcher       = $event_dispatcher;
     }
 
     /**
@@ -111,12 +116,14 @@ class Registration_Service {
 
         $options = $this->racketmanager->get_options( 'rosters' );
         if ( 'auto' === $options['rosterConfirmation'] || current_user_can( 'edit_teams' ) ) {
-            $this->approve_registration( $registration->id, $registered_by_userId );
+            $this->approve_registration( (int) ( $registration->id ?? 0 ), $registered_by_userId ?? 0 );
             $action = 'add';
             $msg    = __( 'Player added to club', 'racketmanager' );
+            $status = 'approved';
         } else {
             $action = 'request';
             $msg    = __( 'Player registration pending', 'racketmanager' );
+            $status = 'pending';
         }
         if ( ! empty( $options['rosterConfirmationEmail'] ) ) {
             $headers = array();
@@ -137,6 +144,15 @@ class Registration_Service {
             $message                   = club_players_notification( $message_args );
             $this->mailer->send( $email_to, $subject, $message, $headers );
         }
+
+        $this->event_dispatcher?->dispatch(
+            new Club_Player_Registered_Event(
+                club_id: $club_id,
+                player_id: $player->id,
+                registered_by_user_id: $registered_by_userId,
+                status: $status
+            )
+        );
 
         return $msg;
     }

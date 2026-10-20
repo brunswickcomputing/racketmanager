@@ -12,7 +12,7 @@ use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
-use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Tournament\Tournament;
 use stdClass;
 
 require_once __DIR__ . '/../../../wp-stubs.php';
@@ -58,7 +58,7 @@ class Tournament_Team_Admin_Controller_Test extends TestCase {
             'tournament' => '456',
         ];
 
-        $tournament = unserialize( sprintf( 'O:%d:"Racketmanager\Domain\Tournament":0:{}', strlen( 'Racketmanager\Domain\Tournament' ) ) );
+        $tournament = unserialize( sprintf( 'O:%d:"Racketmanager\Domain\Tournament\Tournament":0:{}', strlen( 'Racketmanager\Domain\Tournament\Tournament' ) ) );
         $this->tournament_service->expects( self::once() )->method( 'get_tournament' )->with( 456 )->willReturn( $tournament );
 
         $team_obj = new stdClass();
@@ -66,7 +66,7 @@ class Tournament_Team_Admin_Controller_Test extends TestCase {
         $team_obj->title = 'Test Team';
         $team_obj->roster = [];
         $team_obj->team_type = 'C';
-        $team = new \Racketmanager\Domain\Team( $team_obj );
+        $team = new \Racketmanager\Domain\Team\Team( $team_obj );
 
         $this->team_service->expects( self::once() )->method( 'get_team_by_id' )->with( 123 )->willReturn( $team );
         $this->club_service->method( 'get_clubs' )->willReturn( [] );

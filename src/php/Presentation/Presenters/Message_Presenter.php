@@ -10,7 +10,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Presentation\Presenters;
 
-use Racketmanager\Domain\Message;
+use Racketmanager\Domain\Communication\Message;
 use Racketmanager\Presentation\View_Models\Message_View_Model;
 use Racketmanager\Presentation\View_Models\Messages_List_View_Model;
 use function mysql2date;

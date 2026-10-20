@@ -16,7 +16,7 @@ use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
-use Racketmanager\Domain\Results_Checker;
+use Racketmanager\Domain\Result\Results_Checker;
 use stdClass;
 
 #[AllowMockObjectsWithoutExpectations]

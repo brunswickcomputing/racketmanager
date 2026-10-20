@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Services;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Player_Factory;
+use Racketmanager\Domain\Player\Player_Factory;
 use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Player_Stats_Service;
 

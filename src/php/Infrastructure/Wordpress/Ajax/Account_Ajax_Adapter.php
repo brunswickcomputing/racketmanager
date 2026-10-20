@@ -2,11 +2,11 @@
 
 namespace Racketmanager\Infrastructure\Wordpress\Ajax;
 
-use Racketmanager\Domain\DTO\Account\Add_Favourite_Command;
-use Racketmanager\Domain\DTO\Account\Delete_Messages_Command;
-use Racketmanager\Domain\DTO\Account\Login_Command;
-use Racketmanager\Domain\DTO\Account\Reset_Password_Command;
-use Racketmanager\Domain\DTO\Account\Update_Account_Command;
+use Racketmanager\Application\Account\Commands\Add_Favourite_Command;
+use Racketmanager\Application\Account\Commands\Delete_Messages_Command;
+use Racketmanager\Application\Account\Commands\Login_Command;
+use Racketmanager\Application\Account\Commands\Reset_Password_Command;
+use Racketmanager\Application\Account\Commands\Update_Account_Command;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;

@@ -6,7 +6,7 @@ namespace Racketmanager\Tests\Unit\Services\Admin\Finance;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
-use Racketmanager\Domain\Invoice;
+use Racketmanager\Domain\Finance\Invoice;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;

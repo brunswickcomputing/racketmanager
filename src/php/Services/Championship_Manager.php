@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Services;
 
-use Racketmanager\Domain\Championship;
+use Racketmanager\Domain\Tournament\Championship;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;

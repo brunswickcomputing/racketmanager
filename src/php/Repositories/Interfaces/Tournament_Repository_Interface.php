@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Repositories\Interfaces;
 
-use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Domain\Competition\Event;
 use stdClass;
 

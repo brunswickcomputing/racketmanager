@@ -5,9 +5,9 @@ namespace Racketmanager\Tests\Unit\Services;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Enums\Invoice_Status;
-use Racketmanager\Domain\Invoice;
-use Racketmanager\Domain\Player;
-use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Finance\Invoice;
+use Racketmanager\Domain\Player\Player;
+use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Domain\Value_Objects\Currency;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;

@@ -7,7 +7,7 @@
 
 namespace Racketmanager;
 
-use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Tournament\Tournament;
 
 /** @var Tournament $tournament */
 /** @var array $tournament_players */

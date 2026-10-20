@@ -5,8 +5,8 @@ namespace Racketmanager\Tests\Unit\Templates;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Player;
-use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Player\Player;
+use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Presentation\View_Models\Tournament_Date_View_Model;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 

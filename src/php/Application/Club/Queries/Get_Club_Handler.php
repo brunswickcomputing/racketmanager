@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Club\Queries;
 
-use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\DTO\Club\Club_Details_DTO;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;

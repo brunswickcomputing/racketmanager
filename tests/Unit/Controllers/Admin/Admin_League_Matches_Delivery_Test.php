@@ -26,7 +26,7 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Domain\Team;
+use Racketmanager\Domain\Team\Team;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Container\Simple_Container;

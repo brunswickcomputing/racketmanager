@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Result;
 
-use Racketmanager\Domain\Results_Checker;
+use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Domain\Enums\Results_Checker_Status;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;

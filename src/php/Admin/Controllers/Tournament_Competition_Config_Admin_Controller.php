@@ -11,7 +11,7 @@ namespace Racketmanager\Admin\Controllers;
 use Exception;
 use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model;
 use Racketmanager\Domain\Competition\Competition;
-use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Updated_Exception;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;

@@ -10,7 +10,7 @@
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\DTO\Finance\Invoice_Details_DTO;
-use Racketmanager\Domain\Invoice;
+use Racketmanager\Domain\Finance\Invoice;
 use Racketmanager\Repositories\Interfaces\Invoice_Repository_Interface;
 use Racketmanager\Util\Util;
 use wpdb;

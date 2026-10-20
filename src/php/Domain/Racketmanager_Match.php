@@ -10,7 +10,9 @@
 namespace Racketmanager\Domain;
 
 use Racketmanager\Domain\Fixture\Rubber;
+use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Domain\Scoring\Set_Score;
+use Racketmanager\Domain\Tournament\Championship;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Repositories\Interfaces\Result_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;

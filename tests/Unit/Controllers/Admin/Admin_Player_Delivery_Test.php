@@ -11,7 +11,7 @@ use Racketmanager\Admin\View_Models\Player_Errors_Page_View_Model;
 use Racketmanager\Admin\View_Models\Player_Page_View_Model;
 use Racketmanager\Admin\View_Models\Player_Requests_Page_View_Model;
 use Racketmanager\Admin\View_Models\Players_Page_View_Model;
-use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Player\Player;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;

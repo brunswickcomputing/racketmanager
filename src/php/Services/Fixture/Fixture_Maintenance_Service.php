@@ -11,10 +11,10 @@ use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
 use Racketmanager\Domain\Result\Result;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
-use Racketmanager\Domain\Results_Checker;
+use Racketmanager\Domain\Result\Results_Checker;
 
 use Racketmanager\Repositories\Interfaces\Results_Report_Repository_Interface;
-use Racketmanager\Domain\Results_Report;
+use Racketmanager\Domain\Communication\Results_Report;
 
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 

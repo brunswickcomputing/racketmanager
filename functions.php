@@ -8,23 +8,26 @@
 
 namespace Racketmanager;
 
-use Racketmanager\Domain\Club;
-use Racketmanager\Domain\Club_Role;
+use Racketmanager\Domain\Club\Club;
+use Racketmanager\Domain\Club\Club_Role;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Team;
-use Racketmanager\Domain\Message;
-use Racketmanager\Domain\Player;
-use Racketmanager\Domain\Player_Factory;
+use Racketmanager\Domain\Communication\Message;
+use Racketmanager\Domain\Player\Player;
+use Racketmanager\Domain\Player\Player_Factory;
 use Racketmanager\Domain\Racketmanager_Match;
-use Racketmanager\Domain\Results_Checker;
-use Racketmanager\Domain\Results_Report;
+use Racketmanager\Domain\Result\Results_Checker;
+use Racketmanager\Domain\Communication\Results_Report;
 use Racketmanager\Domain\Fixture\Rubber;
-use Racketmanager\Domain\Team;
-use Racketmanager\Domain\Tournament_Entry;
-use Racketmanager\Domain\User;
+use Racketmanager\Domain\Team\Team;
+use Racketmanager\Domain\Tournament\Tournament_Entry;
+use Racketmanager\Domain\Player\User;
+use Racketmanager\Infrastructure\Legacy\Legacy_User;
+use Racketmanager\Infrastructure\Legacy\Legacy_User_Factory;
 use Racketmanager\Repositories\Club_Repository;
+use Racketmanager\Repositories\Message_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Competition_Repository;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
@@ -531,7 +534,28 @@ function get_user( object|int|string|null $user = null ): ?object {
     if ( ! $_user ) {
         return null;
     }
-    return $_user;
+
+    if ( $_user instanceof Legacy_User ) {
+        return $_user;
+    }
+
+    return to_legacy_user( $_user );
+}
+
+/**
+ * Wrap a domain User as a compatibility Legacy_User with an injected message repository.
+ */
+function to_legacy_user( User $user ): Legacy_User {
+    global $racketmanager;
+    if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'legacy_user_factory' ) ) {
+        return $racketmanager->container->get( 'legacy_user_factory' )->from_user( $user );
+    }
+
+    $message_repository = ( isset( $racketmanager->container ) && $racketmanager->container->has( 'message_repository' ) )
+        ? $racketmanager->container->get( 'message_repository' )
+        : new Message_Repository();
+
+    return ( new Legacy_User_Factory( $message_repository ) )->from_user( $user );
 }
 
 /**

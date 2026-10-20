@@ -2,10 +2,10 @@
 
 namespace Racketmanager\Infrastructure\Wordpress\Ajax;
 
-use Racketmanager\Domain\DTO\Club\Club_Player_Request_Command;
-use Racketmanager\Domain\DTO\Club\Club_Players_Remove_Command;
-use Racketmanager\Domain\DTO\Club\Set_Club_Role_Command;
-use Racketmanager\Domain\DTO\Club\Update_Club_Command;
+use Racketmanager\Application\Club\Commands\Club_Player_Request_Command;
+use Racketmanager\Application\Club\Commands\Club_Players_Remove_Command;
+use Racketmanager\Application\Club\Commands\Set_Club_Role_Command;
+use Racketmanager\Application\Club\Commands\Update_Club_Command;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Already_Registered_Exception;
 use Racketmanager\Exceptions\Registration_Not_Found_Exception;

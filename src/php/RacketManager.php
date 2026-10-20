@@ -10,7 +10,7 @@ namespace Racketmanager;
 
 use NumberFormatter;
 use Racketmanager\Infrastructure\Wordpress\Export\Export_Delivery_Adapter;
-use Racketmanager\Domain\Message;
+use Racketmanager\Domain\Communication\Message;
 use Racketmanager\Repositories\Rubber_Repository;
 use Racketmanager\Rest\Rest_Routes;
 use Racketmanager\Services\Competition_Entry_Service;

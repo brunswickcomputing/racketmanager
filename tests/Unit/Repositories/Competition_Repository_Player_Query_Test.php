@@ -8,7 +8,7 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Domain\Player_Factory;
+use Racketmanager\Domain\Player\Player_Factory;
 use Racketmanager\Repositories\Competition_Repository;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;

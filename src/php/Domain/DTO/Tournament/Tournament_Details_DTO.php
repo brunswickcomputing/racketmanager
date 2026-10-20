@@ -9,9 +9,9 @@
 
 namespace Racketmanager\Domain\DTO\Tournament;
 
-use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\Competition;
-use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Tournament\Tournament;
 
 /**
  * Class to implement the Tournament Details Data Transfer Object

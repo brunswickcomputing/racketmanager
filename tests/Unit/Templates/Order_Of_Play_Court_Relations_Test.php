@@ -4,11 +4,11 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Templates;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture_Team_Resolver_Interface;
-use Racketmanager\Domain\Team;
+use Racketmanager\Domain\Team\Team;
 use Racketmanager\Presentation\View_Models\Order_Of_Play_Match_View_Model;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;

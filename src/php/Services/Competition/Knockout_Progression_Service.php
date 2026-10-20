@@ -2,7 +2,7 @@
 
 namespace Racketmanager\Services\Competition;
 
-use Racketmanager\Domain\Championship;
+use Racketmanager\Domain\Tournament\Championship;
 use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Competition\League;

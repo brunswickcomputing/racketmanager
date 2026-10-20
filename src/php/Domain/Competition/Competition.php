@@ -816,7 +816,7 @@ class Competition {
             $data['date_end'] = end( $data['match_dates'] );
         }
         if ( empty( $data['date_start'] ) && $count_match_dates >= 2 ) {
-            $data['date_start'] = $data['match_dates'][0];
+            $data['date_start'] = reset( $data['match_dates'] );
         }
 
         return $data;

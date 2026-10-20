@@ -9,7 +9,7 @@ use Racketmanager\Admin\Admin_Season;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Admin\View_Models\Error_Bag;
 use Racketmanager\Admin\View_Models\Seasons_Page_View_Model;
-use Racketmanager\Domain\Season;
+use Racketmanager\Domain\Season\Season;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
 use Racketmanager\RacketManager;

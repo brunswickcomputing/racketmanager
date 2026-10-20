@@ -10,7 +10,7 @@ use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\Enums\Match_Outcome;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Scoring\Set_Score;
-use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Domain\Value_Objects\Date_Range;
 use Racketmanager\Presentation\View_Models\Team_Match_Row_View_Model;
 use Racketmanager\Presentation\View_Models\Team_Matches_Group_View_Model;

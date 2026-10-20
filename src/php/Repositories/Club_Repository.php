@@ -9,11 +9,11 @@
 
 namespace Racketmanager\Repositories;
 
-use Racketmanager\Domain\Club;
-use Racketmanager\Domain\Club_Factory;
+use Racketmanager\Domain\Club\Club;
+use Racketmanager\Domain\Club\Club_Factory;
 use Racketmanager\Domain\DTO\Club\Club_Competition_DTO;
-use Racketmanager\Domain\Team;
-use Racketmanager\Domain\Team_Factory;
+use Racketmanager\Domain\Team\Team;
+use Racketmanager\Domain\Team\Team_Factory;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Util\Util;
 use wpdb;

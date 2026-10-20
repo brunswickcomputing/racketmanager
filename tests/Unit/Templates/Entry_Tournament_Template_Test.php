@@ -6,7 +6,7 @@ namespace Racketmanager\Tests\Unit\Templates;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Competition\Queries\Tournament_Entry_Access;
-use Racketmanager\Domain\Club_Player;
+use Racketmanager\Domain\Club\Club_Player;
 use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;

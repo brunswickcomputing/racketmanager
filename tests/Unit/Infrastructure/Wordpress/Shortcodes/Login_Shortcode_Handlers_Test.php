@@ -13,7 +13,7 @@ use Racketmanager\Application\Login\Queries\Get_Password_Lost_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Lost_Form_Query;
 use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Query;
-use Racketmanager\Domain\User;
+use Racketmanager\Domain\Player\User;
 use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Login_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;

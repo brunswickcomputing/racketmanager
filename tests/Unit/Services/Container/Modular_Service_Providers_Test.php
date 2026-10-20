@@ -71,6 +71,7 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has( 'invoice_repository' ) );
         $this->assertTrue( $container->has( 'finance_service' ) );
         $this->assertTrue( $container->has( 'security_service' ) );
+        $this->assertTrue( $container->has( 'legacy_user_factory' ) );
     }
 
     public function test_club_service_provider_registers_expected_keys(): void {
@@ -167,5 +168,24 @@ class Modular_Service_Providers_Test extends TestCase {
             $container->get( 'fixture_presenter' ),
             ( new \ReflectionProperty( Get_League_Last_5_Handler::class, 'fixture_presenter' ) )->getValue( $handler )
         );
+    }
+
+    public function test_providers_wire_domain_event_dispatcher_to_services(): void {
+        $container = Container_Bootstrap::boot( $this->app );
+
+        $dispatcher = $container->get( 'domain_event_dispatcher' );
+        $this->assertInstanceOf( \Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface::class, $dispatcher );
+
+        $season_service = $container->get( 'competition_season_service' );
+        $ref_season     = new \ReflectionProperty( \Racketmanager\Services\Competition\Competition_Season_Service::class, 'event_dispatcher' );
+        $this->assertSame( $dispatcher, $ref_season->getValue( $season_service ) );
+
+        $reg_service = $container->get( 'registration_service' );
+        $ref_reg     = new \ReflectionProperty( \Racketmanager\Services\Registration_Service::class, 'event_dispatcher' );
+        $this->assertSame( $dispatcher, $ref_reg->getValue( $reg_service ) );
+
+        $fixture_finalization = $container->get( 'fixture_finalization_service' );
+        $ref_fixture          = new \ReflectionProperty( \Racketmanager\Services\Fixture\Fixture_Finalization_Service::class, 'event_dispatcher' );
+        $this->assertSame( $dispatcher, $ref_fixture->getValue( $fixture_finalization ) );
     }
 }

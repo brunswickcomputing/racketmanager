@@ -5,8 +5,8 @@ namespace Racketmanager\Tests\Unit\Domain\Player;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Player\Player_Hydration_DTO;
-use Racketmanager\Domain\Player;
-use Racketmanager\Domain\Player_Factory;
+use Racketmanager\Domain\Player\Player;
+use Racketmanager\Domain\Player\Player_Factory;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Services\Container\Container_Bootstrap;

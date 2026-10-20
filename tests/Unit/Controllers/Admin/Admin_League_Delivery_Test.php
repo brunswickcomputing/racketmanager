@@ -140,7 +140,7 @@ final class Admin_League_Delivery_Test extends TestCase {
             type: Competition_Type::LEAGUE,
         );
 
-        $champ_ref = new \ReflectionClass( \Racketmanager\Domain\Championship::class );
+        $champ_ref = new \ReflectionClass( \Racketmanager\Domain\Tournament\Championship::class );
         $champ_obj = $champ_ref->newInstanceWithoutConstructor();
         $prop      = $champ_ref->getProperty( 'num_teams_first_round' );
         $prop->setAccessible( true );

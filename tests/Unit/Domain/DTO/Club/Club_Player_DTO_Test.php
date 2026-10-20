@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Domain\DTO\Club;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Club_Player;
+use Racketmanager\Domain\Club\Club_Player;
 use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Player_Test_Factory;

@@ -32,8 +32,8 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
-use Racketmanager\Domain\Player;
-use Racketmanager\Domain\Team;
+use Racketmanager\Domain\Player\Player;
+use Racketmanager\Domain\Team\Team;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\League_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\League_Archive_Presenter;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
@@ -136,7 +136,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $rubber = ( new \ReflectionClass( \Racketmanager\Domain\Fixture\Rubber::class ) )->newInstanceWithoutConstructor();
         $rubber->id = 91;
 
-        $championship = $this->createStub( \Racketmanager\Domain\Championship::class );
+        $championship = $this->createStub( \Racketmanager\Domain\Tournament\Championship::class );
         $championship->method( '__get' )->willReturnMap( [
             [ 'num_teams_first_round', 2 ]
         ] );

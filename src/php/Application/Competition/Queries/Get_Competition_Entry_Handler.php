@@ -5,8 +5,8 @@ namespace Racketmanager\Application\Competition\Queries;
 
 use BackedEnum;
 use Racketmanager\Domain\Competition\Event;
-use Racketmanager\Domain\Player;
-use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Player\Player;
+use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;

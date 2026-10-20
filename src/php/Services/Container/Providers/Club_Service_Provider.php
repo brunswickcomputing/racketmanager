@@ -60,7 +60,8 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
             $c->get( 'player_repository' ),
             $c->get( 'club_repository' ),
             $c->get( 'player_service' ),
-            $c->get( 'mailer' )
+            $c->get( 'mailer' ),
+            $c->get( 'domain_event_dispatcher' )
         ) );
 
         $container->set( 'team_service', fn( Simple_Container $c ) => new Team_Service(

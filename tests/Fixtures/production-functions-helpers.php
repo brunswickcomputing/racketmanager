@@ -96,7 +96,7 @@ $wpdb->get_row_callback = function( $query ) {
 // 1. Setup container with repositories and player_service required by Team
 $team_repo = new class {
 	public function find_by_id( $id_or_title ) {
-		$t = new \Racketmanager\Domain\Team();
+		$t = new \Racketmanager\Domain\Team\Team();
 		if ( is_numeric( $id_or_title ) ) {
 			$t->set_id( (int) $id_or_title );
 			$t->set_name( 'Team ' . $id_or_title );
@@ -110,12 +110,12 @@ $team_repo = new class {
 
 $entry_repo = new class {
 	public function find_by_id( $id ) {
-		$e = new \Racketmanager\Domain\Tournament_Entry();
+		$e = new \Racketmanager\Domain\Tournament\Tournament_Entry();
 		$e->id = (int) $id;
 		return $e;
 	}
 	public function find_by_tournament_and_player( int $t_id, int $p_id ) {
-		$e = new \Racketmanager\Domain\Tournament_Entry();
+		$e = new \Racketmanager\Domain\Tournament\Tournament_Entry();
 		$e->id = 777;
 		$e->tournament_id = $t_id;
 		$e->player_id = $p_id;
@@ -188,20 +188,20 @@ $GLOBALS['racketmanager'] = (object) array( 'container' => $container );
 
 // Test get_team numeric
 $team_num = \Racketmanager\get_team( 123 );
-if ( ! $team_num instanceof \Racketmanager\Domain\Team || 123 !== $team_num->id ) {
+if ( ! $team_num instanceof \Racketmanager\Domain\Team\Team || 123 !== $team_num->id ) {
 	fwrite( STDERR, "get_team(123) failed.\n" );
 	exit( 1 );
 }
 
 // Test get_team string name (must call find_by_id, not fail on missing find_by_name)
 $team_str = \Racketmanager\get_team( 'Westcliff 1' );
-if ( ! $team_str instanceof \Racketmanager\Domain\Team || 'Westcliff 1' !== $team_str->title ) {
+if ( ! $team_str instanceof \Racketmanager\Domain\Team\Team || 'Westcliff 1' !== $team_str->title ) {
 	fwrite( STDERR, "get_team('Westcliff 1') failed.\n" );
 	exit( 1 );
 }
 
 // Test get_team with object pass-through
-$orig_team = new \Racketmanager\Domain\Team();
+$orig_team = new \Racketmanager\Domain\Team\Team();
 $orig_team->set_id( 55 );
 if ( \Racketmanager\get_team( $orig_team ) !== $orig_team ) {
 	fwrite( STDERR, "get_team(object) failed to return same instance.\n" );
@@ -240,13 +240,13 @@ if ( \Racketmanager\get_league_team( $league_team_obj ) !== $league_team_obj ) {
 
 // 3. Test get_tournament_entry with ID and with 'key' ('12_34')
 $entry_by_id = \Racketmanager\get_tournament_entry( 101, 'id' );
-if ( ! $entry_by_id instanceof \Racketmanager\Domain\Tournament_Entry || 101 !== $entry_by_id->id ) {
+if ( ! $entry_by_id instanceof \Racketmanager\Domain\Tournament\Tournament_Entry || 101 !== $entry_by_id->id ) {
 	fwrite( STDERR, "get_tournament_entry by ID failed.\n" );
 	exit( 1 );
 }
 
 $entry_by_key = \Racketmanager\get_tournament_entry( '12_34', 'key' );
-if ( ! $entry_by_key instanceof \Racketmanager\Domain\Tournament_Entry || 777 !== $entry_by_key->id || 12 !== $entry_by_key->tournament_id || 34 !== $entry_by_key->player_id ) {
+if ( ! $entry_by_key instanceof \Racketmanager\Domain\Tournament\Tournament_Entry || 777 !== $entry_by_key->id || 12 !== $entry_by_key->tournament_id || 34 !== $entry_by_key->player_id ) {
 	fwrite( STDERR, "get_tournament_entry by key ('12_34') failed.\n" );
 	exit( 1 );
 }

@@ -11,7 +11,7 @@ use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\Fixture\Fixture_Relation_Loader;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
-use Racketmanager\Domain\Championship;
+use Racketmanager\Domain\Tournament\Championship;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;

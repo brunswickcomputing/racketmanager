@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Repositories;
 
-use Racketmanager\Domain\Player_Error;
+use Racketmanager\Domain\Player\Player_Error;
 use Racketmanager\Repositories\Interfaces\Player_Error_Repository_Interface;
 use wpdb;
 

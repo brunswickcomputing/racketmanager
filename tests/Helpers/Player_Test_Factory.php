@@ -4,8 +4,8 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Helpers;
 
 use Racketmanager\Domain\DTO\Player\Player_Hydration_DTO;
-use Racketmanager\Domain\Player;
-use Racketmanager\Domain\Player_Factory;
+use Racketmanager\Domain\Player\Player;
+use Racketmanager\Domain\Player\Player_Factory;
 use InvalidArgumentException;
 
 /**

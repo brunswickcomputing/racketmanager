@@ -5,7 +5,7 @@ namespace Racketmanager\Tests\Integration\Services\Result;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
-use Racketmanager\Domain\Championship;
+use Racketmanager\Domain\Tournament\Championship;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Competition\League;
@@ -13,7 +13,7 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Settings;
 use Racketmanager\Domain\Competition\Competition_Type;
-use Racketmanager\Domain\Team;
+use Racketmanager\Domain\Team\Team;
 use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;

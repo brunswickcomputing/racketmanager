@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Services;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Ports\Rating_Gateway_Interface;
 use Racketmanager\Gateways\Mail\Mailer_Interface;
 use Racketmanager\RacketManager;

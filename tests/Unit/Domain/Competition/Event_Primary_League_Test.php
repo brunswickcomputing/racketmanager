@@ -18,7 +18,7 @@ use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
-require_once __DIR__ . '/../../../wp-stubs.php';
+require_once dirname( __DIR__, 3 ) . '/wp-stubs.php';
 
 #[AllowMockObjectsWithoutExpectations]
 class Event_Primary_League_Test extends TestCase {

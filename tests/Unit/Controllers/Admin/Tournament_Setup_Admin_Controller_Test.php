@@ -11,9 +11,9 @@ use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Details_DTO;
-use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Domain\Competition\Competition;
-use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Club\Club;
 use stdClass;
 use WP_Error;
 

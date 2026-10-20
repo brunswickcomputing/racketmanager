@@ -15,10 +15,13 @@ use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Handler;
 use Racketmanager\Application\Message\Queries\Get_Message_Handler;
 use Racketmanager\Application\Message\Queries\Get_Messages_Handler;
 use Racketmanager\Presentation\Presenters\Message_Presenter;
+use Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface;
 use Racketmanager\Domain\Ports\Rating_Gateway_Interface;
 use Racketmanager\Gateways\Mail\Mailer_Interface;
 use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Gateways\Payment\Payment_Gateway_Interface;
+use Racketmanager\Infrastructure\Events\Simple_Domain_Event_Dispatcher;
+use Racketmanager\Infrastructure\Legacy\Legacy_User_Factory;
 use Racketmanager\Infrastructure\Gateways\Account\Wp_User_Favourites_Gateway;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
@@ -72,6 +75,8 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $app = $this->app;
 
         // Gateways & External Clients
+        $container->set( 'domain_event_dispatcher', fn(): Domain_Event_Dispatcher_Interface => new Simple_Domain_Event_Dispatcher() );
+        $container->set( Domain_Event_Dispatcher_Interface::class, fn( Simple_Container $c ): Domain_Event_Dispatcher_Interface => $c->get( 'domain_event_dispatcher' ) );
         $container->set( 'rating_gateway', fn(): Rating_Gateway_Interface => new Lta_Wtn_Gateway_Adapter() );
         $container->set( 'wtn_api_client', fn( Simple_Container $c ): Rating_Gateway_Interface => $c->get( 'rating_gateway' ) );
         $container->set( 'mailer', fn(): Mailer_Interface => new Wp_Mailer() );
@@ -92,6 +97,7 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->set( 'invoice_repository', fn() => new Invoice_Repository() );
         $container->set( 'user_repository', fn() => new User_Repository() );
         $container->set( 'message_repository', fn() => new Message_Repository() );
+        $container->set( 'legacy_user_factory', fn( Simple_Container $c ) => new Legacy_User_Factory( $c->get( 'message_repository' ) ) );
 
         // Repository Provider Aggregate
         $container->set( 'repository_provider', fn( Simple_Container $c ) => new Repository_Provider(

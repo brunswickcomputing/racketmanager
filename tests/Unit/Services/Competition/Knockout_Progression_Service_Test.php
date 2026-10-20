@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Services\Competition;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Championship;
+use Racketmanager\Domain\Tournament\Championship;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Stage;

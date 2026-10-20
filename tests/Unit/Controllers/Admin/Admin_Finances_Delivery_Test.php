@@ -13,7 +13,7 @@ use Racketmanager\Admin\View_Models\Finances_Invoice_Page_View_Model;
 use Racketmanager\Admin\View_Models\Finances_Invoices_Page_View_Model;
 use Racketmanager\Domain\DTO\Finance\Charge_Details_DTO;
 use Racketmanager\Domain\DTO\Finance\Invoice_Full_Details_DTO;
-use Racketmanager\Domain\Invoice;
+use Racketmanager\Domain\Finance\Invoice;
 use Racketmanager\Domain\Value_Objects\Currency;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
 use Racketmanager\Presentation\Presenters\Invoice_Presenter;

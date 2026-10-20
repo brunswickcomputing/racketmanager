@@ -9,7 +9,7 @@ use Racketmanager\Application\Matches\Queries\Get_Daily_Matches_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Daily_Matches_Query;
 use Racketmanager\Application\Matches\Queries\Get_Latest_Results_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Latest_Results_Query;
-use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;

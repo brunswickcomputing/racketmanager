@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Repositories;
 
-use Racketmanager\Domain\Message;
+use Racketmanager\Domain\Communication\Message;
 use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;
 use Racketmanager\Util\Util;
 use wpdb;

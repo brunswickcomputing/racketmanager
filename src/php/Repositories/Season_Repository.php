@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Repositories;
 
-use Racketmanager\Domain\Season;
+use Racketmanager\Domain\Season\Season;
 use Racketmanager\Repositories\Interfaces\Season_Repository_Interface;
 use wpdb;
 

@@ -10,7 +10,7 @@ use Racketmanager\Admin\Controllers\Tournament_Information_Admin_Controller;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Information_Page_View_Model;
-use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;

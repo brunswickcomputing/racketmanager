@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Helpers;
 
-use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Club\Club;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;

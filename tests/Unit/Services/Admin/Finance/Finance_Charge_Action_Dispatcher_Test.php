@@ -5,7 +5,7 @@ namespace Racketmanager\Tests\Unit\Services\Admin\Finance;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Charge;
+use Racketmanager\Domain\Finance\Charge;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Charge_Not_Deleted_Exception;
 use Racketmanager\Exceptions\Charge_Not_Found_Exception;

@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Repositories;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\User;
+use Racketmanager\Domain\Player\User;
 use Racketmanager\Repositories\User_Repository;
 
 class User_Repository_Test extends TestCase {

@@ -9,12 +9,12 @@
 
 namespace Racketmanager\Domain\Competition;
 
-use Racketmanager\Domain\Championship;
-use Racketmanager\Domain\Championship_Settings;
+use Racketmanager\Domain\Tournament\Championship;
+use Racketmanager\Domain\Tournament\Championship_Settings;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
-use Racketmanager\Domain\Team;
+use Racketmanager\Domain\Team\Team;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;

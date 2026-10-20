@@ -12,7 +12,7 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
-use Racketmanager\Domain\Team;
+use Racketmanager\Domain\Team\Team;
 use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
@@ -135,12 +135,12 @@ class Fixture_Presenter_Phase2_Test extends TestCase {
         $competition->method('get_type')->willReturn('league');
         $competition->type = Competition_Type::LEAGUE;
 
-        $club = $this->createStub(\Racketmanager\Domain\Club::class);
+        $club = $this->createStub(\Racketmanager\Domain\Club\Club::class);
         $club->method('get_name')->willReturn('Home Club');
         $club->method('get_address')->willReturn('123 Street');
         $club->method('get_website')->willReturn('https://homeclub.com');
 
-        $match_secretary = $this->createStub(\Racketmanager\Domain\Player::class);
+        $match_secretary = $this->createStub(\Racketmanager\Domain\Player\Player::class);
         $match_secretary->method('get_fullname')->willReturn('Sec Name');
         $match_secretary->method('get_contactno')->willReturn('01234');
         $match_secretary->method('get_email')->willReturn('sec@example.com');

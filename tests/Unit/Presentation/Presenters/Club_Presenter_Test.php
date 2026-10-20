@@ -4,9 +4,9 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Presentation\Presenters;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Club_Player;
+use Racketmanager\Domain\Club\Club_Player;
 use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
-use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Player\Player;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\View_Models\Club_Roster_Player_View_Model;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;

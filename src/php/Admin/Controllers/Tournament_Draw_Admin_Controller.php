@@ -14,7 +14,7 @@ use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Response_DTO;
-use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;

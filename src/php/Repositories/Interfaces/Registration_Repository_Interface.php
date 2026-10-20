@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Repositories\Interfaces;
 
-use Racketmanager\Domain\Club_Player;
+use Racketmanager\Domain\Club\Club_Player;
 
 /**
  * Interface to implement the Registration repository

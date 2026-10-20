@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Repositories\Interfaces;
 
-use Racketmanager\Domain\Invoice;
+use Racketmanager\Domain\Finance\Invoice;
 
 /**
  * Interface for Invoice_Repository.

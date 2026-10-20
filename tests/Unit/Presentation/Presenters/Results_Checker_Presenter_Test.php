@@ -31,16 +31,16 @@ namespace Racketmanager\Presentation\Presenters {
 namespace Racketmanager\Tests\Unit\Presentation\Presenters {
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Results_Checker;
+use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Presentation\Presenters\Results_Checker_Presenter;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\Enums\Results_Checker_Status;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
-use Racketmanager\Domain\Team;
-use Racketmanager\Domain\Player;
-use Racketmanager\Domain\Player_Factory;
+use Racketmanager\Domain\Team\Team;
+use Racketmanager\Domain\Player\Player;
+use Racketmanager\Domain\Player\Player_Factory;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use stdClass;

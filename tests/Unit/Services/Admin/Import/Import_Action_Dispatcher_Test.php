@@ -15,7 +15,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Player\Player;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Player_Exists_Exception;
 use Racketmanager\RacketManager;

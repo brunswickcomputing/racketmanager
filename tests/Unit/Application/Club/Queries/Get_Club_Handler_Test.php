@@ -6,7 +6,7 @@ namespace Racketmanager\Tests\Unit\Application\Club\Queries;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Club\Queries\Get_Club_Handler;
 use Racketmanager\Application\Club\Queries\Get_Club_Query;
-use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\DTO\Club\Club_Details_DTO;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Presentation\Presenters\Club_Presenter;

@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Domain\Team;
+use Racketmanager\Domain\Team\Team;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Infrastructure\Wordpress\Rest\Rest_Controller_Adapter;

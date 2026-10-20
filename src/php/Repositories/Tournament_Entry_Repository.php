@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Repositories;
 
-use Racketmanager\Domain\Tournament_Entry;
+use Racketmanager\Domain\Tournament\Tournament_Entry;
 use Racketmanager\Repositories\Interfaces\Tournament_Entry_Repository_Interface;
 use Racketmanager\Util\Util;
 use wpdb;

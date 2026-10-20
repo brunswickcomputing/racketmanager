@@ -140,9 +140,9 @@ final class Club_Team_Action_Dispatcher_Test extends TestCase {
         $team_service = $this->createMock( Team_Service::class );
         $guard        = $this->createStub( Action_Guard_Interface::class );
 
-        $team1 = new \Racketmanager\Domain\Team();
+        $team1 = new \Racketmanager\Domain\Team\Team();
         $team1->set_name( 'Team One' );
-        $team2 = new \Racketmanager\Domain\Team();
+        $team2 = new \Racketmanager\Domain\Team\Team();
         $team2->set_name( 'Team Two' );
 
         $team_service->expects( self::exactly( 2 ) )

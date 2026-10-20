@@ -27,14 +27,14 @@ use Racketmanager\Application\General\Queries\Get_Purchase_Order_Handler;
 use Racketmanager\Application\General\Queries\Get_Purchase_Order_Query;
 use Racketmanager\Application\General\Queries\Get_Team_Order_Handler;
 use Racketmanager\Application\General\Queries\Get_Team_Order_Query;
-use Racketmanager\Domain\Club;
-use Racketmanager\Domain\Club_Player;
+use Racketmanager\Domain\Club\Club;
+use Racketmanager\Domain\Club\Club_Player;
 use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
 use Racketmanager\Domain\DTO\Finance\Invoice_Full_Details_DTO;
 use Racketmanager\Domain\DTO\Player\Players_List_DTO;
-use Racketmanager\Domain\Invoice;
-use Racketmanager\Domain\Player;
-use Racketmanager\Domain\User;
+use Racketmanager\Domain\Finance\Invoice;
+use Racketmanager\Domain\Player\Player;
+use Racketmanager\Domain\Player\User;
 use Racketmanager\Domain\Value_Objects\Currency;
 use Racketmanager\Presentation\View_Models\Club_Membership_View_Model;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
@@ -472,7 +472,7 @@ class General_Shortcode_Handlers_Test extends TestCase {
 
     public function test_get_favourites_handler_when_logged_in(): void {
         $favourite_types = [ [ 'name' => 'player', 'favourites' => [ 10, 20 ] ] ];
-        $user = $this->createStub( \Racketmanager\Domain\User::class );
+        $user = $this->createStub( \Racketmanager\Domain\Player\User::class );
 
         $user_repository = $this->createMock( User_Repository_Interface::class );
         $user_repository->expects( $this->once() )

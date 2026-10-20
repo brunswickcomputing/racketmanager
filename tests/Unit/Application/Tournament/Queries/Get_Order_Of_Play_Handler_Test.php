@@ -8,7 +8,7 @@ use Racketmanager\Application\Tournament\Queries\Get_Order_Of_Play_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Order_Of_Play_Query;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
-use Racketmanager\Domain\Team;
+use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Presentation\Presenters\Order_Of_Play_Presenter;
@@ -110,7 +110,7 @@ class Get_Order_Of_Play_Handler_Test extends TestCase
 
     public function test_handle_success_with_tournament_id(): void
     {
-        $tournament = $this->createStub('Racketmanager\Domain\Tournament');
+        $tournament = $this->createStub('Racketmanager\Domain\Tournament\Tournament');
         $tournament->method('get_order_of_play')->willReturn([
             ['court' => '1', 'matches' => ['10', '11']]
         ]);
@@ -142,7 +142,7 @@ class Get_Order_Of_Play_Handler_Test extends TestCase
 
     public function test_handle_and_render_templates_with_placeholder_and_empty_slots(): void
     {
-        $tournament = $this->createStub('Racketmanager\Domain\Tournament');
+        $tournament = $this->createStub('Racketmanager\Domain\Tournament\Tournament');
         $tournament->method('get_order_of_play')->willReturn([
             ['court' => 'Court 1', 'fixtures' => ['101', '102']],
             ['court' => 'Court 2', 'fixtures' => ['103']],
@@ -208,7 +208,7 @@ class Get_Order_Of_Play_Handler_Test extends TestCase
 
     public function test_handle_and_render_templates_no_order_of_play(): void
     {
-        $tournament = $this->createStub('Racketmanager\Domain\Tournament');
+        $tournament = $this->createStub('Racketmanager\Domain\Tournament\Tournament');
         $tournament->method('get_order_of_play')->willReturn([]);
         $this->tournament_service->method('get_tournament')->willReturn($tournament);
 

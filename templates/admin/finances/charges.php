@@ -8,7 +8,7 @@
 namespace Racketmanager;
 
 use Racketmanager\Admin\View_Models\Finances_Charges_Page_View_Model;
-use Racketmanager\Domain\Season;
+use Racketmanager\Domain\Season\Season;
 
 /** @var Finances_Charges_Page_View_Model $vm */
 $competition_id    = $vm->competition_id;

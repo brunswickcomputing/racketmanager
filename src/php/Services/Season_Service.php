@@ -2,7 +2,7 @@
 
 namespace Racketmanager\Services;
 
-use Racketmanager\Domain\Season;
+use Racketmanager\Domain\Season\Season;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Season_Repository;
 use Racketmanager\Services\Validator\Validator;

@@ -10,8 +10,8 @@
 namespace Racketmanager\Domain\DTO\Finance;
 
 use Racketmanager\Domain\Enums\Invoice_Status;
-use Racketmanager\Domain\Invoice;
-use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Finance\Invoice;
+use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Value_Objects\Currency;
 use Racketmanager\Domain\Value_Objects\Money;
 use stdClass;

@@ -272,7 +272,7 @@ final class Admin_Templates_Render_Test extends TestCase {
     }
 
     public function test_render_finance_invoice_template_with_errors_and_values(): void {
-        $invoice = new \Racketmanager\Domain\Invoice();
+        $invoice = new \Racketmanager\Domain\Finance\Invoice();
         $invoice->id             = 55;
         $invoice->charge_id      = 5;
         $invoice->billable_id    = 12;

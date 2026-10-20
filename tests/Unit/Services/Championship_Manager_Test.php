@@ -5,8 +5,8 @@ namespace Racketmanager\Tests\Unit\Services;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Championship;
-use Racketmanager\Domain\Championship_Settings;
+use Racketmanager\Domain\Tournament\Championship;
+use Racketmanager\Domain\Tournament\Championship_Settings;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Fixture;

@@ -11,7 +11,7 @@ use Racketmanager\Application\Event\Queries\Get_Event_Teams_Handler;
 use Racketmanager\Application\Event\Queries\Get_Event_Teams_Query;
 use Racketmanager\Application\League\Queries\Get_League_Teams_Handler;
 use Racketmanager\Application\League\Queries\Get_League_Teams_Query;
-use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;

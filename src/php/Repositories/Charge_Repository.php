@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Repositories;
 
-use Racketmanager\Domain\Charge;
+use Racketmanager\Domain\Finance\Charge;
 use Racketmanager\Repositories\Interfaces\Charge_Repository_Interface;
 use Racketmanager\Domain\DTO\Finance\Charge_Details_DTO;
 use Racketmanager\Domain\DTO\Finance\Charges_With_Totals_DTO;

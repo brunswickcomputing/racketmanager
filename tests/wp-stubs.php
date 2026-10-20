@@ -1080,8 +1080,18 @@ namespace {
         }
     }
 
+    if ( ! isset( $GLOBALS['wp_scheduled_events'] ) ) {
+        $GLOBALS['wp_scheduled_events'] = [];
+    }
+
     if ( ! function_exists( 'wp_schedule_single_event' ) ) {
         function wp_schedule_single_event( $timestamp, $hook, $args = [], $wp_error = false ) {
+            $GLOBALS['wp_scheduled_events'][] = [
+                'timestamp' => $timestamp,
+                'hook'      => $hook,
+                'args'      => $args,
+                'wp_error'  => $wp_error,
+            ];
             return true;
         }
     }

@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Repositories\Interfaces;
 
-use Racketmanager\Domain\Charge;
+use Racketmanager\Domain\Finance\Charge;
 
 /**
  * Interface for Charge_Repository.

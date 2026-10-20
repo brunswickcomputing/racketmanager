@@ -30,7 +30,7 @@ namespace Racketmanager\Tests\Unit\Services\Fixture {
     use Racketmanager\Domain\Fixture\Fixture;
     use Racketmanager\Domain\Fixture\Rubber;
     use Racketmanager\Domain\Scoring\Set_Score;
-    use Racketmanager\Domain\Team;
+    use Racketmanager\Domain\Team\Team;
     use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
     use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
     use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;

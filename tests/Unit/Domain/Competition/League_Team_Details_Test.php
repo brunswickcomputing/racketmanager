@@ -9,7 +9,7 @@ use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
-require_once __DIR__ . '/../../../wp-stubs.php';
+require_once dirname( __DIR__, 3 ) . '/wp-stubs.php';
 
 /**
  * Regression: get_league_teams( [ 'get_details' => true ] ) used to assign the captain display name

@@ -5,8 +5,8 @@ namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Ajax;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Club;
-use Racketmanager\Domain\User;
+use Racketmanager\Domain\Club\Club;
+use Racketmanager\Domain\Player\User;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Ajax_Registry;
@@ -314,7 +314,7 @@ class Club_Ajax_Adapter_Test extends TestCase {
         $this->stub_role_user( false );
         $GLOBALS['wp_stubs_club_roles'][9] = (object) array( 'user' => (object) array( 'id' => 99 ) );
         $this->club_service = $this->createMock( Club_Service::class );
-        $this->club_service->expects( $this->once() )->method( 'reassign_role_user' )->with( 9, 5 )->willReturn( $this->createStub( \Racketmanager\Domain\Club_Role::class ) );
+        $this->club_service->expects( $this->once() )->method( 'reassign_role_user' )->with( 9, 5 )->willReturn( $this->createStub( \Racketmanager\Domain\Club\Club_Role::class ) );
         $this->adapter = $this->make_adapter();
 
         $content = $this->adapter->set_club_role( $request )->get_content();

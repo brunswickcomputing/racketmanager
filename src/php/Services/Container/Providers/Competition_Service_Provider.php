@@ -116,7 +116,8 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
         $container->set( 'competition_season_service', fn( Simple_Container $c ) => new Competition_Season_Service(
             $c->get( 'league_team_repository' ),
             $c->get( 'club_repository' ),
-            $c->get( 'event_repository' )
+            $c->get( 'event_repository' ),
+            $c->get( 'domain_event_dispatcher' )
         ) );
         $container->set( 'competition_service', fn( Simple_Container $c ) => new Competition_Service(
             $app,

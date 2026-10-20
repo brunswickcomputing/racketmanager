@@ -8,7 +8,7 @@
 namespace Racketmanager;
 
 use Racketmanager\Domain\Competition;
-use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Tournament\Tournament;
 
 /** @var int $post_id */
 /** @var string $form_action */

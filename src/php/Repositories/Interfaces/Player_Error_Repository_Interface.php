@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Repositories\Interfaces;
 
-use Racketmanager\Domain\Player_Error;
+use Racketmanager\Domain\Player\Player_Error;
 
 /**
  * Interface to implement the Player_Error repository

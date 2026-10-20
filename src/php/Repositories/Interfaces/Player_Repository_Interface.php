@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Repositories\Interfaces;
 
-use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Player\Player;
 use WP_User;
 
 /**

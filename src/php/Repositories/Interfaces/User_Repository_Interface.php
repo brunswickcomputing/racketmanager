@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Repositories\Interfaces;
 
-use Racketmanager\Domain\User;
+use Racketmanager\Domain\Player\User;
 
 interface User_Repository_Interface extends Repository_Interface {
     public function find( int|string $user_id ): ?User;

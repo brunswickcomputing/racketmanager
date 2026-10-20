@@ -5,7 +5,7 @@ namespace Racketmanager\Services\Notification;
 
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Domain\Results_Checker;
+use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Gateways\Mail\Mailer_Interface;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\Presentation\Presenters\Notification_Presenter;

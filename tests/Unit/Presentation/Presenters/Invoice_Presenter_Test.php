@@ -451,7 +451,7 @@ class Invoice_Presenter_Test extends TestCase {
         $statuses = ['pending', 'failed', ''];
         foreach ($statuses as $status) {
             // Using REAL Invoice
-            $invoice = new \Racketmanager\Domain\Invoice();
+            $invoice = new \Racketmanager\Domain\Finance\Invoice();
             $invoice->status = $status;
             $invoice->amount = '10.00';
             $invoice->invoice_number = 123;
@@ -462,7 +462,7 @@ class Invoice_Presenter_Test extends TestCase {
             $this->assertNull($vm->status_display);
             
             // Using Invoice_Full_Details_DTO
-            $invoice_dto = new \Racketmanager\Domain\Invoice();
+            $invoice_dto = new \Racketmanager\Domain\Finance\Invoice();
             $invoice_dto->id = 1;
             $invoice_dto->invoice_number = 123;
             $invoice_dto->status = $status;

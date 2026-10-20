@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Repositories\Interfaces;
 
-use Racketmanager\Domain\Message;
+use Racketmanager\Domain\Communication\Message;
 
 interface Message_Repository_Interface extends Repository_Interface {
     public function find( int|string $message_id ): ?Message;

@@ -9,8 +9,8 @@
 
 namespace Racketmanager\Domain\DTO\Club;
 
-use Racketmanager\Domain\Club;
-use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Club\Club;
+use Racketmanager\Domain\Player\Player;
 
 /**
  * Class to implement the Club Details Data Transfer Object

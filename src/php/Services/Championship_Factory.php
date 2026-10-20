@@ -9,8 +9,8 @@
 
 namespace Racketmanager\Services;
 
-use Racketmanager\Domain\Championship;
-use Racketmanager\Domain\Championship_Settings;
+use Racketmanager\Domain\Tournament\Championship;
+use Racketmanager\Domain\Tournament\Championship_Settings;
 use Racketmanager\Util\Util;
 use function Racketmanager\get_league;
 

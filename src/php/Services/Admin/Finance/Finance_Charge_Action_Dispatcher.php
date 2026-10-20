@@ -11,7 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Services\Admin\Finance;
 
 use Exception;
-use Racketmanager\Domain\Charge;
+use Racketmanager\Domain\Finance\Charge;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Charge_Not_Deleted_Exception;

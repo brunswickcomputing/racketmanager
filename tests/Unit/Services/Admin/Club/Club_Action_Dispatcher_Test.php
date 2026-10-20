@@ -5,7 +5,7 @@ namespace Racketmanager\Tests\Unit\Services\Admin\Club;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Services\Admin\Club\Club_Action_Dispatcher;

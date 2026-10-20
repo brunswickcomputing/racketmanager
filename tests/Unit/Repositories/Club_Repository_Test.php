@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Repositories;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Club\Club;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use wpdb;

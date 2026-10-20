@@ -5,7 +5,7 @@ namespace Racketmanager\Tests\Unit\Repositories;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Results_Report;
+use Racketmanager\Domain\Communication\Results_Report;
 use Racketmanager\Repositories\Interfaces\Results_Report_Repository_Interface;
 use Racketmanager\Repositories\Result_Repository;
 use wpdb;

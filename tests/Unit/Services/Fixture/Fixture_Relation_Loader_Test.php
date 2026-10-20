@@ -4,13 +4,13 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Services\Fixture;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Fixture\Fixture_Team_Resolver_Interface;
-use Racketmanager\Domain\Team;
+use Racketmanager\Domain\Team\Team;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Role_Assignment_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;

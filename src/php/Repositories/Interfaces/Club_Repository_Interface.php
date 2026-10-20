@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Repositories\Interfaces;
 
-use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Club\Club;
 
 /**
  * Interface to implement the Club repository

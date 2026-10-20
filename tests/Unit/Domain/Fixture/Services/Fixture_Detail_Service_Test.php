@@ -7,7 +7,7 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Details_DTO;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Services\Fixture_Detail_Service;
-use Racketmanager\Domain\Player_Factory;
+use Racketmanager\Domain\Player\Player_Factory;
 
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
@@ -112,12 +112,12 @@ class Fixture_Detail_Service_Test extends TestCase {
             return null;
         });
 
-        $home_player = $this->createStub(\Racketmanager\Domain\Player::class);
+        $home_player = $this->createStub(\Racketmanager\Domain\Player\Player::class);
         $home_player->method('get_fullname')->willReturn('Home Captain');
         $home_player->method('get_contactno')->willReturn('0777111');
         $home_player->method('get_email')->willReturn('home@capt.com');
 
-        $away_player = $this->createStub(\Racketmanager\Domain\Player::class);
+        $away_player = $this->createStub(\Racketmanager\Domain\Player\Player::class);
         $away_player->method('get_fullname')->willReturn('Away Captain');
         $away_player->method('get_contactno')->willReturn('0777222');
         $away_player->method('get_email')->willReturn('away@capt.com');
@@ -147,20 +147,20 @@ class Fixture_Detail_Service_Test extends TestCase {
         $fixture->method('get_home_team')->willReturn('1');
         $fixture->method('get_away_team')->willReturn('2');
 
-        $team = $this->createStub(\Racketmanager\Domain\Team::class);
+        $team = $this->createStub(\Racketmanager\Domain\Team\Team::class);
         $team->method('get_club_id')->willReturn(5);
         $team->method('get_name')->willReturn('Home Team');
         $this->team_repository->method('find_by_id')->willReturn($team);
 
-        $club = $this->createStub(\Racketmanager\Domain\Club::class);
+        $club = $this->createStub(\Racketmanager\Domain\Club\Club::class);
         $club->method('get_id')->willReturn(5);
         $this->club_repository->method('find_by_id')->willReturn($club);
 
-        $role = $this->createStub(\Racketmanager\Domain\Club_Role::class);
+        $role = $this->createStub(\Racketmanager\Domain\Club\Club_Role::class);
         $role->method('get_user_id')->willReturn(100);
         $this->club_role_repository->method('search')->willReturn([$role]);
 
-        $secretary = $this->createStub(\Racketmanager\Domain\Player::class);
+        $secretary = $this->createStub(\Racketmanager\Domain\Player\Player::class);
         $secretary->method('get_fullname')->willReturn('John Sec');
         $this->player_repository->method('find')->willReturnCallback(function($id) use ($secretary) {
             if ($id === 100) return $secretary;
@@ -279,9 +279,9 @@ class Fixture_Detail_Service_Test extends TestCase {
             $this->club_role_repository
         );
 
-        $home_team = $this->createStub( \Racketmanager\Domain\Team::class );
+        $home_team = $this->createStub( \Racketmanager\Domain\Team\Team::class );
         $home_team->method( 'get_club_id' )->willReturn( 100 );
-        $away_team = $this->createStub( \Racketmanager\Domain\Team::class );
+        $away_team = $this->createStub( \Racketmanager\Domain\Team\Team::class );
         $away_team->method( 'get_club_id' )->willReturn( 200 );
         $this->team_repository->method( 'find_by_id' )->willReturnMap( [
             [ 10, $home_team ],

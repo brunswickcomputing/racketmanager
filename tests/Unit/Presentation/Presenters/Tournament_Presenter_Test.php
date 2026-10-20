@@ -9,10 +9,10 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
-use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Scoring\Set_Score;
-use Racketmanager\Domain\Team;
-use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Team\Team;
+use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
 

@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Repositories;
 
-use Racketmanager\Domain\User;
+use Racketmanager\Domain\Player\User;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
 use Racketmanager\Util\Util;
 use stdClass;

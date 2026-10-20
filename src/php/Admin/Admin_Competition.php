@@ -18,6 +18,7 @@ use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
+use stdClass;
 use Racketmanager\Services\Admin\Competition\Competition_Action_Dispatcher;
 use Racketmanager\Services\Admin\Competition\Competition_Season_Action_Dispatcher;
 use Racketmanager\Services\Validator\Validator_Config;

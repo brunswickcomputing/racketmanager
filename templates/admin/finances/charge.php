@@ -7,7 +7,7 @@
 
 namespace Racketmanager;
 
-use Racketmanager\Domain\Season;
+use Racketmanager\Domain\Season\Season;
 
 /** @var object $charge */
 /** @var string $form_title */

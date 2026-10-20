@@ -11,7 +11,7 @@ use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\Fixture\Fixture_Relation_Loader;
 use Racketmanager\Admin\View_Models\Tournament_Plan_Page_View_Model;
-use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Details_DTO;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;

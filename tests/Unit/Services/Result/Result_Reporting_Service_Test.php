@@ -12,8 +12,8 @@ namespace {
 namespace Racketmanager\Tests\Unit\Services\Result {
 
 	use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Championship;
-use Racketmanager\Domain\Championship_Settings;
+use Racketmanager\Domain\Tournament\Championship;
+use Racketmanager\Domain\Tournament\Championship_Settings;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Domain\Competition\League;
@@ -21,7 +21,7 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Settings;
 use Racketmanager\Domain\Competition\Competition_Type;
-use Racketmanager\Domain\Team;
+use Racketmanager\Domain\Team\Team;
 use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;

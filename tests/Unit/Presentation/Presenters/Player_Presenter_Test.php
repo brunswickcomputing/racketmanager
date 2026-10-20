@@ -4,10 +4,10 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Presentation\Presenters;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Club;
-use Racketmanager\Domain\Club_Player;
+use Racketmanager\Domain\Club\Club;
+use Racketmanager\Domain\Club\Club_Player;
 use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
-use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Player\Player;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\View_Models\Club_Membership_View_Model;
 use Racketmanager\Presentation\View_Models\Competition_List_Item_View_Model;

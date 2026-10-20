@@ -6,7 +6,7 @@ namespace Racketmanager\Services\Validator;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTOs\Results_Checker_Data;
-use Racketmanager\Domain\Results_Checker;
+use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Domain\DTO\Player\Validation_Context_DTO;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;

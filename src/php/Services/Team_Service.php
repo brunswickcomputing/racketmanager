@@ -12,7 +12,7 @@ namespace Racketmanager\Services;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\DTO\Team\Team_Fixture_Settings_DTO;
 use Racketmanager\Domain\Fixture\Fixture_Team_Resolver_Interface;
-use Racketmanager\Domain\Team;
+use Racketmanager\Domain\Team\Team;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;

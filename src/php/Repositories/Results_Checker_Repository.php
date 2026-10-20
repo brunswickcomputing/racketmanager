@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Repositories;
 
-use Racketmanager\Domain\Results_Checker;
+use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Domain\DTOs\Results_Checker_Data;
 use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
 use wpdb;

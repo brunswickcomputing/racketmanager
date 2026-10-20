@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Enums\Team_Profile;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Team;
-use Racketmanager\Domain\Team;
+use Racketmanager\Domain\Team\Team;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Has_Matches_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;

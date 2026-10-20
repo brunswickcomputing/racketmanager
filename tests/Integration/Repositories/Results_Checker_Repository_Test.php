@@ -12,7 +12,7 @@ if ( ! function_exists( 'Racketmanager\get_player' ) ) {
 namespace Racketmanager\Tests\Integration\Repositories;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Results_Checker;
+use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Domain\DTOs\Results_Checker_Data;
 use Racketmanager\Repositories\Results_Checker_Repository;
 use stdClass;

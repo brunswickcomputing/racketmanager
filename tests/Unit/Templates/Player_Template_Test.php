@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Templates;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Player\Player;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 
 class Player_Template_Test extends TestCase {

@@ -8,7 +8,7 @@
 
 namespace Racketmanager;
 
-use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Player\Player;
 use Racketmanager\Presentation\View_Models\Player_View_Model;
 
 /** @var Player_View_Model|null $vm */

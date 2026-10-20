@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Repositories\Interfaces;
 
-use Racketmanager\Domain\Results_Report;
+use Racketmanager\Domain\Communication\Results_Report;
 
 /**
  * Interface to implement the Results Report repository

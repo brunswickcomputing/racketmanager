@@ -11,7 +11,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Repositories;
 
-use Racketmanager\Domain\Results_Report;
+use Racketmanager\Domain\Communication\Results_Report;
 use Racketmanager\Repositories\Interfaces\Result_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Results_Report_Repository_Interface;
 use stdClass;

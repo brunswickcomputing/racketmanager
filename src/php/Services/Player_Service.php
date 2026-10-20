@@ -10,11 +10,11 @@
 namespace Racketmanager\Services;
 
 use Exception;
-use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Enums\Club_Role;
-use Racketmanager\Domain\Player;
-use Racketmanager\Domain\Player_Factory;
-use Racketmanager\Domain\Player_Error;
+use Racketmanager\Domain\Player\Player;
+use Racketmanager\Domain\Player\Player_Factory;
+use Racketmanager\Domain\Player\Player_Error;
 use Racketmanager\Domain\Ports\Rating_Gateway_Interface;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Duplicate_BTM_Exception;

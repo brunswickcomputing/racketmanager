@@ -12,7 +12,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Services;
 
 use Racketmanager\Domain\Competition\Competition;
-use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Player\Player;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Util\Util;

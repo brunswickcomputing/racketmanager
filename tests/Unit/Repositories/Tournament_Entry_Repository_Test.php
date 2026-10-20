@@ -5,7 +5,7 @@ namespace Racketmanager\Tests\Unit\Repositories;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Tournament_Entry;
+use Racketmanager\Domain\Tournament\Tournament_Entry;
 use Racketmanager\Repositories\Tournament_Entry_Repository;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use wpdb;

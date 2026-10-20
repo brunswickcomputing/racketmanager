@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Entry_Request_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Entry_Response_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Partner_Request_DTO;
-use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Exceptions\Stripe_API_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;

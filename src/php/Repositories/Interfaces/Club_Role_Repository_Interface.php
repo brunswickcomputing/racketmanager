@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Repositories\Interfaces;
 
-use Racketmanager\Domain\Club_Role;
+use Racketmanager\Domain\Club\Club_Role;
 
 /**
  * Interface to implement the Club_Role repository

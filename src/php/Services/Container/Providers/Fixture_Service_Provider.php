@@ -3,12 +3,15 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Container\Providers;
 
+use Racketmanager\Application\Fixture\Listeners\Schedule_Fixture_Report_Listener;
 use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Daily_Matches_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Latest_Results_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Match_Detail_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Match_Header_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Match_Score_Handler;
+use Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface;
+use Racketmanager\Domain\Fixture\Events\Fixture_Result_Finalized_Event;
 use Racketmanager\Domain\Fixture\Services\Fixture_Detail_Service as Domain_Fixture_Detail_Service;
 use Racketmanager\Infrastructure\Persistence\Legacy_Fixture_Listing_Finder;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Fixture_Ajax_Adapter;
@@ -93,10 +96,33 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             $c->get( 'fixture_link_service' )
         ) );
 
+        $container->set( 'result_reporting_service', fn( Simple_Container $c ) => new Result_Reporting_Service(
+            $c->get( 'repository_provider' ),
+            $c->get( 'option_gateway' )
+        ) );
+
+        $container->set( 'schedule_fixture_report_listener', fn( Simple_Container $c ) => new Schedule_Fixture_Report_Listener(
+            $c->get( 'result_reporting_service' )
+        ) );
+
+        if ( $container->has( 'domain_event_dispatcher' ) ) {
+            /** @var Domain_Event_Dispatcher_Interface $dispatcher */
+            $dispatcher = $container->get( 'domain_event_dispatcher' );
+            $dispatcher->subscribe(
+                Fixture_Result_Finalized_Event::class,
+                function ( Fixture_Result_Finalized_Event $event ) use ( $container ): void {
+                    /** @var Schedule_Fixture_Report_Listener $listener */
+                    $listener = $container->get( 'schedule_fixture_report_listener' );
+                    $listener( $event );
+                }
+            );
+        }
+
         $container->set( 'fixture_finalization_service', fn( Simple_Container $c ) => new Fixture_Finalization_Service(
             $c->get( 'standings_service' ),
             $c->get( 'knockout_progression_service' ),
-            $c->get( 'result_reporting_service' )
+            $c->get( 'result_reporting_service' ),
+            $c->get( 'domain_event_dispatcher' )
         ) );
 
         $container->set( 'rubber_result_manager', fn( Simple_Container $c ) => new Rubber_Result_Manager(
@@ -170,11 +196,6 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             $c->get( 'fixture_link_service' ),
             $c->get( 'fixture_permission_service' ),
             $c->get( 'club_role_repository' )
-        ) );
-
-        $container->set( 'result_reporting_service', fn( Simple_Container $c ) => new Result_Reporting_Service(
-            $c->get( 'repository_provider' ),
-            $c->get( 'option_gateway' )
         ) );
 
         $container->set( 'result_service', fn( Simple_Container $c ) => new Result_Service(

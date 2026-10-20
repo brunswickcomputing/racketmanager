@@ -6,7 +6,7 @@ namespace Racketmanager\Tests\Unit\Services\Admin\Player;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
-use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Player\Player;
 use Racketmanager\Exceptions\Duplicate_BTM_Exception;
 use Racketmanager\Exceptions\Duplicate_Email_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;

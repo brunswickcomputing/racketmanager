@@ -10,7 +10,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Admin\View_Models;
 
-use Racketmanager\Domain\Season;
+use Racketmanager\Domain\Season\Season;
 use Racketmanager\Admin\View_Models\Error_Bag;
 
 readonly final class Seasons_Page_View_Model {

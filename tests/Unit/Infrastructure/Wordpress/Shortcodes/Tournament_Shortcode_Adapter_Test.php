@@ -30,7 +30,7 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Event_Entry_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Event_DTO;
-use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;

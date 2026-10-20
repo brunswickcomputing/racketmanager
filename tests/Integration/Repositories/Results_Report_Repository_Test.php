@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Integration\Repositories;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Results_Report;
+use Racketmanager\Domain\Communication\Results_Report;
 use Racketmanager\Repositories\Results_Report_Repository;
 use stdClass;
 

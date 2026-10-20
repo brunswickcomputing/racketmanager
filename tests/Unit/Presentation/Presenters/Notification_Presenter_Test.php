@@ -24,7 +24,7 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
     use PHPUnit\Framework\MockObject\MockObject;
     use PHPUnit\Framework\TestCase;
     use Racketmanager\Domain\Fixture\Fixture;
-    use Racketmanager\Domain\Tournament;
+    use Racketmanager\Domain\Tournament\Tournament;
     use Racketmanager\Presentation\Presenters\Notification_Presenter;
     use Racketmanager\Services\Fixture\Fixture_Link_Service;
     use Racketmanager\Services\Fixture\Fixture_Permission_Service;
@@ -35,7 +35,7 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
     use Racketmanager\Domain\Competition\League;
     use Racketmanager\Domain\Competition\Event;
     use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
-    use Racketmanager\Domain\Team;
+    use Racketmanager\Domain\Team\Team;
     use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
     use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
     use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;

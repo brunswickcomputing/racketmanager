@@ -8,8 +8,8 @@
 namespace Racketmanager;
 
 use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model;
-use Racketmanager\Domain\Competition;
-use Racketmanager\Domain\Event;
+use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Util\Util_Lookup;
 
 /** @var Tournament_Competition_Config_Page_View_Model $vm */

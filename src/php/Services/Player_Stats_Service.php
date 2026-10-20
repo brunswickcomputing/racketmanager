@@ -11,7 +11,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services;
 
-use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Player\Player;
 use stdClass;
 
 /**

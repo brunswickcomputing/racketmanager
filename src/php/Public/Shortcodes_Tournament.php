@@ -11,7 +11,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Public;
 
-use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
 
 /**

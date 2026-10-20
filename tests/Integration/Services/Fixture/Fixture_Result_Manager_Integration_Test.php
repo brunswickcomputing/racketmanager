@@ -585,11 +585,11 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
 
         $GLOBALS['wp_stubs_current_user_can'] = false;
 
-        $home_team = $this->getMockBuilder( \Racketmanager\Domain\Team::class )
+        $home_team = $this->getMockBuilder( \Racketmanager\Domain\Team\Team::class )
                           ->disableOriginalConstructor()
                           ->getMock();
         $home_team->method( 'get_club_id' )->willReturn( 10 );
-        $away_team = $this->getMockBuilder( \Racketmanager\Domain\Team::class )
+        $away_team = $this->getMockBuilder( \Racketmanager\Domain\Team\Team::class )
                           ->disableOriginalConstructor()
                           ->getMock();
         $away_team->method( 'get_club_id' )->willReturn( 20 );

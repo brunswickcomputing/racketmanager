@@ -8,10 +8,10 @@
 
 namespace Racketmanager\Admin\View_Models;
 
-use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
-use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Tournament\Tournament;
 
 readonly final class Tournament_Competition_Config_Page_View_Model {
 

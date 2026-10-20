@@ -10,10 +10,10 @@
 namespace Racketmanager\Services;
 
 use Exception;
-use Racketmanager\Domain\Club;
-use Racketmanager\Domain\Club_Role;
+use Racketmanager\Domain\Club\Club;
+use Racketmanager\Domain\Club\Club_Role;
 use Racketmanager\Domain\DTO\Club\Club_Details_DTO;
-use Racketmanager\Domain\Team;
+use Racketmanager\Domain\Team\Team;
 use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Registration_Repository_Interface;
 use Racketmanager\Exceptions\Club_Has_Teams_Exception;

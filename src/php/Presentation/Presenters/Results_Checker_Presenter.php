@@ -5,7 +5,7 @@ namespace Racketmanager\Presentation\Presenters;
 
 use Racketmanager\Domain\Enums\Results_Checker_Status;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Domain\Results_Checker;
+use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Presentation\View_Models\Results_Checker_View_Model;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;

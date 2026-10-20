@@ -22,7 +22,7 @@ $player_row = static fn(): object => (object) array(
 // 1. Without container: fallback repository is used and collaborators are wired.
 unset( $GLOBALS['racketmanager'] );
 $unwired_app_player = \Racketmanager\get_player( $player_row() );
-if ( ! $unwired_app_player instanceof \Racketmanager\Domain\Player ) {
+if ( ! $unwired_app_player instanceof \Racketmanager\Domain\Player\Player ) {
 	fwrite( STDERR, "The production get_player() did not return a Player instance.\n" );
 	exit( 1 );
 }
@@ -34,13 +34,13 @@ $container->set( 'player_repository', static fn() => $repository );
 $GLOBALS['racketmanager'] = (object) array( 'container' => $container );
 
 $wired_app_player = \Racketmanager\get_player( $player_row() );
-if ( ! $wired_app_player instanceof \Racketmanager\Domain\Player ) {
+if ( ! $wired_app_player instanceof \Racketmanager\Domain\Player\Player ) {
 	fwrite( STDERR, "The production get_player() with container did not return a Player instance.\n" );
 	exit( 1 );
 }
 
 // 3. Passing an existing Player instance re-wires it.
-$existing_player = new \Racketmanager\Domain\Player();
+$existing_player = new \Racketmanager\Domain\Player\Player();
 $existing_player->ID = 999;
 $existing_player->user_login = 'existing';
 $rewired_player = \Racketmanager\get_player( $existing_player );

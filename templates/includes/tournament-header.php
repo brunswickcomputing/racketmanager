@@ -8,7 +8,7 @@
 
 namespace Racketmanager;
 
-use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Presentation\View_Models\Tournament_Header_View_Model;
 
 /** @var Tournament|object|null $tournament */

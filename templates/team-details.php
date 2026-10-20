@@ -42,7 +42,7 @@ $display_opt = $racketmanager->get_options( 'display' );
 if ( ! empty( $display_opt['wtn'] ) ) {
     $help_text   = __( 'World Tennis Number', 'racketmanager');
     $format      = substr( $object_event->type, 1, 1 );
-    if ( $format !=== 'S' && $format !== 'D' ) {
+    if ( $format !== 'S' && $format !== 'D' ) {
         $format = 'S';
     }
     $format_type = Util::get_match_type( $format );

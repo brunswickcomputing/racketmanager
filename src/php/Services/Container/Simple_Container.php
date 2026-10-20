@@ -24,6 +24,7 @@ class Simple_Container {
      */
     public function set(string $id, callable|object $concrete): void {
         $this->definitions[$id] = $concrete;
+        unset( $this->instances[$id] );
     }
 
     /**

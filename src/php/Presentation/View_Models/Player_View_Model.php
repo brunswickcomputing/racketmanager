@@ -103,6 +103,7 @@ final readonly class Player_View_Model {
             'search_string'       => $this->search_string,
             'search_results'      => $this->search_results,
             'favourites'          => $this->favourites,
+            'favourite_name'      => 'player',
             'alphabet_nav'        => $this->alphabet_nav,
             'players_list'        => $this->players_list,
             'player_list'         => $this->players_list,

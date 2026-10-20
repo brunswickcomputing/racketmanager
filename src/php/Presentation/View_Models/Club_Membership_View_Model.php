@@ -19,8 +19,14 @@ final readonly class Club_Membership_View_Model {
         public ?string $removal_date = null,
         public string $removal_date_display = '',
         public ?string $registration_date = null,
+        public string $registration_date_display = '',
         public ?int $club_id = null,
         public ?int $user_id = null,
         public ?int $registration_id = null,
+        public ?int $approved_by_user_id = null,
+        public ?int $registered_by_user_id = null,
+        public ?int $removed_by_user_id = null,
+        public ?bool $system_record = null,
+        public string $club_url = '',
     ) {}
 }

@@ -10,7 +10,7 @@ namespace Racketmanager;
 /** @var string $captain */
 /** @var string $competition */
 /** @var string $season */
-/** @var array  $matches */
+/** @var \Racketmanager\Presentation\View_Models\Send_Fixtures_Match_Row_View_Model[] $matches */
 /** @var object $team */
 /** @var string $salutation */
 /** @var string $contact */
@@ -54,28 +54,16 @@ require 'email-header.php';
                                                                         <tbody>
                                                                             <?php foreach ( $matches as $match ) { ?>
                                                                             <tr class="align-center">
-                                                                                <td><?php echo esc_html( $match->match_day ); ?></td>
-                                                                                <td><?php echo esc_html( mysql2date( 'd M y', $match->date ) ); ?></td>
-                                                                                <td><?php echo esc_html( mysql2date( 'D', $match->date ) ); ?></td>
-                                                                                <td><?php the_match_time( $match->start_time ); ?></td>
-                                                                                <td class="align-right
-                                                                                <?php
-                                                                                if ( $match->home_team === $team->id ) {
-                                                                                    echo ' bold';
-                                                                                }
-                                                                                ?>
-                                                                                ">
-                                                                                    <?php echo esc_html( $match->teams['home']->title ); ?>
+                                                                                <td><?php echo esc_html( $match->round_display ); ?></td>
+                                                                                <td><?php echo esc_html( $match->date_display ); ?></td>
+                                                                                <td><?php echo esc_html( $match->day_display ); ?></td>
+                                                                                <td><?php echo esc_html( $match->time_display ); ?></td>
+                                                                                <td class="align-right<?php echo $match->is_home ? ' bold' : ''; ?>">
+                                                                                    <?php echo esc_html( $match->home_team_title ); ?>
                                                                                 </td>
                                                                                 <td>-</td>
-                                                                                <td class="align-left
-                                                                                <?php
-                                                                                if ( $match->away_team === $team->id ) {
-                                                                                    echo ' bold';
-                                                                                }
-                                                                                ?>
-                                                                                ">
-                                                                                    <?php echo esc_html( $match->teams['away']->title ); ?>
+                                                                                <td class="align-left<?php echo $match->is_away ? ' bold' : ''; ?>">
+                                                                                    <?php echo esc_html( $match->away_team_title ); ?>
                                                                                 </td>
                                                                             </tr>
                                                                             <?php } ?>

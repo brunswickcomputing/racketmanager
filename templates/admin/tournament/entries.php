@@ -19,8 +19,10 @@ if ( $vm ) {
     $unpaid_entries    = $vm->unpaid_entries;
     $pending_entries   = $vm->pending_entries;
     $confirmed_entries = $vm->confirmed_entries;
+    $player_entry_urls = $vm->player_entry_urls;
 }
-$player_list_base = 'admin/tournament/player-list';
+$player_list_base  = 'admin/tournament/player-list';
+$player_entry_urls = $player_entry_urls ?? array();
 
 /** @var array $withdrawn_entries */
 /** @var array $unpaid_entries */
@@ -40,7 +42,7 @@ $player_list_base = 'admin/tournament/player-list';
                     </tr>
                 </thead>
                 <tbody>
-                    <?php $renderer->render( $player_list_base, $vm, [ 'player_list' => $withdrawn_entries, 'entered' => true ] ); ?>
+                    <?php $renderer->render( $player_list_base, $vm, [ 'player_list' => $withdrawn_entries, 'player_entry_urls' => $player_entry_urls, 'entered' => true ] ); ?>
                 </tbody>
             </table>
             <?php
@@ -54,7 +56,7 @@ $player_list_base = 'admin/tournament/player-list';
                     </tr>
                 </thead>
                 <tbody>
-                    <?php $renderer->render( $player_list_base, $vm, [ 'player_list' => $unpaid_entries, 'entered' => true ] ); ?>
+                    <?php $renderer->render( $player_list_base, $vm, [ 'player_list' => $unpaid_entries, 'player_entry_urls' => $player_entry_urls, 'entered' => true ] ); ?>
                 </tbody>
             </table>
             <?php
@@ -67,7 +69,7 @@ $player_list_base = 'admin/tournament/player-list';
                 </tr>
             </thead>
             <tbody>
-                <?php $renderer->render( $player_list_base, $vm, [ 'player_list' => $pending_entries, 'entered' => false ] ); ?>
+                <?php $renderer->render( $player_list_base, $vm, [ 'player_list' => $pending_entries, 'player_entry_urls' => $player_entry_urls, 'entered' => false ] ); ?>
             </tbody>
         </table>
     </div>
@@ -79,7 +81,7 @@ $player_list_base = 'admin/tournament/player-list';
                 </tr>
             </thead>
             <tbody>
-                <?php $renderer->render( $player_list_base, $vm, [ 'player_list' => $confirmed_entries, 'entered' => true ] ); ?>
+                <?php $renderer->render( $player_list_base, $vm, [ 'player_list' => $confirmed_entries, 'player_entry_urls' => $player_entry_urls, 'entered' => true ] ); ?>
             </tbody>
         </table>
     </div>

@@ -19,18 +19,8 @@ $team = $team_details->team;
 $club = $team_details->club;
 $envelope           = RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#envelope-fill';
 $telephone          = RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#telephone-fill';
-$user_can_edit_team = false;
-if ( is_user_logged_in() ) {
-    if ( current_user_can( 'manage_racketmanager' ) ) {
-        $user_can_edit_team = true;
-    } else {
-        $user   = wp_get_current_user();
-        $userid = $user->ID;
-        if ( ! empty( $team_details->match_secretary->id ) && intval( $team_details->match_secretary->id ) === $userid ) {
-            $user_can_edit_team = true;
-        }
-    }
-}
+$user_can_edit_team = $vm->user_can_edit_team;
+$calendar_url       = $vm->calendar_url;
 if ( isset( $object->competition ) ) {
     $object_competition = $object->competition;
     $object_event       = $object;
@@ -71,7 +61,7 @@ $match_time_val   = $vm->match_time_formatted ?? '';
                         <?php
                         $favourite_type = 'team';
                         $favourite_id   = $team->get_id();
-                        require_once 'includes/favourite-button.php';
+                        require 'includes/favourite-button.php';
                         ?>
                     </h3>
                 </div>
@@ -135,16 +125,6 @@ $match_time_val   = $vm->match_time_formatted ?? '';
                     <div class="module__banner">
                         <h3 class="module__title"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></h3>
                         <div class="module__aside">
-                            <?php
-                            $calendar_url = add_query_arg(
-                                array(
-                                    'league_id' => $object->id,
-                                    'team_id'   => $team->get_id(),
-                                    'season'    => $object->current_season['name'],
-                                ),
-                                rest_url( 'racketmanager/v1/export/calendar' )
-                            );
-                            ?>
                             <a href="<?php echo esc_url( $calendar_url ); ?>" class="btn btn--link calendar-add" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Add Matches to Calendar', 'racketmanager' ); ?>" >
                                 <svg width="32" height="32" class="icon ">
                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar-fill' ); ?>"></use>

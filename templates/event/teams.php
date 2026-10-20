@@ -7,7 +7,9 @@
 
 namespace Racketmanager;
 
-$competition_type = $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
+/** @var object $event */
+/** @var array<int, array{team_link: string, club_link: string, league_link: string}> $team_links */
+$team_links = $team_links ?? [];
 ?>
 <div class="module module--card">
     <div class="module__banner">
@@ -50,34 +52,44 @@ $competition_type = $event->competition->type instanceof \BackedEnum ? $event->c
                     </div>
                     <?php
                     foreach ( $event->teams as $team ) {
-                        if ( $event->is_box ) {
-                            $league_link = $competition_type . '/' . seo_url( $team->league_title ) . '/' . __( 'round', 'racketmanager' ) . '-' . $event->current_season['name'] . '/';
-                        } else {
-                            $league_link = $competition_type . '/' . seo_url( $team->league_title ) . '/' . $event->current_season['name'] . '/';
-                        }
-                        $club_link = '/' . $competition_type . 's/' . seo_url( $event->name ) . '/' . $event->current_season['name'] . '/club/' . seo_url( $team->club->shortcode ) . '/';
+                        $team_id     = is_object( $team ) ? (int) ( $team->id ?? 0 ) : (int) ( $team['id'] ?? 0 );
+                        $team_link   = $team_links[ $team_id ]['team_link'] ?? '';
+                        $club_link   = $team_links[ $team_id ]['club_link'] ?? '';
+                        $league_link = $team_links[ $team_id ]['league_link'] ?? '';
                         ?>
                         <div class="row mb-2 row-list">
                             <div class="col-4" name="<?php esc_html_e( 'Team', 'racketmanager' ); ?>">
-                                <a href="/<?php echo esc_attr( $competition_type ); ?>/<?php echo esc_html( seo_url( $team->league_title ) ); ?>/<?php echo esc_attr( $event->current_season['name'] ); ?>/team/<?php echo esc_attr( seo_url( $team->name ) ); ?>/">
+                                <?php if ( '' !== $team_link ) : ?>
+                                    <a href="<?php echo esc_attr( $team_link ); ?>">
+                                        <?php echo esc_html( $team->name ); ?>
+                                    </a>
+                                <?php else : ?>
                                     <?php echo esc_html( $team->name ); ?>
-                                </a>
+                                <?php endif; ?>
                             </div>
                             <?php
                             if ( ! $event->is_box ) {
                                 ?>
                                 <div class="col-4" name="<?php esc_html_e( 'club', 'racketmanager' ); ?>">
-                                    <a href="<?php echo esc_attr( $club_link ); ?>" class="tabDataLink" data-type="event" data-type-id="<?php echo esc_attr( $event->id ); ?>" data-season="<?php echo esc_attr( $event->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $club_link ); ?>" data-link-id="<?php echo esc_attr( $team->club->id ); ?>" data-link-type="clubs">
+                                    <?php if ( '' !== $club_link ) : ?>
+                                        <a href="<?php echo esc_attr( $club_link ); ?>" class="tabDataLink" data-type="event" data-type-id="<?php echo esc_attr( (string) $event->id ); ?>" data-season="<?php echo esc_attr( (string) ( $event->current_season['name'] ?? '' ) ); ?>" data-link="<?php echo esc_attr( $club_link ); ?>" data-link-id="<?php echo esc_attr( (string) ( $team->club->id ?? '' ) ); ?>" data-link-type="clubs">
+                                            <?php echo esc_html( $team->club->shortcode ); ?>
+                                        </a>
+                                    <?php else : ?>
                                         <?php echo esc_html( $team->club->shortcode ); ?>
-                                    </a>
+                                    <?php endif; ?>
                                 </div>
                                 <?php
                             }
                             ?>
                             <div class="col-3" name="<?php esc_html_e( 'league', 'racketmanager' ); ?>">
-                                <a href="/<?php echo esc_attr( $league_link ); ?>">
+                                <?php if ( '' !== $league_link ) : ?>
+                                    <a href="<?php echo esc_attr( $league_link ); ?>">
+                                        <?php echo esc_html( $team->league_title ); ?>
+                                    </a>
+                                <?php else : ?>
                                     <?php echo esc_html( $team->league_title ); ?>
-                                </a>
+                                <?php endif; ?>
                             </div>
                             <?php
                             if ( ! $event->is_box ) {

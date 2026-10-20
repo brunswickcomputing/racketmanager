@@ -88,7 +88,7 @@ class Admin_Club extends Admin_Display {
 
         $this->show_message();
         $clubs = $this->club_service->get_clubs();
-        require_once RACKETMANAGER_PATH . 'templates/admin/show-clubs.php';
+        require RACKETMANAGER_PATH . 'templates/admin/show-clubs.php';
     }
     /**
      * Display club page

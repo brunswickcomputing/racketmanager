@@ -38,8 +38,9 @@ class Get_Login_Form_Query {
         $defaults   = [ 'show_title' => false ];
         $parsed     = shortcode_atts( $defaults, $atts_array );
 
-        $show_title = filter_var( $parsed['show_title'] ?? false, FILTER_VALIDATE_BOOLEAN );
-        $action     = null !== $action_override
+        $show_title      = filter_var( $parsed['show_title'] ?? false, FILTER_VALIDATE_BOOLEAN );
+        $action_override = ( null !== $action_override && '' !== trim( $action_override ) ) ? $action_override : null;
+        $action          = null !== $action_override
             ? sanitize_text_field( wp_unslash( $action_override ) )
             : ( isset( $get_params['action'] ) ? sanitize_text_field( wp_unslash( (string) $get_params['action'] ) ) : ( isset( $request_params['action'] ) ? sanitize_text_field( wp_unslash( (string) $request_params['action'] ) ) : '' ) );
 

@@ -11,6 +11,8 @@ use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use function __;
 use function array_key_exists;
 use function function_exists;
+use function get_permalink;
+use function get_the_ID;
 use function intval;
 use function is_array;
 use function is_iterable;
@@ -115,13 +117,17 @@ class Get_League_Matches_Handler {
             $filename = ( ! empty( $query->template ) ) ? 'matches-' . $query->template : 'matches';
         }
 
+        $post_id = $query->post_id ?: ( function_exists( 'get_the_ID' ) ? (int) get_the_ID() : 0 );
+
         return Shortcode_View_Model::for_template(
             $filename,
             [
-                'league'  => $league,
-                'matches' => $league_matches,
-                'teams'   => is_array( $teams ) ? $teams : [],
-                'season'  => $query->season,
+                'league'      => $league,
+                'matches'     => $league_matches,
+                'teams'       => is_array( $teams ) ? $teams : [],
+                'season'      => $query->season,
+                'post_id'     => $post_id,
+                'form_action' => $post_id > 0 ? (string) get_permalink( $post_id ) : '',
             ]
         );
     }

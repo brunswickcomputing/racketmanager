@@ -17,7 +17,7 @@ if ( ! $winners ) {
             <?php
             foreach ( $winners as $key => $winner_group ) {
                 ?>
-                <li class="winner-list__cat" id="<?php echo esc_html( $key ); ?>">
+                <li class="winner-list__cat" id="<?php echo esc_html( (string) $key ); ?>">
                     <div class="list-divider"></div>
                     <ul class="row list--winner winner-list-type">
                         <?php
@@ -26,27 +26,24 @@ if ( ! $winners ) {
                             <li class="winner-list-item col-12 col-sm-6 col-md-4">
                                 <div>
                                     <?php
-                                    if ( empty( $tournament ) ) {
-                                        $link_ref = '/' . seo_url( $winner->competition_type ) . 's/' . seo_url( $winner->event_name ) . '/' . seo_url( $winner->season ) . '/';
-                                        $data_season    = null;
-                                        $data_type      = null;
-                                        $data_type_id   = null;
-                                        $data_type_type = null;
-                                        $link_class     = null;
-                                    } else {
-                                        $link_ref     = '/tournament/' . seo_url( $tournament->name ) . '/draw/' . seo_url( $winner->event_name ) . '/';
-                                        $data_season  = null;
-                                        $data_type    = 'tournament';
-                                        $data_type_id = $tournament->id;
-                                        $data_type_type = 'draws';
-                                        $link_class     = 'tabDataLink';
-                                    }
+                                    $link_ref       = $winner->link_url ?? $winner->link_ref ?? '';
+                                    $data_season    = $winner->data_season ?? null;
+                                    $data_type      = $winner->data_type ?? null;
+                                    $data_type_id   = $winner->data_type_id ?? null;
+                                    $data_type_type = $winner->data_type_type ?? null;
+                                    $link_class     = $winner->link_class ?? null;
                                     ?>
-                                    <a href="<?php echo esc_html( $link_ref ); ?>" class="<?php echo esc_attr( $link_class ); ?>" data-type="<?php echo esc_attr( $data_type ); ?>" data-type-id="<?php echo esc_attr( $data_type_id ); ?>" data-season="<?php echo esc_attr( $data_season ); ?>" data-link="<?php echo esc_attr( $link_ref ); ?>" data-link-id="<?php echo esc_attr( $winner->event_id ); ?>" data-link-type="<?php echo esc_attr( $data_type_type ); ?>">
+                                    <?php if ( '' !== $link_ref ) : ?>
+                                        <a href="<?php echo esc_url( $link_ref ); ?>" class="<?php echo esc_attr( (string) $link_class ); ?>" data-type="<?php echo esc_attr( (string) $data_type ); ?>" data-type-id="<?php echo esc_attr( (string) $data_type_id ); ?>" data-season="<?php echo esc_attr( (string) $data_season ); ?>" data-link="<?php echo esc_attr( $link_ref ); ?>" data-link-id="<?php echo esc_attr( (string) ( $winner->event_id ?? '' ) ); ?>" data-link-type="<?php echo esc_attr( (string) $data_type_type ); ?>">
+                                            <span class="header">
+                                                <?php echo esc_html( $winner->league ?? '' ); ?>
+                                            </span>
+                                        </a>
+                                    <?php else : ?>
                                         <span class="header">
-                                            <?php echo esc_html( $winner->league ); ?>
+                                            <?php echo esc_html( $winner->league ?? '' ); ?>
                                         </span>
-                                    </a>
+                                    <?php endif; ?>
                                     <?php
                                     if ( empty( $winner->loser ) ) {
                                         $list_type = 'ul';
@@ -56,9 +53,9 @@ if ( ! $winners ) {
                                     ?>
                                     <<?php echo esc_html( $list_type ); ?> class="list-winners">
                                         <li>
-                                            <span class="team-name"><?php echo esc_html( $winner->winner ); ?></span>
+                                            <span class="team-name"><?php echo esc_html( $winner->winner ?? '' ); ?></span>
                                             <?php
-                                            if ( ( ! empty( $tournament ) || ! $winner->is_team_entry ) && $winner->winner_club ) {
+                                            if ( ( ! empty( $tournament ) || empty( $winner->is_team_entry ) ) && ! empty( $winner->winner_club ) ) {
                                                 ?>
                                                 <span class="player-club">(<?php echo esc_html( $winner->winner_club ); ?>)</span>
                                                 <?php
@@ -71,7 +68,7 @@ if ( ! $winners ) {
                                             <li>
                                                 <span class="team-name"><?php echo esc_html( $winner->loser ); ?></span>
                                                 <?php
-                                                if ( ( ! empty( $tournament ) || ! $winner->is_team_entry ) && $winner->winner_club ) {
+                                                if ( ( ! empty( $tournament ) || empty( $winner->is_team_entry ) ) && ! empty( $winner->loser_club ) ) {
                                                     ?>
                                                     <span class="player-club">(<?php echo esc_html( $winner->loser_club ); ?>)</span>
                                                     <?php

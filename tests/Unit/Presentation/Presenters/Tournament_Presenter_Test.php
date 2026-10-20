@@ -4,8 +4,17 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Presentation\Presenters;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
+use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
+use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Scoring\Set_Score;
+use Racketmanager\Domain\Team;
 use Racketmanager\Domain\Tournament;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
+use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
 
 final class Tournament_Presenter_Test extends TestCase {
 	public function test_formats_dates_with_configured_format(): void {
@@ -43,6 +52,10 @@ final class Tournament_Presenter_Test extends TestCase {
 		$this->assertSame( 'https://tennis.org/entry-form/winter-closed-2026-tournament/', $presenter->get_entry_link( $tournament, 'https://tennis.org' ) );
 		$this->assertSame( 'https://tennis.org/entry-form/winter-closed-2026-tournament/', $presenter->get_entry_link( $tournament, 'https://tennis.org/' ) );
 		$this->assertSame( '/entry-form/winter-closed-2026-tournament/', $presenter->get_entry_link( $tournament, '' ) );
+		$this->assertSame(
+			'https://tennis.org/entry-form/winter-closed-2026-tournament/payment-complete/',
+			$presenter->get_payment_complete_url( $tournament, 'https://tennis.org/' )
+		);
 	}
 
 	public function test_present_dates_integrates_with_date_range_windows_and_boundaries(): void {
@@ -124,5 +137,89 @@ final class Tournament_Presenter_Test extends TestCase {
 		$this->assertTrue( $dt_header->has_date_range );
 		$this->assertSame( '01/07/2026', $dt_header->date_start_display );
 		$this->assertSame( '15/07/2026', $dt_header->date_end_display );
+	}
+
+	public function test_present_match_card_sets_with_home_and_away_winners_and_tiebreaks(): void {
+		$fixture = Fixture_Test_Factory::create(
+			id: 501,
+			home_team: '10',
+			away_team: '20',
+			winner_id: 10,
+			loser_id: 20,
+			custom: [
+				'sets' => [
+					new Set_Score( 7, 6, 7, 5 ),
+					new Set_Score( 3, 6 ),
+					new Set_Score( 6, 7, 5, 7 ),
+				],
+			]
+		);
+
+		$league = $this->createStub( League::class );
+		$league->title = 'Men Singles';
+		$event = $this->createStub( Event::class );
+		$event->name = 'Singles Event';
+		$league->event = $event;
+
+		$tournament = $this->createStub( Tournament::class );
+		$tournament->id = 5;
+		$tournament->name = 'Summer Championships';
+
+		$p1 = $this->createStub( Player::class );
+		$p1->method( 'get_id' )->willReturn( 101 );
+		$p1->method( 'get_fullname' )->willReturn( 'Roger Federer' );
+		$p2 = $this->createStub( Player::class );
+		$p2->method( 'get_id' )->willReturn( 102 );
+		$p2->method( 'get_fullname' )->willReturn( 'Rafael Nadal' );
+
+		$t1 = $this->createStub( Team::class );
+		$t1->method( 'get_id' )->willReturn( 10 );
+		$t1->method( 'get_name' )->willReturn( 'Federer' );
+		$t1->players = [ $p1 ];
+		$t2 = $this->createStub( Team::class );
+		$t2->method( 'get_id' )->willReturn( 20 );
+		$t2->method( 'get_name' )->willReturn( 'Nadal' );
+		$t2->players = [ $p2 ];
+
+		$detail = new Fixture_Details_DTO(
+			fixture: $fixture,
+			league: $league,
+			event: $event,
+			competition: $this->createStub( Competition::class ),
+			home_team: new Team_Details_DTO( $t1 ),
+			away_team: new Team_Details_DTO( $t2 )
+		);
+
+		$presenter = new Tournament_Presenter( 'd/m/Y' );
+		$card      = $presenter->present_match_card( $detail, $tournament );
+
+		$this->assertCount( 3, $card->sets );
+
+		// Set 1: Home won 7-6 (7-5 tiebreak)
+		$this->assertSame( '7', $card->sets[0]->player1_games );
+		$this->assertSame( '6', $card->sets[0]->player2_games );
+		$this->assertSame( ' winner', $card->sets[0]->player1_winner_class );
+		$this->assertSame( '', $card->sets[0]->player2_winner_class );
+		$this->assertTrue( $card->sets[0]->show_p1_tiebreak );
+		$this->assertFalse( $card->sets[0]->show_p2_tiebreak );
+		$this->assertSame( '7', $card->sets[0]->tiebreak );
+
+		// Set 2: Away won 3-6 (no tiebreak)
+		$this->assertSame( '3', $card->sets[1]->player1_games );
+		$this->assertSame( '6', $card->sets[1]->player2_games );
+		$this->assertSame( '', $card->sets[1]->player1_winner_class );
+		$this->assertSame( ' winner', $card->sets[1]->player2_winner_class );
+		$this->assertFalse( $card->sets[1]->show_p1_tiebreak );
+		$this->assertFalse( $card->sets[1]->show_p2_tiebreak );
+		$this->assertSame( '', $card->sets[1]->tiebreak );
+
+		// Set 3: Away won 6-7 (5-7 tiebreak)
+		$this->assertSame( '6', $card->sets[2]->player1_games );
+		$this->assertSame( '7', $card->sets[2]->player2_games );
+		$this->assertSame( '', $card->sets[2]->player1_winner_class );
+		$this->assertSame( ' winner', $card->sets[2]->player2_winner_class );
+		$this->assertFalse( $card->sets[2]->show_p1_tiebreak );
+		$this->assertTrue( $card->sets[2]->show_p2_tiebreak );
+		$this->assertSame( '5', $card->sets[2]->tiebreak );
 	}
 }

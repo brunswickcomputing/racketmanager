@@ -22,6 +22,7 @@ use Racketmanager\Admin\Controllers\Tournament_Tournaments_Admin_Controller;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Admin\Presenters\Admin_Championship_Finals_Presenter;
 use Racketmanager\Admin\Presenters\Admin_Date_Presenter;
+use Racketmanager\Admin\Presenters\Admin_Entry_Link_Presenter;
 use Racketmanager\Admin\Presenters\Admin_League_Matches_Presenter;
 use Racketmanager\Admin\Presenters\Admin_Results_Match_Presenter;
 use Racketmanager\Exceptions\Interface_Exception;
@@ -107,6 +108,7 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
 
         // Presenters
         $container->set( 'admin_date_presenter', fn() => new Admin_Date_Presenter() );
+        $container->set( 'admin_entry_link_presenter', fn() => new Admin_Entry_Link_Presenter() );
 
         $container->set( 'admin_league_matches_presenter', fn( Simple_Container $c ) => new Admin_League_Matches_Presenter(
             $c->get( 'admin_date_presenter' )
@@ -375,7 +377,8 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
         $container->set( 'tournament_overview_admin_controller', fn( Simple_Container $c ) => new Tournament_Overview_Admin_Controller(
             $c->get( 'tournament_service' ),
             $c->get( 'tournament_overview_action_dispatcher' ),
-            $c->get( 'action_guard' )
+            $c->get( 'action_guard' ),
+            $c->get( 'admin_entry_link_presenter' )
         ) );
 
         $container->set( 'tournament_setup_admin_controller', fn( Simple_Container $c ) => new Tournament_Setup_Admin_Controller(

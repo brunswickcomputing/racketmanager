@@ -12,16 +12,21 @@ namespace Racketmanager;
 /** @var string $season */
 /** @var string $tab */
 /** @var bool $new_event */
-if ( isset( $vm ) && $vm instanceof \Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model ) {
-    $competition = $vm->competition;
-    $event       = $vm->event;
-    $tournament  = $vm->tournament;
-    $new_event   = $vm->new_event;
-    $tab         = $vm->tab;
-    $errors      = $vm->errors;
+$target_vm = ( isset( $vm ) && $vm instanceof \Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model ) ? $vm : ( ( isset( $view_model ) && $view_model instanceof \Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model ) ? $view_model : null );
+if ( null !== $target_vm ) {
+    $competition = $target_vm->competition;
+    $event       = $target_vm->event;
+    $tournament  = $target_vm->tournament;
+    $new_event   = $target_vm->new_event;
+    $tab         = $target_vm->tab;
+    $errors      = $target_vm->errors;
+    $leagues     = $target_vm->leagues;
 }
 if ( ! isset( $tab ) ) {
     $tab = 'general';
+}
+if ( ! isset( $season ) ) {
+    $season = '';
 }
 if ( ! isset( $validator ) ) {
     $validator           = new \stdClass();

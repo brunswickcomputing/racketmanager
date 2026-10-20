@@ -11,8 +11,11 @@ use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\Fixture\Fixture_Relation_Loader;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
+use Racketmanager\Domain\Championship;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
+use Racketmanager\Domain\DTO\Competition\Competition_Overview_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Response_DTO;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
@@ -554,5 +557,163 @@ final class Admin_Cup_Delivery_Test extends TestCase {
         $this->assertStringContainsString( 'is-invalid', $output );
         $this->assertStringContainsString( 'Start time required', $output );
         $this->assertStringContainsString( '11:30', $output );
+    }
+
+    public function test_display_cup_overview_page_renders_entries_with_entry_urls(): void {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_GET                      = array( 'page' => 'racketmanager-cups', 'view' => 'overview', 'competition_id' => '5', 'season' => '2024' );
+
+        $competition = $this->create_test_competition( 5, '2024' );
+        $overview    = new Competition_Overview_DTO(
+            (object) array(
+                'id'          => 5,
+                'name'        => 'Test Cup',
+                'settings'    => wp_json_encode( array( 'competition_code' => 'TC' ) ),
+                'num_events'  => 0,
+                'num_teams'   => 0,
+                'num_clubs'   => 1,
+                'num_players' => 0,
+            )
+        );
+        $entries = array(
+            (object) array(
+                'id'        => 1,
+                'shortcode' => 'WTC',
+            ),
+        );
+
+        $this->competition_service->expects( self::once() )
+            ->method( 'get_competition_by_season' )
+            ->with( 5, 2024 )
+            ->willReturn( $competition );
+        $this->competition_service->expects( self::once() )
+            ->method( 'get_events_for_competition' )
+            ->with( 5, 2024 )
+            ->willReturn( array() );
+        $this->competition_service->expects( self::once() )
+            ->method( 'get_competition_overview' )
+            ->with( 5, 2024 )
+            ->willReturn( $overview );
+        $this->competition_service->expects( self::once() )
+            ->method( 'get_clubs_for_competition' )
+            ->with( 5, 2024 )
+            ->willReturn( $entries );
+
+        $warnings = array();
+        set_error_handler(
+            static function ( int $severity, string $message ) use ( &$warnings ): bool {
+                $warnings[] = $message;
+                return true;
+            }
+        );
+        ob_start();
+        try {
+            $this->screen->display_cup_overview_page();
+        } finally {
+            $output = (string) ob_get_clean();
+            restore_error_handler();
+        }
+
+        $this->assertSame( array(), $warnings );
+        $this->assertStringContainsString( 'WTC', $output );
+        $this->assertStringContainsString( '/entry-form/test-cup/2024/wtc/', $output );
+    }
+
+    public function test_display_cup_overview_page_renders_events_with_leagues_and_draw_size(): void {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_GET                      = array( 'page' => 'racketmanager-cups', 'view' => 'overview', 'competition_id' => '5', 'season' => '2024' );
+
+        $competition = $this->create_test_competition( 5, '2024' );
+        $overview    = new Competition_Overview_DTO(
+            (object) array(
+                'id'          => 5,
+                'name'        => 'Test Cup',
+                'settings'    => wp_json_encode( array( 'competition_code' => 'TC' ) ),
+                'num_events'  => 1,
+                'num_teams'   => 16,
+                'num_clubs'   => 4,
+                'num_players' => 32,
+            )
+        );
+
+        $champ_ref = new \ReflectionClass( Championship::class );
+        $champ_obj = $champ_ref->newInstanceWithoutConstructor();
+        $prop      = $champ_ref->getProperty( 'num_teams_first_round' );
+        $prop->setAccessible( true );
+        $prop->setValue( $champ_obj, 8 );
+
+        $champ_league                  = $this->createMock( League::class );
+        $champ_league->id              = 12;
+        $champ_league->title           = 'Men Championship Draw';
+        $champ_league->num_teams_total = 16;
+        $champ_league->is_championship = true;
+        $champ_league->championship    = $champ_obj;
+
+        $non_champ_league                  = $this->createMock( League::class );
+        $non_champ_league->id              = 13;
+        $non_champ_league->title           = 'Ladies Plate Draw';
+        $non_champ_league->num_teams_total = 10;
+        $non_champ_league->is_championship = false;
+        $non_champ_league->expects( self::once() )
+            ->method( 'set_num_matches' )
+            ->with( true )
+            ->willReturnCallback(
+                static function () use ( $non_champ_league ): void {
+                    $non_champ_league->num_matches_total = 14;
+                }
+            );
+
+        $event = new class( array( $champ_league, $non_champ_league ) ) {
+            public array $leagues = array();
+            private array $leagues_list;
+            public function __construct( array $leagues_list ) {
+                $this->leagues_list = $leagues_list;
+            }
+            public function get_leagues(): array {
+                return $this->leagues_list;
+            }
+        };
+
+        $this->competition_service->expects( self::once() )
+            ->method( 'get_competition_by_season' )
+            ->with( 5, 2024 )
+            ->willReturn( $competition );
+        $this->competition_service->expects( self::once() )
+            ->method( 'get_events_for_competition' )
+            ->with( 5, 2024 )
+            ->willReturn( array( $event ) );
+        $this->competition_service->expects( self::once() )
+            ->method( 'get_competition_overview' )
+            ->with( 5, 2024 )
+            ->willReturn( $overview );
+        $this->competition_service->expects( self::once() )
+            ->method( 'get_clubs_for_competition' )
+            ->with( 5, 2024 )
+            ->willReturn( array() );
+
+        $warnings = array();
+        set_error_handler(
+            static function ( int $severity, string $message ) use ( &$warnings ): bool {
+                $warnings[] = $message;
+                return true;
+            }
+        );
+        ob_start();
+        try {
+            $this->screen->display_cup_overview_page();
+        } finally {
+            $output = (string) ob_get_clean();
+            restore_error_handler();
+        }
+
+        $this->assertSame( array(), $warnings );
+        $this->assertStringContainsString( 'Men Championship Draw', $output );
+        $this->assertStringContainsString( 'view=draw&competition_id=5&league=12&season=2024', $output );
+        $this->assertStringContainsString( 'Ladies Plate Draw', $output );
+        $this->assertStringContainsString( 'view=draw&competition_id=5&league=13&season=2024', $output );
+        $this->assertMatchesRegularExpression( '#<td>\s*16\s*</td>#', $output );
+        $this->assertMatchesRegularExpression( '#<td>\s*8\s*</td>#', $output );
+        $this->assertMatchesRegularExpression( '#<td>\s*10\s*</td>#', $output );
+        $this->assertMatchesRegularExpression( '#<td>\s*14\s*</td>#', $output );
     }
 }

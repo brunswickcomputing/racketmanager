@@ -8,8 +8,10 @@
 namespace Racketmanager;
 
 /** @var object $event */
-$email_subject = $event->name;
-$site_url      = $site_url ?? ( isset( $GLOBALS['racketmanager']->site_url ) ? $GLOBALS['racketmanager']->site_url : site_url() );
+/** @var string|null $site_url */
+/** @var array<int|string, string> $league_urls */
+$email_subject = $event->name ?? '';
+$site_url      = $site_url ?? ( function_exists( 'site_url' ) ? site_url() : '' );
 require RACKETMANAGER_PATH . 'templates/email/email-header.php';
 require RACKETMANAGER_PATH . 'templates/email/div-top.php';
 ?>
@@ -17,17 +19,17 @@ require RACKETMANAGER_PATH . 'templates/email/div-top.php';
     <h1><?php echo esc_html( $event->name ) . ' - ' . esc_html( $event->current_season['name'] ); ?></h1>
     <?php
     foreach ( $event->leagues as $league ) {
-        $href = $site_url . '/' . __( 'league', 'racketmanager' ) . '/' . seo_url( $league->title ) . '/';
-        if ( $event->is_box ) {
-            $href .= __( 'round', 'racketmanager' ) . '-';
-        }
-        $href .= $event->current_season['name'] . '/';
+        $href = $league_urls[ $league->id ] ?? ( $league_urls[ (string) $league->id ] ?? '' );
         ?>
         <div class="standings-archive">
             <h2 class="header">
-                <a href="<?php echo esc_url( $href ); ?>">
+                <?php if ( '' !== $href ) : ?>
+                    <a href="<?php echo esc_url( $href ); ?>">
+                        <?php echo esc_html( $league->title ); ?>
+                    </a>
+                <?php else : ?>
                     <?php echo esc_html( $league->title ); ?>
-                </a>
+                <?php endif; ?>
             </h2>
             <?php
             league_standings(

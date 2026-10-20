@@ -11,6 +11,7 @@ use Racketmanager\Domain\Competition;
 use Racketmanager\Domain\Tournament;
 
 /** @var int $post_id */
+/** @var string $form_action */
 /** @var array $tournaments */
 /** @var Tournament $tournament */
 /** @var Competition $competition */
@@ -19,7 +20,7 @@ if ( empty( $selection_id ) ) {
 }
 ?>
 <div id="racketmanager_tournament_selections">
-    <form method="get" action="<?php echo esc_url( get_permalink( $post_id ) ); ?>" id="<?php echo esc_html( $selection_id ); ?>">
+    <form method="get" action="<?php echo esc_url( $form_action ?? '' ); ?>" id="<?php echo esc_html( $selection_id ); ?>">
         <div class="row g-1 align-items-center">
             <input type="hidden" name="page_id" value="<?php echo esc_html( $post_id ); ?>" />
             <?php

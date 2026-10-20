@@ -8,14 +8,18 @@
 namespace Racketmanager;
 
 /** @var object $event */
+/** @var array  $leagues */
 /** @var string $error_tab */
 /** @var bool   $is_invalid */
 /** @var string $msg */
 $tab_name = 'championship';
+if ( ! isset( $event->config ) || ! is_object( $event->config ) ) {
+    $event->config = new \stdClass();
+}
 if ( ! isset( $event->config->primary_league ) ) {
     $event->config->primary_league = null;
 }
-$leagues = $event->get_leagues();
+$leagues = $leagues ?? array();
 ?>
 <div class="form-control">
     <div class="row">
@@ -30,7 +34,7 @@ $leagues = $event->get_leagues();
             }
             ?>
             <div class="form-floating mb-3">
-                <select class="form-select" name="primary_league" id="primary_league">;
+                <select class="form-select" name="primary_league" id="primary_league">
                     <option value=""><?php esc_html_e( 'Select', 'racketmanager' ); ?></option>
                         <?php
                         foreach ( $leagues as $league ) {

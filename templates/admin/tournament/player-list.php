@@ -14,16 +14,29 @@ $vm = isset( $vm ) && ( $vm instanceof Tournament_Overview_Page_View_Model ) ? $
 
 // BC fallback: allow legacy locals if $vm isn't provided.
 if ( $vm ) {
-    $tournament = $vm->tournament;
+    $tournament        = $vm->tournament;
+    $player_entry_urls = $vm->player_entry_urls;
 }
+
+$player_entry_urls = $player_entry_urls ?? array();
 
 /** @var array  $player_list */
 /** @var object $tournament */
 foreach ( $player_list as $players ) {
     foreach ( $players as $player ) {
+        $display_name = is_object( $player ) ? (string) ( $player->display_name ?? '' ) : (string) ( $player['display_name'] ?? '' );
+        $player_key   = $display_name ?: (string) ( is_object( $player ) ? ( $player->id ?? $player->ID ?? '' ) : ( $player['id'] ?? '' ) );
+        $player_id    = (string) ( is_object( $player ) ? ( $player->id ?? $player->ID ?? '' ) : ( $player['id'] ?? '' ) );
+        $entry_url    = $player_entry_urls[ $player_key ] ?? ( $player_entry_urls[ $player_id ] ?? '' );
         ?>
         <tr>
-            <td><a href="/tournament/entry-form/<?php echo esc_attr( seo_url( $tournament->name ) ); ?>/player/<?php echo esc_attr( seo_url( $player->display_name ) ); ?>/"><?php echo esc_html( $player->display_name ); ?></a></td>
+            <td>
+                <?php if ( '' !== $entry_url ) : ?>
+                    <a href="<?php echo esc_url( $entry_url ); ?>"><?php echo esc_html( $display_name ); ?></a>
+                <?php else : ?>
+                    <?php echo esc_html( $display_name ); ?>
+                <?php endif; ?>
+            </td>
         </tr>
         <?php
     }

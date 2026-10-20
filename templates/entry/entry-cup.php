@@ -281,7 +281,7 @@ $additional_information = __( 'Additional information', 'racketmanager' );
                             <div class="club-entry__submit">
                                 <button type="submit" class="btn btn-primary" id="entrySubmit" name="entrySubmit" data-type="cup" data-action="entry-submit"><?php esc_html_e( 'Enter', 'racketmanager' ); ?></button>
                             </div>
-                            <a href="/clubs/<?php echo esc_html( seo_url( $club->shortcode ) ); ?>/" class="btn btn--cancel"><?php esc_html_e( 'Back', 'racketmanager' ); ?></a>
+                            <a href="<?php echo esc_url( $back_url ); ?>" class="btn btn--cancel"><?php esc_html_e( 'Back', 'racketmanager' ); ?></a>
                         </div>
                     </div>
                 </div>

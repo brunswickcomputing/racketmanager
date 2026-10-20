@@ -25,6 +25,7 @@ use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function array_column;
+use function array_merge;
 use function in_array;
 use function intval;
 use function is_object;
@@ -100,7 +101,7 @@ final readonly class Get_Competition_Entry_Handler {
                 return Shortcode_View_Model::error( __( 'Tournament not found', 'racketmanager' ) );
             }
 
-            return $this->build_tournament_entry( $tournament, $player, $query->template );
+            return $this->build_tournament_entry( $tournament, $player, $query->template, $query->user_id, $query->is_admin );
         }
 
         // League / Cup flow
@@ -153,11 +154,13 @@ final readonly class Get_Competition_Entry_Handler {
             );
 
             if ( $clubs ) {
+                $club_urls = $this->competition_presenter->present_entry_form_club_urls( $clubs );
                 $vars = [
                     'competition'        => $competition,
                     'season'             => $query->season,
                     'competition_season' => $competition_season,
                     'clubs'              => $clubs,
+                    'club_urls'          => $club_urls,
                 ];
                 $vars['competition_header'] = $this->competition_presenter->present_header(
                     competition: $competition,
@@ -240,6 +243,8 @@ final readonly class Get_Competition_Entry_Handler {
             'competition'        => $competition,
             'competition_season' => $competition_season,
             'match_days'         => $match_days,
+            'rules_url'          => $this->competition_presenter->get_rules_url( $competition ),
+            'back_url'           => $this->competition_presenter->get_club_url( $club ),
         ];
 
         $vars['competition_header'] = $this->competition_presenter->present_header(
@@ -340,6 +345,8 @@ final readonly class Get_Competition_Entry_Handler {
             'season'             => $season,
             'competition_season' => $competition_season,
             'match_days'         => Util_Lookup::get_match_days(),
+            'rules_url'          => $this->competition_presenter->get_rules_url( $competition ),
+            'back_url'           => $this->competition_presenter->get_club_url( $club ),
         ];
 
         $vars['competition_header'] = $this->competition_presenter->present_header(
@@ -359,7 +366,7 @@ final readonly class Get_Competition_Entry_Handler {
         );
     }
 
-    private function build_tournament_entry( Tournament $tournament, ?Player $player, string $template ): Shortcode_View_Model {
+    private function build_tournament_entry( Tournament $tournament, ?Player $player, string $template, int $user_id = 0, bool $can_manage = false ): Shortcode_View_Model {
         $player_id     = $player ? $player->get_id() : 0;
         $tournament_id = $tournament->get_id();
         $season        = $tournament->get_season();
@@ -444,7 +451,16 @@ final readonly class Get_Competition_Entry_Handler {
             'club_memberships' => $club_memberships,
             'tournament_entry' => $tournament_entry,
             'season'           => $tournament->season,
+            'back_url'         => $this->tournament_presenter->get_link( $tournament ),
         ];
+        $access = Tournament_Entry_Access::resolve(
+            is_open: (bool) $tournament->is_open,
+            is_closed: (bool) $tournament->is_closed,
+            user_id: $user_id,
+            player_id: (int) $player_id,
+            can_manage: $can_manage
+        );
+        $vars   = array_merge( $vars, $access->to_vars() );
 
         $vars['tournament_header'] = $this->tournament_presenter->present_header( $tournament, false );
         $tournament_dates          = $this->tournament_presenter->present_dates( $tournament );

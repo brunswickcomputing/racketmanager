@@ -8,6 +8,7 @@ use Racketmanager\Domain\Enums\Charge_Status;
 use Racketmanager\Domain\Enums\Club_Role;
 use Racketmanager\Domain\Enums\Fixture_Status;
 use Racketmanager\Domain\Enums\Invoice_Status;
+use Racketmanager\Domain\Enums\Match_Outcome;
 use Racketmanager\Domain\Enums\Team_Profile;
 
 /**
@@ -16,6 +17,7 @@ use Racketmanager\Domain\Enums\Team_Profile;
  * @covers \Racketmanager\Domain\Enums\Club_Role
  * @covers \Racketmanager\Domain\Enums\Fixture_Status
  * @covers \Racketmanager\Domain\Enums\Team_Profile
+ * @covers \Racketmanager\Domain\Enums\Match_Outcome
  */
 final class Domain_Enums_Test extends TestCase {
 
@@ -146,5 +148,39 @@ final class Domain_Enums_Test extends TestCase {
         self::assertSame( Team_Profile::ACTIVE, Team_Profile::from_value( Team_Profile::ACTIVE ) );
         self::assertNull( Team_Profile::try_from_value( 99 ) );
         self::assertNull( Team_Profile::try_from_value( null ) );
+    }
+
+    public function test_match_outcome_enum(): void {
+        self::assertSame( 'home', Match_Outcome::HOME->value );
+        self::assertSame( 'away', Match_Outcome::AWAY->value );
+
+        self::assertTrue( Match_Outcome::HOME->is_home() );
+        self::assertFalse( Match_Outcome::HOME->is_away() );
+        self::assertTrue( Match_Outcome::AWAY->is_away() );
+        self::assertFalse( Match_Outcome::AWAY->is_home() );
+
+        self::assertSame( Match_Outcome::AWAY, Match_Outcome::HOME->opponent() );
+        self::assertSame( Match_Outcome::HOME, Match_Outcome::AWAY->opponent() );
+
+        self::assertSame( Match_Outcome::HOME, Match_Outcome::from_value( 'home' ) );
+        self::assertSame( Match_Outcome::HOME, Match_Outcome::from_value( ' HOME ' ) );
+        self::assertSame( Match_Outcome::AWAY, Match_Outcome::from_value( 'away' ) );
+        self::assertSame( Match_Outcome::AWAY, Match_Outcome::from_value( Match_Outcome::AWAY ) );
+
+        self::assertSame( Match_Outcome::HOME, Match_Outcome::try_from_value( 'home' ) );
+        self::assertSame( Match_Outcome::AWAY, Match_Outcome::try_from_value( 'away' ) );
+        self::assertSame( Match_Outcome::HOME, Match_Outcome::try_from_value( Match_Outcome::HOME ) );
+        self::assertNull( Match_Outcome::try_from_value( 'draw' ) );
+        self::assertNull( Match_Outcome::try_from_value( null ) );
+        self::assertNull( Match_Outcome::try_from_value( '' ) );
+
+        foreach ( [ 'draw', 'invalid', '', '123' ] as $invalid ) {
+            try {
+                Match_Outcome::from_value( $invalid );
+                self::fail( 'Expected ValueError for ' . var_export( $invalid, true ) );
+            } catch ( \ValueError ) {
+                self::assertTrue( true );
+            }
+        }
     }
 }

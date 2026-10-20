@@ -4,7 +4,11 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Presentation\Presenters;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Domain\Club_Player;
+use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
+use Racketmanager\Domain\Player;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
+use Racketmanager\Presentation\View_Models\Club_Roster_Player_View_Model;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
 
 class Club_Presenter_Test extends TestCase {
@@ -146,5 +150,76 @@ class Club_Presenter_Test extends TestCase {
         $this->assertSame( $vm, $vars['vm'] );
         $this->assertEquals( 'Rayleigh LTC', $vars['club_name'] );
         $this->assertEquals( 'Jane Smith', $vars['match_secretary_name'] );
+    }
+
+    public function test_format_rating_display(): void {
+        $this->assertSame( '[S:9.2] - [D:8.5]', $this->presenter->format_rating_display( [ 'S' => '9.2', 'D' => '8.5' ] ) );
+        $this->assertSame( '[S:-] - [D:-]', $this->presenter->format_rating_display( [] ) );
+        $this->assertSame( '[S:9.2] - [D:-]', $this->presenter->format_rating_display( [ 'S' => '9.2' ] ) );
+    }
+
+    public function test_present_roster_player_from_real_club_player_dto(): void {
+        $club         = Club_Test_Factory::create( id: 10, name: 'Leigh Tennis Club', shortcode: 'Leigh TC' );
+        $player       = new Player();
+        $player->id   = 42;
+        $player->display_name = 'Roger Federer';
+        $player->gender       = 'M';
+        $player->btm          = '12345678';
+        $player->wtn          = [ 'S' => '9.4', 'D' => '10.1' ];
+        $registration         = new Club_Player();
+        $registration->id     = 101;
+        $dto                  = new Club_Player_DTO( $player, $club, $registration );
+
+        $presented = $this->presenter->present_roster_player( $dto, $club, use_wtn: true );
+        $this->assertInstanceOf( Club_Roster_Player_View_Model::class, $presented );
+        $this->assertSame( 101, $presented->registration_id );
+        $this->assertSame( 42, $presented->user_id );
+        $this->assertSame( 'Roger Federer', $presented->display_name );
+        $this->assertSame( 'M', $presented->gender );
+        $this->assertSame( '/clubs/leigh-tc/players/roger-federer/', $presented->player_url );
+        $this->assertSame( '12345678', $presented->btm );
+        $this->assertSame( '[S:9.4] - [D:10.1]', $presented->rating_display );
+
+        $rating_mode = $this->presenter->present_roster_player( $dto, $club, use_wtn: false );
+        $this->assertSame( '[S:-] - [D:-]', $rating_mode->rating_display, 'Registrations carry no rating points' );
+    }
+
+    public function test_present_club_competition_and_event_view_models(): void {
+        $club        = (object) [ 'shortcode' => 'Westcliff Hard' ];
+        $competition = (object) [ 'name' => 'Summer League', 'current_season' => [ 'name' => '2026' ] ];
+        $event       = (object) [ 'id' => 7, 'name' => 'Men\'s Division 1', 'current_season' => [ 'name' => '2026' ] ];
+        $off_season  = (object) [ 'id' => 8, 'name' => 'Plate' ];
+
+        $event_vm       = $this->presenter->present_club_event( $event, $club, [ 'row' ] );
+        $off_season_vm  = $this->presenter->present_club_event( $off_season, $club );
+        $competition_vm = $this->presenter->present_club_competition( $competition, $club, [ 3 => $event_vm, 9 => $off_season_vm ] );
+
+        $this->assertSame( 7, $event_vm->id );
+        $this->assertSame( 'Men\'s Division 1', $event_vm->name );
+        $this->assertSame( '/clubs/westcliff-hard/event/mens-division-1/', $event_vm->url );
+        $this->assertSame( [ 'row' ], $event_vm->team_rows );
+        $this->assertSame( '', $off_season_vm->url );
+        $this->assertSame( 'Summer League', $competition_vm->name );
+        $this->assertSame( '/summer-league/2026/club/westcliff-hard/', $competition_vm->url );
+        $this->assertSame( [ $event_vm, $off_season_vm ], $competition_vm->events );
+    }
+
+    public function test_get_club_competition_and_event_links(): void {
+        $comp = (object) [
+            'name'           => 'Summer League',
+            'current_season' => [ 'name' => '2026' ],
+        ];
+        $club = (object) [
+            'shortcode' => 'Westcliff Hard',
+        ];
+        $event = (object) [
+            'name' => 'Men\'s Division 1',
+        ];
+
+        $comp_link = $this->presenter->get_club_competition_link( $comp, $club );
+        $this->assertSame( '/summer-league/2026/club/westcliff-hard/', $comp_link );
+
+        $event_link = $this->presenter->get_club_event_link( $event, $club );
+        $this->assertSame( '/clubs/westcliff-hard/event/mens-division-1/', $event_link );
     }
 }

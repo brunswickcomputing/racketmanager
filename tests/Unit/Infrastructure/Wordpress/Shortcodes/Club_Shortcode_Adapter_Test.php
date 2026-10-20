@@ -10,17 +10,22 @@ use Racketmanager\Application\Club\Queries\Get_Club_Invoices_Handler;
 use Racketmanager\Application\Club\Queries\Get_Club_Players_Handler;
 use Racketmanager\Application\Club\Queries\Get_Club_Role_Modal_Handler;
 use Racketmanager\Application\Club\Queries\Get_Club_Roles_Handler;
+use Racketmanager\Domain\Championship;
 use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Club_Player;
 use Racketmanager\Domain\Club_Role;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Factory;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Club\Club_Details_DTO;
+use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
 use Racketmanager\Domain\DTO\Competition\Competition_Hydration_DTO;
 use Racketmanager\Domain\Invoice;
 use Racketmanager\Domain\Player;
 use Racketmanager\Domain\Value_Objects\Currency;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
 use ReflectionClass;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
@@ -35,7 +40,11 @@ use Racketmanager\Presentation\Presenters\Invoice_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Presentation\View_Models\Club_Competition_View_Model;
+use Racketmanager\Presentation\View_Models\Club_Event_View_Model;
+use Racketmanager\Presentation\View_Models\Club_Roster_Player_View_Model;
 use Racketmanager\Presentation\View_Models\Event_Header_View_Model;
+use Racketmanager\Presentation\View_Models\Player_View_Model;
 use Racketmanager\Public\Shortcodes_Club;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
@@ -138,17 +147,76 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $club_service = $this->club_service_for( $this->club() );
         $club_service->method( 'can_user_update_players' )->willReturn( true );
         $registration = $this->createMock( Registration_Service::class );
-        $registration->expects( $this->once() )->method( 'get_registered_players_list' )->with( 'active', null, 10 )->willReturn( [ 'p1', 'p2' ] );
+        $registration->expects( $this->once() )->method( 'get_registered_players_list' )->with( 'active', null, 10 )->willReturn(
+            [
+                $this->club_player_dto( 1, 42, 'Roger Federer', 'M', '12345678', [ 'S' => '9.4', 'D' => '10.1' ] ),
+                $this->club_player_dto( 2, 43, 'Martina Hingis', 'F', '87654321', [ 'S' => '8.0', 'D' => '7.5' ] ),
+            ]
+        );
 
         $output = $this->adapter(
-            [ 'club_service' => $club_service, 'registration' => $registration, 'renderer' => $this->capturing_renderer() ]
+            [
+                'club_service' => $club_service,
+                'registration' => $registration,
+                'renderer'     => $this->capturing_renderer(),
+                'display'      => [ 'wtn' => true ],
+            ]
         )->show_club_players( [] );
 
         $this->assertSame( 'rendered:club/players', $output );
         $vars = $this->rendered[0]['vars'];
-        $this->assertSame( [ 'p1', 'p2' ], $vars['players'] );
+        $this->assertCount( 2, $vars['players'] );
+        $this->assertContainsOnlyInstancesOf( Club_Roster_Player_View_Model::class, $vars['players'] );
+        $this->assertSame( 'Roger Federer', $vars['players'][0]->display_name );
+        $this->assertSame( '/clubs/leigh-ltc/players/roger-federer/', $vars['players'][0]->player_url );
+        $this->assertSame( '[S:9.4] - [D:10.1]', $vars['players'][0]->rating_display );
+        $this->assertSame( 'WTN', $vars['rating_header'] );
         $this->assertNull( $vars['player'] );
         $this->assertTrue( $vars['user_can_update'] );
+    }
+
+    public function test_show_club_players_renders_roster_template_with_wtn_from_real_dtos(): void {
+        $club_service = $this->club_service_for( $this->club() );
+        $registration = $this->createStub( Registration_Service::class );
+        $registration->method( 'get_registered_players_list' )->willReturn(
+            [
+                $this->club_player_dto( 1, 42, 'Roger Federer', 'M', '12345678', [ 'S' => '9.4', 'D' => '10.1' ] ),
+                $this->club_player_dto( 2, 43, 'Martina Hingis', 'F', '87654321', [ 'S' => '8.0', 'D' => '7.5' ] ),
+            ]
+        );
+
+        $output = $this->capture_without_warnings(
+            fn() => $this->adapter( [ 'club_service' => $club_service, 'registration' => $registration, 'display' => [ 'wtn' => true ] ] )->show_club_players( [] ),
+            $errors
+        );
+
+        $this->assertSame( [], $errors, 'Rendering club/players produced PHP warnings: ' . implode( '; ', $errors ) );
+        $this->assertStringContainsString( 'Leigh Tennis Club', $output );
+        $this->assertStringContainsString( '>WTN</th>', $output );
+        $this->assertStringContainsString( 'href="/clubs/leigh-ltc/players/roger-federer/">Roger Federer</a>', $output );
+        $this->assertStringContainsString( 'href="/clubs/leigh-ltc/players/martina-hingis/">Martina Hingis</a>', $output );
+        $this->assertStringContainsString( '12345678', $output );
+        $this->assertStringContainsString( '[S:9.4] - [D:10.1]', $output );
+        $this->assertStringContainsString( '[S:8.0] - [D:7.5]', $output );
+        $this->assertStringContainsString( 'id="club_player-1"', $output );
+    }
+
+    public function test_show_club_players_rating_points_mode_has_no_rating_source_and_shows_placeholders(): void {
+        $club_service = $this->club_service_for( $this->club() );
+        $registration = $this->createStub( Registration_Service::class );
+        $registration->method( 'get_registered_players_list' )->willReturn(
+            [ $this->club_player_dto( 1, 42, 'Roger Federer', 'M', '12345678', [ 'S' => '9.4', 'D' => '10.1' ] ) ]
+        );
+
+        $output = $this->capture_without_warnings(
+            fn() => $this->adapter( [ 'club_service' => $club_service, 'registration' => $registration, 'display' => [] ] )->show_club_players( [] ),
+            $errors
+        );
+
+        $this->assertSame( [], $errors, 'Rendering club/players produced PHP warnings: ' . implode( '; ', $errors ) );
+        $this->assertStringContainsString( '>Rating Points</th>', $output );
+        $this->assertStringContainsString( '[S:-] - [D:-]', $output );
+        $this->assertStringNotContainsString( '9.4', $output );
     }
 
     public function test_show_club_players_single_player_from_query_var(): void {
@@ -159,7 +227,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $players                            = $this->createMock( Player_Service::class );
         $players->expects( $this->once() )->method( 'get_player_by_name' )->with( 'jane doe' )->willReturn( $player );
         $registration = $this->createMock( Registration_Service::class );
-        $registration->expects( $this->once() )->method( 'get_player_for_club' )->with( 10, 7 )->willReturn( null );
+        $registration->expects( $this->once() )->method( 'get_player_for_club' )->with( 10, 7 )->willReturn( $this->club_player_dto( 10, 7, 'Jane Doe', 'F', '11112222' ) );
         $registration->expects( $this->never() )->method( 'get_registered_players_list' );
 
         $this->adapter(
@@ -167,7 +235,94 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         )->show_club_players( [ 'template' => 'single' ] );
 
         $this->assertSame( 'club/players-single', $this->rendered[0]['path'] );
-        $this->assertSame( [], $this->rendered[0]['vars']['players'] );
+        $this->assertInstanceOf( Player_View_Model::class, $this->rendered[0]['vars']['player_vm'] );
+    }
+
+    public function test_show_club_players_single_player_unregistered_returns_not_found(): void {
+        $GLOBALS['query_vars']['player_id'] = 'jane-doe';
+        $club_service                       = $this->club_service_for( $this->club() );
+        $player                             = $this->createStub( Player::class );
+        $player->id                         = 7;
+        $players                            = $this->createMock( Player_Service::class );
+        $players->expects( $this->once() )->method( 'get_player_by_name' )->with( 'jane doe' )->willReturn( $player );
+        $registration = $this->createMock( Registration_Service::class );
+        $registration->expects( $this->once() )->method( 'get_player_for_club' )->with( 10, 7 )->willReturn( null );
+        $registration->expects( $this->never() )->method( 'get_registered_players_list' );
+
+        $output = $this->adapter(
+            [ 'club_service' => $club_service, 'players' => $players, 'registration' => $registration, 'renderer' => $this->capturing_renderer() ]
+        )->show_club_players( [ 'template' => 'single' ] );
+
+        $this->assertSame( 'rendered:alert', $output );
+        $this->assertSame( 'Player not found', $this->rendered[0]['vars']['msg'] );
+    }
+
+    public function test_show_club_players_single_player_uses_wordpress_referrer_when_available(): void {
+        $GLOBALS['query_vars']['player_id']  = 'jane-doe';
+        $GLOBALS['wp_stubs_wp_get_referer'] = 'https://example.test/previous-page/';
+
+        $this->adapter(
+            [
+                'club_service' => $this->club_service_for( $this->club() ),
+                'players'      => $this->player_service_returning( 7 ),
+                'registration' => $this->registration_returning_player( 'Jane Doe' ),
+                'renderer'     => $this->capturing_renderer(),
+            ]
+        )->show_club_players( [] );
+
+        $this->assertSame( 'https://example.test/previous-page/', $this->rendered[0]['vars']['page_referrer'] );
+        $this->assertSame( '/clubs/leigh-ltc/players/', $this->rendered[0]['vars']['club_players_url'] );
+    }
+
+    public function test_show_club_players_single_player_falls_back_to_club_players_url_without_referrer(): void {
+        $GLOBALS['query_vars']['player_id'] = 'jane-doe';
+        unset( $GLOBALS['wp_stubs_wp_get_referer'] );
+
+        $this->adapter(
+            [
+                'club_service' => $this->club_service_for( $this->club() ),
+                'players'      => $this->player_service_returning( 7 ),
+                'registration' => $this->registration_returning_player( 'Jane Doe' ),
+                'renderer'     => $this->capturing_renderer(),
+            ]
+        )->show_club_players( [] );
+
+        $this->assertSame( '/clubs/leigh-ltc/players/', $this->rendered[0]['vars']['page_referrer'] );
+    }
+
+    public function test_show_club_players_renders_single_player_template_with_return_link(): void {
+        $GLOBALS['query_vars']['player_id']  = 'jane-doe';
+        $GLOBALS['wp_stubs_wp_get_referer'] = 'https://example.test/previous-page/';
+
+        $output = $this->capture_without_warnings(
+            fn() => $this->adapter(
+                [
+                    'club_service' => $this->club_service_for( $this->club() ),
+                    'players'      => $this->player_service_returning( 7 ),
+                    'registration' => $this->registration_returning_player( 'Jane Doe' ),
+                ]
+            )->show_club_players( [] ),
+            $errors
+        );
+
+        $this->assertSame( [], $errors, 'Rendering club/player produced PHP warnings: ' . implode( '; ', $errors ) );
+        $this->assertStringContainsString( 'Jane Doe', $output );
+        $this->assertStringContainsString( 'href="https://example.test/previous-page/"', $output );
+
+        unset( $GLOBALS['wp_stubs_wp_get_referer'] );
+        $output = $this->capture_without_warnings(
+            fn() => $this->adapter(
+                [
+                    'club_service' => $this->club_service_for( $this->club() ),
+                    'players'      => $this->player_service_returning( 7 ),
+                    'registration' => $this->registration_returning_player( 'Jane Doe' ),
+                ]
+            )->show_club_players( [] ),
+            $errors
+        );
+
+        $this->assertSame( [], $errors, 'Rendering club/player produced PHP warnings: ' . implode( '; ', $errors ) );
+        $this->assertStringContainsString( 'href="/clubs/leigh-ltc/players/"', $output );
     }
 
     public function test_show_club_players_unknown_player_renders_alert(): void {
@@ -247,14 +402,10 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $club_service = $this->club_service_for( $this->club() );
         $club_service->method( 'can_user_update' )->willReturn( true );
 
-        $event_with_teams = $this->createStub( Event::class );
-        $event_with_teams->method( 'get_teams_info' )->willReturn( [ 'team-a' ] );
-        $event_without    = $this->createStub( Event::class );
-        $event_without->method( 'get_teams_info' )->willReturn( [] );
-        $with_teams       = $this->createStub( Competition::class );
-        $with_teams->method( 'get_events' )->willReturn( [ $event_with_teams, $event_without ] );
-        $without_teams    = $this->createStub( Competition::class );
-        $without_teams->method( 'get_events' )->willReturn( [ $event_without ] );
+        $event_with_teams = $this->event_with_teams( 101, "Men's Division 1", [ 'id' => 5, 'title' => 'Leigh LTC 1' ] );
+        $event_without    = $this->event_with_teams( 102, 'Ladies Division 1' );
+        $with_teams       = $this->competition_with_events( 'Summer League', [ $event_with_teams, $event_without ] );
+        $without_teams    = $this->competition_with_events( 'Winter League', [ $event_without ] );
 
         $competition_service = $this->createStub( Competition_Service::class );
         $competition_service->method( 'get_by_criteria' )->willReturnCallback(
@@ -267,40 +418,85 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $vars = $this->rendered[0]['vars'];
         $this->assertSame( 'club/competitions', $this->rendered[0]['path'] );
         $this->assertTrue( $vars['user_can_update'] );
-        $this->assertCount( 1, $vars['club']->competitions );
-        $this->assertSame( [ $event_with_teams ], array_values( $vars['club']->competitions[0]->events ) );
+        $this->assertContainsOnlyInstancesOf( Club_Competition_View_Model::class, $vars['competitions'] );
+        $this->assertCount( 1, $vars['competitions'] );
+        $competition = $vars['competitions'][0];
+        $this->assertSame( 'Summer League', $competition->name );
+        $this->assertSame( '/summer-league/2026/club/leigh-ltc/', $competition->url );
+        $this->assertCount( 1, $competition->events );
+        $this->assertInstanceOf( Club_Event_View_Model::class, $competition->events[0] );
+        $this->assertSame( "Men's Division 1", $competition->events[0]->name );
+        $this->assertSame( '/clubs/leigh-ltc/event/mens-division-1/', $competition->events[0]->url );
+        $this->assertCount( 1, $competition->events[0]->team_rows );
+        $this->assertSame( 'Leigh LTC 1', $competition->events[0]->team_rows[0]->title );
+    }
+
+    public function test_show_club_competitions_does_not_write_presentation_state_onto_domain_objects(): void {
+        $club             = $this->club();
+        $event_with_teams = $this->event_with_teams( 101, "Men's Division 1", [ 'id' => 5, 'title' => 'Leigh LTC 1' ] );
+        $competition      = $this->competition_with_events( 'Summer League', [ $event_with_teams ] );
+        $competition_service = $this->createStub( Competition_Service::class );
+        $competition_service->method( 'get_by_criteria' )->willReturnCallback(
+            static fn( array $criteria ) => 'league' === $criteria['type'] ? [ $competition ] : []
+        );
+
+        $this->adapter(
+            [ 'club_service' => $this->club_service_for( $club ), 'competition_service' => $competition_service, 'renderer' => $this->capturing_renderer() ]
+        )->show_club_competitions( [] );
+
+        $this->assertSame( [], $club->competitions, 'The club entity must not be mutated by the query' );
+        $this->assertFalse( property_exists( $competition, 'club_url' ) );
+        $this->assertFalse( property_exists( $event_with_teams, 'club_url' ) );
+    }
+
+    public function test_show_club_competitions_renders_template_with_links_from_handler(): void {
+        $club_service = $this->club_service_for( $this->club() );
+        $event        = $this->event_with_teams( 101, "Men's Division 1", [ 'id' => 5, 'title' => 'Leigh LTC 1' ] );
+        $competition  = $this->competition_with_events( 'Summer League', [ $event ] );
+        $competition_service = $this->createStub( Competition_Service::class );
+        $competition_service->method( 'get_by_criteria' )->willReturnCallback(
+            static fn( array $criteria ) => 'league' === $criteria['type'] ? [ $competition ] : []
+        );
+
+        $output = $this->capture_without_warnings(
+            fn() => $this->adapter( [ 'club_service' => $club_service, 'competition_service' => $competition_service ] )->show_club_competitions( [] ),
+            $errors
+        );
+
+        $this->assertSame( [], $errors, 'Rendering club/competitions produced PHP warnings: ' . implode( '; ', $errors ) );
+        $this->assertStringContainsString( 'Summer League', $output );
+        $this->assertStringContainsString( 'href="/summer-league/2026/club/leigh-ltc/"', $output );
+        $this->assertMatchesRegularExpression( '/Men(\'|&#0?39;)s Division 1/', $output );
+        $this->assertStringContainsString( 'href="/clubs/leigh-ltc/event/mens-division-1/"', $output );
+        $this->assertStringContainsString( 'Leigh LTC 1', $output );
+        $this->assertStringNotContainsString( 'Club has no teams in this event', $output );
+    }
+
+    public function test_show_club_competitions_event_without_current_season_has_no_link(): void {
+        $event       = $this->event_with_teams( 101, 'Plate', [ 'id' => 5, 'title' => 'Leigh LTC 1' ], false );
+        $competition = $this->competition_with_events( 'Summer Cup', [ $event ] );
+        $competition_service = $this->createStub( Competition_Service::class );
+        $competition_service->method( 'get_by_criteria' )->willReturnCallback(
+            static fn( array $criteria ) => 'cup' === $criteria['type'] ? [ $competition ] : []
+        );
+
+        $output = $this->capture_without_warnings(
+            fn() => $this->adapter(
+                [ 'club_service' => $this->club_service_for( $this->club() ), 'competition_service' => $competition_service ]
+            )->show_club_competitions( [] ),
+            $errors
+        );
+
+        $this->assertSame( [], $errors, 'Rendering club/competitions produced PHP warnings: ' . implode( '; ', $errors ) );
+        $this->assertStringContainsString( 'Plate', $output );
+        $this->assertStringNotContainsString( '/event/plate/', $output );
     }
 
     public function test_show_club_competitions_named_competition_from_query_var(): void {
         $GLOBALS['query_vars']['competition_name'] = 'summer-cup';
-        $event_with_teams = $this->createStub( Event::class );
-        $event_with_teams->method( 'get_teams_info' )->willReturn( [ 'team-a' ] );
-        $event_without    = $this->createStub( Event::class );
-        $event_without->method( 'get_teams_info' )->willReturn( [] );
-
-        $competition = $this->createStub( Competition::class );
-        $competition->method( 'get_events' )->willReturn( [ $event_with_teams, $event_without ] );
-
-        $repository                                = $this->createMock( Competition_Repository_Interface::class );
-        $repository->expects( $this->once() )->method( 'find_by_name' )->with( 'summer cup' )->willReturn( $competition );
-
-        $this->adapter(
-            [ 'club_service' => $this->club_service_for( $this->club() ), 'competition_repository' => $repository, 'renderer' => $this->capturing_renderer() ]
-        )->show_club_competitions( [] );
-
-        $this->assertCount( 1, $this->rendered[0]['vars']['club']->competitions );
-        $this->assertSame( $competition, $this->rendered[0]['vars']['club']->competitions[0] );
-        $this->assertSame( [ $event_with_teams ], array_values( $this->rendered[0]['vars']['club']->competitions[0]->events ) );
-        $this->assertSame( [ 'team-a' ], $event_with_teams->teams );
-    }
-
-    public function test_show_club_competitions_named_competition_without_teams_renders_empty_competitions(): void {
-        $GLOBALS['query_vars']['competition_name'] = 'summer-cup';
-        $event_without = $this->createStub( Event::class );
-        $event_without->method( 'get_teams_info' )->willReturn( [] );
-
-        $competition = $this->createStub( Competition::class );
-        $competition->method( 'get_events' )->willReturn( [ $event_without ] );
+        $event_with_teams = $this->event_with_teams( 101, 'Mixed Cup', [ 'id' => 5, 'title' => 'Leigh LTC 1' ] );
+        $event_without    = $this->event_with_teams( 102, 'Ladies Cup' );
+        $competition      = $this->competition_with_events( 'Summer Cup', [ $event_with_teams, $event_without ] );
 
         $repository = $this->createMock( Competition_Repository_Interface::class );
         $repository->expects( $this->once() )->method( 'find_by_name' )->with( 'summer cup' )->willReturn( $competition );
@@ -309,7 +505,26 @@ class Club_Shortcode_Adapter_Test extends TestCase {
             [ 'club_service' => $this->club_service_for( $this->club() ), 'competition_repository' => $repository, 'renderer' => $this->capturing_renderer() ]
         )->show_club_competitions( [] );
 
-        $this->assertSame( [], $this->rendered[0]['vars']['club']->competitions );
+        $competitions = $this->rendered[0]['vars']['competitions'];
+        $this->assertCount( 1, $competitions );
+        $this->assertSame( 'Summer Cup', $competitions[0]->name );
+        $this->assertCount( 1, $competitions[0]->events );
+        $this->assertSame( 'Mixed Cup', $competitions[0]->events[0]->name );
+        $this->assertSame( '/clubs/leigh-ltc/event/mixed-cup/', $competitions[0]->events[0]->url );
+    }
+
+    public function test_show_club_competitions_named_competition_without_teams_renders_empty_competitions(): void {
+        $GLOBALS['query_vars']['competition_name'] = 'summer-cup';
+        $competition = $this->competition_with_events( 'Summer Cup', [ $this->event_with_teams( 102, 'Ladies Cup' ) ] );
+
+        $repository = $this->createMock( Competition_Repository_Interface::class );
+        $repository->expects( $this->once() )->method( 'find_by_name' )->with( 'summer cup' )->willReturn( $competition );
+
+        $this->adapter(
+            [ 'club_service' => $this->club_service_for( $this->club() ), 'competition_repository' => $repository, 'renderer' => $this->capturing_renderer() ]
+        )->show_club_competitions( [] );
+
+        $this->assertSame( [], $this->rendered[0]['vars']['competitions'] );
     }
 
     public function test_show_club_competitions_unknown_competition_renders_alert(): void {
@@ -471,6 +686,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         string $season = '2026'
     ): Event {
         $event                 = new class extends Event {
+            public ?League $primary_league_obj = null;
             public function __construct() {
                 // no-op
             }
@@ -482,6 +698,9 @@ class Club_Shortcode_Adapter_Test extends TestCase {
             }
             public function get_seasons(): array {
                 return json_decode( $this->seasons, true ) ?? [];
+            }
+            public function get_primary_league(): ?League {
+                return $this->primary_league_obj;
             }
         };
         $event->id             = $id;
@@ -543,6 +762,74 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $adapter->show_club_event( [] );
         $this->assertSame( 'alert', $this->rendered[0]['path'] );
         $this->assertSame( 'Event not found for competition', $this->rendered[0]['vars']['msg'] );
+    }
+
+    public function test_show_club_event_passes_primary_league_for_championship_event(): void {
+        $competition       = $this->create_test_competition( 10, [ 101 ] );
+        $competition->type = Competition_Type::CUP;
+
+        $championship = $this->createStub( Championship::class );
+        $championship->method( 'get_finals' )->willReturn( [
+            'final' => [ 'round' => 1, 'name' => 'Final' ],
+            'semi'  => [ 'round' => 2, 'name' => 'Semi Final' ],
+        ] );
+        $championship->method( 'num_rounds' )->willReturn( 2 );
+
+        $primary_league               = $this->createStub( League::class );
+        $primary_league->id           = 10;
+        $primary_league->championship = $championship;
+
+        $event                      = $this->create_test_event( 101, 'Cup Event', 10, $competition );
+        $event->is_championship     = true;
+        $event->primary_league_obj  = $primary_league;
+
+        $GLOBALS['wp_stubs_events']['cup event'] = $event;
+        $GLOBALS['query_vars']['season']         = '2026';
+        $GLOBALS['query_vars']['event']          = 'cup-event';
+
+        $adapter = $this->adapter( [
+            'club_service' => $this->club_service_for( $this->club() ),
+            'renderer'     => $this->capturing_renderer(),
+        ] );
+
+        $adapter->show_club_event( [] );
+
+        $this->assertSame( 'club/event', $this->rendered[0]['path'] );
+        $this->assertSame( $primary_league, $this->rendered[0]['vars']['primary_league'] );
+    }
+
+    public function test_show_club_event_renders_championship_rounds_with_real_renderer(): void {
+        $competition       = $this->create_test_competition( 10, [ 101 ] );
+        $competition->type = Competition_Type::CUP;
+
+        $championship = $this->createStub( Championship::class );
+        $championship->method( 'get_finals' )->willReturn( [
+            'final' => [ 'round' => 1, 'name' => 'Final' ],
+            'semi'  => [ 'round' => 2, 'name' => 'Semi Final' ],
+        ] );
+        $championship->method( 'num_rounds' )->willReturn( 2 );
+
+        $primary_league               = $this->createStub( League::class );
+        $primary_league->id           = 10;
+        $primary_league->championship = $championship;
+
+        $event                      = $this->create_test_event( 101, 'Cup Event', 10, $competition );
+        $event->is_championship     = true;
+        $event->primary_league_obj  = $primary_league;
+
+        $GLOBALS['wp_stubs_events']['cup event'] = $event;
+        $GLOBALS['query_vars']['season']         = '2026';
+        $GLOBALS['query_vars']['event']          = 'cup-event';
+
+        $adapter = $this->adapter( [
+            'club_service' => $this->club_service_for( $this->club() ),
+        ] );
+
+        $html = $adapter->show_club_event( [] );
+
+        $this->assertStringContainsString( 'Player Matches', $html );
+        $this->assertStringContainsString( 'Final', $html );
+        $this->assertStringContainsString( 'Semi Final', $html );
     }
 
     public function test_show_club_team_enforces_allowlist(): void {
@@ -714,6 +1001,96 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         return $club_service;
     }
 
+    /**
+     * Registration as the players query returns it: a real Club_Player_DTO built from the domain entities.
+     *
+     * @param array<string, string> $wtn
+     */
+    private function club_player_dto( int $registration_id, int $player_id, string $display_name, string $gender, string $btm, array $wtn = [] ): Club_Player_DTO {
+        $player               = new Player();
+        $player->id           = $player_id;
+        $player->display_name = $display_name;
+        $player->gender       = $gender;
+        $player->btm          = $btm;
+        $player->wtn          = $wtn;
+        $player->firstname    = explode( ' ', $display_name )[0];
+        $player->surname      = explode( ' ', $display_name )[1] ?? '';
+
+        $registration            = new Club_Player();
+        $registration->id        = $registration_id;
+        $registration->player_id = $player_id;
+        $registration->club_id   = 10;
+
+        return new Club_Player_DTO( $player, $this->club(), $registration );
+    }
+
+    private function player_service_returning( int $player_id ): Player_Service {
+        $player     = new Player();
+        $player->id = $player_id;
+        $service    = $this->createStub( Player_Service::class );
+        $service->method( 'get_player_by_name' )->willReturn( $player );
+
+        return $service;
+    }
+
+    private function registration_returning_player( string $display_name ): Registration_Service {
+        $registration = $this->createStub( Registration_Service::class );
+        $registration->method( 'get_player_for_club' )->willReturn( $this->club_player_dto( 3, 7, $display_name, 'F', '11112222' ) );
+
+        return $registration;
+    }
+
+    /**
+     * Event holding the given teams (none for an event the club does not play in).
+     *
+     * @param array<string, mixed>|null $team
+     */
+    private function event_with_teams( int $id, string $name, ?array $team = null, bool $with_season = true ): Event {
+        $event = $this->createStub( Event::class );
+        $event->method( 'get_teams_info' )->willReturn( null === $team ? [] : [ (object) $team ] );
+        $event->id   = $id;
+        $event->name = $name;
+        if ( $with_season ) {
+            $event->current_season = [ 'name' => '2026' ];
+        }
+
+        return $event;
+    }
+
+    /**
+     * @param Event[] $events
+     */
+    private function competition_with_events( string $name, array $events ): Competition {
+        $competition = $this->createStub( Competition::class );
+        $competition->method( 'get_events' )->willReturn( $events );
+        $competition->name           = $name;
+        $competition->current_season = [ 'name' => '2026' ];
+
+        return $competition;
+    }
+
+    /**
+     * Runs the callback, collecting every PHP warning/notice/deprecation raised meanwhile.
+     *
+     * @param array<int, string>|null $errors
+     */
+    private function capture_without_warnings( callable $callback, ?array &$errors ): string {
+        $errors = [];
+        set_error_handler(
+            static function ( int $errno, string $errstr ) use ( &$errors ): bool {
+                $errors[] = $errstr;
+
+                return true;
+            }
+        );
+
+        try {
+            return (string) $callback();
+        } finally {
+            restore_error_handler();
+        }
+    }
+
     private function club_service_unknown(): Club_Service {
         $club_service = $this->createStub( Club_Service::class );
         $club_service->method( 'get_club_by_shortcode' )->willThrowException( new Club_Not_Found_Exception( 'No such club' ) );
@@ -739,7 +1116,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
 
     /**
      * @param array<string, mixed> $overrides club_service, settings, players, registration, competition_service,
-     *                                        competition_repository, finance, renderer.
+     *                                        competition_repository, finance, renderer, display (racketmanager_display option).
      */
     private function adapter( array $overrides = [] ): Club_Shortcode_Adapter {
         $club_service = $overrides['club_service'] ?? $this->createStub( Club_Service::class );
@@ -757,15 +1134,19 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         }
         $security          = $overrides['security_service'] ?? $this->createStub( Security_Service_Interface::class );
         $club_presenter    = new Club_Presenter();
+        $option_gateway    = $this->createStub( Option_Gateway_Interface::class );
+        $option_gateway->method( 'get_option' )->willReturnCallback(
+            static fn( string $option, mixed $default = false ) => 'racketmanager_display' === $option ? ( $overrides['display'] ?? [] ) : $default
+        );
 
         return new Club_Shortcode_Adapter(
             $club_service,
             new Get_Club_Handler( $club_service, $settings, $club_presenter, $security ),
             new Club_Shortcode_Presenter( $renderer, new Club_Presenter(), new Player_Presenter() ),
-            new Get_Club_Players_Handler( $club_service, $players, $registration ),
+            new Get_Club_Players_Handler( $club_service, $players, $registration, $club_presenter, $option_gateway, new Player_Presenter() ),
             new Get_Club_Roles_Handler( $club_service ),
             new Get_Club_Role_Modal_Handler( $club_service ),
-            new Get_Club_Competitions_Handler( $club_service, $competitions, $repository, new Team_Details_Presenter( new Wp_Option_Gateway(), $settings ) ),
+            new Get_Club_Competitions_Handler( $club_service, $competitions, $repository, new Team_Details_Presenter( new Wp_Option_Gateway(), $settings ), $club_presenter ),
             new Get_Club_Invoices_Handler( $club_service, $finance, new Invoice_Presenter(), $club_presenter, $settings ),
             new Shortcode_View_Presenter( $template_renderer ),
             $overrides['competition_presenter'] ?? new Competition_Shortcode_Presenter( $renderer )

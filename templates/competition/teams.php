@@ -57,24 +57,38 @@ namespace Racketmanager;
                     </div>
                     <?php
                     foreach ( $teams as $team ) {
-                        $league_link = $competition->get_type() . '/' . seo_url( $team->league_name ) . '/' . $competition->current_season['name'] . '/';
-                        $club_link   = '/' . seo_url( $competition->name ) . '/' . $competition->current_season['name'] . '/club/' . seo_url( $team->club_shortcode ) . '/';
+                        $team_id     = is_object( $team ) ? (int) ( $team->team_id ?? ( $team->id ?? 0 ) ) : (int) ( $team['team_id'] ?? ( $team['id'] ?? 0 ) );
+                        $team_link   = $team_links[ $team_id ]['team_link'] ?? '';
+                        $club_link   = $team_links[ $team_id ]['club_link'] ?? '';
+                        $league_link = $team_links[ $team_id ]['league_link'] ?? '';
                         ?>
                         <div class="row mb-2 row-list">
                             <div class="col-4" name="<?php esc_html_e( 'Team', 'racketmanager' ); ?>">
-                                <a href="/<?php echo esc_attr( $competition->get_type() ); ?>/<?php echo esc_html( seo_url( $team->league_name ) ); ?>/<?php echo esc_attr( $competition->current_season['name'] ); ?>/team/<?php echo esc_attr( seo_url( $team->team_name ) ); ?>/">
+                                <?php if ( '' !== $team_link ) : ?>
+                                    <a href="<?php echo esc_attr( $team_link ); ?>">
+                                        <?php echo esc_html( $team->team_name ); ?>
+                                    </a>
+                                <?php else : ?>
                                     <?php echo esc_html( $team->team_name ); ?>
-                                </a>
+                                <?php endif; ?>
                             </div>
                             <div class="col-4" name="<?php esc_html_e( 'club', 'racketmanager' ); ?>">
-                                <a href="<?php echo esc_attr( $club_link ); ?>" class="tabDataLink" data-type="competition" data-type-id="<?php echo esc_attr( $competition->id ); ?>" data-season="<?php echo esc_attr( $competition->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $club_link ); ?>" data-link-id="<?php echo esc_attr( $team->club_id ); ?>" data-link-type="clubs">
+                                <?php if ( '' !== $club_link ) : ?>
+                                    <a href="<?php echo esc_attr( $club_link ); ?>" class="tabDataLink" data-type="competition" data-type-id="<?php echo esc_attr( (string) ( $competition->id ?? '' ) ); ?>" data-season="<?php echo esc_attr( (string) ( $competition->current_season['name'] ?? '' ) ); ?>" data-link="<?php echo esc_attr( $club_link ); ?>" data-link-id="<?php echo esc_attr( (string) ( $team->club_id ?? '' ) ); ?>" data-link-type="clubs">
+                                        <?php echo esc_html( $team->club_shortcode ); ?>
+                                    </a>
+                                <?php else : ?>
                                     <?php echo esc_html( $team->club_shortcode ); ?>
-                                </a>
+                                <?php endif; ?>
                             </div>
                             <div class="col-3" name="<?php esc_html_e( 'league', 'racketmanager' ); ?>">
-                                <a href="/<?php echo esc_attr( $league_link ); ?>">
+                                <?php if ( '' !== $league_link ) : ?>
+                                    <a href="<?php echo esc_attr( $league_link ); ?>">
+                                        <?php echo esc_html( $team->league_name ); ?>
+                                    </a>
+                                <?php else : ?>
                                     <?php echo esc_html( $team->league_name ); ?>
-                                </a>
+                                <?php endif; ?>
                             </div>
                             <?php
                             if ( $competition->is_team_entry ) {

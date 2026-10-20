@@ -14,6 +14,7 @@ final readonly class League_Standings_View_Model {
      * @param bool        $widget     Widget display flag.
      * @param string|null $season     Active season.
      * @param string|null $group      Active group.
+     * @param array       $team_links Precalculated team URLs.
      */
     public function __construct(
         public string $template = 'standings',
@@ -21,7 +22,8 @@ final readonly class League_Standings_View_Model {
         public array $teams = [],
         public bool $widget = false,
         public ?string $season = null,
-        public ?string $group = null
+        public ?string $group = null,
+        public array $team_links = []
     ) {}
 
     /**
@@ -31,10 +33,11 @@ final readonly class League_Standings_View_Model {
      */
     public function template_vars(): array {
         return [
-            'league' => $this->league,
-            'teams'  => $this->teams,
-            'widget' => $this->widget,
-            'season' => $this->season,
+            'league'     => $this->league,
+            'teams'      => $this->teams,
+            'widget'     => $this->widget,
+            'season'     => $this->season,
+            'team_links' => $this->team_links,
         ];
     }
 }

@@ -29,11 +29,12 @@ class Player_Stats_Service {
      *
      * @param Player $player
      * @param object|null $grouping
-     * @param string|null $season
+     * @param string|int|null $season
      * @param string $match_source
      */
-    public function populate_player_stats( Player $player, ?object $grouping, ?string $season, string $match_source ): void {
-        $player->matches = $this->query_service->get_matches( $player, $grouping, $season, $match_source );
+    public function populate_player_stats( Player $player, ?object $grouping, string|int|null $season, string $match_source ): void {
+        $season_str      = null !== $season ? (string) $season : null;
+        $player->matches = $this->query_service->get_matches( $player, $grouping, $season_str, $match_source );
         $player->stats        = $this->get_stats( $player );
         $total                = $player->stats['total'] ?? null;
         $player->win_pct      = $total->win_pct ?? 0;
@@ -47,11 +48,11 @@ class Player_Stats_Service {
      *
      * @param array $players
      * @param object|null $grouping
-     * @param string|null $season
+     * @param string|int|null $season
      * @param string $match_source
      * @return array
      */
-    public function populate_players_stats( array $players, ?object $grouping, ?string $season, string $match_source ): array {
+    public function populate_players_stats( array $players, ?object $grouping, string|int|null $season, string $match_source ): array {
         foreach ( $players as $player ) {
             if ( $player instanceof Player ) {
                 $this->populate_player_stats( $player, $grouping, $season, $match_source );

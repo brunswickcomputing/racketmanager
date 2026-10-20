@@ -4,13 +4,15 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Tournament\Queries;
 
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Tournament_Service;
 use function __;
 
 class Get_Tournament_Winners_Handler {
     public function __construct(
-        private readonly Tournament_Service $tournament_service
+        private readonly Tournament_Service $tournament_service,
+        private readonly ?Tournament_Presenter $tournament_presenter = null
     ) {}
 
     public function handle( Get_Tournament_Winners_Query $query ): Shortcode_View_Model {
@@ -24,6 +26,9 @@ class Get_Tournament_Winners_Handler {
         } catch ( Tournament_Not_Found_Exception $e ) {
             return Shortcode_View_Model::for_error( $e->getMessage() );
         }
+
+        $presenter = $this->tournament_presenter ?? new Tournament_Presenter();
+        $winners   = $presenter->present_tournament_winners( $winners, $tournament );
 
         $filename = ( '' !== $query->template ) ? 'winners-' . $query->template : 'winners';
 

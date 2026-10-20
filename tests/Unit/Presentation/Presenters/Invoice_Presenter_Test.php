@@ -246,6 +246,7 @@ class Invoice_Presenter_Test extends TestCase {
         );
 
         $this->assertCount( 4, $vm->charges );
+        $this->assertSame( 'Charges', $vm->tab_title );
         $this->assertSame( 120.50, $vm->total_amount );
         $this->assertSame( '€120.50', $vm->total_amount_formatted );
         $this->assertSame( 2, $vm->competition_id );
@@ -351,6 +352,7 @@ class Invoice_Presenter_Test extends TestCase {
         );
 
         $this->assertCount( 2, $vm_club->invoices );
+        $this->assertSame( 'Club Invoices', $vm_club->tab_title );
         $this->assertSame( 100.0, $vm_club->total_amount );
         $this->assertStringContainsString( '100.00', $vm_club->total_amount_formatted );
         $this->assertSame( 'Club', $vm_club->billable_type );
@@ -371,6 +373,7 @@ class Invoice_Presenter_Test extends TestCase {
             tab: 'player-invoices'
         );
         $this->assertSame( 'Player', $vm_player->billable_type );
+        $this->assertSame( 'Player Invoices', $vm_player->tab_title );
     }
 
     public function test_present_admin_charge_detail_and_club_charges(): void {

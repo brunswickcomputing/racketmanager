@@ -7,20 +7,21 @@
 
 namespace Racketmanager;
 
-global $racketmanager;
-/** @var object $match */
-/** @var bool   $delay */
-/** @var string $paragraph */
-/** @var string $contact */
-/** @var string $closing */
-$competition_name = $match->league->title;
-if ( empty( $match->start_time ) ) {
-    $match_date    = mysql2date( $racketmanager->date_format, $match->date );
-    $original_date = mysql2date( $racketmanager->date_format, $match->date_original );
-} else {
-    $match_date    = mysql2date( 'j F Y H:i', $match->date );
-    $original_date = mysql2date( 'j F Y H:i', $match->date_original );
-}
+/** @var object|null      $match */
+/** @var bool|null        $delay */
+/** @var string|null      $paragraph */
+/** @var string|null      $contact */
+/** @var string|null      $closing */
+/** @var string|null      $competition_name */
+/** @var string|null      $match_date */
+/** @var string|null      $original_date */
+/** @var string|null      $new_date */
+/** @var string|null      $from_email */
+
+$competition_name = (string) ( $competition_name ?? ( $match->league->title ?? '' ) );
+$match_date       = (string) ( $match_date ?? ( $new_date ?? ( $match->match_date ?? '' ) ) );
+$original_date    = (string) ( $original_date ?? ( $match->original_date ?? '' ) );
+$delay            = ! empty( $delay );
 ?>
 <?php require 'email-header.php'; ?>
             <?php require 'components/match-heading.php'; ?>

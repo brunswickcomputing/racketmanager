@@ -15,7 +15,9 @@ use Racketmanager\Application\Matches\Queries\Get_Match_Score_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Match_Score_Query;
 use Racketmanager\Presentation\Presenters\Match_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Matches_List_Presenter;
+use function get_permalink;
 use function get_query_var;
+use function get_the_ID;
 use function gmdate;
 use function is_numeric;
 use function Racketmanager\un_seo_url;
@@ -76,7 +78,11 @@ class Matches_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         );
         $result = $this->daily_matches_handler->handle( $query );
 
-        return $this->presenter->render( $this->presenter->present_daily( $result, $query->template ) );
+        global $wp_query;
+        $post_id     = (int) ( $wp_query->post->ID ?? ( function_exists( 'get_the_ID' ) ? get_the_ID() : 0 ) );
+        $form_action = $post_id > 0 ? (string) get_permalink( $post_id ) : '';
+
+        return $this->presenter->render( $this->presenter->present_daily( $result, $query->template, $post_id, $form_action ) );
     }
 
     /**

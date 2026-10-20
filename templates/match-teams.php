@@ -2,6 +2,9 @@
 /**
  * Template for match for teams
  *
+ * @deprecated 2.0.0 Orphan template (no caller in plugin source). Retained ONLY as a legacy
+ * compatibility exception for custom themes; it is not an active, modernized template.
+ *
  * @package Racketmanager/Templates
  */
 

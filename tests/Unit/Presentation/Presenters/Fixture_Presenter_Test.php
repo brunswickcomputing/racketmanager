@@ -121,6 +121,70 @@ class Fixture_Presenter_Test extends TestCase {
         $this->assertEquals('test-option', $vars['option']);
         $this->assertEquals('testAction', $vars['action']);
         $this->assertEquals('Test Button', $vars['button']);
+        $this->assertArrayHasKey('date_input_type', $vars);
+        $this->assertArrayHasKey('date_input', $vars);
+    }
+
+    public function test_map_to_match_card_vars_with_valid_date(): void {
+        $fixture = $this->createStub( Fixture::class );
+        $fixture->method( 'get_date' )->willReturn( '2026-10-18 19:30:00' );
+        $league = $this->createStub( \Racketmanager\Domain\Competition\League::class );
+        $event  = $this->createStub( \Racketmanager\Domain\Competition\Event::class );
+        $comp   = $this->createStub( \Racketmanager\Domain\Competition\Competition::class );
+
+        $dto  = new Fixture_Details_DTO( $fixture, $league, $event, $comp );
+        $vars = $this->presenter->map_to_match_card_vars( $dto, $fixture, '<sponsor>' );
+
+        $this->assertSame( '2026-10-18', $vars['date_display'] );
+        $this->assertSame( $fixture, $vars['match'] );
+        $this->assertSame( '<sponsor>', $vars['sponsor_html'] );
+        $this->assertSame( $dto, $vars['dto'] );
+    }
+
+    public function test_map_to_match_card_vars_with_null_and_zero_date(): void {
+        $fixture_null = $this->createStub( Fixture::class );
+        $fixture_null->method( 'get_date' )->willReturn( null );
+
+        $dto_null  = new Fixture_Details_DTO( $fixture_null, $this->createStub( \Racketmanager\Domain\Competition\League::class ), $this->createStub( \Racketmanager\Domain\Competition\Event::class ), $this->createStub( \Racketmanager\Domain\Competition\Competition::class ) );
+        $vars_null = $this->presenter->map_to_match_card_vars( $dto_null );
+        $this->assertSame( '', $vars_null['date_display'] );
+
+        $fixture_zero = $this->createStub( Fixture::class );
+        $fixture_zero->method( 'get_date' )->willReturn( '0000-00-00 00:00:00' );
+        $dto_zero  = new Fixture_Details_DTO( $fixture_zero, $this->createStub( \Racketmanager\Domain\Competition\League::class ), $this->createStub( \Racketmanager\Domain\Competition\Event::class ), $this->createStub( \Racketmanager\Domain\Competition\Competition::class ) );
+        $vars_zero = $this->presenter->map_to_match_card_vars( $dto_zero );
+        $this->assertSame( '', $vars_zero['date_display'] );
+    }
+
+    public function test_map_to_fixture_option_vars_with_and_without_start_time(): void {
+        $fixture_no_time = $this->createStub( Fixture::class );
+        $fixture_no_time->method( 'get_date' )->willReturn( '2026-10-18 00:00:00' );
+        $fixture_no_time->method( 'get_start_time' )->willReturn( null );
+
+        $dto_no_time  = new Fixture_Details_DTO( $fixture_no_time, $this->createStub( \Racketmanager\Domain\Competition\League::class ), $this->createStub( \Racketmanager\Domain\Competition\Event::class ), $this->createStub( \Racketmanager\Domain\Competition\Competition::class ) );
+        $request      = new Fixture_Option_Request( 1, 'modal', 'schedule_match' );
+        $vars_no_time = $this->presenter->map_to_fixture_option_vars( $dto_no_time, $request, 'Title', 'Button', 'action' );
+
+        $this->assertSame( 'date', $vars_no_time['date_input_type'] );
+        $this->assertSame( '2026-10-18', $vars_no_time['date_input'] );
+
+        $fixture_time = $this->createStub( Fixture::class );
+        $fixture_time->method( 'get_date' )->willReturn( '2026-10-18 19:30:00' );
+        $fixture_time->method( 'get_start_time' )->willReturn( '19:30' );
+
+        $dto_time  = new Fixture_Details_DTO( $fixture_time, $this->createStub( \Racketmanager\Domain\Competition\League::class ), $this->createStub( \Racketmanager\Domain\Competition\Event::class ), $this->createStub( \Racketmanager\Domain\Competition\Competition::class ) );
+        $vars_time = $this->presenter->map_to_fixture_option_vars( $dto_time, $request, 'Title', 'Button', 'action' );
+
+        $this->assertSame( 'datetime-local', $vars_time['date_input_type'] );
+        $this->assertSame( '2026-10-18 19:30:00', $vars_time['date_input'] );
+
+        $fixture_null = $this->createStub( Fixture::class );
+        $fixture_null->method( 'get_date' )->willReturn( null );
+        $dto_null  = new Fixture_Details_DTO( $fixture_null, $this->createStub( \Racketmanager\Domain\Competition\League::class ), $this->createStub( \Racketmanager\Domain\Competition\Event::class ), $this->createStub( \Racketmanager\Domain\Competition\Competition::class ) );
+        $vars_null = $this->presenter->map_to_fixture_option_vars( $dto_null, $request, 'Title', 'Button', 'action' );
+
+        $this->assertSame( 'date', $vars_null['date_input_type'] );
+        $this->assertSame( '', $vars_null['date_input'] );
     }
 
     public function test_map_to_date_update_read_model(): void {

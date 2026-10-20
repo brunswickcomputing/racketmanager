@@ -267,6 +267,50 @@ class Login_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'Leigh & Westcliff Tennis', $vm->vars['site_name'] );
     }
 
+    public function test_from_atts_normalizes_empty_action_override_to_get_action(): void {
+        $query = Get_Login_Form_Query::from_atts(
+            atts: [],
+            query_vars: [],
+            get_params: [ 'action' => 'register' ],
+            action_override: ''
+        );
+
+        $this->assertSame( 'register', $query->action );
+    }
+
+    public function test_from_atts_normalizes_whitespace_action_override_to_get_action(): void {
+        $query = Get_Login_Form_Query::from_atts(
+            atts: [],
+            query_vars: [],
+            get_params: [ 'action' => 'register' ],
+            action_override: '   '
+        );
+
+        $this->assertSame( 'register', $query->action );
+    }
+
+    public function test_from_atts_preserves_explicit_action_override_over_get_action(): void {
+        $query = Get_Login_Form_Query::from_atts(
+            atts: [],
+            query_vars: [],
+            get_params: [ 'action' => 'login' ],
+            action_override: 'register'
+        );
+
+        $this->assertSame( 'register', $query->action );
+    }
+
+    public function test_from_atts_sanitizes_action(): void {
+        $query = Get_Login_Form_Query::from_atts(
+            atts: [],
+            query_vars: [],
+            get_params: [ 'action' => '<script>alert(1)</script>custom' ],
+            action_override: null
+        );
+
+        $this->assertSame( 'alert(1)custom', $query->action );
+    }
+
     /**
      * @param mixed $users_can_register
      * @param array<string, mixed> $keys

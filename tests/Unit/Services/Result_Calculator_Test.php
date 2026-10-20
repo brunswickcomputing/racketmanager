@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Services;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Domain\Enums\Fixture_Status;
 use Racketmanager\Services\Result_Calculator;
 use Racketmanager\Domain\Scoring\Set_Score;
 use stdClass;
@@ -176,6 +177,33 @@ final class Result_Calculator_Test extends TestCase {
         $this->assertEquals( 0, $result['home_walkover'] );
         $this->assertEquals( 1, $result['home_win'] );
         $this->assertEquals( 2.0, $result['home_points'] );
+    }
+
+    public function test_calculate_stats_with_string_and_numeric_enum_values(): void {
+        $rubber_wo_away = (object) [
+            'status'      => '1', // String Walkover code
+            'winner_id'   => '20',
+            'home_points' => 0,
+            'away_points' => 2,
+        ];
+        $rubber_shared = (object) [
+            'status'      => Fixture_Status::SHARED->value,
+            'winner_id'   => '-1',
+            'home_points' => 1,
+            'away_points' => 1,
+        ];
+
+        $rubbers = [ $rubber_wo_away, $rubber_shared ];
+        $home_id = '10';
+        $away_id = '20';
+
+        $result = Result_Calculator::calculate_stats_from_rubbers( $rubbers, $home_id, $away_id );
+
+        $this->assertEquals( 1, $result['home_walkover'] );
+        $this->assertEquals( 0, $result['away_walkover'] );
+        $this->assertEquals( 1, $result['shared'] );
+        $this->assertEquals( 1, $result['away_win'] );
+        $this->assertEquals( 1, $result['draw'] );
     }
 
     public function test_calculate_points_from_stats_match_win_points(): void {

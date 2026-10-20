@@ -81,6 +81,24 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
         $this->assertSame( [ [ 'match_date' => '2026-10-12', 'competition_type' => 'league' ] ], $this->get_matches_calls );
     }
 
+    public function test_daily_matches_renders_form_without_wp_query(): void {
+        unset( $GLOBALS['wp_query'], $GLOBALS['post'] );
+
+        $output = $this->build_adapter( [] )->show_daily_matches( [ 'match_date' => '2026-10-12' ] );
+
+        $this->assertStringContainsString( 'action="" id="racketmanager_daily_matches"', $output );
+        $this->assertStringContainsString( 'name="page_id" value="0"', $output );
+    }
+
+    public function test_daily_matches_adapter_supplies_form_target(): void {
+        $GLOBALS['wp_query'] = (object) [ 'post' => (object) [ 'ID' => 87 ] ];
+
+        $output = $this->build_adapter( [] )->show_daily_matches( [ 'match_date' => '2026-10-12' ] );
+
+        $this->assertStringContainsString( 'action="https://example.test/page/87"', $output );
+        $this->assertStringContainsString( 'name="page_id" value="87"', $output );
+    }
+
     public function test_daily_matches_shows_result_link_only_when_update_allowed(): void {
         $allowed = $this->build_adapter( [ $this->fixture( 201, '1', '2', null ) ], true )->show_daily_matches( [ 'match_date' => '2026-10-12' ] );
         $this->assertStringContainsString( 'href="https://example.test/match/201/result/"', $allowed );

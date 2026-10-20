@@ -14,7 +14,7 @@ if ( isset( $vm ) && $vm instanceof Options_Page_View_Model ) {
     $options = $vm->options;
 } else {
     $tab     = $tab ?? 'club-players';
-    $options = $options ?? ( $GLOBALS['racketmanager']->options ?? array() );
+    $options = $options ?? array();
 }
 $menu_page_url = admin_url( 'options-general.php?page=racketmanager-settings' );
 ?>

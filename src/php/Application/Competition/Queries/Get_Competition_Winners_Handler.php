@@ -5,6 +5,7 @@ namespace Racketmanager\Application\Competition\Queries;
 
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
+use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Competition_Service;
 use function is_numeric;
@@ -16,7 +17,8 @@ use function __;
  */
 class Get_Competition_Winners_Handler {
     public function __construct(
-        private readonly Competition_Service $competition_service
+        private readonly Competition_Service $competition_service,
+        private readonly ?Competition_Shortcode_Presenter $competition_shortcode_presenter = null
     ) {}
 
     public function handle( Get_Competition_Winners_Query $query ): Shortcode_View_Model {
@@ -54,6 +56,9 @@ class Get_Competition_Winners_Handler {
         } catch ( Season_Not_Found_Exception|Competition_Not_Found_Exception $e ) {
             return Shortcode_View_Model::error( $e->getMessage() );
         }
+
+        $presenter = $this->competition_shortcode_presenter ?? new Competition_Shortcode_Presenter();
+        $winners   = $presenter->present_competition_winners( $winners );
 
         $template = '' !== $query->template ? 'winners-' . $query->template : 'winners';
 

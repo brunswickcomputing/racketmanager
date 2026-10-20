@@ -72,11 +72,12 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
         ) );
 
         // Presenters
-        $container->set( 'club_presenter', fn() => new Club_Presenter() );
+        $container->set( 'club_presenter', fn( Simple_Container $c ) => new Club_Presenter( $c->get( 'option_gateway' ) ) );
         $container->set( 'club_shortcode_presenter', fn( Simple_Container $c ) => new Club_Shortcode_Presenter(
             $c->get( 'view_renderer' ),
             $c->get( 'club_presenter' ),
-            $c->get( 'player_presenter' )
+            $c->get( 'player_presenter' ),
+            $c->get( 'favourite_presenter' )
         ) );
 
         // Query Handlers
@@ -90,7 +91,10 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
         $container->set( 'get_club_players_handler', fn( Simple_Container $c ) => new Get_Club_Players_Handler(
             $c->get( 'club_service' ),
             $c->get( 'player_service' ),
-            $c->get( 'registration_service' )
+            $c->get( 'registration_service' ),
+            $c->get( 'club_presenter' ),
+            $c->get( 'option_gateway' ),
+            $c->get( 'player_presenter' )
         ) );
 
         $container->set( 'get_club_roles_handler', fn( Simple_Container $c ) => new Get_Club_Roles_Handler(
@@ -105,7 +109,8 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
             $c->get( 'club_service' ),
             $c->get( 'competition_service' ),
             $c->get( 'competition_repository' ),
-            $c->get( 'team_details_presenter' )
+            $c->get( 'team_details_presenter' ),
+            $c->get( 'club_presenter' )
         ) );
 
         $container->set( 'get_club_invoices_handler', fn( Simple_Container $c ) => new Get_Club_Invoices_Handler(

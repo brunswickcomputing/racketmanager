@@ -46,19 +46,20 @@ namespace Racketmanager;
                     <?php
                     $class = '';
                     foreach ( $clubs as $club ) {
-                        $club  = get_club( $club );
+                        $club  = is_object( $club ) ? $club : (object) $club;
                         $class = ( 'alternate' === $class ) ? '' : 'alternate';
+                        $club_id = $club->id ?? '';
                         ?>
                         <tr class="">
                             <td class="check-column">
-                                <label for="club-<?php echo esc_html( $club->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $club->id ); ?>" name="club[<?php echo esc_html( $club->id ); ?>]" id="club-<?php echo esc_html( $club->id ); ?>" />
+                                <label for="club-<?php echo esc_attr( (string) $club_id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_attr( (string) $club_id ); ?>" name="club[<?php echo esc_attr( (string) $club_id ); ?>]" id="club-<?php echo esc_attr( (string) $club_id ); ?>" />
                             </td>
-                            <td class="d-none d-md-table-cell column-num"><?php echo esc_html( $club->id ); ?></td>
-                            <td class="club-name"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=club&amp;club_id=<?php echo esc_html( $club->id ); ?> "><?php echo esc_html( $club->name ); ?></a></td>
-                            <td class="d-none d-md-table-cell"><?php echo isset( $club->match_secretary->display_name ) ? esc_html( $club->match_secretary->display_name ) : null; ?></td>
-                            <td class="col-auto"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=players&amp;club_id=<?php echo esc_html( $club->id ); ?> " class="btn btn-secondary"><?php esc_html_e( 'Players', 'racketmanager' ); ?></a></td>
-                            <td class="col-auto"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=teams&amp;club_id=<?php echo esc_html( $club->id ); ?> " class="btn btn-secondary"><?php esc_html_e( 'Teams', 'racketmanager' ); ?></a></td>
-                            <td class="col-auto"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=roles&amp;club_id=<?php echo esc_html( $club->id ); ?> " class="btn btn-secondary"><?php esc_html_e( 'Roles', 'racketmanager' ); ?></a></td>
+                            <td class="d-none d-md-table-cell column-num"><?php echo esc_html( (string) $club_id ); ?></td>
+                            <td class="club-name"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=club&amp;club_id=<?php echo esc_attr( (string) $club_id ); ?> "><?php echo esc_html( (string) ( $club->name ?? '' ) ); ?></a></td>
+                            <td class="d-none d-md-table-cell"><?php echo isset( $club->match_secretary->display_name ) ? esc_html( (string) $club->match_secretary->display_name ) : null; ?></td>
+                            <td class="col-auto"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=players&amp;club_id=<?php echo esc_attr( (string) $club_id ); ?> " class="btn btn-secondary"><?php esc_html_e( 'Players', 'racketmanager' ); ?></a></td>
+                            <td class="col-auto"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=teams&amp;club_id=<?php echo esc_attr( (string) $club_id ); ?> " class="btn btn-secondary"><?php esc_html_e( 'Teams', 'racketmanager' ); ?></a></td>
+                            <td class="col-auto"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=roles&amp;club_id=<?php echo esc_attr( (string) $club_id ); ?> " class="btn btn-secondary"><?php esc_html_e( 'Roles', 'racketmanager' ); ?></a></td>
                         </tr>
                         <?php
                     }

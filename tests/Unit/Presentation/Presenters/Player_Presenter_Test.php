@@ -4,7 +4,12 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Presentation\Presenters;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Club_Player;
+use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
+use Racketmanager\Domain\Player;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
+use Racketmanager\Presentation\View_Models\Club_Membership_View_Model;
 use Racketmanager\Presentation\View_Models\Competition_List_Item_View_Model;
 
 class Player_Presenter_Test extends TestCase {
@@ -279,5 +284,117 @@ class Player_Presenter_Test extends TestCase {
         $this->assertSame( '2026-05-20', $presented->removal_date );
         $this->assertSame( '20/05/2026', $presented->removal_date_display );
         $this->assertSame( '2026-01-01', $presented->registration_date );
+    }
+
+    public function test_present_club_membership_with_club_player_dto_and_datetime_formatting(): void {
+        $option_gateway = new class implements \Racketmanager\Gateways\Option\Option_Gateway_Interface {
+            public function get_option( string $option, mixed $default = false ): mixed {
+                return 'd/m/Y';
+            }
+            public function update_option( string $option, mixed $value, mixed $autoload = null ): bool {
+                return true;
+            }
+            public function delete_option( string $option ): bool {
+                return true;
+            }
+        };
+
+        $presenter = new Player_Presenter( option_gateway: $option_gateway );
+
+        $player               = new Player();
+        $player->id           = 42;
+        $player->display_name = 'Andy Murray';
+
+        $club                 = new Club();
+        $club->id             = 101;
+        $club->name           = 'Westcliff Hardcourt Tennis Club';
+        $club->shortcode      = 'Westcliff Hardcourt';
+
+        $registration = new Club_Player( (object) [
+            'id'             => 55,
+            'player_id'      => 42,
+            'club_id'        => 101,
+            'requested_date' => '2026-01-10 09:30:00',
+            'created_date'   => '2026-01-15 14:00:00',
+            'removed_date'   => '2026-06-30 18:45:00',
+            'requested_user' => 42,
+            'created_user'   => 1,
+            'removed_user'   => 2,
+            'system_record'  => 0,
+        ] );
+
+        $dto = new Club_Player_DTO( $player, $club, $registration );
+
+        $presented = $presenter->present_club_membership( $dto );
+
+        $this->assertInstanceOf( Club_Membership_View_Model::class, $presented );
+        $this->assertSame( 'Westcliff Hardcourt', $presented->club_name );
+        $this->assertSame( 'Westcliff Hardcourt Tennis Club', $presented->club_display_name );
+        $this->assertSame( '2026-01-15 14:00:00', $presented->approval_date );
+        $this->assertSame( '15/01/2026', $presented->approval_date_display );
+        $this->assertSame( '2026-06-30 18:45:00', $presented->removal_date );
+        $this->assertSame( '30/06/2026', $presented->removal_date_display );
+        $this->assertSame( '2026-01-10 09:30:00', $presented->registration_date );
+        $this->assertSame( '10/01/2026', $presented->registration_date_display );
+        $this->assertSame( 101, $presented->club_id );
+        $this->assertSame( 42, $presented->user_id );
+        $this->assertSame( 55, $presented->registration_id );
+        $this->assertSame( 1, $presented->approved_by_user_id );
+        $this->assertSame( 42, $presented->registered_by_user_id );
+        $this->assertSame( 2, $presented->removed_by_user_id );
+        $this->assertSame( false, $presented->system_record );
+        $this->assertSame( '/clubs/westcliff-hardcourt/', $presented->club_url );
+    }
+
+    public function test_present_club_membership_with_system_record_true(): void {
+        $presenter = new Player_Presenter();
+
+        $player = new Player();
+        $player->id = 42;
+
+        $club = new Club();
+        $club->id = 101;
+
+        $registration = new Club_Player( (object) [
+            'id'            => 57,
+            'player_id'     => 42,
+            'club_id'       => 101,
+            'system_record' => 1,
+        ] );
+
+        $dto = new Club_Player_DTO( $player, $club, $registration );
+
+        $presented = $presenter->present_club_membership( $dto );
+
+        $this->assertSame( true, $presented->system_record );
+    }
+
+    public function test_present_club_membership_with_null_and_zero_dates(): void {
+        $presenter = new Player_Presenter();
+
+        $player               = new Player();
+        $player->id           = 42;
+        $player->display_name = 'Andy Murray';
+
+        $club                 = new Club();
+        $club->id             = 101;
+        $club->name           = 'Leigh TC';
+
+        $registration = new Club_Player( (object) [
+            'id'             => 56,
+            'player_id'      => 42,
+            'club_id'        => 101,
+            'requested_date' => null,
+            'created_date'   => '0000-00-00 00:00:00',
+            'removed_date'   => '',
+        ] );
+
+        $dto = new Club_Player_DTO( $player, $club, $registration );
+
+        $presented = $presenter->present_club_membership( $dto );
+
+        $this->assertSame( '', $presented->approval_date_display );
+        $this->assertSame( '', $presented->removal_date_display );
+        $this->assertSame( '', $presented->registration_date_display );
     }
 }

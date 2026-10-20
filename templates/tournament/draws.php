@@ -33,7 +33,7 @@ namespace Racketmanager;
                         <div class="row mb-2 row-list">
                             <div class="col-1" name="<?php esc_html_e( 'Favourite', 'racketmanager' ); ?>">
                                 <?php
-                                $draw_link      = '/tournament/' . seo_url( $tournament->name ) . '/draw/' . seo_url( $event->name ) . '/';
+                                $draw_link      = $event->draw_link;
                                 $hidden         = true;
                                 $favourite_type = 'competition';
                                 $favourite_id   = $event->id;

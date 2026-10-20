@@ -10,6 +10,7 @@
 namespace Racketmanager\Admin;
 
 use Racketmanager\Admin\Presenters\Admin_Date_Presenter;
+use Racketmanager\Admin\Presenters\Admin_Entry_Link_Presenter;
 use Racketmanager\Admin\Presenters\Admin_League_Matches_Presenter;
 use Racketmanager\Admin\Presenters\Admin_League_Schedule_Presenter;
 use Racketmanager\Admin\View_Models\Admin_League_Schedule_Event_View_Model;
@@ -34,6 +35,17 @@ use function Racketmanager\get_team;
  * @subpackage RacketManagerAdmin
  */
 final class Admin_League extends Admin_Display {
+
+    private Admin_Entry_Link_Presenter $admin_entry_link_presenter;
+
+    public function __construct(
+        $plugin_instance,
+        ?Admin_Entry_Link_Presenter $admin_entry_link_presenter = null,
+    ) {
+        parent::__construct( $plugin_instance );
+        $this->admin_entry_link_presenter = $admin_entry_link_presenter ?? $this->racketmanager->container->get( 'admin_entry_link_presenter' );
+    }
+
     /**
      * Function to handle administration finances displays
      *
@@ -134,14 +146,14 @@ final class Admin_League extends Admin_Display {
             $validator      = $validator->competition( $competition_id );
             if ( empty( $validator->error ) ) {
                 $competition = $this->competition_service->get_competition( $competition_id );
-                $season      = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
+                $season      = isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : null;
                 $seasons     = $competition->get_seasons();
                 $validator   = $validator->season_set( $season, $seasons );
             }
         }
         if ( ! empty( $validator->error ) ) {
             if ( empty( $validator->msg ) ) {
-                $this->set_message( $validator->err_msg[0] , true );
+                $this->set_message( $validator->err_msgs[0] ?? '', true );
             } else {
                 $this->set_message( $validator->msg, true );
             }
@@ -152,17 +164,18 @@ final class Admin_League extends Admin_Display {
             return;
         }
         $this->show_message();
-        $competition_overview = $this->competition_service->get_competition_overview( $competition_id, $season );
-        $competition_events   = $this->competition_service->get_events_with_details_for_competition( $competition_id, $season );
+        $competition_overview = $this->competition_service->get_competition_overview( $competition_id, null !== $season ? (int) $season : null );
+        $competition_events   = $this->competition_service->get_events_with_details_for_competition( $competition_id, (string) $season );
         $tab                  = 'overview';
-        $current_season       = (object) $competition->get_season_by_name( $season ) ?? array();
+        $current_season       = (object) $competition->get_season_by_name( (string) $season ) ?? array();
         if ( isset( $current_season->date_closing ) && $current_season->date_closing <= gmdate( 'Y-m-d' ) ) {
             $current_season->is_active = true;
         } else {
             $current_season->is_active = false;
         }
         $current_season->is_open = false;
-        $current_season->entries = $this->competition_service->get_clubs_for_competition( $competition_id, $season );
+        $current_season->entries = $this->competition_service->get_clubs_for_competition( $competition_id, (string) $season );
+        $entry_urls              = $this->admin_entry_link_presenter->club_entry_urls( $competition, (string) $season, (array) ( $current_season->entries ?? array() ) );
         require_once RACKETMANAGER_PATH . 'templates/admin/league/show-season.php';
     }
     /**
@@ -394,7 +407,17 @@ final class Admin_League extends Admin_Display {
             $event_season = $event->current_season['name'] ?? '';
             $season       = ( isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : $event_season );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         }
-        require_once RACKETMANAGER_PATH . 'templates/admin/event/show-leagues.php';
+        $leagues            = ( isset( $event ) && method_exists( $event, 'get_leagues' ) ) ? $event->get_leagues() : array();
+        $league_matches_map = array();
+        foreach ( $leagues as $league_item ) {
+            if ( ! ( $league_item->is_championship ?? false ) ) {
+                if ( method_exists( $league_item, 'set_num_matches' ) ) {
+                    $league_item->set_num_matches( true );
+                }
+                $league_matches_map[ $league_item->id ] = $league_item->num_matches_total ?? 0;
+            }
+        }
+        require RACKETMANAGER_PATH . 'templates/admin/event/show-leagues.php';
     }
     /**
      * Display constitution page
@@ -428,8 +451,66 @@ final class Admin_League extends Admin_Display {
                 $event_season = $event->current_season['name'] ?? '';
                 $season       = ( isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : $event_season );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             }
-            $seasons = $this->season_service->get_all_seasons();
-            require_once RACKETMANAGER_PATH . 'templates/admin/league/show-constitution.php';
+            $seasons             = $this->season_service->get_all_seasons();
+            $leagues             = ( isset( $event ) && method_exists( $event, 'get_leagues' ) ) ? $event->get_leagues() : array();
+            $event_seasons       = ( isset( $event ) && method_exists( $event, 'get_seasons' ) ) ? $event->get_seasons() : array();
+
+            $num_teams           = 0;
+            $league_active_teams = array();
+            $teams               = array();
+            $constitution_action = 'update';
+            $constitution_exists = false;
+            $updates_allowed     = false;
+            $latest_season       = '';
+            $latest_event_season = '';
+            $standing_status     = \Racketmanager\Util\Util_Lookup::get_standing_statuses();
+
+            $has_content = ! ( ( empty( $event->is_box ) && empty( $seasons ) ) || ( empty( $event->leagues ) && empty( $leagues ) ) || empty( $event_seasons ) );
+
+            if ( $has_content ) {
+                $num_teams = ( isset( $event ) && method_exists( $event, 'get_teams' ) ) ? $event->get_teams( array( 'count' => true, 'season' => $season ) ) : 0;
+                foreach ( $leagues as $l ) {
+                    if ( method_exists( $l, 'get_num_teams' ) ) {
+                        $league_active_teams[ $l->id ] = $l->get_num_teams( 'active', true );
+                    }
+                }
+
+                $today               = gmdate( 'Y-m-d' );
+                $latest_season_dtls  = $event->current_season ?? array();
+                $latest_season       = $latest_season_dtls['name'] ?? '';
+                $latest_competition  = ( isset( $event->competition ) && method_exists( $event->competition, 'get_season_by_name' ) ) ? $event->competition->get_season_by_name( $latest_season ) : null;
+                $competition_seasons = ( isset( $event->competition ) && method_exists( $event->competition, 'get_seasons' ) ) ? $event->competition->get_seasons() : array();
+                $updates_allowed     = ! empty( $latest_competition['date_start'] ) && $latest_competition['date_start'] > $today;
+
+                $latest_event_season = $event->current_season['name'] ?? '';
+                $stop_next           = false;
+                foreach ( array_reverse( $competition_seasons ) as $comp_season ) {
+                    $comp_season_name = is_array( $comp_season ) ? ( $comp_season['name'] ?? '' ) : ( (string) $comp_season );
+                    if ( $stop_next ) {
+                        $latest_event_season = $comp_season_name;
+                        break;
+                    }
+                    if ( $latest_season === $comp_season_name ) {
+                        $stop_next = true;
+                    }
+                }
+
+                $teams = ( isset( $event ) && method_exists( $event, 'get_constitution' ) ) ? $event->get_constitution(
+                    array(
+                        'season'    => $latest_season,
+                        'oldseason' => $latest_event_season,
+                    )
+                ) : null;
+                $constitution_action = 'update';
+                $constitution_exists = true;
+                if ( ! $teams ) {
+                    $teams               = ( isset( $event ) && method_exists( $event, 'build_constitution' ) ) ? $event->build_constitution( array( 'season' => $latest_event_season ) ) : array();
+                    $constitution_action = 'insert';
+                    $constitution_exists = false;
+                }
+            }
+
+            require RACKETMANAGER_PATH . 'templates/admin/league/show-constitution.php';
         }
     }
     /**

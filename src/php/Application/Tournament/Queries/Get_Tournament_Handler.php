@@ -11,6 +11,7 @@ use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use function __;
 use function esc_url;
+use function get_permalink;
 
 class Get_Tournament_Handler {
     public function __construct(
@@ -132,12 +133,12 @@ class Get_Tournament_Handler {
             'tab'                 => $tab,
             'menu_options'        => $menu_options,
             'post_id'             => $post_id,
-            'tournament_seo_name' => $tournament_seo_name,
+            'form_action'         => $post_id ? (string) get_permalink( (int) $post_id ) : '',
+            'tournament_seo_name'  => $tournament_seo_name,
             'season'              => $tournament_details->tournament->season,
             'entry_option'        => true,
+            'tournament_header'   => $this->tournament_presenter->present_header( $tournament_details->tournament, true ),
         ];
-
-        $vars['tournament_header'] = $this->tournament_presenter->present_header( $tournament_details->tournament, true );
 
         return Shortcode_View_Model::for_template(
             $filename,

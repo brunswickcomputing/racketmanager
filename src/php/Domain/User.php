@@ -622,24 +622,24 @@ class User {
             $favourite_item = new stdClass();
             if ( 'league' === $favourites_type ) {
                 $league                 = get_league( $favourite );
-                $favourite_item->name   = $league->title;
-                $favourite_item->detail = $league;
+                $favourite_item->name   = is_object( $league ) ? ( $league->title ?? '' ) : '';
+                $favourite_item->detail = is_object( $league ) ? $league : null;
             } elseif ( 'club' === $favourites_type ) {
                 $club                   = get_club( $favourite );
-                $favourite_item->name   = $club->name;
-                $favourite_item->detail = $club;
+                $favourite_item->name   = is_object( $club ) ? ( $club->name ?? '' ) : '';
+                $favourite_item->detail = is_object( $club ) ? $club : null;
             } elseif ( 'competition' === $favourites_type ) {
                 $event                  = get_event( $favourite );
-                $favourite_item->name   = $event->name;
-                $favourite_item->detail = $event;
+                $favourite_item->name   = is_object( $event ) ? ( $event->name ?? '' ) : '';
+                $favourite_item->detail = is_object( $event ) ? $event : null;
             } elseif ( 'player' === $favourites_type ) {
                 $player                 = get_player( $favourite );
-                $favourite_item->name   = $player->display_name;
-                $favourite_item->detail = $player;
+                $favourite_item->name   = is_object( $player ) ? ( $player->display_name ?? '' ) : '';
+                $favourite_item->detail = is_object( $player ) ? $player : null;
             } elseif ( 'team' === $favourites_type ) {
                 $team                   = get_team( $favourite );
-                $favourite_item->name   = $team->title;
-                $favourite_item->detail = $team;
+                $favourite_item->name   = is_object( $team ) ? ( $team->title ?? '' ) : '';
+                $favourite_item->detail = is_object( $team ) ? $team : null;
             }
             $favourite_item->id = $favourite;
             $favourites[ $i ]   = $favourite_item;

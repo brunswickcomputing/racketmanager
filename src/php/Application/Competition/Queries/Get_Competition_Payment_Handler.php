@@ -14,6 +14,7 @@ use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Stripe_Settings;
 use Racketmanager\Services\Tournament_Service;
 use function __;
+use function defined;
 
 class Get_Competition_Payment_Handler {
     public function __construct(
@@ -33,15 +34,18 @@ class Get_Competition_Payment_Handler {
             $tournament = $this->tournament_service->get_tournament_by_name( $query->tournament_name );
             $player = $this->player_service->get_player( $query->player_id );
             $entry = $this->entry_service->get_tournament_entry_by_tournament_and_player( (int) $tournament->id, (int) $player->id );
+            $site_url = defined( 'RACKETMANAGER_SITE' ) ? RACKETMANAGER_SITE : '/';
             $vars = [
-                'tournament'       => $tournament,
-                'player'           => $player,
-                'tournament_entry' => $entry,
+                'tournament'           => $tournament,
+                'player'               => $player,
+                'tournament_entry'     => $entry,
+                'payment_complete_url' => $this->tournament_presenter->get_payment_complete_url( $tournament, $site_url ),
+                'tournament_header'    => $this->tournament_presenter->present_header( $tournament, false ),
             ];
-            $vars['tournament_header'] = $this->tournament_presenter->present_header( $tournament, false );
+
             if ( $query->complete ) {
                 $vars['total_due'] = null;
-                $vars['stripe'] = new Stripe_Settings( $query->billing_options );
+                $vars['stripe']    = new Stripe_Settings( $query->billing_options );
                 return new Shortcode_View_Model( 'tournament-payment-complete', $vars, 'entry' );
             }
 
@@ -55,7 +59,7 @@ class Get_Competition_Payment_Handler {
             return Shortcode_View_Model::error( $e->getMessage() );
         }
 
-        $vars['total_due'] = 0;
+        $vars['total_due']  = 0;
         $vars['invoice_id'] = null;
         foreach ( $invoices as $invoice ) {
             $vars['total_due'] += $invoice->amount;

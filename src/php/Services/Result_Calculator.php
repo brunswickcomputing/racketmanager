@@ -2,6 +2,8 @@
 
 namespace Racketmanager\Services;
 
+use Racketmanager\Domain\Enums\Fixture_Status;
+use Racketmanager\Domain\Enums\Match_Outcome;
 use Racketmanager\Domain\Fixture\Fixture_Status_Policy;
 use Racketmanager\Domain\Scoring\Set_Score;
 
@@ -20,11 +22,13 @@ class Result_Calculator {
         $away_points = 0.0;
 
         foreach ( $sets as $set ) {
-            $winner = $set->winner();
-            if ( 'home' === $winner ) {
-                $home_points += 1.0;
-            } elseif ( 'away' === $winner ) {
-                $away_points += 1.0;
+            if ( $set instanceof Set_Score ) {
+                $outcome = $set->winner_outcome();
+                if ( Match_Outcome::HOME === $outcome ) {
+                    $home_points += 1.0;
+                } elseif ( Match_Outcome::AWAY === $outcome ) {
+                    $away_points += 1.0;
+                }
             }
         }
 
@@ -82,14 +86,14 @@ class Result_Calculator {
             // Rubber statuses are stored by Rubber_Result_Manager with the same
             // codes as Fixture_Status (1 = walkover, 3 = shared).
             switch ( $status ) {
-                case 1: // Walkover
+                case Fixture_Status::WALKOVER->value:
                     if ( $home_id_str === $winner_id ) {
                         ++$away_walkover;
                     } elseif ( $away_id_str === $winner_id ) {
                         ++$home_walkover;
                     }
                     break;
-                case 3: // Shared
+                case Fixture_Status::SHARED->value:
                     ++$shared;
                     break;
             }

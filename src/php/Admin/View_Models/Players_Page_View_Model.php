@@ -21,6 +21,7 @@ final readonly class Players_Page_View_Model {
         public string $racketmanager_tab = 'players',
         public Error_Bag $errors = new Error_Bag(),
         public bool $form_valid = true,
+        public string $tab_title = 'Players',
     ) {
     }
 }

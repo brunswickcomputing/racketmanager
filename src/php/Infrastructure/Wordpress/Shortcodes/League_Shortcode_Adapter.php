@@ -67,7 +67,10 @@ class League_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     public function show_archive( array|string $atts = [] ): string {
         $query_vars  = $this->extract_query_vars();
         $league_name = $this->resolve_league_name( $atts, $query_vars );
-        $query       = Get_League_Archive_Query::from_atts( $atts, $query_vars, $league_name );
+        $query       = Get_League_Archive_Query::from_atts( $atts, $query_vars, $league_name, is_array( $_GET ) ? $_GET : [] );
+        if ( '-1' === $query->match_day && function_exists( 'set_query_var' ) ) {
+            set_query_var( 'match_day', '-1' );
+        }
         $vm          = $this->archive_handler->handle( $query );
 
         return $this->view_presenter->render( $vm );

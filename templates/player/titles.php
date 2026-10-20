@@ -31,12 +31,20 @@ $titles = $vm->titles ?? ( $titles ?? [] );
                 <div class="module-container">
                     <?php
                     foreach ( $tournaments as $tournament => $matches ) {
+                        $tournament_first_match = is_array( $matches ) && ! empty( $matches ) ? reset( $matches ) : null;
+                        $tournament_url         = is_object( $tournament_first_match ) && isset( $tournament_first_match->tournament_url )
+                            ? (string) $tournament_first_match->tournament_url
+                            : '';
                         ?>
                         <h6 class="module-divider">
                             <span class="module-divider__body">
-                                <a class="nav--link media__link" href="<?php echo '/tournament/' . esc_attr( seo_url( $tournament ) ); ?>">
+                                <?php if ( '' !== $tournament_url ) : ?>
+                                    <a class="nav--link media__link" href="<?php echo esc_url( $tournament_url ); ?>">
+                                        <span class="nav-link__value"><?php echo esc_html( $tournament ); ?></span>
+                                    </a>
+                                <?php else : ?>
                                     <span class="nav-link__value"><?php echo esc_html( $tournament ); ?></span>
-                                </a>
+                                <?php endif; ?>
                             </span>
                         </h6>
                         <ul class="list list--naked list-bordered">
@@ -47,6 +55,7 @@ $titles = $vm->titles ?? ( $titles ?? [] );
                                 } else {
                                     $class = 'runner-up';
                                 }
+                                $match_draw_url = isset( $match->draw_url ) ? (string) $match->draw_url : '';
                                 ?>
                                 <li class="list__item">
                                     <div class="media">
@@ -58,9 +67,13 @@ $titles = $vm->titles ?? ( $titles ?? [] );
                                             </div>
                                             <div class="media__content">
                                                 <span class="media__title">
-                                                    <a class="nav--link media__link" href="<?php echo '/tournament/' . esc_attr( seo_url( $match->tournament ) ) . '/draw/' . esc_attr( seo_url( $match->draw ) ) . '/'; ?>">
+                                                    <?php if ( '' !== $match_draw_url ) : ?>
+                                                        <a class="nav--link media__link" href="<?php echo esc_url( $match_draw_url ); ?>">
+                                                            <span class="nav-link__value"><?php echo esc_html( $match->title ); ?></span>
+                                                        </a>
+                                                    <?php else : ?>
                                                         <span class="nav-link__value"><?php echo esc_html( $match->title ); ?></span>
-                                                    </a>
+                                                    <?php endif; ?>
                                                 </span>
                                             </div>
                                         </div>

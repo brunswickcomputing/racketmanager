@@ -96,4 +96,71 @@ class Login_Shortcode_Adapter_Test extends TestCase {
         $output = $this->adapter->generate_member_account_form( [] );
         $this->assertStringContainsString( 'member-account-form', $output );
     }
+
+    public function test_render_login_form_with_empty_action_override_passes_get_action_to_handler(): void {
+        $_GET['action'] = 'register';
+
+        $login_form_handler = $this->createMock( Get_Login_Form_Handler::class );
+        $login_form_handler->expects( $this->once() )
+            ->method( 'handle' )
+            ->with( $this->callback( static function ( Get_Login_Form_Query $query ): bool {
+                return 'register' === $query->action;
+            } ) )
+            ->willReturn( Shortcode_View_Model::for_html( '<div data-tabid="registration"></div>' ) );
+
+        $view_presenter = $this->createStub( Shortcode_View_Presenter::class );
+        $view_presenter->method( 'render' )->willReturnCallback( static fn( Shortcode_View_Model $vm ) => $vm->raw_html );
+
+        $adapter = new Login_Shortcode_Adapter(
+            null,
+            $view_presenter,
+            $login_form_handler,
+            $this->password_lost_form_handler,
+            $this->password_reset_form_handler,
+            $this->member_account_form_handler
+        );
+
+        $output = $adapter->render_login_form( [], '' );
+        $this->assertStringContainsString( 'data-tabid="registration"', $output );
+
+        unset( $_GET['action'] );
+    }
+
+    public function test_render_login_form_renders_real_registration_tab_when_action_override_is_empty_string(): void {
+        $_GET['action'] = 'register';
+
+        $option_gateway = $this->createStub( \Racketmanager\Gateways\Option\Option_Gateway_Interface::class );
+        $option_gateway->method( 'get_option' )->willReturnCallback(
+            static fn( string $name, mixed $default = false ) => match ( $name ) {
+                'users_can_register' => true,
+                'blogname'           => 'Leigh Tennis',
+                'siteurl'            => 'https://example.test',
+                default              => $default,
+            }
+        );
+
+        $real_handler     = new Get_Login_Form_Handler( $option_gateway, new \Racketmanager\Services\Settings_Service( [] ) );
+        $php_renderer     = new \Racketmanager\Services\View\Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
+        $view_presenter   = new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $php_renderer ) );
+        $security_service = $this->createStub( \Racketmanager\Infrastructure\Security\Security_Service_Interface::class );
+        $security_service->method( 'is_user_logged_in' )->willReturn( false );
+
+        $adapter = new Login_Shortcode_Adapter(
+            null,
+            $view_presenter,
+            $real_handler,
+            $this->password_lost_form_handler,
+            $this->password_reset_form_handler,
+            $this->member_account_form_handler,
+            null,
+            $security_service
+        );
+
+        $output = $adapter->render_login_form( [], '' );
+        $this->assertStringContainsString( 'data-tabid="registration"', $output );
+        $this->assertStringContainsString( 'id="registration-tab"', $output );
+        $this->assertStringContainsString( 'id="registration"', $output );
+
+        unset( $_GET['action'] );
+    }
 }

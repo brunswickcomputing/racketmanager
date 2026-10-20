@@ -22,6 +22,7 @@ final readonly class Get_League_Matches_Query {
     public ?string $group;
     public string $time;
     public string $show_match_day_selection;
+    public ?int $post_id;
 
     public function __construct(
         ?int $league_id = null,
@@ -34,7 +35,8 @@ final readonly class Get_League_Matches_Query {
         string $home_only = 'false',
         ?string $group = null,
         string $time = '',
-        string $show_match_day_selection = ''
+        string $show_match_day_selection = '',
+        ?int $post_id = null
     ) {
         $this->league_id                = ( null !== $league_id && $league_id > 0 ) ? $league_id : null;
         $this->team                     = $team;
@@ -47,6 +49,7 @@ final readonly class Get_League_Matches_Query {
         $this->group                    = ( null !== $group && '' !== trim( $group ) && false !== $group ) ? trim( (string) $group ) : null;
         $this->time                     = preg_replace( '/[^A-Za-z0-9_-]/', '', $time ) ?: '';
         $this->show_match_day_selection = (string) $show_match_day_selection;
+        $this->post_id                  = $post_id;
     }
 
     public static function from_atts( array|string $atts, ?int $default_league_id = null ): self {
@@ -74,7 +77,8 @@ final readonly class Get_League_Matches_Query {
             home_only: $home_only,
             group: $group,
             time: $time,
-            show_match_day_selection: $selection
+            show_match_day_selection: $selection,
+            post_id: isset( $atts_array['post_id'] ) ? (int) $atts_array['post_id'] : null
         );
     }
 }

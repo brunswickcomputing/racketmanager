@@ -9,6 +9,8 @@ namespace Racketmanager;
 
 /** @var object $competition */
 /** @var string $season */
+/** @var array<string, string> $entry_urls */
+$entry_urls = $entry_urls ?? array();
 ?>
 <div class="row">
     <div class="col-12">
@@ -26,9 +28,18 @@ namespace Racketmanager;
                     <?php
                 } else {
                     foreach ( $cup_season->entries as $club ) {
+                        $shortcode = is_object( $club ) ? (string) ( $club->shortcode ?? '' ) : (string) ( $club['shortcode'] ?? '' );
+                        $club_id   = is_object( $club ) ? (string) ( $club->id ?? '' ) : (string) ( $club['id'] ?? '' );
+                        $entry_url = $entry_urls[ $shortcode ] ?? ( $entry_urls[ $club_id ] ?? '' );
                         ?>
                         <tr>
-                            <td><a href="/entry-form/<?php echo esc_attr( seo_url( $competition->name ) ); ?>/<?php echo esc_attr( $season ); ?>/<?php echo esc_attr( seo_url( $club->shortcode ) ); ?>/"><?php echo esc_html( $club->shortcode ); ?></a></td>
+                            <td>
+                                <?php if ( '' !== $entry_url ) : ?>
+                                    <a href="<?php echo esc_url( $entry_url ); ?>"><?php echo esc_html( $shortcode ); ?></a>
+                                <?php else : ?>
+                                    <?php echo esc_html( $shortcode ); ?>
+                                <?php endif; ?>
+                            </td>
                         </tr>
                         <?php
                     }

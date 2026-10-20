@@ -7,16 +7,21 @@
 
 namespace Racketmanager;
 
-/** @var string $email_subject */
-/** @var string $organisation */
-global $racketmanager;
-$site_url   = $racketmanager->site_url;
-$paragraph  = 'components/paragraph.php';
-$hr         = 'components/hr.php';
-$title      = 'components/title.php';
-$salutation = 'components/salutation.php';
-$contact    = 'components/contact.php';
-$closing    = 'components/closing.php';
+/** @var string|null $email_subject */
+/** @var string|null $organisation */
+/** @var string|null $site_url */
+
+// Producers pass $site_url and $organisation explicitly. The site_url() fallback is a compatibility
+// shim only for email templates whose producers do not yet pass it (e.g. account/privacy emails
+// rendered from WordPress core filters); it resolves the same `siteurl` option as before.
+$site_url        = $site_url ?? ( function_exists( 'site_url' ) ? site_url() : '' );
+$organisation    = $organisation ?? '';
+$paragraph       = 'components/paragraph.php';
+$hr              = 'components/hr.php';
+$title           = 'components/title.php';
+$salutation      = 'components/salutation.php';
+$contact         = 'components/contact.php';
+$closing         = 'components/closing.php';
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns="http://www.w3.org/1999/xhtml" lang="en-gb" xml:lang="en-gb">

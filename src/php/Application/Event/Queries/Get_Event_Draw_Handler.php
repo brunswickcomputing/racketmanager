@@ -3,9 +3,13 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Event\Queries;
 
+use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
+use Racketmanager\Exceptions\Fixture_Not_Found_Exception;
+use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Competition_Service;
+use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\League_Service;
 use function __;
 use function array_reverse;
@@ -16,7 +20,9 @@ use function method_exists;
 class Get_Event_Draw_Handler {
     public function __construct(
         private readonly Competition_Service $competition_service,
-        private readonly ?League_Service $league_service = null
+        private readonly ?League_Service $league_service,
+        private readonly Competition_Shortcode_Presenter $competition_shortcode_presenter,
+        private readonly Fixture_Detail_Service $fixture_detail_service
     ) {}
 
     public function handle( Get_Event_Draw_Query $query ): Shortcode_View_Model {
@@ -42,6 +48,8 @@ class Get_Event_Draw_Handler {
         } else {
             $event->leagues = $event->get_leagues();
         }
+
+        $event = $this->competition_shortcode_presenter->present_event_draw( $event );
 
         $filename = ! empty( $query->template ) ? 'draw-' . $query->template : 'draw';
 
@@ -73,8 +81,9 @@ class Get_Event_Draw_Handler {
                         ],
                     ] ) : [];
                     if ( count( $matches ) ) {
-                        $final['matches'] = $matches;
-                        $finals[ $f ]     = (object) $final;
+                        $final['matches']  = $matches;
+                        $final['fixtures'] = $this->resolve_fixture_details( $matches );
+                        $finals[ $f ]      = (object) $final;
                     } else {
                         unset( $finals[ $f ] );
                     }
@@ -85,5 +94,35 @@ class Get_Event_Draw_Handler {
         }
 
         return $leagues;
+    }
+
+    /**
+     * Resolve raw Fixture entities into Fixture_Details_DTOs (teams, players, withdrawal status, links)
+     * so the draw presenter can render opponents. Unresolvable fixtures are kept as raw entities.
+     * Fixtures with non-empty leg != 2 (e.g. leg 1 of two-legged ties) are skipped because the draw
+     * presenter discards them from rendering.
+     *
+     * @param array $matches
+     * @return array
+     */
+    private function resolve_fixture_details( array $matches ): array {
+        $fixtures = [];
+        foreach ( $matches as $match ) {
+            $details = null;
+            if ( $match instanceof Fixture ) {
+                if ( ! empty( $match->leg ) && 2 !== (int) $match->leg ) {
+                    $fixtures[] = $match;
+                    continue;
+                }
+                try {
+                    $details = $this->fixture_detail_service->get_fixture_with_details( $match );
+                } catch ( Fixture_Not_Found_Exception ) {
+                    $details = null;
+                }
+            }
+            $fixtures[] = $details ?? $match;
+        }
+
+        return $fixtures;
     }
 }

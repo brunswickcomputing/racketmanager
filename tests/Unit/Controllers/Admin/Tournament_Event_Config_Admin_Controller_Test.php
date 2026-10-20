@@ -23,6 +23,8 @@ use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\Creates_View_Renderer;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
@@ -32,6 +34,7 @@ require_once __DIR__ . '/../../../wp-stubs.php';
 final
 class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
     use Manages_Wordpress_Globals;
+    use Creates_View_Renderer;
 
     private $tournament_service;
     private $competition_service;
@@ -434,5 +437,139 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
 
         $this->assertSame( 'Event already exists', $result['message'] );
         $this->assertTrue( $result['message_type'] );
+    }
+
+    public function test_handle_populates_leagues_and_renders_championship_options_in_template(): void {
+        $_GET['competition_id'] = '13';
+        $_GET['event_id']       = '13';
+
+        $competition = Competition_Test_Factory::create(
+            id: 13,
+            name: 'Ladies Championship',
+            type: Competition_Type::TOURNAMENT,
+            seasons: Competition_Test_Factory::season_map( '2026' ),
+            settings: [ 'mode' => 'championship' ],
+            current_season: [ 'name' => '2026' ]
+        );
+        $competition->is_championship = true;
+        $competition->is_tournament   = true;
+        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
+
+        $league1        = new stdClass();
+        $league1->id    = 101;
+        $league1->title = 'Ladies Singles';
+
+        $league2        = new stdClass();
+        $league2->id    = 102;
+        $league2->title = 'Ladies Singles Plate';
+
+        $event_raw                 = new stdClass();
+        $event_raw->id             = 13;
+        $event_raw->competition_id = 13;
+        $event_raw->name           = 'Ladies Singles';
+        $event_raw->type           = 'singles';
+        $event_raw->num_sets       = 3;
+        $event_raw->num_rubbers    = 1;
+        $event_raw->seasons        = '["2026"]';
+        $event_raw->settings       = [ 'primary_league' => 101 ];
+
+        $event = new Event( $event_raw );
+        $this->event_repository->method( 'query_leagues' )->willReturn( [ $league1, $league2 ] );
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
+
+        $result = $this->controller->handle();
+
+        $this->assertArrayHasKey( 'view_model', $result );
+        $vm = $result['view_model'];
+        $this->assertCount( 2, $vm->leagues );
+
+        $renderer = $this->create_view_renderer();
+        $html     = $renderer->render_to_string( 'admin/includes/event-config', $vm );
+
+        $this->assertStringContainsString( 'name="primary_league" id="primary_league"', $html );
+        $this->assertStringContainsString( '<option value="">Select</option>', $html );
+        $this->assertMatchesRegularExpression( '/<option value="101"\s+selected=[\'"]selected[\'"]\s*>Ladies Singles<\/option>/', $html );
+        $this->assertMatchesRegularExpression( '/<option value="102"\s*>Ladies Singles Plate<\/option>/', $html );
+    }
+
+    public function test_handle_update_validation_error_returns_view_model_with_leagues_for_championship_event(): void {
+        $_POST['updateEventConfig'] = '1';
+        $_POST['event_id']          = '13';
+        $_POST['event_title']       = ''; // Invalid empty title
+        $_GET['competition_id']     = '13';
+        $_GET['event_id']           = '13';
+
+        $competition = Competition_Test_Factory::create(
+            id: 13,
+            name: 'Ladies Championship',
+            type: Competition_Type::TOURNAMENT,
+            seasons: Competition_Test_Factory::season_map( '2026' ),
+            settings: [ 'mode' => 'championship' ],
+            current_season: [ 'name' => '2026' ]
+        );
+        $competition->is_championship = true;
+        $competition->is_tournament   = true;
+        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
+
+        $league1        = new stdClass();
+        $league1->id    = 101;
+        $league1->title = 'Ladies Singles';
+
+        $event_raw                 = new stdClass();
+        $event_raw->id             = 13;
+        $event_raw->competition_id = 13;
+        $event_raw->name           = 'Ladies Singles';
+        $event_raw->type           = 'singles';
+        $event_raw->num_sets       = 3;
+        $event_raw->num_rubbers    = 1;
+        $event_raw->seasons        = '["2026"]';
+        $event_raw->settings       = [ 'primary_league' => 101 ];
+
+        $event = new Event( $event_raw );
+        $this->event_repository->method( 'query_leagues' )->willReturn( [ $league1 ] );
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
+
+        $result = $this->controller->handle();
+
+        $this->assertSame( 'Event name required', $result['message'] );
+        $this->assertTrue( $result['message_type'] );
+        $this->assertArrayHasKey( 'view_model', $result );
+        $this->assertCount( 1, $result['view_model']->leagues );
+    }
+
+    public function test_handle_non_championship_does_not_query_event_leagues(): void {
+        $_GET['competition_id'] = '10';
+        $_GET['event_id']       = '456';
+
+        $competition = Competition_Test_Factory::create(
+            id: 10,
+            name: 'Men\'s Tournament',
+            type: Competition_Type::TOURNAMENT,
+            seasons: Competition_Test_Factory::season_map( '2026' ),
+            settings: [ 'mode' => 'tournament' ],
+            current_season: [ 'name' => '2026' ]
+        );
+        $competition->is_championship = false;
+        $competition->is_tournament   = true;
+        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
+
+        $event_raw                 = new stdClass();
+        $event_raw->id             = 456;
+        $event_raw->competition_id = 10;
+        $event_raw->name           = 'Men\'s Singles';
+        $event_raw->type           = 'singles';
+        $event_raw->num_sets       = 3;
+        $event_raw->num_rubbers    = 1;
+        $event_raw->seasons        = '["2026"]';
+        $event_raw->settings       = [];
+
+        $event = new Event( $event_raw );
+        $this->event_repository->expects( $this->never() )->method( 'query_leagues' );
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
+
+        $result = $this->controller->handle();
+
+        $this->assertArrayHasKey( 'view_model', $result );
+        $this->assertEmpty( $result['view_model']->leagues );
     }
 }

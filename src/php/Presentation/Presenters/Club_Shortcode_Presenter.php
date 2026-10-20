@@ -16,7 +16,8 @@ class Club_Shortcode_Presenter {
     public function __construct(
         private readonly View_Renderer_Interface $renderer,
         private readonly ?Club_Presenter $club_presenter = null,
-        private readonly ?Player_Presenter $player_presenter = null
+        private readonly ?Player_Presenter $player_presenter = null,
+        private readonly ?Favourite_Presenter $favourite_presenter = null
     ) {}
 
     public function render( Club_View_Model $vm ): string {
@@ -34,6 +35,9 @@ class Club_Shortcode_Presenter {
         }
 
         $vars = array_merge( $default_vars, $vm->template_vars() );
+        if ( $this->favourite_presenter ) {
+            $vars = array_merge( $vars, $this->favourite_presenter->present_template_vars( $vars ) );
+        }
 
         $level = ob_get_level();
         try {

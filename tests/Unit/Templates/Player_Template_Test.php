@@ -38,8 +38,6 @@ class Player_Template_Test extends TestCase {
             ),
         );
         $is_page_header   = true;
-        $player_presenter = new Player_Presenter();
-
         ob_start();
         include $this->player_header_template_path;
         $output = ob_get_clean();

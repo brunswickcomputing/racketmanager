@@ -10,6 +10,7 @@ final readonly class Get_Club_Players_Query {
     public function __construct(
         public string $club_name = '',
         public ?string $player_name = null,
-        public string $template = ''
+        public string $template = '',
+        public ?string $referrer = null
     ) {}
 }

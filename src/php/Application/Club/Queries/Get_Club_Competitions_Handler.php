@@ -4,7 +4,9 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Club\Queries;
 
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
+use Racketmanager\Presentation\View_Models\Club_Competition_View_Model;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Services\Club_Service;
@@ -23,7 +25,8 @@ class Get_Club_Competitions_Handler {
         private readonly Club_Service $club_service,
         private readonly Competition_Service $competition_service,
         private readonly Competition_Repository_Interface $competition_repository,
-        private readonly Team_Details_Presenter $team_details_presenter
+        private readonly Team_Details_Presenter $team_details_presenter,
+        private readonly Club_Presenter $club_presenter
     ) {}
 
     public function handle( Get_Club_Competitions_Query $query ): Shortcode_View_Model {
@@ -33,52 +36,45 @@ class Get_Club_Competitions_Handler {
             return Shortcode_View_Model::error( $e->getMessage() );
         }
 
-        $event_team_rows = [];
+        $competitions = [];
 
         if ( ! empty( $query->competition_name ) ) {
             $competition = $this->competition_repository->find_by_name( $query->competition_name );
             if ( ! $competition ) {
                 return Shortcode_View_Model::error( __( 'Competition not found', 'racketmanager' ) );
             }
-            $filtered = $this->filter_competition_events_for_club( $club, $competition, $event_team_rows );
-            $club->competitions = $filtered ? [ $filtered ] : [];
+            $view_model   = $this->present_competition_for_club( $club, $competition );
+            $competitions = $view_model ? [ $view_model ] : [];
         } else {
-            $club_competitions = [];
             foreach ( self::COMPETITION_TYPES as $type ) {
-                $club_competitions = $this->add_competitions_with_club_teams( $club, $club_competitions, $type, $event_team_rows );
+                foreach ( $this->competition_service->get_by_criteria( [ 'type' => $type ] ) as $competition ) {
+                    $view_model = $this->present_competition_for_club( $club, $competition );
+                    if ( $view_model ) {
+                        $competitions[] = $view_model;
+                    }
+                }
             }
-            $club->competitions = $club_competitions;
         }
 
         return new Shortcode_View_Model(
             template: '' !== $query->template ? 'competitions-' . $query->template : 'competitions',
             vars: [
                 'club'            => $club,
-                'event_team_rows' => $event_team_rows,
+                'competitions'    => $competitions,
                 'user_can_update' => $this->club_service->can_user_update( (int) $club->get_id() ),
             ],
             template_type: 'club'
         );
     }
 
-    private function add_competitions_with_club_teams( object $club, array $club_competitions, string $type, array &$event_team_rows ): array {
-        $competitions = $this->competition_service->get_by_criteria( [ 'type' => $type ] );
+    /**
+     * Present the competition with only those events in which the club has teams; null when there are none.
+     */
+    private function present_competition_for_club( object $club, object $competition ): ?Club_Competition_View_Model {
+        $events       = method_exists( $competition, 'get_events' ) ? $competition->get_events() : ( $competition->events ?? [] );
+        $event_models = [];
 
-        foreach ( $competitions as $competition ) {
-            $filtered = $this->filter_competition_events_for_club( $club, $competition, $event_team_rows );
-            if ( $filtered ) {
-                $club_competitions[] = $filtered;
-            }
-        }
-
-        return $club_competitions;
-    }
-
-    private function filter_competition_events_for_club( object $club, object $competition, array &$event_team_rows ): ?object {
-        $events      = method_exists( $competition, 'get_events' ) ? $competition->get_events() : ( $competition->events ?? [] );
-        $event_found = false;
-
-        foreach ( $events as $e => $event ) {
+        foreach ( $events as $event ) {
             $teams = method_exists( $event, 'get_teams_info' )
                 ? $event->get_teams_info(
                     [
@@ -87,26 +83,13 @@ class Get_Club_Competitions_Handler {
                     ]
                 )
                 : ( $event->teams ?? [] );
-            if ( $teams ) {
-                $event_id = isset( $event->id ) ? (int) $event->id : (int) $e;
-                $event_team_rows[ $event_id ] = $this->team_details_presenter->present_team_rows(
-                    is_array( $teams ) ? $teams : [],
-                    $event,
-                    null
-                );
-                $event->teams = is_array( $teams ) ? $teams : [];
-                $events[ $e ] = $event;
-                $event_found  = true;
-            } else {
-                unset( $events[ $e ] );
+            if ( ! $teams ) {
+                continue;
             }
+            $team_rows      = $this->team_details_presenter->present_team_rows( is_array( $teams ) ? $teams : [], $event, null );
+            $event_models[] = $this->club_presenter->present_club_event( $event, $club, $team_rows );
         }
 
-        if ( $event_found ) {
-            $competition->events = array_values( $events );
-            return $competition;
-        }
-
-        return null;
+        return $event_models ? $this->club_presenter->present_club_competition( $competition, $club, $event_models ) : null;
     }
 }

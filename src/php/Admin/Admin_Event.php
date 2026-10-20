@@ -162,6 +162,9 @@ final class Admin_Event extends Admin_Display {
 
         $tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( strval( $_GET['tab'] ) ) ) : 'general';
 
+        $raw_leagues = ( ! $new_event && ( $competition->is_championship ?? false ) && isset( $event ) && method_exists( $event, 'get_leagues' ) ) ? $event->get_leagues() : array();
+        $leagues     = is_array( $raw_leagues ) ? $raw_leagues : array();
+
         $vm = new Tournament_Event_Config_Page_View_Model(
             competition: $competition,
             event: $event,
@@ -169,6 +172,7 @@ final class Admin_Event extends Admin_Display {
             new_event: $new_event,
             errors: $errors,
             tab: $tab,
+            leagues: $leagues,
         );
 
         $this->screens->present(

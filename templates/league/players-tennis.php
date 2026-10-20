@@ -15,6 +15,10 @@
 namespace Racketmanager;
 
 /** @var object $league */
+/** @var array<int|string, array{player_link: string, team_link: string}>|null $player_links */
+
+$player_links = $player_links ?? [];
+
 if ( ! empty( $league->player ) ) {
     $player = $league->player;
     require RACKETMANAGER_PATH . 'templates/includes/player-header.php';
@@ -61,14 +65,14 @@ if ( ! empty( $league->player ) ) {
                     ?>
                     <ol class="list list--bordered list--count">
                         <?php
-                        $competition_type = $league->event->competition->type instanceof \BackedEnum ? $league->event->competition->type->value : (string) ( $league->event->competition->type ?? '' );
                         foreach ( $league->players as $player ) {
-                            $selected_player = false;
-                            if ( intval( $player->id ) === get_current_user_id() ) {
-                                $selected_player = true;
-                            }
-                            $player_link = '/' . $competition_type . '/' . seo_url( $league->title ) . '/' . $league->current_season['name'] . '/player/' . seo_url( $player->get_fullname() ) . '/';
-                            $team_link   = '/' . $competition_type . '/' . seo_url( $league->title ) . '/' . $league->current_season['name'] . '/team/' . seo_url( $player->team->title ) . '/';
+                            $player_id       = (int) ( $player->id ?? ( $player->ID ?? ( method_exists( $player, 'get_id' ) ? $player->get_id() : 0 ) ) );
+                            $selected_player = $player_id === (int) get_current_user_id();
+                            $links           = $player_links[ $player_id ] ?? [];
+                            $player_link     = $links['player_link'] ?? '';
+                            $team_link       = $links['team_link'] ?? '';
+                            $player_fullname = method_exists( $player, 'get_fullname' ) ? $player->get_fullname() : ( $player->display_name ?? ( trim( ( $player->firstname ?? '' ) . ' ' . ( $player->surname ?? '' ) ) ) );
+                            $team_title      = $player->team->title ?? ( $player->team->name ?? '' );
                             ?>
                             <li class="list__item <?php echo empty( $selected_player ) ? null : 'is-selected'; ?>">
                                 <div class="media">
@@ -77,7 +81,7 @@ if ( ! empty( $league->player ) ) {
                                             <div class="profile-icon">
                                                 <span class="profile-icon__abbr">
                                                     <?php
-                                                    $player_initials = substr( $player->firstname, 0, 1 ) . substr( $player->surname, 0, 1 );
+                                                    $player_initials = substr( (string) ( $player->firstname ?? '' ), 0, 1 ) . substr( (string) ( $player->surname ?? '' ), 0, 1 );
                                                     echo esc_html( $player_initials );
                                                     ?>
                                                 </span>
@@ -87,30 +91,42 @@ if ( ! empty( $league->player ) ) {
                                             <div class="flex-container">
                                                 <div class="flex-item flex-item--grow">
                                                     <p class="media__title">
-                                                        <a href="<?php echo esc_attr( $player_link ); ?>" class="nav--link tabDataLink" data-type="league" data-type-id="<?php echo esc_attr( $league->id ); ?>" data-season="<?php echo esc_attr( $league->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $player_link ); ?>" data-link-id="<?php echo esc_attr( $player->id ); ?>" data-link-type="players" >
+                                                        <?php if ( ! empty( $player_link ) ) : ?>
+                                                            <a href="<?php echo esc_attr( $player_link ); ?>" class="nav--link tabDataLink" data-type="league" data-type-id="<?php echo esc_attr( (string) ( $league->id ?? '' ) ); ?>" data-season="<?php echo esc_attr( (string) ( $league->current_season['name'] ?? '' ) ); ?>" data-link="<?php echo esc_attr( $player_link ); ?>" data-link-id="<?php echo esc_attr( (string) $player_id ); ?>" data-link-type="players" >
+                                                                <span class="nav-link__value">
+                                                                    <?php echo esc_html( $player_fullname ); ?>
+                                                                </span>
+                                                            </a>
+                                                        <?php else : ?>
                                                             <span class="nav-link__value">
-                                                                <?php echo esc_html( $player->get_fullname() ); ?>
+                                                                <?php echo esc_html( $player_fullname ); ?>
                                                             </span>
-                                                        </a>
+                                                        <?php endif; ?>
                                                     </p>
                                                     <p class="media__subheading">
-                                                        <a href="<?php echo esc_attr( $team_link ); ?>" class="nav--link tabDataLink" data-type="league" data-type-id="<?php echo esc_attr( $league->id ); ?>" data-season="<?php echo esc_attr( $league->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $team_link ); ?>" data-link-id="<?php echo esc_attr( $player->team->id ); ?>" data-link-type="teams">
+                                                        <?php if ( ! empty( $team_link ) ) : ?>
+                                                            <a href="<?php echo esc_attr( $team_link ); ?>" class="nav--link tabDataLink" data-type="league" data-type-id="<?php echo esc_attr( (string) ( $league->id ?? '' ) ); ?>" data-season="<?php echo esc_attr( (string) ( $league->current_season['name'] ?? '' ) ); ?>" data-link="<?php echo esc_attr( $team_link ); ?>" data-link-id="<?php echo esc_attr( (string) ( $player->team->id ?? '' ) ); ?>" data-link-type="teams">
+                                                                <span class="nav-link__value">
+                                                                    <?php echo esc_html( $team_title ); ?>
+                                                                </span>
+                                                            </a>
+                                                        <?php else : ?>
                                                             <span class="nav-link__value">
-                                                                <?php echo esc_html( $player->team->title ); ?>
+                                                                <?php echo esc_html( $team_title ); ?>
                                                             </span>
-                                                        </a>
+                                                        <?php endif; ?>
                                                     </p>
                                                 </div>
                                                 <div class="progress-bar-container">
                                                     <?php
-                                                    if ( $player->played ) {
+                                                    if ( ! empty( $player->played ) ) {
                                                         ?>
                                                         <div class="clearfix">
                                                             <span class="pull-left"><?php esc_html_e( 'Win-Loss', 'racketmanager' ); ?></span>
-                                                            <span class="pull-right"><?php echo esc_html( $player->matches_won ) . '-' . esc_html( $player->matches_lost ) . ' (' . esc_html( $player->played ) . ')'; ?></span>
+                                                            <span class="pull-right"><?php echo esc_html( (string) ( $player->matches_won ?? 0 ) ) . '-' . esc_html( (string) ( $player->matches_lost ?? 0 ) ) . ' (' . esc_html( (string) ( $player->played ?? 0 ) ) . ')'; ?></span>
                                                         </div>
                                                         <div class="progress">
-                                                            <div class="progress-bar bg-success" role="progressbar" style="width: <?php echo esc_html( $player->win_pct ); ?>%" aria-valuenow="<?php echo esc_html( $player->win_pct ); ?>" aria-valuemin="0" aria-valuemax="100" data-bs-toggle="tooltip" data-bs-placement="bottom" title="<?php echo esc_html( $player->win_pct ) . ' ' . esc_html__( 'won', 'racketmanager' ); ?>%"></div>
+                                                            <div class="progress-bar bg-success" role="progressbar" style="width: <?php echo esc_html( (string) ( $player->win_pct ?? 0 ) ); ?>%" aria-valuenow="<?php echo esc_html( (string) ( $player->win_pct ?? 0 ) ); ?>" aria-valuemin="0" aria-valuemax="100" data-bs-toggle="tooltip" data-bs-placement="bottom" title="<?php echo esc_html( (string) ( $player->win_pct ?? 0 ) ) . ' ' . esc_html__( 'won', 'racketmanager' ); ?>%"></div>
                                                         </div>
                                                         <?php
                                                     }

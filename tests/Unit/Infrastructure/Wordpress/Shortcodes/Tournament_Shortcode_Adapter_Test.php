@@ -183,6 +183,38 @@ class Tournament_Shortcode_Adapter_Test extends TestCase {
         );
     }
 
+    public function test_show_tournament_match_passes_request_referrer_to_the_query(): void {
+        $this->assert_match_query_referrer( 'https://example.test/tournament/open/draw/', 'https://example.test/tournament/open/draw/' );
+    }
+
+    public function test_show_tournament_match_passes_no_referrer_when_request_has_none(): void {
+        $this->assert_match_query_referrer( false, null );
+    }
+
+    private function assert_match_query_referrer( string|false $request_referrer, ?string $expected ): void {
+        $previous = $GLOBALS['wp_stubs_wp_get_referer'] ?? null;
+        $GLOBALS['wp_stubs_wp_get_referer'] = $request_referrer;
+        try {
+            $vm      = Shortcode_View_Model::for_template( 'match-tournament', [] );
+            $handler = $this->createMock( Get_Tournament_Match_Handler::class );
+            $handler->expects( $this->once() )
+                ->method( 'handle' )
+                ->with( $this->callback( fn( Get_Tournament_Match_Query $query ): bool => $expected === $query->referrer && 456 === $query->fixture_id ) )
+                ->willReturn( $vm );
+            $presenter = $this->createStub( Shortcode_View_Presenter::class );
+            $presenter->method( 'render' )->willReturn( '<div>Match Output</div>' );
+
+            $adapter = $this->create_adapter( [ 'match_handler' => $handler, 'view_presenter' => $presenter ] );
+            $this->assertSame( '<div>Match Output</div>', $adapter->show_tournament_match( [ 'match_id' => 456 ] ) );
+        } finally {
+            if ( null === $previous ) {
+                unset( $GLOBALS['wp_stubs_wp_get_referer'] );
+            } else {
+                $GLOBALS['wp_stubs_wp_get_referer'] = $previous;
+            }
+        }
+    }
+
     public function test_show_order_of_play_delegates_to_handler_and_presenter(): void {
         $this->assert_delegation_to_handler_and_presenter(
             Get_Order_Of_Play_Handler::class,

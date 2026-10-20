@@ -3,13 +3,23 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Presentation\Presenters;
 
+use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Presentation\View_Models\Club_Competition_View_Model;
+use Racketmanager\Presentation\View_Models\Club_Event_View_Model;
+use Racketmanager\Presentation\View_Models\Club_Roster_Player_View_Model;
 use Racketmanager\Presentation\View_Models\Club_View_Model;
+use Racketmanager\Util\Util_Lookup;
 use function Racketmanager\seo_url;
 
 /**
  * Presenter for Club domain objects and templates.
  */
 readonly class Club_Presenter {
+
+    public function __construct(
+        private ?Option_Gateway_Interface $option_gateway = null
+    ) {}
 
     /**
      * Present full immutable Club view model.
@@ -139,5 +149,102 @@ readonly class Club_Presenter {
             'competitions' => $this->get_link( $club, 'competitions' ),
             'players'      => $this->get_link( $club, 'players' ),
         );
+    }
+
+    /**
+     * Format player rating / WTN dictionary into formatted string "[S:X] - [D:Y]".
+     */
+    public function format_rating_display( array $rating ): string {
+        $parts = [];
+        foreach ( array_keys( Util_Lookup::get_match_types() ) as $match_type ) {
+            $value   = $rating[ $match_type ] ?? '-';
+            $parts[] = '[' . $match_type . ':' . $value . ']';
+        }
+
+        return implode( ' - ', $parts );
+    }
+
+    /**
+     * Present a registered club player as an immutable roster row.
+     *
+     * Registrations only carry WTN data. There is no source for rating points, so that mode
+     * renders placeholders until one is introduced.
+     */
+    public function present_roster_player( Club_Player_DTO $club_player, object $club, bool $use_wtn = false ): Club_Roster_Player_View_Model {
+        $display_name = (string) $club_player->display_name;
+        $slug         = function_exists( 'Racketmanager\seo_url' ) ? seo_url( $display_name ) : sanitize_title( $display_name );
+
+        return new Club_Roster_Player_View_Model(
+            registration_id: $club_player->registration_id,
+            user_id: $club_player->user_id ?? $club_player->id,
+            display_name: $display_name,
+            gender: (string) $club_player->gender,
+            player_url: '' !== $slug ? $this->get_link( $club, 'players' ) . $slug . '/' : '',
+            btm: (string) $club_player->btm,
+            rating_display: $this->format_rating_display( $use_wtn ? $club_player->wtn : [] ),
+        );
+    }
+
+    /**
+     * Present one event of a club's competition page.
+     *
+     * @param array<int, mixed> $team_rows Team rows for the club within the event.
+     */
+    public function present_club_event( object $event, object $club, array $team_rows = [] ): Club_Event_View_Model {
+        return new Club_Event_View_Model(
+            id: $event->id ?? 0,
+            name: (string) ( $event->name ?? '' ),
+            url: isset( $event->current_season['name'] ) ? $this->get_club_event_link( $event, $club ) : '',
+            team_rows: $team_rows
+        );
+    }
+
+    /**
+     * Present a competition card of a club's competition page.
+     *
+     * @param array<int, Club_Event_View_Model> $events
+     */
+    public function present_club_competition( object $competition, object $club, array $events ): Club_Competition_View_Model {
+        return new Club_Competition_View_Model(
+            name: (string) ( $competition->name ?? '' ),
+            url: $this->get_club_competition_link( $competition, $club ),
+            events: array_values( $events )
+        );
+    }
+
+    /**
+     * Generate canonical link for club within a competition and season.
+     */
+    public function get_club_competition_link( object|string $competition, object|string $club, ?string $season_name = null ): string {
+        $comp_name = is_object( $competition ) ? ( $competition->name ?? '' ) : (string) $competition;
+        $comp_slug = function_exists( 'Racketmanager\seo_url' ) ? seo_url( (string) $comp_name ) : sanitize_title( (string) $comp_name );
+
+        $club_shortcode = is_object( $club ) ? ( $club->shortcode ?? ( method_exists( $club, 'get_shortcode' ) ? $club->get_shortcode() : '' ) ) : (string) $club;
+        $club_slug      = function_exists( 'Racketmanager\seo_url' ) ? seo_url( (string) $club_shortcode ) : sanitize_title( (string) $club_shortcode );
+
+        $season = $season_name ?? ( is_object( $competition ) ? ( $competition->current_season['name'] ?? '' ) : '' );
+
+        if ( '' === $comp_slug || '' === $club_slug ) {
+            return '';
+        }
+
+        return '/' . $comp_slug . '/' . $season . '/club/' . $club_slug . '/';
+    }
+
+    /**
+     * Generate canonical link for club event subpage.
+     */
+    public function get_club_event_link( object|string $event, object|string $club ): string {
+        $club_shortcode = is_object( $club ) ? ( $club->shortcode ?? ( method_exists( $club, 'get_shortcode' ) ? $club->get_shortcode() : '' ) ) : (string) $club;
+        $club_slug      = function_exists( 'Racketmanager\seo_url' ) ? seo_url( (string) $club_shortcode ) : sanitize_title( (string) $club_shortcode );
+
+        $event_name = is_object( $event ) ? ( $event->name ?? '' ) : (string) $event;
+        $event_slug = function_exists( 'Racketmanager\seo_url' ) ? seo_url( (string) $event_name ) : sanitize_title( (string) $event_name );
+
+        if ( '' === $club_slug || '' === $event_slug ) {
+            return '';
+        }
+
+        return '/clubs/' . $club_slug . '/event/' . $event_slug . '/';
     }
 }

@@ -212,4 +212,37 @@ class League_Shortcode_Adapter_Test extends TestCase {
         $this->assertSame( '<div class="match-dropdown"></div>', $adapter->show_match_dropdown( [ 'league_id' => 1 ] ) );
         $this->assertSame( '<div class="last-5"></div>', $adapter->show_last_5( [ 'league_id' => 1 ] ) );
     }
+
+    public function test_show_archive_sets_match_day_minus_one_when_match_day_is_zero(): void {
+        global $wp, $wp_query;
+        $wp = new class {
+            public array $query_vars = [ 'match_day' => '0' ];
+        };
+        $wp_query = new class {
+            public array $query_vars = [ 'match_day' => '0' ];
+            public function set( string $key, mixed $val ): void {
+                $this->query_vars[ $key ] = $val;
+            }
+            public function get( string $key, mixed $default = '' ): mixed {
+                return $this->query_vars[ $key ] ?? $default;
+            }
+        };
+
+        $view_presenter  = $this->createStub( Shortcode_View_Presenter::class );
+        $view_presenter->method( 'render' )->willReturn( '<div class="archive"></div>' );
+        $archive_handler = $this->createMock( Get_League_Archive_Handler::class );
+        $archive_handler->expects( self::once() )
+            ->method( 'handle' )
+            ->with( self::callback( fn( $query ) => '-1' === $query->match_day ) )
+            ->willReturn( Shortcode_View_Model::for_template( 'archive' ) );
+
+        $adapter = $this->create_adapter( [
+            'view_presenter'  => $view_presenter,
+            'archive_handler' => $archive_handler,
+        ] );
+
+        $output = $adapter->show_archive( [ 'league_id' => 1 ] );
+        $this->assertSame( '<div class="archive"></div>', $output );
+        $this->assertSame( '-1', get_query_var( 'match_day' ) );
+    }
 }

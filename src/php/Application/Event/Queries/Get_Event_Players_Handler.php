@@ -5,6 +5,8 @@ namespace Racketmanager\Application\Event\Queries;
 
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
+use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
@@ -22,7 +24,9 @@ class Get_Event_Players_Handler {
         private readonly Competition_Service $competition_service,
         private readonly Player_Service $player_service,
         private readonly Player_Query_Service $player_query_service,
-        private readonly Player_Stats_Service $player_stats_service
+        private readonly Player_Stats_Service $player_stats_service,
+        private readonly Player_Presenter $player_presenter,
+        private readonly Competition_Shortcode_Presenter $competition_presenter
     ) {}
 
     public function handle( Get_Event_Players_Query $query ): Shortcode_View_Model {
@@ -43,25 +47,37 @@ class Get_Event_Players_Handler {
             return Shortcode_View_Model::for_error( __( 'Event not found for competition', 'racketmanager' ) );
         }
 
-        $event->players = [];
+        $event->players    = [];
+        $player_vm         = null;
+        $match_group_links = [];
+        $player_links      = [];
+        $player_link       = null;
 
         if ( ! empty( $query->player_id ) ) {
             $player = $this->get_player_info( $event, $query->player_id );
             if ( is_object( $player ) ) {
-                $event->player = $player;
+                $event->player     = $player;
+                $player_vm         = $this->player_presenter->present_player( $player );
+                $match_group_links = $this->competition_presenter->present_player_match_group_links( $player->matches ?? [] );
             } else {
                 return Shortcode_View_Model::for_error( __( 'Player not found', 'racketmanager' ) );
             }
         } else {
-            $current_season = $event->current_season['name'] ?? null;
+            $current_season = isset( $event->current_season['name'] ) ? (string) $event->current_season['name'] : null;
             $players        = $event->get_players( [ 'season' => $current_season ] );
             $event->players = Util::get_players_list( $players );
+            $player_links   = $this->competition_presenter->present_event_players_links( $event, $event->players ?? [] );
+            $player_link    = $this->competition_presenter->get_event_player_base_url( $event );
         }
 
         return Shortcode_View_Model::for_template(
             'players',
             [
-                'event' => $event,
+                'event'             => $event,
+                'player_vm'         => $player_vm,
+                'match_group_links' => $match_group_links,
+                'player_links'      => $player_links,
+                'player_link'       => $player_link,
             ],
             'event'
         );
@@ -79,7 +95,7 @@ class Get_Event_Players_Handler {
         }
 
         if ( $player ) {
-            $season = $event->current_season['name'] ?? null;
+            $season = isset( $event->current_season['name'] ) ? (string) $event->current_season['name'] : null;
             $player->matches = $this->player_query_service->get_matches( $player, $event, $season, 'event' );
             if ( is_array( $player->matches ) ) {
                 asort( $player->matches );

@@ -7,9 +7,13 @@
 
 namespace Racketmanager;
 
-use Racketmanager\Util\Util;
+use Racketmanager\Presentation\View_Models\Tournament_Date_View_Model;
 
-/** @var object $tournament */?>
+/** @var object $tournament */
+/** @var ?Tournament_Date_View_Model $tournament_dates */
+
+$dates_vm = $tournament_dates ?? null;
+?>
 <div class="container">
     <div class="module module--card">
         <div class="module__banner">
@@ -26,7 +30,7 @@ use Racketmanager\Util\Util;
                             <div class="tournament-meta__title">
                                 <span class="meta-link">
                                     <span class="meta-link__value">
-                                        <?php echo esc_html( $tournament->venue_name ); ?>
+                                        <?php echo esc_html( (string) ( $tournament->venue_name ?? '' ) ); ?>
                                     </span>
                                 </span>
                             </div>
@@ -38,7 +42,7 @@ use Racketmanager\Util\Util;
                             <div class="tournament-meta__title">
                                 <span class="meta-link">
                                     <span class="meta-link__value">
-                                        <?php echo esc_html( $tournament->num_events ); ?>
+                                        <?php echo esc_html( (string) ( $tournament->num_events ?? '' ) ); ?>
                                     </span>
                                 </span>
                             </div>
@@ -50,7 +54,7 @@ use Racketmanager\Util\Util;
                             <div class="tournament-meta__title">
                                 <span class="meta-link">
                                     <span class="meta-link__value">
-                                        <?php echo esc_html( $tournament->num_entries ); ?>
+                                        <?php echo esc_html( (string) ( $tournament->num_entries ?? '' ) ); ?>
                                     </span>
                                 </span>
                             </div>
@@ -58,50 +62,51 @@ use Racketmanager\Util\Util;
                     </ul>
                     <div class="tournament-meta__timeline">
                         <ol class="list--timeline-labelled list--timeline list has-custom-icon">
-                            <li class="list__item is-entry-open <?php echo ( 'open' === $tournament->phase ) ? 'is-current is-success' : null; ?>">
+                            <li class="list__item is-entry-open <?php echo ( 'open' === ( $tournament->phase ?? '' ) ) ? 'is-current is-success' : null; ?>">
                                 <div class="list__value">
                                     <?php esc_html_e( 'Entry opens', 'racketmanager' ); ?>
                                 </div>
                                 <div class="list__meta">
-                                    <?php echo esc_html( Util::get_formatted_date( $tournament->date_open ) ); ?>
+                                    <?php echo esc_html( $dates_vm?->date_open_display ?? 'N/A' ); ?>
                                 </div>
                             </li>
-                            <li class="list__item is-entry-closed <?php echo ( 'closed' === $tournament->phase ) ? 'is-current is-warning' : null; ?>">
+                            <li class="list__item is-entry-closed <?php echo ( 'closed' === ( $tournament->phase ?? '' ) ) ? 'is-current is-warning' : null; ?>">
                                 <div class="list__value">
                                     <?php esc_html_e( 'Closing deadline', 'racketmanager' ); ?>
                                 </div>
                                 <div class="list__meta">
-                                    <?php echo esc_html( Util::get_formatted_date( $tournament->date_closing ) ); ?>
+                                    <?php echo esc_html( $dates_vm?->date_closing_display ?? 'N/A' ); ?>
                                 </div>
                             </li>
                             <?php
-                            if ( ! empty( $tournament->date_withdrawal ) ) {
+                            $withdrawal_display = $dates_vm?->date_withdrawal_display ?? 'N/A';
+                            if ( ! empty( $tournament->date_withdrawal ) || 'N/A' !== $withdrawal_display ) {
                                 ?>
-                                <li class="list__item is-withdrawal-deadline <?php echo ( 'withdraw' === $tournament->phase ) ? 'is-current is-warning' : null; ?>">
+                                <li class="list__item is-withdrawal-deadline <?php echo ( 'withdraw' === ( $tournament->phase ?? '' ) ) ? 'is-current is-warning' : null; ?>">
                                     <div class="list__value">
                                         <?php esc_html_e( 'Withdrawal deadline', 'racketmanager' ); ?>
                                     </div>
                                     <div class="list__meta">
-                                        <?php echo esc_html( Util::get_formatted_date( $tournament->date_withdrawal ) ); ?>
+                                        <?php echo esc_html( $withdrawal_display ); ?>
                                     </div>
                                 </li>
                                 <?php
                             }
                             ?>
-                            <li class="list__item is-started <?php echo ( 'in_progress' === $tournament->phase ) ? ' is-current is-success' : null; ?>">
+                            <li class="list__item is-started <?php echo ( 'in_progress' === ( $tournament->phase ?? '' ) ) ? ' is-current is-success' : null; ?>">
                                 <div class="list__value">
                                     <?php esc_html_e( 'Start tournament', 'racketmanager' ); ?>
                                 </div>
                                 <div class="list__meta">
-                                    <?php echo esc_html( Util::get_formatted_date( $tournament->date_start ) ); ?>
+                                    <?php echo esc_html( $dates_vm?->date_start_display ?? 'N/A' ); ?>
                                 </div>
                             </li>
-                            <li class="list__item is-finished <?php echo ( 'end' === $tournament->phase ) ? ' is-current is-danger' : null; ?>">
+                            <li class="list__item is-finished <?php echo ( 'end' === ( $tournament->phase ?? '' ) ) ? ' is-current is-danger' : null; ?>">
                                 <div class="list__value">
                                     <?php esc_html_e( 'End of tournament', 'racketmanager' ); ?>
                                 </div>
                                 <div class="list__meta">
-                                    <?php echo esc_html( Util::get_formatted_date( $tournament->date_end ) ); ?>
+                                    <?php echo esc_html( $dates_vm?->date_end_display ?? ( $dates_vm?->date_display ?? 'TBC' ) ); ?>
                                 </div>
                             </li>
                         </ol>

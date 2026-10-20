@@ -50,9 +50,11 @@ class Get_Login_Form_Handler {
 
         $vars = [
             'show_title'         => $query->show_title,
+            'tab'                => 'register' === $query->action ? 'registration' : 'login',
             'site_name'          => $site_name,
             'site_url'           => $site_url,
             'recaptcha_site_key' => $recaptcha_site_key,
+            'users_can_register' => (bool) $this->option_gateway->get_option( 'users_can_register', false ),
         ];
 
         if ( 'register' === $query->action ) {

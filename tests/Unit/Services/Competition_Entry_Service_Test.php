@@ -22,6 +22,10 @@ use Racketmanager\Domain\DTO\Tournament\Tournament_Entry_Response_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Invoice_Details_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Partner_Request_DTO;
 use Racketmanager\Domain\Tournament_Entry;
+use Racketmanager\Gateways\Mail\Mailer_Interface;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Tests\Helpers\Creates_View_Renderer;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Database_Operation_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
@@ -51,6 +55,7 @@ use WP_Error;
 
 #[AllowMockObjectsWithoutExpectations]
 class Competition_Entry_Service_Test extends TestCase {
+    use Creates_View_Renderer;
     use Manages_Wordpress_Globals;
 
     private Competition_Entry_Service $service;
@@ -3206,4 +3211,263 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->service->cup_entry_valid( $club_id, $club_entry );
     }
 
+    public function test_notify_team_entry_open_sends_email_with_formatted_dates_for_league_competition(): void {
+        $option_gateway = new class implements Option_Gateway_Interface {
+            public function get_option( string $option, mixed $default = false ): mixed {
+                return 'date_format' === $option ? 'd/m/Y' : $default;
+            }
+            public function update_option( string $option, mixed $value, mixed $autoload = null ): bool { return true; }
+            public function delete_option( string $option ): bool { return true; }
+        };
+
+        $captured_mails = [];
+        $fake_mailer = new class( $captured_mails ) implements Mailer_Interface {
+            public function __construct( private array &$captured_mails ) {}
+            public function send( string|array|null $to, ?string $subject, ?string $message, string|array|null $headers = '', ?array $attachments = [] ): bool {
+                $this->captured_mails[] = [
+                    'to'      => $to,
+                    'subject' => $subject,
+                    'message' => $message,
+                    'headers' => $headers,
+                ];
+                return true;
+            }
+        };
+
+        $service = new Competition_Entry_Service(
+            plugin_instance: $this->plugin,
+            club_repository: $this->club_repository,
+            league_repository: $this->createStub( League_Repository::class ),
+            league_team_repository: $this->league_team_repository,
+            team_repository: $this->team_repository,
+            tournament_repository: $this->tournament_repository,
+            tournament_entry_repository: $this->tournament_entry_repository,
+            club_service: $this->club_service,
+            competition_service: $this->competition_service,
+            finance_service: $this->finance_service,
+            player_service: $this->player_service,
+            tournament_service: $this->tournament_service,
+            notify_service: $this->notify_service,
+            mailer: $fake_mailer,
+            option_gateway: $option_gateway
+        );
+
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            name: 'Summer League',
+            type: Competition_Type::LEAGUE,
+            seasons: Competition_Test_Factory::season_map( '2026', [
+                'date_closing' => '2026-04-15 00:00:00',
+                'date_start'   => '2026-05-01 00:00:00',
+                'date_end'     => '2026-08-31 00:00:00',
+                'venue'        => null,
+            ] )
+        );
+        $this->competition_to_return = $competition;
+
+        $this->competition_service->method( 'is_season_valid_for_competition' )
+            ->willReturn( [
+                'name'         => '2026',
+                'date_closing' => '2026-04-15 00:00:00',
+                'date_start'   => '2026-05-01 00:00:00',
+                'date_end'     => '2026-08-31 00:00:00',
+                'venue'        => null,
+            ] );
+
+        $event = $this->create_event( 10, 'MD' );
+        $this->competition_service->method( 'get_events_for_competition' )
+            ->willReturn( [ $event ] );
+        $this->competition_service->method( 'get_leagues_for_event' )
+            ->willReturn( [ (object) [ 'id' => 101 ] ] );
+
+        $club = new Club();
+        $club->set_id( 1 );
+        $club->set_name( 'Leigh Tennis Club' );
+        $club->set_shortcode( 'Leigh' );
+
+        $this->plugin->method( 'get_clubs' )->willReturn( [ $club ] );
+        $this->plugin->method( 'get_confirmation_email' )->willReturn( 'league@test.local' );
+        $this->plugin->site_name = 'Test Tennis League';
+        $this->plugin->site_url  = 'https://example.com';
+
+        $secretary               = new Player();
+        $secretary->set_id( 99 );
+        $secretary->display_name = 'Alice Secretary';
+        $secretary->email        = 'alice@test.local';
+
+        $this->player_service->method( 'get_match_secretary_details' )
+            ->willReturn( $secretary );
+
+        $view_renderer      = $this->create_view_renderer();
+        $shortcode_renderer = new Shortcode_Template_Renderer( $view_renderer );
+        $shortcodes         = $this->createStub( \Racketmanager\Public\Shortcodes::class );
+        $warnings           = [];
+        $shortcodes->method( 'load_template' )->willReturnCallback(
+            function( string $template, array $args, string $subdir = '' ) use ( $shortcode_renderer, &$warnings ): string {
+                set_error_handler( static function ( int $errno, string $errstr, string $errfile, int $errline ) use ( &$warnings ): bool {
+                    if ( ! ( error_reporting() & $errno ) ) {
+                        return false;
+                    }
+                    $warnings[] = [ 'errno' => $errno, 'errstr' => $errstr, 'errfile' => $errfile, 'errline' => $errline ];
+                    return true;
+                } );
+                try {
+                    return $shortcode_renderer->render( $template, $args, $subdir );
+                } finally {
+                    restore_error_handler();
+                }
+            }
+        );
+        $this->plugin->shortcodes = $shortcodes;
+
+        $result = $service->notify_team_entry_open( 1, 2026 );
+
+        $this->assertFalse( property_exists( $result, 'error' ) && $result->error );
+        $this->assertSame( '1 match secretaries notified', $result->msg );
+        $this->assertCount( 1, $captured_mails );
+
+        $mail = $captured_mails[0];
+        $this->assertSame( 'Alice Secretary <alice@test.local>', $mail['to'] );
+        $this->assertSame( 'Test Tennis League - Summer League 2026 Entry Open - Leigh Tennis Club', $mail['subject'] );
+        $this->assertSame( [], $warnings, 'Rendering competition-entry-open template via service must produce zero warnings' );
+
+        $body = $mail['message'];
+        $this->assertStringContainsString( 'The closing date for entries is 15/04/2026.', $body );
+        $this->assertStringContainsString( 'The competition will run from 01/05/2026 until 31/08/2026.', $body );
+        $this->assertStringContainsString( 'https://example.com', $body );
+        $this->assertStringContainsString( 'Test Tennis League', $body );
+        $this->assertStringContainsString( 'https://example.com/entry-form/summer-league/2026/leigh/', $body );
+        $this->assertStringNotContainsString( 'Finals day will held at', $body );
+    }
+
+    public function test_notify_team_entry_open_sends_email_with_venue_for_cup_competition(): void {
+        $option_gateway = new class implements Option_Gateway_Interface {
+            public function get_option( string $option, mixed $default = false ): mixed {
+                return 'date_format' === $option ? 'd/m/Y' : $default;
+            }
+            public function update_option( string $option, mixed $value, mixed $autoload = null ): bool { return true; }
+            public function delete_option( string $option ): bool { return true; }
+        };
+
+        $captured_mails = [];
+        $fake_mailer = new class( $captured_mails ) implements Mailer_Interface {
+            public function __construct( private array &$captured_mails ) {}
+            public function send( string|array|null $to, ?string $subject, ?string $message, string|array|null $headers = '', ?array $attachments = [] ): bool {
+                $this->captured_mails[] = [
+                    'to'      => $to,
+                    'subject' => $subject,
+                    'message' => $message,
+                    'headers' => $headers,
+                ];
+                return true;
+            }
+        };
+
+        $venue_club = new Club();
+        $venue_club->set_id( 10 );
+        $venue_club->set_name( 'Westcliff Lawn Tennis Club' );
+        $venue_club->set_shortcode( 'Westcliff' );
+
+        $club_service = $this->createStub( Club_Service::class );
+        $club_service->method( 'get_club' )->willReturn( $venue_club );
+
+        $competition = Competition_Test_Factory::create(
+            id: 2,
+            name: 'Summer Cup',
+            type: Competition_Type::CUP,
+            seasons: Competition_Test_Factory::season_map( '2026', [
+                'date_closing' => '2026-04-15 00:00:00',
+                'date_start'   => '2026-05-01 00:00:00',
+                'date_end'     => '2026-08-31 00:00:00',
+                'venue'        => 10,
+            ] )
+        );
+        $this->competition_to_return = $competition;
+
+        $this->competition_service->method( 'is_season_valid_for_competition' )
+            ->willReturn( [
+                'name'         => '2026',
+                'date_closing' => '2026-04-15 00:00:00',
+                'date_start'   => '2026-05-01 00:00:00',
+                'date_end'     => '2026-08-31 00:00:00',
+                'venue'        => 10,
+            ] );
+
+        $service = new Competition_Entry_Service(
+            plugin_instance: $this->plugin,
+            club_repository: $this->club_repository,
+            league_repository: $this->createStub( League_Repository::class ),
+            league_team_repository: $this->league_team_repository,
+            team_repository: $this->team_repository,
+            tournament_repository: $this->tournament_repository,
+            tournament_entry_repository: $this->tournament_entry_repository,
+            club_service: $club_service,
+            competition_service: $this->competition_service,
+            finance_service: $this->finance_service,
+            player_service: $this->player_service,
+            tournament_service: $this->tournament_service,
+            notify_service: $this->notify_service,
+            mailer: $fake_mailer,
+            option_gateway: $option_gateway
+        );
+
+        $club = new Club();
+        $club->set_id( 1 );
+        $club->set_name( 'Leigh Tennis Club' );
+        $club->set_shortcode( 'Leigh' );
+
+        $this->plugin->method( 'get_clubs' )->willReturn( [ $club ] );
+        $this->plugin->method( 'get_confirmation_email' )->willReturn( 'cup@test.local' );
+        $this->plugin->site_name = 'Test Tennis League';
+        $this->plugin->site_url  = 'https://example.com';
+
+        $secretary               = new Player();
+        $secretary->set_id( 99 );
+        $secretary->display_name = 'Alice Secretary';
+        $secretary->email        = 'alice@test.local';
+
+        $this->player_service->method( 'get_match_secretary_details' )
+            ->willReturn( $secretary );
+
+        $view_renderer      = $this->create_view_renderer();
+        $shortcode_renderer = new Shortcode_Template_Renderer( $view_renderer );
+        $shortcodes         = $this->createStub( \Racketmanager\Public\Shortcodes::class );
+        $warnings           = [];
+        $shortcodes->method( 'load_template' )->willReturnCallback(
+            function( string $template, array $args, string $subdir = '' ) use ( $shortcode_renderer, &$warnings ): string {
+                set_error_handler( static function ( int $errno, string $errstr, string $errfile, int $errline ) use ( &$warnings ): bool {
+                    if ( ! ( error_reporting() & $errno ) ) {
+                        return false;
+                    }
+                    $warnings[] = [ 'errno' => $errno, 'errstr' => $errstr, 'errfile' => $errfile, 'errline' => $errline ];
+                    return true;
+                } );
+                try {
+                    return $shortcode_renderer->render( $template, $args, $subdir );
+                } finally {
+                    restore_error_handler();
+                }
+            }
+        );
+        $this->plugin->shortcodes = $shortcodes;
+
+        $result = $service->notify_team_entry_open( 2, 2026 );
+
+        $this->assertFalse( property_exists( $result, 'error' ) && $result->error );
+        $this->assertSame( '1 match secretaries notified', $result->msg );
+        $this->assertCount( 1, $captured_mails );
+
+        $mail = $captured_mails[0];
+        $this->assertSame( 'Alice Secretary <alice@test.local>', $mail['to'] );
+        $this->assertSame( 'Test Tennis League - Summer Cup 2026 Entry Open - Leigh Tennis Club', $mail['subject'] );
+        $this->assertSame( [], $warnings, 'Rendering competition-entry-open template via service must produce zero warnings' );
+
+        $body = $mail['message'];
+        $this->assertStringContainsString( 'The closing date for entries is 15/04/2026.', $body );
+        $this->assertStringContainsString( 'The competition will run from 01/05/2026 until 31/08/2026.', $body );
+        $this->assertStringContainsString( 'Finals day will held at Westcliff.', $body );
+        $this->assertStringContainsString( 'https://example.com', $body );
+        $this->assertStringContainsString( 'Test Tennis League', $body );
+        $this->assertStringContainsString( 'https://example.com/entry-form/summer-cup/2026/leigh/', $body );
+    }
 }

@@ -4,13 +4,15 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Event\Queries;
 
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
+use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Competition_Service;
 use function __;
 
 class Get_Event_Standings_Handler {
     public function __construct(
-        private readonly Competition_Service $competition_service
+        private readonly Competition_Service $competition_service,
+        private readonly Competition_Shortcode_Presenter $competition_presenter
     ) {}
 
     public function handle( Get_Event_Standings_Query $query ): Shortcode_View_Model {
@@ -32,12 +34,14 @@ class Get_Event_Standings_Handler {
             return Shortcode_View_Model::for_error( __( 'Event not found for competition', 'racketmanager' ) );
         }
 
-        $filename = ! empty( $query->template ) ? 'standings-' . $query->template : 'standings';
+        $filename     = ! empty( $query->template ) ? 'standings-' . $query->template : 'standings';
+        $league_links = $this->competition_presenter->present_event_standings_links( $event, $event->leagues ?? [] );
 
         return Shortcode_View_Model::for_template(
             $filename,
             [
-                'event' => $event,
+                'event'        => $event,
+                'league_links' => $league_links,
             ],
             'event'
         );

@@ -7,38 +7,47 @@
 
 namespace Racketmanager;
 
-/** @var string $addressee */
-/** @var string $competition */
-/** @var object $season_dtls */
-/** @var bool   $is_championship */
-/** @var string $salutation */
-/** @var string $paragraph */
-/** @var string $contact */
-/** @var string $closing */
-global $racketmanager;
+/** @var string|null $addressee */
+/** @var string|null $competition */
+/** @var object|null $season_dtls */
+/** @var bool|null   $is_championship */
+/** @var string|null $salutation */
+/** @var string|null $paragraph */
+/** @var string|null $contact */
+/** @var string|null $closing */
+/** @var string|null $days_remaining */
+/** @var string|null $from_email */
+/** @var string|null $date_closing_display */
+/** @var string|null $date_start_display */
+/** @var string|null $date_end_display */
+
+$closing_date_display = (string) ( $date_closing_display ?? ( $season_dtls->date_closing_display ?? '' ) );
+$start_date_display   = (string) ( $date_start_display ?? ( $season_dtls->date_start_display ?? '' ) );
+$end_date_display     = (string) ( $date_end_display ?? ( $season_dtls->date_end_display ?? '' ) );
+
 require 'email-header.php';
-$salutation_link = $addressee;
+$salutation_link = $addressee ?? '';
 require $salutation;
 if ( empty( $days_remaining ) ) {
     /* translators: %1$s: competition name %2$s: closing date */
-    $paragraph_text = sprintf( __( 'The entry form for the %1$s is now available. The closing date for entries is %2$s.', 'racketmanager' ), ucfirst( $competition ), mysql2date( $racketmanager->date_format, $season_dtls->date_closing ) );
+    $paragraph_text = sprintf( __( 'The entry form for the %1$s is now available. The closing date for entries is %2$s.', 'racketmanager' ), ucfirst( (string) ( $competition ?? '' ) ), $closing_date_display );
 } else {
     /* translators: %1$s: days remaining %2$s: competition name */
-    $paragraph_text = sprintf( __( 'There are now less than %1$s days left before the closing date of the %2$s.', 'racketmanager' ), $days_remaining, ucfirst( $competition ) );
+    $paragraph_text = sprintf( __( 'There are now less than %1$s days left before the closing date of the %2$s.', 'racketmanager' ), (string) $days_remaining, ucfirst( (string) ( $competition ?? '' ) ) );
 }
 require $paragraph;
-if ( ! empty( $season_dtls->date_start ) ) {
+if ( ! empty( $start_date_display ) ) {
     /* translators: $s: start date */
-    $paragraph_text = sprintf( __( 'The competition will run from %s', 'racketmanager' ), mysql2date( $racketmanager->date_format, $season_dtls->date_start ) );
-    if ( ! empty( $season_dtls->date_end ) ) {
+    $paragraph_text = sprintf( __( 'The competition will run from %s', 'racketmanager' ), $start_date_display );
+    if ( ! empty( $end_date_display ) ) {
         /* translators: $s: end date */
-        $paragraph_text .= ' ' . sprintf( __( 'until % s', 'racketmanager' ), mysql2date( $racketmanager->date_format, $season_dtls->date_end ) );
+        $paragraph_text .= ' ' . sprintf( __( 'until % s', 'racketmanager' ), $end_date_display );
     }
     $paragraph_text .= '.';
     require $paragraph;
 }
 
-if ( ! empty( $season_dtls->venue_name ) && $is_championship ) {
+if ( ! empty( $season_dtls->venue_name ) && ! empty( $is_championship ) ) {
     /* translators: $s: venue name */
     $paragraph_text = ' ' . sprintf( __( 'Finals day will held at %s. ', 'racketmanager' ), $season_dtls->venue_name );
     require $paragraph;

@@ -17,6 +17,8 @@ use Racketmanager\Domain\Fixture\Fixture;
 /** @var string $option */
 /** @var string $action */
 /** @var string $button */
+/** @var string|null $date_input_type */
+/** @var string|null $date_input */
 ?>
 <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -35,20 +37,15 @@ use Racketmanager\Domain\Fixture\Fixture;
                     <?php
                     require RACKETMANAGER_PATH . 'templates/includes/matches-teams-match.php';
                     if ( 'schedule_match' === $option ) {
-                        if ( empty( $match->get_start_time() ) ) {
-                            $date_input_type = 'date';
-                            $date_input      = substr( $match->get_date(), 0, 10 );
-                        } else {
-                            $date_input_type = 'datetime-local';
-                            $date_input      = $match->get_date();
-                        }
+                        $input_type  = $date_input_type ?? 'date';
+                        $input_value = $date_input ?? '';
                         ?>
                         <div class="strike mb-3">
                             <span><?php esc_html_e( '(Re)schedule fixture', 'racketmanager' ); ?></span>
                         </div>
                         <div class="mb-3">
                             <label for="schedule-date" class="visually-hidden"><?php esc_html_e( 'New date', 'racketmanager' ); ?></label>
-                            <input type="<?php echo esc_attr( $date_input_type ); ?>" class="form-control" id="schedule-date" name="schedule-date" value="<?php echo esc_html( $date_input ); ?>" />
+                            <input type="<?php echo esc_attr( $input_type ); ?>" class="form-control" id="schedule-date" name="schedule-date" value="<?php echo esc_attr( $input_value ); ?>" />
                             <div class="invalid-feedback" id="schedule-dateFeedback"></div>
                         </div>
                         <div class="alert_rm" id="matchDateAlert" style="display:none;">

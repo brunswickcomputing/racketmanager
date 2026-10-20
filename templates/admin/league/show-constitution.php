@@ -10,7 +10,13 @@ namespace Racketmanager;
 /** @var object $event */
 /** @var string $season */
 /** @var array  $seasons */
-$competition_type = $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
+/** @var array  $leagues */
+/** @var int    $num_teams */
+/** @var array  $league_active_teams */
+$competition_type    = $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
+$leagues             = $leagues ?? array();
+$num_teams           = $num_teams ?? 0;
+$league_active_teams = $league_active_teams ?? array();
 ?>
 <div class="container">
     <div class="row justify-content-end">
@@ -24,16 +30,13 @@ $competition_type = $event->competition->type instanceof \BackedEnum ? $event->c
         </div>
     </div>
 
-    <?php $this->show_message(); ?>
+    <?php
+    if ( method_exists( $this, 'show_message' ) ) {
+        $this->show_message();
+    }
+    ?>
     <div id="">
         <?php
-        $leagues   = $event->get_leagues();
-        $num_teams = $event->get_teams(
-            array(
-                'count'  => true,
-                'season' => $season,
-            )
-        );
         if ( $num_teams ) {
             ?>
             <div class="mb-3">
@@ -43,7 +46,7 @@ $competition_type = $event->competition->type instanceof \BackedEnum ? $event->c
                 </div>
                 <?php
                 foreach ( $leagues as $league ) {
-                    $active_teams = $league->get_num_teams( 'active', true );
+                    $active_teams = $league_active_teams[ $league->id ] ?? 0;
                     if ( $active_teams ) {
                         ?>
                         <div class="row">
@@ -63,6 +66,6 @@ $competition_type = $event->competition->type instanceof \BackedEnum ? $event->c
         }
         ?>
         <?php
-        require_once RACKETMANAGER_PATH . 'templates/admin/event/constitution.php';
+        require RACKETMANAGER_PATH . 'templates/admin/event/constitution.php';
         ?>
     </div>

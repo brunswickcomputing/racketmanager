@@ -23,7 +23,7 @@ namespace Racketmanager;
             </h3>
         </div>
         <?php
-        $fixtures = $draw->get_meta( 'fixtures' );
+        $fixtures = $draw->get_meta( 'fixtures' ) ?: [];
         require 'draw-body.php';
         ?>
     </div>

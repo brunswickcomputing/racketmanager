@@ -34,13 +34,18 @@ if ( empty( $event_club ) ) {
                         </div>
                         <?php
                         foreach ( $event->clubs as $club ) {
-                            $club_link = '/' . $competition_type . 's/' . seo_url( $event->name ) . '/' . $event->current_season['name'] . '/club/' . seo_url( $club->shortcode ) . '/';
+                            $club_id   = is_object( $club ) ? (int) ( $club->id ?? 0 ) : (int) ( $club['id'] ?? 0 );
+                            $club_link = $club_links[ $club_id ] ?? '';
                             ?>
                             <div class="row mb-2 row-list">
                                 <div class="col-6" name="<?php esc_html_e( 'Club', 'racketmanager' ); ?>">
-                                    <a href="<?php echo esc_attr( $club_link ); ?>" class="tabDataLink" data-type="event" data-type-id="<?php echo esc_attr( $event->id ); ?>" data-season="<?php echo esc_attr( $event->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $club_link ); ?>" data-link-id="<?php echo esc_attr( $club->id ); ?>" data-link-type="clubs">
+                                    <?php if ( '' !== $club_link ) : ?>
+                                        <a href="<?php echo esc_attr( $club_link ); ?>" class="tabDataLink" data-type="event" data-type-id="<?php echo esc_attr( (string) $event->id ); ?>" data-season="<?php echo esc_attr( (string) ( $event->current_season['name'] ?? '' ) ); ?>" data-link="<?php echo esc_attr( $club_link ); ?>" data-link-id="<?php echo esc_attr( (string) $club_id ); ?>" data-link-type="clubs">
+                                            <?php echo esc_html( $club->name ); ?>
+                                        </a>
+                                    <?php else : ?>
                                         <?php echo esc_html( $club->name ); ?>
-                                    </a>
+                                    <?php endif; ?>
                                 </div>
                                 <div class="col-3 text-end">
                                     <?php echo esc_html( $club->team_count ); ?>
@@ -79,9 +84,13 @@ if ( empty( $event_club ) ) {
                 </div>
                 <div class="media__content">
                     <h3 class="media__title">
-                        <a href="/clubs/<?php echo esc_attr( seo_url( $event_club->shortcode ) ); ?>/">
+                        <?php if ( ! empty( $club_url ) ) : ?>
+                            <a href="<?php echo esc_attr( $club_url ); ?>">
+                                <?php echo esc_html( $event_club->name ); ?>
+                            </a>
+                        <?php else : ?>
                             <?php echo esc_html( $event_club->name ); ?>
-                        </a>
+                        <?php endif; ?>
                     </h3>
                     <?php
                     if ( ! empty( $event_club->address ) ) {
@@ -160,17 +169,28 @@ if ( empty( $event_club ) ) {
                             </div>
                             <?php
                             foreach ( $event_club->teams as $team ) {
+                                $team_id     = is_object( $team ) ? (int) ( $team->id ?? 0 ) : (int) ( $team['id'] ?? 0 );
+                                $team_link   = $team_links[ $team_id ]['team_link'] ?? '';
+                                $league_link = $team_links[ $team_id ]['league_link'] ?? '';
                                 ?>
                                 <div class="row mb-2 row-list">
                                     <div class="col-6">
-                                        <a href="/<?php echo esc_attr( $competition_type ); ?>/<?php echo esc_html( seo_url( $team->league_title ) ); ?>/<?php echo esc_attr( $event->current_season['name'] ); ?>/team/<?php echo esc_attr( seo_url( $team->name ) ); ?>/">
+                                        <?php if ( '' !== $team_link ) : ?>
+                                            <a href="<?php echo esc_attr( $team_link ); ?>">
+                                                <?php echo esc_html( $team->name ); ?>
+                                            </a>
+                                        <?php else : ?>
                                             <?php echo esc_html( $team->name ); ?>
-                                        </a>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="col-5">
-                                        <a href="/<?php echo esc_attr( $competition_type ); ?>/<?php echo esc_html( seo_url( $team->league_title ) ); ?>/<?php echo esc_attr( $event->current_season['name'] ); ?>/">
+                                        <?php if ( '' !== $league_link ) : ?>
+                                            <a href="<?php echo esc_attr( $league_link ); ?>">
+                                                <?php echo esc_html( $team->league_title ); ?>
+                                            </a>
+                                        <?php else : ?>
                                             <?php echo esc_html( $team->league_title ); ?>
-                                        </a>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="col-1 text-end">
                                         <?php echo esc_html( $team->rank ); ?>
@@ -196,7 +216,8 @@ if ( empty( $event_club ) ) {
                                 if ( intval( $player->id ) === get_current_user_id() ) {
                                     $selected_player = true;
                                 }
-                                $player_link = '/' . $competition_type . 's/' . seo_url( $event->name ) . '/' . $event->current_season['name'] . '/player/' . seo_url( $player->get_fullname() ) . '/';
+                                $player_id   = is_object( $player ) ? (int) ( $player->id ?? ( $player->ID ?? 0 ) ) : (int) ( $player['id'] ?? 0 );
+                                $player_link = $player_links[ $player_id ] ?? '';
                                 ?>
                                 <li class="list__item <?php echo empty( $selected_player ) ? null : 'is-selected'; ?>">
                                     <div class="media">
@@ -215,11 +236,17 @@ if ( empty( $event_club ) ) {
                                                 <div class="flex-container">
                                                     <div class="flex-item flex-item--grow">
                                                         <p class="media__title">
-                                                            <a href="<?php echo esc_attr( $player_link ); ?>" class="nav--link tabDataLink" data-type="event" data-type-id="<?php echo esc_attr( $event->id ); ?>" data-season="<?php echo esc_attr( $event->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $player_link ); ?>" data-link-id="<?php echo esc_attr( $player->id ); ?>" data-link-type="players">
+                                                            <?php if ( '' !== $player_link ) : ?>
+                                                                <a href="<?php echo esc_attr( $player_link ); ?>" class="nav--link tabDataLink" data-type="event" data-type-id="<?php echo esc_attr( (string) $event->id ); ?>" data-season="<?php echo esc_attr( (string) ( $event->current_season['name'] ?? '' ) ); ?>" data-link="<?php echo esc_attr( $player_link ); ?>" data-link-id="<?php echo esc_attr( (string) $player_id ); ?>" data-link-type="players">
+                                                                    <span class="nav-link__value">
+                                                                        <?php echo esc_html( $player->get_fullname() ); ?>
+                                                                    </span>
+                                                                </a>
+                                                            <?php else : ?>
                                                                 <span class="nav-link__value">
                                                                     <?php echo esc_html( $player->get_fullname() ); ?>
                                                                 </span>
-                                                            </a>
+                                                            <?php endif; ?>
                                                         </p>
                                                     </div>
                                                     <div class="progress-bar-container">

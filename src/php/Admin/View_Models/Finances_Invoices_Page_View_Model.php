@@ -12,6 +12,8 @@ namespace Racketmanager\Admin\View_Models;
 
 final readonly class Finances_Invoices_Page_View_Model {
 
+    public string $tab_title;
+
     /**
      * @param array<int, object>    $invoices
      * @param array<int, object>    $charges
@@ -24,6 +26,7 @@ final readonly class Finances_Invoices_Page_View_Model {
      * @param string                $total_amount_formatted
      * @param float                 $total_amount
      * @param Error_Bag             $errors
+     * @param string|null           $tab_title
      */
     public function __construct(
         public array $invoices,
@@ -37,6 +40,8 @@ final readonly class Finances_Invoices_Page_View_Model {
         public string $status = 'open',
         public float $total_amount = 0.0,
         public Error_Bag $errors = new Error_Bag(),
+        ?string $tab_title = null,
     ) {
+        $this->tab_title = $tab_title ?? ( 'player-invoices' === $racketmanager_tab ? __( 'Player Invoices', 'racketmanager' ) : __( 'Club Invoices', 'racketmanager' ) );
     }
 }

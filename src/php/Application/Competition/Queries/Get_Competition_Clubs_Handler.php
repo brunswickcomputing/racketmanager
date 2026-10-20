@@ -6,6 +6,7 @@ namespace Racketmanager\Application\Competition\Queries;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
+use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Presentation\View_Models\Team_Matches_Group_View_Model;
@@ -26,7 +27,8 @@ class Get_Competition_Clubs_Handler {
         private readonly Competition_Service $competition_service,
         private readonly Club_Service $club_service,
         private readonly Player_Stats_Service $player_stats_service,
-        private readonly Tournament_Presenter $tournament_presenter
+        private readonly Tournament_Presenter $tournament_presenter,
+        private readonly Competition_Shortcode_Presenter $competition_presenter
     ) {}
 
     public function handle( Get_Competition_Clubs_Query $query ): Shortcode_View_Model {
@@ -53,7 +55,7 @@ class Get_Competition_Clubs_Handler {
             $competition->set_current_season( (string) $query->season );
         }
 
-        $season_name = $competition->current_season['name'] ?? null;
+        $season_name = isset( $competition->current_season['name'] ) ? (string) $competition->current_season['name'] : null;
         $season_int  = $query->season ?? ( ( null !== $season_name && is_numeric( $season_name ) ) ? (int) $season_name : null );
 
         $clubs            = null;
@@ -168,15 +170,26 @@ class Get_Competition_Clubs_Handler {
             }
         }
 
+        $vars = [
+            'competition'      => $competition,
+            'competition_club' => $competition_club,
+            'clubs'            => $clubs,
+        ];
+
+        if ( $competition_club ) {
+            $club_details         = $this->competition_presenter->present_competition_club_detail_links( $competition, $competition_club );
+            $vars['club_url']     = $club_details['club_url'];
+            $vars['team_links']   = $club_details['team_links'];
+            $vars['player_links'] = $club_details['player_links'];
+        } else {
+            $vars['club_links']   = $this->competition_presenter->present_competition_club_links( $competition, $clubs ?? [] );
+        }
+
         $template = '' !== $query->template ? 'clubs-' . $query->template : 'clubs';
 
         return new Shortcode_View_Model(
             template: $template,
-            vars: [
-                'competition'      => $competition,
-                'competition_club' => $competition_club,
-                'clubs'            => $clubs,
-            ],
+            vars: $vars,
             template_type: 'competition'
         );
     }

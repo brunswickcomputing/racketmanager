@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Templates;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Club\Queries\Get_Club_Competitions_Handler;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Application\Club\Queries\Get_Club_Competitions_Query;
 use Racketmanager\Application\Event\Queries\Get_Event_Teams_Handler;
 use Racketmanager\Application\Event\Queries\Get_Event_Teams_Query;
@@ -15,8 +16,12 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Favourite_Presenter;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
+use Racketmanager\Infrastructure\Gateways\Account\Wp_User_Favourites_Gateway;
 use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
+use Racketmanager\Infrastructure\Security\Security_Service;
 use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Services\Club_Service;
@@ -41,15 +46,15 @@ class Team_List_Render_Regression_Test extends TestCase {
         parent::setUp();
         $this->backup_globals();
 
-        $GLOBALS['racketmanager'] = new class {
-            public string $date_format = 'Y-m-d';
-            public function is_user_favourite( string $type, int|string $id ): bool {
-                return false;
-            }
-        };
+        unset( $GLOBALS['racketmanager'] );
+        $GLOBALS['wp_stubs_user_meta'] = [];
+        $GLOBALS['wp_stubs_get_current_user_id'] = 41;
 
         $view_renderer             = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
-        $this->template_renderer       = new Shortcode_Template_Renderer( $view_renderer );
+        $this->template_renderer       = new Shortcode_Template_Renderer(
+            $view_renderer,
+            favourite_presenter: new Favourite_Presenter( new Wp_User_Favourites_Gateway( new Security_Service() ) )
+        );
         $this->team_details_presenter = new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() );
     }
 
@@ -215,7 +220,8 @@ class Team_List_Render_Regression_Test extends TestCase {
             $stats_service,
             new Tournament_Presenter( team_match_row_presenter: $this->create_team_match_row_presenter() ),
             $team_service,
-            $this->team_details_presenter
+            $this->team_details_presenter,
+            new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) )
         );
 
         $event = new class extends Event {
@@ -291,7 +297,8 @@ class Team_List_Render_Regression_Test extends TestCase {
             $stats_service,
             new Tournament_Presenter( team_match_row_presenter: $this->create_team_match_row_presenter() ),
             $team_service,
-            $this->team_details_presenter
+            $this->team_details_presenter,
+            new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) )
         );
 
         $event = new class extends Event {
@@ -362,7 +369,8 @@ class Team_List_Render_Regression_Test extends TestCase {
             $club_service,
             $comp_service,
             $comp_repo,
-            $this->team_details_presenter
+            $this->team_details_presenter,
+            new Club_Presenter()
         );
 
         $club = new class extends Club {
@@ -433,28 +441,27 @@ class Team_List_Render_Regression_Test extends TestCase {
 
     public function test_club_competitions_fallback_to_empty_when_no_team_rows(): void {
         $club = (object) [
-            'id'           => 15,
-            'name'         => 'Empty Club',
-            'shortcode'    => 'Empty',
-            'competitions' => [
-                (object) [
-                    'name'           => 'Winter Cup',
-                    'current_season' => [ 'name' => '2026' ],
-                    'events'         => [
-                        (object) [
-                            'id'             => 70,
-                            'name'           => 'Open Doubles',
-                            'current_season' => [ 'name' => '2026' ],
-                        ],
-                    ],
-                ],
-            ],
+            'id'        => 15,
+            'name'      => 'Empty Club',
+            'shortcode' => 'Empty',
         ];
 
-        // Notice $event_team_rows is not passed or empty
+        $presenter   = new Club_Presenter();
+        $event       = (object) [
+            'id'             => 70,
+            'name'           => 'Open Doubles',
+            'current_season' => [ 'name' => '2026' ],
+        ];
+        $competition = (object) [
+            'name'           => 'Winter Cup',
+            'current_season' => [ 'name' => '2026' ],
+        ];
+
         $vars = [
-            'club'            => $club,
-            'event_team_rows' => [],
+            'club'         => $club,
+            'competitions' => [
+                $presenter->present_club_competition( $competition, $club, [ $presenter->present_club_event( $event, $club ) ] ),
+            ],
         ];
 
         $warnings = [];

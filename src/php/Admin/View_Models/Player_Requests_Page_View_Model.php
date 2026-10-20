@@ -23,6 +23,7 @@ final readonly class Player_Requests_Page_View_Model {
         public string $status = 'outstanding',
         public string $racketmanager_tab = 'requests',
         public Error_Bag $errors = new Error_Bag(),
+        public string $tab_title = 'Requests',
     ) {
     }
 }

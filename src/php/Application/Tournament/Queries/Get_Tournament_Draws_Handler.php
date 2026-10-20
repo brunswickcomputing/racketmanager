@@ -39,25 +39,30 @@ class Get_Tournament_Draws_Handler {
                 $draw->set_meta( 'fixtures', $this->tournament_presenter->present_match_cards( $raw_fixtures, $tournament ) );
             }
 
+            $draw = $this->tournament_presenter->present_tournament_draw( $draw, $tournament );
+
             return Shortcode_View_Model::for_template(
                 'draw',
                 [
-                    'tournament' => $tournament,
-                    'draw'       => $draw,
-                    'tab'        => 'draws',
+                    'tournament'      => $tournament,
+                    'draw'            => $draw,
+                    'tournament_link' => $this->tournament_presenter->get_link( $tournament ),
+                    'tab'             => 'draws',
                 ],
                 'tournament'
             );
         }
 
-        $draws = $this->tournament_service->get_events_with_details_for_tournament( $query->tournament_id );
-
         return Shortcode_View_Model::for_template(
             'draws',
             [
-                'tournament' => $tournament,
-                'draws'      => $draws,
-                'tab'        => 'draws',
+                'tournament'      => $tournament,
+                'draws'           => $this->tournament_presenter->present_draw_list_rows(
+                    $tournament,
+                    $this->tournament_service->get_events_with_details_for_tournament( $query->tournament_id )
+                ),
+                'tournament_link' => $this->tournament_presenter->get_link( $tournament ),
+                'tab'             => 'draws',
             ],
             'tournament'
         );

@@ -13,13 +13,14 @@ use Racketmanager\Util\Util;
 
 /** @var Fixture_Details_DTO $dto */
 /** @var Fixture $match */
+/** @var string|null $date_display */
 /** @var string $sponsor_html */
 $points_span = 2 + intval( $dto->league->num_sets );
 ?>
         <div id="matchRubbers" class="rubber-block">
             <div id="matchHeader">
                 <div class="leagueTitle"><?php echo esc_html( $dto->league->title ); ?></div>
-                <div class="matchDate"><?php echo esc_html( substr( $match->get_date(), 0, 10 ) ); ?></div>
+                <div class="matchDate"><?php echo esc_html( (string) ( $date_display ?? '' ) ); ?></div>
                 <div class="matchday">
                     <?php
                     if ( $dto->competition->is_championship ) {

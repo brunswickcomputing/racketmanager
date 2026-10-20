@@ -65,6 +65,7 @@ namespace Racketmanager;
                                     <div class="module-container">
                                         <?php
                                         $favourites = $favourite_type['favourites'];
+                                        $favourite_rows = $favourite_rows_by_type[ $favourite_name ] ?? [];
                                         require RACKETMANAGER_PATH . 'templates/includes/favourites.php';
                                         ?>
                                     </div>

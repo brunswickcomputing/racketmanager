@@ -15,10 +15,11 @@ use function wp_unslash;
 final class Get_Tournament_Match_Query {
     public function __construct(
         public readonly ?string $tournament = null,
-        public readonly ?int $fixture_id = null
+        public readonly ?int $fixture_id = null,
+        public readonly ?string $referrer = null
     ) {}
 
-    public static function from_atts( array|string $atts, array $query_vars = [], array $get = [] ): self {
+    public static function from_atts( array|string $atts, array $query_vars = [], array $get = [], ?string $referrer = null ): self {
         $atts_array = is_array( $atts ) ? $atts : [];
 
         $tournament = $atts_array['tournament'] ?? null;
@@ -47,6 +48,8 @@ final class Get_Tournament_Match_Query {
 
         $fixture_id = is_numeric( $fixture_id ) ? (int) $fixture_id : null;
 
-        return new self( $tournament, $fixture_id );
+        $referrer = ( null !== $referrer && '' !== trim( $referrer ) ) ? trim( $referrer ) : null;
+
+        return new self( $tournament, $fixture_id, $referrer );
     }
 }

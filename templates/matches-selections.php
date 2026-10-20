@@ -9,14 +9,16 @@ namespace Racketmanager;
 
 /** @var object $league */
 /** @var string $season */
+/** @var int|string $post_id */
+/** @var string $form_action */
 ?>
 <?php
 if ( ( $league->show_match_day_selection ) && ! $league->event->competition->is_championship ) {
     ?>
     <div class="matches-selections wp-clearfix mb-3 row">
-        <form method='get' action='<?php the_permalink( get_the_ID() ); ?>' id='racketmanager_match_day_selection'>
+        <form method='get' action='<?php echo esc_url( $form_action ?? '' ); ?>' id='racketmanager_match_day_selection'>
             <div class="row g-1 align-items-center">
-                <input type="hidden" name="page_id" value="<?php the_ID(); ?>" />
+                <input type="hidden" name="page_id" value="<?php echo esc_attr( (string) ( $post_id ?? 0 ) ); ?>" />
                 <input type="hidden" name="season" value="<?php echo esc_attr( $season ); ?>" />
                 <input type="hidden" name="league_id" value="<?php echo esc_attr( $league->title ); ?>" />
                 <input type="hidden" id="leagueId" value="<?php echo esc_attr( $league->id ); ?>" />

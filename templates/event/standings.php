@@ -8,6 +8,8 @@
 namespace Racketmanager;
 
 /** @var object $event */
+/** @var array<int, string> $league_links */
+$league_links = $league_links ?? [];
 ?>
 <div class="module module--card">
     <div class="module__banner">
@@ -18,20 +20,19 @@ namespace Racketmanager;
             <div id="leagues">
                 <?php
                 foreach ( $event->leagues as $league ) {
+                    $league_id = is_object( $league ) ? (int) ( $league->id ?? 0 ) : (int) ( $league['id'] ?? 0 );
+                    $href      = $league_links[ $league_id ] ?? '';
                     ?>
                     <!-- Standings Table -->
                     <div id="standings-archive">
                         <h4 class="header">
-                            <?php
-                            $href = '/' . __( 'league', 'racketmanager' ) . '/' . seo_url( $league->title ) . '/';
-                            if ( $event->is_box ) {
-                                $href .= __( 'round', 'racketmanager' ) . '-';
-                            }
-                            $href .= $event->current_season['name'] . '/';
-                            ?>
-                            <a href="<?php echo esc_url( $href ); ?>">
+                            <?php if ( '' !== $href ) : ?>
+                                <a href="<?php echo esc_url( $href ); ?>">
+                                    <?php echo esc_html( $league->title ); ?>
+                                </a>
+                            <?php else : ?>
                                 <?php echo esc_html( $league->title ); ?>
-                            </a>
+                            <?php endif; ?>
                             <?php
                             $favourite_type = 'league';
                             $favourite_id   = $league->id;

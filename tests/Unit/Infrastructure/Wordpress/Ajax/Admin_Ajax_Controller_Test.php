@@ -8,17 +8,26 @@ use Racketmanager\Infrastructure\Wordpress\Ajax\Admin_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Admin_Ajax_Controller;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\RacketManager;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 require_once __DIR__ . '/../../../../wp-stubs.php';
 
 final class Admin_Ajax_Controller_Test extends TestCase {
+    use Manages_Wordpress_Globals;
+
     private RacketManager $racketmanager;
 
     protected function setUp(): void {
         parent::setUp();
+        $this->backup_globals();
         $this->racketmanager = $this->createStub( RacketManager::class );
         $_GET  = [];
         $_POST = [];
+    }
+
+    protected function tearDown(): void {
+        $this->restore_globals();
+        parent::tearDown();
     }
 
     public function test_get_request_merges_get_and_post_with_post_precedence(): void {

@@ -15,6 +15,8 @@
  *  $femalePartners: female partners object
  *  $player_entries: array of existing entries for the player
  *  $tournament_entry: object containing entry metadata
+ *  $changes_allowed: whether the current user may change the entry (supplied by the handler)
+ *  $withdrawal_allowed: whether the current user may withdraw from events (supplied by the handler)
  */
 
 namespace Racketmanager;
@@ -26,26 +28,14 @@ use Racketmanager\Util\Util_Lookup;
 /** @var array $club_memberships */
 /** @var array $player_entries */
 /** @var object $tournament_entry */
+/** @var bool|null $changes_allowed */
+/** @var bool|null $withdrawal_allowed */
 
-// Determine user permissions and tournament state.
-$can_manage     = current_user_can( 'manage_racketmanager' );
-$is_own_player  = ( get_current_user_id() === (int) $player->id );
-$has_permission = ( $is_own_player || $can_manage );
-
-$changes_allowed    = false;
-$withdrawal_allowed = false;
+// Permissions are decided by the producer; without them the form is read-only.
+$changes_allowed    = (bool) ( $changes_allowed ?? false );
+$withdrawal_allowed = (bool) ( $withdrawal_allowed ?? false );
 // Consumed by templates/includes/tournament-header.php (hides header "Enter" button).
 $entry_option       = false;
-
-if ( $has_permission ) {
-    if ( $tournament->is_open ) {
-        $changes_allowed    = true;
-        $withdrawal_allowed = true;
-    } else {
-        $changes_allowed    = $can_manage;
-        $withdrawal_allowed = (bool) $tournament->is_closed;
-    }
-}
 
 $entered        = ! empty( $player_entries );
 $form_title     = $entered ? __( 'Entry details', 'racketmanager' ) : __( 'Enter online', 'racketmanager' );
@@ -348,7 +338,7 @@ if ( ! $changes_allowed ) {
                                                                     <input type="hidden" name="partner[<?php echo esc_attr( $event->id ); ?>]" id="partner-<?php echo esc_attr( $event->id ); ?>" value="<?php echo esc_attr( $partner_id ); ?>" />
                                                                     <input type="hidden" name="partnerId[<?php echo esc_attr( $event->id ); ?>]" id="partnerId-<?php echo esc_attr( $event->id ); ?>" value="<?php echo esc_attr( $partner_id ); ?>" />
                                                                     <?php if ( $changes_allowed ) : ?>
-                                                                        <a href="/<?php echo esc_attr( seo_url( $event->name ) ); ?>-<?php echo esc_attr( seo_url( __( 'set partner', 'racketmanager' ) ) ); ?>" class="tournamentEventEntry" data-event-id="<?php echo esc_attr( $event->id ); ?>" data-action="open-partner-modal">
+                                                                        <a href="#" class="tournamentEventEntry" data-event-id="<?php echo esc_attr( $event->id ); ?>" data-action="open-partner-modal">
                                                                             <span id="partnerName-<?php echo esc_attr( $event->id ); ?>"><?php echo esc_html( $partner_name ); ?></span>
                                                                         </a>
                                                                     <?php else : ?>
@@ -449,7 +439,7 @@ if ( ! $changes_allowed ) {
                                     </button>
                                 </div>
                             <?php endif; ?>
-                            <a href="/tournament/<?php echo esc_attr( seo_url( $tournament->name ) ); ?>/" class="btn btn--cancel">
+                            <a href="<?php echo esc_url( $back_url ); ?>" class="btn btn--cancel">
                                 <?php esc_html_e( 'Back', 'racketmanager' ); ?>
                             </a>
                             <?php if ( $withdrawal_allowed ) : ?>

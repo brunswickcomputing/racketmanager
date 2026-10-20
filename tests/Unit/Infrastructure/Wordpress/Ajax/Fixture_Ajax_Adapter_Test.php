@@ -131,6 +131,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         ];
 
         $fixture             = $this->createStub( Fixture::class );
+        $fixture->method( 'get_date' )->willReturn( '2026-10-18 19:30:00' );
         $league              = $this->createStub( League::class );
         $league->num_rubbers = 0;
 
@@ -139,7 +140,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $this->fixture_detail_service->expects( $this->once() )->method( 'get_fixture_with_details' )->with( 123 )->willReturn( $dto );
 
         $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with( 'match/match-card', $this->callback( function ( $args ) use ( $dto, $fixture ) {
-                return $args['dto'] === $dto && $args['match'] === $fixture;
+                return $args['dto'] === $dto && $args['match'] === $fixture && '2026-10-18' === $args['date_display'];
             } ) )->willReturn( 'Rendered Content' );
 
         $response = $this->adapter->print_match_card( $post );
@@ -155,6 +156,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         ];
 
         $fixture = $this->createMock( Fixture::class );
+        $fixture->method( 'get_date' )->willReturn( '2026-10-18 19:30:00' );
         $fixture->expects( $this->once() )->method( 'get_rubbers' )->willReturn( [ 'rubber1' ] );
 
         $league              = $this->createStub( League::class );
@@ -165,7 +167,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $this->fixture_detail_service->expects( $this->once() )->method( 'get_fixture_with_details' )->with( 123 )->willReturn( $dto );
 
         $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with( 'match/match-card-rubbers', $this->callback( function ( $args ) use ( $dto, $fixture ) {
-                return $args['dto'] === $dto && $args['match'] === $fixture && $fixture->rubbers === [ 'rubber1' ];
+                return $args['dto'] === $dto && $args['match'] === $fixture && $fixture->rubbers === [ 'rubber1' ] && '2026-10-18' === $args['date_display'];
             } ) )->willReturn( 'Rendered Rubbers Content' );
 
         $response = $this->adapter->print_match_card( $post );
@@ -492,6 +494,8 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         ];
 
         $fixture = $this->createMock( Fixture::class );
+        $fixture->method( 'get_date' )->willReturn( '2026-10-18 19:30:00' );
+        $fixture->method( 'get_start_time' )->willReturn( '19:30' );
         $league = $this->createMock( League::class );
         $event = $this->createMock( Event::class );
         $competition = $this->createMock( Competition::class );
@@ -507,7 +511,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
 
         $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )
             ->with( 'match/match-option-modal', $this->callback( function ( $vars ) use ( $dto ) {
-                return $vars['dto'] === $dto && $vars['title'] === '(Re)schedule fixture' && $vars['action'] === 'setMatchDate';
+                return $vars['dto'] === $dto && $vars['title'] === '(Re)schedule fixture' && $vars['action'] === 'setMatchDate' && 'datetime-local' === $vars['date_input_type'] && '2026-10-18 19:30:00' === $vars['date_input'];
             } ) )->willReturn( 'rendered content' );
 
         $response = $this->adapter->show_fixture_option( $post );

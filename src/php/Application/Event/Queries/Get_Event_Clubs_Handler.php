@@ -5,6 +5,7 @@ namespace Racketmanager\Application\Event\Queries;
 
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
+use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Presentation\View_Models\Team_Matches_Group_View_Model;
@@ -21,7 +22,8 @@ class Get_Event_Clubs_Handler {
         private readonly Competition_Service $competition_service,
         private readonly Club_Service $club_service,
         private readonly Player_Stats_Service $player_stats_service,
-        private readonly Tournament_Presenter $tournament_presenter
+        private readonly Tournament_Presenter $tournament_presenter,
+        private readonly Competition_Shortcode_Presenter $competition_presenter
     ) {}
 
     public function handle( Get_Event_Clubs_Query $query ): Shortcode_View_Model {
@@ -95,13 +97,23 @@ class Get_Event_Clubs_Handler {
 
         $event->clubs = $event->get_clubs( [ 'status' => 1 ] );
         $filename     = ! empty( $query->template ) ? 'clubs-' . $query->template : 'clubs';
+        $vars         = [
+            'event'      => $event,
+            'event_club' => $event_club,
+        ];
+
+        if ( $event_club ) {
+            $club_details         = $this->competition_presenter->present_event_club_detail_links( $event, $event_club );
+            $vars['club_url']     = $club_details['club_url'];
+            $vars['team_links']   = $club_details['team_links'];
+            $vars['player_links'] = $club_details['player_links'];
+        } else {
+            $vars['club_links']   = $this->competition_presenter->present_event_club_links( $event, $event->clubs ?? [] );
+        }
 
         return Shortcode_View_Model::for_template(
             $filename,
-            [
-                'event'      => $event,
-                'event_club' => $event_club,
-            ],
+            $vars,
             'event'
         );
     }

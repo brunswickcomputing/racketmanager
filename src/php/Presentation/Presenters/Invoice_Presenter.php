@@ -376,7 +376,8 @@ class Invoice_Presenter {
             racketmanager_tab: $tab,
             total_amount_formatted: $total_formatted,
             total_amount: $total_amount,
-            errors: $errors
+            errors: $errors,
+            tab_title: __( 'Charges', 'racketmanager' ),
         );
     }
 
@@ -444,6 +445,10 @@ class Invoice_Presenter {
 
         $total_formatted = $this->format_currency( $total_amount, $currency );
 
+        $tab_title = 'club-invoices' === $tab
+            ? __( 'Club Invoices', 'racketmanager' )
+            : __( 'Player Invoices', 'racketmanager' );
+
         return new Finances_Invoices_Page_View_Model(
             invoices: $items,
             charges: $charges,
@@ -455,7 +460,8 @@ class Invoice_Presenter {
             billable_type: $billable_type,
             total_amount_formatted: $total_formatted,
             total_amount: $total_amount,
-            errors: $errors
+            errors: $errors,
+            tab_title: $tab_title,
         );
     }
 

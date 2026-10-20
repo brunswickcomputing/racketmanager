@@ -261,11 +261,17 @@ class League_Team {
      */
     public string $class;
     /**
-     * Captain name variable
+     * Captain (user id) variable - persisted in the league teams `captain` column.
      *
      * @var ?int
      */
     public ?int $captain = null;
+    /**
+     * Captain display name variable (populated when team details are loaded)
+     *
+     * @var ?string
+     */
+    public ?string $captain_name = null;
     /**
      * Formatted points variable
      *

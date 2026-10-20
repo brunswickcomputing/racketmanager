@@ -22,7 +22,11 @@ if ( ! empty( $num_rounds ) ) {
     $cols = 12;
 }
 $player_class = '';
-if ( $league->event->competition->is_player_entry && isset( $league->event->type ) && 'D' === substr( $league->event->type, 1, 1 ) ) {
+$is_player_entry = isset( $league->event->competition->is_player_entry )
+    ? (bool) $league->event->competition->is_player_entry
+    : (bool) ( $league->event->is_player_entry ?? false );
+$event_type = isset( $league->event->type ) ? (string) $league->event->type : '';
+if ( $is_player_entry && 'D' === substr( $event_type, 1, 1 ) ) {
     $player_class = 'doubles';
 }
 ?>

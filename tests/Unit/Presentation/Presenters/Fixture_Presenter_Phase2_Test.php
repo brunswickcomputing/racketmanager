@@ -38,20 +38,6 @@ class Fixture_Presenter_Phase2_Test extends TestCase {
             }
         );
         $this->presenter      = new Fixture_Presenter( $this->link_service, $this->option_gateway );
-        
-        // Mock WordPress functions if needed, but here we mostly use DI or stubs
-        if (!function_exists('get_option')) {
-            eval('function get_option($opt) { return $opt === "date_format" ? "Y-m-d" : "H:i"; }');
-        }
-        if (!function_exists('seo_url')) {
-            eval('function seo_url($url) { return strtolower(str_replace(" ", "-", $url)); }');
-        }
-        if (!function_exists('__')) {
-            eval('function __($text, $domain) { return $text; }');
-        }
-        if (!function_exists('mysql2date')) {
-            eval('function mysql2date($format, $date) { return $date; }'); // Simplified for test
-        }
     }
 
     public function test_map_to_header_read_model(): void {

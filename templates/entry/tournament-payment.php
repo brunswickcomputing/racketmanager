@@ -15,9 +15,8 @@ namespace Racketmanager;
 /** @var object $player */
 /** @var int    $invoice_id */
 /** @var object $stripe */
-$msgs                 = array();
-$payment_required     = false;
-$payment_complete_url = null;
+$msgs             = array();
+$payment_required = false;
 if ( $tournament_entry ) {
     $msgs[] = __( 'You have been entered into the tournament.', 'racketmanager' );
     if ( $total_due ) {
@@ -25,7 +24,6 @@ if ( $tournament_entry ) {
             $msgs[] = __( 'You now need to pay your entry fee.', 'racketmanager' );
             $alert_type = 'success';
             $payment_required = true;
-            $payment_complete_url = RACKETMANAGER_SITE . 'entry-form/' . seo_url( $tournament->name ) . '-tournament/payment-complete/';
         } else {
             $msgs[] = __( 'You are due a refund which will be processed when entries close.', 'racketmanager' );
             $alert_type = 'warning';

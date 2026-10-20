@@ -93,10 +93,12 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      */
     public function show_club_players( array|string $atts = [] ): string {
         $player_name = get_query_var( 'player_id' );
+        $referrer    = function_exists( 'wp_get_referer' ) ? wp_get_referer() : false;
         $query       = new Get_Club_Players_Query(
             club_name: $this->club_name_from_request(),
             player_name: $player_name ? un_seo_url( (string) $player_name ) : null,
-            template: $this->template_attribute( $atts )
+            template: $this->template_attribute( $atts ),
+            referrer: $referrer ?: null
         );
 
         return $this->view_presenter->render( $this->players_handler->handle( $query ) );
@@ -209,12 +211,24 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             ]
         );
 
+        $player_links = $this->competition_shortcode_presenter->present_club_event_player_links(
+            $event,
+            $player_stats ?? [],
+            $event->current_season['name'] ?? ( $season_name ?? null )
+        );
+
+        $primary_league = ! empty( $event->is_championship ) && method_exists( $event, 'get_primary_league' )
+            ? $event->get_primary_league()
+            : null;
+
         $vars = [
             'club'           => $club,
             'event'          => $event,
             'player_stats'   => $player_stats,
+            'player_links'   => $player_links,
             'seasons'        => $event->get_seasons(),
             'current_season' => $event->current_season ?? [],
+            'primary_league' => $primary_league,
         ];
 
         $post_id = function_exists( 'get_the_ID' ) ? get_the_ID() : '';

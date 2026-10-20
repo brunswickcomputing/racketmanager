@@ -13,7 +13,9 @@ use Racketmanager\Presentation\View_Models\Player_View_Model;
 /** @var Player_View_Model|null $vm */
 /** @var string $player_link */
 /** @var array $player_list */
+/** @var array<int, string> $player_links */
 $player_presenter = $player_presenter ?? new Player_Presenter();
+$player_links     = $player_links ?? [];
 $player_list      = $vm->players_list ?? ( $player_list ?? array() );
 $alphabet_key     = array();
 ?>
@@ -36,7 +38,10 @@ $alphabet_key     = array();
                             <ul class="row player-list-letter">
                                 <?php
                                 foreach ( $players as $player ) {
-                                    $url_link = $player_link . seo_url( $player->display_name ) . '/';
+                                    $player_id = is_object( $player ) ? ( $player->id ?? $player->ID ?? null ) : null;
+                                    $url_link  = ( null !== $player_id && isset( $player_links[ (int) $player_id ] ) )
+                                        ? $player_links[ (int) $player_id ]
+                                        : $player_presenter->get_player_link( (string) ( $player->display_name ?? '' ), null, (string) ( $player_link ?? '' ) );
                                     if ( ! empty( $tournament ) ) {
                                         $data_season    = null;
                                         $data_type      = 'tournament';
@@ -62,9 +67,13 @@ $alphabet_key     = array();
                                     <li class="alphabet-list-item col-12 col-sm-6 col-md-4">
                                         <div class="media__content">
                                             <h5 class="media__title">
-                                                <a class="nav--link media__link <?php echo esc_attr( $link_class ); ?>" href="<?php echo esc_attr( $url_link ); ?>" data-type="<?php echo esc_attr( $data_type ); ?>" data-type-id="<?php echo esc_attr( $data_type_id ); ?>" data-season="<?php echo esc_attr( $data_season ); ?>" data-link="<?php echo esc_attr( $url_link ); ?>" data-link-id="<?php echo esc_attr( $player->id ); ?>" data-link-type="players">
+                                                <?php if ( '' !== $url_link ) : ?>
+                                                    <a class="nav--link media__link <?php echo esc_attr( $link_class ); ?>" href="<?php echo esc_attr( $url_link ); ?>" data-type="<?php echo esc_attr( (string) $data_type ); ?>" data-type-id="<?php echo esc_attr( (string) $data_type_id ); ?>" data-season="<?php echo esc_attr( (string) $data_season ); ?>" data-link="<?php echo esc_attr( $url_link ); ?>" data-link-id="<?php echo esc_attr( (string) ( $player->id ?? '' ) ); ?>" data-link-type="players">
+                                                        <span class="nav-link__value"><?php echo esc_html( $player->index ); ?></span>
+                                                    </a>
+                                                <?php else : ?>
                                                     <span class="nav-link__value"><?php echo esc_html( $player->index ); ?></span>
-                                                </a>
+                                                <?php endif; ?>
                                             </h5>
                                             <?php
                                             if ( ! empty( $player->club ) ) {

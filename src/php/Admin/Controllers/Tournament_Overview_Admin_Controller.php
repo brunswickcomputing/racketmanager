@@ -8,6 +8,7 @@
 
 namespace Racketmanager\Admin\Controllers;
 
+use Racketmanager\Admin\Presenters\Admin_Entry_Link_Presenter;
 use Racketmanager\Admin\Presenters\Admin_Message_Mapper;
 use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
 use Racketmanager\Domain\DTO\Admin\Overview\Tournament_Overview_Action_Request_DTO;
@@ -23,6 +24,7 @@ readonly final class Tournament_Overview_Admin_Controller {
         private Tournament_Service $tournament_service,
         private Tournament_Overview_Action_Dispatcher $dispatcher,
         private Action_Guard_Interface $action_guard,
+        private Admin_Entry_Link_Presenter $entry_link_presenter,
     ) {
     }
 
@@ -56,6 +58,7 @@ readonly final class Tournament_Overview_Admin_Controller {
         $tab    = 'overview';
 
         $categorized_entries = $this->tournament_service->get_categorized_players_for_tournament( $tournament_id );
+        $player_entry_urls   = $this->entry_link_presenter->player_entry_urls( $tournament, $categorized_entries );
 
         $vm = new Tournament_Overview_Page_View_Model(
             tournament: $tournament,
@@ -66,6 +69,7 @@ readonly final class Tournament_Overview_Admin_Controller {
             unpaid_entries: $categorized_entries['unpaid'],
             pending_entries: $categorized_entries['pending'],
             withdrawn_entries: $categorized_entries['withdrawn'],
+            player_entry_urls: $player_entry_urls,
         );
 
         $result = array(

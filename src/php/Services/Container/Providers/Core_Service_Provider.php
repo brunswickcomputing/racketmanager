@@ -19,6 +19,7 @@ use Racketmanager\Domain\Ports\Rating_Gateway_Interface;
 use Racketmanager\Gateways\Mail\Mailer_Interface;
 use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Gateways\Payment\Payment_Gateway_Interface;
+use Racketmanager\Infrastructure\Gateways\Account\Wp_User_Favourites_Gateway;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
 use Racketmanager\Infrastructure\Gateways\Payment\Stripe_Payment_Gateway;
@@ -39,6 +40,7 @@ use Racketmanager\Infrastructure\Wordpress\Shortcodes\General_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Login_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Message_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Email_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Favourite_Presenter;
 use Racketmanager\Presentation\Presenters\Invoice_Presenter;
 use Racketmanager\Presentation\Presenters\Notification_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
@@ -138,7 +140,8 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             $c->get( 'fixture_permission_service' ),
             $app?->site_url ?? '',
             $app?->site_name ?? '',
-            $c->get( 'rubber_repository' )
+            $c->get( 'rubber_repository' ),
+            $c->get( 'option_gateway' )
         ) );
 
         $container->set( 'notification_service', fn( Simple_Container $c ) => new Notification_Service(
@@ -178,10 +181,13 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->set( 'finance_ajax_controller', fn( Simple_Container $c ) => new Finance_Ajax_Controller( $app, $c->get( 'finance_ajax_adapter' ) ) );
 
         // Core Presentation & View Handlers
+        $container->set( 'user_favourites_gateway', fn( Simple_Container $c ) => new Wp_User_Favourites_Gateway( $c->get( 'security_service' ) ) );
+        $container->set( 'favourite_presenter', fn( Simple_Container $c ) => new Favourite_Presenter( $c->get( 'user_favourites_gateway' ) ) );
         $container->set( 'shortcode_template_renderer', fn( Simple_Container $c ) => new Shortcode_Template_Renderer(
             $c->get( 'view_renderer' ),
             $c->get( 'club_presenter' ),
-            $c->get( 'player_presenter' )
+            $c->get( 'player_presenter' ),
+            $c->get( 'favourite_presenter' )
         ) );
         $container->set( 'shortcode_view_presenter', fn( Simple_Container $c ) => new Shortcode_View_Presenter( $c->get( 'shortcode_template_renderer' ) ) );
 
@@ -193,7 +199,8 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             permission_service: $c->get( 'fixture_permission_service' ),
             site_url: $app?->site_url ?? '',
             site_name: $app?->site_name ?? '',
-            rubber_repository: $c->get( 'rubber_repository' )
+            rubber_repository: $c->get( 'rubber_repository' ),
+            option_gateway: $c->get( 'option_gateway' )
         ) );
         $container->set( 'email_shortcode_adapter', fn( Simple_Container $c ) => new Email_Shortcode_Adapter(
             fixture_repository: $c->get( 'fixture_repository' ),
@@ -201,7 +208,8 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             template_renderer: new Shortcode_Template_Renderer(
                 $c->get( 'view_renderer' ),
                 $c->get( 'club_presenter' ),
-                $c->get( 'player_presenter' )
+                $c->get( 'player_presenter' ),
+                $c->get( 'favourite_presenter' )
             )
         ) );
 
@@ -235,7 +243,10 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             security_service: $c->get( 'security_service' )
         ) );
 
-        $container->set( 'get_favourites_handler', fn( Simple_Container $c ) => new Get_Favourites_Handler( $c->get( 'user_repository' ) ) );
+        $container->set( 'get_favourites_handler', fn( Simple_Container $c ) => new Get_Favourites_Handler(
+            $c->get( 'user_repository' ),
+            $c->get( 'club_repository' )
+        ) );
         $container->set( 'invoice_presenter', fn() => new Invoice_Presenter() );
         $container->set( 'get_invoice_handler', fn( Simple_Container $c ) => new Get_Invoice_Handler(
             $c->get( 'finance_service' ),

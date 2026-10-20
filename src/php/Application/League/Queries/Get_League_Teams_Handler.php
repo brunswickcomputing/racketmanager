@@ -12,8 +12,11 @@ use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Util\Util;
 use function __;
+use function current_user_can;
+use function get_current_user_id;
 use function is_array;
 use function is_iterable;
+use function is_user_logged_in;
 use function iterator_to_array;
 use Throwable;
 
@@ -99,7 +102,11 @@ class Get_League_Teams_Handler {
 			);
 			$league->team = $team;
 
-			$vm = $this->team_details_presenter->present( $league, $team_details );
+			$user_can_edit_team = is_user_logged_in() && (
+				current_user_can( 'manage_racketmanager' ) ||
+				( ! empty( $team_details->match_secretary->id ) && (int) $team_details->match_secretary->id === get_current_user_id() )
+			);
+			$vm = $this->team_details_presenter->present( $league, $team_details, $user_can_edit_team );
 
 			return Shortcode_View_Model::for_template(
 				'team-details',

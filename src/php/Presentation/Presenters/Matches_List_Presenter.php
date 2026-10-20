@@ -33,11 +33,13 @@ class Matches_List_Presenter {
         private readonly ?Rubber_Repository_Interface $rubber_repository = null
     ) {}
 
-    public function present_daily( Match_List_Result $result, string $template ): Matches_List_View_Model {
+    public function present_daily( Match_List_Result $result, string $template, int $post_id = 0, string $form_action = '' ): Matches_List_View_Model {
         return new Matches_List_View_Model(
             template: '' !== $template ? 'matches-' . $template : 'matches-daily',
             matches_list: $this->group_by_league( $result->fixtures ),
-            match_date: $result->match_date ?? gmdate( 'Y-m-d' )
+            match_date: $result->match_date ?? gmdate( 'Y-m-d' ),
+            post_id: $post_id,
+            form_action: $form_action
         );
     }
 

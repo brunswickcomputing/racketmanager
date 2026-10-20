@@ -22,7 +22,7 @@ class Get_Memberships_Handler {
             return Shortcode_View_Model::for_error( __( 'You must be logged in to view memberships', 'racketmanager' ) );
         }
 
-        if ( ! $this->player_service || ! $this->registration_service ) {
+        if ( ! $this->player_service || ! $this->registration_service || ! $this->player_presenter ) {
             return Shortcode_View_Model::for_error( __( 'Player not found', 'racketmanager' ) );
         }
 
@@ -30,9 +30,8 @@ class Get_Memberships_Handler {
             $player                         = $this->player_service->get_player( $query->user_id );
             $raw_clubs                      = $this->registration_service->get_clubs_for_player( $player->get_id() );
             $raw_clubs_archive              = $this->registration_service->get_clubs_for_player( $player->get_id(), 'removed' );
-            $presenter                      = $this->player_presenter ?? new Player_Presenter();
-            $template_args['clubs']         = array_map( fn( $c ) => $presenter->present_club_membership( $c ), $raw_clubs );
-            $template_args['clubs_archive'] = array_map( fn( $c ) => $presenter->present_club_membership( $c ), $raw_clubs_archive );
+            $template_args['clubs']         = array_map( fn( $c ) => $this->player_presenter->present_club_membership( $c ), $raw_clubs );
+            $template_args['clubs_archive'] = array_map( fn( $c ) => $this->player_presenter->present_club_membership( $c ), $raw_clubs_archive );
             $filename                       = ! empty( $query->template ) ? 'player-clubs-' . $query->template : 'player-clubs';
 
             return Shortcode_View_Model::for_template( $filename, $template_args, 'account' );

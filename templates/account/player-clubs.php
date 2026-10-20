@@ -24,7 +24,6 @@ namespace Racketmanager;
                         <?php
                         $image = 'assets/icons/lta-icons-extra.svg#icon-team';
                         foreach ( $clubs as $player_club ) {
-                            $fav_link = '/clubs/' . seo_url( $player_club->club_name ) . '/';
                             ?>
                             <li class="list__item col-12 col-sm-6">
                                 <div class="media">
@@ -36,7 +35,7 @@ namespace Racketmanager;
                                         </div>
                                         <div class="media__content">
                                             <h4 class="media__title">
-                                                <a class="nav--link media__link" href="<?php echo esc_attr( $fav_link ); ?>">
+                                                <a class="nav--link media__link" href="<?php echo esc_url( $player_club->club_url ); ?>">
                                                     <span class="nav-link__value"><?php echo esc_html( $player_club->club_name ); ?></span>
                                                 </a>
                                             </h4>
@@ -82,7 +81,6 @@ namespace Racketmanager;
                         <?php
                         $image = 'assets/icons/lta-icons-extra.svg#icon-team';
                         foreach ( $clubs_archive as $player_club ) {
-                            $fav_link = '/clubs/' . seo_url( $player_club->club_name ) . '/';
                             ?>
                             <li class="list__item col-12 col-sm-6">
                                 <div class="media">
@@ -94,7 +92,7 @@ namespace Racketmanager;
                                         </div>
                                         <div class="media__content">
                                             <h4 class="media__title">
-                                                <a class="nav--link media__link" href="<?php echo esc_attr( $fav_link ); ?>">
+                                                <a class="nav--link media__link" href="<?php echo esc_url( $player_club->club_url ); ?>">
                                                     <span class="nav-link__value"><?php echo esc_html( $player_club->club_name ); ?></span>
                                                 </a>
                                             </h4>

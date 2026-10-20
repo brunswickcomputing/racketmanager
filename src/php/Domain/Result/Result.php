@@ -2,6 +2,7 @@
 
 namespace Racketmanager\Domain\Result;
 
+use Racketmanager\Domain\Enums\Fixture_Status;
 use Racketmanager\Domain\Scoring\Set_Score;
 
 class Result {
@@ -45,6 +46,10 @@ class Result {
 
     public function get_status(): ?int {
         return $this->status;
+    }
+
+    public function get_status_enum(): ?Fixture_Status {
+        return Fixture_Status::try_from_value( $this->status );
     }
 
     public function is_walkover(): bool {

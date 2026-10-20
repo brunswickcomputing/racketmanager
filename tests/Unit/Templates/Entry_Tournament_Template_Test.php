@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Templates;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Competition\Queries\Tournament_Entry_Access;
 use Racketmanager\Domain\Club_Player;
 use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
@@ -104,6 +105,17 @@ final class Entry_Tournament_Template_Test extends TestCase {
         $type             = $context['type'] ?? 'tournament';
         $malePartners     = $context['malePartners'] ?? null;
         $femalePartners   = $context['femalePartners'] ?? null;
+
+        // The template no longer decides permissions; act as the producer (Get_Competition_Entry_Handler) would.
+        $access             = Tournament_Entry_Access::resolve(
+            is_open: (bool) $tournament->is_open,
+            is_closed: (bool) $tournament->is_closed,
+            user_id: (int) ( $GLOBALS['wp_stubs_current_user_id'] ?? 0 ),
+            player_id: (int) $player->id,
+            can_manage: (bool) ( $GLOBALS['wp_stubs_current_user_can'] ?? false )
+        );
+        $changes_allowed    = $context['changes_allowed'] ?? $access->changes_allowed;
+        $withdrawal_allowed = $context['withdrawal_allowed'] ?? $access->withdrawal_allowed;
 
         ob_start();
         include $this->template_path;

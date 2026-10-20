@@ -5,6 +5,7 @@ namespace Racketmanager\Services\View;
 
 use Racketmanager\Exceptions\Template_Not_Found_Exception;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
+use Racketmanager\Presentation\Presenters\Favourite_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Throwable;
 use function __;
@@ -44,7 +45,8 @@ class Shortcode_Template_Renderer {
     public function __construct(
         private readonly View_Renderer_Interface $renderer,
         ?Club_Presenter $club_presenter = null,
-        ?Player_Presenter $player_presenter = null
+        ?Player_Presenter $player_presenter = null,
+        private readonly ?Favourite_Presenter $favourite_presenter = null
     ) {
         $this->club_presenter   = $club_presenter ?? new Club_Presenter();
         $this->player_presenter = $player_presenter ?? new Player_Presenter();
@@ -59,6 +61,9 @@ class Shortcode_Template_Renderer {
      */
     public function render( string $template, array $vars = [], false|string $template_type = false ): string {
         $directory = $template_type ? ( self::TYPE_DIRECTORIES[ $template_type ] ?? '' ) : '';
+        if ( $this->favourite_presenter ) {
+            $vars = array_merge( $vars, $this->favourite_presenter->present_template_vars( $vars ) );
+        }
         $vars      = array_merge(
             [
                 'club_presenter'   => $this->club_presenter,

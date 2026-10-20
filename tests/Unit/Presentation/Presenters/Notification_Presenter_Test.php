@@ -124,6 +124,8 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
             $this->assertStringContainsString( 'Test Event', $vars['draw_link'] );
             $this->assertEquals( 'Home Team', $vars['teams']['home']->name );
             $this->assertEquals( 'Away Team', $vars['teams']['away']->name );
+            $this->assertEquals( 'https://example.com', $vars['site_url'] );
+            $this->assertEquals( 'Test Site', $vars['organisation'] );
         }
 
         #[AllowMockObjectsWithoutExpectations]
@@ -156,6 +158,8 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
             $fixture->method( 'get_season' )->willReturn( '2024' );
             $fixture->method( 'get_home_team' )->willReturn( "101" );
             $fixture->method( 'get_away_team' )->willReturn( "102" );
+            $fixture->method( 'get_date' )->willReturn( '2026-10-15 18:30:00' );
+            $fixture->method( 'get_start_time' )->willReturn( '18:30' );
 
             $args = [
                 'competition_type' => 'cup',
@@ -166,7 +170,12 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
 
             $vars = $this->presenter->present_match_notification( $fixture, $args );
 
-            $this->assertEquals( 'match-notification-cup', $vars['template'] );
+            $this->assertSame( 'match-notification-cup', $vars['template'] );
+            $this->assertSame( 'Cup Name', $vars['competition_name'] );
+            $this->assertSame( '15/10/2026', $vars['match_date'] );
+            $this->assertSame( '18:30', $vars['match_time'] );
+            $this->assertSame( 'https://example.com', $vars['site_url'] );
+            $this->assertSame( 'Test Site', $vars['organisation'] );
         }
 
         #[AllowMockObjectsWithoutExpectations]
@@ -179,6 +188,70 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
             $this->assertArrayHasKey( 'action_url', $vars );
             $this->assertStringContainsString( 'https://example.com', $vars['action_url'] );
             $this->assertStringContainsString( 'result/', $vars['action_url'] );
+        }
+
+        #[AllowMockObjectsWithoutExpectations]
+        public function test_present_date_change_notification(): void {
+            $fixture = $this->createStub( Fixture::class );
+            $fixture->method( 'get_id' )->willReturn( 5 );
+            $fixture->method( 'get_league_id' )->willReturn( 10 );
+            $fixture->method( 'get_season' )->willReturn( '2026' );
+            $fixture->method( 'get_home_team' )->willReturn( '101' );
+            $fixture->method( 'get_away_team' )->willReturn( '102' );
+            $fixture->method( 'get_date' )->willReturn( '2026-06-25 19:00:00' );
+            $fixture->method( 'get_date_original' )->willReturn( '2026-06-18 19:00:00' );
+            $fixture->method( 'get_start_time' )->willReturn( '19:00' );
+
+            $this->setup_notification_services( competition_name: 'Division 1' );
+
+            $vars = $this->presenter->present_date_change_notification( $fixture, [
+                'competition_type' => 'league',
+            ] );
+
+            $this->assertSame( 'Test League', $vars['competition_name'] );
+            $this->assertSame( 'https://example.com', $vars['site_url'] );
+            $this->assertSame( 'Test Site', $vars['organisation'] );
+            $this->assertSame( '25 June 2026 19:00', $vars['match_date'] );
+            $this->assertSame( '18 June 2026 19:00', $vars['original_date'] );
+        }
+
+        #[AllowMockObjectsWithoutExpectations]
+        public function test_present_date_change_notification_without_start_time_uses_site_date_format(): void {
+            $fixture = $this->createStub( Fixture::class );
+            $fixture->method( 'get_id' )->willReturn( 5 );
+            $fixture->method( 'get_league_id' )->willReturn( 10 );
+            $fixture->method( 'get_season' )->willReturn( '2026' );
+            $fixture->method( 'get_home_team' )->willReturn( '101' );
+            $fixture->method( 'get_away_team' )->willReturn( '102' );
+            $fixture->method( 'get_date' )->willReturn( '2026-06-25 00:00:00' );
+            $fixture->method( 'get_date_original' )->willReturn( '2026-06-18 00:00:00' );
+            $fixture->method( 'get_start_time' )->willReturn( null );
+
+            $this->setup_notification_services( competition_name: 'Division 1' );
+
+            $vars = $this->presenter->present_date_change_notification( $fixture, [
+                'competition_type' => 'league',
+            ] );
+
+            $this->assertSame( '25/06/2026', $vars['match_date'] );
+            $this->assertSame( '18/06/2026', $vars['original_date'] );
+        }
+
+        #[AllowMockObjectsWithoutExpectations]
+        public function test_present_team_withdrawn_notification_includes_site_info(): void {
+            $fixture = $this->createStub( Fixture::class );
+            $fixture->method( 'get_id' )->willReturn( 6 );
+            $fixture->method( 'get_league_id' )->willReturn( 10 );
+            $fixture->method( 'get_season' )->willReturn( '2026' );
+            $fixture->method( 'get_home_team' )->willReturn( '101' );
+            $fixture->method( 'get_away_team' )->willReturn( '102' );
+
+            $this->setup_notification_services();
+
+            $vars = $this->presenter->present_team_withdrawn_notification( $fixture, [] );
+
+            $this->assertSame( 'https://example.com', $vars['site_url'] );
+            $this->assertSame( 'Test Site', $vars['organisation'] );
         }
 
         #[AllowMockObjectsWithoutExpectations]

@@ -18,6 +18,7 @@ readonly final class Tournament_Event_Config_Page_View_Model {
      * @param Event|object|null $event
      * @param object|null $tournament
      * @param bool $new_event
+     * @param array $leagues
      */
     public function __construct(
         public Competition $competition,
@@ -26,6 +27,7 @@ readonly final class Tournament_Event_Config_Page_View_Model {
         public bool $new_event = false,
         public Error_Bag $errors = new Error_Bag(),
         public string $tab = 'general',
+        public array $leagues = array(),
     ) {
     }
 
@@ -42,6 +44,7 @@ readonly final class Tournament_Event_Config_Page_View_Model {
             'new_event'   => $this->new_event,
             'errors'      => $this->errors,
             'tab'         => $this->tab,
+            'leagues'     => $this->leagues,
         );
     }
 }

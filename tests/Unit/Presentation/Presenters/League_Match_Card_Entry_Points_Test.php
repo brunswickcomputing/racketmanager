@@ -34,6 +34,8 @@ use Racketmanager\Domain\Scoring\Set_Score;
 use Racketmanager\Domain\Team;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
+use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Fixture_Presentation_Adapter;
 use Racketmanager\Presentation\Presenters\Matches_List_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
@@ -92,6 +94,10 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
 
     private function renderer(): Shortcode_Template_Renderer {
         return new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) );
+    }
+
+    private function competition_presenter(): Competition_Shortcode_Presenter {
+        return new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) );
     }
 
     private function create_player( int $id, string $fullname ): Player {
@@ -523,7 +529,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $stats->method( 'populate_players_stats' )->willReturn( [] );
 
         $presenter = new Tournament_Presenter( 'd/m/Y', $this->detail_service_expecting( $fixture, $detail, true ), team_match_row_presenter: $this->create_team_match_row_presenter() );
-        $handler   = new Get_Event_Teams_Handler( $comp_service, $stats, $presenter, $team_service, new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() ) );
+        $handler   = new Get_Event_Teams_Handler( $comp_service, $stats, $presenter, $team_service, new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() ), $this->competition_presenter() );
 
         $vm = $handler->handle( new Get_Event_Teams_Query( event_id: 12, team: '10' ) );
 
@@ -587,7 +593,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $team_service->method( 'get_team_by_id' )->willReturn( $team );
         $stats     = $this->createStub( Player_Stats_Service::class );
         $presenter = new Tournament_Presenter( 'd/m/Y', team_match_row_presenter: $this->create_team_match_row_presenter() );
-        $handler   = new Get_Event_Teams_Handler( $competition_service, $stats, $presenter, $team_service, new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() ) );
+        $handler   = new Get_Event_Teams_Handler( $competition_service, $stats, $presenter, $team_service, new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() ), $this->competition_presenter() );
 
         $vm = $handler->handle( new Get_Event_Teams_Query( event_id: 12, team: '10' ) );
         $row = $event->team->matches[0];
@@ -757,7 +763,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $handler = new Get_Event_Draw_Handler( $comp_service );
+        $handler = new Get_Event_Draw_Handler( $comp_service, null, new Competition_Shortcode_Presenter(), $this->createStub( Fixture_Detail_Service::class ) );
         $vm      = $handler->handle( new Get_Event_Draw_Query( event_id: 12 ) );
 
         $this->assertSame( 'draw', $vm->template, (string) $vm->error_message );
@@ -798,7 +804,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
             ->willReturn( $detail );
 
         $presenter = new Tournament_Presenter( 'd/m/Y', $detail_service, team_match_row_presenter: $this->create_team_match_row_presenter() );
-        $handler   = new Get_Event_Clubs_Handler( $comp_service, $club_service, $stats, $presenter );
+        $handler   = new Get_Event_Clubs_Handler( $comp_service, $club_service, $stats, $presenter, $this->competition_presenter() );
         $vm        = $handler->handle( new Get_Event_Clubs_Query( event_id: 12, club_id: '5' ) );
 
         $this->assertSame( 'clubs', $vm->template, (string) $vm->error_message );
@@ -847,7 +853,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
             ->willReturn( $detail );
 
         $presenter = new Tournament_Presenter( 'd/m/Y', $detail_service, team_match_row_presenter: $this->create_team_match_row_presenter() );
-        $handler   = new Get_Competition_Clubs_Handler( $comp_service, $club_service, $stats, $presenter );
+        $handler   = new Get_Competition_Clubs_Handler( $comp_service, $club_service, $stats, $presenter, $this->competition_presenter() );
         $vm        = $handler->handle( new Get_Competition_Clubs_Query( competition_id: 1, club_identifier: '5', template: '' ) );
 
         $this->assertSame( 'clubs', $vm->template, (string) $vm->error_message );

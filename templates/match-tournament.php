@@ -25,6 +25,8 @@ $competition = $fixture_details->competition;
 $home_team = $fixture_details->home_team;
 $away_team = $fixture_details->away_team;
 $tournament_link          = $tournament_link ?? null;
+// Return link is supplied by the producer (referrer, otherwise the tournament matches page).
+$back_url                 = $back_url ?? ( empty( $tournament ) ? '' : $tournament_link . 'matches/' );
 $winner_set               = null;
 $winner                   = $winner ?? null;
 $loser                    = $loser ?? null;
@@ -265,12 +267,6 @@ if ( $match ) {
                     <?php
                 }
                 ?>
-                <?php
-                $page_referrer = wp_get_referer();
-                if ( ! $page_referrer && ! empty( $tournament ) ) {
-                    $page_referrer = $tournament_link . 'matches/';
-                }
-                ?>
                 <div class="alert_rm <?php echo empty( $message ) ? null : 'alert--success'; ?>" id="matchAlert" <?php echo empty( $message ) ? 'style="display:none;"' : null; ?>>
                     <div class="alert__body">
                         <div class="alert__body-inner" id="matchAlertResponse">
@@ -279,7 +275,7 @@ if ( $match ) {
                     </div>
                 </div>
                 <div class="match__buttons mb-3">
-                    <a href="<?php echo esc_url( $page_referrer ); ?>">
+                    <a href="<?php echo esc_url( $back_url ); ?>">
                         <button class="btn btn-plain" type="button"><?php esc_html_e( 'Return', 'racketmanager' ); ?></button>
                     </a>
                     <?php

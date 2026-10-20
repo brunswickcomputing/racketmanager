@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\League\Queries;
 
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\League_Service;
@@ -24,7 +25,8 @@ class Get_League_Players_Handler {
         private readonly Player_Service $player_service,
         private readonly Shortcode_Template_Renderer $template_renderer,
         private readonly Player_Query_Service $player_query_service,
-        private readonly Player_Stats_Service $player_stats_service
+        private readonly Player_Stats_Service $player_stats_service,
+        private readonly Player_Presenter $player_presenter
     ) {}
 
     public function handle( Get_League_Players_Query $query ): Shortcode_View_Model {
@@ -38,6 +40,7 @@ class Get_League_Players_Handler {
 
         $league->set_season( $query->season ?? false );
         $season_name = $league->current_season['name'] ?? null;
+        $player_vm   = null;
 
         if ( $query->player_id ) {
             $player = null;
@@ -58,6 +61,7 @@ class Get_League_Players_Handler {
             $player->matches = $this->player_query_service->get_matches( $player, $league, $season_name, 'league' );
             $player->stats   = $this->player_stats_service->get_stats( $player );
             $league->player  = $player;
+            $player_vm       = $this->player_presenter->present_player( $player );
         } else {
             $league->players = $this->player_stats_service->populate_players_stats(
                 $league->get_players(),
@@ -70,6 +74,11 @@ class Get_League_Players_Handler {
             }
         }
 
+        $player_links = [];
+        if ( ! empty( $league->players ) && is_array( $league->players ) ) {
+            $player_links = $this->player_presenter->present_league_player_links( $league, $league->players );
+        }
+
         if ( empty( $query->template ) && ! empty( $league->sport ) && $this->template_renderer->template_exists( 'players-' . $league->sport, 'league' ) ) {
             $filename = 'players-' . $league->sport;
         } else {
@@ -79,7 +88,9 @@ class Get_League_Players_Handler {
         return Shortcode_View_Model::for_template(
             $filename,
             [
-                'league' => $league,
+                'league'       => $league,
+                'player_vm'    => $player_vm,
+                'player_links' => $player_links,
             ],
             'league'
         );

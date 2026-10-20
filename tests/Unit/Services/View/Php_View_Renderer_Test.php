@@ -214,16 +214,15 @@ class Php_View_Renderer_Test extends TestCase {
     }
 
     public function test_form_login_renders_registration_tab_when_registration_enabled(): void {
-        $GLOBALS['wp_stubs_options']['users_can_register'] = 1;
-        $_GET['action']                                    = 'register';
-
         $renderer = new Php_View_Renderer( $this->template_base_path );
 
         $output = $this->render_trapping_warnings(
             static fn() => $renderer->render_to_string(
                 'forms/form-login',
                 [
-                    'recaptcha_site_key' => 'test_recaptcha_key_123',
+                    'recaptcha_site_key'  => 'test_recaptcha_key_123',
+                    'users_can_register'  => true,
+                    'tab'                 => 'registration',
                 ]
             )
         );
@@ -325,6 +324,7 @@ class Php_View_Renderer_Test extends TestCase {
                 'forms/form-login',
                 [
                     'recaptcha_site_key' => 'site_key_xyz',
+                    'users_can_register' => true,
                     'errors'             => [ 'email_exists', 'first_name', 'last_name', 'captcha' ],
                     'error_codes'        => [ 'email_exists', 'first_name', 'last_name', 'captcha' ],
                 ]

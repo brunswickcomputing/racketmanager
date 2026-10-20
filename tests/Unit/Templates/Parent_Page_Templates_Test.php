@@ -29,8 +29,11 @@ use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class Parent_Page_Templates_Test extends TestCase {
+    use Manages_Wordpress_Globals;
+
     private string $templates_dir;
     private Php_View_Renderer $renderer;
     private Shortcode_View_Presenter $view_presenter;
@@ -39,6 +42,9 @@ class Parent_Page_Templates_Test extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        $this->backup_globals();
+        $_GET                        = [];
+        $_POST                       = [];
         $this->templates_dir         = dirname( __DIR__, 3 ) . '/templates/';
         $this->renderer              = new Php_View_Renderer( $this->templates_dir );
         $this->competition_presenter = new Competition_Shortcode_Presenter( $this->renderer );
@@ -46,6 +52,11 @@ class Parent_Page_Templates_Test extends TestCase {
         $this->view_presenter        = new Shortcode_View_Presenter(
             new Shortcode_Template_Renderer( $this->renderer )
         );
+    }
+
+    protected function tearDown(): void {
+        $this->restore_globals();
+        parent::tearDown();
     }
 
     public function test_competition_handler_to_page_render_league_with_no_post(): void {

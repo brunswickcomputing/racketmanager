@@ -13,6 +13,8 @@
 namespace Racketmanager;
 
 /** @var array $clubs */
+/** @var array<int|string, string> $club_urls */
+$club_urls = $club_urls ?? [];
 ?>
 <div class="container">
     <?php
@@ -33,13 +35,18 @@ namespace Racketmanager;
                     </div>
                     <?php
                     foreach ( $clubs as $club ) {
+                        $club_shortcode = is_object( $club ) ? ( $club->shortcode ?? '' ) : ( $club['shortcode'] ?? '' );
+                        $club_id        = is_object( $club ) ? ( $club->id ?? '' ) : ( $club['id'] ?? '' );
+                        $href           = $club_urls[ $club_id ] ?? ( $club_urls[ (string) $club_id ] ?? ( $club_urls[ (string) $club_shortcode ] ?? '' ) );
                         ?>
                         <div class="row mb-2 row-list">
                             <div class="col-3 col-md-1">
-                                <a href="<?php echo esc_attr( seo_url( $club->shortcode ) ); ?>/" class="btn btn-primary" role="button"><?php esc_html_e( 'Enter', 'racketmanager' ); ?></a>
+                                <?php if ( '' !== $href ) : ?>
+                                    <a href="<?php echo esc_attr( $href ); ?>" class="btn btn-primary" role="button"><?php esc_html_e( 'Enter', 'racketmanager' ); ?></a>
+                                <?php endif; ?>
                             </div>
                             <div class="col-6">
-                                <span class=""><?php echo esc_html( $club->shortcode ); ?></span>
+                                <span class=""><?php echo esc_html( $club_shortcode ); ?></span>
                             </div>
                         </div>
                         <?php

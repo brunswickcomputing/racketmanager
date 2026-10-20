@@ -22,6 +22,8 @@ use Racketmanager\Domain\Player_Factory;
 use Racketmanager\Domain\Scoring\Set_Score;
 use Racketmanager\Domain\Team;
 use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\DTO\Fixture\Fixture_Option_Request;
+use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use ReflectionClass;
 use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
@@ -38,6 +40,7 @@ use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
 use stdClass;
 
 class Match_Detail_And_Tournament_Templates_Test extends TestCase {
+	use Creates_Team_Match_Row_Presenter;
 
 	private Php_View_Renderer $renderer;
 	private Shortcode_Template_Renderer $template_renderer;
@@ -238,6 +241,93 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$this->assertStringContainsString( '(Re)schedule match', $html );
 		$this->assertStringContainsString( 'data-match-option="schedule_match"', $html );
 		$this->assertStringNotContainsString( 'Reset match result', $html );
+	}
+
+	private function build_tournament_match_view_model( ?string $referrer ): \Racketmanager\Presentation\View_Models\Shortcode_View_Model {
+		$tournament = new Tournament( (object) [
+			'id'         => 101,
+			'name'       => 'Summer Championship 2026',
+			'date_start' => '2026-07-01',
+			'date_end'   => '2026-07-10',
+			'date'       => '2026-07-10',
+		] );
+
+		$player1 = Player_Factory::from_object( (object) [ 'id' => 1, 'display_name' => 'Roger Federer', 'first_name' => 'Roger', 'last_name' => 'Federer' ] );
+		$player2 = Player_Factory::from_object( (object) [ 'id' => 2, 'display_name' => 'Rafael Nadal', 'first_name' => 'Rafael', 'last_name' => 'Nadal' ] );
+		$team1   = new Team( (object) [ 'id' => 10, 'title' => 'Roger Federer', 'players' => [ $player1 ] ] );
+		$team2   = new Team( (object) [ 'id' => 20, 'title' => 'Rafael Nadal', 'players' => [ $player2 ] ] );
+
+		$fixture = Fixture_Test_Factory::create( id: 555, home_team: '10', away_team: '20', date: '2026-07-05 09:05:00', final: 'final', league_id: 202 );
+		$fixture->start_time = '09:05';
+		$fixture->season     = '2026';
+
+		$league                  = $this->createStub( League::class );
+		$league->title           = 'Championship Singles';
+		$league->is_championship = true;
+		$league->scoring         = '3_sets';
+		$league->num_sets        = 3;
+		$league->num_rubbers     = 1;
+
+		$event       = $this->createStub( Event::class );
+		$event->name = 'Mens Singles';
+
+		$competition       = $this->createStub( Competition::class );
+		$competition->type = Competition_Type::TOURNAMENT;
+		$competition->method( 'get_type' )->willReturn( 'tournament' );
+
+		$club = $this->createStub( Club::class );
+		$club->method( 'get_shortcode' )->willReturn( 'SW19' );
+
+		$fixture_details = new Fixture_Details_DTO(
+			fixture: $fixture,
+			league: $league,
+			event: $event,
+			competition: $competition,
+			home_team: new Team_Details_DTO( $team1 ),
+			away_team: new Team_Details_DTO( $team2 )
+		);
+
+		$tournament_service = $this->createStub( Tournament_Service::class );
+		$tournament_service->method( 'get_tournament_with_details_by_name' )
+			->willReturn( new Tournament_Details_DTO( $tournament, $competition, $club ) );
+		$fixture_service = $this->createStub( Fixture_Service::class );
+		$fixture_service->method( 'get_tournament_fixture_with_details' )->willReturn( $fixture_details );
+		$fixture_service->method( 'is_update_allowed' )
+			->willReturn( (object) [ 'user_can_update' => true, 'user_type' => 'admin' ] );
+
+		$handler = new Get_Tournament_Match_Handler( $tournament_service, $fixture_service, new Tournament_Presenter( 'Y-m-d' ) );
+
+		return $handler->handle( new Get_Tournament_Match_Query( 'summer-championship-2026', 555, $referrer ) );
+	}
+
+	/**
+	 * @return array<string, array{?string, string}>
+	 */
+	public static function tournament_match_back_url_provider(): array {
+		return [
+			'referrer supplied'            => [ 'https://example.test/tournament/summer-championship-2026/draw/', 'https://example.test/tournament/summer-championship-2026/draw/' ],
+			'no referrer uses matches page' => [ null, '/tournament/summer-championship-2026/matches/' ],
+			'blank referrer uses matches page' => [ '', '/tournament/summer-championship-2026/matches/' ],
+		];
+	}
+
+	#[\PHPUnit\Framework\Attributes\DataProvider( 'tournament_match_back_url_provider' )]
+	public function test_tournament_match_back_url_comes_from_producer_not_request_state( ?string $referrer, string $expected ): void {
+		// The template must not read the request: contradict the query with a different request referrer.
+		$GLOBALS['wp_stubs_wp_get_referer'] = 'https://elsewhere.test/should-not-be-used/';
+		try {
+			$view_model = $this->build_tournament_match_view_model( $referrer );
+			$this->assertSame( $expected, $view_model->vars['back_url'] );
+
+			$GLOBALS['wp_stubs_is_user_logged_in'] = true;
+			[ $html, $warnings ] = $this->with_warning_capture( fn() => $this->renderer->render_to_string( 'match-tournament', $view_model, $view_model->vars ) );
+		} finally {
+			unset( $GLOBALS['wp_stubs_wp_get_referer'] );
+		}
+
+		$this->assertSame( [], $warnings );
+		$this->assertStringContainsString( '<a href="' . $expected . '">', $html );
+		$this->assertStringNotContainsString( 'elsewhere.test', $html );
 	}
 
 	public function test_render_match_tournament_league_box_real_template(): void {
@@ -655,5 +745,184 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$this->assertStringNotContainsString( '(Re)schedule match', $html );
 		$this->assertStringContainsString( 'is-editable', $html );
 		$this->assertStringContainsString( 'at 9:05', $html );
+	}
+
+	public function test_match_card_template_renders_precomputed_date_with_zero_warnings(): void {
+		$fixture = $this->createStub( Fixture::class );
+		$fixture->method( 'get_id' )->willReturn( 101 );
+		$fixture->method( 'get_date' )->willReturn( '2026-10-18 19:30:00' );
+		$fixture->method( 'get_match_day' )->willReturn( 3 );
+
+		$league           = $this->createStub( League::class );
+		$league->title    = 'Premier League';
+		$league->num_sets = 3;
+
+		$event       = $this->createStub( Event::class );
+		$competition = $this->createStub( Competition::class );
+
+		$home_team = $this->createStub( Team::class );
+		$home_team->method( 'get_name' )->willReturn( 'Home Club 1' );
+		$away_team = $this->createStub( Team::class );
+		$away_team->method( 'get_name' )->willReturn( 'Away Club 2' );
+
+		$dto = new Fixture_Details_DTO(
+			fixture: $fixture,
+			league: $league,
+			event: $event,
+			competition: $competition,
+			home_team: new Team_Details_DTO( $home_team ),
+			away_team: new Team_Details_DTO( $away_team ),
+			fixture_title: 'Home Club 1 v Away Club 2'
+		);
+
+		$presenter = new Fixture_Presenter(
+			$this->createStub( Fixture_Link_Service::class ),
+			$this->createStub( Option_Gateway_Interface::class ),
+			$this->create_team_match_row_presenter()
+		);
+
+		$vars = $presenter->map_to_match_card_vars( $dto, $fixture, '<div class="sponsor">Sponsor</div>' );
+
+		[ $html, $warnings ] = $this->with_warning_capture( fn() => $this->renderer->render_to_string( 'match/match-card', $vars ) );
+
+		$this->assertSame( [], $warnings );
+		$this->assertStringContainsString( 'Premier League', $html );
+		$this->assertStringContainsString( '<div class="matchDate">2026-10-18</div>', $html );
+		$this->assertStringContainsString( 'Week3', $html );
+		$this->assertStringContainsString( 'Home Club 1 v Away Club 2', $html );
+		$this->assertStringContainsString( '<div class="sponsor">Sponsor</div>', $html );
+	}
+
+	public function test_match_card_template_renders_with_null_date_with_zero_warnings(): void {
+		$fixture = $this->createStub( Fixture::class );
+		$fixture->method( 'get_id' )->willReturn( 102 );
+		$fixture->method( 'get_date' )->willReturn( null );
+		$fixture->method( 'get_match_day' )->willReturn( 1 );
+
+		$league           = $this->createStub( League::class );
+		$league->title    = 'Division 2';
+		$league->num_sets = 2;
+
+		$dto = new Fixture_Details_DTO(
+			fixture: $fixture,
+			league: $league,
+			event: $this->createStub( Event::class ),
+			competition: $this->createStub( Competition::class )
+		);
+
+		$presenter = new Fixture_Presenter(
+			$this->createStub( Fixture_Link_Service::class ),
+			$this->createStub( Option_Gateway_Interface::class ),
+			$this->create_team_match_row_presenter()
+		);
+
+		$vars = $presenter->map_to_match_card_vars( $dto, $fixture );
+
+		[ $html, $warnings ] = $this->with_warning_capture( fn() => $this->renderer->render_to_string( 'match/match-card', $vars ) );
+
+		$this->assertSame( [], $warnings );
+		$this->assertStringContainsString( 'Division 2', $html );
+		$this->assertStringContainsString( '<div class="matchDate"></div>', $html );
+	}
+
+	public function test_match_card_rubbers_template_renders_precomputed_date_with_zero_warnings(): void {
+		$fixture = $this->createStub( Fixture::class );
+		$fixture->method( 'get_id' )->willReturn( 201 );
+		$fixture->method( 'get_date' )->willReturn( '2026-10-18 19:30:00' );
+		$fixture->method( 'get_match_day' )->willReturn( 4 );
+		$fixture->method( 'get_rubbers' )->willReturn( [] );
+
+		$league              = $this->createStub( League::class );
+		$league->title       = 'Premier Rubbers';
+		$league->num_rubbers = 3;
+		$league->num_sets    = 3;
+
+		$dto = new Fixture_Details_DTO(
+			fixture: $fixture,
+			league: $league,
+			event: $this->createStub( Event::class ),
+			competition: $this->createStub( Competition::class ),
+			fixture_title: 'Team A v Team B'
+		);
+
+		$presenter = new Fixture_Presenter(
+			$this->createStub( Fixture_Link_Service::class ),
+			$this->createStub( Option_Gateway_Interface::class ),
+			$this->create_team_match_row_presenter()
+		);
+
+		$vars = $presenter->map_to_match_card_vars( $dto, $fixture, '<!-- sponsor -->' );
+
+		[ $html, $warnings ] = $this->with_warning_capture( fn() => $this->renderer->render_to_string( 'match/match-card-rubbers', $vars ) );
+
+		$this->assertSame( [], $warnings );
+		$this->assertStringContainsString( 'Premier Rubbers', $html );
+		$this->assertStringContainsString( '<div class="matchDate">2026-10-18</div>', $html );
+		$this->assertStringContainsString( 'Team A v Team B', $html );
+	}
+
+	public function test_match_option_modal_renders_schedule_date_inputs_with_zero_warnings(): void {
+		$fixture = $this->createStub( Fixture::class );
+		$fixture->method( 'get_id' )->willReturn( 301 );
+		$fixture->method( 'get_home_team' )->willReturn( '10' );
+		$fixture->method( 'get_away_team' )->willReturn( '20' );
+		$fixture->method( 'get_date' )->willReturn( '2026-10-18 00:00:00' );
+		$fixture->method( 'get_start_time' )->willReturn( null );
+
+		$league        = $this->createStub( League::class );
+		$league->id    = 1;
+		$league->title = 'Division 1';
+		$league->method( 'get_name' )->willReturn( 'Division 1' );
+		$event         = $this->createStub( Event::class );
+		$event->id     = 2;
+		$event->name   = 'Men Singles';
+		$comp          = $this->createStub( Competition::class );
+		$comp->method( 'get_type' )->willReturn( 'league' );
+
+		$dto = new Fixture_Details_DTO(
+			fixture: $fixture,
+			league: $league,
+			event: $event,
+			competition: $comp
+		);
+
+		$presenter = new Fixture_Presenter(
+			$this->createStub( Fixture_Link_Service::class ),
+			$this->createStub( Option_Gateway_Interface::class ),
+			$this->create_team_match_row_presenter()
+		);
+
+		$request = new Fixture_Option_Request( 301, 'schedule-modal', 'schedule_match' );
+		$vars    = $presenter->map_to_fixture_option_vars( $dto, $request, '(Re)schedule fixture', 'Save Date', 'setMatchDate' );
+
+		[ $html, $warnings ] = $this->with_warning_capture( fn() => $this->renderer->render_to_string( 'match/match-option-modal', $vars ) );
+
+		$this->assertSame( [], $warnings );
+		$this->assertStringContainsString( '(Re)schedule fixture', $html );
+		$this->assertStringContainsString( 'type="date"', $html );
+		$this->assertStringContainsString( 'value="2026-10-18"', $html );
+		$this->assertStringContainsString( 'data-action="set-match-date"', $html );
+
+		// Test datetime-local with start time
+		$fixture_time = $this->createStub( Fixture::class );
+		$fixture_time->method( 'get_id' )->willReturn( 302 );
+		$fixture_time->method( 'get_home_team' )->willReturn( '10' );
+		$fixture_time->method( 'get_away_team' )->willReturn( '20' );
+		$fixture_time->method( 'get_date' )->willReturn( '2026-10-18 19:30:00' );
+		$fixture_time->method( 'get_start_time' )->willReturn( '19:30' );
+
+		$dto_time = new Fixture_Details_DTO(
+			fixture: $fixture_time,
+			league: $league,
+			event: $event,
+			competition: $comp
+		);
+		$vars_time = $presenter->map_to_fixture_option_vars( $dto_time, $request, '(Re)schedule fixture', 'Save Date', 'setMatchDate' );
+
+		[ $html_time, $warnings_time ] = $this->with_warning_capture( fn() => $this->renderer->render_to_string( 'match/match-option-modal', $vars_time ) );
+
+		$this->assertSame( [], $warnings_time );
+		$this->assertStringContainsString( 'type="datetime-local"', $html_time );
+		$this->assertStringContainsString( 'value="2026-10-18 19:30:00"', $html_time );
 	}
 }

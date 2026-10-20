@@ -12,6 +12,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Admin;
 
 use Racketmanager\Admin\Presenters\Admin_Error_Bag_Mapper;
+use Racketmanager\Admin\Presenters\Admin_Entry_Link_Presenter;
 use Racketmanager\Admin\Presenters\Admin_Plan_Presenter;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
@@ -46,6 +47,7 @@ final class Admin_Cup extends Admin_Championship {
     private Cup_Plan_Action_Dispatcher $cup_plan_action_dispatcher;
     private Draw_Action_Dispatcher $draw_action_dispatcher;
     private Admin_Plan_Presenter $admin_plan_presenter;
+    private Admin_Entry_Link_Presenter $admin_entry_link_presenter;
 
     public function __construct(
         $plugin_instance,
@@ -54,6 +56,7 @@ final class Admin_Cup extends Admin_Championship {
         ?Cup_Plan_Action_Dispatcher $cup_plan_action_dispatcher = null,
         ?Draw_Action_Dispatcher $draw_action_dispatcher = null,
         ?Admin_Plan_Presenter $admin_plan_presenter = null,
+        ?Admin_Entry_Link_Presenter $admin_entry_link_presenter = null,
     ) {
         parent::__construct( $plugin_instance );
         $c                                 = $this->racketmanager->container;
@@ -62,6 +65,7 @@ final class Admin_Cup extends Admin_Championship {
         $this->cup_plan_action_dispatcher  = $cup_plan_action_dispatcher ?? $c->get( 'cup_plan_action_dispatcher' );
         $this->draw_action_dispatcher      = $draw_action_dispatcher ?? $c->get( 'draw_action_dispatcher' );
         $this->admin_plan_presenter        = $admin_plan_presenter ?? $c->get( 'admin_plan_presenter' );
+        $this->admin_entry_link_presenter  = $admin_entry_link_presenter ?? $c->get( 'admin_entry_link_presenter' );
     }
 
     /**
@@ -145,10 +149,24 @@ final class Admin_Cup extends Admin_Championship {
             return;
         }
         $competition_events = $this->competition_service->get_events_for_competition( $competition_id, $season );
+        $draw_sizes         = array();
         $i                  = 0;
         foreach ( $competition_events as $event ) {
             $leagues = $event->get_leagues();
             if ( $leagues ) {
+                foreach ( $leagues as $league ) {
+                    $league_id = is_object( $league ) ? ( $league->id ?? null ) : ( $league['id'] ?? null );
+                    if ( null !== $league_id ) {
+                        if ( ! empty( $league->is_championship ) && isset( $league->championship->num_teams_first_round ) ) {
+                            $draw_sizes[ $league_id ] = (string) $league->championship->num_teams_first_round;
+                        } else {
+                            if ( method_exists( $league, 'set_num_matches' ) ) {
+                                $league->set_num_matches( true );
+                            }
+                            $draw_sizes[ $league_id ] = (string) ( $league->num_matches_total ?? '' );
+                        }
+                    }
+                }
                 $competition_events[ $i ]->leagues = $leagues;
             }
             ++$i;
@@ -172,6 +190,7 @@ final class Admin_Cup extends Admin_Championship {
         }
         $cup_season->entries  = $this->competition_service->get_clubs_for_competition( $competition_id, $season );
         $competition_overview = $this->competition_service->get_competition_overview( $competition_id, $season );
+        $entry_urls           = $this->admin_entry_link_presenter->club_entry_urls( $competition, (string) $season, (array) ( $cup_season->entries ?? array() ) );
 
         $this->show_message();
         require RACKETMANAGER_PATH . 'templates/admin/cup/show-season.php';

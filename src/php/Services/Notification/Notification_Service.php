@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Notification;
 
+use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Results_Checker;
 use Racketmanager\Gateways\Mail\Mailer_Interface;
@@ -133,12 +134,13 @@ class Notification_Service {
             return;
         }
 
-        $admin_email = $this->app->get_confirmation_email( $league->event->competition->type );
+        $comp_type   = $this->get_competition_type_string( $league->event->competition->type ?? 'league' );
+        $admin_email = $this->app->get_confirmation_email( $comp_type );
         if ( empty( $admin_email ) ) {
             return;
         }
 
-        $options               = $this->settings_service->get_category( $league->event->competition->type );
+        $options               = $this->settings_service->get_category( $comp_type );
         $result_notification   = $options['resultNotification'] ?? 'none';
         $confirmation_required = $options['confirmationRequired'] ?? false;
         $confirmation_timeout  = $options['confirmationTimeout'] ?? 0;
@@ -166,7 +168,7 @@ class Notification_Service {
         if ( $confirmation_email ) {
             $email_to  = $confirmation_email;
             $headers[] = $this->app->get_from_user_email();
-            $headers[] = RACKETMANAGER_CC_EMAIL . ucfirst( $league->event->competition->type ) . ' Secretary <' . $admin_email . '>';
+            $headers[] = RACKETMANAGER_CC_EMAIL . ucfirst( $comp_type ) . ' Secretary <' . $admin_email . '>';
 
             if ( $confirmation_required ) {
                 $subject .= ' - ' . __( 'Confirmation required', 'racketmanager' );
@@ -282,7 +284,8 @@ class Notification_Service {
             return;
         }
 
-        $email_from = $this->app->get_confirmation_email( $league->event->competition->type );
+        $comp_type  = $this->get_competition_type_string( $league->event->competition->type ?? 'league' );
+        $email_from = $this->app->get_confirmation_email( $comp_type );
         $headers    = array( 'From: ' . $organisation_name . ' <' . $email_from . '>' );
 
         $subject = sprintf( /* translators: 1: organisation name, 2: fixture title */ __( '[%1$s] Result Error: %2$s', 'racketmanager' ), $organisation_name, $fixture->fixture_title );
@@ -365,14 +368,15 @@ class Notification_Service {
             return null;
         }
 
-        $admin_email = $args['from_email'] ?? $this->app->get_confirmation_email( $league->event->competition->type );
+        $comp_type   = $this->get_competition_type_string( $league->event->competition->type ?? 'league' );
+        $admin_email = $args['from_email'] ?? $this->app->get_confirmation_email( $comp_type );
         if ( empty( $admin_email ) ) {
             return null;
         }
 
         $headers   = array();
         $headers[] = $this->app->get_from_user_email();
-        $headers[] = RACKETMANAGER_CC_EMAIL . ucfirst( $league->event->competition->type ) . ' Secretary <' . $admin_email . '>';
+        $headers[] = RACKETMANAGER_CC_EMAIL . ucfirst( $comp_type ) . ' Secretary <' . $admin_email . '>';
 
         $home_team     = $this->team_repository->find_by_id( (int) $fixture->get_home_team() );
         $away_team     = $this->team_repository->find_by_id( (int) $fixture->get_away_team() );
@@ -495,8 +499,9 @@ class Notification_Service {
             return null;
         }
 
-        $email_from      = $this->app->get_confirmation_email( $league->event->competition->type );
-        $secretary_email = ucfirst( $league->event->competition->type ) . ' ' . __( 'Secretary', 'racketmanager' ) . ' <' . $email_from . '>';
+        $comp_type       = $this->get_competition_type_string( $league->event->competition->type ?? 'league' );
+        $email_from      = $this->app->get_confirmation_email( $comp_type );
+        $secretary_email = ucfirst( $comp_type ) . ' ' . __( 'Secretary', 'racketmanager' ) . ' <' . $email_from . '>';
         $headers         = array(
             RACKETMANAGER_FROM_EMAIL . $secretary_email,
             RACKETMANAGER_CC_EMAIL . $secretary_email,
@@ -654,7 +659,8 @@ class Notification_Service {
             return;
         }
 
-        $admin_email = $this->app->get_confirmation_email( $league->event->competition->type );
+        $comp_type   = $this->get_competition_type_string( $league->event->competition->type ?? 'league' );
+        $admin_email = $this->app->get_confirmation_email( $comp_type );
         if ( empty( $admin_email ) ) {
             return;
         }
@@ -670,7 +676,7 @@ class Notification_Service {
         $subject       = $this->app->site_name . ' - ' . $league->title . ' - ' . $fixture_title . ' - ' . __( 'Team withdrawn', 'racketmanager' );
         $headers       = array();
         $headers[]     = $this->app->get_from_user_email();
-        $headers[]     = RACKETMANAGER_CC_EMAIL . ucfirst( $league->event->competition->type ) . ' Secretary <' . $admin_email . '>';
+        $headers[]     = RACKETMANAGER_CC_EMAIL . ucfirst( $comp_type ) . ' Secretary <' . $admin_email . '>';
 
         $message_args = array(
             'fixture' => $fixture->get_id(),
@@ -699,7 +705,7 @@ class Notification_Service {
      */
     public function send_event_fixtures( object $event ): bool {
         $message_sent      = false;
-        $comp_type         = $event->competition->type ?? 'league';
+        $comp_type         = $this->get_competition_type_string( $event->competition->type ?? 'league' );
         $from_email        = $this->app->get_confirmation_email( $comp_type );
         $organisation_name = $this->app->site_name ?? '';
         $leagues           = method_exists( $event, 'get_leagues' ) ? $event->get_leagues() : [];
@@ -724,10 +730,11 @@ class Notification_Service {
                     : [];
 
                 $headers   = [];
-                $headers[] = 'From: ' . ucfirst( (string) $comp_type ) . ' Secretary <' . $from_email . '>';
-                $headers[] = 'cc: ' . ucfirst( (string) $comp_type ) . ' Secretary <' . $from_email . '>';
+                $headers[] = 'From: ' . ucfirst( $comp_type ) . ' Secretary <' . $from_email . '>';
+                $headers[] = 'cc: ' . ucfirst( $comp_type ) . ' Secretary <' . $from_email . '>';
                 $email_subject = $organisation_name . ' - ' . ( $league->title ?? '' ) . ' - Season ' . ( $team->season ?? '' ) . ' - Fixtures - ' . ( $team->title ?? '' );
-                $email_to  = ( $team->captain ?? '' ) . ' <' . $team->contactemail . '>';
+                $captain_name  = (string) ( $team->captain_name ?? '' );
+                $email_to  = $captain_name . ' <' . $team->contactemail . '>';
 
                 $club = isset( $team->club_id ) ? $this->club_repository->find_by_id( (int) $team->club_id ) : null;
                 if ( isset( $club->match_secretary->email ) ) {
@@ -739,14 +746,20 @@ class Notification_Service {
                 $team_label        = __( 'team', 'racketmanager' );
                 $action_url        = ( $this->app->site_url ?? '' ) . '/' . $comp_type . '/' . $league_title_slug . '/' . ( $team->season ?? '' ) . '/' . $team_label . '/' . $team_title_slug;
 
+                $presented_matches = [];
+                foreach ( $matches as $m ) {
+                    $presented_matches[] = $this->presenter->present_send_fixtures_match( $m, (int) $team->id );
+                }
+
                 $vars = [
                     'competition'   => $event->name ?? '',
-                    'captain'       => $team->captain ?? '',
+                    'captain'       => $captain_name,
                     'season'        => $team->season ?? '',
-                    'matches'       => $matches,
+                    'matches'       => $presented_matches,
                     'team'          => $team,
                     'action_url'    => $action_url,
                     'organisation'  => $organisation_name,
+                    'site_url'      => $this->app->site_url ?? '',
                     'contact_email' => $from_email,
                 ];
 
@@ -758,5 +771,19 @@ class Notification_Service {
         }
 
         return $message_sent;
+    }
+
+    /**
+     * Normalize competition type to string value.
+     *
+     * @param Competition_Type|string|null $type
+     * @return string
+     */
+    private function get_competition_type_string( mixed $type ): string {
+        if ( $type instanceof Competition_Type ) {
+            return $type->value;
+        }
+
+        return (string) ( $type ?? 'league' );
     }
 }

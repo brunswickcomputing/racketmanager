@@ -246,6 +246,7 @@ final class Admin_Player_Delivery_Test extends TestCase {
         $this->screen->display_errors_page();
 
         self::assertInstanceOf( Player_Errors_Page_View_Model::class, $captured_vm );
+        self::assertSame( 'Errors', $captured_vm->tab_title );
         self::assertSame( 'no_player', $captured_vm->status );
         self::assertCount( 1, $captured_vm->player_errors );
     }
@@ -310,6 +311,7 @@ final class Admin_Player_Delivery_Test extends TestCase {
         $this->screen->display_requests_page();
 
         self::assertInstanceOf( Player_Requests_Page_View_Model::class, $captured_vm );
+        self::assertSame( 'Requests', $captured_vm->tab_title );
         self::assertSame( 5, $captured_vm->club_id );
         self::assertSame( 'outstanding', $captured_vm->status );
         self::assertCount( 1, $captured_vm->player_requests );
@@ -366,6 +368,7 @@ final class Admin_Player_Delivery_Test extends TestCase {
         $this->screen->display_players_page();
 
         self::assertInstanceOf( Players_Page_View_Model::class, $captured_vm );
+        self::assertSame( 'Players', $captured_vm->tab_title );
         self::assertCount( 1, $captured_vm->players );
         self::assertTrue( $captured_vm->form_valid );
     }

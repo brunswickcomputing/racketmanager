@@ -37,7 +37,7 @@ class Get_Event_Handler {
             return Shortcode_View_Model::for_error( __( 'Event not found for competition', 'racketmanager' ) );
         }
 
-        $season          = $event->current_season['name'] ?? '';
+        $season          = isset( $event->current_season['name'] ) ? (string) $event->current_season['name'] : '';
         $seasons         = $event->get_seasons();
         $is_championship = (bool) ( $event->competition->is_championship ?? false );
 

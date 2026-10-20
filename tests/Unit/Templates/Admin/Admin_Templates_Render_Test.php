@@ -7,7 +7,10 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\View_Models\Error_Bag;
 use Racketmanager\Admin\View_Models\Finances_Charge_Page_View_Model;
+use Racketmanager\Admin\View_Models\Finances_Charges_Page_View_Model;
 use Racketmanager\Admin\View_Models\Finances_Invoice_Page_View_Model;
+use Racketmanager\Admin\View_Models\Finances_Invoices_Page_View_Model;
+use Racketmanager\Admin\View_Models\Options_Page_View_Model;
 use Racketmanager\Admin\View_Models\Player_Errors_Page_View_Model;
 use Racketmanager\Admin\View_Models\Player_Page_View_Model;
 use Racketmanager\Admin\View_Models\Player_Requests_Page_View_Model;
@@ -15,6 +18,7 @@ use Racketmanager\Admin\View_Models\Players_Page_View_Model;
 use Racketmanager\Admin\View_Models\Season_Modify_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model;
+use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
 use Racketmanager\Presentation\Presenters\Invoice_Presenter;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Settings;
@@ -445,5 +449,592 @@ final class Admin_Templates_Render_Test extends TestCase {
         self::assertStringContainsString( 'Westcliff', $html );
         self::assertStringContainsString( 'Jane Doe', $html );
         self::assertStringContainsString( '987654', $html );
+    }
+
+    private function render_and_capture_warnings( callable $render_callback, array &$warnings ): string {
+        set_error_handler( function ( $errno, $errstr, $errfile, $errline ) use ( &$warnings ) {
+            $warnings[] = "$errstr on $errfile:$errline";
+            return true;
+        } );
+
+        try {
+            return (string) $render_callback();
+        } finally {
+            restore_error_handler();
+        }
+    }
+
+    public function test_render_tournament_entries_and_player_list_with_view_model_and_player_entry_urls(): void {
+        $tournament = (object) array(
+            'id'   => 10,
+            'name' => 'Spring Championship',
+        );
+
+        $confirmed_entries = array(
+            'D' => array(
+                (object) array(
+                    'id'           => 101,
+                    'display_name' => 'John Doe',
+                ),
+            ),
+        );
+
+        $pending_entries = array(
+            'S' => array(
+                (object) array(
+                    'id'           => 102,
+                    'display_name' => 'Jane Smith',
+                ),
+            ),
+        );
+
+        $player_entry_urls = array(
+            'John Doe'   => '/sentinel/custom-player-john-url/',
+            'Jane Smith' => '/sentinel/custom-player-jane-url/',
+        );
+
+        $vm = new Tournament_Overview_Page_View_Model(
+            tournament: $tournament,
+            overview: (object) array(),
+            events: array(),
+            tab: 'overview',
+            confirmed_entries: $confirmed_entries,
+            unpaid_entries: array(),
+            pending_entries: $pending_entries,
+            withdrawn_entries: array(),
+            player_entry_urls: $player_entry_urls,
+        );
+
+        $warnings = array();
+        $html     = $this->render_and_capture_warnings(
+            fn() => $this->renderer->render_to_string( 'admin/tournament/entries', $vm, array( 'renderer' => $this->renderer ) ),
+            $warnings
+        );
+
+        self::assertEmpty( $warnings );
+        self::assertStringContainsString( 'John Doe', $html );
+        self::assertStringContainsString( '/sentinel/custom-player-john-url/', $html );
+        self::assertStringContainsString( 'Jane Smith', $html );
+        self::assertStringContainsString( '/sentinel/custom-player-jane-url/', $html );
+    }
+
+    public function test_render_tournament_entries_and_player_list_without_entry_urls_renders_plain_text(): void {
+        $tournament = (object) array(
+            'id'   => 10,
+            'name' => 'Spring Championship',
+        );
+
+        $confirmed_entries = array(
+            'D' => array(
+                (object) array(
+                    'id'           => 101,
+                    'display_name' => 'Unlinked Player',
+                ),
+            ),
+        );
+
+        $vm = new Tournament_Overview_Page_View_Model(
+            tournament: $tournament,
+            overview: (object) array(),
+            events: array(),
+            tab: 'overview',
+            confirmed_entries: $confirmed_entries,
+            unpaid_entries: array(),
+            pending_entries: array(),
+            withdrawn_entries: array(),
+            player_entry_urls: array(),
+        );
+
+        $warnings = array();
+        $html     = $this->render_and_capture_warnings(
+            fn() => $this->renderer->render_to_string( 'admin/tournament/entries', $vm, array( 'renderer' => $this->renderer ) ),
+            $warnings
+        );
+
+        self::assertEmpty( $warnings );
+        self::assertStringContainsString( 'Unlinked Player', $html );
+        self::assertStringNotContainsString( '<a href="', $html );
+    }
+
+    public function test_render_cup_entries_template_with_entry_urls(): void {
+        $competition = (object) array(
+            'id'   => 5,
+            'name' => 'Summer Cup',
+        );
+        $cup_season = (object) array(
+            'entries' => array(
+                (object) array(
+                    'id'        => 1,
+                    'shortcode' => 'WTC',
+                ),
+                (object) array(
+                    'id'        => 2,
+                    'shortcode' => 'LTC',
+                ),
+            ),
+        );
+        $entry_urls = array(
+            'WTC' => '/sentinel/custom-cup-wtc-url/',
+            'LTC' => '/sentinel/custom-cup-ltc-url/',
+        );
+
+        $warnings = array();
+        $html     = $this->render_and_capture_warnings(
+            fn() => $this->renderer->render_to_string(
+                'admin/cup/entries',
+                array(
+                    'competition' => $competition,
+                    'season'      => '2026',
+                    'cup_season'  => $cup_season,
+                    'entry_urls'  => $entry_urls,
+                )
+            ),
+            $warnings
+        );
+
+        self::assertEmpty( $warnings );
+        self::assertStringContainsString( 'WTC', $html );
+        self::assertStringContainsString( '/sentinel/custom-cup-wtc-url/', $html );
+        self::assertStringContainsString( 'LTC', $html );
+        self::assertStringContainsString( '/sentinel/custom-cup-ltc-url/', $html );
+    }
+
+    public function test_render_cup_entries_template_without_entry_urls_renders_plain_text(): void {
+        $competition = (object) array(
+            'id'   => 5,
+            'name' => 'Summer Cup',
+        );
+        $cup_season = (object) array(
+            'entries' => array(
+                (object) array(
+                    'id'        => 1,
+                    'shortcode' => 'WTC',
+                ),
+            ),
+        );
+
+        $warnings = array();
+        $html     = $this->render_and_capture_warnings(
+            fn() => $this->renderer->render_to_string(
+                'admin/cup/entries',
+                array(
+                    'competition' => $competition,
+                    'season'      => '2026',
+                    'cup_season'  => $cup_season,
+                    'entry_urls'  => array(),
+                )
+            ),
+            $warnings
+        );
+
+        self::assertEmpty( $warnings );
+        self::assertStringContainsString( 'WTC', $html );
+        self::assertStringNotContainsString( '<a href="', $html );
+    }
+
+    public function test_render_shared_admin_entries_template_with_entry_urls(): void {
+        $competition = (object) array(
+            'id'   => 8,
+            'name' => 'Mixed League',
+        );
+        $current_season = (object) array(
+            'entries' => array(
+                (object) array(
+                    'id'         => 1,
+                    'shortcode'  => 'WTC',
+                    'team_count' => 3,
+                ),
+            ),
+        );
+        $entry_urls = array(
+            'WTC' => '/sentinel/custom-league-wtc-url/',
+        );
+
+        $warnings = array();
+        $html     = $this->render_and_capture_warnings(
+            fn() => $this->renderer->render_to_string(
+                'admin/includes/entries',
+                array(
+                    'competition'    => $competition,
+                    'season'         => '2026',
+                    'current_season' => $current_season,
+                    'entry_urls'     => $entry_urls,
+                )
+            ),
+            $warnings
+        );
+
+        self::assertEmpty( $warnings );
+        self::assertStringContainsString( 'WTC', $html );
+        self::assertStringContainsString( '/sentinel/custom-league-wtc-url/', $html );
+        self::assertStringContainsString( '3', $html );
+    }
+
+    public function test_render_shared_admin_entries_template_without_entry_urls_renders_plain_text(): void {
+        $competition = (object) array(
+            'id'   => 8,
+            'name' => 'Mixed League',
+        );
+        $current_season = (object) array(
+            'entries' => array(
+                (object) array(
+                    'id'         => 1,
+                    'shortcode'  => 'WTC',
+                    'team_count' => 3,
+                ),
+            ),
+        );
+
+        $warnings = array();
+        $html     = $this->render_and_capture_warnings(
+            fn() => $this->renderer->render_to_string(
+                'admin/includes/entries',
+                array(
+                    'competition'    => $competition,
+                    'season'         => '2026',
+                    'current_season' => $current_season,
+                    'entry_urls'     => array(),
+                )
+            ),
+            $warnings
+        );
+
+        self::assertEmpty( $warnings );
+        self::assertStringContainsString( 'WTC', $html );
+        self::assertStringNotContainsString( '<a href="', $html );
+    }
+
+    public function test_render_players_nav_tabs_template_with_tab_title(): void {
+        $vm = new Player_Errors_Page_View_Model(
+            player_errors: array(),
+            status: 'unconfirmed',
+            racketmanager_tab: 'errors',
+            tab_title: 'Errors',
+        );
+
+        $warnings = array();
+        $html     = $this->render_and_capture_warnings(
+            fn() => $this->renderer->render_to_string( 'admin/players/nav-tabs', $vm ),
+            $warnings
+        );
+
+        self::assertEmpty( $warnings );
+        self::assertStringContainsString( '<h1>Errors</h1>', $html );
+        self::assertStringContainsString( 'RacketManager Players', $html );
+        self::assertStringContainsString( '&raquo; Errors', $html );
+    }
+
+    public function test_render_finances_nav_tabs_template_with_tab_title(): void {
+        $vm = new Finances_Charges_Page_View_Model(
+            charges: array(),
+            competitions: array(),
+            seasons: array(),
+            total_amount_formatted: '£0.00',
+            racketmanager_tab: 'charges',
+            tab_title: 'Charges',
+        );
+
+        $warnings = array();
+        $html     = $this->render_and_capture_warnings(
+            fn() => $this->renderer->render_to_string( 'admin/finances/nav-tabs', $vm ),
+            $warnings
+        );
+
+        self::assertEmpty( $warnings );
+        self::assertStringContainsString( '<h1>Charges</h1>', $html );
+        self::assertStringContainsString( 'RacketManager Finances', $html );
+        self::assertStringContainsString( '&raquo; Charges', $html );
+
+        $invoices_vm = new Finances_Invoices_Page_View_Model(
+            invoices: array(),
+            charges: array(),
+            billable_type: 'Player',
+            total_amount_formatted: '£0.00',
+            racketmanager_tab: 'player-invoices',
+            tab_title: 'Player Invoices',
+        );
+
+        $invoices_html = $this->render_and_capture_warnings(
+            fn() => $this->renderer->render_to_string( 'admin/finances/nav-tabs', $invoices_vm ),
+            $warnings
+        );
+
+        self::assertEmpty( $warnings );
+        self::assertStringContainsString( '<h1>Player Invoices</h1>', $invoices_html );
+        self::assertStringContainsString( '&raquo; Player Invoices', $invoices_html );
+    }
+
+    public function test_render_admin_show_settings_without_globals(): void {
+        global $racketmanager;
+        $racketmanager = (object) array(
+            'options' => array(
+                'checks' => array(
+                    'rosterLeadTime' => '999',
+                    'playedRounds'   => '888',
+                ),
+            ),
+        );
+
+        $vm = new Options_Page_View_Model(
+            options: array(
+                'checks' => array(
+                    'rosterLeadTime' => '48',
+                    'playedRounds'   => '5',
+                ),
+            ),
+            tab: 'players',
+        );
+
+        $warnings = array();
+        $html     = $this->render_and_capture_warnings(
+            fn() => $this->renderer->render_to_string( 'admin/show-settings', $vm ),
+            $warnings
+        );
+
+        self::assertEmpty( $warnings );
+        self::assertStringContainsString( 'Racketmanager Global Settings', $html );
+        self::assertStringContainsString( "value='48'", $html );
+        self::assertStringContainsString( "value='5'", $html );
+        self::assertStringNotContainsString( "value='999'", $html );
+        self::assertStringNotContainsString( "value='888'", $html );
+    }
+
+    public function test_render_admin_cup_events_template_with_leagues_and_zero_warnings(): void {
+        $competition = (object) array(
+            'id' => 12,
+        );
+
+        $league = (object) array(
+            'id'               => 101,
+            'title'            => 'Men Championship Draw',
+            'num_teams_total'  => 16,
+        );
+
+        $event = (object) array(
+            'leagues' => array( $league ),
+        );
+
+        $competition_events = array( $event );
+
+        $warnings = array();
+        $html     = $this->render_and_capture_warnings(
+            fn() => $this->renderer->render_to_string(
+                'admin/cup/events',
+                array(
+                    'competition'        => $competition,
+                    'season'             => '2026',
+                    'competition_events' => $competition_events,
+                    'draw_sizes'         => array( 101 => '8' ),
+                )
+            ),
+            $warnings
+        );
+
+        self::assertEmpty( $warnings );
+        self::assertStringContainsString( 'href="/wp-admin/admin.php?page=racketmanager-cups&view=draw&competition_id=12&league=101&season=2026"', $html );
+        self::assertStringContainsString( 'Men Championship Draw', $html );
+        self::assertMatchesRegularExpression( '#<td>\s*16\s*</td>#', $html );
+        self::assertMatchesRegularExpression( '#<td>\s*8\s*</td>#', $html );
+    }
+
+    public function test_render_admin_show_clubs_template_with_clubs_and_zero_warnings(): void {
+        $club1 = (object) array(
+            'id'              => 42,
+            'name'            => 'Leigh LTC',
+            'match_secretary' => (object) array(
+                'display_name' => 'John Doe',
+            ),
+        );
+
+        $club2 = (object) array(
+            'id'              => 43,
+            'name'            => 'Westcliff LTC',
+            'match_secretary' => null,
+        );
+
+        $clubs = array( $club1, $club2 );
+
+        $warnings = array();
+        $html     = $this->render_and_capture_warnings(
+            fn() => $this->renderer->render_to_string(
+                'admin/show-clubs',
+                array(
+                    'clubs' => $clubs,
+                )
+            ),
+            $warnings
+        );
+
+        self::assertEmpty( $warnings );
+        self::assertStringContainsString( 'value="42"', $html );
+        self::assertStringContainsString( 'href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=club&amp;club_id=42 "', $html );
+        self::assertStringContainsString( 'Leigh LTC', $html );
+        self::assertStringContainsString( 'John Doe', $html );
+        self::assertStringContainsString( 'Westcliff LTC', $html );
+    }
+
+    public function test_render_admin_event_leagues_template_with_precomputed_matches(): void {
+        $event = (object) array(
+            'id'              => 10,
+            'is_championship' => false,
+            'competition'     => (object) array(
+                'type'      => 'league',
+                'is_league' => true,
+            ),
+        );
+
+        $league1 = (object) array(
+            'id'                 => 101,
+            'title'              => 'Division 1',
+            'is_championship'    => false,
+            'num_teams_total'    => 8,
+            'num_matches_total'  => 28,
+        );
+
+        $league2 = (object) array(
+            'id'                 => 102,
+            'title'              => 'Championship Draw',
+            'is_championship'    => true,
+            'num_teams_total'    => 16,
+            'championship'       => (object) array(
+                'num_teams_first_round' => 16,
+            ),
+        );
+
+        $warnings = array();
+        $html     = $this->render_and_capture_warnings(
+            fn() => $this->renderer->render_to_string(
+                'admin/event/leagues',
+                array(
+                    'event'              => $event,
+                    'season'             => '2026',
+                    'league_id'          => 0,
+                    'event_id'           => 10,
+                    'league_edit'        => null,
+                    'league_title'       => '',
+                    'leagues'            => array( $league1, $league2 ),
+                    'league_matches_map' => array( 101 => 28 ),
+                )
+            ),
+            $warnings
+        );
+
+        self::assertEmpty( $warnings );
+        self::assertStringContainsString( 'Division 1', $html );
+        self::assertStringContainsString( 'Championship Draw', $html );
+        self::assertStringContainsString( '28', $html );
+        self::assertStringContainsString( '16', $html );
+    }
+
+    public function test_render_admin_league_show_constitution_template_with_precomputed_data(): void {
+        $event = (object) array(
+            'id'              => 10,
+            'name'            => 'Mixed League Event',
+            'is_box'          => false,
+            'leagues'         => array( (object) array( 'id' => 101, 'title' => 'Division 1' ) ),
+            'current_season'  => array( 'name' => '2026' ),
+            'competition'     => (object) array(
+                'id'          => 1,
+                'name'        => 'Mixed League',
+                'type'        => 'league',
+            ),
+        );
+
+        $league = (object) array(
+            'id'    => 101,
+            'title' => 'Division 1',
+        );
+
+        $team = (object) array(
+            'table_id'         => 1,
+            'old_league_title' => 'Division 1',
+            'old_league_id'    => 101,
+            'league_id'        => 101,
+            'title'            => 'Leigh 1',
+            'team_id'          => 501,
+            'status'           => 'champion',
+            'old_rank'         => 1,
+            'rank'             => 1,
+            'points_plus'      => 20,
+            'add_points'       => 0,
+            'rating'           => '10.5',
+            'profile'          => '1',
+        );
+
+        $warnings = array();
+        $html     = $this->render_and_capture_warnings(
+            fn() => $this->renderer->render_to_string(
+                'admin/league/show-constitution',
+                array(
+                    'event'               => $event,
+                    'season'              => '2026',
+                    'seasons'             => array( '2026' ),
+                    'leagues'             => array( $league ),
+                    'num_teams'           => 1,
+                    'league_active_teams' => array( 101 => 6 ),
+                    'event_seasons'       => array( array( 'name' => '2026' ) ),
+                    'latest_season'       => '2026',
+                    'latest_event_season' => '2026',
+                    'teams'               => array( $team ),
+                    'constitution_action' => 'update',
+                    'constitution_exists' => true,
+                    'updates_allowed'     => true,
+                    'standing_status'     => array( 'champion' => 'Champion' ),
+                )
+            ),
+            $warnings
+        );
+
+        self::assertEmpty( $warnings );
+        self::assertStringContainsString( 'Constitution - Mixed League Event 2026', $html );
+        self::assertStringContainsString( 'Division 1', $html );
+        self::assertStringContainsString( 'Leigh 1', $html );
+    }
+
+    public function test_render_admin_event_config_template_with_precomputed_leagues(): void {
+        $competition = new class() extends Competition {
+            public function __construct() {
+                $this->id              = 1;
+                $this->name            = 'Mixed League';
+                $this->type            = Competition_Type::LEAGUE;
+                $this->is_league       = true;
+                $this->is_tournament   = false;
+                $this->is_championship = true;
+                $this->age_group       = 'open';
+                $this->settings        = new Competition_Settings( array( 'mode' => 'league' ) );
+            }
+        };
+
+        $event = (object) array(
+            'id'       => 10,
+            'name'     => 'Mixed Doubles',
+            'settings' => array(),
+            'config'   => (object) array( 'primary_league' => 101 ),
+        );
+
+        $league = (object) array(
+            'id'    => 101,
+            'title' => 'Division 1',
+        );
+
+        $vm = new Tournament_Event_Config_Page_View_Model(
+            competition: $competition,
+            event: $event,
+            tournament: null,
+            new_event: false,
+            errors: new Error_Bag(),
+            tab: 'championship',
+            leagues: array( $league ),
+        );
+
+        $warnings = array();
+        $html     = $this->render_and_capture_warnings(
+            fn() => $this->renderer->render_to_string( 'admin/includes/event-config', $vm ),
+            $warnings
+        );
+
+        self::assertEmpty( $warnings );
+        self::assertStringContainsString( 'Division 1', $html );
+        self::assertStringContainsString( 'value="101"', $html );
     }
 }

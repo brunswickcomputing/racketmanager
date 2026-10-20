@@ -223,6 +223,8 @@ class Shortcodes_Email_Integration_Test extends TestCase {
     }
 
     public function test_show_match_date_change_notification(): void {
+        $GLOBALS['wp_stubs_options']['date_format'] = 'd/m/Y';
+
         $output = $this->shortcode->show_match_date_change_notification( [
             'match'         => 555,
             'original_date' => '2026-06-01',
@@ -232,7 +234,78 @@ class Shortcodes_Email_Integration_Test extends TestCase {
 
         $this->assertSame( 'rendered_html_email/match-date-change-notification', $output );
         $this->assertTrue( $this->rendered['vars']['delay'] );
-        $this->assertSame( '2026-06-08', $this->rendered['vars']['new_date'] );
+        // Raw shortcode dates are formatted by the presenter (fixture has no start time => site date format).
+        $this->assertSame( '08/06/2026', $this->rendered['vars']['new_date'] );
+        $this->assertSame( '08/06/2026', $this->rendered['vars']['match_date'] );
+        $this->assertSame( '01/06/2026', $this->rendered['vars']['original_date'] );
+    }
+
+    public function test_match_date_change_shortcode_with_raw_mysql_dates_renders_formatted_dates_in_real_template(): void {
+        $GLOBALS['wp_stubs_options']['date_format'] = 'd/m/Y';
+
+        $fixture = Fixture_Factory::from_object( (object) [
+            'id'            => 556,
+            'league_id'     => 10,
+            'home_team'     => '1',
+            'away_team'     => '2',
+            'date'          => '2026-10-02 19:30:00',
+            'date_original' => '2026-09-25 19:30:00',
+            'start_time'    => '19:30',
+            'season'        => '2026',
+            'host'          => 'home',
+            'match_day'     => 1,
+        ] );
+        $fixture_repo = $this->createStub( Fixture_Repository_Interface::class );
+        $fixture_repo->method( 'find_by_id' )->willReturn( $fixture );
+
+        $adapter = new Email_Shortcode_Adapter(
+            $fixture_repo,
+            $this->presenter,
+            new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) )
+        );
+
+        $warnings = [];
+        set_error_handler( static function ( int $errno, string $errstr ) use ( &$warnings ): bool {
+            $warnings[] = $errstr;
+
+            return true;
+        } );
+        try {
+            // Mirrors the legacy match_date_change_notification() template tag, which passes raw MySQL datetimes.
+            $html = $adapter->show_match_date_change_notification( [
+                'match'         => 556,
+                'new_date'      => '2026-10-02 19:30:00',
+                'original_date' => '2026-09-25 19:30:00',
+                'delay'         => true,
+            ] );
+        } finally {
+            restore_error_handler();
+        }
+
+        $this->assertSame( [], $warnings );
+        $this->assertStringContainsString( 'The new date is 2 October 2026 19:30.', $html );
+        $this->assertStringContainsString( 'This is now after the round end date (25 September 2026 19:30).', $html );
+        $this->assertStringNotContainsString( '2026-10-02 19:30:00', $html );
+        $this->assertStringContainsString( 'href="https://example.com"', $html );
+        $this->assertStringContainsString( 'Test Tennis League', $html );
+    }
+
+    public function test_match_date_change_shortcode_without_start_time_uses_site_date_format_in_real_template(): void {
+        $GLOBALS['wp_stubs_options']['date_format'] = 'j M Y';
+
+        $adapter = new Email_Shortcode_Adapter(
+            $this->fixture_repo,
+            $this->presenter,
+            new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) )
+        );
+
+        $html = $adapter->show_match_date_change_notification( [
+            'match'    => 555,
+            'new_date' => '2026-10-02 00:00:00',
+        ] );
+
+        $this->assertStringContainsString( 'The new date is 2 Oct 2026.', $html );
+        $this->assertStringNotContainsString( 'after the round end date', $html );
     }
 
     public function test_real_php_template_renderer_renders_email_templates_without_errors(): void {

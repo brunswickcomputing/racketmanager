@@ -9,6 +9,8 @@ namespace Racketmanager;
 
 /** @var object $league */
 /** @var array $teams */
+/** @var array<int|string, string> $team_links */
+$team_links = $team_links ?? [];
 if ( count( $league->teams ) ) {
     ?>
     <div class="table-responsive">
@@ -122,25 +124,22 @@ if ( count( $league->teams ) ) {
                         <td>
                             <?php
                             if ( $team->is_withdrawn ) {
-                            $title_text = $team->title . ' ' . __( 'has withdrawn', 'racketmanager' );
-                            ?>
+                                $title_text = $team->title . ' ' . __( 'has withdrawn', 'racketmanager' );
+                                ?>
                                 <s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php echo esc_attr( $title_text ); ?>">
                                 <?php
                             }
-                            $is_box = isset( $league->event ) && ! empty( $league->event->is_box );
                             $current_season_name = is_array( $league->current_season ?? null ) ? ( $league->current_season['name'] ?? '' ) : (string) ( $league->current_season ?? '' );
-                            if ( $is_box ) {
-                                $season_link = __( 'round', 'racketmanager' ) . '-' . $current_season_name;
-                            } else {
-                                $season_link = $current_season_name;
-                            }
-                            $comp_type = ( isset( $league->event ) && isset( $league->event->competition->type ) ) ? $league->event->competition->type : 'league';
-                            $competition_type = $comp_type instanceof \BackedEnum ? $comp_type->value : (string) $comp_type;
-                            $team_link = '/' . $competition_type . '/' . seo_url( $league->title ) . '/' . $season_link . '/team/' . seo_url( $team->title ) . '/';
+                            $team_id_val         = $team->id ?? $team->table_id ?? '';
+                            $team_link           = $team_links[ (string) $team_id_val ] ?? ( $team_links[ (string) ( $team->title ?? '' ) ] ?? '' );
                             ?>
-                            <a href="<?php echo esc_attr( $team_link ); ?>" class="tabDataLink" data-type="league" data-type-id="<?php echo esc_attr( $league->id ); ?>" data-season="<?php echo esc_attr( $current_season_name ); ?>" data-link="<?php echo esc_attr( $team_link ); ?>" data-link-id="<?php echo esc_attr( $team->id ?? $team->table_id ?? '' ); ?>" data-link-type="teams">
+                            <?php if ( '' !== $team_link ) : ?>
+                                <a href="<?php echo esc_attr( $team_link ); ?>" class="tabDataLink" data-type="league" data-type-id="<?php echo esc_attr( (string) $league->id ); ?>" data-season="<?php echo esc_attr( (string) $current_season_name ); ?>" data-link="<?php echo esc_attr( $team_link ); ?>" data-link-id="<?php echo esc_attr( (string) ( $team->id ?? $team->table_id ?? '' ) ); ?>" data-link-type="teams">
+                                    <?php echo esc_html( $team->title ); ?>
+                                </a>
+                            <?php else : ?>
                                 <?php echo esc_html( $team->title ); ?>
-                            </a>
+                            <?php endif; ?>
                             <?php
                             if ( ! empty( $team->is_withdrawn ) ) {
                                 ?>

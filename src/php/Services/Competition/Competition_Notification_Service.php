@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Services\Competition;
 
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Gateways\Mail\Mailer_Interface;
@@ -86,7 +87,8 @@ class Competition_Notification_Service {
 		$teams         = $league->get_league_teams( [ 'season' => $season ] );
 		$email_message = str_replace( '\"', '"', $email_message );
 		$headers       = [];
-		$comp_type     = $league->event->competition->type ?? 'league';
+		$raw_type      = $league->event->competition->type ?? 'league';
+		$comp_type     = $raw_type instanceof Competition_Type ? $raw_type->value : (string) $raw_type;
 		$email_from    = method_exists( $racketmanager, 'get_confirmation_email' )
 			? $racketmanager->get_confirmation_email( $comp_type )
 			: ( is_callable( $racketmanager->get_confirmation_email ?? null ) ? ( $racketmanager->get_confirmation_email )( $comp_type ) : '' );
@@ -125,8 +127,9 @@ class Competition_Notification_Service {
 	 */
 	public function notify_withdrawn_team( League $league, int $team_id, string $season ): bool {
 		global $racketmanager;
-		$teams        = $league->get_league_teams( [ 'season' => $season ] );
-		$comp_type    = $league->event->competition->type ?? 'league';
+		$teams         = $league->get_league_teams( [ 'season' => $season ] );
+		$raw_type      = $league->event->competition->type ?? 'league';
+		$comp_type     = $raw_type instanceof Competition_Type ? $raw_type->value : (string) $raw_type;
 		$email_from   = method_exists( $racketmanager, 'get_confirmation_email' )
 			? $racketmanager->get_confirmation_email( $comp_type )
 			: ( is_callable( $racketmanager->get_confirmation_email ?? null ) ? ( $racketmanager->get_confirmation_email )( $comp_type ) : '' );
@@ -175,7 +178,8 @@ class Competition_Notification_Service {
 	 */
 	public function send_constitution( Event $event, array $season ): void {
 		global $racketmanager;
-		$comp_type     = $event->competition->type ?? 'league';
+		$raw_type      = $event->competition->type ?? 'league';
+		$comp_type     = $raw_type instanceof Competition_Type ? $raw_type->value : (string) $raw_type;
 		$email_address = method_exists( $racketmanager, 'get_confirmation_email' )
 			? $racketmanager->get_confirmation_email( $comp_type )
 			: ( is_callable( $racketmanager->get_confirmation_email ?? null ) ? ( $racketmanager->get_confirmation_email )( $comp_type ) : '' );

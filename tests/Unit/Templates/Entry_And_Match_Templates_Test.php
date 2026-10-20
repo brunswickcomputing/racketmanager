@@ -22,8 +22,11 @@ use Racketmanager\Domain\Tournament;
 use Racketmanager\Domain\Tournament_Entry;
 use Racketmanager\Application\General\Queries\Get_Memberships_Handler;
 use Racketmanager\Application\General\Queries\Get_Memberships_Query;
+use Racketmanager\Infrastructure\Gateways\Account\Wp_User_Favourites_Gateway;
 use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
+use Racketmanager\Infrastructure\Security\Security_Service;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Favourite_Presenter;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Presentation\Presenters\Match_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
@@ -63,7 +66,10 @@ class Entry_And_Match_Templates_Test extends TestCase {
 
         $template_path           = defined( 'RACKETMANAGER_PATH' ) ? RACKETMANAGER_PATH . 'templates/' : dirname( __DIR__, 3 ) . '/templates/';
         $this->view_renderer     = new Php_View_Renderer( $template_path );
-        $this->template_renderer = new Shortcode_Template_Renderer( $this->view_renderer );
+        $this->template_renderer = new Shortcode_Template_Renderer(
+            $this->view_renderer,
+            favourite_presenter: new Favourite_Presenter( new Wp_User_Favourites_Gateway( new Security_Service() ) )
+        );
     }
 
     protected function tearDown(): void {
@@ -503,13 +509,11 @@ class Entry_And_Match_Templates_Test extends TestCase {
     public function test_two_row_differing_favourite_buttons_do_not_leak_state(): void {
         unset( $GLOBALS['racketmanager'] );
         $GLOBALS['wp_stubs_is_user_logged_in'] = true;
-
-        $GLOBALS['racketmanager'] = new class {
-            public string $date_format = 'Y-m-d';
-            public function is_user_favourite( string $type, int|string $id ): bool {
-                return in_array( (int) $id, [ 102, 202 ], true );
-            }
-        };
+        $GLOBALS['wp_stubs_get_current_user_id'] = 41;
+        $GLOBALS['wp_stubs_user_meta'][41] = [
+            'favourite-team' => [ '102' ],
+            'favourite-competition' => [ '202' ],
+        ];
 
         $league_service = $this->createStub( League_Service::class );
         $team_service   = $this->createStub( Team_Service::class );
@@ -634,31 +638,44 @@ class Entry_And_Match_Templates_Test extends TestCase {
     }
 
     public function test_email_competition_entry_open_renders_with_correct_punctuation_and_dates(): void {
-        $GLOBALS['racketmanager'] = (object) [
-            'date_format' => 'd/m/Y',
-            'site_url'    => 'https://example.local',
+        $option_gateway = new class implements \Racketmanager\Gateways\Option\Option_Gateway_Interface {
+            public function get_option( string $option, mixed $default = false ): mixed {
+                return 'date_format' === $option ? 'd/m/Y' : $default;
+            }
+            public function update_option( string $option, mixed $value, mixed $autoload = null ): bool {
+                return true;
+            }
+            public function delete_option( string $option ): bool {
+                return true;
+            }
+        };
+
+        $formatter   = new \Racketmanager\Presentation\Formatters\Email_Date_Formatter( $option_gateway );
+        $season_dtls = (object) [
+            'date_start'   => '2026-05-01',
+            'date_end'     => '2026-08-31',
+            'date_closing' => '2026-04-15',
         ];
 
         $vars = [
-            'email_subject'   => 'Competition Entry Open',
-            'competition'     => 'summer league',
-            'season_dtls'     => (object) [
-                'date_start'   => '2026-05-01',
-                'date_end'     => '2026-08-31',
-                'date_closing' => '2026-04-15',
-            ],
-            'addressee'       => 'Jane Doe',
-            'salutation'      => RACKETMANAGER_PATH . 'templates/email/components/salutation.php',
-            'paragraph'       => RACKETMANAGER_PATH . 'templates/email/components/paragraph.php',
-            'contact'         => RACKETMANAGER_PATH . 'templates/email/components/contact.php',
-            'closing'         => RACKETMANAGER_PATH . 'templates/email/components/closing.php',
-            'action_link'     => RACKETMANAGER_PATH . 'templates/email/components/action-link.php',
-            'from_email'      => 'secretary@example.local',
-            'action_url'      => 'https://example.local/entry',
-            'site_url'        => 'https://example.local',
-            'organisation'    => 'Tennis Association',
-            'days_remaining'  => null,
-            'is_championship' => false,
+            'email_subject'        => 'Competition Entry Open',
+            'competition'          => 'summer league',
+            'season_dtls'          => $season_dtls,
+            'date_closing_display' => $formatter->date( $season_dtls->date_closing ),
+            'date_start_display'   => $formatter->date( $season_dtls->date_start ),
+            'date_end_display'     => $formatter->date( $season_dtls->date_end ),
+            'addressee'            => 'Jane Doe',
+            'salutation'           => RACKETMANAGER_PATH . 'templates/email/components/salutation.php',
+            'paragraph'            => RACKETMANAGER_PATH . 'templates/email/components/paragraph.php',
+            'contact'              => RACKETMANAGER_PATH . 'templates/email/components/contact.php',
+            'closing'              => RACKETMANAGER_PATH . 'templates/email/components/closing.php',
+            'action_link'          => RACKETMANAGER_PATH . 'templates/email/components/action-link.php',
+            'from_email'           => 'secretary@example.local',
+            'action_url'           => 'https://example.local/entry',
+            'site_url'             => 'https://example.local',
+            'organisation'         => 'Tennis Association',
+            'days_remaining'       => null,
+            'is_championship'      => false,
         ];
 
         $warnings = [];
@@ -674,6 +691,10 @@ class Entry_And_Match_Templates_Test extends TestCase {
     }
 
     public function test_single_match_legacy_template_renders_with_match_date_and_zero_warnings(): void {
+        $GLOBALS['racketmanager'] = (object) [
+            'date_format' => 'd/m/Y',
+        ];
+
         $match = new class {
             public int $id = 88;
             public string $score = '6-2, 6-4';
@@ -888,5 +909,85 @@ class Entry_And_Match_Templates_Test extends TestCase {
         $this->assertStringContainsString( 'Previous memberships', $output );
         $this->assertStringContainsString( 'Old Club', $output );
         $this->assertStringContainsString( 'Removed: 15/04/2025', $output );
+        $this->assertStringContainsString( 'href="/clubs/current-club/"', $output );
+        $this->assertStringContainsString( 'href="/clubs/old-club/"', $output );
+    }
+
+    public function test_player_clubs_template_renders_with_real_club_player_dto_datetimes(): void {
+        $option_gateway = new class implements \Racketmanager\Gateways\Option\Option_Gateway_Interface {
+            public function get_option( string $option, mixed $default = false ): mixed {
+                return 'd/m/Y';
+            }
+            public function update_option( string $option, mixed $value, mixed $autoload = null ): bool {
+                return true;
+            }
+            public function delete_option( string $option ): bool {
+                return true;
+            }
+        };
+
+        $player_presenter = new Player_Presenter( option_gateway: $option_gateway );
+
+        $player               = new Player();
+        $player->id           = 42;
+        $player->display_name = 'Roger Federer';
+
+        $club_active            = new Club();
+        $club_active->id        = 10;
+        $club_active->name      = 'Westcliff Hardcourt Tennis Club';
+        $club_active->shortcode = 'Westcliff Hardcourt';
+
+        $reg_active = new Club_Player( (object) [
+            'id'             => 101,
+            'player_id'      => 42,
+            'club_id'        => 10,
+            'requested_date' => '2026-01-05 08:30:00',
+            'created_date'   => '2026-01-10 14:15:00',
+            'removed_date'   => null,
+        ] );
+
+        $dto_active = new Club_Player_DTO( $player, $club_active, $reg_active );
+
+        $club_archive            = new Club();
+        $club_archive->id        = 20;
+        $club_archive->name      = 'Leigh Tennis Club';
+        $club_archive->shortcode = 'Leigh TC';
+
+        $reg_archive = new Club_Player( (object) [
+            'id'             => 102,
+            'player_id'      => 42,
+            'club_id'        => 20,
+            'requested_date' => '2024-05-01 10:00:00',
+            'created_date'   => '2024-05-15 11:20:00',
+            'removed_date'   => '2025-11-30 17:45:00',
+        ] );
+
+        $dto_archive = new Club_Player_DTO( $player, $club_archive, $reg_archive );
+
+        $presented_active  = $player_presenter->present_club_membership( $dto_active );
+        $presented_archive = $player_presenter->present_club_membership( $dto_archive );
+
+        $warnings = [];
+        $output   = $this->render_and_capture_warnings(
+            fn() => $this->template_renderer->render(
+                'player-clubs',
+                [
+                    'clubs'         => [ $presented_active ],
+                    'clubs_archive' => [ $presented_archive ],
+                ],
+                'account'
+            ),
+            $warnings
+        );
+
+        $this->assertSame( [], $warnings, 'Rendering player-clubs with Club_Player_DTO must produce zero PHP warnings' );
+        $this->assertStringContainsString( 'Westcliff Hardcourt', $output );
+        $this->assertStringContainsString( 'Added: 10/01/2026', $output );
+        $this->assertStringContainsString( 'Previous memberships', $output );
+        $this->assertStringContainsString( 'Leigh TC', $output );
+        $this->assertStringContainsString( 'Added: 15/05/2024', $output );
+        $this->assertStringContainsString( 'Removed: 30/11/2025', $output );
+        $this->assertStringContainsString( 'href="/clubs/westcliff-hardcourt/"', $output );
+        $this->assertStringContainsString( 'href="/clubs/leigh-tc/"', $output );
     }
 }

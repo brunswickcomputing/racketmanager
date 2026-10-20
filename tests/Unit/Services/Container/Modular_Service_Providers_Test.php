@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Services\Container;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\RacketManager;
+use Racketmanager\Application\League\Queries\Get_League_Last_5_Handler;
 use Racketmanager\Services\Container\Container_Bootstrap;
 use Racketmanager\Services\Container\Providers\Admin_Service_Provider;
 use Racketmanager\Services\Container\Providers\Club_Service_Provider;
@@ -155,5 +156,16 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has( 'fixture_repository' ) );
         $this->assertTrue( $container->has( 'league_repository' ) );
         $this->assertTrue( $container->has( 'tournament_admin_controller' ) );
+    }
+
+    public function test_last_5_handler_is_wired_with_fixture_presenter(): void {
+        $container = Container_Bootstrap::boot( $this->app );
+        $handler = $container->get( 'get_league_last_5_handler' );
+
+        $this->assertInstanceOf( Get_League_Last_5_Handler::class, $handler );
+        $this->assertSame(
+            $container->get( 'fixture_presenter' ),
+            ( new \ReflectionProperty( Get_League_Last_5_Handler::class, 'fixture_presenter' ) )->getValue( $handler )
+        );
     }
 }

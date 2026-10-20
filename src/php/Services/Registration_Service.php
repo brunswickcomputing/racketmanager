@@ -254,6 +254,9 @@ class Registration_Service {
             throw new Player_Not_Found_Exception( __( 'Player not found', 'racketmanager' ) );
         }
         $registration = $this->club_player_repository->find_by_club_and_player( $club_id, $player_id );
+        if ( ! $registration ) {
+            return null;
+        }
 
         return $this->create_club_player_dto( $registration->id );
     }

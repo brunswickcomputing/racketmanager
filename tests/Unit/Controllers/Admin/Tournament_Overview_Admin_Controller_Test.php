@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Controllers\Admin;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Admin\Controllers\Tournament_Overview_Admin_Controller;
+use Racketmanager\Admin\Presenters\Admin_Entry_Link_Presenter;
 use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
@@ -51,7 +52,14 @@ class Tournament_Overview_Admin_Controller_Test extends TestCase {
         $overview = new stdClass();
         $events = [];
         $categorized_entries = [
-            'confirmed' => [],
+            'confirmed' => [
+                'D' => [
+                    (object) [
+                        'id'           => 1,
+                        'display_name' => 'John Doe',
+                    ],
+                ],
+            ],
             'unpaid'    => [],
             'pending'   => [],
             'withdrawn' => [],
@@ -86,7 +94,8 @@ class Tournament_Overview_Admin_Controller_Test extends TestCase {
         $controller = new Tournament_Overview_Admin_Controller(
             $tournament_service,
             $dispatcher,
-            $action_guard
+            $action_guard,
+            new Admin_Entry_Link_Presenter()
         );
 
         $result = $controller->overview_page( [ 'tournament' => (string) $tournament_id ], [] );
@@ -95,6 +104,8 @@ class Tournament_Overview_Admin_Controller_Test extends TestCase {
         self::assertInstanceOf( Tournament_Overview_Page_View_Model::class, $result['view_model'] );
         self::assertSame( $tournament, $result['view_model']->tournament );
         self::assertSame( $overview, $result['view_model']->overview );
+        self::assertArrayHasKey( 'John Doe', $result['view_model']->player_entry_urls );
+        self::assertSame( '/tournament/entry-form/test-tournament/player/john-doe/', $result['view_model']->player_entry_urls['John Doe'] );
     }
 
     public function test_overview_page_handles_post_via_dispatcher(): void {
@@ -118,7 +129,8 @@ class Tournament_Overview_Admin_Controller_Test extends TestCase {
         $controller = new Tournament_Overview_Admin_Controller(
             $tournament_service,
             $dispatcher,
-            $action_guard
+            $action_guard,
+            new Admin_Entry_Link_Presenter()
         );
 
         $result = $controller->overview_page( [ 'tournament' => '123' ], [ 'contactTeam' => '1' ] );

@@ -97,14 +97,16 @@ class Shortcodes_Competition_Integration_Test extends TestCase {
         $view_presenter    = new Shortcode_View_Presenter( $template_renderer );
 
         $overview_handler = new Get_Competition_Overview_Handler( $comp_service, $presenter );
-        $events_handler   = new Get_Competition_Events_Handler( $comp_service );
-        $teams_handler    = new Get_Competition_Teams_Handler( $comp_service );
-        $clubs_handler    = new Get_Competition_Clubs_Handler( $comp_service, $club_service, new \Racketmanager\Services\Player_Stats_Service(), new Tournament_Presenter() );
+        $events_handler   = new Get_Competition_Events_Handler( $comp_service, $presenter );
+        $teams_handler    = new Get_Competition_Teams_Handler( $comp_service, $presenter );
+        $clubs_handler    = new Get_Competition_Clubs_Handler( $comp_service, $club_service, new \Racketmanager\Services\Player_Stats_Service(), new Tournament_Presenter(), $presenter );
         $players_handler  = new Get_Competition_Players_Handler(
             $comp_service,
             $player_service,
             new \Racketmanager\Services\Player_Query_Service(),
-            new \Racketmanager\Services\Player_Stats_Service()
+            new \Racketmanager\Services\Player_Stats_Service(),
+            new Player_Presenter(),
+            $presenter
         );
         $winners_handler  = new Get_Competition_Winners_Handler( $comp_service );
 

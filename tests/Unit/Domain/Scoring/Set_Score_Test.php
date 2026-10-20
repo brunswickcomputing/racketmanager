@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Domain\Scoring;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Domain\Enums\Match_Outcome;
 use Racketmanager\Domain\Scoring\Set_Score;
 
 final class Set_Score_Test extends TestCase {
@@ -43,6 +44,18 @@ final class Set_Score_Test extends TestCase {
         $this->assertSame('home', (new Set_Score(7, 6, 7, 5))->winner());
         $this->assertSame('away', (new Set_Score(6, 7, 5, 7))->winner());
         $this->assertNull((new Set_Score(6, null))->winner());
+        $this->assertNull((new Set_Score(null, 6))->winner());
+        $this->assertNull((new Set_Score(6, 6))->winner());
+    }
+
+    public function test_winner_outcome(): void {
+        $this->assertSame(Match_Outcome::HOME, (new Set_Score(6, 4))->winner_outcome());
+        $this->assertSame(Match_Outcome::AWAY, (new Set_Score(4, 6))->winner_outcome());
+        $this->assertSame(Match_Outcome::HOME, (new Set_Score(7, 6, 7, 5))->winner_outcome());
+        $this->assertSame(Match_Outcome::AWAY, (new Set_Score(6, 7, 5, 7))->winner_outcome());
+        $this->assertNull((new Set_Score(6, null))->winner_outcome());
+        $this->assertNull((new Set_Score(null, 6))->winner_outcome());
+        $this->assertNull((new Set_Score(6, 6))->winner_outcome());
     }
 
     public function test_immutable_set(): void {

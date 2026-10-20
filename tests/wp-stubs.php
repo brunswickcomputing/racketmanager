@@ -18,6 +18,15 @@ namespace Racketmanager {
         }
     }
 
+    if ( ! function_exists( 'Racketmanager\get_currency_amount' ) ) {
+        function get_currency_amount( $amount ): string {
+            if ( null !== $amount && '' !== $amount ) {
+                return '£' . (string) $amount;
+            }
+            return '';
+        }
+    }
+
     if ( ! function_exists( 'Racketmanager\the_currency_amount' ) ) {
         function the_currency_amount( $amount ): void {
             if ( null !== $amount && '' !== $amount ) {
@@ -65,6 +74,124 @@ namespace Racketmanager {
     if ( ! function_exists( 'Racketmanager\season_dropdown' ) ) {
         function season_dropdown( int $league_id, array $args = array() ): string {
             return "<select name='season'></select>";
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\league_standings' ) ) {
+        function league_standings( int $league_id, array $args = array() ): void {
+            $defaults          = array(
+                'season'   => false,
+                'template' => 'last5',
+                'group'    => false,
+                'home'     => 0,
+            );
+            $args              = array_merge( $defaults, $args );
+            $args['league_id'] = $league_id;
+
+            $shortcode = '[standings';
+            foreach ( $args as $key => $value ) {
+                $shortcode .= ' ' . $key . "='" . $value . "'";
+            }
+            $shortcode .= ']';
+            echo do_shortcode( $shortcode );
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\league_matches' ) ) {
+        function league_matches( int $league_id, array $args = array() ): void {
+            $defaults          = array(
+                'season'                   => '',
+                'template'                 => '',
+                'mode'                     => '',
+                'limit'                    => 'true',
+                'match_day'                => 'current',
+                'group'                    => false,
+                'order'                    => false,
+                'show_match_day_selection' => '',
+                'time'                     => '',
+                'team'                     => 0,
+                'home_only'                => 'false',
+                'match_date'               => false,
+                'dateformat'               => '',
+            );
+            $args              = array_merge( $defaults, $args );
+            $args['league_id'] = $league_id;
+
+            $shortcode = '[matches';
+            foreach ( $args as $key => $value ) {
+                $shortcode .= ' ' . $key . "='" . $value . "'";
+            }
+            $shortcode .= ']';
+            echo do_shortcode( $shortcode );
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\league_crosstable' ) ) {
+        function league_crosstable( int $league_id, array $args = array() ): void {
+            $defaults          = array(
+                'season'   => false,
+                'group'    => '',
+                'template' => '',
+                'mode'     => '',
+            );
+            $args              = array_merge( $defaults, $args );
+            $args['league_id'] = $league_id;
+
+            $shortcode = '[crosstable';
+            foreach ( $args as $key => $value ) {
+                $shortcode .= ' ' . $key . "='" . $value . "'";
+            }
+            $shortcode .= ']';
+            echo do_shortcode( $shortcode );
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\league_teams' ) ) {
+        function league_teams( int $league_id, array $args = array() ): void {
+            $defaults          = array(
+                'season'   => false,
+                'template' => '',
+                'group'    => false,
+            );
+            $args              = array_merge( $defaults, $args );
+            $args['league_id'] = $league_id;
+
+            $shortcode = '[teams';
+            foreach ( $args as $key => $value ) {
+                $shortcode .= ' ' . $key . "='" . $value . "'";
+            }
+            $shortcode .= ']';
+            echo do_shortcode( $shortcode );
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\league_players' ) ) {
+        function league_players( int|string $league_id, array $args = array() ): void {
+            $defaults          = array(
+                'season'   => false,
+                'template' => '',
+                'group'    => false,
+            );
+            $args              = array_merge( $defaults, $args );
+            $args['league_id'] = intval( $league_id );
+
+            $shortcode = '[league-players';
+            foreach ( $args as $key => $value ) {
+                $shortcode .= ' ' . $key . "='" . $value . "'";
+            }
+            $shortcode .= ']';
+            echo do_shortcode( $shortcode );
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\get_league_template' ) ) {
+        function get_league_template( string $template = '' ): string {
+            global $league;
+
+            if ( ! empty( $template ) && isset( $league->templates[ $template ] ) ) {
+                return $league->templates[ $template ];
+            }
+            return '';
         }
     }
 
@@ -1043,9 +1170,32 @@ namespace {
         }
     }
 
+    if ( ! function_exists( 'do_shortcode' ) ) {
+        function do_shortcode( string $content, bool $ignore_html = false ): string {
+            return $content;
+        }
+    }
+
     if ( ! function_exists( 'get_query_var' ) ) {
         function get_query_var( $var, $default = '' ) {
+            if ( isset( $GLOBALS['wp_query'] ) && is_object( $GLOBALS['wp_query'] ) && method_exists( $GLOBALS['wp_query'], 'get' ) ) {
+                return $GLOBALS['wp_query']->get( $var, $default );
+            }
+            if ( isset( $GLOBALS['wp_query']->query_vars[ $var ] ) ) {
+                return $GLOBALS['wp_query']->query_vars[ $var ];
+            }
             return $GLOBALS['query_vars'][ $var ] ?? $default;
+        }
+    }
+
+    if ( ! function_exists( 'set_query_var' ) ) {
+        function set_query_var( $var, $value ) {
+            if ( isset( $GLOBALS['wp_query'] ) && is_object( $GLOBALS['wp_query'] ) && method_exists( $GLOBALS['wp_query'], 'set' ) ) {
+                $GLOBALS['wp_query']->set( $var, $value );
+            } elseif ( isset( $GLOBALS['wp_query'] ) && is_object( $GLOBALS['wp_query'] ) ) {
+                $GLOBALS['wp_query']->query_vars[ $var ] = $value;
+            }
+            $GLOBALS['query_vars'][ $var ] = $value;
         }
     }
 

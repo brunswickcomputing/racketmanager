@@ -34,7 +34,8 @@ class Login_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     ) {}
 
     public function render_login_form( array|string $vars = [], ?string $action_override = null ): string {
-        $is_logged_in = $this->security_service ? $this->security_service->is_user_logged_in() : ( function_exists( 'is_user_logged_in' ) ? is_user_logged_in() : false );
+        $is_logged_in    = $this->security_service ? $this->security_service->is_user_logged_in() : ( function_exists( 'is_user_logged_in' ) ? is_user_logged_in() : false );
+        $action_override = ( null !== $action_override && '' !== trim( $action_override ) ) ? $action_override : null;
 
         $query = Get_Login_Form_Query::from_atts(
             $this->normalize_atts( $vars ),

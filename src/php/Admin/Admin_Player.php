@@ -206,6 +206,7 @@ final class Admin_Player extends Admin_Display {
             status: $status,
             racketmanager_tab: 'errors',
             errors: $errors,
+            tab_title: __( 'Errors', 'racketmanager' ),
         );
 
         $this->screens->present(
@@ -251,6 +252,7 @@ final class Admin_Player extends Admin_Display {
             status: $status,
             racketmanager_tab: 'requests',
             errors: $errors,
+            tab_title: __( 'Requests', 'racketmanager' ),
         );
 
         $this->screens->present(
@@ -303,11 +305,12 @@ final class Admin_Player extends Admin_Display {
         }
 
         $vm = new Players_Page_View_Model(
-            players: $players,
+            players: (array) $players,
             player: $player,
             racketmanager_tab: 'players',
             errors: $errors,
             form_valid: empty( $errors->all() ),
+            tab_title: __( 'Players', 'racketmanager' ),
         );
 
         $present_args = array( 'view_model' => $vm );

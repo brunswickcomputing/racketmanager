@@ -7,6 +7,7 @@ use DateTimeImmutable;
 use Exception;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
+use Racketmanager\Domain\Enums\Match_Outcome;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Scoring\Set_Score;
 use Racketmanager\Domain\Tournament;
@@ -15,7 +16,10 @@ use Racketmanager\Presentation\View_Models\Team_Match_Row_View_Model;
 use Racketmanager\Presentation\View_Models\Team_Matches_Group_View_Model;
 use LogicException;
 use Racketmanager\Presentation\View_Models\Tournament_Date_View_Model;
+use Racketmanager\Presentation\View_Models\Tournament_Draw_List_Row_View_Model;
+use Racketmanager\Presentation\View_Models\Tournament_Event_List_Row_View_Model;
 use Racketmanager\Presentation\View_Models\Tournament_Header_View_Model;
+use Racketmanager\Presentation\View_Models\Tournament_Player_Entry_Row_View_Model;
 use Racketmanager\Presentation\View_Models\Tournament_Match_Card_Opponent_View_Model;
 use Racketmanager\Presentation\View_Models\Tournament_Match_Card_Set_View_Model;
 use Racketmanager\Presentation\View_Models\Tournament_Match_Card_Title_Item_View_Model;
@@ -48,17 +52,32 @@ readonly class Tournament_Presenter {
     /**
      * Build the display dates view model for a tournament.
      */
-    public function present_dates( Tournament $tournament ): Tournament_Date_View_Model {
-        $tournament_window = $tournament->get_tournament_window();
-        $entry_window      = $tournament->get_entry_window();
-        $withdrawal_window = $tournament->get_withdrawal_window();
+    public function present_dates( object $tournament ): Tournament_Date_View_Model {
+        $tournament_window = ( $tournament instanceof Tournament )
+            ? $tournament->get_tournament_window()
+            : ( method_exists( $tournament, 'get_tournament_window' ) ? $tournament->get_tournament_window() : null );
+        $entry_window      = ( $tournament instanceof Tournament )
+            ? $tournament->get_entry_window()
+            : ( method_exists( $tournament, 'get_entry_window' ) ? $tournament->get_entry_window() : null );
+        $withdrawal_window = ( $tournament instanceof Tournament )
+            ? $tournament->get_withdrawal_window()
+            : ( method_exists( $tournament, 'get_withdrawal_window' ) ? $tournament->get_withdrawal_window() : null );
+
+        $end_date        = method_exists( $tournament, 'get_end_date' ) ? $tournament->get_end_date() : ( $tournament->date_end ?? ( $tournament->date ?? null ) );
+        $closing_date    = method_exists( $tournament, 'get_closing_date' ) ? $tournament->get_closing_date() : ( $tournament->date_closing ?? null );
+        $withdrawal_date = method_exists( $tournament, 'get_withdrawal_date' ) ? $tournament->get_withdrawal_date() : ( $tournament->date_withdrawal ?? null );
+        $open_date       = method_exists( $tournament, 'get_open_date' ) ? $tournament->get_open_date() : ( $tournament->date_open ?? null );
+        $start_date      = method_exists( $tournament, 'get_start_date' ) ? $tournament->get_start_date() : ( $tournament->date_start ?? null );
+
+        $end_display = $tournament_window ? $this->format( $tournament_window->get_end_string(), 'TBC' ) : $this->format( $end_date, 'TBC' );
 
         return new Tournament_Date_View_Model(
-            date_display: $tournament_window ? $this->format( $tournament_window->get_end_string(), 'TBC' ) : $this->format( $tournament->get_end_date(), 'TBC' ),
-            date_closing_display: $entry_window ? $this->format( $entry_window->get_end_string(), 'N/A' ) : $this->format( $tournament->get_closing_date(), 'N/A' ),
-            date_withdrawal_display: $withdrawal_window ? $this->format( $withdrawal_window->get_end_string(), 'N/A' ) : $this->format( $tournament->get_withdrawal_date(), 'N/A' ),
-            date_open_display: $entry_window ? $this->format( $entry_window->get_start_string(), 'N/A' ) : $this->format( $tournament->get_open_date(), 'N/A' ),
-            date_start_display: $tournament_window ? $this->format( $tournament_window->get_start_string(), 'N/A' ) : $this->format( $tournament->get_start_date(), 'N/A' )
+            date_display: $end_display,
+            date_closing_display: $entry_window ? $this->format( $entry_window->get_end_string(), 'N/A' ) : $this->format( $closing_date, 'N/A' ),
+            date_withdrawal_display: $withdrawal_window ? $this->format( $withdrawal_window->get_end_string(), 'N/A' ) : $this->format( $withdrawal_date, 'N/A' ),
+            date_open_display: $entry_window ? $this->format( $entry_window->get_start_string(), 'N/A' ) : $this->format( $open_date, 'N/A' ),
+            date_start_display: $tournament_window ? $this->format( $tournament_window->get_start_string(), 'N/A' ) : $this->format( $start_date, 'N/A' ),
+            date_end_display: $end_display
         );
     }
 
@@ -113,7 +132,146 @@ readonly class Tournament_Presenter {
     public function get_link( object $tournament ): string {
         $name = $tournament->name ?? ( method_exists( $tournament, 'get_name' ) ? $tournament->get_name() : '' );
 
-        return '/tournament/' . seo_url( (string) $name ) . '/';
+        return '/tournament/' . Util::seo_url( (string) $name ) . '/';
+    }
+
+    /**
+     * Build the tournament event permalink relative URL.
+     */
+    public function get_event_link( object $tournament, object|string $event ): string {
+        $event_name = is_object( $event ) ? ( $event->name ?? '' ) : (string) $event;
+
+        return $this->get_link( $tournament ) . 'event/' . Util::seo_url( (string) $event_name ) . '/';
+    }
+
+    /**
+     * Build the tournament draw permalink relative URL.
+     */
+    public function get_draw_link( object $tournament, object|string $event ): string {
+        $event_name = is_object( $event ) ? ( $event->name ?? '' ) : (string) $event;
+
+        return $this->get_link( $tournament ) . 'draw/' . Util::seo_url( (string) $event_name ) . '/';
+    }
+
+    /**
+     * Build the tournament player permalink relative URL.
+     */
+    public function get_player_link( object $tournament, object|string $player ): string {
+        $player_name = is_object( $player )
+            ? ( method_exists( $player, 'get_fullname' ) ? $player->get_fullname() : ( $player->fullname ?? $player->name ?? $player->display_name ?? '' ) )
+            : (string) $player;
+
+        return $this->get_link( $tournament ) . 'player/' . Util::seo_url( (string) $player_name ) . '/';
+    }
+
+    /**
+     * Build the tournament payment-complete URL.
+     */
+    public function get_payment_complete_url( object $tournament, string $site_url = '' ): string {
+        return rtrim( $this->get_entry_link( $tournament, $site_url ), '/' ) . '/payment-complete/';
+    }
+
+    /**
+     * @param array<int, object> $events
+     * @return list<Tournament_Event_List_Row_View_Model>
+     */
+    public function present_event_list_rows( object $tournament, array $events ): array {
+        $rows = [];
+        foreach ( $events as $event ) {
+            $rows[] = new Tournament_Event_List_Row_View_Model(
+                id: $event->id ?? 0,
+                name: (string) ( $event->name ?? '' ),
+                num_teams: $event->num_teams ?? null,
+                url_link: $this->get_event_link( $tournament, $event ),
+            );
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @param array<int, object> $draws
+     * @return list<Tournament_Draw_List_Row_View_Model>
+     */
+    public function present_draw_list_rows( object $tournament, array $draws ): array {
+        $rows = [];
+        foreach ( $draws as $event ) {
+            $rows[] = new Tournament_Draw_List_Row_View_Model(
+                id: $event->id ?? 0,
+                name: (string) ( $event->name ?? '' ),
+                draw_size: $event->draw_size ?? null,
+                draw_link: $this->get_draw_link( $tournament, $event ),
+            );
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Build per-player permalinks for a tournament event's entries.
+     *
+     * @return array<int, string>
+     */
+    public function present_event_player_links( object $tournament, object $event ): array {
+        $links   = [];
+        $entries = is_array( $event->entries ?? null ) ? $event->entries : [];
+        foreach ( $entries as $entry ) {
+            $players = is_array( $entry->players ?? null ) ? $entry->players : [];
+            foreach ( $players as $player ) {
+                $player_id = is_object( $player ) ? ( $player->id ?? $player->ID ?? null ) : null;
+                if ( null === $player_id ) {
+                    continue;
+                }
+                $links[ (int) $player_id ] = $this->get_player_link( $tournament, $player );
+            }
+        }
+
+        return $links;
+    }
+
+    /**
+     * Build per-player permalinks for an alphabet-grouped tournament player list.
+     *
+     * @param array<string, array<int, object>> $grouped_players
+     * @return array<int, string>
+     */
+    public function present_player_list_links( object $tournament, array $grouped_players ): array {
+        $links = [];
+        foreach ( $grouped_players as $players ) {
+            if ( ! is_array( $players ) ) {
+                continue;
+            }
+            foreach ( $players as $player ) {
+                $player_id = is_object( $player ) ? ( $player->id ?? $player->ID ?? null ) : null;
+                if ( null === $player_id ) {
+                    continue;
+                }
+                $links[ (int) $player_id ] = $this->get_player_link( $tournament, $player );
+            }
+        }
+
+        return $links;
+    }
+
+    /**
+     * @param array<int, object> $entries
+     * @return list<Tournament_Player_Entry_Row_View_Model>
+     */
+    public function present_player_entry_rows( object $tournament, array $entries ): array {
+        $rows = [];
+        foreach ( $entries as $entry ) {
+            $partner_name = (string) ( $entry->partner_name ?? '' );
+            $rows[]       = new Tournament_Player_Entry_Row_View_Model(
+                event_id: $entry->event_id ?? 0,
+                event_name: (string) ( $entry->event_name ?? '' ),
+                event_link: $this->get_event_link( $tournament, (string) ( $entry->event_name ?? '' ) ),
+                partner_id: $entry->partner_id ?? null,
+                partner_name: $partner_name,
+                partner_link: '' !== $partner_name ? $this->get_player_link( $tournament, $partner_name ) : '',
+            );
+        }
+
+        return $rows;
     }
 
     /**
@@ -122,10 +280,14 @@ readonly class Tournament_Presenter {
      * @param object|null $tournament
      * @param Fixture_Details_DTO|null $fixture_details
      * @param object|null $is_update_allowed
+     * @param string|null $referrer Referring page supplied by the request boundary, used for the return link.
      * @return array<string, mixed>
      */
-    public function present_tournament_match_data( ?object $tournament, ?Fixture_Details_DTO $fixture_details, ?object $is_update_allowed ): array {
+    public function present_tournament_match_data( ?object $tournament, ?Fixture_Details_DTO $fixture_details, ?object $is_update_allowed, ?string $referrer = null ): array {
         $tournament_link     = $tournament ? $this->get_link( $tournament ) : '';
+        $back_url            = ( null !== $referrer && '' !== $referrer )
+            ? $referrer
+            : ( $tournament ? $tournament_link . 'matches/' : '' );
         $tournament_header   = $tournament ? $this->present_header( $tournament ) : null;
         $tournament_seo_name = $tournament ? Util::seo_url( $tournament->name ?? '' ) : '';
 
@@ -276,6 +438,7 @@ readonly class Tournament_Presenter {
             'tournament'                    => $tournament,
             'tournament_header'             => $tournament_header,
             'tournament_link'               => $tournament_link,
+            'back_url'                      => $back_url,
             'tournament_seo_name'           => $tournament_seo_name,
             'tournament_date_range_display' => $tournament_date_range_display,
             'fixture_details'               => $fixture_details,
@@ -797,7 +960,8 @@ readonly class Tournament_Presenter {
 				$p1         = (string) $set->get_home_games();
 				$p2         = (string) $set->get_away_games();
 				$tb         = (string) ( $set->get_home_tiebreak() ?? $set->get_away_tiebreak() ?? '' );
-				$set_winner = $set->winner() === 'home' ? 'player1' : ( $set->winner() === 'away' ? 'player2' : null );
+				$outcome    = $set->winner_outcome();
+				$set_winner = Match_Outcome::HOME === $outcome ? 'player1' : ( Match_Outcome::AWAY === $outcome ? 'player2' : null );
 			} elseif ( is_array( $set ) ) {
 				$p1         = isset( $set['player1'] ) ? (string) $set['player1'] : '';
 				$p2         = isset( $set['player2'] ) ? (string) $set['player2'] : '';
@@ -874,6 +1038,68 @@ readonly class Tournament_Presenter {
 			footer_formatted_date: $footer_formatted_date,
 			footer_time_display: $footer_time_display
 		);
+    }
+
+    /**
+     * Present winners grouped by category for tournament winners view.
+     *
+     * @param array $winners
+     * @param object $tournament
+     * @return array
+     */
+    public function present_tournament_winners( array $winners, object $tournament ): array {
+        $presented  = [];
+        $tourn_name = method_exists( $tournament, 'get_name' ) ? $tournament->get_name() : ( $tournament->name ?? '' );
+        $tourn_id   = method_exists( $tournament, 'get_id' ) ? $tournament->get_id() : ( $tournament->id ?? 0 );
+        $tourn_slug = Util::seo_url( (string) $tourn_name );
+
+        foreach ( $winners as $key => $winner_group ) {
+            $presented_group = [];
+            foreach ( $winner_group as $winner ) {
+                $w = is_object( $winner ) ? clone $winner : (object) $winner;
+                $event_name        = $w->event_name ?? '';
+                $w->link_url       = '/tournament/' . $tourn_slug . '/draw/' . Util::seo_url( (string) $event_name ) . '/';
+                $w->link_class     = 'tabDataLink';
+                $w->data_season    = null;
+                $w->data_type      = 'tournament';
+                $w->data_type_id   = $tourn_id;
+                $w->data_type_type = 'draws';
+                $presented_group[] = $w;
+            }
+            $presented[ $key ] = $presented_group;
+        }
+
+        return $presented;
+    }
+
+    /**
+     * Present tournament draw leagues with precomputed match URLs, opponent details, and score models.
+     *
+     * @param object $draw Event/Draw object
+     * @param object $tournament Tournament object
+     * @return object
+     */
+    public function present_tournament_draw( object $draw, object $tournament ): object {
+        $presented_draw = clone $draw;
+        if ( ! empty( $presented_draw->leagues ) && is_array( $presented_draw->leagues ) ) {
+            $presented_leagues = [];
+            foreach ( $presented_draw->leagues as $l_idx => $league ) {
+                $league_obj = is_object( $league ) ? clone $league : (object) $league;
+                if ( ! empty( $league_obj->finals ) && is_array( $league_obj->finals ) ) {
+                    $league_obj->finals = Draw_Presenter::present_finals(
+                        $league_obj->finals,
+                        $tournament,
+                        $league_obj,
+                        $league_obj->event->competition ?? ( $presented_draw->competition ?? null ),
+                        $presented_draw
+                    );
+                }
+                $presented_leagues[ $l_idx ] = $league_obj;
+            }
+            $presented_draw->leagues = $presented_leagues;
+        }
+
+        return $presented_draw;
     }
 
     private function format( ?string $date, string $fallback ): string {

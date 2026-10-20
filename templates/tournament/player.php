@@ -89,7 +89,7 @@ $player = $tournament_player;
                 <div class="module__content">
                     <div class="module-container">
                         <?php
-                        if ( ! empty( $tournament_player->teams ) ) {
+                        if ( ! empty( $player_entry_rows ) ) {
                             ?>
                             <div class="col-12">
                                 <div class="row mb-2 row-header">
@@ -102,8 +102,8 @@ $player = $tournament_player;
                                     </div>
                                 </div>
                                 <?php
-                                foreach ( $tournament_player->teams as $entry ) {
-                                    $event_link = '/tournament/' . seo_url( $tournament->name ) . '/event/' . seo_url( $entry->event_name ) . '/';
+                                foreach ( $player_entry_rows as $entry ) {
+                                    $event_link = $entry->event_link;
                                     ?>
                                     <div class="row mb-2 row-list">
                                         <div class="col-1" name="<?php esc_html_e( 'Favourite', 'racketmanager' ); ?>">
@@ -123,7 +123,7 @@ $player = $tournament_player;
                                         <div class="col-5" name="<?php esc_html_e( 'Partner', 'racketmanager' ); ?>">
                                             <?php
                                             if ( ! empty( $entry->partner_name ) ) {
-                                                $player_link = '/tournament/' . seo_url( $tournament->name ) . '/player/' . seo_url( $entry->partner_name ) . '/';
+                                                $player_link = $entry->partner_link;
                                                 ?>
                                                 <a href="<?php echo esc_attr( $player_link ); ?>" class="tabDataLink" data-type="tournament" data-type-id="<?php echo esc_attr( $tournament->id ); ?>" data-season="" data-link="<?php echo esc_attr( $player_link ); ?>" data-link-id="<?php echo esc_attr( $entry->partner_id ); ?>" data-link-type="players">
                                                     <?php echo esc_html( wp_unslash( $entry->partner_name ) ); ?>

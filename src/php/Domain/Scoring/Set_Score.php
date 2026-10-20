@@ -2,6 +2,8 @@
 
 namespace Racketmanager\Domain\Scoring;
 
+use Racketmanager\Domain\Enums\Match_Outcome;
+
 /**
  * Value object representing a single set score.
  */
@@ -71,29 +73,34 @@ final class Set_Score implements \ArrayAccess
         return $this->away_tiebreak;
     }
 
-    public function winner(): ?string
+    public function winner_outcome(): ?Match_Outcome
     {
         if (null === $this->home_games || null === $this->away_games) {
             return null;
         }
 
         if ($this->home_games > $this->away_games) {
-            return 'home';
+            return Match_Outcome::HOME;
         }
 
         if ($this->away_games > $this->home_games) {
-            return 'away';
+            return Match_Outcome::AWAY;
         }
 
         if ($this->home_tiebreak !== null && $this->away_tiebreak !== null) {
             if ($this->home_tiebreak > $this->away_tiebreak) {
-                return 'home';
+                return Match_Outcome::HOME;
             }
             if ($this->away_tiebreak > $this->home_tiebreak) {
-                return 'away';
+                return Match_Outcome::AWAY;
             }
         }
 
         return null;
+    }
+
+    public function winner(): ?string
+    {
+        return $this->winner_outcome()?->value;
     }
 }

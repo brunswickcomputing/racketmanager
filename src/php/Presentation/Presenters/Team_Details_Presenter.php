@@ -36,9 +36,10 @@ final class Team_Details_Presenter {
 	 *
 	 * @param object $object League or Event object.
 	 * @param object|null $team_details Team details DTO or object.
+	 * @param bool $user_can_edit_team Whether the current user may edit this team.
 	 * @return Team_Details_View_Model
 	 */
-	public function present( object $object, ?object $team_details ): Team_Details_View_Model {
+	public function present( object $object, ?object $team_details, bool $user_can_edit_team = false ): Team_Details_View_Model {
 		$display_options = $this->settings_service->get_category( 'display' );
 		$show_wtn        = ! empty( $display_options['wtn'] );
 		$format          = null;
@@ -97,6 +98,15 @@ final class Team_Details_Presenter {
 			}
 		}
 
+		$calendar_url = $team && ! empty( $object->id ) ? add_query_arg(
+			[
+				'league_id' => $object->id,
+				'team_id'   => $team->get_id(),
+				'season'    => $season_name,
+			],
+			rest_url( 'racketmanager/v1/export/calendar' )
+		) : '';
+
 		return new Team_Details_View_Model(
 			show_wtn: $show_wtn,
 			format: $format,
@@ -105,6 +115,8 @@ final class Team_Details_Presenter {
 			club_link: $club_link,
 			player_links: $player_links,
 			match_time_formatted: $match_time_formatted,
+			user_can_edit_team: $user_can_edit_team,
+			calendar_url: $calendar_url,
 		);
 	}
 

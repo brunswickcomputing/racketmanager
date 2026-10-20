@@ -13,8 +13,15 @@ namespace Racketmanager;
 /** @var int    $event_id */
 /** @var object $league_edit */
 /** @var string $league_title */
-$competition_type = $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
-$leagues = $event->get_leagues();
+/** @var array  $leagues */
+/** @var array  $league_matches_map */
+$competition_type   = $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
+$leagues            = $leagues ?? array();
+$league_matches_map = $league_matches_map ?? array();
+$league_title       = $league_title ?? '';
+$league_id          = $league_id ?? null;
+$event_id           = $event_id ?? $event->id ?? null;
+$league_edit        = $league_edit ?? null;
 ?>
 <div class>
     <div class="row gx-3 align-items-center mb-3">
@@ -87,11 +94,14 @@ $leagues = $event->get_leagues();
                                 </td>
                                 <td class="">
                                     <?php
-                                    if ( $league->is_championship ) {
-                                        echo esc_html( $league->championship->num_teams_first_round );
+                                    if ( $league->is_championship && isset( $league->championship ) ) {
+                                        $first_round = method_exists( $league->championship, 'num_teams_first_round' )
+                                            ? $league->championship->num_teams_first_round()
+                                            : ( $league->championship->num_teams_first_round ?? '' );
+                                        echo esc_html( $first_round );
                                     } else {
-                                        $league->set_num_matches( true );
-                                        echo esc_html( $league->num_matches_total );
+                                        $num_matches = $league_matches_map[ $league->id ] ?? $league->num_matches_total ?? 0;
+                                        echo esc_html( $num_matches );
                                     }
                                     ?>
                                 </td>

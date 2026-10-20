@@ -25,6 +25,7 @@ use Racketmanager\Domain\Tournament;
 use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Presentation\Presenters\Match_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Tournament_Match_Card_View_Model;
@@ -284,16 +285,107 @@ class Match_Tournament_Real_Template_Test extends TestCase {
             away_team: $away_team
         );
 
-        $html = $this->render_match_card( $detail, $tournament );
+        $presenter = new Tournament_Presenter( 'd/m/Y' );
+        $card      = $presenter->present_match_card( $detail, $tournament );
+
+        // Direct view-model assertions for Set 1 (6-4 home win) and Set 2 (7-6 home win with 7-5 tiebreak)
+        $this->assertSame( '6', $card->sets[0]->player1_games );
+        $this->assertSame( '4', $card->sets[0]->player2_games );
+        $this->assertSame( ' winner', $card->sets[0]->player1_winner_class );
+        $this->assertSame( '', $card->sets[0]->player2_winner_class );
+        $this->assertFalse( $card->sets[0]->show_p1_tiebreak );
+        $this->assertFalse( $card->sets[0]->show_p2_tiebreak );
+
+        $this->assertSame( '7', $card->sets[1]->player1_games );
+        $this->assertSame( '6', $card->sets[1]->player2_games );
+        $this->assertSame( ' winner', $card->sets[1]->player1_winner_class );
+        $this->assertSame( '', $card->sets[1]->player2_winner_class );
+        $this->assertTrue( $card->sets[1]->show_p1_tiebreak );
+        $this->assertFalse( $card->sets[1]->show_p2_tiebreak );
+        $this->assertSame( '7', $card->sets[1]->tiebreak );
+
+        ob_start();
+        include RACKETMANAGER_PATH . 'templates/tournament/match.php';
+        $html = (string) ob_get_clean();
 
         $this->assertStringContainsString( 'class="match__row  winner"', $html );
         $this->assertStringContainsString( '<span class="match__status winner">W</span>', $html );
         $this->assertStringContainsString( 'Roger Federer', $html );
         $this->assertStringContainsString( 'Rafael Nadal', $html );
         $this->assertStringContainsString( '/tournament/summer-championships/player/roger-federer/', $html );
-        $this->assertStringContainsString( '<span class="player-row__tie-break">7</span>', $html );
-        $this->assertStringContainsString( '6', $html );
-        $this->assertStringContainsString( '4', $html );
+        $this->assertMatchesRegularExpression( '/<li class="match-points__cell\s+winner">\s*6\s*<\/li>\s*<li class="match-points__cell\s*">\s*4\s*<\/li>/', $html );
+        $this->assertMatchesRegularExpression( '/<li class="match-points__cell\s+winner">\s*7\s*<span class="player-row__tie-break">7<\/span>\s*<\/li>\s*<li class="match-points__cell\s*">\s*6\s*<\/li>/', $html );
+    }
+
+    public function test_match_card_played_with_away_winner_sets_and_tiebreak_markup(): void {
+        $player1 = $this->create_test_player( 101, 'Roger Federer' );
+        $player2 = $this->create_test_player( 102, 'Rafael Nadal' );
+
+        $home_team = $this->create_test_team( 10, 'Team Federer', [ $player1 ] );
+        $away_team = $this->create_test_team( 20, 'Team Nadal', [ $player2 ] );
+
+        $fixture = Fixture_Test_Factory::create(
+            id: 501,
+            home_team: '10',
+            away_team: '20',
+            winner_id: 20,
+            loser_id: 10,
+            custom: [
+                'sets' => [
+                    new Set_Score( 4, 6 ),
+                    new Set_Score( 6, 7, 5, 7 ),
+                ],
+            ]
+        );
+
+        $league = $this->createStub( League::class );
+        $league->title = 'Men Singles';
+        $event = $this->createStub( Event::class );
+        $event->name = 'Singles Event';
+        $league->event = $event;
+
+        $tournament = $this->createStub( Tournament::class );
+        $tournament->id = 5;
+        $tournament->name = 'Summer Championships';
+
+        $detail = new Fixture_Details_DTO(
+            fixture: $fixture,
+            league: $league,
+            event: $event,
+            competition: $this->createStub( Competition::class ),
+            home_team: $home_team,
+            away_team: $away_team
+        );
+
+        $presenter = new Tournament_Presenter( 'd/m/Y' );
+        $card      = $presenter->present_match_card( $detail, $tournament );
+
+        // Direct view-model assertions for Set 1 (4-6 away win) and Set 2 (6-7 away win with 5-7 tiebreak)
+        $this->assertSame( '4', $card->sets[0]->player1_games );
+        $this->assertSame( '6', $card->sets[0]->player2_games );
+        $this->assertSame( '', $card->sets[0]->player1_winner_class );
+        $this->assertSame( ' winner', $card->sets[0]->player2_winner_class );
+        $this->assertFalse( $card->sets[0]->show_p1_tiebreak );
+        $this->assertFalse( $card->sets[0]->show_p2_tiebreak );
+
+        $this->assertSame( '6', $card->sets[1]->player1_games );
+        $this->assertSame( '7', $card->sets[1]->player2_games );
+        $this->assertSame( '', $card->sets[1]->player1_winner_class );
+        $this->assertSame( ' winner', $card->sets[1]->player2_winner_class );
+        $this->assertFalse( $card->sets[1]->show_p1_tiebreak );
+        $this->assertTrue( $card->sets[1]->show_p2_tiebreak );
+        $this->assertSame( '5', $card->sets[1]->tiebreak );
+
+        ob_start();
+        include RACKETMANAGER_PATH . 'templates/tournament/match.php';
+        $html = (string) ob_get_clean();
+
+        $this->assertStringContainsString( 'class="match__row  winner"', $html );
+        $this->assertStringContainsString( '<span class="match__status winner">W</span>', $html );
+        $this->assertStringContainsString( 'Rafael Nadal', $html );
+        $this->assertStringContainsString( '/tournament/summer-championships/player/rafael-nadal/', $html );
+        $this->assertMatchesRegularExpression( '/<li class="match-points__cell\s*">\s*4\s*<\/li>\s*<li class="match-points__cell\s+winner">\s*6\s*<\/li>/', $html );
+        $this->assertMatchesRegularExpression( '/<li class="match-points__cell\s*">\s*6\s*<\/li>\s*<li class="match-points__cell\s+winner">\s*7\s*<span class="player-row__tie-break">5<\/span>\s*<\/li>/', $html );
     }
 
     public function test_match_card_walkover_retired_and_tie_status(): void {
@@ -600,7 +692,7 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         $tournament_service->method( 'get_player_details_for_tournament' )->willReturn( $tournament_player );
 
         $presenter = new Tournament_Presenter( 'd/m/Y' );
-        $handler = new Get_Tournament_Players_Handler( $tournament_service, $presenter );
+        $handler = new Get_Tournament_Players_Handler( $tournament_service, $presenter, new Player_Presenter() );
 
         $vm = $handler->handle( new Get_Tournament_Players_Query( 5, 101 ) );
         $html = $this->view_presenter()->render( $vm );

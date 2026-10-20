@@ -65,7 +65,7 @@ $additional_information = __( 'Additional information', 'racketmanager' );
                             ?>
                         </div>
                         <div class="entry-subhead__aside">
-                            <a role="button" href="/rules/<?php echo esc_attr( seo_url( $competition->name ) ); ?>-rules/" target="_blank" class="btn btn-primary">
+                            <a role="button" href="<?php echo esc_url( $rules_url ); ?>" target="_blank" class="btn btn-primary">
                                 <?php esc_html_e( 'League Rules', 'racketmanager' ); ?>
                             </a>
                         </div>
@@ -292,7 +292,7 @@ $additional_information = __( 'Additional information', 'racketmanager' );
                                 <input class="form-check-input" id="acceptance" name="acceptance" type="checkbox" role="switch" aria-checked="false" <?php echo $changes_allowed ? null : 'disabled'; ?> />
                                 <label class="form-check-label" for="acceptance">
                                     <?php
-                                    $rules_link = '<a href="/rules/' . seo_url( $competition->name ) . '-rules" target="_blank">' . __( 'the rules', 'racketmanager' ) . '</a>';
+                                    $rules_link = '<a href="' . esc_url( $rules_url ?? '' ) . '" target="_blank">' . __( 'the rules', 'racketmanager' ) . '</a>';
                                     /* Translators: %s: link to tournament rules */
                                     printf( __( 'I agree to abide by %s.', 'racketmanager' ), $rules_link ); //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
                                     ?>
@@ -313,7 +313,7 @@ $additional_information = __( 'Additional information', 'racketmanager' );
                                 <input type="hidden" name="competition_events" id="competition_events" value="<?php echo esc_html( implode( ',', $competition_events ?? [] ) ); ?>" />
                                 <button type="submit" class="btn btn-primary" id="entrySubmit" name="entrySubmit" data-type="league" data-action="entry-submit"><?php esc_html_e( 'Enter', 'racketmanager' ); ?></button>
                             </div>
-                            <a role="button" href="/clubs/<?php echo esc_html( seo_url( $club->shortcode ) ); ?>/" class="btn btn--cancel"><?php esc_html_e( 'Back', 'racketmanager' ); ?></a>
+                            <a role="button" href="<?php echo esc_url( $back_url ); ?>" class="btn btn--cancel"><?php esc_html_e( 'Back', 'racketmanager' ); ?></a>
                         </div>
                     </div>
                 </div>

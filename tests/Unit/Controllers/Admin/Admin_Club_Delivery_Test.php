@@ -17,6 +17,7 @@ use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Admin_Delivery_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
@@ -174,5 +175,39 @@ final class Admin_Club_Delivery_Test extends TestCase {
             ->with( self::stringContains( 'page=racketmanager-clubs' ) );
 
         $this->screen->display_clubs_page();
+    }
+
+    public function test_display_clubs_page_renders_clubs_table(): void {
+        $GLOBALS['wp_stubs_current_user_can'] = true;
+        $_SERVER['REQUEST_METHOD']            = 'GET';
+        $_POST                                = array();
+
+        $club1 = Club_Test_Factory::create( id: 1, name: 'Leigh LTC', shortcode: 'LLTC' );
+        $club2 = Club_Test_Factory::create( id: 2, name: 'Kent Elms', shortcode: 'KE' );
+
+        $this->club_service->expects( self::once() )
+            ->method( 'get_clubs' )
+            ->willReturn( array( $club1, $club2 ) );
+
+        $warnings = array();
+        set_error_handler(
+            static function ( int $severity, string $message ) use ( &$warnings ): bool {
+                $warnings[] = $message;
+                return true;
+            }
+        );
+        ob_start();
+        try {
+            $this->screen->display_clubs_page();
+        } finally {
+            $output = (string) ob_get_clean();
+            restore_error_handler();
+        }
+
+        $this->assertSame( array(), $warnings );
+        $this->assertStringContainsString( 'Leigh LTC', $output );
+        $this->assertStringContainsString( 'Kent Elms', $output );
+        $this->assertStringContainsString( 'page=racketmanager-clubs&amp;view=club&amp;club_id=1', $output );
+        $this->assertStringContainsString( 'page=racketmanager-clubs&amp;view=club&amp;club_id=2', $output );
     }
 }

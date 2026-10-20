@@ -33,7 +33,7 @@ class Get_Tournament_Match_Handler {
 
         $is_update_allowed = $this->fixture_service->is_update_allowed( $query->fixture_id );
 
-        $vars = $this->tournament_presenter->present_tournament_match_data( $tournament, $fixture, $is_update_allowed );
+        $vars = $this->tournament_presenter->present_tournament_match_data( $tournament, $fixture, $is_update_allowed, $query->referrer );
 
         return Shortcode_View_Model::for_template(
             'match-tournament',

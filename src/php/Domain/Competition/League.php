@@ -1480,7 +1480,7 @@ class League {
                     $team->match_day     = $team_dtls->match_day;
                     $team->match_time    = $team_dtls->match_time;
                     $team->captain_id    = $team_dtls->captain_id;
-                    $team->captain       = $team_dtls->captain;
+                    $team->captain_name  = $team_dtls->captain;
                     $team->contactno     = $team_dtls->contactno;
                     $team->contactemail  = $team_dtls->contactemail;
                     $team->league_status = $team_dtls->league_status;

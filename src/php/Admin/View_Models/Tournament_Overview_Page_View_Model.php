@@ -19,6 +19,7 @@ readonly final class Tournament_Overview_Page_View_Model {
      * @param array $unpaid_entries
      * @param array $pending_entries
      * @param array $withdrawn_entries
+     * @param array<string, string> $player_entry_urls
      */
     public function __construct(
         public object $tournament,
@@ -29,6 +30,7 @@ readonly final class Tournament_Overview_Page_View_Model {
         public array $unpaid_entries,
         public array $pending_entries,
         public array $withdrawn_entries,
+        public array $player_entry_urls = array(),
     ) {
     }
 
@@ -47,6 +49,7 @@ readonly final class Tournament_Overview_Page_View_Model {
             'unpaid_entries'    => $this->unpaid_entries,
             'pending_entries'   => $this->pending_entries,
             'withdrawn_entries' => $this->withdrawn_entries,
+            'player_entry_urls' => $this->player_entry_urls,
         );
     }
 }

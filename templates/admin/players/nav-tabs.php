@@ -8,17 +8,19 @@
 namespace Racketmanager;
 
 /** @var string $racketmanager_tab */
+/** @var string $tab_title */
 if ( isset( $vm ) && isset( $vm->racketmanager_tab ) ) {
     $racketmanager_tab = $vm->racketmanager_tab;
 }
 $racketmanager_tab = $racketmanager_tab ?? 'errors';
+$tab_title         = ( isset( $vm ) && isset( $vm->tab_title ) && '' !== $vm->tab_title ) ? $vm->tab_title : ( $tab_title ?? '' );
 ?>
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
-            <a href="/wp-admin/admin.php?page=racketmanager-players"><?php esc_html_e( 'RacketManager Players', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( ucwords( un_seo_url( $racketmanager_tab ) ) ); ?>
+            <a href="/wp-admin/admin.php?page=racketmanager-players"><?php esc_html_e( 'RacketManager Players', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $tab_title ); ?>
         </div>
     </div>
-    <h1><?php echo esc_html( ucwords( un_seo_url( $racketmanager_tab )) ); ?></h1>
+    <h1><?php echo esc_html( $tab_title ); ?></h1>
     <div class="row">
         <div class="container">
             <!-- Nav tabs -->

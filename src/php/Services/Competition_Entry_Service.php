@@ -22,6 +22,7 @@ use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Player;
 use Racketmanager\Domain\Team;
 use Racketmanager\Domain\Tournament;
+use Racketmanager\Presentation\Formatters\Email_Date_Formatter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Tournament_Date_View_Model;
 use Racketmanager\Domain\Tournament_Entry;
@@ -38,6 +39,7 @@ use Racketmanager\Exceptions\Player_Update_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Gateways\Mail\Mailer_Interface;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Club_Repository;
@@ -73,12 +75,13 @@ class Competition_Entry_Service {
     private Notify_Service $notify_service;
     private Tournament_Service $tournament_service;
     private Mailer_Interface $mailer;
+    private Email_Date_Formatter $date_formatter;
 
     /**
      * Constructor
      *
      */
-    public function __construct( RacketManager $plugin_instance, Club_Repository $club_repository, League_Repository $league_repository, League_Team_Repository $league_team_repository, Team_Repository $team_repository, Tournament_Repository $tournament_repository, Tournament_Entry_Repository $tournament_entry_repository, Club_Service $club_service, Competition_Service $competition_service, Finance_Service $finance_service, Player_Service $player_service, Tournament_Service $tournament_service, Notify_Service $notify_service, ?Mailer_Interface $mailer = null ) {
+    public function __construct( RacketManager $plugin_instance, Club_Repository $club_repository, League_Repository $league_repository, League_Team_Repository $league_team_repository, Team_Repository $team_repository, Tournament_Repository $tournament_repository, Tournament_Entry_Repository $tournament_entry_repository, Club_Service $club_service, Competition_Service $competition_service, Finance_Service $finance_service, Player_Service $player_service, Tournament_Service $tournament_service, Notify_Service $notify_service, ?Mailer_Interface $mailer = null, ?Option_Gateway_Interface $option_gateway = null ) {
         $this->racketmanager               = $plugin_instance;
         $this->club_repository             = $club_repository;
         $this->club_service                = $club_service;
@@ -93,6 +96,22 @@ class Competition_Entry_Service {
         $this->tournament_service          = $tournament_service;
         $this->notify_service              = $notify_service;
         $this->mailer                      = $mailer ?? new Wp_Mailer();
+        $this->date_formatter              = new Email_Date_Formatter( $option_gateway );
+    }
+
+    /**
+     * Presentation-ready season dates for the competition-entry-open email.
+     *
+     * Also exposes them on $season_dtls (date_*_display) for theme overrides reading the season object.
+     *
+     * @return string[] closing, start and end date display strings.
+     */
+    private function present_entry_open_dates( object $season_dtls ): array {
+        $season_dtls->date_closing_display = $this->date_formatter->date( isset( $season_dtls->date_closing ) ? (string) $season_dtls->date_closing : null );
+        $season_dtls->date_start_display   = $this->date_formatter->date( isset( $season_dtls->date_start ) ? (string) $season_dtls->date_start : null );
+        $season_dtls->date_end_display     = $this->date_formatter->date( isset( $season_dtls->date_end ) ? (string) $season_dtls->date_end : null );
+
+        return [ $season_dtls->date_closing_display, $season_dtls->date_start_display, $season_dtls->date_end_display ];
     }
 
     /**
@@ -148,20 +167,27 @@ class Competition_Entry_Service {
                 $headers[]         = RACKETMANAGER_CC_EMAIL . ucfirst( $competition->get_type() ) . 'Secretary <' . $from_email . '>';
                 $organisation_name = $this->racketmanager->site_name;
                 $messages_sent     = 0;
+
+                [ $date_closing_display, $date_start_display, $date_end_display ] = $this->present_entry_open_dates( $season_dtls );
+
                 foreach ( $clubs as $club ) {
                     $match_secretary = $this->player_service->get_match_secretary_details( $club->id );
                     $email_subject   = $this->racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entry Open', 'racketmanager' ) . ' - ' . $club->name;
                     $email_to        = $match_secretary->display_name . ' <' . $match_secretary->email . '>';
                     $action_url      = $url . seo_url( $club->shortcode ) . '/';
                     $email_message   = $this->racketmanager->shortcodes->load_template( 'competition-entry-open', array(
-                        'email_subject'   => $email_subject,
-                        'from_email'      => $from_email,
-                        'action_url'      => $action_url,
-                        'organisation'    => $organisation_name,
-                        'is_championship' => $is_championship,
-                        'competition'     => $competition_name,
-                        'addressee'       => $match_secretary->display_name,
-                        'season_dtls'     => $season_dtls,
+                        'email_subject'        => $email_subject,
+                        'from_email'           => $from_email,
+                        'action_url'           => $action_url,
+                        'site_url'             => $this->racketmanager->site_url ?? '',
+                        'organisation'         => $organisation_name,
+                        'is_championship'      => $is_championship,
+                        'competition'          => $competition_name,
+                        'addressee'            => $match_secretary->display_name,
+                        'season_dtls'          => $season_dtls,
+                        'date_closing_display' => $date_closing_display,
+                        'date_start_display'   => $date_start_display,
+                        'date_end_display'     => $date_end_display,
                     ), 'email' );
                     $this->mailer->send( $email_to, $email_subject, $email_message, $headers );
                     ++ $messages_sent;
@@ -245,21 +271,28 @@ class Competition_Entry_Service {
             $headers[]         = RACKETMANAGER_FROM_EMAIL . ucfirst( $competition->get_type() ) . 'Secretary <' . $from_email . '>';
             $headers[]         = RACKETMANAGER_CC_EMAIL . ucfirst( $competition->get_type() ) . 'Secretary <' . $from_email . '>';
             $organisation_name = $this->racketmanager->site_name;
+
+            [ $date_closing_display, $date_start_display, $date_end_display ] = $this->present_entry_open_dates( $season_dtls );
+
             foreach ( $clubs as $club ) {
                 $match_secretary = $this->player_service->get_match_secretary_details( $club->id );
                 $email_subject   = $this->racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entries Closing Soon', 'racketmanager' ) . ' - ' . $club->name;
                 $email_to        = $match_secretary->display_name . ' <' . $match_secretary->email . '>';
                 $action_url      = $url . seo_url( $club->shortcode ) . '/';
                 $email_message   = $this->racketmanager->shortcodes->load_template( 'competition-entry-open', array(
-                    'email_subject'   => $email_subject,
-                    'from_email'      => $from_email,
-                    'action_url'      => $action_url,
-                    'organisation'    => $organisation_name,
-                    'is_championship' => $is_championship,
-                    'competition'     => $competition_name,
-                    'addressee'       => $match_secretary->display_name,
-                    'season_dtls'     => $season_dtls,
-                    'days_remaining'  => $days_remaining,
+                    'email_subject'        => $email_subject,
+                    'from_email'           => $from_email,
+                    'action_url'           => $action_url,
+                    'site_url'             => $this->racketmanager->site_url ?? '',
+                    'organisation'         => $organisation_name,
+                    'is_championship'      => $is_championship,
+                    'competition'          => $competition_name,
+                    'addressee'            => $match_secretary->display_name,
+                    'season_dtls'          => $season_dtls,
+                    'days_remaining'       => $days_remaining,
+                    'date_closing_display' => $date_closing_display,
+                    'date_start_display'   => $date_start_display,
+                    'date_end_display'     => $date_end_display,
                 ), 'email' );
                 $this->mailer->send( $email_to, $email_subject, $email_message, $headers );
                 ++ $messages_sent;

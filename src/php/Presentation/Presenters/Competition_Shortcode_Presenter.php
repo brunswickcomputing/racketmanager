@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Presentation\Presenters;
 
+use BackedEnum;
 use Racketmanager\Domain\Value_Objects\Date_Range;
 use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Exceptions\Template_Not_Found_Exception;
@@ -28,7 +29,7 @@ use function Racketmanager\show_alert;
  */
 class Competition_Shortcode_Presenter {
     public function __construct(
-        private readonly View_Renderer_Interface $renderer,
+        private readonly ?View_Renderer_Interface $renderer = null,
         private readonly ?Club_Presenter $club_presenter = null,
         private readonly ?Player_Presenter $player_presenter = null,
         private readonly ?Option_Gateway_Interface $option_gateway = null
@@ -175,7 +176,7 @@ class Competition_Shortcode_Presenter {
     public function present_event_header(
         object $event,
         ?object $club = null,
-        string $curr_season = '',
+        string|int $curr_season = '',
         array $seasons = [],
         int $header_level = 1,
         ?string $standings_template = null,
@@ -183,7 +184,8 @@ class Competition_Shortcode_Presenter {
         string $pagename_query = '',
         string $date_format = ''
     ): Event_Header_View_Model {
-        $raw_comp_type = $event->competition->type ?? '';
+        $curr_season_str = (string) $curr_season;
+        $raw_comp_type   = $event->competition->type ?? '';
         $competition_type = $raw_comp_type instanceof \BackedEnum ? $raw_comp_type->value : (string) $raw_comp_type;
 
         $icon_path = match ( $competition_type ) {
@@ -209,7 +211,7 @@ class Competition_Shortcode_Presenter {
         $competition_name = $event->competition->name ?? null;
         $competition_link = null;
         if ( ! empty( $competition_name ) ) {
-            $competition_link = '/' . Util::seo_url( (string) $competition_name ) . '/' . $curr_season . '/';
+            $competition_link = '/' . Util::seo_url( (string) $competition_name ) . '/' . $curr_season_str . '/';
         }
 
         if ( '' === $date_format ) {
@@ -243,7 +245,7 @@ class Competition_Shortcode_Presenter {
             form_action: $form_action,
             season_label: $season_label,
             seasons: $seasons,
-            curr_season: $curr_season
+            curr_season: $curr_season_str
         );
     }
 
@@ -403,6 +405,27 @@ class Competition_Shortcode_Presenter {
     }
 
     /**
+     * Build the competition rules permalink.
+     */
+    public function get_rules_url( object $competition ): string {
+        $name = (string) ( $competition->name ?? ( method_exists( $competition, 'get_name' ) ? $competition->get_name() : '' ) );
+
+        return '/rules/' . Util::seo_url( $name ) . '-rules/';
+    }
+
+    /**
+     * Build the club permalink used as an entry-form back URL.
+     */
+    public function get_club_url( object $club ): string {
+        if ( $this->club_presenter ) {
+            return $this->club_presenter->get_link( $club );
+        }
+        $shortcode = (string) ( $club->shortcode ?? ( method_exists( $club, 'get_shortcode' ) ? $club->get_shortcode() : '' ) );
+
+        return '/clubs/' . Util::seo_url( $shortcode ) . '/';
+    }
+
+    /**
      * Format a closing date string for display.
      *
      * @param string|null $date_closing
@@ -416,5 +439,510 @@ class Competition_Shortcode_Presenter {
             ? $this->option_gateway->get_option( 'date_format', 'd/m/Y' )
             : get_option( 'date_format', 'd/m/Y' ) );
         return (string) mysql2date( $date_format, (string) $date_closing );
+    }
+
+    /**
+     * Present link map for competition clubs list.
+     *
+     * @param object $competition
+     * @param iterable $clubs
+     * @return array<int, string>
+     */
+    public function present_competition_club_links( object $competition, iterable $clubs ): array {
+        $links       = [];
+        $comp_name   = (string) ( $competition->name ?? '' );
+        $season_name = (string) ( $competition->current_season['name'] ?? '' );
+
+        foreach ( $clubs as $club ) {
+            $club_id           = is_object( $club ) ? (int) ( $club->id ?? 0 ) : (int) ( $club['id'] ?? 0 );
+            $shortcode         = is_object( $club ) ? (string) ( $club->shortcode ?? '' ) : (string) ( $club['shortcode'] ?? '' );
+            $links[ $club_id ] = '/' . Util::seo_url( $comp_name ) . '/' . $season_name . '/club/' . Util::seo_url( $shortcode ) . '/';
+        }
+
+        return $links;
+    }
+
+    /**
+     * Present URLs and link maps for a single competition club view.
+     *
+     * @param object $competition
+     * @param object $competition_club
+     * @return array{club_url: string, team_links: array<int, array{team_link: string, league_link: string}>, player_links: array<int, string>}
+     */
+    public function present_competition_club_detail_links( object $competition, object $competition_club ): array {
+        $comp_type       = $this->resolve_competition_type( $competition );
+        $comp_name       = (string) ( $competition->name ?? '' );
+        $season          = (string) ( $competition->current_season['name'] ?? '' );
+        $shortcode       = (string) ( $competition_club->shortcode ?? '' );
+        $is_championship = ! empty( $competition->is_championship );
+
+        $club_url = '/clubs/' . Util::seo_url( $shortcode ) . '/';
+
+        $team_links = [];
+        if ( ! empty( $competition_club->teams ) && is_iterable( $competition_club->teams ) ) {
+            foreach ( $competition_club->teams as $team ) {
+                $team_id   = is_object( $team ) ? (int) ( $team->id ?? 0 ) : (int) ( $team['id'] ?? 0 );
+                $team_name = is_object( $team ) ? (string) ( $team->name ?? '' ) : (string) ( $team['name'] ?? '' );
+                if ( $is_championship ) {
+                    $event_name  = is_object( $team ) ? (string) ( $team->event_name ?? '' ) : (string) ( $team['event_name'] ?? '' );
+                    $team_link   = '/' . $comp_type . '/' . Util::seo_url( $event_name ) . '/' . $season . '/team/' . Util::seo_url( $team_name ) . '/';
+                    $league_link = '/' . $comp_type . 's/' . Util::seo_url( $event_name ) . '/' . $season . '/';
+                } else {
+                    $league_title = is_object( $team ) ? (string) ( $team->league_title ?? '' ) : (string) ( $team['league_title'] ?? '' );
+                    $team_link    = '/' . $comp_type . '/' . Util::seo_url( $league_title ) . '/' . $season . '/team/' . Util::seo_url( $team_name ) . '/';
+                    $league_link  = '/' . $comp_type . '/' . Util::seo_url( $league_title ) . '/' . $season . '/';
+                }
+                $team_links[ $team_id ] = [
+                    'team_link'   => $team_link,
+                    'league_link' => $league_link,
+                ];
+            }
+        }
+
+        $player_links = [];
+        if ( ! empty( $competition_club->players ) && is_iterable( $competition_club->players ) ) {
+            foreach ( $competition_club->players as $player ) {
+                $player_id             = is_object( $player ) ? (int) ( $player->id ?? ( $player->ID ?? 0 ) ) : (int) ( $player['id'] ?? 0 );
+                $player_name           = is_object( $player ) ? ( method_exists( $player, 'get_fullname' ) ? $player->get_fullname() : ( $player->display_name ?? '' ) ) : ( $player['fullname'] ?? ( $player['display_name'] ?? '' ) );
+                $player_links[ $player_id ] = '/' . Util::seo_url( $comp_name ) . '/' . $season . '/player/' . Util::seo_url( (string) $player_name ) . '/';
+            }
+        }
+
+        return [
+            'club_url'     => $club_url,
+            'team_links'   => $team_links,
+            'player_links' => $player_links,
+        ];
+    }
+
+    /**
+     * Present link map for competition teams list.
+     *
+     * @param object $competition
+     * @param iterable $teams
+     * @return array<int, array{team_link: string, club_link: string, league_link: string}>
+     */
+    public function present_competition_teams_links( object $competition, iterable $teams ): array {
+        $comp_type = $this->resolve_competition_type( $competition );
+        $comp_name = (string) ( isset( $competition->name ) ? $competition->name : '' );
+        $season    = (string) ( $competition->current_season['name'] ?? '' );
+
+        $links = [];
+        foreach ( $teams as $team ) {
+            $team_id        = is_object( $team ) ? (int) ( $team->team_id ?? ( $team->id ?? 0 ) ) : (int) ( $team['team_id'] ?? ( $team['id'] ?? 0 ) );
+            $league_name    = is_object( $team ) ? (string) ( $team->league_name ?? '' ) : (string) ( $team['league_name'] ?? '' );
+            $team_name      = is_object( $team ) ? (string) ( $team->team_name ?? ( $team->name ?? '' ) ) : (string) ( $team['team_name'] ?? ( $team['name'] ?? '' ) );
+            if ( is_object( $team ) ) {
+                $club_shortcode = is_object( $team->club ?? null ) ? (string) ( $team->club->shortcode ?? '' ) : (string) ( $team->club_shortcode ?? '' );
+            } else {
+                $club_shortcode = is_array( $team['club'] ?? null ) ? (string) ( $team['club']['shortcode'] ?? '' ) : (string) ( $team['club_shortcode'] ?? '' );
+            }
+
+            $links[ $team_id ] = [
+                'team_link'   => '/' . $comp_type . '/' . Util::seo_url( $league_name ) . '/' . $season . '/team/' . Util::seo_url( $team_name ) . '/',
+                'club_link'   => '/' . Util::seo_url( $comp_name ) . '/' . $season . '/club/' . Util::seo_url( $club_shortcode ) . '/',
+                'league_link' => '/' . $comp_type . '/' . Util::seo_url( $league_name ) . '/' . $season . '/',
+            ];
+        }
+
+        return $links;
+    }
+
+    /**
+     * Get base URL for competition player pages.
+     *
+     * @param object $competition
+     * @return string
+     */
+    public function get_competition_player_base_url( object $competition ): string {
+        $comp_name = (string) ( isset( $competition->name ) ? $competition->name : '' );
+        $season    = (string) ( $competition->current_season['name'] ?? '' );
+        return '/' . Util::seo_url( $comp_name ) . '/' . $season . '/player/';
+    }
+
+    /**
+     * Present link map for competition events list.
+     *
+     * @param object $competition
+     * @param iterable $events
+     * @return array<int, string>
+     */
+    public function present_competition_events_links( object $competition, iterable $events ): array {
+        $comp_type = $this->resolve_competition_type( $competition );
+        $season    = (string) ( $competition->current_season['name'] ?? '' );
+
+        $links = [];
+        foreach ( $events as $event ) {
+            $event_id           = is_object( $event ) ? (int) ( $event->event_id ?? ( $event->id ?? 0 ) ) : (int) ( $event['event_id'] ?? ( $event['id'] ?? 0 ) );
+            $event_name         = is_object( $event ) ? (string) ( $event->event_name ?? ( $event->name ?? '' ) ) : (string) ( $event['event_name'] ?? ( $event['name'] ?? '' ) );
+            $links[ $event_id ] = '/' . $comp_type . 's/' . Util::seo_url( $event_name ) . '/' . $season . '/';
+        }
+
+        return $links;
+    }
+
+    /**
+     * Present link map for grouped competition players.
+     *
+     * @param object $competition
+     * @param iterable $grouped_players
+     * @return array<int, string>
+     */
+    public function present_competition_players_links( object $competition, iterable $grouped_players ): array {
+        $base_url = $this->get_competition_player_base_url( $competition );
+
+        $links = [];
+        foreach ( $grouped_players as $players ) {
+            if ( is_iterable( $players ) ) {
+                foreach ( $players as $player ) {
+                    $player_id           = is_object( $player ) ? (int) ( $player->id ?? ( $player->ID ?? 0 ) ) : (int) ( $player['id'] ?? 0 );
+                    $player_name         = is_object( $player ) ? (string) ( $player->display_name ?? ( method_exists( $player, 'get_fullname' ) ? $player->get_fullname() : '' ) ) : (string) ( $player['display_name'] ?? ( $player['fullname'] ?? '' ) );
+                    $links[ $player_id ] = $base_url . Util::seo_url( $player_name ) . '/';
+                }
+            }
+        }
+
+        return $links;
+    }
+
+    /**
+     * Get base URL for event player pages.
+     *
+     * @param object $event
+     * @return string
+     */
+    public function get_event_player_base_url( object $event ): string {
+        $comp_type  = $this->resolve_competition_type( $event->competition ?? null );
+        $event_name = (string) ( isset( $event->name ) ? $event->name : '' );
+        $season     = (string) ( $event->current_season['name'] ?? '' );
+        return '/' . $comp_type . 's/' . Util::seo_url( $event_name ) . '/' . $season . '/player/';
+    }
+
+    /**
+     * Present link map for event clubs list.
+     *
+     * @param object $event
+     * @param iterable $clubs
+     * @return array<int, string>
+     */
+    public function present_event_club_links( object $event, iterable $clubs ): array {
+        $comp_type  = $this->resolve_competition_type( $event->competition ?? null );
+        $event_name = (string) ( isset( $event->name ) ? $event->name : '' );
+        $season     = (string) ( $event->current_season['name'] ?? '' );
+
+        $links = [];
+        foreach ( $clubs as $club ) {
+            $club_id           = is_object( $club ) ? (int) ( $club->id ?? 0 ) : (int) ( $club['id'] ?? 0 );
+            $shortcode         = is_object( $club ) ? (string) ( $club->shortcode ?? '' ) : (string) ( $club['shortcode'] ?? '' );
+            $links[ $club_id ] = '/' . $comp_type . 's/' . Util::seo_url( $event_name ) . '/' . $season . '/club/' . Util::seo_url( $shortcode ) . '/';
+        }
+
+        return $links;
+    }
+
+    /**
+     * Present URLs and link maps for a single event club view.
+     *
+     * @param object $event
+     * @param object $event_club
+     * @return array{club_url: string, team_links: array<int, array{team_link: string, league_link: string}>, player_links: array<int, string>}
+     */
+    public function present_event_club_detail_links( object $event, object $event_club ): array {
+        $comp_type  = $this->resolve_competition_type( $event->competition ?? null );
+        $event_name = (string) ( isset( $event->name ) ? $event->name : '' );
+        $season     = (string) ( $event->current_season['name'] ?? '' );
+        $shortcode  = (string) ( $event_club->shortcode ?? '' );
+
+        $club_url = '/clubs/' . Util::seo_url( $shortcode ) . '/';
+
+        $team_links = [];
+        if ( ! empty( $event_club->teams ) && is_iterable( $event_club->teams ) ) {
+            foreach ( $event_club->teams as $team ) {
+                $team_id      = is_object( $team ) ? (int) ( $team->id ?? 0 ) : (int) ( $team['id'] ?? 0 );
+                $team_name    = is_object( $team ) ? (string) ( $team->name ?? '' ) : (string) ( $team['name'] ?? '' );
+                $league_title = is_object( $team ) ? (string) ( $team->league_title ?? '' ) : (string) ( $team['league_title'] ?? '' );
+
+                $team_links[ $team_id ] = [
+                    'team_link'   => '/' . $comp_type . '/' . Util::seo_url( $league_title ) . '/' . $season . '/team/' . Util::seo_url( $team_name ) . '/',
+                    'league_link' => '/' . $comp_type . '/' . Util::seo_url( $league_title ) . '/' . $season . '/',
+                ];
+            }
+        }
+
+        $player_links = [];
+        if ( ! empty( $event_club->players ) && is_iterable( $event_club->players ) ) {
+            foreach ( $event_club->players as $player ) {
+                $player_id             = is_object( $player ) ? (int) ( $player->id ?? ( $player->ID ?? 0 ) ) : (int) ( $player['id'] ?? 0 );
+                $player_name           = is_object( $player ) ? ( method_exists( $player, 'get_fullname' ) ? $player->get_fullname() : ( $player->display_name ?? '' ) ) : ( $player['fullname'] ?? ( $player['display_name'] ?? '' ) );
+                $player_links[ $player_id ] = '/' . $comp_type . 's/' . Util::seo_url( $event_name ) . '/' . $season . '/player/' . Util::seo_url( (string) $player_name ) . '/';
+            }
+        }
+
+        return [
+            'club_url'     => $club_url,
+            'team_links'   => $team_links,
+            'player_links' => $player_links,
+        ];
+    }
+
+    /**
+     * Present link map for event teams list.
+     *
+     * @param object $event
+     * @param iterable $teams
+     * @return array<int, array{team_link: string, club_link: string, league_link: string}>
+     */
+    public function present_event_teams_links( object $event, iterable $teams ): array {
+        $comp_type  = $this->resolve_competition_type( $event->competition ?? null );
+        $event_name = (string) ( isset( $event->name ) ? $event->name : '' );
+        $season     = (string) ( $event->current_season['name'] ?? '' );
+        $is_box     = ! empty( $event->is_box );
+
+        $links = [];
+        foreach ( $teams as $team ) {
+            $team_id        = is_object( $team ) ? (int) ( $team->id ?? 0 ) : (int) ( $team['id'] ?? 0 );
+            $team_name      = is_object( $team ) ? (string) ( $team->name ?? '' ) : (string) ( $team['name'] ?? '' );
+            $league_title   = is_object( $team ) ? (string) ( $team->league_title ?? '' ) : (string) ( $team['league_title'] ?? '' );
+            if ( is_object( $team ) ) {
+                $club_shortcode = is_object( $team->club ?? null ) ? (string) ( $team->club->shortcode ?? '' ) : (string) ( $team->club_shortcode ?? '' );
+            } else {
+                $club_shortcode = is_array( $team['club'] ?? null ) ? (string) ( $team['club']['shortcode'] ?? '' ) : (string) ( $team['club_shortcode'] ?? '' );
+            }
+
+            if ( $is_box ) {
+                $league_link = '/' . $comp_type . '/' . Util::seo_url( $league_title ) . '/' . __( 'round', 'racketmanager' ) . '-' . $season . '/';
+            } else {
+                $league_link = '/' . $comp_type . '/' . Util::seo_url( $league_title ) . '/' . $season . '/';
+            }
+
+            $links[ $team_id ] = [
+                'team_link'   => '/' . $comp_type . '/' . Util::seo_url( $league_title ) . '/' . $season . '/team/' . Util::seo_url( $team_name ) . '/',
+                'club_link'   => '/' . $comp_type . 's/' . Util::seo_url( $event_name ) . '/' . $season . '/club/' . Util::seo_url( $club_shortcode ) . '/',
+                'league_link' => $league_link,
+            ];
+        }
+
+        return $links;
+    }
+
+    /**
+     * Present link map for grouped event players.
+     *
+     * @param object $event
+     * @param iterable $grouped_players
+     * @return array<int, string>
+     */
+    public function present_event_players_links( object $event, iterable $grouped_players ): array {
+        $base_url = $this->get_event_player_base_url( $event );
+
+        $links = [];
+        foreach ( $grouped_players as $players ) {
+            if ( is_iterable( $players ) ) {
+                foreach ( $players as $player ) {
+                    $player_id           = is_object( $player ) ? (int) ( $player->id ?? ( $player->ID ?? 0 ) ) : (int) ( $player['id'] ?? 0 );
+                    $player_name         = is_object( $player ) ? (string) ( $player->display_name ?? ( method_exists( $player, 'get_fullname' ) ? $player->get_fullname() : '' ) ) : (string) ( $player['display_name'] ?? ( $player['fullname'] ?? '' ) );
+                    $links[ $player_id ] = $base_url . Util::seo_url( $player_name ) . '/';
+                }
+            }
+        }
+
+        return $links;
+    }
+
+    /**
+     * Present link map for event league URLs.
+     *
+     * @param object $event
+     * @param iterable $leagues
+     * @param string|null $season
+     * @param string $base_url
+     * @return array<int, string>
+     */
+    public function present_event_league_urls( object $event, iterable $leagues, ?string $season = null, string $base_url = '' ): array {
+        $is_box      = ! empty( $event->is_box );
+        $season_name = $season ?? (string) ( $event->current_season['name'] ?? '' );
+
+        $links = [];
+        foreach ( $leagues as $league ) {
+            $league_id    = is_object( $league ) ? (int) ( $league->id ?? 0 ) : (int) ( $league['id'] ?? 0 );
+            $league_title = is_object( $league ) ? (string) ( $league->title ?? '' ) : (string) ( $league['title'] ?? '' );
+
+            $href = $base_url . '/' . __( 'league', 'racketmanager' ) . '/' . Util::seo_url( $league_title ) . '/';
+            if ( $is_box ) {
+                $href .= __( 'round', 'racketmanager' ) . '-';
+            }
+            $href .= $season_name . '/';
+
+            $links[ $league_id ] = $href;
+        }
+
+        return $links;
+    }
+
+    /**
+     * Present link map for event standings leagues.
+     *
+     * @param object $event
+     * @param iterable $leagues
+     * @return array<int, string>
+     */
+    public function present_event_standings_links( object $event, iterable $leagues ): array {
+        return $this->present_event_league_urls( $event, $leagues );
+    }
+
+    /**
+     * Present event and league links for player match groupings.
+     *
+     * @param iterable $matches_groups
+     * @return array<string, array{event_link: string, league_link: string}>
+     */
+    public function present_player_match_group_links( iterable $matches_groups ): array {
+        $links = [];
+        foreach ( $matches_groups as $key => $player_matches ) {
+            $league = is_object( $player_matches ) ? ( $player_matches->league ?? null ) : ( $player_matches['league'] ?? null );
+            if ( $league && isset( $league->event ) ) {
+                $league_comp  = $league->event->competition ?? null;
+                $comp_type    = $this->resolve_competition_type( $league_comp );
+                $event_name   = (string) ( isset( $league->event->name ) ? $league->event->name : '' );
+                $league_title = (string) ( $league->title ?? '' );
+                $season       = (string) ( $league->season ?? '' );
+
+                $links[ (string) $key ] = [
+                    'event_link'  => '/' . $comp_type . 's/' . Util::seo_url( $event_name ) . '/' . $season . '/',
+                    'league_link' => '/' . $comp_type . '/' . Util::seo_url( $league_title ) . '/' . $season . '/',
+                ];
+            }
+        }
+
+        return $links;
+    }
+
+    /**
+     * Resolve competition type string from an object or value.
+     *
+     * @param mixed $competition
+     * @return string
+     */
+    private function resolve_competition_type( mixed $competition ): string {
+        if ( is_object( $competition ) ) {
+            $type = method_exists( $competition, 'get_type' ) ? $competition->get_type() : ( $competition->type ?? 'league' );
+        } else {
+            $type = $competition ?? 'league';
+        }
+
+        if ( $type instanceof BackedEnum ) {
+            return (string) $type->value;
+        }
+
+        return '' !== (string) $type ? (string) $type : 'league';
+    }
+
+    /**
+     * Present winners grouped by category for competition winners view.
+     *
+     * @param array $winners
+     * @return array
+     */
+    public function present_competition_winners( array $winners ): array {
+        $presented = [];
+        foreach ( $winners as $key => $winner_group ) {
+            $presented_group = [];
+            foreach ( $winner_group as $winner ) {
+                $w = is_object( $winner ) ? clone $winner : (object) $winner;
+                $comp_type  = $w->competition_type ?? 'competition';
+                $event_name = $w->event_name ?? '';
+                $season     = $w->season ?? '';
+                $w->link_url        = '/' . Util::seo_url( (string) $comp_type ) . 's/' . Util::seo_url( (string) $event_name ) . '/' . Util::seo_url( (string) $season ) . '/';
+                $w->link_class      = null;
+                $w->data_season     = null;
+                $w->data_type       = null;
+                $w->data_type_id    = null;
+                $w->data_type_type  = null;
+                $presented_group[]  = $w;
+            }
+            $presented[ $key ] = $presented_group;
+        }
+
+        return $presented;
+    }
+
+    /**
+     * Present link map for club event player stats.
+     *
+     * @param object $event
+     * @param iterable $player_stats
+     * @param string|null $season_name
+     * @return array<string, string>
+     */
+    public function present_club_event_player_links( object $event, iterable $player_stats, ?string $season_name = null ): array {
+        $player_links     = [];
+        $comp_type        = ( isset( $event->competition ) && isset( $event->competition->type ) ) ? $event->competition->type : 'league';
+        $competition_type = $comp_type instanceof BackedEnum ? $comp_type->value : (string) $comp_type;
+        $event_slug       = Util::seo_url( (string) ( $event->name ?? '' ) );
+        $season_slug      = (string) ( $season_name ?? ( $event->current_season['name'] ?? '' ) );
+
+        if ( ! empty( $player_stats ) ) {
+            foreach ( $player_stats as $stat ) {
+                $fn = is_object( $stat ) ? ( $stat->fullname ?? '' ) : ( $stat['fullname'] ?? '' );
+                if ( '' !== (string) $fn ) {
+                    $player_links[ (string) $fn ] = '/' . $competition_type . 's/' . $event_slug . '/' . $season_slug . '/player/' . Util::seo_url( (string) $fn ) . '/';
+                }
+            }
+        }
+
+        return $player_links;
+    }
+
+    /**
+     * Present event draw leagues with precomputed match URLs, opponent details, and score models.
+     *
+     * @param object $event
+     * @return object
+     */
+    public function present_event_draw( object $event ): object {
+        $presented_event = clone $event;
+        if ( ! empty( $presented_event->leagues ) && is_array( $presented_event->leagues ) ) {
+            $presented_leagues = [];
+            foreach ( $presented_event->leagues as $l_idx => $league ) {
+                $league_obj = is_object( $league ) ? clone $league : (object) $league;
+                if ( ! empty( $league_obj->finals ) && is_array( $league_obj->finals ) ) {
+                    $competition = ( isset( $league_obj->event->competition ) ? $league_obj->event->competition : null ) ?? ( $presented_event->competition ?? null );
+                    $league_obj->finals = Draw_Presenter::present_finals(
+                        $league_obj->finals,
+                        null,
+                        $league_obj,
+                        $competition,
+                        $presented_event
+                    );
+                }
+                $presented_leagues[ $l_idx ] = $league_obj;
+            }
+            $presented_event->leagues = $presented_leagues;
+        }
+
+        return $presented_event;
+    }
+
+    /**
+     * Present club entry form urls map.
+     *
+     * @param array $clubs
+     * @return array<int|string, string>
+     */
+    public function present_entry_form_club_urls( array $clubs ): array {
+        $club_urls = [];
+        foreach ( $clubs as $c ) {
+            $c_id        = is_object( $c ) ? ( $c->id ?? 0 ) : ( $c['id'] ?? 0 );
+            $c_shortcode = is_object( $c ) ? ( $c->shortcode ?? '' ) : ( $c['shortcode'] ?? '' );
+            $slug        = Util::seo_url( (string) $c_shortcode );
+            if ( '' !== (string) $c_id ) {
+                $club_urls[ (string) $c_id ] = $slug . '/';
+                $club_urls[ (int) $c_id ]    = $slug . '/';
+            }
+            if ( '' !== (string) $c_shortcode ) {
+                $club_urls[ (string) $c_shortcode ] = $slug . '/';
+            }
+        }
+        return $club_urls;
     }
 }

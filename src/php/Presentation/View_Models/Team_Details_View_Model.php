@@ -15,6 +15,8 @@ final readonly class Team_Details_View_Model {
 	 * @param string $club_link Canonical URL for the club page.
 	 * @param array<int|string, string> $player_links Canonical URLs for team players keyed by player ID.
 	 * @param string|null $match_time_formatted Localised match start time.
+	 * @param bool $user_can_edit_team Whether to display the team edit control.
+	 * @param string $calendar_url Calendar export URL for this team and season.
 	 */
 	public function __construct(
 		public bool $show_wtn = false,
@@ -24,6 +26,8 @@ final readonly class Team_Details_View_Model {
 		public string $club_link = '',
 		public array $player_links = [],
 		public ?string $match_time_formatted = null,
+		public bool $user_can_edit_team = false,
+		public string $calendar_url = '',
 	) {
 	}
 }

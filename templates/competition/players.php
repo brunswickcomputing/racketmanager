@@ -9,8 +9,9 @@ namespace Racketmanager;
 
 /** @var object $competition */
 if ( empty( $competition->player ) ) {
-    $player_list     = $competition->players;
-    $player_link = '/' . seo_url( $competition->name ) . '/' . $competition->current_season['name'] . '/player/';
+    $player_list  = $competition->players;
+    $player_link  = $player_link ?? '';
+    $player_links = $player_links ?? [];
     require RACKETMANAGER_PATH . 'templates/includes/player-list-names.php';
 } else {
     $player = $competition->player;
@@ -27,21 +28,34 @@ if ( empty( $competition->player ) ) {
                         <div class="module">
                             <?php
                             foreach ( $player->matches as $key => $player_matches ) {
-                                $league = $player_matches['league'];
-                                $league_competition_type = $league->event->competition->type instanceof \BackedEnum ? $league->event->competition->type->value : (string) ( $league->event->competition->type ?? '' );
+                                $league      = $player_matches['league'];
+                                $event_link  = $match_group_links[ (string) $key ]['event_link'] ?? '';
+                                $league_link = $match_group_links[ (string) $key ]['league_link'] ?? '';
                                 ?>
                                 <h4 class="module-divider">
                                     <span class="module-divider__body">
-                                        <a href="/<?php echo esc_attr( $league_competition_type ); ?>s/<?php echo esc_attr( seo_url( $league->event->name ) ); ?>/<?php echo esc_attr( $league->season ); ?>/">
+                                        <?php if ( '' !== $event_link ) : ?>
+                                            <a href="<?php echo esc_attr( $event_link ); ?>">
+                                                <span class="nav-link__value">
+                                                    <?php echo esc_html( $league->event->name ); ?>
+                                                </span>
+                                            </a>
+                                        <?php else : ?>
                                             <span class="nav-link__value">
                                                 <?php echo esc_html( $league->event->name ); ?>
                                             </span>
-                                        </a>&nbsp;&#8226;&nbsp;
-                                        <a href="/<?php echo esc_attr( $league_competition_type ); ?>/<?php echo esc_attr( seo_url( $league->title ) ); ?>/<?php echo esc_attr( $league->season ); ?>/">
+                                        <?php endif; ?>&nbsp;&#8226;&nbsp;
+                                        <?php if ( '' !== $league_link ) : ?>
+                                            <a href="<?php echo esc_attr( $league_link ); ?>">
+                                                <span class="nav-link__value">
+                                                    <?php echo esc_html( $league->title ); ?>
+                                                </span>
+                                            </a>
+                                        <?php else : ?>
                                             <span class="nav-link__value">
                                                 <?php echo esc_html( $league->title ); ?>
                                             </span>
-                                        </a>
+                                        <?php endif; ?>
                                     </span>
                                 </h4>
                                 <?php

@@ -32,6 +32,8 @@ use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use function __;
 use function is_array;
 use function is_object;
+use function is_string;
+use function wp_get_referer;
 
 /**
  * Driving adapter for Tournament shortcodes.
@@ -200,7 +202,8 @@ class Tournament_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         $query = Get_Tournament_Match_Query::from_atts(
             $this->normalize_atts( $atts ),
             $this->extract_query_vars(),
-            $this->extract_get_params()
+            $this->extract_get_params(),
+            $this->extract_referrer()
         );
 
         return $this->view_presenter->render( $this->match_handler->handle( $query ) );
@@ -249,6 +252,12 @@ class Tournament_Shortcode_Adapter implements Shortcode_Adapter_Interface {
 
     private function extract_get_params(): array {
         return $_GET ?? [];
+    }
+
+    private function extract_referrer(): ?string {
+        $referrer = wp_get_referer();
+
+        return is_string( $referrer ) && '' !== $referrer ? $referrer : null;
     }
 
     private function normalize_atts( array|string $atts ): array {

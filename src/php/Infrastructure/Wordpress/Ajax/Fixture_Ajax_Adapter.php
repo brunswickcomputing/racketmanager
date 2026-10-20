@@ -72,13 +72,11 @@ class Fixture_Ajax_Adapter {
                 $template       = 'match/match-card-rubbers';
             }
 
+            $vars = $this->presenter->map_to_match_card_vars( $dto, $match, '' );
+
             $output = $this->view_renderer->render_to_string(
                 $template,
-                [
-                    'dto'          => $dto,
-                    'match'        => $match,
-                    'sponsor_html' => '',
-                ]
+                $vars
             );
 
             $response = $this->response_factory->create_raw_response( $output );

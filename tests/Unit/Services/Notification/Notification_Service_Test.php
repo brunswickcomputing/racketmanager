@@ -63,6 +63,7 @@ namespace Racketmanager\Tests\Unit\Services\Notification {
     use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
     use Racketmanager\Domain\Club;
+    use Racketmanager\Domain\Competition\Competition_Type;
     use Racketmanager\Domain\Competition\Event;
     use Racketmanager\Domain\Results_Checker;
 use Racketmanager\Domain\Fixture\Fixture;
@@ -78,6 +79,7 @@ use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Gateways\Mail\Mailer_Interface;
 use Racketmanager\Presentation\Presenters\Notification_Presenter;
+use Racketmanager\Presentation\View_Models\Send_Fixtures_Match_Row_View_Model;
 use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Settings_Service;
@@ -920,13 +922,17 @@ class Notification_Service_Test extends TestCase {
     public function test_send_event_fixtures_sends_mail_contract_and_skips_teams_without_email(): void {
         $this->app->site_name = 'Test Site';
         $this->app->site_url  = 'https://example.com';
-        $this->app->method('get_confirmation_email')->willReturn('secretary@example.com');
+        $this->app->expects($this->once())
+            ->method('get_confirmation_email')
+            ->with('league')
+            ->willReturn('secretary@example.com');
 
         $league        = $this->create_mock_league();
         $team_with_email = (object) [
             'id'           => 1,
             'contactemail' => 'captain@example.com',
-            'captain'      => 'Jane Captain',
+            'captain'      => 55,
+            'captain_name' => 'Jane Captain',
             'season'       => '2026',
             'title'        => 'Leigh A',
             'club_id'      => 10,
@@ -934,14 +940,31 @@ class Notification_Service_Test extends TestCase {
         $team_without_email = (object) [
             'id'           => 2,
             'contactemail' => '',
-            'captain'      => 'No Email',
+            'captain'      => 56,
+            'captain_name' => 'No Email',
             'season'       => '2026',
             'title'        => 'Leigh B',
             'club_id'      => 11,
         ];
         $league->method('get_league_teams')->willReturn([$team_with_email, $team_without_email]);
-        $league->method('get_matches')->willReturn(['match-1']);
+        $fixture = Fixture_Factory::from_object( (object) [
+            'id'         => 9001,
+            'league_id'  => 456,
+            'home_team'  => '1',
+            'away_team'  => '3',
+            'date'       => '2026-10-02 00:00:00',
+            'start_time' => '19:30',
+            'season'     => '2026',
+            'match_day'  => 1,
+        ] );
+        $league->method('get_matches')->willReturn([$fixture]);
         $this->league_repository->method('find_by_id')->willReturn($league);
+
+        $row = new Send_Fixtures_Match_Row_View_Model( round_display: '1', date_display: '02 Oct 26', is_home: true );
+        $this->presenter->expects($this->once())
+            ->method('present_send_fixtures_match')
+            ->with($this->identicalTo($fixture), 1)
+            ->willReturn($row);
 
         $club                   = Club_Test_Factory::create(id: 10, name: 'Leigh Tennis Club');
         $club->match_secretary  = (object) [
@@ -952,7 +975,7 @@ class Notification_Service_Test extends TestCase {
 
         $event              = $this->createMock(Event::class);
         $event->name        = 'Summer League';
-        $event->competition = (object) ['type' => 'league'];
+        $event->competition = (object) ['type' => Competition_Type::LEAGUE];
         $event->method('get_leagues')->willReturn([(object) ['id' => 456]]);
 
         $captured_vars = null;
@@ -973,7 +996,8 @@ class Notification_Service_Test extends TestCase {
         $this->assertSame('Summer League', $captured_vars['competition']);
         $this->assertSame('Jane Captain', $captured_vars['captain']);
         $this->assertSame('2026', $captured_vars['season']);
-        $this->assertSame(['match-1'], $captured_vars['matches']);
+        $this->assertSame([$row], $captured_vars['matches']);
+        $this->assertSame('https://example.com', $captured_vars['site_url']);
         $this->assertSame('https://example.com/league/division-1/2026/team/leigh-a', $captured_vars['action_url']);
         $this->assertSame('Test Site', $captured_vars['organisation']);
         $this->assertSame('secretary@example.com', $captured_vars['contact_email']);

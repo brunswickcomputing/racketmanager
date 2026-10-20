@@ -7,28 +7,34 @@
 
 namespace Racketmanager;
 
-global $racketmanager;
-/** @var string $competition */
-/** @var object $match */
-/** @var string $round */
-/** @var string $cup_link */
-/** @var array  $teams */
-/** @var string $rules_link */
-/** @var string $paragraph */
-/** @var string $contact */
-/** @var string $closing */
-/** @var string $title */
-/** @var string $hr */
-$competition_name = $competition;
-$match_date    = $match->match_date;
-$match_time    = mysql2date( $racketmanager->time_format, $match->date );
-$email_subject = __( 'Match Details', 'racketmanager' ) . ' - ' . $round . ' - ' . $competition_name;
+/** @var string|null $competition */
+/** @var string|null $competition_name */
+/** @var object|null $match */
+/** @var string|null $round */
+/** @var string|null $cup_link */
+/** @var array|null  $teams */
+/** @var string|null $rules_link */
+/** @var string|null $paragraph */
+/** @var string|null $contact */
+/** @var string|null $closing */
+/** @var string|null $title */
+/** @var string|null $hr */
+/** @var string|null $email_from */
+/** @var string|null $email_subject */
+/** @var string|null $match_date */
+/** @var string|null $match_time */
+
+$competition_name = (string) ( $competition_name ?? ( $competition ?? ( $match->league->title ?? '' ) ) );
+$round_label      = (string) ( $round ?? '' );
+$match_date       = (string) ( $match_date ?? ( $match->match_date ?? '' ) );
+$match_time       = (string) ( $match_time ?? ( $match->match_time ?? '' ) );
+$email_subject    = $email_subject ?? ( __( 'Match Details', 'racketmanager' ) . ' - ' . $round_label . ' - ' . $competition_name );
 require 'email-header.php';
 $title_text = sprintf(
     /* translators: %1$s: competition name %2$s: round name */
     __( '%1$s %2$s Match Confirmation', 'racketmanager' ),
-    $match->league->title,
-    $round,
+    $match->league->title ?? $competition_name,
+    $round_label,
 );
 $title_level = '1';
 $title_align = 'center';
@@ -37,7 +43,7 @@ $title_align = '';
 $paragraph_text = sprintf(
     /* translators: $s: cup link */
     __( 'Please find below details of your next match in the %s.', 'racketmanager' ),
-    $cup_link,
+    $cup_link ?? '',
 );
 $paragraph_imbed = true;
 require $paragraph;
@@ -54,8 +60,13 @@ $paragraph_text = __( 'Match to be played on', 'racketmanager' ) . ' ' . $match_
 require $paragraph;
 $opponents = array( 'home', 'away' );
 foreach ( $opponents as $opponent ) {
-    $team        = $teams[ $opponent ];
-    $title_text  = $team->title . ' - ' . $team->name;
+    $team = $teams[ $opponent ] ?? null;
+    if ( ! $team ) {
+        continue;
+    }
+    $team_title  = $team->title ?? '';
+    $team_name   = $team->name ?? '';
+    $title_text  = trim( $team_title . ( $team_name ? ' - ' . $team_name : '' ) );
     $title_level = '3';
     require $title;
     ?>
@@ -72,15 +83,15 @@ foreach ( $opponents as $opponent ) {
                                             <tbody>
                                                 <tr style="line-height: 22px;">
                                                     <td style="width: 150px; font-size: 14px; font-weight: 500;"><?php esc_html_e( 'Captain', 'racketmanager' ); ?>:</td>
-                                                    <td><?php echo esc_html( $team->captain ); ?></td>
+                                                    <td><?php echo esc_html( $team->captain ?? '' ); ?></td>
                                                 </tr>
                                                 <tr style="line-height: 22px;">
                                                     <td style="width: 150px; font-size: 14px; font-weight: 500;"><?php esc_html_e( 'Telephone', 'racketmanager' ); ?>:</td>
-                                                    <td><?php echo esc_html( $team->captain_tel ); ?></td>
+                                                    <td><?php echo esc_html( $team->captain_tel ?? '' ); ?></td>
                                                 </tr>
                                                 <tr style="line-height: 22px;">
                                                     <td style="width: 150px; font-size: 14px; font-weight: 500;"><?php esc_html_e( 'Email', 'racketmanager' ); ?>:</td>
-                                                    <td><?php echo esc_html( $team->captain_email ); ?></td>
+                                                    <td><?php echo esc_html( $team->captain_email ?? '' ); ?></td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -99,7 +110,7 @@ require $hr;
 $title_text  = __( 'Rules', 'racketmanager' );
 $title_level = '2';
 require $title;
-$paragraph_text  = __( 'The rules for the cup can be found', 'racketmanager' ) . ' <a href="' . $rules_link . '">' . __( 'here', 'racketmanager' ) . '</a>.';
+$paragraph_text  = __( 'The rules for the cup can be found', 'racketmanager' ) . ' <a href="' . ( $rules_link ?? '' ) . '">' . __( 'here', 'racketmanager' ) . '</a>.';
 $paragraph_imbed = true;
 require $paragraph;
 $paragraph_imbed = false;

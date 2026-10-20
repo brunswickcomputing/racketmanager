@@ -9,6 +9,8 @@ namespace Racketmanager;
 
 /** @var object $competition */
 /** @var array  $events */
+/** @var array<int, string> $event_links */
+$event_links = $event_links ?? [];
 ?>
 <div class="module module--card">
     <div class="module__banner">
@@ -34,6 +36,8 @@ namespace Racketmanager;
                 </div>
                 <?php
                 foreach ( $events as $event ) {
+                    $event_id   = is_object( $event ) ? (int) ( $event->event_id ?? ( $event->id ?? 0 ) ) : (int) ( $event['event_id'] ?? ( $event['id'] ?? 0 ) );
+                    $event_link = $event_links[ $event_id ] ?? '';
                     ?>
                     <div class="row mb-2 row-list">
                         <div class="col-1" name="<?php esc_html_e( 'Favourite', 'racketmanager' ); ?>">
@@ -45,9 +49,13 @@ namespace Racketmanager;
                         ?>
                         </div>
                         <div class="col-5" name="<?php esc_html_e( 'Event', 'racketmanager' ); ?>">
-                            <a href="/<?php echo esc_html( $competition->get_type() ); ?>s/<?php echo esc_html( seo_url( $event->event_name ) ); ?>/<?php echo esc_html( $competition->current_season['name'] ); ?>/">
+                            <?php if ( '' !== $event_link ) : ?>
+                                <a href="<?php echo esc_attr( $event_link ); ?>">
+                                    <?php echo esc_html( $event->event_name ); ?>
+                                </a>
+                            <?php else : ?>
                                 <?php echo esc_html( $event->event_name ); ?>
-                            </a>
+                            <?php endif; ?>
                         </div>
                         <div class="col-2 text-end" name="<?php esc_html_e( 'Leagues', 'racketmanager' ); ?>">
                             <?php echo empty( $event->num_leagues ) ? null : esc_html( $event->num_leagues ); ?>

@@ -9,25 +9,20 @@ namespace Racketmanager;
 
 /** @var string $favourite_type */
 /** @var int    $favourite_id */
-if ( is_user_logged_in() ) {
+/** @var \Racketmanager\Presentation\View_Models\Favourite_Controls_View_Model|null $favourite_controls */
+if ( ! empty( $favourite_controls->can_toggle ) ) {
     if ( ! empty( $hidden ) ) {
         $visible = 'hidden-svg';
     } else {
         $visible = '';
     }
 
-    $_button_is_favourite = $is_favourite ?? ( isset( $GLOBALS['racketmanager'] ) && method_exists( $GLOBALS['racketmanager'], 'is_user_favourite' ) ? $GLOBALS['racketmanager']->is_user_favourite( $favourite_type, $favourite_id ) : false );
-    unset( $is_favourite );
-    if ( $_button_is_favourite ) {
-        $tooltip_title = __( 'Remove favourite', 'racketmanager' );
-    } else {
-        $tooltip_title = __( 'Add favourite', 'racketmanager' );
-    }
+    $favourite_state = $favourite_controls->selected[ $favourite_type ][ $favourite_id ] ?? $favourite_controls->unselected;
     ?>
-    <span type="button" class="btn btn-sm btn-favourite <?php echo $_button_is_favourite ? ' is-favourite' : ''; ?>" data-bs-toggle="tooltip" data-bs-placement="top"  title="<?php echo esc_html( $tooltip_title ); ?>" id="fav-<?php echo esc_attr( $favourite_id ); ?>" data-js="add-favourite" data-type="<?php echo esc_attr( $favourite_type ); ?>" data-favourite="<?php echo esc_html( $favourite_id ); ?>" data-status="<?php echo esc_attr( $_button_is_favourite ); ?>">
+    <span type="button" class="btn btn-sm btn-favourite <?php echo esc_attr( $favourite_state->button_class ); ?>" data-bs-toggle="tooltip" data-bs-placement="top"  title="<?php echo esc_html( $favourite_state->title ); ?>" id="fav-<?php echo esc_attr( $favourite_id ); ?>" data-js="add-favourite" data-type="<?php echo esc_attr( $favourite_type ); ?>" data-favourite="<?php echo esc_html( $favourite_id ); ?>" data-status="<?php echo esc_attr( $favourite_state->status ); ?>">
         <span class="fav-icon">
             <a href="" >
-                <i class="fav-icon-svg <?php echo esc_html( $visible ); ?> racketmanager-svg-icon <?php echo $_button_is_favourite ? ' fav-icon-svg-selected' : ''; ?>
+                <i class="fav-icon-svg <?php echo esc_html( $visible ); ?> racketmanager-svg-icon <?php echo esc_attr( $favourite_state->icon_class ); ?>
                 ">
                 <svg width="12" height="12" class="">
                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#suit-heart-fill' ); ?>"></use>
@@ -39,5 +34,5 @@ if ( is_user_logged_in() ) {
         </span>
     </span>
     <?php
-    unset( $_button_is_favourite );
+    unset( $favourite_state );
 }

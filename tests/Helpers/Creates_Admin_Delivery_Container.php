@@ -113,6 +113,7 @@ trait Creates_Admin_Delivery_Container {
         $container->set( 'fixture_maintenance_service', fn() => $fixture_maintenance );
         $container->set( 'fixture_repository', fn() => $fixture_repository );
         $container->set( 'admin_league_schedule_presenter', fn() => $services['admin_league_schedule_presenter'] ?? new \Racketmanager\Admin\Presenters\Admin_League_Schedule_Presenter() );
+        $container->set( 'admin_entry_link_presenter', fn() => $services['admin_entry_link_presenter'] ?? new \Racketmanager\Admin\Presenters\Admin_Entry_Link_Presenter() );
         $container->set( 'league_team_repository', fn() => $league_team_repo );
         $container->set( 'score_validation_service', fn() => $score_validation );
 

@@ -12,25 +12,24 @@ namespace Racketmanager;
 /** @var array $current_season */
 /** @var object $event */
 /** @var mixed $player_stats */
+/** @var array<string, string> $player_links */
+/** @var object|null $primary_league */
+$player_links     = $player_links ?? [];
 $competition_type = $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
-$playerstats    = $player_stats;
-$rounds         = array();
-$primary_league = null;
-$header_level   = 1;
-$curr_season    = $current_season['name'];
+$playerstats      = $player_stats;
+$rounds           = array();
+$primary_league   = $primary_league ?? ( ( ! empty( $event->is_championship ) && isset( $event->primary_league ) && is_object( $event->primary_league ) ) ? $event->primary_league : null );
+$header_level     = 1;
+$curr_season      = $current_season['name'];
 require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 $header_level = 2;
 require RACKETMANAGER_PATH . 'templates/includes/event-header.php';
-if ( $event->is_championship ) {
-    if ( isset( $event->primary_league ) ) {
-        $primary_league = is_object( $event->primary_league ) ? $event->primary_league : ( function_exists( '\Racketmanager\get_league' ) ? get_league( $event->primary_league ) : null );
-    } elseif ( ! empty( $event->league_index ) ) {
-        $first_league_id = array_key_first( $event->league_index );
-        $primary_league  = function_exists( '\Racketmanager\get_league' ) ? get_league( $first_league_id ) : null;
-    }
-    $num_cols = $primary_league && isset( $primary_league->championship->num_rounds ) ? $primary_league->championship->num_rounds : 0;
+if ( ! empty( $event->is_championship ) ) {
+    $num_cols = $primary_league && isset( $primary_league->championship->num_rounds )
+        ? (int) $primary_league->championship->num_rounds
+        : ( ( $primary_league && isset( $primary_league->championship ) && method_exists( $primary_league->championship, 'num_rounds' ) ) ? (int) $primary_league->championship->num_rounds() : 0 );
     $i        = 1;
-    $finals   = $primary_league && method_exists( $primary_league->championship, 'get_finals' ) ? $primary_league->championship->get_finals() : [];
+    $finals   = $primary_league && isset( $primary_league->championship ) && method_exists( $primary_league->championship, 'get_finals' ) ? (array) $primary_league->championship->get_finals() : [];
     foreach ( array_reverse( $finals ) as $final ) {
         $rounds[ $i ] = $final;
         ++$i;
@@ -77,9 +76,16 @@ if ( $event->is_championship ) {
                             <?php $class = ( 'alternate' === $class ) ? '' : 'alternate'; ?>
                             <tr class="<?php echo esc_html( $class ); ?>">
                                 <th class="player-name" scope="row">
-                                    <a href="/<?php echo esc_attr( $competition_type ); ?>s/<?php echo esc_attr( seo_url( $event->name ) ); ?>/<?php echo esc_attr( $event->current_season['name'] ); ?>/player/<?php echo esc_attr( seo_url( $playerstat->fullname ) ); ?>/">
+                                    <?php
+                                    $player_link = $player_links[ (string) $playerstat->fullname ] ?? '';
+                                    ?>
+                                    <?php if ( '' !== $player_link ) : ?>
+                                        <a href="<?php echo esc_url( $player_link ); ?>">
+                                            <span class="nav__link"><?php echo esc_html( $playerstat->fullname ); ?></span>
+                                        </a>
+                                    <?php else : ?>
                                         <span class="nav__link"><?php echo esc_html( $playerstat->fullname ); ?></span>
-                                    </a>
+                                    <?php endif; ?>
                                 </th>
                                 <?php
                                 $match_day_stats = $match_day_stats_dummy;
@@ -112,8 +118,10 @@ if ( $event->is_championship ) {
                                         'match_result'  => $match_result,
                                         'rubber_result' => $rubber_result,
                                     );
-                                    if ( $event->is_championship ) {
-                                        $d                           = $primary_league->championship->get_finals( $matches->final_round )['round'];
+                                    if ( ! empty( $event->is_championship ) ) {
+                                        $d                           = ( $primary_league && isset( $primary_league->championship ) && method_exists( $primary_league->championship, 'get_finals' ) )
+                                            ? ( $primary_league->championship->get_finals( $matches->final_round )['round'] ?? 1 )
+                                            : 1;
                                         $match_day_stats[ $d ][ $i ] = $player_line;
                                     } else {
                                         $match_day_stats[ $matches->match_day ][ $i ] = $player_line;

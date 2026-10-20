@@ -17,10 +17,7 @@ namespace Racketmanager;
 /** @var object $club */
 /** @var object $player */
 /** @var bool $user_can_update */
-$page_referrer = wp_get_referer();
-if ( ! $page_referrer ) {
-    $page_referrer = '/clubs/' . seo_url( $club->shortcode ) . '/players/';
-}
+/** @var string $page_referrer */
 ?>
 <?php require RACKETMANAGER_PATH . 'templates/includes/player-header.php'; ?>
 
@@ -189,7 +186,7 @@ if ( ! $page_referrer ) {
                     ?>
                     <div class="row mb-3">
                         <div class="match__buttons">
-                            <a href="<?php echo esc_attr( $page_referrer ); ?>" class="btn btn-secondary text-uppercase" type="button"><?php esc_html_e( 'Return', 'racketmanager' ); ?></a>
+                            <a href="<?php echo esc_url( $page_referrer ); ?>" class="btn btn-secondary text-uppercase" type="button"><?php esc_html_e( 'Return', 'racketmanager' ); ?></a>
                             <?php
                             if ( $user_can_update ) {
                                 ?>

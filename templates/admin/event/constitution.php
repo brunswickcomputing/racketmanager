@@ -9,7 +9,21 @@ namespace Racketmanager;
 
 use Racketmanager\Util\Util_Lookup;
 
-/** @var int $event_id */
+/** @var object $event */
+/** @var array  $seasons */
+/** @var array  $event_seasons */
+/** @var int    $event_id */
+/** @var array  $leagues */
+/** @var array  $teams */
+/** @var string $latest_season */
+/** @var string $latest_event_season */
+/** @var string $constitution_action */
+/** @var bool   $constitution_exists */
+/** @var bool   $updates_allowed */
+/** @var array  $standing_status */
+$event_seasons = $event_seasons ?? array();
+$event_id      = $event_id ?? ( $event->id ?? 0 );
+
 if ( empty( $event->is_box ) && empty( $seasons ) ) {
     ?>
     <p><?php esc_html_e( 'No seasons defined', 'racketmanager' ); ?>
@@ -18,47 +32,20 @@ if ( empty( $event->is_box ) && empty( $seasons ) ) {
     ?>
     <p><?php esc_html_e( 'No leagues defined', 'racketmanager' ); ?>
     <?php
-} elseif ( empty( $event->get_seasons() ) ) {
+} elseif ( empty( $event_seasons ) ) {
     ?>
     <p><?php esc_html_e( 'No pending seasons for event', 'racketmanager' ); ?>
     <?php
 } else {
-    $today               = gmdate( 'Y-m-d' );
-    $latest_season_dtls  = $event->current_season;
-    $latest_season       = $latest_season_dtls['name'];
-    $latest_competition  = $event->competition->get_season_by_name( $latest_season );
-    $competition_seasons = $event->competition->get_seasons();
-    if ( ! empty( $latest_competition['date_start'] ) && $latest_competition['date_start'] > $today ) {
-        $updates_allowed = true;
-    } else {
-        $updates_allowed = false;
-    }
-    $latest_event_season = $event->current_season['name'];
-    $stop_next           = false;
-    foreach ( array_reverse( $competition_seasons ) as $season ) {
-        if ( $stop_next ) {
-            $latest_event_season = $season['name'];
-            break;
-        }
-        if ( $latest_season === $season['name'] ) {
-            $stop_next = true;
-        }
-    }
-    $teams               = $event->get_constitution(
-        array(
-            'season'    => $latest_season,
-            'oldseason' => $latest_event_season,
-        )
-    );
-    $constitution_action = 'update';
-    $constitution_exists = true;
-    if ( ! $teams ) {
-        $teams               = $event->build_constitution( array( 'season' => $latest_event_season ) );
-        $constitution_action = 'insert';
-        $constitution_exists = false;
-    }
-    $leagues         = $event->get_leagues();
-    $standing_status = Util_Lookup::get_standing_statuses();
+    $latest_season_dtls  = $event->current_season ?? array();
+    $latest_season       = $latest_season ?? ( $latest_season_dtls['name'] ?? '' );
+    $updates_allowed     = $updates_allowed ?? false;
+    $latest_event_season = $latest_event_season ?? $latest_season;
+    $teams               = $teams ?? array();
+    $constitution_action = $constitution_action ?? 'update';
+    $constitution_exists = $constitution_exists ?? ! empty( $teams );
+    $leagues             = $leagues ?? array();
+    $standing_status     = $standing_status ?? Util_Lookup::get_standing_statuses();
     ?>
     <h2 class="header"><?php esc_html_e( 'Constitution', 'racketmanager' ); ?> - <?php echo esc_html( $latest_season ); ?></h2>
     <form id="teams-filter" method="post" action="">

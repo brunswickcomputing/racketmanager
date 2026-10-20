@@ -56,7 +56,7 @@ $search_results = $vm->search_results ?? ( $search_results ?? null );
                     <div class="module-container">
                         <?php
                         $favourite_name = 'player';
-                        require_once RACKETMANAGER_PATH . 'templates/includes/favourites.php';
+                        require RACKETMANAGER_PATH . 'templates/includes/favourites.php';
                         ?>
                     </div>
                 </div>

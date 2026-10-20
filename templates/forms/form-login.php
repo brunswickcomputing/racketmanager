@@ -10,13 +10,8 @@ namespace Racketmanager;
 use Racketmanager\Util\Util;
 
 /** @var array $vars */
-// phpcs:disable WordPress.WP.GlobalVariablesOverride.Prohibited
-$tab    = 'login';
-$action = isset( $_GET[ ( 'action' ) ] ) ? sanitize_text_field( wp_unslash( $_GET[ ( 'action' ) ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-if ( isset( $action ) && 'register' === $action ) {
-    $tab = 'registration';
-}
-// phpcs:enable WordPress.WP.GlobalVariablesOverride.Prohibited
+$users_can_register = (bool) ( $users_can_register ?? ( is_array( $vars ?? null ) ? ( $vars['users_can_register'] ?? false ) : false ) );
+$tab = $tab ?? 'login';
 ?>
 <div class="row justify-content-center" data-action="activate-tab" data-tabid="<?php echo esc_attr( $tab ); ?>">
     <div id="tabs-login" class="col-12">
@@ -26,7 +21,7 @@ if ( isset( $action ) && 'register' === $action ) {
                 <button class="nav-link" id="login-tab" data-bs-toggle="pill" data-bs-target="#login" type="button" role="tab" aria-controls="login" aria-selected="true"><?php esc_html_e( 'Login', 'racketmanager' ); ?></button>
             </li>
             <?php
-            if ( get_option( 'users_can_register' ) ) {
+            if ( $users_can_register ) {
                 ?>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="registration-tab" data-bs-toggle="pill" data-bs-target="#registration" type="button" role="tab" aria-controls="registration" aria-selected="true"><?php esc_html_e( 'Sign Up', 'racketmanager' ); ?></button>
@@ -150,7 +145,7 @@ if ( isset( $action ) && 'register' === $action ) {
             <?php require 'login-page.php'; ?>
         </div>
         <?php
-        if ( get_option( 'users_can_register' ) ) {
+        if ( $users_can_register ) {
             ?>
             <div class="tab-pane fade" id="registration" role="tabpanel" aria-labelledby="registration-tab">
                 <?php require 'register-page.php'; ?>

@@ -5,6 +5,7 @@ namespace Racketmanager\Application\Event\Queries;
 
 use BackedEnum;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
+use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
@@ -21,7 +22,8 @@ class Get_Event_Teams_Handler {
 		private readonly Player_Stats_Service $player_stats_service,
 		private readonly Tournament_Presenter $tournament_presenter,
 		private readonly ?Team_Service $team_service,
-		private readonly Team_Details_Presenter $team_details_presenter
+		private readonly Team_Details_Presenter $team_details_presenter,
+		private readonly Competition_Shortcode_Presenter $competition_presenter
 	) {}
 
 	public function handle( Get_Event_Teams_Query $query ): Shortcode_View_Model {
@@ -106,8 +108,9 @@ class Get_Event_Teams_Handler {
 			);
 		}
 
-		$tab      = 'teams';
-		$filename = empty( $template ) ? 'teams' : 'teams-' . $template;
+		$tab        = 'teams';
+		$filename   = empty( $template ) ? 'teams' : 'teams-' . $template;
+		$team_links = $this->competition_presenter->present_event_teams_links( $event, $event->teams ?? [] );
 
 		return Shortcode_View_Model::for_template(
 			$filename,
@@ -116,6 +119,7 @@ class Get_Event_Teams_Handler {
 				'tab'         => $tab,
 				'curr_season' => $current_season,
 				'team_rows'   => $team_rows,
+				'team_links'  => $team_links,
 			],
 			'event'
 		);

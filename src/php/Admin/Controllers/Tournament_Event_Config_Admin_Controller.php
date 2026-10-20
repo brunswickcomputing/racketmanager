@@ -104,7 +104,8 @@ final class Tournament_Event_Config_Admin_Controller {
                 $competition,
                 $event,
                 $tournament,
-                $new_event
+                $new_event,
+                leagues: $this->get_event_leagues( $competition, $event, $new_event )
             ),
         );
     }
@@ -142,10 +143,17 @@ final class Tournament_Event_Config_Admin_Controller {
         $validator = $this->handle_config_update_validation( $config, $competition, true );
 
         if ( ! empty( $validator->error ) ) {
+            $event_stub = (object) array( 'config' => $config );
             return array(
                 'message'      => $validator->msg ?: __( 'Errors found', 'racketmanager' ),
                 'message_type' => true,
-                'view_model'   => new Tournament_Event_Config_Page_View_Model( $competition, (object)['config' => $config], $tournament, true )
+                'view_model'   => new Tournament_Event_Config_Page_View_Model(
+                    $competition,
+                    $event_stub,
+                    $tournament,
+                    true,
+                    leagues: $this->get_event_leagues( $competition, $event_stub, true )
+                ),
             );
         }
 
@@ -225,6 +233,13 @@ final class Tournament_Event_Config_Admin_Controller {
             return array(
                 'message'      => __( 'Event mismatch', 'racketmanager' ),
                 'message_type' => true,
+                'view_model'   => new Tournament_Event_Config_Page_View_Model(
+                    $competition,
+                    $event,
+                    $tournament,
+                    false,
+                    leagues: $this->get_event_leagues( $competition, $event, false )
+                ),
             );
         }
 
@@ -235,6 +250,13 @@ final class Tournament_Event_Config_Admin_Controller {
             return array(
                 'message'      => $validator->msg ?: __( 'Errors found', 'racketmanager' ),
                 'message_type' => true,
+                'view_model'   => new Tournament_Event_Config_Page_View_Model(
+                    $competition,
+                    $event,
+                    $tournament,
+                    false,
+                    leagues: $this->get_event_leagues( $competition, $event, false )
+                ),
             );
         }
 
@@ -258,6 +280,13 @@ final class Tournament_Event_Config_Admin_Controller {
             return array(
                 'message'      => __( 'No updates', 'racketmanager' ),
                 'message_type' => 'warning',
+                'view_model'   => new Tournament_Event_Config_Page_View_Model(
+                    $competition,
+                    $event,
+                    $tournament,
+                    false,
+                    leagues: $this->get_event_leagues( $competition, $event, false )
+                ),
             );
         }
     }
@@ -304,5 +333,23 @@ final class Tournament_Event_Config_Admin_Controller {
             }
         }
         return $validator;
+    }
+
+    /**
+     * Resolve leagues for event config view model.
+     *
+     * @param object $competition
+     * @param object $event
+     * @param bool $new_event
+     * @return array
+     */
+    private function get_event_leagues( object $competition, object $event, bool $new_event ): array {
+        if ( $new_event || empty( $competition->is_championship ) || ! method_exists( $event, 'get_leagues' ) ) {
+            return array();
+        }
+
+        $raw_leagues = $event->get_leagues();
+
+        return is_array( $raw_leagues ) ? $raw_leagues : array();
     }
 }

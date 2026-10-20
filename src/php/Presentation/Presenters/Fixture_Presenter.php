@@ -270,6 +270,81 @@ readonly class Fixture_Presenter {
         ];
     }
 
+    /**
+     * Format tooltip title for last-5 matches display.
+     *
+     * @param mixed $match Fixture entity, match DTO, or match object/array.
+     * @return string
+     */
+    public function present_last_5_tooltip( mixed $match, ?string $home_team_title = null, ?string $away_team_title = null ): string {
+        if ( empty( $match ) ) {
+            return '';
+        }
+
+        if ( is_object( $match ) && isset( $match->tooltip_title ) && '' !== (string) $match->tooltip_title ) {
+            return (string) $match->tooltip_title;
+        }
+        if ( is_array( $match ) && isset( $match['tooltip_title'] ) && '' !== (string) $match['tooltip_title'] ) {
+            return (string) $match['tooltip_title'];
+        }
+
+        $home_title = $home_team_title ?? '';
+        $away_title = $away_team_title ?? '';
+        if ( ( null === $home_team_title || null === $away_team_title ) && is_object( $match ) && method_exists( $match, 'get_teams' ) ) {
+            $teams      = $match->get_teams();
+            $home       = $teams['home'] ?? null;
+            $away       = $teams['away'] ?? null;
+            $home_title = $home_team_title ?? ( is_object( $home ) ? ( $home->title ?? $home->name ?? '' ) : ( $home['title'] ?? $home['name'] ?? '' ) );
+            $away_title = $away_team_title ?? ( is_object( $away ) ? ( $away->title ?? $away->name ?? '' ) : ( $away['title'] ?? $away['name'] ?? '' ) );
+        } elseif ( is_object( $match ) && isset( $match->teams ) && is_array( $match->teams ) ) {
+            $home       = $match->teams['home'] ?? null;
+            $away       = $match->teams['away'] ?? null;
+            $home_title = is_object( $home ) ? ( $home->title ?? $home->name ?? '' ) : ( $home['title'] ?? $home['name'] ?? '' );
+            $away_title = is_object( $away ) ? ( $away->title ?? $away->name ?? '' ) : ( $away['title'] ?? $away['name'] ?? '' );
+        } elseif ( is_array( $match ) && isset( $match['teams'] ) && is_array( $match['teams'] ) ) {
+            $home       = $match['teams']['home'] ?? null;
+            $away       = $match['teams']['away'] ?? null;
+            $home_title = is_object( $home ) ? ( $home->title ?? $home->name ?? '' ) : ( $home['title'] ?? $home['name'] ?? '' );
+            $away_title = is_object( $away ) ? ( $away->title ?? $away->name ?? '' ) : ( $away['title'] ?? $away['name'] ?? '' );
+        }
+
+        if ( '' === $home_title && is_object( $match ) && isset( $match->home_team_name ) ) {
+            $home_title = (string) $match->home_team_name;
+        }
+        if ( '' === $away_title && is_object( $match ) && isset( $match->away_team_name ) ) {
+            $away_title = (string) $match->away_team_name;
+        }
+
+        $date_format = $this->get_date_format();
+        $raw_date    = is_object( $match ) && method_exists( $match, 'get_date' ) ? $match->get_date() : ( is_object( $match ) ? ( $match->date ?? null ) : ( $match['date'] ?? null ) );
+        if ( ! empty( $raw_date ) && ! str_starts_with( (string) $raw_date, '0000-00-00' ) ) {
+            $formatted_date = (string) mysql2date( $date_format, (string) $raw_date );
+        } else {
+            $formatted_date = is_object( $match ) && isset( $match->match_date ) ? (string) $match->match_date : 'N/A';
+        }
+
+        $home_points = is_object( $match ) && method_exists( $match, 'get_home_points' ) ? $match->get_home_points() : ( is_object( $match ) ? ( $match->home_points ?? null ) : ( $match['home_points'] ?? null ) );
+        $away_points = is_object( $match ) && method_exists( $match, 'get_away_points' ) ? $match->get_away_points() : ( is_object( $match ) ? ( $match->away_points ?? null ) : ( $match['away_points'] ?? null ) );
+
+        $title = is_object( $match ) && method_exists( $match, 'get_fixture_title' ) ? $match->get_fixture_title() : ( is_object( $match ) ? ( $match->title ?? $match->fixture_title ?? null ) : ( $match['title'] ?? null ) );
+
+        $is_pending = ( null === $home_points || '' === (string) $home_points ) && ( null === $away_points || '' === (string) $away_points );
+        if ( is_object( $match ) && method_exists( $match, 'is_pending' ) ) {
+            $is_pending = $match->is_pending();
+        }
+
+        if ( $is_pending || ( empty( $home_points ) && empty( $away_points ) && empty( $match->winner_id ?? null ) ) ) {
+            return 'Next Match: ' . $home_title . ' - ' . $away_title . ' [' . $formatted_date . ']';
+        }
+
+        if ( ! empty( $title ) ) {
+            return stripslashes( (string) $title ) . ' [' . $formatted_date . ']';
+        }
+
+        $score = sprintf( '%g - %g', (float) ( $home_points ?? 0 ), (float) ( $away_points ?? 0 ) );
+        return $score . ' - ' . $home_title . ' - ' . $away_title . ' [' . $formatted_date . ']';
+    }
+
     public function present_team_match_row( mixed $match, array $options = [] ): Team_Match_Row_View_Model {
         $options['date_format'] = $options['date_format'] ?? $this->get_date_format();
         if ( null === $this->team_match_row_presenter ) {
@@ -281,15 +356,56 @@ readonly class Fixture_Presenter {
     public function map_to_fixture_option_vars(
         Fixture_Details_DTO $dto, Fixture_Option_Request $request, string $title, string $button, string $action
     ): array {
+        $match           = $dto->fixture;
+        $date_input_type = 'date';
+        $date_input      = '';
+        if ( $match ) {
+            $raw_date      = $match->get_date();
+            $start_time    = $match->get_start_time();
+            $is_valid_date = ! empty( $raw_date ) && ! str_starts_with( (string) $raw_date, '0000-00-00' );
+
+            if ( empty( $start_time ) ) {
+                $date_input_type = 'date';
+                $date_input      = $is_valid_date ? substr( (string) $raw_date, 0, 10 ) : '';
+            } else {
+                $date_input_type = 'datetime-local';
+                $date_input      = $is_valid_date ? (string) $raw_date : '';
+            }
+        }
+
         return array(
-            'dto'    => $dto,
-            'match'  => $dto->fixture,
-            'vm'     => $this->present_team_match_row( $dto, [ 'show_header' => true, 'allow_user_update' => false ] ),
-            'title'  => $title,
-            'modal'  => $request->modal,
-            'option' => $request->option,
-            'action' => $action,
-            'button' => $button,
+            'dto'             => $dto,
+            'match'           => $dto->fixture,
+            'vm'              => $this->present_team_match_row( $dto, [ 'show_header' => true, 'allow_user_update' => false ] ),
+            'title'           => $title,
+            'modal'           => $request->modal,
+            'option'          => $request->option,
+            'action'          => $action,
+            'button'          => $button,
+            'date_input_type' => $date_input_type,
+            'date_input'      => $date_input,
+        );
+    }
+
+    public function map_to_match_card_vars(
+        Fixture_Details_DTO $dto,
+        ?Fixture $match = null,
+        string $sponsor_html = ''
+    ): array {
+        $fixture      = $match ?? $dto->fixture;
+        $date_display = '';
+        if ( $fixture ) {
+            $raw_date = $fixture->get_date();
+            if ( ! empty( $raw_date ) && ! str_starts_with( (string) $raw_date, '0000-00-00' ) ) {
+                $date_display = substr( (string) $raw_date, 0, 10 );
+            }
+        }
+
+        return array(
+            'dto'          => $dto,
+            'match'        => $fixture,
+            'sponsor_html' => $sponsor_html,
+            'date_display' => $date_display,
         );
     }
 

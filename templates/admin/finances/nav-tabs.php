@@ -8,16 +8,19 @@
 namespace Racketmanager;
 
 /** @var string $racketmanager_tab */
+/** @var string $tab_title */
 if ( isset( $vm ) && ( $vm instanceof \Racketmanager\Admin\View_Models\Finances_Charges_Page_View_Model || $vm instanceof \Racketmanager\Admin\View_Models\Finances_Invoices_Page_View_Model ) ) {
     $racketmanager_tab = $vm->racketmanager_tab;
 }
+$racketmanager_tab = $racketmanager_tab ?? 'charges';
+$tab_title         = ( isset( $vm ) && isset( $vm->tab_title ) && '' !== $vm->tab_title ) ? $vm->tab_title : ( $tab_title ?? '' );
 ?>
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
-            <a href="/wp-admin/admin.php?page=racketmanager-finances"><?php esc_html_e( 'RacketManager Finances', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( ucwords( un_seo_url( $racketmanager_tab ) ) ); ?>
+            <a href="/wp-admin/admin.php?page=racketmanager-finances"><?php esc_html_e( 'RacketManager Finances', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $tab_title ); ?>
         </div>
     </div>
-    <h1><?php echo esc_html( ucwords( un_seo_url( $racketmanager_tab )) ); ?></h1>
+    <h1><?php echo esc_html( $tab_title ); ?></h1>
     <div class="row">
         <div class="container">
             <!-- Nav tabs -->

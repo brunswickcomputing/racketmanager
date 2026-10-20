@@ -5,12 +5,15 @@ namespace Racketmanager\Presentation\Presenters;
 
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Presentation\Formatters\Email_Date_Formatter;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
+use Racketmanager\Util\Util;
 use stdClass;
 use function __;
 use function admin_url;
@@ -32,8 +35,13 @@ readonly class Email_Shortcode_Presenter {
         private Fixture_Permission_Service $permission_service,
         private string $site_url,
         private string $site_name,
-        private ?Rubber_Repository_Interface $rubber_repository = null
+        private ?Rubber_Repository_Interface $rubber_repository = null,
+        private ?Option_Gateway_Interface $option_gateway = null,
     ) {
+    }
+
+    private function date_formatter(): Email_Date_Formatter {
+        return new Email_Date_Formatter( $this->option_gateway );
     }
 
     /**
@@ -58,6 +66,7 @@ readonly class Email_Shortcode_Presenter {
             $this->team_service,
             $this->fixture_link_service,
             $this->permission_service,
+            option_gateway: $this->option_gateway,
             rubber_repository: $this->rubber_repository
         );
 
@@ -146,22 +155,31 @@ readonly class Email_Shortcode_Presenter {
             $teams[ $opponent_1 ]->matchTime     = $match->teams[ $opponent_2 ]->match_time ?? '';
         }
 
+        $formatter   = $this->date_formatter();
+        $comp_name   = $competition ?: ( $match->league->title ?? '' );
+        $match_date  = $formatter->date( $fixture->get_date() );
+        $match_time  = $formatter->time( $fixture->get_date() );
+
         return [
-            'template'        => $template,
-            'tournament'      => $tournament,
-            'competition'     => $competition,
-            'match'           => $match,
-            'home_dtls'       => $home_dtls,
-            'away_dtls'       => $away_dtls,
-            'round'           => $round,
-            'organisation'    => $this->site_name,
-            'email_from'      => $email_from,
-            'teams'           => $teams,
-            'tournament_link' => $tournament_link,
-            'draw_link'       => $draw_link,
-            'action_url'      => $match_link,
-            'rules_link'      => $rules_link,
-            'cup_link'        => $cup_link,
+            'template'         => $template,
+            'tournament'       => $tournament,
+            'competition'      => $comp_name,
+            'competition_name' => $comp_name,
+            'match'            => $match,
+            'home_dtls'        => $home_dtls,
+            'away_dtls'        => $away_dtls,
+            'round'            => $round,
+            'organisation'     => $this->site_name,
+            'site_url'         => $this->site_url,
+            'email_from'       => $email_from,
+            'teams'            => $teams,
+            'tournament_link'  => $tournament_link,
+            'draw_link'        => $draw_link,
+            'action_url'       => $match_link,
+            'rules_link'       => $rules_link,
+            'cup_link'         => $cup_link,
+            'match_date'       => $match_date,
+            'match_time'       => $match_time,
         ];
     }
 
@@ -179,6 +197,7 @@ readonly class Email_Shortcode_Presenter {
             $this->team_service,
             $this->fixture_link_service,
             $this->permission_service,
+            option_gateway: $this->option_gateway,
             rubber_repository: $this->rubber_repository
         );
 
@@ -220,6 +239,7 @@ readonly class Email_Shortcode_Presenter {
             $fixture,
             $this->competition_service,
             $this->team_service,
+            option_gateway: $this->option_gateway,
             rubber_repository: $this->rubber_repository
         );
 
@@ -265,6 +285,7 @@ readonly class Email_Shortcode_Presenter {
             $this->team_service,
             $this->fixture_link_service,
             $this->permission_service,
+            option_gateway: $this->option_gateway,
             rubber_repository: $this->rubber_repository
         );
 
@@ -334,6 +355,7 @@ readonly class Email_Shortcode_Presenter {
             $fixture,
             $this->competition_service,
             $this->team_service,
+            option_gateway: $this->option_gateway,
             rubber_repository: $this->rubber_repository
         );
 
@@ -361,19 +383,33 @@ readonly class Email_Shortcode_Presenter {
             $match_link       = $this->site_url . ( $match->link ?? '' );
         }
 
+        // The [match-date-change-notification] shortcode receives raw MySQL datetimes; always format them here.
+        $formatter         = $this->date_formatter();
+        $start_time        = $fixture->get_start_time();
+        $raw_new_date      = ! empty( $args['new_date'] ) ? (string) $args['new_date'] : $fixture->get_date();
+        $raw_original_date = ! empty( $args['original_date'] ) ? (string) $args['original_date'] : $fixture->get_date_original();
+        $match_date        = $formatter->date_change( $raw_new_date, $start_time );
+        $original_date     = $formatter->date_change( $raw_original_date, $start_time );
+        $comp_name         = ( $args['competition'] ?? '' ) ?: ( $match->league->title ?? '' );
+
         return [
             'tournament'       => $tournament,
-            'competition'      => $args['competition'] ?? '',
+            'competition'      => $comp_name,
+            'competition_name' => $comp_name,
             'match'            => $match,
+            'match_date'       => $match_date,
+            'new_date'         => $match_date,
+            'original_date'    => $original_date,
             'round'            => $args['round'] ?? '',
             'organisation'     => $this->site_name,
+            'site_url'         => $this->site_url,
             'email_from'       => $args['email_from'] ?? ( $args['emailfrom'] ?? '' ),
+            'from_email'       => $args['email_from'] ?? ( $args['emailfrom'] ?? '' ),
             'draw_link'        => $draw_link,
             'action_url'       => $match_link,
             'rules_link'       => $rules_link,
             'competition_link' => $competition_link,
-            'new_date'         => $args['new_date'] ?? '',
-            'original_date'    => $args['original_date'] ?? '',
+            'tournament_link'  => $tournament_link ?? '',
             'delay'            => $args['delay'] ?? false,
             'email_subject'    => $args['email_subject'] ?? '',
         ];
@@ -423,9 +459,17 @@ readonly class Email_Shortcode_Presenter {
      * @return array
      */
     public function present_event_constitution( object $event ): array {
+        $league_urls = [];
+        if ( isset( $event->leagues ) && is_iterable( $event->leagues ) ) {
+            $presenter   = new Competition_Shortcode_Presenter();
+            $league_urls = $presenter->present_event_league_urls( $event, $event->leagues, null, $this->site_url );
+        }
+
         return [
             'event'        => $event,
             'organisation' => $this->site_name,
+            'site_url'     => $this->site_url,
+            'league_urls'  => $league_urls,
         ];
     }
 }

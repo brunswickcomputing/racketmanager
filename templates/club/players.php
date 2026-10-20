@@ -13,17 +13,17 @@
 namespace Racketmanager;
 
 use Racketmanager\Presentation\View_Models\Club_View_Model;
-use Racketmanager\Util\Util_Lookup;
+use Racketmanager\Presentation\View_Models\Club_Roster_Player_View_Model;
 
 /** @var Club_View_Model|null $vm */
 /** @var object|null $club */
 /** @var bool   $user_can_update */
-/** @var array  $players */
-$club_id     = $vm->id ?? ( $club->id ?? 0 );
-$display_opt = $display_opt ?? ( isset( $GLOBALS['racketmanager'] ) && is_object( $GLOBALS['racketmanager'] ) && method_exists( $GLOBALS['racketmanager'], 'get_options' ) ? $GLOBALS['racketmanager']->get_options( 'display' ) : ( function_exists( 'get_option' ) ? get_option( 'racketmanager_display', [] ) : [] ) );
+/** @var Club_Roster_Player_View_Model[] $players */
+/** @var string $rating_header */
+$club_id = $vm->id ?? ( $club->id ?? 0 );
 if ( empty( $player ) ) {
     $header_level = 1;
-    require_once RACKETMANAGER_PATH . 'templates/includes/club-header.php';
+    require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
     if ( $user_can_update ) {
         ?>
         <div class="module module--card">
@@ -140,15 +140,7 @@ if ( empty( $player ) ) {
                                         </th>
                                         <th scope="col"><?php esc_html_e( 'Name', 'racketmanager' ); ?></th>
                                         <th scope="col" class="colspan"><?php esc_html_e( 'LTA Tennis Number', 'racketmanager' ); ?></th>
-                                        <th scope="col" class="colspan">
-                                            <?php
-                                            if ( empty( $display_opt['wtn'] ) ) {
-                                                esc_html_e( 'Rating Points', 'racketmanager' );
-                                            } else {
-                                                esc_html_e( 'WTN', 'racketmanager' );
-                                            }
-                                            ?>
-                                        </th>
+                                        <th scope="col" class="colspan"><?php echo esc_html( $rating_header ); ?></th>
                                     </tr>
                                 </thead>
                                 <tbody id="Club <?php echo esc_html( $key ); ?> Players">
@@ -158,37 +150,20 @@ if ( empty( $player ) ) {
                                         if ( $club_player->gender === $gender ) {
                                             $class = ( 'alternate' === $class ) ? '' : 'alternate';
                                             ?>
-                                            <tr class="<?php echo esc_html( $class ); ?>" id="club_player-<?php echo esc_html( $club_player->registration_id ); ?>">
+                                            <tr class="<?php echo esc_html( $class ); ?>" id="club_player-<?php echo esc_html( (string) $club_player->registration_id ); ?>">
                                                 <th scope="row" class="check-column">
                                                     <?php
                                                     if ( $user_can_update ) {
                                                         ?>
-                                                        <label for="clubPlayer-<?php echo esc_html( $club_player->registration_id ); ?>" class="visually-hidden"><?php ?><?php esc_html_e( 'Check', 'racketmanager' ); ?></label>
-                                                        <input type="checkbox" class="checkbox" value="<?php echo esc_html( $club_player->registration_id ); ?>" name="clubPlayer[<?php echo esc_html( $club_player->registration_id ); ?>]" id="clubPlayer-<?php echo esc_html( $club_player->registration_id ); ?>" />
+                                                        <label for="clubPlayer-<?php echo esc_html( (string) $club_player->registration_id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label>
+                                                        <input type="checkbox" class="checkbox" value="<?php echo esc_html( (string) $club_player->registration_id ); ?>" name="clubPlayer[<?php echo esc_html( (string) $club_player->registration_id ); ?>]" id="clubPlayer-<?php echo esc_html( (string) $club_player->registration_id ); ?>" />
                                                         <?php
                                                     }
                                                     ?>
                                                 </th>
-                                                <td><a href="<?php echo esc_html( seo_url( $club_player->display_name ) ); ?>/"><?php echo esc_html( $club_player->display_name ); ?></a></td>
+                                                <td><a href="<?php echo esc_url( $club_player->player_url ); ?>"><?php echo esc_html( $club_player->display_name ); ?></a></td>
                                                 <td><?php echo esc_html( $club_player->btm ); ?></td>
-                                                <td>
-                                                    <?php
-                                                    if ( empty( $display_opt['wtn'] ) ) {
-                                                        $rating = $club_player->rating;
-                                                    } else {
-                                                        $rating = $club_player->wtn;
-                                                    }
-                                                    $match_types    = Util_Lookup::get_match_types();
-                                                    $rating_display = '';
-                                                    foreach ( $match_types as $match_type => $description ) {
-                                                        if ( ! empty( $rating_display ) ) {
-                                                            $rating_display .= ' - ';
-                                                        }
-                                                        $rating_display .= '[' . $match_type . ':' . $rating[ $match_type ] . ']';
-                                                    }
-                                                    echo ' ' . esc_html( $rating_display );
-                                                    ?>
-                                                </td>
+                                                <td><?php echo ' ' . esc_html( $club_player->rating_display ); ?></td>
                                             </tr>
                                             <?php
                                         }
@@ -206,5 +181,5 @@ if ( empty( $player ) ) {
         <?php
     }
 } else {
-    require_once RACKETMANAGER_PATH . 'templates/club/player.php';
+    require RACKETMANAGER_PATH . 'templates/club/player.php';
 }

@@ -30,10 +30,13 @@ use Racketmanager\Application\League\Queries\Get_League_Teams_Handler;
 use Racketmanager\Application\League\Queries\Get_League_Teams_Query;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Player;
 use Racketmanager\Domain\Team;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\League_Shortcode_Adapter;
+use Racketmanager\Presentation\Presenters\League_Archive_Presenter;
+use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\League_Standings_Presenter;
@@ -44,6 +47,7 @@ use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Player_Query_Service;
@@ -191,7 +195,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $comp_service   = $this->createStub( Competition_Service::class );
         $renderer       = $this->create_renderer();
 
-        $handler = new Get_League_Archive_Handler( $league_service, $comp_service, $renderer );
+        $handler = new Get_League_Archive_Handler( $league_service, $comp_service, $renderer, new League_Archive_Presenter() );
 
         // Error path: league not found
         $query_error = new Get_League_Archive_Query( league_name: 'Nonexistent League' );
@@ -207,9 +211,6 @@ class League_Shortcode_Handlers_Test extends TestCase {
                 $this->sport    = 'tennis';
                 $this->event_id = 5;
             }
-            public function set_tab( bool $is_archive = false ): void {}
-            public function set_templates( array $templates ): void {}
-            public function set_template( string $type, string $template ): void {}
         };
         $event_obj = new class extends Event {
             public string $title = 'Main Event';
@@ -231,6 +232,44 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $this->assertFalse( $vm->template_type );
         $this->assertSame( $league_obj, $vm->vars['league'] );
         $this->assertSame( 'standings', $vm->vars['tab'] );
+        $this->assertInstanceOf( \Racketmanager\Presentation\View_Models\League_Archive_View_Model::class, $vm->vars['archive_vm'] );
+        $this->assertSame( 'Premier Division', $vm->vars['archive_vm']->league_title );
+        $this->assertSame( 'premier-division', $vm->vars['archive_vm']->league_seo_name );
+        $this->assertSame( 'last5', $league_obj->templates['standings'] );
+        $this->assertSame( 'list', $league_obj->templates['teams'] );
+        $this->assertTrue( $league_obj->is_archive );
+    }
+
+    public function test_archive_query_from_atts_query_var_resolution(): void {
+        $_GET['tab'] = 'standings';
+
+        // match_day 0 converts to -1 and tab matches
+        $q1 = Get_League_Archive_Query::from_atts( [], [ 'match_day' => '0' ], 'Default League' );
+        $this->assertSame( '-1', $q1->match_day );
+        $this->assertSame( 'matches', $q1->tab );
+        $this->assertSame( 'Default League', $q1->league_name );
+
+        // team_id routes to matches
+        $q2 = Get_League_Archive_Query::from_atts( [], [ 'team_id' => '12' ] );
+        $this->assertSame( 'matches', $q2->tab );
+
+        // player_id routes to players even when leftover $_GET['tab'] is set
+        $q3 = Get_League_Archive_Query::from_atts( [], [ 'player_id' => '34' ] );
+        $this->assertSame( 'players', $q3->tab );
+
+        // team routes to teams
+        $q4 = Get_League_Archive_Query::from_atts( [], [ 'team' => 'team-slug' ] );
+        $this->assertSame( 'teams', $q4->tab );
+
+        // explicit tab takes precedence unless match_day / team_id
+        $q5 = Get_League_Archive_Query::from_atts( [ 'tab' => 'crosstable' ] );
+        $this->assertSame( 'crosstable', $q5->tab );
+
+        // injected get_params are used when query vars do not supply a tab
+        $q6 = Get_League_Archive_Query::from_atts( [], [], null, [ 'tab' => 'players' ] );
+        $this->assertSame( 'players', $q6->tab );
+
+        unset( $_GET['tab'] );
     }
 
     public function test_teams_handler_list_and_details_with_rank_guard(): void {
@@ -392,7 +431,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
                 }
             );
 
-        $handler = new Get_League_Players_Handler( $league_service, $repo, $player_service, $renderer, $this->createStub( Player_Query_Service::class ), $stats );
+        $handler = new Get_League_Players_Handler( $league_service, $repo, $player_service, $renderer, $this->createStub( Player_Query_Service::class ), $stats, new Player_Presenter() );
         $vm      = $handler->handle( new Get_League_Players_Query( league_id: 1 ) );
 
         $this->assertFalse( $vm->is_error() );
@@ -445,7 +484,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $stats_service = $this->createStub( Player_Stats_Service::class );
         $stats_service->method( 'get_stats' )->willReturn( [] );
         $league_repo   = $this->createStub( League_Repository_Interface::class );
-        $handler       = new Get_League_Players_Handler( $league_service, $league_repo, $player_service, $renderer, $query_service, $stats_service );
+        $handler       = new Get_League_Players_Handler( $league_service, $league_repo, $player_service, $renderer, $query_service, $stats_service, new Player_Presenter() );
 
         $league_obj = new class extends League {
             public function __construct() {
@@ -498,6 +537,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $vm_all    = $handler->handle( $query_all );
         $this->assertFalse( $vm_all->is_error() );
         $this->assertSame( 'players-tennis', $vm_all->template );
+        $this->assertArrayHasKey( 'player_links', $vm_all->vars );
     }
 
     public function test_matches_handler_nonce_and_empty_template(): void {
@@ -594,11 +634,166 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'league', $vm_md->template_type );
 
         // Last 5
-        $last5_handler = new Get_League_Last_5_Handler( $league_service, $renderer );
+        $last5_handler = new Get_League_Last_5_Handler( $league_service, $renderer, $this->createStub( Fixture_Presenter::class ) );
         $vm_l5        = $last5_handler->handle( new Get_League_Last_5_Query( league_id: 1, team_id: 5 ) );
         $this->assertFalse( $vm_l5->is_error() );
         $this->assertSame( 'last-5', $vm_l5->template );
         $this->assertSame( 'league', $vm_l5->template_type );
+    }
+
+    public function test_last_5_handler_renders_unloaded_fixtures_with_team_names_and_no_warnings(): void {
+        $completed              = new Fixture();
+        $completed->id          = 101;
+        $completed->home_team   = '10';
+        $completed->away_team   = '20';
+        $completed->date        = '2026-10-06';
+        $completed->home_points = '6';
+        $completed->away_points = '0';
+        $completed->winner_id   = 10;
+        $completed->loser_id    = 20;
+
+        $titled                = new Fixture();
+        $titled->id            = 102;
+        $titled->home_team     = '20';
+        $titled->away_team     = '10';
+        $titled->date          = '2026-10-11';
+        $titled->home_points   = '3';
+        $titled->away_points   = '3';
+        $titled->fixture_title = 'Division final';
+        $titled->winner_id     = -1;
+        $titled->loser_id      = -1;
+
+        $pending            = new Fixture();
+        $pending->id        = 103;
+        $pending->home_team = '10';
+        $pending->away_team = '20';
+        $pending->date      = '2026-10-20';
+
+        $league = new class( [ $completed, $titled, $pending ] ) extends League {
+            public function __construct( private array $fixtures ) {
+                $this->id = 1;
+            }
+            public function set_season( false|string $season = false, bool $force_overwrite = false ): void {}
+            public function get_matches( array $query_args ): array|int|object { return $this->fixtures; }
+            public function get_league_teams( array $query_args = [] ): array|int {
+                return [
+                    (object) [ 'id' => 10, 'title' => 'Red Team' ],
+                    (object) [ 'id' => 20, 'title' => 'Blue Team' ],
+                ];
+            }
+        };
+        $league_service = $this->createStub( League_Service::class );
+        $league_service->method( 'get_league' )->willReturn( $league );
+        $options = $this->createStub( Option_Gateway_Interface::class );
+        $options->method( 'get_option' )->willReturn( 'd/m/Y' );
+        $fixture_presenter = new Fixture_Presenter( $this->createStub( Fixture_Link_Service::class ), $options );
+        $handler = new Get_League_Last_5_Handler( $league_service, $this->create_renderer(), $fixture_presenter );
+
+        $warnings = [];
+        set_error_handler( static function ( int $code, string $message ) use ( &$warnings ): bool {
+            $warnings[] = $message;
+            return true;
+        } );
+        try {
+            $vm = $handler->handle( new Get_League_Last_5_Query( league_id: 1, team_id: 10 ) );
+            $html = ( new Shortcode_View_Presenter( $this->create_renderer() ) )->render( $vm );
+        } finally {
+            restore_error_handler();
+        }
+
+        $this->assertSame( [], $warnings );
+        $this->assertNull( $completed->teams );
+        $this->assertNull( $pending->teams );
+        $this->assertSame( '6 - 0 - Red Team - Blue Team [06/10/2026]', $vm->vars['match_tooltips'][101] );
+        $this->assertSame( 'Division final [11/10/2026]', $vm->vars['match_tooltips'][102] );
+        $this->assertSame( 'Next Match: Red Team - Blue Team [20/10/2026]', $vm->vars['match_tooltips'][103] );
+        foreach ( $vm->vars['match_tooltips'] as $tooltip ) {
+            $this->assertStringContainsString( 'title="' . esc_attr( $tooltip ) . '"', $html );
+        }
+        $this->assertStringNotContainsString( 'Unknown', $html );
+    }
+
+    public function test_last_5_handler_caches_team_titles_per_league_and_season_and_handles_byes_and_unknowns(): void {
+        $f_normal            = new Fixture();
+        $f_normal->id        = 201;
+        $f_normal->home_team = '10';
+        $f_normal->away_team = '20';
+        $f_normal->date      = '2026-10-06';
+        $f_normal->home_points = '4';
+        $f_normal->away_points = '2';
+        $f_normal->winner_id = 10;
+        $f_normal->loser_id  = 20;
+
+        $f_bye            = new Fixture();
+        $f_bye->id        = 202;
+        $f_bye->home_team = '10';
+        $f_bye->away_team = '-1';
+        $f_bye->date      = '2026-10-13';
+        $f_bye->home_points = '6';
+        $f_bye->away_points = '0';
+        $f_bye->winner_id = 10;
+        $f_bye->loser_id  = -1;
+
+        $f_unknown            = new Fixture();
+        $f_unknown->id        = 203;
+        $f_unknown->home_team = '999';
+        $f_unknown->away_team = '10';
+        $f_unknown->date      = '2026-10-20';
+
+        $league = new class( [ $f_normal, $f_bye, $f_unknown ] ) extends League {
+            public int $teams_call_count = 0;
+            public function __construct( private array $fixtures ) {
+                $this->id     = 1;
+                $this->season = '2026';
+            }
+            public function set_season( false|string $season = false, bool $force_overwrite = false ): void {}
+            public function get_matches( array $query_args ): array|int|object { return $this->fixtures; }
+            public function get_league_teams( array $query_args = [] ): array|int {
+                $this->teams_call_count++;
+                return [
+                    (object) [ 'id' => 10, 'title' => 'Alpha Team' ],
+                    (object) [ 'id' => 20, 'title' => 'Beta Team' ],
+                ];
+            }
+        };
+
+        $league_service = $this->createStub( League_Service::class );
+        $league_service->method( 'get_league' )->willReturn( $league );
+        $options = $this->createStub( Option_Gateway_Interface::class );
+        $options->method( 'get_option' )->willReturn( 'd/m/Y' );
+        $fixture_presenter = new Fixture_Presenter( $this->createStub( Fixture_Link_Service::class ), $options );
+        $handler = new Get_League_Last_5_Handler( $league_service, $this->create_renderer(), $fixture_presenter );
+
+        $warnings = [];
+        set_error_handler( static function ( int $code, string $message ) use ( &$warnings ): bool {
+            $warnings[] = $message;
+            return true;
+        } );
+
+        try {
+            // First call for Team 10 in 2026 season -> should call get_league_teams
+            $vm1 = $handler->handle( new Get_League_Last_5_Query( league_id: 1, team_id: 10 ) );
+            $this->assertSame( 1, $league->teams_call_count );
+
+            // Second call for Team 20 in same 2026 season -> should use cache and NOT call get_league_teams again
+            $vm2 = $handler->handle( new Get_League_Last_5_Query( league_id: 1, team_id: 20 ) );
+            $this->assertSame( 1, $league->teams_call_count );
+
+            // Change season on league to 2027 -> should refresh cache and call get_league_teams again
+            $league->season = '2027';
+            $vm3 = $handler->handle( new Get_League_Last_5_Query( league_id: 1, team_id: 10 ) );
+            $this->assertSame( 2, $league->teams_call_count );
+        } finally {
+            restore_error_handler();
+        }
+
+        $this->assertSame( [], $warnings );
+        // Assert normal match has resolved names
+        $this->assertSame( '4 - 2 - Alpha Team - Beta Team [06/10/2026]', $vm1->vars['match_tooltips'][201] );
+        // Assert bye match falls back cleanly to 'Bye' placeholder without warning
+        $this->assertSame( '6 - 0 - Alpha Team - Bye [13/10/2026]', $vm1->vars['match_tooltips'][202] );
+        // Assert unknown team falls back to 'Unknown' placeholder without warning
+        $this->assertSame( 'Next Match: Unknown - Alpha Team [20/10/2026]', $vm1->vars['match_tooltips'][203] );
     }
 
     public function test_renderer_sets_and_restores_global_league(): void {

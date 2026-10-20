@@ -314,7 +314,10 @@ class Fixture_Service_Test extends TestCase {
 
     private function assert_created_rubbers( Fixture $fixture, stdClass $league, array $expected_types ): void {
         $created_types = [];
-        $this->mock_wpdb_rubber_captor( $created_types );
+        $this->rubber_repository->method( 'save' )->willReturnCallback( function ( $rubber ) use ( &$created_types ) {
+            $created_types[] = $rubber->get_type();
+            return 1;
+        } );
         $this->service->create_fixture( $fixture, $league );
         $this->assertCount( count( $expected_types ), $created_types );
         $this->assertSame( $expected_types, $created_types );
@@ -390,26 +393,17 @@ class Fixture_Service_Test extends TestCase {
         // Championship semi-final with 6 rubbers should NOT increment
         $fixture_semi = $this->create_league_fixture( 565, final: 'semi' );
         $league       = $this->create_league_fixture_structure( type: 'MD', num_rubbers: 6, is_championship: true );
-        $created_types = [];
-        $this->mock_wpdb_rubber_captor( $created_types );
-        $this->service->create_fixture( $fixture_semi, $league );
-        $this->assertCount( 6, $created_types );
+        $this->assert_created_rubbers( $fixture_semi, $league, [ 'MD', 'MD', 'MD', 'MD', 'MD', 'MD' ] );
 
         // Non-championship fixture marked final should NOT increment
         $fixture_non_champ = $this->create_league_fixture( 566, final: 'final' );
         $league_non_champ  = $this->create_league_fixture_structure( type: 'MD', num_rubbers: 6, is_championship: false );
-        $created_types_nc  = [];
-        $this->mock_wpdb_rubber_captor( $created_types_nc );
-        $this->service->create_fixture( $fixture_non_champ, $league_non_champ );
-        $this->assertCount( 6, $created_types_nc );
+        $this->assert_created_rubbers( $fixture_non_champ, $league_non_champ, [ 'MD', 'MD', 'MD', 'MD', 'MD', 'MD' ] );
 
         // Championship final with odd (5) rubbers should NOT increment
         $fixture_odd = $this->create_league_fixture( 567, final: 'final' );
         $league_odd  = $this->create_league_fixture_structure( type: 'MD', num_rubbers: 5, is_championship: true );
-        $created_types_odd = [];
-        $this->mock_wpdb_rubber_captor( $created_types_odd );
-        $this->service->create_fixture( $fixture_odd, $league_odd );
-        $this->assertCount( 5, $created_types_odd );
+        $this->assert_created_rubbers( $fixture_odd, $league_odd, [ 'MD', 'MD', 'MD', 'MD', 'MD' ] );
     }
 
     public function test_create_fixture_creates_associated_rubbers_for_ladies_doubles_league(): void {

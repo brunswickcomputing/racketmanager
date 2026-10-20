@@ -66,6 +66,7 @@ use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Tournament_Entry_Repository;
 use Racketmanager\Repositories\Tournament_Repository;
+use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition\Competition_Notification_Service;
 use Racketmanager\Services\Competition\Knockout_Progression_Service;
 use Racketmanager\Services\Competition\League_Schedule_Service as Competition_League_Schedule_Service;
@@ -112,6 +113,11 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
         ) );
 
         // Services
+        $container->set( 'competition_season_service', fn( Simple_Container $c ) => new Competition_Season_Service(
+            $c->get( 'league_team_repository' ),
+            $c->get( 'club_repository' ),
+            $c->get( 'event_repository' )
+        ) );
         $container->set( 'competition_service', fn( Simple_Container $c ) => new Competition_Service(
             $app,
             $c->get( 'competition_repository' ),
@@ -125,7 +131,8 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
         ) );
 
         $container->set( 'competition_notification_service', fn( Simple_Container $c ) => new Competition_Notification_Service(
-            $c->get( 'mailer' )
+            $c->get( 'mailer' ),
+            $c->get( 'event_repository' )
         ) );
 
         $container->set( 'league_service', fn( Simple_Container $c ) => new League_Service(
@@ -208,22 +215,26 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'club_service' ),
             $c->get( 'player_service' ),
             $c->get( 'security_service' ),
-            $c->get( 'settings_service' )
+            $c->get( 'settings_service' ),
+            $c->get( 'competition_season_service' )
         ) );
 
         $container->set( 'get_competition_overview_handler', fn( Simple_Container $c ) => new Get_Competition_Overview_Handler(
             $c->get( 'competition_service' ),
-            $c->get( 'competition_shortcode_presenter' )
+            $c->get( 'competition_shortcode_presenter' ),
+            $c->get( 'competition_season_service' )
         ) );
 
         $container->set( 'get_competition_events_handler', fn( Simple_Container $c ) => new Get_Competition_Events_Handler(
             $c->get( 'competition_service' ),
-            $c->get( 'competition_shortcode_presenter' )
+            $c->get( 'competition_shortcode_presenter' ),
+            $c->get( 'competition_season_service' )
         ) );
 
         $container->set( 'get_competition_teams_handler', fn( Simple_Container $c ) => new Get_Competition_Teams_Handler(
             $c->get( 'competition_service' ),
-            $c->get( 'competition_shortcode_presenter' )
+            $c->get( 'competition_shortcode_presenter' ),
+            $c->get( 'competition_season_service' )
         ) );
 
         $container->set( 'get_competition_clubs_handler', fn( Simple_Container $c ) => new Get_Competition_Clubs_Handler(
@@ -231,7 +242,8 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'club_service' ),
             $c->get( 'player_stats_service' ),
             $c->get( 'tournament_presenter' ),
-            $c->get( 'competition_shortcode_presenter' )
+            $c->get( 'competition_shortcode_presenter' ),
+            $c->get( 'competition_season_service' )
         ) );
 
         $container->set( 'get_competition_players_handler', fn( Simple_Container $c ) => new Get_Competition_Players_Handler(
@@ -240,11 +252,13 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'player_query_service' ),
             $c->get( 'player_stats_service' ),
             $c->get( 'player_presenter' ),
-            $c->get( 'competition_shortcode_presenter' )
+            $c->get( 'competition_shortcode_presenter' ),
+            $c->get( 'competition_season_service' )
         ) );
 
         $container->set( 'get_competition_winners_handler', fn( Simple_Container $c ) => new Get_Competition_Winners_Handler(
             $c->get( 'competition_service' ),
+            $c->get( 'competition_season_service' ),
             $c->get( 'competition_shortcode_presenter' )
         ) );
 

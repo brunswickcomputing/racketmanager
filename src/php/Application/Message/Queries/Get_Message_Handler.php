@@ -36,6 +36,7 @@ class Get_Message_Handler {
 
         if ( '1' === (string) ( $message->status ?? '' ) ) {
             $message->set_status( '0' );
+            $this->message_repository->save( $message );
         }
 
         $presenter = $this->message_presenter ?? new Message_Presenter();

@@ -11,6 +11,7 @@ use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Presentation\View_Models\Team_Matches_Group_View_Model;
 use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Stats_Service;
 use function is_numeric;
@@ -28,7 +29,8 @@ class Get_Competition_Clubs_Handler {
         private readonly Club_Service $club_service,
         private readonly Player_Stats_Service $player_stats_service,
         private readonly Tournament_Presenter $tournament_presenter,
-        private readonly Competition_Shortcode_Presenter $competition_presenter
+        private readonly Competition_Shortcode_Presenter $competition_presenter,
+        private readonly Competition_Season_Service $competition_season_service
     ) {}
 
     public function handle( Get_Competition_Clubs_Query $query ): Shortcode_View_Model {
@@ -51,9 +53,7 @@ class Get_Competition_Clubs_Handler {
             return Shortcode_View_Model::error( __( 'Competition not found', 'racketmanager' ) );
         }
 
-        if ( null !== $query->season ) {
-            $competition->set_current_season( (string) $query->season );
-        }
+        $this->competition_season_service->resolve_current_season( $competition, (string) ( $query->season ?? '' ) );
 
         $season_name = isset( $competition->current_season['name'] ) ? (string) $competition->current_season['name'] : null;
         $season_int  = $query->season ?? ( ( null !== $season_name && is_numeric( $season_name ) ) ? (int) $season_name : null );
@@ -74,7 +74,8 @@ class Get_Competition_Clubs_Handler {
 
             if ( $competition_club ) {
                 $club_id = method_exists( $competition_club, 'get_id' ) ? $competition_club->get_id() : ( $competition_club->id ?? null );
-                $competition_club->teams = $competition->get_teams(
+                $competition_club->teams = $this->competition_service->get_teams_by_query(
+                    $competition,
                     [
                         'club'   => $club_id,
                         'season' => $season_name,
@@ -83,7 +84,8 @@ class Get_Competition_Clubs_Handler {
                 );
 
                 $competition_club->matches = [];
-                $matches                   = $competition->get_matches(
+                $matches = $this->competition_service->get_matches_for_competition(
+                    $competition,
                     [
                         'season'  => $season_name,
                         'club'    => $club_id,
@@ -103,7 +105,8 @@ class Get_Competition_Clubs_Handler {
                 }
 
                 $competition_club->results = [];
-                $results_matches           = $competition->get_matches(
+                $results_matches = $this->competition_service->get_matches_for_competition(
+                    $competition,
                     [
                         'season'  => $season_name,
                         'club'    => $club_id,
@@ -147,7 +150,8 @@ class Get_Competition_Clubs_Handler {
                     );
                 }
 
-                $competition_club->players = $competition->get_players(
+                $competition_club->players = $this->competition_service->get_players_for_competition_query(
+                    $competition,
                     [
                         'club'   => $club_id,
                         'season' => $season_name,

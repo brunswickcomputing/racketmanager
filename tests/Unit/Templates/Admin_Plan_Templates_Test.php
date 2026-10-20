@@ -670,7 +670,6 @@ class Admin_Plan_Templates_Test extends TestCase {
         $competition = $this->createStub( Competition::class );
         $competition->method( 'get_id' )->willReturn( 55 );
         $competition->method( 'get_type' )->willReturn( 'league' );
-        $competition->method( 'get_events' )->willReturn( [ $event1, $event2 ] );
         $competition->id   = 55;
         $competition->name = 'Premier Leagues';
 
@@ -679,6 +678,10 @@ class Admin_Plan_Templates_Test extends TestCase {
             ->method( 'get_competition' )
             ->with( 55 )
             ->willReturn( $competition );
+        $comp_service->expects( $this->once() )
+            ->method( 'get_events_for_competition' )
+            ->with( 55 )
+            ->willReturn( [ $event1, $event2 ] );
         $comp_service->expects( $this->atLeastOnce() )
             ->method( 'get_by_id' )
             ->with( 55 )
@@ -712,7 +715,6 @@ class Admin_Plan_Templates_Test extends TestCase {
         $competition = $this->createStub( Competition::class );
         $competition->method( 'get_id' )->willReturn( 55 );
         $competition->method( 'get_type' )->willReturn( 'league' );
-        $competition->method( 'get_events' )->willReturn( [] );
         $competition->id   = 55;
         $competition->name = 'Empty Competition';
 
@@ -721,6 +723,10 @@ class Admin_Plan_Templates_Test extends TestCase {
             ->method( 'get_competition' )
             ->with( 55 )
             ->willReturn( $competition );
+        $comp_service->expects( $this->once() )
+            ->method( 'get_events_for_competition' )
+            ->with( 55 )
+            ->willReturn( [] );
         $comp_service->expects( $this->atLeastOnce() )
             ->method( 'get_by_id' )
             ->with( 55 )

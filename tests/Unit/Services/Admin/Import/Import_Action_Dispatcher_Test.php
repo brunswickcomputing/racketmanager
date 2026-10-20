@@ -19,6 +19,7 @@ use Racketmanager\Domain\Player;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Player_Exists_Exception;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Admin\Import\Import_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Fixture_Service;
@@ -38,6 +39,7 @@ final class Import_Action_Dispatcher_Test extends TestCase {
     private Fixture_Service $fixture_service;
     private Player_Service $player_service;
     private Registration_Service $registration_service;
+    private League_Team_Repository_Interface $league_team_repository;
     private object $racketmanager;
     private Import_Action_Dispatcher $dispatcher;
 
@@ -49,6 +51,7 @@ final class Import_Action_Dispatcher_Test extends TestCase {
         $this->fixture_service      = $this->createMock( Fixture_Service::class );
         $this->player_service       = $this->createMock( Player_Service::class );
         $this->registration_service = $this->createMock( Registration_Service::class );
+        $this->league_team_repository = $this->createMock( League_Team_Repository_Interface::class );
 
         $this->racketmanager = $this->createMock( RacketManager::class );
         $this->racketmanager->method( 'get_team_id' )->willReturn( 10 );
@@ -58,6 +61,7 @@ final class Import_Action_Dispatcher_Test extends TestCase {
             $this->fixture_service,
             $this->player_service,
             $this->registration_service,
+            $this->league_team_repository,
             $this->racketmanager,
         );
 
@@ -250,26 +254,6 @@ final class Import_Action_Dispatcher_Test extends TestCase {
 
         $GLOBALS['wp_stubs_leagues'][10] = $mock_league;
 
-        $league_team_mock = new class {
-            public int $done_matches = 0;
-            public int $won_matches = 0;
-            public int $draw_matches = 0;
-            public int $lost_matches = 0;
-            public int $points_2_plus = 0;
-            public int $points_2_minus = 0;
-            public float $points_plus = 0;
-            public float $points_minus = 0;
-            public int $add_points = 0;
-            public array $custom = array();
-            public bool $updated = false;
-
-            public function update(): void {
-                $this->updated = true;
-            }
-        };
-
-        $GLOBALS['wp_stubs_league_teams'][101] = $league_team_mock;
-
         global $racketmanager;
         $racketmanager = $this->createMock( RacketManager::class );
         $racketmanager->method( 'get_team_id' )->willReturn( 10 );
@@ -279,13 +263,32 @@ final class Import_Action_Dispatcher_Test extends TestCase {
             'Team Alpha,5,4,0,1,8:2,12:3,0,16,4,120,40',
         );
 
+        $this->league_team_repository->expects( $this->once() )
+            ->method( 'update_stats' )
+            ->with(
+                101,
+                5,
+                4,
+                0,
+                1,
+                12.0,
+                3.0,
+                8,
+                2,
+                0.0,
+                array(
+                    'sets_won'      => 16,
+                    'sets_allowed'  => 4,
+                    'games_won'     => 120,
+                    'games_allowed' => 40,
+                )
+            )
+            ->willReturn( true );
+
         $result = $this->dispatcher->import_table( $contents, ',', 10, '2026' );
 
         $this->assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
         $this->assertStringContainsString( '1 Table Entries imported', $result->message );
-        $this->assertTrue( $league_team_mock->updated );
-        $this->assertSame( 8, $league_team_mock->points_2_plus );
-        $this->assertSame( 2, $league_team_mock->points_2_minus );
     }
 
     public function test_full_filesystem_pipeline_with_mocked_wp_filesystem(): void {

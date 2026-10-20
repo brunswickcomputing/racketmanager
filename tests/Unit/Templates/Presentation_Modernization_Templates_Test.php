@@ -75,8 +75,10 @@ use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use stdClass;
+use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;
 
 final class Presentation_Modernization_Templates_Test extends TestCase {
+    use Creates_Competition_Season_Service;
     use Manages_Wordpress_Globals;
 
     private Php_View_Renderer $view_renderer;
@@ -763,7 +765,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             ]
         );
 
-        $handler = new Get_Competition_Events_Handler( $service, new Competition_Shortcode_Presenter() );
+        $handler = new Get_Competition_Events_Handler( $service, new Competition_Shortcode_Presenter(), $this->competition_season_service() );
         $vm      = $handler->handle( new Get_Competition_Events_Query( competition_id: 5 ) );
 
         $this->assertSame( 'events', $vm->template );
@@ -795,7 +797,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             ]
         );
 
-        $handler = new Get_Competition_Teams_Handler( $service, new Competition_Shortcode_Presenter() );
+        $handler = new Get_Competition_Teams_Handler( $service, new Competition_Shortcode_Presenter(), $this->competition_season_service() );
         $vm      = $handler->handle( new Get_Competition_Teams_Query( competition_id: 5 ) );
 
         $this->assertSame( 'teams', $vm->template );
@@ -827,6 +829,9 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
 
         $service = $this->createStub( Competition_Service::class );
         $service->method( 'get_by_id' )->willReturn( $competition );
+        $service->method( 'get_teams_by_query' )->willReturn( [ $team ] );
+        $service->method( 'get_matches_for_competition' )->willReturn( [] );
+        $service->method( 'get_players_for_competition_query' )->willReturn( [ $player ] );
         $service->method( 'get_club_details_for_competition' )->willReturn(
             [
                 new Club_Competition_DTO( (object) [ 'club_id' => 3, 'club_name' => 'Westcliff Tennis Club', 'club_shortcode' => 'Westcliff TC', 'num_teams' => 2, 'num_players' => 9 ] ),
@@ -838,7 +843,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $stats = $this->createStub( Player_Stats_Service::class );
         $stats->method( 'populate_players_stats' )->willReturnArgument( 0 );
 
-        $handler = new Get_Competition_Clubs_Handler( $service, $club_service, $stats, new Tournament_Presenter(), new Competition_Shortcode_Presenter() );
+        $handler = new Get_Competition_Clubs_Handler( $service, $club_service, $stats, new Tournament_Presenter(), new Competition_Shortcode_Presenter(), $this->competition_season_service() );
 
         // List.
         $list_vm = $handler->handle( new Get_Competition_Clubs_Query( competition_id: 5 ) );
@@ -889,8 +894,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             $this->createStub( Player_Query_Service::class ),
             $this->createStub( Player_Stats_Service::class ),
             new Player_Presenter(),
-            new Competition_Shortcode_Presenter()
-        );
+            new Competition_Shortcode_Presenter(), $this->competition_season_service() );
         $vm      = $handler->handle( new Get_Competition_Players_Query( competition_id: 5 ) );
 
         $this->assertSame( 'players', $vm->template );
@@ -1141,8 +1145,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             $player_query_service,
             $player_stats_service,
             new Player_Presenter(),
-            new Competition_Shortcode_Presenter()
-        );
+            new Competition_Shortcode_Presenter(), $this->competition_season_service() );
         $event_handler       = new Get_Event_Players_Handler(
             $service,
             $player_service,
@@ -1202,12 +1205,15 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
 
         $service = $this->createStub( Competition_Service::class );
         $service->method( 'get_by_id' )->willReturn( $competition );
+        $service->method( 'get_teams_by_query' )->willReturn( [ $team ] );
+        $service->method( 'get_matches_for_competition' )->willReturn( [] );
+        $service->method( 'get_players_for_competition_query' )->willReturn( [ $player ] );
         $club_service = $this->createStub( Club_Service::class );
         $club_service->method( 'get_club_by_shortcode' )->willReturn( $club );
         $stats = $this->createStub( Player_Stats_Service::class );
         $stats->method( 'populate_players_stats' )->willReturnArgument( 0 );
 
-        $handler = new Get_Competition_Clubs_Handler( $service, $club_service, $stats, new Tournament_Presenter(), new Competition_Shortcode_Presenter() );
+        $handler = new Get_Competition_Clubs_Handler( $service, $club_service, $stats, new Tournament_Presenter(), new Competition_Shortcode_Presenter(), $this->competition_season_service() );
         $vm      = $handler->handle( new Get_Competition_Clubs_Query( competition_id: 9, club_identifier: 'westcliff-tc' ) );
 
         $this->assertFalse( $vm->is_error() );
@@ -1344,8 +1350,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             $query_service,
             $stats_service,
             new Player_Presenter(),
-            new Competition_Shortcode_Presenter()
-        );
+            new Competition_Shortcode_Presenter(), $this->competition_season_service() );
 
         // 1. List with integer season
         $list_vm = $handler->handle( new Get_Competition_Players_Query( competition_id: 5 ) );
@@ -1478,12 +1483,15 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
 
         $service = $this->createStub( Competition_Service::class );
         $service->method( 'get_by_id' )->willReturn( $competition );
+        $service->method( 'get_teams_by_query' )->willReturn( [] );
+        $service->method( 'get_matches_for_competition' )->willReturn( [] );
+        $service->method( 'get_players_for_competition_query' )->willReturn( [ $player ] );
         $club_service = $this->createStub( Club_Service::class );
         $club_service->method( 'get_club_by_shortcode' )->willReturn( $club );
         $stats = $this->createStub( Player_Stats_Service::class );
         $stats->method( 'populate_players_stats' )->willReturnArgument( 0 );
 
-        $handler = new Get_Competition_Clubs_Handler( $service, $club_service, $stats, new Tournament_Presenter(), new Competition_Shortcode_Presenter() );
+        $handler = new Get_Competition_Clubs_Handler( $service, $club_service, $stats, new Tournament_Presenter(), new Competition_Shortcode_Presenter(), $this->competition_season_service() );
         $vm      = $handler->handle( new Get_Competition_Clubs_Query( competition_id: 5, club_identifier: 'westcliff-tc' ) );
 
         $this->assertFalse( $vm->is_error() );

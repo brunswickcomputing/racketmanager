@@ -94,7 +94,7 @@ readonly final class League_Setup_Action_Dispatcher {
         $current_season['match_dates'] = $validated['dates'];
         $seasons                       = $competition->get_seasons();
         $seasons[ $season ]            = $current_season;
-        $updates                       = $competition->update_seasons( $seasons );
+        $updates                       = $this->competition_service->update_seasons( $competition, $seasons );
         if ( ! $updates ) {
             return new Action_Result_DTO(
                 message: __( 'No updates', 'racketmanager' ),

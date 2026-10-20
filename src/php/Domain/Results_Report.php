@@ -37,45 +37,13 @@ class Results_Report {
      * @var object
      */
     public mixed $data;
-    /**
-     * Get class instance
-     *
-     * @param int $results_report_id id.
-     */
-    public static function get_instance( int $results_report_id ) {
-        global $wpdb;
-        if ( ! $results_report_id ) {
-            return false;
-        }
-        $results_report = wp_cache_get( $results_report_id, 'results_report' );
-
-        if ( ! $results_report ) {
-            $results_report = $wpdb->get_row(
-                $wpdb->prepare(
-                    "SELECT `id`, `match_id`, `result_object` FROM $wpdb->racketmanager_results_report WHERE `id` = %d LIMIT 1",
-                    $results_report_id
-                )
-            );  // db call ok.
-
-            if ( ! $results_report ) {
-                return false;
-            }
-
-            $results_report = new Results_Report( $results_report );
-
-            wp_cache_set( $results_report->id, $results_report, 'results_report' );
-        }
-
-        return $results_report;
-    }
 
     /**
      * Construct class instance
      *
      * @param object|null $results_report results_report object.
-     * @param bool $persist (deprecated) Whether to automatically persist the object.
      */
-    public function __construct( ?object $results_report = null, bool $persist = false ) {
+    public function __construct( ?object $results_report = null ) {
         if ( ! is_null( $results_report ) ) {
             foreach ( get_object_vars( $results_report ) as $key => $value ) {
                 $this->$key = $value;
@@ -83,47 +51,9 @@ class Results_Report {
             if ( ! isset( $this->data ) && isset( $this->result_object ) ) {
                 $this->data = json_decode( $this->result_object );
             }
-            if ( ! isset( $this->result_object ) && isset( $this->data )) {
+            if ( ! isset( $this->result_object ) && isset( $this->data ) ) {
                 $this->result_object = wp_json_encode( $this->data );
             }
-            if ( $persist && ! isset( $this->id ) ) {
-                $this->add();
-            }
         }
-    }
-
-    /**
-     * Add new results report
-     * @deprecated Use Results_Report_Repository::save()
-     */
-    private function add(): void {
-        global $wpdb;
-
-        if ( isset( $this->id ) ) {
-            return;
-        }
-
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "INSERT INTO $wpdb->racketmanager_results_report (`match_id`, `result_object`) VALUES (%d, %s)",
-                $this->match_id,
-                $this->result_object,
-            )
-        );
-        $this->id = $wpdb->insert_id;
-    }
-    /**
-     * Delete results report
-     * @deprecated Use Results_Report_Repository::delete()
-     */
-    public function delete(): void {
-        global $wpdb;
-
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "DELETE FROM $wpdb->racketmanager_results_report WHERE `id` = %d",
-                $this->id
-            )
-        );
     }
 }

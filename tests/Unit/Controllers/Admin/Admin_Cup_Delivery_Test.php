@@ -532,6 +532,7 @@ final class Admin_Cup_Delivery_Test extends TestCase {
         $competition = $this->create_test_competition( 5, '2024' );
         $this->competition_service->expects( self::once() )->method( 'get_competition_by_season' )->with( 5, 2024 )->willReturn( $competition );
         $this->competition_service->expects( self::once() )->method( 'get_events_for_competition' )->with( 5, 2024 )->willReturn( array() );
+        $this->competition_service->expects( self::once() )->method( 'get_matches_for_competition' )->with( $competition, array( 'season' => 2024, 'final' => 'final' ) )->willReturn( array() );
 
         $this->flash_store->method( 'pop' )->willReturn( array(
             'message'      => 'Error with plan details',

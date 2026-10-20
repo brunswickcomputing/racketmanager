@@ -148,7 +148,7 @@ class Result_Repository implements Result_Repository_Interface {
             $results_report->result_object = wp_json_encode( $report_data );
         }
 
-        $report_entity = new Results_Report( $results_report, false );
+        $report_entity = new Results_Report( $results_report );
         return $this->results_report_repository->save( $report_entity );
     }
 }

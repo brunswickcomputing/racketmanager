@@ -6,6 +6,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Club;
+use Racketmanager\Domain\User;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Ajax_Registry;
@@ -14,6 +15,7 @@ use Racketmanager\Infrastructure\Wordpress\Ajax\Club_Ajax_Controller;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Registration_Service;
 use WP_Error;
@@ -22,6 +24,7 @@ class Club_Ajax_Adapter_Test extends TestCase {
     private Stub|Security_Service_Interface $security_service;
     private Club_Service|MockObject|Stub $club_service;
     private Registration_Service|MockObject|Stub $registration_service;
+    private User_Repository_Interface|MockObject|Stub $user_repository;
     private Club_Ajax_Adapter $adapter;
 
     protected function setUp(): void {
@@ -29,6 +32,7 @@ class Club_Ajax_Adapter_Test extends TestCase {
         $this->security_service     = $this->createStub( Security_Service_Interface::class );
         $this->club_service         = $this->createStub( Club_Service::class );
         $this->registration_service = $this->createStub( Registration_Service::class );
+        $this->user_repository      = $this->createStub( User_Repository_Interface::class );
         $this->adapter              = $this->make_adapter();
         $_POST                      = array();
         $_REQUEST                   = array();
@@ -57,7 +61,8 @@ class Club_Ajax_Adapter_Test extends TestCase {
             $this->security_service,
             $response_factory,
             $this->club_service,
-            $this->registration_service
+            $this->registration_service,
+            $this->user_repository
         );
     }
 
@@ -211,12 +216,14 @@ class Club_Ajax_Adapter_Test extends TestCase {
     }
 
     private function stub_role_user( bool $contact_updated, ?object &$user = null ): void {
-        $user = new class( $contact_updated ) {
-            public function __construct( private bool $result ) {}
-            public function update_contact( $contact_no, $email ): bool {
-                return $this->result;
-            }
-        };
+        $user = new User();
+        $user->id         = 5;
+        $user->ID         = 5;
+        $user->user_email = 'old@example.test';
+        $user->email      = 'old@example.test';
+        $this->user_repository = $this->createStub( User_Repository_Interface::class );
+        $this->user_repository->method( 'find' )->willReturn( $user );
+        $this->user_repository->method( 'update_contact' )->willReturn( $contact_updated );
         $GLOBALS['wp_stubs_clubs'][12]   = (object) array( 'id' => 12 );
         $GLOBALS['wp_stubs_clubs']['12'] = $GLOBALS['wp_stubs_clubs'][12];
         $GLOBALS['wp_stubs_users'][5]    = $user;

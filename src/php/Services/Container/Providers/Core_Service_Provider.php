@@ -169,7 +169,9 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         // Core AJAX Controllers & Adapters
         $container->set( 'account_ajax_adapter', fn( Simple_Container $c ) => new Account_Ajax_Adapter(
             $c->get( 'security_service' ),
-            $c->get( 'json_response_factory' )
+            $c->get( 'json_response_factory' ),
+            $c->get( 'message_repository' ),
+            $c->get( 'user_repository' )
         ) );
         $container->set( 'account_ajax_controller', fn( Simple_Container $c ) => new Account_Ajax_Controller( $app, $c->get( 'account_ajax_adapter' ) ) );
 
@@ -231,7 +233,7 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         ) );
 
         $container->set( 'message_presenter', fn() => new Message_Presenter() );
-        $container->set( 'get_messages_handler', fn( Simple_Container $c ) => new Get_Messages_Handler( $c->get( 'user_repository' ), $c->get( 'message_presenter' ) ) );
+        $container->set( 'get_messages_handler', fn( Simple_Container $c ) => new Get_Messages_Handler( $c->get( 'user_repository' ), $c->get( 'message_repository' ), $c->get( 'message_presenter' ) ) );
         $container->set( 'get_message_handler', fn( Simple_Container $c ) => new Get_Message_Handler( $c->get( 'message_repository' ), $c->get( 'message_presenter' ) ) );
 
         $container->set( 'message_shortcode_adapter', fn( Simple_Container $c ) => new Message_Shortcode_Adapter(

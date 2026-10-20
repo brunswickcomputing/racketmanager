@@ -206,14 +206,20 @@ final class Cup_Setup_Action_Dispatcher_Test extends TestCase {
             ->method( 'get_seasons' )
             ->willReturn( array( 2024 => array() ) );
 
-        $competition->expects( self::once() )
+        $competition->expects( self::never() )->method( 'update_seasons' );
+
+        $this->competition_service->expects( self::once() )
             ->method( 'update_seasons' )
-            ->with( self::callback( function ( array $seasons ) {
-                return isset( $seasons[2024]['match_dates'] )
-                    && count( $seasons[2024]['match_dates'] ) === 2
-                    && $seasons[2024]['match_dates'][0] === '2024-05-01'
-                    && $seasons[2024]['match_dates'][1] === '2024-05-10';
-            } ) );
+            ->with(
+                $competition,
+                self::callback( function ( array $seasons ) {
+                    return isset( $seasons[2024]['match_dates'] )
+                        && count( $seasons[2024]['match_dates'] ) === 2
+                        && $seasons[2024]['match_dates'][0] === '2024-05-01'
+                        && $seasons[2024]['match_dates'][1] === '2024-05-10';
+                } )
+            )
+            ->willReturn( true );
 
         $this->competition_service->expects( self::once() )
             ->method( 'get_competition' )

@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Helpers;
 
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
+use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 
 /**
  * Builds real Competition aggregates for tests.
@@ -18,6 +19,7 @@ final class Competition_Test_Factory {
      * @param array|null $seasons       Seasons exactly as the test needs them; null or [] leaves the competition without seasons.
      * @param array|null $finals        Overrides the finals generated for cup competitions.
      * @param array|null $current_season Assigned to the public current_season property.
+     * @param Competition_Repository_Interface|null $competition_repository Injected for tests that read events, teams, players or matches.
      */
     public static function create(
         int $id = 5,
@@ -26,7 +28,8 @@ final class Competition_Test_Factory {
         ?array $seasons = null,
         ?array $settings = null,
         ?array $finals = null,
-        ?array $current_season = null
+        ?array $current_season = null,
+        ?Competition_Repository_Interface $competition_repository = null
     ): Competition {
         $competition = new Competition( $name, $type, 'open', null, [], $id );
         if ( ! empty( $seasons ) ) {
@@ -40,6 +43,9 @@ final class Competition_Test_Factory {
         }
         if ( null !== $current_season ) {
             $competition->current_season = $current_season;
+        }
+        if ( null !== $competition_repository ) {
+            $competition->set_competition_repository( $competition_repository );
         }
         return $competition;
     }

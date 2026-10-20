@@ -175,6 +175,7 @@ class Entry_And_Match_Templates_Test extends TestCase {
         };
 
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
+        $comp_service->method( 'get_events_for_competition' )->willReturn( $competition->get_events() );
         $club_service->method( 'get_club_by_shortcode' )->willReturn( $club );
         $club_service->method( 'get_clubs' )->willReturn( 1 );
 
@@ -306,6 +307,7 @@ class Entry_And_Match_Templates_Test extends TestCase {
         };
 
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
+        $comp_service->method( 'get_events_for_competition' )->willReturn( $competition->get_events() );
         $club_service->method( 'get_club_by_shortcode' )->willReturn( $club );
         $club_service->method( 'get_clubs' )->willReturn( 1 );
         $team_service->method( 'get_teams_for_club' )->willReturn( [] );

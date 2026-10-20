@@ -222,9 +222,10 @@ final class Admin_Competition_Delivery_Test extends TestCase {
             'filler_weeks'     => 0,
             'match_dates'      => array(),
         ) );
-        $competition->expects( self::once() )->method( 'update_season' )->willReturn( true );
+        $competition->expects( self::never() )->method( 'update_season' );
 
         $this->guard->expects( self::once() )->method( 'assert_allowed' );
+        $this->competition_service->expects( self::once() )->method( 'update_season' )->with( $competition, self::isArray() )->willReturn( true );
         $this->competition_service->expects( self::atLeastOnce() )
             ->method( 'get_competition' )
             ->with( 1 )

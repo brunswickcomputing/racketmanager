@@ -1166,7 +1166,11 @@ class RacketManager {
                         $message_object->message_object = $message;
                         $message_object->sender         = $from;
                         $message_object->status         = 1;
-                        new Message( $message_object );
+                        $message_entity                 = new Message( $message_object );
+                        $message_repo                   = ( isset( $this->container ) && $this->container->has( 'message_repository' ) )
+                            ? $this->container->get( 'message_repository' )
+                            : new \Racketmanager\Repositories\Message_Repository();
+                        $message_repo->save( $message_entity );
                     }
                 }
             }

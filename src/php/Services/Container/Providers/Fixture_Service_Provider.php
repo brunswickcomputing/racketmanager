@@ -71,7 +71,7 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             rubber_repository: $c->get( 'rubber_repository' )
         ) );
 
-        $container->set( 'rubber_repository', fn() => new Rubber_Repository() );
+        $container->set( 'rubber_repository', fn( Simple_Container $c ) => new Rubber_Repository( $c->get( 'registration_service' ) ) );
         $container->set( 'results_checker_repository', fn() => new Results_Checker_Repository() );
         $container->set( 'results_report_repository', fn() => new Results_Report_Repository() );
         $container->set( 'result_repository', fn(): Result_Repository_Interface => new Result_Repository() );

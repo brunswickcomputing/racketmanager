@@ -20,6 +20,7 @@ use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interf
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Notification\Notification_Service;
@@ -32,6 +33,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     private Competition_Entry_Service|MockObject|Stub $competition_entry_service;
     private Notification_Service|MockObject|Stub $notification_service;
     private Fixture_Repository_Interface|MockObject|Stub $fixture_repository;
+    private League_Team_Repository_Interface|MockObject|Stub $league_team_repository;
     private Admin_Ajax_Adapter $adapter;
 
     protected function setUp(): void {
@@ -42,6 +44,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
         $this->competition_entry_service = $this->createStub( Competition_Entry_Service::class );
         $this->notification_service      = $this->createStub( Notification_Service::class );
         $this->fixture_repository        = $this->createStub( Fixture_Repository_Interface::class );
+        $this->league_team_repository    = $this->createStub( League_Team_Repository_Interface::class );
         $this->adapter                   = $this->make_adapter();
         $_POST                           = [];
         $_GET                            = [];
@@ -80,7 +83,8 @@ class Admin_Ajax_Adapter_Test extends TestCase {
             $this->competition_entry_service,
             $this->notification_service,
             $this->fixture_repository,
-            $settings ?? new Settings_Service( [] )
+            $settings ?? new Settings_Service( [] ),
+            $this->league_team_repository
         );
     }
 
@@ -158,13 +162,21 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     public function test_save_add_points_success(): void {
         $this->allow_security();
 
-        $league_team = new class {
-            public int $points = 0;
-            public function amend_points( int $pts ): void {
-                $this->points = $pts;
-            }
-        };
+        $league_team = new \Racketmanager\Domain\Competition\League_Team();
+        $league_team->table_id = 5;
+        $league_team->league_id = 1;
+        $league_team->rank = 1;
+        $league_team->status = 'active';
+        $league_team->set_entered_state(\Racketmanager\Domain\Enums\Team_Profile::from_value(1));
         $GLOBALS['wp_stubs_league_teams'] = [ 5 => $league_team ];
+
+        $league_team_repo = $this->createMock( League_Team_Repository_Interface::class );
+        $league_team_repo->expects( $this->once() )
+            ->method( 'amend_points' )
+            ->with( 5, 3.0 )
+            ->willReturn( true );
+        $this->league_team_repository = $league_team_repo;
+        $this->adapter = $this->make_adapter();
 
         $response = $this->adapter->save_add_points( [
             'security' => 'valid',
@@ -172,7 +184,6 @@ class Admin_Ajax_Adapter_Test extends TestCase {
             'points'   => 3,
         ] );
         $this->assertSame( 200, $response->get_status_code() );
-        $this->assertSame( 3, $league_team->points );
         unset( $GLOBALS['wp_stubs_league_teams'] );
     }
 

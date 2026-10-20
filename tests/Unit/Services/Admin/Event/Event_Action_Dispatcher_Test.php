@@ -10,6 +10,7 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Admin\Event\Event_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Competition_Service;
@@ -124,7 +125,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
         $guard               = $this->createMock( Action_Guard_Interface::class );
         $guard->expects( self::never() )->method( 'assert_allowed' );
 
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard );
+        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
         $result     = $dispatcher->handle( array(), array() );
 
         self::assertNull( $result->message );
@@ -138,7 +139,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             ->with( 'racketmanager_nonce', 'racketmanager_manage-event-config', 'edit_leagues' )
             ->willThrowException( new Invalid_Status_Exception( 'Unauthorized' ) );
 
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard );
+        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             array(
@@ -155,7 +156,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
         $competition_service = $this->createMock( Competition_Service::class );
         $guard               = $this->createStub( Action_Guard_Interface::class );
 
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard );
+        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             array(
@@ -179,7 +180,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             ->with( 1 )
             ->willReturn( $competition );
 
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard );
+        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
         // Missing required fields like type, scoring, num_sets
         $result = $dispatcher->handle(
             array( 'competition_id' => '1' ),
@@ -203,7 +204,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             ->with( 1 )
             ->willReturn( $competition );
 
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard );
+        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             array(
@@ -273,7 +274,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             ->with( 5, 'Men Doubles' )
             ->willReturn( $this->make_league() );
         $this->set_racketmanager_container( $competition_service, $league_service );
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard );
+        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
         $result = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             $this->create_event_payload()
@@ -312,7 +313,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             );
 
         $this->set_racketmanager_container( $competition_service, $league_service );
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard );
+        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
         $result = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             $this->create_event_payload( array(
@@ -350,7 +351,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             ->willThrowException( new Event_Not_Found_Exception( 'Event not found' ) );
         $this->set_racketmanager_container( $competition_service, $league_service );
 
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard );
+        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             $this->create_event_payload()
@@ -421,7 +422,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             ->with( 1 )
             ->willReturn( $competition );
 
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard );
+        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
         $result = $dispatcher->handle(
             array( 'competition_id' => '1', 'event_id' => '10' ),
             $this->create_event_payload( array(
@@ -453,7 +454,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             ->with( 1 )
             ->willReturn( $competition );
 
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard );
+        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
         $result = $dispatcher->handle(
             array( 'competition_id' => '1', 'event_id' => '10' ),
             $this->create_event_payload( array(
@@ -484,7 +485,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             ->willReturn( $failed_league );
         $this->set_racketmanager_container( $competition_service, $league_service );
 
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard );
+        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             $this->create_event_payload( array( 'event_name' => 'Test Event' ) )
@@ -530,7 +531,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             ->willReturnOnConsecutiveCalls( $this->make_league( 7 ), $failed_plate );
         $this->set_racketmanager_container( $competition_service, $league_service );
 
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard );
+        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             $this->create_event_payload( array(

@@ -9,14 +9,7 @@
 
 namespace Racketmanager\Domain\Fixture;
 
-use DateMalformedStringException;
-use DateTime;
-use Racketmanager\Services\Registration_Service;
-use Racketmanager\Util\Util;
 use stdClass;
-use function Racketmanager\get_event;
-use function Racketmanager\get_league;
-use function Racketmanager\get_team;
 
 /**
  * Class to implement the Rubber object
@@ -27,19 +20,19 @@ class Rubber {
      *
      * @var int|false
      */
-    public int|false $id;
+    public int|false $id = 0;
     /**
      * Match id variable
      *
      * @var int
      */
-    public int $match_id;
+    public int $match_id = 0;
     /**
      * Status variable
      *
      * @var int|null
      */
-    public ?int $status;
+    public ?int $status = null;
     /**
      * Custom variable
      *
@@ -51,37 +44,37 @@ class Rubber {
      *
      * @var array
      */
-    public mixed $sets;
+    public mixed $sets = array();
     /**
      * Rubber start time variable
      *
      * @var string|int|false
      */
-    public string|int|false $start_time;
+    public string|int|false $start_time = '';
     /**
      * Rubber hour variable
      *
      * @var string
      */
-    public string $hour;
+    public string $hour = '';
     /**
      * Rubber minutes variable
      *
      * @var string
      */
-    public string $minutes;
+    public string $minutes = '';
     /**
      * Date variable
      *
      * @var string
      */
-    public string $date;
+    public string $date = '';
     /**
      * Rubber date variable
      *
      * @var string|int|false
      */
-    public string|int|false $rubber_date;
+    public string|int|false $rubber_date = '';
     /**
      * Home points variable
      *
@@ -99,205 +92,171 @@ class Rubber {
      *
      * @var string
      */
-    public string $score;
+    public string $score = '-:-';
     /**
      * Is walkover variable
      *
      * @var boolean
      */
-    public bool $is_walkover;
+    public bool $is_walkover = false;
     /**
      * Is retired variable
      *
      * @var boolean
      */
-    public bool $is_retired;
+    public bool $is_retired = false;
     /**
      * Is shared variable
      *
      * @var boolean
      */
-    public bool $is_shared;
+    public bool $is_shared = false;
     /**
      * Is abandoned variable
      *
      * @var boolean
      */
-    public bool $is_abandoned;
+    public bool $is_abandoned = false;
     /**
      * Is invalid variable
      *
      * @var boolean
      */
-    public bool $is_invalid;
+    public bool $is_invalid = false;
     /**
      * Players variable
      *
      * @var array
      */
-    public array $players;
+    public array $players = array();
     /**
      * Rubber type variable
      *
      * @var string
      */
-    public string $type;
+    public string $type = '';
     /**
      * Rubber title variable
      *
      * @var string
      */
-    public string $title;
+    public string $title = '';
     /**
      * Rubber number variable
      *
      * @var int
      */
-    public int $rubber_number;
+    public int $rubber_number = 0;
     /**
      * Winner id variable
      *
      * @var int
      */
-    public int $winner_id;
+    public int $winner_id = 0;
     /**
      * Loser id variable
      *
      * @var int
      */
-    public int $loser_id;
+    public int $loser_id = 0;
     /**
      * Reverse rubbers variable
      *
      * @var boolean
      */
-    public bool $reverse_rubbers;
+    public bool $reverse_rubbers = false;
     /**
      * Reverse rubber variable
      *
      * @var boolean
      */
-    public bool $reverse_rubber;
+    public bool $reverse_rubber = false;
     /**
      * Day
      *
      * @var int
      */
-    public int $day;
+    public int $day = 0;
     /**
      * Month
      *
      * @var int
      */
-    public int $month;
+    public int $month = 0;
     /**
      * Year
      *
      * @var int
      */
-    public int $year;
+    public int $year = 0;
     /**
      * Stats
      *
      * @var array
      */
-    public array $stats;
+    public array $stats = array();
     /**
      * Class
      *
      * @var string
      */
-    public string $class;
+    public string $class = '';
     /**
      * Group
      *
      * @var string
      */
-    public string $group;
+    public string $group = '';
     /**
      * Post id
      *
      * @var int
      */
-    public int $post_id;
+    public int $post_id = 0;
     /**
      * Walkover
      *
      * @var string
      */
-    public string $walkover;
+    public string $walkover = '';
     /**
      * Invalid
      *
      * @var string
      */
-    public string $invalid;
+    public string $invalid = '';
     /**
      * Abandoned
      *
      * @var string
      */
-    public string $abandoned;
+    public string $abandoned = '';
     /**
      * Share
      *
      * @var string
      */
-    public string $share;
+    public string $share = '';
     /**
      * Cancelled
      *
      * @var string
      */
-    public string $cancelled;
+    public string $cancelled = '';
     /**
      * Retired
      *
      * @var string
      */
-    public string $retired;
-    private ?Registration_Service $registration_service = null;
+    public string $retired = '';
 
-    /**
-     * Get rubber instance function
-     *
-     * @param int|null $rubber_id rubber id.
-     * @return null|object rubber.
-     */
-    public static function get_instance( ?int $rubber_id = null ): object|null {
-        global $wpdb;
-        $rubber_id = (int) $rubber_id;
-        if ( ! $rubber_id ) {
-            return null;
-        }
-        $rubber = wp_cache_get( $rubber_id, 'rubbers' );
-        if ( ! $rubber ) {
-            $rubber = $wpdb->get_row(
-                $wpdb->prepare(
-                    "SELECT `id`, `match_id`, `group`, DATE_FORMAT(`date`, '%%Y-%%m-%%d %%H:%%i') AS date, DATE_FORMAT(`date`, '%%e') AS day, DATE_FORMAT(`date`, '%%c') AS month, DATE_FORMAT(`date`, '%%Y') AS year, DATE_FORMAT(`date`, '%%H') AS `hour`, DATE_FORMAT(`date`, '%%i') AS `minutes`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `type`, `custom`, `rubber_number`, `status` FROM $wpdb->racketmanager_rubbers WHERE `id` =  %d",
-                    $rubber_id,
-                )
-            );
-            if ( ! $rubber ) {
-                return null;
-            }
-            $rubber = new Rubber( $rubber );
-            wp_cache_set( $rubber_id, $rubber, 'rubbers' );
-        }
-        return $rubber;
-    }
     /**
      * Rubber construction function
      *
      * @param object|null $rubber rubber object.
      */
     public function __construct( ?object $rubber = null ) {
-        global $racketmanager;
-        $c = $racketmanager->container ?? null;
-        if ( $c && method_exists( $c, 'get' ) ) {
-            $has_method = method_exists( $c, 'has' );
-            $this->registration_service = ( ! $has_method || $c->has( 'registration_service' ) ) ? $c->get( 'registration_service' ) : null;
-        }
+        $this->players = array();
 
         if ( ! is_null( $rubber ) ) {
             if ( ! empty( $rubber->custom ) ) {
@@ -308,69 +267,50 @@ class Rubber {
             foreach ( get_object_vars( $rubber ) as $key => $value ) {
                 $this->$key = $value;
             }
-            if ( ! isset( $this->id ) ) {
-                $this->id = $this->add();
-            }
+
             $this->custom = stripslashes_deep( maybe_unserialize( $this->custom ) );
             $this->sets   = $this->custom['sets'] ?? array();
-            $rubber       = (object) array_merge( (array) $this, (array) $this->custom );
 
-            $this->rubber_date = ( str_starts_with( $this->date, '0000-00-00' ) ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date );
-            $this->year        = substr( $this->date, 0, 4 );
-            $this->month       = substr( $this->date, 5, 2 );
-            $this->day         = substr( $this->date, 8, 2 );
-            $time              = substr( $this->date, 11, 5);
-            $this->hour        = substr( $time, 0, 2 );
-            $this->minutes     = substr( $time, 3, 2 );
-            $this->start_time  = ( '00:00' === $time ) ? '' : mysql2date( $racketmanager->time_format, $this->date );
+            if ( ! empty( $this->date ) && ! str_starts_with( $this->date, '0000-00-00' ) ) {
+                $this->rubber_date = function_exists( 'mysql2date' ) ? mysql2date( 'Y-m-d', $this->date ) : substr( $this->date, 0, 10 );
+                $this->year        = (int) substr( $this->date, 0, 4 );
+                $this->month       = (int) substr( $this->date, 5, 2 );
+                $this->day         = (int) substr( $this->date, 8, 2 );
+                $time              = substr( $this->date, 11, 5 );
+                $this->hour        = substr( $time, 0, 2 );
+                $this->minutes     = substr( $time, 3, 2 );
+                $this->start_time  = ( '00:00' === $time ) ? '' : ( function_exists( 'mysql2date' ) ? mysql2date( 'H:i', $this->date ) : $time );
+            } else {
+                $this->rubber_date = ( ! empty( $this->date ) && str_starts_with( $this->date, '0000-00-00' ) ) ? 'N/A' : '';
+                $this->year        = 0;
+                $this->month       = 0;
+                $this->day         = 0;
+                $this->hour        = '';
+                $this->minutes     = '';
+                $this->start_time  = '';
+            }
 
             if ( null !== $this->home_points && null !== $this->away_points ) {
                 $home_score  = $this->home_points;
                 $away_score  = $this->away_points;
                 $this->score = sprintf( '%g - %g', $home_score, $away_score );
             } else {
-                $home_score = '-';
-                $away_score = '-';
-                $this->score      = sprintf( '%g:%g', $home_score, $away_score );
+                $this->score = '-:-';
             }
-            $this->is_walkover  = false;
-            $this->is_retired   = false;
-            $this->is_shared    = false;
-            $this->is_abandoned = false;
-            $this->is_invalid   = false;
-            if ( ! empty( $this->custom['walkover'] ) ) {
-                $this->is_walkover = true;
+
+            $this->is_walkover  = ! empty( $this->custom['walkover'] );
+            $this->is_shared    = ! empty( $this->custom['share'] );
+            $this->is_retired   = ! empty( $this->custom['retired'] );
+            $this->is_abandoned = ! empty( $this->custom['abandoned'] );
+            $this->is_invalid   = ! empty( $this->custom['invalid'] );
+
+            if ( isset( $rubber->players ) && is_array( $rubber->players ) ) {
+                $this->players = $rubber->players;
             }
-            if ( ! empty( $this->custom['share'] ) ) {
-                $this->is_shared = true;
-            }
-            if ( ! empty( $this->custom['retired'] ) ) {
-                $this->is_retired = true;
-            }
-            if ( ! empty( $this->custom['abandoned'] ) ) {
-                $this->is_abandoned = true;
-            }
-            if ( ! empty( $this->custom['invalid'] ) ) {
-                $this->is_invalid = true;
-            }
-            $this->players = array();
-            $this->get_players();
-            $this->title          = $this->type . $this->rubber_number;
-            global $racketmanager;
-            $fixture_repository   = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
-                ? $racketmanager->container->get( 'fixture_repository' )
-                : new \Racketmanager\Repositories\Fixture_Repository();
-            $fixture              = $fixture_repository->find_by_id( (int) $rubber->match_id );
-            $league               = $fixture && $fixture->get_league_id() ? get_league( $fixture->get_league_id() ) : null;
-            $this->reverse_rubber = false;
-            if ( $league && isset( $league->event ) && ! empty( $league->event->reverse_rubbers ) ) {
-                $this->reverse_rubbers = true;
-                if ( $this->rubber_number > $league->num_rubbers ) {
-                    $this->reverse_rubber = true;
-                }
-            } else {
-                $this->reverse_rubbers = false;
-            }
+
+            $this->title           = ( $this->type ?? '' ) . ( $this->rubber_number ?? '' );
+            $this->reverse_rubbers = isset( $rubber->reverse_rubbers ) ? (bool) $rubber->reverse_rubbers : false;
+            $this->reverse_rubber  = isset( $rubber->reverse_rubber ) ? (bool) $rubber->reverse_rubber : false;
         }
     }
 
@@ -623,108 +563,33 @@ class Rubber {
     }
 
     /**
-     * Add rubber function
+     * Get players for rubber.
      *
-     * @return false|int id of rubber inserted
+     * @return array
      */
-    public function add(): false|int {
-        global $wpdb;
-        $insert = $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "INSERT INTO $wpdb->racketmanager_rubbers (`date`, `match_id`, `rubber_number`, `type`) VALUES (%s, %d, %d, %s)",
-                $this->date,
-                $this->match_id,
-                $this->rubber_number,
-                $this->type
-            )
-        );
-        if ( ! $insert ) {
-            return false;
-        }
-        $this->id = $wpdb->insert_id;
-        return $this->id;
+    public function get_players(): array {
+        return $this->players ?? array();
     }
+
     /**
-     * Delete rubber function
-     */
-    public function delete(): void {
-        global $wpdb;
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "DELETE FROM $wpdb->racketmanager_rubbers WHERE `id` = %d",
-                $this->id
-            )
-        );
-    }
-    /**
-     * Update rubber result function
-     */
-    public function update_result(): void {
-        global $wpdb;
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_rubbers SET `home_points` = %f,`away_points` = %f, `winner_id` = %d,`loser_id` = %d,`custom` = %s, `status`= %d WHERE `id` = %d",
-                $this->home_points,
-                $this->away_points,
-                $this->winner_id,
-                $this->loser_id,
-                maybe_serialize( $this->custom ),
-                $this->status,
-                $this->id,
-            )
-        );
-        wp_cache_set( $this->id, $this, 'rubbers' );
-    }
-    /**
-     * Set players function
+     * Set players for rubber.
      *
-     * @param array $players array of players.
+     * @param array $players
+     * @return void
      */
     public function set_players( array $players ): void {
-        global $wpdb;
-        $this->players = array();
-        foreach ( $players as $player_team => $player_ref ) {
-            foreach ( $player_ref as $player_num => $player ) {
-                if ( empty( $player ) ) {
-                    continue;
-                }
-                $club_player = $this->registration_service->get_registration( (int) $player );
-                if ( $club_player ) {
-                    $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                        $wpdb->prepare(
-                            "REPLACE INTO $wpdb->racketmanager_rubber_players ( `rubber_id`, `player_ref`, `player_team`, `player_id`, `club_player_id` ) VALUES ( %d, %d, %s, %d, %d )",
-                            $this->id,
-                            $player_num,
-                            $player_team,
-                            $club_player->user_id,
-                            $club_player->registration_id,
-                        )
-                    );
-                    $this->players[ $player_team ][ $player_num ] = $club_player;
-                }
-            }
-        }
+        $this->players = $players;
     }
-    /**
-     * Update rubber date function
-     */
-    public function update_date(): void {
-        global $wpdb;
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_rubbers SET `date` = %s WHERE `id` = %d",
-                $this->date,
-                $this->id,
-            )
-        );
-    }
+
     /**
      * Calculate result function
      *
      * @param array $points array of data used to calculate points.
+     * @param array $point_rule
+     * @param int $num_sets
      * @return object points data for home and away.
      */
-    public function calculate_result( array $points ): object {
+    public function calculate_result( array $points, array $point_rule, int $num_sets ): object {
         $home_team          = $points['home']['team'];
         $home_sets          = $points['home']['sets'];
         $home_walkover      = isset( $points['home']['walkover'] ) ? 1 : 0;
@@ -737,13 +602,7 @@ class Rubber {
         $away_invalid       = isset( $points['away']['invalid'] ) ? 1 : 0;
         $both_invalid       = isset( $points['both']['invalid'] ) ? 1 : 0;
         $shared_sets        = $points['shared']['sets'] ?? 0;
-        global $racketmanager;
-        $fixture_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
-            ? $racketmanager->container->get( 'fixture_repository' )
-            : new \Racketmanager\Repositories\Fixture_Repository();
-        $fixture            = $fixture_repository->find_by_id( (int) $this->match_id );
-        $league             = $fixture && $fixture->get_league_id() ? get_league( $fixture->get_league_id() ) : null;
-        $point_rule         = $league ? $league->get_point_rule() : array( 'forwin' => 0, 'forwin_split' => 0, 'forshare' => 0, 'forwalkover_rubber' => 0 );
+
         $forwin             = $point_rule['forwin'] ?? 0;
         $forwin_split       = $point_rule['forwin_split'] ?? 0;
         $forshare           = $point_rule['forshare'] ?? 0;
@@ -761,7 +620,7 @@ class Rubber {
             $invalid_points_home = 0;
             $invalid_points_away = 0;
         }
-        if ( $shared_sets === $league->num_sets ) {
+        if ( $shared_sets === $num_sets ) {
             $straight_sets_home = 0;
             $straight_sets_away = 0;
             $split_sets_home    = 0;
@@ -839,40 +698,7 @@ class Rubber {
         $return->loser  = $loser;
         return $return;
     }
-    /**
-     * Get players for rubber function
-     */
-    public function get_players(): void {
-        global $wpdb;
-        $players = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "SELECT `id`, `player_ref`, `player_team`, `player_id`, `club_player_id` FROM $wpdb->racketmanager_rubber_players WHERE `rubber_id` = %s",
-                $this->id
-            )
-        );
 
-        foreach ( $players as $player ) {
-            $this->players[ $player->player_team ][ $player->player_ref ] = $this->registration_service->get_registration( $player->club_player_id );
-            $this->players[ $player->player_team ][ $player->player_ref ]->description    = null;
-            $this->players[ $player->player_team ][ $player->player_ref ]->class          = null;
-            $player_errors = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                $wpdb->prepare(
-                    "SELECT `description` FROM $wpdb->racketmanager_results_checker WHERE `rubber_id` = %d AND `player_id` = %d AND (`status` IS NULL OR `status` != 1)",
-                    $this->id,
-                    $player->player_id,
-                )
-            );
-            if ( $player_errors ) {
-                $this->players[ $player->player_team ][ $player->player_ref ]->class = 'is-ineligible';
-                foreach ( $player_errors as $player_error ) {
-                    if ( ! empty( $this->players[ $player->player_team ][ $player->player_ref ]->description ) ) {
-                        $this->players[ $player->player_team ][ $player->player_ref ]->description .= ', ';
-                    }
-                    $this->players[ $player->player_team ][ $player->player_ref ]->description .= $player_error->description;
-                }
-            }
-        }
-    }
     public function is_walkover(): bool {
         return \Racketmanager\Domain\Enums\Fixture_Status::WALKOVER->value === $this->status;
     }
@@ -887,30 +713,12 @@ class Rubber {
      * @return void
      */
     public function reset_result(): void {
-        global $wpdb;
-        // Delete rubber players
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "DELETE FROM $wpdb->racketmanager_rubber_players WHERE `rubber_id` = %d",
-                $this->id,
-            )
-        );
-        // Reset rubber result by initialising points/winner/loser/status/custom
-        $this->players = array();
+        $this->players     = array();
         $this->home_points = null;
         $this->away_points = null;
         $this->winner_id   = 0;
         $this->loser_id    = 0;
         $this->custom      = null;
         $this->status      = null;
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_rubbers SET `home_points` = null,`away_points` = null, `winner_id` = %d,`loser_id` = %d,`custom` = null, `status`= null WHERE `id` = %d",
-                $this->winner_id,
-                $this->loser_id,
-                $this->id,
-            )
-        );
-        wp_cache_set( $this->id, $this, 'rubbers' );
     }
 }

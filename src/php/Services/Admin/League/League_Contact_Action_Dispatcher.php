@@ -12,6 +12,7 @@ use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Services\Competition\Competition_Notification_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\League_Service;
 
@@ -24,6 +25,7 @@ readonly final class League_Contact_Action_Dispatcher {
         private League_Service $league_service,
         private Competition_Service $competition_service,
         private Action_Guard_Interface $action_guard,
+        private Competition_Notification_Service $competition_notification_service,
     ) {
     }
 
@@ -57,7 +59,7 @@ readonly final class League_Contact_Action_Dispatcher {
             } elseif ( $competition_id ) {
                 $competition = $this->competition_service->get_competition( $competition_id );
                 if ( $competition ) {
-                    $sent = $competition->contact_teams( $season, $message );
+                    $sent = $this->competition_notification_service->contact_teams( $competition, $season, $message );
                 }
             }
         }

@@ -500,6 +500,7 @@ class Frontend_Ajax_Adapter {
                                     $rubber = $rubbers[ $match_rubber->rubber_number ] ?? null;
                                     if ( $rubber ) {
                                         $rubber_players[ $opponent ] = $rubber->players;
+                                        $this->rubber_repository->save_players( (int) $match_rubber->get_id(), $rubber_players );
                                         $match_rubber->set_players( $rubber_players );
                                         $updates = true;
                                     }

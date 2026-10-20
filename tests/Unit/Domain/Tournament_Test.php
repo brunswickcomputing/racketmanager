@@ -182,6 +182,11 @@ final class Tournament_Test extends TestCase {
             return str_contains( $query, 'racketmanager_events' ) ? $rows : [];
         };
         $GLOBALS['wpdb'] = $wpdb;
+
+        $repository = new \Racketmanager\Repositories\Competition_Repository();
+        foreach ( $this->competitions_by_id as $competition ) {
+            $competition->set_competition_repository( $repository );
+        }
     }
 
     private function create_competition( int $id = 10, array $seasons = [ '2026' => [ 'name' => '2026' ] ] ): Competition {

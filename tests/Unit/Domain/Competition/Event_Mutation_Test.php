@@ -10,10 +10,12 @@ use Racketmanager\Domain\Competition\Competition_Settings;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Event_Factory;
+use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Competition\Event_Hydration_DTO;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Event_Repository;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
@@ -181,6 +183,109 @@ class Event_Mutation_Test extends TestCase {
 			->willReturn( array() );
 
 		$this->event->get_players();
+	}
+
+	public function test_add_season_persists_constitution_details_without_reloading_league_team(): void {
+		$competition = $this->createStub( Competition::class );
+		$competition->is_league = true;
+
+		$team                  = new stdClass();
+		$team->old_league_id    = 12;
+		$team->team_id          = 34;
+		$team->captain          = 56;
+		$team->match_day        = 'Tuesday';
+		$team->match_time       = '18:30';
+
+		$event = $this->getMockBuilder( Event::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'build_constitution' ] )
+			->getMock();
+		$event->id          = 42;
+		$event->competition = $competition;
+		$event->seasons     = [ '2025' => [ 'name' => '2025' ] ];
+		$event->expects( $this->once() )
+			->method( 'build_constitution' )
+			->with( [ 'season' => '2025' ] )
+			->willReturn( [ $team ] );
+
+		$league = $this->createMock( League::class );
+		$league->expects( $this->once() )
+			->method( 'add_team' )
+			->with( 34, '2026', 1, '', '0' )
+			->willReturn( 78 );
+		$GLOBALS['wp_stubs_leagues'][12] = $league;
+
+		$season = [
+			'name'           => '2026',
+			'home_away'      => true,
+			'num_match_days' => 10,
+			'match_dates'    => [ '1' => '2026-06-02' ],
+		];
+		$this->event_repository->expects( $this->once() )
+			->method( 'update_seasons' )
+			->with( 42, [ '2025' => [ 'name' => '2025' ], '2026' => $season ] )
+			->willReturn( true );
+
+		$league_team_repository = $this->createMock( League_Team_Repository_Interface::class );
+		$league_team_repository->expects( $this->once() )
+			->method( 'update_details' )
+			->with( 78, 56, 'Tuesday', '18:30' )
+			->willReturn( true );
+
+		$event->add_season( $season, $league_team_repository );
+
+		$this->assertSame( 78, $team->league_team_id );
+	}
+
+	public function test_promote_and_relegate_persists_constitution_without_reloading_league_team(): void {
+		$competition = $this->createMock( Competition::class );
+		$competition->expects( $this->once() )
+			->method( 'get_season_by_name' )
+			->with( '2026' )
+			->willReturn(
+				[
+					'teams_prom_relg'  => 2,
+					'teams_per_club'   => 2,
+					'max_teams'        => 4,
+					'lowest_promotion' => 1,
+				]
+			);
+
+		$league = $this->createMock( League::class );
+		$league->id               = 50;
+		$league->num_teams_total  = 4;
+		$league->expects( $this->once() )
+			->method( 'get_league_teams' )
+			->with( [ 'club' => 7, 'season' => 2026, 'count' => true, 'cache' => false ] )
+			->willReturn( 1 );
+
+		$event = $this->getMockBuilder( Event::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'get_leagues' ] )
+			->getMock();
+		$event->competition = $competition;
+		$event->expects( $this->once() )
+			->method( 'get_leagues' )
+			->with( [ 'season' => 2026 ] )
+			->willReturn( [ $league ] );
+
+		$team = (object) [
+			'team_id'  => 34,
+			'league_id' => 50,
+			'old_rank' => 4,
+			'rank'     => 1,
+			'table_id' => 78,
+			'status'   => '',
+		];
+		$GLOBALS['wp_stubs_teams'][34] = (object) [ 'club_id' => 7 ];
+
+		$league_team_repository = $this->createMock( League_Team_Repository_Interface::class );
+		$league_team_repository->expects( $this->once() )
+			->method( 'update_constitution' )
+			->with( 78, 50, 'BT' )
+			->willReturn( true );
+
+		$this->assertTrue( $event->promote_and_relegate( [ $team ], 2026, $league_team_repository ) );
 	}
 
 	public function test_event_repository_find_by_id_and_name_hydrates_via_factory(): void {

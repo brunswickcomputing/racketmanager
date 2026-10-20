@@ -13,7 +13,9 @@ use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Domain\Scoring\Set_Score;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Repositories\Interfaces\Result_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\Result_Repository;
+use Racketmanager\Repositories\Rubber_Repository;
 use Racketmanager\Services\Championship_Manager;
 use Racketmanager\Services\Result_Calculator;
 use Racketmanager\Services\Registration_Service;
@@ -905,7 +907,8 @@ class Racketmanager_Match {
                 $rubber->rubber_number = $ix;
                 $rubber->date          = $this->date;
                 $rubber->match_id      = $this->id;
-                new Rubber( $rubber );
+                $rubber_entity         = new Rubber( $rubber );
+                $this->get_rubber_repository()->save( $rubber_entity );
             }
         }
         return $this->id;
@@ -1001,10 +1004,7 @@ class Racketmanager_Match {
      */
     public function delete(): true {
         global $wpdb;
-        $rubbers = $this->get_rubbers();
-        foreach ( $rubbers as $rubber ) {
-            $rubber->delete();
-        }
+        $this->get_rubber_repository()->delete_by_fixture_id( (int) $this->id );
         $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
                 "DELETE FROM $wpdb->racketmanager_matches WHERE `id` = %d",
@@ -1712,11 +1712,7 @@ class Racketmanager_Match {
             }
             wp_cache_set( $this->id, $this, 'matches' );
             if ( $this->num_rubbers ) {
-                $rubbers = $this->get_rubbers();
-                foreach ( $rubbers as $rubber ) {
-                    $rubber->date = $match_date;
-                    $rubber->update_date();
-                }
+                $this->get_rubber_repository()->update_date_by_fixture_id( (int) $this->id, $match_date );
             }
             if ( ! empty( $this->date_original ) ) {
                 $this->notify_date_change();
@@ -2472,5 +2468,15 @@ class Racketmanager_Match {
         return isset( $racketmanager->container ) && $racketmanager->container->has( 'result_repository' )
             ? $racketmanager->container->get( 'result_repository' )
             : new Result_Repository();
+    }
+
+    /**
+     * Resolve Rubber_Repository instance from container or fallback.
+     */
+    private function get_rubber_repository(): Rubber_Repository_Interface {
+        global $racketmanager;
+        return isset( $racketmanager->container ) && $racketmanager->container->has( 'rubber_repository' )
+            ? $racketmanager->container->get( 'rubber_repository' )
+            : new Rubber_Repository();
     }
 }

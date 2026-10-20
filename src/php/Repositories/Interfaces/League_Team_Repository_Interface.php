@@ -18,7 +18,25 @@ use stdClass;
 interface League_Team_Repository_Interface extends Repository_Interface {
     public function save( object $entity ): bool|int;
     public function delete( int $id ): bool;
-    public function find_by_id( $id ): ?League_Team;
+    public function find( int|string $id ): ?League_Team;
+    public function find_by_id( int|string|null $id ): ?League_Team;
+    public function update_constitution( int $table_id, int $league_id, string $status ): bool;
+    public function set_constitution_rank( int $table_id, int $league_id, int $rank, string $status, string|int $profile ): bool;
+    public function amend_points( int $table_id, float $points ): bool;
+    public function update_details( int $table_id, int $captain, string $match_day, string $match_time ): bool;
+    public function update_stats(
+        int $table_id,
+        int $done_matches,
+        int $won_matches,
+        int $draw_matches,
+        int $lost_matches,
+        float $points_plus,
+        float $points_minus,
+        int $points_2_plus,
+        int $points_2_minus,
+        float $add_points,
+        array $custom = array()
+    ): bool;
     public function find_club_ids_where_player_is_captain( int $player_id, ?int $club_id = null ): array;
     public function find_by_event_id( ?int $event_id, ?int $season = null, ?int $team_id = null, ?int $club_id = null ): array;
     public function get_clubs_by_event_id( ?int $event_id, ?int $season = null ): array;

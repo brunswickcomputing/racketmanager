@@ -5,6 +5,8 @@ namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Ajax;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Domain\Message;
+use Racketmanager\Domain\User;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Account_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Account_Ajax_Controller;
@@ -12,6 +14,8 @@ use Racketmanager\Infrastructure\Wordpress\Ajax\Ajax_Registry;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
 use stdClass;
 use WP_Error;
 
@@ -33,7 +37,7 @@ class Account_Ajax_Adapter_Test extends TestCase {
         parent::tearDown();
     }
 
-    private function make_adapter(): Account_Ajax_Adapter {
+    private function make_adapter( ?Message_Repository_Interface $message_repo = null, ?User_Repository_Interface $user_repo = null ): Account_Ajax_Adapter {
         $response_factory = $this->createStub( Json_Response_Factory_Interface::class );
         $response_factory->method( 'create_success_response' )->willReturnCallback(
             static function ( $data, $status = null ) {
@@ -48,7 +52,9 @@ class Account_Ajax_Adapter_Test extends TestCase {
 
         return new Account_Ajax_Adapter(
             $this->security_service,
-            $response_factory
+            $response_factory,
+            $message_repo,
+            $user_repo
         );
     }
 
@@ -225,7 +231,19 @@ class Account_Ajax_Adapter_Test extends TestCase {
             ->method( 'verify_nonce' )
             ->with( 'valid', 'ajax-nonce' )
             ->willReturn( true );
-        $this->adapter = $this->make_adapter();
+        $message_repo = $this->createMock( Message_Repository_Interface::class );
+        $message_repo->method( 'find' )->willReturnCallback(
+            static function ( int|string $id ) {
+                if ( 12 === (int) $id ) {
+                    $message = new Message();
+                    $message->id = 12;
+                    return $message;
+                }
+                return null;
+            }
+        );
+        $message_repo->expects( $this->once() )->method( 'delete' )->with( 12 )->willReturn( true );
+        $this->adapter = $this->make_adapter( $message_repo );
 
         // Missing id
         $response = $this->adapter->delete_message( array( 'security' => 'valid', 'message_id' => 0 ) );
@@ -238,11 +256,6 @@ class Account_Ajax_Adapter_Test extends TestCase {
         $this->assertSame( 'Message not found', $response->get_content() );
 
         // Success
-        $GLOBALS['wp_stubs_messages'][12] = new class {
-            public function delete(): bool {
-                return true;
-            }
-        };
         $response = $this->adapter->delete_message( array( 'security' => 'valid', 'message_id' => 12 ) );
         $this->assertSame( 200, $response->get_status_code() );
         $content = $response->get_content();
@@ -268,8 +281,29 @@ class Account_Ajax_Adapter_Test extends TestCase {
             ->method( 'verify_nonce' )
             ->with( 'valid', 'racketmanager_delete-messages' )
             ->willReturn( true );
-        $this->adapter = $this->make_adapter();
         $GLOBALS['wp_stubs_current_user_id'] = 5;
+
+        $user = new User();
+        $user->id = 5;
+        $user->ID = 5;
+
+        $user_repo = $this->createStub( User_Repository_Interface::class );
+        $user_repo->method( 'find' )->willReturnCallback(
+            static function () use ( $user ) {
+                static $calls = 0;
+                ++$calls;
+                return 1 === $calls ? null : $user;
+            }
+        );
+        $received_type = null;
+        $message_repo  = $this->createStub( Message_Repository_Interface::class );
+        $message_repo->method( 'delete_by_user_and_type' )->willReturnCallback(
+            static function ( int $user_id, string $type ) use ( &$received_type ): int {
+                $received_type = $type;
+                return '2' === $type ? 3 : 0;
+            }
+        );
+        $this->adapter = $this->make_adapter( $message_repo, $user_repo );
 
         // Missing type
         $response = $this->adapter->delete_messages( array( 'racketmanager_nonce' => 'valid' ) );
@@ -282,14 +316,6 @@ class Account_Ajax_Adapter_Test extends TestCase {
         $this->assertSame( 'User not found', $response->get_content()->msg );
 
         // User delete messages success with type argument verification
-        $received_type = null;
-        $GLOBALS['wp_stubs_users'][5] = new class( $received_type ) {
-            public function __construct( private &$type_ref ) {}
-            public function delete_messages( $type ): int {
-                $this->type_ref = $type;
-                return 3;
-            }
-        };
         $response = $this->adapter->delete_messages( array( 'racketmanager_nonce' => 'valid', 'message_type' => 2 ) );
         $this->assertSame( 200, $response->get_status_code() );
         $content = $response->get_content();
@@ -298,15 +324,37 @@ class Account_Ajax_Adapter_Test extends TestCase {
         $this->assertNotEmpty( $content->output );
         $this->assertNotEmpty( $content->type );
 
-        // User delete messages zero
-        $GLOBALS['wp_stubs_users'][5] = new class {
-            public function delete_messages( $type ): int {
-                return 0;
-            }
-        };
+        $message_repo = $this->createStub( Message_Repository_Interface::class );
+        $message_repo->method( 'delete_by_user_and_type' )->willReturn( 0 );
+        $user_repo    = $this->createStub( User_Repository_Interface::class );
+        $user_repo->method( 'find' )->willReturn( $user );
+        $this->adapter = $this->make_adapter( $message_repo, $user_repo );
+
         $response = $this->adapter->delete_messages( array( 'racketmanager_nonce' => 'valid', 'message_type' => 2 ) );
         $this->assertSame( 200, $response->get_status_code() );
         $this->assertSame( 0, $response->get_content()->success );
+    }
+
+    public function test_delete_messages_reports_database_failure_as_error(): void {
+        $this->security_service = $this->createStub( Security_Service_Interface::class );
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+        $GLOBALS['wp_stubs_current_user_id'] = 5;
+
+        $user = new User();
+        $user->id = 5;
+        $user->ID = 5;
+
+        $user_repo = $this->createStub( User_Repository_Interface::class );
+        $user_repo->method( 'find' )->willReturn( $user );
+        $message_repo = $this->createStub( Message_Repository_Interface::class );
+        $message_repo->method( 'delete_by_user_and_type' )->willReturn( false );
+        $this->adapter = $this->make_adapter( $message_repo, $user_repo );
+
+        $response = $this->adapter->delete_messages( array( 'racketmanager_nonce' => 'valid', 'message_type' => 'read' ) );
+
+        $this->assertSame( 200, $response->get_status_code() );
+        $this->assertFalse( $response->get_content()->success );
+        $this->assertStringContainsString( 'danger', $response->get_content()->output );
     }
 
     public function test_reset_password_flows(): void {
@@ -369,6 +417,11 @@ class Account_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_update_account_flows_and_payload_mapping(): void {
+        $GLOBALS['wp_stubs_current_user_id'] = 5;
+        $user = new User();
+        $user->id = 5;
+        $user->ID = 5;
+
         // Nonce failure
         $this->security_service = $this->createMock( Security_Service_Interface::class );
         $this->security_service->expects( $this->once() )
@@ -380,25 +433,15 @@ class Account_Ajax_Adapter_Test extends TestCase {
         $response = $this->adapter->update_account( array( 'racketmanager_nonce' => 'bad' ) );
         $this->assertSame( 403, $response->get_status_code() );
 
-        // Valid nonce, user update with error
+        // Valid nonce, validation error
         $this->security_service = $this->createMock( Security_Service_Interface::class );
         $this->security_service->expects( $this->once() )
             ->method( 'verify_nonce' )
             ->with( 'valid', 'member_account' )
             ->willReturn( true );
-        $this->adapter = $this->make_adapter();
-
-        $user_mock = new #[\AllowDynamicProperties] class {
-            public string $message = 'Error in account';
-            public array $err_flds = array( 'email' );
-            public array $err_msgs = array( 'Invalid email' );
-            public string $update_result = 'danger';
-            public function update( $data ): self {
-                return $this;
-            }
-        };
-        $GLOBALS['wp_stubs_users'][0] = $user_mock;
-        $GLOBALS['wp_stubs_users']['default'] = $user_mock;
+        $user_repo = $this->createStub( User_Repository_Interface::class );
+        $user_repo->method( 'find' )->willReturn( $user );
+        $this->adapter = $this->make_adapter( null, $user_repo );
 
         $response = $this->adapter->update_account( array( 'racketmanager_nonce' => 'valid', 'username' => 'test@example.test' ) );
         $this->assertSame( 401, $response->get_status_code() );
@@ -410,21 +453,16 @@ class Account_Ajax_Adapter_Test extends TestCase {
             ->method( 'verify_nonce' )
             ->with( 'valid', 'member_account' )
             ->willReturn( true );
-        $this->adapter = $this->make_adapter();
-
         $captured_data = null;
-        $user_success  = new #[\AllowDynamicProperties] class( $captured_data ) {
-            public function __construct( private &$data_ref ) {}
-            public string $message = 'Account updated';
-            public array $err_flds = array();
-            public array $err_msgs = array();
-            public string $update_result = 'success';
-            public function update( $data ): self {
-                $this->data_ref = $data;
-                return $this;
+        $user_repo     = $this->createStub( User_Repository_Interface::class );
+        $user_repo->method( 'find' )->willReturn( $user );
+        $user_repo->method( 'save' )->willReturnCallback(
+            static function ( object $entity ) use ( &$captured_data ) {
+                $captured_data = clone $entity;
+                return 5;
             }
-        };
-        $GLOBALS['wp_stubs_users']['default'] = $user_success;
+        );
+        $this->adapter = $this->make_adapter( null, $user_repo );
 
         $request = array(
             'racketmanager_nonce' => 'valid',
@@ -437,15 +475,14 @@ class Account_Ajax_Adapter_Test extends TestCase {
             'year_of_birth'       => '1990',
             'password'            => 'secret123',
             'rePassword'          => 'secret123',
-            'opt_in'              => array( 'email' => '1', 'sms' => '1' ),
+            'opt_in'              => array( '1' => '1' ),
         );
 
         $response = $this->adapter->update_account( $request );
         $this->assertSame( 200, $response->get_status_code() );
-        $this->assertSame( 'Account updated', $response->get_content()->msg );
+        $this->assertSame( 'User updated', $response->get_content()->msg );
         $this->assertSame( 'success', $response->get_content()->class );
 
-        // Verify mapped data passed into user->update
         $this->assertNotNull( $captured_data );
         $this->assertSame( 'player@example.test', $captured_data->email );
         $this->assertSame( 'John', $captured_data->firstname );
@@ -456,15 +493,23 @@ class Account_Ajax_Adapter_Test extends TestCase {
         $this->assertSame( 1990, $captured_data->year_of_birth );
         $this->assertSame( 'secret123', $captured_data->password );
         $this->assertSame( 'secret123', $captured_data->re_password );
-        $this->assertSame( array( 'email' => '1', 'sms' => '1' ), $captured_data->opt_ins );
+        $this->assertSame( array( '1' ), $captured_data->opt_ins );
 
-        // Also test with empty btm and year_of_birth casting to null
+        // Empty btm and year_of_birth casting to null
         $this->security_service = $this->createMock( Security_Service_Interface::class );
         $this->security_service->expects( $this->once() )
             ->method( 'verify_nonce' )
             ->with( 'valid', 'member_account' )
             ->willReturn( true );
-        $this->adapter = $this->make_adapter();
+        $user_repo = $this->createStub( User_Repository_Interface::class );
+        $user_repo->method( 'find' )->willReturn( $user );
+        $user_repo->method( 'save' )->willReturnCallback(
+            static function ( object $entity ) use ( &$captured_data ) {
+                $captured_data = clone $entity;
+                return 5;
+            }
+        );
+        $this->adapter = $this->make_adapter( null, $user_repo );
 
         $request['btm']           = '';
         $request['year_of_birth'] = '';
@@ -473,5 +518,21 @@ class Account_Ajax_Adapter_Test extends TestCase {
         $this->assertSame( 200, $response->get_status_code() );
         $this->assertNull( $captured_data->btm );
         $this->assertNull( $captured_data->year_of_birth );
+
+        // No-op save maps to warning
+        $this->security_service = $this->createMock( Security_Service_Interface::class );
+        $this->security_service->expects( $this->once() )
+            ->method( 'verify_nonce' )
+            ->with( 'valid', 'member_account' )
+            ->willReturn( true );
+        $user_repo = $this->createStub( User_Repository_Interface::class );
+        $user_repo->method( 'find' )->willReturn( $user );
+        $user_repo->method( 'save' )->willReturn( 0 );
+        $this->adapter = $this->make_adapter( null, $user_repo );
+
+        $response = $this->adapter->update_account( $request );
+        $this->assertSame( 200, $response->get_status_code() );
+        $this->assertSame( 'No updates', $response->get_content()->msg );
+        $this->assertSame( 'warning', $response->get_content()->class );
     }
 }

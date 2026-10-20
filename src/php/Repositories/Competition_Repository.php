@@ -99,6 +99,22 @@ class Competition_Repository implements Competition_Repository_Interface {
     }
 
     /**
+     * Hydrate competition relations.
+     *
+     * Competitions are returned (and cached) request-neutral: the current season is the domain default
+     * (active or latest season) and no venue lookup happens here. Request-selected seasons and the venue
+     * name are applied by Competition_Season_Service::resolve_current_season() at the application boundary.
+     *
+     * @param Competition $competition
+     * @return Competition
+     */
+    private function hydrate_competition( Competition $competition ): Competition {
+        $competition->set_competition_repository( $this );
+
+        return $competition;
+    }
+
+    /**
      * Find a competition by its ID.
      *
      * @param int|string|null $id
@@ -129,7 +145,10 @@ class Competition_Repository implements Competition_Repository_Interface {
                 return null;
             }
             $competition = Competition::from_database( $row );
+            $competition = $this->hydrate_competition( $competition );
             wp_cache_set( $competition->get_id(), $competition, 'competitions' );
+        } else {
+            $competition = $this->hydrate_competition( $competition );
         }
 
         return $competition;
@@ -143,9 +162,21 @@ class Competition_Repository implements Competition_Repository_Interface {
     public function find_all(): array {
         $competitions = wp_cache_get( 'competitions', 'competitions' );
         if ( ! $competitions ) {
-            $competitions = $this->wpdb->get_results( "SELECT * FROM $this->table_name ORDER BY `name`" );
-            $competitions = array_map( [ Competition::class, 'from_database' ], $competitions );
+            $rows         = $this->wpdb->get_results( "SELECT * FROM $this->table_name ORDER BY `name`" );
+            $competitions = array_map(
+                function( $row ) {
+                    $comp = Competition::from_database( $row );
+                    return $this->hydrate_competition( $comp );
+                },
+                $rows
+            );
             wp_cache_set( 'competitions', $competitions, 'competitions' );
+        } else {
+            foreach ( $competitions as $competition ) {
+                if ( $competition instanceof Competition ) {
+                    $this->hydrate_competition( $competition );
+                }
+            }
         }
         return $competitions;
     }
@@ -170,7 +201,13 @@ class Competition_Repository implements Competition_Repository_Interface {
         $sql .= ' ORDER BY `name`';
         // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
         $rows = $this->wpdb->get_results( $sql );
-        return array_map( [ Competition::class, 'from_database' ], $rows );
+        return array_map(
+            function( $row ) {
+                $comp = Competition::from_database( $row );
+                return $this->hydrate_competition( $comp );
+            },
+            $rows
+        );
     }
 
     /**
@@ -327,7 +364,8 @@ class Competition_Repository implements Competition_Repository_Interface {
 			return null;
 		}
 
-		return Competition::from_object( $row );
+		$competition = Competition::from_object( $row );
+		return $this->hydrate_competition( $competition );
 	}
 
 	/**
@@ -385,7 +423,7 @@ class Competition_Repository implements Competition_Repository_Interface {
 		} else {
 			$sql = 'SELECT `l`.`title` AS `league_title`, l.`id` AS `league_id`, t2.`id` AS `team_id`, t1.`id` AS `table_id`, `t2`.`title` as `name`,`t1`.`rank`, l.`id`, t1.`status`, t1.`profile`, t1.`group`, t2.`roster`, t2.`club_id`, t2.`status` AS `team_type`, e.`name` AS `event_name`';
 		}
-		$sql .= " FROM {$this->wpdb->prefix}racketmanager_events e, {$this->wpdb->prefix}racketmanager l, {$this->wpdb->prefix}racketmanager_teams t2, {$this->wpdb->prefix}racketmanager_league_teams t1 WHERE e.`id` = l.`event_id` AND t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` " . $search;
+		$sql .= " FROM {$this->events_table} e, {$this->leagues_table} l, {$this->teams_table} t2, {$this->league_teams_table} t1 WHERE e.`id` = l.`event_id` AND t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` " . $search;
 
 		if ( $count ) {
 			$result = $this->wpdb->get_var( $sql );
@@ -470,14 +508,14 @@ class Competition_Repository implements Competition_Repository_Interface {
 			$sql = 'SELECT DISTINCT rp.`player_id` as id';
 		}
 
-		$sql .= " FROM {$this->wpdb->prefix}racketmanager_events e
-                  INNER JOIN {$this->wpdb->prefix}racketmanager l ON e.id = l.event_id
-                  INNER JOIN {$this->wpdb->prefix}racketmanager_league_teams lt ON l.id = lt.league_id
-                  INNER JOIN {$this->wpdb->prefix}racketmanager_teams t ON lt.team_id = t.id
-                  INNER JOIN {$this->wpdb->prefix}racketmanager_matches m ON l.id = m.league_id AND m.season = lt.season
-                  INNER JOIN {$this->wpdb->prefix}racketmanager_rubbers r ON m.id = r.match_id
-                  INNER JOIN {$this->wpdb->prefix}racketmanager_rubber_players rp ON r.id = rp.rubber_id
-                  WHERE (rp.team_id = t.id OR rp.team_id IS NULL) " . str_replace( 'WHERE', 'AND', $search );
+		$sql .= " FROM {$this->events_table} e
+                  INNER JOIN {$this->leagues_table} l ON e.id = l.event_id
+                  INNER JOIN {$this->league_teams_table} lt ON l.id = lt.league_id
+                  INNER JOIN {$this->teams_table} t ON lt.team_id = t.id
+                  INNER JOIN {$this->fixtures_table} m ON l.id = m.league_id AND m.season = lt.season
+                  INNER JOIN {$this->rubbers_table} r ON m.id = r.match_id
+                  INNER JOIN {$this->rubber_players_table} rp ON r.id = rp.rubber_id
+                  WHERE ( (rp.player_team = 'home' AND m.home_team = t.id) OR (rp.player_team = 'away' AND m.away_team = t.id) ) " . str_replace( 'WHERE', 'AND', $search );
 
 		if ( $count ) {
 			$result = $this->wpdb->get_var( $sql );
@@ -513,7 +551,7 @@ class Competition_Repository implements Competition_Repository_Interface {
 		$params = [ $competition_id ];
 
 		if ( $season ) {
-			$query .= ' AND `id` IN (SELECT `event_id` FROM ' . $this->wpdb->prefix . 'racketmanager WHERE `id` IN (SELECT `league_id` FROM ' . $this->wpdb->prefix . 'racketmanager_league_teams WHERE `season` = %s))';
+			$query .= " AND `id` IN (SELECT `event_id` FROM {$this->leagues_table} WHERE `id` IN (SELECT `league_id` FROM {$this->league_teams_table} WHERE `season` = %s))";
 			$params[] = $season;
 		}
 
@@ -568,9 +606,9 @@ class Competition_Repository implements Competition_Repository_Interface {
 			$sql = 'SELECT m.id';
 		}
 
-		$sql .= " FROM {$this->wpdb->prefix}racketmanager_matches m
-                  INNER JOIN {$this->wpdb->prefix}racketmanager l ON m.league_id = l.id
-                  INNER JOIN {$this->wpdb->prefix}racketmanager_events e ON l.event_id = e.id " . $search;
+		$sql .= " FROM {$this->fixtures_table} m
+                  INNER JOIN {$this->leagues_table} l ON m.league_id = l.id
+                  INNER JOIN {$this->events_table} e ON l.event_id = e.id " . $search;
 
 		if ( $count ) {
 			$result = $this->wpdb->get_var( $sql );

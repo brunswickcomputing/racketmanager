@@ -10,12 +10,10 @@
 namespace Racketmanager\Domain\Competition;
 
 use Racketmanager\Domain\DTO\Competition\Competition_Hydration_DTO;
+use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Util\Util;
 use stdClass;
-use function Racketmanager\get_club;
 use function Racketmanager\get_event;
-use function Racketmanager\get_league;
-use function Racketmanager\get_player;
 
 /**
  * Class to implement the Competition object
@@ -711,17 +709,65 @@ class Competition {
     }
 
     /**
+     * Competition Repository
+     *
+     * @var ?Competition_Repository_Interface
+     */
+    private ?Competition_Repository_Interface $competition_repository = null;
+
+    public function set_competition_repository( ?Competition_Repository_Interface $competition_repository ): void {
+        $this->competition_repository = $competition_repository;
+    }
+
+    public function get_competition_repository(): ?Competition_Repository_Interface {
+        return $this->competition_repository;
+    }
+
+    public function __serialize(): array {
+        $data = get_object_vars( $this );
+        unset( $data['competition_repository'] );
+        return $data;
+    }
+
+    public function __unserialize( array $data ): void {
+        foreach ( $data as $key => $value ) {
+            $this->$key = $value;
+        }
+        $this->competition_repository = null;
+    }
+
+    /**
+     * Repository used to read this competition's events, teams, players and matches.
+     *
+     * @throws \LogicException When no repository has been injected.
+     */
+    private function require_competition_repository(): Competition_Repository_Interface {
+        if ( null === $this->competition_repository ) {
+            throw new \LogicException( 'A Competition_Repository_Interface must be injected before querying competition relations.' );
+        }
+
+        return $this->competition_repository;
+    }
+
+    /**
      * Set current season
      *
      * @param string $season season.
-     * @param boolean $force_overwrite force overwrite.
+     * @param boolean $force_overwrite force overwrite (deprecated).
      */
     public function set_current_season( string $season = '', bool $force_overwrite = false ): void {
-        $service = new \Racketmanager\Services\Competition\Competition_Season_Service();
-        $data    = $service->resolve_current_season( $this, $season, $force_overwrite );
-        
-        $this->current_phase = $service->calculate_phase( $data );
-        
+        $data = $this->resolve_season_data( $season );
+        $this->apply_current_season( $data );
+    }
+
+    /**
+     * Apply resolved season data and update phase flags.
+     *
+     * @param array $data Resolved season data.
+     */
+    public function apply_current_season( array $data ): void {
+        $this->current_phase = self::calculate_phase( $data );
+
         // Reset state flags
         $this->is_complete = 'end' === $this->current_phase || 'complete' === $this->current_phase;
         $this->is_started  = 'start' === $this->current_phase;
@@ -731,6 +777,87 @@ class Competition {
 
         $this->num_match_days = $data['num_match_days'] ?? 0;
         $this->current_season = $data;
+    }
+
+    /**
+     * Pure domain helper to resolve season data.
+     *
+     * @param string $season
+     * @return array
+     */
+    public function resolve_season_data( string $season = '' ): array {
+        $seasons = $this->seasons;
+        $data    = null;
+
+        // 1. Resolve which season to use
+        if ( ! empty( $season ) ) {
+            $data = $seasons->get( $season );
+        }
+
+        // 2. Fallback to active or latest season if not resolved
+        if ( ! isset( $data ) || false === $data ) {
+            $today = gmdate( 'Y-m-d' );
+            foreach ( $seasons->reverse() as $season_item ) {
+                $date_active = empty( $season_item['date_closing'] ) ? null : Util::amend_date( $season_item['date_closing'], 7 );
+                if ( ! empty( $date_active ) && $date_active <= $today ) {
+                    $data = $season_item;
+                    break;
+                }
+            }
+        }
+
+        if ( empty( $data ) ) {
+            $data = $seasons->latest() ?? [];
+        }
+
+        // 3. Hydrate basic dates if missing
+        $count_match_dates = isset( $data['match_dates'] ) && is_array( $data['match_dates'] ) ? count( $data['match_dates'] ) : 0;
+        if ( empty( $data['date_end'] ) && $count_match_dates >= 2 ) {
+            $data['date_end'] = end( $data['match_dates'] );
+        }
+        if ( empty( $data['date_start'] ) && $count_match_dates >= 2 ) {
+            $data['date_start'] = $data['match_dates'][0];
+        }
+
+        return $data;
+    }
+
+    /**
+     * Pure domain helper to calculate season phase.
+     *
+     * @param array $season_data
+     * @return string
+     */
+    public static function calculate_phase( array $season_data ): string {
+        $today = gmdate( 'Y-m-d' );
+
+        if ( ! empty( $season_data['date_end'] ) && $today > $season_data['date_end'] ) {
+            return 'end';
+        }
+        if ( ! empty( $season_data['date_start'] ) && $today >= $season_data['date_start'] ) {
+            return 'start';
+        }
+        if ( ! empty( $season_data['date_closing'] ) && $today > $season_data['date_closing'] ) {
+            return 'close';
+        }
+        if ( ! empty( $season_data['date_open'] ) ) {
+            if ( $today >= $season_data['date_open'] ) {
+                return 'open';
+            }
+            return 'pending';
+        }
+
+        return 'complete';
+    }
+
+    /**
+     * Instance wrapper for calculate_phase.
+     *
+     * @param array $season_data
+     * @return string
+     */
+    public function calculate_season_phase( array $season_data ): string {
+        return self::calculate_phase( $season_data );
     }
 
     /**
@@ -783,8 +910,7 @@ class Competition {
         if ( empty( $this->id ) ) {
             return array();
         }
-        $repository = new \Racketmanager\Repositories\Competition_Repository();
-        $events     = $repository->find_events( (int) $this->id );
+        $events = $this->require_competition_repository()->find_events( (int) $this->id );
 
         return array_values(
             array_filter(
@@ -1007,8 +1133,7 @@ class Competition {
      * @return array
      */
     public function get_events( array $args = array() ): array {
-        $repository = new \Racketmanager\Repositories\Competition_Repository();
-        $events = $repository->find_events( $this->id, $args );
+        $events = $this->require_competition_repository()->find_events( $this->id, $args );
 
         $event_index = array();
         foreach ( $events as $i => $event ) {
@@ -1027,8 +1152,7 @@ class Competition {
      * @return array|int
      */
     public function get_teams( array $args = array() ): array|int {
-        $repository = new \Racketmanager\Repositories\Competition_Repository();
-        $teams = $repository->find_teams( $this->id, $args );
+        $teams = $this->require_competition_repository()->find_teams( $this->id, $args );
 
         if ( is_array( $teams ) ) {
             $this->teams = $teams;
@@ -1044,8 +1168,6 @@ class Competition {
      * @return array|int
      */
     public function get_players( array $args = array() ): array|int {
-        $repository = new \Racketmanager\Repositories\Competition_Repository();
-        
         // Handle player entry type
         if ( $this->is_player_entry ) {
             $season = $args['season'] ?? false;
@@ -1058,7 +1180,7 @@ class Competition {
             }
             $competition_players = array_unique( $players );
         } else {
-            $competition_players = $repository->find_players( $this->id, $args );
+            $competition_players = $this->require_competition_repository()->find_players( $this->id, $args );
         }
 
         if ( is_array( $competition_players ) ) {
@@ -1077,15 +1199,14 @@ class Competition {
      * @return array $matches
      */
     public function get_matches( array $match_args ): array {
-        $repository = new \Racketmanager\Repositories\Competition_Repository();
-        return $repository->find_matches( $this->id, $match_args );
+        return $this->require_competition_repository()->find_matches( $this->id, $match_args );
     }
 
     /**
      * Update seasons
      *
      * Accepts either an array (preferred) or a JSON string (Option B compatibility).
-     * Keeps the internal seasons property as a JSON string and persists JSON to DB.
+     * Only mutates in-memory state; callers persist through Competition_Service.
      *
      * @param array|string $seasons Season data as array or JSON string.
      */
@@ -1106,8 +1227,6 @@ class Competition {
         $current = $this->get_seasons();
         if ( $current !== $seasons ) {
             $this->seasons = new Season_Collection( $seasons );
-            $repository    = new \Racketmanager\Repositories\Competition_Repository();
-            $repository->save( $this );
             return true;
         }
         return false;
@@ -1121,15 +1240,8 @@ class Competition {
     public function add_season( object $season ): bool {
         $seasons                  = $this->get_seasons();
         $seasons[ $season->name ] = (array) $season;
-        
-        $updates = $this->update_seasons( $seasons );
-        
-        if ( $updates ) {
-            $service = new \Racketmanager\Services\Competition\Competition_Season_Service();
-            $service->cascade_season_to_events( $this, $season );
-        }
-        
-        return $updates;
+
+        return (bool) $this->update_seasons( $seasons );
     }
     /**
      * Update season
@@ -1137,40 +1249,11 @@ class Competition {
      * @param array $season season data.
      */
     public function update_season( array $season ): bool {
-        $seasons                 = $this->seasons;
+        $seasons                 = $this->get_seasons();
         $season_name             = $season['name'];
         $seasons[ $season_name ] = $season;
         ksort( $seasons );
         return $this->update_seasons( $seasons );
-    }
-
-    /**
-     * Contact Competition Teams
-     *
-     * @param string $season season.
-     * @param string $email_message message.
-     *
-     * @return boolean
-     */
-    public function contact_teams( string $season, string $email_message ): bool {
-        $notification_service = new \Racketmanager\Services\Competition\Competition_Notification_Service();
-        return $notification_service->contact_teams( $this, $season, $email_message );
-    }
-
-    /**
-     * Retrieve competition instance
-     *
-     * @param int|string $competition_id competition id.
-     * @param string|null $search_term search.
-     */
-    public static function get_instance( int|string $competition_id, ?string $search_term = 'id' ) {
-        $repository = new \Racketmanager\Repositories\Competition_Repository();
-
-        if ( 'name' === $search_term ) {
-            return $repository->find_by_name( (string) $competition_id );
-        }
-
-        return $repository->find_by_id( (int) $competition_id );
     }
 
 }

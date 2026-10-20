@@ -58,6 +58,7 @@ use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Test_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
@@ -67,6 +68,9 @@ class Club_Shortcode_Adapter_Test extends TestCase {
 
     /** @var array<int, array{path: string, vars: array}> Templates rendered through the capturing renderer. */
     private array $rendered = [];
+
+    /** @var array<int, Event[]> Events returned by Competition_Service::get_events_for_competition(), keyed by competition id. */
+    private array $competition_events = [];
 
     protected function setUp(): void {
         parent::setUp();
@@ -407,10 +411,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $with_teams       = $this->competition_with_events( 'Summer League', [ $event_with_teams, $event_without ] );
         $without_teams    = $this->competition_with_events( 'Winter League', [ $event_without ] );
 
-        $competition_service = $this->createStub( Competition_Service::class );
-        $competition_service->method( 'get_by_criteria' )->willReturnCallback(
-            static fn( array $criteria ) => 'league' === $criteria['type'] ? [ $with_teams, $without_teams ] : []
-        );
+        $competition_service = $this->competition_service_by_type( [ 'league' => [ $with_teams, $without_teams ] ] );
 
         $this->adapter( [ 'club_service' => $club_service, 'competition_service' => $competition_service, 'renderer' => $this->capturing_renderer() ] )
             ->show_club_competitions( [] );
@@ -435,10 +436,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $club             = $this->club();
         $event_with_teams = $this->event_with_teams( 101, "Men's Division 1", [ 'id' => 5, 'title' => 'Leigh LTC 1' ] );
         $competition      = $this->competition_with_events( 'Summer League', [ $event_with_teams ] );
-        $competition_service = $this->createStub( Competition_Service::class );
-        $competition_service->method( 'get_by_criteria' )->willReturnCallback(
-            static fn( array $criteria ) => 'league' === $criteria['type'] ? [ $competition ] : []
-        );
+        $competition_service = $this->competition_service_by_type( [ 'league' => [ $competition ] ] );
 
         $this->adapter(
             [ 'club_service' => $this->club_service_for( $club ), 'competition_service' => $competition_service, 'renderer' => $this->capturing_renderer() ]
@@ -453,10 +451,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $club_service = $this->club_service_for( $this->club() );
         $event        = $this->event_with_teams( 101, "Men's Division 1", [ 'id' => 5, 'title' => 'Leigh LTC 1' ] );
         $competition  = $this->competition_with_events( 'Summer League', [ $event ] );
-        $competition_service = $this->createStub( Competition_Service::class );
-        $competition_service->method( 'get_by_criteria' )->willReturnCallback(
-            static fn( array $criteria ) => 'league' === $criteria['type'] ? [ $competition ] : []
-        );
+        $competition_service = $this->competition_service_by_type( [ 'league' => [ $competition ] ] );
 
         $output = $this->capture_without_warnings(
             fn() => $this->adapter( [ 'club_service' => $club_service, 'competition_service' => $competition_service ] )->show_club_competitions( [] ),
@@ -475,10 +470,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
     public function test_show_club_competitions_event_without_current_season_has_no_link(): void {
         $event       = $this->event_with_teams( 101, 'Plate', [ 'id' => 5, 'title' => 'Leigh LTC 1' ], false );
         $competition = $this->competition_with_events( 'Summer Cup', [ $event ] );
-        $competition_service = $this->createStub( Competition_Service::class );
-        $competition_service->method( 'get_by_criteria' )->willReturnCallback(
-            static fn( array $criteria ) => 'cup' === $criteria['type'] ? [ $competition ] : []
-        );
+        $competition_service = $this->competition_service_by_type( [ 'cup' => [ $competition ] ] );
 
         $output = $this->capture_without_warnings(
             fn() => $this->adapter(
@@ -1061,12 +1053,35 @@ class Club_Shortcode_Adapter_Test extends TestCase {
      * @param Event[] $events
      */
     private function competition_with_events( string $name, array $events ): Competition {
-        $competition = $this->createStub( Competition::class );
-        $competition->method( 'get_events' )->willReturn( $events );
-        $competition->name           = $name;
-        $competition->current_season = [ 'name' => '2026' ];
+        $id          = 900 + count( $this->competition_events );
+        $competition = Competition_Test_Factory::create( id: $id, name: $name, current_season: [ 'name' => '2026' ] );
+
+        $this->competition_events[ $id ] = $events;
 
         return $competition;
+    }
+
+    /**
+     * Competition service listing the given competitions per type and serving the events registered by
+     * competition_with_events(); asking for the events of an unregistered competition fails the test.
+     *
+     * @param array<string, Competition[]> $by_type
+     */
+    private function competition_service_by_type( array $by_type ): Competition_Service {
+        $competition_service = $this->createStub( Competition_Service::class );
+        $competition_service->method( 'get_by_criteria' )->willReturnCallback(
+            static fn( array $criteria ) => $by_type[ $criteria['type'] ] ?? []
+        );
+        $competition_service->method( 'get_events_for_competition' )->willReturnCallback(
+            function ( null|int|string $competition_id, ?int $season = null ): array {
+                $this->assertArrayHasKey( $competition_id, $this->competition_events, 'Events requested for an unknown competition' );
+                $this->assertNull( $season, 'Club competitions must request all events of the competition' );
+
+                return $this->competition_events[ $competition_id ];
+            }
+        );
+
+        return $competition_service;
     }
 
     /**
@@ -1123,7 +1138,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $renderer     = $overrides['renderer'] ?? new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
         $players      = $overrides['players'] ?? $this->createStub( Player_Service::class );
         $registration = $overrides['registration'] ?? $this->createStub( Registration_Service::class );
-        $competitions = $overrides['competition_service'] ?? $this->createStub( Competition_Service::class );
+        $competitions = $overrides['competition_service'] ?? $this->competition_service_by_type( [] );
         $repository   = $overrides['competition_repository'] ?? $this->createStub( Competition_Repository_Interface::class );
         $finance      = $overrides['finance'] ?? $this->createStub( Finance_Service::class );
 

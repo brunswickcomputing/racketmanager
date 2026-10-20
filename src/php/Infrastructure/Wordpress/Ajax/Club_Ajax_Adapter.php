@@ -12,12 +12,13 @@ use Racketmanager\Exceptions\Registration_Not_Found_Exception;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
+use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
+use Racketmanager\Repositories\User_Repository;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Validator\Validator_Club;
 use stdClass;
 use function Racketmanager\get_club_role;
-use function Racketmanager\get_user;
 use function Racketmanager\show_alert;
 use function Racketmanager\show_club_role_modal;
 
@@ -33,8 +34,10 @@ class Club_Ajax_Adapter {
         private Security_Service_Interface $security_service,
         private Json_Response_Factory_Interface $response_factory,
         private Club_Service $club_service,
-        private Registration_Service $registration_service
+        private Registration_Service $registration_service,
+        private ?User_Repository_Interface $user_repository = null
     ) {
+        $this->user_repository = $this->user_repository ?? new User_Repository();
     }
 
     public function logged_out(): Response {
@@ -200,7 +203,7 @@ class Club_Ajax_Adapter {
         }
 
         $updates   = false;
-        $user      = get_user( $command->user_id );
+        $user      = $this->user_repository->find( (int) $command->user_id );
         $club_role = get_club_role( $command->club_role_id );
         if ( $club_role->user->id !== $command->user_id ) {
             $club_role = $this->club_service->reassign_role_user( $command->club_role_id, $command->user_id );
@@ -208,9 +211,15 @@ class Club_Ajax_Adapter {
                 $updates = true;
             }
         }
-        $user_updates = $user->update_contact( $command->contact_no, $command->email );
-        if ( $user_updates ) {
-            $updates = true;
+        if ( $user ) {
+            $user_updates = $this->user_repository->update_contact(
+                $user,
+                (string) ( $command->contact_no ?? '' ),
+                (string) ( $command->email ?? '' )
+            );
+            if ( $user_updates ) {
+                $updates = true;
+            }
         }
 
         $return         = new stdClass();

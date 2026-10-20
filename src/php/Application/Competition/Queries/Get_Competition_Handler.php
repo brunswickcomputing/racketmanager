@@ -4,11 +4,11 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Competition\Queries;
 
 use Racketmanager\Domain\Competition\Competition;
-use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Presentation\View_Models\Competition_View_Model;
 use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Settings_Service;
@@ -25,7 +25,8 @@ class Get_Competition_Handler {
         private readonly Club_Service $club_service,
         private readonly Player_Service $player_service,
         private readonly Security_Service_Interface $security_service,
-        private readonly Settings_Service $settings_service
+        private readonly Settings_Service $settings_service,
+        private readonly Competition_Season_Service $competition_season_service
     ) {}
 
     public function handle( Get_Competition_Query $query ): Competition_View_Model {
@@ -61,26 +62,14 @@ class Get_Competition_Handler {
             );
         }
 
-        $competition->set_current_season( $query->season ?? '' );
-        if ( empty( $competition->current_season ) ) {
+        $competition_season = $this->competition_season_service->resolve_current_season( $competition, $query->season ?? '' );
+        if ( empty( array_diff_key( $competition_season, [ 'venue_name' => true ] ) ) ) {
             return new Competition_View_Model(
                 error_message: __( 'Season not found for competition', 'racketmanager' )
             );
         }
 
-        $season             = $competition->current_season['name'] ?? '';
-        $competition_season = $competition->current_season;
-
-        if ( ! empty( $competition_season['venue'] ) ) {
-            try {
-                $venue_club = $this->club_service->get_club( (int) $competition_season['venue'] );
-                if ( $venue_club ) {
-                    $competition_season['venue_name'] = $venue_club->shortcode ?? ( method_exists( $venue_club, 'get_shortcode' ) ? $venue_club->get_shortcode() : null );
-                }
-            } catch ( Club_Not_Found_Exception ) {
-                // Ignore missing venue club gracefully
-            }
-        }
+        $season = $competition_season['name'] ?? '';
 
         $tab                  = $query->tab ?: ( Util_Lookup::get_tab() ?: 'overview' );
         $is_singular          = $query->is_singular;

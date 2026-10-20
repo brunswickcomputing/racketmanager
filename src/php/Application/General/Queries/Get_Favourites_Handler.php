@@ -8,7 +8,6 @@ use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
 use function __;
 use function is_object;
-use function method_exists;
 
 class Get_Favourites_Handler {
     public function __construct(
@@ -23,8 +22,8 @@ class Get_Favourites_Handler {
 
         $user = $this->user_repository->find( $query->user_id );
 
-        $favourites = ( is_object( $user ) && method_exists( $user, 'get_favourites' ) )
-            ? ( $user->get_favourites() ?: [] )
+        $favourites = $user
+            ? ( $this->user_repository->get_favourites( $user ) ?: [] )
             : [];
 
         $prepared_favourites = [];

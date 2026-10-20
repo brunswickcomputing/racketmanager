@@ -66,54 +66,6 @@ class Tournament_Entry {
         $this->club_id       = $tournament_entry->club_id ?? null;
     }
 
-    /**
-     * Retrieve tournament entry instance
-     *
-     * @param int|string $tournament_entry_id tournament entry id.
-     * @param string $search_term search term - defaults to id.
-     *
-     * @return object|false
-     */
-    public static function get_instance( int|string $tournament_entry_id, string $search_term = 'id' ): object|false {
-        global $wpdb;
-        if ( ! $tournament_entry_id ) {
-            return false;
-        }
-        switch ( $search_term ) {
-            case 'key':
-                $search_terms  = explode( '_', $tournament_entry_id );
-                $tournament_id = $search_terms[0];
-                $player_id     = $search_terms[1];
-                $search        = $wpdb->prepare(
-                    '`tournament_id` = %d AND `player_id` = %d',
-                    intval( $tournament_id ),
-                    $player_id,
-                );
-                break;
-            case 'id':
-            default:
-                $search = $wpdb->prepare(
-                    '`id` = %d',
-                    $tournament_entry_id
-                );
-                break;
-        }
-        $tournament_entry = wp_cache_get( $tournament_entry_id, 'tournament_entries' );
-        if ( ! $tournament_entry ) {
-            $tournament_entry = $wpdb->get_row(
-            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                "SELECT `id`, `tournament_id`, `player_id`, `status`, `fee`, `club_id` FROM $wpdb->racketmanager_tournament_entries WHERE $search"
-            );
-            if ( ! $tournament_entry ) {
-                return false;
-            }
-            $tournament_entry = new Tournament_Entry( $tournament_entry );
-            wp_cache_set( $tournament_entry_id, $tournament_entry, 'tournament_entries' );
-        }
-
-        return $tournament_entry;
-    }
-
     public function get_id(): ?int {
         return $this->id;
     }

@@ -147,7 +147,7 @@ class Cup_Setup_Action_Dispatcher {
             $cup_seasons                  = $competition->get_seasons();
             $cup_season['num_match_days'] = count( $cup_season['match_dates'] );
             $cup_seasons[ $season ]       = $cup_season;
-            $competition->update_seasons( $cup_seasons );
+            $this->competition_service->update_seasons( $competition, $cup_seasons );
 
             return new Action_Result_DTO( __( 'Cup match dates updated', 'racketmanager' ), Admin_Message_Type::SUCCESS );
 

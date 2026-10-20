@@ -17,6 +17,7 @@ use Racketmanager\Exceptions\Charge_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Validator\Validator_Config;
@@ -32,6 +33,7 @@ readonly final class Competition_Season_Action_Dispatcher {
         private Competition_Service $competition_service,
         private Finance_Service $finance_service,
         private Action_Guard_Interface $action_guard,
+        private Competition_Season_Service $competition_season_service,
     ) {
     }
 
@@ -408,8 +410,8 @@ readonly final class Competition_Season_Action_Dispatcher {
                 if ( ! empty( $match_days_change ) ) {
                     $season['match_dates'] = $this->set_match_dates( $current_season );
                 }
-                $updates = $competition->update_season( $season );
-                $events  = $competition->get_events();
+                $updates = $this->competition_service->update_season( $competition, $season );
+                $events  = $this->competition_service->get_events_for_competition( (int) $competition->get_id() );
                 if ( $events ) {
                     $event_season                   = array();
                     $event_season['name']           = $season['name'];
@@ -424,7 +426,9 @@ readonly final class Competition_Season_Action_Dispatcher {
         } else {
             $current_season->match_dates = $this->set_match_dates( $current_season );
             $season                      = $current_season;
-            $competition->add_season( $season );
+            if ( $this->competition_service->add_season( $competition, $season ) ) {
+                $this->competition_season_service->cascade_season_to_events( $competition, $season );
+            }
         }
 
         if ( ! empty( $charge_create ) ) {

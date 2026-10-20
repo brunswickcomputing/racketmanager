@@ -16,6 +16,7 @@ use Racketmanager\Domain\Competition\Season_Collection;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Container\Simple_Container;
@@ -44,18 +45,20 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
     private $event_repository;
     private $league_repository;
     private $league_service;
+    private $league_team_repository;
 
     protected function setUp(): void {
         parent::setUp();
         $this->backup_globals();
 
-        $this->container           = new Simple_Container();
-        $this->tournament_service  = $this->createStub( Tournament_Service::class );
-        $this->competition_service = $this->createMock( Competition_Service::class );
-        $this->guard               = $this->createStub( Action_Guard_Interface::class );
-        $this->event_repository    = $this->createMock( Event_Repository_Interface::class );
-        $this->league_repository   = $this->createMock( League_Repository_Interface::class );
-        $this->league_service      = $this->createMock( League_Service::class );
+        $this->container              = new Simple_Container();
+        $this->tournament_service     = $this->createStub( Tournament_Service::class );
+        $this->competition_service    = $this->createMock( Competition_Service::class );
+        $this->guard                  = $this->createStub( Action_Guard_Interface::class );
+        $this->event_repository       = $this->createMock( Event_Repository_Interface::class );
+        $this->league_repository      = $this->createMock( League_Repository_Interface::class );
+        $this->league_service         = $this->createMock( League_Service::class );
+        $this->league_team_repository = $this->createMock( League_Team_Repository_Interface::class );
 
         $this->container->set( 'competition_service', $this->competition_service );
         $this->container->set( 'event_repository', $this->event_repository );
@@ -71,7 +74,8 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $this->controller = new Tournament_Event_Config_Admin_Controller(
             $this->tournament_service,
             $this->competition_service,
-            $this->guard
+            $this->guard,
+            $this->league_team_repository
         );
     }
 
@@ -428,7 +432,7 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $competition->seasons = new Season_Collection( [ '2026' => [ 'name' => '2026', 'home_away' => 0, 'num_match_days' => 1, 'match_dates' => [] ] ] );
         $competition->standings = [];
         $competition->current_season = [ 'name' => '2026' ];
-        $competition->method( 'get_events' )->willReturn( [ $existing_event ] );
+        $this->competition_service->expects( $this->once() )->method( 'get_events_for_competition' )->willReturn( [ $existing_event ] );
 
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
         $this->competition_service->method( 'get_event_by_id' )->willThrowException( new Event_Not_Found_Exception() );
@@ -571,5 +575,60 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
 
         $this->assertArrayHasKey( 'view_model', $result );
         $this->assertEmpty( $result['view_model']->leagues );
+    }
+
+    public function test_handle_add_event_with_current_season_persists_season(): void {
+        $_GET['competition_id'] = '10';
+        $_POST['addEventConfig'] = '1';
+        $_POST['event_title']   = 'Men\'s Singles';
+        $_POST['type']          = 'singles';
+        $_POST['num_sets']      = '3';
+        $_POST['num_rubbers']   = '1';
+
+        $competition = Competition_Test_Factory::create(
+            id: 10,
+            name: 'Men\'s Tournament',
+            type: Competition_Type::TOURNAMENT,
+            seasons: Competition_Test_Factory::season_map( '2026', [ 'home_away' => 0, 'num_match_days' => 1, 'match_dates' => [] ] ),
+            settings: [ 'mode' => 'tournament' ],
+            current_season: [
+                'name'           => '2026',
+                'home_away'      => 0,
+                'num_match_days' => 1,
+                'match_dates'    => [],
+            ]
+        );
+        $competition->is_championship = false;
+        $competition->is_tournament   = true;
+        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
+
+        $this->event_repository->expects( $this->once() )
+            ->method( 'insert_event' )
+            ->willReturn( 42 );
+        $this->event_repository->expects( $this->once() )
+            ->method( 'update_seasons' )
+            ->with( 42, [ '2026' => [ 'name' => '2026', 'home_away' => 0, 'num_match_days' => 1, 'match_dates' => [] ] ] )
+            ->willReturn( true );
+
+        $league     = $this->createMock( League::class );
+        $league->id = 789;
+        $this->league_service->expects( $this->once() )
+            ->method( 'add_league_to_event' )
+            ->with( 42, 'Men\'s Singles' )
+            ->willReturn( $league );
+        $this->event_repository->expects( $this->once() )
+            ->method( 'update_settings_and_rules' )
+            ->with(
+                42,
+                $this->callback( static fn( array $settings ): bool => 789 === ( $settings['primary_league'] ?? null ) ),
+                $this->anything(),
+                $this->anything(),
+                $this->anything()
+            );
+
+        $result = $this->controller->handle();
+
+        $this->assertSame( 'Event added', $result['message'] );
+        $this->assertSame( 'success', $result['message_type'] );
     }
 }

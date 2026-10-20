@@ -195,7 +195,8 @@ final readonly class Get_Competition_Entry_Handler {
     }
 
     private function build_cup_entry( object $competition, string $season, array $competition_season, object $club, string $template ): Shortcode_View_Model {
-        $events  = method_exists( $competition, 'get_events' ) ? $competition->get_events() : ( $competition->events ?? [] );
+        $comp_id = method_exists( $competition, 'get_id' ) ? $competition->get_id() : ( $competition->id ?? null );
+        $events  = $comp_id ? $this->competition_service->get_events_for_competition( (int) $comp_id ) : [];
         $club_id = method_exists( $club, 'get_id' ) ? $club->get_id() : ( $club->id ?? 0 );
 
         foreach ( $events as $i => $event ) {
@@ -265,7 +266,8 @@ final readonly class Get_Competition_Entry_Handler {
     }
 
     private function build_league_entry( object $competition, string $season, array $competition_season, object $club, string $template ): Shortcode_View_Model {
-        $events  = method_exists( $competition, 'get_events' ) ? $competition->get_events() : ( $competition->events ?? [] );
+        $comp_id = method_exists( $competition, 'get_id' ) ? $competition->get_id() : ( $competition->id ?? null );
+        $events  = $comp_id ? $this->competition_service->get_events_for_competition( (int) $comp_id ) : [];
         $club_id = method_exists( $club, 'get_id' ) ? $club->get_id() : ( $club->id ?? 0 );
 
         foreach ( $events as $i => $event ) {

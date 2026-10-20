@@ -61,12 +61,14 @@ class Rubber_Result_Manager_Test extends TestCase {
 
         $rubber_mock = $this->createMock(Rubber::class);
         $rubber_mock->method('get_id')->willReturn(10);
-        $rubber_mock->method('calculate_result')->willReturn((object)[
-            'home' => 2.0,
-            'away' => 0.0,
-            'winner' => 1,
-            'loser' => 2
-        ]);
+        $rubber_mock->expects($this->once())->method('calculate_result')
+            ->with(['home' => ['team' => 1], 'away' => ['team' => 2]], ['match_result' => 'sets'], 3)
+            ->willReturn((object)[
+                'home' => 2.0,
+                'away' => 0.0,
+                'winner' => 1,
+                'loser' => 2
+            ]);
         $this->rubber_repository->expects($this->once())->method('find_by_id')->with(10)->willReturn($rubber_mock);
 
         $request = new Rubber_Update_Request(
@@ -86,6 +88,7 @@ class Rubber_Result_Manager_Test extends TestCase {
         $this->player_validator->method('apply_dummy_players')->willReturn($request->players);
 
         $this->rubber_repository->expects($this->once())->method('save')->with($rubber_mock);
+        $this->rubber_repository->expects($this->once())->method('save_players')->with(10, $request->players);
         $rubber_mock->expects($this->once())->method('set_players');
 
         $result = $this->manager->handle_rubber_update($fixture, $request);
@@ -123,16 +126,6 @@ class Rubber_Result_Manager_Test extends TestCase {
         $league->type = 'MT';
         $this->league_service->expects($this->once())->method('get_league')->with(456)->willReturn($league);
 
-        $rubber_mock = $this->createMock(Rubber::class);
-        $rubber_mock->method('get_id')->willReturn(10);
-        $rubber_mock->method('calculate_result')->willReturn((object)[
-            'home' => 2.0,
-            'away' => 0.0,
-            'winner' => 1,
-            'loser' => 2
-        ]);
-        $this->rubber_repository->expects($this->once())->method('find_by_id')->with(10)->willReturn($rubber_mock);
-
         $request = new Rubber_Update_Request(
             rubber_id: 10,
             rubber_type: 'MS',
@@ -141,6 +134,19 @@ class Rubber_Result_Manager_Test extends TestCase {
             sets: [],
             rubber_status: 'none'
         );
+
+        $rubber_mock = $this->createMock(Rubber::class);
+        $rubber_mock->method('get_id')->willReturn(10);
+        $rubber_mock->expects($this->once())->method('calculate_result')
+            ->with(['home' => ['team' => 1], 'away' => ['team' => 2]], ['match_result' => 'sets'], 3)
+            ->willReturn((object)[
+                'home' => 2.0,
+                'away' => 0.0,
+                'winner' => 1,
+                'loser' => 2
+            ]);
+        $this->rubber_repository->expects($this->once())->method('find_by_id')->with(10)->willReturn($rubber_mock);
+        $this->rubber_repository->expects($this->once())->method('save_players')->with(10, $request->players);
 
         $this->score_validator->method('get_error')->willReturn(false);
         $this->score_validator->method('get_sets')->willReturn([]);

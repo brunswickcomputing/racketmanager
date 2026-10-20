@@ -173,7 +173,7 @@ final class Admin_Competition extends Admin_Display {
             )
         );
         $clubs         = is_array( $clubs ) ? $clubs : array();
-        $events        = $competition->get_events() ?? array();
+        $events        = $this->competition_service->get_events_for_competition( (int) $competition->get_id() ) ?? array();
 
         $vm = new Tournament_Competition_Config_Page_View_Model(
             competition: $competition,

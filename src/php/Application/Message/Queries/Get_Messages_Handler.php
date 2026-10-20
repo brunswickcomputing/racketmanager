@@ -5,12 +5,14 @@ namespace Racketmanager\Application\Message\Queries;
 
 use Racketmanager\Presentation\Presenters\Message_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
+use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
 use function __;
 
 class Get_Messages_Handler {
     public function __construct(
         private readonly User_Repository_Interface $user_repository,
+        private readonly Message_Repository_Interface $message_repository,
         private readonly ?Message_Presenter $message_presenter = null
     ) {}
 
@@ -23,11 +25,12 @@ class Get_Messages_Handler {
 
         $messages = [];
         if ( $user ) {
-            $messages_total = $user->get_messages( [ 'count' => true ] );
+            $user_id = (int) $user->id;
+            $messages_total = $this->message_repository->find_by_user( $user_id, [ 'count' => true ] );
             if ( $messages_total ) {
                 $messages['total']  = $messages_total;
-                $messages['detail'] = $user->get_messages( [] );
-                $messages['unread'] = $user->get_messages( [
+                $messages['detail'] = $this->message_repository->find_by_user( $user_id, [] );
+                $messages['unread'] = $this->message_repository->find_by_user( $user_id, [
                     'count'  => true,
                     'status' => 'unread',
                 ] );

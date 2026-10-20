@@ -88,7 +88,8 @@ class Club_Ajax_Controller {
             $c->has( 'security_service' ) ? $c->get( 'security_service' ) : new Security_Service(),
             $c->has( 'json_response_factory' ) ? $c->get( 'json_response_factory' ) : new Json_Response_Factory(),
             $c->get( 'club_service' ),
-            $c->get( 'registration_service' )
+            $c->get( 'registration_service' ),
+            $c->has( 'user_repository' ) ? $c->get( 'user_repository' ) : null
         );
     }
 

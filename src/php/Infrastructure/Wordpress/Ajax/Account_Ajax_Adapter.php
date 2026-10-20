@@ -10,6 +10,10 @@ use Racketmanager\Domain\DTO\Account\Update_Account_Command;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
+use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
+use Racketmanager\Repositories\Message_Repository;
+use Racketmanager\Repositories\User_Repository;
 use Racketmanager\Util\Util;
 use stdClass;
 use function Racketmanager\get_message;
@@ -27,8 +31,12 @@ class Account_Ajax_Adapter {
 
     public function __construct(
         private Security_Service_Interface $security_service,
-        private Json_Response_Factory_Interface $response_factory
+        private Json_Response_Factory_Interface $response_factory,
+        private ?Message_Repository_Interface $message_repository = null,
+        private ?User_Repository_Interface $user_repository = null
     ) {
+        $this->message_repository = $this->message_repository ?? new Message_Repository();
+        $this->user_repository    = $this->user_repository ?? new User_Repository();
     }
 
     public function logged_out(): Response {
@@ -136,12 +144,12 @@ class Account_Ajax_Adapter {
             return $this->response_factory->create_error_response( __( 'No message id found in request', 'racketmanager' ), 404 );
         }
 
-        $message_dtl = get_message( $message_id );
+        $message_dtl = $this->message_repository->find( $message_id );
         if ( ! $message_dtl ) {
             return $this->response_factory->create_error_response( __( 'Message not found', 'racketmanager' ), 404 );
         }
 
-        $success            = $message_dtl->delete();
+        $success            = $this->message_repository->delete( $message_id );
         $alert_class        = $success ? 'success' : 'danger';
         $alert_text         = $success ? __( 'Message deleted', 'racketmanager' ) : __( 'Unable to delete message', 'racketmanager' );
         $validator          = new stdClass();
@@ -178,7 +186,7 @@ class Account_Ajax_Adapter {
             return $this->response_factory->create_error_response( $details, 404 );
         }
 
-        $user = get_user( $userid );
+        $user = $this->user_repository->find( $userid );
         if ( ! $user ) {
             $details           = new stdClass();
             $details->error    = true;
@@ -189,7 +197,7 @@ class Account_Ajax_Adapter {
         }
 
         $message_type_name  = is_numeric( $command->message_type ) ? Util::get_message_type( (int) $command->message_type ) : (string) $command->message_type;
-        $success            = $user->delete_messages( $command->message_type );
+        $success            = $this->message_repository->delete_by_user_and_type( (int) $user->id, (string) $command->message_type );
         $alert_class        = $success ? 'success' : ( 0 === $success ? 'warning' : 'danger' );
         $alert_text         = $success ? __( 'Messages deleted', 'racketmanager' ) : ( 0 === $success ? __( 'No messages to delete', 'racketmanager' ) : __( 'Unable to delete messages', 'racketmanager' ) );
         $validator          = new stdClass();
@@ -246,7 +254,7 @@ class Account_Ajax_Adapter {
         }
 
         $current_user = wp_get_current_user();
-        $user         = get_user( $current_user->ID );
+        $user         = $this->user_repository->find( $current_user->ID );
         if ( ! $user ) {
             $details           = new stdClass();
             $details->error    = true;
@@ -256,35 +264,103 @@ class Account_Ajax_Adapter {
             return $this->response_factory->create_error_response( $details, 404 );
         }
 
-        $command             = Update_Account_Command::from_post( $request );
-        $user_update         = clone $user;
-        $user_update->email         = $command->username;
-        $user_update->firstname     = $command->firstname;
-        $user_update->surname       = $command->lastname;
-        $user_update->contactno     = $command->contactno;
-        $user_update->gender        = $command->gender;
-        $user_update->btm           = $command->btm;
-        $user_update->year_of_birth = $command->year_of_birth;
-        $user_update->password      = $command->password;
-        $user_update->re_password   = $command->re_password;
-        $user_update->opt_ins       = $command->opt_ins;
+        $command = Update_Account_Command::from_post( $request );
 
-        $user = $user->update( $user_update );
-
-        $validator      = new stdClass();
-        $validator->msg = $user->message ?? '';
-        if ( empty( $user->err_flds ) ) {
-            $validator->class = $user->update_result ?? '';
-
-            return $this->response_factory->create_success_response( $validator );
+        $valid   = true;
+        $err_fld = array();
+        $err_msg = array();
+        if ( empty( $command->username ) ) {
+            $valid     = false;
+            $err_fld[] = 'username';
+            $err_msg[] = Util::get_error_message( 'empty_username' );
+        }
+        if ( empty( $command->firstname ) ) {
+            $valid     = false;
+            $err_fld[] = 'firstname';
+            $err_msg[] = Util::get_error_message( 'firstname_field_empty' );
+        }
+        if ( empty( $command->lastname ) ) {
+            $valid     = false;
+            $err_fld[] = 'lastname';
+            $err_msg[] = Util::get_error_message( 'lastname_field_empty' );
+        }
+        if ( empty( $command->gender ) ) {
+            $valid     = false;
+            $err_fld[] = 'gender';
+            $err_msg[] = Util::get_error_message( 'gender_field_empty' );
+        }
+        if ( empty( $command->btm ) ) {
+            global $racketmanager;
+            $player_options = isset( $racketmanager ) ? $racketmanager->get_options( 'rosters' ) : [];
+            if ( isset( $player_options['btm'] ) && '1' === $player_options['btm'] ) {
+                $valid     = false;
+                $err_fld[] = 'btm';
+                $err_msg[] = Util::get_error_message( 'btm_field_empty' );
+            }
+        }
+        if ( $command->password !== $command->re_password ) {
+            $valid     = false;
+            $err_fld[] = 'password';
+            $err_msg[] = Util::get_error_message( 'password_reset_mismatch' );
         }
 
-        $validator->err_flds = $user->err_flds;
-        $validator->err_msgs = $user->err_msgs;
-        $validator->error    = true;
-        $validator->status   = 401;
+        $validator = new stdClass();
 
-        return $this->response_factory->create_error_response( $validator, 401 );
+        if ( ! $valid ) {
+            $validator->err_flds = $err_fld;
+            $validator->err_msgs = $err_msg;
+            $validator->error    = true;
+            $validator->status   = 401;
+            $validator->msg      = __( 'Errors found', 'racketmanager' );
+
+            return $this->response_factory->create_error_response( $validator, 401 );
+        }
+
+        $user->email         = $command->username ?? '';
+        $user->user_email    = $command->username ?? '';
+        $user->firstname     = $command->firstname ?? '';
+        $user->surname       = $command->lastname ?? '';
+        $user->contactno     = $command->contactno;
+        $user->gender        = $command->gender;
+        $user->btm           = $command->btm;
+        $user->year_of_birth = $command->year_of_birth;
+        $user->password      = (string) ( $command->password ?? '' );
+        $user->re_password   = (string) ( $command->re_password ?? '' );
+        $user->opt_ins       = $this->normalize_opt_ins( $command->opt_ins );
+
+        $saved = $this->user_repository->save( $user );
+
+        $validator->msg   = $saved ? __( 'User updated', 'racketmanager' ) : __( 'No updates', 'racketmanager' );
+        $validator->class = $saved ? 'success' : 'warning';
+
+        return $this->response_factory->create_success_response( $validator );
+    }
+
+    /**
+     * @param mixed $opt_ins
+     * @return array<int, string>
+     */
+    private function normalize_opt_ins( mixed $opt_ins ): array {
+        if ( ! is_array( $opt_ins ) || [] === $opt_ins ) {
+            return array();
+        }
+        $choices = array_map( 'strval', array_keys( Util::get_email_opt_ins() ) );
+        $normalized = array();
+        if ( array_is_list( $opt_ins ) ) {
+            foreach ( $opt_ins as $value ) {
+                $value = (string) $value;
+                if ( in_array( $value, $choices, true ) ) {
+                    $normalized[] = $value;
+                }
+            }
+            return array_values( array_unique( $normalized ) );
+        }
+        foreach ( $choices as $choice ) {
+            if ( ! empty( $opt_ins[ $choice ] ) ) {
+                $normalized[] = $choice;
+            }
+        }
+        return $normalized;
     }
 
     private function nonce_failure_response( string $field, string $action, ?string $override_msg = null, array $request = [] ): ?Response {

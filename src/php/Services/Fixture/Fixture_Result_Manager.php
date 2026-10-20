@@ -848,6 +848,9 @@ class Fixture_Result_Manager {
         $rubbers = $this->rubber_repository->find_by_fixture_id( (int) $fixture->get_id() );
         foreach ( $rubbers as $rubber ) {
             $rubber->reset_result();
+            if ( $rubber->get_id() ) {
+                $this->rubber_repository->reset_result( (int) $rubber->get_id() );
+            }
         }
 
         // Persist the reset state.

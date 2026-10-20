@@ -119,13 +119,13 @@ class General_Shortcode_Handlers_Test extends TestCase {
             ->with( [ 'name' => 'Smith' ] )
             ->willReturn( [ $player ] );
 
-        $user = $this->createMock( User::class );
-        $user->expects( $this->once() )
-            ->method( 'get_favourites' )
-            ->with( 'player' )
-            ->willReturn( [ 42 ] );
+        $user = $this->createStub( User::class );
 
         $user_repository = $this->createMock( User_Repository_Interface::class );
+        $user_repository->expects( $this->once() )
+            ->method( 'get_favourites' )
+            ->with( $user, 'player' )
+            ->willReturn( [ 42 ] );
         $user_repository->expects( $this->once() )
             ->method( 'find' )
             ->with( 10 )
@@ -473,13 +473,13 @@ class General_Shortcode_Handlers_Test extends TestCase {
     public function test_get_favourites_handler_when_logged_in(): void {
         $favourite_types = [ [ 'name' => 'player', 'favourites' => [ 10, 20 ] ] ];
         $user = $this->createStub( \Racketmanager\Domain\User::class );
-        $user->method( 'get_favourites' )->willReturn( $favourite_types );
 
         $user_repository = $this->createMock( User_Repository_Interface::class );
         $user_repository->expects( $this->once() )
             ->method( 'find' )
             ->with( 42 )
             ->willReturn( $user );
+        $user_repository->method( 'get_favourites' )->willReturn( $favourite_types );
         $club_repository = $this->createStub( Club_Repository_Interface::class );
 
         $handler = new Get_Favourites_Handler( $user_repository, $club_repository );

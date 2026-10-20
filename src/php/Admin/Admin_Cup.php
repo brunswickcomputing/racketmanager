@@ -483,7 +483,8 @@ final class Admin_Cup extends Admin_Championship {
         if ( ! isset( $cup_season->starttime ) ) {
             $cup_season->starttime = null;
         }
-        $final_matches = $competition->get_matches(
+        $final_matches = $this->competition_service->get_matches_for_competition(
+            $competition,
             array(
                 'season' => $season,
                 'final'  => 'final',

@@ -4,78 +4,85 @@ declare( strict_types=1 );
 namespace Racketmanager\Services\Competition;
 
 use Racketmanager\Domain\Competition\Competition;
-use Racketmanager\Util\Util;
-use stdClass;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 
 /**
  * Service for managing competition seasons and their lifecycle states.
  */
 class Competition_Season_Service {
+	public function __construct(
+		private League_Team_Repository_Interface $league_team_repository,
+		private Club_Repository_Interface $club_repository,
+		private Event_Repository_Interface $event_repository,
+	) {
+	}
+
 	/**
-	 * Resolves and sets the current season for a competition.
+	 * Resolves the request-specific current season of a competition and applies it to the entity.
+	 *
+	 * Precedence: a forced season, then the request (`?season=`, `?season_<competition id>=`, the `season`
+	 * query var), then the given season, then the domain fallback (active or latest season). Unknown
+	 * request seasons are ignored. The venue club is resolved once and exposed as `venue_name`.
+	 *
+	 * Repositories return request-neutral competitions; call this at the application boundary only.
 	 *
 	 * @param Competition $competition The competition entity.
 	 * @param string      $season      Optional specific season name.
-	 * @param bool        $force       Whether to force use of the provided season.
+	 * @param bool        $force       Whether the given season takes precedence over the request.
 	 * @return array The resolved season data.
 	 */
 	public function resolve_current_season( Competition $competition, string $season = '', bool $force = false ): array {
-		global $wp;
-
-		$seasons = $competition->seasons;
-		$data    = null;
-
-		// 1. Resolve which season to use
-		if ( ! empty( $season ) && $force ) {
-			$data = $seasons->get( $season );
-		} elseif ( ! empty( $_GET['season'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$key = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['season'] ) ) );
-			$data = $seasons->get( $key ) ?? false;
-		} elseif ( isset( $_GET[ 'season_' . $competition->get_id() ] ) && ! empty( $_GET[ 'season_' . $competition->get_id() ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$key = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET[ 'season_' . $competition->get_id() ] ) ) );
-			$data = $seasons->get( $key ) ?? false;
-		} elseif ( isset( $wp->query_vars['season'] ) ) {
-			$key = $wp->query_vars['season'];
-			$data = $seasons->get( $key ) ?? false;
-		} elseif ( ! empty( $season ) ) {
-			$data = $seasons->get( $season );
-		}
-
-		// 2. Fallback to active or latest season if not resolved
-		if ( ! isset( $data ) || false === $data ) {
-			$today = gmdate( 'Y-m-d' );
-			foreach ( $seasons->reverse() as $season_item ) {
-				$date_active = empty( $season_item['date_closing'] ) ? null : Util::amend_date( $season_item['date_closing'], 7 );
-				if ( ! empty( $date_active ) && $date_active <= $today ) {
-					$data = $season_item;
-					break;
-				}
+		$season_name = ( '' !== $season && $force ) ? $season : '';
+		if ( '' === $season_name ) {
+			$request_season = $this->get_request_season( $competition );
+			if ( null !== $request_season && null !== $competition->seasons->get( $request_season ) ) {
+				$season_name = $request_season;
 			}
 		}
-
-		if ( empty( $data ) ) {
-			$data = $seasons->latest() ?? [];
+		if ( '' === $season_name ) {
+			$season_name = $season;
 		}
 
-		// 3. Hydrate basic dates if missing
-		$count_match_dates = isset( $data['match_dates'] ) && is_array( $data['match_dates'] ) ? count( $data['match_dates'] ) : 0;
-		if ( empty( $data['date_end'] ) && $count_match_dates >= 2 ) {
-			$data['date_end'] = end( $data['match_dates'] );
-		}
-		if ( empty( $data['date_start'] ) && $count_match_dates >= 2 ) {
-			$data['date_start'] = $data['match_dates'][0];
-		}
+		$data               = $competition->resolve_season_data( $season_name );
+		$data['venue_name'] = $this->get_venue_name( $data['venue'] ?? null );
 
-		// 4. Hydrate venue name
-		$data['venue_name'] = null;
-		if ( ! empty( $data['venue'] ) && function_exists( 'Racketmanager\get_club' ) ) {
-			$venue_club = \Racketmanager\get_club( (int) $data['venue'] );
-			if ( $venue_club ) {
-				$data['venue_name'] = $venue_club->shortcode ?? ( method_exists( $venue_club, 'get_shortcode' ) ? $venue_club->get_shortcode() : null );
-			}
-		}
+		$competition->apply_current_season( $data );
 
 		return $data;
+	}
+
+	/**
+	 * Season selected by the current request, if any.
+	 */
+	private function get_request_season( Competition $competition ): ?string {
+		global $wp;
+
+		$competition_key = 'season_' . $competition->get_id();
+		if ( ! empty( $_GET['season'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$raw = $_GET['season']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		} elseif ( ! empty( $_GET[ $competition_key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$raw = $_GET[ $competition_key ]; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		} elseif ( ! empty( $wp->query_vars['season'] ) ) {
+			return (string) $wp->query_vars['season'];
+		} else {
+			return null;
+		}
+
+		return is_scalar( $raw ) ? htmlspecialchars( wp_strip_all_tags( wp_unslash( (string) $raw ) ) ) : null;
+	}
+
+	/**
+	 * Shortcode of the venue club, or null when there is no venue or the club does not exist.
+	 */
+	private function get_venue_name( mixed $venue ): ?string {
+		if ( empty( $venue ) ) {
+			return null;
+		}
+		$venue_club = $this->club_repository->find_by_id( (int) $venue );
+
+		return $venue_club?->get_shortcode();
 	}
 
 	/**
@@ -85,25 +92,7 @@ class Competition_Season_Service {
 	 * @return string The phase name.
 	 */
 	public function calculate_phase( array $season_data ): string {
-		$today = gmdate( 'Y-m-d' );
-		
-		if ( ! empty( $season_data['date_end'] ) && $today > $season_data['date_end'] ) {
-			return 'end';
-		}
-		if ( ! empty( $season_data['date_start'] ) && $today >= $season_data['date_start'] ) {
-			return 'start';
-		}
-		if ( ! empty( $season_data['date_closing'] ) && $today > $season_data['date_closing'] ) {
-			return 'close';
-		}
-		if ( ! empty( $season_data['date_open'] ) ) {
-			if ( $today >= $season_data['date_open'] ) {
-				return 'open';
-			}
-			return 'pending';
-		}
-		
-		return 'complete';
+		return Competition::calculate_phase( $season_data );
 	}
 
 	/**
@@ -114,7 +103,8 @@ class Competition_Season_Service {
 	 * @return void
 	 */
 	public function cascade_season_to_events( Competition $competition, object $season ): void {
-		$events = $competition->get_events();
+		$events = $this->event_repository->find_by_competition_id( (int) $competition->get_id() );
+
 		if ( empty( $events ) ) {
 			return;
 		}
@@ -128,7 +118,7 @@ class Competition_Season_Service {
 
 		foreach ( $events as $event ) {
 			if ( method_exists( $event, 'add_season' ) ) {
-				$event->add_season( $event_season );
+				$event->add_season( $event_season, $this->league_team_repository );
 			}
 		}
 	}

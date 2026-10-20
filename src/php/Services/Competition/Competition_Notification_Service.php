@@ -9,6 +9,8 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Gateways\Mail\Mailer_Interface;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use LogicException;
 use function Racketmanager\constitution_notification;
 use function Racketmanager\withdrawn_team_email;
 
@@ -18,7 +20,10 @@ use function Racketmanager\withdrawn_team_email;
 class Competition_Notification_Service {
 	private Mailer_Interface $mailer;
 
-	public function __construct( ?Mailer_Interface $mailer = null ) {
+	public function __construct(
+		?Mailer_Interface $mailer = null,
+		private ?Event_Repository_Interface $event_repository = null
+	) {
 		$this->mailer = $mailer ?? new Wp_Mailer();
 	}
 
@@ -46,7 +51,10 @@ class Competition_Notification_Service {
 
 		if ( ! $competition->is_player_entry ) {
 			$teams  = [];
-			$events = $competition->get_events();
+			if ( null === $this->event_repository ) {
+				throw new LogicException( 'Event_Repository_Interface is required to contact competition teams.' );
+			}
+			$events = $this->event_repository->find_by_competition_id( (int) $competition->get_id() );
 			foreach ( $events as $event ) {
 				if ( $event ) {
 					$event_teams = $event->get_teams( [ 'season' => $event->current_season['name'] ] );

@@ -142,6 +142,38 @@ $event_repo = new class {
 	}
 };
 
+$comp_repo = new class implements \Racketmanager\Repositories\Interfaces\Competition_Repository_Interface {
+	public function save( object $entity ): bool|int { return true; }
+	public function find_by_id( int|string|null $id ): ?\Racketmanager\Domain\Competition\Competition {
+		$c = new class extends \Racketmanager\Domain\Competition\Competition {
+			public function __construct() {}
+		};
+		$c->id = (int) $id;
+		$c->name = 'Competition ' . $id;
+		return $c;
+	}
+	public function find_all(): array { return []; }
+	public function find_by( array $criteria ): array { return []; }
+	public function find_competitions_with_summary( $age_group, $type ): array { return []; }
+	public function delete( int $id ): bool { return true; }
+	public function get_competition_overview( int $competition_id, int $season, ?int $min_fixtures = null ): ?\Racketmanager\Domain\DTO\Competition\Competition_Overview_DTO { return null; }
+	public function is_club_participating( int $competition_id, int $club_id, string $season ): bool { return true; }
+	public function get_league_winners( int $competition_id, ?int $season = null ): array { return []; }
+	public function get_championship_winners( int $competition_id, ?int $season = null ): array { return []; }
+	public function find_by_name( string $name ): ?\Racketmanager\Domain\Competition\Competition {
+		$c = new class extends \Racketmanager\Domain\Competition\Competition {
+			public function __construct() {}
+		};
+		$c->id = 56;
+		$c->name = $name;
+		return $c;
+	}
+	public function find_teams( int $competition_id, array $args = [] ): array|int { return []; }
+	public function find_players( int $competition_id, array $args = [] ): array|int { return []; }
+	public function find_events( int $competition_id, array $args = [] ): array { return []; }
+	public function find_matches( int $competition_id, array $args = [] ): array|int { return []; }
+};
+
 $container = new \Racketmanager\Services\Container\Simple_Container();
 $container->set( 'player_service', static fn() => new class extends \Racketmanager\Services\Player_Service {
 	public function __construct() {}
@@ -150,6 +182,7 @@ $container->set( 'player_service', static fn() => new class extends \Racketmanag
 $container->set( 'team_repository', static fn() => $team_repo );
 $container->set( 'tournament_entry_repository', static fn() => $entry_repo );
 $container->set( 'event_repository', static fn() => $event_repo );
+$container->set( 'competition_repository', static fn() => $comp_repo );
 
 $GLOBALS['racketmanager'] = (object) array( 'container' => $container );
 
@@ -186,14 +219,16 @@ if ( 10 !== $league_team_obj->id || 20 !== $league_team_obj->table_id || 'League
 	exit( 1 );
 }
 
-// Check amend_points method on League_Team executes update and sets add_points
+// Check amend_points method on League_Team updates in-memory property
 $league_team_obj->amend_points( 3.0 );
 if ( 3.0 != $league_team_obj->add_points ) {
 	fwrite( STDERR, "League_Team amend_points did not set add_points properly.\n" );
 	exit( 1 );
 }
-if ( ! str_contains( $wpdb->last_query, 'wp_racketmanager_league_teams' ) || ! str_contains( $wpdb->last_query, '20' ) ) {
-	fwrite( STDERR, "League_Team amend_points did not run expected query: {$wpdb->last_query}\n" );
+$league_team_repo = new \Racketmanager\Repositories\League_Team_Repository( $wpdb );
+$result = $league_team_repo->amend_points( $league_team_obj->table_id, 3.0 );
+if ( ! $result ) {
+	fwrite( STDERR, "League_Team_Repository amend_points did not run successfully.\n" );
 	exit( 1 );
 }
 
@@ -296,6 +331,43 @@ try {
 }
 if ( [ 30, 40 ] !== $players_legacy || ! $helper_deprecated_triggered ) {
 	fwrite( STDERR, "match_add_players legacy contract or deprecation failed: " . json_encode( $players_legacy ) . "\n" );
+	exit( 1 );
+}
+
+// 8. Test get_competition with container resolution and object pass-through
+$comp_deprecated_triggered = false;
+set_error_handler( function ( $errno, $errstr ) use ( &$comp_deprecated_triggered ) {
+	if ( E_USER_DEPRECATED === $errno && str_contains( $errstr, 'get_competition() is deprecated' ) ) {
+		$comp_deprecated_triggered = true;
+		return true;
+	}
+	return false;
+} );
+try {
+	$comp_by_id = \Racketmanager\get_competition( 55 );
+} finally {
+	restore_error_handler();
+}
+if ( ! $comp_deprecated_triggered || ! $comp_by_id instanceof \Racketmanager\Domain\Competition\Competition || 55 !== $comp_by_id->id ) {
+	fwrite( STDERR, "get_competition(55) failed or did not trigger deprecation notice.\n" );
+	exit( 1 );
+}
+
+set_error_handler( static fn() => true );
+try {
+	$comp_by_name = \Racketmanager\get_competition( 'Summer League', 'name' );
+	$comp_pass    = \Racketmanager\get_competition( $comp_by_id );
+} finally {
+	restore_error_handler();
+}
+
+if ( ! $comp_by_name instanceof \Racketmanager\Domain\Competition\Competition || 'Summer League' !== $comp_by_name->name ) {
+	fwrite( STDERR, "get_competition('Summer League', 'name') failed.\n" );
+	exit( 1 );
+}
+
+if ( $comp_pass !== $comp_by_id ) {
+	fwrite( STDERR, "get_competition(object) pass-through failed.\n" );
 	exit( 1 );
 }
 

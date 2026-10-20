@@ -26,7 +26,10 @@ use Racketmanager\Domain\Tournament_Entry;
 use Racketmanager\Domain\User;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
+use Racketmanager\Repositories\Competition_Repository;
+use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\League_Repository;
+use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Player_Repository;
 
 /**
@@ -185,6 +188,20 @@ function get_club( object|int|string|null $club = null, string $search_term = 'i
 }
 
 /**
+ * Resolve the competition repository for procedural helpers, preferring the container.
+ *
+ * @return Competition_Repository_Interface
+ */
+function get_competition_repository_for_helpers(): Competition_Repository_Interface {
+    global $racketmanager;
+    if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'competition_repository' ) ) {
+        return $racketmanager->container->get( 'competition_repository' );
+    }
+
+    return new Competition_Repository();
+}
+
+/**
  * Get Competition object
  *
  * @deprecated 2.0.0 Use \Racketmanager\Services\Competition_Service::get_competition() instead.
@@ -207,8 +224,12 @@ function get_competition( Competition|int|string|null $competition = null, ?stri
             $competition->sport = '';
         }
         $_competition = Competition::from_object( $competition );
+        $_competition->set_competition_repository( get_competition_repository_for_helpers() );
     } else {
-        $_competition = Competition::get_instance( $competition, $search_term );
+        $competition_repository = get_competition_repository_for_helpers();
+        $_competition           = 'name' === $search_term
+            ? $competition_repository->find_by_name( (string) $competition )
+            : $competition_repository->find_by_id( (int) $competition );
     }
 
     if ( ! $_competition ) {
@@ -341,8 +362,20 @@ function get_rubber( object|int|null $rubber = null ): Rubber|null {
         $_rubber = $rubber;
     } elseif ( is_object( $rubber ) ) {
         $_rubber = new Rubber( $rubber );
+    } elseif ( $rubber ) {
+        global $racketmanager;
+        if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'rubber_repository' ) ) {
+            $rubber_repo = $racketmanager->container->get( 'rubber_repository' );
+            $_rubber     = $rubber_repo->find_by_id( (int) $rubber );
+        } elseif ( isset( $racketmanager->container ) && $racketmanager->container->has( 'registration_service' ) ) {
+            $rubber_repo = new \Racketmanager\Repositories\Rubber_Repository( $racketmanager->container->get( 'registration_service' ) );
+            $_rubber     = $rubber_repo->find_by_id( (int) $rubber );
+        } else {
+            $rubber_repo = new \Racketmanager\Repositories\Rubber_Repository();
+            $_rubber     = $rubber_repo->find_by_id( (int) $rubber );
+        }
     } else {
-        $_rubber = Rubber::get_instance( $rubber );
+        $_rubber = null;
     }
 
     if ( ! $_rubber ) {
@@ -369,19 +402,21 @@ function get_tournament_entry( object|int|string|null $tournament_entry = null, 
         $_tournament_entry = $tournament_entry;
     } elseif ( is_object( $tournament_entry ) ) {
         $_tournament_entry = new Tournament_Entry( $tournament_entry );
-    } else {
+    } elseif ( $tournament_entry ) {
         global $racketmanager;
         if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'tournament_entry_repository' ) ) {
             $entry_repo = $racketmanager->container->get( 'tournament_entry_repository' );
-            if ( 'key' === $search_term && is_string( $tournament_entry ) && str_contains( $tournament_entry, '_' ) ) {
-                [ $t_id, $p_id ]   = explode( '_', $tournament_entry, 2 );
-                $_tournament_entry = $entry_repo->find_by_tournament_and_player( (int) $t_id, (int) $p_id );
-            } else {
-                $_tournament_entry = $entry_repo->find_by_id( $tournament_entry );
-            }
         } else {
-            $_tournament_entry = Tournament_Entry::get_instance( $tournament_entry, $search_term );
+            $entry_repo = new \Racketmanager\Repositories\Tournament_Entry_Repository();
         }
+        if ( 'key' === $search_term && is_string( $tournament_entry ) && str_contains( $tournament_entry, '_' ) ) {
+            [ $t_id, $p_id ]   = explode( '_', $tournament_entry, 2 );
+            $_tournament_entry = $entry_repo->find_by_tournament_and_player( (int) $t_id, (int) $p_id );
+        } else {
+            $_tournament_entry = $entry_repo->find_by_id( $tournament_entry );
+        }
+    } else {
+        $_tournament_entry = null;
     }
     if ( ! $_tournament_entry ) {
         return null;
@@ -470,9 +505,28 @@ function get_user( object|int|string|null $user = null ): ?object {
     if ( $user instanceof User ) {
         $_user = $user;
     } elseif ( is_object( $user ) ) {
-        $_user = new User( $user );
+        $id = (int) ( $user->ID ?? $user->id ?? 0 );
+        if ( $id > 0 ) {
+            global $racketmanager;
+            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'user_repository' ) ) {
+                $user_repo = $racketmanager->container->get( 'user_repository' );
+            } else {
+                $user_repo = new \Racketmanager\Repositories\User_Repository();
+            }
+            $_user = $user_repo->find( $id ) ?? new User( $user );
+        } else {
+            $_user = new User( $user );
+        }
+    } elseif ( $user ) {
+        global $racketmanager;
+        if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'user_repository' ) ) {
+            $user_repo = $racketmanager->container->get( 'user_repository' );
+        } else {
+            $user_repo = new \Racketmanager\Repositories\User_Repository();
+        }
+        $_user = $user_repo->find( $user );
     } else {
-        $_user = User::get_instance( $user );
+        $_user = null;
     }
     if ( ! $_user ) {
         return null;
@@ -495,14 +549,19 @@ function get_league_team( object|int|null $league_team = null ): League_Team|nul
         $_league_team = $league_team;
     } elseif ( is_object( $league_team ) ) {
         $_league_team = new League_Team( $league_team );
+    } elseif ( $league_team ) {
+        global $racketmanager;
+        $league_team_repository = ( isset( $racketmanager->container ) && $racketmanager->container->has( 'league_team_repository' ) )
+            ? $racketmanager->container->get( 'league_team_repository' )
+            : new League_Team_Repository();
+        $_league_team = $league_team_repository->find( $league_team );
     } else {
-        $_league_team = League_Team::get_instance( $league_team );
+        $_league_team = null;
     }
 
     if ( ! $_league_team ) {
         return null;
     }
-
     return $_league_team;
 }
 
@@ -543,7 +602,7 @@ function get_result_check( object|int|null $results_check = null ): ?object {
  *
  * @return Message|null message|null
  */
-function get_message( ?int $message = null ): Message|null {
+function get_message( object|int|string|null $message = null ): Message|null {
     if ( empty( $message ) && isset( $GLOBALS['message'] ) ) {
         $message = $GLOBALS['message'];
     }
@@ -552,8 +611,16 @@ function get_message( ?int $message = null ): Message|null {
         $_message = $message;
     } elseif ( is_object( $message ) ) {
         $_message = new Message( $message );
+    } elseif ( $message ) {
+        global $racketmanager;
+        if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'message_repository' ) ) {
+            $message_repo = $racketmanager->container->get( 'message_repository' );
+        } else {
+            $message_repo = new \Racketmanager\Repositories\Message_Repository();
+        }
+        $_message = $message_repo->find( $message );
     } else {
-        $_message = Message::get_instance( $message );
+        $_message = null;
     }
 
     if ( ! $_message ) {

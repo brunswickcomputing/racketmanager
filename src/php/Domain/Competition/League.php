@@ -631,7 +631,15 @@ class League {
         if ( ! $league_id ) {
             return false;
         }
-        $league_repository = $league_repository ?? new League_Repository();
+        if ( null === $league_repository ) {
+            global $racketmanager;
+            $league_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'league_repository' )
+                ? $racketmanager->container->get( 'league_repository' )
+                : null;
+        }
+        if ( null === $league_repository ) {
+            return false;
+        }
 
         if ( is_numeric( $league_id ) ) {
             $league = $league_repository->find_by_id( (int) $league_id );

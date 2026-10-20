@@ -118,8 +118,9 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         $this->competition_service = $competition_service;
     }
 
-    private function create_rubber_with_recorder( int $rubber_number, ?array &$recorded_players ): \Racketmanager\Domain\Fixture\Rubber {
+    private function create_rubber_with_recorder( int $rubber_number, ?array &$recorded_players, int $id = 1 ): \Racketmanager\Domain\Fixture\Rubber {
         $rubber = $this->createStub( \Racketmanager\Domain\Fixture\Rubber::class );
+        $rubber->method( 'get_id' )->willReturn( $id );
         $rubber->rubber_number = $rubber_number;
         $rubber->method( 'set_players' )->willReturnCallback(
             static function ( array $players ) use ( &$recorded_players ): void {
@@ -474,9 +475,10 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
 
         $rubber1_players_called = null;
         $match = \Racketmanager\Domain\Fixture\Fixture_Factory::from_array( [ 'id' => 555, 'home_team' => '100', 'away_team' => '200' ] );
-        $rubber = $this->create_rubber_with_recorder( 1, $rubber1_players_called );
+        $rubber = $this->create_rubber_with_recorder( 1, $rubber1_players_called, 1 );
         $this->rubber_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );
         $this->rubber_repository->expects( $this->once() )->method( 'find_by_fixture_id' )->with( 555 )->willReturn( [ $rubber ] );
+        $this->rubber_repository->expects( $this->once() )->method( 'save_players' )->with( 1, [ 'home' => [ 'p1' => 1, 'p2' => 2 ] ] );
 
         $this->setup_fixture_repo_for_match( 555, $match );
         $this->adapter = $this->make_adapter();
@@ -508,9 +510,10 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
 
         $rubber1_players_called = null;
         $match = \Racketmanager\Domain\Fixture\Fixture_Factory::from_array( [ 'id' => 555, 'home_team' => '100', 'away_team' => '200' ] );
-        $rubber = $this->create_rubber_with_recorder( 1, $rubber1_players_called );
+        $rubber = $this->create_rubber_with_recorder( 1, $rubber1_players_called, 1 );
         $this->rubber_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );
         $this->rubber_repository->expects( $this->once() )->method( 'find_by_fixture_id' )->with( 555 )->willReturn( [ $rubber ] );
+        $this->rubber_repository->expects( $this->once() )->method( 'save_players' )->with( 1, [ 'away' => [ 'p1' => 1, 'p2' => 2 ] ] );
 
         $this->setup_fixture_repo_for_match( 555, $match );
         $this->adapter = $this->make_adapter();

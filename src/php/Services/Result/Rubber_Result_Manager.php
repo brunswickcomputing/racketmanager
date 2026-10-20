@@ -165,7 +165,7 @@ class Rubber_Result_Manager {
         // 5. Calculate Result
         $points['home']['team'] = $fixture->get_home_team();
         $points['away']['team'] = $fixture->get_away_team();
-        $calc_result            = $rubber->calculate_result( $points );
+        $calc_result            = $rubber->calculate_result( $points, $league->get_point_rule(), (int) $league->num_sets );
 
         $rubber->set_home_points( (float) $calc_result->home );
         $rubber->set_away_points( (float) $calc_result->away );
@@ -175,6 +175,7 @@ class Rubber_Result_Manager {
         $rubber->set_status( $status );
 
         $this->rubber_repository->save( $rubber );
+        $this->rubber_repository->save_players( (int) $rubber->get_id(), $players );
         $rubber->set_players( $players );
 
         return new Rubber_Update_Result(

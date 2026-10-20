@@ -146,7 +146,8 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
             $c->get( 'security_service' ),
             $c->get( 'json_response_factory' ),
             $c->get( 'club_service' ),
-            $c->get( 'registration_service' )
+            $c->get( 'registration_service' ),
+            $c->get( 'user_repository' )
         ) );
         $container->set( 'club_ajax_controller', fn( Simple_Container $c ) => new Club_Ajax_Controller( $app, $c->get( 'club_ajax_adapter' ) ) );
     }

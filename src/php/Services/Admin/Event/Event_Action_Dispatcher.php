@@ -16,6 +16,7 @@ use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Validator\Validator_Config;
@@ -29,6 +30,7 @@ readonly final class Event_Action_Dispatcher {
     public function __construct(
         private Competition_Service $competition_service,
         private Action_Guard_Interface $action_guard,
+        private League_Team_Repository_Interface $league_team_repository,
     ) {
     }
 
@@ -125,7 +127,7 @@ readonly final class Event_Action_Dispatcher {
                 $event_season['home_away']      = $competition_season['home_away'] ?? false;
                 $event_season['num_match_days'] = $competition_season['num_match_days'] ?? 0;
                 $event_season['match_dates']    = $competition_season['match_dates'] ?? array();
-                $event->add_season( $event_season );
+                $event->add_season( $event_season, $this->league_team_repository );
             }
         }
 

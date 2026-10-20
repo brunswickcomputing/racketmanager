@@ -15,8 +15,10 @@ use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;
 
 class Get_Competition_Handler_Test extends TestCase {
+    use Creates_Competition_Season_Service;
     public function test_handle_when_competition_open_and_logged_in_as_admin(): void {
         $competition = Competition_Test_Factory::create(
             name: 'Summer League',
@@ -46,7 +48,8 @@ class Get_Competition_Handler_Test extends TestCase {
             $club_service,
             $player_service,
             $security,
-            $settings
+            $settings,
+            $this->competition_season_service()
         );
 
         $query = new Get_Competition_Query( competition_id: 1, season: '2026' );
@@ -91,7 +94,8 @@ class Get_Competition_Handler_Test extends TestCase {
             $club_service,
             $player_service,
             $security,
-            $settings
+            $settings,
+            $this->competition_season_service()
         );
 
         $query = new Get_Competition_Query( competition_id: 2, season: '2026' );

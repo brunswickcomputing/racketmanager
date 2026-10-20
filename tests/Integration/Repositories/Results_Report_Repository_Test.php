@@ -38,7 +38,7 @@ class Results_Report_Repository_Test extends TestCase {
         $data->match_id = 12345;
         $data->data = (object)[ 'test' => 'report' ];
 
-        $report = new Results_Report( $data, false );
+        $report = new Results_Report( $data );
         $this->repository->save( $report );
 
         $this->assertNotEmpty( $report->id );
@@ -54,7 +54,7 @@ class Results_Report_Repository_Test extends TestCase {
         $data->match_id = 12345;
         $data->data = (object)[ 'test' => 'report' ];
         
-        $report = new Results_Report( $data, false );
+        $report = new Results_Report( $data );
         $this->repository->save( $report );
 
         $count = (int) $this->wpdb->get_var( "SELECT count(*) FROM {$this->wpdb->prefix}racketmanager_results_report WHERE match_id = 12345" );
@@ -71,7 +71,7 @@ class Results_Report_Repository_Test extends TestCase {
         $data->match_id = 12345;
         $data->data = (object)[ 'test' => 'report 1' ];
         
-        $report = new Results_Report( $data, false );
+        $report = new Results_Report( $data );
         $this->repository->save( $report );
 
         $found = $this->repository->find_by_fixture_id( 12345 );

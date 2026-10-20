@@ -16,6 +16,7 @@ use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\Rubber_Repository;
@@ -1455,7 +1456,7 @@ class Event {
      *
      * @param array $season season data.
      */
-    public function add_season( array $season ): void {
+    public function add_season( array $season, League_Team_Repository_Interface $league_team_repository ): void {
         global $racketmanager;
         $seasons                 = $this->get_seasons();
         $season_name             = $season['name'];
@@ -1483,10 +1484,7 @@ class Event {
                 if ( $league ) {
                     $league_team_id = $league->add_team( $team->team_id, $curr_season['name'], $rank, $status, $profile );
                     if ( $league_team_id ) {
-                        $league_team_entry = get_league_team( $league_team_id );
-                        if ( $league_team_entry ) {
-                            $league_team_entry->add_details( $team->captain, $team->match_day, $team->match_time );
-                        }
+                        $league_team_repository->update_details( (int) $league_team_id, (int) $team->captain, (string) $team->match_day, (string) $team->match_time );
                         $team->league_team_id = $league_team_id;
                     }
                     ++$rank;
@@ -1561,7 +1559,7 @@ class Event {
      * @param int $season season name.
      * @return boolean
      */
-    public function promote_and_relegate(array $teams, int $season ): bool {
+    public function promote_and_relegate( array $teams, int $season, League_Team_Repository_Interface $league_team_repository ): bool {
         $competition_season = $this->competition->get_season_by_name( $season );
         $leagues            = $this->get_leagues( array( 'season' => $season ) );
         $teams_prom_relg    = intval( $competition_season['teams_prom_relg'] );
@@ -1666,8 +1664,7 @@ class Event {
                     }
                 }
                 if ( $status ) {
-                    $league_team = get_league_team( $table_id );
-                    $league_team?->update_constitution($new_league_id, $status);
+                    $league_team_repository->update_constitution( $table_id, $new_league_id, $status );
                 }
             }
             return true;
@@ -1842,13 +1839,16 @@ class Event {
     }
 
     /**
-     * Resolve Competition_Notification_Service instance from container or fallback.
+     * Resolve Competition_Notification_Service instance from the container.
+     *
+     * @throws \LogicException When the container does not provide the service.
      */
     private function get_notification_service(): Competition_Notification_Service {
         global $racketmanager;
-        return isset( $racketmanager->container ) && $racketmanager->container->has( 'competition_notification_service' )
-            ? $racketmanager->container->get( 'competition_notification_service' )
-            : new Competition_Notification_Service();
+        if ( ! isset( $racketmanager->container ) || ! $racketmanager->container->has( 'competition_notification_service' ) ) {
+            throw new \LogicException( 'competition_notification_service is not available in the container.' );
+        }
+        return $racketmanager->container->get( 'competition_notification_service' );
     }
 
     /**

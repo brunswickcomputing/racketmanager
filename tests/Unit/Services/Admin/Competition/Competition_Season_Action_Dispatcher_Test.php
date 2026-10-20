@@ -11,6 +11,7 @@ use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Services\Admin\Competition\Competition_Season_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
@@ -22,9 +23,12 @@ require_once __DIR__ . '/../../../../wp-stubs.php';
 final class Competition_Season_Action_Dispatcher_Test extends TestCase {
     use Manages_Wordpress_Globals;
 
+    private Competition_Season_Service $season_service;
+
     protected function setUp(): void {
         parent::setUp();
         $this->backup_globals();
+        $this->season_service         = $this->createMock( Competition_Season_Service::class );
         $container                    = new \Racketmanager\Services\Container\Simple_Container();
         $existence_service            = $this->createStub( Competition_Service::class );
         $existence_service->method( 'get_by_id' )->willReturn( $this->createStub( Competition::class ) );
@@ -83,7 +87,7 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
         $guard               = $this->createMock( Action_Guard_Interface::class );
         $guard->expects( self::never() )->method( 'assert_allowed' );
 
-        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard );
+        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service );
         $result     = $dispatcher->handle( array(), array() );
 
         self::assertNull( $result->message );
@@ -98,7 +102,7 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
             ->with( 'racketmanager_nonce', 'racketmanager_add-season', 'edit_seasons' )
             ->willThrowException( new Invalid_Status_Exception( 'Unauthorized' ) );
 
-        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard );
+        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             array(
@@ -117,7 +121,7 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
         $finance_service     = $this->createMock( Finance_Service::class );
         $guard               = $this->createStub( Action_Guard_Interface::class );
 
-        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard );
+        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -140,7 +144,7 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
             ->with( 1 )
             ->willReturn( $competition );
 
-        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard );
+        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service );
         // Missing required dates and fields
         $result = $dispatcher->handle(
             array( 'competition_id' => '1' ),
@@ -162,14 +166,31 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
         $finance_service     = $this->createMock( Finance_Service::class );
         $guard               = $this->createStub( Action_Guard_Interface::class );
         $competition         = $this->create_competition_mock( season_data: null );
-        $competition->expects( self::once() )->method( 'add_season' );
+        $competition->expects( self::never() )->method( 'add_season' );
+        $competition_service->expects( self::once() )
+            ->method( 'add_season' )
+            ->with( $competition, self::isInstanceOf( \stdClass::class ) )
+            ->willReturn( true );
 
         $competition_service->expects( self::atLeastOnce() )
             ->method( 'get_competition' )
             ->with( 1 )
             ->willReturn( $competition );
 
-        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard );
+        $this->season_service->expects( self::once() )
+            ->method( 'cascade_season_to_events' )
+            ->with(
+                $competition,
+                self::callback(
+                    static fn( object $season ): bool => $season instanceof \stdClass
+                        && '2025' === $season->name
+                        && 10 === $season->num_match_days
+                        && 2 === $season->teams_prom_relg
+                        && 1 === $season->lowest_promotion
+                )
+            );
+
+        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service );
         $result = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             $this->create_season_payload()
@@ -189,7 +210,7 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
         $competition->expects( self::never() )->method( 'add_season' );
         $competition_service->method( 'get_competition' )->willReturn( $competition );
 
-        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard );
+        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             $this->create_season_payload( array(
@@ -208,10 +229,11 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
         $guard               = $this->createStub( Action_Guard_Interface::class );
 
         $competition = $this->create_competition_mock( season_data: null );
-        $competition->expects( self::once() )->method( 'add_season' );
+        $competition->expects( self::never() )->method( 'add_season' );
+        $competition_service->expects( self::once() )->method( 'add_season' )->with( $competition )->willReturn( true );
         $competition_service->method( 'get_competition' )->willReturn( $competition );
 
-        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard );
+        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             $this->create_season_payload( array(
@@ -246,14 +268,21 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
             'filler_weeks'   => 0,
             'match_dates'    => array(),
         ) );
-        $competition->expects( self::once() )->method( 'update_season' )->willReturn( true );
+        $competition->expects( self::never() )->method( 'update_season' );
+        $competition_service->expects( self::once() )
+            ->method( 'update_season' )
+            ->with(
+                $competition,
+                self::callback( static fn( array $season ): bool => '2025' === $season['name'] && 'A' === $season['grade'] )
+            )
+            ->willReturn( true );
 
         $competition_service->expects( self::atLeastOnce() )
             ->method( 'get_competition' )
             ->with( 1 )
             ->willReturn( $competition );
 
-        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard );
+        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service );
         $result = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             $this->create_season_payload( array(
@@ -292,13 +321,14 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
             'match_dates'    => array(),
         ) );
         $competition->expects( self::never() )->method( 'update_season' );
+        $competition_service->expects( self::never() )->method( 'update_season' );
 
         $competition_service->expects( self::atLeastOnce() )
             ->method( 'get_competition' )
             ->with( 1 )
             ->willReturn( $competition );
 
-        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard );
+        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service );
         $result = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             $this->create_season_payload( array(
@@ -331,7 +361,7 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
             ->with( 1 )
             ->willReturn( $competition );
 
-        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard );
+        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service );
         // Missing dates to trigger validation error
         $result = $dispatcher->handle(
             array( 'competition_id' => '1' ),

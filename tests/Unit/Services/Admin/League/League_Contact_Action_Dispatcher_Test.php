@@ -10,6 +10,7 @@ use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Services\Admin\League\League_Contact_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Services\Competition\Competition_Notification_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\League_Service;
 
@@ -23,6 +24,8 @@ final class League_Contact_Action_Dispatcher_Test extends TestCase {
         $league_service->expects( self::never() )->method( 'get_league' );
         $competition_service = $this->createMock( Competition_Service::class );
         $competition_service->expects( self::never() )->method( 'get_competition' );
+        $notification_service = $this->createMock( Competition_Notification_Service::class );
+        $notification_service->expects( self::never() )->method( 'contact_teams' );
 
         $guard = $this->createMock( Action_Guard_Interface::class );
         $guard->expects( self::once() )
@@ -30,7 +33,7 @@ final class League_Contact_Action_Dispatcher_Test extends TestCase {
             ->with( 'racketmanager_nonce', 'racketmanager_contact-teams-preview', 'edit_teams' )
             ->willThrowException( new Invalid_Status_Exception( 'Security token invalid' ) );
 
-        $result = ( new League_Contact_Action_Dispatcher( $league_service, $competition_service, $guard ) )->handle(
+        $result = ( new League_Contact_Action_Dispatcher( $league_service, $competition_service, $guard, $notification_service ) )->handle(
             array( 'league_id' => '5', 'season' => '2026', 'emailMessage' => 'Hi' )
         );
 
@@ -50,11 +53,13 @@ final class League_Contact_Action_Dispatcher_Test extends TestCase {
         $league_service->expects( self::once() )->method( 'get_league' )->with( 5 )->willReturn( $league );
         $competition_service = $this->createMock( Competition_Service::class );
         $competition_service->expects( self::never() )->method( 'get_competition' );
+        $notification_service = $this->createMock( Competition_Notification_Service::class );
+        $notification_service->expects( self::never() )->method( 'contact_teams' );
 
         $guard = $this->createMock( Action_Guard_Interface::class );
         $guard->expects( self::once() )->method( 'assert_allowed' );
 
-        $result = ( new League_Contact_Action_Dispatcher( $league_service, $competition_service, $guard ) )->handle(
+        $result = ( new League_Contact_Action_Dispatcher( $league_service, $competition_service, $guard, $notification_service ) )->handle(
             array( 'league_id' => '5', 'competition_id' => '9', 'season' => '2026', 'emailMessage' => '&lt;p&gt;Hi&lt;/p&gt;' )
         );
 
@@ -64,8 +69,9 @@ final class League_Contact_Action_Dispatcher_Test extends TestCase {
     }
 
     public function test_sends_message_to_competition_teams_when_no_league(): void {
-        $competition = $this->createMock( Competition::class );
-        $competition->expects( self::once() )->method( 'contact_teams' )->with( '2026', 'Hello' )->willReturn( true );
+        $competition = $this->createStub( Competition::class );
+        $notification_service = $this->createMock( Competition_Notification_Service::class );
+        $notification_service->expects( self::once() )->method( 'contact_teams' )->with( $competition, '2026', 'Hello' )->willReturn( true );
 
         $league_service = $this->createMock( League_Service::class );
         $league_service->expects( self::never() )->method( 'get_league' );
@@ -74,7 +80,7 @@ final class League_Contact_Action_Dispatcher_Test extends TestCase {
 
         $guard = $this->createStub( Action_Guard_Interface::class );
 
-        $result = ( new League_Contact_Action_Dispatcher( $league_service, $competition_service, $guard ) )->handle(
+        $result = ( new League_Contact_Action_Dispatcher( $league_service, $competition_service, $guard, $notification_service ) )->handle(
             array( 'competition_id' => '9', 'season' => '2026', 'emailMessage' => 'Hello' )
         );
 
@@ -86,8 +92,10 @@ final class League_Contact_Action_Dispatcher_Test extends TestCase {
         $league_service->expects( self::never() )->method( 'get_league' );
         $competition_service = $this->createMock( Competition_Service::class );
         $competition_service->expects( self::never() )->method( 'get_competition' );
+        $notification_service = $this->createMock( Competition_Notification_Service::class );
+        $notification_service->expects( self::never() )->method( 'contact_teams' );
 
-        $result = ( new League_Contact_Action_Dispatcher( $league_service, $competition_service, $this->createStub( Action_Guard_Interface::class ) ) )->handle(
+        $result = ( new League_Contact_Action_Dispatcher( $league_service, $competition_service, $this->createStub( Action_Guard_Interface::class ), $notification_service ) )->handle(
             array( 'league_id' => '5' )
         );
 

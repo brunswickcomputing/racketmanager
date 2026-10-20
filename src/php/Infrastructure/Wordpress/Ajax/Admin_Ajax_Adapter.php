@@ -14,6 +14,8 @@ use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interf
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Notification\Notification_Service;
@@ -23,6 +25,7 @@ use Racketmanager\Util\Util;
 use stdClass;
 use function Racketmanager\event_dropdown;
 use function Racketmanager\get_event;
+use function Racketmanager\get_league;
 use function Racketmanager\get_league_team;
 use function Racketmanager\get_team;
 use function Racketmanager\league_dropdown;
@@ -44,8 +47,18 @@ class Admin_Ajax_Adapter {
         private Competition_Entry_Service $competition_entry_service,
         private Notification_Service $notification_service,
         private Fixture_Repository_Interface $fixture_repository,
-        private Settings_Service $settings_service
+        private Settings_Service $settings_service,
+        private ?League_Team_Repository_Interface $league_team_repository = null
     ) {}
+
+    private function get_league_team_repository(): League_Team_Repository_Interface {
+        if ( null === $this->league_team_repository ) {
+            $this->league_team_repository = isset( $this->racketmanager->container ) && $this->racketmanager->container->has( 'league_team_repository' )
+                ? $this->racketmanager->container->get( 'league_team_repository' )
+                : new League_Team_Repository();
+        }
+        return $this->league_team_repository;
+    }
 
     public function save_add_points( array $request = [] ): Response {
         $security_error = $this->nonce_failure_response( $request );
@@ -66,6 +79,9 @@ class Admin_Ajax_Adapter {
         $league_entry = get_league_team( $command->table_id );
         if ( $league_entry ) {
             $league_entry->amend_points( $command->points );
+            $this->get_league_team_repository()->amend_points( (int) $command->table_id, (float) $command->points );
+            $league = get_league( $league_entry->league_id );
+            $league?->set_teams_rank( $league_entry->season );
 
             return $this->response_factory->create_success_response();
         }

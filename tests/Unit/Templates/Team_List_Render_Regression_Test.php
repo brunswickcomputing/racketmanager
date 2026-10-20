@@ -32,6 +32,7 @@ use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
@@ -362,7 +363,7 @@ class Team_List_Render_Regression_Test extends TestCase {
 
     public function test_club_competitions_renders_real_handler_output_with_modal_attrs_and_zero_warnings(): void {
         $club_service = $this->createStub( Club_Service::class );
-        $comp_service = $this->createStub( Competition_Service::class );
+        $comp_service = $this->createMock( Competition_Service::class );
         $comp_repo    = $this->createStub( Competition_Repository_Interface::class );
 
         $handler = new Get_Club_Competitions_Handler(
@@ -405,16 +406,21 @@ class Team_List_Render_Regression_Test extends TestCase {
             ],
         ];
 
-        $comp1 = (object) [
-            'name'           => 'Summer League',
-            'current_season' => [ 'name' => '2026' ],
-            'events'         => [ $event1 ],
-            'get_events'     => fn() => [ $event1 ],
-        ];
+        $comp1 = Competition_Test_Factory::create(
+            id: 31,
+            name: 'Summer League',
+            current_season: [ 'name' => '2026' ]
+        );
 
         $club_service->method( 'get_club_by_shortcode' )->willReturn( $club );
         $club_service->method( 'can_user_update' )->willReturn( true );
-        $comp_service->method( 'get_by_criteria' )->willReturn( [ $comp1 ] );
+        $comp_service->method( 'get_by_criteria' )->willReturnCallback(
+            fn( array $criteria ) => 'league' === $criteria['type'] ? [ $comp1 ] : []
+        );
+        $comp_service->expects( $this->once() )
+            ->method( 'get_events_for_competition' )
+            ->with( 31 )
+            ->willReturn( [ $event1 ] );
 
         $vm = $handler->handle( new Get_Club_Competitions_Query( club_name: 'Westcliff' ) );
         $this->assertFalse( $vm->is_error() );

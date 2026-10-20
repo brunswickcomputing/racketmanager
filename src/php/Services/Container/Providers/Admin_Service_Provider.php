@@ -196,7 +196,8 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
         $container->set( 'league_contact_action_dispatcher', fn( Simple_Container $c ) => new League_Contact_Action_Dispatcher(
             $c->get( 'league_service' ),
             $c->get( 'competition_service' ),
-            $c->get( 'action_guard' )
+            $c->get( 'action_guard' ),
+            $c->get( 'competition_notification_service' )
         ) );
 
         $container->set( 'league_setup_action_dispatcher', fn( Simple_Container $c ) => new League_Setup_Action_Dispatcher(
@@ -226,7 +227,8 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
         ) );
 
         $container->set( 'league_constitution_action_dispatcher', fn( Simple_Container $c ) => new League_Constitution_Action_Dispatcher(
-            $c->get( 'action_guard' )
+            $c->get( 'action_guard' ),
+            $c->get( 'league_team_repository' )
         ) );
 
         $container->set( 'league_event_action_dispatcher', fn( Simple_Container $c ) => new League_Event_Action_Dispatcher(
@@ -275,12 +277,14 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
         $container->set( 'competition_season_action_dispatcher', fn( Simple_Container $c ) => new Competition_Season_Action_Dispatcher(
             $c->get( 'competition_service' ),
             $c->get( 'finance_service' ),
-            $c->get( 'action_guard' )
+            $c->get( 'action_guard' ),
+            $c->get( 'competition_season_service' )
         ) );
 
         $container->set( 'event_action_dispatcher', fn( Simple_Container $c ) => new Event_Action_Dispatcher(
             $c->get( 'competition_service' ),
-            $c->get( 'action_guard' )
+            $c->get( 'action_guard' ),
+            $c->get( 'league_team_repository' )
         ) );
 
         $container->set( 'finance_charge_action_dispatcher', fn( Simple_Container $c ) => new Finance_Charge_Action_Dispatcher(
@@ -324,6 +328,7 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'fixture_service' ),
             $c->get( 'player_service' ),
             $c->get( 'registration_service' ),
+            $c->get( 'league_team_repository' ),
             $c->has( 'racketmanager_app' ) ? $c->get( 'racketmanager_app' ) : null
         ) );
 
@@ -396,7 +401,8 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
         $container->set( 'tournament_event_config_admin_controller', fn( Simple_Container $c ) => new Tournament_Event_Config_Admin_Controller(
             $c->get( 'tournament_service' ),
             $c->get( 'competition_service' ),
-            $c->get( 'action_guard' )
+            $c->get( 'action_guard' ),
+            $c->get( 'league_team_repository' )
         ) );
 
         $container->set( 'tournament_team_admin_controller', fn( Simple_Container $c ) => new Tournament_Team_Admin_Controller(
@@ -455,7 +461,8 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'competition_entry_service' ),
             $c->get( 'notification_service' ),
             $c->get( 'fixture_repository' ),
-            $c->get( 'settings_service' )
+            $c->get( 'settings_service' ),
+            $c->get( 'league_team_repository' )
         ) );
         $container->set( 'admin_ajax_controller', fn( Simple_Container $c ) => new Admin_Ajax_Controller( $app, $c->get( 'admin_ajax_adapter' ) ) );
 

@@ -71,7 +71,7 @@ class Get_Club_Competitions_Handler {
      * Present the competition with only those events in which the club has teams; null when there are none.
      */
     private function present_competition_for_club( object $club, object $competition ): ?Club_Competition_View_Model {
-        $events       = method_exists( $competition, 'get_events' ) ? $competition->get_events() : ( $competition->events ?? [] );
+        $events       = $this->competition_service->get_events_for_competition( (int) $competition->get_id() );
         $event_models = [];
 
         foreach ( $events as $event ) {

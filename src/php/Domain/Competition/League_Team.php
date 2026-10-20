@@ -145,7 +145,7 @@ class League_Team {
      *
      * @var int
      */
-    public int $add_points = 0;
+    public float $add_points = 0.0;
     /**
      * Points variable
      *
@@ -428,40 +428,6 @@ class League_Team {
      * @var string
      */
     public string $league_status;
-    /**
-     * Get instance function
-     *
-     * @param int $league_team_id league team id.
-     *
-     * @return boolean|object
-     */
-    public static function get_instance( int $league_team_id ): bool|League_Team {
-        global $wpdb;
-        if ( ! $league_team_id ) {
-            return false;
-        }
-
-        $league_team = wp_cache_get( $league_team_id, 'league-teams' );
-
-        if ( ! $league_team ) {
-            $league_team = $wpdb->get_row(
-                $wpdb->prepare(
-                    "SELECT B.`id` AS `id`, B.`title`, B.`club_id`, B.`stadium`, B.`home`, A.`group`, B.`roster`, B.`profile`, A.`points_plus`, A.`points_minus`, A.`points_2_plus`, A.`points_2_minus`, A.`add_points`, A.`done_matches`, A.`won_matches`, A.`draw_matches`, A.`lost_matches`, A.`diff`, A.`league_id`, A.`id` AS `table_id`, A.`season`, A.`rank`, A.`status`, A.`custom`, B.`team_type`, A.`rating` FROM $wpdb->racketmanager_teams B INNER JOIN $wpdb->racketmanager_league_teams A ON B.id = A.team_id WHERE A.`id` = %d LIMIT 1",
-                    $league_team_id
-                )
-            ); // db call ok.
-
-            if ( ! $league_team ) {
-                return false;
-            }
-            $league_team = new League_Team( $league_team );
-
-            wp_cache_set( $league_team->id, $league_team, 'league-teams' );
-        }
-
-        return $league_team;
-    }
-
     /**
      * Constructor
      *
@@ -777,20 +743,9 @@ class League_Team {
     }
 
     public function add_details( int $captain, string $match_day, string $match_time ): void {
-        global $wpdb;
-        $this->captain = $captain;
+        $this->captain    = $captain;
         $this->match_day  = $match_day;
         $this->match_time = $match_time;
-
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_league_teams SET `captain` = %d, `match_day` = %s, `match_time` = %s WHERE `id` = %d",
-                $this->captain,
-                $this->match_day,
-                $this->match_time,
-                $this->table_id
-            )
-        );
     }
     /**
      * Compute win percentage
@@ -1002,18 +957,8 @@ class League_Team {
      * @param string $status status.
      */
     public function update_constitution( int $league_id, string $status ): void {
-        global $wpdb;
         $this->league_id = $league_id;
         $this->status    = $status;
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_league_teams SET `league_id` = %d, `status` = %s WHERE `id` = %d",
-                $league_id,
-                $this->status,
-                $this->table_id
-            )
-        );
-        wp_cache_set( $this->id, $this, 'league-teams' );
     }
     /**
      * Add/remove points
@@ -1021,45 +966,7 @@ class League_Team {
      * @param float $points points to add/remove.
      */
     public function amend_points( float $points ): void {
-        global $wpdb;
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_league_teams SET `add_points` = %s WHERE `id` = %d",
-                $points,
-                $this->table_id,
-            )
-        );
         $this->add_points = $points;
-        $league = get_league( $this->league_id );
-        $league?->set_teams_rank( $this->season );
-        wp_cache_set( $this->id, $this, 'league-teams' );
-    }
-    /**
-     * Persist current computed/edited stats to database
-     *
-     * Updates aggregate fields such as matches played/won/lost/drawn and
-     * points (plus/minus/secondary) and custom data for this league team.
-     *
-     * @return void
-     */
-    public function update(): void {
-        global $wpdb;
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_league_teams SET `done_matches` = %d, `won_matches` = %d, `lost_matches` = %d, `draw_matches` = %d, `points_plus` = %f, `points_minus` = %f, `points_2_plus` = %d, `points_2_minus` = %d, `add_points` = %d, `custom` = %s WHERE `id` = %d",
-                $this->done_matches,
-                $this->won_matches,
-                $this->lost_matches,
-                $this->draw_matches,
-                $this->points_plus,
-                $this->points_minus,
-                $this->points_2_plus,
-                $this->points_2_minus,
-                $this->add_points,
-                maybe_serialize( $this->custom ),
-                $this->table_id,
-            )
-        );
     }
     /**
      * Update Table
@@ -1067,21 +974,13 @@ class League_Team {
      * @param int $league_id league id.
      * @param int $rank rank.
      * @param string $status status.
-     * @param string $profile profile.
+     * @param string|int $profile profile.
      */
-    public function set_constitution_rank( int $league_id, int $rank, string $status, string $profile ): void {
-        global $wpdb;
-
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_league_teams SET `league_id` = %d, `rank` = %d, `status` = %s, `profile` = %d WHERE `id` = %d",
-                $league_id,
-                $rank,
-                $status,
-                $profile,
-                $this->table_id
-            )
-        );
+    public function set_constitution_rank( int $league_id, int $rank, string $status, string|int $profile ): void {
+        $this->league_id = $league_id;
+        $this->rank      = $rank;
+        $this->status    = $status;
+        $this->profile   = Team_Profile::from_value( (int) $profile );
     }
 
     /**
@@ -1093,6 +992,14 @@ class League_Team {
      */
     public function set_team_details( $player_id ) {
 
+    }
+
+    public function get_table_id(): ?int {
+        return $this->table_id ?? null;
+    }
+
+    public function set_table_id( int $table_id ): void {
+        $this->table_id = $table_id;
     }
 
     public function set_team_id( ?int $team_id ): void {

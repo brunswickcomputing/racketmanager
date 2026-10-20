@@ -18,12 +18,15 @@ use Racketmanager\Admin\View_Models\Admin_League_Schedule_Page_View_Model;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Util\Util;
 use stdClass;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
+use function Racketmanager\get_league_team;
 use function Racketmanager\get_team;
 
 /**
@@ -560,7 +563,7 @@ final class Admin_League extends Admin_Display {
             throw new \RuntimeException( 'Event_Repository_Interface not found in container.' );
         }
 
-        $raw_events  = method_exists( $competition, 'get_events' ) ? $competition->get_events() : ( $competition->events ?? array() );
+        $raw_events  = $this->competition_service->get_events_for_competition( $competition_id );
         $events_data = array();
         foreach ( ( is_array( $raw_events ) ? $raw_events : array() ) as $event_item ) {
             $event = is_object( $event_item )
@@ -655,7 +658,7 @@ final class Admin_League extends Admin_Display {
                 }
                 if ( $valid ) {
                     if ( $teams ) {
-                        $result = $event->promote_and_relegate( $teams, $latest_season );
+                        $result = $event->promote_and_relegate( $teams, $latest_season, $this->resolve_league_team_repository() );
                         if ( $result ) {
                             $this->set_message( __( 'Promotion and relegation actioned', 'racketmanager' ) );
                         } else {
@@ -1089,8 +1092,9 @@ final class Admin_League extends Admin_Display {
                     $league?->add_team( $team, $latest_season, $rank, $status, $profile );
                 } elseif ( isset( $_POST['constitutionAction'] ) && 'update' === $_POST['constitutionAction'] ) {
                     $league_team = get_league_team( $table_id );
-                    if ( $league_id !== $league_team->league_id || $rank !== intval( $league_team->rank ) || $status !== $league_team->status || $profile !== $league_team->get_profile() ) {
-                        $league_team?->set_constitution_rank( $league_id, $rank, $status, $profile );
+                    if ( $league_team && ( $league_id !== $league_team->league_id || $rank !== intval( $league_team->rank ) || $status !== $league_team->status || $profile !== $league_team->get_profile() ) ) {
+                        $this->resolve_league_team_repository()->set_constitution_rank( intval( $table_id ), $league_id, $rank, $status, $profile );
+                        $league_team->set_constitution_rank( $league_id, $rank, $status, $profile );
                         ++$updates;
                     }
                     if ( $updates ) {
@@ -1231,5 +1235,14 @@ final class Admin_League extends Admin_Display {
         }
 
         throw new \RuntimeException( 'Admin_League_Schedule_Presenter not found in container.' );
+    }
+
+    private function resolve_league_team_repository(): League_Team_Repository_Interface {
+        $container = $this->racketmanager->container ?? null;
+        if ( $container instanceof Simple_Container && $container->has( 'league_team_repository' ) ) {
+            return $container->get( 'league_team_repository' );
+        }
+
+        return new League_Team_Repository();
     }
 }

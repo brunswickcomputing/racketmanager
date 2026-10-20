@@ -29,8 +29,11 @@ use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use stdClass;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;
 
 class Public_Headers_And_Lists_Templates_Test extends TestCase {
+    use Creates_Competition_Season_Service;
     private string $templates_dir;
 
     protected function setUp(): void {
@@ -328,20 +331,20 @@ class Public_Headers_And_Lists_Templates_Test extends TestCase {
     }
 
     public function test_get_competition_overview_handler_produces_view_model_and_renders_template(): void {
-        $competition = $this->createStub( Competition::class );
-        $competition->method( 'get_id' )->willReturn( 10 );
-        $competition->is_open = true;
-        $competition->is_closed = false;
-        $competition->is_started = false;
-        $competition->is_complete = false;
-        $competition->current_season = [
-            'name'         => '2026',
-            'venue_name'   => 'Thorpe Bay Lawn Tennis Club',
-            'date_open'    => '2026-03-01',
-            'date_closing' => '2026-05-01',
-            'date_start'   => '2026-06-01',
-            'date_end'     => '2026-06-15',
-        ];
+        $competition = Competition_Test_Factory::create(
+            id: 10,
+            name: 'Essex Championship',
+            seasons: Competition_Test_Factory::season_map(
+                '2026',
+                [
+                    'venue'        => 130,
+                    'date_open'    => '2026-03-01',
+                    'date_closing' => '2026-05-01',
+                    'date_start'   => '2026-06-01',
+                    'date_end'     => '2026-06-15',
+                ]
+            )
+        );
 
         $overview_data = (object) [
             'id'          => 10,
@@ -359,7 +362,7 @@ class Public_Headers_And_Lists_Templates_Test extends TestCase {
         $comp_service->method( 'get_competition_overview' )->willReturn( $overview );
 
         $competition_presenter = new Competition_Shortcode_Presenter( new Php_View_Renderer( $this->templates_dir ) );
-        $handler = new Get_Competition_Overview_Handler( $comp_service, $competition_presenter );
+        $handler = new Get_Competition_Overview_Handler( $comp_service, $competition_presenter, $this->competition_season_service( [ 130 => 'Thorpe Bay Lawn Tennis Club' ] ) );
         $query   = new Get_Competition_Overview_Query( competition_id: 10, season: 2026 );
         $vm      = $handler->handle( $query );
 

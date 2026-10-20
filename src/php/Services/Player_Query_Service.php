@@ -106,14 +106,16 @@ class Player_Query_Service {
 				)
 			) : array();
 		} elseif ( 'competition' === $match_source ) {
+			$competition_repository = $this->get_competition_repository();
 			if ( $grouping instanceof Competition ) {
 				$competition = $grouping;
 			} elseif ( $grouping ) {
-				$competition = $this->get_competition_repository()->find_by_id( (int) ( $grouping->id ?? $grouping ) );
+				$competition = $competition_repository->find_by_id( (int) ( $grouping->id ?? $grouping ) );
 			} else {
 				$competition = null;
 			}
-			$matches     = $competition ? $competition->get_matches(
+			$matches     = $competition ? $competition_repository->find_matches(
+				(int) $competition->get_id(),
 				array(
 					'season'  => $season,
 					'player'  => $player->id,

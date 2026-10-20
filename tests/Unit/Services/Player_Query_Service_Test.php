@@ -233,19 +233,23 @@ final class Player_Query_Service_Test extends TestCase {
 	public function test_get_matches_groups_competition_matches_by_league(): void {
 		$player  = Player_Factory::from_array( array( 'ID' => '9', 'display_name' => 'Query Player' ) );
 		$match   = $this->make_match( 'MS', 'home', 1, array() );
-		$competition = new class( array( $match ) ) extends Competition {
-			private array $matches;
-
-			public function __construct( array $matches ) {
-				parent::__construct( 'Test Competition', Competition_Type::LEAGUE, 'open' );
-				$this->matches = $matches;
-			}
-
-			public function get_matches( array $match_args ): array {
-				return $this->matches;
-			}
-		};
-		$service = new Player_Query_Service( $this->make_wpdb( array() ) );
+		$competition = Competition_Test_Factory::create( id: 31 );
+		$repository  = $this->createMock( Competition_Repository_Interface::class );
+		$repository->expects( $this->once() )
+			->method( 'find_matches' )
+			->with(
+				31,
+				array(
+					'season'  => '2026',
+					'player'  => $player->id,
+					'orderby' => array(
+						'date'      => 'ASC',
+						'league_id' => 'DESC',
+					),
+				)
+			)
+			->willReturn( array( $match ) );
+		$service = new Player_Query_Service( $this->make_wpdb( array() ), $repository );
 
 		$result = $service->get_matches( $player, $competition, '2026', 'competition' );
 
@@ -274,6 +278,13 @@ final class Player_Query_Service_Test extends TestCase {
 		$this->expectException( RuntimeException::class );
 		$this->expectExceptionMessage( 'Player_Query_Service requires a Fixture_Repository_Interface.' );
 		$service->get_matches( $this->make_player(), null, '2026', 'all' );
+	}
+
+	public function test_get_matches_competition_throws_without_competition_repository(): void {
+		$service = new Player_Query_Service( $this->make_wpdb( array() ) );
+		$this->expectException( RuntimeException::class );
+		$this->expectExceptionMessage( 'Player_Query_Service requires a Competition_Repository_Interface.' );
+		$service->get_matches( $this->make_player(), Competition_Test_Factory::create( id: 31 ), '2026', 'competition' );
 	}
 
 	public function test_get_matches_unknown_source_returns_empty(): void {

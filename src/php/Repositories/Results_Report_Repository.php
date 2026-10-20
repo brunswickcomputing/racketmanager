@@ -85,7 +85,7 @@ class Results_Report_Repository implements Results_Report_Repository_Interface {
             return null;
         }
 
-        return new Results_Report( $row, false );
+        return new Results_Report( $row );
     }
 
     /**
@@ -106,7 +106,7 @@ class Results_Report_Repository implements Results_Report_Repository_Interface {
             return null;
         }
 
-        return new Results_Report( $row, false );
+        return new Results_Report( $row );
     }
 
     /**

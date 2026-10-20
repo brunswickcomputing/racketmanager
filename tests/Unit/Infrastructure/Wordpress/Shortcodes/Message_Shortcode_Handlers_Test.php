@@ -51,7 +51,10 @@ class Message_Shortcode_Handlers_Test extends TestCase {
 
     public function test_messages_handler_when_logged_out(): void {
         $user_repository = $this->createStub( User_Repository_Interface::class );
-        $handler         = new Get_Messages_Handler( $user_repository );
+        $handler         = new Get_Messages_Handler(
+            $user_repository,
+            $this->createStub( Message_Repository_Interface::class )
+        );
         $query           = new Get_Messages_Query(
             is_logged_in: false,
             user_id: null
@@ -63,12 +66,19 @@ class Message_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_messages_handler_when_logged_in(): void {
-        $user = $this->createMock( User::class );
+        $user = $this->createStub( User::class );
+        $user->id = 101;
         $details = [ (object) [ 'id' => 15 ] ];
         $message_calls = [];
-        $user->expects( $this->exactly( 3 ) )
-            ->method( 'get_messages' )
-            ->willReturnCallback( static function ( array $args ) use ( &$message_calls, $details ): array|int {
+        $user_repository = $this->createMock( User_Repository_Interface::class );
+        $user_repository->expects( $this->once() )
+            ->method( 'find' )
+            ->with( 101 )
+            ->willReturn( $user );
+        $message_repository = $this->createMock( Message_Repository_Interface::class );
+        $message_repository->expects( $this->exactly( 3 ) )
+            ->method( 'find_by_user' )
+            ->willReturnCallback( static function ( int $user_id, array $args = [] ) use ( &$message_calls, $details ): array|int {
                 $message_calls[] = $args;
                 return match ( count( $message_calls ) ) {
                     1 => 3,
@@ -76,13 +86,8 @@ class Message_Shortcode_Handlers_Test extends TestCase {
                     3 => 2,
                 };
             } );
-        $user_repository = $this->createMock( User_Repository_Interface::class );
-        $user_repository->expects( $this->once() )
-            ->method( 'find' )
-            ->with( 101 )
-            ->willReturn( $user );
 
-        $handler = new Get_Messages_Handler( $user_repository );
+        $handler = new Get_Messages_Handler( $user_repository, $message_repository );
         $query   = new Get_Messages_Query(
             template: 'custom',
             is_logged_in: true,
@@ -193,6 +198,10 @@ class Message_Shortcode_Handlers_Test extends TestCase {
             ->method( 'find' )
             ->with( 42 )
             ->willReturn( $message );
+        $message_repository->expects( $this->once() )
+            ->method( 'save' )
+            ->with( $message )
+            ->willReturn( 42 );
 
         $handler = new Get_Message_Handler( $message_repository );
         $query   = new Get_Message_Query(
@@ -254,8 +263,12 @@ class Message_Shortcode_Handlers_Test extends TestCase {
             ];
         };
         $user = $this->createStub( User::class );
-        $user->method( 'get_messages' )->willReturnCallback(
-            static function ( array $args ) use ( $make ) {
+        $user->id = 101;
+        $user_repository = $this->createStub( User_Repository_Interface::class );
+        $user_repository->method( 'find' )->willReturn( $user );
+        $message_repository = $this->createStub( Message_Repository_Interface::class );
+        $message_repository->method( 'find_by_user' )->willReturnCallback(
+            static function ( int $user_id, array $args = [] ) use ( $make ) {
                 if ( ! empty( $args['count'] ) ) {
                     return isset( $args['status'] ) ? 1 : 2;
                 }
@@ -265,10 +278,7 @@ class Message_Shortcode_Handlers_Test extends TestCase {
                 ];
             }
         );
-        $user_repository = $this->createStub( User_Repository_Interface::class );
-        $user_repository->method( 'find' )->willReturn( $user );
-
-        $vm        = ( new Get_Messages_Handler( $user_repository ) )->handle( new Get_Messages_Query( is_logged_in: true, user_id: 101 ) );
+        $vm        = ( new Get_Messages_Handler( $user_repository, $message_repository ) )->handle( new Get_Messages_Query( is_logged_in: true, user_id: 101 ) );
         $presenter = new Shortcode_View_Presenter(
             new Shortcode_Template_Renderer( new Php_View_Renderer( dirname( __DIR__, 5 ) . '/templates/' ) )
         );
@@ -286,11 +296,13 @@ class Message_Shortcode_Handlers_Test extends TestCase {
 
     public function test_messages_handler_without_messages_passes_empty_view_model_and_renders(): void {
         $user = $this->createStub( User::class );
-        $user->method( 'get_messages' )->willReturn( 0 );
+        $user->id = 101;
         $user_repository = $this->createStub( User_Repository_Interface::class );
         $user_repository->method( 'find' )->willReturn( $user );
+        $message_repository = $this->createStub( Message_Repository_Interface::class );
+        $message_repository->method( 'find_by_user' )->willReturn( 0 );
 
-        $vm = ( new Get_Messages_Handler( $user_repository ) )->handle( new Get_Messages_Query( is_logged_in: true, user_id: 101 ) );
+        $vm = ( new Get_Messages_Handler( $user_repository, $message_repository ) )->handle( new Get_Messages_Query( is_logged_in: true, user_id: 101 ) );
         $this->assertInstanceOf( \Racketmanager\Presentation\View_Models\Messages_List_View_Model::class, $vm->vars['messages'] );
         $this->assertSame( 0, $vm->vars['messages']->total );
         $this->assertSame( [], $vm->vars['messages']->detail );
@@ -305,7 +317,8 @@ class Message_Shortcode_Handlers_Test extends TestCase {
 
     public function test_adapter_and_facade_delegation(): void {
         $messages_handler = new Get_Messages_Handler(
-            $this->createStub( User_Repository_Interface::class )
+            $this->createStub( User_Repository_Interface::class ),
+            $this->createStub( Message_Repository_Interface::class )
         );
         $message_handler  = new Get_Message_Handler(
             $this->createStub( Message_Repository_Interface::class )

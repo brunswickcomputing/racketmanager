@@ -172,4 +172,40 @@ class Competition_Notification_Service_Test extends TestCase {
         $this->assertSame( 'secretary@example.com', $sent_calls[0]['to'] );
         $this->assertSame( 'Leigh and Westcliff Tennis - Mixed League 2026 - Constitution', $sent_calls[0]['subject'] );
     }
+
+    public function test_contact_teams_reads_events_from_injected_event_repository(): void {
+        $event = new class extends Event {
+            public ?array $requested_args = null;
+            public function __construct() {
+                $this->current_season = [ 'name' => '2026' ];
+            }
+            public function get_teams( array $args = [] ): array {
+                $this->requested_args = $args;
+                return [];
+            }
+        };
+
+        $event_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class );
+        $event_repository->expects( $this->once() )
+            ->method( 'find_by_competition_id' )
+            ->with( 31 )
+            ->willReturn( [ $event ] );
+
+        $mailer = $this->createMock( Mailer_Interface::class );
+        $mailer->expects( $this->once() )->method( 'send' )->willReturn( true );
+
+        $service     = new Competition_Notification_Service( $mailer, $event_repository );
+        $competition = \Racketmanager\Tests\Helpers\Competition_Test_Factory::create( id: 31 );
+
+        $this->assertTrue( $service->contact_teams( $competition, '2026', 'Hello' ) );
+        $this->assertSame( [ 'season' => '2026' ], $event->requested_args );
+    }
+
+    public function test_contact_teams_requires_event_repository(): void {
+        $service     = new Competition_Notification_Service( $this->createStub( Mailer_Interface::class ) );
+        $competition = \Racketmanager\Tests\Helpers\Competition_Test_Factory::create( id: 31 );
+
+        $this->expectException( \LogicException::class );
+        $service->contact_teams( $competition, '2026', 'Hello' );
+    }
 }

@@ -34,8 +34,10 @@ use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Util\Util;
+use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;
 
 class Draw_And_Winners_Templates_Test extends TestCase {
+    use Creates_Competition_Season_Service;
     use Manages_Wordpress_Globals;
 
     private Php_View_Renderer $view_renderer;
@@ -139,7 +141,7 @@ class Draw_And_Winners_Templates_Test extends TestCase {
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
         $comp_service->method( 'get_winners_for_competition' )->willReturn( [ 'LADIES' => [ $winner_item ] ] );
 
-        $handler = new Get_Competition_Winners_Handler( $comp_service, new Competition_Shortcode_Presenter() );
+        $handler = new Get_Competition_Winners_Handler( $comp_service, $this->competition_season_service(), new Competition_Shortcode_Presenter() );
         $vm      = $handler->handle( new Get_Competition_Winners_Query( competition_id: 10, season: 2026 ) );
 
         $this->assertFalse( $vm->is_error() );

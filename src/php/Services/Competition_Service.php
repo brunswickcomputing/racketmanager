@@ -122,7 +122,9 @@ class Competition_Service {
             if ( ! isset( $competition_id->sport ) ) {
                 $competition_id->sport = 'tennis';
             }
-            return Competition::from_object( $competition_id );
+            $competition = Competition::from_object( $competition_id );
+            $competition->set_competition_repository( $this->competition_repository );
+            return $competition;
         }
 
         if ( 'name' === $search_term ) {
@@ -671,7 +673,7 @@ class Competition_Service {
     public function calculate_team_ratings( ?int $competition_id, ?int $season ): void {
         $competition = $this->get_by_id( $competition_id );
         $this->is_season_valid_for_competition( $competition, $season );
-        $teams = $competition->get_teams( array( 'season' => $season ) );
+        $teams = $this->get_teams_by_query( $competition, array( 'season' => $season ) );
         foreach ( $teams as $team ) {
             $team_points = 0;
             // set league ratings.
@@ -728,7 +730,8 @@ class Competition_Service {
             }
             if ( $competition->is_championship ) {
                 // set cup rating.
-                $matches = $competition->get_matches(
+                $matches = $this->get_matches_for_competition(
+                    $competition,
                     array(
                         'team'     => $team->team_id,
                         'final'    => 'all',
@@ -847,6 +850,132 @@ class Competition_Service {
         $seasons[ $season ] = $tournament_season;
         $competition->set_seasons( $seasons );
         return $this->competition_repository->save( $competition );
+    }
+
+    /**
+     * Save a competition entity.
+     *
+     * @param Competition $competition
+     * @return bool|int
+     */
+    public function save( Competition $competition ): bool|int {
+        return $this->competition_repository->save( $competition );
+    }
+
+    /**
+     * Get the matches of a competition using the competition repository.
+     *
+     * @param Competition|int|string $competition Competition or competition id.
+     * @param array                  $args        Query arguments.
+     * @return array
+     */
+    public function get_matches_for_competition( Competition|int|string $competition, array $args = array() ): array {
+        $competition_id = $competition instanceof Competition ? $competition->get_id() : (int) $competition;
+
+        $matches = $this->competition_repository->find_matches( $competition_id, $args );
+
+        return is_array( $matches ) ? $matches : array();
+    }
+
+    /**
+     * Get teams for a competition using the competition repository.
+     *
+     * @param Competition|int|string $competition Competition or competition id.
+     * @param array                  $args        Query arguments.
+     * @return array
+     */
+    public function get_teams_by_query( Competition|int|string $competition, array $args = array() ): array {
+        $competition_id = $competition instanceof Competition ? $competition->get_id() : (int) $competition;
+
+        $teams = $this->competition_repository->find_teams( $competition_id, $args );
+
+        return is_array( $teams ) ? $teams : array();
+    }
+
+    /**
+     * Get players for a competition using the competition repository.
+     *
+     * @param Competition|int|string $competition Competition or competition id.
+     * @param array                  $args        Query arguments.
+     * @return array
+     */
+    public function get_players_for_competition_query( Competition|int|string $competition, array $args = array() ): array {
+        if ( $competition instanceof Competition && $competition->is_player_entry ) {
+            $season = $args['season'] ?? false;
+            $teams = $this->get_teams_by_query( $competition, array( 'season' => $season ) );
+            $players = array();
+            if ( is_iterable( $teams ) ) {
+                foreach ( $teams as $team ) {
+                    if ( isset( $team->player ) && is_iterable( $team->player ) ) {
+                        foreach ( $team->player as $player ) {
+                            $players[] = $player;
+                        }
+                    }
+                }
+            }
+            $competition_players = array_unique( $players );
+            asort( $competition_players );
+            return $competition_players;
+        }
+
+        $competition_id = $competition instanceof Competition ? $competition->get_id() : (int) $competition;
+
+        $players = $this->competition_repository->find_players( $competition_id, $args );
+
+        if ( is_array( $players ) ) {
+            asort( $players );
+            return $players;
+        }
+
+        return array();
+    }
+
+    /**
+     * Replace the seasons of a competition and persist them when they changed.
+     *
+     * @param Competition  $competition Competition.
+     * @param array|string $seasons     Season data as array or JSON string.
+     * @return bool True when the seasons changed and were saved.
+     */
+    public function update_seasons( Competition $competition, array|string $seasons ): bool {
+        if ( ! $competition->update_seasons( $seasons ) ) {
+            return false;
+        }
+        $this->competition_repository->save( $competition );
+
+        return true;
+    }
+
+    /**
+     * Add a season to a competition and persist it.
+     *
+     * @param Competition $competition Competition.
+     * @param object      $season      Season data.
+     * @return bool True when the season was added and saved.
+     */
+    public function add_season( Competition $competition, object $season ): bool {
+        if ( ! $competition->add_season( $season ) ) {
+            return false;
+        }
+        $this->competition_repository->save( $competition );
+
+        return true;
+    }
+
+    /**
+     * Update a season of a competition and persist it.
+     *
+     * @param Competition $competition Competition.
+     * @param array       $season      Season data.
+     * @return bool True when the season changed and was saved.
+     */
+    public function update_season( Competition $competition, array $season ): bool {
+        if ( ! $competition->update_season( $season ) ) {
+            return false;
+        }
+        $this->competition_repository->save( $competition );
+
+        return true;
     }
 
 }

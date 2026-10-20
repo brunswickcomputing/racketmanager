@@ -904,6 +904,15 @@ namespace {
         }
     }
 
+    if ( ! function_exists( 'wp_cache_flush_group' ) ) {
+        function wp_cache_flush_group( string $group ): bool {
+            if ( ! empty( $GLOBALS['wp_stubs_cache_enabled'] ) ) {
+                unset( $GLOBALS['wp_stubs_cache'][ $group ] );
+            }
+            return true;
+        }
+    }
+
     if ( ! function_exists( 'selected' ) ) {
         function selected( $selected, $current = true, $echo = true ) {
             $result = ( (string) $selected === (string) $current ) ? ' selected="selected"' : '';
@@ -995,6 +1004,39 @@ namespace {
                 }
             }
             return true;
+        }
+    }
+
+    if ( ! function_exists( 'update_user_meta' ) ) {
+        function update_user_meta( $user_id, $meta_key, $meta_value, $prev_value = '' ) {
+            $GLOBALS['wp_stubs_update_user_meta'][] = array( (int) $user_id, (string) $meta_key, $meta_value );
+            $GLOBALS['wp_stubs_user_meta'][ (int) $user_id ][ (string) $meta_key ] = is_array( $meta_value ) ? $meta_value : array( $meta_value );
+            return true;
+        }
+    }
+
+    if ( ! function_exists( 'wp_update_user' ) ) {
+        function wp_update_user( $userdata ) {
+            $GLOBALS['wp_stubs_wp_update_user'][] = $userdata;
+            if ( ! empty( $GLOBALS['wp_stubs_wp_update_user_error'] ) ) {
+                $message = is_string( $GLOBALS['wp_stubs_wp_update_user_error'] )
+                    ? $GLOBALS['wp_stubs_wp_update_user_error']
+                    : 'Unable to update user';
+                return new WP_Error( 'update_failed', $message );
+            }
+            return (int) ( $userdata['ID'] ?? 0 );
+        }
+    }
+
+    if ( ! function_exists( 'wp_set_password' ) ) {
+        function wp_set_password( $password, $user_id ) {
+            $GLOBALS['wp_stubs_wp_set_password'][] = array( $password, (int) $user_id );
+        }
+    }
+
+    if ( ! function_exists( 'wp_set_auth_cookie' ) ) {
+        function wp_set_auth_cookie( $user_id, $remember = false, $secure = '' ) {
+            $GLOBALS['wp_stubs_wp_set_auth_cookie'][] = array( (int) $user_id, $remember, $secure );
         }
     }
 
@@ -1143,6 +1185,9 @@ namespace {
             $user_id = (int) $user_id;
             if ( ! empty( $GLOBALS['wp_stubs_users_not_found'][ $user_id ] ) ) {
                 return false;
+            }
+            if ( isset( $GLOBALS['wp_stubs_userdata'][ $user_id ] ) ) {
+                return $GLOBALS['wp_stubs_userdata'][ $user_id ];
             }
             $data = (object) [
                 'ID'           => $user_id,

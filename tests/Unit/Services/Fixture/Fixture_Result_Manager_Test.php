@@ -63,7 +63,9 @@ class Fixture_Result_Manager_Test extends TestCase {
         $fixture->method( 'get_id' )->willReturn( 123 );
 
         $rubber1 = $this->createMock( Rubber::class );
+        $rubber1->method( 'get_id' )->willReturn( 10 );
         $rubber2 = $this->createMock( Rubber::class );
+        $rubber2->method( 'get_id' )->willReturn( 20 );
 
         $this->rubber_repository->expects( $this->once() )
             ->method( 'find_by_fixture_id' )
@@ -72,6 +74,10 @@ class Fixture_Result_Manager_Test extends TestCase {
 
         $rubber1->expects( $this->once() )->method( 'reset_result' );
         $rubber2->expects( $this->once() )->method( 'reset_result' );
+
+        $this->rubber_repository->expects( $this->exactly( 2 ) )
+            ->method( 'reset_result' )
+            ->with( $this->logicalOr( 10, 20 ) );
 
         // Expect reset to be applied to fixture
         $this->result_service->expects( $this->once() )

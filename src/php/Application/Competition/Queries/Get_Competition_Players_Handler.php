@@ -8,6 +8,7 @@ use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
+use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Player_Query_Service;
@@ -28,7 +29,8 @@ class Get_Competition_Players_Handler {
         private readonly Player_Query_Service $player_query_service,
         private readonly Player_Stats_Service $player_stats_service,
         private readonly Player_Presenter $player_presenter,
-        private readonly Competition_Shortcode_Presenter $competition_presenter
+        private readonly Competition_Shortcode_Presenter $competition_presenter,
+        private readonly Competition_Season_Service $competition_season_service
     ) {}
 
     public function handle( Get_Competition_Players_Query $query ): Shortcode_View_Model {
@@ -51,9 +53,7 @@ class Get_Competition_Players_Handler {
             return Shortcode_View_Model::error( __( 'Competition not found', 'racketmanager' ) );
         }
 
-        if ( null !== $query->season ) {
-            $competition->set_current_season( (string) $query->season );
-        }
+        $this->competition_season_service->resolve_current_season( $competition, (string) ( $query->season ?? '' ) );
 
         $season_str           = isset( $competition->current_season['name'] ) ? (string) $competition->current_season['name'] : null;
         $competition->players = [];

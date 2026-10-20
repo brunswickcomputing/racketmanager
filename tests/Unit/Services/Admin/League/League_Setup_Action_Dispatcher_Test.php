@@ -96,9 +96,12 @@ final class League_Setup_Action_Dispatcher_Test extends TestCase {
         $competition = $this->createMock( Competition::class );
         $competition->expects( self::once() )->method( 'get_season_by_name' )->with( '2026' )->willReturn( array( 'name' => '2026' ) );
         $competition->expects( self::once() )->method( 'get_seasons' )->willReturn( array( 2026 => array( 'name' => '2026' ) ) );
-        $competition->expects( self::once() )->method( 'update_seasons' )->willReturn( true );
+        $competition->expects( self::never() )->method( 'update_seasons' );
 
         $competition_service = $this->createMock( Competition_Service::class );
+        $competition_service->expects( self::once() )->method( 'update_seasons' )
+            ->with( $competition, array( 2026 => array( 'name' => '2026', 'match_dates' => array( '2026-04-01', '2026-04-08' ) ) ) )
+            ->willReturn( true );
         $competition_service->expects( self::once() )->method( 'get_competition' )->with( 3 )->willReturn( $competition );
         $competition_service->expects( self::once() )->method( 'get_events_for_competition' )->with( 3, 2026 )->willReturn( array( $event ) );
 

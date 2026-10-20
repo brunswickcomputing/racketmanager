@@ -13,6 +13,7 @@ namespace Racketmanager\Services\Admin\League;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use stdClass;
 use function Racketmanager\get_event;
@@ -27,6 +28,7 @@ readonly final class League_Constitution_Action_Dispatcher {
 
     public function __construct(
         private Action_Guard_Interface $action_guard,
+        private League_Team_Repository_Interface $league_team_repository,
     ) {
     }
 
@@ -144,6 +146,7 @@ readonly final class League_Constitution_Action_Dispatcher {
             } elseif ( 'update' === $constitution_action ) {
                 $league_team = get_league_team( $table_id );
                 if ( null !== $league_team && ( $league_id !== $league_team->league_id || $rank !== intval( $league_team->rank ) || $status !== $league_team->status || $profile !== $league_team->get_profile() ) ) {
+                    $this->league_team_repository->set_constitution_rank( (int) $table_id, $league_id, $rank, $status, $profile );
                     $league_team->set_constitution_rank( $league_id, $rank, $status, $profile );
                     ++$updates;
                 }
@@ -237,7 +240,7 @@ readonly final class League_Constitution_Action_Dispatcher {
             return new Action_Result_DTO();
         }
 
-        $result = $event->promote_and_relegate( $teams, $latest_season );
+        $result = $event->promote_and_relegate( $teams, $latest_season, $this->league_team_repository );
         if ( $result ) {
             return new Action_Result_DTO(
                 message: __( 'Promotion and relegation actioned', 'racketmanager' ),

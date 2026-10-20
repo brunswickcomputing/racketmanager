@@ -36,9 +36,11 @@ use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;
 
 #[AllowMockObjectsWithoutExpectations]
 class Shortcodes_Competition_Integration_Test extends TestCase {
+    use Creates_Competition_Season_Service;
     private RacketManager $plugin;
     private Simple_Container $container;
     private Shortcodes_Competition $facade;
@@ -92,23 +94,22 @@ class Shortcodes_Competition_Integration_Test extends TestCase {
         $template_renderer = new Shortcode_Template_Renderer( $renderer, new Club_Presenter(), new Player_Presenter() );
         $security          = $this->createStub( \Racketmanager\Infrastructure\Security\Security_Service_Interface::class );
         $settings          = new \Racketmanager\Services\Settings_Service( [] );
-        $handler           = new Get_Competition_Handler( $comp_service, $club_service, $player_service, $security, $settings );
+        $handler           = new Get_Competition_Handler( $comp_service, $club_service, $player_service, $security, $settings, $this->competition_season_service() );
         $presenter         = new Competition_Shortcode_Presenter( $renderer, new Club_Presenter(), new Player_Presenter() );
         $view_presenter    = new Shortcode_View_Presenter( $template_renderer );
 
-        $overview_handler = new Get_Competition_Overview_Handler( $comp_service, $presenter );
-        $events_handler   = new Get_Competition_Events_Handler( $comp_service, $presenter );
-        $teams_handler    = new Get_Competition_Teams_Handler( $comp_service, $presenter );
-        $clubs_handler    = new Get_Competition_Clubs_Handler( $comp_service, $club_service, new \Racketmanager\Services\Player_Stats_Service(), new Tournament_Presenter(), $presenter );
+        $overview_handler = new Get_Competition_Overview_Handler( $comp_service, $presenter, $this->competition_season_service() );
+        $events_handler   = new Get_Competition_Events_Handler( $comp_service, $presenter, $this->competition_season_service() );
+        $teams_handler    = new Get_Competition_Teams_Handler( $comp_service, $presenter, $this->competition_season_service() );
+        $clubs_handler    = new Get_Competition_Clubs_Handler( $comp_service, $club_service, new \Racketmanager\Services\Player_Stats_Service(), new Tournament_Presenter(), $presenter, $this->competition_season_service() );
         $players_handler  = new Get_Competition_Players_Handler(
             $comp_service,
             $player_service,
             new \Racketmanager\Services\Player_Query_Service(),
             new \Racketmanager\Services\Player_Stats_Service(),
             new Player_Presenter(),
-            $presenter
-        );
-        $winners_handler  = new Get_Competition_Winners_Handler( $comp_service );
+            $presenter, $this->competition_season_service() );
+        $winners_handler  = new Get_Competition_Winners_Handler( $comp_service, $this->competition_season_service() );
 
         $this->adapter = new Competition_Shortcode_Adapter(
             competition_service: $comp_service,

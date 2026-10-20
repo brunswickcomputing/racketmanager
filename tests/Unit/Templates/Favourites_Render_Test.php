@@ -136,9 +136,9 @@ class Favourites_Render_Test extends TestCase {
         }
         $before = serialize( $groups );
         $user = $this->createStub( User::class );
-        $user->method( 'get_favourites' )->willReturn( $groups );
         $repository = $this->createMock( User_Repository_Interface::class );
         $repository->expects( self::once() )->method( 'find' )->with( 41 )->willReturn( $user );
+        $repository->method( 'get_favourites' )->willReturn( $groups );
         $this->container->set( 'user_repository', $repository );
 
         $club_repo = $this->createMock( Club_Repository_Interface::class );
@@ -194,9 +194,9 @@ class Favourites_Render_Test extends TestCase {
         ];
 
         $user = $this->createStub( User::class );
-        $user->method( 'get_favourites' )->willReturn( $groups );
         $repository = $this->createMock( User_Repository_Interface::class );
         $repository->expects( self::once() )->method( 'find' )->with( 41 )->willReturn( $user );
+        $repository->method( 'get_favourites' )->willReturn( $groups );
         $this->container->set( 'user_repository', $repository );
 
         $club_repo = $this->createMock( Club_Repository_Interface::class );
@@ -228,9 +228,9 @@ class Favourites_Render_Test extends TestCase {
         $player = Player_Test_Factory::create_sparse( [ 'id' => 12, 'display_name' => 'Jane Smith' ] );
         $favourites = [ (object) [ 'id' => '12', 'name' => 'Jane Smith', 'detail' => $player ] ];
         $user = $this->createStub( User::class );
-        $user->method( 'get_favourites' )->willReturn( $favourites );
         $users = $this->createMock( User_Repository_Interface::class );
         $users->expects( self::once() )->method( 'find' )->with( 41 )->willReturn( $user );
+        $users->expects( self::once() )->method( 'get_favourites' )->with( $user, 'player' )->willReturn( $favourites );
         $players = $this->createMock( Player_Repository_Interface::class );
         $players->expects( self::once() )->method( 'find_players_summary' )->with( [ 'name' => 'Smith' ] )->willReturn( [
             new Players_List_DTO( [ 'ID' => 12, 'firstname' => 'Jane', 'surname' => 'Smith', 'display_name' => 'Jane Smith' ] ),

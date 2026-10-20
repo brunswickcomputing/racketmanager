@@ -30,8 +30,8 @@ class Get_Players_Handler {
         if ( $query->is_logged_in && $query->user_id ) {
             $user = $this->user_repository->find( $query->user_id );
 
-            if ( is_object( $user ) && method_exists( $user, 'get_favourites' ) ) {
-                $favourites = $user->get_favourites( 'player' ) ?: [];
+            if ( is_object( $user ) ) {
+                $favourites = $this->user_repository->get_favourites( $user, 'player' ) ?: [];
             }
         }
 

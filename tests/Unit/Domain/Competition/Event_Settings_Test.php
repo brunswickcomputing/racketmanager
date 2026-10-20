@@ -98,7 +98,7 @@ class Event_Settings_Test extends TestCase {
         $fixture_raw->date      = '2026-06-01 19:00:00';
         $fixture                = Fixture_Factory::from_object( $fixture_raw );
 
-        $this->fixture_repository->expects( $this->exactly( 3 ) )
+        $this->fixture_repository->expects( $this->once() )
             ->method( 'find_by_id' )
             ->with( 100 )
             ->willReturn( $fixture );

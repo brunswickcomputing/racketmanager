@@ -9,6 +9,7 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Admin\Import\Import_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Fixture_Service;
@@ -24,10 +25,11 @@ class Admin_Import_Fixtures_Test extends TestCase {
     use Manages_Wordpress_Globals;
 
     private Simple_Container $container;
-    private $fixture_service;
-    private $player_service;
-    private $registration_service;
-    private $action_guard;
+    private Fixture_Service $fixture_service;
+    private Player_Service $player_service;
+    private Registration_Service $registration_service;
+    private Action_Guard_Interface $action_guard;
+    private League_Team_Repository_Interface $league_team_repository;
 
     protected function setUp(): void {
         parent::setUp();
@@ -37,6 +39,7 @@ class Admin_Import_Fixtures_Test extends TestCase {
         $this->player_service       = $this->createMock( Player_Service::class );
         $this->registration_service = $this->createMock( Registration_Service::class );
         $this->action_guard         = $this->createMock( Action_Guard_Interface::class );
+        $this->league_team_repository = $this->createMock( League_Team_Repository_Interface::class );
 
         $this->container = new Simple_Container();
         $this->container->set( 'fixture_service', fn() => $this->fixture_service );
@@ -62,6 +65,7 @@ class Admin_Import_Fixtures_Test extends TestCase {
             $this->fixture_service,
             $this->player_service,
             $this->registration_service,
+            $this->league_team_repository,
             $GLOBALS['racketmanager']
         );
 

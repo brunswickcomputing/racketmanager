@@ -13,6 +13,7 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Tournament_Service;
@@ -25,11 +26,13 @@ final class Tournament_Event_Config_Admin_Controller {
      * @param Tournament_Service $tournament_service
      * @param Competition_Service $competition_service
      * @param Action_Guard_Interface $action_guard
+     * @param League_Team_Repository_Interface $league_team_repository
      */
     public function __construct(
         private readonly Tournament_Service $tournament_service,
         private readonly Competition_Service $competition_service,
         private readonly Action_Guard_Interface $action_guard,
+        private readonly League_Team_Repository_Interface $league_team_repository,
     ) {
     }
 
@@ -179,7 +182,7 @@ final class Tournament_Event_Config_Admin_Controller {
                     'num_match_days' => $competition_season['num_match_days'],
                     'match_dates'    => $competition_season['match_dates'],
                 );
-                $event->add_season( $event_season );
+                $event->add_season( $event_season, $this->league_team_repository );
             }
         }
 
@@ -323,7 +326,7 @@ final class Tournament_Event_Config_Admin_Controller {
             $validator->error = true;
             $validator->msg   = __( 'Event name required', 'racketmanager' );
         } elseif ( $new ) {
-            $events = $competition->get_events();
+            $events = $this->competition_service->get_events_for_competition( $competition->get_id() );
             foreach ( $events as $event ) {
                 if ( is_object( $event ) && isset( $event->name ) && $event->name === $config->name ) {
                     $validator->error = true;

@@ -61,7 +61,7 @@ final class Competition_Allowlist_Test extends TestCase {
     }
 
     private function create_competition( array $seasons = [] ): Competition {
-        return Competition_Factory::create_from_dto(
+        $competition = Competition_Factory::create_from_dto(
             new Competition_Hydration_DTO(
                 id: 100,
                 name: 'Allowlist Test League',
@@ -71,6 +71,9 @@ final class Competition_Allowlist_Test extends TestCase {
                 settings: []
             )
         );
+        $competition->set_competition_repository( new \Racketmanager\Repositories\Competition_Repository() );
+
+        return $competition;
     }
 
     private function create_event(

@@ -29,9 +29,11 @@ use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class Parent_Page_Templates_Test extends TestCase {
+    use Creates_Competition_Season_Service;
     use Manages_Wordpress_Globals;
 
     private string $templates_dir;
@@ -97,7 +99,8 @@ class Parent_Page_Templates_Test extends TestCase {
             $club_service,
             $player_service,
             $security_service,
-            $settings_service
+            $settings_service,
+            $this->competition_season_service( [ 1 => 'Central Club' ] )
         );
 
         $query = new Get_Competition_Query(
@@ -172,7 +175,8 @@ class Parent_Page_Templates_Test extends TestCase {
             $club_service,
             $player_service,
             $security_service,
-            $settings_service
+            $settings_service,
+            $this->competition_season_service( [ 2 => 'Memorial Ground' ] )
         );
 
         $query = new Get_Competition_Query(
@@ -218,7 +222,8 @@ class Parent_Page_Templates_Test extends TestCase {
             $this->createStub( Club_Service::class ),
             $this->createStub( Player_Service::class ),
             $this->createStub( Security_Service_Interface::class ),
-            $this->createStub( Settings_Service::class )
+            $this->createStub( Settings_Service::class ),
+            $this->competition_season_service()
         );
 
         // Rewrite rules set query_vars['pagename'] = 'competition'

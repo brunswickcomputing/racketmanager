@@ -22,6 +22,7 @@ use Racketmanager\Exceptions\Player_Exists_Exception;
 use Racketmanager\Exceptions\Registration_Not_Found_Exception;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Fixture_Service;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Util\Util;
@@ -46,6 +47,7 @@ readonly final class Import_Action_Dispatcher implements Import_Action_Dispatche
         private Fixture_Service $fixture_service,
         private Player_Service $player_service,
         private Registration_Service $registration_service,
+        private League_Team_Repository_Interface $league_team_repository,
         private ?object $racketmanager = null,
     ) {
     }
@@ -208,44 +210,34 @@ readonly final class Import_Action_Dispatcher implements Import_Action_Dispatche
                 if ( ! empty( $team_id ) ) {
                     $table_id = $league->add_team( $team_id, $season );
                     if ( $table_id ) {
-                        $league_team = get_league_team( $table_id );
-                        if ( $league_team ) {
-                            $league_team->done_matches = (int) ( $line[1] ?? 0 );
-                            $league_team->won_matches  = (int) ( $line[2] ?? 0 );
-                            $league_team->draw_matches = (int) ( $line[3] ?? 0 );
-                            $league_team->lost_matches = (int) ( $line[4] ?? 0 );
-                            if ( isset( $line[5] ) ) {
-                                if ( str_contains( strval( $line[5] ), ':' ) ) {
-                                    $points_2 = explode( ':', strval( $line[5] ) );
-                                } else {
-                                    $points_2 = array( $line[5], 0 );
-                                }
-                            } else {
-                                $points_2 = array( 0, 0 );
-                            }
-                            $league_team->points_2_plus  = intval( $points_2[0] );
-                            $league_team->points_2_minus = intval( $points_2[1] );
-                            if ( isset( $line[6] ) ) {
-                                if ( str_contains( strval( $line[6] ), ':' ) ) {
-                                    $points = explode( ':', strval( $line[6] ) );
-                                } else {
-                                    $points = array( $line[6], 0 );
-                                }
-                            } else {
-                                $points = array( 0, 0 );
-                            }
-                            $league_team->points_plus  = floatval( $points[0] );
-                            $league_team->points_minus = floatval( $points[1] );
-                            $league_team->add_points   = intval( $line[7] ?? 0 );
-                            $custom                    = array();
-                            $custom['sets_won']        = intval( $line[8] ?? 0 );
-                            $custom['sets_allowed']    = intval( $line[9] ?? 0 );
-                            $custom['games_won']       = intval( $line[10] ?? 0 );
-                            $custom['games_allowed']   = intval( $line[11] ?? 0 );
-                            $league_team->custom       = $custom;
-                            $league_team->update();
-                            ++$x;
+                        $points_2 = array( 0, 0 );
+                        if ( isset( $line[5] ) ) {
+                            $points_2 = str_contains( strval( $line[5] ), ':' ) ? explode( ':', strval( $line[5] ) ) : array( $line[5], 0 );
                         }
+                        $points = array( 0, 0 );
+                        if ( isset( $line[6] ) ) {
+                            $points = str_contains( strval( $line[6] ), ':' ) ? explode( ':', strval( $line[6] ) ) : array( $line[6], 0 );
+                        }
+                        $custom = array(
+                            'sets_won'      => intval( $line[8] ?? 0 ),
+                            'sets_allowed'  => intval( $line[9] ?? 0 ),
+                            'games_won'     => intval( $line[10] ?? 0 ),
+                            'games_allowed' => intval( $line[11] ?? 0 ),
+                        );
+                        $this->league_team_repository->update_stats(
+                            (int) $table_id,
+                            (int) ( $line[1] ?? 0 ),
+                            (int) ( $line[2] ?? 0 ),
+                            (int) ( $line[3] ?? 0 ),
+                            (int) ( $line[4] ?? 0 ),
+                            floatval( $points[0] ),
+                            floatval( $points[1] ),
+                            intval( $points_2[0] ),
+                            intval( $points_2[1] ),
+                            floatval( $line[7] ?? 0 ),
+                            $custom
+                        );
+                        ++$x;
                     }
                 }
             }

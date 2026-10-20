@@ -400,9 +400,6 @@ class Result_Reporting_Service_Test extends TestCase {
 					'away' => [ '1' => (object) [ 'display_name' => 'Rubber Loser' ] ],
 				];
 			}
-
-			public function get_players(): void {
-			}
 		};
 	}
 

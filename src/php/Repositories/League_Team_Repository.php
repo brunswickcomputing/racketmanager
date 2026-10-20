@@ -81,61 +81,184 @@ class League_Team_Repository implements League_Team_Repository_Interface {
             '%f',
             '%s',
         );
-        if ( empty( $entity->get_id() ) ) {
+        $table_id = $entity->get_table_id() ?? $entity->table_id ?? $entity->get_id();
+        if ( empty( $table_id ) ) {
             $inserted = $this->wpdb->insert(
                 $this->table_name,
                 $data,
                 $data_format
             );
             if ( $inserted ) {
+                $entity->table_id = $this->wpdb->insert_id;
                 $entity->set_id( $this->wpdb->insert_id );
-                wp_cache_set( $entity->get_id(), $entity, 'league-teams' );
+                wp_cache_set( $entity->table_id, $entity, 'league-teams' );
                 return $this->wpdb->insert_id;
             }
             return false;
         } else {
-            wp_cache_set( $entity->get_id(), $entity, 'league-teams' );
+            wp_cache_set( $table_id, $entity, 'league-teams' );
             return $this->wpdb->update(
                 $this->table_name,
                 $data,
                 array(
-                    'id' => $entity->get_id()
+                    'id' => $table_id,
                 ), // Where clause
                 $data_format,
                 array(
-                    '%d'
+                    '%d',
                 ) // Where format
             ) !== false;
         }
     }
 
     public function delete( int $id ): bool {
+        wp_cache_delete( $id, 'league-teams' );
         return $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) ) !== false;
+    }
+
+    public function find( int|string $id ): ?League_Team {
+        return $this->find_by_id( $id );
     }
 
     public function find_by_id( $id ): ?League_Team {
         if ( empty( $id ) ) {
             return null;
         }
+        $id = (int) $id;
         $league_team = wp_cache_get( $id, 'league-teams' );
 
         if ( ! $league_team ) {
-            $league_team = $this->wpdb->get_row(
+            $teams_table = $this->wpdb->prefix . 'racketmanager_teams';
+            $league_team_row = $this->wpdb->get_row(
                 $this->wpdb->prepare(
-                    "SELECT * FROM $this->table_name WHERE `id` = %d LIMIT 1",
+                    "SELECT B.`id` AS `id`, A.`team_id`, B.`title`, B.`club_id`, B.`stadium`, B.`home`, A.`group`, B.`roster`, A.`profile`, A.`captain`, A.`match_day`, A.`match_time`, A.`points_plus`, A.`points_minus`, A.`points_2_plus`, A.`points_2_minus`, A.`add_points`, A.`done_matches`, A.`won_matches`, A.`draw_matches`, A.`lost_matches`, A.`diff`, A.`league_id`, A.`id` AS `table_id`, A.`season`, A.`rank`, A.`status`, A.`custom`, B.`team_type`, A.`rating` FROM $teams_table B INNER JOIN $this->table_name A ON B.id = A.team_id WHERE A.`id` = %d LIMIT 1",
                     $id
                 )
             );
 
-            if ( ! $league_team ) {
+            if ( ! $league_team_row ) {
+                $league_team_row = $this->wpdb->get_row(
+                    $this->wpdb->prepare(
+                        "SELECT * FROM $this->table_name WHERE `id` = %d LIMIT 1",
+                        $id
+                    )
+                );
+                if ( $league_team_row ) {
+                    // Raw league_teams row: its `id` is the table id and `team_id` is the team.
+                    $league_team_row->table_id = (int) $league_team_row->id;
+                    $league_team_row->id       = (int) ( $league_team_row->team_id ?? $league_team_row->id );
+                }
+            }
+
+            if ( ! $league_team_row ) {
                 return null;
             }
-            $league_team = new League_Team( $league_team );
+            $league_team = new League_Team( $league_team_row );
 
-            wp_cache_set( $league_team->get_id(), $league_team, 'league-teams' );
+            wp_cache_set( $id, $league_team, 'league-teams' );
         }
 
         return $league_team;
+    }
+
+    public function update_constitution( int $table_id, int $league_id, string $status ): bool {
+        $result = $this->wpdb->update(
+            $this->table_name,
+            array(
+                'league_id' => $league_id,
+                'status'    => $status,
+            ),
+            array( 'id' => $table_id ),
+            array( '%d', '%s' ),
+            array( '%d' )
+        ) !== false;
+
+        wp_cache_delete( $table_id, 'league-teams' );
+        return $result;
+    }
+
+    public function set_constitution_rank( int $table_id, int $league_id, int $rank, string $status, string|int $profile ): bool {
+        $result = $this->wpdb->update(
+            $this->table_name,
+            array(
+                'league_id' => $league_id,
+                'rank'      => $rank,
+                'status'    => $status,
+                'profile'   => (int) $profile,
+            ),
+            array( 'id' => $table_id ),
+            array( '%d', '%d', '%s', '%d' ),
+            array( '%d' )
+        ) !== false;
+
+        wp_cache_delete( $table_id, 'league-teams' );
+        return $result;
+    }
+
+    public function amend_points( int $table_id, float $points ): bool {
+        $result = $this->wpdb->update(
+            $this->table_name,
+            array( 'add_points' => $points ),
+            array( 'id' => $table_id ),
+            array( '%f' ),
+            array( '%d' )
+        ) !== false;
+
+        wp_cache_delete( $table_id, 'league-teams' );
+        return $result;
+    }
+
+    public function update_details( int $table_id, int $captain, string $match_day, string $match_time ): bool {
+        $result = $this->wpdb->update(
+            $this->table_name,
+            array(
+                'captain'    => $captain,
+                'match_day'  => $match_day,
+                'match_time' => $match_time,
+            ),
+            array( 'id' => $table_id ),
+            array( '%d', '%s', '%s' ),
+            array( '%d' )
+        ) !== false;
+
+        wp_cache_delete( $table_id, 'league-teams' );
+        return $result;
+    }
+
+    public function update_stats(
+        int $table_id,
+        int $done_matches,
+        int $won_matches,
+        int $draw_matches,
+        int $lost_matches,
+        float $points_plus,
+        float $points_minus,
+        int $points_2_plus,
+        int $points_2_minus,
+        float $add_points,
+        array $custom = array()
+    ): bool {
+        $result = $this->wpdb->update(
+            $this->table_name,
+            array(
+                'done_matches'   => $done_matches,
+                'won_matches'    => $won_matches,
+                'draw_matches'   => $draw_matches,
+                'lost_matches'   => $lost_matches,
+                'points_plus'    => $points_plus,
+                'points_minus'   => $points_minus,
+                'points_2_plus'  => $points_2_plus,
+                'points_2_minus' => $points_2_minus,
+                'add_points'     => $add_points,
+                'custom'         => maybe_serialize( $custom ),
+            ),
+            array( 'id' => $table_id ),
+            array( '%d', '%d', '%d', '%d', '%f', '%f', '%d', '%d', '%f', '%s' ),
+            array( '%d' )
+        ) !== false;
+
+        wp_cache_delete( $table_id, 'league-teams' );
+        return $result;
     }
 
     /**

@@ -90,7 +90,8 @@ class Fixture_Service {
             $rubber_data->rubber_number = $ix;
             $rubber_data->date          = $fixture->get_date();
             $rubber_data->match_id      = $fixture->get_id();
-            new Rubber( $rubber_data );
+            $rubber                     = new Rubber( $rubber_data );
+            $this->rubber_repository->save( $rubber );
         }
     }
 

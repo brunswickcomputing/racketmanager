@@ -61,12 +61,14 @@ use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;
 
 /**
  * End-to-end coverage of the league/team entry points that render tournament match cards:
  * handler -> Tournament_Presenter -> real templates (matches.php, team-details.php, matches-team-list.php).
  */
 class League_Match_Card_Entry_Points_Test extends TestCase {
+    use Creates_Competition_Season_Service;
     use Manages_Wordpress_Globals;
     use Creates_Team_Match_Row_Presenter;
 
@@ -839,6 +841,9 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
 
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
+        $comp_service->method( 'get_matches_for_competition' )->willReturn( [ $fixture ] );
+        $comp_service->method( 'get_teams_by_query' )->willReturn( [] );
+        $comp_service->method( 'get_players_for_competition_query' )->willReturn( [] );
 
         $club_service = $this->createStub( Club_Service::class );
         $club_service->method( 'get_club' )->willReturn( $club );
@@ -853,7 +858,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
             ->willReturn( $detail );
 
         $presenter = new Tournament_Presenter( 'd/m/Y', $detail_service, team_match_row_presenter: $this->create_team_match_row_presenter() );
-        $handler   = new Get_Competition_Clubs_Handler( $comp_service, $club_service, $stats, $presenter, $this->competition_presenter() );
+        $handler   = new Get_Competition_Clubs_Handler( $comp_service, $club_service, $stats, $presenter, $this->competition_presenter(), $this->competition_season_service() );
         $vm        = $handler->handle( new Get_Competition_Clubs_Query( competition_id: 1, club_identifier: '5', template: '' ) );
 
         $this->assertSame( 'clubs', $vm->template, (string) $vm->error_message );

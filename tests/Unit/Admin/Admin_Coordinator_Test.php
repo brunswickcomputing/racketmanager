@@ -316,13 +316,16 @@ final class Admin_Coordinator_Test extends TestCase {
             ->method( 'register_hooks' )
             ->with( $registry );
 
-        new Admin(
+        $admin = new Admin(
             $container,
             null,
             $this->createStub( Admin_Display::class ),
             new Asset_Manager(),
             $ajax_controller
         );
+
+        self::assertInstanceOf( Admin::class, $admin );
+        self::assertSame( $ajax_controller, $admin->ajax_admin );
     }
 
     public function test_register_admin_hooks_is_idempotent(): void {

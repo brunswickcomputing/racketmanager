@@ -14,7 +14,6 @@ use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Email_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Email_Shortcode_Presenter;
-use Racketmanager\Public\Shortcodes_Email;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 
@@ -263,41 +262,11 @@ class Email_Shortcode_Adapter_Test extends TestCase {
         unset( $GLOBALS['wp_stubs_events'][30] );
     }
 
-    public function test_shortcodes_email_facade_delegates_to_container_adapter(): void {
-        $adapter = $this->createMock( Email_Shortcode_Adapter::class );
-
-        $adapter->expects( $this->once() )->method( 'show_match_notification' )->with( [ 'match' => 1 ] )->willReturn( 'match_notif' );
-        $adapter->expects( $this->once() )->method( 'show_result_notification' )->with( [ 'match' => 2 ] )->willReturn( 'result_notif' );
-        $adapter->expects( $this->once() )->method( 'show_captain_result_notification' )->with( [ 'match' => 3 ] )->willReturn( 'capt_notif' );
-        $adapter->expects( $this->once() )->method( 'show_result_outstanding_notification' )->with( [ 'match' => 4 ] )->willReturn( 'out_notif' );
-        $adapter->expects( $this->once() )->method( 'show_club_player_notification' )->with( [ 'club' => 'a' ] )->willReturn( 'player_notif' );
-        $adapter->expects( $this->once() )->method( 'show_match_date_change_notification' )->with( [ 'match' => 5 ] )->willReturn( 'date_notif' );
-        $adapter->expects( $this->once() )->method( 'show_team_withdrawn' )->with( [ 'team' => 6 ] )->willReturn( 'team_notif' );
-        $adapter->expects( $this->once() )->method( 'show_withdrawn_team_match' )->with( [ 'event' => 'b' ] )->willReturn( 'withdrawn_match' );
-        $adapter->expects( $this->once() )->method( 'show_event_constitution' )->with( [ 'id' => 7 ] )->willReturn( 'constitution' );
-
-        $app = $this->create_app_with_services( [ 'email_shortcode_adapter' => $adapter ] );
-
-        $facade = new Shortcodes_Email( $app );
-        $this->assertSame( 'match_notif', $facade->show_match_notification( [ 'match' => 1 ] ) );
-        $this->assertSame( 'result_notif', $facade->show_result_notification( [ 'match' => 2 ] ) );
-        $this->assertSame( 'capt_notif', $facade->show_captain_result_notification( [ 'match' => 3 ] ) );
-        $this->assertSame( 'out_notif', $facade->show_result_outstanding_notification( [ 'match' => 4 ] ) );
-        $this->assertSame( 'player_notif', $facade->show_club_player_notification( [ 'club' => 'a' ] ) );
-        $this->assertSame( 'date_notif', $facade->show_match_date_change_notification( [ 'match' => 5 ] ) );
-        $this->assertSame( 'team_notif', $facade->show_team_withdrawn( [ 'team' => 6 ] ) );
-        $this->assertSame( 'withdrawn_match', $facade->show_withdrawn_team_match( [ 'event' => 'b' ] ) );
-        $this->assertSame( 'constitution', $facade->show_event_constitution( [ 'id' => 7 ] ) );
-    }
-
-    public function test_adapter_and_facade_have_no_legacy_cycle_or_service_locator(): void {
+    public function test_adapter_has_no_legacy_cycle_or_service_locator(): void {
         $adapter = (string) file_get_contents( RACKETMANAGER_PATH . 'src/php/Infrastructure/Wordpress/Shortcodes/Email_Shortcode_Adapter.php' );
-        $facade  = (string) file_get_contents( RACKETMANAGER_PATH . 'src/php/Public/Shortcodes_Email.php' );
 
         $this->assertStringNotContainsString( 'Racketmanager\\Public\\', $adapter );
         $this->assertStringNotContainsString( 'legacy_handler', $adapter );
         $this->assertStringNotContainsString( 'container', $adapter );
-        $this->assertSame( 0, substr_count( $facade, 'load_template' ) );
-        $this->assertSame( 0, substr_count( $facade, 'fixture_repository' ) );
     }
 }

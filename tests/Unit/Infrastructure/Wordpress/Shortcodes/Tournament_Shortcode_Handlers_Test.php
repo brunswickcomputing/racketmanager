@@ -50,7 +50,6 @@ use Racketmanager\Presentation\Presenters\Order_Of_Play_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
-use Racketmanager\Public\Shortcodes_Tournament;
 use Racketmanager\Repositories\Competition_Repository;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Services\Competition_Service;
@@ -633,48 +632,5 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
         $output = $presenter->render( $vm );
 
         $this->assertSame( '<div class="real-rendered-modal">Modal HTML</div>', $output );
-    }
-
-    // -------------------------------------------------------------------------
-    // 13. Shortcodes_Tournament Facade Delegation Test
-    // -------------------------------------------------------------------------
-
-    public function test_shortcodes_tournament_facade_delegates_to_adapter(): void {
-        $adapter = $this->createMock( Tournament_Shortcode_Adapter::class );
-        $adapter->expects( $this->once() )->method( 'show_tournament' )->willReturn( 'facade_tournament' );
-        $adapter->expects( $this->once() )->method( 'show_tournament_overview' )->willReturn( 'facade_overview' );
-        $adapter->expects( $this->exactly( 2 ) )->method( 'show_tournament_events' )->willReturn( 'facade_events' );
-        $adapter->expects( $this->exactly( 2 ) )->method( 'show_draws' )->willReturn( 'facade_draws' );
-        $adapter->expects( $this->exactly( 2 ) )->method( 'show_tournament_players' )->willReturn( 'facade_players' );
-        $adapter->expects( $this->once() )->method( 'show_tournament_winners' )->willReturn( 'facade_winners' );
-        $adapter->expects( $this->once() )->method( 'show_tournament_matches' )->willReturn( 'facade_matches' );
-        $adapter->expects( $this->once() )->method( 'show_tournament_match' )->willReturn( 'facade_match' );
-        $adapter->expects( $this->once() )->method( 'show_order_of_play' )->willReturn( 'facade_order_of_play' );
-        $adapter->expects( $this->once() )->method( 'show_latest_tournament' )->willReturn( 'facade_latest' );
-        $adapter->expects( $this->once() )->method( 'show_tournament_withdrawal_modal' )->willReturn( 'facade_withdrawal_modal' );
-        $adapter->expects( $this->once() )->method( 'show_tournament_withdrawal' )->willReturn( 'facade_withdrawal' );
-
-        $racketmanager = $this->create_app_with_services( [ 'tournament_shortcode_adapter' => $adapter ] );
-
-        $facade = new Shortcodes_Tournament( $racketmanager );
-
-        $tournament = $this->createStub( Tournament::class );
-        $tournament->method( 'get_id' )->willReturn( 1 );
-
-        $this->assertSame( 'facade_tournament', $facade->show_tournament() );
-        $this->assertSame( 'facade_overview', $facade->show_tournament_overview() );
-        $this->assertSame( 'facade_events', $facade->show_tournament_events() );
-        $this->assertSame( 'facade_events', $facade->show_tournament_event( $tournament, 2 ) );
-        $this->assertSame( 'facade_draws', $facade->show_draws() );
-        $this->assertSame( 'facade_draws', $facade->show_draw( $tournament, 3 ) );
-        $this->assertSame( 'facade_players', $facade->show_tournament_players() );
-        $this->assertSame( 'facade_players', $facade->show_tournament_player( $tournament, 4 ) );
-        $this->assertSame( 'facade_winners', $facade->show_tournament_winners() );
-        $this->assertSame( 'facade_matches', $facade->show_tournament_matches() );
-        $this->assertSame( 'facade_match', $facade->show_tournament_match() );
-        $this->assertSame( 'facade_order_of_play', $facade->show_order_of_play() );
-        $this->assertSame( 'facade_latest', $facade->show_latest_tournament() );
-        $this->assertSame( 'facade_withdrawal_modal', $facade->show_tournament_withdrawal_modal() );
-        $this->assertSame( 'facade_withdrawal', $facade->show_tournament_withdrawal() );
     }
 }

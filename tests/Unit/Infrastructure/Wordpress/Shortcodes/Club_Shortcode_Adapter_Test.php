@@ -45,7 +45,6 @@ use Racketmanager\Presentation\View_Models\Club_Event_View_Model;
 use Racketmanager\Presentation\View_Models\Club_Roster_Player_View_Model;
 use Racketmanager\Presentation\View_Models\Event_Header_View_Model;
 use Racketmanager\Presentation\View_Models\Player_View_Model;
-use Racketmanager\Public\Shortcodes_Club;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Services\Club_Service;
@@ -932,33 +931,15 @@ class Club_Shortcode_Adapter_Test extends TestCase {
     }
 
     // ---------------------------------------------------------------------
-    // Facade and architecture guards
+    // Architecture guards
     // ---------------------------------------------------------------------
 
-    public function test_shortcodes_club_facade_delegates_to_adapter(): void {
-        $adapter = $this->createMock( Club_Shortcode_Adapter::class );
-        $adapter->expects( $this->once() )->method( 'show_clubs' )->with( [ 'template' => 'list' ] )->willReturn( '<div class="clubs"></div>' );
-        $adapter->expects( $this->once() )->method( 'show_club_roles' )->with( [] )->willReturn( '<div class="roles"></div>' );
-        $adapter->expects( $this->once() )->method( 'show_club_invoices' )->with( [ 'template' => 'x' ] )->willReturn( 'invoices' );
-
-        $app = $this->create_app_with_services( [
-            'club_shortcode_adapter' => $adapter,
-        ] );
-
-        $facade = new Shortcodes_Club( $app );
-        $this->assertSame( '<div class="clubs"></div>', $facade->show_clubs( [ 'template' => 'list' ] ) );
-        $this->assertSame( '<div class="roles"></div>', $facade->show_club_roles( [] ) );
-        $this->assertSame( 'invoices', $facade->show_club_invoices( [ 'template' => 'x' ] ) );
-    }
-
-    public function test_adapter_and_facade_have_no_legacy_cycle_or_service_locator(): void {
+    public function test_adapter_has_no_legacy_cycle_or_service_locator(): void {
         $adapter = (string) file_get_contents( RACKETMANAGER_PATH . 'src/php/Infrastructure/Wordpress/Shortcodes/Club_Shortcode_Adapter.php' );
-        $facade  = (string) file_get_contents( RACKETMANAGER_PATH . 'src/php/Public/Shortcodes_Club.php' );
 
         $this->assertStringNotContainsString( 'Racketmanager\\Public\\', $adapter );
         $this->assertStringNotContainsString( 'legacy_handler', $adapter );
         $this->assertStringNotContainsString( 'container', $adapter );
-        $this->assertStringNotContainsString( 'load_template', $facade );
         $this->assertSame( 0, preg_match( '/\?(Club_Service|Get_\w+_Handler|Shortcode_View_Presenter)\s+\$/', $adapter ), 'Dependencies must be required' );
     }
 

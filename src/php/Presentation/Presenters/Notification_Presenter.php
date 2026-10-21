@@ -46,7 +46,7 @@ readonly class Notification_Presenter {
     /**
      * Prepare variables for the match-notification template.
      *
-     * Mirrors logic in Shortcodes_Email::show_match_notification
+     * Mirrors logic in Email_Shortcode_Adapter::show_match_notification
      */
     public function present_match_notification( Fixture $fixture, array $args ): array {
         $competition_type = $args['competition_type'] ?? '';

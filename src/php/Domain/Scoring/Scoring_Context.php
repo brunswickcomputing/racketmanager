@@ -20,7 +20,7 @@ readonly class Scoring_Context {
 	}
 
 	/**
-	 * Create from legacy Racketmanager_Match object.
+	 * Create from match or fixture object.
 	 *
 	 * @param object $match
 	 *

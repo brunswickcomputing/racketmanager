@@ -13,7 +13,6 @@ use Racketmanager\Domain\Communication\Message;
 use Racketmanager\Domain\Player\User;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Message_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
-use Racketmanager\Public\Shortcodes_Message;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
@@ -315,7 +314,7 @@ class Message_Shortcode_Handlers_Test extends TestCase {
         $this->assertStringNotContainsString( 'message-summary', $output );
     }
 
-    public function test_adapter_and_facade_delegation(): void {
+    public function test_adapter_delegation(): void {
         $messages_handler = new Get_Messages_Handler(
             $this->createStub( User_Repository_Interface::class ),
             $this->createStub( Message_Repository_Interface::class )
@@ -331,11 +330,7 @@ class Message_Shortcode_Handlers_Test extends TestCase {
             $message_handler
         );
 
-        $this->racketmanager->container = $this->create_container_with_services( [ 'message_shortcode_adapter' => $adapter ] );
-
-        $facade = new Shortcodes_Message( $this->racketmanager );
-
-        $this->assertNotEmpty( $facade->show_messages( [] ) );
-        $this->assertNotEmpty( $facade->show_message( [ 'id' => 1 ] ) );
+        $this->assertNotEmpty( $adapter->show_messages( [] ) );
+        $this->assertNotEmpty( $adapter->show_message( [ 'id' => 1 ] ) );
     }
 }

@@ -47,6 +47,12 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 10.0.0 =
+* UPDATE: removed Public\Shortcodes_* facades and Racketmanager_Match; get_match() now returns ?Fixture
+* UPDATE: shortcode tags now resolve through Infrastructure\Wordpress\Shortcodes\*_Shortcode_Adapter classes registered in the service container (Shortcodes_Club, Shortcodes_Competition, Shortcodes_Email, Shortcodes_Event, Shortcodes_League, Shortcodes_Login, Shortcodes_Match, Shortcodes_Message, Shortcodes_Tournament)
+* UPDATE: migrate get_match() callers to an instance of Fixture_Repository (resolved from the container) and find_by_id(); the helper remains as an E_USER_DEPRECATED shim
+* UPDATE: get_competition(), get_rubber(), and match_add_players() remain as E_USER_DEPRECATED shims; prefer container-resolved repositories and services
+
 = 9.7.0 =
 * UPDATE: show timeout period on result notification
 * UPDATE: only chase match confirmation when needed
@@ -1998,3 +2004,8 @@ http://wordpress.org/support/topic/racketmanager-385-changes-info
 
 = 1.0 =
 * initial release
+
+== Upgrade Notice ==
+
+= 10.0.0 =
+Removed Public\Shortcodes_* facades and Racketmanager_Match. get_match() now returns ?Fixture; resolve Fixture_Repository from the container. Deprecated helpers remain as E_USER_DEPRECATED shims.

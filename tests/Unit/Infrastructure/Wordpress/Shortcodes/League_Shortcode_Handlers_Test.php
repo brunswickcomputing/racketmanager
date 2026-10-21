@@ -42,7 +42,6 @@ use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\League_Standings_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
-use Racketmanager\Public\Shortcodes_League;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
@@ -827,34 +826,5 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'rendered-output', $output_unset );
         $this->assertSame( 42, $inner_renderer->observed_league_id );
         $this->assertFalse( array_key_exists( 'league', $GLOBALS ) );
-    }
-
-    public function test_shortcodes_league_facade_delegation(): void {
-        $adapter = $this->createMock( League_Shortcode_Adapter::class );
-        $adapter->expects( self::once() )->method( 'show_championship' )->with( [ 'id' => 1 ] )->willReturn( '<div>Champ</div>' );
-        $adapter->expects( self::once() )->method( 'show_archive' )->with( [ 'id' => 1 ] )->willReturn( '<div>Archive</div>' );
-        $adapter->expects( self::once() )->method( 'show_standings' )->with( [ 'id' => 1 ], false )->willReturn( '<div>Standings</div>' );
-        $adapter->expects( self::once() )->method( 'show_crosstable' )->with( [ 'id' => 1 ] )->willReturn( '<div>Crosstable</div>' );
-        $adapter->expects( self::once() )->method( 'show_matches' )->with( [ 'id' => 1 ] )->willReturn( '<div>Matches</div>' );
-        $adapter->expects( self::once() )->method( 'show_teams' )->with( [ 'id' => 1 ] )->willReturn( '<div>Teams</div>' );
-        $adapter->expects( self::once() )->method( 'show_league_players' )->with( [ 'id' => 1 ] )->willReturn( '<div>Players</div>' );
-        $adapter->expects( self::once() )->method( 'show_season_dropdown' )->with( [ 'id' => 1 ] )->willReturn( '<select>Season</select>' );
-        $adapter->expects( self::once() )->method( 'show_match_dropdown' )->with( [ 'id' => 1 ] )->willReturn( '<select>Match</select>' );
-        $adapter->expects( self::once() )->method( 'show_last_5' )->with( [ 'id' => 1 ] )->willReturn( '<div>Last5</div>' );
-
-        $racketmanager = $this->create_app_with_services( [ 'league_shortcode_adapter' => $adapter ] );
-
-        $facade = new Shortcodes_League( $racketmanager );
-
-        $this->assertSame( '<div>Champ</div>', $facade->show_championship( [ 'id' => 1 ] ) );
-        $this->assertSame( '<div>Archive</div>', $facade->show_archive( [ 'id' => 1 ] ) );
-        $this->assertSame( '<div>Standings</div>', $facade->show_standings( [ 'id' => 1 ] ) );
-        $this->assertSame( '<div>Crosstable</div>', $facade->show_crosstable( [ 'id' => 1 ] ) );
-        $this->assertSame( '<div>Matches</div>', $facade->show_matches( [ 'id' => 1 ] ) );
-        $this->assertSame( '<div>Teams</div>', $facade->show_teams( [ 'id' => 1 ] ) );
-        $this->assertSame( '<div>Players</div>', $facade->show_league_players( [ 'id' => 1 ] ) );
-        $this->assertSame( '<select>Season</select>', $facade->show_season_dropdown( [ 'id' => 1 ] ) );
-        $this->assertSame( '<select>Match</select>', $facade->show_match_dropdown( [ 'id' => 1 ] ) );
-        $this->assertSame( '<div>Last5</div>', $facade->show_last_5( [ 'id' => 1 ] ) );
     }
 }

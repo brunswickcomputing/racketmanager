@@ -174,6 +174,19 @@ $comp_repo = new class implements \Racketmanager\Repositories\Interfaces\Competi
 	public function find_matches( int $competition_id, array $args = [] ): array|int { return []; }
 };
 
+$fixture_repo = new class {
+	public function find_by_id( $id ): ?\Racketmanager\Domain\Fixture\Fixture {
+		if ( ! $id || 999999 === (int) $id ) {
+			return null;
+		}
+		$f = new class extends \Racketmanager\Domain\Fixture\Fixture {
+			public function __construct() {}
+		};
+		$f->id = (int) $id;
+		return $f;
+	}
+};
+
 $container = new \Racketmanager\Services\Container\Simple_Container();
 $container->set( 'player_service', static fn() => new class extends \Racketmanager\Services\Player_Service {
 	public function __construct() {}
@@ -183,6 +196,7 @@ $container->set( 'team_repository', static fn() => $team_repo );
 $container->set( 'tournament_entry_repository', static fn() => $entry_repo );
 $container->set( 'event_repository', static fn() => $event_repo );
 $container->set( 'competition_repository', static fn() => $comp_repo );
+$container->set( 'fixture_repository', static fn() => $fixture_repo );
 
 $GLOBALS['racketmanager'] = (object) array( 'container' => $container );
 
@@ -270,7 +284,7 @@ if ( ! $ev_nonnum instanceof \Racketmanager\Domain\Competition\Event || 'Event M
 	exit( 1 );
 }
 
-// 5. Test get_match deprecation notice
+// 5. Test get_match deprecation notice and behaviour branches
 $match_deprecated_triggered = false;
 set_error_handler( function ( $errno, $errstr ) use ( &$match_deprecated_triggered ) {
 	if ( E_USER_DEPRECATED === $errno && str_contains( $errstr, 'get_match() is deprecated' ) ) {
@@ -280,13 +294,58 @@ set_error_handler( function ( $errno, $errstr ) use ( &$match_deprecated_trigger
 	return false;
 } );
 try {
-	\Racketmanager\get_match( 999999 );
+	$match_by_id = \Racketmanager\get_match( 77 );
 } finally {
 	restore_error_handler();
 }
-if ( ! $match_deprecated_triggered ) {
-	fwrite( STDERR, "get_match() did not trigger E_USER_DEPRECATED notice.\n" );
+if ( ! $match_deprecated_triggered || ! $match_by_id instanceof \Racketmanager\Domain\Fixture\Fixture || 77 !== $match_by_id->id ) {
+	fwrite( STDERR, "get_match(77) failed or did not trigger E_USER_DEPRECATED notice.\n" );
 	exit( 1 );
+}
+
+set_error_handler( static fn() => true );
+try {
+	// Fixture pass-through
+	$fixture_pass = \Racketmanager\get_match( $match_by_id );
+	if ( $fixture_pass !== $match_by_id ) {
+		fwrite( STDERR, "get_match(Fixture) pass-through failed.\n" );
+		exit( 1 );
+	}
+
+	// Object with ->id property
+	$match_from_obj = \Racketmanager\get_match( (object) [ 'id' => 77 ] );
+	if ( ! $match_from_obj instanceof \Racketmanager\Domain\Fixture\Fixture || 77 !== $match_from_obj->id ) {
+		fwrite( STDERR, "get_match((object)['id'=>77]) lookup failed.\n" );
+		exit( 1 );
+	}
+
+	// Falsy input / object without id
+	if ( null !== \Racketmanager\get_match( null ) ) {
+		fwrite( STDERR, "get_match(null) should return null.\n" );
+		exit( 1 );
+	}
+	if ( null !== \Racketmanager\get_match( (object) [ 'no_id' => 123 ] ) ) {
+		fwrite( STDERR, "get_match(object without id) should return null.\n" );
+		exit( 1 );
+	}
+
+	// Nonexistent ID
+	if ( null !== \Racketmanager\get_match( 999999 ) ) {
+		fwrite( STDERR, "get_match(999999) should return null.\n" );
+		exit( 1 );
+	}
+
+	// Container fallback when container does not have fixture_repository
+	$saved_app = $GLOBALS['racketmanager'];
+	$GLOBALS['racketmanager'] = (object) array( 'container' => new \Racketmanager\Services\Container\Simple_Container() );
+	$fallback_match = \Racketmanager\get_match( 999999 );
+	$GLOBALS['racketmanager'] = $saved_app;
+	if ( null !== $fallback_match ) {
+		fwrite( STDERR, "get_match container fallback for missing id should return null.\n" );
+		exit( 1 );
+	}
+} finally {
+	restore_error_handler();
 }
 
 // 6. Test get_rubber deprecation notice

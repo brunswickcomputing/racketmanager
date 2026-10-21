@@ -28,7 +28,6 @@ use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
-use Racketmanager\Public\Shortcodes_Competition;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Entry_Service;
@@ -583,41 +582,6 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
         $output = $adapter->show_competition_entry( [] );
         $this->assertStringContainsString( 'Competition not found', $output );
         unset( $GLOBALS['wp_stubs_is_user_logged_in'] );
-    }
-
-    public function test_shortcodes_competition_facade_delegates_to_container_adapter(): void {
-        $renderer          = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
-        $template_renderer = new Shortcode_Template_Renderer( $renderer );
-
-        $comp_service = $this->createStub( Competition_Service::class );
-        $competition  = Competition_Test_Factory::create( id: 9, name: 'Facade League', seasons: Competition_Test_Factory::season_list() );
-        $comp_service->method( 'get_by_id' )->willReturn( $competition );
-        $comp_service->method( 'get_by_criteria' )->willReturn( [ $competition ] );
-        $comp_service->method( 'get_events_for_competition' )->willReturn( [] );
-        $comp_service->method( 'get_winners_for_competition' )->willReturn( [] );
-
-        $adapter = new Competition_Shortcode_Adapter(
-            competition_service: $comp_service,
-            template_renderer: $template_renderer,
-            competitions_handler: new Get_Competitions_Handler(
-                $comp_service,
-                $this->createStub( Tournament_Service::class ),
-                $this->createStub( Player_Service::class ),
-                $this->createStub( Player_Query_Service::class ),
-                $this->competition_shortcode_presenter()
-            ),
-            dropdown_handler: new Get_Competition_Dropdown_Handler( $comp_service ),
-            view_presenter: new Shortcode_View_Presenter( $template_renderer )
-        );
-
-        $racketmanager = $this->create_app_with_services( [
-            'competition_shortcode_adapter' => $adapter,
-        ] );
-
-        $facade = new Shortcodes_Competition( $racketmanager );
-
-        $this->assertStringContainsString( 'Facade League', $facade->show_competitions( [ 'type' => 'league' ] ) );
-        $this->assertStringContainsString( '<select', $facade->show_dropdown( [ 'id' => '9' ] ) );
     }
 
     public function test_competitions_query_preserves_attributes_and_legacy_fallbacks(): void {

@@ -47,7 +47,6 @@ use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use ReflectionClass;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter;
-use Racketmanager\Public\Shortcodes_Event;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
@@ -800,37 +799,6 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'rendered-output', $output_unset );
         $this->assertSame( 888, $inner_renderer->observed_event_id );
         $this->assertFalse( array_key_exists( 'event', $GLOBALS ) );
-    }
-
-    public function test_shortcodes_event_facade_delegates_to_adapter(): void {
-        $adapter = $this->createMock( Event_Shortcode_Adapter::class );
-        $adapter->expects( $this->once() )->method( 'show_event' )->willReturn( 'facade_event' );
-        $adapter->expects( $this->once() )->method( 'show_event_standings' )->willReturn( 'facade_standings' );
-        $adapter->expects( $this->once() )->method( 'show_event_draw' )->willReturn( 'facade_draw' );
-        $adapter->expects( $this->once() )->method( 'show_event_matches' )->willReturn( 'facade_matches' );
-        $adapter->expects( $this->once() )->method( 'show_event_clubs' )->willReturn( 'facade_clubs' );
-        $adapter->expects( $this->once() )->method( 'show_event_teams' )->willReturn( 'facade_teams' );
-        $adapter->expects( $this->once() )->method( 'show_event_players' )->willReturn( 'facade_players' );
-        $adapter->expects( $this->once() )->method( 'show_event_partner' )->willReturn( 'facade_partner' );
-        $adapter->expects( $this->once() )->method( 'show_event_team_matches' )->willReturn( 'facade_team_matches' );
-        $adapter->expects( $this->once() )->method( 'show_team_order_players' )->willReturn( 'facade_order_players' );
-        $adapter->expects( $this->once() )->method( 'show_dropdown' )->willReturn( 'facade_dropdown' );
-
-        $racketmanager = $this->create_app_with_services( [ 'event_shortcode_adapter' => $adapter ] );
-
-        $facade = new Shortcodes_Event( $racketmanager );
-
-        $this->assertSame( 'facade_event', $facade->show_event( [ 'id' => 1 ] ) );
-        $this->assertSame( 'facade_standings', $facade->show_event_standings( [ 'id' => 1 ] ) );
-        $this->assertSame( 'facade_draw', $facade->show_event_draw( [ 'id' => 1 ] ) );
-        $this->assertSame( 'facade_matches', $facade->show_event_matches( [ 'id' => 1 ] ) );
-        $this->assertSame( 'facade_clubs', $facade->show_event_clubs( [ 'id' => 1 ] ) );
-        $this->assertSame( 'facade_teams', $facade->show_event_teams( [ 'id' => 1 ] ) );
-        $this->assertSame( 'facade_players', $facade->show_event_players( [ 'id' => 1 ] ) );
-        $this->assertSame( 'facade_partner', $facade->show_event_partner( [ 'id' => 1 ] ) );
-        $this->assertSame( 'facade_team_matches', $facade->show_event_team_matches( [ 'id' => 1 ] ) );
-        $this->assertSame( 'facade_order_players', $facade->show_team_order_players( [ 'id' => 1 ] ) );
-        $this->assertSame( 'facade_dropdown', $facade->show_dropdown( [ 'id' => 1 ] ) );
     }
 
     private function create_test_event( int $id, int $competition_id = 10, ?Competition $competition = null ): Event {

@@ -17,7 +17,6 @@ use Racketmanager\Domain\Player\User;
 use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Login_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
-use Racketmanager\Public\Shortcodes_Login;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
 use Racketmanager\Services\Settings_Service;
@@ -221,7 +220,7 @@ class Login_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( Util::get_email_opt_ins(), $vm->vars['opt_in_choices'] );
     }
 
-    public function test_adapter_and_facade_delegation(): void {
+    public function test_adapter_delegation(): void {
         $login_handler          = $this->login_form_handler( users_can_register: 0 );
         $password_lost_handler  = new Get_Password_Lost_Form_Handler();
         $password_reset_handler = new Get_Password_Reset_Form_Handler();
@@ -238,24 +237,22 @@ class Login_Shortcode_Handlers_Test extends TestCase {
             $member_account_handler
         );
 
-        $this->racketmanager->container = $this->create_container_with_services( [ 'login_shortcode_adapter' => $adapter ] );
-
-        $facade = new Shortcodes_Login( $this->racketmanager );
-
-        $facade->load_translations();
-        $this->assertNotEmpty( $facade->render_login_form( [] ) );
+        $this->assertNotEmpty( $adapter->render_login_form( [] ) );
         $GLOBALS['wp_stubs_options']['users_can_register'] = 0;
         $GLOBALS['wp_stubs_is_user_logged_in'] = false;
-        $register_output = $facade->form_register();
-        unset( $GLOBALS['wp_stubs_is_user_logged_in'] );
+        try {
+            $register_output = $adapter->render_login_form( [], 'register' );
+        } finally {
+            unset( $GLOBALS['wp_stubs_is_user_logged_in'] );
+        }
         $this->assertSame(
             'Registering new users is currently not allowed',
             $register_output
         );
-        $this->assertNotEmpty( $facade->form_login( [] ) );
-        $this->assertNotEmpty( $facade->render_password_lost_form( [] ) );
-        $this->assertNotEmpty( $facade->render_password_reset_form( [ 'login' => 'user', 'key' => 'k' ] ) );
-        $this->assertNotEmpty( $facade->generate_member_account_form() );
+        $this->assertNotEmpty( $adapter->login_form( [] ) );
+        $this->assertNotEmpty( $adapter->render_password_lost_form( [] ) );
+        $this->assertNotEmpty( $adapter->render_password_reset_form( [ 'login' => 'user', 'key' => 'k' ] ) );
+        $this->assertNotEmpty( $adapter->generate_member_account_form() );
     }
 
     public function test_login_form_handler_decodes_html_entities_in_site_name(): void {

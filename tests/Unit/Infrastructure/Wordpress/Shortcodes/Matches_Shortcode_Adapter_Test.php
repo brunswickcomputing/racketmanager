@@ -30,7 +30,6 @@ use Racketmanager\Infrastructure\Wordpress\Shortcodes\Matches_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Matches_List_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Public\Shortcodes;
-use Racketmanager\Public\Shortcodes_Match;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
@@ -439,32 +438,15 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
     }
 
     // ---------------------------------------------------------------------
-    // Facade and architecture guards
+    // Architecture guards
     // ---------------------------------------------------------------------
 
-    public function test_shortcodes_match_facade_delegates_to_adapter(): void {
-        $adapter = $this->createMock( Matches_Shortcode_Adapter::class );
-        $adapter->expects( $this->once() )->method( 'show_score' )->with( [ 'id' => 10 ] )->willReturn( 'facade-score' );
-        $adapter->expects( $this->once() )->method( 'show_match_header' )->with( [ 'id' => 10 ] )->willReturn( 'facade-header' );
-        $adapter->expects( $this->once() )->method( 'show_match_detail' )->with( [ 'id' => 10 ] )->willReturn( 'facade-detail' );
-
-        $app = $this->create_app_with_services( [ 'matches_shortcode_adapter' => $adapter ] );
-
-        $facade = new Shortcodes_Match( $app );
-        $this->assertSame( 'facade-score', $facade->show_score( [ 'id' => 10 ] ) );
-        $this->assertSame( 'facade-header', $facade->show_match_header( [ 'id' => 10 ] ) );
-        $this->assertSame( 'facade-detail', $facade->show_match_detail( [ 'id' => 10 ] ) );
-    }
-
-    public function test_adapter_and_facade_have_no_legacy_cycle_or_service_locator(): void {
+    public function test_adapter_has_no_legacy_cycle_or_service_locator(): void {
         $adapter = (string) file_get_contents( RACKETMANAGER_PATH . 'src/php/Infrastructure/Wordpress/Shortcodes/Matches_Shortcode_Adapter.php' );
-        $facade  = (string) file_get_contents( RACKETMANAGER_PATH . 'src/php/Public/Shortcodes_Match.php' );
 
         $this->assertStringNotContainsString( 'Racketmanager\\Public\\', $adapter );
         $this->assertStringNotContainsString( 'match_handler', $adapter );
         $this->assertStringNotContainsString( 'container', $adapter );
-        $this->assertSame( 0, substr_count( $facade, 'load_template' ) );
-        $this->assertSame( 0, substr_count( $facade, 'fixture_detail_service' ) );
     }
 
     // ---------------------------------------------------------------------

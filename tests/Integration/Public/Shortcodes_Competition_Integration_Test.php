@@ -22,7 +22,6 @@ use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
-use Racketmanager\Public\Shortcodes_Competition;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Entry_Service;
@@ -43,7 +42,6 @@ class Shortcodes_Competition_Integration_Test extends TestCase {
     use Creates_Competition_Season_Service;
     private RacketManager $plugin;
     private Simple_Container $container;
-    private Shortcodes_Competition $facade;
     private Competition_Shortcode_Adapter $adapter;
 
     protected function setUp(): void {
@@ -142,52 +140,51 @@ class Shortcodes_Competition_Integration_Test extends TestCase {
         );
 
         $this->container->set( 'competition_shortcode_adapter', fn() => $this->adapter );
-        $this->facade = new Shortcodes_Competition( $this->plugin );
     }
 
     public function test_real_template_rendering_for_competitions(): void {
-        $output = $this->facade->show_competitions( [ 'type' => 'league' ] );
+        $output = $this->adapter->show_competitions( [ 'type' => 'league' ] );
         $this->assertStringContainsString( 'Integration Premier League', $output );
     }
 
     public function test_real_template_rendering_for_competition_detail(): void {
-        $output = $this->facade->show_competition( [ 'competition' => '10' ] );
+        $output = $this->adapter->show_competition( [ 'competition' => '10' ] );
         $this->assertStringContainsString( 'Integration Premier League', $output );
     }
 
     public function test_real_template_rendering_for_competition_overview(): void {
-        $output = $this->facade->show_competition_overview( [ 'id' => '10', 'season' => '2026' ] );
+        $output = $this->adapter->show_competition_overview( [ 'id' => '10', 'season' => '2026' ] );
         $this->assertStringContainsString( 'Overview', $output );
         $this->assertStringContainsString( 'Events', $output );
     }
 
     public function test_real_template_rendering_for_competition_events(): void {
-        $output = $this->facade->show_competition_events( [ 'id' => '10', 'season' => '2026' ] );
+        $output = $this->adapter->show_competition_events( [ 'id' => '10', 'season' => '2026' ] );
         $this->assertStringContainsString( 'Events', $output );
     }
 
     public function test_real_template_rendering_for_competition_teams(): void {
-        $output = $this->facade->show_competition_teams( [ 'id' => '10', 'season' => '2026' ] );
+        $output = $this->adapter->show_competition_teams( [ 'id' => '10', 'season' => '2026' ] );
         $this->assertStringContainsString( 'Teams', $output );
     }
 
     public function test_real_template_rendering_for_competition_clubs(): void {
-        $output = $this->facade->show_competition_clubs( [ 'id' => '10', 'season' => '2026' ] );
+        $output = $this->adapter->show_competition_clubs( [ 'id' => '10', 'season' => '2026' ] );
         $this->assertStringContainsString( 'Clubs', $output );
     }
 
     public function test_real_template_rendering_for_competition_players(): void {
-        $output = $this->facade->show_competition_players( [ 'id' => '10', 'season' => '2026' ] );
+        $output = $this->adapter->show_competition_players( [ 'id' => '10', 'season' => '2026' ] );
         $this->assertStringContainsString( 'Players', $output );
     }
 
     public function test_real_template_rendering_for_competition_winners(): void {
-        $output = $this->facade->show_competition_winners( [ 'id' => '10', 'season' => '2026' ] );
+        $output = $this->adapter->show_competition_winners( [ 'id' => '10', 'season' => '2026' ] );
         $this->assertStringContainsString( 'Winners', $output );
     }
 
     public function test_real_template_rendering_for_dropdown(): void {
-        $output = $this->facade->show_dropdown( [ 'id' => '10' ] );
+        $output = $this->adapter->show_dropdown( [ 'id' => '10' ] );
         $this->assertStringContainsString( 'select', $output );
     }
 }

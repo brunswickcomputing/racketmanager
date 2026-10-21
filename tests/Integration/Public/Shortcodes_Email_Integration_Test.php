@@ -17,7 +17,6 @@ use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Email_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Email_Shortcode_Presenter;
-use Racketmanager\Public\Shortcodes_Email;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
@@ -141,13 +140,12 @@ class Shortcodes_Email_Integration_Test extends TestCase {
 
         $template_renderer = new Shortcode_Template_Renderer( $renderer );
 
-        $this->container->set( 'email_shortcode_adapter', fn() => new Email_Shortcode_Adapter(
+        $this->shortcode = new Email_Shortcode_Adapter(
             $this->fixture_repo,
             $this->presenter,
             $template_renderer
-        ) );
-
-        $this->shortcode = new Shortcodes_Email( $this->plugin );
+        );
+        $this->container->set( 'email_shortcode_adapter', fn() => $this->shortcode );
     }
 
     protected function tearDown(): void {

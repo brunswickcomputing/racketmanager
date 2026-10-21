@@ -15,9 +15,9 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Communication\Message;
+use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Player\Player_Factory;
-use Racketmanager\Domain\Racketmanager_Match;
 use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Domain\Communication\Results_Report;
 use Racketmanager\Domain\Fixture\Rubber;
@@ -317,33 +317,44 @@ function get_league( object|int|string|null $league = null ): ?League {
 
 
 /**
- * Get Racketmanager_Match object
+ * Get Fixture object
  *
- * @deprecated 2.0.0 Use \Racketmanager\Repositories\Fixture_Repository::find_by_id() instead.
+ * @deprecated 2.0.0 Returns \Racketmanager\Domain\Fixture\Fixture instead of legacy Racketmanager_Match.
+ *                   Use \Racketmanager\Repositories\Fixture_Repository::find_by_id() instead.
  *
- * @param object|int|null $match Match ID or a match object. Defaults to global $match.
+ * @param object|int|null $match Match/Fixture ID or object. Defaults to global $match.
  *
- * @return Racketmanager_Match|null Racketmanager_Match|null
+ * @return Fixture|null
  */
-function get_match( object|int|null $match = null ): Racketmanager_Match|null {
+function get_match( object|int|null $match = null ): ?Fixture {
     trigger_error( 'get_match() is deprecated since version 2.0.0! Use \Racketmanager\Repositories\Fixture_Repository::find_by_id() instead.', E_USER_DEPRECATED ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error
     if ( empty( $match ) && isset( $GLOBALS['match'] ) ) {
         $match = $GLOBALS['match'];
     }
 
-    if ( $match instanceof Racketmanager_Match ) {
-        $_match = $match;
-    } elseif ( is_object( $match ) ) {
-        $_match = new Racketmanager_Match( $match );
-    } else {
-        $_match = Racketmanager_Match::get_instance( $match );
+    if ( $match instanceof Fixture ) {
+        return $match;
     }
 
-    if ( ! $_match ) {
-        return null;
+    if ( is_object( $match ) ) {
+        if ( isset( $match->id ) ) {
+            $match = $match->id;
+        } else {
+            return null;
+        }
     }
 
-    return $_match;
+    if ( $match ) {
+        global $racketmanager;
+        if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' ) ) {
+            $fixture_repo = $racketmanager->container->get( 'fixture_repository' );
+        } else {
+            $fixture_repo = new \Racketmanager\Repositories\Fixture_Repository();
+        }
+        return $fixture_repo->find_by_id( (int) $match );
+    }
+
+    return null;
 }
 
 /**

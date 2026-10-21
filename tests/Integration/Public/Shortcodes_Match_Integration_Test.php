@@ -39,7 +39,6 @@ namespace Racketmanager\Tests\Integration\Public {
     use Racketmanager\Presentation\Presenters\Fixture_Presenter;
     use Racketmanager\Presentation\Presenters\Matches_List_Presenter;
     use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
-    use Racketmanager\Public\Shortcodes_Match;
     use Racketmanager\RacketManager;
     use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
     use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
@@ -145,7 +144,7 @@ namespace Racketmanager\Tests\Integration\Public {
 
                 return 'header_html';
             } );
-            $this->container->set( 'matches_shortcode_adapter', fn() => new Matches_Shortcode_Adapter(
+            $this->shortcode = new Matches_Shortcode_Adapter(
                 $this->createStub( Get_Daily_Matches_Handler::class ),
                 $this->createStub( Get_Latest_Results_Handler::class ),
                 $this->createStub( Matches_List_Presenter::class ),
@@ -153,9 +152,8 @@ namespace Racketmanager\Tests\Integration\Public {
                 new Get_Match_Header_Handler( $detail_service ),
                 new Get_Match_Detail_Handler( $detail_service, $this->createStub( Player_Service::class ), $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class ) ),
                 new Match_Shortcode_Presenter( new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $renderer ) ), new Fixture_Presenter( $link_service, $this->createStub( Option_Gateway_Interface::class ) ), $this->createStub( Player_Service::class ) )
-            ) );
-
-            $this->shortcode = new Shortcodes_Match( $this->plugin );
+            );
+            $this->container->set( 'matches_shortcode_adapter', fn() => $this->shortcode );
         }
     }
 }

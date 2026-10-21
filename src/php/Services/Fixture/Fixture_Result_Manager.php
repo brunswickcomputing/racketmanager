@@ -48,7 +48,6 @@ use Racketmanager\Util\Util_Messages;
 
 /**
  * Service for managing fixture results and state transitions.
- * Orchestrates logic formerly in Racketmanager_Match.
  */
 class Fixture_Result_Manager {
     /**

@@ -7,10 +7,14 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Presentation\View_Models\League_Standings_View_Model;
+
 /** @var object $league */
 /** @var array $teams */
 /** @var array<int|string, string> $team_links */
-$team_links = $team_links ?? [];
+/** @var League_Standings_View_Model|null $vm */
+$team_links        = $team_links ?? [];
+$is_column_visible = fn( string $key ): bool => isset( $vm ) && $vm instanceof League_Standings_View_Model ? $vm->show_column( $key ) : show_standings( $key );
 if ( count( $league->teams ) ) {
     ?>
     <div class="table-responsive">
@@ -21,7 +25,7 @@ if ( count( $league->teams ) ) {
                         <?php esc_html_e( 'Pos', 'racketmanager' ); ?>
                     </th>
                     <?php
-                    if ( show_standings( 'status' ) ) {
+                    if ( $is_column_visible( 'status' ) ) {
                         ?>
                         <th class="num d-none d-md-table-cell">
                             &#160;
@@ -33,7 +37,7 @@ if ( count( $league->teams ) ) {
                         <?php esc_html_e( 'Team', 'racketmanager' ); ?>
                     </th>
                     <?php
-                    if ( show_standings( 'pld' ) ) {
+                    if ( $is_column_visible( 'pld' ) ) {
                         ?>
                         <th class="num">
                             <?php esc_html_e( 'Pld', 'racketmanager' ); ?>
@@ -42,7 +46,7 @@ if ( count( $league->teams ) ) {
                     }
                     ?>
                     <?php
-                    if ( show_standings( 'won' ) ) {
+                    if ( $is_column_visible( 'won' ) ) {
                         ?>
                         <th class="num d-none d-md-table-cell">
                             <?php esc_html_e( 'W', 'racketmanager' ); ?>
@@ -51,7 +55,7 @@ if ( count( $league->teams ) ) {
                     }
                     ?>
                     <?php
-                    if ( show_standings( 'tie' ) ) {
+                    if ( $is_column_visible( 'tie' ) ) {
                         ?>
                         <th class="num d-none d-md-table-cell">
                             <?php esc_html_e( 'T', 'racketmanager' ); ?>
@@ -60,7 +64,7 @@ if ( count( $league->teams ) ) {
                     }
                     ?>
                     <?php
-                    if ( show_standings( 'lost' ) ) {
+                    if ( $is_column_visible( 'lost' ) ) {
                         ?>
                         <th class="num d-none d-md-table-cell">
                             <?php esc_html_e( 'L', 'racketmanager' ); ?>
@@ -69,7 +73,7 @@ if ( count( $league->teams ) ) {
                     }
                     ?>
                     <?php
-                    if ( show_standings( 'winPercent' ) ) {
+                    if ( $is_column_visible( 'winPercent' ) ) {
                         ?>
                         <th class="num d-none d-md-table-cell">
                             <?php esc_html_e( 'PCT', 'racketmanager' ); ?>
@@ -78,7 +82,7 @@ if ( count( $league->teams ) ) {
                     }
                     ?>
                     <?php
-                    if ( show_standings( 'sets' ) ) {
+                    if ( $is_column_visible( 'sets' ) ) {
                         ?>
                         <th class='num'>
                             <?php esc_html_e( 'Sets', 'racketmanager' ); ?>
@@ -87,7 +91,7 @@ if ( count( $league->teams ) ) {
                     }
                     ?>
                     <?php
-                    if ( show_standings( 'games' ) ) {
+                    if ( $is_column_visible( 'games' ) ) {
                         ?>
                         <th class='num'>
                             <?php esc_html_e( 'Games', 'racketmanager' ); ?>
@@ -111,7 +115,7 @@ if ( count( $league->teams ) ) {
                             </span>
                         </td>
                         <?php
-                        if ( show_standings( 'status' ) ) {
+                        if ( $is_column_visible( 'status' ) ) {
                             ?>
                             <td class="num d-none d-md-table-cell" title="<?php echo esc_html( $team->status_text ); ?>">
                                 <svg width="32" height="32" class="icon ">
@@ -149,7 +153,7 @@ if ( count( $league->teams ) ) {
                             ?>
                         </td>
                         <?php
-                        if ( show_standings( 'pld' ) ) {
+                        if ( $is_column_visible( 'pld' ) ) {
                             ?>
                             <td class='num'>
                                 <?php echo esc_html( $team->done_matches ?? 0 ); ?>
@@ -158,7 +162,7 @@ if ( count( $league->teams ) ) {
                         }
                         ?>
                         <?php
-                        if ( show_standings( 'won' ) ) {
+                        if ( $is_column_visible( 'won' ) ) {
                             ?>
                             <td class='num d-none d-md-table-cell'>
                                 <?php echo esc_html( $team->won_matches ?? 0 ); ?>
@@ -167,7 +171,7 @@ if ( count( $league->teams ) ) {
                         }
                         ?>
                         <?php
-                        if ( show_standings( 'tie' ) ) {
+                        if ( $is_column_visible( 'tie' ) ) {
                             ?>
                             <td class='num d-none d-md-table-cell'>
                                 <?php echo esc_html( $team->draw_matches ?? 0 ); ?>
@@ -176,7 +180,7 @@ if ( count( $league->teams ) ) {
                         }
                         ?>
                         <?php
-                        if ( show_standings( 'lost' ) ) {
+                        if ( $is_column_visible( 'lost' ) ) {
                             ?>
                             <td class='num d-none d-md-table-cell'>
                                 <?php echo esc_html( $team->lost_matches ?? 0 ) ?>
@@ -185,7 +189,7 @@ if ( count( $league->teams ) ) {
                         }
                         ?>
                         <?php
-                        if ( show_standings( 'winPercent' ) ) {
+                        if ( $is_column_visible( 'winPercent' ) ) {
                             ?>
                             <td class="num d-none d-md-table-cell">
                                 <?php echo esc_html( $team->win_percent ?? 0 ); ?>
@@ -194,7 +198,7 @@ if ( count( $league->teams ) ) {
                         }
                         ?>
                         <?php
-                        if ( show_standings( 'sets' ) ) {
+                        if ( $is_column_visible( 'sets' ) ) {
                             ?>
                             <td class='num'>
                                 <?php echo esc_html( ( $team->sets_won ?? 0 ) . '-' . ( $team->sets_allowed ?? 0 ) ); ?>
@@ -203,7 +207,7 @@ if ( count( $league->teams ) ) {
                         }
                         ?>
                         <?php
-                        if ( show_standings( 'games' ) ) {
+                        if ( $is_column_visible( 'games' ) ) {
                             ?>
                             <td class='num'>
                                 <?php echo esc_html( ( $team->games_won ?? 0 ) . '-' . ( $team->games_allowed ?? 0 ) ); ?>

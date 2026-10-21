@@ -91,11 +91,13 @@ use Racketmanager\Infrastructure\Wordpress\Shortcodes\League_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Login_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Matches_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Message_Shortcode_Adapter;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\Shortcode_Registrar;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Email_Shortcode_Presenter;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
+use Racketmanager\Services\Container\Container_Bootstrap;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Player_Service;
@@ -109,15 +111,126 @@ use Racketmanager\Public\Shortcodes;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+use ReflectionClass;
+use stdClass;
 
 class Shortcode_Adapters_Bootstrap_Test extends TestCase {
+    private const array EXPECTED_SHORTCODE_DEFINITIONS = [
+        [ 'dailymatches', 'matches_shortcode_adapter', 'show_daily_matches' ],
+        [ 'latest_results', 'matches_shortcode_adapter', 'show_latest_results' ],
+        [ 'players', 'general_shortcode_adapter', 'show_players' ],
+        [ 'player', 'general_shortcode_adapter', 'show_player' ],
+        [ 'favourites', 'general_shortcode_adapter', 'show_favourites' ],
+        [ 'invoice', 'general_shortcode_adapter', 'show_invoice' ],
+        [ 'purchase-order', 'general_shortcode_adapter', 'show_purchase_order' ],
+        [ 'memberships', 'general_shortcode_adapter', 'show_memberships' ],
+        [ 'search-players', 'general_shortcode_adapter', 'show_player_search' ],
+        [ 'team-order', 'general_shortcode_adapter', 'show_team_order' ],
+        [ 'show-alert', 'general_shortcode_adapter', 'show_alert' ],
+
+        [ 'clubs', 'club_shortcode_adapter', 'show_clubs' ],
+        [ 'club', 'club_shortcode_adapter', 'show_club' ],
+        [ 'club-players', 'club_shortcode_adapter', 'show_club_players' ],
+        [ 'club-roles', 'club_shortcode_adapter', 'show_club_roles' ],
+        [ 'club-role-modal', 'club_shortcode_adapter', 'show_club_role_modal' ],
+        [ 'club-competitions', 'club_shortcode_adapter', 'show_club_competitions' ],
+        [ 'club-event', 'club_shortcode_adapter', 'show_club_event' ],
+        [ 'club-team', 'club_shortcode_adapter', 'show_club_team' ],
+        [ 'club-invoices', 'club_shortcode_adapter', 'show_club_invoices' ],
+        [ 'team-edit', 'club_shortcode_adapter', 'show_team_edit_modal' ],
+
+        [ 'competitions', 'competition_shortcode_adapter', 'show_competitions' ],
+        [ 'competition', 'competition_shortcode_adapter', 'show_competition' ],
+        [ 'competition-overview', 'competition_shortcode_adapter', 'show_competition_overview' ],
+        [ 'competition-events', 'competition_shortcode_adapter', 'show_competition_events' ],
+        [ 'competition-teams', 'competition_shortcode_adapter', 'show_competition_teams' ],
+        [ 'competition-clubs', 'competition_shortcode_adapter', 'show_competition_clubs' ],
+        [ 'competition-players', 'competition_shortcode_adapter', 'show_competition_players' ],
+        [ 'competition-winners', 'competition_shortcode_adapter', 'show_competition_winners' ],
+        [ 'competition-entry', 'competition_shortcode_adapter', 'show_competition_entry' ],
+        [ 'competition-entry-payment', 'competition_shortcode_adapter', 'show_competition_entry_payment' ],
+        [ 'competition-entry-payment-complete', 'competition_shortcode_adapter', 'show_competition_entry_payment_complete' ],
+        [ 'event-dropdown', 'competition_shortcode_adapter', 'show_dropdown' ],
+
+        [ 'match-notification', 'email_shortcode_adapter', 'show_match_notification' ],
+        [ 'result-notification', 'email_shortcode_adapter', 'show_result_notification' ],
+        [ 'result-notification-captain', 'email_shortcode_adapter', 'show_captain_result_notification' ],
+        [ 'result-outstanding-notification', 'email_shortcode_adapter', 'show_result_outstanding_notification' ],
+        [ 'club-player-notification', 'email_shortcode_adapter', 'show_club_player_notification' ],
+        [ 'match_date_change_notification', 'email_shortcode_adapter', 'show_match_date_change_notification' ],
+        [ 'withdrawn-team', 'email_shortcode_adapter', 'show_team_withdrawn' ],
+        [ 'withdrawn-team-match', 'email_shortcode_adapter', 'show_withdrawn_team_match' ],
+        [ 'event-constitution', 'email_shortcode_adapter', 'show_event_constitution' ],
+
+        [ 'event', 'event_shortcode_adapter', 'show_event' ],
+        [ 'event-standings', 'event_shortcode_adapter', 'show_event_standings' ],
+        [ 'event-draw', 'event_shortcode_adapter', 'show_event_draw' ],
+        [ 'event-matches', 'event_shortcode_adapter', 'show_event_matches' ],
+        [ 'event-clubs', 'event_shortcode_adapter', 'show_event_clubs' ],
+        [ 'event-teams', 'event_shortcode_adapter', 'show_event_teams' ],
+        [ 'event-players', 'event_shortcode_adapter', 'show_event_players' ],
+        [ 'event-partner', 'event_shortcode_adapter', 'show_event_partner' ],
+        [ 'event-team-matches', 'event_shortcode_adapter', 'show_event_team_matches' ],
+        [ 'team-order-players', 'event_shortcode_adapter', 'show_team_order_players' ],
+        [ 'league-dropdown', 'event_shortcode_adapter', 'show_dropdown' ],
+
+        [ 'championship', 'league_shortcode_adapter', 'show_championship' ],
+        [ 'leaguearchive', 'league_shortcode_adapter', 'show_archive' ],
+        [ 'standings', 'league_shortcode_adapter', 'show_standings' ],
+        [ 'crosstable', 'league_shortcode_adapter', 'show_crosstable' ],
+        [ 'matches', 'league_shortcode_adapter', 'show_matches' ],
+
+        [ 'fixture', 'fixture_shortcode_controller', 'handle' ],
+        [ 'match', 'fixture_shortcode_controller', 'handle' ],
+
+        [ 'teams', 'league_shortcode_adapter', 'show_teams' ],
+        [ 'league-players', 'league_shortcode_adapter', 'show_league_players' ],
+        [ 'season-dropdown', 'league_shortcode_adapter', 'show_season_dropdown' ],
+        [ 'match-dropdown', 'league_shortcode_adapter', 'show_match_dropdown' ],
+        [ 'last-5', 'league_shortcode_adapter', 'show_last_5' ],
+
+        [ 'custom-login-form', 'login_shortcode_adapter', 'render_login_form' ],
+        [ 'login-form', 'login_shortcode_adapter', 'login_form' ],
+        [ 'custom-password-lost-form', 'login_shortcode_adapter', 'render_password_lost_form' ],
+        [ 'custom-password-reset-form', 'login_shortcode_adapter', 'render_password_reset_form' ],
+        [ 'account-info', 'login_shortcode_adapter', 'generate_member_account_form' ],
+
+        [ 'score', 'matches_shortcode_adapter', 'show_score' ],
+        [ 'match-header', 'matches_shortcode_adapter', 'show_match_header' ],
+        [ 'match-detail', 'matches_shortcode_adapter', 'show_match_detail' ],
+
+        [ 'messages', 'message_shortcode_adapter', 'show_messages' ],
+        [ 'show-message', 'message_shortcode_adapter', 'show_message' ],
+
+        [ 'tournament', 'tournament_shortcode_adapter', 'show_tournament' ],
+        [ 'tournament-overview', 'tournament_shortcode_adapter', 'show_tournament_overview' ],
+        [ 'tournament-events', 'tournament_shortcode_adapter', 'show_tournament_events' ],
+        [ 'tournament-draws', 'tournament_shortcode_adapter', 'show_draws' ],
+        [ 'tournament-players', 'tournament_shortcode_adapter', 'show_tournament_players' ],
+        [ 'tournament-winners', 'tournament_shortcode_adapter', 'show_tournament_winners' ],
+        [ 'tournament-matches', 'tournament_shortcode_adapter', 'show_tournament_matches' ],
+        [ 'tournament-match', 'tournament_shortcode_adapter', 'show_tournament_match' ],
+        [ 'orderofplay', 'tournament_shortcode_adapter', 'show_order_of_play' ],
+        [ 'latest-tournament', 'tournament_shortcode_adapter', 'show_latest_tournament' ],
+        [ 'tournament-withdrawal', 'tournament_shortcode_adapter', 'show_tournament_withdrawal_modal' ],
+    ];
+
     use Creates_Competition_Season_Service;
+    use Manages_Wordpress_Globals;
+
     private RacketManager $racketmanager;
 
     protected function setUp(): void {
         parent::setUp();
+        $this->backup_globals();
         $this->racketmanager = $this->createStub( RacketManager::class );
         $this->racketmanager->container = new Simple_Container();
+    }
+
+    protected function tearDown(): void {
+        $this->restore_globals();
+        parent::tearDown();
     }
 
     public function test_adapters_instantiate(): void {
@@ -157,43 +270,30 @@ class Shortcode_Adapters_Bootstrap_Test extends TestCase {
         $this->assertInstanceOf( General_Shortcode_Adapter::class, $general_adapter );
     }
 
-    public function test_load_shortcodes_callbacks_are_callable(): void {
-        $source = file_get_contents( dirname( __DIR__, 5 ) . '/src/php/RacketManager.php' );
-        $this->assertNotFalse( $source );
+    public function test_shortcode_registrar_definitions_match_expected_callbacks_and_forward_to_handlers(): void {
+        $definitions = Shortcode_Registrar::SHORTCODE_DEFINITIONS;
+        $this->assertSame( self::EXPECTED_SHORTCODE_DEFINITIONS, $definitions, 'Shortcode tags and callbacks are part of the public API' );
+        $this->assertCount( 86, $definitions, 'Expected exactly 86 shortcode registrations' );
 
-        preg_match( '/function load_shortcodes\(\): void \{(.*?)\n    \}/s', $source, $method );
-        $this->assertNotEmpty( $method[1] ?? '' );
-
-        preg_match_all(
-            '/add_shortcode\(\s*\'([^\']+)\'\s*,\s*\[\s*\$([a-z_]+)\s*,\s*\'([^\']+)\'\s*\]\s*\)/',
-            $method[1],
-            $matches,
-            PREG_SET_ORDER
-        );
-        $this->assertNotEmpty( $matches );
-
-        $raw_add_shortcode_count = substr_count( $method[1], 'add_shortcode(' );
-        $this->assertSame( $raw_add_shortcode_count, count( $matches ), 'Mismatch between add_shortcode calls and parsed matches' );
-        $this->assertSame( 86, count( $matches ), 'Expected 86 shortcode registrations' );
-
-        $adapter_map = [
-            'general'     => General_Shortcode_Adapter::class,
-            'club'        => Club_Shortcode_Adapter::class,
-            'competition' => Competition_Shortcode_Adapter::class,
-            'email'       => Email_Shortcode_Adapter::class,
-            'event'       => Event_Shortcode_Adapter::class,
-            'league'      => League_Shortcode_Adapter::class,
-            'matches'     => Matches_Shortcode_Adapter::class,
-            'login'       => Login_Shortcode_Adapter::class,
-            'message'     => Message_Shortcode_Adapter::class,
-            'tournament'  => Tournament_Shortcode_Adapter::class,
-            'fixture_controller' => Fixture_Shortcode_Controller::class,
+        $service_map = [
+            'general_shortcode_adapter'     => [ 'class' => General_Shortcode_Adapter::class, 'var' => 'general' ],
+            'club_shortcode_adapter'        => [ 'class' => Club_Shortcode_Adapter::class, 'var' => 'club' ],
+            'competition_shortcode_adapter' => [ 'class' => Competition_Shortcode_Adapter::class, 'var' => 'competition' ],
+            'email_shortcode_adapter'       => [ 'class' => Email_Shortcode_Adapter::class, 'var' => 'email' ],
+            'event_shortcode_adapter'       => [ 'class' => Event_Shortcode_Adapter::class, 'var' => 'event' ],
+            'league_shortcode_adapter'      => [ 'class' => League_Shortcode_Adapter::class, 'var' => 'league' ],
+            'matches_shortcode_adapter'     => [ 'class' => Matches_Shortcode_Adapter::class, 'var' => 'matches' ],
+            'login_shortcode_adapter'       => [ 'class' => Login_Shortcode_Adapter::class, 'var' => 'login' ],
+            'message_shortcode_adapter'     => [ 'class' => Message_Shortcode_Adapter::class, 'var' => 'message' ],
+            'tournament_shortcode_adapter'  => [ 'class' => Tournament_Shortcode_Adapter::class, 'var' => 'tournament' ],
+            'fixture_shortcode_controller'  => [ 'class' => Fixture_Shortcode_Controller::class, 'var' => 'fixture_controller' ],
         ];
 
-        foreach ( $matches as $match ) {
-            [ , $tag, $var, $method_name ] = $match;
-            $this->assertArrayHasKey( $var, $adapter_map, "Unknown shortcode owner \${$var} for [{$tag}]" );
-            $adapter_class = $adapter_map[ $var ];
+        foreach ( $definitions as [ $tag, $service_id, $method_name ] ) {
+            $this->assertArrayHasKey( $service_id, $service_map, "Unknown service {$service_id} for [{$tag}]" );
+            $adapter_class = $service_map[ $service_id ]['class'];
+            $var           = $service_map[ $service_id ]['var'];
+
             $this->assertTrue(
                 method_exists( $adapter_class, $method_name ),
                 "[{$tag}] callback {$adapter_class}::{$method_name} is not callable"
@@ -228,6 +328,84 @@ class Shortcode_Adapters_Bootstrap_Test extends TestCase {
             $result = $adapter->$method_name( [] );
             $this->assertSame( $dummy_output, $result, "[{$tag}] adapter {$adapter_class}::{$method_name} failed to forward to its handler {$legacy_method}" );
         }
+    }
+
+    public function test_shortcode_registrar_registers_all_shortcodes_and_login_translation_hook(): void {
+        $container = new Simple_Container();
+        $dummy_objects = [];
+
+        foreach ( [
+            'general_shortcode_adapter',
+            'club_shortcode_adapter',
+            'competition_shortcode_adapter',
+            'email_shortcode_adapter',
+            'event_shortcode_adapter',
+            'league_shortcode_adapter',
+            'matches_shortcode_adapter',
+            'login_shortcode_adapter',
+            'message_shortcode_adapter',
+            'tournament_shortcode_adapter',
+            'fixture_shortcode_controller',
+        ] as $service_id ) {
+            $obj = new class {
+                public function __call( string $name, array $args ) {
+                    return '';
+                }
+            };
+            $dummy_objects[ $service_id ] = $obj;
+            $container->set( $service_id, fn() => $obj );
+        }
+
+        $GLOBALS['shortcode_tags']           = [];
+        $GLOBALS['wp_stubs_added_shortcodes'] = [];
+        $GLOBALS['wp_stubs_added_actions']   = [];
+
+        $registrar = new Shortcode_Registrar( $container );
+        $registrar->register();
+
+        $this->assertCount( 86, $GLOBALS['shortcode_tags'] );
+        $this->assertCount( 86, $GLOBALS['wp_stubs_added_shortcodes'] );
+
+        foreach ( Shortcode_Registrar::SHORTCODE_DEFINITIONS as [ $tag, $service_id, $method ] ) {
+            $this->assertArrayHasKey( $tag, $GLOBALS['shortcode_tags'] );
+            $expected_callback = [ $dummy_objects[ $service_id ], $method ];
+            $this->assertSame( $expected_callback, $GLOBALS['shortcode_tags'][ $tag ] );
+        }
+
+        // Verify login translations hook registered on 'init'
+        $this->assertArrayHasKey( 'init', $GLOBALS['wp_stubs_added_actions'] );
+        $init_actions = $GLOBALS['wp_stubs_added_actions']['init'];
+        $has_login_translation = false;
+        foreach ( $init_actions as $action ) {
+            if ( is_array( $action['callback'] ) && $action['callback'][0] === $dummy_objects['login_shortcode_adapter'] && $action['callback'][1] === 'load_translations' ) {
+                $has_login_translation = true;
+                break;
+            }
+        }
+        $this->assertTrue( $has_login_translation, 'Expected login load_translations to be registered on init action' );
+    }
+
+    public function test_racketmanager_load_shortcodes_delegates_to_shortcode_registrar(): void {
+        $racketmanager = ( new ReflectionClass( RacketManager::class ) )->newInstanceWithoutConstructor();
+        $container = new Simple_Container();
+
+        $mock_registrar = $this->createMock( Shortcode_Registrar::class );
+        $mock_registrar->expects( $this->once() )->method( 'register' );
+
+        $container->set( 'shortcode_registrar', fn() => $mock_registrar );
+        $racketmanager->container = $container;
+
+        $racketmanager->load_shortcodes();
+    }
+
+    public function test_container_bootstrap_registers_shortcode_registrar(): void {
+        $container = Container_Bootstrap::boot();
+        $this->assertTrue( $container->has( 'shortcode_registrar' ) );
+        $this->assertTrue( $container->has( Shortcode_Registrar::class ) );
+
+        $registrar = $container->get( 'shortcode_registrar' );
+        $this->assertInstanceOf( Shortcode_Registrar::class, $registrar );
+        $this->assertSame( $registrar, $container->get( Shortcode_Registrar::class ) );
     }
 
     private function create_adapter_with_mock_handler( string $var, string $method_name, string $legacy_method, string $dummy_output ): object {

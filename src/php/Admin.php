@@ -7,9 +7,15 @@
  * @subpackage RacketManager-Admin
  */
 
+declare( strict_types=1 );
+
 namespace Racketmanager;
 
 use Racketmanager\Admin\Admin_Display;
+use Racketmanager\Infrastructure\Wordpress\Ajax\Admin_Ajax_Controller;
+use Racketmanager\Infrastructure\Wordpress\Assets\Asset_Manager;
+use Racketmanager\Services\Container\Container_Bootstrap;
+use Racketmanager\Services\Container\Simple_Container;
 use WP_Error;
 
 /**
@@ -21,42 +27,74 @@ use WP_Error;
  * @package RacketManager
  * @subpackage RacketManagerAdmin
  */
-class Admin extends RacketManager {
+class Admin {
 
     /**
      * Instance of this class.
      *
-     * @since    1.0.0
-     *
-     * @var      RacketManager|null
+     * @var Admin|null
      */
-    protected static ?RacketManager $instance = null;
+    protected static ?Admin $instance = null;
+
     /**
      * Error messages.
      *
      * @var array|null $error_messages
      */
-    public ?array $error_messages;
-     public object $ajax_admin;
-    private Admin_Display $admin_display;
+    public ?array $error_messages = null;
+
+    public ?Admin_Ajax_Controller $ajax_admin = null;
+    public ?Admin_Display $admin_display = null;
+    public ?Simple_Container $container = null;
+    public ?RacketManager $racketmanager = null;
+    public ?Asset_Manager $asset_manager = null;
+    private bool $hooks_registered = false;
 
     /**
      * Constructor
+     *
+     * @param Simple_Container|null       $container
+     * @param RacketManager|null          $racketmanager
+     * @param Admin_Display|null          $admin_display
+     * @param Asset_Manager|null          $asset_manager
+     * @param Admin_Ajax_Controller|null  $ajax_admin
      */
-    public function __construct() {
+    public function __construct(
+        ?Simple_Container $container = null,
+        ?RacketManager $racketmanager = null,
+        ?Admin_Display $admin_display = null,
+        ?Asset_Manager $asset_manager = null,
+        ?Admin_Ajax_Controller $ajax_admin = null,
+    ) {
         self::$instance = $this;
 
-        parent::__construct();
+        $this->container     = $container;
+        $this->racketmanager = $racketmanager;
+        $this->asset_manager = $asset_manager;
+        $this->admin_display = $admin_display;
+        $this->ajax_admin    = $ajax_admin;
+
+        if ( $this->ajax_admin && $this->container?->has( 'ajax_registry' ) ) {
+            $this->ajax_admin->register_hooks( $this->container->get( 'ajax_registry' ) );
+        }
 
         // Load WordPress admin meta box/template helpers (add_meta_box, do_meta_boxes, submit_meta_box(), etc.)
         // These functions live in wp-admin/includes/template.php and are needed by Admin::metaboxes() and related UI.
-        // Safe here because Admin is only instantiated in the dashboard (see racketmanager.php -> is_admin()).
-        require_once ABSPATH . 'wp-admin/includes/template.php';
+        if ( defined( 'ABSPATH' ) && file_exists( ABSPATH . 'wp-admin/includes/template.php' ) ) {
+            require_once ABSPATH . 'wp-admin/includes/template.php';
+        }
 
-        // PSR-4 autoloading handles class loading; no manual includes needed here.
-        $this->ajax_admin    = $this->container->get( 'admin_ajax_controller' );
-        $this->ajax_admin->register_hooks( $this->container->get( 'ajax_registry' ) );
-        $this->admin_display = new Admin_Display( $this );
+        $this->register_admin_hooks();
+    }
+
+    /**
+     * Register admin action and filter hooks.
+     */
+    public function register_admin_hooks(): void {
+        if ( $this->hooks_registered ) {
+            return;
+        }
+        $this->hooks_registered = true;
 
         add_action( 'admin_enqueue_scripts', array( &$this, 'load_scripts' ) );
         add_action( 'admin_enqueue_scripts', array( &$this, 'load_styles' ) );
@@ -78,17 +116,119 @@ class Admin extends RacketManager {
     /**
      * Return an instance of this class.
      *
-     * @return object|null A single instance of this class.
+     * @param Simple_Container|null $container
+     * @param RacketManager|null    $racketmanager
+     * @return Admin
      * @since     1.0.0
-     *
      */
-    public static function get_instance(): object|null {
-        // If the single instance hasn't been set, set it now.
-        if ( null === self::$instance ) {
-            self::$instance = new self();
+    public static function get_instance( ?Simple_Container $container = null, ?RacketManager $racketmanager = null ): self {
+        if ( null !== self::$instance ) {
+            return self::$instance;
         }
 
+        if ( null !== $container && $container->has( 'admin' ) ) {
+            $instance = $container->get( 'admin' );
+            if ( $instance instanceof self ) {
+                self::$instance = $instance;
+                return $instance;
+            }
+        }
+
+        $rm = $racketmanager ?? (
+            isset( $GLOBALS['racketmanager'] ) && $GLOBALS['racketmanager'] instanceof RacketManager
+                ? $GLOBALS['racketmanager']
+                : null
+        );
+
+        if ( null !== $rm && isset( $rm->container ) && $rm->container->has( 'admin' ) ) {
+            $instance = $rm->container->get( 'admin' );
+            if ( $instance instanceof self ) {
+                self::$instance = $instance;
+                return $instance;
+            }
+        }
+
+        throw new \LogicException( 'Admin instance has not been initialized. Ensure Container_Bootstrap has booted the application container.' );
+    }
+
+    /**
+     * Return the currently loaded instance, if any.
+     */
+    public static function get_current_instance(): ?self {
         return self::$instance;
+    }
+
+    /**
+     * Reset singleton instance (primarily for testing).
+     */
+    public static function reset_instance(): void {
+        self::$instance = null;
+    }
+
+    /**
+     * Legacy options getter helper.
+     *
+     * @param false|string $index
+     * @return mixed
+     */
+    public function get_options( false|string $index = false ): mixed {
+        return $this->racketmanager?->get_options( $index ) ?? [];
+    }
+
+    /**
+     * Legacy options update helper.
+     *
+     * @param array $options
+     * @return void
+     */
+    public function update_plugin_options( array $options ): void {
+        $this->racketmanager?->update_plugin_options( $options );
+    }
+
+    /**
+     * Legacy options section setter helper.
+     *
+     * @param string $type
+     * @param array  $options
+     */
+    public function set_options( string $type, array $options ): void {
+        $this->racketmanager?->set_options( $type, $options );
+    }
+
+    /**
+     * Legacy asset url helper.
+     *
+     * @param string $path
+     * @return string
+     */
+    public function get_asset_url( string $path ): string {
+        return $this->asset_manager?->get_asset_url( $path ) ?? '';
+    }
+
+    /**
+     * Dynamic property getter for backward compatibility.
+     *
+     * @param string $name
+     * @return mixed
+     */
+    public function __get( string $name ): mixed {
+        if ( 'options' === $name ) {
+            return $this->racketmanager?->options ?? [];
+        }
+        return null;
+    }
+
+    /**
+     * Dynamic property check for backward compatibility.
+     *
+     * @param string $name
+     * @return bool
+     */
+    public function __isset( string $name ): bool {
+        if ( 'options' === $name ) {
+            return isset( $this->racketmanager?->options );
+        }
+        return false;
     }
     /**
      * Adds the menu to the admin interface
@@ -375,130 +515,29 @@ class Admin extends RacketManager {
     /**
      * Load Javascript
      */
-    public function load_scripts(): void {
-        // Determine the current admin screen / page to scope scripts
-        $screen = function_exists('get_current_screen') ? get_current_screen() : null;
-        $page   = isset($_GET['page']) ? sanitize_text_field($_GET['page']) : '';
-        $is_rm_page = ( $page && str_starts_with( $page, 'racketmanager' ) );
-        $is_post_edit = $screen && in_array($screen->base, array('post', 'post-new', 'post.php', 'post-new.php'), true);
-
-        // If not a RacketManager admin page or post editor (for our metabox), do nothing
-        if ( ! $is_rm_page && ! $is_post_edit ) {
+    public function load_scripts( ?string $hook = null ): void {
+        if ( null !== $this->asset_manager ) {
+            $this->asset_manager->load_admin_scripts( $hook );
             return;
         }
 
-        // Common localization data
-        $l10n = array(
-            'url'        => admin_url( 'admin-ajax.php' ),
-            'ajax_nonce' => wp_create_nonce( 'ajax-nonce' ),
-        );
-
-        // Enqueue base deps used by our admin pages
-        wp_enqueue_script('jquery');
-        wp_enqueue_script('jquery-ui-core');
-        wp_enqueue_script('jquery-ui-datepicker');
-        wp_enqueue_script('jquery-ui-sortable');
-        wp_enqueue_script('jquery-ui-tooltip');
-        wp_enqueue_script('jquery-effects-core');
-        wp_enqueue_script('jquery-effects-slide');
-        wp_enqueue_script('jquery-effects-explode');
-        wp_enqueue_script('jquery-ui-autocomplete');
-        wp_enqueue_script('iris');
-
-        // Bootstrap only on our plugin pages
-        if ( $is_rm_page ) {
-            wp_register_script( 'racketmanager-bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js', array(), RACKETMANAGER_VERSION, false );
-            wp_enqueue_script( 'racketmanager-bootstrap' );
+        if ( isset( $this->container ) && $this->container->has( 'asset_manager' ) ) {
+            $this->container->get( 'asset_manager' )->load_admin_scripts( $hook );
         }
-
-        // Admin AJAX helpers – required by metabox and many pages
-        wp_register_script(
-            'racketmanager-admin-ajax',
-            $this->get_asset_url('dist/js/admin/ajax.js'),
-            array(),
-            RACKETMANAGER_VERSION,
-            false
-        );
-        wp_enqueue_script('racketmanager-admin-ajax');
-        wp_localize_script('racketmanager-admin-ajax', 'ajax_var', $l10n);
-
-        // Functions bundle – only needed on our plugin pages (UI widgets, handlers)
-        if ( $is_rm_page ) {
-            wp_register_script(
-                'racketmanager-admin-functions',
-                $this->get_asset_url('dist/js/admin/functions.js'),
-                array('thickbox','jquery','jquery-ui-core','jquery-ui-datepicker','jquery-ui-sortable','jquery-ui-tooltip','jquery-effects-core','jquery-effects-slide','jquery-effects-explode','jquery-ui-autocomplete','iris','racketmanager-admin-ajax'),
-                RACKETMANAGER_VERSION,
-                false
-            );
-            wp_enqueue_script('racketmanager-admin-functions');
-            wp_localize_script('racketmanager-admin-functions', 'ajax_var', $l10n);
-
-            // Small utilities used by many admin templates (e.g. Racketmanager.checkAll)
-            wp_register_script(
-                'racketmanager-admin-utils',
-                $this->get_asset_url('dist/js/admin/utils.js'),
-                array(),
-                RACKETMANAGER_VERSION,
-                false
-            );
-            wp_enqueue_script('racketmanager-admin-utils');
-        }
-
-        // Draggable interactions – only on the tournaments page
-        if ( $is_rm_page && ( 'racketmanager-tournaments' === $page || 'racketmanager-cups' === $page ) ) {
-            wp_register_script(
-                'racketmanager-admin-draggable',
-                $this->get_asset_url('dist/js/admin/draggable.js'),
-                array('jquery'),
-                RACKETMANAGER_VERSION,
-                true
-            );
-            wp_enqueue_script('racketmanager-admin-draggable');
-        }
-
-        // Keep legacy inline i18n for specific strings
-        ?>
-        <script type='text/javascript'>
-        //<!--<![CDATA[-->
-        window.RacketManagerAjaxL10n = {
-            requestUrl: "<?php bloginfo( 'wpurl' ); ?>/wp-admin/admin-ajax.php",
-            manualPointRuleDescription: "<?php esc_html_e( 'Order: win, win overtime, tie, loss, loss overtime', 'racketmanager' ); ?>",
-            pluginUrl: "<?php plugins_url( '', __DIR__ ); ?>/wp-content/plugins/leaguemanager",
-            Edit: "<?php esc_html_e( 'Edit', 'racketmanager' ); ?>",
-            Post: "<?php esc_html_e( 'Post', 'racketmanager' ); ?>",
-            Save: "<?php esc_html_e( 'Save', 'racketmanager' ); ?>",
-            Cancel: "<?php esc_html_e( 'Cancel', 'racketmanager' ); ?>",
-            pleaseWait: "<?php esc_html_e( 'Please wait...', 'racketmanager' ); ?>",
-            Delete: "<?php esc_html_e( 'Delete', 'racketmanager' ); ?>",
-            Yellow: "<?php esc_html_e( 'Yellow', 'racketmanager' ); ?>",
-            Red: "<?php esc_html_e( 'Red', 'racketmanager' ); ?>",
-            Yellow_Red: "<?php esc_html_e( 'Yellow/Red', 'racketmanager' ); ?>",
-            Insert: "<?php esc_html_e( 'Insert', 'racketmanager' ); ?>",
-            InsertPlayer: "<?php esc_html_e( 'Insert Player', 'racketmanager' ); ?>"
-        }
-        //<!--]]>-->
-        </script>
-        <?php
     }
 
     /**
      * Load CSS styles
      */
     public function load_styles(): void {
-        wp_enqueue_style( 'racketmanager-bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css', false, RACKETMANAGER_VERSION, 'screen' );
-        wp_enqueue_style( 'racketmanager', $this->get_asset_url('dist/css/admin.css'), false, RACKETMANAGER_VERSION, 'screen' );
-        wp_enqueue_style( 'racketmanager-modal', $this->get_asset_url('dist/css/modal.css'), false, RACKETMANAGER_VERSION, 'screen' );
+        if ( null !== $this->asset_manager ) {
+            $this->asset_manager->load_admin_styles();
+            return;
+        }
 
-        $jquery_ui_version = '1.13.2';
-        wp_register_style( 'jquery-ui', RACKETMANAGER_URL . '/css/jquery/jquery-ui.min.css', false, $jquery_ui_version );
-        wp_register_style( 'jquery-ui-structure', RACKETMANAGER_URL . '/css/jquery/jquery-ui.structure.min.css', array( 'jquery-ui' ), $jquery_ui_version );
-        wp_register_style( 'jquery-ui-theme', RACKETMANAGER_URL . '/css/jquery/jquery-ui.theme.min.css', array( 'jquery-ui', 'jquery-ui-structure' ), $jquery_ui_version );
-
-        wp_enqueue_style( 'jquery-ui-structure' );
-        wp_enqueue_style( 'jquery-ui-theme' );
-
-        wp_enqueue_style( 'thickbox' );
+        if ( isset( $this->container ) && $this->container->has( 'asset_manager' ) ) {
+            $this->container->get( 'asset_manager' )->load_admin_styles();
+        }
     }
 
     /************

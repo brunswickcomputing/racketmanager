@@ -5,6 +5,7 @@ namespace Racketmanager\Repositories\Interfaces;
 
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\DTO\Competition\Competition_Overview_DTO;
+use Racketmanager\Domain\DTO\Competition\Competition_Summary_DTO;
 
 /**
  * Interface for Competition Repository.
@@ -14,6 +15,14 @@ interface Competition_Repository_Interface extends Repository_Interface {
 	public function find_by_id( int|string|null $id ): ?Competition;
 	public function find_all(): array;
 	public function find_by( array $criteria ): array;
+
+	/**
+	 * Find competitions with summary data.
+	 *
+	 * @param string|null $age_group
+	 * @param string|null $type
+	 * @return Competition_Summary_DTO[]
+	 */
 	public function find_competitions_with_summary( $age_group, $type ): array;
 	public function delete( int $id ): bool;
 	public function get_competition_overview( int $competition_id, int $season, ?int $min_fixtures = null ): ?Competition_Overview_DTO;

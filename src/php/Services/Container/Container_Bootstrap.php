@@ -19,11 +19,14 @@ final class Container_Bootstrap {
     /**
      * Boot the dependency injection container by registering all domain service providers.
      *
-     * @param RacketManager $app
+     * @param ?RacketManager $app
      * @return Simple_Container
      */
-    public static function boot( RacketManager $app ): Simple_Container {
+    public static function boot( ?RacketManager $app = null ): Simple_Container {
         $container = new Simple_Container();
+        if ( $app ) {
+            $app->container = $container;
+        }
 
         /** @var Service_Provider_Interface[] $providers */
         $providers = [

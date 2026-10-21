@@ -9,17 +9,18 @@
 namespace Racketmanager;
 
 use NumberFormatter;
+use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
+use Racketmanager\Infrastructure\Wordpress\Assets\Asset_Manager;
+use Racketmanager\Infrastructure\Wordpress\Bootstrap\Plugin_Bootstrap;
 use Racketmanager\Infrastructure\Wordpress\Export\Export_Delivery_Adapter;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
+use Racketmanager\Infrastructure\Wordpress\Templates\Template_Loader;
 use Racketmanager\Domain\Communication\Message;
 use Racketmanager\Repositories\Rubber_Repository;
 use Racketmanager\Rest\Rest_Routes;
-use Racketmanager\Services\Competition_Entry_Service;
-use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Login;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Rewrites;
-use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Container\Container_Bootstrap;
 use Racketmanager\Services\Container\Simple_Container;
@@ -63,6 +64,22 @@ class RacketManager {
      * @var array $options
      */
     public array $options = [];
+    /**
+     * Options service.
+     */
+    public ?Option_Service $option_service = null;
+    /**
+     * Asset manager.
+     */
+    public ?Asset_Manager $asset_manager = null;
+    /**
+     * Template loader.
+     */
+    public ?Template_Loader $template_loader = null;
+    /**
+     * Plugin lifecycle bootstrap (hook registration and library loading).
+     */
+    public ?Plugin_Bootstrap $plugin_bootstrap = null;
     /**
      * Date format.
      *
@@ -128,12 +145,6 @@ class RacketManager {
      * Simple dependency injection container.
      */
     public Simple_Container $container;
-    private Competition_Service $competition_service;
-    private Competition_Entry_Service $competition_entry_service;
-    private Finance_Service $finance_service;
-    private Player_Service $player_service;
-    private Tournament_Service $tournament_service;
-    private Fixture_Maintenance_Service $fixture_maintenance_service;
 
     /**
      * Constructor
@@ -145,44 +156,31 @@ class RacketManager {
         if ( empty( $this->options ) ) {
             $wpdb->show_errors();
             $this->load_options();
-            $this->load_libraries();
 
             // Boot the dependency injection container and register services.
-            $this->container = Container_Bootstrap::boot( $this );
-            // Resolve commonly used services from the container.
-            $this->competition_entry_service = $this->container->get( 'competition_entry_service' );
-            $this->competition_service       = $this->container->get( 'competition_service' );
-            $this->finance_service           = $this->container->get( 'finance_service' );
-            $this->player_service            = $this->container->get( 'player_service' );
-            $this->tournament_service        = $this->container->get( 'tournament_service' );
-            $this->fixture_maintenance_service = $this->container->get( 'fixture_maintenance_service' );
+            $this->container        = Container_Bootstrap::boot( $this );
+            $this->asset_manager    = $this->container->get( 'asset_manager' );
+            $this->template_loader  = $this->container->get( 'template_loader' );
+            $this->plugin_bootstrap = $this->container->get( 'plugin_bootstrap' );
 
-            add_action( 'widgets_init', array( &$this, 'register_widget' ) );
-            add_action( 'init', array( &$this, 'racketmanager_locale' ) );
-            add_action( 'init', array( &$this, 'init_components' ) );
-            add_action( 'init', array( &$this, 'load_shortcodes' ) );
-            add_action( 'wp_enqueue_scripts', array( &$this, 'load_styles' ), 5 );
-            add_action( 'wp_enqueue_scripts', array( &$this, 'load_scripts' ) );
-            add_action( 'rm_resultPending', array( &$this, 'chase_pending_results' ), 1 );
-            add_action( 'rm_confirmationPending', array( &$this, 'chase_pending_approvals' ), 1 );
-            add_action( 'wp_loaded', array( &$this, 'add_racketmanager_templates' ) );
-            add_action( 'template_redirect', array( &$this, 'redirect_to_login' ) );
-            add_filter( 'wp_privacy_personal_data_exporters', array( &$this, 'racketmanager_register_exporter' ) );
-            add_filter( 'wp_mail', array( &$this, 'racketmanager_mail' ) );
-            add_filter( 'email_change_email', array( &$this, 'racketmanager_change_email_address' ), 10, 3 );
-            add_filter( 'pre_get_document_title', array( &$this, 'set_page_title' ), 999 );
-            add_action( 'rm_calculate_player_ratings', array( &$this, 'calculate_player_ratings' ), 1 );
-            add_action( 'rm_calculate_tournament_ratings', array( $this->tournament_service, 'calculate_player_team_rating_for_tournament' ), 1 );
-            add_action( 'rm_calculate_team_ratings', array( $this->competition_service, 'calculate_team_ratings' ), 10, 3 );
-            add_action( 'rm_notify_team_entry_open', array( $this->competition_entry_service, 'notify_team_entry_open' ), 10, 2 );
-            add_action( 'rm_notify_team_entry_reminder', array( $this->competition_entry_service, 'notify_team_entry_reminder' ), 10, 2 );
-            add_action( 'rm_notify_tournament_entry_open', array( $this->competition_entry_service, 'notify_tournament_entry_open' ) );
-            add_action( 'rm_notify_tournament_entry_reminder', array( $this->competition_entry_service, 'notify_tournament_entry_open_reminder' ) );
-            add_action( 'rm_notify_tournament_finalists', array( $this->tournament_service, 'notify_finalists_for_tournament' ) );
-            add_action( 'rm_send_invoices', array( $this->finance_service, 'send_invoices' ) );
-            add_action( 'racketmanager_report_fixture_result', array( &$this, 'report_fixture_result' ), 10, 2 );
+            // Load procedural libraries and register WordPress lifecycle / scheduled task hooks.
+            $this->plugin_bootstrap->boot( $this );
         }
         self::$instance = $this;
+    }
+
+    /**
+     * Lazily resolve the player service from the container.
+     */
+    private function get_player_service(): Player_Service {
+        return $this->container->get( 'player_service' );
+    }
+
+    /**
+     * Lazily resolve the fixture maintenance service from the container.
+     */
+    private function get_fixture_maintenance_service(): Fixture_Maintenance_Service {
+        return $this->container->get( 'fixture_maintenance_service' );
     }
 
     public function report_fixture_result( int $fixture_id, string $competition_type ): void {
@@ -437,7 +435,7 @@ class RacketManager {
         foreach ( $matches as $match ) {
             $fixture = $this->container->get( 'fixture_repository' )->find_by_id( $match->id );
             if ( $fixture ) {
-                $this->fixture_maintenance_service->chase_match_result( $fixture, $result_pending, $result_timeout, $result_penalty );
+                $this->get_fixture_maintenance_service()->chase_match_result( $fixture, $result_pending, $result_timeout, $result_penalty );
             }
         }
     }
@@ -464,7 +462,7 @@ class RacketManager {
         foreach ( $matches as $match ) {
             $fixture = $this->container->get( 'fixture_repository' )->find_by_id( $match->id );
             if ( $fixture ) {
-                $this->fixture_maintenance_service->complete_result( $fixture, (int) $confirmation_timeout );
+                $this->get_fixture_maintenance_service()->complete_result( $fixture, (int) $confirmation_timeout );
             }
         }
         $confirmation_required  = $this->get_options( $competition )['confirmationRequired'];
@@ -484,7 +482,7 @@ class RacketManager {
             foreach ( $matches as $match ) {
                 $fixture = $this->container->get( 'fixture_repository' )->find_by_id( $match->id );
                 if ( $fixture ) {
-                    $this->fixture_maintenance_service->chase_match_approval( $fixture, $confirmation_pending, false, $confirmation_timeout, $confirmation_penalty );
+                    $this->get_fixture_maintenance_service()->chase_match_approval( $fixture, $confirmation_pending, false, $confirmation_timeout, $confirmation_penalty );
                 }
             }
         }
@@ -498,7 +496,7 @@ class RacketManager {
      */
     public function calculate_player_ratings( ?int $club_id = null ): void {
         // Delegate to the Player__Service implementation.
-        $this->player_service->calculate_player_ratings( $club_id );
+        $this->get_player_service()->calculate_player_ratings( $club_id );
     }
 
     /**
@@ -550,32 +548,19 @@ class RacketManager {
      * Adds our templates
      */
     public function add_racketmanager_templates(): void {
-        // Add your templates to this array.
-        $this->templates = array(
-            'templates/page_template/template_no_title.php' => 'No Title',
-            'templates/page_template/template_member_account.php' => 'Member Account',
-        );
-
-        // Add a filter to the wp 4.7 version attributes meta-box.
-        add_filter( 'theme_page_templates', array( $this, 'racketmanager_templates_as_option' ) );
-
-        // Add a filter to the save post to inject our template into the page cache.
-        add_filter( 'wp_insert_post_data', array( $this, 'register_racketmanager_templates' ) );
-
-        // Add a filter to the template include to determine if the page has our
-        // template assigned and return its path.
-        add_filter( 'template_include', array( $this, 'racketmanager_load_template' ) );
-
-        add_filter( 'archive_template', array( $this, 'racketmanager_archive_template' ) );
+        $this->template_loader->register_hooks();
+        $this->templates = $this->template_loader->get_templates();
     }
 
     /**
      * Adds our templates to the page dropdown
      *
      * @param array $posts_templates array of post templates.
+     * @param mixed $theme           theme object.
+     * @param mixed $post            post object or ID.
      */
-    public function racketmanager_templates_as_option( array $posts_templates ): array {
-        return array_merge( $posts_templates, $this->templates );
+    public function racketmanager_templates_as_option( array $posts_templates, mixed $theme = null, mixed $post = null ): array {
+        return $this->template_loader->racketmanager_templates_as_option( $posts_templates, $theme, $post );
     }
 
     /**
@@ -585,28 +570,7 @@ class RacketManager {
      * @param array $atts array of attributes.
      */
     public function register_racketmanager_templates( array $atts ): array {
-
-        // Create the key used for the theme cache.
-        $cache_key = 'page_templates-' . md5( get_theme_root() . '/' . get_stylesheet() );
-
-        // Retrieve the cache list.
-        // If it doesn't exist, or it is empty, prepare an array.
-        $page_templates = wp_get_theme()->get_page_templates();
-        if ( empty( $page_templates ) ) {
-            $page_templates = array();
-        }
-
-        // New cache, therefore, removes the old one.
-        wp_cache_delete( $cache_key, 'themes' );
-
-        // Now add our template to the list of templates by merging our templates.
-        // with the existing templates array from the cache.
-        $page_templates = array_merge( $page_templates, $this->templates );
-
-        // Add the modified cache to allow WordPress to pick it up for listing available templates.
-        wp_cache_add( $cache_key, $page_templates, 'themes', 1800 );
-
-        return $atts;
+        return $this->template_loader->register_racketmanager_templates( $atts );
     }
 
     /**
@@ -615,26 +579,7 @@ class RacketManager {
      * @param string $template template.
      */
     public function racketmanager_load_template( string $template ): string {
-
-        // Get global post.
-        global $post;
-
-        // Return template if post is empty or if we don't have a custom one defined.
-        if ( ! $post || ! isset( $this->templates[ get_post_meta( $post->ID, '_wp_page_template', true ) ] ) ) {
-            return $template;
-        }
-
-        $file = RACKETMANAGER_PATH . get_post_meta( $post->ID, '_wp_page_template', true );
-
-        // Just to be safe, we check if the file exists first.
-        if ( file_exists( $file ) ) {
-            return $file;
-        } else {
-            echo esc_html( $file );
-        }
-
-        // Return template.
-        return $template;
+        return $this->template_loader->racketmanager_load_template( $template );
     }
 
     /**
@@ -643,13 +588,7 @@ class RacketManager {
      * @param string $template template.
      */
     public function racketmanager_archive_template( string $template ): string {
-        if ( is_category( 'rules' ) ) {
-            $template = RACKETMANAGER_PATH . 'templates/pages/category-rules.php';
-        }
-        if ( is_category( 'how-to' ) ) {
-            $template = RACKETMANAGER_PATH . 'templates/pages/category-how-to.php';
-        }
-        return $template;
+        return $this->template_loader->racketmanager_archive_template( $template );
     }
 
     /**
@@ -671,38 +610,6 @@ class RacketManager {
         register_widget( 'Racketmanager\Services\Widget' );
     }
 
-    /**
-     * Load libraries
-     */
-    private function load_libraries(): void {
-        // PSR-4 autoloading is required from the main plugin bootstrap.
-        // Load only sports registrar scripts (non-class files), so filters (e.g. racketmanager_sports) are registered.
-        $plugin_sports = array_filter(
-            $this->read_directory( RACKETMANAGER_PATH . 'src/php/sports' ),
-            static function ( $file ): bool {
-                $base = basename( $file );
-                // Registrar scripts are lowercase like tennis.php; exclude class files like Competition_Tennis.php, League_Tennis.php
-                return (bool) preg_match( '/^[a-z0-9\-]+\.php$/', $base );
-            }
-        );
-        // Allow theme overrides/augmentations to continue working.
-        $theme_sports = array_filter(
-            $this->read_directory( get_stylesheet_directory() . '/Sports' ),
-            static function ( $file ): bool {
-                $base = basename( $file );
-                return (bool) preg_match( '/^[a-z0-9\-]+\.php$/', $base );
-            }
-        );
-        $registrars = array_values( array_unique( array_merge( $plugin_sports, $theme_sports ) ) );
-        foreach ( $registrars as $file ) {
-            require_once $file;
-        }
-
-        // template tags & functions.
-        require_once RACKETMANAGER_PATH . '/template-tags.php';
-        require_once RACKETMANAGER_PATH . '/functions.php';
-        include_once ABSPATH . 'wp-admin/includes/plugin.php';
-    }
     /**
      * Initialise components
      */
@@ -772,116 +679,7 @@ class RacketManager {
      * Load shortcodes
      */
     public function load_shortcodes(): void {
-        $general     = $this->shortcodes_general;
-        $club        = $this->shortcodes_club;
-        $competition = $this->shortcodes_competition;
-        $email       = $this->shortcodes_email;
-        $event       = $this->shortcodes_event;
-        $league      = $this->shortcodes_league;
-        $matches     = $this->shortcodes_match;
-        $login       = $this->shortcodes_login;
-        $message     = $this->shortcodes_message;
-        $tournament  = $this->shortcodes_tournament;
-
-        add_shortcode( 'dailymatches', [ $matches, 'show_daily_matches' ] );
-        add_shortcode( 'latest_results', [ $matches, 'show_latest_results' ] );
-        add_shortcode( 'players', [ $general, 'show_players' ] );
-        add_shortcode( 'player', [ $general, 'show_player' ] );
-        add_shortcode( 'favourites', [ $general, 'show_favourites' ] );
-        add_shortcode( 'invoice', [ $general, 'show_invoice' ] );
-        add_shortcode( 'purchase-order', [ $general, 'show_purchase_order' ] );
-        add_shortcode( 'memberships', [ $general, 'show_memberships' ] );
-        add_shortcode( 'search-players', [ $general, 'show_player_search' ] );
-        add_shortcode( 'team-order', [ $general, 'show_team_order' ] );
-        add_shortcode( 'show-alert', [ $general, 'show_alert' ] );
-
-        add_shortcode( 'clubs', [ $club, 'show_clubs' ] );
-        add_shortcode( 'club', [ $club, 'show_club' ] );
-        add_shortcode( 'club-players', [ $club, 'show_club_players' ] );
-        add_shortcode( 'club-roles', [ $club, 'show_club_roles' ] );
-        add_shortcode( 'club-role-modal', [ $club, 'show_club_role_modal' ] );
-        add_shortcode( 'club-competitions', [ $club, 'show_club_competitions' ] );
-        add_shortcode( 'club-event', [ $club, 'show_club_event' ] );
-        add_shortcode( 'club-team', [ $club, 'show_club_team' ] );
-        add_shortcode( 'club-invoices', [ $club, 'show_club_invoices' ] );
-        add_shortcode( 'team-edit', [ $club, 'show_team_edit_modal' ] );
-
-        add_shortcode( 'competitions', [ $competition, 'show_competitions' ] );
-        add_shortcode( 'competition', [ $competition, 'show_competition' ] );
-        add_shortcode( 'competition-overview', [ $competition, 'show_competition_overview' ] );
-        add_shortcode( 'competition-events', [ $competition, 'show_competition_events' ] );
-        add_shortcode( 'competition-teams', [ $competition, 'show_competition_teams' ] );
-        add_shortcode( 'competition-clubs', [ $competition, 'show_competition_clubs' ] );
-        add_shortcode( 'competition-players', [ $competition, 'show_competition_players' ] );
-        add_shortcode( 'competition-winners', [ $competition, 'show_competition_winners' ] );
-        add_shortcode( 'competition-entry', [ $competition, 'show_competition_entry' ] );
-        add_shortcode( 'competition-entry-payment', [ $competition, 'show_competition_entry_payment' ] );
-        add_shortcode( 'competition-entry-payment-complete', [ $competition, 'show_competition_entry_payment_complete' ] );
-        add_shortcode( 'event-dropdown', [ $competition, 'show_dropdown' ] );
-
-        add_shortcode( 'match-notification', [ $email, 'show_match_notification' ] );
-        add_shortcode( 'result-notification', [ $email, 'show_result_notification' ] );
-        add_shortcode( 'result-notification-captain', [ $email, 'show_captain_result_notification' ] );
-        add_shortcode( 'result-outstanding-notification', [ $email, 'show_result_outstanding_notification' ] );
-        add_shortcode( 'club-player-notification', [ $email, 'show_club_player_notification' ] );
-        add_shortcode( 'match_date_change_notification', [ $email, 'show_match_date_change_notification' ] );
-        add_shortcode( 'withdrawn-team', [ $email, 'show_team_withdrawn' ] );
-        add_shortcode( 'withdrawn-team-match', [ $email, 'show_withdrawn_team_match' ] );
-        add_shortcode( 'event-constitution', [ $email, 'show_event_constitution' ] );
-
-        add_shortcode( 'event', [ $event, 'show_event' ] );
-        add_shortcode( 'event-standings', [ $event, 'show_event_standings' ] );
-        add_shortcode( 'event-draw', [ $event, 'show_event_draw' ] );
-        add_shortcode( 'event-matches', [ $event, 'show_event_matches' ] );
-        add_shortcode( 'event-clubs', [ $event, 'show_event_clubs' ] );
-        add_shortcode( 'event-teams', [ $event, 'show_event_teams' ] );
-        add_shortcode( 'event-players', [ $event, 'show_event_players' ] );
-        add_shortcode( 'event-partner', [ $event, 'show_event_partner' ] );
-        add_shortcode( 'event-team-matches', [ $event, 'show_event_team_matches' ] );
-        add_shortcode( 'team-order-players', [ $event, 'show_team_order_players' ] );
-        add_shortcode( 'league-dropdown', [ $event, 'show_dropdown' ] );
-
-        add_shortcode( 'championship', [ $league, 'show_championship' ] );
-        add_shortcode( 'leaguearchive', [ $league, 'show_archive' ] );
-        add_shortcode( 'standings', [ $league, 'show_standings' ] );
-        add_shortcode( 'crosstable', [ $league, 'show_crosstable' ] );
-        add_shortcode( 'matches', [ $league, 'show_matches' ] );
-
-        $fixture_controller = $this->container->get( 'fixture_shortcode_controller' );
-        add_shortcode( 'fixture', [ $fixture_controller, 'handle' ] );
-        add_shortcode( 'match', [ $fixture_controller, 'handle' ] );
-
-        add_shortcode( 'teams', [ $league, 'show_teams' ] );
-        add_shortcode( 'league-players', [ $league, 'show_league_players' ] );
-        add_shortcode( 'season-dropdown', [ $league, 'show_season_dropdown' ] );
-        add_shortcode( 'match-dropdown', [ $league, 'show_match_dropdown' ] );
-        add_shortcode( 'last-5', [ $league, 'show_last_5' ] );
-
-        add_shortcode( 'custom-login-form', [ $login, 'render_login_form' ] );
-        add_shortcode( 'login-form', [ $login, 'login_form' ] );
-        add_shortcode( 'custom-password-lost-form', [ $login, 'render_password_lost_form' ] );
-        add_shortcode( 'custom-password-reset-form', [ $login, 'render_password_reset_form' ] );
-        add_shortcode( 'account-info', [ $login, 'generate_member_account_form' ] );
-        add_action( 'init', [ $login, 'load_translations' ] );
-
-        add_shortcode( 'score', [ $matches, 'show_score' ] );
-        add_shortcode( 'match-header', [ $matches, 'show_match_header' ] );
-        add_shortcode( 'match-detail', [ $matches, 'show_match_detail' ] );
-
-        add_shortcode( 'messages', [ $message, 'show_messages' ] );
-        add_shortcode( 'show-message', [ $message, 'show_message' ] );
-
-        add_shortcode( 'tournament', [ $tournament, 'show_tournament' ] );
-        add_shortcode( 'tournament-overview', [ $tournament, 'show_tournament_overview' ] );
-        add_shortcode( 'tournament-events', [ $tournament, 'show_tournament_events' ] );
-        add_shortcode( 'tournament-draws', [ $tournament, 'show_draws' ] );
-        add_shortcode( 'tournament-players', [ $tournament, 'show_tournament_players' ] );
-        add_shortcode( 'tournament-winners', [ $tournament, 'show_tournament_winners' ] );
-        add_shortcode( 'tournament-matches', [ $tournament, 'show_tournament_matches' ] );
-        add_shortcode( 'tournament-match', [ $tournament, 'show_tournament_match' ] );
-        add_shortcode( 'orderofplay', [ $tournament, 'show_order_of_play' ] );
-        add_shortcode( 'latest-tournament', [ $tournament, 'show_latest_tournament' ] );
-        add_shortcode( 'tournament-withdrawal', [ $tournament, 'show_tournament_withdrawal_modal' ] );
+        $this->container->get( 'shortcode_registrar' )->register();
     }
     /**
      * Read files in the directory
@@ -912,12 +710,18 @@ class RacketManager {
      * Load options
      */
     private function load_options(): void {
-        $this->options     = get_option( 'racketmanager' );
-        $this->date_format = get_option( 'date_format' );
-        $this->time_format = get_option( 'time_format' );
-        $this->site_name   = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
-        $this->admin_email = get_option( 'admin_email' );
-        $this->site_url    = get_option( 'siteurl' );
+        if ( ! isset( $this->option_service ) ) {
+            $this->option_service = new Option_Service( new Wp_Option_Gateway() );
+        } else {
+            $this->option_service->load_options();
+        }
+
+        $this->options       = $this->option_service->get_options();
+        $this->date_format   = $this->option_service->get_date_format();
+        $this->time_format   = $this->option_service->get_time_format();
+        $this->site_name     = $this->option_service->get_site_name();
+        $this->admin_email   = $this->option_service->get_admin_email();
+        $this->site_url      = $this->option_service->get_site_url();
     }
 
     /**
@@ -926,20 +730,18 @@ class RacketManager {
      * @param false|string $index index lookup (optional).
      */
     public function get_options( false|string $index = false ) {
-        if ( $index ) {
-            return $this->options[ $index ];
-        } else {
-            return $this->options;
-        }
+        return $this->option_service->get_options( $index );
     }
+
     /**
      * Set options
      *
+     * @param string $type
      * @param array $options.
      */
     public function set_options( $type, array $options ): void {
-        $this->options[ $type ] = $options;
-        $this->update_plugin_options($this->options);
+        $this->option_service->set_options( $type, $options );
+        $this->options = $this->option_service->get_options();
     }
 
     /**
@@ -953,8 +755,8 @@ class RacketManager {
      *   $racketmanager->update_plugin_options($options);
      */
     public function update_plugin_options(array $options): void {
-        $this->options = $options;
-        update_option( 'racketmanager', $this->options );
+        $this->option_service->update_plugin_options( $options );
+        $this->options = $this->option_service->get_options();
     }
 
     /**
@@ -962,118 +764,21 @@ class RacketManager {
      * Provide a plugin-relative path like `dist/js/racketmanager.js`.
      */
     protected function get_asset_url(string $relative_path, bool $prefer_min = true): string {
-        $is_debug = ( defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ) || ( defined('WP_DEBUG') && WP_DEBUG );
-        $base_url = RACKETMANAGER_URL . ltrim($relative_path, '/');
-
-        if ( $prefer_min && ! $is_debug ) {
-            // Insert .min before the extension
-            $dot_pos = strrpos($relative_path, '.');
-            if ( $dot_pos !== false ) {
-                $min_relative = substr($relative_path, 0, $dot_pos) . '.min' . substr($relative_path, $dot_pos);
-                $min_path = RACKETMANAGER_PATH . ltrim($min_relative, '/');
-                if ( file_exists( $min_path ) ) {
-                    return RACKETMANAGER_URL . ltrim($min_relative, '/');
-                }
-            }
-        }
-        return $base_url;
+        return $this->asset_manager->get_asset_url( $relative_path, $prefer_min );
     }
+
     /**
      * Load JavaScript
      */
     public function load_scripts(): void {
-        $javascript_locale = str_replace( '_', '-', get_locale() );
-        $module_handle     = 'racketmanager-module';
-        // Use built bundle output by the JS build step (see package.json -> build)
-        $module_src        = $this->get_asset_url('dist/js/racketmanager.js');
-
-        // Enqueue jQuery UI dependencies FIRST
-        wp_enqueue_script('jquery');
-        wp_enqueue_script('jquery-ui-core');
-        wp_enqueue_script('jquery-ui-autocomplete');
-        wp_enqueue_script('jquery-ui-datepicker');
-        wp_enqueue_script('jquery-ui-sortable');
-        wp_enqueue_script('jquery-ui-tooltip');
-        wp_enqueue_script('jquery-effects-core');
-        wp_enqueue_script('jquery-effects-slide');
-
-        // Register a regular script JUST for the inline config
-        wp_register_script(
-                'racketmanager-config',
-                false, // No source file
-                [],
-                RACKETMANAGER_VERSION,
-                false // Load in header, BEFORE module
-        );
-        wp_enqueue_script('racketmanager-config');
-
-        // Add ajax_var to the config script
-        wp_add_inline_script(
-                'racketmanager-config',
-                'window.ajax_var = ' . wp_json_encode( array(
-                        'url'        => admin_url( 'admin-ajax.php' ),
-                        'ajax_nonce' => wp_create_nonce( 'ajax-nonce' ),
-                ) ) . ';'
-        );
-
-        // Now register and enqueue your module AFTER the config
-        wp_register_script_module( $module_handle, $module_src, array(), RACKETMANAGER_VERSION );
-        wp_enqueue_script_module( $module_handle );
-
-        // Add locale config
-        $config = [
-                'currency' => $this->currency_code,
-                'locale'   => $javascript_locale,
-        ];
-        wp_add_inline_script( 'racketmanager-config', 'window.locale_var = ' . wp_json_encode($config) . ';' );
-
-
-        wp_enqueue_script( 'password-strength-meter' );        wp_localize_script( 'password-strength-meter', 'pwsL10n', array(
-            'empty'    => __( 'But... it\'s empty!', 'theme-domain' ),
-            'short'    => __( 'Too short!', 'theme-domain' ),
-            'bad'      => __( 'Not even close!', 'theme-domain' ),
-            'good'     => __( 'You are getting closer...', 'theme-domain' ),
-            'strong'   => __( 'Now, that\'s a password!', 'theme-domain' ),
-            'mismatch' => __( 'They are completely different, come on!', 'theme-domain' )
-        ) );
-        ?>
-    <script type="text/javascript">
-    //<![CDATA[
-    RacketManagerAjaxL10n = {
-        blogUrl: "<?php bloginfo( 'wpurl' ); ?>",
-        pluginUrl: "<?php echo esc_url( RACKETMANAGER_URL ); ?>",
-        requestUrl: "<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>",
-        Edit: "<?php esc_html_e( 'Edit', 'racketmanager' ); ?>",
-        Post: "<?php esc_html_e( 'Post', 'racketmanager' ); ?>",
-        Save: "<?php esc_html_e( 'Save', 'racketmanager' ); ?>",
-        Cancel: "<?php esc_html_e( 'Cancel', 'racketmanager' ); ?>",
-        pleaseWait: "<?php esc_html_e( 'Please wait...', 'racketmanager' ); ?>",
-        Revisions: "<?php esc_html_e( 'Page Revisions', 'racketmanager' ); ?>",
-        Time: "<?php esc_html_e( 'Insert time', 'racketmanager' ); ?>",
-        Options: "<?php esc_html_e( 'Options', 'racketmanager' ); ?>",
-        Delete: "<?php esc_html_e( 'Delete', 'racketmanager' ); ?>"
-    }
-    //]]>
-    </script>
-        <?php
+        $this->asset_manager->load_frontend_scripts( $this->currency_code );
     }
 
     /**
      * Load CSS styles
      */
     public function load_styles(): void {
-        wp_enqueue_style( 'racketmanager-print', $this->get_asset_url('dist/css/print.css'), false, RACKETMANAGER_VERSION, 'print' );
-        wp_enqueue_style( 'racketmanager-modal', $this->get_asset_url('dist/css/modal.css'), false, RACKETMANAGER_VERSION, 'screen' );
-        wp_enqueue_style( 'racketmanager', $this->get_asset_url('dist/css/style.css'), false, RACKETMANAGER_VERSION, 'screen' );
-
-        $jquery_ui_version = '1.13.2';
-        wp_register_style( 'jquery-ui', RACKETMANAGER_URL . 'css/jquery/jquery-ui.min.css', false, $jquery_ui_version );
-        wp_register_style( 'jquery-ui-structure', RACKETMANAGER_URL . 'css/jquery/jquery-ui.structure.min.css', array( 'jquery-ui' ), $jquery_ui_version );
-        wp_register_style( 'jquery-ui-theme', RACKETMANAGER_URL . 'css/jquery/jquery-ui.theme.min.css', array( 'jquery-ui', 'jquery-ui-structure' ), $jquery_ui_version );
-        wp_register_style( 'jquery-ui-autocomplete', RACKETMANAGER_URL . 'css/jquery/jquery-ui.autocomplete.min.css', array( 'jquery-ui', 'jquery-ui-autocomplete' ), $jquery_ui_version );
-
-        wp_enqueue_style( 'jquery-ui-structure' );
-        wp_enqueue_style( 'jquery-ui-theme' );
+        $this->asset_manager->load_frontend_styles();
     }
     /**
      * Set the locale info function

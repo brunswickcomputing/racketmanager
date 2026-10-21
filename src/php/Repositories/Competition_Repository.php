@@ -12,6 +12,7 @@ namespace Racketmanager\Repositories;
 use LogicException;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\DTO\Competition\Competition_Overview_DTO;
+use Racketmanager\Domain\DTO\Competition\Competition_Summary_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use wpdb;
@@ -213,10 +214,10 @@ class Competition_Repository implements Competition_Repository_Interface {
     /**
      * Find competitions with summary data.
      *
-     * @param $age_group
-     * @param $type
+     * @param string|null $age_group
+     * @param string|null $type
      *
-     * @return array
+     * @return Competition_Summary_DTO[]
      */
     public function find_competitions_with_summary( $age_group = null, $type = null ): array {
         $params     = [];
@@ -240,7 +241,16 @@ class Competition_Repository implements Competition_Repository_Interface {
         if ( $where_clause ) {
             $query = $this->wpdb->prepare( $query, $params );
         }
-        return $this->wpdb->get_results( $query );
+        $results = $this->wpdb->get_results( $query );
+
+        if ( empty( $results ) || ! is_array( $results ) ) {
+            return [];
+        }
+
+        return array_map(
+            static fn( object|array $row ): Competition_Summary_DTO => new Competition_Summary_DTO( $row ),
+            $results
+        );
     }
 
     /**

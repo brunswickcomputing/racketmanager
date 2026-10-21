@@ -280,4 +280,44 @@ class League_Archive_Presenter_Test extends TestCase {
         $this->assertNull( $vm->date_start_display );
         $this->assertNull( $vm->date_end_display );
     }
+
+    public function test_present_archive_maps_templates_into_view_model(): void {
+        $presenter = new League_Archive_Presenter();
+
+        $competition = new Competition( name: 'League Comp', type: Competition_Type::LEAGUE, age_group: 'Open', id: 1 );
+        $event       = new class( $competition ) extends Event {
+            public function __construct( Competition $competition ) {
+                $this->id          = 1;
+                $this->competition = $competition;
+            }
+        };
+
+        $league = new class( $event ) extends League {
+            public function __construct( Event $event ) {
+                $this->id        = 10;
+                $this->title     = 'Division 1';
+                $this->event     = $event;
+                $this->templates = [
+                    'standings' => 'standings-custom.php',
+                    'matches'   => 'matches-grid.php',
+                ];
+            }
+        };
+
+        $vm = $presenter->present_archive(
+            league: $league,
+            event: $event,
+            seasons: [],
+            leagues: [ $league ],
+            tab: 'standings'
+        );
+
+        $this->assertSame( [
+            'standings' => 'standings-custom.php',
+            'matches'   => 'matches-grid.php',
+        ], $vm->templates );
+        $this->assertSame( 'standings-custom.php', $vm->get_template_filename( 'standings' ) );
+        $this->assertSame( 'matches-grid.php', $vm->get_template_filename( 'matches' ) );
+        $this->assertSame( '', $vm->get_template_filename( 'unknown' ) );
+    }
 }

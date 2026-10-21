@@ -59,7 +59,7 @@ class Util {
     public static function add_racketmanager_page( string $slug, array $page ): int|null {
         // Check that the page doesn't exist already.
         if ( ! is_page( $slug ) ) {
-            $page_template = $page['page_template'] ?? 'template_no_title.php';
+            $page_template = $page['page_template'] ?? 'templates/page_template/template_notitle.php';
             // Add the page using the data from the array above.
             $post    = array(
                 'post_content'   => $page['content'],

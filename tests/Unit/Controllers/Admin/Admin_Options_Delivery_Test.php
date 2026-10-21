@@ -10,9 +10,11 @@ use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Admin\View_Models\Options_Page_View_Model;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Admin\Admin_Message_Service;
 use Racketmanager\Services\Admin\Options\Options_Action_Dispatcher_Interface;
@@ -319,6 +321,11 @@ final class Admin_Options_Delivery_Test extends TestCase {
 
         $racketmanager          = ( new \ReflectionClass( RacketManager::class ) )->newInstanceWithoutConstructor();
         $racketmanager->options = $stored_options;
+        $gateway                = $this->createStub( Option_Gateway_Interface::class );
+        $gateway->method( 'get_option' )->willReturnCallback(
+            fn( string $key, mixed $default = false ) => 'racketmanager' === $key ? $stored_options : $default
+        );
+        $racketmanager->option_service = new Option_Service( $gateway );
 
         $racketmanager_prop = ( new \ReflectionProperty( Admin_Display::class, 'racketmanager' ) );
         $racketmanager_prop->setValue( $screen, $racketmanager );

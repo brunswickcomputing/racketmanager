@@ -137,7 +137,7 @@ $vm = $archive_vm ?? $vm;
                                 if ( function_exists( $function_name ) ) {
                                     $args = [
                                         'season'   => $vm->current_season_name,
-                                        'template' => get_league_template( $option['name'] ),
+                                        'template' => ( isset( $vm ) && method_exists( $vm, 'get_template_filename' ) ? $vm->get_template_filename( $option['name'] ) : '' ) ?: get_league_template( $option['name'] ),
                                         'post_id'  => $vm->post_id,
                                     ];
                                     $function_name( $vm->league_id, $args );

@@ -17,6 +17,7 @@
 namespace Racketmanager;
 
 // Abort if this file is called directly.
+use Racketmanager\Infrastructure\Wordpress\Bootstrap\Plugin_Bootstrap;
 use WP_CLI;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -31,7 +32,7 @@ $site_url .= '/';
 
 define( 'RACKETMANAGER', 'racketmanager' );
 define( 'RACKETMANAGER_VERSION', '10.0.0' );
-define( 'RACKETMANAGER_DBVERSION', '10.0.17' );
+define( 'RACKETMANAGER_DBVERSION', '10.0.18' );
 define( 'RACKETMANAGER_SITE', $site_url );
 define( 'RACKETMANAGER_URL', esc_url( plugin_dir_url( __FILE__ ) ) );
 define( 'RACKETMANAGER_PATH', plugin_dir_path( __FILE__ ) );
@@ -108,16 +109,8 @@ add_action( 'init', __NAMESPACE__ . '\\maybe_buffer_export' );
 // Bootstrap core on plugins_loaded
 // -----------------------------------------------------------------------------
 add_action( 'plugins_loaded', function () {
-    // Core singleton - Admin singleton when in the dashboard
-    if ( is_admin() ) {
-        $instance = Admin::get_instance();
-    } else {
-        $instance = RacketManager::get_instance();
-    }
-
-    // Global for BC with legacy code that expects $racketmanager to be set.
-    global $racketmanager;
-    $racketmanager = $instance;
+    // Initialize RacketManager core, expose $racketmanager global, and resolve Admin coordinator in dashboard.
+    Plugin_Bootstrap::launch();
 }, 5 );
 
 // -----------------------------------------------------------------------------

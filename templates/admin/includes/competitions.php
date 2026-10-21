@@ -77,7 +77,14 @@ if ( isset( $vm ) && $vm instanceof Index_Page_View_Model ) {
             <tbody>
                 <?php
                 foreach ( $competitions as $competition ) {
-                    if ( 'tournament' === $competition->get_type() ) {
+                    $comp_id           = is_object( $competition ) && method_exists( $competition, 'get_id' ) ? $competition->get_id() : ( is_object( $competition ) ? ( $competition->id ?? 0 ) : ( $competition['id'] ?? 0 ) );
+                    $comp_name         = is_object( $competition ) && method_exists( $competition, 'get_name' ) ? $competition->get_name() : ( is_object( $competition ) ? ( $competition->name ?? '' ) : ( $competition['name'] ?? '' ) );
+                    $comp_type         = is_object( $competition ) && method_exists( $competition, 'get_type' ) ? $competition->get_type() : ( is_object( $competition ) ? ( $competition->type ?? '' ) : ( $competition['type'] ?? '' ) );
+                    $comp_age_group    = is_object( $competition ) && method_exists( $competition, 'get_age_group' ) ? $competition->get_age_group() : ( is_object( $competition ) ? ( $competition->age_group ?? null ) : ( $competition['age_group'] ?? null ) );
+                    $comp_season_count = is_object( $competition ) && method_exists( $competition, 'get_season_count' ) ? $competition->get_season_count() : ( is_object( $competition ) ? ( $competition->season_count ?? 0 ) : ( $competition['season_count'] ?? 0 ) );
+                    $comp_event_count  = is_object( $competition ) && method_exists( $competition, 'get_event_count' ) ? $competition->get_event_count() : ( is_object( $competition ) ? ( $competition->event_count ?? 0 ) : ( $competition['event_count'] ?? 0 ) );
+
+                    if ( 'tournament' === $comp_type ) {
                         $page_link = 'config';
                     } else {
                         $page_link = 'seasons';
@@ -85,27 +92,27 @@ if ( isset( $vm ) && $vm instanceof Index_Page_View_Model ) {
                     ?>
                     <tr>
                         <td class="check-column">
-                            <label for="competition-<?php echo esc_html( $competition->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $competition->id ); ?>" name="competition[<?php echo esc_html( $competition->id ); ?>]" id="competition-<?php echo esc_html( $competition->id ); ?>" />
+                            <label for="competition-<?php echo esc_html( (string) $comp_id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( (string) $comp_id ); ?>" name="competition[<?php echo esc_html( (string) $comp_id ); ?>]" id="competition-<?php echo esc_html( (string) $comp_id ); ?>" />
                         </td>
                         <td class="d-none d-md-table-cell">
-                            <?php echo esc_html( $competition->id ); ?>
+                            <?php echo esc_html( (string) $comp_id ); ?>
                         </td>
                         <td class="">
-                            <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->get_type() ); ?>s&amp;view=<?php echo esc_attr( $page_link ); ?>&amp;competition_id=<?php echo esc_html( $competition->id ); ?>">
-                                <?php echo esc_html( $competition->name ); ?>
+                            <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( (string) $comp_type ); ?>s&amp;view=<?php echo esc_attr( $page_link ); ?>&amp;competition_id=<?php echo esc_html( (string) $comp_id ); ?>">
+                                <?php echo esc_html( (string) $comp_name ); ?>
                             </a>
                         </td>
                         <td class="centered">
-                            <?php echo esc_html( ucfirst( $competition->age_group ) ); ?>
+                            <?php echo esc_html( null !== $comp_age_group && '' !== $comp_age_group ? ucfirst( (string) $comp_age_group ) : '' ); ?>
                         </td>
                         <td class="centered">
-                            <?php echo esc_html( ucfirst( $competition->get_type() ) ); ?>
+                            <?php echo esc_html( '' !== (string) $comp_type ? ucfirst( (string) $comp_type ) : '' ); ?>
                         </td>
                         <td class="d-none d-md-table-cell text-center">
-                            <?php echo esc_html( $competition->season_count ); ?>
+                            <?php echo esc_html( (string) $comp_season_count ); ?>
                         </td>
                         <td class="d-none d-md-table-cell text-center">
-                            <?php echo esc_html( $competition->event_count ); ?>
+                            <?php echo esc_html( (string) $comp_event_count ); ?>
                         </td>
                     </tr>
                     <?php

@@ -219,6 +219,12 @@ namespace Racketmanager {
         }
     }
 
+    if ( ! function_exists( 'Racketmanager\last_5_matches' ) ) {
+        function last_5_matches( int $league_id, array $args = array() ): string {
+            return "<div class='last-5-matches'></div>";
+        }
+    }
+
     if ( ! function_exists( 'Racketmanager\is_lta_number_required' ) ) {
         function is_lta_number_required(): bool {
             return $GLOBALS['wp_stubs_is_lta_number_required'] ?? false;
@@ -573,12 +579,24 @@ namespace {
             if ( isset( $GLOBALS['wp_action_hooks'] ) ) {
                 $GLOBALS['wp_action_hooks'][$tag][] = $function_to_add;
             }
+            if ( isset( $GLOBALS['wp_stubs_added_actions'] ) ) {
+                $GLOBALS['wp_stubs_added_actions'][ $tag ][] = array(
+                    'callback'      => $function_to_add,
+                    'priority'      => $priority,
+                    'accepted_args' => $accepted_args,
+                );
+            }
             return true;
         }
     }
 
     if ( ! function_exists( 'add_filter' ) ) {
         function add_filter( $tag, $function_to_add, $priority = 10, $accepted_args = 1 ) {
+            $GLOBALS['wp_stubs_added_filters'][ $tag ][] = array(
+                'callback'      => $function_to_add,
+                'priority'      => $priority,
+                'accepted_args' => $accepted_args,
+            );
             return true;
         }
     }
@@ -789,6 +807,12 @@ namespace {
         }
     }
 
+    if ( ! function_exists( 'wp_create_nonce' ) ) {
+        function wp_create_nonce( $action = -1 ): string {
+            return 'stub-nonce-' . (string) $action;
+        }
+    }
+
     if ( ! function_exists( 'wp_die' ) ) {
         function wp_die( mixed $message = '', string|int $title = '', array|int|string $args = [] ): mixed {
             $GLOBALS['wp_stubs_last_wp_die'] = [
@@ -879,17 +903,138 @@ namespace {
 
     if ( ! function_exists( 'wp_register_script' ) ) {
         function wp_register_script( $handle, $src, $deps = array(), $ver = false, $in_footer = false ): bool {
+            $GLOBALS['wp_stubs_registered_scripts'][ $handle ] = compact( 'handle', 'src', 'deps', 'ver', 'in_footer' );
             return true;
         }
     }
 
     if ( ! function_exists( 'wp_enqueue_script' ) ) {
-        function wp_enqueue_script( $handle, $src = '', $deps = array(), $ver = false, $in_footer = false ): void {}
+        function wp_enqueue_script( $handle, $src = '', $deps = array(), $ver = false, $in_footer = false ): void {
+            if ( ! empty( $src ) || ! empty( $deps ) || false !== $ver ) {
+                $GLOBALS['wp_stubs_enqueued_scripts'][ $handle ] = compact( 'handle', 'src', 'deps', 'ver', 'in_footer' );
+            } elseif ( isset( $GLOBALS['wp_stubs_registered_scripts'][ $handle ] ) ) {
+                $GLOBALS['wp_stubs_enqueued_scripts'][ $handle ] = $GLOBALS['wp_stubs_registered_scripts'][ $handle ];
+            } else {
+                $GLOBALS['wp_stubs_enqueued_scripts'][ $handle ] = compact( 'handle', 'src', 'deps', 'ver', 'in_footer' );
+            }
+            $GLOBALS['wp_stubs_enqueued_scripts_order'][] = $handle;
+        }
+    }
+
+    if ( ! function_exists( 'wp_register_style' ) ) {
+        function wp_register_style( $handle, $src, $deps = array(), $ver = false, $media = 'all' ): bool {
+            $GLOBALS['wp_stubs_registered_styles'][ $handle ] = compact( 'handle', 'src', 'deps', 'ver', 'media' );
+            return true;
+        }
+    }
+
+    if ( ! function_exists( 'wp_enqueue_style' ) ) {
+        function wp_enqueue_style( $handle, $src = '', $deps = array(), $ver = false, $media = 'all' ): void {
+            $GLOBALS['wp_stubs_enqueued_styles'][ $handle ] = compact( 'handle', 'src', 'deps', 'ver', 'media' );
+        }
+    }
+
+    if ( ! function_exists( 'wp_add_inline_script' ) ) {
+        function wp_add_inline_script( $handle, $data, $position = 'after' ): bool {
+            $GLOBALS['wp_stubs_inline_scripts'][ $handle ][] = compact( 'data', 'position' );
+            return true;
+        }
+    }
+
+    if ( ! function_exists( 'wp_localize_script' ) ) {
+        function wp_localize_script( $handle, $object_name, $l10n ): bool {
+            $GLOBALS['wp_stubs_localized_scripts'][ $handle ][ $object_name ] = $l10n;
+            return true;
+        }
+    }
+
+    if ( ! function_exists( 'wp_register_script_module' ) ) {
+        function wp_register_script_module( $id, $src, $deps = array(), $version = false ): bool {
+            $GLOBALS['wp_stubs_registered_script_modules'][ $id ] = compact( 'id', 'src', 'deps', 'version' );
+            return true;
+        }
+    }
+
+    if ( ! function_exists( 'wp_enqueue_script_module' ) ) {
+        function wp_enqueue_script_module( $id ): void {
+            $GLOBALS['wp_stubs_enqueued_script_modules'][ $id ] = true;
+        }
+    }
+
+    if ( ! function_exists( 'bloginfo' ) ) {
+        function bloginfo( $show = '' ): void {
+            echo 'https://example.com';
+        }
+    }
+
+    if ( ! function_exists( 'get_current_screen' ) ) {
+        function get_current_screen() {
+            return $GLOBALS['wp_stubs_current_screen'] ?? null;
+        }
     }
 
     if ( ! function_exists( 'plugins_url' ) ) {
         function plugins_url( $path = '', $plugin = '' ): string {
             return 'https://example.com/wp-content/plugins/' . ltrim( $path, '/' );
+        }
+    }
+
+    if ( ! function_exists( 'wp_cache_add' ) ) {
+        function wp_cache_add( $id, $data, $group = '', $expire = 0 ) {
+            $GLOBALS['wp_stubs_cache_added'][] = array( $id, $data, $group, $expire );
+            if ( ! empty( $GLOBALS['wp_stubs_cache_enabled'] ) ) {
+                $group = $group ?: 'default';
+                $GLOBALS['wp_stubs_cache'][ $group ][ (string) $id ] = $data;
+            }
+            return true;
+        }
+    }
+
+    if ( ! function_exists( 'wp_get_theme' ) ) {
+        function wp_get_theme() {
+            return new class {
+                public function get_page_templates(): array {
+                    return $GLOBALS['wp_stubs_theme_page_templates'] ?? [];
+                }
+            };
+        }
+    }
+
+    if ( ! function_exists( 'get_theme_root' ) ) {
+        function get_theme_root(): string {
+            return $GLOBALS['wp_stubs_theme_root'] ?? '/var/www/wp-content/themes';
+        }
+    }
+
+    if ( ! function_exists( 'get_stylesheet' ) ) {
+        function get_stylesheet(): string {
+            return $GLOBALS['wp_stubs_stylesheet'] ?? 'my-theme';
+        }
+    }
+
+    if ( ! function_exists( 'get_post_meta' ) ) {
+        function get_post_meta( int $post_id, string $key = '', bool $single = false ) {
+            $meta = $GLOBALS['wp_stubs_post_meta'][ $post_id ][ $key ] ?? null;
+            if ( null === $meta ) {
+                return $single ? '' : [];
+            }
+            if ( $single ) {
+                return is_array( $meta ) ? ( $meta[0] ?? '' ) : $meta;
+            }
+            return is_array( $meta ) ? $meta : [ $meta ];
+        }
+    }
+
+    if ( ! function_exists( 'is_category' ) ) {
+        function is_category( $category = '' ): bool {
+            $current = $GLOBALS['wp_stubs_is_category'] ?? false;
+            if ( empty( $category ) ) {
+                return (bool) $current;
+            }
+            if ( is_array( $current ) ) {
+                return in_array( $category, $current, true );
+            }
+            return $current === $category;
         }
     }
 
@@ -1222,6 +1367,19 @@ namespace {
                 return $GLOBALS['wp_stubs_users'][ $value ];
             }
             return false;
+        }
+    }
+
+    if ( ! function_exists( 'add_shortcode' ) ) {
+        function add_shortcode( string $tag, $callback ): void {
+            $GLOBALS['shortcode_tags'][ $tag ] = $callback;
+            $GLOBALS['wp_stubs_added_shortcodes'][ $tag ] = $callback;
+        }
+    }
+
+    if ( ! function_exists( 'shortcode_exists' ) ) {
+        function shortcode_exists( string $tag ): bool {
+            return isset( $GLOBALS['shortcode_tags'][ $tag ] ) || isset( $GLOBALS['wp_stubs_added_shortcodes'][ $tag ] );
         }
     }
 
@@ -1840,8 +1998,10 @@ namespace Racketmanager {
 
 namespace Racketmanager {
 
-    function match_header( int $match_id, array $args = array() ): string {
-        return "match header content";
+    if ( ! function_exists( 'Racketmanager\match_header' ) ) {
+        function match_header( int $match_id, array $args = array() ): string {
+            return "match header content";
+        }
     }
 }
 

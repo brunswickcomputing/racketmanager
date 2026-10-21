@@ -68,5 +68,20 @@ final readonly class League_Archive_View_Model {
         public ?string $championship_season = null,
         public array $menu_options = [],
         public string $tab = 'standings',
+        public array $templates = [],
     ) {}
+
+    /**
+     * Get specific template filename configured for this view model.
+     *
+     * @param string $template Template key.
+     * @return string
+     */
+    public function get_template_filename( string $template = '' ): string {
+        if ( ! empty( $template ) && isset( $this->templates[ $template ] ) ) {
+            return (string) $this->templates[ $template ];
+        }
+
+        return '';
+    }
 }

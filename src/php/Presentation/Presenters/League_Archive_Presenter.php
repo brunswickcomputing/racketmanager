@@ -187,6 +187,7 @@ class League_Archive_Presenter {
             championship_season: $championship_season,
             menu_options: $menu_options,
             tab: $tab,
+            templates: is_object( $league ) && isset( $league->templates ) && is_array( $league->templates ) ? $league->templates : [],
         );
     }
 

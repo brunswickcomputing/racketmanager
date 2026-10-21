@@ -11,18 +11,19 @@ declare( strict_types=1 );
 namespace Racketmanager\Admin\View_Models;
 
 use Racketmanager\Admin\View_Models\Error_Bag;
+use Racketmanager\Domain\DTO\Competition\Competition_Summary_DTO;
 
 readonly final class Index_Page_View_Model {
 
     /**
-     * @param array<int, object>    $competitions
-     * @param array<string, string> $age_groups
-     * @param string                $age_group_select
-     * @param string                $page_name
-     * @param Error_Bag             $errors
-     * @param ?string               $competition_name
-     * @param ?string               $type
-     * @param ?string               $age_group
+     * @param Competition_Summary_DTO[] $competitions
+     * @param array<string, string>      $age_groups
+     * @param string                     $age_group_select
+     * @param string                     $page_name
+     * @param Error_Bag                  $errors
+     * @param ?string                    $competition_name
+     * @param ?string                    $type
+     * @param ?string                    $age_group
      */
     public function __construct(
         public array $competitions = array(),

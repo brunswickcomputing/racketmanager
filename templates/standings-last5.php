@@ -7,10 +7,14 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Presentation\View_Models\League_Standings_View_Model;
+
 /** @var object $league */
 /** @var array $teams */
 /** @var array<int|string, string> $team_links */
-$team_links = $team_links ?? [];
+/** @var League_Standings_View_Model|null $vm */
+$team_links        = $team_links ?? [];
+$is_column_visible = fn( string $key ): bool => isset( $vm ) && $vm instanceof League_Standings_View_Model ? $vm->show_column( $key ) : show_standings( $key );
 ?>
 <div class="module module--card">
     <div class="module__banner">
@@ -29,7 +33,7 @@ $team_links = $team_links ?? [];
                                     <?php esc_html_e( 'Pos', 'racketmanager' ); ?>
                                 </th>
                                 <?php
-                                if ( show_standings( 'status' ) ) {
+                                if ( $is_column_visible( 'status' ) ) {
                                     ?>
                                     <th class="num d-none d-md-table-cell">
                                         &#160;
@@ -41,7 +45,7 @@ $team_links = $team_links ?? [];
                                     <?php esc_html_e( 'Team', 'racketmanager' ); ?>
                                 </th>
                                 <?php
-                                if ( show_standings( 'pld' ) ) {
+                                if ( $is_column_visible( 'pld' ) ) {
                                     ?>
                                     <th class="num" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_attr_e( 'Played', 'racketmanager' ); ?>">
                                         <?php esc_html_e( 'Pld', 'racketmanager' ); ?>
@@ -50,7 +54,7 @@ $team_links = $team_links ?? [];
                                 }
                                 ?>
                                 <?php
-                                if ( show_standings( 'won' ) ) {
+                                if ( $is_column_visible( 'won' ) ) {
                                     ?>
                                     <th class="num d-none d-md-table-cell" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_attr_e( 'Won', 'racketmanager' ); ?>">
                                         <?php esc_html_e( 'W', 'racketmanager' ); ?>
@@ -59,7 +63,7 @@ $team_links = $team_links ?? [];
                                 }
                                 ?>
                                 <?php
-                                if ( show_standings( 'tie' ) ) {
+                                if ( $is_column_visible( 'tie' ) ) {
                                     ?>
                                     <th class="num d-none d-md-table-cell" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_attr_e( 'Drawn', 'racketmanager' ); ?>">
                                         <?php esc_html_e( 'T', 'racketmanager' ); ?>
@@ -68,7 +72,7 @@ $team_links = $team_links ?? [];
                                 }
                                 ?>
                                 <?php
-                                if ( show_standings( 'lost' ) ) {
+                                if ( $is_column_visible( 'lost' ) ) {
                                     ?>
                                     <th class="num d-none d-md-table-cell" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_attr_e( 'Lost', 'racketmanager' ); ?>">
                                         <?php esc_html_e( 'L', 'racketmanager' ); ?>
@@ -77,7 +81,7 @@ $team_links = $team_links ?? [];
                                 }
                                 ?>
                                 <?php
-                                if ( show_standings( 'winPercent' ) ) {
+                                if ( $is_column_visible( 'winPercent' ) ) {
                                     ?>
                                     <th class="num d-none d-md-table-cell" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_attr_e( 'Win Percentage', 'racketmanager' ); ?>">
                                         <?php esc_html_e( 'PCT', 'racketmanager' ); ?>
@@ -86,7 +90,7 @@ $team_links = $team_links ?? [];
                                 }
                                 ?>
                                 <?php
-                                if ( show_standings( 'sets' ) ) {
+                                if ( $is_column_visible( 'sets' ) ) {
                                     ?>
                                     <th class='num' data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_attr_e( 'Sets', 'racketmanager' ); ?>">
                                         <?php esc_html_e( 'S', 'racketmanager' ); ?>
@@ -95,7 +99,7 @@ $team_links = $team_links ?? [];
                                 }
                                 ?>
                                 <?php
-                                if ( show_standings( 'games' ) ) {
+                                if ( $is_column_visible( 'games' ) ) {
                                     ?>
                                     <th class="num" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_attr_e( 'Games', 'racketmanager' ); ?>">
                                         <?php esc_html_e( 'G', 'racketmanager' ); ?>
@@ -110,7 +114,7 @@ $team_links = $team_links ?? [];
                                     <?php esc_html_e( 'Pts', 'racketmanager' ); ?>
                                 </th>
                                 <?php
-                                if ( show_standings( 'last5' ) ) {
+                                if ( $is_column_visible( 'last5' ) ) {
                                     ?>
                                     <th class="d-none d-md-table-cell" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_attr_e( 'History', 'racketmanager' ); ?>">
                                         <?php esc_html_e( 'Last 5', 'racketmanager' ); ?>
@@ -131,7 +135,7 @@ $team_links = $team_links ?? [];
                                         </span>
                                     </td>
                                     <?php
-                                    if ( show_standings( 'status' ) ) {
+                                    if ( $is_column_visible( 'status' ) ) {
                                         ?>
                                         <td class="num d-none d-md-table-cell" title="<?php echo esc_html( $team->status_text ); ?>">
                                             <svg width="32" height="32" class="icon ">
@@ -169,7 +173,7 @@ $team_links = $team_links ?? [];
                                         ?>
                                     </td>
                                     <?php
-                                    if ( show_standings( 'pld' ) ) {
+                                    if ( $is_column_visible( 'pld' ) ) {
                                         ?>
                                         <td class='num'>
                                             <?php echo esc_html( $team->done_matches ?? 0 ); ?>
@@ -178,7 +182,7 @@ $team_links = $team_links ?? [];
                                     }
                                     ?>
                                     <?php
-                                    if ( show_standings( 'won' ) ) {
+                                    if ( $is_column_visible( 'won' ) ) {
                                         ?>
                                         <td class='num d-none d-md-table-cell'>
                                             <?php echo esc_html( $team->won_matches ?? 0 ); ?>
@@ -187,7 +191,7 @@ $team_links = $team_links ?? [];
                                     }
                                     ?>
                                     <?php
-                                    if ( show_standings( 'tie' ) ) {
+                                    if ( $is_column_visible( 'tie' ) ) {
                                         ?>
                                         <td class='num d-none d-md-table-cell'>
                                             <?php echo esc_html( $team->draw_matches ?? 0 ); ?>
@@ -196,7 +200,7 @@ $team_links = $team_links ?? [];
                                     }
                                     ?>
                                     <?php
-                                    if ( show_standings( 'lost' ) ) {
+                                    if ( $is_column_visible( 'lost' ) ) {
                                         ?>
                                         <td class='num d-none d-md-table-cell'>
                                             <?php echo esc_html( $team->lost_matches ?? 0 ) ?>
@@ -205,7 +209,7 @@ $team_links = $team_links ?? [];
                                     }
                                     ?>
                                     <?php
-                                    if ( show_standings( 'winPercent' ) ) {
+                                    if ( $is_column_visible( 'winPercent' ) ) {
                                         ?>
                                         <td class="num d-none d-md-table-cell">
                                             <?php echo esc_html( $team->win_percent ?? 0 ); ?>
@@ -214,7 +218,7 @@ $team_links = $team_links ?? [];
                                     }
                                     ?>
                                     <?php
-                                    if ( show_standings( 'sets' ) ) {
+                                    if ( $is_column_visible( 'sets' ) ) {
                                         ?>
                                         <td class='num'>
                                             <?php echo esc_html( ( $team->sets_won ?? 0 ) . '-' . ( $team->sets_allowed ?? 0 ) ); ?>
@@ -223,7 +227,7 @@ $team_links = $team_links ?? [];
                                     }
                                     ?>
                                     <?php
-                                    if ( show_standings( 'games' ) ) {
+                                    if ( $is_column_visible( 'games' ) ) {
                                         ?>
                                         <td class='num'>
                                             <?php echo esc_html( ( $team->games_won ?? 0 ) . '-' . ( $team->games_allowed ?? 0 ) ); ?>
@@ -238,7 +242,7 @@ $team_links = $team_links ?? [];
                                         <?php echo esc_html( is_array( $team->points_formatted ?? null ) ? ( $team->points_formatted['primary'] ?? $team->points_plus ?? 0 ) : ( $team->points_plus ?? 0 ) ); ?>
                                     </td>
                                     <?php
-                                    if ( show_standings( 'last5' ) ) {
+                                    if ( $is_column_visible( 'last5' ) ) {
                                         ?>
                                         <td class="standing-form d-none d-md-table-cell">
                                             <?php echo last_5_matches( $league->id, array( 'team_id' => $team->id ) ); ?>

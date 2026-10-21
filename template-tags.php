@@ -7,68 +7,58 @@
 
 namespace Racketmanager;
 
-    use Racketmanager\Util\Util;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
+use Racketmanager\Presentation\Formatters\Currency_Formatter;
+use Racketmanager\Presentation\Formatters\Date_Time_Formatter;
+use Racketmanager\Presentation\Presenters\League_Standings_Presenter;
+use Racketmanager\Util\Util_Lookup;
 
-    /**
-     * Get specific template
-     *
-     * @param string $template template.
-     *
-     * @return string
-     * @category template-tags
-     */
+/**
+ * Get specific template
+ *
+ * @param string $template template.
+ *
+ * @return string
+ * @category template-tags
+ */
 function get_league_template( string $template = '' ): string {
     global $league;
-
-    if ( ! empty( $template ) && isset( $league->templates[ $template ] ) ) {
-        return $league->templates[ $template ];
-    }
-    return '';
+    return League_Standings_Presenter::get_league_template( $league ?? null, $template );
 }
-    /**
-     * Check if a specific standings columns is activated for display
-     *
-     * @param string $key key.
-     *
-     * @return boolean
-     * @category template-tags
-     */
+
+/**
+ * Check if a specific standings columns is activated for display
+ *
+ * @param string $key key.
+ *
+ * @return boolean
+ * @category template-tags
+ */
 function show_standings( string $key ): bool {
     global $league;
-
-    if ( isset( $league->standings[ $key ] ) && 1 === $league->standings[ $key ] ) {
-        return true;
-    }
-    return false;
+    return League_Standings_Presenter::is_column_visible( $league ?? null, $key );
 }
-    /**
-     * Print Match time
-     *
-     * @category template-tags
-     */
+
+/**
+ * Print Match time
+ *
+ * @param mixed $start_time start time.
+ * @category template-tags
+ */
 function the_match_time( $start_time ): void {
-    if ( '00:00' === $start_time ) {
-        echo '';
-    } else {
-        echo $start_time;
-    }
+    echo Date_Time_Formatter::format_match_time( $start_time );
 }
 
-    /**
-     * Get formatted currency function
-     *
-     * @param string|null $amount amount to be formatted.
-     *
-     * @return string
-     */
-    function get_currency_amount( ?string $amount ): string {
-        if ( is_null( $amount ) ) {
-            $amount = 0;
-        }
-        $currency_fmt  = Util::get_currency_format();
-        $currency_code = Util::get_currency_code();
-        return numfmt_format_currency( $currency_fmt, $amount, $currency_code );
-    }
+/**
+ * Get formatted currency function
+ *
+ * @param string|null $amount amount to be formatted.
+ *
+ * @return string
+ */
+function get_currency_amount( ?string $amount ): string {
+    return Currency_Formatter::format_currency( $amount );
+}
 
 /**
  * Show formatted currency function
@@ -78,7 +68,7 @@ function the_match_time( $start_time ): void {
  * @return void
  */
 function the_currency_amount( ?string $amount ): void {
-    echo get_currency_amount( $amount);
+    echo get_currency_amount( $amount );
 }
     /**
      * Wrapper tags
@@ -1078,29 +1068,23 @@ function withdrawn_team_email( array $args = array() ): string {
      *
      */
     function get_tab(): ?string {
-        global $wp;
-        if ( ! empty( $_GET['tab'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            $tab = wp_strip_all_tags( wp_unslash( $_GET['tab'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        } elseif ( isset( $wp->query_vars['tab'] ) ) {
-            $tab = get_query_var( 'tab' );
-        } else {
-            $tab = null;
-        }
-        return $tab;
+        return Util_Lookup::get_tab();
     }
+
     /**
      * Function to determine if LTA tennis number required
      * @return bool
      */
     function is_lta_number_required(): bool {
         global $racketmanager;
-        $options = $racketmanager->get_options( 'rosters' );
-        if ( empty( $options['btm'] ) ) {
-            $btm_required = false;
-        } else {
-            $btm_required = true;
+        if ( isset( $racketmanager->option_service ) && $racketmanager->option_service instanceof Option_Service ) {
+            return $racketmanager->option_service->is_lta_number_required();
         }
-        return $btm_required;
+        if ( isset( $racketmanager->container ) && $racketmanager->container->has( Option_Service::class ) ) {
+            return $racketmanager->container->get( Option_Service::class )->is_lta_number_required();
+        }
+        $options = $racketmanager?->get_options( 'rosters' );
+        return is_array( $options ) && ! empty( $options['btm'] );
     }
     /**
      * Display purchase order modal

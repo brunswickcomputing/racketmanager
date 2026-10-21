@@ -146,6 +146,10 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has( 'championship_admin_service' ) );
         $this->assertTrue( $container->has( 'draw_action_dispatcher' ) );
         $this->assertTrue( $container->has( 'tournament_admin_controller' ) );
+        $this->assertTrue( $container->has( 'admin_display' ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Admin_Display::class ) );
+        $this->assertTrue( $container->has( 'admin' ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin::class ) );
     }
 
     public function test_container_bootstrap_boots_all_providers(): void {

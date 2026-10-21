@@ -115,6 +115,44 @@ class League_Standings_Presenter {
         return $team_links;
     }
 
+    /**
+     * Check if a specific standings column is activated for display in the given league.
+     *
+     * @param object|null $league League domain entity or object.
+     * @param string      $key    Column key (e.g. 'status', 'pld', 'won', 'sets', 'games', 'last5').
+     * @return bool
+     */
+    public static function is_column_visible( ?object $league, string $key ): bool {
+        if ( null === $league ) {
+            return false;
+        }
+
+        if ( isset( $league->standings ) && is_array( $league->standings ) ) {
+            return isset( $league->standings[ $key ] ) && 1 === (int) $league->standings[ $key ];
+        }
+
+        return false;
+    }
+
+    /**
+     * Get specific template file configured for the given league.
+     *
+     * @param object|null $league   League domain entity or object.
+     * @param string      $template Template key.
+     * @return string
+     */
+    public static function get_league_template( ?object $league, string $template = '' ): string {
+        if ( null === $league || empty( $template ) ) {
+            return '';
+        }
+
+        if ( isset( $league->templates ) && is_array( $league->templates ) && isset( $league->templates[ $template ] ) ) {
+            return (string) $league->templates[ $template ];
+        }
+
+        return '';
+    }
+
     private function restore_buffer_level( int $level ): void {
         while ( ob_get_level() > $level ) {
             ob_end_clean();

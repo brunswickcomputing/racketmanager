@@ -67,6 +67,7 @@ class Upgrade {
         $this->v10_0_15();
         $this->v10_0_16();
         $this->v10_0_17();
+        $this->v10_0_18();
         /*
         * Update version and dbversion
         */
@@ -570,6 +571,34 @@ class Upgrade {
         if ( version_compare( $this->installed, $version, '<' ) ) {
             $this->show_upgrade_step( $version );
             $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_league_teams CHANGE `group` `group` VARCHAR(30) NULL DEFAULT NULL, CHANGE `rank` `rank` INT NULL DEFAULT '0', CHANGE `status` `status` VARCHAR(50) NULL;" );
+        }
+    }
+
+    /**
+     * Upgrade to 10.0.18
+     * Migrate legacy page template slugs in postmeta
+     *
+     * @return void
+     */
+    private function v10_0_18(): void {
+        $version = '10.0.18';
+        if ( version_compare( $this->installed, $version, '<' ) ) {
+            $this->show_upgrade_step( $version );
+            $mappings = [
+                'templates/template_notitle.php'                      => 'templates/page_template/template_notitle.php',
+                'templates/template_member_account.php'               => 'templates/page_template/template-member-account.php',
+                'templates/page_template/template_no_title.php'       => 'templates/page_template/template_notitle.php',
+                'templates/page_template/template_member_account.php' => 'templates/page_template/template-member-account.php',
+            ];
+            foreach ( $mappings as $old_slug => $new_slug ) {
+                $this->wpdb->query(
+                    $this->wpdb->prepare(
+                        "UPDATE {$this->wpdb->postmeta} SET `meta_value` = %s WHERE `meta_key` = '_wp_page_template' AND `meta_value` = %s",
+                        $new_slug,
+                        $old_slug
+                    )
+                );
+            }
         }
     }
 

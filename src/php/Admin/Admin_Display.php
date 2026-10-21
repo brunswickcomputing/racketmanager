@@ -43,6 +43,7 @@ use Racketmanager\Services\Admin\League\League_Team_Action_Dispatcher;
 use Racketmanager\Services\Admin\League\Season_Delete_Action_Dispatcher;
 use Racketmanager\Services\Admin\Season\Season_Action_Dispatcher;
 use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Container\Container_Bootstrap;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
@@ -131,11 +132,16 @@ class Admin_Display {
     /**
      * Constructor
      */
-    public function __construct( $plugin_instance ) {
-        $this->racketmanager = $plugin_instance;
+    public function __construct( ?RacketManager $racketmanager = null, ?Simple_Container $container = null ) {
+        if ( $racketmanager instanceof RacketManager ) {
+            $this->racketmanager = $racketmanager;
+        }
         $this->load_translations();
         add_action( 'init', array( &$this, 'load_translations' ) );
-        $c                          = $this->racketmanager->container;
+        $c = $container ?? ( isset( $this->racketmanager->container ) ? $this->racketmanager->container : null );
+        if ( null === $c ) {
+            throw new \LogicException( 'Admin_Display requires a Simple_Container instance.' );
+        }
         $this->club_service         = $c->get( 'club_service' );
         $this->player_service       = $c->get( 'player_service' );
         $this->registration_service = $c->get( 'registration_service' );

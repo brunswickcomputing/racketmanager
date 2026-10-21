@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Container\Providers;
 
+use Racketmanager\Admin;
+use Racketmanager\Admin\Admin_Display;
 use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Competition_Config_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Contact_Admin_Controller;
@@ -480,5 +482,30 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'rubber_repository' )
         ) );
         $container->set( 'frontend_ajax_controller', fn( Simple_Container $c ) => new Frontend_Ajax_Controller( $app, $c->get( 'frontend_ajax_adapter' ) ) );
+
+        $container->set( 'admin_display', function( Simple_Container $c ) use ( $app ) {
+            if ( null === $app ) {
+                throw new \LogicException( 'admin_display service requires a valid RacketManager application instance.' );
+            }
+            return new Admin_Display( $app, $c );
+        } );
+        $container->set( Admin_Display::class, fn( Simple_Container $c ) => $c->get( 'admin_display' ) );
+
+        $container->set( 'admin', function( Simple_Container $c ) use ( $app ) {
+            if ( null !== Admin::get_current_instance() ) {
+                return Admin::get_current_instance();
+            }
+            if ( null === $app ) {
+                throw new \LogicException( 'Admin service requires a valid RacketManager application instance.' );
+            }
+            return new Admin(
+                $c,
+                $app,
+                $c->get( 'admin_display' ),
+                $c->has( 'asset_manager' ) ? $c->get( 'asset_manager' ) : null,
+                $c->has( 'admin_ajax_controller' ) ? $c->get( 'admin_ajax_controller' ) : null
+            );
+        } );
+        $container->set( Admin::class, fn( Simple_Container $c ) => $c->get( 'admin' ) );
     }
 }

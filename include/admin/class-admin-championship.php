@@ -227,7 +227,7 @@ class Admin_Championship extends Admin_Display {
         $matches      = $league->get_matches( $match_args );
         foreach ( $matches as $match ) {
             $matches_list[] = $match->id;
-            if ( '-1' === $match->home_team ) {
+            if ( '-1' == $match->home_team || -1 === intval( $match->home_team ) ) {
                 $home['team'] = -1;
                 $home_team    = array( 'id' => -1 );
             } elseif ( str_contains( $match->home_team, '_' ) ) {
@@ -254,7 +254,7 @@ class Admin_Championship extends Admin_Display {
             } else {
                 $home_team = '';
             }
-            if ( '-1' === $match->away_team ) {
+            if ( '-1' == $match->away_team || -1 === intval( $match->away_team ) ) {
                 $away['team'] = -1;
                 $away_team    = array( 'id' => -1 );
             } elseif ( str_contains( $match->away_team, '_' ) ) {

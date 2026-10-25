@@ -748,7 +748,7 @@ final class Racketmanager_Match {
             $this->away_score = $this->away_points;
             $this->score      = sprintf( '%g - %g', $this->home_score, $this->away_score );
             if ( ! empty( $this->league->num_rubbers ) ) {
-                if ( '-1' === $this->home_team || '-1' === $this->away_team ) {
+                if ( '-1' == $this->home_team || -1 === intval( $this->home_team ) || '-1' == $this->away_team || -1 === intval( $this->away_team ) ) {
                     $this->is_walkover = true;
                     $set_score         = __( 'Walkover', 'racketmanager' );
                 } else {
@@ -785,7 +785,7 @@ final class Racketmanager_Match {
             $this->score      = null;
             $set_score        = null;
             if ( isset( $this->winner_id ) ) {
-                if ( '-1' === $this->home_team || '-1' === $this->away_team ) {
+                if ( '-1' == $this->home_team || -1 === intval( $this->home_team ) || '-1' == $this->away_team || -1 === intval( $this->away_team ) ) {
                     $set_score = $this->score;
                 } else {
                     $this->is_walkover = true;
@@ -1212,12 +1212,12 @@ final class Racketmanager_Match {
         $bye            = false;
         $updated        = false;
         $winning_points = $this->league->num_sets_to_win;
-        if ( empty( $home_points_input ) && '-1' === $this->home_team ) {
+        if ( empty( $home_points_input ) && ( '-1' == $this->home_team || -1 === intval( $this->home_team ) ) ) {
             $home_points_input = 0;
             $away_points_input = $winning_points;
             $bye               = true;
         }
-        if ( empty( $away_points_input ) && '-1' === $this->away_team ) {
+        if ( empty( $away_points_input ) && ( '-1' == $this->away_team || -1 === intval( $this->away_team ) ) ) {
             $home_points_input = $winning_points;
             $away_points_input = 0;
             $bye               = true;
@@ -1642,10 +1642,10 @@ final class Racketmanager_Match {
             $match['winner'] = -1;
             $match['loser']  = -1;
             $this->status    = 7;
-        } elseif ( '-1' === $this->home_team ) {
+        } elseif ( '-1' == $this->home_team || -1 === intval( $this->home_team ) ) {
             $match['winner'] = $this->away_team;
             $match['loser']  = 0;
-        } elseif ( '-1' === $this->away_team ) {
+        } elseif ( '-1' == $this->away_team || -1 === intval( $this->away_team ) ) {
             $match['winner'] = $this->home_team;
             $match['loser']  = 0;
         } elseif ( is_null( $home_points ) && is_null( $away_points ) ) {

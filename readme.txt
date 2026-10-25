@@ -47,6 +47,9 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 9.7.6 =
+* BUGFIX: preserve tournament next round team placeholders when opponent match is pending
+
 = 9.7.5 =
 * BUGFIX: prevent match notification email dispatch when match involves a bye
 * BUGFIX: handle null string argument in seo_url and un_seo_url

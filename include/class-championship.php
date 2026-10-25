@@ -514,17 +514,23 @@ final class Championship {
                     $match_args['leg'] = 2;
                 }
                 $prev      = $league->get_matches( $match_args );
-                $home_team = 0;
-                $away_team = 0;
-                if ( isset( $prev[ $home['no'] - 1 ] ) ) {
-                    $prev_home = $prev[ $home['no'] - 1 ];
-                    $home_team = $prev_home->{$home['col']};
+                $home_team = null;
+                $away_team = null;
+                if ( $home['no'] > 0 && isset( $prev[ $home['no'] - 1 ] ) ) {
+                    $prev_home   = $prev[ $home['no'] - 1 ];
+                    $home_winner = $prev_home->{$home['col']};
+                    if ( ! empty( $home_winner ) && intval( $home_winner ) > 0 ) {
+                        $home_team = strval( $home_winner );
+                    }
                 }
-                if ( isset( $prev[ $away['no'] - 1 ] ) ) {
-                    $prev_away = $prev[ $away['no'] - 1 ];
-                    $away_team = $prev_away->{$away['col']};
+                if ( $away['no'] > 0 && isset( $prev[ $away['no'] - 1 ] ) ) {
+                    $prev_away   = $prev[ $away['no'] - 1 ];
+                    $away_winner = $prev_away->{$away['col']};
+                    if ( ! empty( $away_winner ) && intval( $away_winner ) > 0 ) {
+                        $away_team = strval( $away_winner );
+                    }
                 }
-                if ( empty( $home_team ) && empty( $away_team ) ) {
+                if ( is_null( $home_team ) && is_null( $away_team ) ) {
                     $update = false;
                 }
                 if ( $update ) {
@@ -539,7 +545,7 @@ final class Championship {
                     }
                     // Set winners on final.
                     if ( 'third' === $next ) {
-                        $match     = $league->get_matches(
+                        $third_matches = $league->get_matches(
                             array(
                                 'final'   => 'final',
                                 'limit'   => false,
@@ -548,10 +554,14 @@ final class Championship {
                                 ),
                             )
                         );
-                        $match     = $match[0];
-                        $home_team = $prev_home->loser_id;
-                        $away_team = $prev_away->loser_id;
-                        $match->set_teams( $home_team, $away_team );
+                        if ( ! empty( $third_matches ) ) {
+                            $third_match     = $third_matches[0];
+                            $third_home_team = ( ! empty( $prev_home->loser_id ) && intval( $prev_home->loser_id ) > 0 ) ? strval( $prev_home->loser_id ) : null;
+                            $third_away_team = ( ! empty( $prev_away->loser_id ) && intval( $prev_away->loser_id ) > 0 ) ? strval( $prev_away->loser_id ) : null;
+                            if ( ! is_null( $third_home_team ) || ! is_null( $third_away_team ) ) {
+                                $this->set_teams( $third_match, $third_home_team, $third_away_team );
+                            }
+                        }
                     }
                 }
             }

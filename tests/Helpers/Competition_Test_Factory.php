@@ -44,9 +44,6 @@ final class Competition_Test_Factory {
         if ( null !== $current_season ) {
             $competition->current_season = $current_season;
         }
-        if ( null !== $competition_repository ) {
-            $competition->set_competition_repository( $competition_repository );
-        }
         return $competition;
     }
 

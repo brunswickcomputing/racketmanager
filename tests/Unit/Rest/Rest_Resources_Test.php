@@ -8,6 +8,7 @@ use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Team\Team;
@@ -16,6 +17,8 @@ use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Infrastructure\Wordpress\Rest\Rest_Controller_Adapter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Rest\Rest_Resources;
 use Racketmanager\Services\Club_Service;
@@ -26,6 +29,7 @@ use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Season_Service;
 use Racketmanager\Services\Team_Service;
+use Racketmanager\Services\Competition\League_Query_Service;
 use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -59,6 +63,11 @@ class Rest_Resources_Test extends TestCase {
         $container->set( 'registration_service', fn() => $this->createStub( Registration_Service::class ) );
         $container->set( 'finance_service', fn() => $this->finance_service );
         $container->set( 'rest_controller_adapter', fn() => $this->adapter );
+        $container->set( 'league_query_service', new League_Query_Service(
+            $this->createStub( League_Repository_Interface::class ),
+            $this->createStub( Fixture_Repository_Interface::class ),
+            $this->createStub( Rubber_Repository_Interface::class )
+        ) );
 
         $this->plugin->container = $container;
 
@@ -72,6 +81,37 @@ class Rest_Resources_Test extends TestCase {
             $this->season_service,
             $this->adapter
         );
+    }
+
+    private function bind_league_query_service( League_Repository_Interface $league_repository, Fixture_Repository_Interface $fixture_repository ): void {
+        $this->plugin->container->set( 'league_query_service', new League_Query_Service(
+            $league_repository,
+            $fixture_repository,
+            $this->createStub( Rubber_Repository_Interface::class )
+        ) );
+    }
+
+    private function configure_league_match_fixtures( array $fixtures, ?League_Repository_Interface $league_repository = null ): League_Repository_Interface {
+        $league_repository ??= $this->createStub( League_Repository_Interface::class );
+        $league_repository->method( 'query_matches' )->willReturn(
+            array_map( static fn( Fixture $fixture ): object => (object) [ 'id' => $fixture->get_id() ], $fixtures )
+        );
+
+        $fixture_repository = $this->createStub( Fixture_Repository_Interface::class );
+        $fixture_repository->method( 'find_by_id' )->willReturnCallback(
+            static function ( int $id ) use ( $fixtures ): ?Fixture {
+                foreach ( $fixtures as $fixture ) {
+                    if ( $fixture->get_id() === $id ) {
+                        return $fixture;
+                    }
+                }
+                return null;
+            }
+        );
+
+        $this->bind_league_query_service( $league_repository, $fixture_repository );
+
+        return $league_repository;
     }
 
     public function test_register_routes_registers_all_expected_endpoints(): void {
@@ -131,8 +171,10 @@ class Rest_Resources_Test extends TestCase {
         $request->set_param( 'league', 'division-1' );
         $request->set_param( 'days', '10' );
 
-        $league = $this->createMock( League::class );
-        $match = new \stdClass();
+        $league = new League( (object) array( 'id' => 3, 'title' => 'Division 1' ) );
+        $match = new Fixture();
+        $match->id = 31;
+        $match->league_id = 3;
         $match->league = (object) array( 'title' => 'Division 1' );
         $match->teams = array(
             'home' => (object) array( 'title' => 'Team A' ),
@@ -141,17 +183,20 @@ class Rest_Resources_Test extends TestCase {
         $match->date = '2026-05-10 14:00:00';
         $match->start_time = '14:00';
         $match->winner_id = 1;
-        $match->score = '6-0 6-0';
         $match->status = null;
 
-        $league->expects( self::once() )
-            ->method( 'get_matches' )
-            ->with( self::callback( function( array $args ) {
+        $league_repository = $this->createMock( League_Repository_Interface::class );
+        $league_repository->expects( self::once() )
+            ->method( 'query_matches' )
+            ->with( 3, self::callback( function( array $args ) {
                 return ( $args['time'] ?? null ) === 'latest'
-                    && ( $args['days'] ?? null ) === 10
-                    && ( $args['history'] ?? null ) === 10;
-            } ) )
-            ->willReturn( array( $match ) );
+                    && ( $args['days'] ?? null ) === 10;
+            } ), false )
+            ->willReturn( array( (object) [ 'id' => $match->get_id() ] ) );
+
+        $fixture_repository = $this->createStub( Fixture_Repository_Interface::class );
+        $fixture_repository->method( 'find_by_id' )->willReturn( $match );
+        $this->bind_league_query_service( $league_repository, $fixture_repository );
 
         $GLOBALS['wp_stubs_leagues']['division 1'] = $league;
 
@@ -212,8 +257,8 @@ class Rest_Resources_Test extends TestCase {
             fn( int $id ) => 5 === $id ? $home_team : ( 6 === $id ? $away_team : null )
         );
 
-        $league = $this->createStub( League::class );
-        $league->title = 'Premier "Division"';
+        $league = new League( (object) array( 'id' => 3, 'title' => 'Premier "Division"' ) );
+        $league->seasons = [ '2026' ];
         $league_repo = $this->createStub( League_Repository_Interface::class );
         $league_repo->method( 'find_by_id' )->willReturn( $league );
         $this->competition_service->method( 'get_league_repository' )->willReturn( $league_repo );
@@ -233,9 +278,8 @@ class Rest_Resources_Test extends TestCase {
         $fixture->date        = '2026-05-01 19:30:00';
         $fixture->start_time  = '19:30';
 
+        $this->configure_league_match_fixtures( [ $fixture ], $league_repo );
         $GLOBALS['wp_stubs_leagues']['premier division'] = $league;
-        $league->method( 'get_seasons' )->willReturn( array( array( 'name' => '2026' ) ) );
-        $league->method( 'get_matches' )->willReturn( array( $fixture ) );
 
         $request = new WP_REST_Request( 'GET', '/racketmanager/v1/fixtures' );
         $request->set_param( 'league', 'premier-division' );
@@ -293,8 +337,7 @@ class Rest_Resources_Test extends TestCase {
             return null;
         } );
 
-        $league = $this->createStub( League::class );
-        $league->title = 'Division 1';
+        $league = new League( (object) array( 'id' => 3, 'title' => 'Division 1' ) );
         $league_repo = $this->createStub( League_Repository_Interface::class );
         $league_repo->method( 'find_by_id' )->willReturn( $league );
         $this->competition_service->method( 'get_league_repository' )->willReturn( $league_repo );
@@ -326,9 +369,9 @@ class Rest_Resources_Test extends TestCase {
         $fixture4->home_team = '777';
         $fixture4->away_team = 'Winner of Semi 1';
 
+        $this->configure_league_match_fixtures( [ $fixture1, $fixture2, $fixture3, $fixture4 ], $league_repo );
         $GLOBALS['wp_stubs_leagues']['division 1'] = $league;
-        $league->method( 'get_seasons' )->willReturn( array( array( 'name' => '2026' ) ) );
-        $league->method( 'get_matches' )->willReturn( array( $fixture1, $fixture2, $fixture3, $fixture4 ) );
+        $league->seasons = [ '2026' ];
 
         $request = new WP_REST_Request( 'GET', '/racketmanager/v1/fixtures' );
         $request->set_param( 'league', 'division-1' );
@@ -338,24 +381,16 @@ class Rest_Resources_Test extends TestCase {
 
         self::assertInstanceOf( WP_REST_Response::class, $response );
         self::assertSame( 200, $response->get_status() );
-
         $data = $response->get_data();
         self::assertCount( 4, $data );
 
         self::assertSame( 'Active Team 5', $data[0]->home_team );
         self::assertSame( 'Active Team 6', $data[0]->away_team );
-
-        // Missing team (null in repository) falls back to empty string
         self::assertSame( '', $data[1]->home_team );
         self::assertSame( 'Active Team 6', $data[1]->away_team );
-
-        // Exception during lookup falls back to empty string
         self::assertSame( '', $data[2]->home_team );
         self::assertSame( 'Active Team 5', $data[2]->away_team );
-
-        // Empty title team resolves safely without calling undefined get_title()
         self::assertSame( '', $data[3]->home_team );
-        // Explicit non-numeric placeholder retains its text
         self::assertSame( 'Winner of Semi 1', $data[3]->away_team );
 
         unset( $GLOBALS['wp_stubs_leagues']['division 1'] );
@@ -381,8 +416,8 @@ class Rest_Resources_Test extends TestCase {
         } );
 
         $league_lookup_count = 0;
-        $league = $this->createStub( League::class );
-        $league->title = 'Memoized League';
+        $league = new League( (object) array( 'id' => 100, 'title' => 'Memoized League' ) );
+        $league->seasons = [ '2026' ];
         $league_repo = $this->createStub( League_Repository_Interface::class );
         $league_repo->method( 'find_by_id' )->willReturnCallback( function( int $id ) use ( $league, &$league_lookup_count ) {
             $league_lookup_count++;
@@ -404,11 +439,24 @@ class Rest_Resources_Test extends TestCase {
         }
 
         $matches_to_return = $fixtures;
+        $league_repo->method( 'query_matches' )->willReturnCallback(
+            static function () use ( &$matches_to_return ): array {
+                return array_map( static fn( Fixture $fixture ): object => (object) [ 'id' => $fixture->get_id() ], $matches_to_return );
+            }
+        );
+        $fixture_repository = $this->createStub( Fixture_Repository_Interface::class );
+        $fixture_repository->method( 'find_by_id' )->willReturnCallback(
+            static function ( int $id ) use ( &$matches_to_return ): ?Fixture {
+                foreach ( $matches_to_return as $fixture ) {
+                    if ( $fixture->get_id() === $id ) {
+                        return $fixture;
+                    }
+                }
+                return null;
+            }
+        );
+        $this->bind_league_query_service( $league_repo, $fixture_repository );
         $GLOBALS['wp_stubs_leagues']['memoized league'] = $league;
-        $league->method( 'get_seasons' )->willReturn( array( array( 'name' => '2026' ) ) );
-        $league->method( 'get_matches' )->willReturnCallback( function() use ( &$matches_to_return ) {
-            return $matches_to_return;
-        } );
 
         $request = new WP_REST_Request( 'GET', '/racketmanager/v1/fixtures' );
         $request->set_param( 'league', 'memoized-league' );
@@ -456,12 +504,13 @@ class Rest_Resources_Test extends TestCase {
         $event = $this->createStub( Event::class );
         $event->id = 50;
 
-        $league = $this->createMock( League::class );
-        $league->id = 10;
-        $league->title = 'Premier League';
+        $league = new League( (object) [ 'id' => 10, 'title' => 'Premier League', 'seasons' => [ '2026' => [ 'name' => '2026' ] ] ] );
+        $league->current_season = [ 'name' => '2026' ];
         $league->event = $event;
 
         $team_item = new \stdClass();
+        $team_item->table_id = 1;
+        $team_item->id = 1;
         $team_item->title = 'First Team';
         $team_item->season = '2026';
         $team_item->rank = 1;
@@ -470,12 +519,20 @@ class Rest_Resources_Test extends TestCase {
         $team_item->won_matches = 4;
         $team_item->draw_matches = 0;
         $team_item->lost_matches = 0;
-        $team_item->points = array( 'plus' => 12 );
+        $team_item->points_plus = 12;
+        $team_item->points_minus = 0;
+        $league_team = new League_Team( $team_item );
 
-        $league->expects( self::once() )
-            ->method( 'get_league_teams' )
-            ->with( array( 'season' => '2026', 'club' => null ) )
+        $league_repo = $this->createMock( League_Repository_Interface::class );
+        $league_repo->expects( self::once() )
+            ->method( 'query_league_teams' )
+            ->with( 10, self::callback( fn( $args ) => '2026' === ( $args['season'] ?? null ) && 0 === ( $args['club'] ?? null ) ), false )
             ->willReturn( array( $team_item ) );
+        $league_team_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface::class );
+        $league_team_repo->expects( self::once() )->method( 'find_by_id' )->with( 1 )->willReturn( $league_team );
+        $this->plugin->container->set( 'league_repository', fn() => $league_repo );
+        $this->plugin->container->set( 'league_team_repository', fn() => $league_team_repo );
+        $this->plugin->container->set( 'league_query_service', fn() => new \Racketmanager\Services\Competition\League_Query_Service( $league_repo, league_team_repository: $league_team_repo ) );
 
         $GLOBALS['wp_stubs_leagues']['premier league'] = $league;
         $GLOBALS['wp_stubs_leagues'][10] = $league;
@@ -489,7 +546,7 @@ class Rest_Resources_Test extends TestCase {
         self::assertCount( 1, $data );
         self::assertSame( 'Premier League', $data[0]->league );
         self::assertSame( 'First Team', $data[0]->team );
-        self::assertSame( 12, $data[0]->points );
+        self::assertSame( 12.0, $data[0]->points );
 
         unset( $GLOBALS['wp_stubs_leagues']['premier league'], $GLOBALS['wp_stubs_leagues'][10], $GLOBALS['wp_stubs_events'][50] );
     }

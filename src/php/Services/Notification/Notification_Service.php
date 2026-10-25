@@ -16,6 +16,8 @@ use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\Repository_Provider;
+use Racketmanager\Services\Competition\Event_Query_Service;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Util\Util;
@@ -106,7 +108,7 @@ class Notification_Service {
      * @param Mailer_Interface|null $mailer
      */
     public function __construct(
-        Repository_Provider $repository_provider, Settings_Service $settings_service, Notification_Presenter $presenter, View_Renderer_Interface $view_renderer, RacketManager $app, ?Mailer_Interface $mailer = null
+        private Repository_Provider $repository_provider, Settings_Service $settings_service, Notification_Presenter $presenter, View_Renderer_Interface $view_renderer, RacketManager $app, ?Mailer_Interface $mailer = null, private ?Event_Query_Service $event_query_service = null, private League_Query_Service|\Closure|null $league_query_service = null
     ) {
         $this->league_repository      = $repository_provider->get_league_repository();
         $this->league_team_repository = $repository_provider->get_league_team_repository();
@@ -118,6 +120,30 @@ class Notification_Service {
         $this->view_renderer          = $view_renderer;
         $this->app                    = $app;
         $this->mailer                 = $mailer ?? new Wp_Mailer();
+    }
+
+    private function event_query(): Event_Query_Service {
+        if ( null === $this->event_query_service ) {
+            $this->event_query_service = new Event_Query_Service(
+                $this->repository_provider->get_event_repository(),
+                null,
+                null,
+                $this->league_repository
+            );
+        }
+
+        return $this->event_query_service;
+    }
+
+    private function league_query(): League_Query_Service {
+        if ( $this->league_query_service instanceof \Closure ) {
+            $this->league_query_service = ( $this->league_query_service )();
+        }
+        if ( ! $this->league_query_service instanceof League_Query_Service ) {
+            throw new \LogicException( 'League_Query_Service is required by Notification_Service but was not configured.' );
+        }
+
+        return $this->league_query_service;
     }
 
     /**
@@ -708,7 +734,7 @@ class Notification_Service {
         $comp_type         = $this->get_competition_type_string( $event->competition->type ?? 'league' );
         $from_email        = $this->app->get_confirmation_email( $comp_type );
         $organisation_name = $this->app->site_name ?? '';
-        $leagues           = method_exists( $event, 'get_leagues' ) ? $event->get_leagues() : [];
+        $leagues           = $this->event_query()->get_leagues( $event );
 
         foreach ( $leagues as $league_item ) {
             $league = $this->league_repository->find_by_id( (int) $league_item->id );
@@ -716,18 +742,14 @@ class Notification_Service {
                 continue;
             }
 
-            $teams = method_exists( $league, 'get_league_teams' )
-                ? $league->get_league_teams( [ 'get_details' => true ] )
-                : [];
+            $teams = $this->league_query()->get_league_teams( $league, [ 'get_details' => true ] );
 
             foreach ( $teams as $team ) {
                 if ( empty( $team->contactemail ) ) {
                     continue;
                 }
 
-                $matches = method_exists( $league, 'get_matches' )
-                    ? $league->get_matches( [ 'final' => '', 'team_id' => $team->id ] )
-                    : [];
+                $matches = $this->league_query()->get_matches( $league, [ 'final' => '', 'team_id' => $team->id ] );
 
                 $headers   = [];
                 $headers[] = 'From: ' . ucfirst( $comp_type ) . ' Secretary <' . $from_email . '>';

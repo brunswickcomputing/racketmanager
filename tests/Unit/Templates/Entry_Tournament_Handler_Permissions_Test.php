@@ -31,6 +31,7 @@ use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
+use Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Tests\Helpers\Player_Test_Factory;
 
@@ -38,6 +39,7 @@ use Racketmanager\Tests\Helpers\Player_Test_Factory;
  * Handler to real template tests: the tournament entry form permissions are decided by the producer, never by the template.
  */
 final class Entry_Tournament_Handler_Permissions_Test extends TestCase {
+    use Creates_Event_Query_Service;
     use Manages_Wordpress_Globals;
 
     private const int PLAYER_ID = 42;
@@ -227,7 +229,8 @@ final class Entry_Tournament_Handler_Permissions_Test extends TestCase {
             competition_entry_service: $comp_entry_service,
             finance_service: $this->createStub( Finance_Service::class ),
             competition_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
-            tournament_presenter: new Tournament_Presenter( 'd/m/Y' )
+            tournament_presenter: new Tournament_Presenter( 'd/m/Y' ),
+            event_query_service: $this->event_query_service()
         );
     }
 }

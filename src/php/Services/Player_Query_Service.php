@@ -11,10 +11,13 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services;
 
+use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Util\Util;
 use RuntimeException;
 use wpdb;
@@ -28,15 +31,33 @@ class Player_Query_Service {
 	private ?wpdb $wpdb;
 	private ?Competition_Repository_Interface $competition_repository;
 	private ?Fixture_Repository_Interface $fixture_repository;
+	private ?Event_Repository_Interface $event_repository;
+	private ?Rubber_Repository_Interface $rubber_repository;
 
 	public function __construct(
 		?wpdb $wpdb = null,
 		?Competition_Repository_Interface $competition_repository = null,
-		?Fixture_Repository_Interface $fixture_repository = null
+		?Fixture_Repository_Interface $fixture_repository = null,
+		?Event_Repository_Interface $event_repository = null,
+		?Rubber_Repository_Interface $rubber_repository = null,
+		private Event_Query_Service|\Closure|null $event_query_service = null
 	) {
 		$this->wpdb                   = $wpdb;
 		$this->competition_repository = $competition_repository;
 		$this->fixture_repository     = $fixture_repository;
+		$this->event_repository       = $event_repository;
+		$this->rubber_repository      = $rubber_repository;
+	}
+
+	private function get_event_query_service(): Event_Query_Service {
+		if ( $this->event_query_service instanceof \Closure ) {
+			$this->event_query_service = ( $this->event_query_service )();
+		}
+		if ( null === $this->event_query_service ) {
+			$this->event_query_service = new Event_Query_Service( $this->event_repository, $this->fixture_repository, $this->rubber_repository );
+		}
+
+		return $this->event_query_service;
 	}
 
 	private function get_wpdb(): wpdb {
@@ -82,7 +103,7 @@ class Player_Query_Service {
 		$statistics = array();
 		if ( 'league' === $match_source ) {
 			$league  = $grouping ? get_league( $grouping ) : null;
-			$matches = $league ? $league->get_matches(
+			$matches = $league ? \Racketmanager\get_league_query_service()->get_matches( $league,
 				array(
 					'season'    => $season,
 					'player'    => $player->id,
@@ -95,7 +116,8 @@ class Player_Query_Service {
 			) : array();
 		} elseif ( 'event' === $match_source ) {
 			$event   = $grouping ? get_event( $grouping ) : null;
-			$matches = $event ? $event->get_matches(
+			$matches = $event ? $this->get_event_query_service()->get_matches(
+				$event,
 				array(
 					'season'  => $season,
 					'player'  => $player->id,

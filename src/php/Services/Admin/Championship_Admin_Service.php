@@ -10,12 +10,14 @@
 
 namespace Racketmanager\Services\Admin;
 
+use InvalidArgumentException;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Domain\DTO\Admin\Overview\Tournament_Overview_Action_Request_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
+use Racketmanager\Domain\Fixture\Fixture_Time_Parser;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
@@ -141,16 +143,21 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         $messages = array();
 
         if ( isset( $post['team'] ) && is_array( $post['team'] ) ) {
-            foreach ( $post['team'] as $id ) {
-                $league_team = $this->league_team_repository->find_by_id( intval( $id ) );
-                if ( ! $league_team ) {
-                    continue;
+            try {
+                foreach ( $post['team'] as $id ) {
+                    $league_team = $this->league_team_repository->find_by_id( intval( $id ) );
+                    if ( ! $league_team ) {
+                        continue;
+                    }
+                    $team_id = $league_team->get_team_id();
+                    $team    = $this->team_repository->find_by_id( $team_id );
+                    $this->league_service->withdraw_team( $league, $team_id, (string) $season );
+                    $title      = $team ? $team->title : strval( $team_id );
+                    $messages[] = $title . ' ' . __( 'withdrawn', 'racketmanager' );
                 }
-                $team_id = $league_team->get_team_id();
-                $team    = $this->team_repository->find_by_id( $team_id );
-                $league->withdraw_team( $team_id, $season );
-                $title      = $team ? $team->title : strval( $team_id );
-                $messages[] = $title . ' ' . __( 'withdrawn', 'racketmanager' );
+            } catch ( \RuntimeException | \InvalidArgumentException $e ) {
+                $messages[] = $e->getMessage();
+                return new Action_Result_DTO( implode( '<br>', $messages ), Admin_Message_Type::ERROR );
             }
         }
 
@@ -272,14 +279,23 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
 
         $num_fixtures = count( (array) $post['fixture'] );
 
-        foreach ( (array) $post['fixture'] as $i => $fixture_id ) {
-            $fixture = $this->build_new_fixture_from_post_row( $league, $post, $i, $season, $final );
-            if ( null === $fixture ) {
-                -- $num_fixtures;
-                continue;
-            }
+        $fixtures = array();
+        try {
+            foreach ( (array) $post['fixture'] as $i => $fixture_id ) {
+                $fixture = $this->build_new_fixture_from_post_row( $league, $post, $i, $season, $final );
+                if ( null === $fixture ) {
+                    -- $num_fixtures;
+                    continue;
+                }
 
-            $this->fixture_service->create_fixture( Fixture_Factory::from_object( $fixture ), $league );
+                $fixtures[] = Fixture_Factory::from_object( $fixture );
+            }
+        } catch ( InvalidArgumentException $e ) {
+            return new Action_Result_DTO( sprintf( __( 'Fixture row %d: %s', 'racketmanager' ), $i + 1, $e->getMessage() ), Admin_Message_Type::ERROR );
+        }
+
+        foreach ( $fixtures as $fixture ) {
+            $this->fixture_service->create_fixture( $fixture, $league );
         }
 
         return new Action_Result_DTO(
@@ -320,9 +336,18 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
 
     private function build_fixture_date_time_from_post( array $post, int $i, int $begin_hour, int $begin_minutes ): ?string {
         if ( isset( $post['myDatePicker'][ $i ] ) ) {
-            $date = sanitize_text_field( wp_unslash( strval( $post['myDatePicker'][ $i ] ) ) );
+            $date    = sanitize_text_field( wp_unslash( strval( $post['myDatePicker'][ $i ] ) ) );
+            $trimmed = trim( $date );
+            if ( '' === $trimmed ) {
+                return null;
+            }
 
-            return $date . ' ' . $begin_hour . ':' . $begin_minutes . ':00';
+            $date_time = sprintf( '%s %02d:%02d:00', $trimmed, $begin_hour, $begin_minutes );
+            if ( ! Fixture_Time_Parser::is_valid_datetime( $date_time ) ) {
+                throw new InvalidArgumentException( sprintf( __( 'Invalid fixture date provided: "%s".', 'racketmanager' ), $date_time ) );
+            }
+
+            return $date_time;
         }
 
         $index = ( isset( $post['year'][ $i ], $post['month'][ $i ], $post['day'][ $i ] ) ) ? $i : 0;
@@ -334,7 +359,16 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         $month = intval( $post['month'][ $index ] );
         $day   = intval( $post['day'][ $index ] );
 
-        return $year . '-' . $month . '-' . $day . ' ' . $begin_hour . ':' . $begin_minutes . ':00';
+        if ( $year <= 0 || $month <= 0 || $day <= 0 ) {
+            return null;
+        }
+
+        $date_time = sprintf( '%04d-%02d-%02d %02d:%02d:00', $year, $month, $day, $begin_hour, $begin_minutes );
+        if ( ! Fixture_Time_Parser::is_valid_datetime( $date_time ) ) {
+            throw new InvalidArgumentException( sprintf( __( 'Invalid fixture date provided: "%s".', 'racketmanager' ), $date_time ) );
+        }
+
+        return $date_time;
     }
 
     private function match_day_from_post( array $post, int $i, mixed $default ): mixed {
@@ -358,15 +392,26 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
 
         $num_fixtures = count( (array) $post['fixture'] );
 
-        foreach ( (array) $post['fixture'] as $i => $fixture_id ) {
-            $fixture = $this->fixture_repository->find_by_id( (int) $fixture_id );
-            if ( ! $fixture ) {
-                continue;
+        $fixtures = array();
+        try {
+            foreach ( (array) $post['fixture'] as $i => $fixture_id ) {
+                $fixture = $this->fixture_repository->find_by_id( (int) $fixture_id );
+                if ( ! $fixture ) {
+                    continue;
+                }
+
+                $begin_hour    = isset( $post['begin_hour'][ $i ] ) ? intval( $post['begin_hour'][ $i ] ) : 0;
+                $begin_minutes = isset( $post['begin_minutes'][ $i ] ) ? intval( $post['begin_minutes'][ $i ] ) : 0;
+                $date_time     = $this->build_fixture_date_time_from_post( $post, $i, $begin_hour, $begin_minutes );
+                $fixtures[]    = array( $fixture instanceof Fixture ? $fixture : Fixture_Factory::from_object( $fixture ), $date_time, $i );
             }
+        } catch ( InvalidArgumentException $e ) {
+            return new Action_Result_DTO( sprintf( __( 'Fixture row %d: %s', 'racketmanager' ), $i + 1, $e->getMessage() ), Admin_Message_Type::ERROR );
+        }
 
-            $this->apply_fixture_edit_from_post_row( $league, $fixture, $post, $i );
-
-            $this->fixture_service->update_fixture( $fixture instanceof Fixture ? $fixture : Fixture_Factory::from_object( $fixture ) );
+        foreach ( $fixtures as [ $fixture, $date_time, $i ] ) {
+            $this->apply_fixture_edit_from_post_row( $league, $fixture, $post, $i, $date_time );
+            $this->fixture_service->update_fixture( $fixture );
         }
 
         return new Action_Result_DTO(
@@ -375,13 +420,13 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         );
     }
 
-    private function apply_fixture_edit_from_post_row( object $league, object $fixture, array $post, int $i ): void {
-        $begin_hour    = isset( $post['begin_hour'][ $i ] ) ? intval( $post['begin_hour'][ $i ] ) : 0;
-        $begin_minutes = isset( $post['begin_minutes'][ $i ] ) ? intval( $post['begin_minutes'][ $i ] ) : 0;
-
-        $date_time = $this->build_fixture_date_time_from_post( $post, $i, $begin_hour, $begin_minutes );
+    private function apply_fixture_edit_from_post_row( object $league, object $fixture, array $post, int $i, ?string $date_time ): void {
         if ( null !== $date_time ) {
-            $fixture->date = $date_time;
+            if ( $fixture instanceof Fixture ) {
+                $fixture->set_date( $date_time );
+            } else {
+                $fixture->date = $date_time;
+            }
         }
 
         $fixture->league_id = $league->id;
@@ -463,7 +508,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
             $rank  = $parts[0] ?? '';
             $group = $parts[1] ?? '';
 
-            $teams = $league->get_league_teams(
+            $teams = \Racketmanager\get_league_query_service()->get_league_teams( $league,
                 array(
                     'rank'             => $rank,
                     'group'            => $group,
@@ -481,10 +526,10 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         if ( null !== $resolved_team_id && - 1 !== $resolved_team_id ) {
             if ( 'home' === $side ) {
                 $fixture->home_team     = $resolved_team_id;
-                $fixture->teams['home'] = $league->get_team_dtls( $resolved_team_id );
+                $fixture->teams['home'] = \Racketmanager\get_league_query_service()->get_team_dtls( $league, $resolved_team_id );
             } else {
                 $fixture->away_team     = $resolved_team_id;
-                $fixture->teams['away'] = $league->get_team_dtls( $resolved_team_id );
+                $fixture->teams['away'] = \Racketmanager\get_league_query_service()->get_team_dtls( $league, $resolved_team_id );
             }
         }
 
@@ -743,7 +788,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         array $event_season,
         string $action
     ): void {
-        $league->set_rounds( $season, $rounds );
+        \Racketmanager\get_league_query_service()->set_rounds( $league, $season, $rounds );
         if ( 'replace' === $action ) {
             $this->fixture_service->delete_fixtures_for_season( $league->id, (string) $season );
         }
@@ -767,6 +812,9 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         }
         $event_seasons            = $event->get_seasons();
         $event_seasons[ $season ] = $event_season;
-        $event->update_seasons( $event_seasons );
+        $changed                  = $event->update_seasons( $event_seasons );
+        if ( $changed && ! empty( $event->id ) ) {
+            $this->event_repository->update_seasons( (int) $event->id, $event_seasons );
+        }
     }
 }

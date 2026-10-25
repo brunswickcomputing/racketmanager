@@ -10,8 +10,11 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Admin\League\League_Schedule_Service;
+use Racketmanager\Services\Competition\League_Schedule_Service as Competition_League_Schedule_Service;
 use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
+use Racketmanager\Tests\Helpers\Creates_League_Query_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+use Racketmanager\Services\Container\Simple_Container;
 use stdClass;
 use wpdb;
 
@@ -19,16 +22,18 @@ require_once __DIR__ . '/../../../../wp-stubs.php';
 
 #[AllowMockObjectsWithoutExpectations]
 final class League_Schedule_Service_Test extends TestCase {
-    use Manages_Wordpress_Globals;
+    use Creates_League_Query_Service, Manages_Wordpress_Globals;
 
     private Fixture_Maintenance_Service $fixture_maintenance_service;
+    private Competition_League_Schedule_Service $competition_schedule_service;
     private League_Schedule_Service $service;
 
     protected function setUp(): void {
         parent::setUp();
         $this->backup_globals();
         $this->fixture_maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
-        $this->service                     = new League_Schedule_Service( $this->fixture_maintenance_service );
+        $this->competition_schedule_service = $this->createMock( Competition_League_Schedule_Service::class );
+        $this->service                     = new League_Schedule_Service( $this->fixture_maintenance_service, $this->competition_schedule_service );
         $GLOBALS['wp_stubs_events']        = array();
         $GLOBALS['wp_stubs_leagues']       = array();
         $GLOBALS['wp_stubs_teams']         = array();
@@ -82,8 +87,16 @@ final class League_Schedule_Service_Test extends TestCase {
         return $event;
     }
 
-    private function setup_racketmanager_mock( int|callable $match_count = 0 ): RacketManager {
+    private function setup_racketmanager_mock( int|callable $match_count = 0, ?\Racketmanager\Services\Competition\League_Query_Service $lqs = null ): RacketManager {
         $racketmanager = $this->createMock( RacketManager::class );
+        $container = $this->createMock( Simple_Container::class );
+        $racketmanager->container = $container;
+
+        if ( $lqs ) {
+            $container->method( 'has' )->willReturnCallback( static fn( string $id ): bool => 'league_query_service' === $id );
+            $container->method( 'get' )->willReturnCallback( static fn( string $id ): ?object => 'league_query_service' === $id ? $lqs : null );
+        }
+
         if ( is_callable( $match_count ) ) {
             $racketmanager->method( 'get_matches' )->willReturnCallback( $match_count );
         } else {
@@ -135,20 +148,40 @@ final class League_Schedule_Service_Test extends TestCase {
         $event->id = 10;
         $event->method( 'get_season' )->willReturn( '2026' );
 
-        $league     = $this->createMock( League::class );
-        $match1     = (object) array( 'id' => 101 );
-        $match2     = (object) array( 'id' => 102 );
-        $league->expects( self::once() )->method( 'get_matches' )->with( array( 'season' => '2026' ) )->willReturn( array( $match1, $match2 ) );
+        $league          = new League( (object) array( 'title' => 'Division 1' ) );
+        $league->id      = 100;
+        $league->seasons = array( '2026' => array( 'name' => '2026' ) );
+        $match1          = (object) array( 'id' => 101 );
+        $match2          = (object) array( 'id' => 102 );
 
-        $event->method( 'get_leagues' )->willReturn( array( $league ) );
+        $league_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );
+        $league_repo->expects( self::once() )->method( 'query_matches' )
+            ->with( 100, self::callback( static fn( array $args ): bool => '2026' === $args['season'] ), false )
+            ->willReturn( array( $match1, $match2 ) );
+
+        $fixture_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class );
+        $fixture_repo->method( 'find_by_id' )->willReturnCallback( function($id) {
+            $fixture = $this->createMock( \Racketmanager\Domain\Fixture\Fixture::class );
+            $fixture->id = $id;
+            $fixture->method( 'get_id' )->willReturn($id);
+            return $fixture;
+        });
+
+        $lqs = $this->league_query_service( $league_repo, null, $fixture_repo );
+
+        $event->leagues                 = array( $league );
         $GLOBALS['wp_stubs_events'][10] = $event;
 
-        $racketmanager = $this->createMock( RacketManager::class );
-        $racketmanager->expects( self::once() )
-            ->method( 'get_matches' )
-            ->with( array( 'count' => true, 'event_id' => 10, 'season' => '2026', 'time' => 'latest' ) )
-            ->willReturn( 0 );
-        $GLOBALS['racketmanager'] = $racketmanager;
+        $this->setup_racketmanager_mock(
+            static function ( array $args ): int {
+                self::assertSame(
+                    array( 'count' => true, 'event_id' => 10, 'season' => '2026', 'time' => 'latest' ),
+                    $args
+                );
+                return 0;
+            },
+            $lqs
+        );
 
         $this->fixture_maintenance_service->expects( self::exactly( 2 ) )
             ->method( 'delete_fixture' )
@@ -188,14 +221,29 @@ final class League_Schedule_Service_Test extends TestCase {
         $event2->method( 'get_season' )->willReturn( '2026' );
 
         $league    = $this->createMock( League::class );
-        $match     = (object) array( 'id' => 201 );
-        $league->method( 'get_matches' )->willReturn( array( $match ) );
-        $event2->method( 'get_leagues' )->willReturn( array( $league ) );
+        $league->id = 100;
+        $league->current_season = ['name' => '2026'];
+        $match     = (object) array( 'id' => 201, 'season' => '2026' );
+
+        $league_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );
+        $league_repo->method( 'query_matches' )->willReturn( array( $match ) );
+
+        $fixture_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class );
+        $fixture_repo->method( 'find_by_id' )->willReturnCallback( function($id) {
+            $fixture = $this->createMock( \Racketmanager\Domain\Fixture\Fixture::class );
+            $fixture->id = $id;
+            $fixture->method( 'get_id' )->willReturn($id);
+            return $fixture;
+        });
+
+        $lqs = $this->league_query_service( $league_repo, null, $fixture_repo );
+
+        $event2->leagues = array( $league );
 
         $GLOBALS['wp_stubs_events'][10] = $event1;
         $GLOBALS['wp_stubs_events'][20] = $event2;
 
-        $this->setup_racketmanager_mock( fn( array $args ) => ( 10 === $args['event_id'] ) ? 2 : 0 );
+        $this->setup_racketmanager_mock( fn( array $args ) => ( 10 === $args['event_id'] ) ? 2 : 0, $lqs );
 
         $this->fixture_maintenance_service->expects( self::once() )
             ->method( 'delete_fixture' )
@@ -608,8 +656,6 @@ final class League_Schedule_Service_Test extends TestCase {
     public function test_schedule_league_matches_orchestrates_full_flow(): void {
         $event  = $this->create_event_mock( 10, 'Premier Event', 6, array( '2026-05-01', '2026-05-08', '2026-05-15', '2026-05-22', '2026-05-29', '2026-06-05' ) );
         $league = $this->createMock( League::class );
-        $league->method( 'get_matches' )->willReturn( array() );
-        $event->method( 'get_leagues' )->willReturn( array( $league ) );
 
         $GLOBALS['wp_stubs_events'][10] = $event;
         $this->setup_racketmanager_mock( 0 );
@@ -620,20 +666,96 @@ final class League_Schedule_Service_Test extends TestCase {
         $wpdb_mock->method( 'query' )->willReturn( 1 );
         $GLOBALS['wpdb'] = $wpdb_mock;
 
+        $this->competition_schedule_service->expects( self::once() )
+            ->method( 'schedule_event_leagues' )
+            ->with( $event )
+            ->willReturn( array( 'scheduled' => 1, 'skipped' => 0 ) );
+
         $result = $this->service->schedule_league_matches( array( 10 ) );
 
         self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
         self::assertSame( 'Matches scheduled', $result->message );
+        self::assertSame( array( 'scheduled' => 1, 'skipped' => 0 ), $result->flash_data );
+    }
+
+    public function test_schedule_league_matches_skips_invalid_league_objects(): void {
+        $event  = $this->create_event_mock( 10, 'Premier Event', 6, array( '2026-05-01', '2026-05-08', '2026-05-15', '2026-05-22', '2026-05-29', '2026-06-05' ) );
+        $raw_row = (object) array( 'id' => 999 );
+
+        $GLOBALS['wp_stubs_events'][10] = $event;
+        $this->setup_racketmanager_mock( 0 );
+
+        $wpdb_mock = $this->create_wpdb_mock();
+        $wpdb_mock->method( 'get_var' )->willReturn( '2026' );
+        $wpdb_mock->method( 'get_results' )->willReturn( array() );
+        $wpdb_mock->method( 'query' )->willReturn( 1 );
+        $GLOBALS['wpdb'] = $wpdb_mock;
+
+        $this->competition_schedule_service->expects( self::once() )
+            ->method( 'schedule_event_leagues' )
+            ->with( $event )
+            ->willReturn( array( 'scheduled' => 0, 'skipped' => 1 ) );
+
+        $result = $this->service->schedule_league_matches( array( 10 ) );
+
+        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
+        self::assertSame( 'No leagues scheduled (1 league skipped)', $result->message );
+        self::assertSame( array( 'scheduled' => 0, 'skipped' => 1 ), $result->flash_data );
+    }
+
+    public function test_schedule_league_matches_reports_empty_event(): void {
+        $event = $this->create_event_mock();
+        $GLOBALS['wp_stubs_events'][10] = $event;
+        $this->setup_racketmanager_mock( 0 );
+
+        $wpdb_mock = $this->create_wpdb_mock();
+        $wpdb_mock->method( 'get_var' )->willReturn( '2026' );
+        $wpdb_mock->method( 'get_results' )->willReturn( array() );
+        $GLOBALS['wpdb'] = $wpdb_mock;
+
+        $this->competition_schedule_service->expects( self::once() )
+            ->method( 'schedule_event_leagues' )
+            ->with( $event )
+            ->willReturn( array( 'scheduled' => 0, 'skipped' => 0 ) );
+
+        $result = $this->service->schedule_league_matches( array( 10 ) );
+        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
+        self::assertSame( 'No leagues scheduled', $result->message );
+    }
+
+    public function test_schedule_league_matches_warns_when_some_leagues_are_skipped(): void {
+        $event = $this->create_event_mock();
+        $GLOBALS['wp_stubs_events'][10] = $event;
+        $this->setup_racketmanager_mock( 0 );
+
+        $wpdb_mock = $this->create_wpdb_mock();
+        $wpdb_mock->method( 'get_var' )->willReturn( '2026' );
+        $wpdb_mock->method( 'get_results' )->willReturn( array() );
+        $GLOBALS['wpdb'] = $wpdb_mock;
+
+        $this->competition_schedule_service->expects( self::once() )
+            ->method( 'schedule_event_leagues' )
+            ->with( $event )
+            ->willReturn( array( 'scheduled' => 1, 'skipped' => 1 ) );
+
+        $result = $this->service->schedule_league_matches( array( 10 ) );
+        self::assertSame( Admin_Message_Type::WARNING, $result->message_type );
+        self::assertSame( 'Matches scheduled (1 league skipped)', $result->message );
+        self::assertSame( array( 'scheduled' => 1, 'skipped' => 1 ), $result->flash_data );
     }
 
     public function test_schedule_league_matches_fails_when_setup_cannot_resolve_clashes(): void {
         $event  = $this->create_event_mock( 10, 'Premier Event', 6, array( '2026-05-01', '2026-05-08', '2026-05-15', '2026-05-22', '2026-05-29', '2026-06-05' ) );
         $league = $this->createMock( League::class );
-        $league->method( 'get_matches' )->willReturn( array() );
-        $event->method( 'get_leagues' )->willReturn( array( $league ) );
+        $league->id = 100;
+
+        $league_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );
+        $league_repo->method( 'query_matches' )->willReturn( array() );
+
+        $lqs = $this->league_query_service( $league_repo );
 
         $GLOBALS['wp_stubs_events'][10] = $event;
-        $this->setup_racketmanager_mock( 0 );
+        $this->setup_racketmanager_mock( 0, $lqs );
 
         $wpdb_mock = $this->create_wpdb_mock();
         $wpdb_mock->method( 'get_var' )->willReturn( '2026' );

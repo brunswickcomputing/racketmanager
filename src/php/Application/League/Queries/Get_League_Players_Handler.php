@@ -6,6 +6,7 @@ namespace Racketmanager\Application\League\Queries;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Player_Service;
@@ -26,7 +27,8 @@ class Get_League_Players_Handler {
         private readonly Shortcode_Template_Renderer $template_renderer,
         private readonly Player_Query_Service $player_query_service,
         private readonly Player_Stats_Service $player_stats_service,
-        private readonly Player_Presenter $player_presenter
+        private readonly Player_Presenter $player_presenter,
+        private readonly League_Query_Service $league_query_service
     ) {}
 
     public function handle( Get_League_Players_Query $query ): Shortcode_View_Model {
@@ -38,7 +40,7 @@ class Get_League_Players_Handler {
             return Shortcode_View_Model::for_error( __( 'League not found', 'racketmanager' ) );
         }
 
-        $league->set_season( $query->season ?? false );
+        $this->league_query()->set_season( $league, $query->season ?? false );
         $season_name = $league->current_season['name'] ?? null;
         $player_vm   = null;
 
@@ -64,7 +66,7 @@ class Get_League_Players_Handler {
             $player_vm       = $this->player_presenter->present_player( $player );
         } else {
             $league->players = $this->player_stats_service->populate_players_stats(
-                $league->get_players(),
+                $this->league_query()->get_players( $league ),
                 $league,
                 $season_name,
                 'league'
@@ -94,5 +96,9 @@ class Get_League_Players_Handler {
             ],
             'league'
         );
+    }
+
+    private function league_query(): League_Query_Service {
+        return $this->league_query_service;
     }
 }

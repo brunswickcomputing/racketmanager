@@ -13,6 +13,8 @@
 
 namespace Racketmanager\Services\Admin\Championship;
 
+use Racketmanager\Application\Tournament\Commands\Generate_Tournament_Bracket_Command;
+use Racketmanager\Application\Tournament\Commands\Generate_Tournament_Bracket_Handler;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
@@ -25,6 +27,7 @@ class Draw_Action_Dispatcher {
     public function __construct(
         private Draw_Action_Handler_Interface $championship_admin_service,
         private Action_Guard_Interface $action_guard,
+        private ?Generate_Tournament_Bracket_Handler $generate_tournament_bracket_handler = null,
     ) {
     }
 
@@ -153,6 +156,12 @@ class Draw_Action_Dispatcher {
     private function invoke_handler( array $handler, Draw_Action_Request_DTO $dto, array $context ): Action_Result_DTO {
         $method = strval( $handler['method'] ?? '' );
         $args   = $handler['args'] ?? array();
+
+        if ( 'set_championship_fixtures' === $method ) {
+            $command = Generate_Tournament_Bracket_Command::from_post( $dto->post, $dto->league_id, $dto->tournament_id, $dto->season );
+            $bracket_handler = $this->generate_tournament_bracket_handler ?? new Generate_Tournament_Bracket_Handler( $this->championship_admin_service );
+            return $bracket_handler->handle( $command );
+        }
 
         if ( '' === $method || ! method_exists( $this->championship_admin_service, $method ) ) {
             return new Action_Result_DTO();

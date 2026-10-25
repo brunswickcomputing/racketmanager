@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Services\Admin\Cup;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Tournament\Commands\Generate_Tournament_Bracket_Handler;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
@@ -270,5 +271,37 @@ final class Cup_Setup_Action_Dispatcher_Test extends TestCase {
 
         $this->assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
         $this->assertSame( 'Fixtures added', $result->message );
+    }
+
+    public function test_league_setup_uses_injected_bracket_handler_after_guard(): void {
+        $this->action_guard->expects( self::once() )->method( 'assert_allowed' )
+            ->with( 'racketmanager_nonce', 'racketmanager_add_championship-matches', 'edit_matches' );
+        $this->championship_admin_service->expects( self::never() )->method( 'set_championship_fixtures' );
+        $bracket_service = $this->createMock( Draw_Action_Handler_Interface::class );
+        $bracket_service->expects( self::once() )->method( 'set_championship_fixtures' )
+            ->with( self::callback( static fn( Draw_Action_Request_DTO $dto ): bool =>
+                $dto->league_id === 12 && $dto->tournament_id === 0 && $dto->season === '2026'
+                && $dto->post['rounds'][0]['num_matches'] === 1
+            ) )
+            ->willReturn( new Action_Result_DTO( 'Fixtures added', Admin_Message_Type::SUCCESS ) );
+        $dispatcher = new Cup_Setup_Action_Dispatcher(
+            $this->competition_service, $this->championship_admin_service, $this->action_guard,
+            new Generate_Tournament_Bracket_Handler( $bracket_service )
+        );
+        $rounds = [ [ 'round' => 1, 'key' => 'Final', 'match_date' => '2026-07-20', 'num_matches' => 1 ] ];
+        $result = $dispatcher->handle( [ 'league_id' => 12 ], [ 'action' => 'add', 'season' => '2026', 'rounds' => $rounds ] );
+        $this->assertSame( 'Fixtures added', $result->message );
+    }
+
+    public function test_league_setup_without_rounds_does_not_call_bracket_handler(): void {
+        $this->action_guard->expects( self::once() )->method( 'assert_allowed' );
+        $bracket_service = $this->createMock( Draw_Action_Handler_Interface::class );
+        $bracket_service->expects( self::never() )->method( 'set_championship_fixtures' );
+        $dispatcher = new Cup_Setup_Action_Dispatcher(
+            $this->competition_service, $this->championship_admin_service, $this->action_guard,
+            new Generate_Tournament_Bracket_Handler( $bracket_service )
+        );
+        $result = $dispatcher->handle( [ 'league_id' => 12 ], [ 'action' => 'add' ] );
+        $this->assertSame( 'No rounds specified', $result->message );
     }
 }

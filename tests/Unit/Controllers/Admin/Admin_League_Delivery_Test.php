@@ -16,6 +16,7 @@ use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 final class Admin_League_Delivery_Test extends TestCase {
     use Creates_Admin_Delivery_Container;
+    use \Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
     use Manages_Wordpress_Globals;
 
     private Simple_Container $container;
@@ -42,9 +43,53 @@ final class Admin_League_Delivery_Test extends TestCase {
         $this->screen = new Admin_League( $plugin );
     }
 
+    private function rebuild_screen(): void {
+        $plugin            = $this->createStub( RacketManager::class );
+        $plugin->container = $this->container;
+        $this->screen      = new Admin_League( $plugin );
+    }
+
     protected function tearDown(): void {
         $this->restore_globals();
         parent::tearDown();
+    }
+
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
+    #[\PHPUnit\Framework\Attributes\PreserveGlobalState( false )]
+    public function test_match_edit_page_uses_requested_final_round(): void {
+        $_GET = array( 'league_id' => '42', 'season' => '2026', 'final' => 'semi', 'mode' => 'edit' );
+        $_POST = array();
+        $competition = Competition_Test_Factory::create( id: 1, type: Competition_Type::CUP );
+        $event = new \Racketmanager\Domain\Competition\Event( (object) array(
+            'id' => 93,
+            'name' => 'Event',
+            'seasons' => array( '2026' => array( 'name' => '2026' ) ),
+        ), $competition );
+        $league = new \Racketmanager\Domain\Competition\League( (object) array( 'id' => 42, 'title' => 'Finals' ), $event );
+        $league->mode = 'championship';
+        $league->num_teams_total = 8;
+        $league->set_season( '2026' );
+        $GLOBALS['wp_stubs_leagues'][42] = $league;
+        $repository = $this->createMock( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );
+        $repository->method( 'query_league_teams' )->willReturn( 8 );
+        $repository->expects( self::once() )->method( 'query_matches' )
+            ->with( 42, self::callback( static fn( array $args ): bool => 'semi' === $args['final'] ), false )
+            ->willReturn( array() );
+        $this->container->set( 'league_query_service', new \Racketmanager\Services\Competition\League_Query_Service(
+            $repository,
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class ),
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class )
+        ) );
+        $this->rebuild_screen();
+        ob_start();
+        try {
+            $this->screen->display_match_page();
+            $html = (string) ob_get_contents();
+        } finally {
+            ob_end_clean();
+        }
+        self::assertSame( 'semi', $league->championship->get_current_final_key() );
+        self::assertStringContainsString( 'Edit Matches - Semi', $html );
     }
 
     public function test_display_overview_page_renders_entries_with_entry_urls(): void {
@@ -146,24 +191,23 @@ final class Admin_League_Delivery_Test extends TestCase {
         $prop->setAccessible( true );
         $prop->setValue( $champ_obj, 16 );
 
-        $league_champ                  = $this->createStub( \Racketmanager\Domain\Competition\League::class );
-        $league_champ->id              = 101;
-        $league_champ->title           = 'Division Cup';
+        $league_champ                  = new \Racketmanager\Domain\Competition\League( (object) array( 'id' => 101, 'title' => 'Division Cup' ) );
         $league_champ->is_championship = true;
         $league_champ->num_teams_total = 8;
         $league_champ->championship    = $champ_obj;
 
-        $league_std                  = $this->createMock( \Racketmanager\Domain\Competition\League::class );
-        $league_std->id              = 102;
-        $league_std->title           = 'Division 1';
+        $league_std                  = new \Racketmanager\Domain\Competition\League( (object) array( 'id' => 102, 'title' => 'Division 1' ) );
         $league_std->is_championship = false;
         $league_std->num_teams_total = 6;
-        $league_std->expects( self::once() )
-            ->method( 'set_num_matches' )
-            ->with( true )
-            ->willReturnCallback( function () use ( $league_std ) {
-                $league_std->num_matches_total = 30;
-            } );
+
+        $league_repository = $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );
+        $league_repository->method( 'query_matches' )->willReturn( 30 );
+        $this->container->set( 'league_repository', fn() => $league_repository );
+        $this->container->set( 'league_query_service', new \Racketmanager\Services\Competition\League_Query_Service(
+            $league_repository,
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class ),
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class )
+        ) );
 
         $event                  = $this->createStub( \Racketmanager\Domain\Competition\Event::class );
         $event->id              = 10;
@@ -171,9 +215,13 @@ final class Admin_League_Delivery_Test extends TestCase {
         $event->competition     = $competition;
         $event->is_championship = false;
         $event->current_season  = array( 'name' => '2026' );
-        $event->method( 'get_leagues' )->willReturn( array( $league_champ, $league_std ) );
+        $this->container->set(
+            'event_query_service',
+            $this->event_query_service( $this->event_repository_with_results( array( 'query_leagues' => array( $league_champ, $league_std ) ) ) )
+        );
 
         $GLOBALS['wp_stubs_events'][10] = $event;
+        $this->rebuild_screen();
 
         $warnings = array();
         set_error_handler(
@@ -214,10 +262,9 @@ final class Admin_League_Delivery_Test extends TestCase {
             )
         );
 
-        $league1                  = $this->createMock( \Racketmanager\Domain\Competition\League::class );
+        $league1                  = $this->createStub( \Racketmanager\Domain\Competition\League::class );
         $league1->id              = 101;
         $league1->title           = 'Division 1';
-        $league1->expects( self::once() )->method( 'get_num_teams' )->with( 'active', true )->willReturn( 6 );
 
         $team1                   = (object) array(
             'table_id'         => 1,
@@ -242,12 +289,30 @@ final class Admin_League_Delivery_Test extends TestCase {
         $event->is_box          = false;
         $event->leagues         = array( $league1 );
         $event->current_season  = array( 'name' => '2026' );
-        $event->expects( self::once() )->method( 'get_leagues' )->willReturn( array( $league1 ) );
         $event->expects( self::once() )->method( 'get_seasons' )->willReturn( array( array( 'name' => '2026' ) ) );
-        $event->expects( self::once() )->method( 'get_teams' )->with( array( 'count' => true, 'season' => '2026' ) )->willReturn( 6 );
-        $event->expects( self::once() )->method( 'get_constitution' )->willReturn( array( $team1 ) );
+
+        $event_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class );
+        $event_repository->expects( self::once() )->method( 'query_leagues' )->willReturn( array( $league1 ) );
+        $event_repository->expects( self::once() )->method( 'query_teams' )
+            ->with( 10, self::callback( static fn( array $args ): bool => true === $args['count'] && '2026' === $args['season'] ) )
+            ->willReturn( 6 );
+        $event_repository->expects( self::once() )->method( 'query_constitution' )->willReturn( array( $team1 ) );
+        $league_repository = $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );
+        $league_repository->method( 'find_by_id' )->willReturn( $league1 );
+        $league_repository->method( 'query_league_teams' )->willReturn( 6 );
+        $this->container->set( 'league_repository', fn() => $league_repository );
+        $this->container->set( 'league_query_service', new \Racketmanager\Services\Competition\League_Query_Service(
+            $league_repository,
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class ),
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class )
+        ) );
+        $this->container->set(
+            'event_query_service',
+            $this->event_query_service( $event_repository, null, null, $league_repository )
+        );
 
         $GLOBALS['wp_stubs_events'][10] = $event;
+        $this->rebuild_screen();
 
         $warnings = array();
         set_error_handler(

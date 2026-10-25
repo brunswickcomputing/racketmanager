@@ -3,8 +3,10 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Competition;
 
+use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Schedule_Round_Robin;
 use Racketmanager\Util\Util;
@@ -17,13 +19,18 @@ use stdClass;
 class League_Schedule_Service {
 	private ?Fixture_Service $fixture_service = null;
 	private Schedule_Round_Robin $schedule_round_robin;
+	private ?League_Repository_Interface $league_repository;
 
 	public function __construct(
 		?Fixture_Service $fixture_service = null,
-		?Schedule_Round_Robin $schedule_round_robin = null
+		?Schedule_Round_Robin $schedule_round_robin = null,
+		?League_Repository_Interface $league_repository = null,
+		private ?Event_Query_Service $event_query_service = null,
+		private League_Query_Service|\Closure|null $league_query_service = null
 	) {
 		$this->fixture_service      = $fixture_service;
 		$this->schedule_round_robin = $schedule_round_robin ?? new Schedule_Round_Robin();
+		$this->league_repository    = $league_repository;
 	}
 
 	public function set_fixture_service( Fixture_Service $fixture_service ): void {
@@ -42,7 +49,7 @@ class League_Schedule_Service {
 	 */
 	public function schedule_league( League $league ): void {
 		$season         = $league->get_season();
-		$schedule_teams = $league->get_league_teams(
+		$schedule_teams = $this->league_query()->get_league_teams( $league,
 			array(
 				'season'  => $season,
 				'status'  => 'active',
@@ -92,7 +99,7 @@ class League_Schedule_Service {
 			}
 		}
 
-		$schedule_teams = $league->get_league_teams(
+		$schedule_teams = $this->league_query()->get_league_teams( $league,
 			array(
 				'season'      => $season,
 				'status'      => 'active',
@@ -198,5 +205,68 @@ class League_Schedule_Service {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Generate box league matches for an event.
+	 *
+	 * @param object $event
+	 * @return array{scheduled: int, skipped: int}
+	 */
+	public function generate_box_league_matches( object $event ): array {
+		return $this->schedule_event_leagues( $event );
+	}
+
+	/**
+	 * Schedule all resolvable leagues belonging to an event.
+	 *
+	 * @return array{scheduled: int, skipped: int}
+	 */
+	public function schedule_event_leagues( object $event ): array {
+		$leagues = $event instanceof Event
+			? ( $this->event_query_service ? $this->event_query_service->get_leagues( $event ) : \Racketmanager\get_event_query_service()->get_leagues( $event ) )
+			: ( method_exists( $event, 'get_leagues' ) ? $event->get_leagues() : ( $event->leagues ?? array() ) );
+		$result  = array( 'scheduled' => 0, 'skipped' => 0 );
+		if ( ! is_iterable( $leagues ) ) {
+			return $result;
+		}
+		foreach ( $leagues as $league ) {
+			$league_obj = $this->resolve_league( $league );
+			if ( $league_obj instanceof League ) {
+				$this->schedule_league( $league_obj );
+				++$result['scheduled'];
+			} else {
+				++$result['skipped'];
+			}
+		}
+		return $result;
+	}
+
+	private function resolve_league( mixed $league ): ?League {
+		if ( $league instanceof League ) {
+			return $league;
+		}
+		$id = is_object( $league ) ? ( $league->id ?? null ) : $league;
+		if ( ! is_numeric( $id ) || (int) $id <= 0 ) {
+			return null;
+		}
+		if ( $this->league_repository ) {
+			return $this->league_repository->find_by_id( (int) $id );
+		}
+		// Support legacy callers that construct this service without a repository.
+		$resolved = is_object( $league ) && isset( $league->title, $league->event_id )
+			? \Racketmanager\get_league( $league )
+			: \Racketmanager\get_league( (int) $id );
+		return $resolved instanceof League ? $resolved : null;
+	}
+
+	private function league_query(): League_Query_Service {
+		if ( $this->league_query_service instanceof \Closure ) {
+			$this->league_query_service = ( $this->league_query_service )();
+		}
+		if ( ! $this->league_query_service instanceof League_Query_Service ) {
+			throw new \LogicException( 'League_Query_Service is required by League_Schedule_Service but was not configured.' );
+		}
+		return $this->league_query_service;
 	}
 }

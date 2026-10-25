@@ -93,7 +93,7 @@ final class Knockout_Progression_Service_Test extends TestCase {
 		$service->progress_winner( $stage, $fixture );
 	}
 
-	public function test_handle_consolation_resolves_league_and_event_via_injected_repositories(): void {
+	public function test_consolation_progression_and_reset_use_a_real_event_and_injected_repositories(): void {
 		$fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
 		$league_repo  = $this->createMock( League_Repository_Interface::class );
 		$event_repo   = $this->createMock( Event_Repository_Interface::class );
@@ -106,6 +106,7 @@ final class Knockout_Progression_Service_Test extends TestCase {
 		$prop_finals->setValue( $championship, array(
 			'round_1' => array( 'round' => 1 ),
 		) );
+		$ref_champ->getProperty( 'keys_by_round' )->setValue( $championship, [ 2 => 'round_2' ] );
 		$stage = new Stage( 1, 'Stage 1', 'draw', 10 );
 		$stage->set_championship( $championship );
 
@@ -115,12 +116,13 @@ final class Knockout_Progression_Service_Test extends TestCase {
 		$fixture->set_final( 'round_1' );
 		$fixture->set_season( '2026' );
 		$fixture->set_loser_id( 33 );
+		$fixture->set_home_team( '33' );
 
-		$event = $this->createMock( Event::class );
-		$event->expects( $this->once() )
-			->method( 'get_leagues' )
-			->with( array( 'consolation' => true ) )
-			->willReturn( array( 999 ) );
+		$event = new Event( (object) [ 'id' => 88, 'name' => 'Cup', 'seasons' => '{"2026":{"name":"2026"}}' ] );
+		$event_repo->expects( $this->exactly( 2 ) )
+			->method( 'query_leagues' )
+			->with( 88, $this->callback( static fn( array $args ): bool => true === $args['consolation'] ) )
+			->willReturn( [ (object) [ 'id' => 999 ] ] );
 
 		$main_league = ( new \ReflectionClass( League::class ) )->newInstanceWithoutConstructor();
 		$main_league->id = 77;
@@ -135,8 +137,12 @@ final class Knockout_Progression_Service_Test extends TestCase {
 		$consolation_league->season = '2026';
 		$consolation_league->current_season = array( 'name' => '2026', 'home_away' => false );
 		$consolation_league->event = $event;
+		$consolation_league->championship = clone $championship;
+		$prop_consolation->setValue( $consolation_league->championship, true );
 
-		$league_repo->expects( $this->exactly( 2 ) )
+		// Source league lookup in handle_consolation, plus one load/filter per
+		// consolation query in handle_consolation and reset_consolation.
+		$league_repo->expects( $this->exactly( 3 ) )
 			->method( 'find_by_id' )
 			->willReturnCallback( function ( int $id ) use ( $main_league, $consolation_league ) {
 				if ( 77 === $id ) {
@@ -148,7 +154,7 @@ final class Knockout_Progression_Service_Test extends TestCase {
 				return null;
 			} );
 
-		$event_repo->expects( $this->once() )
+		$event_repo->expects( $this->exactly( 2 ) )
 			->method( 'find_by_id' )
 			->with( 88 )
 			->willReturn( $event );
@@ -157,16 +163,22 @@ final class Knockout_Progression_Service_Test extends TestCase {
 		$consolation_fixture->set_id( 801 );
 		$consolation_fixture->set_home_team( '2_round_1_501' );
 
-		$fixture_repo->expects( $this->once() )
+		$fixture_repo->expects( $this->exactly( 2 ) )
 			->method( 'find_by_league_and_team' )
-			->with( 999, '2026', '2_round_1_501' )
+			->with( 999, '2026', $this->logicalOr( '2_round_1_501', '33' ) )
 			->willReturn( array( $consolation_fixture ) );
 
-		$fixture_repo->expects( $this->once() )
+		$next_fixture = \Racketmanager\Domain\Fixture\Fixture_Factory::from_array( [ 'id' => 802 ] );
+		$fixture_repo->expects( $this->exactly( 2 ) )->method( 'find_by_league_and_final' )
+			->with( 77, '2026', $this->logicalOr( 'round_1', 'round_2' ) )
+			->willReturnCallback( static fn( $league_id, $season, $round ) => 'round_1' === $round ? [ $fixture ] : [ $next_fixture ] );
+		$saved = [];
+		$fixture_repo->expects( $this->exactly( 3 ) )
 			->method( 'save' )
-			->with( $this->callback( function ( Fixture $f ) {
-				return '33' === $f->get_home_team();
-			} ) );
+			->willReturnCallback( static function ( Fixture $f ) use ( &$saved ): bool {
+				$saved[] = [ $f->get_id(), $f->get_home_team() ];
+				return true;
+			} );
 
 		$service = new Knockout_Progression_Service(
 			$fixture_repo,
@@ -175,5 +187,9 @@ final class Knockout_Progression_Service_Test extends TestCase {
 		);
 
 		$service->handle_consolation( $stage, $fixture );
+		$this->assertSame( '33', $consolation_fixture->get_home_team() );
+		$service->reset_progression( $stage, $fixture, $main_league );
+		$this->assertSame( '2_round_1_501', $consolation_fixture->get_home_team() );
+		$this->assertSame( [ [ 801, '33' ], [ 802, '1_round_1_1' ], [ 801, '2_round_1_501' ] ], $saved );
 	}
 }

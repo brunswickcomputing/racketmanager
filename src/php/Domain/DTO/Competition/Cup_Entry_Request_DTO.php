@@ -27,16 +27,39 @@ readonly class Cup_Entry_Request_DTO {
      * Cup_Entry_Request_DTO constructor.
      *
      * @param array $data
+     * @param int|null $competition_id
+     * @param string|null $season
+     * @param int|null $club_id
+     * @param bool $acceptance
+     * @param string|null $comments
+     * @param array<int, stdClass> $events_entered
      */
-    public function __construct( array $data ) {
-        $this->competition_id = isset( $data['competitionId'] ) ? absint( $data['competitionId'] ) : null;
-        $this->season         = isset( $data['season'] ) ? sanitize_text_field( wp_unslash( $data['season'] ) ) : null;
-        $this->club_id        = isset( $data['clubId'] ) ? absint( $data['clubId'] ) : null;
-        $this->comments       = isset( $data['commentDetails'] ) ? sanitize_textarea_field( wp_unslash( $data['commentDetails'] ) ) : null;
-        $this->acceptance     = isset( $data['acceptance'] );
+    public function __construct(
+        array $data = [],
+        ?int $competition_id = null,
+        ?string $season = null,
+        ?int $club_id = null,
+        bool $acceptance = false,
+        ?string $comments = null,
+        array $events_entered = []
+    ) {
+        if ( ! empty( $data ) ) {
+            $this->competition_id = isset( $data['competitionId'] ) ? absint( $data['competitionId'] ) : ( isset( $data['competition_id'] ) ? absint( $data['competition_id'] ) : $competition_id );
+            $this->season         = isset( $data['season'] ) ? sanitize_text_field( wp_unslash( $data['season'] ) ) : $season;
+            $this->club_id        = isset( $data['clubId'] ) ? absint( $data['clubId'] ) : ( isset( $data['club_id'] ) ? absint( $data['club_id'] ) : $club_id );
+            $this->comments       = isset( $data['commentDetails'] ) ? sanitize_textarea_field( wp_unslash( $data['commentDetails'] ) ) : ( isset( $data['comments'] ) ? sanitize_textarea_field( wp_unslash( $data['comments'] ) ) : $comments );
+            $this->acceptance     = isset( $data['acceptance'] ) ? (bool) $data['acceptance'] : $acceptance;
 
-        $selected_event_ids   = array_map( 'absint', (array) ( $data['event'] ?? [] ) );
-        $this->events_entered = $this->parse_cup_data( $data, $selected_event_ids );
+            $selected_event_ids   = array_map( 'absint', (array) ( $data['event'] ?? [] ) );
+            $this->events_entered = ! empty( $selected_event_ids ) ? $this->parse_cup_data( $data, $selected_event_ids ) : $events_entered;
+        } else {
+            $this->competition_id = $competition_id;
+            $this->season         = $season;
+            $this->club_id        = $club_id;
+            $this->acceptance     = $acceptance;
+            $this->comments       = $comments;
+            $this->events_entered = $events_entered;
+        }
     }
 
     /**

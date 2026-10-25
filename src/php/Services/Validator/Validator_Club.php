@@ -9,7 +9,8 @@
 
 namespace Racketmanager\Services\Validator;
 
-use function Racketmanager\get_club_role;
+use Racketmanager\Repositories\Club_Role_Repository;
+use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
 use function Racketmanager\get_player;
 use function Racketmanager\get_user;
 
@@ -17,6 +18,17 @@ use function Racketmanager\get_user;
  * Class to implement the Club Validator object
  */
 final class Validator_Club extends Validator {
+    private Club_Role_Repository_Interface $club_role_repository;
+
+    /**
+     * Constructor
+     *
+     * @param Club_Role_Repository_Interface|null $club_role_repository
+     */
+    public function __construct( ?Club_Role_Repository_Interface $club_role_repository = null ) {
+        parent::__construct();
+        $this->club_role_repository = $club_role_repository ?? new Club_Role_Repository();
+    }
     /**
      * Validate name
      *
@@ -98,7 +110,7 @@ final class Validator_Club extends Validator {
             $this->err_flds[] = 'userName';
             $this->err_msgs[] = __( 'Club role not found', 'racketmanager' );
         } else {
-            $club_role = get_club_role( $club_role_id );
+            $club_role = $this->club_role_repository->find( $club_role_id );
             if ( ! $club_role ) {
                 $this->error      = true;
                 $this->err_flds[] = 'userName';

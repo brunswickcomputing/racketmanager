@@ -33,29 +33,64 @@ readonly class League_Entry_Request_DTO {
      * League_Entry_Request_DTO constructor.
      *
      * @param array $data
+     * @param int|null $competition_id
+     * @param string|null $season
+     * @param int|null $club_id
+     * @param string|null $comments
+     * @param bool $acceptance
+     * @param int|null $num_courts_available
+     * @param array $events_entered
+     * @param array $missed_event_ids
+     * @param array $missed_team_ids
+     * @param array $empty_event_ids
      */
-    public function __construct( array $data ) {
-        $this->competition_id       = isset( $data['competitionId'] ) ? intval( $data['competitionId'] ) : null;
-        $this->season               = isset( $data['season'] ) ? sanitize_text_field( wp_unslash( $data['season'] ) ) : null;
-        $this->club_id              = isset( $data['clubId'] ) ? intval( $data['clubId'] ) : null;
-        $this->comments             = isset( $data['commentDetails'] ) ? sanitize_text_field( wp_unslash( $data['commentDetails'] ) ) : null;
-        $this->num_courts_available = isset( $data['numCourtsAvailable'] ) ? intval( $data['numCourtsAvailable'] ) : null;
-        $this->acceptance           = isset( $data['acceptance'] );
-        $this->events_entered       = $this->parse_submissions( $data );
-        // 1. Identify all possible events from the competition_events string
-        $all_possible_events = array_filter( array_map( 'absint', explode( ',', (string) ( $data['competition_events'] ?? '' ) ) ) );
-        // 2. Identify which ones were actually selected
-        $selected_event_ids = array_map( 'absint', (array) ( $data['event'] ?? [] ) );
-        // 3. Find the difference (Events not entered)
-        $this->missed_event_ids = array_diff( $all_possible_events, $selected_event_ids );
-        // 4. Find missed teams within selected events
-        $this->missed_team_ids = $this->identify_missed_teams( $data, $selected_event_ids );
-        // 5. Get IDs of all events the user actually CHECKED
-        $selected_event_ids = array_map( 'absint', (array) ( $data['event'] ?? [] ) );
-        // 6. Identify which events actually have team data organized
-        $events_with_teams = array_keys( $this->events_entered );
-        // 7. The difference is events that were selected but are empty
-        $this->empty_event_ids = array_values( array_diff( $selected_event_ids, $events_with_teams ) );
+    public function __construct(
+        array $data = [],
+        ?int $competition_id = null,
+        ?string $season = null,
+        ?int $club_id = null,
+        ?string $comments = null,
+        bool $acceptance = false,
+        ?int $num_courts_available = null,
+        array $events_entered = [],
+        array $missed_event_ids = [],
+        array $missed_team_ids = [],
+        array $empty_event_ids = []
+    ) {
+        if ( ! empty( $data ) ) {
+            $this->competition_id       = isset( $data['competitionId'] ) ? intval( $data['competitionId'] ) : ( isset( $data['competition_id'] ) ? intval( $data['competition_id'] ) : $competition_id );
+            $this->season               = isset( $data['season'] ) ? sanitize_text_field( wp_unslash( $data['season'] ) ) : $season;
+            $this->club_id              = isset( $data['clubId'] ) ? intval( $data['clubId'] ) : ( isset( $data['club_id'] ) ? intval( $data['club_id'] ) : $club_id );
+            $this->comments             = isset( $data['commentDetails'] ) ? sanitize_text_field( wp_unslash( $data['commentDetails'] ) ) : ( isset( $data['comments'] ) ? sanitize_text_field( wp_unslash( $data['comments'] ) ) : $comments );
+            $this->num_courts_available = isset( $data['numCourtsAvailable'] ) ? intval( $data['numCourtsAvailable'] ) : ( isset( $data['num_courts_available'] ) ? intval( $data['num_courts_available'] ) : $num_courts_available );
+            $this->acceptance           = isset( $data['acceptance'] ) ? (bool) $data['acceptance'] : $acceptance;
+            $this->events_entered       = ! empty( $data['event'] ) ? $this->parse_submissions( $data ) : $events_entered;
+            // 1. Identify all possible events from the competition_events string
+            $all_possible_events = array_filter( array_map( 'absint', explode( ',', (string) ( $data['competition_events'] ?? '' ) ) ) );
+            // 2. Identify which ones were actually selected
+            $selected_event_ids = array_map( 'absint', (array) ( $data['event'] ?? [] ) );
+            // 3. Find the difference (Events not entered)
+            $this->missed_event_ids = ! empty( $all_possible_events ) ? array_diff( $all_possible_events, $selected_event_ids ) : $missed_event_ids;
+            // 4. Find missed teams within selected events
+            $this->missed_team_ids = ! empty( $selected_event_ids ) ? $this->identify_missed_teams( $data, $selected_event_ids ) : $missed_team_ids;
+            // 5. Get IDs of all events the user actually CHECKED
+            $selected_event_ids = array_map( 'absint', (array) ( $data['event'] ?? [] ) );
+            // 6. Identify which events actually have team data organized
+            $events_with_teams = array_keys( $this->events_entered );
+            // 7. The difference is events that were selected but are empty
+            $this->empty_event_ids = ! empty( $selected_event_ids ) ? array_values( array_diff( $selected_event_ids, $events_with_teams ) ) : $empty_event_ids;
+        } else {
+            $this->competition_id       = $competition_id;
+            $this->season               = $season;
+            $this->club_id              = $club_id;
+            $this->comments             = $comments;
+            $this->num_courts_available = $num_courts_available;
+            $this->acceptance           = $acceptance;
+            $this->events_entered       = $events_entered;
+            $this->missed_event_ids     = $missed_event_ids;
+            $this->missed_team_ids      = $missed_team_ids;
+            $this->empty_event_ids      = $empty_event_ids;
+        }
     }
 
     /**

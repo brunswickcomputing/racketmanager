@@ -9,12 +9,17 @@ use Racketmanager\Domain\DTOs\Results_Checker_Data;
 use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Domain\DTO\Player\Validation_Context_DTO;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
 use Racketmanager\Repositories\Fixture_Repository;
+use Racketmanager\Repositories\Player_Repository;
+use Racketmanager\Repositories\Results_Checker_Repository;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Util\Util;
 use DateTime;
 use DateMalformedStringException;
+use stdClass;
+use WP_Error;
 
 /**
  * Service for validating player eligibility and handling dummy player assignments.
@@ -23,15 +28,21 @@ class Player_Validation_Service {
     private Registration_Service $registration_service;
     private Results_Checker_Repository_Interface $results_checker_repository;
     private Fixture_Repository_Interface $fixture_repository;
+    private Player_Repository_Interface $player_repository;
+    private Player_Details_Validator $player_details_validator;
 
     public function __construct(
         Registration_Service $registration_service,
         Results_Checker_Repository_Interface $results_checker_repository,
-        ?Fixture_Repository_Interface $fixture_repository = null
+        ?Fixture_Repository_Interface $fixture_repository = null,
+        ?Player_Repository_Interface $player_repository = null,
+        ?Player_Details_Validator $player_details_validator = null
     ) {
         $this->registration_service       = $registration_service;
         $this->results_checker_repository = $results_checker_repository;
         $this->fixture_repository         = $fixture_repository ?? new Fixture_Repository();
+        $this->player_repository          = $player_repository ?? new Player_Repository();
+        $this->player_details_validator   = $player_details_validator ?? new Player_Details_Validator( $this->player_repository );
     }
 
     /**
@@ -526,4 +537,33 @@ class Player_Validation_Service {
         $this->results_checker_repository->save( $check );
     }
 
+    /**
+     * Validate player details and return a WP_Error or stdClass player object.
+     *
+     * @param array|null $request
+     * @return stdClass|WP_Error
+     */
+    public function validate_player( ?array $request = null ): stdClass|WP_Error {
+        return $this->player_details_validator->validate_player( $request );
+    }
+
+    /**
+     * Validate player details from request/input data and return a legacy tuple.
+     *
+     * @param array|null $input Optional input array; null defaults to $_POST.
+     * @return array
+     */
+    public function validate_player_details( ?array $input = null ): array {
+        return $this->player_details_validator->validate_player_details( $input );
+    }
+
+    /**
+     * Build and validate the player object from input data.
+     *
+     * @param array|null $input
+     * @return array{0: stdClass, 1: Validator}
+     */
+    public function build_player_and_validator( ?array $input = null ): array {
+        return $this->player_details_validator->build_player_and_validator( $input );
+    }
 }

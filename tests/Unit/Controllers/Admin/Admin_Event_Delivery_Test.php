@@ -12,6 +12,7 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Competition_Service;
@@ -32,6 +33,7 @@ final class Admin_Event_Delivery_Test extends TestCase {
     private Admin_Flash_Message_Store $flash_store;
     private Action_Guard_Interface $guard;
     private Competition_Service $competition_service;
+    private Event_Repository_Interface $event_repository;
     private Admin_Event $screen;
 
     protected function setUp(): void {
@@ -58,6 +60,7 @@ final class Admin_Event_Delivery_Test extends TestCase {
         $this->flash_store         = $this->createMock( Admin_Flash_Message_Store::class );
         $this->guard               = $this->createMock( Action_Guard_Interface::class );
         $this->competition_service = $this->createMock( Competition_Service::class );
+        $this->event_repository    = $this->createMock( Event_Repository_Interface::class );
 
         $league_service = $this->createStub( League_Service::class );
         $league_service->method( 'add_league_to_event' )->willReturn( $this->make_league() );
@@ -66,6 +69,7 @@ final class Admin_Event_Delivery_Test extends TestCase {
             services: array(
                 'competition_service' => $this->competition_service,
                 'league_service'      => $league_service,
+                'event_repository'    => $this->event_repository,
             ),
             guard: $this->guard,
             redirector: $this->redirector,
@@ -106,6 +110,9 @@ final class Admin_Event_Delivery_Test extends TestCase {
             ->method( 'get_by_id' )
             ->with( 1 )
             ->willReturn( $competition );
+        $this->event_repository->expects( self::once() )
+            ->method( 'insert_event' )
+            ->willReturn( 5 );
 
         $this->flash_store->expects( self::once() )
             ->method( 'set' )

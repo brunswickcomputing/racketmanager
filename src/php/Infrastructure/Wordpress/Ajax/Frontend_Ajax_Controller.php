@@ -4,8 +4,13 @@ declare( strict_types=1 );
 namespace Racketmanager\Infrastructure\Wordpress\Ajax;
 
 use JetBrains\PhpStorm\NoReturn;
+use Racketmanager\Application\General\Queries\Get_Alert_Handler;
+use Racketmanager\Application\General\Queries\Get_Player_Search_Handler;
+use Racketmanager\Application\Player\Queries\Get_Player_Details_Handler;
+use Racketmanager\Application\Player\Queries\Search_Players_Handler;
 use Racketmanager\Infrastructure\Security\Security_Service;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory;
+use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
 
 /**
@@ -122,6 +127,10 @@ class Frontend_Ajax_Controller {
             return $c->get( 'frontend_ajax_adapter' );
         }
 
+        $get_player_details_handler = $c->has( 'get_player_details_handler' )
+            ? $c->get( 'get_player_details_handler' )
+            : new Get_Player_Details_Handler( $c->get( 'player_repository' ) );
+
         return new Frontend_Ajax_Adapter(
             $c->has( 'security_service' ) ? $c->get( 'security_service' ) : new Security_Service(),
             $c->has( 'json_response_factory' ) ? $c->get( 'json_response_factory' ) : new Json_Response_Factory(),
@@ -133,8 +142,31 @@ class Frontend_Ajax_Controller {
             $c->get( 'club_service' ),
             $c->get( 'tournament_service' ),
             $c->get( 'fixture_repository' ),
-            $c->get( 'rubber_repository' )
+            $c->get( 'rubber_repository' ),
+            search_players_handler: $this->resolve_search_players_handler( $c ),
+            get_player_details_handler: $get_player_details_handler,
+            submit_cup_entry_handler: $c->has( 'submit_cup_entry_handler' ) ? $c->get( 'submit_cup_entry_handler' ) : null,
+            submit_league_entry_handler: $c->has( 'submit_league_entry_handler' ) ? $c->get( 'submit_league_entry_handler' ) : null,
+            update_player_handler: $c->has( 'update_player_handler' ) ? $c->get( 'update_player_handler' ) : null
         );
+    }
+
+    private function resolve_search_players_handler( $c ): Search_Players_Handler {
+        if ( $c->has( 'search_players_handler' ) ) {
+            return $c->get( 'search_players_handler' );
+        }
+
+        $search_handler = $c->has( 'get_player_search_handler' )
+            ? $c->get( 'get_player_search_handler' )
+            : new Get_Player_Search_Handler( $c->get( 'player_repository' ) );
+        $alert_handler  = $c->has( 'get_alert_handler' )
+            ? $c->get( 'get_alert_handler' )
+            : new Get_Alert_Handler();
+        $view_presenter = $c->has( 'shortcode_view_presenter' )
+            ? $c->get( 'shortcode_view_presenter' )
+            : new Shortcode_View_Presenter( $c->get( 'shortcode_template_renderer' ) );
+
+        return new Search_Players_Handler( $search_handler, $alert_handler, $view_presenter );
     }
 
     #[NoReturn]

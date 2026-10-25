@@ -41,7 +41,7 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
         // Repositories
         $container->set( 'club_repository', fn() => new Club_Repository() );
         $container->set( 'registration_repository', fn(): Registration_Repository_Interface => new Registration_Repository() );
-        $container->set( 'club_role_repository', fn(): Club_Role_Repository_Interface => new Club_Role_Repository() );
+        $container->set( 'club_role_repository', fn( Simple_Container $c ): Club_Role_Repository_Interface => new Club_Role_Repository( null, $c->get( 'user_repository' ) ) );
         $container->set( 'team_repository', fn( Simple_Container $c ) => new Team_Repository( null, $c->get( 'player_repository' ) ) );
 
         // Services
@@ -69,7 +69,8 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
             $c->get( 'club_repository' ),
             $c->get( 'event_repository' ),
             $c->get( 'player_service' ),
-            $c->get( 'fixture_repository' )
+            $c->get( 'fixture_repository' ),
+            $c->get( 'event_query_service' )
         ) );
 
         // Presenters
@@ -111,7 +112,8 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
             $c->get( 'competition_service' ),
             $c->get( 'competition_repository' ),
             $c->get( 'team_details_presenter' ),
-            $c->get( 'club_presenter' )
+            $c->get( 'club_presenter' ),
+            $c->get( 'event_query_service' )
         ) );
 
         $container->set( 'get_club_invoices_handler', fn( Simple_Container $c ) => new Get_Club_Invoices_Handler(
@@ -139,7 +141,8 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
             competitions_handler: $c->get( 'get_club_competitions_handler' ),
             invoices_handler: $c->get( 'get_club_invoices_handler' ),
             view_presenter: $c->get( 'shortcode_view_presenter' ),
-            competition_shortcode_presenter: $c->get( 'competition_shortcode_presenter' )
+            competition_shortcode_presenter: $c->get( 'competition_shortcode_presenter' ),
+            event_query_service: $c->get( 'event_query_service' )
         ) );
 
         // AJAX Adapter & Controller
@@ -148,7 +151,8 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
             $c->get( 'json_response_factory' ),
             $c->get( 'club_service' ),
             $c->get( 'registration_service' ),
-            $c->get( 'user_repository' )
+            $c->get( 'user_repository' ),
+            $c->get( 'club_role_repository' )
         ) );
         $container->set( 'club_ajax_controller', fn( Simple_Container $c ) => new Club_Ajax_Controller( $app, $c->get( 'club_ajax_adapter' ) ) );
     }

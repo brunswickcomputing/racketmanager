@@ -17,32 +17,7 @@ class Rubber_Test extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->backup_globals();
-
-        $GLOBALS['racketmanager']              = new stdClass();
-        $GLOBALS['racketmanager']->date_format = 'Y-m-d';
-        $GLOBALS['racketmanager']->time_format = 'H:i';
-        $GLOBALS['wpdb']                       = new class {
-            public string $racketmanager_rubbers = 'wp_racketmanager_rubbers';
-            public string $racketmanager_rubber_players = 'wp_racketmanager_rubber_players';
-            public string $racketmanager_results_checker = 'wp_racketmanager_results_checker';
-            public int $insert_id = 99;
-
-            public function prepare( string $query, ...$args ): string {
-                return $query;
-            }
-
-            public function query( string $query ): int {
-                return 1;
-            }
-
-            public function get_results( string $query ): array {
-                return [];
-            }
-
-            public function get_row( string $query ): ?object {
-                return null;
-            }
-        };
+        unset( $GLOBALS['racketmanager'] );
     }
 
     protected function tearDown(): void {
@@ -50,38 +25,7 @@ class Rubber_Test extends TestCase {
         parent::tearDown();
     }
 
-    private function setup_container_fixture_repo( ?\Racketmanager\Domain\Fixture\Fixture $fixture = null ): void {
-        $fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
-        if ( $fixture ) {
-            $fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
-        }
-        $registration_service = $this->createMock( \Racketmanager\Services\Registration_Service::class );
-
-        $container = new class( $fixture_repository, $registration_service ) {
-            private $repo;
-            private $registration_service;
-            public function __construct( $repo, $reg_service ) {
-                $this->repo = $repo;
-                $this->registration_service = $reg_service;
-            }
-            public function has( $name ): bool {
-                return in_array( $name, [ 'fixture_repository', 'registration_service' ], true );
-            }
-            public function get( $name ) {
-                if ( 'fixture_repository' === $name ) {
-                    return $this->repo;
-                }
-                if ( 'registration_service' === $name ) {
-                    return $this->registration_service;
-                }
-                return null;
-            }
-        };
-        $GLOBALS['racketmanager']->container = $container;
-    }
-
     private function create_dummy_rubber(): Rubber {
-        $this->setup_container_fixture_repo();
         $data = (object) [
             'id'            => 10,
             'match_id'      => 100,

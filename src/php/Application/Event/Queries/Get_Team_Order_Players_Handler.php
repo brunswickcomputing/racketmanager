@@ -7,6 +7,7 @@ use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Settings_Service;
@@ -19,7 +20,8 @@ class Get_Team_Order_Players_Handler {
         private readonly Competition_Service $competition_service,
         private readonly Club_Service $club_service,
         private readonly Registration_Service $registration_service,
-        private readonly Settings_Service $settings_service
+        private readonly Settings_Service $settings_service,
+        private readonly Event_Query_Service $event_query_service
     ) {}
 
     public function handle( Get_Team_Order_Players_Query $query ): Shortcode_View_Model {
@@ -33,6 +35,8 @@ class Get_Team_Order_Players_Handler {
         } catch ( Competition_Not_Found_Exception ) {
             return Shortcode_View_Model::for_error( __( 'Event not found', 'racketmanager' ) );
         }
+
+        $this->event_query_service->set_season( $event, $query->season ?? null );
 
         if ( ! Event_Allowlist_Guard::is_event_allowed( $event, $event->current_season['name'] ?? null, $this->competition_service ) ) {
             return Shortcode_View_Model::for_error( __( 'Event not found for competition', 'racketmanager' ) );
@@ -65,7 +69,7 @@ class Get_Team_Order_Players_Handler {
             [
                 'event'        => $event,
                 'club'         => $club,
-                'teams'        => $event->get_teams( $team_args ),
+                'teams'        => $this->event_query_service->get_teams( $event, $team_args ),
                 'matches'      => [],
                 'club_players' => $club_players,
                 'can_update'   => $can_update,

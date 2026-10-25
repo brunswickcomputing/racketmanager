@@ -18,6 +18,21 @@ class Get_Purchase_Order_Query {
         public readonly ?string $template = null
     ) {}
 
+    /**
+     * @param array<string, mixed> $request
+     * @return self
+     */
+    public static function from_request( array $request ): self {
+        $id    = isset( $request['invoiceId'] ) ? (int) $request['invoiceId'] : ( isset( $request['id'] ) ? (int) $request['id'] : 0 );
+        $modal = isset( $request['modal'] ) ? sanitize_text_field( wp_unslash( (string) $request['modal'] ) ) : null;
+
+        return new self(
+            id: $id,
+            modal: $modal,
+            template: null
+        );
+    }
+
     public static function from_atts(
         array|string $atts = [],
         array $query_vars = [],

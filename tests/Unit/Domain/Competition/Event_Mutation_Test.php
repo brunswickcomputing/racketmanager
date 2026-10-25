@@ -10,14 +10,13 @@ use Racketmanager\Domain\Competition\Competition_Settings;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Event_Factory;
-use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Competition\Event_Hydration_DTO;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Event_Repository;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
@@ -25,21 +24,15 @@ use stdClass;
 class Event_Mutation_Test extends TestCase {
 	use Manages_Wordpress_Globals;
 
-	private Simple_Container $container;
 	private $event_repository;
 	private Event $event;
 
 	protected function setUp(): void {
 		parent::setUp();
 		$this->backup_globals();
+		unset( $GLOBALS['racketmanager'] );
 
-		$this->container        = new Simple_Container();
 		$this->event_repository = $this->createMock( Event_Repository_Interface::class );
-
-		$this->container->set( 'event_repository', $this->event_repository );
-
-		$competition_service = $this->createMock( Competition_Service::class );
-		$this->container->set( 'competition_service', $competition_service );
 
 		$competition          = $this->createMock( Competition::class );
 		$competition_settings = new Competition_Settings( [ 'mode' => 'league' ] );
@@ -47,13 +40,6 @@ class Event_Mutation_Test extends TestCase {
 		$competition->type = Competition_Type::LEAGUE;
 		$competition->is_player_entry = false;
 		$competition->standings = [];
-		$competition_service->method( 'get_by_id' )->willReturn( $competition );
-
-		$racketmanager = $this->getMockBuilder( RacketManager::class )
-			->disableOriginalConstructor()
-			->getMock();
-		$racketmanager->container = $this->container;
-		$GLOBALS['racketmanager'] = $racketmanager;
 
 		$event_raw = new stdClass();
 		$event_raw->id = 42;
@@ -64,7 +50,7 @@ class Event_Mutation_Test extends TestCase {
 		$event_raw->num_rubbers = 4;
 		$event_raw->num_sets = 3;
 
-		$this->event = new Event( $event_raw );
+		$this->event = new Event( $event_raw, $competition );
 	}
 
 	protected function tearDown(): void {
@@ -72,7 +58,7 @@ class Event_Mutation_Test extends TestCase {
 		parent::tearDown();
 	}
 
-	public function test_get_instance_delegates_to_event_repository_find_by_id(): void {
+	public function test_query_service_get_event_delegates_to_event_repository_find_by_id(): void {
 		$dto = new Event_Hydration_DTO(
 			id: 42,
 			name: 'Men\'s Doubles',
@@ -88,13 +74,13 @@ class Event_Mutation_Test extends TestCase {
 			->with( 42 )
 			->willReturn( $mock_event );
 
-		$instance = Event::get_instance( 42, 'id' );
+		$instance = ( new \Racketmanager\Services\Competition\Event_Query_Service( $this->event_repository ) )->get_event( 42, 'id' );
 		$this->assertInstanceOf( Event::class, $instance );
 		$this->assertSame( 42, $instance->id );
 		$this->assertSame( 'Men\'s Doubles', $instance->name );
 	}
 
-	public function test_get_instance_delegates_to_event_repository_find_by_name(): void {
+	public function test_query_service_get_event_delegates_to_event_repository_find_by_name(): void {
 		$dto = new Event_Hydration_DTO(
 			id: 42,
 			name: 'Men\'s Doubles',
@@ -110,17 +96,12 @@ class Event_Mutation_Test extends TestCase {
 			->with( 'Men\'s Doubles' )
 			->willReturn( $mock_event );
 
-		$instance = Event::get_instance( 'Men\'s Doubles', 'name' );
+		$instance = ( new \Racketmanager\Services\Competition\Event_Query_Service( $this->event_repository ) )->get_event( 'Men\'s Doubles', 'name' );
 		$this->assertInstanceOf( Event::class, $instance );
 		$this->assertSame( 'Men\'s Doubles', $instance->name );
 	}
 
-	public function test_set_name_delegates_to_event_repository_update_name(): void {
-		$this->event_repository->expects( $this->once() )
-			->method( 'update_name' )
-			->with( 42, 'Updated Event Name' )
-			->willReturn( true );
-
+	public function test_set_name_updates_property(): void {
 		$this->event->set_name( 'Updated Event Name' );
 		$this->assertSame( 'Updated Event Name', $this->event->name );
 	}
@@ -136,7 +117,17 @@ class Event_Mutation_Test extends TestCase {
 			->with( 42 )
 			->willReturn( true );
 
-		$this->event->delete();
+		$comp_service = new Competition_Service(
+			$this->createStub( RacketManager::class ),
+			$this->createStub( \Racketmanager\Repositories\Interfaces\Competition_Repository_Interface::class ),
+			$this->createStub( \Racketmanager\Repositories\Interfaces\Club_Repository_Interface::class ),
+			$this->event_repository,
+			$this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class ),
+			$this->createStub( League_Team_Repository_Interface::class ),
+			$this->createStub( \Racketmanager\Repositories\Interfaces\Season_Repository_Interface::class ),
+			$this->createStub( \Racketmanager\Repositories\Interfaces\Team_Repository_Interface::class )
+		);
+		$comp_service->delete_event( $this->event );
 	}
 
 	public function test_set_num_leagues_delegates_to_event_repository_count_leagues(): void {
@@ -145,7 +136,8 @@ class Event_Mutation_Test extends TestCase {
 			->with( 42 )
 			->willReturn( 5 );
 
-		$this->event->set_num_leagues( true );
+		$service = new Event_Query_Service( $this->event_repository );
+		$service->set_num_leagues( $this->event, true );
 		$this->assertSame( 5, $this->event->num_leagues );
 	}
 
@@ -155,7 +147,8 @@ class Event_Mutation_Test extends TestCase {
 			->with( 42, '2026', 10, 20 )
 			->willReturn( true );
 
-		$this->event->mark_teams_withdrawn( '2026', 10, 20 );
+		$service = new Event_Query_Service( $this->event_repository );
+		$this->assertTrue( $service->mark_teams_withdrawn( $this->event, '2026', 10, 20 ) );
 	}
 
 	public function test_mark_teams_entered_delegates_to_event_repository(): void {
@@ -164,128 +157,8 @@ class Event_Mutation_Test extends TestCase {
 			->with( 42, 20, '2026' )
 			->willReturn( true );
 
-		$this->event->mark_teams_entered( 20, '2026' );
-	}
-
-	public function test_get_players_defaults_to_current_season(): void {
-		$this->event->current_season = array( 'name' => '2026' );
-		$this->event_repository->expects( $this->once() )
-			->method( 'query_players' )
-			->with(
-				42,
-				false,
-				$this->callback(
-					static function ( array $args ): bool {
-						return '2026' === ( $args['season'] ?? null );
-					}
-				)
-			)
-			->willReturn( array() );
-
-		$this->event->get_players();
-	}
-
-	public function test_add_season_persists_constitution_details_without_reloading_league_team(): void {
-		$competition = $this->createStub( Competition::class );
-		$competition->is_league = true;
-
-		$team                  = new stdClass();
-		$team->old_league_id    = 12;
-		$team->team_id          = 34;
-		$team->captain          = 56;
-		$team->match_day        = 'Tuesday';
-		$team->match_time       = '18:30';
-
-		$event = $this->getMockBuilder( Event::class )
-			->disableOriginalConstructor()
-			->onlyMethods( [ 'build_constitution' ] )
-			->getMock();
-		$event->id          = 42;
-		$event->competition = $competition;
-		$event->seasons     = [ '2025' => [ 'name' => '2025' ] ];
-		$event->expects( $this->once() )
-			->method( 'build_constitution' )
-			->with( [ 'season' => '2025' ] )
-			->willReturn( [ $team ] );
-
-		$league = $this->createMock( League::class );
-		$league->expects( $this->once() )
-			->method( 'add_team' )
-			->with( 34, '2026', 1, '', '0' )
-			->willReturn( 78 );
-		$GLOBALS['wp_stubs_leagues'][12] = $league;
-
-		$season = [
-			'name'           => '2026',
-			'home_away'      => true,
-			'num_match_days' => 10,
-			'match_dates'    => [ '1' => '2026-06-02' ],
-		];
-		$this->event_repository->expects( $this->once() )
-			->method( 'update_seasons' )
-			->with( 42, [ '2025' => [ 'name' => '2025' ], '2026' => $season ] )
-			->willReturn( true );
-
-		$league_team_repository = $this->createMock( League_Team_Repository_Interface::class );
-		$league_team_repository->expects( $this->once() )
-			->method( 'update_details' )
-			->with( 78, 56, 'Tuesday', '18:30' )
-			->willReturn( true );
-
-		$event->add_season( $season, $league_team_repository );
-
-		$this->assertSame( 78, $team->league_team_id );
-	}
-
-	public function test_promote_and_relegate_persists_constitution_without_reloading_league_team(): void {
-		$competition = $this->createMock( Competition::class );
-		$competition->expects( $this->once() )
-			->method( 'get_season_by_name' )
-			->with( '2026' )
-			->willReturn(
-				[
-					'teams_prom_relg'  => 2,
-					'teams_per_club'   => 2,
-					'max_teams'        => 4,
-					'lowest_promotion' => 1,
-				]
-			);
-
-		$league = $this->createMock( League::class );
-		$league->id               = 50;
-		$league->num_teams_total  = 4;
-		$league->expects( $this->once() )
-			->method( 'get_league_teams' )
-			->with( [ 'club' => 7, 'season' => 2026, 'count' => true, 'cache' => false ] )
-			->willReturn( 1 );
-
-		$event = $this->getMockBuilder( Event::class )
-			->disableOriginalConstructor()
-			->onlyMethods( [ 'get_leagues' ] )
-			->getMock();
-		$event->competition = $competition;
-		$event->expects( $this->once() )
-			->method( 'get_leagues' )
-			->with( [ 'season' => 2026 ] )
-			->willReturn( [ $league ] );
-
-		$team = (object) [
-			'team_id'  => 34,
-			'league_id' => 50,
-			'old_rank' => 4,
-			'rank'     => 1,
-			'table_id' => 78,
-			'status'   => '',
-		];
-		$GLOBALS['wp_stubs_teams'][34] = (object) [ 'club_id' => 7 ];
-
-		$league_team_repository = $this->createMock( League_Team_Repository_Interface::class );
-		$league_team_repository->expects( $this->once() )
-			->method( 'update_constitution' )
-			->with( 78, 50, 'BT' )
-			->willReturn( true );
-
-		$this->assertTrue( $event->promote_and_relegate( [ $team ], 2026, $league_team_repository ) );
+		$service = new Event_Query_Service( $this->event_repository );
+		$this->assertTrue( $service->mark_teams_entered( $this->event, 20, '2026' ) );
 	}
 
 	public function test_event_repository_find_by_id_and_name_hydrates_via_factory(): void {
@@ -302,5 +175,106 @@ class Event_Mutation_Test extends TestCase {
 		$this->assertInstanceOf( Event::class, $event );
 		$this->assertSame( 99, $event->id );
 		$this->assertSame( 'Mixed Doubles', $event->name );
+	}
+
+	public function test_set_season_explicit_unknown_season_falls_back_to_latest(): void {
+		$event = new Event( (object) [
+			'id'      => 10,
+			'name'    => 'Men Singles',
+			'type'    => 'singles',
+			'seasons' => json_encode( [
+				'2025' => [ 'name' => '2025' ],
+				'2026' => [ 'name' => '2026' ],
+			] ),
+		] );
+
+		// Explicit unknown season 1999 without strict mode falls back to latest season (2026)
+		$event->set_season( '1999', force_overwrite: true, strict: false );
+		$this->assertIsArray( $event->current_season );
+		$this->assertSame( '2026', $event->current_season['name'] );
+	}
+
+	public function test_set_season_default_arguments_unknown_season_falls_back_to_latest_and_sets_match_days(): void {
+		$event = new Event( (object) [
+			'id'      => 10,
+			'name'    => 'Men Singles',
+			'type'    => 'singles',
+			'seasons' => json_encode( [
+				'2025' => [ 'name' => '2025', 'match_days' => [ '2025-05-01' ] ],
+				'2026' => [ 'name' => '2026', 'match_days' => [ '2026-05-01', '2026-05-08' ] ],
+			] ),
+		] );
+
+		$event->set_season( '1999' );
+		$this->assertIsArray( $event->current_season );
+		$this->assertSame( '2026', $event->current_season['name'] );
+		$this->assertSame( 2, $event->num_match_days );
+	}
+
+	public function test_set_season_strict_mode_evaluates_to_false_for_unknown_season(): void {
+		$event = new Event( (object) [
+			'id'      => 10,
+			'name'    => 'Men Singles',
+			'type'    => 'singles',
+			'seasons' => json_encode( [
+				'2025' => [ 'name' => '2025' ],
+				'2026' => [ 'name' => '2026' ],
+			] ),
+		] );
+
+		// Request-style strict mode: unknown season yields false, not a latest-season fallback.
+		$event->set_season( '1999', force_overwrite: false, strict: true );
+		$this->assertFalse( $event->current_season );
+	}
+
+	public function test_set_season_force_overwrite_updates_current_season(): void {
+		$event = new Event( (object) [
+			'id'      => 10,
+			'name'    => 'Men Singles',
+			'type'    => 'singles',
+			'seasons' => json_encode( [
+				'2025' => [ 'name' => '2025' ],
+				'2026' => [ 'name' => '2026' ],
+			] ),
+		] );
+
+		$event->set_season();
+		$this->assertSame( '2026', $event->current_season['name'] );
+
+		// A known season is applied whether or not force_overwrite is set.
+		$event->set_season( '2025', force_overwrite: false );
+		$this->assertSame( '2025', $event->current_season['name'] );
+
+		$event->set_season( '2026', force_overwrite: true );
+		$this->assertSame( '2026', $event->current_season['name'] );
+	}
+
+	public function test_constructor_fallback_when_competition_season_not_in_event_seasons(): void {
+		$competition = new Competition(
+			'Summer League',
+			Competition_Type::LEAGUE,
+			'Open',
+			[ '2024' => [ 'name' => '2024' ] ],
+			null,
+			1
+		);
+
+		// Event configured only for 2025 and 2026
+		$event = new Event(
+			(object) [
+				'id'      => 10,
+				'name'    => 'Men Singles',
+				'type'    => 'singles',
+				'seasons' => json_encode( [
+					'2025' => [ 'name' => '2025' ],
+					'2026' => [ 'name' => '2026' ],
+				] ),
+			],
+			$competition
+		);
+
+		// Event must fall back to its latest configured season (2026) without warning/false
+		$this->assertIsArray( $event->current_season );
+		$this->assertSame( '2026', $event->current_season['name'] );
 	}
 }

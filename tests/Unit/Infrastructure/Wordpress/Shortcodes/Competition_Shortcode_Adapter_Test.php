@@ -45,6 +45,7 @@ use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;
+use Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
 use Racketmanager\Tests\Helpers\Creates_Test_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Tests\Helpers\Player_Test_Factory;
@@ -53,6 +54,7 @@ use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 
 class Competition_Shortcode_Adapter_Test extends TestCase {
     use Creates_Competition_Season_Service;
+    use Creates_Event_Query_Service;
     use Creates_Test_Container;
     use Manages_Wordpress_Globals;
 
@@ -320,11 +322,8 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
         $competition = $this->createStub( \Racketmanager\Domain\Competition\Competition::class );
         $competition->current_season = [ 'name' => '2026' ];
         $competition->method( 'get_id' )->willReturn( 5 );
-        $competition->method( 'get_teams' )->willReturn( [] );
-        $competition->method( 'get_matches' )->willReturn( [] );
 
         [ $low, $high, $stats ] = $this->build_stat_players( $competition, '2026', 'competition' );
-        $competition->method( 'get_players' )->willReturn( [ $low, $high ] );
 
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
@@ -573,10 +572,23 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
 
         $renderer          = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
         $template_renderer = new Shortcode_Template_Renderer( $renderer );
+        $club_service      = $this->createStub( Club_Service::class );
+        $player_service    = $this->createStub( Player_Service::class );
 
         $adapter = new Competition_Shortcode_Adapter(
             competition_service: $comp_service,
-            template_renderer: $template_renderer
+            club_service: $club_service,
+            team_service: $this->createStub( Team_Service::class ),
+            player_service: $player_service,
+            tournament_service: $this->createStub( Tournament_Service::class ),
+            finance_service: $this->createStub( Finance_Service::class ),
+            registration_service: $this->createStub( Registration_Service::class ),
+            competition_entry_service: $this->createStub( Competition_Entry_Service::class ),
+            template_renderer: $template_renderer,
+            club_entry_selection: new Club_Entry_Selection_Service( $club_service, $player_service ),
+            competition_shortcode_presenter: $this->competition_shortcode_presenter(),
+            tournament_presenter: new Tournament_Presenter(),
+            event_query_service: $this->event_query_service()
         );
 
         $output = $adapter->show_competition_entry( [] );

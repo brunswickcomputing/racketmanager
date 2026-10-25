@@ -47,6 +47,17 @@ namespace Racketmanager {
         function upcoming_matches( int $club_id = 0, array $args = array() ): void {}
     }
 
+    if ( ! function_exists( 'Racketmanager\show_score' ) ) {
+        function show_score( int $match_id, array $args = array() ): string {
+            $args['id'] = $match_id;
+            $shortcode  = '[score';
+            foreach ( $args as $key => $value ) {
+                $shortcode .= ' ' . $key . "='" . $value . "'";
+            }
+            return do_shortcode( $shortcode . ']' );
+        }
+    }
+
     if ( ! function_exists( 'Racketmanager\get_league_team' ) ) {
         function get_league_team( $id ) {
             return $GLOBALS['wp_stubs_league_teams'][ $id ] ?? null;
@@ -227,7 +238,7 @@ namespace Racketmanager {
 
     if ( ! function_exists( 'Racketmanager\is_lta_number_required' ) ) {
         function is_lta_number_required(): bool {
-            return $GLOBALS['wp_stubs_is_lta_number_required'] ?? false;
+            return (bool) ( $GLOBALS['wp_stubs_is_lta_number_required'] ?? false );
         }
     }
 
@@ -345,6 +356,11 @@ namespace {
 
     if ( ! function_exists( 'apply_filters' ) ) {
         function apply_filters( $hook_name, $value, ...$args ) {
+            if ( ! empty( $GLOBALS['wp_stubs_added_filters'][ $hook_name ] ) ) {
+                foreach ( $GLOBALS['wp_stubs_added_filters'][ $hook_name ] as $hook ) {
+                    $value = ( $hook['callback'] )( $value, ...$args );
+                }
+            }
             return $value;
         }
     }
@@ -579,14 +595,32 @@ namespace {
             if ( isset( $GLOBALS['wp_action_hooks'] ) ) {
                 $GLOBALS['wp_action_hooks'][$tag][] = $function_to_add;
             }
-            if ( isset( $GLOBALS['wp_stubs_added_actions'] ) ) {
-                $GLOBALS['wp_stubs_added_actions'][ $tag ][] = array(
-                    'callback'      => $function_to_add,
-                    'priority'      => $priority,
-                    'accepted_args' => $accepted_args,
-                );
+            if ( ! isset( $GLOBALS['wp_stubs_added_actions'] ) ) {
+                $GLOBALS['wp_stubs_added_actions'] = array();
             }
+            $GLOBALS['wp_stubs_added_actions'][ $tag ][] = array(
+                'callback'      => $function_to_add,
+                'priority'      => $priority,
+                'accepted_args' => $accepted_args,
+            );
             return true;
+        }
+    }
+
+    if ( ! function_exists( 'has_action' ) ) {
+        function has_action( $tag, $function_to_check = false ) {
+            if ( empty( $GLOBALS['wp_stubs_added_actions'][ $tag ] ) ) {
+                return false;
+            }
+            if ( false === $function_to_check ) {
+                return true;
+            }
+            foreach ( $GLOBALS['wp_stubs_added_actions'][ $tag ] as $entry ) {
+                if ( $entry['callback'] === $function_to_check ) {
+                    return $entry['priority'];
+                }
+            }
+            return false;
         }
     }
 
@@ -607,6 +641,12 @@ namespace {
         }
     }
 
+    if ( ! function_exists( 'add_rewrite_rule' ) ) {
+        function add_rewrite_rule( $regex, $query, $after = 'bottom' ) {
+            return true;
+        }
+    }
+
     if ( ! function_exists( 'absint' ) ) {
         function absint( $x ) {
             return abs( intval( $x ) );
@@ -615,7 +655,10 @@ namespace {
 
     if ( ! function_exists( 'wp_unslash' ) ) {
         function wp_unslash( $value ) {
-            return $value;
+            if ( is_array( $value ) ) {
+                return array_map( 'wp_unslash', $value );
+            }
+            return is_string( $value ) ? stripslashes( $value ) : $value;
         }
     }
     if ( ! function_exists( 'wp_strip_all_tags' ) ) {
@@ -881,6 +924,7 @@ namespace {
 
     if ( ! function_exists( 'paginate_links' ) ) {
         function paginate_links( $args = '' ) {
+            $GLOBALS['paginate_links_last_args'] = $args;
             return '';
         }
     }
@@ -1025,6 +1069,18 @@ namespace {
         }
     }
 
+    if ( ! function_exists( 'get_post_field' ) ) {
+        function get_post_field( string $field, $post = null, string $context = 'display' ): string {
+            if ( null === $post && isset( $GLOBALS['post'] ) && is_object( $GLOBALS['post'] ) ) {
+                return (string) ( $GLOBALS['post']->$field ?? '' );
+            }
+            if ( is_object( $post ) ) {
+                return (string) ( $post->$field ?? '' );
+            }
+            return '';
+        }
+    }
+
     if ( ! function_exists( 'is_category' ) ) {
         function is_category( $category = '' ): bool {
             $current = $GLOBALS['wp_stubs_is_category'] ?? false;
@@ -1045,6 +1101,13 @@ namespace {
                 $group = $group ?: 'default';
                 unset( $GLOBALS['wp_stubs_cache'][ $group ][ (string) $id ] );
             }
+            return true;
+        }
+    }
+
+    if ( ! function_exists( 'wp_cache_flush' ) ) {
+        function wp_cache_flush(): bool {
+            $GLOBALS['wp_stubs_cache'] = [];
             return true;
         }
     }
@@ -1243,6 +1306,9 @@ namespace {
 
     if ( ! function_exists( '__' ) ) {
         function __( string $text, string $domain = '' ): string {
+            if ( isset( $GLOBALS['wp_stubs_translate_callback'] ) ) {
+                return $GLOBALS['wp_stubs_translate_callback']( $text, $domain );
+            }
             return $text;
         }
     }
@@ -1557,6 +1623,9 @@ namespace {
 
     if ( ! function_exists( 'esc_html' ) ) {
         function esc_html( $text ) {
+            if ( isset( $GLOBALS['wp_stubs_esc_html_callback'] ) && is_callable( $GLOBALS['wp_stubs_esc_html_callback'] ) ) {
+                return ( $GLOBALS['wp_stubs_esc_html_callback'] )( $text );
+            }
             return $text;
         }
     }
@@ -1773,6 +1842,138 @@ namespace Racketmanager {
         }
     }
 
+    if ( ! function_exists( 'Racketmanager\get_competition' ) ) {
+        function get_competition( $competition = null ) {
+            if ( $competition instanceof \Racketmanager\Domain\Competition\Competition ) {
+                return $competition;
+            }
+            if ( null === $competition ) {
+                return $GLOBALS['competition'] ?? null;
+            }
+            if ( ( is_int( $competition ) || is_string( $competition ) ) && isset( $GLOBALS['wp_stubs_competitions'][ $competition ] ) ) {
+                return $GLOBALS['wp_stubs_competitions'][ $competition ];
+            }
+            global $racketmanager;
+            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'competition_service' ) ) {
+                try {
+                    return $racketmanager->container->get( 'competition_service' )->get_by_id( (int) $competition );
+                } catch ( \Exception $e ) {
+                    return null;
+                }
+            }
+            return null;
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\get_event_repository_for_helpers' ) ) {
+        function get_event_repository_for_helpers(): \Racketmanager\Repositories\Interfaces\Event_Repository_Interface {
+            global $racketmanager;
+            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'event_repository' ) ) {
+                return $racketmanager->container->get( 'event_repository' );
+            }
+            return new \Racketmanager\Repositories\Event_Repository();
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\get_league_repository_for_helpers' ) ) {
+        function get_league_repository_for_helpers(): \Racketmanager\Repositories\Interfaces\League_Repository_Interface {
+            global $racketmanager;
+            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'league_repository' ) ) {
+                return $racketmanager->container->get( 'league_repository' );
+            }
+            return new \Racketmanager\Repositories\League_Repository(
+                null,
+                fn() => get_event_repository_for_helpers()
+            );
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\get_event_query_service' ) ) {
+        function get_event_query_service(): \Racketmanager\Services\Competition\Event_Query_Service {
+            global $racketmanager;
+            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'event_query_service' ) ) {
+                return $racketmanager->container->get( 'event_query_service' );
+            }
+            return new \Racketmanager\Services\Competition\Event_Query_Service(
+                get_event_repository_for_helpers(),
+                fn() => get_fixture_repository_for_helpers(),
+                fn() => function_exists( 'Racketmanager\get_rubber_repository_for_helpers' ) ? get_rubber_repository_for_helpers() : null,
+                fn() => get_league_repository_for_helpers(),
+                fn() => function_exists( 'Racketmanager\get_team_repository_for_helpers' ) ? get_team_repository_for_helpers() : null,
+                fn() => isset( $racketmanager->container ) && $racketmanager->container->has( 'club_repository' ) ? $racketmanager->container->get( 'club_repository' ) : new \Racketmanager\Repositories\Club_Repository(),
+                fn() => isset( $racketmanager->container ) && $racketmanager->container->has( 'player_repository' ) ? $racketmanager->container->get( 'player_repository' ) : new \Racketmanager\Repositories\Player_Repository()
+            );
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\get_league_query_service' ) ) {
+        function get_league_query_service(): \Racketmanager\Services\Competition\League_Query_Service {
+            global $racketmanager;
+            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'league_query_service' ) ) {
+                return $racketmanager->container->get( 'league_query_service' );
+            }
+            return new \Racketmanager\Services\Competition\League_Query_Service(
+                get_league_repository_for_helpers(),
+                fn() => get_fixture_repository_for_helpers(),
+                fn() => function_exists( 'Racketmanager\get_rubber_repository_for_helpers' ) ? get_rubber_repository_for_helpers() : null,
+                fn() => function_exists( 'Racketmanager\get_team_repository_for_helpers' ) ? get_team_repository_for_helpers() : null,
+                fn() => function_exists( 'Racketmanager\get_league_team_repository_for_helpers' ) ? get_league_team_repository_for_helpers() : null,
+                fn() => isset( $racketmanager->container ) && $racketmanager->container->has( 'club_repository' ) ? $racketmanager->container->get( 'club_repository' ) : new \Racketmanager\Repositories\Club_Repository(),
+                fn() => isset( $racketmanager->container ) && $racketmanager->container->has( 'player_repository' ) ? $racketmanager->container->get( 'player_repository' ) : new \Racketmanager\Repositories\Player_Repository()
+            );
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\get_fixture_repository_for_helpers' ) ) {
+        function get_fixture_repository_for_helpers(): \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface {
+            global $racketmanager;
+            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' ) ) {
+                return $racketmanager->container->get( 'fixture_repository' );
+            }
+            return new \Racketmanager\Repositories\Fixture_Repository();
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\get_competition_repository_for_helpers' ) ) {
+        function get_competition_repository_for_helpers(): \Racketmanager\Repositories\Interfaces\Competition_Repository_Interface {
+            global $racketmanager;
+            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'competition_repository' ) ) {
+                return $racketmanager->container->get( 'competition_repository' );
+            }
+            return new \Racketmanager\Repositories\Competition_Repository();
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\get_league_team_repository_for_helpers' ) ) {
+        function get_league_team_repository_for_helpers(): \Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface {
+            global $racketmanager;
+            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'league_team_repository' ) ) {
+                return $racketmanager->container->get( 'league_team_repository' );
+            }
+            return new \Racketmanager\Repositories\League_Team_Repository();
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\get_team_repository_for_helpers' ) ) {
+        function get_team_repository_for_helpers(): \Racketmanager\Repositories\Interfaces\Team_Repository_Interface {
+            global $racketmanager;
+            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'team_repository' ) ) {
+                return $racketmanager->container->get( 'team_repository' );
+            }
+            return new \Racketmanager\Repositories\Team_Repository();
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\get_rubber_repository_for_helpers' ) ) {
+        function get_rubber_repository_for_helpers(): \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface {
+            global $racketmanager;
+            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'rubber_repository' ) ) {
+                return $racketmanager->container->get( 'rubber_repository' );
+            }
+            return new \Racketmanager\Repositories\Rubber_Repository();
+        }
+    }
+
     if ( ! function_exists( 'Racketmanager\get_league' ) ) {
         function get_league( $league = null ) {
             if ( $league instanceof \Racketmanager\Domain\Competition\League ) {
@@ -1834,7 +2035,10 @@ namespace Racketmanager {
     }
 
     if ( ! function_exists( 'Racketmanager\get_club_role' ) ) {
-        function get_club_role( $id ) {
+        function get_club_role( $id = null ) {
+            if ( empty( $id ) && isset( $GLOBALS['club_role'] ) ) {
+                return $GLOBALS['club_role'];
+            }
             if ( isset( $GLOBALS['wp_stubs_club_roles'][ $id ] ) ) {
                 return $GLOBALS['wp_stubs_club_roles'][ $id ];
             }
@@ -1955,9 +2159,7 @@ namespace Racketmanager {
             return [ [ 'name' => self::DEFAULT_SEASON ] ];
         }
 
-        public function set_num_leagues( bool $total = false ): void {}
-
-        public function set_season( ?string $season = null, bool $force_overwrite = false ): void {}
+        public function set_season( ?string $season = null, bool $force_overwrite = false, bool $strict = false ): void {}
     }
 
     if ( ! function_exists( 'Racketmanager\get_event' ) ) {
@@ -2001,6 +2203,12 @@ namespace Racketmanager {
     if ( ! function_exists( 'Racketmanager\match_header' ) ) {
         function match_header( int $match_id, array $args = array() ): string {
             return "match header content";
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\match_detail' ) ) {
+        function match_detail( int $match_id, array $args = array() ): string {
+            return "match detail content";
         }
     }
 }
@@ -2058,6 +2266,11 @@ namespace {
             return $login_url;
         }
     }
+    if ( ! function_exists( 'wp_get_current_url' ) ) {
+        function wp_get_current_url(): string {
+            return 'https://example.com/current-url';
+        }
+    }
     if ( ! function_exists( 'wp_registration_url' ) ) {
         function wp_registration_url() {
             return 'https://example.com/wp-login.php?action=register';
@@ -2080,6 +2293,11 @@ namespace {
     if ( ! function_exists( 'wp_kses' ) ) {
         function wp_kses( $string, $allowed_html, $allowed_protocols = array() ) {
             return (string) $string;
+        }
+    }
+    if ( ! function_exists( 'wp_kses_post' ) ) {
+        function wp_kses_post( $data ) {
+            return wp_kses( $data, 'post' );
         }
     }
     if ( ! function_exists( 'get_filesystem_method' ) ) {
@@ -2136,6 +2354,28 @@ namespace {
         function wp_get_referer() {
             return $GLOBALS['wp_stubs_wp_get_referer'] ?? false;
         }
+    }
+    if ( ! function_exists( '_deprecated_file' ) ) {
+        function _deprecated_file( $file, $version, $replacement = null, $message = '' ) {
+            $GLOBALS['wp_stubs_deprecated_files'][] = array(
+                'file'        => $file,
+                'version'     => $version,
+                'replacement' => $replacement,
+                'message'     => $message,
+            );
+        }
+    }
+    if ( ! defined( 'ARRAY_A' ) ) {
+        define( 'ARRAY_A', 'ARRAY_A' );
+    }
+    if ( ! defined( 'ARRAY_N' ) ) {
+        define( 'ARRAY_N', 'ARRAY_N' );
+    }
+    if ( ! defined( 'OBJECT' ) ) {
+        define( 'OBJECT', 'OBJECT' );
+    }
+    if ( ! defined( 'OBJECT_K' ) ) {
+        define( 'OBJECT_K', 'OBJECT_K' );
     }
     if ( ! defined( 'RACKETMANAGER_VERSION' ) ) {
         define( 'RACKETMANAGER_VERSION', '1.0.0' );

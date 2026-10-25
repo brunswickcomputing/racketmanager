@@ -27,6 +27,7 @@ use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\League_Standings_View_Model;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
@@ -41,10 +42,13 @@ use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
 final class Public_Links_Modernization_Test extends TestCase {
+    use Creates_Event_Query_Service;
+    use \Racketmanager\Tests\Helpers\Creates_League_Query_Service;
     use Manages_Wordpress_Globals;
 
     private Php_View_Renderer $view_renderer;
@@ -405,7 +409,8 @@ final class Public_Links_Modernization_Test extends TestCase {
             competition_entry_service: $this->createStub( Competition_Entry_Service::class ),
             finance_service: $this->createStub( Finance_Service::class ),
             competition_presenter: $competition_presenter,
-            tournament_presenter: $tournament_presenter
+            tournament_presenter: $tournament_presenter,
+            event_query_service: $this->event_query_service()
         );
 
         $query = new Get_Competition_Entry_Query(
@@ -796,10 +801,7 @@ final class Public_Links_Modernization_Test extends TestCase {
             public function get_id(): int {
                 return 50;
             }
-            public function get_players( array $args = [] ): array {
-                return $this->players ?? [];
-            }
-            public function set_season( false|string $season = false, bool $force_overwrite = false ): void {
+            public function set_season( false|string $season = false, bool $force_overwrite = false, ?\Racketmanager\Repositories\Interfaces\League_Repository_Interface $league_repository = null, ?string $final = null ): void {
                 $this->current_season = [ 'name' => $season ?: '2026' ];
             }
         };
@@ -825,6 +827,9 @@ final class Public_Links_Modernization_Test extends TestCase {
         $stats_service->method( 'get_stats' )->willReturn( [] );
         $stats_service->method( 'populate_players_stats' )->willReturnCallback( fn( $players ) => $players );
 
+        $league_query = $this->createMock( League_Query_Service::class );
+        $league_query->expects( $this->once() )->method( 'get_players' )->with( $league )->willReturn( [ $player1, $player2 ] );
+
         $handler = new Get_League_Players_Handler(
             $league_service,
             $league_repo,
@@ -832,7 +837,8 @@ final class Public_Links_Modernization_Test extends TestCase {
             $this->template_renderer,
             $query_service,
             $stats_service,
-            $player_presenter
+            $player_presenter,
+            $league_query
         );
         $vm = $handler->handle( new Get_League_Players_Query( league_id: 50 ) );
 
@@ -901,7 +907,8 @@ final class Public_Links_Modernization_Test extends TestCase {
             $this->template_renderer,
             $query_service,
             $stats_service,
-            $player_presenter
+            $player_presenter,
+            $this->league_query_service( $league_repo )
         );
         $vm      = $handler->handle( new Get_League_Players_Query( league_id: 50, player_id: '101' ) );
 

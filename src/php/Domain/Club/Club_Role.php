@@ -9,7 +9,6 @@
 namespace Racketmanager\Domain\Club;
 
 use Racketmanager\Util\Util_Lookup;
-use function Racketmanager\get_user;
 
 /**
  * Class to implement the Club_Role object
@@ -66,12 +65,6 @@ class Club_Role {
         if ( ! is_null( $club_role ) ) {
             foreach ( get_object_vars( $club_role ) as $key => $value ) {
                 $this->$key = $value;
-            }
-            if ( ! empty( $this->user_id ) ) {
-                $user = get_user( $this->user_id );
-                if ( $user ) {
-                    $this->user = $user;
-                }
             }
             if ( !empty( $this->role_id ) ) {
                 $this->role = Util_Lookup::get_club_role( $this->role_id );

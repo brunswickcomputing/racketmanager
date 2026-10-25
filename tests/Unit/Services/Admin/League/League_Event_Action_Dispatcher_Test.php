@@ -132,4 +132,36 @@ final class League_Event_Action_Dispatcher_Test extends TestCase {
         self::assertNull( $result->message );
         self::assertNull( $result->message_type );
     }
+
+    public function test_delete_leagues_delegates_to_league_service(): void {
+        $league = $this->createMock( \Racketmanager\Domain\Competition\League::class );
+        $league->title = 'Division 1';
+        $GLOBALS['wp_stubs_leagues'][51] = $league;
+        $service = $this->createMock( League_Service::class );
+        $service->expects( self::once() )->method( 'delete_league' )->with( $league );
+
+        $result = ( new League_Event_Action_Dispatcher( $service, $this->createStub( Action_Guard_Interface::class ) ) )->handle(
+            array(), array( 'doActionLeague' => '1', 'action' => 'delete', 'league' => array( 51 ) )
+        );
+
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+        self::assertSame( 'Division 1 deleted', $result->message );
+        unset( $GLOBALS['wp_stubs_leagues'][51] );
+    }
+
+    public function test_delete_leagues_maps_service_failure_to_error(): void {
+        $league = $this->createMock( \Racketmanager\Domain\Competition\League::class );
+        $GLOBALS['wp_stubs_leagues'][52] = $league;
+        $service = $this->createMock( League_Service::class );
+        $service->expects( self::once() )->method( 'delete_league' )->with( $league )
+            ->willThrowException( new \RuntimeException( 'Fixture delete failed' ) );
+
+        $result = ( new League_Event_Action_Dispatcher( $service, $this->createStub( Action_Guard_Interface::class ) ) )->handle(
+            array(), array( 'doActionLeague' => '1', 'action' => 'delete', 'league' => array( 52 ) )
+        );
+
+        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
+        self::assertSame( 'Fixture delete failed', $result->message );
+        unset( $GLOBALS['wp_stubs_leagues'][52] );
+    }
 }

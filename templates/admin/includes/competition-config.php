@@ -16,7 +16,9 @@ $rules_options = $vm->rules_options;
 $clubs         = $vm->clubs;
 $events        = $vm->events;
 $tab           = $vm->tab;
-$mode          = $vm->competition->config->mode ?? '';
+$config        = $vm->config;
+$title         = $vm->title;
+$mode          = $vm->config->mode ?? '';
 
 $validator           = new \stdClass();
 $validator->err_flds = array();
@@ -51,7 +53,7 @@ if ( empty( $tournament ) ) {
     </div>
     <div class="row justify-content-between">
         <div class="col-auto">
-            <h1><?php echo esc_html( $vm->competition->name ); ?></h1>
+            <h1><?php echo esc_html( $title ); ?></h1>
         </div>
         <div class="">
             <form action="" method="post" class="">

@@ -282,7 +282,7 @@ class Player_Repository implements Player_Repository_Interface {
                 $params[]        = (string) $name;
             } else {
                 $where_clauses[] = 'u.display_name LIKE %s';
-                $params[]        = '%' . $this->wpdb->esc_like( (string) $name ) . '%';
+                $params[]        = '%' . $this->esc_like( (string) $name ) . '%';
 
                 $where_clauses[] = "u.ID IN (SELECT user_id FROM $usermeta_table WHERE meta_key = %s AND meta_value IN ('M', 'F'))";
                 $params[]        = self::META_KEY_GENDER;
@@ -303,9 +303,10 @@ class Player_Repository implements Player_Repository_Interface {
                 MAX(CASE WHEN m.meta_key = 'first_name' THEN m.meta_value END) AS firstName,
                 MAX(CASE WHEN m.meta_key = 'last_name' THEN m.meta_value END) AS surname,
                 MAX(CASE WHEN m.meta_key = '" . self::META_KEY_BTM . "' THEN m.meta_value END) AS btm,
-                MAX(CASE WHEN m.meta_key = '" . self::META_KEY_GENDER . "' THEN m.meta_value END) AS gender
+                MAX(CASE WHEN m.meta_key = '" . self::META_KEY_GENDER . "' THEN m.meta_value END) AS gender,
+                MAX(CASE WHEN m.meta_key = 'contactno' THEN m.meta_value END) AS contactno
             FROM $user_table u
-            LEFT JOIN $usermeta_table m ON u.ID = m.user_id AND m.meta_key IN ('first_name', 'last_name', '" . self::META_KEY_BTM . "', '" . self::META_KEY_GENDER . "')
+            LEFT JOIN $usermeta_table m ON u.ID = m.user_id AND m.meta_key IN ('first_name', 'last_name', '" . self::META_KEY_BTM . "', '" . self::META_KEY_GENDER . "', 'contactno')
             WHERE $where_sql
             GROUP BY u.ID, u.display_name, u.user_nicename, u.user_email
             ORDER BY $order_by
@@ -334,6 +335,33 @@ class Player_Repository implements Player_Repository_Interface {
      */
     public function get_active_players(): array {
         $sql     = "SELECT DISTINCT `player_id` FROM {$this->wpdb->prefix}racketmanager_rubber_players UNION SELECT DISTINCT `player_id` FROM {$this->wpdb->prefix}racketmanager_tournament_entries ORDER BY `player_id`";
+        $players = wp_cache_get( md5( $sql ), 'players' );
+        if ( ! $players ) {
+            $players = $this->wpdb->get_results( $sql // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+            );
+            if ( $players ) {
+                $i = 0;
+                foreach ( $players as $player ) {
+                    $player        = $this->find( $player->player_id );
+                    $players[ $i ] = $player;
+                    ++ $i;
+                }
+            }
+            wp_cache_set( md5( $sql ), $players, 'players' );
+        }
+
+        return $players;
+    }
+
+    /**
+     * Get players who have played in a rubber (legacy "active" player list).
+     *
+     * Unlike get_active_players() this excludes players who only have tournament entries.
+     *
+     * @return array
+     */
+    public function get_active_rubber_players(): array {
+        $sql     = "SELECT DISTINCT `player_id` FROM {$this->wpdb->prefix}racketmanager_rubber_players ORDER BY `player_id`";
         $players = wp_cache_get( md5( $sql ), 'players' );
         if ( ! $players ) {
             $players = $this->wpdb->get_results( $sql // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
@@ -403,6 +431,10 @@ class Player_Repository implements Player_Repository_Interface {
         if ( ! empty( $locked ) ) {
             $player->data->locked_date = get_user_meta( $player->data->ID, 'locked_date', true );
             $player->data->locked_user = get_user_meta( $player->data->ID, 'locked_user', true );
+            if ( ! empty( $player->data->locked_user ) ) {
+                $locked_user_data               = get_userdata( (int) $player->data->locked_user );
+                $player->data->locked_user_name = ( $locked_user_data && isset( $locked_user_data->display_name ) ) ? $locked_user_data->display_name : '';
+            }
         }
         $player->data->system_record = get_user_meta( $player->data->ID, 'racketmanager_type', true );
         $match_types                 = Util_Lookup::get_match_types();
@@ -728,7 +760,132 @@ class Player_Repository implements Player_Repository_Interface {
      * @return object|null
      */
     public function find_by_id( int|string|null $id ): ?object {
-        return null;
+        if ( empty( $id ) ) {
+            return null;
+        }
+        try {
+            return $this->find( (int) $id );
+        } catch ( Player_Not_Found_Exception ) {
+            return null;
+        }
+    }
+
+    /**
+     * Find registered player autocomplete projections.
+     *
+     * @param string $term Search query (name or BTM).
+     * @param string $type Lookup type ('name' or 'btm').
+     * @param string|null $gender Optional gender filter ('M' or 'F').
+     * @param int|null $club_id Optional club ID filter.
+     * @param int $limit Max results to return.
+     *
+     * @return list<array{id: int, playerId: int, name: string, user_email: string|null, club_id: int, club: string|null, btm: string|null, contactno: string}>
+     */
+    public function find_registered_player_autocomplete(
+        string $term,
+        string $type = 'name',
+        ?string $gender = null,
+        ?int $club_id = null,
+        int $limit = 100
+    ): array {
+        $term = trim( $term );
+        if ( strlen( $term ) < 2 ) {
+            return [];
+        }
+
+        $limit = max( 1, min( $limit, 100 ) );
+
+        $users_table        = $this->wpdb->users;
+        $usermeta_table     = $this->wpdb->usermeta;
+        $club_players_table = $this->wpdb->prefix . 'racketmanager_club_players';
+        $clubs_table        = $this->wpdb->prefix . 'racketmanager_clubs';
+
+        $where_clauses = [
+            'r.removed_date IS NULL',
+            'r.system_record IS NULL',
+        ];
+        $params = [];
+
+        $gender_join = '';
+        if ( ! empty( $gender ) ) {
+            $gender_join = "INNER JOIN $usermeta_table um_gender ON u.ID = um_gender.user_id AND um_gender.meta_key = %s AND um_gender.meta_value = %s";
+            $params[]    = self::META_KEY_GENDER;
+            $params[]    = $gender;
+        }
+
+        if ( 'btm' === $type ) {
+            $where_clauses[] = 'um_btm.meta_value = %s';
+            $params[]        = $term;
+        } else {
+            $where_clauses[] = 'u.display_name LIKE %s';
+            $params[]        = '%' . $this->esc_like( $term ) . '%';
+        }
+
+        if ( ! empty( $club_id ) ) {
+            $where_clauses[] = 'r.club_id = %d';
+            $params[]        = (int) $club_id;
+        }
+
+        $where_sql = implode( ' AND ', $where_clauses );
+
+        $btm_join_type = ( 'btm' === $type ) ? 'INNER JOIN' : 'LEFT JOIN';
+
+        $sql = "
+            SELECT
+                r.id AS id,
+                u.ID AS playerId,
+                u.display_name AS name,
+                u.user_email,
+                c.id AS club_id,
+                COALESCE(NULLIF(c.shortcode, ''), c.name) AS club,
+                um_btm.meta_value AS btm,
+                COALESCE(um_phone.meta_value, '') AS contactno
+            FROM $users_table u
+            INNER JOIN $club_players_table r ON u.ID = r.player_id
+            INNER JOIN $clubs_table c ON r.club_id = c.id
+            $gender_join
+            $btm_join_type $usermeta_table um_btm ON u.ID = um_btm.user_id AND um_btm.meta_key = '" . self::META_KEY_BTM . "'
+            LEFT JOIN $usermeta_table um_phone ON u.ID = um_phone.user_id AND um_phone.meta_key = 'contactno'
+            WHERE $where_sql
+            ORDER BY u.display_name ASC, c.shortcode ASC
+            LIMIT %d
+        ";
+
+        $params[] = $limit;
+
+        $prepared = $this->wpdb->prepare( $sql, $params );
+        $results  = $this->wpdb->get_results( $prepared, \ARRAY_A );
+
+        if ( empty( $results ) || ! is_array( $results ) ) {
+            return [];
+        }
+
+        return array_map(
+            static fn( array $row ): array => [
+                'id'         => (int) $row['id'],
+                'playerId'   => (int) $row['playerId'],
+                'name'       => (string) $row['name'],
+                'user_email' => ( $row['user_email'] !== '' && $row['user_email'] !== null ) ? (string) $row['user_email'] : null,
+                'club_id'    => (int) $row['club_id'],
+                'club'       => ( $row['club'] !== '' && $row['club'] !== null ) ? (string) $row['club'] : null,
+                'btm'        => ( $row['btm'] !== '' && $row['btm'] !== null ) ? (string) $row['btm'] : null,
+                'contactno'  => (string) ( $row['contactno'] ?? '' ),
+            ],
+            $results
+        );
+    }
+
+    /**
+     * Escape LIKE wildcards safely.
+     *
+     * @param string $text
+     *
+     * @return string
+     */
+    private function esc_like( string $text ): string {
+        return method_exists( $this->wpdb, 'esc_like' )
+            ? $this->wpdb->esc_like( $text )
+            : addcslashes( $text, '_%\\' );
     }
 
     /**

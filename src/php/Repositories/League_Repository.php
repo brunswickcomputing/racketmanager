@@ -10,17 +10,13 @@
 namespace Racketmanager\Repositories;
 
 use Closure;
+use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Factory;
-use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Domain\Tournament\Championship_Settings;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
-use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
-use Racketmanager\Services\Competition\Competition_Notification_Service;
-use Racketmanager\Services\Competition\League_Schedule_Service;
-use Racketmanager\Services\Fixture\Fixture_Result_Manager;
-use Racketmanager\Services\Fixture_Service;
-use Racketmanager\Services\Notification\Notification_Service;
-use Racketmanager\Services\Standings\Standings_Service;
+use Racketmanager\Services\Championship_Factory;
 use Racketmanager\Util\Util;
 
 /**
@@ -29,39 +25,26 @@ use Racketmanager\Util\Util;
 class League_Repository implements League_Repository_Interface {
     private ?object $wpdb = null;
     private ?string $table_name = null;
-    private Fixture_Repository_Interface|Closure|null $fixture_repository = null;
-    private Standings_Service|Closure|null $standings_service = null;
-    private League_Schedule_Service|Closure|null $league_schedule_service = null;
-    private Competition_Notification_Service|Closure|null $competition_notification_service = null;
-    private Fixture_Service|Closure|null $fixture_service = null;
-    private Fixture_Result_Manager|Closure|null $fixture_result_manager = null;
-    private Notification_Service|Closure|null $notification_service = null;
-    private Rubber_Repository_Interface|Closure|null $rubber_repository = null;
+    /** @var Event_Repository_Interface|Closure|null */
+    private mixed $event_repository = null;
 
     public function __construct(
         ?object $db = null,
-        Fixture_Repository_Interface|Closure|null $fixture_repository = null,
-        Standings_Service|Closure|null $standings_service = null,
-        League_Schedule_Service|Closure|null $league_schedule_service = null,
-        Competition_Notification_Service|Closure|null $competition_notification_service = null,
-        Fixture_Service|Closure|null $fixture_service = null,
-        Fixture_Result_Manager|Closure|null $fixture_result_manager = null,
-        Notification_Service|Closure|null $notification_service = null,
-        Rubber_Repository_Interface|Closure|null $rubber_repository = null
+        Event_Repository_Interface|Closure|null $event_repository = null
     ) {
         $this->wpdb = $db ?? ( $GLOBALS['wpdb'] ?? null );
         if ( $this->wpdb ) {
             $prefix = isset( $this->wpdb->prefix ) ? (string) $this->wpdb->prefix : 'wp_';
             $this->table_name = $prefix . 'racketmanager_leagues';
         }
-        $this->fixture_repository = $fixture_repository;
-        $this->standings_service = $standings_service;
-        $this->league_schedule_service = $league_schedule_service;
-        $this->competition_notification_service = $competition_notification_service;
-        $this->fixture_service = $fixture_service;
-        $this->fixture_result_manager = $fixture_result_manager;
-        $this->notification_service = $notification_service;
-        $this->rubber_repository = $rubber_repository;
+        $this->event_repository = $event_repository;
+    }
+
+    private function get_event_repository(): ?Event_Repository_Interface {
+        if ( $this->event_repository instanceof Closure ) {
+            $this->event_repository = ( $this->event_repository )();
+        }
+        return $this->event_repository instanceof Event_Repository_Interface ? $this->event_repository : null;
     }
 
     public function save( object $entity ): bool|int {
@@ -88,11 +71,14 @@ class League_Repository implements League_Repository_Interface {
             );
             if ( $inserted ) {
                 $entity->set_id( $this->wpdb->insert_id );
+                if ( $entity->get_event_id() ) {
+                    $this->invalidate_event_leagues_cache( (int) $entity->get_event_id() );
+                }
                 return $this->wpdb->insert_id;
             }
             return false;
         } else {
-            return $this->wpdb->update(
+            $updated = $this->wpdb->update(
                 $this->table_name,
                 $data, // Data to update
                 array(
@@ -103,6 +89,16 @@ class League_Repository implements League_Repository_Interface {
                     '%d'
                 ) // Where format
             ) !== false;
+            if ( $updated ) {
+                wp_cache_delete( $entity->get_id(), 'leagues' );
+                if ( $entity->get_name() ) {
+                    wp_cache_delete( $entity->get_name(), 'leagues' );
+                }
+                if ( $entity->get_event_id() ) {
+                    $this->invalidate_event_leagues_cache( (int) $entity->get_event_id() );
+                }
+            }
+            return $updated;
         }
     }
 
@@ -130,8 +126,6 @@ class League_Repository implements League_Repository_Interface {
             }
 
             wp_cache_set( $league->id, $league, 'leagues' );
-        } elseif ( $league instanceof League ) {
-            $this->wire_league_collaborators( $league );
         }
 
         return $league;
@@ -162,115 +156,40 @@ class League_Repository implements League_Repository_Interface {
 
             wp_cache_set( $name, $league, 'leagues' );
             wp_cache_set( $league->id, $league, 'leagues' );
-        } elseif ( $league instanceof League ) {
-            $this->wire_league_collaborators( $league );
         }
 
         return $league;
     }
 
-    public function wire_league_collaborators( League $league ): void {
-        $league->set_league_repository( $this );
-
-        $rubber_repo = $this->resolve_rubber_repository();
-        if ( $rubber_repo ) {
-            $league->set_rubber_repository( $rubber_repo );
+    private function hydrate_league( object $row, ?Event $event = null ): ?League {
+        if ( null === $event && ! empty( $row->event_id ) ) {
+            $event_repo = $this->get_event_repository();
+            if ( $event_repo ) {
+                $event = $event_repo->find_by_id( (int) $row->event_id );
+            }
         }
-
-        $fixture_repo = $this->resolve_fixture_repository();
-        if ( $fixture_repo ) {
-            $league->set_fixture_repository( $fixture_repo );
-        }
-        $standings_svc = $this->resolve_standings_service();
-        if ( $standings_svc ) {
-            $league->set_standings_service( $standings_svc );
-        }
-        $schedule_svc = $this->resolve_league_schedule_service();
-        if ( $schedule_svc ) {
-            $league->set_league_schedule_service( $schedule_svc );
-        }
-        $notification_svc = $this->resolve_competition_notification_service();
-        if ( $notification_svc ) {
-            $league->set_competition_notification_service( $notification_svc );
-        }
-        $fixture_svc = $this->resolve_fixture_service();
-        if ( $fixture_svc ) {
-            $league->set_fixture_service( $fixture_svc );
-        }
-        $result_mgr = $this->resolve_fixture_result_manager();
-        if ( $result_mgr ) {
-            $league->set_fixture_result_manager( $result_mgr );
-        }
-        $app_notify_svc = $this->resolve_notification_service();
-        if ( $app_notify_svc ) {
-            $league->set_notification_service( $app_notify_svc );
-        }
-    }
-
-    private function hydrate_league( object $row ): ?League {
-        $league = League_Factory::from_object(
-            $row,
-            null,
-            $this,
-            $this->resolve_fixture_repository(),
-            $this->resolve_standings_service(),
-            $this->resolve_league_schedule_service(),
-            $this->resolve_competition_notification_service(),
-            $this->resolve_fixture_service(),
-            $this->resolve_fixture_result_manager(),
-            $this->resolve_notification_service()
-        );
+        $league = League_Factory::from_object( $row, $event );
         if ( $league ) {
-            $league->set_rubber_repository( $this->resolve_rubber_repository() );
+            $league->set_season( false, false );
+            $league->num_teams_total = (int) $this->query_league_teams(
+                (int) $league->id,
+                array(
+                    'count'            => true,
+                    'season'           => $league->current_season['name'] ?? '',
+                    'reset_query_args' => true,
+                    'club'             => false,
+                ),
+                true
+            );
+
+            if ( 'championship' === ( $league->mode ?? '' ) ) {
+                $settings_data        = isset( $league->settings ) ? (array) $league->settings : array();
+                $settings             = Championship_Settings::from_array( $settings_data );
+                $factory              = new Championship_Factory( $this );
+                $league->championship = $factory->create( $league, $settings, null );
+            }
         }
         return $league;
-    }
-
-    private function resolve_collaborator( mixed &$collaborator ): mixed {
-        if ( $collaborator instanceof Closure ) {
-            $collaborator = $collaborator();
-        }
-        return $collaborator;
-    }
-
-    private function resolve_fixture_repository(): ?Fixture_Repository_Interface {
-        $resolved = $this->resolve_collaborator( $this->fixture_repository );
-        return $resolved instanceof Fixture_Repository_Interface ? $resolved : null;
-    }
-
-    private function resolve_rubber_repository(): ?Rubber_Repository_Interface {
-        $resolved = $this->resolve_collaborator( $this->rubber_repository );
-        return $resolved instanceof Rubber_Repository_Interface ? $resolved : null;
-    }
-
-    private function resolve_standings_service(): ?Standings_Service {
-        $resolved = $this->resolve_collaborator( $this->standings_service );
-        return $resolved instanceof Standings_Service ? $resolved : null;
-    }
-
-    private function resolve_league_schedule_service(): ?League_Schedule_Service {
-        $resolved = $this->resolve_collaborator( $this->league_schedule_service );
-        return $resolved instanceof League_Schedule_Service ? $resolved : null;
-    }
-
-    private function resolve_competition_notification_service(): ?Competition_Notification_Service {
-        $resolved = $this->resolve_collaborator( $this->competition_notification_service );
-        return $resolved instanceof Competition_Notification_Service ? $resolved : null;
-    }
-
-    private function resolve_fixture_service(): ?Fixture_Service {
-        $resolved = $this->resolve_collaborator( $this->fixture_service );
-        return $resolved instanceof Fixture_Service ? $resolved : null;
-    }
-
-    private function resolve_fixture_result_manager(): ?Fixture_Result_Manager {
-        $resolved = $this->resolve_collaborator( $this->fixture_result_manager );
-        return $resolved instanceof Fixture_Result_Manager ? $resolved : null;
-    }
-
-    private function resolve_notification_service(): ?Notification_Service {
-        $resolved = $this->resolve_collaborator( $this->notification_service );
-        return $resolved instanceof Notification_Service ? $resolved : null;
     }
 
     public function find_next_sequence_number( string $event_name ): int {
@@ -287,6 +206,21 @@ class League_Repository implements League_Repository_Interface {
         return $max_sequence + 1;
     }
 
+    private function invalidate_event_leagues_cache( ?int $event_id ): void {
+        if ( empty( $event_id ) ) {
+            return;
+        }
+        $version = (int) wp_cache_get( 'ver_event_leagues_' . $event_id, 'leagues' );
+        wp_cache_set( 'ver_event_leagues_' . $event_id, $version + 1, 'leagues' );
+    }
+
+    private function get_event_leagues_version( ?int $event_id ): int {
+        if ( empty( $event_id ) ) {
+            return 0;
+        }
+        return (int) wp_cache_get( 'ver_event_leagues_' . $event_id, 'leagues' );
+    }
+
     /**
      * Get leagues for an event
      *
@@ -296,9 +230,13 @@ class League_Repository implements League_Repository_Interface {
      * @return array
      */
     public function get_by_event_id( ?int $event_id, ?int $season = null ): array {
-        $cache_key = $event_id . '_' . $season;
-        $leagues = wp_cache_get( md5( $cache_key ), 'leagues' );
-        if ( ! $leagues ) {
+        if ( empty( $event_id ) ) {
+            return array();
+        }
+        $version   = $this->get_event_leagues_version( $event_id );
+        $cache_key = 'event_leagues_' . $event_id . '_' . ( $season ?? 'all' ) . '_v' . $version;
+        $leagues   = wp_cache_get( md5( $cache_key ), 'leagues' );
+        if ( ! is_array( $leagues ) ) {
             $search = '';
             if ( $season ) {
                 $league_teams_table = $this->wpdb->prefix . 'racketmanager_league_teams';
@@ -310,7 +248,11 @@ class League_Repository implements League_Repository_Interface {
                     $event_id
                 )
             );
-            wp_cache_set( md5( $cache_key ), $leagues, 'events' );
+            if ( is_array( $leagues ) ) {
+                wp_cache_set( md5( $cache_key ), $leagues, 'leagues' );
+            } else {
+                $leagues = array();
+            }
         }
         return $leagues;
     }
@@ -344,29 +286,103 @@ class League_Repository implements League_Repository_Interface {
      * @return bool
      */
     public function delete( int $id ): bool {
-        if ( $this->wpdb ) {
-            return $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) ) !== false;
+        if ( ! $this->wpdb ) {
+            return false;
         }
-        return false;
+        $existing = wp_cache_get( $id, 'leagues' );
+        $db_row   = null;
+        if ( ! ( $existing instanceof League ) ) {
+            $db_row = $this->wpdb->get_row(
+                $this->wpdb->prepare( "SELECT * FROM $this->table_name WHERE `id` = %d LIMIT 1", $id )
+            );
+        }
+
+        $deleted = $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) ) !== false;
+        if ( $deleted ) {
+            wp_cache_delete( $id, 'leagues' );
+
+            $title    = null;
+            $event_id = null;
+            $seasons  = array();
+
+            if ( $existing instanceof League ) {
+                $title    = $existing->title ?? null;
+                $event_id = isset( $existing->event_id ) ? (int) $existing->event_id : null;
+                if ( isset( $existing->seasons ) && is_array( $existing->seasons ) ) {
+                    $seasons = array_keys( $existing->seasons );
+                }
+            } elseif ( $db_row ) {
+                $title    = $db_row->title ?? null;
+                $event_id = isset( $db_row->event_id ) ? (int) $db_row->event_id : null;
+                if ( ! empty( $db_row->seasons ) ) {
+                    $unserialized = maybe_unserialize( $db_row->seasons );
+                    if ( is_array( $unserialized ) ) {
+                        $seasons = array_keys( $unserialized );
+                    }
+                }
+            }
+
+            if ( ! empty( $title ) ) {
+                wp_cache_delete( $title, 'leagues' );
+            }
+
+            foreach ( $seasons as $season_key ) {
+                wp_cache_delete( 'last_' . $id . '_' . $season_key, 'leagues_match_days' );
+                wp_cache_delete( 'next_' . $id . '_' . $season_key, 'leagues_match_days' );
+                wp_cache_delete( 'current_' . $id . '_' . $season_key, 'leagues_match_days' );
+            }
+
+            if ( ! empty( $event_id ) ) {
+                $this->invalidate_event_leagues_cache( $event_id );
+            }
+        }
+        return $deleted;
     }
 
     public function update_title_and_sequence( int $id, string $title, ?string $sequence = null ): bool {
         if ( ! $this->wpdb ) {
             return false;
         }
-        $data = array( 'title' => $title );
-        $format = array( '%s' );
+        $existing = wp_cache_get( $id, 'leagues' );
+        $db_row   = null;
+        if ( ! ( $existing instanceof League ) ) {
+            $db_row = $this->wpdb->get_row(
+                $this->wpdb->prepare( "SELECT `title`, `event_id` FROM $this->table_name WHERE `id` = %d LIMIT 1", $id )
+            );
+        }
+        $data     = array( 'title' => $title );
+        $format   = array( '%s' );
         if ( ! empty( $sequence ) ) {
             $data['sequence'] = $sequence;
-            $format[] = '%s';
+            $format[]         = '%s';
         }
-        return $this->wpdb->update(
+        $result = $this->wpdb->update(
             $this->table_name,
             $data,
             array( 'id' => $id ),
             $format,
             array( '%d' )
         ) !== false;
+        if ( $result ) {
+            wp_cache_delete( $id, 'leagues' );
+            wp_cache_delete( $title, 'leagues' );
+            $old_title = null;
+            $event_id  = null;
+            if ( $existing instanceof League ) {
+                $old_title = $existing->title ?? null;
+                $event_id  = isset( $existing->event_id ) ? (int) $existing->event_id : null;
+            } elseif ( $db_row ) {
+                $old_title = $db_row->title ?? null;
+                $event_id  = isset( $db_row->event_id ) ? (int) $db_row->event_id : null;
+            }
+            if ( ! empty( $old_title ) && $old_title !== $title ) {
+                wp_cache_delete( $old_title, 'leagues' );
+            }
+            if ( ! empty( $event_id ) ) {
+                $this->invalidate_event_leagues_cache( $event_id );
+            }
+        }
+        return $result;
     }
 
     public function delete_league_teams( int $league_id ): bool {
@@ -415,6 +431,13 @@ class League_Repository implements League_Repository_Interface {
         if ( ! $this->wpdb ) {
             return null;
         }
+        $cache_type = ( 'latest' === $type ) ? 'current' : $type;
+        $cache_key  = $cache_type . '_' . $league_id . '_' . $season;
+        $cached     = wp_cache_get( $cache_key, 'leagues_match_days' );
+        if ( false !== $cached && null !== $cached ) {
+            return (int) $cached;
+        }
+
         $matches_table = $this->wpdb->prefix . 'racketmanager_matches';
         if ( 'last' === $type ) {
             $match = $this->wpdb->get_row(
@@ -441,7 +464,12 @@ class League_Repository implements League_Repository_Interface {
                 )
             );
         }
-        return $match ? (int) $match->match_day : null;
+        if ( $match ) {
+            $match_day = (int) $match->match_day;
+            wp_cache_set( $cache_key, $match_day, 'leagues_match_days' );
+            return $match_day;
+        }
+        return null;
     }
 
     public function query_league_teams( int $league_id, array $args, bool $count = false ): array|int {
@@ -786,13 +814,55 @@ class League_Repository implements League_Repository_Interface {
         if ( ! $this->wpdb ) {
             return false;
         }
-        return $this->wpdb->update(
+        $existing = wp_cache_get( $league_id, 'leagues' );
+        $db_row   = null;
+        if ( ! ( $existing instanceof League ) ) {
+            $db_row = $this->wpdb->get_row(
+                $this->wpdb->prepare( "SELECT * FROM $this->table_name WHERE `id` = %d LIMIT 1", $league_id )
+            );
+        }
+        $result = $this->wpdb->update(
             $this->table_name,
             array( 'seasons' => maybe_serialize( $seasons ) ),
             array( 'id' => $league_id ),
             array( '%s' ),
             array( '%d' )
         ) !== false;
+        if ( $result ) {
+            wp_cache_delete( $league_id, 'leagues' );
+            $title       = null;
+            $event_id    = null;
+            $all_seasons = array_keys( $seasons );
+
+            if ( $existing instanceof League ) {
+                $title    = $existing->title ?? null;
+                $event_id = isset( $existing->event_id ) ? (int) $existing->event_id : null;
+                if ( isset( $existing->seasons ) && is_array( $existing->seasons ) ) {
+                    $all_seasons = array_unique( array_merge( $all_seasons, array_keys( $existing->seasons ) ) );
+                }
+            } elseif ( $db_row ) {
+                $title    = $db_row->title ?? null;
+                $event_id = isset( $db_row->event_id ) ? (int) $db_row->event_id : null;
+                if ( ! empty( $db_row->seasons ) ) {
+                    $unserialized = maybe_unserialize( $db_row->seasons );
+                    if ( is_array( $unserialized ) ) {
+                        $all_seasons = array_unique( array_merge( $all_seasons, array_keys( $unserialized ) ) );
+                    }
+                }
+            }
+            if ( ! empty( $title ) ) {
+                wp_cache_delete( $title, 'leagues' );
+            }
+            foreach ( $all_seasons as $season_key ) {
+                wp_cache_delete( 'last_' . $league_id . '_' . $season_key, 'leagues_match_days' );
+                wp_cache_delete( 'next_' . $league_id . '_' . $season_key, 'leagues_match_days' );
+                wp_cache_delete( 'current_' . $league_id . '_' . $season_key, 'leagues_match_days' );
+            }
+            if ( ! empty( $event_id ) ) {
+                $this->invalidate_event_leagues_cache( $event_id );
+            }
+        }
+        return $result;
     }
 
     public function query_matches( int $league_id, array $query_args, bool $count = false ): array|int {
@@ -815,11 +885,11 @@ class League_Repository implements League_Repository_Interface {
         $sql = ' WHERE m.`league_id` = %d';
 
         $season = $query_args['season'] ?? null;
-        if ( empty( $season ) ) {
+        if ( 'all' === $season || 'any' === $season || ! empty( $query_args['skip_season_filter'] ) ) {
+            // No season filter: spans all seasons and includes empty/zero-season rows.
+        } elseif ( empty( $season ) ) {
             $sql .= ' AND m.`season` = %s';
             $args[] = $query_args['current_season'] ?? '';
-        } elseif ( 'any' === $season ) {
-            $sql .= " AND m.`season` != ''";
         } else {
             $sql .= ' AND m.`season` = %s';
             $args[] = $season;
@@ -994,5 +1064,119 @@ class League_Repository implements League_Repository_Interface {
             wp_cache_set( md5( $prepared ), $result, 'matches' );
         }
         return is_array( $result ) ? $result : array();
+    }
+
+    /**
+     * Get leagues from the database matching criteria.
+     *
+     * @param array $args
+     * @return array
+     */
+    public function find_all( array $args = array() ): array {
+        $defaults = array(
+            'offset'           => 0,
+            'limit'            => 99999999,
+            'competition_type' => false,
+            'name'             => false,
+            'season'           => false,
+            'orderby'          => array( 'title' => 'ASC' ),
+        );
+        $args             = array_merge( $defaults, $args );
+        $offset           = $args['offset'];
+        $limit            = $args['limit'];
+        $competition_type = $args['competition_type'];
+        $name             = $args['name'];
+        $season           = $args['season'];
+        $orderby          = $args['orderby'];
+        $search_terms     = array();
+        if ( $name ) {
+            $escaped_name   = method_exists( $this->wpdb, 'esc_like' ) ? $this->wpdb->esc_like( stripslashes( $name ) ) : addcslashes( stripslashes( $name ), '_%\\' );
+            $search_terms[] = $this->wpdb->prepare( '`title` like %s', $escaped_name . '%' );
+        }
+        if ( $competition_type ) {
+            $events_table       = $this->wpdb->prefix . 'racketmanager_events';
+            $competitions_table = $this->wpdb->prefix . 'racketmanager_competitions';
+            $search_terms[]     = $this->wpdb->prepare( "`event_id` in (select e.`id` from $events_table e, $competitions_table c WHERE e.`competition_id` = c.`id` AND c.`type` = %s)", $competition_type );
+        }
+        $search = Util::search_string( $search_terms, true );
+        $order  = Util::order_by_string( $orderby );
+        $sql    = $this->wpdb->prepare(
+            "SELECT `id` FROM $this->table_name $search $order LIMIT %d, %d",
+            intval( $offset ),
+            intval( $limit )
+        );
+        $leagues = wp_cache_get( md5( $sql ), 'leagues' );
+        if ( ! $leagues ) {
+            $leagues = $this->wpdb->get_results( $sql );
+            wp_cache_set( md5( $sql ), $leagues, 'leagues' );
+        }
+        if ( ! is_array( $leagues ) ) {
+            return array();
+        }
+        $hydrated_leagues = array();
+        foreach ( $leagues as $row ) {
+            $league = $this->find_by_id( (int) $row->id );
+            if ( ! $league ) {
+                continue;
+            }
+            if ( $season ) {
+                if ( isset( $league->event ) && method_exists( $league->event, 'get_season_by_name' ) && $league->event->get_season_by_name( $season ) ) {
+                    $hydrated_leagues[] = $league;
+                }
+            } else {
+                $hydrated_leagues[] = $league;
+            }
+        }
+        return $hydrated_leagues;
+    }
+
+    /**
+     * Get league standings summary rows.
+     *
+     * @param array $args
+     * @return array
+     */
+    public function get_league_standings( array $args = array() ): array {
+        $defaults = array(
+            'season'    => false,
+            'team'      => false,
+            'age_group' => false,
+        );
+        $args      = array_merge( $defaults, $args );
+        $season    = $args['season'];
+        $team_id   = $args['team'];
+        $age_group = $args['age_group'];
+
+        $league_teams_table = $this->wpdb->prefix . 'racketmanager_league_teams';
+        $events_table       = $this->wpdb->prefix . 'racketmanager_events';
+        $competitions_table = $this->wpdb->prefix . 'racketmanager_competitions';
+
+        $sql = "SELECT l.id, t.`won_matches`,t.`rank` FROM $this->table_name l, $league_teams_table t WHERE l.`id` = t.`league_id` AND l.`id` IN (SELECT `id` FROM $this->table_name WHERE `event_id` IN (SELECT e.`id` FROM $events_table e, $competitions_table c WHERE e.`competition_id` = c.`id` AND c.`type` = 'league'))";
+        if ( $season ) {
+            $sql .= $this->wpdb->prepare(
+                ' AND t.`season` = %d',
+                $season
+            );
+        }
+        if ( $team_id ) {
+            $sql .= $this->wpdb->prepare(
+                ' AND t.`team_id` = %d',
+                $team_id
+            );
+        }
+        if ( $age_group ) {
+            $sql .= $this->wpdb->prepare(
+                " AND l.`id` IN (SELECT `id` FROM $this->table_name WHERE `event_id` IN (SELECT e.`id` FROM $events_table e, $competitions_table c WHERE e.`competition_id` = c.`id` AND `age_group` = %s))",
+                $age_group
+            );
+        }
+
+        $sql             .= ' ORDER BY l.`id` ASC';
+        $league_standings = wp_cache_get( md5( $sql ), 'league_standings' );
+        if ( ! $league_standings ) {
+            $league_standings = $this->wpdb->get_results( $sql );
+            wp_cache_set( md5( $sql ), $league_standings, 'league_standings' );
+        }
+        return is_array( $league_standings ) ? $league_standings : array();
     }
 }

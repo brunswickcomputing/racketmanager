@@ -10,9 +10,10 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
-use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Services\Admin\Event\Event_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
@@ -26,13 +27,13 @@ final class Event_Action_Dispatcher_Test extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->backup_globals();
-        $GLOBALS['wpdb']              = new class() {
-            public int $insert_id = 5;
-            public string $racketmanager_events = 'events';
-            public string $racketmanager = 'leagues';
-            public array $prepared_queries = array();
+        $GLOBALS['wpdb']              = new class() extends \wpdb {
+            public $insert_id = 5;
+            public $racketmanager_events = 'events';
+            public $racketmanager = 'leagues';
+            public $prepared_queries = array();
 
-            public function prepare( string $q, mixed ...$a ): string {
+            public function prepare( $q, ...$a ) {
                 $this->prepared_queries[] = array(
                     'query' => $q,
                     'args'  => $a,
@@ -40,15 +41,15 @@ final class Event_Action_Dispatcher_Test extends TestCase {
                 return $q;
             }
 
-            public function query( string $q ): int {
+            public function query( $q ) {
                 return 1;
             }
 
-            public function get_results( string $q ): array {
+            public function get_results( $q = null, $output = 'OBJECT' ) {
                 return array();
             }
 
-            public function get_var( string $q ): int {
+            public function get_var( $q = null, $x = 0, $y = 0 ) {
                 return 0;
             }
         };
@@ -111,13 +112,27 @@ final class Event_Action_Dispatcher_Test extends TestCase {
         return null;
     }
 
-    private function set_racketmanager_container( Competition_Service $competition_service, League_Service $league_service ): void {
-        $container = new \Racketmanager\Services\Container\Simple_Container();
-        $container->set( 'competition_service', fn() => $competition_service );
-        $container->set( 'league_service', fn() => $league_service );
-        $racketmanager            = $this->createStub( \Racketmanager\RacketManager::class );
-        $racketmanager->container = $container;
-        $GLOBALS['racketmanager'] = $racketmanager;
+    private function make_event_repository(): Event_Repository_Interface {
+        $event_repository = $this->createMock( Event_Repository_Interface::class );
+        $event_repository->method( 'insert_event' )->willReturn( 5 );
+        $event_repository->method( 'update_seasons' )->willReturn( true );
+        return $event_repository;
+    }
+
+    private function make_dispatcher(
+        Competition_Service $competition_service,
+        Action_Guard_Interface $guard,
+        ?Event_Repository_Interface $event_repository = null,
+        ?League_Service $league_service = null,
+        ?Competition_Season_Service $competition_season_service = null
+    ): Event_Action_Dispatcher {
+        return new Event_Action_Dispatcher(
+            $competition_service,
+            $competition_season_service ?? $this->createStub( Competition_Season_Service::class ),
+            $guard,
+            $event_repository ?? $this->make_event_repository(),
+            $league_service ?? $this->createStub( League_Service::class )
+        );
     }
 
     public function test_unhandled_action_returns_empty_dto(): void {
@@ -125,7 +140,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
         $guard               = $this->createMock( Action_Guard_Interface::class );
         $guard->expects( self::never() )->method( 'assert_allowed' );
 
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
+        $dispatcher = $this->make_dispatcher( $competition_service, $guard );
         $result     = $dispatcher->handle( array(), array() );
 
         self::assertNull( $result->message );
@@ -139,7 +154,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             ->with( 'racketmanager_nonce', 'racketmanager_manage-event-config', 'edit_leagues' )
             ->willThrowException( new Invalid_Status_Exception( 'Unauthorized' ) );
 
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
+        $dispatcher = $this->make_dispatcher( $competition_service, $guard );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             array(
@@ -156,7 +171,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
         $competition_service = $this->createMock( Competition_Service::class );
         $guard               = $this->createStub( Action_Guard_Interface::class );
 
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
+        $dispatcher = $this->make_dispatcher( $competition_service, $guard );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             array(
@@ -180,7 +195,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             ->with( 1 )
             ->willReturn( $competition );
 
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
+        $dispatcher = $this->make_dispatcher( $competition_service, $guard );
         // Missing required fields like type, scoring, num_sets
         $result = $dispatcher->handle(
             array( 'competition_id' => '1' ),
@@ -204,7 +219,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             ->with( 1 )
             ->willReturn( $competition );
 
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
+        $dispatcher = $this->make_dispatcher( $competition_service, $guard );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             array(
@@ -273,8 +288,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             ->method( 'add_league_to_event' )
             ->with( 5, 'Men Doubles' )
             ->willReturn( $this->make_league() );
-        $this->set_racketmanager_container( $competition_service, $league_service );
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
+        $dispatcher = $this->make_dispatcher( $competition_service, $guard, league_service: $league_service );
         $result = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             $this->create_event_payload()
@@ -282,6 +296,43 @@ final class Event_Action_Dispatcher_Test extends TestCase {
 
         self::assertSame( 'Event added', $result->message );
         self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+    }
+
+    public function test_add_event_config_forwards_injected_season_service_to_add_season_to_event(): void {
+        $competition_service = $this->createMock( Competition_Service::class );
+        $guard               = $this->createStub( Action_Guard_Interface::class );
+        $season_2025         = array( 'name' => '2025', 'home_away' => true, 'num_match_days' => 10, 'match_dates' => array() );
+        $season_2026         = array( 'name' => '2026', 'home_away' => true, 'num_match_days' => 10, 'match_dates' => array() );
+        $competition         = $this->make_competition(
+            current_season: $season_2025,
+            seasons: array( '2025' => $season_2025, '2026' => $season_2026 )
+        );
+        $competition->is_league = true;
+        $competition_service->method( 'get_by_id' )->willReturn( $competition );
+
+        $season_names = array();
+        $season_service = $this->createMock( Competition_Season_Service::class );
+        $season_service->expects( self::exactly( 2 ) )
+            ->method( 'add_season_to_event' )
+            ->willReturnCallback(
+                static function ( Event $event, array $season ) use ( &$season_names ): void {
+                    $season_names[] = $season['name'] ?? null;
+                }
+            );
+
+        $league_service = $this->createStub( League_Service::class );
+        $league_service->method( 'add_league_to_event' )->willReturn( $this->make_league() );
+
+        $dispatcher = $this->make_dispatcher(
+            $competition_service,
+            $guard,
+            league_service: $league_service,
+            competition_season_service: $season_service
+        );
+        $result     = $dispatcher->handle( array( 'competition_id' => '1' ), $this->create_event_payload() );
+
+        self::assertSame( array( '2025', '2026' ), $season_names );
+        self::assertSame( 'Event added', $result->message );
     }
 
     public function test_add_event_config_championship_creates_plate_league(): void {
@@ -312,8 +363,16 @@ final class Event_Action_Dispatcher_Test extends TestCase {
                 }
             );
 
-        $this->set_racketmanager_container( $competition_service, $league_service );
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
+        $captured_settings = null;
+        $event_repository  = $this->make_event_repository();
+        $event_repository->method( 'update_settings_and_rules' )
+            ->willReturnCallback(
+                static function ( $id, $settings ) use ( &$captured_settings ): bool {
+                    $captured_settings = $settings;
+                    return true;
+                }
+            );
+        $dispatcher = $this->make_dispatcher( $competition_service, $guard, event_repository: $event_repository, league_service: $league_service );
         $result = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             $this->create_event_payload( array(
@@ -332,10 +391,8 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             $league_calls
         );
 
-        $settings_update = $this->get_settings_update();
-        self::assertNotNull( $settings_update );
-        $settings = unserialize( $settings_update, array( 'allowed_classes' => false ) );
-        self::assertSame( 7, $settings['primary_league'] );
+        self::assertIsArray( $captured_settings );
+        self::assertSame( 7, $captured_settings['primary_league'] );
     }
 
     public function test_add_event_config_league_creation_failure_returns_error(): void {
@@ -349,9 +406,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             ->method( 'add_league_to_event' )
             ->with( 5, 'Men Doubles' )
             ->willThrowException( new Event_Not_Found_Exception( 'Event not found' ) );
-        $this->set_racketmanager_container( $competition_service, $league_service );
-
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
+        $dispatcher = $this->make_dispatcher( $competition_service, $guard, league_service: $league_service );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             $this->create_event_payload()
@@ -359,48 +414,6 @@ final class Event_Action_Dispatcher_Test extends TestCase {
 
         self::assertSame( 'Could not create league for event', $result->message );
         self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
-    }
-
-    public function test_event_add_league_returns_created_league_id(): void {
-        $competition_service = $this->createStub( Competition_Service::class );
-        $competition         = $this->make_competition( is_tournament: true, mode: 'tournament' );
-        $competition_service->method( 'get_by_id' )->willReturn( $competition );
-        $league_service = $this->createMock( League_Service::class );
-        $league_service->expects( self::once() )
-            ->method( 'add_league_to_event' )
-            ->with( 5, 'Men Singles' )
-            ->willReturn( $this->make_league( 23 ) );
-        $this->set_racketmanager_container( $competition_service, $league_service );
-
-        $event = new Event( (object) array(
-            'id'             => 5,
-            'name'           => 'Men Singles',
-            'type'           => 'singles',
-            'competition_id' => 1,
-        ) );
-
-        self::assertSame( 23, $event->add_league( 'Men Singles' ) );
-    }
-
-    public function test_event_add_league_returns_false_when_event_is_not_found(): void {
-        $competition_service = $this->createStub( Competition_Service::class );
-        $competition         = $this->make_competition( is_tournament: true, mode: 'tournament' );
-        $competition_service->method( 'get_by_id' )->willReturn( $competition );
-        $league_service = $this->createMock( League_Service::class );
-        $league_service->expects( self::once() )
-            ->method( 'add_league_to_event' )
-            ->with( 5, 'Men Singles' )
-            ->willThrowException( new Event_Not_Found_Exception( 'Event not found' ) );
-        $this->set_racketmanager_container( $competition_service, $league_service );
-
-        $event = new Event( (object) array(
-            'id'             => 5,
-            'name'           => 'Men Singles',
-            'type'           => 'singles',
-            'competition_id' => 1,
-        ) );
-
-        self::assertFalse( $event->add_league( 'Men Singles' ) );
     }
 
     public function test_update_event_config_success(): void {
@@ -422,7 +435,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             ->with( 1 )
             ->willReturn( $competition );
 
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
+        $dispatcher = $this->make_dispatcher( $competition_service, $guard );
         $result = $dispatcher->handle(
             array( 'competition_id' => '1', 'event_id' => '10' ),
             $this->create_event_payload( array(
@@ -454,7 +467,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             ->with( 1 )
             ->willReturn( $competition );
 
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
+        $dispatcher = $this->make_dispatcher( $competition_service, $guard );
         $result = $dispatcher->handle(
             array( 'competition_id' => '1', 'event_id' => '10' ),
             $this->create_event_payload( array(
@@ -483,9 +496,16 @@ final class Event_Action_Dispatcher_Test extends TestCase {
         $league_service->expects( self::once() )
             ->method( 'add_league_to_event' )
             ->willReturn( $failed_league );
-        $this->set_racketmanager_container( $competition_service, $league_service );
-
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
+        $captured_settings = null;
+        $event_repository  = $this->make_event_repository();
+        $event_repository->method( 'update_settings_and_rules' )
+            ->willReturnCallback(
+                static function ( $id, $settings ) use ( &$captured_settings ): bool {
+                    $captured_settings = $settings;
+                    return true;
+                }
+            );
+        $dispatcher = $this->make_dispatcher( $competition_service, $guard, event_repository: $event_repository, league_service: $league_service );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             $this->create_event_payload( array( 'event_name' => 'Test Event' ) )
@@ -502,11 +522,8 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             $result->query_params
         );
 
-        $settings_update = $this->get_settings_update();
-        self::assertNotNull( $settings_update );
-        $settings = unserialize( $settings_update, array( 'allowed_classes' => false ) );
-        self::assertIsArray( $settings );
-        self::assertArrayNotHasKey( 'primary_league', $settings );
+        self::assertIsArray( $captured_settings );
+        self::assertArrayNotHasKey( 'primary_league', $captured_settings );
     }
 
     public function test_add_event_config_plate_league_creation_failure_returns_error_with_context(): void {
@@ -529,9 +546,16 @@ final class Event_Action_Dispatcher_Test extends TestCase {
         $league_service->expects( self::exactly( 2 ) )
             ->method( 'add_league_to_event' )
             ->willReturnOnConsecutiveCalls( $this->make_league( 7 ), $failed_plate );
-        $this->set_racketmanager_container( $competition_service, $league_service );
-
-        $dispatcher = new Event_Action_Dispatcher( $competition_service, $guard, $this->createStub( League_Team_Repository_Interface::class ) );
+        $captured_settings = null;
+        $event_repository  = $this->make_event_repository();
+        $event_repository->method( 'update_settings_and_rules' )
+            ->willReturnCallback(
+                static function ( $id, $settings ) use ( &$captured_settings ): bool {
+                    $captured_settings = $settings;
+                    return true;
+                }
+            );
+        $dispatcher = $this->make_dispatcher( $competition_service, $guard, event_repository: $event_repository, league_service: $league_service );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             $this->create_event_payload( array(
@@ -551,10 +575,27 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             $result->query_params
         );
 
-        $settings_update = $this->get_settings_update();
-        self::assertNotNull( $settings_update );
-        $settings = unserialize( $settings_update, array( 'allowed_classes' => false ) );
-        self::assertIsArray( $settings );
-        self::assertSame( 7, $settings['primary_league'] );
+        self::assertIsArray( $captured_settings );
+        self::assertSame( 7, $captured_settings['primary_league'] );
+    }
+
+    public function test_create_event_returns_error_when_insert_event_fails(): void {
+        $competition_service = $this->createMock( Competition_Service::class );
+        $competition_service->method( 'get_by_id' )->willReturn( $this->make_competition( 1 ) );
+        $guard = $this->createStub( Action_Guard_Interface::class );
+
+        $event_repository = $this->createMock( Event_Repository_Interface::class );
+        $event_repository->expects( self::once() )
+            ->method( 'insert_event' )
+            ->willReturn( 0 );
+
+        $dispatcher = $this->make_dispatcher( $competition_service, $guard, event_repository: $event_repository );
+        $result     = $dispatcher->handle(
+            array( 'competition_id' => '1' ),
+            $this->create_event_payload( array( 'event_name' => 'Failed Event' ) )
+        );
+
+        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
+        self::assertSame( 'Could not create event', $result->message );
     }
 }

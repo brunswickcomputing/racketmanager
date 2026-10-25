@@ -25,6 +25,7 @@ use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
+use Racketmanager\Services\Standings\Standings_Service;
 use Racketmanager\Util\Util;
 use stdClass;
 use function Racketmanager\get_league;
@@ -48,6 +49,7 @@ readonly final class Import_Action_Dispatcher implements Import_Action_Dispatche
         private Player_Service $player_service,
         private Registration_Service $registration_service,
         private League_Team_Repository_Interface $league_team_repository,
+        private Standings_Service $standings_service,
         private ?object $racketmanager = null,
     ) {
     }
@@ -208,7 +210,7 @@ readonly final class Import_Action_Dispatcher implements Import_Action_Dispatche
                 $team    = $line[0];
                 $team_id = $this->get_team_id( $team );
                 if ( ! empty( $team_id ) ) {
-                    $table_id = $league->add_team( $team_id, $season );
+                    $table_id = \Racketmanager\get_league_query_service()->add_team( $league, $team_id, $season );
                     if ( $table_id ) {
                         $points_2 = array( 0, 0 );
                         if ( isset( $line[5] ) ) {
@@ -244,8 +246,8 @@ readonly final class Import_Action_Dispatcher implements Import_Action_Dispatche
             ++$i;
         }
 
-        if ( ! empty( $i ) && method_exists( $league, 'set_teams_rank' ) ) {
-            $league->set_teams_rank( $season );
+        if ( ! empty( $i ) ) {
+            $this->standings_service->set_teams_rank( $league, $season );
         }
 
         /* translators: %d: number of table entries imported */

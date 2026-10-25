@@ -9,9 +9,13 @@
 namespace Racketmanager\Infrastructure\Wordpress\Ajax;
 
 use JetBrains\PhpStorm\NoReturn;
+use Racketmanager\Application\Finance\Commands\Set_Purchase_Order_Handler;
+use Racketmanager\Application\General\Queries\Get_Purchase_Order_Handler;
 use Racketmanager\Infrastructure\Security\Security_Service;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory;
+use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
+use Racketmanager\Services\View\Shortcode_Template_Renderer;
 
 /**
  * WordPress entry point for finance AJAX actions.
@@ -61,10 +65,24 @@ class Finance_Ajax_Controller {
             return $c->get( 'finance_ajax_adapter' );
         }
 
+        $finance_service            = $c->get( 'finance_service' );
+        $set_purchase_order_handler = $c->has( 'set_purchase_order_handler' )
+            ? $c->get( 'set_purchase_order_handler' )
+            : new Set_Purchase_Order_Handler( $finance_service );
+        $get_purchase_order_handler = $c->has( 'get_purchase_order_handler' )
+            ? $c->get( 'get_purchase_order_handler' )
+            : new Get_Purchase_Order_Handler( $finance_service );
+        $view_presenter             = $c->has( 'shortcode_view_presenter' )
+            ? $c->get( 'shortcode_view_presenter' )
+            : new Shortcode_View_Presenter( $c->has( 'shortcode_template_renderer' ) ? $c->get( 'shortcode_template_renderer' ) : new Shortcode_Template_Renderer( $c->get( 'view_renderer' ) ) );
+
         return new Finance_Ajax_Adapter(
             $c->has( 'security_service' ) ? $c->get( 'security_service' ) : new Security_Service(),
             $c->has( 'json_response_factory' ) ? $c->get( 'json_response_factory' ) : new Json_Response_Factory(),
-            $c->get( 'finance_service' )
+            $finance_service,
+            $set_purchase_order_handler,
+            $get_purchase_order_handler,
+            $view_presenter
         );
     }
 

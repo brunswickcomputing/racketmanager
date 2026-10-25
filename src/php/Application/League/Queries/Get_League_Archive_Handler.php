@@ -5,6 +5,8 @@ namespace Racketmanager\Application\League\Queries;
 
 use Racketmanager\Presentation\Presenters\League_Archive_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
+use Racketmanager\Services\Competition\Event_Query_Service;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
@@ -22,6 +24,8 @@ class Get_League_Archive_Handler {
         private readonly Competition_Service $competition_service,
         private readonly ?Shortcode_Template_Renderer $template_renderer,
         private readonly League_Archive_Presenter $archive_presenter,
+        private readonly Event_Query_Service $event_query_service,
+        private readonly ?League_Query_Service $league_query_service = null,
     ) {}
 
     public function handle( Get_League_Archive_Query $query ): Shortcode_View_Model {
@@ -38,11 +42,15 @@ class Get_League_Archive_Handler {
             return Shortcode_View_Model::for_error( __( 'Event not found', 'racketmanager' ) );
         }
 
+        $league_query_service = $this->league_query_service ?? new League_Query_Service( $this->event_query_service->get_league_repository() );
+        if ( false !== $league_query_service->resolve_requested_season( $league ) ) {
+            $league_query_service->set_season( $league );
+        }
         $seasons = is_object( $event ) && method_exists( $event, 'get_seasons' ) ? $event->get_seasons() : [];
-        $leagues = is_object( $event ) && method_exists( $event, 'get_leagues' ) ? $event->get_leagues() : [];
+        $leagues = $event instanceof \Racketmanager\Domain\Competition\Event ? $this->event_query_service->get_leagues( $event ) : [];
         $tab     = $query->tab ?? 'standings';
 
-        $league->set_tab( true );
+        $league_query_service->set_tab( $league, true );
         $league->set_templates( [
             'standings'  => $query->standings,
             'crosstable' => $query->crosstable,

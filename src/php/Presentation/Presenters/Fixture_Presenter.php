@@ -292,7 +292,7 @@ readonly class Fixture_Presenter {
         $home_title = $home_team_title ?? '';
         $away_title = $away_team_title ?? '';
         if ( ( null === $home_team_title || null === $away_team_title ) && is_object( $match ) && method_exists( $match, 'get_teams' ) ) {
-            $teams      = $match->get_teams();
+            $teams      = $match instanceof Fixture ? $match->get_teams( __( 'Bye', 'racketmanager' ), __( 'Unknown', 'racketmanager' ) ) : $match->get_teams();
             $home       = $teams['home'] ?? null;
             $away       = $teams['away'] ?? null;
             $home_title = $home_team_title ?? ( is_object( $home ) ? ( $home->title ?? $home->name ?? '' ) : ( $home['title'] ?? $home['name'] ?? '' ) );

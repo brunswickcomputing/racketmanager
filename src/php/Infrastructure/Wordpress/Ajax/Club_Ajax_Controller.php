@@ -89,7 +89,8 @@ class Club_Ajax_Controller {
             $c->has( 'json_response_factory' ) ? $c->get( 'json_response_factory' ) : new Json_Response_Factory(),
             $c->get( 'club_service' ),
             $c->get( 'registration_service' ),
-            $c->has( 'user_repository' ) ? $c->get( 'user_repository' ) : null
+            $c->has( 'user_repository' ) ? $c->get( 'user_repository' ) : null,
+            $c->has( 'club_role_repository' ) ? $c->get( 'club_role_repository' ) : null
         );
     }
 

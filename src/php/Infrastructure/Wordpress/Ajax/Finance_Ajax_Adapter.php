@@ -2,18 +2,21 @@
 
 namespace Racketmanager\Infrastructure\Wordpress\Ajax;
 
-use Racketmanager\Domain\DTO\Finance\Set_Purchase_Order_Command;
+use Racketmanager\Application\Finance\Commands\Set_Purchase_Order_Command;
+use Racketmanager\Application\Finance\Commands\Set_Purchase_Order_Handler;
+use Racketmanager\Application\General\Queries\Get_Purchase_Order_Handler;
+use Racketmanager\Application\General\Queries\Get_Purchase_Order_Query;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
+use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Validator\Validator_Finance;
 use stdClass;
 use function Racketmanager\show_alert;
 use function Racketmanager\show_invoice;
-use function Racketmanager\show_purchase_order_modal;
 
 /**
  * Adapter for Finance AJAX requests.
@@ -26,7 +29,10 @@ class Finance_Ajax_Adapter {
     public function __construct(
         private Security_Service_Interface $security_service,
         private Json_Response_Factory_Interface $response_factory,
-        private Finance_Service $finance_service
+        private Finance_Service $finance_service,
+        private Set_Purchase_Order_Handler $set_purchase_order_handler,
+        private Get_Purchase_Order_Handler $get_purchase_order_handler,
+        private Shortcode_View_Presenter $view_presenter
     ) {
     }
 
@@ -49,9 +55,9 @@ class Finance_Ajax_Adapter {
             return $security_error;
         }
 
-        $invoice_id = isset( $request['invoiceId'] ) ? (int) $request['invoiceId'] : null;
-        $modal      = isset( $request['modal'] ) ? sanitize_text_field( wp_unslash( $request['modal'] ) ) : null;
-        $output     = show_purchase_order_modal( $invoice_id, array( 'modal' => $modal ) );
+        $query  = Get_Purchase_Order_Query::from_request( $request );
+        $vm     = $this->get_purchase_order_handler->handle( $query );
+        $output = $this->view_presenter->render( $vm );
 
         return $this->response_factory->create_raw_response( $output );
     }
@@ -76,7 +82,7 @@ class Finance_Ajax_Adapter {
         }
 
         try {
-            $saved = $this->finance_service->set_purchase_order_for_invoice( $command->invoice_id, $command->purchase_order );
+            $saved = $this->set_purchase_order_handler->handle( $command );
             if ( ! $saved ) {
                 $return         = new stdClass();
                 $return->error  = true;

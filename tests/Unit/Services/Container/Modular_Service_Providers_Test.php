@@ -132,6 +132,8 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has( 'league_service' ) );
         $this->assertTrue( $container->has( 'standings_service' ) );
         $this->assertTrue( $container->has( 'knockout_progression_service' ) );
+        $this->assertTrue( $container->has( 'promotion_relegation_service' ) );
+        $this->assertTrue( $container->has( \Racketmanager\Services\Competition\Promotion_Relegation_Service::class ) );
         $this->assertTrue( $container->has( 'tournament_service' ) );
     }
 
@@ -161,6 +163,76 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has( 'fixture_repository' ) );
         $this->assertTrue( $container->has( 'league_repository' ) );
         $this->assertTrue( $container->has( 'tournament_admin_controller' ) );
+        $this->assertInstanceOf(
+            \Racketmanager\Services\Competition\Promotion_Relegation_Service::class,
+            $container->get( 'promotion_relegation_service' )
+        );
+    }
+
+    public function test_competition_and_tournament_commands_are_wired_into_production_adapters(): void {
+        $container = Container_Bootstrap::boot( $this->app );
+        $bindings = [
+            'submit_cup_entry_handler' => [ 'frontend_ajax_adapter', 'submit_cup_entry_handler' ],
+            'submit_league_entry_handler' => [ 'frontend_ajax_adapter', 'submit_league_entry_handler' ],
+            'submit_tournament_entry_handler' => [ 'tournament_ajax_adapter', 'submit_tournament_entry_handler' ],
+            'withdraw_tournament_entry_handler' => [ 'tournament_ajax_adapter', 'withdraw_tournament_entry_handler' ],
+            'submit_tournament_partner_handler' => [ 'tournament_ajax_adapter', 'submit_tournament_partner_handler' ],
+            'create_tournament_payment_handler' => [ 'tournament_ajax_adapter', 'create_tournament_payment_handler' ],
+            'generate_tournament_bracket_handler' => [ 'draw_action_dispatcher', 'generate_tournament_bracket_handler' ],
+        ];
+
+        foreach ( $bindings as $key => [ $adapter_key, $property ] ) {
+            $this->assertTrue( $container->has( $key ), $key );
+            $this->assertSame( $container->get( $key ), ( new \ReflectionProperty( $container->get( $adapter_key ), $property ) )->getValue( $container->get( $adapter_key ) ), $adapter_key );
+        }
+        $this->assertSame(
+            $container->get( 'generate_tournament_bracket_handler' ),
+            ( new \ReflectionProperty( $container->get( 'cup_setup_action_dispatcher' ), 'generate_tournament_bracket_handler' ) )->getValue( $container->get( 'cup_setup_action_dispatcher' ) )
+        );
+    }
+
+    public function test_player_commands_and_queries_are_wired_into_production_adapters(): void {
+        $container = Container_Bootstrap::boot( $this->app );
+        $bindings = [
+            'update_player_handler'      => [ 'frontend_ajax_adapter', 'update_player_handler' ],
+            'search_players_handler'     => [ 'frontend_ajax_adapter', 'search_players_handler' ],
+            'get_player_details_handler' => [ 'frontend_ajax_adapter', 'get_player_details_handler' ],
+        ];
+
+        foreach ( $bindings as $key => [ $adapter_key, $property ] ) {
+            $this->assertTrue( $container->has( $key ), $key );
+            $this->assertSame( $container->get( $key ), ( new \ReflectionProperty( $container->get( $adapter_key ), $property ) )->getValue( $container->get( $adapter_key ) ), $adapter_key );
+        }
+
+        $this->assertTrue( $container->has( 'create_player_handler' ) );
+        $this->assertSame(
+            $container->get( 'update_player_handler' ),
+            ( new \ReflectionProperty( $container->get( 'player_action_dispatcher' ), 'update_player_handler' ) )->getValue( $container->get( 'player_action_dispatcher' ) )
+        );
+        $this->assertSame(
+            $container->get( 'create_player_handler' ),
+            ( new \ReflectionProperty( $container->get( 'player_action_dispatcher' ), 'create_player_handler' ) )->getValue( $container->get( 'player_action_dispatcher' ) )
+        );
+    }
+
+    public function test_finance_commands_and_queries_are_wired_into_production_adapters(): void {
+        $container = Container_Bootstrap::boot( $this->app );
+        $bindings = [
+            'set_purchase_order_handler'        => [ 'finance_ajax_adapter', 'set_purchase_order_handler' ],
+            'get_purchase_order_handler'        => [ 'finance_ajax_adapter', 'get_purchase_order_handler' ],
+            'shortcode_view_presenter'          => [ 'finance_ajax_adapter', 'view_presenter' ],
+            'generate_charge_invoices_handler'  => [ 'finance_charge_action_dispatcher', 'generate_charge_invoices_handler' ],
+            'action_invoice_handler'            => [ 'finance_invoice_action_dispatcher', 'action_invoice_handler' ],
+        ];
+
+        foreach ( $bindings as $key => [ $adapter_key, $property ] ) {
+            $this->assertTrue( $container->has( $key ), $key );
+            $this->assertSame(
+                $container->get( $key ),
+                ( new \ReflectionProperty( $container->get( $adapter_key ), $property ) )->getValue( $container->get( $adapter_key ) ),
+                $adapter_key
+            );
+        }
     }
 
     public function test_last_5_handler_is_wired_with_fixture_presenter(): void {
@@ -191,5 +263,42 @@ class Modular_Service_Providers_Test extends TestCase {
         $fixture_finalization = $container->get( 'fixture_finalization_service' );
         $ref_fixture          = new \ReflectionProperty( \Racketmanager\Services\Fixture\Fixture_Finalization_Service::class, 'event_dispatcher' );
         $this->assertSame( $dispatcher, $ref_fixture->getValue( $fixture_finalization ) );
+    }
+
+    public function test_container_boot_wires_shared_league_query_service_for_five_consumers(): void {
+        $container = Container_Bootstrap::boot( $this->app );
+
+        $shared_service = $container->get( 'league_query_service' );
+        $this->assertInstanceOf( \Racketmanager\Services\Competition\League_Query_Service::class, $shared_service );
+
+        $consumers = [
+            $container->get( 'standings_service' ),
+            $container->get( 'knockout_progression_service' ),
+            $container->get( 'league_service' ),
+            $container->get( 'competition_league_schedule_service' ),
+            $container->get( 'get_league_players_handler' ),
+        ];
+
+        foreach ( $consumers as $consumer ) {
+            $ref = new \ReflectionClass( $consumer );
+            $method = $ref->getMethod( 'league_query' );
+            $resolved_service = $method->invoke( $consumer );
+            $this->assertSame( $shared_service, $resolved_service );
+        }
+    }
+
+    public function test_fixture_service_provider_wires_application_fixture_detail_service_and_handler(): void {
+        $container = Container_Bootstrap::boot( $this->app );
+
+        $this->assertTrue( $container->has( 'application_fixture_detail_service' ) );
+        $this->assertTrue( $container->has( \Racketmanager\Application\Fixture\Services\Fixture_Detail_Service::class ) );
+        $this->assertTrue( $container->has( 'get_fixture_details_handler' ) );
+        $this->assertTrue( $container->has( \Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Handler::class ) );
+
+        $service = $container->get( 'application_fixture_detail_service' );
+        $this->assertInstanceOf( \Racketmanager\Application\Fixture\Services\Fixture_Detail_Service::class, $service );
+
+        $handler = $container->get( 'get_fixture_details_handler' );
+        $this->assertInstanceOf( \Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Handler::class, $handler );
     }
 }

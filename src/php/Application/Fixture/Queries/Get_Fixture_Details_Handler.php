@@ -3,7 +3,7 @@
 namespace Racketmanager\Application\Fixture\Queries;
 
 use Racketmanager\Application\Fixture\DTOs\Fixture_Details_DTO;
-use Racketmanager\Domain\Fixture\Services\Fixture_Detail_Service;
+use Racketmanager\Application\Fixture\Services\Fixture_Detail_Service;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 
 class Get_Fixture_Details_Handler {

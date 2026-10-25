@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\League\Queries;
 
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use function __;
@@ -15,7 +16,8 @@ use function is_array;
 class Get_League_Match_Dropdown_Handler {
     public function __construct(
         private readonly League_Service $league_service,
-        private readonly Shortcode_Template_Renderer $template_renderer
+        private readonly Shortcode_Template_Renderer $template_renderer,
+        private readonly League_Query_Service $league_query_service
     ) {}
 
     public function handle( Get_League_Match_Dropdown_Query $query ): Shortcode_View_Model {
@@ -31,7 +33,7 @@ class Get_League_Match_Dropdown_Handler {
             return Shortcode_View_Model::for_error( __( 'Season not found', 'racketmanager' ) );
         }
 
-        $matches = $league->get_matches( [
+        $matches = $this->league_query_service->get_matches( $league, [
             'limit'            => false,
             'match_day'        => -1,
             'season'           => $query->season,

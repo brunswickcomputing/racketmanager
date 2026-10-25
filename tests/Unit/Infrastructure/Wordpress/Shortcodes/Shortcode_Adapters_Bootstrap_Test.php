@@ -542,7 +542,8 @@ class Shortcode_Adapters_Bootstrap_Test extends TestCase {
             $overrides['competitions'] ?? $this->createStub( Get_Club_Competitions_Handler::class ),
             $overrides['invoices'] ?? $this->createStub( Get_Club_Invoices_Handler::class ),
             $overrides['view_presenter'] ?? $this->createStub( Shortcode_View_Presenter::class ),
-            $overrides['competition_presenter'] ?? $this->createStub( Competition_Shortcode_Presenter::class )
+            $overrides['competition_presenter'] ?? $this->createStub( Competition_Shortcode_Presenter::class ),
+            $overrides['event_query_service'] ?? $this->createStub( \Racketmanager\Services\Competition\Event_Query_Service::class )
         );
     }
 

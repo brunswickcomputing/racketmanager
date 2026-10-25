@@ -452,6 +452,23 @@ class Email_Shortcode_Presenter_Test extends TestCase {
         ] );
         $this->assertSame( '', $vars_league['tournament_link'] );
         $this->assertStringContainsString( '/leagues/premier-event/2026/', $vars_league['competition_link'] );
+
+        // Mixed timed / untimed dates formatting
+        $vars_mixed_to_untimed = $this->presenter->present_match_date_change_notification( $fixture_league, [
+            'competition_type' => 'league',
+            'new_date'         => '2026-10-24 00:00:00',
+            'original_date'    => '2026-10-17 19:30:00',
+        ] );
+        $this->assertSame( '24/10/2026', $vars_mixed_to_untimed['match_date'] );
+        $this->assertSame( '17 October 2026 19:30', $vars_mixed_to_untimed['original_date'] );
+
+        $vars_mixed_to_timed = $this->presenter->present_match_date_change_notification( $fixture_league, [
+            'competition_type' => 'league',
+            'new_date'         => '2026-10-24 18:00:00',
+            'original_date'    => '2026-10-17 00:00:00',
+        ] );
+        $this->assertSame( '24 October 2026 18:00', $vars_mixed_to_timed['match_date'] );
+        $this->assertSame( '17/10/2026', $vars_mixed_to_timed['original_date'] );
     }
 
     public function test_present_team_withdrawn_and_withdrawn_team_match_and_constitution(): void {

@@ -10,6 +10,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Admin\Finance;
 
+use Racketmanager\Application\Finance\Commands\Action_Invoice_Command;
+use Racketmanager\Application\Finance\Commands\Action_Invoice_Handler;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
@@ -20,10 +22,10 @@ use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Finance_Service;
 
 final readonly class Finance_Invoice_Action_Dispatcher {
-
     public function __construct(
         private Finance_Service $finance_service,
         private Action_Guard_Interface $action_guard,
+        private Action_Invoice_Handler $action_invoice_handler,
     ) {
     }
 
@@ -76,7 +78,8 @@ final readonly class Finance_Invoice_Action_Dispatcher {
 
         foreach ( $invoices as $invoice_id ) {
             try {
-                $msg        = $this->finance_service->action_invoice( $invoice_id, $action );
+                $command    = Action_Invoice_Command::create( $invoice_id, $action );
+                $msg        = $this->action_invoice_handler->handle( $command );
                 $messages[] = $msg;
             } catch ( Invoice_Not_Found_Exception|Invalid_Argument_Exception $e ) {
                 $messages[]    = $e->getMessage();

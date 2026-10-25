@@ -26,6 +26,7 @@ use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Settings_Service;
@@ -37,6 +38,7 @@ use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class Team_List_Render_Regression_Test extends TestCase {
+    use \Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
     use Manages_Wordpress_Globals;
     use Creates_Team_Match_Row_Presenter;
 
@@ -87,41 +89,12 @@ class Team_List_Render_Regression_Test extends TestCase {
         $team_service   = $this->createStub( Team_Service::class );
         $stats_service  = $this->createStub( Player_Stats_Service::class );
 
-        $handler = new Get_League_Teams_Handler(
-            $league_service,
-            $team_service,
-            $stats_service,
-            new Tournament_Presenter( team_match_row_presenter: $this->create_team_match_row_presenter() ),
-            $this->team_details_presenter
-        );
-
-        $league = new class extends League {
-            public function __construct() {
-                $this->id             = 10;
-                $this->title          = 'Premier Division';
-                $this->current_season = [ 'name' => '2026' ];
-                $this->event          = new class extends Event {
-                    public function __construct() {
-                        $this->id          = 20;
-                        $this->name        = 'Men Premier';
-                        $this->competition = new class extends Competition {
-                            public function __construct() {
-                                $this->type            = Competition_Type::LEAGUE;
-                                $this->is_team_entry   = true;
-                                $this->is_player_entry = false;
-                            }
-                        };
-                    }
-                };
-            }
-            public function set_template( string $type, string $template ): void {}
-            public function set_group( string $group = '', bool $force_overwrite = false ): void {}
-            public function get_league_teams( array $query_args = [] ): array {
-                $team1 = (object) [ 'id' => 101, 'title' => 'Westcliff 1' ];
-                $team2 = (object) [ 'id' => 102, 'title' => 'Leigh TC 2' ];
-                return [ $team1, $team2 ];
-            }
-            public function get_team_dtls( int $team_id, ?string $season = null ): object {
+        $team1 = (object) [ 'id' => 101, 'title' => 'Westcliff 1' ];
+        $team2 = (object) [ 'id' => 102, 'title' => 'Leigh TC 2' ];
+        $league_query = $this->createStub( League_Query_Service::class );
+        $league_query->method( 'get_league_teams' )->willReturn( [ $team1, $team2 ] );
+        $league_query->method( 'get_team_dtls' )->willReturnCallback(
+            static function ( object $league, int $team_id ): object {
                 if ( 101 === $team_id ) {
                     return (object) [
                         'captain'              => 'John Smith',
@@ -146,6 +119,38 @@ class Team_List_Render_Regression_Test extends TestCase {
                     'match_time'           => '19:30:00',
                 ];
             }
+        );
+
+        $handler = new Get_League_Teams_Handler(
+            $league_service,
+            $team_service,
+            $stats_service,
+            new Tournament_Presenter( team_match_row_presenter: $this->create_team_match_row_presenter() ),
+            $this->team_details_presenter,
+            $league_query
+        );
+
+        $league = new class extends League {
+            public function __construct() {
+                $this->id             = 10;
+                $this->title          = 'Premier Division';
+                $this->current_season = [ 'name' => '2026' ];
+                $this->event          = new class extends Event {
+                    public function __construct() {
+                        $this->id          = 20;
+                        $this->name        = 'Men Premier';
+                        $this->competition = new class extends Competition {
+                            public function __construct() {
+                                $this->type            = Competition_Type::LEAGUE;
+                                $this->is_team_entry   = true;
+                                $this->is_player_entry = false;
+                            }
+                        };
+                    }
+                };
+            }
+            public function set_template( string $type, string $template ): void {}
+            public function set_group( string $group = '', bool $force_overwrite = false ): void {}
         };
 
         $league_service->method( 'get_league' )->willReturn( $league );
@@ -216,13 +221,42 @@ class Team_List_Render_Regression_Test extends TestCase {
         $stats_service = $this->createStub( Player_Stats_Service::class );
         $team_service  = $this->createStub( Team_Service::class );
 
+        $GLOBALS['wp_stubs_userdata'][700] = (object) [
+            'ID'           => 700,
+            'display_name' => 'David Miller',
+            'user_email'   => 'david@thorpebay.test',
+        ];
+
+        $event_repository = $this->event_repository_with_results(
+            [
+                'query_teams'   => [
+                    (object) [
+                        'id'        => 201,
+                        'team_id'   => 201,
+                        'club_id'   => 0,
+                        'name'      => 'Thorpe Bay 1',
+                        'roster'    => null,
+                        'team_type' => 'L',
+                    ],
+                ],
+                'get_team_info' => (object) [
+                    'captain'              => 700,
+                    'captain_contactno'    => '01702123456',
+                    'captain_contactemail' => 'david@thorpebay.test',
+                    'match_day'            => 'Sunday',
+                    'match_time'           => '10:00:00',
+                ],
+            ]
+        );
+
         $handler = new Get_Event_Teams_Handler(
             $comp_service,
             $stats_service,
             new Tournament_Presenter( team_match_row_presenter: $this->create_team_match_row_presenter() ),
             $team_service,
             $this->team_details_presenter,
-            new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) )
+            new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
+            $this->event_query_service( $event_repository )
         );
 
         $event = new class extends Event {
@@ -240,26 +274,12 @@ class Team_List_Render_Regression_Test extends TestCase {
                         $this->is_player_entry = false;
                         $this->current_season  = [ 'name' => '2026' ];
                     }
-                    public function is_event_allowed( object|string|int $event, string|int|null $season = null, bool $for_entry = false ): bool {
+                    public function is_event_allowed( object|string|int $event, string|int|null $season = null, bool $for_entry = false, iterable $events = [] ): bool {
                         return true;
                     }
                 };
             }
-            public function set_season( ?string $season = null, bool $force_overwrite = false ): void {}
-            public function get_teams( array $args = [] ): array {
-                $team = (object) [
-                    'id'    => 201,
-                    'name'  => 'Thorpe Bay 1',
-                    'info'  => (object) [
-                        'captain'              => 'David Miller',
-                        'captain_contactno'    => '01702123456',
-                        'captain_contactemail' => 'david@thorpebay.test',
-                        'match_day'            => 'Sunday',
-                        'match_time'           => '10:00:00',
-                    ],
-                ];
-                return [ $team ];
-            }
+            public function set_season( ?string $season = null, bool $force_overwrite = false, bool $strict = false ): void {}
         };
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
@@ -286,6 +306,8 @@ class Team_List_Render_Regression_Test extends TestCase {
         $this->assertStringContainsString( 'David Miller', $output );
         $this->assertStringContainsString( 'Sunday', $output );
         $this->assertStringContainsString( '10:00', $output );
+
+        unset( $GLOBALS['wp_stubs_userdata'][700] );
     }
 
     public function test_default_event_teams_renders_real_handler_output_with_table_links_and_zero_warnings(): void {
@@ -293,13 +315,41 @@ class Team_List_Render_Regression_Test extends TestCase {
         $stats_service = $this->createStub( Player_Stats_Service::class );
         $team_service  = $this->createStub( Team_Service::class );
 
+        $hadleigh_club            = \Racketmanager\Tests\Helpers\Club_Test_Factory::create( 77, 'Hadleigh Tennis Club', 'Hadleigh TC' );
+        $hadleigh_club_repository = $this->createStub( \Racketmanager\Repositories\Interfaces\Club_Repository_Interface::class );
+        $hadleigh_club_repository->method( 'find_by_id' )->willReturn( $hadleigh_club );
+
         $handler = new Get_Event_Teams_Handler(
             $comp_service,
             $stats_service,
             new Tournament_Presenter( team_match_row_presenter: $this->create_team_match_row_presenter() ),
             $team_service,
             $this->team_details_presenter,
-            new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) )
+            new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
+            $this->event_query_service(
+                $this->event_repository_with_results(
+                    [
+                        'query_teams'   => [
+                            (object) [
+                                'id'           => 301,
+                                'name'         => 'Hadleigh 1',
+                                'league_title' => 'Division 1',
+                                'club_id'      => 77,
+                                'team_id'      => 301,
+                                'team_type'    => 'L',
+                                'roster'       => null,
+                            ],
+                        ],
+                        'query_players' => 6,
+                    ]
+                ),
+                null,
+                null,
+                null,
+                null,
+                $hadleigh_club_repository,
+                $this->createStub( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class )
+            )
         );
 
         $event = new class extends Event {
@@ -316,25 +366,12 @@ class Team_List_Render_Regression_Test extends TestCase {
                         $this->is_championship = false;
                         $this->current_season  = [ 'name' => '2026' ];
                     }
-                    public function is_event_allowed( object|string|int $event, string|int|null $season = null, bool $for_entry = false ): bool {
+                    public function is_event_allowed( object|string|int $event, string|int|null $season = null, bool $for_entry = false, iterable $events = [] ): bool {
                         return true;
                     }
                 };
             }
-            public function set_season( ?string $season = null, bool $force_overwrite = false ): void {}
-            public function get_teams( array $args = [] ): array {
-                $team = (object) [
-                    'id'           => 301,
-                    'name'         => 'Hadleigh 1',
-                    'league_title' => 'Division 1',
-                    'player_count' => 6,
-                    'club'         => (object) [
-                        'id'        => 77,
-                        'shortcode' => 'Hadleigh TC',
-                    ],
-                ];
-                return [ $team ];
-            }
+            public function set_season( ?string $season = null, bool $force_overwrite = false, bool $strict = false ): void {}
         };
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
@@ -371,7 +408,8 @@ class Team_List_Render_Regression_Test extends TestCase {
             $comp_service,
             $comp_repo,
             $this->team_details_presenter,
-            new Club_Presenter()
+            new Club_Presenter(),
+            $this->event_query_service()
         );
 
         $club = new class extends Club {

@@ -15,9 +15,8 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Season_Collection;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
-use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
-use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\League_Service;
@@ -43,9 +42,8 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
     private $controller;
     private Simple_Container $container;
     private $event_repository;
-    private $league_repository;
     private $league_service;
-    private $league_team_repository;
+    private $competition_season_service;
 
     protected function setUp(): void {
         parent::setUp();
@@ -56,13 +54,11 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $this->competition_service    = $this->createMock( Competition_Service::class );
         $this->guard                  = $this->createStub( Action_Guard_Interface::class );
         $this->event_repository       = $this->createMock( Event_Repository_Interface::class );
-        $this->league_repository      = $this->createMock( League_Repository_Interface::class );
         $this->league_service         = $this->createMock( League_Service::class );
-        $this->league_team_repository = $this->createMock( League_Team_Repository_Interface::class );
+        $this->competition_season_service = $this->createMock( Competition_Season_Service::class );
 
         $this->container->set( 'competition_service', $this->competition_service );
         $this->container->set( 'event_repository', $this->event_repository );
-        $this->container->set( 'league_repository', $this->league_repository );
         $this->container->set( 'league_service', $this->league_service );
 
         $racketmanager = $this->getMockBuilder( RacketManager::class )
@@ -74,8 +70,10 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $this->controller = new Tournament_Event_Config_Admin_Controller(
             $this->tournament_service,
             $this->competition_service,
+            $this->competition_season_service,
             $this->guard,
-            $this->league_team_repository
+            $this->event_repository,
+            $this->league_service
         );
     }
 
@@ -178,6 +176,57 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
 
         $this->assertSame( 'Event added', $result['message'] );
         $this->assertSame( 'success', $result['message_type'] );
+    }
+
+    public function test_handle_add_forwards_injected_season_service_to_add_season_to_event(): void {
+        $_POST['addEventConfig'] = '1';
+        $_POST['event_title']    = 'Men\'s Singles';
+        $_POST['type']           = 'singles';
+        $_POST['num_sets']       = '3';
+        $_POST['num_rubbers']    = '1';
+        $_GET['competition_id']  = '10';
+
+        $season_2025 = [ 'name' => '2025', 'home_away' => 0, 'num_match_days' => 1, 'match_dates' => [] ];
+        $season_2026 = [ 'name' => '2026', 'home_away' => 0, 'num_match_days' => 1, 'match_dates' => [] ];
+
+        $competition = $this->createMock( Competition::class );
+        $competition->id = 10;
+        $competition->is_tournament = true;
+        $competition->is_championship = false;
+        $competition->is_player_entry = true;
+        $competition->is_team_entry = false;
+        $competition->is_league = true;
+        $competition->type = Competition_Type::TOURNAMENT;
+        $competition->settings = new Competition_Settings( [ 'mode' => 'tournament' ] );
+        $competition->seasons = new Season_Collection( [ '2025' => $season_2025, '2026' => $season_2026 ] );
+        $competition->standings = [];
+        $competition->current_season = [ 'name' => '2025' ];
+        $competition->method( 'get_seasons' )->willReturn( [ '2025' => $season_2025, '2026' => $season_2026 ] );
+
+        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
+        $this->competition_service->method( 'get_event_by_id' )->willThrowException( new Event_Not_Found_Exception() );
+
+        $this->event_repository->method( 'insert_event' )->willReturn( 42 );
+        $this->event_repository->method( 'update_settings_and_rules' )->willReturn( true );
+        $this->event_repository->method( 'update_name' )->willReturn( true );
+
+        $season_names = [];
+        $this->competition_season_service->expects( $this->exactly( 2 ) )
+            ->method( 'add_season_to_event' )
+            ->willReturnCallback(
+                static function ( Event $event, array $season ) use ( &$season_names ): void {
+                    $season_names[] = $season['name'] ?? null;
+                }
+            );
+
+        $league_obj     = $this->createMock( League::class );
+        $league_obj->id = 789;
+        $this->league_service->method( 'add_league_to_event' )->willReturn( $league_obj );
+
+        $result = $this->controller->handle();
+
+        $this->assertSame( [ '2025', '2026' ], $season_names );
+        $this->assertSame( 'Event added', $result['message'] );
     }
 
     public function test_handle_add_creates_plate_league_for_championship_tournament(): void {
@@ -605,10 +654,12 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $this->event_repository->expects( $this->once() )
             ->method( 'insert_event' )
             ->willReturn( 42 );
-        $this->event_repository->expects( $this->once() )
-            ->method( 'update_seasons' )
-            ->with( 42, [ '2026' => [ 'name' => '2026', 'home_away' => 0, 'num_match_days' => 1, 'match_dates' => [] ] ] )
-            ->willReturn( true );
+        $this->competition_season_service->expects( $this->once() )
+            ->method( 'add_season_to_event' )
+            ->with(
+                $this->callback( static fn( Event $event ): bool => 42 === (int) $event->id ),
+                [ 'name' => '2026', 'home_away' => 0, 'num_match_days' => 1, 'match_dates' => [] ]
+            );
 
         $league     = $this->createMock( League::class );
         $league->id = 789;
@@ -630,5 +681,41 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
 
         $this->assertSame( 'Event added', $result['message'] );
         $this->assertSame( 'success', $result['message_type'] );
+    }
+
+    public function test_handle_returns_error_when_insert_event_fails(): void {
+        $_POST['addEventConfig'] = '1';
+        $_POST['event_title']   = 'Men\'s Singles';
+        $_POST['type']          = 'singles';
+        $_POST['num_sets']      = '3';
+        $_POST['num_rubbers']   = '1';
+        $_GET['competition_id'] = '123';
+        $_GET['event_id']       = '0';
+
+        $competition = Competition_Test_Factory::create(
+            id: 123,
+            name: 'Summer Tournament',
+            type: Competition_Type::TOURNAMENT,
+            seasons: Competition_Test_Factory::season_map( '2026', [ 'home_away' => 0, 'num_match_days' => 1, 'match_dates' => [] ] ),
+            settings: [ 'mode' => 'tournament' ],
+            current_season: [
+                'name'           => '2026',
+                'home_away'      => 0,
+                'num_match_days' => 1,
+                'match_dates'    => [],
+            ]
+        );
+        $competition->is_championship = false;
+        $competition->is_tournament   = true;
+        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
+
+        $this->event_repository->expects( $this->once() )
+            ->method( 'insert_event' )
+            ->willReturn( 0 );
+
+        $result = $this->controller->handle();
+
+        $this->assertSame( 'Could not create event', $result['message'] );
+        $this->assertSame( 'error', $result['message_type'] );
     }
 }

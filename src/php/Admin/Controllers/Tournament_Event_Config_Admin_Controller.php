@@ -13,9 +13,11 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
+use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\Validator\Validator_Config;
 use stdClass;
@@ -25,14 +27,18 @@ final class Tournament_Event_Config_Admin_Controller {
     /**
      * @param Tournament_Service $tournament_service
      * @param Competition_Service $competition_service
+     * @param Competition_Season_Service $competition_season_service
      * @param Action_Guard_Interface $action_guard
-     * @param League_Team_Repository_Interface $league_team_repository
+     * @param Event_Repository_Interface $event_repository
+     * @param League_Service $league_service
      */
     public function __construct(
         private readonly Tournament_Service $tournament_service,
         private readonly Competition_Service $competition_service,
+        private readonly Competition_Season_Service $competition_season_service,
         private readonly Action_Guard_Interface $action_guard,
-        private readonly League_Team_Repository_Interface $league_team_repository,
+        private readonly Event_Repository_Interface $event_repository,
+        private readonly League_Service $league_service,
     ) {
     }
 
@@ -167,7 +173,15 @@ final class Tournament_Event_Config_Admin_Controller {
         $event_data->num_sets       = $config->num_sets;
         $event_data->num_rubbers    = $config->num_rubbers;
         $event_data->type           = $config->type;
-        $event = new Event( $event_data );
+        $event = new Event( $event_data, $competition instanceof \Racketmanager\Domain\Competition\Competition ? $competition : null );
+        $event_id = $this->event_repository->insert_event( $event );
+        if ( ! $event_id ) {
+            return array(
+                'message'      => __( 'Could not create event', 'racketmanager' ),
+                'message_type' => 'error',
+            );
+        }
+        $event->set_id( (int) $event_id );
 
         // Add seasons
         $add_season = false;
@@ -182,21 +196,40 @@ final class Tournament_Event_Config_Admin_Controller {
                     'num_match_days' => $competition_season['num_match_days'],
                     'match_dates'    => $competition_season['match_dates'],
                 );
-                $event->add_season( $event_season, $this->league_team_repository );
+                $this->competition_season_service->add_season_to_event( $event, $event_season );
             }
         }
 
-        $league_id = $event->add_league( $event->name );
+        try {
+            $league    = $this->league_service->add_league_to_event( (int) $event->id, $event->name );
+            $league_id = $league->id ?? false;
+        } catch ( Event_Not_Found_Exception ) {
+            $league_id = false;
+        }
         if ( $league_id ) {
             $config->primary_league = $league_id;
             if ( $competition->is_championship ) {
                 $league_title = $event->name . ' ' . __( 'Plate', 'racketmanager' );
-                $event->add_league( $league_title );
+                try {
+                    $this->league_service->add_league_to_event( (int) $event->id, $league_title );
+                } catch ( Event_Not_Found_Exception ) {
+                    // Ignore plate league creation error if event not found.
+                }
             }
         }
 
         $event->config = $config;
         $updates       = $event->set_config( $config );
+        if ( $updates && ! empty( $event->id ) ) {
+            $this->event_repository->update_settings_and_rules(
+                (int) $event->id,
+                $event->settings,
+                $event->num_rubbers,
+                $event->num_sets,
+                $event->type
+            );
+            $this->event_repository->update_name( (int) $event->id, $event->name );
+        }
 
         if ( $updates ) {
             return array(
@@ -264,7 +297,16 @@ final class Tournament_Event_Config_Admin_Controller {
         }
 
         if ( empty( $config->primary_league ) || (int) $config->primary_league <= 0 ) {
-            $primary_league_id = $event->get_primary_league_id();
+            $primary_league_id = ! empty( $event->primary_league ) ? (int) $event->primary_league : null;
+            if ( ! $primary_league_id && ! empty( $event->id ) ) {
+                $raw_leagues = $this->event_repository->query_leagues( (int) $event->id );
+                if ( is_array( $raw_leagues ) && ! empty( $raw_leagues ) ) {
+                    $first_league = reset( $raw_leagues );
+                    if ( is_object( $first_league ) && ! empty( $first_league->id ) ) {
+                        $primary_league_id = (int) $first_league->id;
+                    }
+                }
+            }
             if ( $primary_league_id ) {
                 $config->primary_league = $primary_league_id;
             }
@@ -272,6 +314,16 @@ final class Tournament_Event_Config_Admin_Controller {
 
         $event->config = $config;
         $updates       = $event->set_config( $config );
+        if ( $updates && ! empty( $event->id ) ) {
+            $this->event_repository->update_settings_and_rules(
+                (int) $event->id,
+                $event->settings,
+                $event->num_rubbers,
+                $event->num_sets,
+                $event->type
+            );
+            $this->event_repository->update_name( (int) $event->id, $event->name );
+        }
 
         if ( $updates ) {
             return array(
@@ -347,11 +399,11 @@ final class Tournament_Event_Config_Admin_Controller {
      * @return array
      */
     private function get_event_leagues( object $competition, object $event, bool $new_event ): array {
-        if ( $new_event || empty( $competition->is_championship ) || ! method_exists( $event, 'get_leagues' ) ) {
+        if ( $new_event || empty( $competition->is_championship ) || ! isset( $event->id ) ) {
             return array();
         }
 
-        $raw_leagues = $event->get_leagues();
+        $raw_leagues = $this->event_repository->query_leagues( (int) $event->id );
 
         return is_array( $raw_leagues ) ? $raw_leagues : array();
     }

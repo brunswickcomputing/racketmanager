@@ -1,0 +1,372 @@
+<?php
+declare( strict_types=1 );
+
+namespace Racketmanager\Tests\Unit\Controllers\Admin;
+
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\TestCase;
+use Racketmanager\Admin\Admin_League;
+use Racketmanager\Domain\Competition\Competition_Type;
+use Racketmanager\Domain\Competition\League_Team;
+use Racketmanager\Domain\Enums\Team_Profile;
+use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Services\Competition\Event_Query_Service;
+use Racketmanager\Services\Competition\League_Query_Service;
+use Racketmanager\Services\Container\Simple_Container;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\Creates_Admin_Delivery_Container;
+use Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+
+/**
+ * Regression tests for Admin_League display flows: missing entities, injected collaborators, standings template.
+ */
+#[AllowMockObjectsWithoutExpectations]
+final class Admin_League_Regression_Test extends TestCase {
+	use Creates_Admin_Delivery_Container;
+	use Creates_Event_Query_Service;
+	use Manages_Wordpress_Globals;
+
+	private Simple_Container $container;
+	private RacketManager $plugin;
+	private Admin_League $screen;
+	/** @var string[] */
+	private array $warnings = array();
+
+	protected function setUp(): void {
+		parent::setUp();
+		$this->backup_globals();
+		$GLOBALS['wp_stubs_current_user_can'] = true;
+		$GLOBALS['wp_stubs_leagues']          = array();
+		$GLOBALS['wp_stubs_events']           = array();
+		$_GET                                 = array();
+		$_POST                                = array();
+		$_SERVER['REQUEST_METHOD']            = 'GET';
+
+		$this->container          = $this->create_admin_delivery_container();
+		$this->plugin             = $this->createStub( RacketManager::class );
+		$this->plugin->container  = $this->container;
+		$GLOBALS['racketmanager'] = $this->plugin;
+		$this->screen             = new Admin_League( $this->plugin );
+		$this->warnings           = array();
+		set_error_handler(
+			function ( int $severity, string $message ): bool {
+				$this->warnings[] = $message;
+				return true;
+			}
+		);
+	}
+
+	protected function tearDown(): void {
+		restore_error_handler();
+		$this->restore_globals();
+		parent::tearDown();
+	}
+
+	public function test_screen_uses_collaborators_injected_at_construction(): void {
+		$this->assertSame( $this->container->get( 'event_repository' ), $this->screen->get_event_repository() );
+		$this->assertSame( $this->container->get( 'league_query_service' ), $this->screen->get_league_query_service() );
+		$this->assertInstanceOf( Event_Repository_Interface::class, $this->screen->get_event_repository() );
+		$this->assertInstanceOf( League_Query_Service::class, $this->screen->get_league_query_service() );
+	}
+
+	public function test_screen_uses_event_query_service_bound_before_construction(): void {
+		$event_query_service = $this->event_query_service( $this->createStub( Event_Repository_Interface::class ) );
+		$this->container->set( 'event_query_service', $event_query_service );
+		$screen = new Admin_League( $this->plugin );
+
+		$reflection = new \ReflectionMethod( $screen, 'get_event_query_service' );
+		$this->assertSame( $event_query_service, $reflection->invoke( $screen ) );
+		$this->assertInstanceOf( Event_Query_Service::class, $reflection->invoke( $screen ) );
+	}
+
+	public function test_display_match_page_with_missing_league_shows_not_found_message(): void {
+		$_GET = array( 'league_id' => '999', 'season' => '2026' );
+
+		ob_start();
+		try {
+			$this->screen->display_match_page();
+			$output = (string) ob_get_contents();
+		} finally {
+			ob_end_clean();
+		}
+
+		$this->assertSame( array(), $this->warnings );
+		$this->assertStringContainsString( 'League not found', $output );
+	}
+
+	public function test_display_league_page_with_missing_league_renders_without_warnings(): void {
+		$_GET = array( 'league_id' => '999', 'season' => '2026' );
+
+		ob_start();
+		try {
+			$this->screen->display_league_page();
+			$output = (string) ob_get_contents();
+		} finally {
+			ob_end_clean();
+		}
+
+		$this->assertSame( array(), $this->warnings );
+		$this->assertStringContainsString( 'League not found', $output . $this->screen->message );
+	}
+
+	public function test_display_event_page_renders_with_injected_event_repository(): void {
+		$competition           = Competition_Test_Factory::create( 5, 'Premier League', Competition_Type::LEAGUE );
+		$event                 = $this->createStub( \Racketmanager\Domain\Competition\Event::class );
+		$event->id             = 10;
+		$event->name           = 'Mixed Doubles';
+		$event->competition    = $competition;
+		$event->current_season = array( 'name' => '2026' );
+		$event->method( 'get_seasons' )->willReturn( array( '2026' => array( 'name' => '2026' ) ) );
+		$GLOBALS['wp_stubs_events'][10] = $event;
+
+		$event_repository = $this->createMock( Event_Repository_Interface::class );
+		$event_repository->expects( self::once() )->method( 'find_by_id' )->with( 10 )->willReturn( $event );
+
+		$this->container->set( 'event_repository', fn() => $event_repository );
+		$this->screen = new Admin_League( $this->plugin );
+		$_GET         = array( 'event_id' => '10', 'season' => '2026' );
+
+		ob_start();
+		try {
+			$this->screen->display_event_page();
+			$output = (string) ob_get_contents();
+		} finally {
+			ob_end_clean();
+		}
+
+		$this->assertSame( array(), $this->warnings );
+		$this->assertStringContainsString( 'Leagues', $output );
+		$this->assertStringContainsString( 'Mixed Doubles', $output );
+	}
+
+	public function test_display_event_page_with_invalid_event_id_renders_error_without_fatal(): void {
+		$_GET = array( 'event_id' => '0', 'season' => '2026' );
+
+		ob_start();
+		try {
+			$this->screen->display_event_page();
+			$output = (string) ob_get_contents();
+		} finally {
+			ob_end_clean();
+		}
+
+		$this->assertSame( array(), $this->warnings );
+		$this->assertStringContainsString( 'Event', $output . $this->screen->message );
+	}
+
+	public function test_display_setup_event_page_renders_using_injected_repository(): void {
+		$competition           = Competition_Test_Factory::create( 5, 'Premier League', Competition_Type::LEAGUE );
+		$event                 = $this->createStub( \Racketmanager\Domain\Competition\Event::class );
+		$event->id             = 10;
+		$event->name           = 'Mixed Doubles';
+		$event->competition    = $competition;
+		$event->current_season = array( 'name' => '2026' );
+		$event->method( 'get_season_by_name' )->willReturn(
+			array(
+				'name'           => '2026',
+				'match_dates'    => array( '2026-05-01' ),
+				'home_away'      => 0,
+				'num_match_days' => 1,
+			)
+		);
+		$GLOBALS['wp_stubs_events'][10] = $event;
+
+		$event_repository = $this->createMock( Event_Repository_Interface::class );
+		$event_repository->expects( self::once() )->method( 'find_by_id' )->with( 10 )->willReturn( $event );
+
+		$this->container->set( 'event_repository', fn() => $event_repository );
+		$this->screen = new Admin_League( $this->plugin );
+		$_GET         = array( 'event_id' => '10', 'season' => '2026' );
+
+		ob_start();
+		try {
+			$this->screen->display_setup_event_page();
+			$output = (string) ob_get_contents();
+		} finally {
+			ob_end_clean();
+		}
+
+		$this->assertSame( array(), $this->warnings );
+		$this->assertStringContainsString( 'Match dates', $output );
+		$this->assertStringContainsString( 'name="event_id" value="10"', $output );
+	}
+
+	public function test_display_matches_page_orders_matches_by_home_team_asc(): void {
+		$competition           = Competition_Test_Factory::create( 5, 'Premier League', Competition_Type::LEAGUE );
+		$event                 = $this->createMock( \Racketmanager\Domain\Competition\Event::class );
+		$event->id             = 10;
+		$event->name           = 'Mixed Doubles';
+		$event->competition    = $competition;
+		$event->current_season = array( 'name' => '2026' );
+		$event->method( 'get_seasons' )->willReturn( array( '2026' => array( 'name' => '2026' ) ) );
+		$GLOBALS['wp_stubs_events'][10] = $event;
+
+		$event_repository = $this->createStub( Event_Repository_Interface::class );
+		$event_repository->method( 'find_by_id' )->willReturn( $event );
+
+		$captured_args       = null;
+		$event_query_service = $this->createMock( Event_Query_Service::class );
+		$event_query_service->expects( self::once() )
+			->method( 'get_matches' )
+			->with(
+				$event,
+				self::callback( static function ( array $args ) use ( &$captured_args ): bool {
+					$captured_args = $args;
+					return true;
+				} )
+			)
+			->willReturn( array() );
+
+		$this->container->set( 'event_repository', fn() => $event_repository );
+		$this->container->set( 'event_query_service', fn() => $event_query_service );
+		$this->screen = new Admin_League( $this->plugin );
+		$_GET         = array( 'event_id' => '10', 'season' => '2026' );
+
+		ob_start();
+		try {
+			$this->screen->display_matches_page();
+			$output = (string) ob_get_contents();
+		} finally {
+			ob_end_clean();
+		}
+
+		$this->assertSame( array(), $this->warnings );
+		$this->assertIsArray( $captured_args );
+		$this->assertSame(
+			array(
+				'match_day' => 'ASC',
+				'date'      => 'ASC',
+				'home_team' => 'ASC',
+				'league_id' => 'ASC',
+			),
+			$captured_args['orderby'] ?? null
+		);
+	}
+
+	public function test_standings_template_marks_withdrawn_team_using_profile_getter(): void {
+		$withdrawn = new League_Team(
+			(object) array(
+				'table_id'      => 1,
+				'id'            => 1,
+				'title'         => 'Withdrawn Team',
+				'profile'       => 3,
+				'rank'          => 1,
+				'old_rank'      => 1,
+				'points_plus'   => 0,
+				'points_minus'  => 0,
+				'add_points'    => 0,
+				'done_matches'  => 0,
+				'won_matches'   => 0,
+				'draw_matches'  => 0,
+				'lost_matches'  => 0,
+				'status'        => '',
+				'group'         => '',
+				'rating'        => null,
+				'games_won'     => 0,
+				'games_allowed' => 0,
+				'sets_won'      => 0,
+				'sets_allowed'  => 0,
+			)
+		);
+		$active    = new League_Team(
+			(object) array(
+				'table_id'      => 2,
+				'id'            => 2,
+				'title'         => 'Active Team',
+				'profile'       => 0,
+				'rank'          => 2,
+				'old_rank'      => 2,
+				'points_plus'   => 0,
+				'points_minus'  => 0,
+				'add_points'    => 0,
+				'done_matches'  => 0,
+				'won_matches'   => 0,
+				'draw_matches'  => 0,
+				'lost_matches'  => 0,
+				'status'        => '',
+				'group'         => '',
+				'rating'        => null,
+				'games_won'     => 0,
+				'games_allowed' => 0,
+				'sets_won'      => 0,
+				'sets_allowed'  => 0,
+			)
+		);
+
+		$output = $this->render_standings( array( $withdrawn, $active ) );
+
+		$this->assertSame( array(), $this->warnings );
+		$this->assertStringContainsString( 'Withdrawn Team has withdrawn', $output );
+		$this->assertStringNotContainsString( 'Active Team has withdrawn', $output );
+		$this->assertStringContainsString( 'Active Team', $output );
+	}
+
+	public function test_standings_template_supports_legacy_profile_property(): void {
+		$legacy = (object) array(
+			'table_id'      => 3,
+			'id'            => 3,
+			'title'         => 'Legacy Team',
+			'profile'       => '3',
+			'rank'          => 1,
+			'old_rank'      => 1,
+			'points_plus'   => 0,
+			'points_minus'  => 0,
+			'add_points'    => 0,
+			'played'        => 0,
+			'won'           => 0,
+			'draw'          => 0,
+			'lost'          => 0,
+			'done_matches'  => 0,
+			'won_matches'   => 0,
+			'draw_matches'  => 0,
+			'lost_matches'  => 0,
+			'status'        => '',
+			'group'         => '',
+			'rating'        => '',
+			'games_won'     => 0,
+			'games_allowed' => 0,
+			'sets_won'      => 0,
+			'sets_allowed'  => 0,
+		);
+
+		$output = $this->render_standings( array( $legacy ) );
+
+		$this->assertSame( array(), $this->warnings );
+		$this->assertStringContainsString( 'Legacy Team has withdrawn', $output );
+	}
+
+	/**
+	 * @param object[] $teams
+	 */
+	private function render_standings( array $teams ): string {
+		$competition                 = new \stdClass();
+		$competition->is_championship = false;
+		$competition->is_player_entry = false;
+		$competition->type           = 'league';
+		$competition->settings       = array( 'team_ranking' => 'auto' );
+		$event                       = new \stdClass();
+		$event->competition          = $competition;
+		$league                      = new \stdClass();
+		$league->id                  = 42;
+		$league->event               = $event;
+		$league->is_championship     = false;
+		$league->groups              = array();
+		$league->standings           = array();
+		$league->point_rule          = 'two';
+		$league->point_format        = '%d:%d';
+		$league->sport               = 'tennis';
+		$season                      = '2026';
+
+		ob_start();
+		try {
+			( static function () use ( $league, $teams, $season ): void {
+				require dirname( __DIR__, 4 ) . '/templates/admin/league/standings.php';
+			} )();
+			return (string) ob_get_contents();
+		} finally {
+			ob_end_clean();
+		}
+	}
+}

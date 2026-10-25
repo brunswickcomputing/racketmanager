@@ -7,6 +7,9 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model;
+
+/** @var Tournament_Competition_Config_Page_View_Model $vm */
 /** @var array $clubs */
 ?>
 <div class="form-control">
@@ -21,7 +24,7 @@ namespace Racketmanager;
             <?php
             foreach ( $clubs as $club ) {
                 $club_id       = $club->get_id();
-                $current_value = $competition->config->num_courts_available[ $club_id ] ?? null;
+                $current_value = $vm->config->num_courts_available[ $club_id ] ?? null;
                 ?>
                 <tr>
                     <td><?php echo esc_html( $club->name ); ?></td>

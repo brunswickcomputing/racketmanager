@@ -14,3 +14,12 @@ namespace Racketmanager\Sports;
     $sports['tennis'] = \__('Tennis', 'racketmanager');
     return $sports;
 });
+
+// Import filter hooks for sport-specific custom fields
+\add_filter('racketmanager_import_matches_tennis', function( array $custom, array $line, int $match_id, int $col ): array {
+    return $custom;
+}, 10, 4);
+
+\add_filter('racketmanager_import_teams_tennis', function( array $custom, array $line, int $col ): array {
+    return $custom;
+}, 10, 3);

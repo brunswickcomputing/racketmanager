@@ -190,11 +190,13 @@ final class Admin_Ajax_Controller_Test extends TestCase {
         $container->method( 'has' )->willReturn( false );
         $container->method( 'get' )->willReturnCallback( function( string $id ) {
             return match ( $id ) {
-                'competition_service'       => $this->createStub( \Racketmanager\Services\Competition_Service::class ),
-                'competition_entry_service' => $this->createStub( \Racketmanager\Services\Competition_Entry_Service::class ),
-                'notification_service'      => $this->createStub( \Racketmanager\Services\Notification\Notification_Service::class ),
-                'fixture_repository'        => $this->createStub( \Racketmanager\Repositories\Fixture_Repository::class ),
-                default                     => null,
+                'competition_service'              => $this->createStub( \Racketmanager\Services\Competition_Service::class ),
+                'competition_entry_service'        => $this->createStub( \Racketmanager\Services\Competition_Entry_Service::class ),
+                'notification_service'             => $this->createStub( \Racketmanager\Services\Notification\Notification_Service::class ),
+                'fixture_repository'               => $this->createStub( \Racketmanager\Repositories\Fixture_Repository::class ),
+                'competition_notification_service' => $this->createStub( \Racketmanager\Services\Competition\Competition_Notification_Service::class ),
+                'standings_service'                 => $this->createStub( \Racketmanager\Services\Standings\Standings_Service::class ),
+                default                            => null,
             };
         } );
 

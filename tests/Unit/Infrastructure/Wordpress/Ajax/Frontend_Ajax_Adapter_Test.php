@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Ajax;
 
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
@@ -28,6 +29,7 @@ use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 
+#[AllowMockObjectsWithoutExpectations]
 class Frontend_Ajax_Adapter_Test extends TestCase {
     private Stub|Security_Service_Interface $security_service;
     private Competition_Service|MockObject|Stub $competition_service;
@@ -65,7 +67,10 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         unset( $GLOBALS['wp_stubs_is_user_logged_in'], $GLOBALS['wp_stubs_teams'] );
     }
 
-    private function make_adapter(): Frontend_Ajax_Adapter {
+    private function make_adapter( ?\Racketmanager\Application\Player\Queries\Get_Player_Details_Handler $get_player_details_handler = null ): Frontend_Ajax_Adapter {
+        $get_player_details_handler ??= new \Racketmanager\Application\Player\Queries\Get_Player_Details_Handler(
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class )
+        );
         $response_factory = $this->createStub( Json_Response_Factory_Interface::class );
         $response_factory->method( 'create_success_response' )->willReturnCallback(
             static fn( $data = null, $status = null ) => new Response( $data, $status ?? 200 )
@@ -75,6 +80,27 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         );
         $response_factory->method( 'create_raw_response' )->willReturnCallback(
             static fn( $content, $status = null ) => new Response( $content, $status ?? 200 )
+        );
+
+        $player_search_handler = $this->createStub( \Racketmanager\Application\General\Queries\Get_Player_Search_Handler::class );
+        $alert_handler         = $this->createStub( \Racketmanager\Application\General\Queries\Get_Alert_Handler::class );
+        $view_presenter        = $this->createStub( \Racketmanager\Presentation\Presenters\Shortcode_View_Presenter::class );
+        $view_presenter->method( 'render' )->willReturnCallback( function ( \Racketmanager\Presentation\View_Models\Shortcode_View_Model $vm ) {
+            if ( isset( $vm->vars['msg'] ) ) {
+                return '<div class="alert alert-' . ( $vm->vars['class'] ?? 'danger' ) . '">' . $vm->vars['msg'] . '</div>';
+            }
+            return '<div>Player search for: ' . ( $vm->vars['players'] ?? '' ) . '</div>';
+        } );
+        $player_search_handler->method( 'handle' )->willReturnCallback( function ( \Racketmanager\Application\General\Queries\Get_Player_Search_Query $q ) {
+            return \Racketmanager\Presentation\View_Models\Shortcode_View_Model::for_template( 'players-list', [ 'players' => $q->search ] );
+        } );
+        $alert_handler->method( 'handle' )->willReturnCallback( function ( \Racketmanager\Application\General\Queries\Get_Alert_Query $q ) {
+            return \Racketmanager\Presentation\View_Models\Shortcode_View_Model::for_template( 'alert', [ 'msg' => $q->msg, 'class' => $q->type ] );
+        } );
+        $search_players_handler = new \Racketmanager\Application\Player\Queries\Search_Players_Handler(
+            player_search_handler: $player_search_handler,
+            alert_handler: $alert_handler,
+            view_presenter: $view_presenter
         );
 
         return new Frontend_Ajax_Adapter(
@@ -88,7 +114,9 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
             $this->club_service,
             $this->tournament_service,
             $this->fixture_repository,
-            $this->rubber_repository
+            $this->rubber_repository,
+            search_players_handler: $search_players_handler,
+            get_player_details_handler: $get_player_details_handler
         );
     }
 
@@ -570,44 +598,134 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
 
     public function test_get_player_details_performs_lookup(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $player_service = $this->createMock( Player_Service::class );
-        $player_service->expects( $this->once() )
-            ->method( 'get_all_players' )
-            ->with( [ 'name' => 'Smith', 'gender' => 'M', 'all' => true ] )
-            ->willReturn( [ [ 'id' => 1, 'name' => 'John Smith' ] ] );
 
-        $this->player_service = $player_service;
-        $this->adapter        = $this->make_adapter();
+        $player_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class );
+        $player_repo->expects( $this->once() )
+            ->method( 'find_registered_player_autocomplete' )
+            ->with( 'Smith', 'name', 'M', null, 100 )
+            ->willReturn( [
+                [
+                    'id'         => 10,
+                    'playerId'   => 1,
+                    'name'       => 'John Smith',
+                    'user_email' => 'john@example.com',
+                    'club_id'    => 100,
+                    'club'       => 'Club A',
+                    'btm'        => '111',
+                    'contactno'  => '01234',
+                ],
+            ] );
+
+        $handler       = new \Racketmanager\Application\Player\Queries\Get_Player_Details_Handler( $player_repo );
+        $this->adapter = $this->make_adapter( $handler );
 
         $response = $this->adapter->get_player_details( [
             'security' => 'valid',
-            'type'     => 'all',
+            'type'     => 'name',
             'name'     => 'Smith',
             'gender'   => 'M',
         ] );
         $this->assertSame( 200, $response->get_status_code() );
-        $this->assertSame( [ [ 'id' => 1, 'name' => 'John Smith' ] ], $response->get_content() );
+        $decoded = json_decode( (string) $response->get_content(), true );
+        $this->assertIsArray( $decoded );
+        $this->assertSame( 'John Smith', $decoded[0]['value'] );
+        $this->assertSame( 'John Smith', $decoded[0]['name'] );
+        $this->assertSame( 'John Smith - Club A', $decoded[0]['label'] );
+        $this->assertSame( 1, $decoded[0]['playerId'] );
+        $this->assertSame( 10, $decoded[0]['id'] );
+        $this->assertSame( 100, $decoded[0]['club_id'] );
+        $this->assertSame( 'Club A', $decoded[0]['club'] );
+        $this->assertArrayNotHasKey( 'user_pass', $decoded[0] );
+        $this->assertArrayNotHasKey( 'user_activation_key', $decoded[0] );
     }
 
     public function test_get_player_details_reads_partner_gender_key(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $player_service = $this->createMock( Player_Service::class );
-        $player_service->expects( $this->once() )
-            ->method( 'get_all_players' )
-            ->with( [ 'name' => 'Jane', 'gender' => 'F', 'all' => true ] )
-            ->willReturn( [ [ 'id' => 2, 'name' => 'Jane Doe' ] ] );
 
-        $this->player_service = $player_service;
-        $this->adapter        = $this->make_adapter();
+        $player_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class );
+        $player_repo->expects( $this->once() )
+            ->method( 'find_registered_player_autocomplete' )
+            ->with( 'Jane', 'name', 'F', null, 100 )
+            ->willReturn( [
+                [
+                    'id'         => 20,
+                    'playerId'   => 2,
+                    'name'       => 'Jane Doe',
+                    'user_email' => 'jane@example.com',
+                    'club_id'    => 101,
+                    'club'       => 'Club B',
+                    'btm'        => '222',
+                    'contactno'  => '',
+                ],
+            ] );
+
+        $handler       = new \Racketmanager\Application\Player\Queries\Get_Player_Details_Handler( $player_repo );
+        $this->adapter = $this->make_adapter( $handler );
 
         $response = $this->adapter->get_player_details( [
             'security'      => 'valid',
-            'type'          => 'all',
+            'type'          => 'name',
             'name'          => 'Jane',
             'partnerGender' => 'F',
         ] );
         $this->assertSame( 200, $response->get_status_code() );
-        $this->assertSame( [ [ 'id' => 2, 'name' => 'Jane Doe' ] ], $response->get_content() );
+        $decoded = json_decode( (string) $response->get_content(), true );
+        $this->assertSame( 'Jane Doe', $decoded[0]['value'] );
+        $this->assertSame( 2, $decoded[0]['playerId'] );
+    }
+
+    public function test_get_player_details_registered_or_club_type_returns_empty_list(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+        $this->adapter = $this->make_adapter();
+
+        $response = $this->adapter->get_player_details( [
+            'security' => 'valid',
+            'type'     => 'registered',
+        ] );
+
+        $this->assertSame( 200, $response->get_status_code() );
+        $this->assertSame( '[]', (string) $response->get_content() );
+    }
+
+    public function test_get_player_details_btm_lookup(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+
+        $player_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class );
+        $player_repo->expects( $this->once() )
+            ->method( 'find_registered_player_autocomplete' )
+            ->with( '999888', 'btm', null, null, 100 )
+            ->willReturn( [
+                [
+                    'id'         => 55,
+                    'playerId'   => 10,
+                    'name'       => 'Roger Federer',
+                    'user_email' => 'roger@example.com',
+                    'club_id'    => 105,
+                    'club'       => 'Basel Club',
+                    'btm'        => '999888',
+                    'contactno'  => '0123456789',
+                ],
+            ] );
+
+        $handler       = new \Racketmanager\Application\Player\Queries\Get_Player_Details_Handler( $player_repo );
+        $this->adapter = $this->make_adapter( $handler );
+
+        $response = $this->adapter->get_player_details( [
+            'security' => 'valid',
+            'type'     => 'btm',
+            'name'     => '999888',
+        ] );
+
+        $this->assertSame( 200, $response->get_status_code() );
+        $decoded = json_decode( (string) $response->get_content(), true );
+        $this->assertCount( 1, $decoded );
+        $this->assertSame( '999888', $decoded[0]['value'] );
+        $this->assertSame( 'Roger Federer', $decoded[0]['name'] );
+        $this->assertSame( 'Roger Federer - Basel Club', $decoded[0]['label'] );
+        $this->assertSame( 10, $decoded[0]['playerId'] );
+        $this->assertSame( 55, $decoded[0]['id'] );
+        $this->assertSame( 105, $decoded[0]['club_id'] );
+        $this->assertSame( 'Basel Club', $decoded[0]['club'] );
     }
 
     public function test_get_team_event_info_success(): void {
@@ -697,7 +815,11 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         $player_service = $this->createMock( Player_Service::class );
         $player_service->expects( $this->once() )
             ->method( 'amend_player_details' )
-            ->with( 1, $request )
+            ->with( 1, $this->callback( function ( array $data ) {
+                return ( $data['playerId'] ?? null ) === 1
+                    && ( $data['firstname'] ?? null ) === 'John'
+                    && ( $data['surname'] ?? null ) === 'Doe';
+            } ) )
             ->willReturn( $this->createStub( Player::class ) );
 
         $this->player_service = $player_service;
@@ -706,6 +828,255 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         $response = $this->adapter->update_player( $request );
         $this->assertSame( 200, $response->get_status_code() );
         $this->assertSame( 'Player updated', $response->get_content()->msg );
+    }
+
+    public function test_update_player_uses_injected_handler(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+
+        $request = [
+            'racketmanager_nonce' => 'valid',
+            'playerId'            => 42,
+            'firstname'           => 'Injected',
+            'surname'             => 'Handler',
+        ];
+
+        $player = $this->createStub( Player::class );
+        $update_handler = $this->createMock( \Racketmanager\Application\Player\Commands\Update_Player_Handler::class );
+        $update_handler->expects( $this->once() )
+            ->method( 'handle' )
+            ->with( $this->callback( fn( \Racketmanager\Application\Player\Commands\Update_Player_Command $c ) => 42 === $c->player_id && 'Injected' === $c->first_name ) )
+            ->willReturn( $player );
+
+        $response_factory = $this->createMock( Json_Response_Factory_Interface::class );
+        $response_factory->method( 'create_success_response' )->willReturnCallback(
+            static fn( $data = null, $status = null ) => new Response( $data, $status ?? 200 )
+        );
+
+        $adapter = new Frontend_Ajax_Adapter(
+            security_service: $this->security_service,
+            response_factory: $response_factory,
+            competition_service: $this->competition_service,
+            competition_entry_service: $this->competition_entry_service,
+            team_service: $this->team_service,
+            player_service: $this->player_service,
+            registration_service: $this->registration_service,
+            club_service: $this->club_service,
+            tournament_service: $this->tournament_service,
+            fixture_repository: $this->fixture_repository,
+            rubber_repository: $this->rubber_repository,
+            search_players_handler: $this->createStub( \Racketmanager\Application\Player\Queries\Search_Players_Handler::class ),
+            get_player_details_handler: $this->createStub( \Racketmanager\Application\Player\Queries\Get_Player_Details_Handler::class ),
+            update_player_handler: $update_handler
+        );
+
+        $response = $adapter->update_player( $request );
+        $this->assertSame( 200, $response->get_status_code() );
+        $this->assertSame( 'Player updated', $response->get_content()->msg );
+    }
+
+    public function test_search_players_uses_injected_handler(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+
+        $request = [
+            'security'      => 'valid',
+            'search_string' => 'Federer',
+        ];
+
+        $search_handler = $this->createMock( \Racketmanager\Application\Player\Queries\Search_Players_Handler::class );
+        $search_handler->expects( $this->once() )
+            ->method( 'handle' )
+            ->with( $this->callback( fn( \Racketmanager\Application\Player\Queries\Search_Players_Query $q ) => 'Federer' === $q->search_string ) )
+            ->willReturn( '<div class="players">Federer Results</div>' );
+
+        $response_factory = $this->createMock( Json_Response_Factory_Interface::class );
+        $response_factory->method( 'create_raw_response' )->willReturnCallback(
+            static fn( $content, $status = null ) => new Response( $content, $status ?? 200 )
+        );
+
+        $adapter = new Frontend_Ajax_Adapter(
+            security_service: $this->security_service,
+            response_factory: $response_factory,
+            competition_service: $this->competition_service,
+            competition_entry_service: $this->competition_entry_service,
+            team_service: $this->team_service,
+            player_service: $this->player_service,
+            registration_service: $this->registration_service,
+            club_service: $this->club_service,
+            tournament_service: $this->tournament_service,
+            fixture_repository: $this->fixture_repository,
+            rubber_repository: $this->rubber_repository,
+            search_players_handler: $search_handler,
+            get_player_details_handler: $this->createStub( \Racketmanager\Application\Player\Queries\Get_Player_Details_Handler::class )
+        );
+
+        $response = $adapter->search_players( $request );
+        $this->assertSame( 200, $response->get_status_code() );
+        $this->assertSame( '<div class="players">Federer Results</div>', $response->get_content() );
+    }
+
+    public function test_get_player_details_uses_injected_handler(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+
+        $request = [
+            'security' => 'valid',
+            'type'     => 'name',
+            'name'     => 'Serena',
+            'gender'   => 'F',
+        ];
+
+        $details_handler = $this->createMock( \Racketmanager\Application\Player\Queries\Get_Player_Details_Handler::class );
+        $details_handler->expects( $this->once() )
+            ->method( 'handle' )
+            ->with( $this->callback( fn( \Racketmanager\Application\Player\Queries\Get_Player_Details_Query $q ) => 'name' === $q->type && 'Serena' === $q->name && 'F' === $q->gender ) )
+            ->willReturn( [ [ 'id' => 10, 'name' => 'Serena' ] ] );
+
+        $response_factory = $this->createMock( Json_Response_Factory_Interface::class );
+        $response_factory->method( 'create_success_response' )->willReturnCallback(
+            static fn( $data = null, $status = null ) => new Response( $data, $status ?? 200 )
+        );
+
+        $adapter = new Frontend_Ajax_Adapter(
+            security_service: $this->security_service,
+            response_factory: $response_factory,
+            competition_service: $this->competition_service,
+            competition_entry_service: $this->competition_entry_service,
+            team_service: $this->team_service,
+            player_service: $this->player_service,
+            registration_service: $this->registration_service,
+            club_service: $this->club_service,
+            tournament_service: $this->tournament_service,
+            fixture_repository: $this->fixture_repository,
+            rubber_repository: $this->rubber_repository,
+            search_players_handler: $this->createStub( \Racketmanager\Application\Player\Queries\Search_Players_Handler::class ),
+            get_player_details_handler: $details_handler
+        );
+
+        $response = $adapter->get_player_details( $request );
+        $this->assertSame( 200, $response->get_status_code() );
+        $this->assertSame( wp_json_encode( [ [ 'id' => 10, 'name' => 'Serena' ] ] ), $response->get_content() );
+    }
+
+    public function test_constructor_requires_player_query_handlers(): void {
+        $ctor = new \ReflectionMethod( Frontend_Ajax_Adapter::class, '__construct' );
+        $params = [];
+        foreach ( $ctor->getParameters() as $param ) {
+            $params[ $param->getName() ] = $param;
+        }
+
+        $this->assertArrayNotHasKey( 'player_repository', $params, 'Adapter must not build handlers from a repository.' );
+        foreach ( [ 'search_players_handler' => \Racketmanager\Application\Player\Queries\Search_Players_Handler::class, 'get_player_details_handler' => \Racketmanager\Application\Player\Queries\Get_Player_Details_Handler::class ] as $name => $class ) {
+            $this->assertArrayHasKey( $name, $params );
+            $this->assertFalse( $params[ $name ]->isOptional(), "$name must be a required constructor argument." );
+            $this->assertFalse( $params[ $name ]->allowsNull(), "$name must not be nullable." );
+            $this->assertSame( $class, (string) $params[ $name ]->getType() );
+        }
+        $this->assertFalse( method_exists( Player_Service::class, 'get_player_repository' ), 'Player_Service must not expose its repository.' );
+    }
+
+    public function test_direct_construction_without_details_handler_fails_fast(): void {
+        $this->expectException( \ArgumentCountError::class );
+        new Frontend_Ajax_Adapter(
+            security_service: $this->security_service,
+            response_factory: $this->createStub( Json_Response_Factory_Interface::class ),
+            competition_service: $this->competition_service,
+            competition_entry_service: $this->competition_entry_service,
+            team_service: $this->team_service,
+            player_service: $this->player_service,
+            registration_service: $this->registration_service,
+            club_service: $this->club_service,
+            tournament_service: $this->tournament_service,
+            fixture_repository: $this->fixture_repository,
+            rubber_repository: $this->rubber_repository,
+            search_players_handler: $this->createStub( \Racketmanager\Application\Player\Queries\Search_Players_Handler::class )
+        );
+    }
+
+    public function test_get_player_details_name_type_returns_json_string_without_secrets(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+        $player_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class );
+        $player_repo->expects( $this->once() )
+            ->method( 'find_registered_player_autocomplete' )
+            ->with( 'jo', 'name', 'M', null, 100 )
+            ->willReturn( [
+                [
+                    'id'                  => 50,
+                    'playerId'            => 5,
+                    'name'                => 'Jo Bloggs',
+                    'user_email'          => 'jo@example.com',
+                    'club_id'             => 100,
+                    'club'                => 'Club Jo',
+                    'btm'                 => '999',
+                    'contactno'           => '07700',
+                    'user_pass'           => '$P$secret',
+                    'user_activation_key' => 'activation-secret',
+                    'year_of_birth'       => '1990',
+                ],
+            ] );
+
+        $player_service = $this->createMock( Player_Service::class );
+        $player_service->expects( $this->never() )->method( 'get_all_players' );
+        $reg_service = $this->createMock( Registration_Service::class );
+        $reg_service->expects( $this->never() )->method( 'get_clubs_for_player' );
+
+        $this->player_service       = $player_service;
+        $this->registration_service = $reg_service;
+        $this->adapter              = $this->make_adapter(
+            new \Racketmanager\Application\Player\Queries\Get_Player_Details_Handler( $player_repo )
+        );
+
+        $response = $this->adapter->get_player_details( [
+            'security'      => 'valid',
+            'type'          => 'name',
+            'name'          => 'jo',
+            'partnerGender' => 'M',
+        ] );
+
+        $this->assertSame( 200, $response->get_status_code() );
+        $content = $response->get_content();
+        $this->assertIsString( $content );
+        $decoded = json_decode( $content, true );
+        $this->assertIsArray( $decoded );
+        $this->assertSame( 'Jo Bloggs - Club Jo', $decoded[0]['label'] );
+        $this->assertSame( 'Jo Bloggs', $decoded[0]['value'] );
+        $this->assertSame( 'Jo Bloggs', $decoded[0]['name'] );
+        $this->assertSame( 5, $decoded[0]['playerId'] );
+        $this->assertSame( 50, $decoded[0]['id'] );
+        $this->assertSame( 100, $decoded[0]['club_id'] );
+        $this->assertSame( 'Club Jo', $decoded[0]['club'] );
+        $this->assertSame( '999', $decoded[0]['btm'] );
+        $this->assertSame( '07700', $decoded[0]['contactno'] );
+        $this->assertSame( 'jo@example.com', $decoded[0]['user_email'] );
+        $this->assertSame(
+            [ 'label', 'value', 'name', 'id', 'playerId', 'btm', 'contactno', 'user_email', 'club_id', 'club' ],
+            array_keys( $decoded[0] )
+        );
+        $this->assertStringNotContainsString( 'user_pass', $content );
+        $this->assertStringNotContainsString( 'user_activation_key', $content );
+        $this->assertStringNotContainsString( 'secret', $content );
+        $this->assertStringNotContainsString( 'year_of_birth', $content );
+    }
+
+    public function test_get_player_details_empty_name_returns_empty_json_array(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+        $player_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class );
+        $player_repo->expects( $this->never() )->method( 'find_registered_player_autocomplete' );
+        $player_service = $this->createMock( Player_Service::class );
+        $player_service->expects( $this->never() )->method( 'get_all_players' );
+
+        $this->player_service = $player_service;
+        $this->adapter        = $this->make_adapter(
+            new \Racketmanager\Application\Player\Queries\Get_Player_Details_Handler( $player_repo )
+        );
+
+        $response = $this->adapter->get_player_details( [
+            'security' => 'valid',
+            'type'     => 'name',
+            'name'     => '',
+        ] );
+
+        $this->assertSame( 200, $response->get_status_code() );
+        $this->assertSame( '[]', $response->get_content() );
+        $this->assertSame( [], json_decode( (string) $response->get_content(), true ) );
     }
 
     public function test_update_player_nonce_failure_returns_403(): void {

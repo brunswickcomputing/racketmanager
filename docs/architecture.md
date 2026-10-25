@@ -2,6 +2,12 @@
 
 This document describes the recommended, future‑proof structure for the RacketManager WordPress plugin. It aligns with WordPress best practices and the project’s current move toward modular JavaScript.
 
+### Status & related documents (2026-10)
+
+- **[DDD / Hexagonal Architecture Audit — October 2026](ddd-architecture-audit-2026-10.md)** — the current source of truth for architectural debt. It records measured compliance of each layer (`Domain/` and `Application/` are free of `$wpdb`, globals and concrete-repository imports), inventories the remaining legacy patterns (L1–L12: untyped `?object` hydration, WordPress functions in `Domain/DTO` request DTOs, legacy `get_league()`/`seo_url()` helpers, raw `$wpdb` in `Services/`, `Admin_Display` screens, templates without `$vm`, missing `strict_types`, jQuery residue), lists the deprecation surface (`aliases.php`, `functions.php` helpers, the `sydney-child` theme consumer) and schedules a prioritised P1–P3 backlog. Its Appendix A catalogues the **architecture guardrail suite** — the `tests/Architecture/` PHPUnit ratchet (26 rules in `Rules/Layer_Rules.php`, debt frozen in `baseline.json`, run with `vendor/bin/phpunit --testsuite Architecture`) is live; the Jest ratchet is being added — see `.junie/guidelines.md` §2 for the workflow.
+- Parts of the layout below pre-date the 2026 refactors and are superseded by the audit: there is no `src/php/Ajax/` directory any more (AJAX lives in `src/php/Infrastructure/Wordpress/Ajax/` as `*_Ajax_Controller` + `*_Ajax_Adapter` behind `Ajax_Registry`); `Admin` does not extend `RacketManager` (both are wired through the container by `Plugin_Bootstrap` → `Container_Bootstrap`); `Racketmanager_Match` has been removed in favour of `Domain\Fixture\Fixture`; the `Application/` layer (commands, queries, handlers) and `Presentation/` (presenters, view models) now sit alongside `Services/`. The "RacketManager Plugin Architecture" / "Top‑Level Layout" sections also appear twice in this file (a historical paste); the first occurrence is canonical.
+- Earlier DDD notes (`ddd-audit-report.md`, `ddd-architecture-report.md`, `ddd-analysis-2026.md`, `ddd-migration-summary.md`) are kept for history; use the dated audit for current figures.
+
 ---
 
 ### Top‑Level Layout

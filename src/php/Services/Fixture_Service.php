@@ -11,6 +11,7 @@ namespace Racketmanager\Services;
 
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
@@ -45,6 +46,19 @@ class Fixture_Service {
         $this->notification_service = $service_provider->get_notification_service();
         $this->permission_service   = $permission_service ?: $service_provider->get_fixture_permission_service();
         $this->detail_service       = $detail_service ?: $service_provider->get_fixture_detail_service();
+    }
+
+    /**
+     * Add a match to a league.
+     *
+     * @param object $match
+     * @param object $league
+     *
+     * @return Fixture
+     */
+    public function add_match( object $match, object $league ): Fixture {
+        $fixture = $match instanceof Fixture ? $match : Fixture_Factory::from_object( $match );
+        return $this->create_fixture( $fixture, $league );
     }
 
     /**
@@ -191,6 +205,46 @@ class Fixture_Service {
         }
 
         return $max_rubbers;
+    }
+
+    /**
+     * Update an existing match and synchronize linked fixtures.
+     *
+     * @param object $match
+     *
+     * @return void
+     */
+    public function update_match( object $match ): void {
+        if ( method_exists( $match, 'update' ) ) {
+            $match->update();
+        } elseif ( $match instanceof Fixture ) {
+            $this->fixture_repository->save( $match );
+        }
+
+        $linked_match_id = $match instanceof Fixture ? $match->get_linked_fixture() : ( $match->linked_match ?? null );
+        if ( ! empty( $linked_match_id ) ) {
+            $linked_fixture = $this->fixture_repository->find_by_id( (int) $linked_match_id );
+            if ( $linked_fixture ) {
+                $home_team = $match instanceof Fixture ? $match->get_home_team() : ( $match->home_team ?? null );
+                $away_team = $match instanceof Fixture ? $match->get_away_team() : ( $match->away_team ?? null );
+                $date      = $match instanceof Fixture ? $match->get_date() : ( $match->date ?? null );
+                $host      = $match instanceof Fixture ? $match->get_host() : ( $match->host ?? null );
+
+                if ( null !== $home_team ) {
+                    $linked_fixture->set_home_team( (string) $home_team );
+                }
+                if ( null !== $away_team ) {
+                    $linked_fixture->set_away_team( (string) $away_team );
+                }
+                if ( ! empty( $date ) ) {
+                    $linked_fixture->set_date( Util::amend_date( $date, 14, '+', 'day' ) );
+                }
+                if ( ! empty( $host ) ) {
+                    $linked_fixture->set_host( 'home' === $host ? 'away' : 'home' );
+                }
+                $this->fixture_repository->save( $linked_fixture );
+            }
+        }
     }
 
     /**

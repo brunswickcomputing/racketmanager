@@ -14,7 +14,7 @@ namespace Racketmanager;
     <?php
     foreach ( $matches as $match ) {
         ?>
-        <option value="<?php echo esc_html( $match->id ); ?>" <?php echo selected( $match_id, $match->id, false ); ?>><?php echo esc_html( $match->get_title( false ) ); ?></option>
+        <option value="<?php echo esc_html( $match->id ); ?>" <?php echo selected( $match_id, $match->id, false ); ?>><?php echo esc_html( $match->get_title( __( 'Bye', 'racketmanager' ), __( 'Unknown', 'racketmanager' ) ) ); ?></option>
     <?php } ?>
 </select>
 <label for="match_id"><?php esc_html_e( 'Match', 'racketmanager' ); ?></label>

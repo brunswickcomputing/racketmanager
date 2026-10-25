@@ -10,13 +10,22 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Admin\League;
 
+use Racketmanager\Services\Admin\Admin_Command_Input as Input;
+use Racketmanager\Application\Admin\Commands\League_Match_Handler;
+use Racketmanager\Application\Admin\Commands\Delete_League_Matches_Command;
+use Racketmanager\Application\Admin\Commands\Manage_League_Matches_Command;
+use Racketmanager\Application\Admin\Commands\Update_League_Results_Command;
+
+
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
+use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
-use stdClass;
+use Racketmanager\Services\Fixture\Fixture_Result_Manager;
+use Racketmanager\Services\Fixture_Service;
 use function Racketmanager\get_league;
 
 /**
@@ -24,11 +33,17 @@ use function Racketmanager\get_league;
  */
 readonly final class League_Match_Action_Dispatcher {
 
+    private League_Match_Handler $commands;
+
     public function __construct(
-        private Fixture_Repository_Interface $fixture_repository,
-        private Fixture_Maintenance_Service $fixture_maintenance_service,
+        Fixture_Repository_Interface $fixture_repository,
+        Fixture_Maintenance_Service $fixture_maintenance_service,
         private Action_Guard_Interface $action_guard,
+        Fixture_Result_Manager $fixture_result_manager,
+        Fixture_Service $fixture_service,
+        ?League_Match_Handler $commands = null,
     ) {
+        $this->commands = $commands ?? new League_Match_Handler( $fixture_repository, $fixture_maintenance_service, $fixture_result_manager, $fixture_service );
     }
 
     /**
@@ -84,23 +99,15 @@ readonly final class League_Match_Action_Dispatcher {
             );
         }
 
-        $matches = isset( $post['match'] ) && is_array( $post['match'] ) ? $post['match'] : array();
-        if ( empty( $matches ) ) {
-            return new Action_Result_DTO( tab_override: 'matches' );
+        try {
+            $command = new Delete_League_Matches_Command(
+                match: Input::column( $post, 'match' ),
+            );
+        } catch ( \InvalidArgumentException $e ) {
+            return new Action_Result_DTO( message: $e->getMessage(), message_type: Admin_Message_Type::ERROR, tab_override: 'matches' );
         }
 
-        $messages = array();
-        foreach ( $matches as $match_id ) {
-            $this->fixture_maintenance_service->delete_fixture( (int) $match_id );
-            /* translators: %d: Match id */
-            $messages[] = sprintf( __( 'Match id %d deleted', 'racketmanager' ), (int) $match_id );
-        }
-
-        return new Action_Result_DTO(
-            message: implode( '<br>', $messages ),
-            message_type: Admin_Message_Type::SUCCESS,
-            tab_override: 'matches',
-        );
+        return $this->commands->handle_delete_matches( $command );
     }
 
     /**
@@ -118,142 +125,32 @@ readonly final class League_Match_Action_Dispatcher {
             );
         }
 
-        $mode = isset( $post['mode'] ) ? sanitize_text_field( wp_unslash( strval( $post['mode'] ) ) ) : '';
-        if ( 'add' === $mode ) {
-            return $this->add_matches( $query, $post, $league );
-        }
-
-        return $this->edit_matches( $post, $league );
-    }
-
-    /**
-     * @param array<string, mixed> $query
-     * @param array<string, mixed> $post
-     */
-    private function add_matches( array $query, array $post, object $league ): Action_Result_DTO {
-        $matches = isset( $post['match'] ) && is_array( $post['match'] ) ? $post['match'] : array();
-        if ( empty( $matches ) ) {
-            return new Action_Result_DTO( tab_override: 'matches' );
-        }
-
-        $season = isset( $post['season'] ) ? sanitize_text_field( wp_unslash( strval( $post['season'] ) ) ) : null;
-        $final  = isset( $post['final'] ) ? sanitize_text_field( wp_unslash( strval( $post['final'] ) ) ) : null;
-
-        if ( $final ) {
-            $final_exists = $league->get_matches(
-                array(
-                    'final'  => $final,
-                    'season' => $season,
-                )
+        try {
+            $mode = Input::text( $post, 'mode' ) ?? '';
+            $command = new Manage_League_Matches_Command(
+                mode: $mode,
+                match: Input::column( $post, 'match' ),
+                season: 'add' === $mode ? Input::text( $post, 'season' ) : null,
+                final: Input::text( $post, 'final' ),
+                league_id: 'add' === $mode ? Input::text( $post, 'league_id' ) : null,
+                num_rubbers: 'add' === $mode ? Input::integer( $post, 'num_rubbers' ) : null,
+                match_day: Input::match_day( $post ),
+                home_team: Input::column( $post, 'home_team' ),
+                away_team: Input::column( $post, 'away_team' ),
+                host: Input::column( $post, 'host' ),
+                location: Input::column( $post, 'location' ),
+                myDatePicker: Input::column( $post, 'myDatePicker' ),
+                begin_hour: Input::column( $post, 'begin_hour' ),
+                begin_minutes: Input::column( $post, 'begin_minutes' ),
+                year: 'add' === $mode ? [] : Input::column( $post, 'year' ),
+                month: 'add' === $mode ? [] : Input::column( $post, 'month' ),
+                day: 'add' === $mode ? [] : Input::column( $post, 'day' ),
             );
-            if ( $final_exists ) {
-                /* translators: %s: final round name */
-                return new Action_Result_DTO(
-                    message: sprintf( __( 'Matches already exist for %s', 'racketmanager' ), $final ),
-                    message_type: Admin_Message_Type::ERROR,
-                    tab_override: 'matches',
-                );
-            }
+        } catch ( \InvalidArgumentException $e ) {
+            return new Action_Result_DTO( message: $e->getMessage(), message_type: Admin_Message_Type::ERROR, tab_override: 'matches' );
         }
 
-        $num_matches = count( $matches );
-        foreach ( $matches as $i => $match_id ) {
-            if ( isset( $post['away_team'][ $i ] ) && isset( $post['home_team'][ $i ] ) && $post['away_team'][ $i ] !== $post['home_team'][ $i ] ) {
-                $index         = isset( $post['myDatePicker'][ $i ] ) ? $i : 0;
-                $begin_hour    = isset( $post['begin_hour'][ $i ] ) ? intval( $post['begin_hour'][ $i ] ) : 0;
-                $begin_minutes = isset( $post['begin_minutes'][ $i ] ) ? intval( $post['begin_minutes'][ $i ] ) : 0;
-                $time          = sprintf( '%02d:%02d:00', $begin_hour, $begin_minutes );
-
-                if ( isset( $post['myDatePicker'][ $index ] ) ) {
-                    $match              = new stdClass();
-                    $match->date        = sanitize_text_field( wp_unslash( strval( $post['myDatePicker'][ $index ] ) ) ) . ' ' . $time;
-                    $match->match_day   = '';
-                    if ( isset( $post['match_day'][ $i ] ) ) {
-                        $match->match_day = sanitize_text_field( wp_unslash( strval( $post['match_day'][ $i ] ) ) );
-                    } elseif ( ! empty( $post['match_day'] ) ) {
-                        $match->match_day = intval( $post['match_day'] );
-                    }
-                    $match->host        = isset( $post['host'][ $i ] ) ? sanitize_text_field( wp_unslash( strval( $post['host'][ $i ] ) ) ) : null;
-                    $match->home_team   = sanitize_text_field( wp_unslash( strval( $post['home_team'][ $i ] ) ) );
-                    $match->away_team   = sanitize_text_field( wp_unslash( strval( $post['away_team'][ $i ] ) ) );
-                    $match->location    = isset( $post['location'][ $i ] ) ? sanitize_text_field( wp_unslash( strval( $post['location'][ $i ] ) ) ) : null;
-                    $match->league_id   = isset( $post['league_id'] ) ? sanitize_text_field( wp_unslash( strval( $post['league_id'] ) ) ) : null;
-                    $match->season      = $season;
-                    $match->group       = null;
-                    $match->final_round = $final;
-                    $match->num_rubbers = isset( $post['num_rubbers'] ) ? intval( $post['num_rubbers'] ) : null;
-                    $league->add_match( $match );
-                }
-            } else {
-                --$num_matches;
-            }
-        }
-
-        /* translators: %d: number of matches added */
-        return new Action_Result_DTO(
-            message: sprintf( _n( '%d Match added', '%d Matches added', $num_matches, 'racketmanager' ), $num_matches ),
-            message_type: Admin_Message_Type::SUCCESS,
-            tab_override: 'matches',
-        );
-    }
-
-    /**
-     * @param array<string, mixed> $post
-     */
-    private function edit_matches( array $post, object $league ): Action_Result_DTO {
-        $matches = isset( $post['match'] ) && is_array( $post['match'] ) ? $post['match'] : array();
-        if ( empty( $matches ) ) {
-            return new Action_Result_DTO( tab_override: 'matches' );
-        }
-
-        $num_matches = count( $matches );
-        foreach ( $matches as $i => $match_id ) {
-            $match = $this->fixture_repository->find_by_id( (int) $match_id );
-            if ( null === $match ) {
-                continue;
-            }
-
-            $begin_hour    = isset( $post['begin_hour'][ $i ] ) ? intval( $post['begin_hour'][ $i ] ) : 0;
-            $begin_minutes = isset( $post['begin_minutes'][ $i ] ) ? intval( $post['begin_minutes'][ $i ] ) : 0;
-            $time          = sprintf( '%02d:%02d:00', $begin_hour, $begin_minutes );
-
-            if ( isset( $post['myDatePicker'][ $i ] ) ) {
-                $date = sanitize_text_field( wp_unslash( strval( $post['myDatePicker'][ $i ] ) ) );
-                $date = $date . ' ' . $time;
-            } else {
-                $index = ( isset( $post['year'][ $i ] ) && isset( $post['month'][ $i ] ) && isset( $post['day'][ $i ] ) ) ? $i : 0;
-                $year  = isset( $post['year'][ $index ] ) ? intval( $post['year'][ $index ] ) : 0;
-                $month = isset( $post['month'][ $index ] ) ? intval( $post['month'][ $index ] ) : 0;
-                $day   = isset( $post['day'][ $index ] ) ? intval( $post['day'][ $index ] ) : 0;
-                $date  = sprintf( '%04d-%02d-%02d %s', $year, $month, $day, $time );
-            }
-
-            $match->date      = $date;
-            $match->league_id = isset( $league->id ) ? intval( $league->id ) : $match->league_id;
-            $match->match_day = null;
-            if ( isset( $post['match_day'] ) ) {
-                if ( is_array( $post['match_day'] ) ) {
-                    $match->match_day = isset( $post['match_day'][ $i ] ) ? intval( $post['match_day'][ $i ] ) : null;
-                } elseif ( ! empty( $post['match_day'] ) ) {
-                    $match->match_day = intval( $post['match_day'] );
-                }
-            }
-
-            $match->host        = isset( $post['host'][ $i ] ) ? sanitize_text_field( wp_unslash( strval( $post['host'][ $i ] ) ) ) : null;
-            $match->home_team   = isset( $post['home_team'][ $i ] ) ? sanitize_text_field( wp_unslash( strval( $post['home_team'][ $i ] ) ) ) : '';
-            $match->away_team   = isset( $post['away_team'][ $i ] ) ? sanitize_text_field( wp_unslash( strval( $post['away_team'][ $i ] ) ) ) : '';
-            $match->location    = isset( $post['location'][ $i ] ) ? sanitize_text_field( wp_unslash( strval( $post['location'][ $i ] ) ) ) : null;
-            $match->final_round = isset( $post['final'] ) ? sanitize_text_field( wp_unslash( strval( $post['final'] ) ) ) : null;
-
-            $league->update_match( $match );
-        }
-
-        /* translators: %d: number of matches updated */
-        return new Action_Result_DTO(
-            message: sprintf( _n( '%d Match updated', '%d Matches updated', $num_matches, 'racketmanager' ), $num_matches ),
-            message_type: Admin_Message_Type::SUCCESS,
-            tab_override: 'matches',
-        );
+        return $this->commands->handle_manage_matches( $command, $league );
     }
 
     /**
@@ -270,24 +167,18 @@ readonly final class League_Match_Action_Dispatcher {
             );
         }
 
-        $custom      = isset( $post['custom'] ) && is_array( $post['custom'] ) ? $post['custom'] : array();
-        $matches     = isset( $post['matches'] ) && is_array( $post['matches'] ) ? $post['matches'] : array();
-        $home_points = isset( $post['home_points'] ) && is_array( $post['home_points'] ) ? $post['home_points'] : array();
-        $away_points = isset( $post['away_points'] ) && is_array( $post['away_points'] ) ? $post['away_points'] : array();
-        $season      = isset( $post['season'] ) ? sanitize_text_field( wp_unslash( strval( $post['season'] ) ) ) : '';
-
-        if ( ! empty( $matches ) && ! empty( $home_points ) && ! empty( $away_points ) && ! empty( $season ) ) {
-            $league->set_finals( false );
-            $num_matches = $league->update_match_results( $matches, $home_points, $away_points, $custom, $season, false );
-
-            /* translators: %d: number of matches updated */
-            return new Action_Result_DTO(
-                message: sprintf( __( 'Updated Results of %d matches', 'racketmanager' ), intval( $num_matches ) ),
-                message_type: Admin_Message_Type::SUCCESS,
-                tab_override: 'matches',
+        try {
+            $command = new Update_League_Results_Command(
+                season: Input::text( $post, 'season' ) ?? '',
+                matches: Input::column( $post, 'matches' ),
+                home_points: Input::column( $post, 'home_points' ),
+                away_points: Input::column( $post, 'away_points' ),
+                custom: Input::tree( $post, 'custom' ),
             );
+        } catch ( \InvalidArgumentException $e ) {
+            return new Action_Result_DTO( message: $e->getMessage(), message_type: Admin_Message_Type::ERROR, tab_override: 'matches' );
         }
 
-        return new Action_Result_DTO( tab_override: 'matches' );
+        return $this->commands->handle_update_results( $command, $league );
     }
 }

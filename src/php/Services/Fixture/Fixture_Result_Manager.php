@@ -33,6 +33,7 @@ use Racketmanager\Services\Result_Calculator;
 use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use Racketmanager\Services\Settings_Service;
+use Racketmanager\Services\Standings\Standings_Service;
 
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
@@ -143,7 +144,8 @@ class Fixture_Result_Manager {
      */
     public function __construct(
         Service_Provider $service_provider,
-        Repository_Provider $repository_provider
+        Repository_Provider $repository_provider,
+        private ?Standings_Service $standings_service = null
     ) {
         $this->service_provider = $service_provider;
 
@@ -635,9 +637,9 @@ class Fixture_Result_Manager {
                     confirm_comments: $request->confirm_comments,
                     result: $result,
                     update_standings: $update_standings,
-                    run_checks: 'A' === $request->result_confirm,
-                    league_repository: $league_repository
-                )
+                    run_checks: 'A' === $request->result_confirm
+                ),
+                $league_repository
             );
         }
 
@@ -832,6 +834,62 @@ class Fixture_Result_Manager {
         return new Fixture_Update_Response( $outcomes );
     }
 
+    private function require_standings_service(): Standings_Service {
+        return $this->standings_service ?? throw new \LogicException( 'Standings_Service has not been configured.' );
+    }
+
+    /**
+     * Update a batch of match results and refresh the league table.
+     */
+    public function update_match_results(
+        League $league,
+        array $matches,
+        array $home_points,
+        array $away_points,
+        array $custom,
+        string $season,
+        false|string $final_round = false,
+        string $confirmed = 'Y',
+        ?Fixture_Repository_Interface $fixture_repository = null
+    ): int {
+        if ( empty( $matches ) ) {
+            return 0;
+        }
+        $standings_service = $final_round ? null : $this->require_standings_service();
+        $fixture_repository ??= $this->fixture_repository;
+        $num_matches = 0;
+        foreach ( $matches as $match_id ) {
+            $c           = $custom[ $match_id ] ?? array();
+            $points_home = isset( $home_points[ $match_id ] ) ? floatval( $home_points[ $match_id ] ) : null;
+            $points_away = isset( $away_points[ $match_id ] ) ? floatval( $away_points[ $match_id ] ) : null;
+
+            $fixture = $fixture_repository->find_by_id( (int) $match_id );
+            if ( $fixture ) {
+                $fixture_custom = $fixture->get_custom() ?? array();
+                $result_data    = [
+                    'home_points' => $points_home,
+                    'away_points' => $points_away,
+                    'status'      => $fixture->get_status(),
+                    'custom'      => $c,
+                    'sets'        => $c['sets'] ?? ( $fixture_custom['sets'] ?? array() ),
+                ];
+                $result = Result_Factory::from_array( $result_data, $fixture->get_home_team(), $fixture->get_away_team() );
+
+                if ( 'Y' === $confirmed ) {
+                    $this->confirm_result( $fixture, '', null, $result );
+                } else {
+                    $this->update_result( $fixture, $result, $confirmed );
+                }
+                ++$num_matches;
+            }
+        }
+
+        if ( $num_matches > 0 && $standings_service ) {
+            $standings_service->update_standings( $league, $season );
+        }
+        return $num_matches;
+    }
+
     /**
      * Reset the result of a fixture.
      *
@@ -841,6 +899,15 @@ class Fixture_Result_Manager {
      * @throws League_Not_Found_Exception
      */
     public function reset_result( Fixture $fixture ): Fixture_Reset_Response {
+        $league_id = $fixture->get_league_id();
+        try {
+            $league = $league_id ? $this->league_service->get_league( $league_id ) : null;
+        } catch ( League_Not_Found_Exception ) {
+            $league = null;
+        }
+        if ( $league && ! $league->is_championship ) {
+            $this->require_standings_service();
+        }
         $fixture->reset_result();
 
         // Reset associated rubbers instead of deleting them.
@@ -862,18 +929,11 @@ class Fixture_Result_Manager {
         );
         $this->result_service->apply_to_fixture( $fixture, $empty_result );
 
-        $league_id = $fixture->get_league_id();
-        try {
-            $league = $league_id ? $this->league_service->get_league( $league_id ) : null;
-        } catch ( League_Not_Found_Exception ) {
-            $league = null;
-        }
-
         if ( $league && $league->is_championship ) {
             $stage = Stage::from_league( $league );
             $this->progression_service->reset_progression( $stage, $fixture, $league );
         } elseif ( $league ) {
-            $league->update_standings( (string) $fixture->get_season() );
+            $this->require_standings_service()->update_standings( $league, (string) $fixture->get_season() );
         }
 
         // Trigger reporting even on reset? Usually no, but we might need to notify external systems.
@@ -892,10 +952,11 @@ class Fixture_Result_Manager {
      *
      * @param Fixture $fixture
      * @param Fixture_Confirmation_Context $context
+     * @param League_Repository_Interface|null $league_repository
      * @return Fixture_Update_Response
      * @throws League_Not_Found_Exception
      */
-    private function apply_confirmation_to_fixture( Fixture $fixture, Fixture_Confirmation_Context $context ): Fixture_Update_Response {
+    private function apply_confirmation_to_fixture( Fixture $fixture, Fixture_Confirmation_Context $context, ?League_Repository_Interface $league_repository = null ): Fixture_Update_Response {
         $fixture->set_confirmed( $context->status );
 
         $comments = $fixture->get_comments();
@@ -911,7 +972,7 @@ class Fixture_Result_Manager {
         $fixture->set_comments( $comments );
 
         if ( $context->update_standings ) {
-            $response = $this->update_result( $fixture, $context->result, $context->status, $context->league_repository );
+            $response = $this->update_result( $fixture, $context->result, $context->status, $league_repository ?? $this->league_repository );
         } else {
             $this->result_service->apply_to_fixture( $fixture, $context->result, $context->status );
             $response = new Fixture_Update_Response( [ Fixture_Update_Status::SAVED ] );
@@ -968,9 +1029,9 @@ class Fixture_Result_Manager {
                 confirm_comments: $confirm_comments,
                 result: $result,
                 update_standings: true,
-                run_checks: true,
-                league_repository: $league_repository
-            )
+                run_checks: true
+            ),
+            $league_repository
         );
 
     }

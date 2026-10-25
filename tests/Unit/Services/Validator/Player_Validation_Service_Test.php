@@ -7,11 +7,13 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
+use Racketmanager\Domain\Player\Player_Factory;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Validator\Player_Validation_Service;
@@ -24,18 +26,26 @@ class Player_Validation_Service_Test extends TestCase {
     private $registration_service;
     private $results_checker_repository;
     private $fixture_repository;
+    private $player_repository;
     private $service;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->registration_service = $this->createMock( Registration_Service::class );
+        $this->registration_service       = $this->createMock( Registration_Service::class );
         $this->results_checker_repository = $this->createMock( Results_Checker_Repository_Interface::class );
-        $this->fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
-        $this->service = new Player_Validation_Service(
+        $this->fixture_repository         = $this->createMock( Fixture_Repository_Interface::class );
+        $this->player_repository          = $this->createMock( Player_Repository_Interface::class );
+        $this->service                    = new Player_Validation_Service(
             $this->registration_service,
             $this->results_checker_repository,
-            $this->fixture_repository
+            $this->fixture_repository,
+            $this->player_repository
         );
+    }
+
+    protected function tearDown(): void {
+        unset( $GLOBALS['wp_stubs_players'] );
+        parent::tearDown();
     }
 
     public function test_apply_dummy_players_for_share(): void {
@@ -398,5 +408,158 @@ class Player_Validation_Service_Test extends TestCase {
             } ) );
 
         $this->service->run_fixture_checks( $fixture, $league, [], $options );
+    }
+
+    public function test_validate_player_details_success_shape(): void {
+        $input = [
+            'firstname'     => 'Jane',
+            'surname'       => 'Doe',
+            'gender'        => 'F',
+            'email'         => 'jane.doe@example.com',
+            'btm'           => '12345678',
+            'contactno'     => '0123456789',
+            'year_of_birth' => '1995',
+        ];
+
+        $result = $this->service->validate_player_details( $input );
+
+        $this->assertIsArray( $result );
+        $this->assertCount( 2, $result );
+        $this->assertTrue( $result[0] );
+        $player = $result[1];
+        $this->assertInstanceOf( stdClass::class, $player );
+        $this->assertSame( 'Jane', $player->firstname );
+        $this->assertSame( 'Doe', $player->surname );
+        $this->assertSame( 'Jane Doe', $player->fullname );
+        $this->assertSame( 'jane.doe', $player->user_login );
+        $this->assertSame( 'jane.doe@example.com', $player->email );
+        $this->assertSame( '12345678', $player->btm );
+        $this->assertSame( '0123456789', $player->contactno );
+        $this->assertSame( 'F', $player->gender );
+        $this->assertFalse( $player->locked );
+        $this->assertSame( 1995, $player->year_of_birth );
+    }
+
+    public function test_validate_player_details_defaults_missing_or_empty_contactno_to_empty_string(): void {
+        $base = [
+            'firstname' => 'Jane',
+            'surname'   => 'Doe',
+            'gender'    => 'F',
+            'email'     => 'jane.doe@example.com',
+            'btm'       => '12345678',
+        ];
+
+        $missing = $this->service->validate_player_details( $base );
+        $this->assertTrue( $missing[0] );
+        $this->assertSame( '', $missing[1]->contactno );
+
+        $empty = $this->service->validate_player_details( $base + [ 'contactno' => '' ] );
+        $this->assertTrue( $empty[0] );
+        $this->assertSame( '', $empty[1]->contactno );
+
+        $failure = $this->service->validate_player_details( [ 'firstname' => '' ] );
+        $this->assertFalse( $failure[0] );
+        $this->assertSame( '', $failure[3]->contactno );
+    }
+
+    public function test_validate_player_returns_null_contactno_when_missing(): void {
+        $result = $this->service->validate_player( [
+            'firstname' => 'Jane',
+            'surname'   => 'Doe',
+            'gender'    => 'F',
+            'email'     => 'jane.doe@example.com',
+            'btm'       => '12345678',
+        ] );
+
+        $this->assertInstanceOf( stdClass::class, $result );
+        $this->assertNull( $result->contactno );
+    }
+
+    public function test_validate_player_details_failure_shape(): void {
+        $input = [
+            'firstname' => '',
+            'surname'   => '',
+            'gender'    => '',
+            'email'     => 'not-an-email',
+        ];
+
+        $result = $this->service->validate_player_details( $input );
+
+        $this->assertIsArray( $result );
+        $this->assertCount( 4, $result );
+        $this->assertFalse( $result[0] );
+        $this->assertIsArray( $result[1] );
+        $this->assertIsArray( $result[2] );
+        $this->assertInstanceOf( stdClass::class, $result[3] );
+        $this->assertContains( 'firstname', $result[1] );
+        $this->assertContains( 'surname', $result[1] );
+        $this->assertContains( 'gender', $result[1] );
+    }
+
+    public function test_validate_player_details_sanitization_and_trimming(): void {
+        $input = [
+            'firstname'     => '  John <script>alert(1)</script> ',
+            'surname'       => ' Smith  ',
+            'gender'        => 'M',
+            'email'         => 'john.smith@example.com',
+            'btm'           => '87654321',
+            'locked'        => '1',
+            'year_of_birth' => '',
+        ];
+
+        $result = $this->service->validate_player_details( $input );
+
+        $this->assertTrue( $result[0] );
+        $player = $result[1];
+        $this->assertSame( 'John alert(1)', $player->firstname );
+        $this->assertSame( 'Smith', $player->surname );
+        $this->assertSame( 'John alert(1) Smith', $player->fullname );
+        $this->assertTrue( $player->locked );
+        $this->assertNull( $player->year_of_birth );
+    }
+
+    public function test_validate_player_details_existing_player_by_name(): void {
+        $player_repo = $this->createMock( Player_Repository_Interface::class );
+        $existing    = Player_Factory::from_object( (object) [
+            'ID'           => 99,
+            'id'           => 99,
+            'display_name' => 'Existing Player',
+            'first_name'   => 'Existing',
+            'last_name'    => 'Player',
+        ] );
+
+        $player_repo->expects( $this->once() )
+            ->method( 'find' )
+            ->with( 'Existing Player', 'name' )
+            ->willReturn( $existing );
+
+        $service = new Player_Validation_Service(
+            $this->registration_service,
+            $this->results_checker_repository,
+            $this->fixture_repository,
+            $player_repo
+        );
+
+        // BTM is registered to ID 99 (the same existing player).
+        // If lookup resolved player_id = 99, validation passes.
+        // If lookup failed, Validator::btm would flag a conflict because player_id would be null.
+        $GLOBALS['wp_stubs_players'] = [
+            'btm' => [
+                '11223344' => (object) [ 'ID' => 99, 'display_name' => 'Existing Player' ],
+            ],
+        ];
+
+        $input = [
+            'firstname' => 'Existing',
+            'surname'   => 'Player',
+            'gender'    => 'M',
+            'email'     => 'existing@example.com',
+            'btm'       => '11223344',
+        ];
+
+        $result = $service->validate_player_details( $input );
+
+        $this->assertTrue( $result[0], 'Validation should succeed when existing player ID matches BTM owner' );
+        $this->assertSame( 'Existing Player', $result[1]->fullname );
     }
 }

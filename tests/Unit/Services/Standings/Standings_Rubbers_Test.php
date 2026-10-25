@@ -7,12 +7,15 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Fixture\Rubber;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Standings\Standings_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class Standings_Rubbers_Test extends TestCase {
     use Manages_Wordpress_Globals;
+    use \Racketmanager\Tests\Helpers\Creates_League_Query_Service;
 
     protected function setUp(): void {
         parent::setUp();
@@ -37,14 +40,20 @@ class Standings_Rubbers_Test extends TestCase {
         $rubber->away_points = 0;
         $rubber->sets = [ 1 => [ 'player1' => 6, 'player2' => 2 ], 2 => [ 'player1' => 6, 'player2' => 3 ] ];
 
-        $league = $this->createStub( League::class );
+        $league = new League( (object) [ 'title' => 'Division 1' ] );
+        $league->id = 12;
+        $league->seasons = [ '2026' => [ 'name' => '2026' ] ];
+        $league->current_season = [ 'name' => '2026' ];
+        $league->set_match_query_arg( 'season', '2026' );
+        $league->point_rule = 'three';
         $league->standings = [];
         $league->num_rubbers = 1;
         $league->num_sets = 2;
         $league->scoring = '';
-        $league->method( 'get_matches' )->willReturn( [ $fixture ] );
-        $league->method( 'get_season' )->willReturn( '2026' );
-        $league->method( 'get_point_rule' )->willReturn( [] );
+        $league_repository = $this->createStub( League_Repository_Interface::class );
+        $league_repository->method( 'query_matches' )->willReturn( [ (object) [ 'id' => 70 ] ] );
+        $fixture_repository = $this->createStub( Fixture_Repository_Interface::class );
+        $fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
 
         $team = new class extends \stdClass {
             public int $id = 10;
@@ -58,7 +67,7 @@ class Standings_Rubbers_Test extends TestCase {
         $repository = $this->createMock( Rubber_Repository_Interface::class );
         $repository->expects( $this->once() )->method( 'find_by_fixture_id' )->with( 70 )->willReturn( [ $rubber ] );
 
-        $standings = ( new Standings_Service( rubber_repository: $repository ) )->get_standings( $league, [ 10 ], 0 );
+        $standings = ( new Standings_Service( rubber_repository: $repository, league_query_service: $this->league_query_service( $league_repository, null, $fixture_repository ) ) )->get_standings( $league, [ 10 ], 0 );
 
         $this->assertSame( [ $rubber ], $fixture->get_rubbers() );
         $this->assertSame( 1, $standings[0]->rubbers_won );

@@ -93,4 +93,18 @@ final class Season_Delete_Action_Dispatcher_Test extends TestCase {
         self::assertSame( 'Missing', $result->message );
         self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
     }
+
+    public function test_fixture_deletion_failure_is_an_error_dto(): void {
+        $competition_service = $this->createMock( Competition_Service::class );
+        $competition_service->expects( self::once() )->method( 'delete_seasons' )
+            ->with( 3, array( 2026 ) )->willThrowException( new \InvalidArgumentException( 'Invalid season' ) );
+
+        $result = ( new Season_Delete_Action_Dispatcher( $competition_service, $this->createStub( Action_Guard_Interface::class ) ) )->handle(
+            array( 'competition_id' => '3' ),
+            array( 'doActionSeason' => '1', 'competition_id' => '3', 'action' => 'delete', 'del_season' => array( 2026 ) )
+        );
+
+        self::assertSame( 'Invalid season', $result->message );
+        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
+    }
 }

@@ -18,8 +18,11 @@
     <testsuite name="Integration">
       <directory>tests/Integration</directory>
     </testsuite>
+    <testsuite name="Architecture">
+      <directory>tests/Architecture</directory>
+    </testsuite>
   </testsuites>
-  <source ignoreIndirectDeprecations="true" restrictNotices="false" restrictWarnings="true">
+  <source ignoreIndirectDeprecations="false" restrictNotices="false" restrictWarnings="true">
     <include>
       <directory>src/php</directory>
     </include>

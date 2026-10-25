@@ -6,6 +6,7 @@ namespace Racketmanager\Application\League\Queries;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Presentation\View_Models\Team_Matches_Group_View_Model;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use function __;
@@ -27,7 +28,8 @@ class Get_League_Matches_Handler {
     public function __construct(
         private readonly League_Service $league_service,
         private readonly Shortcode_Template_Renderer $template_renderer,
-        private readonly Tournament_Presenter $tournament_presenter
+        private readonly Tournament_Presenter $tournament_presenter,
+        private readonly League_Query_Service $league_query_service
     ) {}
 
     public function handle( Get_League_Matches_Query $query ): Shortcode_View_Model {
@@ -52,8 +54,8 @@ class Get_League_Matches_Handler {
             $match_day = is_numeric( $query->matches ) ? (int) $query->matches : $query->matches;
         }
 
-        $league->set_season( $query->season ?? false );
-        $league->set_match_day( $match_day );
+        $this->league_query_service->set_season( $league, $query->season ?? false );
+        $this->league_query_service->set_match_day( $league, $match_day );
         $league->matches_template_type = $query->template_type;
 
         $match_args = [ 'final' => '' ];
@@ -65,8 +67,8 @@ class Get_League_Matches_Handler {
         $match_args['time']      = $query->time;
         $match_args['home_only'] = false;
 
-        $matches = $league->get_matches( $match_args );
-        $league->set_num_matches();
+        $matches = $this->league_query_service->get_matches( $league, $match_args );
+        $this->league_query_service->set_num_matches( $league );
 
         $competition   = $league->event?->competition ?? null;
         // Same condition as templates/matches.php, which renders match cards for non team-entry competitions.
@@ -104,8 +106,8 @@ class Get_League_Matches_Handler {
             $league_matches = $this->tournament_presenter->present_match_list( $raw_matches, options: [ 'show_header' => false ] );
         }
 
-        $teams = $league->get_league_teams( [
-            'season'  => $query->season,
+        $teams = $this->league_query_service->get_league_teams( $league, [
+            'season'  => $league->current_season['name'] ?? $query->season,
             'orderby' => [ 'title' => 'ASC' ],
         ] );
 
@@ -125,7 +127,7 @@ class Get_League_Matches_Handler {
                 'league'      => $league,
                 'matches'     => $league_matches,
                 'teams'       => is_array( $teams ) ? $teams : [],
-                'season'      => $query->season,
+                'season'      => $league->current_season['name'] ?? $query->season,
                 'post_id'     => $post_id,
                 'form_action' => $post_id > 0 ? (string) get_permalink( $post_id ) : '',
             ]

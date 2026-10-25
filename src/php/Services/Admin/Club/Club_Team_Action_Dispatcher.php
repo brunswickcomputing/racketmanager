@@ -10,13 +10,15 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Admin\Club;
 
-use Exception;
+use InvalidArgumentException;
+use Racketmanager\Application\Admin\Commands\Add_Club_Team_Command;
+use Racketmanager\Application\Admin\Commands\Club_Team_Handler;
+use Racketmanager\Application\Admin\Commands\Delete_Club_Teams_Command;
+use Racketmanager\Application\Admin\Commands\Edit_Club_Team_Command;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
-use Racketmanager\Exceptions\Club_Not_Found_Exception;
-use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
-use Racketmanager\Exceptions\Team_Not_Found_Exception;
+use Racketmanager\Services\Admin\Admin_Command_Input as Input;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Team_Service;
@@ -26,11 +28,15 @@ use Racketmanager\Services\Team_Service;
  */
 readonly final class Club_Team_Action_Dispatcher {
 
+    private Club_Team_Handler $commands;
+
     public function __construct(
-        private Club_Service $club_service,
-        private Team_Service $team_service,
+        Club_Service $club_service,
+        Team_Service $team_service,
         private Action_Guard_Interface $action_guard,
+        ?Club_Team_Handler $commands = null,
     ) {
+        $this->commands = $commands ?? new Club_Team_Handler( $club_service, $team_service );
     }
 
     /**
@@ -67,21 +73,22 @@ readonly final class Club_Team_Action_Dispatcher {
             );
         }
 
-        $club_id   = absint( $post['club'] ?? ( $query['club_id'] ?? null ) );
-        $team_type = sanitize_text_field( wp_unslash( strval( $post['team_type'] ?? '' ) ) );
-
         try {
-            $this->club_service->create_team( $club_id, $team_type );
-            return new Action_Result_DTO(
-                message: __( 'Team added', 'racketmanager' ),
-                message_type: Admin_Message_Type::SUCCESS,
+            $club_id   = Input::integer( $post, 'club' ) ?? ( Input::integer( $query, 'club_id' ) ?? 0 );
+            $team_type = Input::text( $post, 'team_type' ) ?? '';
+
+            $command = new Add_Club_Team_Command(
+                club_id: $club_id,
+                team_type: $team_type,
             );
-        } catch ( Club_Not_Found_Exception | Invalid_Argument_Exception $e ) {
+        } catch ( InvalidArgumentException $e ) {
             return new Action_Result_DTO(
                 message: $e->getMessage(),
                 message_type: Admin_Message_Type::ERROR,
             );
         }
+
+        return $this->commands->handle_add_team( $command );
     }
 
     /**
@@ -97,29 +104,24 @@ readonly final class Club_Team_Action_Dispatcher {
             );
         }
 
-        $team_id   = isset( $post['team_id'] ) ? strval( $post['team_id'] ) : null;
-        $club_id   = absint( $post['clubId'] ?? null );
-        $team_type = sanitize_text_field( wp_unslash( strval( $post['team_type'] ?? '' ) ) );
-
         try {
-            $response = $this->team_service->amend_team_for_club( $team_id, $club_id, $team_type );
-            if ( $response ) {
-                return new Action_Result_DTO(
-                    message: __( 'Team updated', 'racketmanager' ),
-                    message_type: Admin_Message_Type::SUCCESS,
-                );
-            }
+            $team_id   = Input::text( $post, 'team_id' );
+            $club_id   = Input::integer( $post, 'clubId' ) ?? 0;
+            $team_type = Input::text( $post, 'team_type' ) ?? '';
 
-            return new Action_Result_DTO(
-                message: __( 'Team details unchanged', 'racketmanager' ),
-                message_type: Admin_Message_Type::WARNING,
+            $command = new Edit_Club_Team_Command(
+                team_id: $team_id,
+                club_id: $club_id,
+                team_type: $team_type,
             );
-        } catch ( Team_Not_Found_Exception | Club_Not_Found_Exception | Invalid_Argument_Exception $e ) {
+        } catch ( InvalidArgumentException $e ) {
             return new Action_Result_DTO(
                 message: $e->getMessage(),
                 message_type: Admin_Message_Type::ERROR,
             );
         }
+
+        return $this->commands->handle_edit_team( $command );
     }
 
     /**
@@ -135,36 +137,17 @@ readonly final class Club_Team_Action_Dispatcher {
             );
         }
 
-        $teams = isset( $post['team'] ) && is_array( $post['team'] ) ? $post['team'] : array();
-        if ( empty( $teams ) ) {
+        try {
+            $command = new Delete_Club_Teams_Command(
+                team: Input::column( $post, 'team' ),
+            );
+        } catch ( InvalidArgumentException $e ) {
             return new Action_Result_DTO(
-                message: __( 'No teams selected', 'racketmanager' ),
-                message_type: Admin_Message_Type::WARNING,
+                message: $e->getMessage(),
+                message_type: Admin_Message_Type::ERROR,
             );
         }
 
-        $messages  = array();
-        $has_error = false;
-        foreach ( $teams as $team_id ) {
-            try {
-                $team = $this->team_service->get_team_by_id( (int) $team_id );
-            } catch ( Team_Not_Found_Exception ) {
-                $team = null;
-            }
-            if ( null !== $team ) {
-                $deleted = $this->team_service->delete_team( (int) $team_id );
-                if ( $deleted ) {
-                    $messages[] = ( $team->get_name() ?: (string) $team_id ) . ' ' . __( 'deleted', 'racketmanager' );
-                } else {
-                    $has_error  = true;
-                    $messages[] = ( $team->get_name() ?: (string) $team_id ) . ' ' . __( 'failed to delete', 'racketmanager' );
-                }
-            }
-        }
-
-        return new Action_Result_DTO(
-            message: implode( '<br>', $messages ),
-            message_type: $has_error ? Admin_Message_Type::ERROR : Admin_Message_Type::SUCCESS,
-        );
+        return $this->commands->handle_delete_teams( $command );
     }
 }

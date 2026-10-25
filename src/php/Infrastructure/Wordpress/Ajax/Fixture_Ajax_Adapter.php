@@ -15,6 +15,7 @@ use Racketmanager\Domain\DTO\Fixture\Rubber_Status_Options_Request;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Status_Update_Request;
 use Racketmanager\Domain\DTO\Fixture\Team_Result_Confirmation_Request;
 use Racketmanager\Domain\DTO\Fixture\Team_Result_Update_Request;
+use Racketmanager\Domain\Fixture\Fixture_Time_Parser;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Fixture_Not_Found_Exception;
 use Racketmanager\Exceptions\Fixture_Validation_Exception;
@@ -299,7 +300,10 @@ class Fixture_Ajax_Adapter {
             }
 
             $maintenance_service = $this->get_fixture_maintenance_service();
-            $maintenance_service->update_fixture_date( $request->match_id, (string) $request->schedule_date, $match->get_date() );
+            $updated             = $maintenance_service->update_fixture_date( $request->match_id, (string) $request->schedule_date, $match->get_date() );
+            if ( ! $updated ) {
+                throw new Exception( __( 'Failed to update match schedule', 'racketmanager' ) );
+            }
             $maintenance_service->update_fixture_status( $request->match_id, 5 );
 
             $read_model = $this->presenter->map_to_date_update_read_model( $request, $schedule_date_fmt );
@@ -356,8 +360,13 @@ class Fixture_Ajax_Adapter {
                 throw new Fixture_Validation_Exception( [ __( 'Match day not found', 'racketmanager' ) ], [ 'schedule-date' ] );
             }
 
+            $target_date = $match_date;
+            if ( ! empty( $fixture->get_start_time() ) && strlen( trim( $match_date ) ) === 10 ) {
+                $target_date = Fixture_Time_Parser::merge_time_into_date( $match_date, $fixture->get_start_time() );
+            }
+
             $maintenance_service = $this->get_fixture_maintenance_service();
-            $maintenance_service->update_fixture_date( $fixture->get_id(), $match_date );
+            $maintenance_service->update_fixture_date( $fixture->get_id(), $target_date );
             $maintenance_service->update_fixture_teams( $fixture->get_id(), $fixture->get_away_team(), $fixture->get_home_team() );
 
             $details    = $this->fixture_detail_service->get_fixture_with_details( $fixture->get_id() );

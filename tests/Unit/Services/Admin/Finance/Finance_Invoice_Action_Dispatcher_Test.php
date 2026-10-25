@@ -5,6 +5,8 @@ namespace Racketmanager\Tests\Unit\Services\Admin\Finance;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Finance\Commands\Action_Invoice_Command;
+use Racketmanager\Application\Finance\Commands\Action_Invoice_Handler;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\Finance\Invoice;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
@@ -23,13 +25,19 @@ final class Finance_Invoice_Action_Dispatcher_Test extends TestCase {
 
     private Finance_Service $finance_service;
     private Action_Guard_Interface $guard;
+    private Action_Invoice_Handler $action_invoice_handler;
     private Finance_Invoice_Action_Dispatcher $dispatcher;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->finance_service = $this->createMock( Finance_Service::class );
-        $this->guard           = $this->createMock( Action_Guard_Interface::class );
-        $this->dispatcher      = new Finance_Invoice_Action_Dispatcher( $this->finance_service, $this->guard );
+        $this->finance_service        = $this->createMock( Finance_Service::class );
+        $this->guard                  = $this->createMock( Action_Guard_Interface::class );
+        $this->action_invoice_handler = new Action_Invoice_Handler( $this->finance_service );
+        $this->dispatcher             = new Finance_Invoice_Action_Dispatcher(
+            $this->finance_service,
+            $this->guard,
+            $this->action_invoice_handler
+        );
     }
 
     public function test_unhandled_action_returns_empty_dto(): void {
@@ -133,6 +141,68 @@ final class Finance_Invoice_Action_Dispatcher_Test extends TestCase {
 
         self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
         self::assertSame( 'Invoice not found', $result->message );
+    }
+
+    public function test_bulk_invoices_executes_injected_handler_with_command(): void {
+        $this->guard->expects( self::once() )->method( 'assert_allowed' );
+
+        $handler = $this->createMock( Action_Invoice_Handler::class );
+        $handler->expects( self::once() )
+            ->method( 'handle' )
+            ->with( self::callback( function ( Action_Invoice_Command $cmd ): bool {
+                return 42 === $cmd->invoice_id && 'paid' === $cmd->action;
+            } ) )
+            ->willReturn( 'Invoice #42 marked as paid' );
+
+        $dispatcher = new Finance_Invoice_Action_Dispatcher(
+            $this->finance_service,
+            $this->guard,
+            action_invoice_handler: $handler
+        );
+
+        $result = $dispatcher->handle(
+            array( 'view' => 'club-invoices' ),
+            array(
+                'doActionInvoices' => '1',
+                'action'           => 'paid',
+                'invoice'          => array( 42 ),
+            )
+        );
+
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+        self::assertSame( 'Invoice #42 marked as paid', $result->message );
+    }
+
+    public function test_bulk_invoices_multiple_mixed_outcomes_aggregates_messages_and_errors(): void {
+        $this->guard->expects( self::once() )->method( 'assert_allowed' );
+
+        $handler = $this->createMock( Action_Invoice_Handler::class );
+        $handler->expects( self::exactly( 2 ) )
+            ->method( 'handle' )
+            ->willReturnCallback( function ( Action_Invoice_Command $cmd ): string {
+                if ( 10 === $cmd->invoice_id ) {
+                    return 'Invoice 10 updated';
+                }
+                throw new Invoice_Not_Found_Exception( 'Invoice 20 missing' );
+            } );
+
+        $dispatcher = new Finance_Invoice_Action_Dispatcher(
+            $this->finance_service,
+            $this->guard,
+            action_invoice_handler: $handler
+        );
+
+        $result = $dispatcher->handle(
+            array( 'view' => 'club-invoices' ),
+            array(
+                'doActionInvoices' => '1',
+                'action'           => 'sent',
+                'invoice'          => array( 10, 20 ),
+            )
+        );
+
+        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
+        self::assertSame( 'Invoice 10 updated<br>Invoice 20 missing', $result->message );
     }
 
     public function test_save_invoice_guard_failure(): void {
@@ -279,5 +349,18 @@ final class Finance_Invoice_Action_Dispatcher_Test extends TestCase {
 
         self::assertSame( 'No updates', $result->message );
         self::assertSame( Admin_Message_Type::WARNING, $result->message_type );
+    }
+
+    public function test_constructor_requires_action_invoice_handler(): void {
+        $ctor = new \ReflectionMethod( Finance_Invoice_Action_Dispatcher::class, '__construct' );
+        $params = [];
+        foreach ( $ctor->getParameters() as $param ) {
+            $params[ $param->getName() ] = $param;
+        }
+
+        $this->assertArrayHasKey( 'action_invoice_handler', $params );
+        $this->assertFalse( $params['action_invoice_handler']->isOptional(), 'action_invoice_handler must be required.' );
+        $this->assertFalse( $params['action_invoice_handler']->allowsNull(), 'action_invoice_handler must not allow null.' );
+        $this->assertSame( Action_Invoice_Handler::class, (string) $params['action_invoice_handler']->getType() );
     }
 }

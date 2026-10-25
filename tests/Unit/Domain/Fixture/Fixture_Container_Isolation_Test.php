@@ -113,6 +113,16 @@ final class Fixture_Container_Isolation_Test extends TestCase {
 		$this->assertSame( array(), $fixture->get_loaded_teams() );
 	}
 
+	public function test_fallback_teams_and_title_accept_localized_labels_without_wordpress(): void {
+		$fixture = Fixture_Factory::from_array( array( 'home_team' => '-1', 'away_team' => '22' ) );
+		$teams   = $fixture->get_teams( 'Freilos', 'Unbekannt' );
+
+		$this->assertSame( 'Freilos', $teams['home']->title );
+		$this->assertSame( 'Unbekannt', $teams['away']->title );
+		$this->assertSame( 'Freilos - Unbekannt', $fixture->get_title( 'Freilos', 'Unbekannt' ) );
+		$this->assertSame( array(), $fixture->get_loaded_teams() );
+	}
+
 	public function test_bulk_team_lookup_for_deletion_does_not_load_relations(): void {
 		$league_repository = $this->createMock( League_Repository_Interface::class );
 		$league_repository->expects( $this->never() )->method( 'find_by_id' );

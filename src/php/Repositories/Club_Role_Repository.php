@@ -11,6 +11,7 @@ namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Club\Club_Role;
 use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use wpdb;
@@ -19,13 +20,20 @@ use wpdb;
  * Class to implement the Club_Role repository
  */
 class Club_Role_Repository implements Club_Role_Repository_Interface {
-    private wpdb $wpdb;
+    private ?wpdb $wpdb;
     private string $table_name;
+    private ?User_Repository_Interface $user_repository;
 
-    public function __construct() {
-        global $wpdb;
-        $this->wpdb = $wpdb;
-        $this->table_name = $this->wpdb->prefix . 'racketmanager_club_roles';
+    public function __construct( ?wpdb $wpdb = null, ?User_Repository_Interface $user_repository = null ) {
+        if ( null === $wpdb ) {
+            global $wpdb;
+            $this->wpdb = $wpdb;
+        } else {
+            $this->wpdb = $wpdb;
+        }
+        $prefix = ( $this->wpdb && isset( $this->wpdb->prefix ) ) ? $this->wpdb->prefix : 'wp_';
+        $this->table_name = $prefix . 'racketmanager_club_roles';
+        $this->user_repository = $user_repository ?? new User_Repository();
     }
 
     /**
@@ -104,11 +112,34 @@ class Club_Role_Repository implements Club_Role_Repository_Interface {
         }
 
         if ( $club_role_data ) {
-            // Instantiate and return a new User object with the fetched data
-            return new Club_Role( $club_role_data );
+            return $this->hydrate_club_role( $club_role_data );
         }
 
         return null; // Club role not found
+    }
+
+    /**
+     * Hydrate a Club_Role instance from a raw data object and resolve its User.
+     *
+     * @param object $row
+     * @return Club_Role
+     */
+    public function hydrate_club_role( object $row ): Club_Role {
+        $club_role = new Club_Role( $row );
+        $this->hydrate_user( $club_role );
+        return $club_role;
+    }
+
+    /**
+     * Resolve and attach User entity to the Club_Role if user_id is present.
+     *
+     * @param Club_Role $club_role
+     * @return void
+     */
+    public function hydrate_user( Club_Role $club_role ): void {
+        if ( ! empty( $club_role->user_id ) && null === $club_role->user && null !== $this->user_repository ) {
+            $club_role->user = $this->user_repository->find( (int) $club_role->user_id );
+        }
     }
 
     /**

@@ -5,11 +5,14 @@ namespace Racketmanager\Tests\Unit\Services\Competition;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Events\Competition_Season_Cascaded_Event;
+use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface;
 use Racketmanager\Domain\Events\Domain_Event_Interface;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
@@ -29,7 +32,8 @@ class Competition_Season_Service_Test extends TestCase {
 		$this->service = new Competition_Season_Service(
 			$this->createStub( League_Team_Repository_Interface::class ),
 			$this->createStub( Club_Repository_Interface::class ),
-			$this->createStub( Event_Repository_Interface::class )
+			$this->createStub( Event_Repository_Interface::class ),
+			$this->createStub( League_Repository_Interface::class )
 		);
 	}
 
@@ -108,29 +112,35 @@ class Competition_Season_Service_Test extends TestCase {
 		$this->assertEquals( 'complete', Competition::calculate_phase( $data ) );
 	}
 
-	public function test_cascade_season_to_events_reads_events_from_event_repository_and_passes_league_team_repository(): void {
-		$league_team_repository = $this->createStub( League_Team_Repository_Interface::class );
-
-		$event = new class() {
-			public ?array $season = null;
-			public ?League_Team_Repository_Interface $repo = null;
-
-			public function add_season( array $season, League_Team_Repository_Interface $repo ): void {
-				$this->season = $season;
-				$this->repo   = $repo;
-			}
-		};
+	public function test_cascade_season_to_events_reads_events_from_event_repository_and_persists_seasons(): void {
+		$event = $this->make_event( 25 );
 
 		$event_repository = $this->createMock( Event_Repository_Interface::class );
 		$event_repository->expects( $this->once() )
 			->method( 'find_by_competition_id' )
 			->with( 31 )
 			->willReturn( [ $event ] );
+		$event_repository->expects( $this->once() )
+			->method( 'update_seasons' )
+			->with(
+				25,
+				$this->callback(
+					static function ( array $seasons ): bool {
+						return isset( $seasons['2026'] )
+							&& '2026' === $seasons['2026']['name']
+							&& 'true' === $seasons['2026']['home_away']
+							&& 10 === $seasons['2026']['num_match_days']
+							&& [ '1' => '2026-06-01' ] === $seasons['2026']['match_dates'];
+					}
+				)
+			)
+			->willReturn( true );
 
 		$service = new Competition_Season_Service(
-			$league_team_repository,
+			$this->createStub( League_Team_Repository_Interface::class ),
 			$this->createStub( Club_Repository_Interface::class ),
-			$event_repository
+			$event_repository,
+			$this->createStub( League_Repository_Interface::class )
 		);
 
 		$season                 = new \stdClass();
@@ -141,11 +151,11 @@ class Competition_Season_Service_Test extends TestCase {
 
 		$service->cascade_season_to_events( Competition_Test_Factory::create( id: 31 ), $season );
 
-		$this->assertSame( $league_team_repository, $event->repo );
-		$this->assertSame( '2026', $event->season['name'] );
-		$this->assertSame( 'true', $event->season['home_away'] );
-		$this->assertSame( 10, $event->season['num_match_days'] );
-		$this->assertSame( [ '1' => '2026-06-01' ], $event->season['match_dates'] );
+		$this->assertArrayHasKey( '2026', $event->get_seasons() );
+		$this->assertSame( '2026', $event->get_seasons()['2026']['name'] );
+		$this->assertSame( 'true', $event->get_seasons()['2026']['home_away'] );
+		$this->assertSame( 10, $event->get_seasons()['2026']['num_match_days'] );
+		$this->assertSame( [ '1' => '2026-06-01' ], $event->get_seasons()['2026']['match_dates'] );
 	}
 
 	public function test_cascade_season_to_events_without_events_does_nothing(): void {
@@ -155,7 +165,8 @@ class Competition_Season_Service_Test extends TestCase {
 		$service = new Competition_Season_Service(
 			$this->createStub( League_Team_Repository_Interface::class ),
 			$this->createStub( Club_Repository_Interface::class ),
-			$event_repository
+			$event_repository,
+			$this->createStub( League_Repository_Interface::class )
 		);
 
 		$season       = new \stdClass();
@@ -170,16 +181,13 @@ class Competition_Season_Service_Test extends TestCase {
 		$dispatcher       = $this->createMock( Domain_Event_Dispatcher_Interface::class );
 
 		$competition = Competition_Test_Factory::create( id: 10 );
-
-		$mock_event = new class {
-			public function add_season( array $season, League_Team_Repository_Interface $repo ): void {
-			}
-		};
+		$event       = $this->make_event( 25 );
 
 		$event_repo->expects( $this->once() )
 			->method( 'find_by_competition_id' )
 			->with( 10 )
-			->willReturn( [ $mock_event ] );
+			->willReturn( [ $event ] );
+		$event_repo->method( 'update_seasons' )->willReturn( true );
 
 		$dispatched_events = [];
 		$dispatcher->expects( $this->once() )
@@ -192,6 +200,7 @@ class Competition_Season_Service_Test extends TestCase {
 			league_team_repository: $league_team_repo,
 			club_repository: $club_repo,
 			event_repository: $event_repo,
+			league_repository: $this->createStub( League_Repository_Interface::class ),
 			event_dispatcher: $dispatcher
 		);
 
@@ -356,6 +365,252 @@ class Competition_Season_Service_Test extends TestCase {
 		$this->assertNull( $data['venue_name'] );
 	}
 
+	public function test_add_season_to_event_merges_and_persists_seasons(): void {
+		$event      = $this->make_event( 5 );
+		$event_repo = $this->createMock( Event_Repository_Interface::class );
+		$event_repo->expects( $this->once() )
+			->method( 'update_seasons' )
+			->with( 5, [ '2026' => [ 'name' => '2026', 'home_away' => true ] ] )
+			->willReturn( true );
+		$event_repo->expects( $this->never() )->method( 'build_constitution' );
+
+		$service = new Competition_Season_Service(
+			$this->createStub( League_Team_Repository_Interface::class ),
+			$this->createStub( Club_Repository_Interface::class ),
+			$event_repo,
+			$this->createStub( League_Repository_Interface::class )
+		);
+
+		$service->add_season_to_event( $event, [ 'name' => '2026', 'home_away' => true ] );
+
+		$this->assertArrayHasKey( '2026', $event->get_seasons() );
+		$this->assertTrue( $event->get_seasons()['2026']['home_away'] );
+	}
+
+	public function test_add_season_to_event_skips_seeding_for_non_league_event(): void {
+		$competition            = $this->createStub( Competition::class );
+		$competition->is_league = false;
+		$event                  = $this->make_event( 5, [ '2025' => [ 'name' => '2025' ] ], $competition );
+
+		$event_repo = $this->createMock( Event_Repository_Interface::class );
+		$event_repo->expects( $this->once() )->method( 'update_seasons' )->willReturn( true );
+		$event_repo->expects( $this->never() )->method( 'build_constitution' );
+
+		$league_repo = $this->createMock( League_Repository_Interface::class );
+		$league_repo->expects( $this->never() )->method( 'add_team_to_league' );
+
+		$service = new Competition_Season_Service(
+			$this->createStub( League_Team_Repository_Interface::class ),
+			$this->createStub( Club_Repository_Interface::class ),
+			$event_repo,
+			$league_repo
+		);
+
+		$service->add_season_to_event( $event, [ 'name' => '2026' ] );
+	}
+
+	public function test_add_season_to_event_skips_seeding_when_there_is_no_previous_season(): void {
+		$competition            = $this->createStub( Competition::class );
+		$competition->is_league = true;
+		$event                  = $this->make_event( 5, [], $competition );
+
+		$event_repo = $this->createMock( Event_Repository_Interface::class );
+		$event_repo->expects( $this->once() )->method( 'update_seasons' )->willReturn( true );
+		$event_repo->expects( $this->never() )->method( 'build_constitution' );
+
+		$league_repo = $this->createMock( League_Repository_Interface::class );
+		$league_repo->expects( $this->never() )->method( 'add_team_to_league' );
+
+		$service = new Competition_Season_Service(
+			$this->createStub( League_Team_Repository_Interface::class ),
+			$this->createStub( Club_Repository_Interface::class ),
+			$event_repo,
+			$league_repo
+		);
+
+		$service->add_season_to_event( $event, [ 'name' => '2026' ] );
+	}
+
+	public function test_add_season_to_event_seeds_previous_season_constitution_in_rank_order(): void {
+		$competition            = $this->createStub( Competition::class );
+		$competition->is_league = true;
+		$event                  = $this->make_event( 50, [ '2025' => [ 'name' => '2025' ] ], $competition );
+
+		$team_one = (object) [
+			'team_id'       => 101,
+			'old_league_id' => 22,
+			'old_rank'      => 1,
+			'status'        => 'P1',
+			'captain'       => 55,
+			'match_day'     => 'Monday',
+			'match_time'    => '19:00',
+		];
+		$team_two = (object) [
+			'team_id'       => 102,
+			'old_league_id' => 22,
+			'old_rank'      => 2,
+			'status'        => 'W',
+			'captain'       => 66,
+			'match_day'     => 'Tuesday',
+			'match_time'    => '18:30',
+		];
+
+		$event_repo = $this->createMock( Event_Repository_Interface::class );
+		$event_repo->expects( $this->once() )->method( 'update_seasons' )->willReturn( true );
+		$event_repo->expects( $this->once() )
+			->method( 'build_constitution' )
+			->with(
+				50,
+				[
+					'offset' => 0,
+					'limit'  => 99999999,
+					'season' => '2025',
+					'club'   => false,
+				]
+			)
+			->willReturn( [ $team_one, $team_two ] );
+
+		$league     = $this->createStub( League::class );
+		$league->id = 22;
+
+		$league_repo = $this->createMock( League_Repository_Interface::class );
+		$league_repo->expects( $this->once() )->method( 'find_by_id' )->with( 22 )->willReturn( $league );
+		$league_repo->expects( $this->exactly( 2 ) )
+			->method( 'add_team_to_league' )
+			->willReturnCallback(
+				function ( int $league_id, int $team_id, string $season, string $rank, string $status, int $profile ): int {
+					$this->assertSame( 22, $league_id );
+					$this->assertSame( '2026', $season );
+					$this->assertSame( '', $status );
+					$this->assertSame( 0, $profile );
+					if ( 101 === $team_id ) {
+						$this->assertSame( '1', $rank );
+						return 301;
+					}
+					$this->assertSame( 102, $team_id );
+					$this->assertSame( '2', $rank );
+					return 302;
+				}
+			);
+
+		$league_team_repo = $this->createMock( League_Team_Repository_Interface::class );
+		$league_team_repo->expects( $this->exactly( 2 ) )
+			->method( 'update_details' )
+			->willReturnCallback(
+				function ( int $league_team_id, int $captain, string $match_day, string $match_time ): bool {
+					if ( 301 === $league_team_id ) {
+						$this->assertSame( 55, $captain );
+						$this->assertSame( 'Monday', $match_day );
+						$this->assertSame( '19:00', $match_time );
+						return true;
+					}
+					$this->assertSame( 302, $league_team_id );
+					$this->assertSame( 66, $captain );
+					$this->assertSame( 'Tuesday', $match_day );
+					$this->assertSame( '18:30', $match_time );
+					return true;
+				}
+			);
+
+		$service = new Competition_Season_Service(
+			$league_team_repo,
+			$this->createStub( Club_Repository_Interface::class ),
+			$event_repo,
+			$league_repo
+		);
+
+		$service->add_season_to_event( $event, [ 'name' => '2026' ] );
+
+		$this->assertSame( 301, $team_one->league_team_id );
+		$this->assertSame( 302, $team_two->league_team_id );
+		$this->assertSame( '', $team_one->status );
+		$this->assertSame( 'W', $team_two->status );
+		$this->assertSame( '0', $team_one->profile );
+		$this->assertSame( '0', $team_two->profile );
+	}
+
+	public function test_add_season_to_event_skips_missing_league(): void {
+		$competition            = $this->createStub( Competition::class );
+		$competition->is_league = true;
+		$event                  = $this->make_event( 50, [ '2025' => [ 'name' => '2025' ] ], $competition );
+
+		$team_row = (object) [
+			'team_id'       => 101,
+			'old_league_id' => 22,
+			'old_rank'      => 1,
+			'status'        => '',
+			'captain'       => 55,
+			'match_day'     => 'Monday',
+			'match_time'    => '19:00',
+		];
+
+		$event_repo = $this->createMock( Event_Repository_Interface::class );
+		$event_repo->expects( $this->once() )->method( 'update_seasons' )->willReturn( true );
+		$event_repo->method( 'build_constitution' )->willReturn( [ $team_row ] );
+
+		$league_repo = $this->createMock( League_Repository_Interface::class );
+		$league_repo->expects( $this->once() )->method( 'find_by_id' )->with( 22 )->willReturn( null );
+		$league_repo->expects( $this->never() )->method( 'add_team_to_league' );
+
+		$league_team_repo = $this->createMock( League_Team_Repository_Interface::class );
+		$league_team_repo->expects( $this->never() )->method( 'update_details' );
+
+		$service = new Competition_Season_Service(
+			$league_team_repo,
+			$this->createStub( Club_Repository_Interface::class ),
+			$event_repo,
+			$league_repo
+		);
+
+		$service->add_season_to_event( $event, [ 'name' => '2026' ] );
+		$this->assertObjectNotHasProperty( 'league_team_id', $team_row );
+	}
+
+	public function test_build_event_constitution_normalises_status_profile_and_rank(): void {
+		$withdrawn = (object) [
+			'old_rank'      => 3,
+			'status'        => 'W',
+			'old_league_id' => 22,
+		];
+		$promoted  = (object) [
+			'old_rank'      => 1,
+			'status'        => 'P1',
+			'old_league_id' => 22,
+		];
+
+		$event_repo = $this->createMock( Event_Repository_Interface::class );
+		$event_repo->expects( $this->once() )
+			->method( 'build_constitution' )
+			->with(
+				50,
+				[
+					'offset' => 0,
+					'limit'  => 99999999,
+					'season' => '2025',
+					'club'   => false,
+				]
+			)
+			->willReturn( [ $withdrawn, $promoted ] );
+
+		$service = new Competition_Season_Service(
+			$this->createStub( League_Team_Repository_Interface::class ),
+			$this->createStub( Club_Repository_Interface::class ),
+			$event_repo,
+			$this->createStub( League_Repository_Interface::class )
+		);
+
+		$result = $service->build_event_constitution( 50, [ 'season' => '2025' ] );
+
+		$this->assertSame( 'W', $result[0]->status );
+		$this->assertSame( 3, $result[0]->rank );
+		$this->assertSame( '0', $result[0]->profile );
+		$this->assertSame( 22, $result[0]->league_id );
+		$this->assertSame( '', $result[1]->status );
+		$this->assertSame( 1, $result[1]->rank );
+		$this->assertSame( '0', $result[1]->profile );
+		$this->assertSame( 22, $result[1]->league_id );
+	}
+
 	/**
 	 * Competition 7 with a closed 2024 season, an active 2025 season held at venue 130 whose dates come
 	 * from its match dates, and a future 2026 season.
@@ -396,7 +651,24 @@ class Competition_Season_Service_Test extends TestCase {
 		return new Competition_Season_Service(
 			$this->createStub( League_Team_Repository_Interface::class ),
 			$club_repository,
-			$this->createStub( Event_Repository_Interface::class )
+			$this->createStub( Event_Repository_Interface::class ),
+			$this->createStub( League_Repository_Interface::class )
+		);
+	}
+
+	private function make_event( int $id = 5, array $seasons = [], ?Competition $competition = null ): Event {
+		return new Event(
+			(object) [
+				'id'             => $id,
+				'name'           => 'Men Doubles ' . $id,
+				'type'           => 'MD',
+				'num_sets'       => 3,
+				'num_rubbers'    => 2,
+				'settings'       => '',
+				'seasons'        => wp_json_encode( $seasons ),
+				'competition_id' => 10,
+			],
+			$competition
 		);
 	}
 }

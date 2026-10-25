@@ -60,4 +60,152 @@ class Fixture_Factory_Test extends TestCase {
 		$this->assertSame( [ 'note' => 'Great match' ], $fixture->get_comments() );
 		$this->assertSame( [ 'walkover' => '1', 'sets' => [ '6-4', '6-2' ] ], $fixture->get_custom() );
 	}
+
+	public function test_from_object_extracts_start_time_from_datetime(): void {
+		$row = (object) [
+			'id'        => '789',
+			'home_team' => '1',
+			'away_team' => '2',
+			'date'      => '2026-05-15 19:30:00',
+		];
+
+		$fixture = Fixture_Factory::from_object( $row );
+
+		$this->assertSame( '2026-05-15 19:30:00', $fixture->get_date() );
+		$this->assertSame( '19:30', $fixture->get_start_time() );
+	}
+
+	public function test_from_object_leaves_start_time_null_for_date_only_or_midnight(): void {
+		$row_date_only = (object) [
+			'id'        => '790',
+			'home_team' => '1',
+			'away_team' => '2',
+			'date'      => '2026-05-15',
+		];
+
+		$fixture_date_only = Fixture_Factory::from_object( $row_date_only );
+		$this->assertNull( $fixture_date_only->get_start_time() );
+
+		$row_midnight = (object) [
+			'id'        => '791',
+			'home_team' => '1',
+			'away_team' => '2',
+			'date'      => '2026-05-15 00:00:00',
+		];
+
+		$fixture_midnight = Fixture_Factory::from_object( $row_midnight );
+		$this->assertNull( $fixture_midnight->get_start_time() );
+	}
+
+	public function test_from_array_extracts_start_time_from_datetime(): void {
+		$data = [
+			'id'        => 792,
+			'home_team' => '5',
+			'away_team' => '6',
+			'date'      => '2026-06-01 18:45:00',
+		];
+
+		$fixture = Fixture_Factory::from_array( $data );
+
+		$this->assertSame( '2026-06-01 18:45:00', $fixture->get_date() );
+		$this->assertSame( '18:45', $fixture->get_start_time() );
+	}
+
+	public function test_from_object_honors_explicit_start_time_override(): void {
+		$row = (object) [
+			'id'         => '793',
+			'home_team'  => '1',
+			'away_team'  => '2',
+			'date'       => '2026-05-15 19:30:00',
+			'start_time' => '20:15',
+		];
+
+		$fixture = Fixture_Factory::from_object( $row );
+
+		$this->assertSame( '2026-05-15 20:15:00', $fixture->get_date() );
+		$this->assertSame( '20:15', $fixture->get_start_time() );
+
+		$reloaded = Fixture_Factory::from_object( (object) [ 'id' => '793', 'date' => $fixture->get_date() ] );
+		$this->assertSame( '20:15', $reloaded->get_start_time() );
+	}
+
+	public function test_from_object_honors_explicit_start_time_override_with_date_only(): void {
+		$row = (object) [
+			'id'         => '794',
+			'home_team'  => '1',
+			'away_team'  => '2',
+			'date'       => '2026-05-15',
+			'start_time' => '18:00',
+		];
+
+		$fixture = Fixture_Factory::from_object( $row );
+
+		$this->assertSame( '2026-05-15 18:00:00', $fixture->get_date() );
+		$this->assertSame( '18:00', $fixture->get_start_time() );
+
+		$reloaded = Fixture_Factory::from_object( (object) [ 'id' => '794', 'date' => $fixture->get_date() ] );
+		$this->assertSame( '18:00', $reloaded->get_start_time() );
+	}
+
+	public function test_from_object_honors_explicit_null_start_time_override(): void {
+		$row = (object) [
+			'id'         => '795',
+			'home_team'  => '1',
+			'away_team'  => '2',
+			'date'       => '2026-05-15 19:30:00',
+			'start_time' => null,
+		];
+
+		$fixture = Fixture_Factory::from_object( $row );
+
+		$this->assertSame( '2026-05-15 00:00:00', $fixture->get_date() );
+		$this->assertNull( $fixture->get_start_time() );
+
+		$reloaded = Fixture_Factory::from_object( (object) [ 'id' => '795', 'date' => $fixture->get_date() ] );
+		$this->assertNull( $reloaded->get_start_time() );
+	}
+
+	public function test_from_object_explicit_midnight_start_time_clears_datetime_to_midnight(): void {
+		$fixture = Fixture_Factory::from_object(
+			(object) [
+				'id'         => '796',
+				'date'       => '2026-05-15 19:30:00',
+				'start_time' => '00:00',
+			]
+		);
+
+		$this->assertSame( '2026-05-15 00:00:00', $fixture->get_date() );
+		$this->assertNull( $fixture->get_start_time() );
+	}
+
+	public function test_from_object_equal_explicit_start_time_preserves_date_exactly(): void {
+		$fixture = Fixture_Factory::from_object(
+			(object) [
+				'id'         => '797',
+				'date'       => '2026-05-15 19:30:45',
+				'start_time' => '19:30',
+			]
+		);
+
+		$this->assertSame( '2026-05-15 19:30:45', $fixture->get_date() );
+		$this->assertSame( '19:30', $fixture->get_start_time() );
+	}
+
+	public function test_direct_dto_with_start_time_reconciles_date_and_round_trips(): void {
+		$fixture = new Fixture( new Fixture_Hydration_DTO( date: '2026-05-15 19:30:00', start_time: '20:00' ) );
+		$this->assertSame( '2026-05-15 20:00:00', $fixture->get_date() );
+		$this->assertSame( '20:00', $fixture->get_start_time() );
+
+		$reloaded = new Fixture( new Fixture_Hydration_DTO( date: $fixture->get_date() ) );
+		$this->assertSame( '20:00', $reloaded->get_start_time() );
+
+		$date_only = new Fixture( new Fixture_Hydration_DTO( date: '2026-05-15', start_time: '14:00' ) );
+		$this->assertSame( '2026-05-15 14:00:00', $date_only->get_date() );
+	}
+
+	public function test_direct_dto_default_null_start_time_preserves_timed_date(): void {
+		$fixture = new Fixture( new Fixture_Hydration_DTO( date: '2026-05-15 19:30:45' ) );
+		$this->assertSame( '2026-05-15 19:30:45', $fixture->get_date() );
+		$this->assertSame( '19:30', $fixture->get_start_time() );
+	}
 }

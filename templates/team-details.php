@@ -45,10 +45,12 @@ $match_time_val   = $vm->match_time_formatted ?? '';
                     <span class="profile-icon">
                         <span class="profile-icon__abbr">
                             <?php
-                            $words    = explode( ' ', $team->get_name() );
-                            $initials = null;
+                            $words    = array_filter( explode( ' ', (string) ( $team->get_name() ?? '' ) ) );
+                            $initials = '';
                             foreach ( $words as $w ) {
-                                $initials .= $w[0];
+                                if ( '' !== $w ) {
+                                    $initials .= $w[0];
+                                }
                             }
                             echo esc_html( $initials );
                             ?>

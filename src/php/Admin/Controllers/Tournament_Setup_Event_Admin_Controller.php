@@ -117,7 +117,7 @@ readonly final class Tournament_Setup_Event_Admin_Controller {
             throw new Invalid_Status_Exception( __( 'League not found', 'racketmanager' ) );
         }
 
-        $match_count = $league->get_matches(
+        $match_count = \Racketmanager\get_league_query_service()->get_matches( $league,
             array(
                 'count' => true,
                 'final' => 'all',

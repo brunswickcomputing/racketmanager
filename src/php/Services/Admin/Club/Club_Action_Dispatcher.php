@@ -10,27 +10,34 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Admin\Club;
 
-use Exception;
+use InvalidArgumentException;
+use Racketmanager\Application\Admin\Commands\Add_Club_Admin_Command;
+use Racketmanager\Application\Admin\Commands\Club_Handler;
+use Racketmanager\Application\Admin\Commands\Delete_Clubs_Command;
+use Racketmanager\Application\Admin\Commands\Edit_Club_Admin_Command;
+use Racketmanager\Application\Admin\Commands\Schedule_Global_Player_Ratings_Command;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
-use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
+use Racketmanager\Services\Admin\Admin_Command_Input as Input;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Player_Service;
-use Racketmanager\Services\Validator\Validator_Club;
-use stdClass;
 
 /**
  * Handles club mutations for the club admin screen (add/edit club, delete clubs, schedule player ratings).
  */
 readonly final class Club_Action_Dispatcher {
 
+    private Club_Handler $commands;
+
     public function __construct(
-        private Club_Service $club_service,
-        private Player_Service $player_service,
+        Club_Service $club_service,
+        Player_Service $player_service,
         private Action_Guard_Interface $action_guard,
+        ?Club_Handler $commands = null,
     ) {
+        $this->commands = $commands ?? new Club_Handler( $club_service, $player_service );
     }
 
     /**
@@ -70,37 +77,29 @@ readonly final class Club_Action_Dispatcher {
             );
         }
 
-        $club_input = $this->get_club_input( $post );
-        $validator  = new Validator_Club();
-        $validator  = $validator->name( $club_input->name );
-        $validator  = $validator->short_code( $club_input->shortcode );
-        $validator  = $validator->type( $club_input->type );
-        $validator  = $validator->address( $club_input->address );
-
-        if ( ! empty( $validator->error ) ) {
-            $error_message = ! empty( $validator->err_msgs[0] ) ? strval( $validator->err_msgs[0] ) : __( 'Unable to add club', 'racketmanager' );
-            return new Action_Result_DTO(
-                message: $error_message,
-                message_type: Admin_Message_Type::ERROR,
-            );
-        }
-
         try {
-            $new_club = $this->club_service->add_club( $club_input );
-            $club_id  = is_object( $new_club ) && isset( $new_club->id ) ? (int) $new_club->id : null;
-
-            return new Action_Result_DTO(
-                message: __( 'Club added', 'racketmanager' ),
-                message_type: Admin_Message_Type::SUCCESS,
-                entity_id: $club_id,
-                query_params: $club_id ? array( 'view' => 'club', 'club_id' => $club_id ) : array(),
+            $command = new Add_Club_Admin_Command(
+                name: Input::text( $post, 'club' ),
+                type: Input::text( $post, 'type' ),
+                shortcode: Input::text( $post, 'shortcode' ),
+                address: Input::text( $post, 'address' ),
+                contactno: Input::text( $post, 'contactno' ),
+                website: Input::text( $post, 'website' ),
+                founded: Input::optional_integer( $post, 'founded' ),
+                facilities: Input::text( $post, 'facilities' ),
+                match_secretary_id: Input::integer( $post, 'match_secretary' ),
+                match_secretary_name: Input::text( $post, 'match_secretary_name' ),
+                match_secretary_contactno: Input::text( $post, 'match_secretary_contact_no' ),
+                match_secretary_email: Input::text( $post, 'match_secretary_email' ),
             );
-        } catch ( Exception $e ) {
+        } catch ( InvalidArgumentException $e ) {
             return new Action_Result_DTO(
                 message: $e->getMessage(),
                 message_type: Admin_Message_Type::ERROR,
             );
         }
+
+        return $this->commands->handle_add_club( $command );
     }
 
     /**
@@ -117,58 +116,32 @@ readonly final class Club_Action_Dispatcher {
             );
         }
 
-        $club_id = isset( $post['club_id'] ) ? (int) $post['club_id'] : ( isset( $query['club_id'] ) ? (int) $query['club_id'] : null );
-        if ( ! $club_id ) {
-            return new Action_Result_DTO(
-                message: __( 'Club not found', 'racketmanager' ),
-                message_type: Admin_Message_Type::ERROR,
-            );
-        }
-
         try {
-            $club = $this->club_service->get_club( $club_id );
-        } catch ( Club_Not_Found_Exception $e ) {
+            $club_id = Input::integer( $post, 'club_id' ) ?? Input::integer( $query, 'club_id' );
+
+            $command = new Edit_Club_Admin_Command(
+                club_id: $club_id,
+                name: Input::text( $post, 'club' ),
+                type: Input::text( $post, 'type' ),
+                shortcode: Input::text( $post, 'shortcode' ),
+                address: Input::text( $post, 'address' ),
+                contactno: Input::text( $post, 'contactno' ),
+                website: Input::text( $post, 'website' ),
+                founded: Input::optional_integer( $post, 'founded' ),
+                facilities: Input::text( $post, 'facilities' ),
+                match_secretary_id: Input::integer( $post, 'match_secretary' ),
+                match_secretary_name: Input::text( $post, 'match_secretary_name' ),
+                match_secretary_contactno: Input::text( $post, 'match_secretary_contact_no' ),
+                match_secretary_email: Input::text( $post, 'match_secretary_email' ),
+            );
+        } catch ( InvalidArgumentException $e ) {
             return new Action_Result_DTO(
                 message: $e->getMessage(),
                 message_type: Admin_Message_Type::ERROR,
             );
         }
 
-        $club_updated = $this->get_club_input( $post, $club );
-        $validator    = new Validator_Club();
-        $validator    = $validator->name( $club_updated->name );
-        $validator    = $validator->short_code( $club_updated->shortcode );
-        $validator    = $validator->type( $club_updated->type );
-        $validator    = $validator->address( $club_updated->address );
-        $validator    = $validator->match_secretary( $club_updated->match_secretary->id );
-        $validator    = $validator->telephone( $club_updated->match_secretary->contactno );
-        $validator    = $validator->email( $club_updated->match_secretary->email, $club_updated->match_secretary->id );
-
-        if ( ! empty( $validator->error ) ) {
-            $error_message = ! empty( $validator->err_msgs[0] ) ? strval( $validator->err_msgs[0] ) : __( 'Unable to update club', 'racketmanager' );
-            return new Action_Result_DTO(
-                message: $error_message,
-                message_type: Admin_Message_Type::ERROR,
-                query_params: array( 'view' => 'club', 'club_id' => $club_id ),
-            );
-        }
-
-        $result = $this->club_service->update_club( $club_id, $club_updated );
-        if ( $result ) {
-            return new Action_Result_DTO(
-                message: __( 'Club updated', 'racketmanager' ),
-                message_type: Admin_Message_Type::SUCCESS,
-                entity_id: $club_id,
-                query_params: array( 'view' => 'club', 'club_id' => $club_id ),
-            );
-        }
-
-        return new Action_Result_DTO(
-            message: __( 'Club details unchanged', 'racketmanager' ),
-            message_type: Admin_Message_Type::WARNING,
-            entity_id: $club_id,
-            query_params: array( 'view' => 'club', 'club_id' => $club_id ),
-        );
+        return $this->commands->handle_edit_club( $command );
     }
 
     /**
@@ -184,31 +157,18 @@ readonly final class Club_Action_Dispatcher {
             );
         }
 
-        $clubs = isset( $post['club'] ) && is_array( $post['club'] ) ? $post['club'] : array();
-        if ( empty( $clubs ) ) {
+        try {
+            $command = new Delete_Clubs_Command(
+                club: Input::column( $post, 'club' ),
+            );
+        } catch ( InvalidArgumentException $e ) {
             return new Action_Result_DTO(
-                message: __( 'No clubs selected', 'racketmanager' ),
-                message_type: Admin_Message_Type::WARNING,
+                message: $e->getMessage(),
+                message_type: Admin_Message_Type::ERROR,
             );
         }
 
-        $messages      = array();
-        $message_error = false;
-
-        foreach ( $clubs as $club_id ) {
-            try {
-                $this->club_service->remove_club( (int) $club_id );
-                $messages[] = (int) $club_id . ' ' . __( 'deleted', 'racketmanager' );
-            } catch ( Exception $e ) {
-                $messages[]    = $e->getMessage();
-                $message_error = true;
-            }
-        }
-
-        return new Action_Result_DTO(
-            message: implode( '<br>', $messages ),
-            message_type: $message_error ? Admin_Message_Type::ERROR : Admin_Message_Type::SUCCESS,
-        );
+        return $this->commands->handle_delete_clubs( $command );
     }
 
     private function handle_schedule_player_ratings(): Action_Result_DTO {
@@ -221,58 +181,6 @@ readonly final class Club_Action_Dispatcher {
             );
         }
 
-        try {
-            $result = $this->player_service->schedule_global_player_ratings();
-            if ( is_wp_error( $result ) ) {
-                return new Action_Result_DTO(
-                    message: __( 'Error scheduling player ratings calculation', 'racketmanager' ),
-                    message_type: Admin_Message_Type::ERROR,
-                );
-            }
-
-            if ( $result ) {
-                return new Action_Result_DTO(
-                    message: __( 'Player ratings calculation scheduled', 'racketmanager' ),
-                    message_type: Admin_Message_Type::SUCCESS,
-                );
-            }
-
-            return new Action_Result_DTO(
-                message: __( 'Player ratings calculation already scheduled', 'racketmanager' ),
-                message_type: Admin_Message_Type::INFO,
-            );
-        } catch ( Exception $e ) {
-            return new Action_Result_DTO(
-                message: $e->getMessage(),
-                message_type: Admin_Message_Type::ERROR,
-            );
-        }
-    }
-
-    /**
-     * @param array<string, mixed> $post
-     */
-    private function get_club_input( array $post, ?object $club = null ): object {
-        if ( empty( $club ) ) {
-            $club_updated = new stdClass();
-        } else {
-            $club_updated = clone $club;
-        }
-
-        $club_updated->name                          = isset( $post['club'] ) ? sanitize_text_field( wp_unslash( strval( $post['club'] ) ) ) : null;
-        $club_updated->type                          = isset( $post['type'] ) ? sanitize_text_field( wp_unslash( strval( $post['type'] ) ) ) : null;
-        $club_updated->shortcode                     = isset( $post['shortcode'] ) ? sanitize_text_field( wp_unslash( strval( $post['shortcode'] ) ) ) : null;
-        $club_updated->match_secretary               = new stdClass();
-        $club_updated->match_secretary->id           = isset( $post['match_secretary'] ) ? intval( $post['match_secretary'] ) : null;
-        $club_updated->match_secretary->display_name = isset( $post['match_secretary_name'] ) ? sanitize_text_field( wp_unslash( strval( $post['match_secretary_name'] ) ) ) : null;
-        $club_updated->match_secretary->contactno    = isset( $post['match_secretary_contact_no'] ) ? sanitize_text_field( wp_unslash( strval( $post['match_secretary_contact_no'] ) ) ) : null;
-        $club_updated->match_secretary->email        = isset( $post['match_secretary_email'] ) ? sanitize_text_field( wp_unslash( strval( $post['match_secretary_email'] ) ) ) : null;
-        $club_updated->contactno                     = isset( $post['contactno'] ) ? sanitize_text_field( wp_unslash( strval( $post['contactno'] ) ) ) : null;
-        $club_updated->website                       = isset( $post['website'] ) ? sanitize_text_field( wp_unslash( strval( $post['website'] ) ) ) : null;
-        $club_updated->founded                       = empty( $post['founded'] ) ? null : intval( $post['founded'] );
-        $club_updated->facilities                    = isset( $post['facilities'] ) ? sanitize_text_field( wp_unslash( strval( $post['facilities'] ) ) ) : null;
-        $club_updated->address                       = isset( $post['address'] ) ? sanitize_text_field( wp_unslash( strval( $post['address'] ) ) ) : null;
-
-        return $club_updated;
+        return $this->commands->handle_schedule_player_ratings( new Schedule_Global_Player_Ratings_Command() );
     }
 }

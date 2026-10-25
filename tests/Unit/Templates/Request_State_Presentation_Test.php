@@ -29,6 +29,7 @@ use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Matches_List_View_Model;
 use Racketmanager\Presentation\View_Models\Team_Match_Row_View_Model;
 use Racketmanager\Services\Competition_Service;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Settings_Service;
@@ -39,6 +40,7 @@ use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class Request_State_Presentation_Test extends TestCase {
+    use \Racketmanager\Tests\Helpers\Creates_League_Query_Service;
     use Manages_Wordpress_Globals;
 
     private Shortcode_Template_Renderer $renderer;
@@ -116,11 +118,12 @@ class Request_State_Presentation_Test extends TestCase {
         $league = $this->league();
         $league->show_match_day_selection = true;
         $league->num_match_days = 3;
-        $league->method( 'get_matches' )->willReturn( [] );
-        $league->method( 'get_league_teams' )->willReturn( [] );
+        $league_query = $this->createStub( League_Query_Service::class );
+        $league_query->method( 'get_matches' )->willReturn( [] );
+        $league_query->method( 'get_league_teams' )->willReturn( [] );
         $service = $this->createStub( League_Service::class );
         $service->method( 'get_league' )->willReturn( $league );
-        $handler = new Get_League_Matches_Handler( $service, $this->renderer, new Tournament_Presenter() );
+        $handler = new Get_League_Matches_Handler( $service, $this->renderer, new Tournament_Presenter(), $league_query );
         $query = Get_League_Matches_Query::from_atts( [ 'league_id' => 1, 'template' => '', 'season' => '2026', 'post_id' => 74 ] );
         $result = $handler->handle( $query );
 
@@ -150,10 +153,11 @@ class Request_State_Presentation_Test extends TestCase {
         }
         $details = new Team_Details_DTO( $team, match_secretary: $secretary );
         $league = $this->league();
-        $league->method( 'get_team_dtls' )->willReturn( (object) [ 'captain' => 'Captain', 'match_day' => '', 'match_time' => '', 'players' => [] ] );
-        $league->method( 'get_league_team' )->willReturn( (object) [ 'rank' => 1, 'done_matches' => 0, 'points_formatted' => [ 'primary' => '0' ] ] );
-        $league->method( 'get_matches' )->willReturn( [] );
-        $league->method( 'get_players' )->willReturn( [] );
+        $league_query = $this->createStub( League_Query_Service::class );
+        $league_query->method( 'get_team_dtls' )->willReturn( (object) [ 'captain' => 'Captain', 'match_day' => '', 'match_time' => '', 'players' => [] ] );
+        $league_query->method( 'get_league_team' )->willReturn( (object) [ 'rank' => 1, 'done_matches' => 0, 'points_formatted' => [ 'primary' => '0' ] ] );
+        $league_query->method( 'get_matches' )->willReturn( [] );
+        $league_query->method( 'get_players' )->willReturn( [] );
         $leagues = $this->createStub( League_Service::class );
         $leagues->method( 'get_league' )->willReturn( $league );
         $teams = $this->createStub( Team_Service::class );
@@ -164,7 +168,8 @@ class Request_State_Presentation_Test extends TestCase {
         $matches->method( 'present_match_list' )->willReturn( [ new Team_Match_Row_View_Model( home_name: 'Westcliff 1', away_name: 'Leigh 1' ) ] );
         $handler = new Get_League_Teams_Handler(
             $leagues, $teams, $stats, $matches,
-            new Team_Details_Presenter( $this->createStub( Option_Gateway_Interface::class ), new Settings_Service( [] ) )
+            new Team_Details_Presenter( $this->createStub( Option_Gateway_Interface::class ), new Settings_Service( [] ) ),
+            $league_query
         );
         $result = $handler->handle( new Get_League_Teams_Query( league_id: 1, team_id: '12' ) );
         $vm = $result->vars['vm'];

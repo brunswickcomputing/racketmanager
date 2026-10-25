@@ -47,8 +47,10 @@ use Racketmanager\Presentation\View_Models\Team_Match_Row_View_Model;
 use Racketmanager\Presentation\View_Models\Team_Matches_Group_View_Model;
 use Racketmanager\Presentation\View_Models\Tournament_Match_Card_View_Model;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
@@ -68,6 +70,8 @@ use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;
  * handler -> Tournament_Presenter -> real templates (matches.php, team-details.php, matches-team-list.php).
  */
 class League_Match_Card_Entry_Points_Test extends TestCase {
+    use \Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
+    use \Racketmanager\Tests\Helpers\Creates_League_Query_Service;
     use Creates_Competition_Season_Service;
     use Manages_Wordpress_Globals;
     use Creates_Team_Match_Row_Presenter;
@@ -102,6 +106,34 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         return new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) );
     }
 
+    /**
+     * Build Event query dependencies from repository fixtures instead of Event method stubs.
+     *
+     * @param Fixture[] $fixtures
+     * @param League[]  $leagues
+     */
+    private function event_query_service_with_fixtures( array $fixtures = [], array $leagues = [] ): Event_Query_Service {
+        $event_repository = $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class );
+        $event_repository->method( 'query_leagues' )->willReturn( $leagues );
+        $event_repository->method( 'query_matches' )->willReturnCallback(
+            static fn( int $event_id, array $args = [] ): array => array_map(
+                static fn( Fixture $fixture ): int => (int) $fixture->id,
+                $fixtures
+            )
+        );
+
+        $fixture_repository = $this->createStub( Fixture_Repository_Interface::class );
+        $fixture_by_id     = [];
+        foreach ( $fixtures as $fixture ) {
+            $fixture_by_id[ (int) $fixture->id ] = $fixture;
+        }
+        $fixture_repository->method( 'find_by_id_with_relations' )->willReturnCallback(
+            static fn( int|string $fixture_id ): ?Fixture => $fixture_by_id[ (int) $fixture_id ] ?? null
+        );
+
+        return $this->event_query_service( $event_repository, $fixture_repository );
+    }
+
     private function create_player( int $id, string $fullname ): Player {
         $player = $this->createStub( Player::class );
         $player->method( 'get_id' )->willReturn( $id );
@@ -131,14 +163,11 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $competition->current_season  = [ 'name' => '2026' ];
         $competition->method( 'get_id' )->willReturn( $id );
         $competition->method( 'is_event_allowed' )->willReturn( true );
-        $competition->method( 'get_players' )->willReturn( [] );
         return $competition;
     }
 
-    private function create_event( Competition $competition, array $leagues = [], ?object $club = null ): Event {
+    private function create_event( Competition $competition ): Event {
         $event = new class extends Event {
-            public array $stub_leagues = [];
-            public ?object $stub_club = null;
             public function __construct() {
                 $this->id             = 12;
                 $this->name           = 'Mens Singles';
@@ -146,14 +175,9 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
                 $this->is_box         = true;
                 $this->current_season = [ 'name' => '2026' ];
             }
-            public function set_season( ?string $season = null, bool $force_overwrite = false ): void {}
-            public function get_leagues( array $args = [] ): array|int { return $this->stub_leagues; }
-            public function get_club( $club ): object { return $this->stub_club; }
-            public function get_clubs( array|string $args = [] ): array|int { return []; }
+            public function set_season( ?string $season = null, bool $force_overwrite = false, bool $strict = false ): void {}
         };
-        $event->competition  = $competition;
-        $event->stub_leagues = $leagues;
-        $event->stub_club    = $club;
+        $event->competition = $competition;
         return $event;
     }
 
@@ -194,28 +218,20 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
 
     private function create_league( Event $event, array $matches ): League {
         $league = new class extends League {
-            public array $stub_matches = [];
             public function __construct() {
                 $this->id             = 3;
                 $this->title          = 'Mens Singles Division';
                 $this->match_day      = -1;
                 $this->current_season = [ 'name' => '2026' ];
+                $this->seasons        = [ '2026' ];
             }
             public function set_template( string $type, string $template ): void {}
-            public function set_season( false|string $season = false, bool $force_overwrite = false ): void {}
-            public function set_match_day( false|string|int $_match_day = false ): void {}
+            public function set_season( false|string $season = false, bool $force_overwrite = false, ?string $final = null ): void {}
+            public function set_match_day( int $match_day = 1 ): void {}
             public function set_group( string $group = '', bool $force_overwrite = false ): void {}
             public function set_num_matches( bool $total = false ): void {}
-            public function get_matches( array $query_args ): array|int|object { return $this->stub_matches; }
-            public function get_league_teams( array $query_args = [] ): array|int { return []; }
-            public function get_team_dtls( int $team_id, ?string $season = null ): object|false { return (object) [ 'name' => 'Team Federer' ]; }
-            public function get_league_team( int $team_id ): object|false {
-                return (object) [ 'rank' => 1, 'done_matches' => 1, 'points_formatted' => [ 'primary' => 2 ] ];
-            }
-            public function get_players( array $args = [] ): array { return []; }
         };
         $league->event        = $event;
-        $league->stub_matches = $matches;
         $league->championship = new class extends Championship {
             public function __construct() {}
             public function get_finals( false|int|string $key = false ): ?array {
@@ -223,6 +239,27 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
             }
         };
         return $league;
+    }
+
+    private function league_query_service_with_matches( array $fixtures ): \Racketmanager\Services\Competition\League_Query_Service {
+        $league_repository = $this->createStub( League_Repository_Interface::class );
+        $league_repository->method( 'query_matches' )->willReturn(
+            array_map( static fn( Fixture $fixture ): object => (object) [ 'id' => $fixture->get_id() ], $fixtures )
+        );
+
+        $fixture_repository = $this->createStub( Fixture_Repository_Interface::class );
+        $fixture_repository->method( 'find_by_id' )->willReturnCallback(
+            static function ( int $id ) use ( $fixtures ): ?Fixture {
+                foreach ( $fixtures as $fixture ) {
+                    if ( $fixture->get_id() === $id ) {
+                        return $fixture;
+                    }
+                }
+                return null;
+            }
+        );
+
+        return $this->league_query_service( $league_repository, null, $fixture_repository );
     }
 
     private function detail_service_expecting( Fixture $fixture, Fixture_Details_DTO $detail, bool $is_tournament ): Fixture_Detail_Service {
@@ -250,13 +287,12 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $event                  = $this->create_event( $competition );
         $league                 = $this->create_league( $event, [] );
         [ $fixture, $detail ]   = $this->build_played_fixture( $league, $event, $competition );
-        $league->stub_matches   = [ $fixture ];
 
         $league_service = $this->createStub( League_Service::class );
         $league_service->method( 'get_league' )->willReturn( $league );
         $presenter = new Tournament_Presenter( 'd/m/Y', $this->detail_service_expecting( $fixture, $detail, true ), team_match_row_presenter: $this->create_team_match_row_presenter() );
 
-        $handler = new Get_League_Matches_Handler( $league_service, $this->renderer(), $presenter );
+        $handler = new Get_League_Matches_Handler( $league_service, $this->renderer(), $presenter, $this->league_query_service_with_matches( [ $fixture ] ) );
         $vm      = $handler->handle( new Get_League_Matches_Query( league_id: 3, template: '' ) );
 
         $this->assertSame( 'matches', $vm->template );
@@ -278,7 +314,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
 
         $league_service = $this->createStub( League_Service::class );
         $league_service->method( 'get_league' )->willReturn( $league );
-        $handler = new Get_League_Matches_Handler( $league_service, $this->renderer(), new Tournament_Presenter( 'd/m/Y', $service, team_match_row_presenter: $this->create_team_match_row_presenter() ) );
+        $handler = new Get_League_Matches_Handler( $league_service, $this->renderer(), new Tournament_Presenter( 'd/m/Y', $service, team_match_row_presenter: $this->create_team_match_row_presenter() ), $this->league_query_service_with_matches( [ $fixture ] ) );
 
         $html = ( new Shortcode_View_Presenter( $this->renderer() ) )->render( $handler->handle( new Get_League_Matches_Query( league_id: 3, template: '' ) ) );
 
@@ -290,8 +326,9 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $competition          = $this->create_competition( Competition_Type::TOURNAMENT );
         $event                = $this->create_event( $competition );
         $league               = $this->create_league( $event, [] );
+        $league->teams        = [ (object) [ 'rank' => 1, 'done_matches' => 1, 'points_formatted' => [ 'primary' => 2 ] ] ];
+        $league->team_index   = [ 10 => 0 ];
         [ $fixture, $detail ] = $this->build_played_fixture( $league, $event, $competition );
-        $league->stub_matches = [ $fixture ];
 
         $league_service = $this->createStub( League_Service::class );
         $league_service->method( 'get_league' )->willReturn( $league );
@@ -308,7 +345,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
 
         $team_presenter = new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() );
         $presenter = new Tournament_Presenter( 'd/m/Y', $this->detail_service_expecting( $fixture, $detail, true ), team_match_row_presenter: $this->create_team_match_row_presenter() );
-        $handler   = new Get_League_Teams_Handler( $league_service, $team_service, $stats, $presenter, $team_presenter );
+        $handler   = new Get_League_Teams_Handler( $league_service, $team_service, $stats, $presenter, $team_presenter, $this->league_query_service_with_matches( [ $fixture ] ) );
         $vm        = $handler->handle( new Get_League_Teams_Query( league_id: 3, team_id: '10' ) );
 
         $this->assertSame( 'team-details', $vm->template );
@@ -323,13 +360,12 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $event                = $this->create_event( $competition );
         $league               = $this->create_league( $event, [] );
         [ $fixture, $detail ] = $this->build_played_fixture( $league, $event, $competition, user_can_update: false );
-        $league->stub_matches = [ $fixture ];
 
         $league_service = $this->createStub( League_Service::class );
         $league_service->method( 'get_league' )->willReturn( $league );
         $presenter = new Tournament_Presenter( 'd/m/Y', $this->detail_service_expecting( $fixture, $detail, true ), team_match_row_presenter: $this->create_team_match_row_presenter() );
 
-        $handler = new Get_League_Matches_Handler( $league_service, $this->renderer(), $presenter );
+        $handler = new Get_League_Matches_Handler( $league_service, $this->renderer(), $presenter, $this->league_query_service_with_matches( [ $fixture ] ) );
         $vm      = $handler->handle( new Get_League_Matches_Query( league_id: 3, template: '' ) );
 
         $html = ( new Shortcode_View_Presenter( $this->renderer() ) )->render( $vm );
@@ -344,6 +380,8 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $event       = $this->create_event( $competition );
         $fixture     = Fixture_Test_Factory::create( id: 703, league_id: 3 );
         $league      = $this->create_league( $event, [ $fixture ] );
+        $league->teams      = [ (object) [ 'rank' => 1, 'done_matches' => 1, 'points_formatted' => [ 'primary' => 2 ] ] ];
+        $league->team_index = [ 10 => 0 ];
 
         $league_service = $this->createStub( League_Service::class );
         $league_service->method( 'get_league' )->willReturn( $league );
@@ -362,7 +400,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $service->expects( $this->never() )->method( 'get_fixture_with_details' );
 
         $team_presenter = new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() );
-        $handler = new Get_League_Teams_Handler( $league_service, $team_service, $stats, new Tournament_Presenter( 'd/m/Y', $service, team_match_row_presenter: $this->create_team_match_row_presenter() ), $team_presenter );
+        $handler = new Get_League_Teams_Handler( $league_service, $team_service, $stats, new Tournament_Presenter( 'd/m/Y', $service, team_match_row_presenter: $this->create_team_match_row_presenter() ), $team_presenter, $this->league_query_service_with_matches( [ $fixture ] ) );
         $handler->handle( new Get_League_Teams_Query( league_id: 3, team_id: '10' ) );
 
         $this->assertCount( 1, $league->team->matches );
@@ -447,7 +485,6 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
 
         [ $fixture, $detail ] = $this->build_played_fixture( $league, $event, $competition );
         $fixture->set_league( $league );
-        $league->stub_matches = [ $fixture ];
 
         $fixture_repo = $this->createStub( Fixture_Repository_Interface::class );
         $fixture_repo->method( 'find_by_id' )->willReturn( $fixture );
@@ -474,7 +511,8 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
             $perm_service,
             $this->renderer(),
             $rubber_repo,
-            $presenter
+            $presenter,
+            $this->league_query_service_with_matches( [ $fixture ] )
         );
 
         $vm = $handler->handle( new Get_League_Championship_Query( league_id: 3, template: 'matches' ) );
@@ -506,20 +544,14 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         };
 
         $event_stub = new class extends Event {
-            public mixed $stub_matches = [];
             public function __construct() {
                 $this->id             = 12;
                 $this->name           = 'Mens Singles';
                 $this->current_season = [ 'name' => '2026' ];
             }
-            public function get_teams( array $args = [] ): array { return []; }
-            public function get_team_info( int $team_id ): ?object { return null; }
-            public function get_matches( array $args = [] ): array { return $this->stub_matches; }
-            public function get_players( array|string $args = array() ): array|int { return []; }
-            public function set_season( ?string $season = null, bool $force_overwrite = false ): void {}
+            public function set_season( ?string $season = null, bool $force_overwrite = false, bool $strict = false ): void {}
         };
         $event_stub->competition  = $competition;
-        $event_stub->stub_matches = [ $fixture ];
 
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
@@ -531,7 +563,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $stats->method( 'populate_players_stats' )->willReturn( [] );
 
         $presenter = new Tournament_Presenter( 'd/m/Y', $this->detail_service_expecting( $fixture, $detail, true ), team_match_row_presenter: $this->create_team_match_row_presenter() );
-        $handler   = new Get_Event_Teams_Handler( $comp_service, $stats, $presenter, $team_service, new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() ), $this->competition_presenter() );
+        $handler   = new Get_Event_Teams_Handler( $comp_service, $stats, $presenter, $team_service, new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() ), $this->competition_presenter(), $this->event_query_service_with_fixtures( [ $fixture ] ) );
 
         $vm = $handler->handle( new Get_Event_Teams_Query( event_id: 12, team: '10' ) );
 
@@ -550,19 +582,13 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
     public function test_event_team_details_hides_league_row_header_in_presented_matches(): void {
         $competition = $this->create_competition( Competition_Type::LEAGUE );
         $event       = new class extends Event {
-            public array $stub_matches = [];
-
             public function __construct() {
                 $this->id             = 12;
                 $this->name           = 'Mens Singles';
                 $this->current_season = [ 'name' => '2026' ];
             }
 
-            public function set_season( ?string $season = null, bool $force_overwrite = false ): void {}
-            public function get_teams( array $args = [] ): array { return []; }
-            public function get_team_info( int $team_id ): ?object { return null; }
-            public function get_matches( array $args = [] ): array { return $this->stub_matches; }
-            public function get_players( array|string $args = [] ): array|int { return []; }
+            public function set_season( ?string $season = null, bool $force_overwrite = false, bool $strict = false ): void {}
         };
         $event->competition = $competition;
 
@@ -581,7 +607,6 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
             'away' => (object) [ 'id' => 20, 'title' => 'Team Nadal', 'club' => (object) [ 'id' => 60 ] ],
         ];
         $fixture->league      = (object) [ 'id' => 3, 'title' => 'Mens Singles Division' ];
-        $event->stub_matches = [ $fixture ];
 
         $team = new class extends Team {
             public function __construct() {
@@ -595,7 +620,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $team_service->method( 'get_team_by_id' )->willReturn( $team );
         $stats     = $this->createStub( Player_Stats_Service::class );
         $presenter = new Tournament_Presenter( 'd/m/Y', team_match_row_presenter: $this->create_team_match_row_presenter() );
-        $handler   = new Get_Event_Teams_Handler( $competition_service, $stats, $presenter, $team_service, new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() ), $this->competition_presenter() );
+        $handler   = new Get_Event_Teams_Handler( $competition_service, $stats, $presenter, $team_service, new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() ), $this->competition_presenter(), $this->event_query_service_with_fixtures( [ $fixture ] ) );
 
         $vm = $handler->handle( new Get_Event_Teams_Query( event_id: 12, team: '10' ) );
         $row = $event->team->matches[0];
@@ -639,14 +664,15 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
             'home' => (object) [ 'id' => 10, 'title' => 'Team Federer', 'club' => (object) [ 'id' => 50 ] ],
             'away' => (object) [ 'id' => 20, 'title' => 'Team Nadal', 'club' => (object) [ 'id' => 60 ] ],
         ];
-        $league->stub_matches = [ $fixture ];
-        $event->stub_leagues  = [ $league ];
 
         $competition_service = $this->createStub( Competition_Service::class );
         $competition_service->method( 'get_event_by_id' )->willReturn( $event );
         $handler = new Get_Event_Matches_Handler(
             $competition_service,
-            new Tournament_Presenter( 'd/m/Y', team_match_row_presenter: $this->create_team_match_row_presenter() )
+            new Tournament_Presenter( 'd/m/Y', team_match_row_presenter: $this->create_team_match_row_presenter() ),
+            null,
+            $this->event_query_service_with_fixtures( [], [ $league ] ),
+            $this->league_query_service_with_matches( [ $fixture ] )
         );
 
         $vm    = $handler->handle( new Get_Event_Matches_Query( event_id: 12 ) );
@@ -733,14 +759,12 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $league               = $this->create_league( $event, [] );
         [ $fixture, $detail ] = $this->build_played_fixture( $league, $event, $competition );
         $fixture->set_league( $league );
-        $league->stub_matches = [ $fixture ];
-        $event->stub_leagues  = [ $league ];
 
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
 
         $presenter = new Tournament_Presenter( 'd/m/Y', $this->detail_service_expecting( $fixture, $detail, true ), team_match_row_presenter: $this->create_team_match_row_presenter() );
-        $handler   = new Get_Event_Matches_Handler( $comp_service, $presenter );
+        $handler   = new Get_Event_Matches_Handler( $comp_service, $presenter, null, $this->event_query_service_with_fixtures( [], [ $league ] ), $this->league_query_service_with_matches( [ $fixture ] ) );
         $vm        = $handler->handle( new Get_Event_Matches_Query( event_id: 12 ) );
 
         $this->assertSame( 'matches', $vm->template, (string) $vm->error_message );
@@ -759,13 +783,11 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $league               = $this->create_league( $event, [] );
         [ $fixture, $detail ] = $this->build_played_fixture( $league, $event, $competition );
         $fixture->set_league( $league );
-        $league->stub_matches = [ $fixture ];
-        $event->stub_leagues  = [ $league ];
 
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $handler = new Get_Event_Draw_Handler( $comp_service, null, new Competition_Shortcode_Presenter(), $this->createStub( Fixture_Detail_Service::class ) );
+        $handler = new Get_Event_Draw_Handler( $comp_service, null, new Competition_Shortcode_Presenter(), $this->createStub( Fixture_Detail_Service::class ), $this->event_query_service_with_fixtures( [], [ $league ] ), $this->league_query_service_with_matches( [ $fixture ] ) );
         $vm      = $handler->handle( new Get_Event_Draw_Query( event_id: 12 ) );
 
         $this->assertSame( 'draw', $vm->template, (string) $vm->error_message );
@@ -779,23 +801,21 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         [ $fixture, $detail ] = $this->build_played_fixture( $league, $event, $competition );
         $fixture->set_league( $league );
 
-        $club = (object) [
-            'id'        => 5,
-            'name'      => 'Leigh',
-            'shortcode' => 'Leigh Club',
-            'address'   => '',
-            'matches'   => [ '2026-06-01' => [ $fixture ] ],
-            'results'   => [ '2026-05-01' => [ $fixture ] ],
-            'teams'     => [],
-            'players'   => [],
-        ];
-        $event->stub_club = $club;
+        // Event_Query_Service::get_club() groups the matches/results returned by the event repository by date.
+        $fixture->date = '2026-06-01 10:00:00';
 
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
 
+        $club            = $this->createStub( Club::class );
+        $club->id        = 5;
+        $club->name      = 'Leigh';
+        $club->shortcode = 'Leigh Club';
+        $club->address   = '';
+        $club->method( 'get_id' )->willReturn( 5 );
+
         $club_service = $this->createStub( Club_Service::class );
-        $club_service->method( 'get_club' )->willReturn( $this->createStub( Club::class ) );
+        $club_service->method( 'get_club' )->willReturn( $club );
         $stats = $this->createStub( Player_Stats_Service::class );
         $stats->method( 'populate_players_stats' )->willReturn( [] );
 
@@ -806,12 +826,12 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
             ->willReturn( $detail );
 
         $presenter = new Tournament_Presenter( 'd/m/Y', $detail_service, team_match_row_presenter: $this->create_team_match_row_presenter() );
-        $handler   = new Get_Event_Clubs_Handler( $comp_service, $club_service, $stats, $presenter, $this->competition_presenter() );
+        $handler   = new Get_Event_Clubs_Handler( $comp_service, $club_service, $stats, $presenter, $this->competition_presenter(), $this->event_query_service_with_fixtures( [ $fixture ] ) );
         $vm        = $handler->handle( new Get_Event_Clubs_Query( event_id: 12, club_id: '5' ) );
 
         $this->assertSame( 'clubs', $vm->template, (string) $vm->error_message );
         $this->assertContainsOnlyInstancesOf( Tournament_Match_Card_View_Model::class, $vm->vars['event_club']->matches['2026-06-01']->matches );
-        $this->assertContainsOnlyInstancesOf( Tournament_Match_Card_View_Model::class, $vm->vars['event_club']->results['2026-05-01']->matches );
+        $this->assertContainsOnlyInstancesOf( Tournament_Match_Card_View_Model::class, $vm->vars['event_club']->results['2026-06-01']->matches );
 
         $html = ( new Shortcode_View_Presenter( $this->renderer() ) )->render( $vm );
         $this->assertStringContainsString( 'Roger Federer', $html );
@@ -827,10 +847,6 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         [ $fixture, $detail ] = $this->build_played_fixture( $league, $event, $competition );
         $fixture->set_league( $league );
         $fixture->date        = '2026-06-01 10:00:00';
-
-        $competition->method( 'get_matches' )->willReturn( [ $fixture ] );
-        $competition->method( 'get_teams' )->willReturn( [] );
-        $competition->method( 'get_players' )->willReturn( [] );
 
         $club            = $this->createStub( Club::class );
         $club->id        = 5;

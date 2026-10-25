@@ -10,9 +10,10 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Admin\Cup;
 
+use Racketmanager\Application\Tournament\Commands\Generate_Tournament_Bracket_Command;
+use Racketmanager\Application\Tournament\Commands\Generate_Tournament_Bracket_Handler;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
-use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
@@ -26,6 +27,7 @@ class Cup_Setup_Action_Dispatcher {
         private readonly Competition_Service $competition_service,
         private readonly Draw_Action_Handler_Interface $championship_admin_service,
         private readonly Action_Guard_Interface $action_guard,
+        private readonly ?Generate_Tournament_Bracket_Handler $generate_tournament_bracket_handler = null,
     ) {
     }
 
@@ -177,14 +179,9 @@ class Cup_Setup_Action_Dispatcher {
 
         $season = isset( $post['season'] ) ? sanitize_text_field( wp_unslash( strval( $post['season'] ) ) ) : ( isset( $query['season'] ) ? sanitize_text_field( wp_unslash( strval( $query['season'] ) ) ) : null );
 
-        $dto = new Draw_Action_Request_DTO(
-            tournament_id: 0,
-            league_id: $league_id,
-            season: $season,
-            post: $post
-        );
-
-        return $this->championship_admin_service->set_championship_fixtures( $dto );
+        $command = Generate_Tournament_Bracket_Command::from_post( $post, $league_id, 0, $season );
+        $handler = $this->generate_tournament_bracket_handler ?? new Generate_Tournament_Bracket_Handler( $this->championship_admin_service );
+        return $handler->handle( $command );
     }
 
     private function sanitize_form_data( array $post ): array {

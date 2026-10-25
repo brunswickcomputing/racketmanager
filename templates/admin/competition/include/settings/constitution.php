@@ -31,7 +31,7 @@ $msg        = null;
                         $msg_id     = array_search( 'max_teams', $validator->err_flds, true );
                         $msg        = $validator->err_msgs[$msg_id] ?? null;
                     }
-                    $current_value = $vm->competition->config->max_teams ?? null;
+                    $current_value = $vm->config->max_teams ?? null;
                     ?>
                     <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="max_teams" id="max_teams" placeholder="<?php esc_html_e( 'Max teams', 'racketmanager' ); ?>" value="<?php echo isset( $current_value ) ? esc_html( $current_value ) : null; ?>" />
                     <label for="max_teams" class="form-label"><?php esc_html_e( 'Max teams per league', 'racketmanager' ); ?></label>
@@ -55,7 +55,7 @@ $msg        = null;
                         $msg_id     = array_search( 'teams_per_club', $validator->err_flds, true );
                         $msg        = $validator->err_msgs[$msg_id] ?? null;
                     }
-                    $current_value = $vm->competition->config->teams_per_club ?? null;
+                    $current_value = $vm->config->teams_per_club ?? null;
                     ?>
                     <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="teams_per_club" id="teams_per_club" placeholder="<?php esc_html_e( 'Club teams', 'racketmanager' ); ?>" value="<?php echo isset( $current_value ) ? esc_html( $current_value ) : null; ?>" />
                     <label for="teams_per_club" class="form-label"><?php esc_html_e( 'Max clubs teams in league', 'racketmanager' ); ?></label>
@@ -83,7 +83,7 @@ $msg        = null;
                         $msg_id     = array_search( 'num_entries', $validator->err_flds, true );
                         $msg        = $validator->err_msgs[$msg_id] ?? null;
                     }
-                    $current_value = $vm->competition->config->num_entries ?? null;
+                    $current_value = $vm->config->num_entries ?? null;
                     ?>
                     <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_entries" id="num_entries" placeholder="<?php esc_html_e( 'Max number of entries', 'racketmanager' ); ?>" value="<?php echo isset( $current_value ) ? esc_html( $current_value ) : null; ?>" />
                     <label for="num_entries" class="form-label"><?php esc_html_e( 'Max entries', 'racketmanager' ); ?></label>
@@ -116,7 +116,7 @@ $msg        = null;
                         $msg_id     = array_search( 'teams_prom_relg', $validator->err_flds, true );
                         $msg        = $validator->err_msgs[$msg_id] ?? null;
                     }
-                    $current_value = $vm->competition->config->teams_prom_relg ?? null;
+                    $current_value = $vm->config->teams_prom_relg ?? null;
                     ?>
                     <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="teams_prom_relg" id="teams_prom_relg" placeholder="<?php esc_html_e( 'Promoted/Relegated teams', 'racketmanager' ); ?>" value="<?php echo isset( $current_value ) ? esc_html( $current_value ) : null; ?>" />
                     <label for="teams_prom_relg" class="form-label"><?php esc_html_e( 'Promoted/Relegated teams', 'racketmanager' ); ?></label>
@@ -140,7 +140,7 @@ $msg        = null;
                         $msg_id     = array_search( 'lowest_promotion', $validator->err_flds, true );
                         $msg        = $validator->err_msgs[$msg_id] ?? null;
                     }
-                    $current_value = $vm->competition->config->lowest_promotion ?? null;
+                    $current_value = $vm->config->lowest_promotion ?? null;
                     ?>
                     <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="lowest_promotion" id="lowest_promotion" placeholder="<?php esc_html_e( 'Lowest promotion', 'racketmanager' ); ?>" value="<?php echo isset( $current_value ) ? esc_html( $current_value ) : null; ?>" />
                     <label for="lowest_promotion" class="form-label"><?php esc_html_e( 'Lowest promotion', 'racketmanager' ); ?></label>
@@ -171,7 +171,7 @@ $msg        = null;
                     $msg_id     = array_search( 'team_ranking', $validator->err_flds, true );
                     $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
-                $current_value = $vm->competition->config->team_ranking ?? null;
+                $current_value = $vm->config->team_ranking ?? null;
                 ?>
                 <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="team_ranking" id="team_ranking" >
                     <option disabled <?php selected( null, empty( $current_value ) ? null : $current_value ); ?>><?php esc_html_e( 'Select team ranking', 'racketmanager' ); ?></option>
@@ -208,7 +208,7 @@ $msg        = null;
                     $msg_id     = array_search( 'point_rule', $validator->err_flds, true );
                     $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
-                $current_value = $vm->competition->config->point_rule ?? null;
+                $current_value = $vm->config->point_rule ?? null;
                 ?>
                 <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="point_rule" id="point_rule" >
                     <option disabled <?php selected( null, empty( $current_value ) ? null : $current_value ); ?>><?php esc_html_e( 'Select team ranking', 'racketmanager' ); ?></option>

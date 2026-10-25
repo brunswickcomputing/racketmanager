@@ -22,8 +22,10 @@ use ReflectionClass;
 require_once __DIR__ . '/../../../wp-stubs.php';
 
 final class Tournament_Setup_Event_Admin_Controller_Test extends TestCase {
+    use \Racketmanager\Tests\Helpers\Stubs_League_Query_Service;
 
     protected function tearDown(): void {
+        $this->restore_league_query_service_global();
         unset( $_SERVER['REQUEST_METHOD'] );
         parent::tearDown();
     }
@@ -42,7 +44,7 @@ final class Tournament_Setup_Event_Admin_Controller_Test extends TestCase {
 
         $league = $this->createStub( League::class );
         $league->event = $event;
-        $league->method( 'get_matches' )->willReturn( 5 );
+        $this->install_league_query_service_mock()->method( 'get_matches' )->willReturn( 5 );
 
         $tournament_service = $this->createMock( Tournament_Service::class );
         $tournament_service

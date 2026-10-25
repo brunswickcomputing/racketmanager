@@ -29,6 +29,7 @@ use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class League_Shortcode_Adapter_Test extends TestCase {
+    use \Racketmanager\Tests\Helpers\Creates_League_Query_Service;
     use Manages_Wordpress_Globals;
 
     protected function setUp(): void {
@@ -95,7 +96,6 @@ class League_Shortcode_Adapter_Test extends TestCase {
         $league_obj->sport     = 'tennis';
         $league_obj->standings = $standings_cols;
         $league_obj->teams     = [ $team ];
-        $league_obj->method( 'get_league_teams' )->willReturn( [ $team ] );
 
         return $league_obj;
     }
@@ -104,7 +104,12 @@ class League_Shortcode_Adapter_Test extends TestCase {
         $league_service = $this->createStub( League_Service::class );
         $league_service->method( 'get_league' )->willReturn( $league_obj );
 
-        $handler   = new Get_League_Standings_Handler( $league_service );
+        $league_repo = $this->createStub( League_Repository_Interface::class );
+        if ( $league_obj && ! empty( $league_obj->teams ) ) {
+            $league_repo->method( 'query_league_teams' )->willReturn( $league_obj->teams );
+        }
+
+        $handler   = new Get_League_Standings_Handler( $league_service, null, $this->league_query_service( $league_repo ) );
         $renderer  = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
         $presenter = $presenter ?? new League_Standings_Presenter( $renderer );
 

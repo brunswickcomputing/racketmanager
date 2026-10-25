@@ -2,10 +2,14 @@
 
 namespace Racketmanager\Infrastructure\Wordpress\Ajax;
 
-use Racketmanager\Domain\DTO\Tournament\Tournament_Entry_Request_DTO;
-use Racketmanager\Domain\DTO\Tournament\Tournament_Partner_Request_DTO;
-use Racketmanager\Domain\DTO\Tournament\Tournament_Payment_Command;
-use Racketmanager\Domain\DTO\Tournament\Tournament_Withdrawal_Command;
+use Racketmanager\Application\Tournament\Commands\Create_Tournament_Payment_Command;
+use Racketmanager\Application\Tournament\Commands\Create_Tournament_Payment_Handler;
+use Racketmanager\Application\Tournament\Commands\Submit_Tournament_Entry_Command;
+use Racketmanager\Application\Tournament\Commands\Submit_Tournament_Entry_Handler;
+use Racketmanager\Application\Tournament\Commands\Submit_Tournament_Partner_Command;
+use Racketmanager\Application\Tournament\Commands\Submit_Tournament_Partner_Handler;
+use Racketmanager\Application\Tournament\Commands\Withdraw_Tournament_Entry_Command;
+use Racketmanager\Application\Tournament\Commands\Withdraw_Tournament_Entry_Handler;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Stripe_API_Exception;
@@ -20,12 +24,10 @@ use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\Validator\Validator_Entry_Form;
 use Racketmanager\Services\Validator\Validator_Tournament;
 use stdClass;
-use function function_exists;
 use function intval;
 use function is_array;
 use function preg_match;
 use function Racketmanager\event_partner_modal;
-use function Racketmanager\get_tournament;
 use function Racketmanager\show_alert;
 use function Racketmanager\tournament_withdrawal_modal;
 
@@ -42,8 +44,16 @@ class Tournament_Ajax_Adapter {
         private Json_Response_Factory_Interface $response_factory,
         private Competition_Entry_Service $competition_entry_service,
         private Finance_Service $finance_service,
-        private ?Tournament_Service $tournament_service = null
+        private ?Tournament_Service $tournament_service = null,
+        private ?Withdraw_Tournament_Entry_Handler $withdraw_tournament_entry_handler = null,
+        private ?Create_Tournament_Payment_Handler $create_tournament_payment_handler = null,
+        private ?Submit_Tournament_Partner_Handler $submit_tournament_partner_handler = null,
+        private ?Submit_Tournament_Entry_Handler $submit_tournament_entry_handler = null
     ) {
+        $this->withdraw_tournament_entry_handler = $this->withdraw_tournament_entry_handler ?? new Withdraw_Tournament_Entry_Handler( $this->competition_entry_service );
+        $this->create_tournament_payment_handler = $this->create_tournament_payment_handler ?? new Create_Tournament_Payment_Handler( $this->finance_service );
+        $this->submit_tournament_partner_handler = $this->submit_tournament_partner_handler ?? new Submit_Tournament_Partner_Handler( $this->competition_entry_service );
+        $this->submit_tournament_entry_handler   = $this->submit_tournament_entry_handler ?? new Submit_Tournament_Entry_Handler( $this->competition_entry_service );
     }
 
     public function logged_out(): Response {
@@ -84,18 +94,11 @@ class Tournament_Ajax_Adapter {
         if ( ! $validator->error ) {
             $validator = $validator->logged_in_entry();
             if ( ! $validator->error ) {
-                $dto = new Tournament_Entry_Request_DTO( $request );
+                $command = Submit_Tournament_Entry_Command::from_post( $request );
                 $tournament = null;
-                if ( $dto->tournament_id > 0 && $this->tournament_service ) {
+                if ( $command->tournament_id > 0 && $this->tournament_service ) {
                     try {
-                        $tournament = $this->tournament_service->get_tournament( $dto->tournament_id );
-                    } catch ( Tournament_Not_Found_Exception ) {
-                        $tournament = null;
-                    }
-                }
-                if ( ! $tournament && $dto->tournament_id > 0 && function_exists( 'Racketmanager\get_tournament' ) ) {
-                    try {
-                        $tournament = get_tournament( $dto->tournament_id );
+                        $tournament = $this->tournament_service->get_tournament( $command->tournament_id );
                     } catch ( Tournament_Not_Found_Exception ) {
                         $tournament = null;
                     }
@@ -107,22 +110,22 @@ class Tournament_Ajax_Adapter {
                     $validator->err_msgs = [ __( 'Tournament not found', 'racketmanager' ) ];
                     $validator->msg      = __( 'Errors in tournament entry form', 'racketmanager' );
                 } else {
-                    $submitted_event_ids = array_keys( $dto->entries );
-                    foreach ( $submitted_event_ids as $event_id ) {
-                        if ( ! $tournament->is_event_allowed( $event_id, true ) ) {
-                            $validator->error    = true;
-                            $validator->status   = 422;
-                            $validator->err_flds = [ 'event' ];
-                            $validator->err_msgs = [ __( 'Event is not open for entry in this tournament', 'racketmanager' ) ];
-                            $validator->msg      = __( 'Errors in tournament entry form', 'racketmanager' );
-                            break;
-                        }
+                    $submitted_event_ids = array_keys( $command->entries );
+                    $unavailable_events  = $this->tournament_service
+                        ? $this->tournament_service->get_unavailable_entry_events( $tournament, $submitted_event_ids )
+                        : $submitted_event_ids;
+                    if ( ! empty( $unavailable_events ) ) {
+                        $validator->error    = true;
+                        $validator->status   = 422;
+                        $validator->err_flds = [ 'event' ];
+                        $validator->err_msgs = [ __( 'Event is not open for entry in this tournament', 'racketmanager' ) ];
+                        $validator->msg      = __( 'Errors in tournament entry form', 'racketmanager' );
                     }
                 }
 
                 if ( ! $validator->error ) {
                     try {
-                        $response = $this->competition_entry_service->request_tournament_entry( $dto );
+                        $response = $this->submit_tournament_entry_handler->handle( $command );
                         if ( ! is_wp_error( $response ) ) {
                             $return = array();
                             array_push( $return, $response->message, $response->message_type, $response->payment_required, $response->return_link );
@@ -170,11 +173,11 @@ class Tournament_Ajax_Adapter {
         }
 
         if ( empty( $validator->error ) ) {
-            $partner_request = new Tournament_Partner_Request_DTO( $request );
-            $response        = $this->competition_entry_service->validate_tournament_partner( $partner_request );
+            $command  = Submit_Tournament_Partner_Command::from_post( $request );
+            $response = $this->submit_tournament_partner_handler->handle( $command );
             if ( ! is_wp_error( $response ) ) {
                 $return = array();
-                array_push( $return, $partner_request->modal, $partner_request->partner_id, $partner_request->partner_name, $partner_request->event_id );
+                array_push( $return, $command->modal, $command->partner_id, $command->partner_name, $command->event_id );
 
                 return $this->response_factory->create_success_response( $return );
             }
@@ -199,7 +202,7 @@ class Tournament_Ajax_Adapter {
             return $this->response_factory->create_raw_response( (string) $nonce_error->msg );
         }
 
-        $command = Tournament_Withdrawal_Command::from_post( $request );
+        $command = Withdraw_Tournament_Entry_Command::from_post( $request );
         $modal   = isset( $request['modal'] ) ? sanitize_text_field( wp_unslash( $request['modal'] ) ) : null;
         $output  = tournament_withdrawal_modal(
             (int) $command->tournament_id,
@@ -222,9 +225,9 @@ class Tournament_Ajax_Adapter {
         }
 
         if ( empty( $validator->error ) ) {
-            $command = Tournament_Withdrawal_Command::from_post( $request );
+            $command = Withdraw_Tournament_Entry_Command::from_post( $request );
             try {
-                $response = $this->competition_entry_service->confirm_tournament_withdrawal( $command->tournament_id, $command->player_id );
+                $response = $this->withdraw_tournament_entry_handler->handle( $command );
                 if ( $response ) {
                     $output = __( 'Tournament withdrawal successful and refund will be issued when tournament starts', 'racketmanager' );
                 } else {
@@ -272,9 +275,6 @@ class Tournament_Ajax_Adapter {
                         $tournament = null;
                     }
                 }
-                if ( ! $tournament && function_exists( 'Racketmanager\get_tournament' ) ) {
-                    $tournament = get_tournament( $tournament_id );
-                }
                 if ( $tournament ) {
                     $valid_season = Target_Season_Validator::validate( $tournament, 'tournament', $season_raw );
                 }
@@ -291,9 +291,9 @@ class Tournament_Ajax_Adapter {
     }
 
     public function tournament_payment_create( array $request = [] ): Response {
-        $command = Tournament_Payment_Command::from_post( $request );
+        $command = Create_Tournament_Payment_Command::from_post( $request );
         try {
-            $client_secret = $this->finance_service->create_tournament_payment_request( $command->tournament_id, $command->player_id, $command->invoice_id );
+            $client_secret = $this->create_tournament_payment_handler->handle( $command );
 
             return $this->response_factory->create_success_response( $client_secret );
         } catch ( Tournament_Not_Found_Exception | Player_Not_Found_Exception | Stripe_API_Exception | Invoice_Not_Found_Exception $e ) {

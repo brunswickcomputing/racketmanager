@@ -7,23 +7,35 @@
  * @subpackage Services
  */
 
+declare( strict_types=1 );
+
 namespace Racketmanager\Services;
 
 use Racketmanager\Domain\Tournament\Championship;
 use Racketmanager\Domain\Tournament\Championship_Settings;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Util\Util;
 use function Racketmanager\get_league;
+use function Racketmanager\get_league_query_service;
 
 final class Championship_Factory {
+    public function __construct(
+        private ?League_Repository_Interface $league_repository = null,
+        private ?League_Query_Service $league_query_service = null,
+    ) {
+    }
+
     /**
      * Create a championship domain object from league and settings.
      *
      * @param object $league league object.
      * @param Championship_Settings $settings settings object.
+     * @param string|null $requested_final requested final key.
      *
      * @return Championship
      */
-    public function create( object $league, Championship_Settings $settings ): Championship {
+    public function create( object $league, Championship_Settings $settings, ?string $requested_final = null ): Championship {
         $league_id       = (int) $league->id;
         $is_consolation  = $this->is_consolation( $league );
         $num_groups      = $settings->num_groups();
@@ -32,7 +44,7 @@ final class Championship_Factory {
         if ( $settings->has_groups() ) {
             $num_advance           = $settings->num_advance;
             $num_teams_first_round = $num_groups * $num_advance;
-            $num_rounds            = (int) log( $num_teams_first_round, 2 );
+            $num_rounds            = (int) log( max( 1, $num_teams_first_round ), 2 );
         } elseif ( $is_consolation ) {
             $progression           = $this->build_consolation_progression( $league, $num_teams );
             $num_teams             = $progression['num_teams'];
@@ -149,7 +161,7 @@ final class Championship_Factory {
             $keys_by_round,
             $finals_by_key,
             $final_teams_by_round,
-            $this->determine_current_final( $keys_by_round )
+            $this->determine_current_final( $keys_by_round, $requested_final )
         );
     }
 
@@ -161,7 +173,8 @@ final class Championship_Factory {
      * @return bool
      */
     private function is_consolation( object $league ): bool {
-        return ! empty( $league->event->primary_league ) && (int) $league->id !== (int) $league->event->primary_league;
+        $primary_league = $league->event->primary_league ?? null;
+        return ! empty( $primary_league ) && (int) $league->id !== (int) $primary_league;
     }
 
     /**
@@ -170,28 +183,63 @@ final class Championship_Factory {
      * @param object $league league object.
      * @param int $num_teams number of teams.
      *
-     * @return array
+     * @return array{num_teams: int, num_advance: int, num_rounds: int, num_teams_first_round: int}
      */
     private function build_consolation_progression( object $league, int $num_teams ): array {
-        $primary_league        = get_league( $league->event->primary_league );
+        $primary_league_id = $league->event->primary_league ?? null;
+        if ( ! $primary_league_id ) {
+            return array(
+                'num_teams'             => $num_teams,
+                'num_advance'           => $num_teams,
+                'num_rounds'            => 0,
+                'num_teams_first_round' => $num_teams,
+            );
+        }
+
+        $primary_league = $this->league_repository
+            ? $this->league_repository->find_by_id( (int) $primary_league_id )
+            : ( function_exists( '\\Racketmanager\\get_league' ) ? get_league( (int) $primary_league_id ) : null );
+
+        if ( ! $primary_league || ! isset( $primary_league->championship ) ) {
+            $num_rounds            = (int) ceil( log( max( 1, $num_teams ), 2 ) );
+            $num_teams_first_round = (int) pow( 2, $num_rounds );
+            return array(
+                'num_teams'             => $num_teams,
+                'num_advance'           => $num_teams_first_round,
+                'num_rounds'            => $num_rounds,
+                'num_teams_first_round' => $num_teams_first_round,
+            );
+        }
+
         $max_rounds            = $primary_league->championship->num_rounds - 1;
         $max_teams_first_round = (int) pow( 2, $max_rounds );
         $first_round           = $primary_league->championship->get_final_keys( 1 );
-        $outstanding_matches   = $primary_league->get_matches(
-            array(
-                'pending'          => true,
-                'final'            => $first_round,
-                'count'            => true,
-                'season'           => $league->current_season['name'],
-                'reset_query_args' => true,
-            )
-        );
+
+        $season_name = is_array( $league->current_season )
+            ? ( $league->current_season['name'] ?? null )
+            : ( $league->current_season->name ?? null );
+
+        $outstanding_matches = false;
+        $query_service       = $this->league_query_service
+            ?? ( function_exists( '\\Racketmanager\\get_league_query_service' ) ? get_league_query_service() : null );
+        if ( null !== $query_service ) {
+            $outstanding_matches = (bool) $query_service->get_matches(
+                $primary_league,
+                array(
+                    'pending'          => true,
+                    'final'            => $first_round,
+                    'count'            => true,
+                    'season'           => $season_name,
+                    'reset_query_args' => true,
+                )
+            );
+        }
 
         if ( $outstanding_matches || $num_teams > $max_teams_first_round ) {
             $num_teams  = 0;
             $num_rounds = $max_rounds;
         } else {
-            $num_rounds = (int) ceil( log( $num_teams, 2 ) );
+            $num_rounds = (int) ceil( log( max( 1, $num_teams ), 2 ) );
         }
 
         $num_teams_first_round = (int) pow( 2, $num_rounds );
@@ -210,13 +258,19 @@ final class Championship_Factory {
      * @param object $league league object.
      * @param int $num_teams number of teams.
      *
-     * @return array
+     * @return array{num_teams: int, num_advance: int, num_rounds: int, num_teams_first_round: int}
      */
     private function build_standard_progression( object $league, int $num_teams ): array {
-        $num_match_days = $league->current_season['num_match_days'] ?? 0;
+        $num_match_days = is_array( $league->current_season )
+            ? ( $league->current_season['num_match_days'] ?? 0 )
+            : ( $league->current_season->num_match_days ?? 0 );
         $num_advance = (int) pow( 2, (int) $num_match_days );
 
-        if ( $league->event->competition->is_active || $league->event->competition->is_complete ) {
+        $competition = $league->event->competition ?? null;
+        $is_active   = $competition->is_active ?? false;
+        $is_complete = $competition->is_complete ?? false;
+
+        if ( $is_active || $is_complete ) {
             $use_teams = true;
         } elseif ( $num_teams > $num_advance ) {
             $use_teams = true;
@@ -225,11 +279,11 @@ final class Championship_Factory {
         }
 
         if ( $use_teams ) {
-            $num_rounds            = (int) ceil( log( $num_teams, 2 ) );
+            $num_rounds            = (int) ceil( log( max( 1, $num_teams ), 2 ) );
             $num_teams_first_round = (int) pow( 2, $num_rounds );
         } else {
             $num_teams_first_round = $num_advance;
-            $num_rounds            = (int) $league->current_season['num_match_days'];
+            $num_rounds            = (int) $num_match_days;
         }
 
         return array(
@@ -264,10 +318,15 @@ final class Championship_Factory {
      * Determine current final from request or default.
      *
      * @param array $keys_by_round keys by round.
+     * @param string|null $requested_final requested final key.
      *
      * @return string
      */
-    private function determine_current_final( array $keys_by_round ): string {
+    private function determine_current_final( array $keys_by_round, ?string $requested_final = null ): string {
+        if ( null !== $requested_final && '' !== $requested_final ) {
+            return $requested_final;
+        }
+
         if ( isset( $_GET['final'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             return sanitize_text_field( wp_unslash( $_GET['final'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         }

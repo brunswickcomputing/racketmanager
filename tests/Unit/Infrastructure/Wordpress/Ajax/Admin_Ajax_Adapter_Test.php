@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Ajax;
 
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
@@ -21,11 +22,14 @@ use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Services\Competition\Competition_Notification_Service;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Services\Settings_Service;
+use Racketmanager\Services\Standings\Standings_Service;
 
+#[AllowMockObjectsWithoutExpectations]
 class Admin_Ajax_Adapter_Test extends TestCase {
     private Stub|Security_Service_Interface $security_service;
     private RacketManager|Stub $racketmanager;
@@ -34,6 +38,8 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     private Notification_Service|MockObject|Stub $notification_service;
     private Fixture_Repository_Interface|MockObject|Stub $fixture_repository;
     private League_Team_Repository_Interface|MockObject|Stub $league_team_repository;
+    private Competition_Notification_Service|MockObject|Stub $competition_notification_service;
+    private Standings_Service|MockObject $standings_service;
     private Admin_Ajax_Adapter $adapter;
 
     protected function setUp(): void {
@@ -45,6 +51,8 @@ class Admin_Ajax_Adapter_Test extends TestCase {
         $this->notification_service      = $this->createStub( Notification_Service::class );
         $this->fixture_repository        = $this->createStub( Fixture_Repository_Interface::class );
         $this->league_team_repository    = $this->createStub( League_Team_Repository_Interface::class );
+        $this->competition_notification_service = $this->createStub( Competition_Notification_Service::class );
+        $this->standings_service = $this->createMock( Standings_Service::class );
         $this->adapter                   = $this->make_adapter();
         $_POST                           = [];
         $_GET                            = [];
@@ -84,7 +92,9 @@ class Admin_Ajax_Adapter_Test extends TestCase {
             $this->notification_service,
             $this->fixture_repository,
             $settings ?? new Settings_Service( [] ),
-            $this->league_team_repository
+            $this->league_team_repository,
+            $this->competition_notification_service,
+            $this->standings_service
         );
     }
 
@@ -165,10 +175,15 @@ class Admin_Ajax_Adapter_Test extends TestCase {
         $league_team = new \Racketmanager\Domain\Competition\League_Team();
         $league_team->table_id = 5;
         $league_team->league_id = 1;
+        $league_team->season = '2026';
         $league_team->rank = 1;
         $league_team->status = 'active';
         $league_team->set_entered_state(\Racketmanager\Domain\Enums\Team_Profile::from_value(1));
         $GLOBALS['wp_stubs_league_teams'] = [ 5 => $league_team ];
+        $league = new \Racketmanager\Domain\Competition\League( (object) [ 'title' => 'Division 1' ] );
+        $league->id = 1;
+        $GLOBALS['wp_stubs_leagues'][1] = $league;
+        $this->standings_service->expects( $this->once() )->method( 'set_teams_rank' )->with( $league, '2026' );
 
         $league_team_repo = $this->createMock( League_Team_Repository_Interface::class );
         $league_team_repo->expects( $this->once() )
@@ -357,15 +372,16 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     public function test_email_constitution_success(): void {
         $this->allow_security();
 
-        $constitution_sent_season = null;
+        $this->competition_notification_service = $this->createMock( Competition_Notification_Service::class );
+        $this->adapter                          = $this->make_adapter();
+
         $event = $this->createStub( Event::class );
         $event->current_season = [ 'name' => '2026' ];
-        $event->method( 'send_constitution' )->willReturnCallback(
-            function ( array $season ) use ( &$constitution_sent_season ) {
-                $constitution_sent_season = $season['name'] ?? null;
-            }
-        );
         $GLOBALS['wp_stubs_events'] = [ 101 => $event ];
+
+        $this->competition_notification_service->expects( $this->once() )
+            ->method( 'send_constitution' )
+            ->with( $event, [ 'name' => '2026' ] );
 
         $response = $this->adapter->email_constitution( [
             'security' => 'valid',
@@ -373,7 +389,6 @@ class Admin_Ajax_Adapter_Test extends TestCase {
         ] );
         $this->assertSame( 200, $response->get_status_code() );
         $this->assertSame( 'Constitution emailed', $response->get_content() );
-        $this->assertSame( '2026', $constitution_sent_season );
     }
 
     public function test_notify_competition_entries_open_unauthorized_returns_403(): void {

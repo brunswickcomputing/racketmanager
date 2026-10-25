@@ -5,12 +5,14 @@ namespace Racketmanager\Application\Event\Queries;
 
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
+use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition_Service;
 use function __;
 
 class Get_Event_Dropdown_Handler {
     public function __construct(
-        private readonly Competition_Service $competition_service
+        private readonly Competition_Service $competition_service,
+        private readonly Event_Query_Service $event_query_service
     ) {}
 
     public function handle( Get_Event_Dropdown_Query $query ): Shortcode_View_Model {
@@ -25,11 +27,13 @@ class Get_Event_Dropdown_Handler {
             return Shortcode_View_Model::for_error( __( 'Event not found', 'racketmanager' ) );
         }
 
+        $this->event_query_service->set_season( $event, $query->season ?? null );
+
         if ( ! Event_Allowlist_Guard::is_event_allowed( $event, $event->current_season['name'] ?? null, $this->competition_service ) ) {
             return Shortcode_View_Model::for_error( __( 'Event not found for competition', 'racketmanager' ) );
         }
 
-        $leagues  = $event->get_leagues();
+        $leagues  = $this->event_query_service->get_leagues( $event );
         $filename = ! empty( $query->template ) ? 'dropdown-' . $query->template : 'dropdown';
 
         return Shortcode_View_Model::for_template(

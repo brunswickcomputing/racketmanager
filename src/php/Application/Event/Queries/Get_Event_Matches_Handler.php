@@ -3,9 +3,12 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Event\Queries;
 
+use Racketmanager\Domain\Competition\League;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
+use Racketmanager\Services\Competition\Event_Query_Service;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\League_Service;
 use function __;
@@ -18,7 +21,9 @@ class Get_Event_Matches_Handler {
     public function __construct(
         private readonly Competition_Service $competition_service,
         private readonly Tournament_Presenter $tournament_presenter,
-        private readonly ?League_Service $league_service = null
+        private readonly ?League_Service $league_service,
+        private readonly Event_Query_Service $event_query_service,
+        private readonly League_Query_Service $league_query_service
     ) {}
 
     public function handle( Get_Event_Matches_Query $query ): Shortcode_View_Model {
@@ -33,16 +38,16 @@ class Get_Event_Matches_Handler {
             return Shortcode_View_Model::for_error( __( 'Event not found', 'racketmanager' ) );
         }
 
-        $event->set_season( $query->season );
+        $this->event_query_service->set_season( $event, $query->season );
 
         if ( ! Event_Allowlist_Guard::is_event_allowed( $event, $event->current_season['name'] ?? $query->season, $this->competition_service ) ) {
             return Shortcode_View_Model::for_error( __( 'Event not found for competition', 'racketmanager' ) );
         }
 
         if ( ! empty( $event->competition->is_championship ) ) {
-            $event->leagues = $this->get_draw( $event, $query->season ?? ( $event->current_season['name'] ?? null ) );
+            $event->leagues = $this->get_draw( $event, $event->current_season['name'] ?? $query->season );
         } else {
-            $event->leagues = $event->get_leagues();
+            $event->leagues = $this->event_query_service->get_leagues( $event );
         }
 
         $filename = ! empty( $query->template ) ? 'matches-' . $query->template : 'matches';
@@ -57,7 +62,7 @@ class Get_Event_Matches_Handler {
     }
 
     public function get_draw( object $event, ?string $season ): array {
-        $leagues = $event->get_leagues();
+        $leagues = $this->event_query_service->get_leagues( $event );
         foreach ( $leagues as $l => $league ) {
             $league_id  = is_object( $league ) ? ( $league->id ?? 0 ) : $league;
             $league_obj = $this->league_service ? $this->league_service->get_league( $league_id ) : null;
@@ -67,7 +72,7 @@ class Get_Event_Matches_Handler {
             if ( isset( $league_obj->championship ) && is_object( $league_obj->championship ) && method_exists( $league_obj->championship, 'get_finals' ) ) {
                 $finals = array_reverse( $league_obj->championship->get_finals() );
                 foreach ( $finals as $f => $final ) {
-                    $matches = method_exists( $league_obj, 'get_matches' ) ? $league_obj->get_matches( [
+                    $matches = $league_obj instanceof League ? $this->league_query_service->get_matches( $league_obj, [
                         'season'  => $season,
                         'final'   => $final['key'] ?? null,
                         'orderby' => [

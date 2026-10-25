@@ -17,9 +17,11 @@ use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class League_Archive_Template_Test extends TestCase {
+    use Creates_Event_Query_Service;
     use Manages_Wordpress_Globals;
 
     private Shortcode_Template_Renderer $template_renderer;
@@ -85,13 +87,11 @@ class League_Archive_Template_Test extends TestCase {
 
     private function create_event( Competition $competition, array $props = [] ): Event {
         $seasons = $props['seasons'] ?? [ [ 'name' => '2025' ], [ 'name' => '2026' ] ];
-        $leagues = $props['leagues'] ?? [];
 
-        return new class( $competition, $seasons, $leagues, $props ) extends Event {
+        return new class( $competition, $seasons, $props ) extends Event {
             public function __construct(
                 Competition $competition,
                 private readonly array $event_seasons,
-                private readonly array $event_leagues,
                 array $props
             ) {
                 $this->id          = $props['id'] ?? 20;
@@ -102,10 +102,6 @@ class League_Archive_Template_Test extends TestCase {
 
             public function get_seasons(): array {
                 return $this->event_seasons;
-            }
-
-            public function get_leagues( array $args = [] ): array|int {
-                return $this->event_leagues;
             }
         };
     }
@@ -146,7 +142,8 @@ class League_Archive_Template_Test extends TestCase {
             league_service: $league_service,
             competition_service: $comp_service,
             template_renderer: $this->template_renderer,
-            archive_presenter: $presenter
+            archive_presenter: $presenter,
+            event_query_service: $this->event_query_service()
         );
 
         $query = new Get_League_Archive_Query(
@@ -219,7 +216,8 @@ class League_Archive_Template_Test extends TestCase {
             league_service: $league_service,
             competition_service: $comp_service,
             template_renderer: $this->template_renderer,
-            archive_presenter: $presenter
+            archive_presenter: $presenter,
+            event_query_service: $this->event_query_service()
         );
 
         $query = new Get_League_Archive_Query(
@@ -291,7 +289,8 @@ class League_Archive_Template_Test extends TestCase {
             league_service: $league_service,
             competition_service: $comp_service,
             template_renderer: $this->template_renderer,
-            archive_presenter: $presenter
+            archive_presenter: $presenter,
+            event_query_service: $this->event_query_service()
         );
 
         $query = new Get_League_Archive_Query(
@@ -346,7 +345,8 @@ class League_Archive_Template_Test extends TestCase {
             league_service: $league_service,
             competition_service: $comp_service,
             template_renderer: $this->template_renderer,
-            archive_presenter: $presenter
+            archive_presenter: $presenter,
+            event_query_service: $this->event_query_service()
         );
 
         $query = new Get_League_Archive_Query(

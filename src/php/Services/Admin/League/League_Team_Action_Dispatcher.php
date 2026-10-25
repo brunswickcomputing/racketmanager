@@ -10,25 +10,37 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Admin\League;
 
+use Racketmanager\Services\Admin\Admin_Command_Input as Input;
+use Racketmanager\Application\Admin\Commands\League_Team_Handler;
+use Racketmanager\Application\Admin\Commands\Delete_League_Teams_Command;
+use Racketmanager\Application\Admin\Commands\Withdraw_League_Teams_Command;
+use Racketmanager\Application\Admin\Commands\Add_League_Teams_Command;
+use Racketmanager\Application\Admin\Commands\Rank_League_Teams_Command;
+use Racketmanager\Application\Admin\Commands\Save_League_Standings_Command;
+
+
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
-use Racketmanager\Exceptions\League_Not_Found_Exception;
-use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\League_Service;
+use Racketmanager\Services\Standings\Standings_Service;
 use function Racketmanager\get_league;
-use function Racketmanager\get_team;
 
 /**
  * Handles team mutations for the league admin screen (delete/withdraw, add teams, ranking).
  */
 readonly final class League_Team_Action_Dispatcher {
 
+    private League_Team_Handler $commands;
+
     public function __construct(
-        private League_Service $league_service,
+        League_Service $league_service,
         private Action_Guard_Interface $action_guard,
+        Standings_Service $standings_service,
+        ?League_Team_Handler $commands = null,
     ) {
+        $this->commands = $commands ?? new League_Team_Handler( $league_service, $standings_service );
     }
 
     /**
@@ -87,7 +99,11 @@ readonly final class League_Team_Action_Dispatcher {
             );
         }
 
-        $action = isset( $post['action'] ) ? sanitize_text_field( wp_unslash( strval( $post['action'] ) ) ) : '';
+        try {
+            $action = Input::text( $post, 'action' ) ?? '';
+        } catch ( \InvalidArgumentException $e ) {
+            return new Action_Result_DTO( message: $e->getMessage(), message_type: Admin_Message_Type::ERROR );
+        }
         if ( 'delete' === $action ) {
             return $this->delete_teams( $post, $league );
         }
@@ -103,48 +119,32 @@ readonly final class League_Team_Action_Dispatcher {
      * @param array<string, mixed> $post
      */
     private function delete_teams( array $post, object $league ): Action_Result_DTO {
-        $season = isset( $post['season'] ) ? sanitize_text_field( wp_unslash( strval( $post['season'] ) ) ) : null;
-        $teams  = isset( $post['team'] ) && is_array( $post['team'] ) ? $post['team'] : array();
-
-        if ( empty( $teams ) ) {
-            return new Action_Result_DTO();
+        try {
+            $command = new Delete_League_Teams_Command(
+                season: Input::text( $post, 'season' ),
+                team: Input::column( $post, 'team' ),
+            );
+        } catch ( \InvalidArgumentException $e ) {
+            return new Action_Result_DTO( message: $e->getMessage(), message_type: Admin_Message_Type::ERROR );
         }
 
-        $messages = array();
-        foreach ( $teams as $team_id ) {
-            $league->delete_team( intval( $team_id ), $season );
-            $messages[] = intval( $team_id ) . ' ' . __( 'deleted', 'racketmanager' );
-        }
-
-        return new Action_Result_DTO(
-            message: implode( '<br>', $messages ),
-            message_type: Admin_Message_Type::SUCCESS,
-        );
+        return $this->commands->delete_teams( $command, $league );
     }
 
     /**
      * @param array<string, mixed> $post
      */
     private function withdraw_teams( array $post, object $league ): Action_Result_DTO {
-        $season = isset( $post['season'] ) ? sanitize_text_field( wp_unslash( strval( $post['season'] ) ) ) : null;
-        $teams  = isset( $post['team'] ) && is_array( $post['team'] ) ? $post['team'] : array();
-
-        if ( empty( $teams ) ) {
-            return new Action_Result_DTO();
+        try {
+            $command = new Withdraw_League_Teams_Command(
+                season: Input::text( $post, 'season' ),
+                team: Input::column( $post, 'team' ),
+            );
+        } catch ( \InvalidArgumentException $e ) {
+            return new Action_Result_DTO( message: $e->getMessage(), message_type: Admin_Message_Type::ERROR );
         }
 
-        $messages = array();
-        foreach ( $teams as $team_id ) {
-            $team = get_team( $team_id );
-            $league->withdraw_team( intval( $team_id ), $season );
-            $team_title = ( $team && isset( $team->title ) ) ? $team->title : strval( $team_id );
-            $messages[] = $team_title . ' ' . __( 'withdrawn', 'racketmanager' );
-        }
-
-        return new Action_Result_DTO(
-            message: implode( '<br>', $messages ),
-            message_type: Admin_Message_Type::SUCCESS,
-        );
+        return $this->commands->withdraw_teams( $command, $league );
     }
 
     /**
@@ -161,34 +161,18 @@ readonly final class League_Team_Action_Dispatcher {
             );
         }
 
-        $league_id = method_exists( $league, 'get_id' ) ? $league->get_id() : ( isset( $league->id ) ? intval( $league->id ) : ( isset( $query['league_id'] ) ? intval( $query['league_id'] ) : null ) );
-        $season    = isset( $post['season'] ) ? intval( $post['season'] ) : null;
-        $teams     = isset( $post['team'] ) && is_array( $post['team'] ) ? $post['team'] : array();
-        $has_event = isset( $post['event_id'] );
-
-        if ( empty( $teams ) || ! $has_event || null === $season || ! $league_id ) {
-            return new Action_Result_DTO();
+        try {
+            $command = new Add_League_Teams_Command(
+                league_id: method_exists( $league, 'get_id' ) ? $league->get_id() : ( isset( $league->id ) ? (int) $league->id : Input::integer( $query, 'league_id' ) ),
+                season: Input::integer( $post, 'season' ),
+                team: Input::column( $post, 'team' ),
+                has_event: isset( $post['event_id'] ),
+            );
+        } catch ( \InvalidArgumentException $e ) {
+            return new Action_Result_DTO( message: $e->getMessage(), message_type: Admin_Message_Type::ERROR );
         }
 
-        $messages  = array();
-        $has_error = false;
-        foreach ( $teams as $team_id ) {
-            try {
-                $this->league_service->add_team_to_league( intval( $team_id ), $league_id, $season );
-                $messages[] = __( 'Team added', 'racketmanager' );
-            } catch ( Team_Not_Found_Exception | League_Not_Found_Exception $e ) {
-                $has_error  = true;
-                $messages[] = $e->getMessage();
-            }
-        }
-
-        $tab_override = ( isset( $league->is_championship ) && $league->is_championship ) ? 'preliminary' : null;
-
-        return new Action_Result_DTO(
-            message: implode( '<br>', $messages ),
-            message_type: $has_error ? Admin_Message_Type::ERROR : Admin_Message_Type::SUCCESS,
-            tab_override: $tab_override,
-        );
+        return $this->commands->handle_add_teams( $command, $league );
     }
 
     /**
@@ -204,25 +188,21 @@ readonly final class League_Team_Action_Dispatcher {
             );
         }
 
-        $type     = isset( $post['saveRanking'] ) ? 'manual' : ( isset( $post['randomRanking'] ) ? 'random' : 'ratings' );
-        $team_ids = isset( $post['table_id'] ) ? array_values( (array) $post['table_id'] ) : array();
-
-        if ( empty( $team_ids ) ) {
-            return new Action_Result_DTO();
-        }
-
-        $ranking_performed = $this->league_service->rank_teams( $league, $type, $post, $team_ids );
-        if ( $ranking_performed ) {
-            return new Action_Result_DTO(
-                message: __( 'Team ranking saved', 'racketmanager' ),
-                message_type: Admin_Message_Type::SUCCESS,
+        try {
+            $type = isset( $post['saveRanking'] ) ? 'manual' : ( isset( $post['randomRanking'] ) ? 'random' : 'ratings' );
+            $js_active = 'manual' === $type && '1' === Input::text( $post, 'js-active' );
+            $command = new Rank_League_Teams_Command(
+                type: $type,
+                table_id: Input::column( $post, 'table_id' ),
+                rank: 'manual' === $type && ! $js_active ? Input::column( $post, 'rank', null ) : null,
+                rating_points: 'ratings' === $type ? Input::column( $post, 'rating_points', null ) : null,
+                js_active: $js_active,
             );
+        } catch ( \InvalidArgumentException $e ) {
+            return new Action_Result_DTO( message: $e->getMessage(), message_type: Admin_Message_Type::ERROR );
         }
 
-        return new Action_Result_DTO(
-            message: __( 'No updates', 'racketmanager' ),
-            message_type: Admin_Message_Type::WARNING,
-        );
+        return $this->commands->handle_ranking( $command, $league );
     }
 
     /**
@@ -238,31 +218,22 @@ readonly final class League_Team_Action_Dispatcher {
             );
         }
 
-        $required_keys = array( 'points_plus', 'points_minus', 'add_points', 'num_done_matches', 'num_won_matches', 'num_draw_matches', 'num_lost_matches', 'team_id', 'custom' );
-        foreach ( $required_keys as $key ) {
-            if ( ! isset( $post[ $key ] ) ) {
-                return new Action_Result_DTO();
-            }
+        try {
+            $command = new Save_League_Standings_Command(
+                points_plus: Input::column( $post, 'points_plus', null ),
+                points_minus: Input::column( $post, 'points_minus', null ),
+                add_points: Input::column( $post, 'add_points', null ),
+                num_done_matches: Input::column( $post, 'num_done_matches', null ),
+                num_won_matches: Input::column( $post, 'num_won_matches', null ),
+                num_draw_matches: Input::column( $post, 'num_draw_matches', null ),
+                num_lost_matches: Input::column( $post, 'num_lost_matches', null ),
+                team_id: Input::column( $post, 'team_id', null ),
+                custom: Input::tree( $post, 'custom', null ),
+            );
+        } catch ( \InvalidArgumentException $e ) {
+            return new Action_Result_DTO( message: $e->getMessage(), message_type: Admin_Message_Type::ERROR );
         }
 
-        $points = array(
-            'points_plus'  => $post['points_plus'],
-            'points_minus' => $post['points_minus'],
-            'add_points'   => $post['add_points'],
-        );
-
-        $matches = array(
-            'num_done_matches' => $post['num_done_matches'],
-            'num_won_matches'  => $post['num_won_matches'],
-            'num_draw_matches' => $post['num_draw_matches'],
-            'num_lost_matches' => $post['num_lost_matches'],
-        );
-
-        $league->save_standings_manually( $post['team_id'], $points, $matches, $post['custom'] );
-
-        return new Action_Result_DTO(
-            message: __( 'Standings Table updated', 'racketmanager' ),
-            message_type: Admin_Message_Type::SUCCESS,
-        );
+        return $this->commands->handle_manual_standings( $command, $league );
     }
 }

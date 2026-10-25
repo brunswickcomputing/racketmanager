@@ -40,12 +40,15 @@ use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;
 #[AllowMockObjectsWithoutExpectations]
 class Shortcodes_Competition_Integration_Test extends TestCase {
     use Creates_Competition_Season_Service;
+    use \Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+
     private RacketManager $plugin;
     private Simple_Container $container;
     private Competition_Shortcode_Adapter $adapter;
 
     protected function setUp(): void {
         parent::setUp();
+        $this->backup_globals();
 
         $this->plugin            = $this->createMock( RacketManager::class );
         $this->container         = new Simple_Container();
@@ -140,6 +143,11 @@ class Shortcodes_Competition_Integration_Test extends TestCase {
         );
 
         $this->container->set( 'competition_shortcode_adapter', fn() => $this->adapter );
+    }
+
+    protected function tearDown(): void {
+        $this->restore_globals();
+        parent::tearDown();
     }
 
     public function test_real_template_rendering_for_competitions(): void {

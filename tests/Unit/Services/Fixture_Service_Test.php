@@ -411,4 +411,188 @@ class Fixture_Service_Test extends TestCase {
         $league  = $this->create_league_fixture_structure( type: 'LD', num_rubbers: 3 );
         $this->assert_created_rubbers( $fixture, $league, [ 'WD', 'MD', 'XD' ] );
     }
+
+    public function test_add_match_hydrates_and_creates_fixture(): void {
+        $match_data            = new stdClass();
+        $match_data->id        = 777;
+        $match_data->league_id = 12;
+        $match_data->home_team = '10';
+        $match_data->away_team = '20';
+        $match_data->date      = '2026-07-01 18:30:00';
+
+        $league = $this->create_league_fixture_structure( type: 'MD', num_rubbers: 0 );
+
+        $this->fixture_repository->expects( $this->once() )
+            ->method( 'save' )
+            ->with( $this->isInstanceOf( Fixture::class ) );
+
+        $result = $this->service->add_match( $match_data, $league );
+
+        $this->assertInstanceOf( Fixture::class, $result );
+        $this->assertSame( 777, $result->get_id() );
+        $this->assertSame( '10', $result->get_home_team() );
+        $this->assertSame( '20', $result->get_away_team() );
+        $this->assertSame( '2026-07-01 18:30:00', $result->get_date() );
+    }
+
+    public function test_update_match_synchronizes_linked_fixture(): void {
+        $primary_raw               = new stdClass();
+        $primary_raw->id           = 10;
+        $primary_raw->home_team    = '100';
+        $primary_raw->away_team    = '200';
+        $primary_raw->date         = '2026-06-01 19:00:00';
+        $primary_raw->host         = 'home';
+        $primary_raw->linked_match = 20;
+        $primary_fixture           = \Racketmanager\Domain\Fixture\Fixture_Factory::from_object( $primary_raw );
+
+        $linked_raw         = new stdClass();
+        $linked_raw->id     = 20;
+        $linked_raw->host   = 'home';
+        $linked_fixture     = \Racketmanager\Domain\Fixture\Fixture_Factory::from_object( $linked_raw );
+
+        $this->fixture_repository->expects( $this->once() )
+            ->method( 'find_by_id' )
+            ->with( 20 )
+            ->willReturn( $linked_fixture );
+
+        $this->fixture_repository->expects( $this->exactly( 2 ) )
+            ->method( 'save' );
+
+        $this->service->update_match( $primary_fixture );
+
+        $this->assertSame( '100', $linked_fixture->get_home_team() );
+        $this->assertSame( '200', $linked_fixture->get_away_team() );
+        $this->assertSame( 'away', $linked_fixture->get_host() );
+        $this->assertSame( '2026-06-15 19:00:00', $linked_fixture->get_date() );
+        $this->assertSame( '19:00', $linked_fixture->get_start_time() );
+    }
+
+    public function test_create_fixture_championship_legs_preserves_start_time(): void {
+        $fixture = \Racketmanager\Domain\Fixture\Fixture_Factory::from_object( (object) [
+            'id'     => 570,
+            'date'   => '2026-05-15 19:30:00',
+            'season' => '2026',
+            'host'   => 'home',
+        ] );
+
+        $league = $this->create_league_fixture_structure( type: 'MD', num_rubbers: 6, is_championship: true, home_away: true );
+        $league->event->current_season = [ 'home_away' => true ];
+        $league->event->competition = new class {
+            public function get_season_by_name( string $season ): array {
+                return [ 'home_away_diff' => 2 ];
+            }
+        };
+
+        $saved_fixtures = [];
+        $this->fixture_repository->method( 'save' )->willReturnCallback( function ( Fixture $f ) use ( &$saved_fixtures ) {
+            if ( ! $f->get_id() ) {
+                $f->set_id( 571 );
+            }
+            $saved_fixtures[] = clone $f;
+            return $f->get_id();
+        } );
+
+        $this->service->create_fixture( $fixture, $league );
+
+        $this->assertSame( 1, $fixture->get_leg() );
+        $this->assertSame( '2026-05-15 19:30:00', $fixture->get_date() );
+        $this->assertSame( '19:30', $fixture->get_start_time() );
+        $this->assertSame( 571, $fixture->get_linked_fixture() );
+
+        $leg2 = null;
+        foreach ( $saved_fixtures as $sf ) {
+            if ( 2 === $sf->get_leg() ) {
+                $leg2 = $sf;
+                break;
+            }
+        }
+
+        $this->assertNotNull( $leg2 );
+        $this->assertSame( '2026-05-29 19:30:00', $leg2->get_date() );
+        $this->assertSame( '19:30', $leg2->get_start_time() );
+        $this->assertSame( 'away', $leg2->get_host() );
+    }
+
+    public function test_update_match_flips_linked_host_from_away_to_home(): void {
+        $primary_raw               = new stdClass();
+        $primary_raw->id           = 12;
+        $primary_raw->home_team    = '100';
+        $primary_raw->away_team    = '200';
+        $primary_raw->date         = '2026-06-01 19:00:00';
+        $primary_raw->host         = 'away';
+        $primary_raw->linked_match = 21;
+        $primary_fixture           = \Racketmanager\Domain\Fixture\Fixture_Factory::from_object( $primary_raw );
+
+        $linked_raw       = new stdClass();
+        $linked_raw->id   = 21;
+        $linked_raw->host = 'away';
+        $linked_fixture   = \Racketmanager\Domain\Fixture\Fixture_Factory::from_object( $linked_raw );
+
+        $this->fixture_repository->expects( $this->once() )->method( 'find_by_id' )->with( 21 )->willReturn( $linked_fixture );
+        $this->fixture_repository->expects( $this->exactly( 2 ) )->method( 'save' );
+
+        $this->service->update_match( $primary_fixture );
+
+        $this->assertSame( 'home', $linked_fixture->get_host() );
+    }
+
+    public function test_update_match_synchronizes_linked_fixture_for_std_class_match(): void {
+        $match               = new stdClass();
+        $match->home_team    = '300';
+        $match->away_team    = '400';
+        $match->date         = '2026-09-01 10:00:00';
+        $match->host         = 'home';
+        $match->linked_match = '30';
+
+        $linked_raw       = new stdClass();
+        $linked_raw->id   = 30;
+        $linked_raw->host = 'home';
+        $linked_fixture   = \Racketmanager\Domain\Fixture\Fixture_Factory::from_object( $linked_raw );
+
+        $this->fixture_repository->expects( $this->once() )
+            ->method( 'find_by_id' )
+            ->with( 30 )
+            ->willReturn( $linked_fixture );
+        $this->fixture_repository->expects( $this->once() )
+            ->method( 'save' )
+            ->with( $linked_fixture );
+
+        $this->service->update_match( $match );
+
+        $this->assertSame( '300', $linked_fixture->get_home_team() );
+        $this->assertSame( '400', $linked_fixture->get_away_team() );
+        $this->assertSame( 'away', $linked_fixture->get_host() );
+        $this->assertSame( '2026-09-15 10:00:00', $linked_fixture->get_date() );
+    }
+
+    public function test_update_match_without_linked_fixture_saves_only_primary(): void {
+        $primary_raw            = new stdClass();
+        $primary_raw->id        = 11;
+        $primary_raw->home_team = '100';
+        $primary_raw->away_team = '200';
+        $primary_raw->date      = '2026-06-01 19:00:00';
+        $primary_fixture        = \Racketmanager\Domain\Fixture\Fixture_Factory::from_object( $primary_raw );
+
+        $this->fixture_repository->expects( $this->never() )
+            ->method( 'find_by_id' );
+
+        $this->fixture_repository->expects( $this->once() )
+            ->method( 'save' )
+            ->with( $primary_fixture );
+
+        $this->service->update_match( $primary_fixture );
+    }
+
+    public function test_update_match_calls_update_method_if_available(): void {
+        $updated = false;
+        $custom_match = new class( $updated ) {
+            public function __construct( public bool &$updated ) {}
+            public function update(): void {
+                $this->updated = true;
+            }
+        };
+
+        $this->service->update_match( $custom_match );
+        $this->assertTrue( $updated );
+    }
 }

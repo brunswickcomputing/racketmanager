@@ -46,7 +46,7 @@ namespace Racketmanager;
                                     <?php
                                     for ( $i = 1; $i <= $num_teams; $i++ ) {
                                         ?>
-                                        <td><?php echo $league->get_crosstable_field( $team->id, $league->teams[ $i - 1 ]->id ); ?></td>
+                                        <td><?php echo \Racketmanager\get_league_query_service()->get_crosstable_field( $league, $team->id, $league->teams[ $i - 1 ]->id ); ?></td>
                                         <?php
                                     }
                                     ?>

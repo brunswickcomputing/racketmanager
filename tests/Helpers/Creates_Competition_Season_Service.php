@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Helpers;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Competition\Competition_Season_Service;
 
@@ -33,7 +34,8 @@ trait Creates_Competition_Season_Service {
         return new Competition_Season_Service(
             $this->createStub( League_Team_Repository_Interface::class ),
             $club_repository,
-            $this->createStub( Event_Repository_Interface::class )
+            $this->createStub( Event_Repository_Interface::class ),
+            $this->createStub( League_Repository_Interface::class )
         );
     }
 }

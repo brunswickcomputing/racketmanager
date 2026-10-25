@@ -13,27 +13,44 @@ use Racketmanager\Domain\Club\Club_Role;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\Competition\League_Factory;
 use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Communication\Message;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Player\Player_Factory;
+use Racketmanager\Domain\Player\User;
 use Racketmanager\Domain\Result\Results_Checker;
-use Racketmanager\Domain\Communication\Results_Report;
 use Racketmanager\Domain\Fixture\Rubber;
+use Racketmanager\Domain\Season\Season;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Tournament\Tournament_Entry;
-use Racketmanager\Domain\Player\User;
 use Racketmanager\Infrastructure\Legacy\Legacy_User;
 use Racketmanager\Infrastructure\Legacy\Legacy_User_Factory;
 use Racketmanager\Repositories\Club_Repository;
-use Racketmanager\Repositories\Message_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Competition_Repository;
+use Racketmanager\Repositories\Event_Repository;
+use Racketmanager\Repositories\Fixture_Repository;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Season_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
+use Racketmanager\Repositories\Message_Repository;
 use Racketmanager\Repositories\Player_Repository;
+use Racketmanager\Repositories\Rubber_Repository;
+use Racketmanager\Repositories\Season_Repository;
+use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Services\Competition\Event_Query_Service;
+use Racketmanager\Services\Competition\League_Query_Service;
 
 /**
  * Send debug code to the JavaScript console
@@ -207,7 +224,7 @@ function get_competition_repository_for_helpers(): Competition_Repository_Interf
 /**
  * Get Competition object
  *
- * @deprecated 2.0.0 Use \Racketmanager\Services\Competition_Service::get_competition() instead.
+ * @deprecated 10.0.0 Use \Racketmanager\Services\Competition_Service::get_competition() instead.
  *
  * @param Competition|int|string|null $competition Competition ID or competition object. Defaults to global $competition.
  * @param string|null                 $search_term type of search.
@@ -215,42 +232,91 @@ function get_competition_repository_for_helpers(): Competition_Repository_Interf
  * @return Competition|null competition|null
  */
 function get_competition( Competition|int|string|null $competition = null, ?string $search_term = 'id' ): ?Competition {
-    trigger_error( 'get_competition() is deprecated since version 2.0.0! Use \Racketmanager\Services\Competition_Service::get_competition() instead.', E_USER_DEPRECATED ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error
-    if ( empty( $competition ) && isset( $GLOBALS['competition'] ) ) {
-        $competition = $GLOBALS['competition'];
-    }
-
-    if ( $competition instanceof Competition ) {
-        $_competition = $competition;
-    } elseif ( is_object( $competition ) ) {
-        if ( ! isset( $competition->sport ) ) {
-            $competition->sport = '';
+    trigger_error( 'get_competition() is deprecated since version 10.0.0! Use \Racketmanager\Services\Competition_Service::get_competition() instead.', E_USER_DEPRECATED ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error
+    if ( null === $competition || 0 === $competition || '' === $competition ) {
+        if ( isset( $GLOBALS['competition'] ) ) {
+            $global_comp = $GLOBALS['competition'];
+            if ( $global_comp instanceof Competition ) {
+                return $global_comp;
+            }
+            if ( is_object( $global_comp ) ) {
+                if ( ! isset( $global_comp->sport ) ) {
+                    $global_comp->sport = '';
+                }
+                return Competition::from_object( $global_comp );
+            }
+            if ( is_string( $global_comp ) && '' !== $global_comp ) {
+                // When WordPress register_globals populates %competition% query var, it is a slug/name string
+                $comp_name = un_seo_url( $global_comp );
+                global $racketmanager;
+                if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'competition_service' ) ) {
+                    try {
+                        return $racketmanager->container->get( 'competition_service' )->get_competition( $comp_name, 'name' );
+                    } catch ( \Exception $e ) {
+                        return null;
+                    }
+                }
+                return get_competition_repository_for_helpers()->find_by_name( $comp_name );
+            }
+            if ( is_int( $global_comp ) ) {
+                return get_competition_repository_for_helpers()->find_by_id( $global_comp );
+            }
         }
-        $_competition = Competition::from_object( $competition );
-        $_competition->set_competition_repository( get_competition_repository_for_helpers() );
-    } else {
-        $competition_repository = get_competition_repository_for_helpers();
-        $_competition           = 'name' === $search_term
-            ? $competition_repository->find_by_name( (string) $competition )
-            : $competition_repository->find_by_id( (int) $competition );
-    }
-
-    if ( ! $_competition ) {
         return null;
     }
 
-    return $_competition;
+    if ( $competition instanceof Competition ) {
+        return $competition;
+    }
+
+    if ( is_object( $competition ) ) {
+        if ( ! isset( $competition->sport ) ) {
+            $competition->sport = '';
+        }
+        return Competition::from_object( $competition );
+    }
+
+    if ( is_string( $competition ) && ! is_numeric( $competition ) && 'id' === $search_term ) {
+        $search_term = 'name';
+    }
+
+    global $racketmanager;
+    if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'competition_service' ) ) {
+        try {
+            return $racketmanager->container->get( 'competition_service' )->get_competition( $competition, $search_term );
+        } catch ( \Exception $e ) {
+            return null;
+        }
+    }
+    $competition_repository = get_competition_repository_for_helpers();
+    return 'name' === $search_term
+        ? $competition_repository->find_by_name( (string) $competition )
+        : $competition_repository->find_by_id( (int) $competition );
+}
+
+/**
+ * Resolve the event repository for procedural helpers, preferring the container.
+ *
+ * @return Event_Repository_Interface
+ */
+function get_event_repository_for_helpers() {
+    global $racketmanager;
+    if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'event_repository' ) ) {
+        return $racketmanager->container->get( 'event_repository' );
+    }
+
+    return new Event_Repository();
 }
 
 /**
  * Get Event object
  *
- * @param int|string|Event|null $event Event ID or event object. Defaults to global $event.
+ * @param object|int|string|null $event Event ID or event object. Defaults to global $event.
  * @param string $search_term type of search.
  *
  * @return Event|null event|null
  */
-function get_event( int|string|Event|null $event = null, string $search_term = 'id' ): Event|null {
+function get_event( object|int|string|null $event = null, string $search_term = 'id' ): Event|null {
     if ( empty( $event ) && isset( $GLOBALS['event'] ) ) {
         $event = $GLOBALS['event'];
     }
@@ -258,15 +324,15 @@ function get_event( int|string|Event|null $event = null, string $search_term = '
     if ( $event instanceof Event ) {
         $_event = $event;
     } elseif ( is_object( $event ) ) {
-        $_event = new Event( $event );
-    } else {
-        global $racketmanager;
-        if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'event_repository' ) ) {
-            $event_repo = $racketmanager->container->get( 'event_repository' );
-            $_event     = 'name' === $search_term ? $event_repo->find_by_name( (string) $event ) : $event_repo->find_by_id( $event );
-        } else {
-            $_event = Event::get_instance( $event, $search_term );
+        $_competition = null;
+        if ( ! empty( $event->competition_id ) ) {
+            $competition_repo = get_competition_repository_for_helpers();
+            $_competition     = $competition_repo->find_by_id( (int) $event->competition_id );
         }
+        $_event = new Event( $event, $_competition instanceof Competition ? $_competition : null );
+    } else {
+        $event_repo = get_event_repository_for_helpers();
+        $_event     = 'name' === $search_term ? $event_repo->find_by_name( (string) $event ) : $event_repo->find_by_id( $event );
     }
 
     if ( ! $_event ) {
@@ -274,6 +340,150 @@ function get_event( int|string|Event|null $event = null, string $search_term = '
     }
 
     return $_event;
+}
+
+/**
+ * Resolve the league repository for procedural helpers, preferring the container.
+ *
+ * @return League_Repository_Interface
+ */
+function get_league_repository_for_helpers() {
+    global $racketmanager;
+    if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'league_repository' ) ) {
+        return $racketmanager->container->get( 'league_repository' );
+    }
+
+    return new League_Repository( null, fn() => get_event_repository_for_helpers() );
+}
+
+/**
+ * Resolve the fixture repository for procedural helpers, preferring the container.
+ *
+ * @return Fixture_Repository_Interface
+ */
+function get_fixture_repository_for_helpers() {
+    global $racketmanager;
+    if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' ) ) {
+        return $racketmanager->container->get( 'fixture_repository' );
+    }
+
+    return new Fixture_Repository(
+        null,
+        null,
+        get_rubber_repository_for_helpers(),
+        get_league_repository_for_helpers(),
+        get_team_repository_for_helpers()
+    );
+}
+
+/**
+ * Resolve the club repository for procedural helpers, preferring the container.
+ *
+ * @return Club_Repository_Interface
+ */
+function get_club_repository_for_helpers(): Club_Repository_Interface {
+    global $racketmanager;
+    if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'club_repository' ) ) {
+        return $racketmanager->container->get( 'club_repository' );
+    }
+
+    return new Club_Repository();
+}
+
+/**
+ * Resolve the league team repository for procedural helpers, preferring the container.
+ *
+ * @return League_Team_Repository_Interface
+ */
+function get_league_team_repository_for_helpers() {
+    global $racketmanager;
+    if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'league_team_repository' ) ) {
+        return $racketmanager->container->get( 'league_team_repository' );
+    }
+
+    return new League_Team_Repository(
+        null,
+        get_club_repository_for_helpers(),
+        get_team_repository_for_helpers()
+    );
+}
+
+/**
+ * Resolve the team repository for procedural helpers, preferring the container.
+ *
+ * @return Team_Repository_Interface
+ */
+function get_team_repository_for_helpers() {
+    global $racketmanager;
+    if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'team_repository' ) ) {
+        return $racketmanager->container->get( 'team_repository' );
+    }
+
+    return new Team_Repository();
+}
+
+/**
+ * Resolve the rubber repository for procedural helpers, preferring the container.
+ *
+ * @return Rubber_Repository_Interface
+ */
+function get_rubber_repository_for_helpers() {
+    global $racketmanager;
+    if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'rubber_repository' ) ) {
+        return $racketmanager->container->get( 'rubber_repository' );
+    }
+
+    return new Rubber_Repository();
+}
+
+/**
+ * Resolve the Event query service for legacy procedural callers and templates.
+ *
+ * Event no longer stores repositories, so code outside the container (legacy
+ * admin screens, templates) runs Event data methods through this service.
+ *
+ * @return Event_Query_Service
+ */
+function get_event_query_service(): Event_Query_Service {
+    global $racketmanager;
+    if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'event_query_service' ) ) {
+        return $racketmanager->container->get( 'event_query_service' );
+    }
+
+    return new Event_Query_Service(
+        get_event_repository_for_helpers(),
+        fn() => get_fixture_repository_for_helpers(),
+        fn() => get_rubber_repository_for_helpers(),
+        fn() => get_league_repository_for_helpers(),
+        fn() => get_team_repository_for_helpers(),
+        fn() => new Club_Repository(),
+        fn() => new Player_Repository()
+    );
+}
+
+/**
+ * Resolve the League query service for legacy procedural callers and templates.
+ *
+ * League no longer stores repositories, so code outside the container (legacy
+ * admin screens, templates) runs League data methods through this service.
+ *
+ * @return League_Query_Service
+ */
+function get_league_query_service(): League_Query_Service {
+    global $racketmanager;
+    if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'league_query_service' ) ) {
+        return $racketmanager->container->get( 'league_query_service' );
+    }
+
+    return new League_Query_Service(
+        get_league_repository_for_helpers(),
+        fn() => get_fixture_repository_for_helpers(),
+        fn() => get_rubber_repository_for_helpers(),
+        fn() => get_team_repository_for_helpers(),
+        fn() => get_league_team_repository_for_helpers(),
+        fn() => new Club_Repository(),
+        fn() => new Player_Repository()
+    );
 }
 
 /**
@@ -290,16 +500,21 @@ function get_league( object|int|string|null $league = null ): ?League {
     if ( $league instanceof League ) {
         $_league = $league;
     } elseif ( is_object( $league ) || $league ) {
-        global $racketmanager;
-        $league_repository = null;
-        if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'league_repository' ) ) {
-            $league_repository = $racketmanager->container->get( 'league_repository' );
-        }
-        $league_repository = $league_repository ?? new League_Repository();
         if ( is_object( $league ) ) {
-            $_league = new League( $league );
-            $league_repository->wire_league_collaborators( $_league );
+            $event = null;
+            if ( isset( $league->event ) && ( $league->event instanceof Event || is_object( $league->event ) ) ) {
+                $event = $league->event instanceof Event ? $league->event : new Event( $league->event );
+            } elseif ( ! empty( $league->event_id ) ) {
+                $event_repo = get_event_repository_for_helpers();
+                $event      = $event_repo ? $event_repo->find_by_id( (int) $league->event_id ) : null;
+            }
+            $_league = League_Factory::from_object( $league, $event );
+            if ( $_league ) {
+                $service = get_league_query_service();
+                $service->set_season( $_league, false, true );
+            }
         } else {
+            $league_repository = get_league_repository_for_helpers();
             if ( is_numeric( $league ) ) {
                 $_league = $league_repository->find_by_id( (int) $league );
             } else {
@@ -454,14 +669,8 @@ function get_team( object|int|string|null $team = null ): ?object {
     } elseif ( is_object( $team ) ) {
         $_team = new Team( $team );
     } else {
-        global $racketmanager;
-        if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'team_repository' ) ) {
-            $team_repo = $racketmanager->container->get( 'team_repository' );
-            $_team     = $team_repo->find_by_id( $team );
-        } else {
-            $team_repo = new \Racketmanager\Repositories\Team_Repository();
-            $_team     = $team_repo->find_by_id( $team );
-        }
+        $team_repo = get_team_repository_for_helpers();
+        $_team     = $team_repo->find_by_id( $team );
     }
 
     if ( ! $_team ) {
@@ -583,13 +792,11 @@ function get_league_team( object|int|null $league_team = null ): League_Team|nul
     if ( $league_team instanceof League_Team ) {
         $_league_team = $league_team;
     } elseif ( is_object( $league_team ) ) {
-        $_league_team = new League_Team( $league_team );
+        $league_team_repository = get_league_team_repository_for_helpers();
+        $_league_team           = $league_team_repository->hydrate( $league_team );
     } elseif ( $league_team ) {
-        global $racketmanager;
-        $league_team_repository = ( isset( $racketmanager->container ) && $racketmanager->container->has( 'league_team_repository' ) )
-            ? $racketmanager->container->get( 'league_team_repository' )
-            : new League_Team_Repository();
-        $_league_team = $league_team_repository->find( $league_team );
+        $league_team_repository = get_league_team_repository_for_helpers();
+        $_league_team           = $league_team_repository->find( $league_team );
     } else {
         $_league_team = null;
     }
@@ -686,29 +893,59 @@ function match_add_players( array $match_players, object $match ): array {
     return $match_players;
 }
 /**
+ * Resolve the club role repository for procedural helpers, preferring the container.
+ *
+ * @return Club_Role_Repository_Interface
+ */
+function get_club_role_repository_for_helpers(): Club_Role_Repository_Interface {
+    global $racketmanager;
+    if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'club_role_repository' ) ) {
+        return $racketmanager->container->get( 'club_role_repository' );
+    }
+
+    return new Club_Role_Repository();
+}
+
+/**
  * Get club role object
  *
  * @param object|int|null $club_role ID. Defaults to global $club_role.
  *
  * @return Club_Role|null
+ * @deprecated 10.0.0 Use \Racketmanager\Repositories\Club_Role_Repository::find() instead.
+ * @see \Racketmanager\Repositories\Club_Role_Repository::find()
  */
 function get_club_role( object|int|null $club_role = null ): ?Club_Role {
-    if ( empty( $club_role ) && isset( $GLOBALS['club_role'] ) ) {
-        $club_role = $GLOBALS['club_role'];
-    }
-    if ( $club_role instanceof Club_Role ) {
-        $_club_role = $club_role;
-    } elseif ( is_object( $club_role ) ) {
-        $_club_role = new Club_Role( $club_role );
-    } elseif( $club_role ) {
-        $club_role_repository = new Club_Role_Repository();
-        $_club_role           = $club_role_repository->find( $club_role );
-    } else {
-        $_club_role = null;
-    }
+    trigger_error( 'get_club_role() is deprecated since version 10.0.0! Use \Racketmanager\Repositories\Club_Role_Repository::find() instead.', E_USER_DEPRECATED ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error
 
-    if ( ! $_club_role ) {
+    if ( null === $club_role ) {
+        if ( isset( $GLOBALS['club_role'] ) ) {
+            $global_role = $GLOBALS['club_role'];
+            if ( $global_role instanceof Club_Role ) {
+                return $global_role;
+            }
+            if ( is_object( $global_role ) ) {
+                return new Club_Role( $global_role );
+            }
+            if ( is_numeric( $global_role ) && (int) $global_role > 0 ) {
+                return get_club_role_repository_for_helpers()->find( (int) $global_role );
+            }
+        }
         return null;
     }
-    return $_club_role;
+
+    if ( $club_role instanceof Club_Role ) {
+        return $club_role;
+    }
+
+    if ( is_object( $club_role ) ) {
+        return new Club_Role( $club_role );
+    }
+
+    if ( ! empty( $club_role ) ) {
+        $club_role_repository = get_club_role_repository_for_helpers();
+        return $club_role_repository->find( $club_role );
+    }
+
+    return null;
 }

@@ -157,12 +157,15 @@ namespace Racketmanager\Tests\Unit\Services\Fixture {
             $fixture->method( 'get_home_team' )->willReturn( '100' );
             $fixture->method( 'get_away_team' )->willReturn( '200' );
 
-            $league = $this->createMock( League::class );
-            $league->method( 'get_id' )->willReturn( 10 );
-            $league->method( 'get_event_id' )->willReturn( 20 );
-            $league->method( 'get_status' )->willReturnMap( [
-                [ 100, '2026', 'W' ], // Home team withdrawn
-                [ 200, '2026', 'A' ], // Away team active
+            $league = new League( (object) [
+                'id'       => 10,
+                'event_id' => 20,
+                'name'     => 'Premier League',
+            ] );
+
+            $this->league_repository->method( 'get_status' )->willReturnMap( [
+                [ 10, '2026', 100, 'W' ], // Home team withdrawn
+                [ 10, '2026', 200, 'A' ], // Away team active
             ] );
 
             $event = $this->createStub( Event::class );

@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Domain\DTO\Competition;
 
+use InvalidArgumentException;
+
 /**
  * Data Transfer Object for hydrating a League entity from raw data.
  */
@@ -16,13 +18,19 @@ readonly class League_Hydration_DTO {
 	 * @param array $seasons
 	 */
 	public function __construct(
-		public ?int $id,
-		public string $title,
+		public ?int $id = null,
+		public string $title = '',
 		public ?int $event_id = null,
 		public ?string $sequence = null,
 		public array $settings = [],
 		public array $seasons = []
 	) {
+		if ( null !== $this->id && $this->id < 0 ) {
+			throw new InvalidArgumentException( 'League id must be non-negative.' );
+		}
+		if ( null !== $this->event_id && $this->event_id <= 0 ) {
+			throw new InvalidArgumentException( 'League event_id must be a positive integer.' );
+		}
 	}
 
 	/**
@@ -34,7 +42,7 @@ readonly class League_Hydration_DTO {
 	public static function from_object( object $data ): self {
 		$seasons = $data->seasons ?? [];
 		if ( is_string( $seasons ) ) {
-			$unserialized = maybe_unserialize( $seasons );
+			$unserialized = self::decode_serialized_array( $seasons );
 			if ( is_array( $unserialized ) ) {
 				$seasons = $unserialized;
 			} else {
@@ -44,7 +52,7 @@ readonly class League_Hydration_DTO {
 
 		$settings = $data->settings ?? [];
 		if ( is_string( $settings ) ) {
-			$unserialized = maybe_unserialize( $settings );
+			$unserialized = self::decode_serialized_array( $settings );
 			if ( is_array( $unserialized ) ) {
 				$settings = $unserialized;
 			} else {
@@ -52,12 +60,12 @@ readonly class League_Hydration_DTO {
 			}
 		}
 
-		$title = $data->title ?? ( $data->name ?? '' );
+		$title = (string) ( $data->title ?? ( $data->name ?? '' ) );
 
 		return new self(
-			id: isset( $data->id ) ? (int) $data->id : null,
-			title: (string) $title,
-			event_id: isset( $data->event_id ) ? (int) $data->event_id : null,
+			id: isset( $data->id ) && '' !== (string) $data->id ? (int) $data->id : null,
+			title: $title,
+			event_id: isset( $data->event_id ) && '' !== (string) $data->event_id && (int) $data->event_id > 0 ? (int) $data->event_id : null,
 			sequence: isset( $data->sequence ) ? (string) $data->sequence : null,
 			settings: (array) $settings,
 			seasons: (array) $seasons
@@ -96,5 +104,17 @@ readonly class League_Hydration_DTO {
 		}
 
 		return $obj;
+	}
+
+	/** Decode only legacy PHP-serialized arrays; leave JSON and malformed values unchanged. */
+	private static function decode_serialized_array( mixed $value ): mixed {
+		if ( ! is_string( $value ) ) {
+			return $value;
+		}
+		$serialized = trim( $value );
+		if ( ! preg_match( '/^a:\d+:\{.*\}$/sD', $serialized ) ) {
+			return $value;
+		}
+		return @unserialize( $serialized );
 	}
 }

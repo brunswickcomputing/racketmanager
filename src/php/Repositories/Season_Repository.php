@@ -18,14 +18,18 @@ use wpdb;
  */
 class Season_Repository implements Season_Repository_Interface {
 
-    private wpdb $wpdb;
+    private object $wpdb;
     private string $table_name;
 
     /**
      * Constructor
+     *
+     * @param object|null $wpdb
      */
-    public function __construct() {
-        global $wpdb;
+    public function __construct( ?object $wpdb = null ) {
+        if ( null === $wpdb ) {
+            global $wpdb;
+        }
         $this->wpdb       = $wpdb;
         $this->table_name = $this->wpdb->prefix . 'racketmanager_seasons';
     }
@@ -53,12 +57,18 @@ class Season_Repository implements Season_Repository_Interface {
             );
             if ( $inserted ) {
                 $entity->set_id( $this->wpdb->insert_id );
-                wp_cache_set( $entity->get_id(), $entity, 'seasons' );
+                wp_cache_set( 'id_' . $entity->get_id(), $entity, 'seasons' );
+                if ( $entity->get_name() ) {
+                    wp_cache_set( 'name_' . $entity->get_name(), $entity, 'seasons' );
+                }
                 return $this->wpdb->insert_id;
             }
             return false;
         } else {
-            wp_cache_set( $entity->get_id(), $entity, 'seasons' );
+            wp_cache_set( 'id_' . $entity->get_id(), $entity, 'seasons' );
+            if ( $entity->get_name() ) {
+                wp_cache_set( 'name_' . $entity->get_name(), $entity, 'seasons' );
+            }
 
             return $this->wpdb->update(
                 $this->table_name,
@@ -75,7 +85,7 @@ class Season_Repository implements Season_Repository_Interface {
     }
 
     /**
-     * Find a season by its ID.
+     * Find a season by its ID or Name.
      *
      * @param int|string|null $id
      * @param string $type
@@ -87,18 +97,20 @@ class Season_Repository implements Season_Repository_Interface {
             return null;
         }
         if ( 'id' === $type ) {
-            $id     = (int) $id;
-            $search = $this->wpdb->prepare(
+            $id_val    = (int) $id;
+            $search    = $this->wpdb->prepare(
                 '`id` = %d',
-                $id
+                $id_val
             );
+            $cache_key = 'id_' . $id_val;
         } else {
-            $search = $this->wpdb->prepare(
+            $search    = $this->wpdb->prepare(
                 '`name` = %s',
-                $id
+                (string) $id
             );
+            $cache_key = 'name_' . $id;
         }
-        $season = wp_cache_get( $id, 'seasons' );
+        $season = wp_cache_get( $cache_key, 'seasons' );
 
         if ( ! $season ) {
             $season = $this->wpdb->get_row(
@@ -109,7 +121,12 @@ class Season_Repository implements Season_Repository_Interface {
                 return null;
             }
             $season = new Season( $season );
-            wp_cache_set( $id, $season, 'seasons' );
+            wp_cache_set( $cache_key, $season, 'seasons' );
+            if ( 'id' === $type && $season->get_name() ) {
+                wp_cache_set( 'name_' . $season->get_name(), $season, 'seasons' );
+            } elseif ( 'id' !== $type && $season->get_id() ) {
+                wp_cache_set( 'id_' . $season->get_id(), $season, 'seasons' );
+            }
         }
 
         return $season;
@@ -140,6 +157,13 @@ class Season_Repository implements Season_Repository_Interface {
      * @return bool
      */
     public function delete( int $id ): bool {
+        $season = $this->find_by_id( $id, 'id' );
+        if ( $season ) {
+            wp_cache_delete( 'id_' . $id, 'seasons' );
+            if ( $season->get_name() ) {
+                wp_cache_delete( 'name_' . $season->get_name(), 'seasons' );
+            }
+        }
         return $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) ) !== false;
     }
 

@@ -17,6 +17,7 @@ if ( ! function_exists( '_e' ) ) {
 }
 
 require $plugin_root . '/functions.php';
+require $plugin_root . '/template-tags.php';
 require $plugin_root . '/tests/wp-stubs.php';
 
 // Setup mock wpdb
@@ -94,8 +95,8 @@ $wpdb->get_row_callback = function( $query ) {
 };
 
 // 1. Setup container with repositories and player_service required by Team
-$team_repo = new class {
-	public function find_by_id( $id_or_title ) {
+$team_repo = new class implements \Racketmanager\Repositories\Interfaces\Team_Repository_Interface {
+	public function find_by_id( int|string|null $id_or_title ): ?\Racketmanager\Domain\Team\Team {
 		$t = new \Racketmanager\Domain\Team\Team();
 		if ( is_numeric( $id_or_title ) ) {
 			$t->set_id( (int) $id_or_title );
@@ -106,6 +107,23 @@ $team_repo = new class {
 		}
 		return $t;
 	}
+	public function find_id_by_title( string $title ): int {
+		return 99;
+	}
+	public function find_by_club( int $club_id, ?string $type = null ): array { return []; }
+	public function find_for_players( string $type ): array { return []; }
+	public function find_all( array $args = [] ): array|int { return []; }
+	public function save( object $entity ): bool|int { return true; }
+	public function has_teams( int $club_id ): bool { return true; }
+	public function find_next_sequence_number( string $club_shortcode, string $type ): int { return 1; }
+	public function find_captain( int $club_id, int $player ): bool { return true; }
+	public function find_teams_by_competition_with_details( int $competition_id, int $season, int $min_fixtures ): array { return []; }
+	public function find_team_settings_for_event( int $teamId, int $eventId ): ?\Racketmanager\Domain\DTO\Team\Team_Fixture_Settings_DTO { return null; }
+	public function find_team_by_players( array $player_ids ): ?int { return null; }
+	public function save_team_players( int $team_id, array $player_ids ): bool { return true; }
+	public function update_event_settings( int $team_id, int $event_id, string $season, string $captain, string $match_day, ?string $match_time ): bool { return true; }
+	public function delete( int $id ): bool { return true; }
+	public function find( int|string $id ): ?object { return $this->find_by_id( $id ); }
 };
 
 $entry_repo = new class {
@@ -160,12 +178,13 @@ $comp_repo = new class implements \Racketmanager\Repositories\Interfaces\Competi
 	public function is_club_participating( int $competition_id, int $club_id, string $season ): bool { return true; }
 	public function get_league_winners( int $competition_id, ?int $season = null ): array { return []; }
 	public function get_championship_winners( int $competition_id, ?int $season = null ): array { return []; }
+	public function get_winners( string $season, int $competition_id, string $competition_type = 'tournament', bool $group_by = false ): false|array { return []; }
 	public function find_by_name( string $name ): ?\Racketmanager\Domain\Competition\Competition {
 		$c = new class extends \Racketmanager\Domain\Competition\Competition {
 			public function __construct() {}
 		};
 		$c->id = 56;
-		$c->name = $name;
+		$c->name = 'Summer League';
 		return $c;
 	}
 	public function find_teams( int $competition_id, array $args = [] ): array|int { return []; }
@@ -427,6 +446,206 @@ if ( ! $comp_by_name instanceof \Racketmanager\Domain\Competition\Competition ||
 
 if ( $comp_pass !== $comp_by_id ) {
 	fwrite( STDERR, "get_competition(object) pass-through failed.\n" );
+	exit( 1 );
+}
+
+// 9. Test get_competition with competition_service registered in container
+$mock_comp_service = new class( $comp_repo ) {
+	public function __construct( private $repo ) {}
+	public function get_competition( $id_or_name, $search_term = 'id' ) {
+		if ( 'name' === $search_term ) {
+			return $this->repo->find_by_name( (string) $id_or_name );
+		}
+		return $this->repo->find_by_id( (int) $id_or_name );
+	}
+};
+$container->set( 'competition_service', static fn() => $mock_comp_service );
+
+set_error_handler( static fn() => true );
+try {
+	$comp_svc_by_id   = \Racketmanager\get_competition( 55 );
+	$comp_svc_by_name = \Racketmanager\get_competition( 'Summer League', 'name' );
+} finally {
+	restore_error_handler();
+}
+
+if ( ! $comp_svc_by_id instanceof \Racketmanager\Domain\Competition\Competition || 55 !== $comp_svc_by_id->id ) {
+	fwrite( STDERR, "get_competition(55) with competition_service failed.\n" );
+	exit( 1 );
+}
+
+if ( ! $comp_svc_by_name instanceof \Racketmanager\Domain\Competition\Competition || 'Summer League' !== $comp_svc_by_name->name ) {
+	fwrite( STDERR, "get_competition('Summer League', 'name') with competition_service failed.\n" );
+	exit( 1 );
+}
+
+// 10. Test get_league_repository_for_helpers fallback hydration with event repository
+unset( $GLOBALS['racketmanager'] );
+$wpdb->get_row_callback = function( $query ) {
+	if ( str_contains( $query, 'wp_racketmanager_leagues' ) ) {
+		return (object) [
+			'id'       => 2395,
+			'title'    => 'Division 1 Men',
+			'event_id' => 93,
+			'seasons'  => serialize( [ '2026' => [ 'name' => '2026' ] ] ),
+			'settings' => serialize( [] ),
+		];
+	}
+	if ( str_contains( $query, 'wp_racketmanager_events' ) ) {
+		return (object) [
+			'id'             => 93,
+			'name'           => 'Men Doubles Event',
+			'type'           => 'doubles',
+			'competition_id' => 12,
+			'seasons'        => '[]',
+		];
+	}
+	return null;
+};
+
+$helper_league_repo = \Racketmanager\get_league_repository_for_helpers();
+$hydrated_league    = $helper_league_repo->find_by_id( 2395 );
+
+if ( ! $hydrated_league instanceof \Racketmanager\Domain\Competition\League || 2395 !== $hydrated_league->id ) {
+	fwrite( STDERR, "get_league_repository_for_helpers find_by_id failed.\n" );
+	exit( 1 );
+}
+
+if ( ! $hydrated_league->event instanceof \Racketmanager\Domain\Competition\Event || 93 !== $hydrated_league->event->id ) {
+	fwrite( STDERR, "get_league_repository_for_helpers did not hydrate attached event.\n" );
+	exit( 1 );
+}
+
+// 11. Test get_club_role and get_club_role_repository_for_helpers
+$mock_club_role_repo = new class implements \Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface {
+	public function find( int|string|null $id ): ?\Racketmanager\Domain\Club\Club_Role {
+		if ( 5 === (int) $id ) {
+			$role = new \Racketmanager\Domain\Club\Club_Role();
+			$role->id = 5;
+			$role->user_id = 42;
+			$role->club_id = 1;
+			$role->role_id = 2;
+			return $role;
+		}
+		return null;
+	}
+	public function find_by_id( int|string|null $id ): ?\Racketmanager\Domain\Club\Club_Role {
+		return $this->find( $id );
+	}
+	public function find_all(): array { return []; }
+	public function find_by_club( int $club_id ): array { return []; }
+	public function find_by_user( int $user_id ): array { return []; }
+	public function save( object $entity ): bool|int { return true; }
+	public function delete( int $id ): bool { return true; }
+	public function search( array $args ): ?array { return null; }
+	public function build_club_roles( string $sql, string $group ): array { return []; }
+	public function delete_for_role( int $id ): bool { return true; }
+	public function delete_for_club( int $club_id ): bool { return true; }
+	public function get_roles_for_club( int $club_id ): array { return []; }
+	public function find_clubs_by_player_and_role( int $user_id, string $role_name, ?int $club_id ): array { return []; }
+};
+
+$container->set( 'club_role_repository', static fn() => $mock_club_role_repo );
+$GLOBALS['racketmanager'] = (object) array( 'container' => $container );
+
+$club_role_by_id = @\Racketmanager\get_club_role( 5 );
+if ( ! $club_role_by_id instanceof \Racketmanager\Domain\Club\Club_Role || 5 !== $club_role_by_id->id || 42 !== $club_role_by_id->user_id ) {
+	fwrite( STDERR, "get_club_role(5) container resolution failed.\n" );
+	exit( 1 );
+}
+
+// Object pass-through
+if ( @\Racketmanager\get_club_role( $club_role_by_id ) !== $club_role_by_id ) {
+	fwrite( STDERR, "get_club_role(object) pass-through failed.\n" );
+	exit( 1 );
+}
+
+// Global fallback with object
+$GLOBALS['club_role'] = $club_role_by_id;
+if ( @\Racketmanager\get_club_role() !== $club_role_by_id ) {
+	fwrite( STDERR, "get_club_role() global fallback failed.\n" );
+	exit( 1 );
+}
+
+// Global fallback with numeric ID
+$GLOBALS['club_role'] = 5;
+if ( @\Racketmanager\get_club_role()?->id !== 5 ) {
+	fwrite( STDERR, "get_club_role() global numeric ID fallback failed.\n" );
+	exit( 1 );
+}
+unset( $GLOBALS['club_role'] );
+
+// 12. Test get_competition with string query var fallback
+$mock_comp_repo = new class extends \Racketmanager\Repositories\Competition_Repository {
+	public function __construct() {}
+	public function find_by_id( string|int|null $id ): ?\Racketmanager\Domain\Competition\Competition {
+		if ( 12 === (int) $id ) {
+			return \Racketmanager\Domain\Competition\Competition::from_object( (object) [ 'id' => 12, 'name' => 'Summer League', 'type' => 'league' ] );
+		}
+		return null;
+	}
+	public function find_by_name( string $name ): ?\Racketmanager\Domain\Competition\Competition {
+		$names = [
+			'summer league' => [ 12, 'Summer League' ],
+			'under-18 cup'  => [ 18, 'Under-18 Cup' ],
+			'Under-18 Cup'  => [ 18, 'Under-18 Cup' ],
+			'2026'          => [ 26, '2026' ],
+		];
+		if ( isset( $names[ $name ] ) ) {
+			return \Racketmanager\Domain\Competition\Competition::from_object( (object) [ 'id' => $names[ $name ][0], 'name' => $names[ $name ][1], 'type' => 'league' ] );
+		}
+		return null;
+	}
+};
+
+$container->set( 'competition_repository', static fn() => $mock_comp_repo );
+$competition_service = ( new \ReflectionClass( \Racketmanager\Services\Competition_Service::class ) )->newInstanceWithoutConstructor();
+( new \ReflectionProperty( \Racketmanager\Services\Competition_Service::class, 'competition_repository' ) )->setValue( $competition_service, $mock_comp_repo );
+$container->set( 'competition_service', static fn() => $competition_service );
+
+$GLOBALS['competition'] = 'summer-league';
+$resolved_comp = @\Racketmanager\get_competition();
+if ( ! $resolved_comp instanceof \Racketmanager\Domain\Competition\Competition || 12 !== $resolved_comp->id ) {
+	fwrite( STDERR, "get_competition() global string query var 'summer-league' resolution failed.\n" );
+	exit( 1 );
+}
+
+$GLOBALS['competition'] = 'under_18-cup';
+foreach ( [ null, 0, '' ] as $input ) {
+	$resolved_comp = @\Racketmanager\get_competition( $input );
+	if ( ! $resolved_comp instanceof \Racketmanager\Domain\Competition\Competition || 18 !== $resolved_comp->id ) {
+		fwrite( STDERR, "get_competition() global underscored slug lookup failed for empty input.\n" );
+		exit( 1 );
+	}
+}
+
+$GLOBALS['competition'] = '2026';
+$resolved_comp = @\Racketmanager\get_competition();
+if ( ! $resolved_comp instanceof \Racketmanager\Domain\Competition\Competition || 26 !== $resolved_comp->id ) {
+	fwrite( STDERR, "get_competition() global numeric-string query var must resolve as a name.\n" );
+	exit( 1 );
+}
+
+$explicit_comp = @\Racketmanager\get_competition( 'Under-18 Cup', 'name' );
+if ( ! $explicit_comp instanceof \Racketmanager\Domain\Competition\Competition || 18 !== $explicit_comp->id ) {
+	fwrite( STDERR, "get_competition() explicit hyphenated name lookup failed.\n" );
+	exit( 1 );
+}
+unset( $GLOBALS['competition'] );
+
+// 14. Test is_lta_number_required template tag
+$option_service = new class extends \Racketmanager\Infrastructure\Wordpress\Options\Option_Service {
+	public function __construct() {}
+	public function is_lta_number_required(): bool {
+		return true;
+	}
+};
+
+$container->set( \Racketmanager\Infrastructure\Wordpress\Options\Option_Service::class, static fn() => $option_service );
+$GLOBALS['racketmanager'] = (object) array( 'container' => $container );
+
+if ( ! \Racketmanager\is_lta_number_required() ) {
+	fwrite( STDERR, "is_lta_number_required() container resolution failed.\n" );
 	exit( 1 );
 }
 

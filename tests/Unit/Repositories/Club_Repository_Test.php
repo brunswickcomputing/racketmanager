@@ -53,11 +53,19 @@ final class Club_Repository_Test extends TestCase {
     public function test_find_all_returns_array_of_hydrated_clubs(): void {
         $wpdb = $this->createStub( wpdb::class );
         $wpdb->prefix = 'wp_';
-        $wpdb->method( 'prepare' )->willReturn( "`type` = 'affiliated'" );
+        $wpdb->method( 'prepare' )->willReturnCallback( function ( $query, ...$args ) {
+            return empty( $args ) ? $query : vsprintf( str_replace( '%s', "'%s'", $query ), $args );
+        } );
         $wpdb->method( 'get_results' )->willReturn( [
             (object) [ 'id' => 1, 'name' => 'Club 1', 'founded' => 1950 ],
             (object) [ 'id' => 2, 'name' => 'Club 2', 'founded' => 1960 ],
         ] );
+        $wpdb->method( 'get_row' )->willReturnCallback( function ( $query ) {
+            if ( str_contains( (string) $query, '2' ) ) {
+                return (object) [ 'id' => 2, 'name' => 'Club 2', 'shortcode' => 'C2', 'type' => 'affiliated', 'founded' => 1960 ];
+            }
+            return (object) [ 'id' => 1, 'name' => 'Club 1', 'shortcode' => 'C1', 'type' => 'affiliated', 'founded' => 1950 ];
+        } );
 
         $GLOBALS['wpdb'] = $wpdb;
 

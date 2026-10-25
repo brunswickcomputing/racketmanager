@@ -94,7 +94,7 @@ readonly final class League_Event_Action_Dispatcher {
         }
 
         $sequence = isset( $post['sequence'] ) ? sanitize_text_field( wp_unslash( strval( $post['sequence'] ) ) ) : null;
-        $league->update( $league_name, $sequence );
+        \Racketmanager\get_league_query_service()->update( $league, $league_name, $sequence );
 
         return new Action_Result_DTO(
             message: __( 'League Updated', 'racketmanager' ),
@@ -121,12 +121,19 @@ readonly final class League_Event_Action_Dispatcher {
         }
 
         $messages = array();
-        foreach ( $leagues as $league_id ) {
-            $league = get_league( intval( $league_id ) );
-            if ( null !== $league ) {
-                $league->delete();
-                $messages[] = $league->title . ' ' . __( 'deleted', 'racketmanager' );
+        try {
+            foreach ( $leagues as $league_id ) {
+                $league = get_league( intval( $league_id ) );
+                if ( null !== $league ) {
+                    $this->league_service->delete_league( $league );
+                    $messages[] = $league->title . ' ' . __( 'deleted', 'racketmanager' );
+                }
             }
+        } catch ( \RuntimeException | \InvalidArgumentException $e ) {
+            return new Action_Result_DTO(
+                message: $e->getMessage(),
+                message_type: Admin_Message_Type::ERROR,
+            );
         }
 
         if ( empty( $messages ) ) {

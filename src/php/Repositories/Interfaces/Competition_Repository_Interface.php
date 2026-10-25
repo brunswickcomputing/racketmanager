@@ -73,4 +73,16 @@ interface Competition_Repository_Interface extends Repository_Interface {
 	 * @return array|int
 	 */
 	public function find_matches( int $competition_id, array $args = [] ): array|int;
+
+	/**
+	 * Show winners
+	 *
+	 * @param string $season season.
+	 * @param int $competition_id competition id.
+	 * @param string $competition_type competition type.
+	 * @param boolean $group_by group by type.
+	 *
+	 * @return array|false of winners|false.
+	 */
+	public function get_winners( string $season, int $competition_id, string $competition_type = 'tournament', bool $group_by = false ): false|array;
 }

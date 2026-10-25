@@ -447,7 +447,8 @@ class Util {
      */
     public static function amend_date( string $date, int $adjustment_value, string $adjustment_type = '+', string $adjustment_period = 'day' ): string {
         if ( $date && $adjustment_value ) {
-            return gmdate( 'Y-m-d', strtotime( $date . ' ' . $adjustment_type . $adjustment_value . $adjustment_period ) );
+            $format = str_contains( $date, ':' ) ? 'Y-m-d H:i:s' : 'Y-m-d';
+            return gmdate( $format, strtotime( $date . ' ' . $adjustment_type . $adjustment_value . $adjustment_period ) );
         } else {
             return $date;
         }
@@ -630,9 +631,11 @@ class Util {
             $fixture_repo = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
                 ? $racketmanager->container->get( 'fixture_repository' )
                 : null;
-            $match = $fixture_repo ? $fixture_repo->find_by_id( (int) $name_array[2] ) : null;
+            $match = $fixture_repo ? $fixture_repo->find_by_id_with_relations( (int) $name_array[2] ) : null;
             if ( $match ) {
-                $team_name .= ' ' . $match->teams['home']->title . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $match->teams['away']->title;
+                $home_title = isset( $match->teams['home']->title ) ? (string) $match->teams['home']->title : '';
+                $away_title = isset( $match->teams['away']->title ) ? (string) $match->teams['away']->title : '';
+                $team_name .= ' ' . trim( $home_title . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $away_title );
             }
         }
         return $team_name;

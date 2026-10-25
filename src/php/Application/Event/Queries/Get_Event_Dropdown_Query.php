@@ -11,7 +11,8 @@ final readonly class Get_Event_Dropdown_Query {
     public function __construct(
         public ?int $event_id = null,
         public ?string $event_name = null,
-        public string $template = ''
+        public string $template = '',
+        public ?string $season = null
     ) {}
 
     public static function from_atts( array|string $atts = [], array $query_vars = [] ): self {
@@ -36,11 +37,13 @@ final readonly class Get_Event_Dropdown_Query {
         }
 
         $template = ! empty( $atts_array['template'] ) ? (string) $atts_array['template'] : '';
+        $season   = ! empty( $atts_array['season'] ) ? (string) $atts_array['season'] : null;
 
         return new self(
             event_id: $event_id,
             event_name: $event_name,
-            template: $template
+            template: $template,
+            season: $season
         );
     }
 }

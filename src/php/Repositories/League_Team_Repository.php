@@ -12,7 +12,10 @@ namespace Racketmanager\Repositories;
 use Racketmanager\Domain\DTO\League\League_Standings_DTO;
 use Racketmanager\Domain\Enums\Team_Profile;
 use Racketmanager\Domain\Competition\League_Team;
+use Racketmanager\Domain\Competition\League_Team_Factory;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use stdClass;
 use wpdb;
 
@@ -23,12 +26,44 @@ class League_Team_Repository implements League_Team_Repository_Interface {
     private wpdb $wpdb;
     private string $table_name;
     private string $season_compare;
+    private ?Club_Repository_Interface $club_repository;
+    private ?Team_Repository_Interface $team_repository;
 
-    public function __construct() {
-        global $wpdb;
-        $this->wpdb = $wpdb;
-        $this->season_compare = ' AND `season` = %d';
-        $this->table_name = $this->wpdb->prefix . 'racketmanager_league_teams';
+    public function __construct(
+        ?wpdb $wpdb = null,
+        ?Club_Repository_Interface $club_repository = null,
+        ?Team_Repository_Interface $team_repository = null
+    ) {
+        $this->wpdb            = $wpdb ?? $GLOBALS['wpdb'];
+        $this->season_compare  = ' AND `season` = %d';
+        $this->table_name      = $this->wpdb->prefix . 'racketmanager_league_teams';
+        $this->club_repository = $club_repository;
+        $this->team_repository = $team_repository;
+    }
+
+    public function hydrate( object $row ): League_Team {
+        $league_team = League_Team_Factory::from_object( $row );
+        $this->enrich( $league_team );
+        return $league_team;
+    }
+
+    /**
+     * Enrich a hydrated league team with club and (for player teams) roster players.
+     *
+     * Preserves the original entity rules: club comes from club_id; players are loaded
+     * when team_type is exactly 'P' and roster is not null (an empty roster still loads).
+     */
+    private function enrich( League_Team $league_team ): void {
+        if ( ! empty( $league_team->club_id ) && null !== $this->club_repository ) {
+            $league_team->club = $this->club_repository->find_by_id( (int) $league_team->club_id );
+        }
+        if ( 'P' === ( $league_team->team_type ?? null ) && null !== $league_team->roster && null !== $this->team_repository ) {
+            $team_id = ! empty( $league_team->get_team_id() ) ? $league_team->get_team_id() : (int) ( $league_team->id ?? 0 );
+            if ( ! empty( $team_id ) ) {
+                $team                 = $this->team_repository->find_by_id( $team_id );
+                $league_team->players = $team?->players ?? array();
+            }
+        }
     }
 
     public function save( object $entity ): bool|int {
@@ -153,7 +188,7 @@ class League_Team_Repository implements League_Team_Repository_Interface {
             if ( ! $league_team_row ) {
                 return null;
             }
-            $league_team = new League_Team( $league_team_row );
+            $league_team = $this->hydrate( $league_team_row );
 
             wp_cache_set( $id, $league_team, 'league-teams' );
         }
@@ -320,7 +355,7 @@ class League_Team_Repository implements League_Team_Repository_Interface {
             )
         );
         $results = array_map(
-            fn( $row ) => new League_Team( $row ),
+            fn( $row ) => $this->hydrate( $row ),
             $teams
         );
         wp_cache_set( md5( $cache_key ), $results, 'league_teams' );
@@ -429,7 +464,7 @@ class League_Team_Repository implements League_Team_Repository_Interface {
 
         foreach ( $rows as $row ) {
             // Map to the Domain Model
-            $results[] = new League_Team( $row );
+            $results[] = $this->hydrate( $row );
         }
         return $results;
     }
@@ -480,7 +515,7 @@ class League_Team_Repository implements League_Team_Repository_Interface {
         $rows = $this->wpdb->get_results( $query );
         foreach ( $rows as $row ) {
             // Map to the Domain Model
-            $results[] = new League_Team( $row );
+            $results[] = $this->hydrate( $row );
         }
         return $results;
 
@@ -576,7 +611,7 @@ class League_Team_Repository implements League_Team_Repository_Interface {
         if ( ! $row ) {
             return null;
         }
-        return new League_Team( $row );
+        return $this->hydrate( $row );
     }
 
 }

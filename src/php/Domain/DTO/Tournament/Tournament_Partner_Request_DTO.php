@@ -26,14 +26,37 @@ readonly class Tournament_Partner_Request_DTO {
      * Tournament_Partner_Request_DTO constructor.
      *
      * @param array $data
+     * @param int|null $player_id
+     * @param int|null $partner_id
+     * @param int|null $tournament_id
+     * @param int|null $event_id
+     * @param string|null $modal
+     * @param string|null $partner_name
      */
-    public function __construct( array $data ) {
-        $this->player_id     = self::parse_int_fallback( $data['playerId'] ?? null, $data['player_id'] ?? null );
-        $this->partner_id    = self::parse_int_fallback( $data['partnerId'] ?? null, $data['partner_id'] ?? null );
-        $this->modal         = isset( $data['modal'] ) ? sanitize_text_field( wp_unslash( $data['modal'] ) ) : null;
-        $this->partner_name  = isset( $data['partner'] ) ? sanitize_text_field( wp_unslash( $data['partner'] ) ) : null;
-        $this->event_id      = self::parse_int_fallback( $data['eventId'] ?? null, $data['event_id'] ?? null );
-        $this->tournament_id = self::parse_int_fallback( $data['tournamentId'] ?? null, $data['tournament_id'] ?? null, $data['tournament'] ?? null );
+    public function __construct(
+        array $data = [],
+        ?int $player_id = null,
+        ?int $partner_id = null,
+        ?int $tournament_id = null,
+        ?int $event_id = null,
+        ?string $modal = null,
+        ?string $partner_name = null
+    ) {
+        if ( ! empty( $data ) ) {
+            $this->player_id     = self::parse_int_fallback( $data['playerId'] ?? null, $data['player_id'] ?? null ) ?? $player_id;
+            $this->partner_id    = self::parse_int_fallback( $data['partnerId'] ?? null, $data['partner_id'] ?? null ) ?? $partner_id;
+            $this->modal         = isset( $data['modal'] ) ? sanitize_text_field( wp_unslash( $data['modal'] ) ) : $modal;
+            $this->partner_name  = isset( $data['partner'] ) ? sanitize_text_field( wp_unslash( $data['partner'] ) ) : ( isset( $data['partner_name'] ) ? sanitize_text_field( wp_unslash( $data['partner_name'] ) ) : $partner_name );
+            $this->event_id      = self::parse_int_fallback( $data['eventId'] ?? null, $data['event_id'] ?? null ) ?? $event_id;
+            $this->tournament_id = self::parse_int_fallback( $data['tournamentId'] ?? null, $data['tournament_id'] ?? null, $data['tournament'] ?? null ) ?? $tournament_id;
+        } else {
+            $this->player_id     = $player_id;
+            $this->partner_id    = $partner_id;
+            $this->tournament_id = $tournament_id;
+            $this->event_id      = $event_id;
+            $this->modal         = $modal;
+            $this->partner_name  = $partner_name;
+        }
     }
 
     /**

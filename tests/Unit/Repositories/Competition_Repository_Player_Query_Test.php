@@ -71,18 +71,16 @@ final class Competition_Repository_Player_Query_Test extends TestCase {
 			->with( 7 )
 			->willReturn( $league );
 
-		$container = new Simple_Container();
-		$container->set( 'fixture_repository', $fixture_repository );
-		$container->set( 'fixture_relation_loader', new Fixture_Relation_Loader( $league_repository ) );
-		$GLOBALS['racketmanager'] = (object) array( 'container' => $container );
-
-		$competition_repository = new Competition_Repository();
+		$competition_repository = new Competition_Repository(
+			static fn(): Fixture_Repository_Interface => $fixture_repository,
+			static fn(): Fixture_Relation_Loader => new Fixture_Relation_Loader( $league_repository )
+		);
 		$competition = new class( $competition_repository ) extends Competition {
 			public function __construct( private readonly Competition_Repository $repository ) {
 				parent::__construct( 'Test Competition', Competition_Type::LEAGUE, 'open', id: 5 );
 			}
 
-			public function get_matches( array $match_args ): array {
+			public function get_matches( array $match_args = array(), ?\Racketmanager\Repositories\Interfaces\Competition_Repository_Interface $competition_repository = null ): array {
 				return $this->repository->find_matches( 5, $match_args );
 			}
 		};

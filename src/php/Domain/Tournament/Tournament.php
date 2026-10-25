@@ -645,18 +645,26 @@ class Tournament {
     /**
      * Check if an event is allowed in this tournament.
      *
+     * Fails closed: raw IDs and slugs are only accepted when they resolve to an in-scope Event
+     * within the supplied candidate events (see Competition_Service::resolve_competition_event()).
+     *
      * @param int|string|object $event Event ID, event name/slug, or Event object.
      * @param bool              $for_entry Whether checking for entry submission (where [] denies all) vs frontend viewing (where [] allows all).
+     * @param iterable          $events Optional in-memory event collection.
      * @return bool
      */
-    public function is_event_allowed( int|string|object $event, bool $for_entry = false ): bool {
+    public function is_event_allowed( int|string|object $event, bool $for_entry = false, iterable $events = [] ): bool {
         $competition = $this->get_competition_object();
         if ( ! $competition || empty( $this->season ) ) {
             return false;
         }
 
-        $event_obj = $competition->resolve_event( $event, $this->season );
+        $event_obj = $competition->resolve_event( $event, $this->season, $events );
         if ( ! $event_obj ) {
+            return false;
+        }
+
+        if ( ! $competition->is_event_allowed( $event_obj, $this->season, $for_entry, $events ) ) {
             return false;
         }
 
@@ -665,8 +673,7 @@ class Tournament {
             return true;
         }
 
-        $event_id = (int) ( $event_obj->id ?? ( method_exists( $event_obj, 'get_id' ) ? $event_obj->get_id() : 0 ) );
-        return in_array( $event_id, $allowed_ids, true );
+        return in_array( (int) $event_obj->id, $allowed_ids, true );
     }
 
     /**
@@ -685,23 +692,24 @@ class Tournament {
     /**
      * Get events available for entry in this tournament.
      *
+     * @param iterable $events Optional in-memory event collection.
      * @return array
      */
-    public function get_entry_events(): array {
+    public function get_entry_events( iterable $events = [] ): array {
         $competition = $this->get_competition_object();
         if ( ! $competition || empty( $this->season ) ) {
             return array();
         }
         $allowed_ids = $this->get_allowlist_event_ids( true );
-        $events      = $competition->get_events_for_season( $this->season );
+        $events_list = $competition->get_events_for_season( $this->season, $events );
         if ( null === $allowed_ids ) {
-            return $events;
+            return $events_list;
         }
 
         return array_values(
             array_filter(
-                $events,
-                static fn( $event ): bool => in_array( (int) $event->id, $allowed_ids, true )
+                $events_list,
+                static fn( $event ): bool => in_array( (int) ( $event->id ?? 0 ), $allowed_ids, true )
             )
         );
     }

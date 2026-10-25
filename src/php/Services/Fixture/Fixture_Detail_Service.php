@@ -132,9 +132,12 @@ class Fixture_Detail_Service {
             ? $this->team_service->get_team_details( (int) $team_id )
             : $this->team_service->derive_team_details( (string) $team_id );
 
-        if ( $dto && is_numeric( $team_id ) && method_exists( $league, 'get_status' ) ) {
-            $status = $league->get_status( (int) $team_id, $season );
-            $dto->is_withdrawn = ( 'W' === $status );
+        if ( $dto && is_numeric( $team_id ) ) {
+            $league_id = isset( $league->id ) ? (int) $league->id : ( method_exists( $league, 'get_id' ) ? (int) $league->get_id() : 0 );
+            if ( $league_id > 0 ) {
+                $status            = $this->league_repository->get_status( $league_id, $season, (int) $team_id );
+                $dto->is_withdrawn = ( 'W' === $status );
+            }
         }
 
         return $dto;

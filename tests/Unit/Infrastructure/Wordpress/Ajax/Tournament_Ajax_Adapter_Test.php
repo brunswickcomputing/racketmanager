@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Ajax;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Tournament\Commands\Submit_Tournament_Entry_Handler;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Entry_Request_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Entry_Response_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Partner_Request_DTO;
@@ -49,7 +50,7 @@ class Tournament_Ajax_Adapter_Test extends TestCase {
         parent::tearDown();
     }
 
-    private function make_adapter( ?Tournament_Service $tournament_service = null ): Tournament_Ajax_Adapter {
+    private function make_adapter( ?Tournament_Service $tournament_service = null, ?Submit_Tournament_Entry_Handler $entry_handler = null ): Tournament_Ajax_Adapter {
         $response_factory = $this->createStub( Json_Response_Factory_Interface::class );
         $response_factory->method( 'create_success_response' )->willReturnCallback(
             static function ( $data, $status = null ) {
@@ -72,7 +73,8 @@ class Tournament_Ajax_Adapter_Test extends TestCase {
             $response_factory,
             $this->competition_entry_service,
             $this->finance_service,
-            $tournament_service
+            $tournament_service,
+            submit_tournament_entry_handler: $entry_handler
         );
     }
 
@@ -143,6 +145,29 @@ class Tournament_Ajax_Adapter_Test extends TestCase {
         $this->assertSame( 'success', $data[1] );
         $this->assertTrue( $data[2] );
         $this->assertSame( '/pay', $data[3] );
+    }
+
+    public function test_tournament_entry_uses_injected_handler_after_auth_and_event_validation(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+        $tournament = $this->createStub( Tournament::class );
+        $tournament_service = $this->createMock( Tournament_Service::class );
+        $tournament_service->expects( $this->once() )->method( 'get_tournament' )->with( 8 )->willReturn( $tournament );
+        $tournament_service->expects( $this->once() )->method( 'get_unavailable_entry_events' )
+            ->with( $tournament, [ 7 ] )->willReturn( [] );
+        $service = $this->createMock( Competition_Entry_Service::class );
+        $service->expects( $this->once() )->method( 'request_tournament_entry' )
+            ->with( $this->callback( static fn( Tournament_Entry_Request_DTO $dto ): bool => isset( $dto->entries[7] ) && 8 === $dto->tournament_id ) )
+            ->willReturn( new Tournament_Entry_Response_DTO( 200, 'Entered', 'success', '/pay', true ) );
+        $handler = new Submit_Tournament_Entry_Handler( $service );
+        $this->competition_entry_service = $this->createMock( Competition_Entry_Service::class );
+        $this->competition_entry_service->expects( $this->never() )->method( 'request_tournament_entry' );
+        $adapter = $this->make_adapter( $tournament_service, $handler );
+
+        $response = $adapter->tournament_entry_request( [
+            'racketmanager_nonce' => 'valid', 'tournament_id' => 8, 'event' => [ '7' ],
+        ] );
+        $this->assertSame( 200, $response->get_status_code() );
+        $this->assertSame( [ 'Entered', 'success', true, '/pay' ], $response->get_content() );
     }
 
     public function test_tournament_entry_missing_nonce_returns_request_error(): void {
@@ -351,20 +376,17 @@ class Tournament_Ajax_Adapter_Test extends TestCase {
     public function test_tournament_entry_request_rejects_disallowed_event_and_does_not_call_service(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
 
-        $calls = [];
-        $tournament = $this->createMock( Tournament::class );
-        $tournament->expects( $this->exactly( 2 ) )
-            ->method( 'is_event_allowed' )
-            ->willReturnCallback( static function ( $event_id, $for_entry ) use ( &$calls ): bool {
-                $calls[] = [ $event_id, $for_entry ];
-                return 42 === $event_id;
-            } );
+        $tournament = $this->createStub( Tournament::class );
 
         $tournament_service = $this->createMock( Tournament_Service::class );
         $tournament_service->expects( $this->once() )
             ->method( 'get_tournament' )
             ->with( 8 )
             ->willReturn( $tournament );
+        $tournament_service->expects( $this->once() )
+            ->method( 'get_unavailable_entry_events' )
+            ->with( $tournament, [ 42, 99 ] )
+            ->willReturn( [ 99 ] );
 
         $this->competition_entry_service = $this->createMock( Competition_Entry_Service::class );
         $this->competition_entry_service->expects( $this->never() )
@@ -390,23 +412,22 @@ class Tournament_Ajax_Adapter_Test extends TestCase {
         $this->assertSame( 422, $content->status );
         $this->assertSame( [ 'event' ], $content->err_flds );
         $this->assertSame( [ 'Event is not open for entry in this tournament' ], $content->err_msgs );
-        $this->assertSame( [ [ 42, true ], [ 99, true ] ], $calls );
     }
 
     public function test_tournament_entry_request_allows_valid_event_and_calls_service(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
 
-        $tournament = $this->createMock( Tournament::class );
-        $tournament->expects( $this->once() )
-            ->method( 'is_event_allowed' )
-            ->with( 42, true )
-            ->willReturn( true );
+        $tournament = $this->createStub( Tournament::class );
 
         $tournament_service = $this->createMock( Tournament_Service::class );
         $tournament_service->expects( $this->once() )
             ->method( 'get_tournament' )
             ->with( 8 )
             ->willReturn( $tournament );
+        $tournament_service->expects( $this->once() )
+            ->method( 'get_unavailable_entry_events' )
+            ->with( $tournament, [ 42 ] )
+            ->willReturn( [] );
 
         $entry_response = new Tournament_Entry_Response_DTO(
             200,
@@ -441,6 +462,34 @@ class Tournament_Ajax_Adapter_Test extends TestCase {
         $this->assertSame( 200, $response->get_status_code() );
         $content = $response->get_content();
         $this->assertSame( 'Entry successful', $content[0] );
+    }
+
+    public function test_tournament_entry_request_rejects_foreign_event_id_with_422_when_service_reports_it_unavailable(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+        $tournament         = $this->createStub( Tournament::class );
+        $tournament_service = $this->createMock( Tournament_Service::class );
+        $tournament_service->method( 'get_tournament' )->willReturn( $tournament );
+        $tournament_service->expects( $this->once() )
+            ->method( 'get_unavailable_entry_events' )
+            ->with( $tournament, [ 1 ] )
+            ->willReturn( [ 1 ] );
+        $this->competition_entry_service = $this->createMock( Competition_Entry_Service::class );
+        $this->competition_entry_service->expects( $this->never() )->method( 'request_tournament_entry' );
+
+        $response = $this->make_adapter( $tournament_service )->tournament_entry_request(
+            [
+                'racketmanager_nonce' => 'valid',
+                'tournament_id'       => 8,
+                'playerId'            => 3,
+                'clubId'              => 1,
+                'season'              => '2026',
+                'event'               => [ 1 ],
+                'eventFee'            => [ 1 => '10.00' ],
+            ]
+        );
+
+        $this->assertSame( 422, $response->get_status_code() );
+        $this->assertSame( [ 'Event is not open for entry in this tournament' ], $response->get_content()->err_msgs );
     }
 
     public function test_tournament_entry_request_rejects_unresolved_tournament(): void {
@@ -531,17 +580,17 @@ class Tournament_Ajax_Adapter_Test extends TestCase {
     public function test_tournament_entry_request_success_with_camel_case_form_payload(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
 
-        $tournament = $this->createMock( Tournament::class );
-        $tournament->expects( $this->once() )
-            ->method( 'is_event_allowed' )
-            ->with( 42, true )
-            ->willReturn( true );
+        $tournament = $this->createStub( Tournament::class );
 
         $tournament_service = $this->createMock( Tournament_Service::class );
         $tournament_service->expects( $this->once() )
             ->method( 'get_tournament' )
             ->with( 8 )
             ->willReturn( $tournament );
+        $tournament_service->expects( $this->once() )
+            ->method( 'get_unavailable_entry_events' )
+            ->with( $tournament, [ 42 ] )
+            ->willReturn( [] );
 
         $entry_response = new Tournament_Entry_Response_DTO(
             200,

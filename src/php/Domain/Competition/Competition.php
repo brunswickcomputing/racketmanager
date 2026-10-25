@@ -10,10 +10,9 @@
 namespace Racketmanager\Domain\Competition;
 
 use Racketmanager\Domain\DTO\Competition\Competition_Hydration_DTO;
-use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
+use Racketmanager\Domain\Value_Objects\Json_Encoder;
 use Racketmanager\Util\Util;
 use stdClass;
-use function Racketmanager\get_event;
 
 /**
  * Class to implement the Competition object
@@ -647,7 +646,7 @@ class Competition {
      * Note: Internal logic should continue using get_seasons() which returns array.
      */
     public function get_seasons_json(): string {
-        return wp_json_encode( $this->seasons->all() );
+        return Json_Encoder::encode( $this->seasons->all() );
     }
 
     public function get_id(): ?int {
@@ -706,47 +705,6 @@ class Competition {
      */
     public function set_settings( array|Competition_Settings $settings ): void {
         $this->settings = $settings instanceof Competition_Settings ? $settings : new Competition_Settings( $settings );
-    }
-
-    /**
-     * Competition Repository
-     *
-     * @var ?Competition_Repository_Interface
-     */
-    private ?Competition_Repository_Interface $competition_repository = null;
-
-    public function set_competition_repository( ?Competition_Repository_Interface $competition_repository ): void {
-        $this->competition_repository = $competition_repository;
-    }
-
-    public function get_competition_repository(): ?Competition_Repository_Interface {
-        return $this->competition_repository;
-    }
-
-    public function __serialize(): array {
-        $data = get_object_vars( $this );
-        unset( $data['competition_repository'] );
-        return $data;
-    }
-
-    public function __unserialize( array $data ): void {
-        foreach ( $data as $key => $value ) {
-            $this->$key = $value;
-        }
-        $this->competition_repository = null;
-    }
-
-    /**
-     * Repository used to read this competition's events, teams, players and matches.
-     *
-     * @throws \LogicException When no repository has been injected.
-     */
-    private function require_competition_repository(): Competition_Repository_Interface {
-        if ( null === $this->competition_repository ) {
-            throw new \LogicException( 'A Competition_Repository_Interface must be injected before querying competition relations.' );
-        }
-
-        return $this->competition_repository;
     }
 
     /**
@@ -899,28 +857,6 @@ class Competition {
     }
 
     /**
-     * Load every event of this competition without season filtering and without touching cached state.
-     *
-     * The repository season filter only matches events that already have teams entered,
-     * so it cannot be used to decide which events are configured for a season.
-     *
-     * @return Event[]
-     */
-    private function load_all_events(): array {
-        if ( empty( $this->id ) ) {
-            return array();
-        }
-        $events = $this->require_competition_repository()->find_events( (int) $this->id );
-
-        return array_values(
-            array_filter(
-                $events,
-                static fn( $candidate ): bool => $candidate instanceof Event
-            )
-        );
-    }
-
-    /**
      * Check an event belongs to this competition and (optionally) is configured for a season.
      *
      * @param Event       $event Event.
@@ -944,56 +880,63 @@ class Competition {
     /**
      * Get the events of this competition that are configured for a season.
      *
-     * Does not modify the competition's cached events.
+     * Pure in-memory filter over the provided candidate events only.
      *
      * @param int|string|null $season Season name.
+     * @param iterable        $events Events list to filter.
      * @return Event[]
      */
-    public function get_events_for_season( int|string|null $season = null ): array {
+    public function get_events_for_season( int|string|null $season = null, iterable $events = [] ): array {
         $season_name = $this->resolve_season_name( $season );
         if ( empty( $season_name ) ) {
             return array();
         }
 
-        return array_values(
-            array_filter(
-                $this->load_all_events(),
-                fn( Event $candidate ): bool => $this->is_event_in_scope( $candidate, $season_name )
-            )
-        );
+        $filtered = array();
+        foreach ( $events as $candidate ) {
+            if ( $candidate instanceof Event && $this->is_event_in_scope( $candidate, $season_name ) ) {
+                $filtered[] = $candidate;
+            }
+        }
+
+        return $filtered;
     }
 
     /**
-     * Resolve an event by ID, name, or object.
+     * Resolve an event by ID, name, or object against an in-memory event collection.
      *
      * The event must belong to this competition and be configured for the season.
      *
      * @param int|string|object $event Event ID, event name/slug, or Event object.
      * @param string|null       $season Season name.
+     * @param iterable          $events In-memory event collection.
      * @return Event|null
      */
-    public function resolve_event( int|string|object $event, ?string $season = null ): ?Event {
+    public function resolve_event( int|string|object $event, ?string $season = null, iterable $events = [] ): ?Event {
         $season_name = $this->resolve_season_name( $season );
         $event_obj   = null;
 
         if ( $event instanceof Event ) {
             $event_obj = $event;
-        } elseif ( is_object( $event ) ) {
-            if ( isset( $event->id ) && is_numeric( $event->id ) && (int) $event->id > 0 ) {
-                $event_obj = get_event( (int) $event->id );
-            }
-        } elseif ( is_numeric( $event ) ) {
-            if ( (int) $event > 0 ) {
-                $event_obj = get_event( (int) $event );
+        } elseif ( ( is_object( $event ) && isset( $event->id ) && is_numeric( $event->id ) && (int) $event->id > 0 ) || ( is_numeric( $event ) && (int) $event > 0 ) ) {
+            $target_id = is_object( $event ) ? (int) $event->id : (int) $event;
+            foreach ( $events as $candidate ) {
+                if ( $candidate instanceof Event && (int) $candidate->id === $target_id ) {
+                    $event_obj = $candidate;
+                    break;
+                }
             }
         } elseif ( is_string( $event ) && '' !== trim( $event ) ) {
             $clean_name = str_replace( '-', ' ', $event );
-            foreach ( $this->load_all_events() as $candidate ) {
+            foreach ( $events as $candidate ) {
                 if (
-                    $candidate->name === ucwords( $event ) ||
-                    strcasecmp( $candidate->name, $event ) === 0 ||
-                    strcasecmp( $candidate->name, $clean_name ) === 0 ||
-                    sanitize_title( $candidate->name ) === sanitize_title( $event )
+                    $candidate instanceof Event &&
+                    (
+                        $candidate->name === ucwords( $event ) ||
+                        strcasecmp( $candidate->name, $event ) === 0 ||
+                        strcasecmp( $candidate->name, $clean_name ) === 0 ||
+                        ( function_exists( 'sanitize_title' ) && sanitize_title( $candidate->name ) === sanitize_title( $event ) )
+                    )
                 ) {
                     $event_obj = $candidate;
                     break;
@@ -1011,19 +954,18 @@ class Competition {
     /**
      * Check if an event is allowed/active for a specific competition season.
      *
+     * Pure in-memory check without database queries. Fails closed: a raw ID, slug or row
+     * is only accepted when it resolves to an in-scope Event within the supplied candidates.
+     *
      * @param int|string|object $event Event ID, event name/slug, or Event object.
      * @param int|string|null   $season Season name.
      * @param bool              $for_entry Whether checking for entry submission (where [] denies all) vs frontend viewing (where [] allows all).
+     * @param iterable          $events Optional in-memory event collection.
      * @return bool
      */
-    public function is_event_allowed( int|string|object $event, int|string|null $season = null, bool $for_entry = false ): bool {
+    public function is_event_allowed( int|string|object $event, int|string|null $season = null, bool $for_entry = false, iterable $events = [] ): bool {
         $season_name = $this->resolve_season_name( $season );
         if ( empty( $season_name ) ) {
-            return false;
-        }
-
-        $event_obj = $this->resolve_event( $event, $season_name );
-        if ( ! $event_obj ) {
             return false;
         }
 
@@ -1032,9 +974,14 @@ class Competition {
             return false;
         }
 
-        $entry_events = $season_config['entry_events'] ?? null;
+        // Fail closed: raw IDs/slugs/rows are only trusted when resolved against supplied candidate events.
+        $event_obj = $this->resolve_event( $event, $season_name, $events );
+        if ( ! $event_obj ) {
+            return false;
+        }
+        $event_id = (int) $event_obj->id;
 
-        $event_id = (int) ( $event_obj->id ?? ( method_exists( $event_obj, 'get_id' ) ? $event_obj->get_id() : 0 ) );
+        $entry_events = $season_config['entry_events'] ?? null;
 
         if ( $for_entry ) {
             // Entry validation: null/unset means all season events; explicit [] means closed/none
@@ -1059,61 +1006,63 @@ class Competition {
      * Unset or empty allowlist displays all season events.
      *
      * @param int|string|null $season Season name.
+     * @param iterable        $events In-memory event collection.
      * @return array
      */
-    public function get_frontend_events( int|string|null $season = null ): array {
+    public function get_frontend_events( int|string|null $season = null, iterable $events = [] ): array {
         $season = $this->resolve_season_name( $season );
         if ( empty( $season ) ) {
             return array();
         }
 
-        $events        = $this->get_events_for_season( $season );
+        $events_list   = $this->get_events_for_season( $season, $events );
         $season_config = $this->get_season_config( $season );
         $entry_events  = $season_config['entry_events'] ?? null;
 
         if ( empty( $entry_events ) || ! is_array( $entry_events ) ) {
-            return array_values( $events );
+            return array_values( $events_list );
         }
 
         $entry_event_ids = array_map( 'intval', $entry_events );
-        foreach ( $events as $index => $event ) {
+        foreach ( $events_list as $index => $event ) {
             $event_id = (int) ( $event->id ?? ( method_exists( $event, 'get_id' ) ? $event->get_id() : 0 ) );
             if ( ! in_array( $event_id, $entry_event_ids, true ) ) {
-                unset( $events[ $index ] );
+                unset( $events_list[ $index ] );
             }
         }
 
-        return array_values( $events );
+        return array_values( $events_list );
     }
 
     /**
      * Get events available for entry in this competition.
      *
      * @param int|string|null $season Season name.
+     * @param iterable        $events In-memory event collection.
      * @return array
      */
-    public function get_entry_events( int|string|null $season = null ): array {
+    public function get_entry_events( int|string|null $season = null, iterable $events = [] ): array {
         $season = $this->resolve_season_name( $season );
         if ( empty( $season ) ) {
             return array();
         }
 
-        $events        = $this->get_events_for_season( $season );
+        $events_list   = $this->get_events_for_season( $season, $events );
         $season_config = $this->get_season_config( $season );
 
         if ( ! is_array( $season_config ) || ! array_key_exists( 'entry_events', $season_config ) || is_null( $season_config['entry_events'] ) ) {
-            return array_values( $events );
+            return array_values( $events_list );
         }
 
         $entry_event_ids = is_array( $season_config['entry_events'] ) ? array_map( 'intval', $season_config['entry_events'] ) : array();
-        foreach ( $events as $index => $event ) {
+        foreach ( $events_list as $index => $event ) {
             $event_id = (int) ( $event->id ?? ( method_exists( $event, 'get_id' ) ? $event->get_id() : 0 ) );
             if ( ! in_array( $event_id, $entry_event_ids, true ) ) {
-                unset( $events[ $index ] );
+                unset( $events_list[ $index ] );
             }
         }
 
-        return array_values( $events );
+        return array_values( $events_list );
     }
 
     /**
@@ -1123,83 +1072,6 @@ class Competition {
      */
     public function get_season(): string {
         return stripslashes( $this->current_season['name'] );
-    }
-
-    /**
-     * Get events from database
-     *
-     * @param array $args search arguments.
-     *
-     * @return array
-     */
-    public function get_events( array $args = array() ): array {
-        $events = $this->require_competition_repository()->find_events( $this->id, $args );
-
-        $event_index = array();
-        foreach ( $events as $i => $event ) {
-            $event_index[ $event->id ] = $i;
-        }
-
-        $this->events      = $events;
-        $this->event_index = $event_index;
-
-        return $events;
-    }
-    /**
-     * Get teams from database
-     *
-     * @param array $args search arguments.
-     * @return array|int
-     */
-    public function get_teams( array $args = array() ): array|int {
-        $teams = $this->require_competition_repository()->find_teams( $this->id, $args );
-
-        if ( is_array( $teams ) ) {
-            $this->teams = $teams;
-        }
-
-        return $teams;
-    }
-    /**
-     * Get players for competition
-     *
-     * @param array $args search arguments.
-     *
-     * @return array|int
-     */
-    public function get_players( array $args = array() ): array|int {
-        // Handle player entry type
-        if ( $this->is_player_entry ) {
-            $season = $args['season'] ?? false;
-            $teams = $this->get_teams( [ 'season' => $season ] );
-            $players = [];
-            foreach ( $teams as $team ) {
-                foreach ( $team->player as $player ) {
-                    $players[] = $player;
-                }
-            }
-            $competition_players = array_unique( $players );
-        } else {
-            $competition_players = $this->require_competition_repository()->find_players( $this->id, $args );
-        }
-
-        if ( is_array( $competition_players ) ) {
-            asort( $competition_players );
-            $this->players = $competition_players;
-        }
-
-        return $this->players;
-    }
-
-    /**
-     * Get matches for competition
-     *
-     * @param array $match_args query arguments.
-     *
-     * @return array $matches
-     */
-    public function get_matches( array $match_args ): array {
-        return $this->require_competition_repository()->find_matches( $this->id, $match_args );
     }
 
     /**

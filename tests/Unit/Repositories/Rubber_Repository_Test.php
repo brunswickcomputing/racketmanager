@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Repositories;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
@@ -158,6 +159,41 @@ class Rubber_Repository_Test extends TestCase {
 
         $result = $this->repository->save( $rubber );
         $this->assertTrue( $result );
+    }
+
+    public function test_save_canonicalizes_rubber_datetime(): void {
+        $rubber = new Rubber( (object) [
+            'id'            => 88,
+            'match_id'      => 100,
+            'type'          => 'MD',
+            'rubber_number' => 1,
+            'date'          => '2026-05-15T19:30:00+01:00',
+        ] );
+
+        $this->wpdb->expects( $this->once() )
+            ->method( 'update' )
+            ->with(
+                'wp_racketmanager_rubbers',
+                $this->callback( function ( $data ) {
+                    return '2026-05-15 19:30:00' === $data['date'];
+                } ),
+                [ 'id' => 88 ]
+            )
+            ->willReturn( 1 );
+
+        $result = $this->repository->save( $rubber );
+        $this->assertTrue( $result );
+    }
+
+    public function test_save_throws_on_invalid_rubber_datetime(): void {
+        $rubber = new Rubber( (object) [
+            'id'       => 88,
+            'match_id' => 100,
+            'date'     => '2026-13-45 25:99',
+        ] );
+
+        $this->expectException( InvalidArgumentException::class );
+        $this->repository->save( $rubber );
     }
 
     public function test_find_by_fixture_id_prepares_query_and_returns_rubbers(): void {
@@ -432,8 +468,13 @@ class Rubber_Repository_Test extends TestCase {
             )
             ->willReturn( 1 );
 
-        $success = $this->repository->update_date_by_fixture_id( 100, '2026-06-02 20:00:00' );
+        $success = $this->repository->update_date_by_fixture_id( 100, '2026-06-02T20:00' );
         $this->assertTrue( $success );
+    }
+
+    public function test_update_date_by_fixture_id_throws_on_invalid_datetime(): void {
+        $this->expectException( InvalidArgumentException::class );
+        $this->repository->update_date_by_fixture_id( 100, 'garbage-date' );
     }
 
     public function test_reset_result_deletes_players_and_updates_rubber(): void {

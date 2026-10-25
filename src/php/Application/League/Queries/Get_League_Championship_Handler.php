@@ -8,6 +8,7 @@ use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Presentation\Presenters\Fixture_Presentation_Adapter;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
@@ -37,7 +38,8 @@ class Get_League_Championship_Handler {
         private readonly Fixture_Permission_Service $fixture_permission_service,
         private readonly Shortcode_Template_Renderer $template_renderer,
         private readonly Rubber_Repository_Interface $rubber_repository,
-        private readonly Tournament_Presenter $tournament_presenter
+        private readonly Tournament_Presenter $tournament_presenter,
+        private readonly League_Query_Service $league_query_service
     ) {}
 
     public function handle( Get_League_Championship_Query $query ): Shortcode_View_Model {
@@ -50,7 +52,8 @@ class Get_League_Championship_Handler {
         }
 
         $league->set_template( 'championship', $query->template );
-        $season = $query->season ?? $league->get_season();
+        $this->league_query_service->set_season( $league, $query->season ?? $league->get_season() );
+        $season = $league->get_season();
         $league->season = $season;
 
         $finals = [];
@@ -67,7 +70,7 @@ class Get_League_Championship_Handler {
                     $num_matches       = max( 1, $data->num_matches );
                     $data->rowspan     = ( $num_first_round / 2 >= 4 ) ? (int) ceil( 4 / $num_matches ) : (int) ceil( ( $num_first_round / 2 ) / $num_matches );
 
-                    $matches_raw = $league->get_matches( [
+                    $matches_raw = $this->league_query_service->get_matches( $league, [
                         'final'   => $final['key'] ?? '',
                         'orderby' => [ 'id' => 'ASC' ],
                     ] );

@@ -28,6 +28,7 @@ use Racketmanager\Presentation\Presenters\Draw_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
@@ -37,6 +38,8 @@ use Racketmanager\Util\Util;
 use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;
 
 class Draw_And_Winners_Templates_Test extends TestCase {
+    use \Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
+    use \Racketmanager\Tests\Helpers\Creates_League_Query_Service;
     use Creates_Competition_Season_Service;
     use Manages_Wordpress_Globals;
 
@@ -209,6 +212,8 @@ class Draw_And_Winners_Templates_Test extends TestCase {
      * @param array<string, Fixture[]> $matches_by_final
      * @return array{0: Event, 1: League, 2: Competition_Service, 3: League_Service, 4: Competition}
      */
+    private League_Query_Service $stub_league_query;
+
     private function build_cup_event_context( array $matches_by_final ): array {
         $competition = $this->createStub( Competition::class );
         $competition->method( 'get_type' )->willReturn( 'cup' );
@@ -238,11 +243,10 @@ class Draw_And_Winners_Templates_Test extends TestCase {
         $league->championship   = $championship;
         $league->current_season = [ 'name' => '2025' ];
         $league->seasons        = [ '2025' => [ 'rounds' => [] ] ];
-        $league->method( 'get_matches' )->willReturnCallback(
-            fn( array $args ) => $matches_by_final[ $args['final'] ] ?? []
+        $this->stub_league_query = $this->createStub( League_Query_Service::class );
+        $this->stub_league_query->method( 'get_matches' )->willReturnCallback(
+            fn( object $league, array $args = [] ) => $matches_by_final[ $args['final'] ] ?? []
         );
-
-        $event->method( 'get_leagues' )->willReturn( [ $league ] );
 
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
@@ -331,7 +335,7 @@ class Draw_And_Winners_Templates_Test extends TestCase {
                 }
             );
 
-        $handler = new Get_Event_Draw_Handler( $comp_service, $league_service, new Competition_Shortcode_Presenter(), $detail_service );
+        $handler = new Get_Event_Draw_Handler( $comp_service, $league_service, new Competition_Shortcode_Presenter(), $detail_service, $this->event_query_service( $this->event_repository_with_results( [ 'query_leagues' => [ $league ] ] ) ), $this->stub_league_query );
         $vm      = $handler->handle( new Get_Event_Draw_Query( event_id: 8, season: '2025' ) );
         $this->assertFalse( $vm->is_error() );
         // Assert detail service is only called for visible leg 2 and non-leg fixtures (703 leg 1 was skipped).

@@ -5,6 +5,7 @@ namespace Racketmanager\Application\League\Queries;
 
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use function __;
@@ -25,7 +26,8 @@ class Get_League_Last_5_Handler {
     public function __construct(
         private readonly League_Service $league_service,
         private readonly Shortcode_Template_Renderer $template_renderer,
-        private readonly Fixture_Presenter $fixture_presenter
+        private readonly Fixture_Presenter $fixture_presenter,
+        private readonly League_Query_Service $league_query_service
     ) {}
 
     public function handle( Get_League_Last_5_Query $query ): Shortcode_View_Model {
@@ -37,13 +39,13 @@ class Get_League_Last_5_Handler {
             return Shortcode_View_Model::for_error( __( 'League not found', 'racketmanager' ) );
         }
 
-        $league->set_season();
+        $this->league_query_service->set_season( $league );
 
         if ( ! $query->team_id ) {
             return Shortcode_View_Model::for_error( __( 'No team ID found', 'racketmanager' ) );
         }
 
-        $matches = $league->get_matches( [
+        $matches = $this->league_query_service->get_matches( $league, [
             'time'             => 'prev',
             'team_id'          => $query->team_id,
             'match_day'        => -1,
@@ -59,7 +61,7 @@ class Get_League_Last_5_Handler {
             $cache_key = $league_id . ':' . $season;
 
             if ( ! isset( $this->team_titles_cache[ $cache_key ] ) ) {
-                $teams = $league->get_league_teams( [ 'reset_query_args' => true ] );
+                $teams = $this->league_query_service->get_league_teams( $league, [ 'reset_query_args' => true ] );
                 $team_titles = [];
                 foreach ( is_array( $teams ) ? $teams : [] as $team ) {
                     $id    = is_object( $team ) ? ( $team->id ?? null ) : ( $team['id'] ?? null );

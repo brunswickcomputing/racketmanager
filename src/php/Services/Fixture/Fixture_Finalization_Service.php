@@ -41,7 +41,10 @@ class Fixture_Finalization_Service {
         $outcomes = [];
         // 1. Update League Standings
         if ( $update_standings ) {
-            $league->update_standings( (string) $fixture->get_season() );
+            if ( ! $this->standings_service ) {
+                throw new \LogicException( 'Standings_Service has not been configured.' );
+            }
+            $this->standings_service->update_standings( $league, (string) $fixture->get_season() );
             $outcomes[] = Fixture_Update_Status::TABLE_UPDATED;
         }
 

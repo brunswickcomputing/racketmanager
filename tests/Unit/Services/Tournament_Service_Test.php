@@ -87,4 +87,102 @@ class Tournament_Service_Test extends TestCase {
         self::assertEquals( $expected_message, $result['message'] );
         self::assertTrue( $result['message_type'] );
     }
+
+    private function make_entry_event( int $id, string $name, int $competition_id = 10, array $seasons = [ '2026' => [ 'name' => '2026' ] ] ): \Racketmanager\Domain\Competition\Event {
+        $event                 = ( new \ReflectionClass( \Racketmanager\Domain\Competition\Event::class ) )->newInstanceWithoutConstructor();
+        $event->id             = $id;
+        $event->name           = $name;
+        $event->competition_id = $competition_id;
+        $event->seasons        = json_encode( $seasons );
+
+        return $event;
+    }
+
+    private function make_entry_tournament( ?array $information ): \Racketmanager\Domain\Tournament\Tournament {
+        $competition = \Racketmanager\Tests\Helpers\Competition_Test_Factory::create(
+            id: 10,
+            name: 'Tournament Comp',
+            type: \Racketmanager\Domain\Competition\Competition_Type::TOURNAMENT,
+            seasons: [ '2026' => [ 'name' => '2026' ] ]
+        );
+        $data                 = new \stdClass();
+        $data->id             = 1;
+        $data->name           = 'Test Tournament';
+        $data->competition_id = 10;
+        $data->season         = '2026';
+        if ( null !== $information ) {
+            $data->information = json_encode( $information );
+        }
+        $tournament = new \Racketmanager\Domain\Tournament\Tournament( $data );
+        $tournament->set_competition( $competition );
+
+        return $tournament;
+    }
+
+    private function make_entry_service( $competition_service ): Tournament_Service {
+        return new Tournament_Service(
+            $this->createMock( RacketManager::class ),
+            $this->createMock( Tournament_Repository_Interface::class ),
+            $this->createMock( Charge_Repository::class ),
+            $this->createMock( Event_Repository_Interface::class ),
+            $this->createMock( Fixture_Service::class ),
+            $this->createMock( League_Team_Repository_Interface::class ),
+            $this->createMock( Tournament_Entry_Repository_Interface::class ),
+            $competition_service,
+            $this->createMock( Player_Service::class ),
+            $this->createMock( Player_Stats_Service::class ),
+            $this->createMock( Club_Service::class ),
+            $this->createMock( Finance_Service::class ),
+            $this->createMock( League_Service::class )
+        );
+    }
+
+    public function test_get_unavailable_entry_events_resolves_submitted_ids_once_and_rejects_foreign_and_out_of_season(): void {
+        $tournament = $this->make_entry_tournament( null );
+        $loaded     = [
+            $this->make_entry_event( 11, 'Men Doubles' ),
+            $this->make_entry_event( 1, 'Foreign Event', 999 ),
+            $this->make_entry_event( 12, 'Old Event', 10, [ '2024' => [ 'name' => '2024' ] ] ),
+        ];
+        $competition_service = $this->createMock( Competition_Service::class );
+        $competition_service->expects( self::once() )
+            ->method( 'get_competition_events' )
+            ->with( $tournament->get_competition_object() )
+            ->willReturn( $loaded );
+
+        $unavailable = $this->make_entry_service( $competition_service )
+            ->get_unavailable_entry_events( $tournament, [ 11, 1, 12, 999999, '11' ] );
+
+        self::assertSame( [ 1, 12, 999999 ], $unavailable );
+    }
+
+    public function test_get_unavailable_entry_events_applies_tournament_allowlist_after_resolution(): void {
+        $tournament = $this->make_entry_tournament( [ 'entry_events' => [ 11 ] ] );
+        $competition_service = $this->createMock( Competition_Service::class );
+        $competition_service->method( 'get_competition_events' )->willReturn(
+            [ $this->make_entry_event( 11, 'Men Doubles' ), $this->make_entry_event( 13, 'Ladies Doubles' ) ]
+        );
+
+        $unavailable = $this->make_entry_service( $competition_service )->get_unavailable_entry_events( $tournament, [ 11, 13 ] );
+
+        self::assertSame( [ 13 ], $unavailable );
+    }
+
+    public function test_get_unavailable_entry_events_rejects_everything_when_no_events_load_or_no_competition(): void {
+        $competition_service = $this->createMock( Competition_Service::class );
+        $competition_service->method( 'get_competition_events' )->willReturn( [] );
+        $service = $this->make_entry_service( $competition_service );
+
+        self::assertSame( [ 11 ], $service->get_unavailable_entry_events( $this->make_entry_tournament( null ), [ 11 ] ) );
+
+        $orphan = new \Racketmanager\Domain\Tournament\Tournament( (object) [ 'id' => 1, 'name' => 'T', 'competition_id' => 10, 'season' => '2026' ] );
+        self::assertSame( [ 11 ], $service->get_unavailable_entry_events( $orphan, [ 11 ] ) );
+    }
+
+    public function test_get_unavailable_entry_events_skips_loading_when_nothing_submitted(): void {
+        $competition_service = $this->createMock( Competition_Service::class );
+        $competition_service->expects( self::never() )->method( 'get_competition_events' );
+
+        self::assertSame( [], $this->make_entry_service( $competition_service )->get_unavailable_entry_events( $this->make_entry_tournament( null ), [] ) );
+    }
 }

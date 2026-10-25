@@ -226,16 +226,26 @@ class Club_Repository implements Club_Repository_Interface {
      * @return array|int array of clubs.
      */
     public function find_all( array $args = array() ): array|int {
-        $defaults = array(
-            'type'    => 'affiliated',
-            'count'   => false,
-            'orderby' => 'asc',
+        $defaults     = array(
+            'offset'      => 0,
+            'limit'       => 99999999,
+            'type'        => 'affiliated',
+            'name'        => false,
+            'count'       => false,
+            'player_type' => false,
+            'player'      => false,
+            'club'        => false,
+            'orderby'     => 'asc',
         );
-        $args     = array_merge( $defaults, $args );
-        $type     = $args['type'];
-        $count    = $args['count'];
-        $orderby  = $args['orderby'];
-
+        $args         = array_merge( $defaults, $args );
+        $offset       = $args['offset'];
+        $limit        = $args['limit'];
+        $type         = $args['type'];
+        $count        = $args['count'];
+        $orderby      = $args['orderby'];
+        $player_type  = $args['player_type'];
+        $player       = $args['player'];
+        $club         = $args['club'];
         $search_terms = array();
         if ( $type && 'all' !== $type ) {
             if ( 'current' === $type ) {
@@ -244,16 +254,28 @@ class Club_Repository implements Club_Repository_Interface {
                 $search_terms[] = $this->wpdb->prepare( '`type` = %s', $type );
             }
         }
-        $search = Util::search_string( $search_terms, true );
-        if ( $count ) {
-            $sql    = "SELECT COUNT(*) FROM $this->table_name $search";
-            $count  = wp_cache_get( md5( $sql ), 'clubs' );
-            if ( ! $count ) {
-                $count = $this->wpdb->get_var( $sql );
-                wp_cache_set( md5( $sql ), $count, 'clubs' );
+        $search_terms[] = empty( $club ) ? '1 = 1' : $this->wpdb->prepare( '`id` = %d', $club );
+        if ( $player ) {
+            $roles_table        = $this->wpdb->prefix . 'racketmanager_club_roles';
+            $teams_events_table = $this->wpdb->prefix . 'racketmanager_teams_events';
+            $teams_table        = $this->wpdb->prefix . 'racketmanager_teams';
+            $club_players_table = $this->wpdb->prefix . 'racketmanager_club_players';
+
+            switch ( $player_type ) {
+                case 'secretary':
+                    $search_terms[] = $this->wpdb->prepare( "`id` IN (SELECT `club_id` FROM $roles_table WHERE `role_id` = 1 AND `user_id` = %d)", $player );
+                    break;
+                case 'captain':
+                    $search_terms[] = $this->wpdb->prepare( "(`id` IN (SELECT `club_id` FROM $teams_events_table te, $teams_table t WHERE `captain` = %d AND te.`team_id` = t.`id`) OR `id` IN (SELECT `club_id` FROM $roles_table WHERE `role_id` = 1 AND `user_id` = %d))", $player, $player );
+                    break;
+                case 'player':
+                    $search_terms[] = $this->wpdb->prepare( "`id` IN (SELECT `club_id` FROM $club_players_table cp WHERE `player_id` = %d AND `removed_date` IS NULL)", $player );
+                    break;
+                default:
+                    break;
             }
-            return $count;
         }
+        $search = Util::search_string( $search_terms, true );
         switch ( $orderby ) {
             case 'asc':
                 $order = '`name` ASC';
@@ -270,20 +292,34 @@ class Club_Repository implements Club_Repository_Interface {
             default:
                 break;
         }
-        $order  = empty( $order ) ? null : 'ORDER BY ' . $order;
-        $sql    = "SELECT * FROM $this->table_name $search $order";
-        $clubs  = wp_cache_get( md5( $sql ), 'clubs' );
+        $order = empty( $order ) ? null : 'ORDER BY ' . $order;
+        if ( $count ) {
+            $sql = "SELECT COUNT(ID) FROM $this->table_name $search";
+            return (int) $this->wpdb->get_var( $sql );
+        }
+
+        $sql = $this->wpdb->prepare(
+            "SELECT `id` FROM $this->table_name $search $order LIMIT %d, %d",
+            intval( $offset ),
+            intval( $limit )
+        );
+
+        $clubs = wp_cache_get( md5( $sql ), 'clubs' );
         if ( ! $clubs ) {
-            $results = $this->wpdb->get_results( $sql );
-            $clubs   = array_map(
-                function( $row ) {
-                    return Club_Factory::from_object( $row );
-                    },
-                $results
-            );
+            $clubs = $this->wpdb->get_results( $sql );
             wp_cache_set( md5( $sql ), $clubs, 'clubs' );
         }
-        return $clubs;
+        if ( ! is_array( $clubs ) ) {
+            return array();
+        }
+        $hydrated_clubs = array();
+        foreach ( $clubs as $row ) {
+            $club = $this->find_by_id( (int) $row->id );
+            if ( $club ) {
+                $hydrated_clubs[] = $club;
+            }
+        }
+        return $hydrated_clubs;
     }
 
     /**

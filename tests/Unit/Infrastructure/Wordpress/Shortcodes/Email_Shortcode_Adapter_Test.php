@@ -243,7 +243,6 @@ class Email_Shortcode_Adapter_Test extends TestCase {
         $this->assertStringContainsString( 'Event not found', $this->adapter->show_event_constitution( [] ) );
 
         $event = $this->createStub( Event::class );
-        $event->method( 'get_leagues' )->willReturn( [] );
         $GLOBALS['wp_stubs_events'][30] = $event;
 
         $this->presenter->method( 'present_event_constitution' )->willReturn( [

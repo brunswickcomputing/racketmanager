@@ -38,6 +38,7 @@ use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Player_Stats_Service;
@@ -48,12 +49,14 @@ use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
+use Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use stdClass;
 
 class Entry_And_Match_Templates_Test extends TestCase {
+    use Creates_Event_Query_Service;
     use Manages_Wordpress_Globals;
     use Creates_Team_Match_Row_Presenter;
 
@@ -115,8 +118,23 @@ class Entry_And_Match_Templates_Test extends TestCase {
             competition_entry_service: $comp_entry_service,
             finance_service: $finance_service,
             competition_presenter: new Competition_Shortcode_Presenter( $this->view_renderer ),
-            tournament_presenter: new Tournament_Presenter()
+            tournament_presenter: new Tournament_Presenter(),
+            event_query_service: $this->event_query_service()
         );
+
+        $event = new class extends Event {
+            public function __construct() {
+                $this->id          = 101;
+                $this->name        = 'Men Premier';
+                $this->type        = 'MD';
+                $this->status      = '';
+                $this->teams       = [];
+                $this->event_teams = [];
+            }
+            public function get_id(): int {
+                return 101;
+            }
+        };
 
         $competition = new class extends Competition {
             public function __construct() {
@@ -138,28 +156,6 @@ class Entry_And_Match_Templates_Test extends TestCase {
                     'date_closing' => '2026-05-01',
                 ];
             }
-            public function get_events( array $args = [] ): array {
-                $event = new class extends Event {
-                    public function __construct() {
-                        $this->id          = 101;
-                        $this->name        = 'Men Premier';
-                        $this->type        = 'MD';
-                        $this->status      = '';
-                        $this->teams       = [];
-                        $this->event_teams = [];
-                    }
-                    public function get_id(): int {
-                        return 101;
-                    }
-                    public function get_teams( array $args = [] ): array {
-                        return [];
-                    }
-                    public function get_team_info( int $team_id ): ?object {
-                        return null;
-                    }
-                };
-                return [ $event ];
-            }
         };
 
         $club = new class extends Club {
@@ -175,7 +171,7 @@ class Entry_And_Match_Templates_Test extends TestCase {
         };
 
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
-        $comp_service->method( 'get_events_for_competition' )->willReturn( $competition->get_events() );
+        $comp_service->method( 'get_events_for_competition' )->willReturn( [ $event ] );
         $club_service->method( 'get_club_by_shortcode' )->willReturn( $club );
         $club_service->method( 'get_clubs' )->willReturn( 1 );
 
@@ -251,8 +247,22 @@ class Entry_And_Match_Templates_Test extends TestCase {
             competition_entry_service: $comp_entry_service,
             finance_service: $finance_service,
             competition_presenter: new Competition_Shortcode_Presenter( $this->view_renderer ),
-            tournament_presenter: new Tournament_Presenter()
+            tournament_presenter: new Tournament_Presenter(),
+            event_query_service: $this->event_query_service()
         );
+
+        $event = new class extends Event {
+            public function __construct() {
+                $this->id     = 201;
+                $this->name   = 'Men Cup Event';
+                $this->type   = 'MD';
+                $this->status = '';
+                $this->teams  = [];
+            }
+            public function get_id(): int {
+                return 201;
+            }
+        };
 
         $competition = new class extends Competition {
             public function __construct() {
@@ -271,27 +281,6 @@ class Entry_And_Match_Templates_Test extends TestCase {
                     'date_closing' => '2026-06-01',
                 ];
             }
-            public function get_events( array $args = [] ): array {
-                $event = new class extends Event {
-                    public function __construct() {
-                        $this->id     = 201;
-                        $this->name   = 'Men Cup Event';
-                        $this->type   = 'MD';
-                        $this->status = '';
-                        $this->teams  = [];
-                    }
-                    public function get_id(): int {
-                        return 201;
-                    }
-                    public function get_teams( array $args = [] ): array {
-                        return [];
-                    }
-                    public function get_team_info( int $team_id ): ?object {
-                        return null;
-                    }
-                };
-                return [ $event ];
-            }
         };
 
         $club = new class extends Club {
@@ -307,7 +296,7 @@ class Entry_And_Match_Templates_Test extends TestCase {
         };
 
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
-        $comp_service->method( 'get_events_for_competition' )->willReturn( $competition->get_events() );
+        $comp_service->method( 'get_events_for_competition' )->willReturn( [ $event ] );
         $club_service->method( 'get_club_by_shortcode' )->willReturn( $club );
         $club_service->method( 'get_clubs' )->willReturn( 1 );
         $team_service->method( 'get_teams_for_club' )->willReturn( [] );
@@ -378,7 +367,8 @@ class Entry_And_Match_Templates_Test extends TestCase {
             competition_entry_service: $comp_entry_service,
             finance_service: $finance_service,
             competition_presenter: new Competition_Shortcode_Presenter( $this->view_renderer ),
-            tournament_presenter: new Tournament_Presenter( 'd/m/Y' )
+            tournament_presenter: new Tournament_Presenter( 'd/m/Y' ),
+            event_query_service: $this->event_query_service()
         );
 
         $today        = new \DateTimeImmutable( 'today', new \DateTimeZone( 'UTC' ) );
@@ -521,12 +511,25 @@ class Entry_And_Match_Templates_Test extends TestCase {
         $team_service   = $this->createStub( Team_Service::class );
         $stats_service  = $this->createStub( Player_Stats_Service::class );
 
+        $team1 = (object) [ 'id' => 101, 'title' => 'Westcliff 1' ];
+        $team2 = (object) [ 'id' => 102, 'title' => 'Leigh TC 2' ];
+        $league_query = $this->createStub( League_Query_Service::class );
+        $league_query->method( 'get_league_teams' )->willReturn( [ $team1, $team2 ] );
+        $league_query->method( 'get_team_dtls' )->willReturn( (object) [
+            'captain'              => 'John Smith',
+            'captain_contactno'    => '01234567890',
+            'captain_contactemail' => 'john@test.local',
+            'match_day'            => 'Wednesday',
+            'match_time'           => '19:00:00',
+        ] );
+
         $handler = new Get_League_Teams_Handler(
             $league_service,
             $team_service,
             $stats_service,
             new Tournament_Presenter( team_match_row_presenter: $this->create_team_match_row_presenter() ),
-            new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() )
+            new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() ),
+            $league_query
         );
 
         $league = new class extends League {
@@ -550,20 +553,6 @@ class Entry_And_Match_Templates_Test extends TestCase {
             }
             public function set_template( string $type, string $template ): void {}
             public function set_group( string $group = '', bool $force_overwrite = false ): void {}
-            public function get_league_teams( array $query_args = [] ): array {
-                $team1 = (object) [ 'id' => 101, 'title' => 'Westcliff 1' ];
-                $team2 = (object) [ 'id' => 102, 'title' => 'Leigh TC 2' ];
-                return [ $team1, $team2 ];
-            }
-            public function get_team_dtls( int $team_id, ?string $season = null ): object {
-                return (object) [
-                    'captain'              => 'John Smith',
-                    'captain_contactno'    => '01234567890',
-                    'captain_contactemail' => 'john@test.local',
-                    'match_day'            => 'Wednesday',
-                    'match_time'           => '19:00:00',
-                ];
-            }
         };
 
         $league_service->method( 'get_league' )->willReturn( $league );

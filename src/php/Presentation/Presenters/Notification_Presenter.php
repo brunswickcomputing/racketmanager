@@ -113,7 +113,7 @@ readonly class Notification_Presenter {
         $dto = is_numeric( $team_id ) ? $this->team_service->get_team_details( (int) $team_id ) : $this->team_service->derive_team_details( (string) $team_id );
 
         if ( $dto && is_numeric( $team_id ) && method_exists( $league, 'get_status' ) ) {
-            $status            = $league->get_status( (int) $team_id, $season );
+            $status            = \Racketmanager\get_league_query_service()->get_status( $league, (int) $team_id, $season );
             $dto->is_withdrawn = ( 'W' === $status );
         }
 
@@ -403,11 +403,10 @@ readonly class Notification_Presenter {
 
         // Producers pass raw MySQL datetimes in new_date/original_date; always format them here.
         $formatter     = $this->date_formatter();
-        $start_time    = $fixture->get_start_time();
         $raw_new_date  = ! empty( $args['new_date'] ) ? (string) $args['new_date'] : $fixture->get_date();
         $raw_orig_date = ! empty( $args['original_date'] ) ? (string) $args['original_date'] : $fixture->get_date_original();
-        $match_date    = $formatter->date_change( $raw_new_date, $start_time );
-        $original_date = $formatter->date_change( $raw_orig_date, $start_time );
+        $match_date    = $formatter->date_change( $raw_new_date );
+        $original_date = $formatter->date_change( $raw_orig_date );
         $comp_name     = ( $args['competition'] ?? '' ) ?: ( $match_adapter->league->title ?? '' );
 
         return array_merge( $args, array(

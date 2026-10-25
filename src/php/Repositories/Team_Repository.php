@@ -16,30 +16,34 @@ use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Team\Team_Factory;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
+use Racketmanager\Util\Util;
 use wpdb;
 
 /**
  * Class to implement the Team repository
  */
 class Team_Repository implements Team_Repository_Interface {
-    private QM_DB|wpdb $wpdb;
-    private string $table_name;
-    private string $team_players_table;
+    private ?object $wpdb = null;
+    private ?string $table_name = null;
+    private ?string $team_players_table = null;
     private ?Player_Repository_Interface $player_repository;
 
     /**
      * Create a new Team_Repository instance
      *
-     * @param QM_DB|wpdb|null $wpdb
+     * @param object|null $wpdb
      * @param Player_Repository_Interface|null $player_repository
      */
-    public function __construct( QM_DB|wpdb|null $wpdb = null, ?Player_Repository_Interface $player_repository = null ) {
+    public function __construct( ?object $wpdb = null, ?Player_Repository_Interface $player_repository = null ) {
         if ( null === $wpdb ) {
             global $wpdb;
         }
         $this->wpdb               = $wpdb;
-        $this->table_name         = $this->wpdb->prefix . 'racketmanager_teams';
-        $this->team_players_table = $this->wpdb->prefix . 'racketmanager_team_players';
+        if ( $this->wpdb ) {
+            $prefix                   = isset( $this->wpdb->prefix ) ? (string) $this->wpdb->prefix : 'wp_';
+            $this->table_name         = $prefix . 'racketmanager_teams';
+            $this->team_players_table = $prefix . 'racketmanager_team_players';
+        }
         $this->player_repository  = $player_repository;
     }
 
@@ -102,6 +106,71 @@ class Team_Repository implements Team_Repository_Interface {
         }
 
         return $team;
+    }
+
+    /**
+     * Find a team ID by title
+     *
+     * @param string $title
+     *
+     * @return int
+     */
+    public function find_id_by_title( string $title ): int {
+        $title = trim( $title );
+        if ( '' === $title ) {
+            return 0;
+        }
+
+        $cached_id = wp_cache_get( 'team_id_' . md5( $title ), 'teams' );
+        if ( false !== $cached_id && (int) $cached_id > 0 ) {
+            return (int) $cached_id;
+        }
+
+        $id = (int) $this->wpdb->get_var(
+            $this->wpdb->prepare(
+                "SELECT `id` FROM $this->table_name WHERE `title` = %s LIMIT 1",
+                $title
+            )
+        );
+
+        if ( $id > 0 ) {
+            wp_cache_set( 'team_id_' . md5( $title ), $id, 'teams' );
+        }
+
+        return $id;
+    }
+
+    /**
+     * Read the persisted title of a team with a lightweight scalar query (no hydration).
+     *
+     * @param int $id
+     *
+     * @return string|null
+     */
+    private function find_title_by_id( int $id ): ?string {
+        $title = $this->wpdb->get_var(
+            $this->wpdb->prepare(
+                "SELECT `title` FROM $this->table_name WHERE `id` = %d LIMIT 1",
+                $id
+            )
+        );
+
+        return ( null === $title || false === $title ) ? null : (string) $title;
+    }
+
+    /**
+     * Invalidate title cache for a team.
+     *
+     * @param string|null $title
+     * @return void
+     */
+    private function invalidate_title_cache( ?string $title ): void {
+        if ( null !== $title ) {
+            $title = trim( $title );
+            if ( '' !== $title ) {
+                wp_cache_delete( 'team_id_' . md5( $title ), 'teams' );
+            }
+        }
     }
 
     /**
@@ -177,17 +246,26 @@ class Team_Repository implements Team_Repository_Interface {
                 $insert_id = $this->wpdb->insert_id;
                 $entity->set_id( $insert_id );
                 wp_cache_set( $insert_id, $entity, 'teams' );
+                $this->invalidate_title_cache( $entity->get_name() );
                 return $insert_id;
             }
             return false;
         } else {
-            // UPDATE: Use wpdb->update with the prepare logic built-in
-            wp_cache_set( $entity->get_id(), $entity, 'teams' );
+            $old_title = $this->find_title_by_id( (int) $entity->get_id() );
 
-            return $this->wpdb->update( $this->table_name, $data, array( 'id' => $entity->get_id() ),            // Where clause
+            // UPDATE: Use wpdb->update with the prepare logic built-in
+            $updated = $this->wpdb->update( $this->table_name, $data, array( 'id' => $entity->get_id() ),            // Where clause
                 $data_types,                                // Data format
                 array( '%d' )                                 // Where format
-            ) !== false;
+            );
+            if ( false === $updated ) {
+                return false;
+            }
+            wp_cache_set( $entity->get_id(), $entity, 'teams' );
+            $this->invalidate_title_cache( $old_title );
+            $this->invalidate_title_cache( $entity->get_name() );
+
+            return true;
         }
     }
 
@@ -383,6 +461,7 @@ class Team_Repository implements Team_Repository_Interface {
      * @return bool True on success, false on failure.
      */
     public function delete( int $id ): bool {
+        $old_title   = $this->find_title_by_id( $id );
         $del_players = $this->wpdb->delete( $this->team_players_table, array( 'team_id' => $id ), array( '%d' ) );
         if ( false === $del_players ) {
             return false;
@@ -397,6 +476,79 @@ class Team_Repository implements Team_Repository_Interface {
             return false;
         }
         wp_cache_delete( $id, 'teams' );
+        $this->invalidate_title_cache( $old_title );
         return true;
+    }
+
+    /**
+     * Get teams from the database matching criteria.
+     *
+     * @param array $args
+     * @return array|int
+     */
+    public function find_all( array $args = array() ): array|int {
+        $defaults = array(
+            'offset'  => 0,
+            'limit'   => 99999999,
+            'orderby' => array(
+                'id' => 'ASC',
+            ),
+            'count'   => false,
+            'player'  => false,
+            'partner' => false,
+        );
+        $args     = array_merge( $defaults, $args );
+        $offset   = $args['offset'];
+        $limit    = $args['limit'];
+        $orderby  = $args['orderby'];
+        $count    = $args['count'];
+        $player   = $args['player'];
+        $partner  = $args['partner'];
+
+        $search_terms = array();
+        if ( $player ) {
+            $search_terms[] = $this->wpdb->prepare( "`id` IN (SELECT `team_id` FROM $this->team_players_table WHERE `player_id` = %d )", $player );
+        }
+        if ( $partner ) {
+            $search_terms[] = $this->wpdb->prepare( "`id` IN (SELECT `team_id` FROM $this->team_players_table WHERE `player_id` = %d )", $partner );
+        }
+        $search = Util::search_string( $search_terms, true );
+        if ( $count ) {
+            $sql = 'SELECT COUNT(distinct(`id`))';
+        } else {
+            $sql = 'SELECT `id`';
+        }
+        $sql .= " FROM $this->table_name " . $search;
+
+        if ( $count ) {
+            $teams = wp_cache_get( md5( $sql ), 'teams' );
+            if ( false === $teams || null === $teams ) {
+                $teams = $this->wpdb->get_var( $sql );
+                wp_cache_set( md5( $sql ), $teams, 'teams' );
+            }
+            return (int) $teams;
+        }
+        $sql .= Util::order_by_string( $orderby );
+        $sql  = $this->wpdb->prepare(
+            $sql . ' LIMIT %d, %d',
+            intval( $offset ),
+            intval( $limit )
+        );
+        $teams = wp_cache_get( md5( $sql ), 'teams' );
+        if ( ! $teams ) {
+            $teams = $this->wpdb->get_results( $sql );
+            wp_cache_set( md5( $sql ), $teams, 'teams' );
+        }
+        if ( ! is_array( $teams ) ) {
+            return array();
+        }
+        $hydrated_teams = array();
+        foreach ( $teams as $row ) {
+            $team = $this->find_by_id( (int) $row->id );
+            if ( $team ) {
+                $hydrated_teams[] = $team;
+            }
+        }
+        return $hydrated_teams;
     }
 }

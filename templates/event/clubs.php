@@ -7,8 +7,10 @@
 
 namespace Racketmanager;
 
+use BackedEnum;
+
 /** @var object $event */
-$competition_type = $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
+$competition_type = $event->competition->type instanceof BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
 if ( empty( $event_club ) ) {
     ?>
     <div class="module module--card">
@@ -34,7 +36,7 @@ if ( empty( $event_club ) ) {
                         </div>
                         <?php
                         foreach ( $event->clubs as $club ) {
-                            $club_id   = is_object( $club ) ? (int) ( $club->id ?? 0 ) : (int) ( $club['id'] ?? 0 );
+                            $club_id   = is_object( $club ) ? $club->id ?? 0 : (int) ( $club['id'] ?? 0 );
                             $club_link = $club_links[ $club_id ] ?? '';
                             ?>
                             <div class="row mb-2 row-list">
@@ -68,10 +70,12 @@ if ( empty( $event_club ) ) {
     </div>
     <?php
 } else {
-    $words    = explode( ' ', $event_club->shortcode );
-    $initials = null;
+    $words    = array_filter( explode( ' ', $event_club->shortcode ?? '' ) );
+    $initials = '';
     foreach ( $words as $w ) {
-        $initials .= $w[0];
+        if ( '' !== $w ) {
+            $initials .= $w[0];
+        }
     }
     ?>
     <div class="page-subhead">
@@ -169,7 +173,7 @@ if ( empty( $event_club ) ) {
                             </div>
                             <?php
                             foreach ( $event_club->teams as $team ) {
-                                $team_id     = is_object( $team ) ? (int) ( $team->id ?? 0 ) : (int) ( $team['id'] ?? 0 );
+                                $team_id     = is_object( $team ) ? $team->id ?? 0 : (int) ( $team['id'] ?? 0 );
                                 $team_link   = $team_links[ $team_id ]['team_link'] ?? '';
                                 $league_link = $team_links[ $team_id ]['league_link'] ?? '';
                                 ?>
@@ -216,7 +220,7 @@ if ( empty( $event_club ) ) {
                                 if ( intval( $player->id ) === get_current_user_id() ) {
                                     $selected_player = true;
                                 }
-                                $player_id   = is_object( $player ) ? (int) ( $player->id ?? ( $player->ID ?? 0 ) ) : (int) ( $player['id'] ?? 0 );
+                                $player_id   = is_object( $player ) ? $player->id ?? ( $player->ID ?? 0 ) : (int) ( $player['id'] ?? 0 );
                                 $player_link = $player_links[ $player_id ] ?? '';
                                 ?>
                                 <li class="list__item <?php echo empty( $selected_player ) ? null : 'is-selected'; ?>">

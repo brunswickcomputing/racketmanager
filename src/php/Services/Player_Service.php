@@ -36,6 +36,7 @@ use Racketmanager\Repositories\Interfaces\Player_Error_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Registration_Repository_Interface;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Services\Contracts\Wtn_Api_Client_Interface;
+use Racketmanager\Services\Validator\Player_Details_Validator;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Util\Util_Messages;
 use stdClass;
@@ -58,21 +59,42 @@ class Player_Service {
     private Club_Repository $club_repository;
     private Registration_Repository_Interface $registration_repository;
     private Mailer_Interface $mailer;
+    private ?Player_Details_Validator $player_details_validator = null;
 
     /**
      * Constructor
      *
      */
-    public function __construct( $plugin_instance, Player_Repository $player_repository, Player_Error_Repository_Interface $player_error_repository, Club_Role_Repository_Interface $club_role_repository, Rating_Gateway_Interface $wtn_api_client, League_Team_Repository $league_team_repository, Club_Repository $club_repository, Registration_Repository_Interface $registration_repository, ?Mailer_Interface $mailer = null ) {
-        $this->racketmanager           = $plugin_instance;
-        $this->player_repository       = $player_repository;
-        $this->player_error_repository = $player_error_repository;
-        $this->club_role_repository    = $club_role_repository;
-        $this->wtn_api_client          = $wtn_api_client;
-        $this->league_team_repository  = $league_team_repository;
-        $this->club_repository         = $club_repository;
-        $this->registration_repository = $registration_repository;
-        $this->mailer                  = $mailer ?? new Wp_Mailer();
+    public function __construct(
+        $plugin_instance,
+        Player_Repository $player_repository,
+        Player_Error_Repository_Interface $player_error_repository,
+        Club_Role_Repository_Interface $club_role_repository,
+        Rating_Gateway_Interface $wtn_api_client,
+        League_Team_Repository $league_team_repository,
+        Club_Repository $club_repository,
+        Registration_Repository_Interface $registration_repository,
+        ?Mailer_Interface $mailer = null,
+        ?Player_Details_Validator $player_details_validator = null
+    ) {
+        $this->racketmanager            = $plugin_instance;
+        $this->player_repository        = $player_repository;
+        $this->player_error_repository  = $player_error_repository;
+        $this->club_role_repository     = $club_role_repository;
+        $this->wtn_api_client           = $wtn_api_client;
+        $this->league_team_repository   = $league_team_repository;
+        $this->club_repository          = $club_repository;
+        $this->registration_repository  = $registration_repository;
+        $this->mailer                   = $mailer ?? new Wp_Mailer();
+        $this->player_details_validator = $player_details_validator;
+    }
+
+    private function get_player_details_validator(): Player_Details_Validator {
+        if ( null === $this->player_details_validator ) {
+            $this->player_details_validator = new Player_Details_Validator( $this->player_repository );
+        }
+
+        return $this->player_details_validator;
     }
 
     public function add_new_player( ?array $request = null ): Player|WP_Error {
@@ -93,50 +115,7 @@ class Player_Service {
      * @return stdClass|WP_Error
      */
     public function validate_player( ?array $request = null ): stdClass|WP_Error {
-        // phpcs:disable WordPress.Security.NonceVerification.Missing
-        $source        = $request ?? $_POST;
-        $player_id     = isset( $source['playerId'] ) ? intval( $source['playerId'] ) : null;
-        $firstname     = isset( $source['firstname'] ) ? trim( sanitize_text_field( wp_unslash( $source['firstname'] ) ) ) : null;
-        $surname       = isset( $source['surname'] ) ? trim( sanitize_text_field( wp_unslash( $source['surname'] ) ) ) : null;
-        $gender        = isset( $source['gender'] ) ? sanitize_text_field( wp_unslash( $source['gender'] ) ) : null;
-        $btm           = isset( $source['btm'] ) ? sanitize_text_field( wp_unslash( $source['btm'] ) ) : null;
-        $contactno     = empty( $source['contactno'] ) ? null : sanitize_text_field( wp_unslash( $source['contactno'] ) );
-        $email         = isset( $source['email'] ) ? sanitize_text_field( wp_unslash( $source['email'] ) ) : null;
-        $locked        = isset( $source['locked'] );
-        $year_of_birth = empty( $source['year_of_birth'] ) ? null : intval( $source['year_of_birth'] );
-        $validator     = new Validator();
-        $validator     = $validator->first_name( $firstname );
-        $validator     = $validator->surname( $surname );
-        $validator     = $validator->gender( $gender );
-        if ( empty( $validator->error ) && empty( $player_id ) ) {
-            $name            = $firstname . ' ' . $surname;
-            $existing_player = $this->player_repository->find( $name, 'name' );
-            if ( $existing_player ) {
-                $player_id = $existing_player->get_id();
-            }
-        }
-        $validator = $validator->btm( intval( $btm ), $player_id );
-        $validator = $validator->email( $email, $player_id, false );
-        // phpcs:enable WordPress.Security.NonceVerification.Missing
-        $player                = new stdClass();
-        $player->id            = $player_id;
-        $player->firstname     = $firstname;
-        $player->surname       = $surname;
-        $player->fullname      = $firstname . ' ' . $surname;
-        $player->user_login    = strtolower( (string) $firstname ) . '.' . strtolower( (string) $surname );
-        $player->email         = $email;
-        $player->btm           = $btm;
-        $player->contactno     = $contactno;
-        $player->gender        = $gender;
-        $player->locked        = $locked;
-        $player->year_of_birth = $year_of_birth;
-        if ( ! empty( $validator->error ) ) {
-            $validator->err->add_data( $player, 'player' );
-
-            return $validator->err;
-        } else {
-            return $player;
-        }
+        return $this->get_player_details_validator()->validate_player( $request );
     }
 
     /**

@@ -6,6 +6,7 @@ namespace Racketmanager\Application\Event\Queries;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
+use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
 use function __;
@@ -14,7 +15,8 @@ use function str_starts_with;
 class Get_Event_Partner_Handler {
     public function __construct(
         private readonly Competition_Service $competition_service,
-        private readonly Player_Service $player_service
+        private readonly Player_Service $player_service,
+        private readonly Event_Query_Service $event_query_service
     ) {}
 
     public function handle( Get_Event_Partner_Query $query ): Shortcode_View_Model {
@@ -29,7 +31,7 @@ class Get_Event_Partner_Handler {
             return Shortcode_View_Model::for_error( __( 'Event not found', 'racketmanager' ), 'modal' );
         }
 
-        $event->set_season( $query->season );
+        $this->event_query_service->set_season( $event, $query->season );
 
         if ( ! Event_Allowlist_Guard::is_event_allowed( $event, $event->current_season['name'] ?? $query->season, $this->competition_service ) ) {
             return Shortcode_View_Model::for_error( __( 'Event not found for competition', 'racketmanager' ), 'modal' );
@@ -73,7 +75,7 @@ class Get_Event_Partner_Handler {
                 'partner_id'     => $query->partner_id,
                 'partner_gender' => $partner_gender,
                 'date_end'       => $query->date_end,
-                'season'         => $query->season,
+                'season'         => $event->current_season['name'] ?? $query->season,
                 'modal'          => $query->modal,
                 'tournament_id'  => $query->tournament_id,
             ],

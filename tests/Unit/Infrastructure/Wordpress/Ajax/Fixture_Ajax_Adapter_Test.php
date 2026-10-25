@@ -593,7 +593,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $this->container->set( 'fixture_repository', $fixture_repo );
 
         $maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
-        $maintenance_service->expects( $this->once() )->method( 'update_fixture_date' )->with( 123, '2023-10-10', '2023-10-09' );
+        $maintenance_service->expects( $this->once() )->method( 'update_fixture_date' )->with( 123, '2023-10-10', '2023-10-09' )->willReturn( true );
         $maintenance_service->expects( $this->once() )->method( 'update_fixture_status' )->with( 123, 5 );
         $this->container->set( 'fixture_maintenance_service', $maintenance_service );
 
@@ -604,6 +604,86 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $this->assertSame( 123, $data['match_id'] );
         $this->assertSame( '2023-10-10', $data['schedule_date'] );
         $this->assertSame( 'Tue 10 Oct', $data['schedule_date_formated'] );
+    }
+
+    #[AllowMockObjectsWithoutExpectations]
+    public function test_set_match_date_with_time_success(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+        $GLOBALS['wp_stubs_wp_verify_nonce_return'] = true;
+        $post = [
+            'racketmanager_nonce' => 'valid',
+            'match_id'            => 123,
+            'modal'               => 'test-modal',
+            'schedule-date'       => '2026-10-10 19:30:00',
+        ];
+
+        $match        = $this->getMockBuilder( Fixture::class )->disableOriginalConstructor()->getMock();
+        $match->id    = 123;
+        $match->method('get_date')->willReturn('2026-10-09 18:00:00');
+
+        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+        $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $match );
+        $this->container->set( 'fixture_repository', $fixture_repo );
+
+        $maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
+        $maintenance_service->expects( $this->once() )->method( 'update_fixture_date' )->with( 123, '2026-10-10 19:30:00', '2026-10-09 18:00:00' )->willReturn( true );
+        $maintenance_service->expects( $this->once() )->method( 'update_fixture_status' )->with( 123, 5 );
+        $this->container->set( 'fixture_maintenance_service', $maintenance_service );
+
+        $response = $this->adapter->set_fixture_date( $post );
+        $this->assertSame( 200, $response->get_status_code() );
+        $data = $response->get_content();
+        $this->assertSame( 'Match schedule updated', $data['msg'] );
+        $this->assertSame( 123, $data['match_id'] );
+        $this->assertSame( '2026-10-10 19:30:00', $data['schedule_date'] );
+    }
+
+    #[AllowMockObjectsWithoutExpectations]
+    public function test_set_match_date_repository_failure_returns_error(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+        $GLOBALS['wp_stubs_wp_verify_nonce_return'] = true;
+        $post = [
+            'racketmanager_nonce' => 'valid',
+            'match_id'            => 123,
+            'modal'               => 'test-modal',
+            'schedule-date'       => '2026-10-10 19:30:00',
+        ];
+
+        $match     = $this->getMockBuilder( Fixture::class )->disableOriginalConstructor()->getMock();
+        $match->id = 123;
+        $match->method( 'get_date' )->willReturn( '2026-10-09 18:00:00' );
+
+        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+        $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $match );
+        $this->container->set( 'fixture_repository', $fixture_repo );
+
+        $maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
+        $maintenance_service->expects( $this->once() )->method( 'update_fixture_date' )->with( 123, '2026-10-10 19:30:00', '2026-10-09 18:00:00' )->willReturn( false );
+        $maintenance_service->expects( $this->never() )->method( 'update_fixture_status' );
+        $this->container->set( 'fixture_maintenance_service', $maintenance_service );
+
+        $response = $this->adapter->set_fixture_date( $post );
+        $this->assertSame( 400, $response->get_status_code() );
+        $data = $response->get_content();
+        $this->assertSame( 'Failed to update match schedule', $data['msg'] );
+    }
+
+    #[AllowMockObjectsWithoutExpectations]
+    public function test_set_match_date_invalid_date_format_returns_validation_error(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+        $GLOBALS['wp_stubs_wp_verify_nonce_return'] = true;
+        $post = [
+            'racketmanager_nonce' => 'valid',
+            'match_id'            => 123,
+            'modal'               => 'test-modal',
+            'schedule-date'       => 'garbage-date',
+        ];
+
+        $response = $this->adapter->set_fixture_date( $post );
+        $this->assertSame( 400, $response->get_status_code() );
+        $data = $response->get_content();
+        $this->assertContains( 'schedule-date', $data['err_flds'] );
+        $this->assertContains( 'Invalid schedule date format', $data['err_msgs'] );
     }
 
     #[AllowMockObjectsWithoutExpectations]
@@ -667,6 +747,65 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $this->assertSame( 123, $data['match_id'] );
         $this->assertSame( '', $data['link'] );
         $this->assertSame( 'test-modal', $data['modal'] );
+    }
+
+    #[AllowMockObjectsWithoutExpectations]
+    public function test_switch_home_away_preserves_scheduled_start_time(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+        $GLOBALS['wp_stubs_wp_verify_nonce_return'] = true;
+        $post = [
+            'racketmanager_nonce' => 'valid',
+            'match_id'            => 123,
+            'modal'               => 'test-modal',
+        ];
+
+        $league = $this->getMockBuilder( League::class )->disableOriginalConstructor()->getMock();
+        $league->method( 'get_event_id' )->willReturn( 456 );
+
+        $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->getMock();
+
+        $match = $this->getMockBuilder( Fixture::class )->disableOriginalConstructor()->getMock();
+        $match->method( 'get_id' )->willReturn( 123 );
+        $match->method( 'get_home_team' )->willReturn( '1' );
+        $match->method( 'get_away_team' )->willReturn( '2' );
+        $match->method( 'get_season' )->willReturn( '2023' );
+        $match->method( 'get_match_day' )->willReturn( 1 );
+        $match->method( 'get_league_id' )->willReturn( 789 );
+        $match->method( 'get_start_time' )->willReturn( '19:30' );
+
+        $dto = new Fixture_Details_DTO(
+            $match,
+            $league,
+            $this->createStub( Event::class ),
+            $this->createStub( Competition::class ),
+            link: 'https://example.com'
+        );
+
+        $this->fixture_detail_service->expects( $this->once() )->method( 'get_fixture_with_details' )->with( 123 )->willReturn( $dto );
+
+        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+        $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $match );
+        $this->container->set( 'fixture_repository', $fixture_repo );
+
+        $league_repo = $this->createMock( League_Repository_Interface::class );
+        $league_repo->expects( $this->once() )->method( 'find_by_id' )->with( 789 )->willReturn( $league );
+        $this->container->set( 'league_repository', $league_repo );
+
+        $event_repo = $this->createMock( Event_Repository_Interface::class );
+        $event_repo->expects( $this->once() )->method( 'find_by_id' )->with( 456 )->willReturn( $event );
+        $this->container->set( 'event_repository', $event_repo );
+
+        $event->expects( $this->once() )->method( 'get_season_by_name' )->with( '2023' )->willReturn( [
+            'match_dates' => [ '2023-10-10' ]
+        ] );
+
+        $maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
+        $maintenance_service->expects( $this->once() )->method( 'update_fixture_date' )->with( 123, '2023-10-10 19:30:00' );
+        $maintenance_service->expects( $this->once() )->method( 'update_fixture_teams' )->with( 123, '2', '1' );
+        $this->container->set( 'fixture_maintenance_service', $maintenance_service );
+
+        $response = $this->adapter->switch_home_away( $post );
+        $this->assertSame( 200, $response->get_status_code() );
     }
 
     #[AllowMockObjectsWithoutExpectations]

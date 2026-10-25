@@ -80,6 +80,11 @@ readonly final class Season_Delete_Action_Dispatcher {
                 message: $e->getMessage(),
                 message_type: Admin_Message_Type::ERROR,
             );
+        } catch ( \RuntimeException | \InvalidArgumentException $e ) {
+            return new Action_Result_DTO(
+                message: $e->getMessage(),
+                message_type: Admin_Message_Type::ERROR,
+            );
         }
     }
 

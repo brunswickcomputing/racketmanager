@@ -387,11 +387,10 @@ readonly class Email_Shortcode_Presenter {
 
         // The [match-date-change-notification] shortcode receives raw MySQL datetimes; always format them here.
         $formatter         = $this->date_formatter();
-        $start_time        = $fixture->get_start_time();
         $raw_new_date      = ! empty( $args['new_date'] ) ? (string) $args['new_date'] : $fixture->get_date();
         $raw_original_date = ! empty( $args['original_date'] ) ? (string) $args['original_date'] : $fixture->get_date_original();
-        $match_date        = $formatter->date_change( $raw_new_date, $start_time );
-        $original_date     = $formatter->date_change( $raw_original_date, $start_time );
+        $match_date        = $formatter->date_change( $raw_new_date );
+        $original_date     = $formatter->date_change( $raw_original_date );
         $comp_name         = ( $args['competition'] ?? '' ) ?: ( $match->league->title ?? '' );
 
         return [

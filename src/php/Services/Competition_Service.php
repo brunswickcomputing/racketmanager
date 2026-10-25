@@ -9,6 +9,7 @@
 
 namespace Racketmanager\Services;
 
+use Closure;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\DTO\Tournament\Championship_Rounds_Request_DTO;
 use Racketmanager\Domain\DTO\Competition\Competition_Overview_DTO;
@@ -51,12 +52,14 @@ class Competition_Service {
     private Club_Repository_Interface $club_repository;
     private Season_Repository_Interface $season_repository;
     private ?Fixture_Repository_Interface $fixture_repository = null;
+    /** @var (Closure():League_Service)|null */
+    private ?Closure $league_service_factory;
 
     /**
      * Constructor
      *
      */
-    public function __construct( RacketManager $plugin_instance, Competition_Repository_Interface $competition_repository, Club_Repository_Interface $club_repository, Event_Repository_Interface $event_repository, League_Repository_Interface $league_repository , League_Team_Repository_Interface $league_team_repository, Season_Repository_Interface $season_repository , Team_Repository_Interface $team_repository, ?Fixture_Repository_Interface $fixture_repository = null ) {
+    public function __construct( RacketManager $plugin_instance, Competition_Repository_Interface $competition_repository, Club_Repository_Interface $club_repository, Event_Repository_Interface $event_repository, League_Repository_Interface $league_repository , League_Team_Repository_Interface $league_team_repository, Season_Repository_Interface $season_repository , Team_Repository_Interface $team_repository, ?Fixture_Repository_Interface $fixture_repository = null, ?callable $league_service_factory = null ) {
         $this->racketmanager          = $plugin_instance;
         $this->competition_repository = $competition_repository;
         $this->club_repository        = $club_repository;
@@ -66,10 +69,58 @@ class Competition_Service {
         $this->season_repository       = $season_repository;
         $this->team_repository        = $team_repository;
         $this->fixture_repository     = $fixture_repository ?? ( isset( $this->racketmanager->container ) && $this->racketmanager->container->has( 'fixture_repository' ) ? $this->racketmanager->container->get( 'fixture_repository' ) : null );
+        $this->league_service_factory = $league_service_factory === null ? null : Closure::fromCallable( $league_service_factory );
+    }
+
+    private function deletion_league_service(): League_Service {
+        if ( $this->league_service_factory === null ) {
+            throw new \RuntimeException( 'League_Service is required for competition deletion.' );
+        }
+        return ( $this->league_service_factory )();
+    }
+
+    public function delete_event( Event $event ): void {
+        $leagues = $this->event_repository->query_leagues( (int) $event->id );
+        $league_service = $leagues ? $this->deletion_league_service() : null;
+        foreach ( $leagues as $league ) {
+            $league_service->delete_league( (int) $league->id );
+        }
+        if ( ! $this->event_repository->delete( (int) $event->id ) ) {
+            throw new \RuntimeException( 'Could not delete event ' . $event->id );
+        }
+        wp_cache_delete( $event->id, 'events' );
+        wp_cache_delete( $event->name, 'events' );
+        wp_cache_delete( md5( (string) $event->competition_id ), 'events' );
+    }
+
+    public function delete_event_season( Event $event, int|string $season ): void {
+        $seasons = $event->get_seasons();
+        if ( ! isset( $seasons[ $season ] ) ) {
+            return;
+        }
+        $leagues = $this->event_repository->query_leagues( (int) $event->id );
+        $league_service = $leagues ? $this->deletion_league_service() : null;
+        foreach ( $leagues as $league ) {
+            $league_service->delete_season_fixtures( (int) $league->id, $season );
+            if ( ! $this->event_repository->delete_league_teams_for_season( (int) $league->id, (string) $season ) ) {
+                throw new \RuntimeException( 'Could not delete season teams for league ' . $league->id );
+            }
+        }
+        unset( $seasons[ $season ] );
+        if ( ! $this->event_repository->update_seasons( (int) $event->id, $seasons ) ) {
+            throw new \RuntimeException( 'Could not update seasons for event ' . $event->id );
+        }
+        $event->set_seasons( $seasons );
+        wp_cache_set( $event->id, $event, 'events' );
+        wp_cache_delete( md5( (string) $event->competition_id ), 'events' );
     }
 
     public function get_league_repository(): League_Repository_Interface {
         return $this->league_repository;
+    }
+
+    public function get_event_repository(): Event_Repository_Interface {
+        return $this->event_repository;
     }
 
     public function get_event_by_id( null|string|int $event_id ): Event {
@@ -99,20 +150,15 @@ class Competition_Service {
     }
 
     /**
-     * Get Competition object, mirroring legacy get_competition() behavior
-     * but following DDD principles and using the modern Factory.
+     * Get Competition object by explicit ID, name, or object.
      *
-     * @param object|int|string|null $competition_id Competition ID, object, or name. Defaults to global $competition.
+     * @param object|int|string|null $competition_id Competition ID, object, or name.
      * @param string|null           $search_term    Type of search ('id' or 'name').
      *
      * @return Competition
      * @throws Competition_Not_Found_Exception If competition not found.
      */
     public function get_competition( object|int|string|null $competition_id = null, ?string $search_term = 'id' ): Competition {
-        if ( empty( $competition_id ) && isset( $GLOBALS['competition'] ) ) {
-            $competition_id = $GLOBALS['competition'];
-        }
-
         if ( $competition_id instanceof Competition ) {
             return $competition_id;
         }
@@ -122,9 +168,11 @@ class Competition_Service {
             if ( ! isset( $competition_id->sport ) ) {
                 $competition_id->sport = 'tennis';
             }
-            $competition = Competition::from_object( $competition_id );
-            $competition->set_competition_repository( $this->competition_repository );
-            return $competition;
+            return Competition::from_object( $competition_id );
+        }
+
+        if ( is_string( $competition_id ) && '' !== $competition_id && ! is_numeric( $competition_id ) ) {
+            $search_term = 'name';
         }
 
         if ( 'name' === $search_term ) {
@@ -178,6 +226,57 @@ class Competition_Service {
             }
         }
         return $events;
+    }
+
+    /**
+     * Load all events of a competition once, for use as the candidate set of pure Competition event lookups.
+     *
+     * @param Competition $competition Competition entity.
+     * @return Event[]
+     */
+    public function get_competition_events( Competition $competition ): array {
+        return $this->competition_repository->find_events( (int) $competition->id );
+    }
+
+    /**
+     * Resolve a competition event by identifier (ID, slug, name, or Event object).
+     *
+     * @param Competition $competition Competition entity.
+     * @param int|string|object $event_identifier Event identifier or object.
+     * @param string|null $season Optional season.
+     * @return Event|null
+     */
+    public function resolve_competition_event( Competition $competition, int|string|object $event_identifier, ?string $season = null ): ?Event {
+        if ( $event_identifier instanceof Event ) {
+            return $competition->resolve_event( $event_identifier, $season );
+        }
+
+        $events = $this->competition_repository->find_events( (int) $competition->id );
+        return $competition->resolve_event( $event_identifier, $season, $events );
+    }
+
+    /**
+     * Get entry events for a competition season.
+     *
+     * @param Competition $competition Competition.
+     * @param int|string|null $season Season.
+     * @return Event[]
+     */
+    public function get_entry_events( Competition $competition, int|string|null $season = null ): array {
+        $events = $this->competition_repository->find_events( (int) $competition->id );
+        return $competition->get_entry_events( $season, $events );
+    }
+
+    /**
+     * Get frontend events for a competition season.
+     *
+     * @param Competition $competition Competition.
+     * @param int|string|null $season Season.
+     * @return Event[]
+     */
+    public function get_frontend_events( Competition $competition, int|string|null $season = null ): array {
+        $events = $this->competition_repository->find_events( (int) $competition->id );
+        return $competition->get_frontend_events( $season, $events );
     }
 
     public function get_events_with_details_for_competition($competition_id, $season, $min_fixtures = 1): array {
@@ -462,9 +561,13 @@ class Competition_Service {
         } catch ( Competition_Not_Found_Exception ) {
             return;
         }
-        $events = $this->event_repository->find_by_competition_id( $competition->get_id() );
+        $events         = $this->event_repository->find_by_competition_id( $competition->get_id() );
         foreach ( $events as $event ) {
-            $this->event_repository->delete( $event->id );
+            $event = $event instanceof Event ? $event : $this->event_repository->find_by_id( $event->id );
+            if ( ! $event ) {
+                throw new \RuntimeException( 'Could not load event for competition deletion.' );
+            }
+            $this->delete_event( $event );
         }
         $this->competition_repository->delete( $competition_id );
     }
@@ -640,20 +743,20 @@ class Competition_Service {
      */
     public function delete_seasons( ?int $competition_id, array $seasons ): void {
 
-        $competition = $this->get_by_id( $competition_id );
-        $deleted = false;
-        foreach ( $seasons as $season ) {
-            $season_found = $competition->get_season_by_name( $season );
+        $competition  = $this->get_by_id( $competition_id );
+        $deleted      = false;
+        $seasons_data = $competition->get_seasons();
+        foreach ( $seasons as $season_key => $season ) {
+            $season_name  = is_array( $season ) ? (string) ( $season['name'] ?? $season_key ) : (string) $season;
+            $season_found = $competition->get_season_by_name( $season_name );
             if ( $season_found ) {
-                $deleted = true;
-                $seasons = $competition->seasons;
-                $competition_events = $this->get_events_for_competition( $competition_id, $season );
+                $deleted            = true;
+                $competition_events = $this->get_events_for_competition( $competition_id, (int) $season_name );
                 foreach ( $competition_events as $event ) {
-                    $event->delete_season( $season );
+                    $this->delete_event_season( $event, (int) $season_name );
                 }
-                unset( $seasons[ $season ] );
-                $schedule_args[] = intval( $competition->id );
-                $schedule_args[] = intval( $season );
+                unset( $seasons_data[ $season_name ] );
+                $schedule_args   = array( intval( $competition->id ), intval( $season_name ) );
                 $schedule_name   = 'rm_notify_team_entry_open';
                 Util::clear_scheduled_event( $schedule_name, $schedule_args );
                 $schedule_name = 'rm_notify_team_entry_reminder';
@@ -663,7 +766,7 @@ class Competition_Service {
             }
         }
         if ( $deleted ) {
-            $competition->set_seasons( $seasons );
+            $competition->set_seasons( $seasons_data );
             $this->competition_repository->save( $competition );
         } else {
             throw new Competition_Not_Updated_Exception( __( 'No seasons deleted', 'racketmanager' ) );
@@ -860,6 +963,21 @@ class Competition_Service {
      */
     public function save( Competition $competition ): bool|int {
         return $this->competition_repository->save( $competition );
+    }
+
+    /**
+     * Get events for a competition using the competition repository.
+     *
+     * @param Competition|int|string $competition Competition or competition id.
+     * @param array                  $args        Query arguments.
+     * @return array
+     */
+    public function get_events_by_query( Competition|int|string $competition, array $args = array() ): array {
+        $competition_id = $competition instanceof Competition ? $competition->get_id() : (int) $competition;
+
+        $events = $this->competition_repository->find_events( $competition_id, $args );
+
+        return is_array( $events ) ? $events : array();
     }
 
     /**

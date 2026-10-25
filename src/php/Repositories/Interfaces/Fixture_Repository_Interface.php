@@ -36,4 +36,5 @@ interface Fixture_Repository_Interface extends Repository_Interface {
     public function find_by_criteria( Export_Criteria $criteria ): array;
     public function find_one_by_slug_criteria( array $criteria ): ?Fixture;
     public function find_player_matches( int $player_id, array $args = [] ): array;
+    public function find_all( array $match_args = [] ): array|int;
 }

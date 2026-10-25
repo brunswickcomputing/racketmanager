@@ -10,6 +10,7 @@ declare( strict_types=1 );
 
 namespace Tests\Unit\Controllers\Admin;
 
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Admin_Result;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
@@ -25,6 +26,7 @@ use Racketmanager\Services\Season_Service;
 use Racketmanager\Tests\Helpers\Creates_Admin_Delivery_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
+#[AllowMockObjectsWithoutExpectations]
 final class Admin_Result_Delivery_Test extends TestCase {
     use Creates_Admin_Delivery_Container;
     use Manages_Wordpress_Globals;
@@ -378,6 +380,97 @@ final class Admin_Result_Delivery_Test extends TestCase {
         }
 
         $this->assertStringContainsString( 'You do not have permission', $output );
+    }
+
+    public function test_constructor_throws_logic_exception_when_results_checker_presenter_is_not_registered(): void {
+        $container = $this->create_admin_delivery_container(
+            services: array(
+                'results_checker_presenter' => false,
+            ),
+            redirector: $this->redirector,
+            flash_store: $this->flash_store,
+        );
+
+        $plugin = $this->createStub( RacketManager::class );
+        $plugin->container = $container;
+
+        $this->expectException( \LogicException::class );
+        $this->expectExceptionMessage( 'The results checker presenter is not registered.' );
+
+        new Admin_Result( $plugin );
+    }
+
+    public function test_constructor_throws_logic_exception_when_admin_results_match_presenter_is_not_registered(): void {
+        $container = $this->create_admin_delivery_container(
+            services: array(
+                'admin_results_match_presenter' => false,
+            ),
+            redirector: $this->redirector,
+            flash_store: $this->flash_store,
+        );
+
+        $plugin = $this->createStub( RacketManager::class );
+        $plugin->container = $container;
+
+        $this->expectException( \LogicException::class );
+        $this->expectExceptionMessage( 'The admin results match presenter is not registered.' );
+
+        new Admin_Result( $plugin );
+    }
+
+    public function test_display_results_page_uses_injected_presenter_and_ignores_global_racketmanager(): void {
+        $GLOBALS['racketmanager'] = (object) array( 'deliberately_different' => true );
+
+        $presenter = $this->createMock( \Racketmanager\Presentation\Presenters\Results_Checker_Presenter::class );
+        $viewModel = new \Racketmanager\Presentation\View_Models\Results_Checker_View_Model(
+            id: 99,
+            formatted_date: '2026-04-10',
+            match_link: 'https://example.test/match/123/',
+            match_title: 'Premier League Match',
+            team_title: 'Team A',
+            player_link: 'https://example.test/player/1/',
+            player_name: 'John Doe',
+            description: 'Custom Warning Presenter Check Output',
+            status_desc: 'Action Required',
+            tooltip: 'Updated on 2026-04-10',
+            show_status: true,
+        );
+
+        $presenter->expects( $this->once() )
+            ->method( 'present_collection' )
+            ->willReturn( array( $viewModel ) );
+
+        $container = $this->create_admin_delivery_container(
+            services: array(
+                'competition_service' => $this->competition_service,
+                'season_service'      => $this->season_service,
+                'league_repository'   => $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class ),
+            ),
+            redirector: $this->redirector,
+            flash_store: $this->flash_store,
+        );
+
+        $plugin = $this->createStub( RacketManager::class );
+        $plugin->container = $container;
+        $plugin->method( 'get_result_warnings' )->willReturn( array() );
+        $plugin->method( 'get_options' )->willReturn( array() );
+        $plugin->method( 'get_matches' )->willReturn( array() );
+
+        $admin_result = new Admin_Result(
+            plugin_instance: $plugin,
+            results_checker_presenter: $presenter,
+        );
+
+        ob_start();
+        try {
+            $admin_result->display_results_page();
+            $output = ob_get_contents();
+        } finally {
+            ob_end_clean();
+        }
+
+        $this->assertStringContainsString( 'Custom Warning Presenter Check Output', $output );
+        $this->assertStringContainsString( 'Action Required', $output );
     }
 
     /**

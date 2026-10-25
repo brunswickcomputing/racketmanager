@@ -9,8 +9,28 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Gateways\Mail\Mailer_Interface;
 use Racketmanager\Services\Competition\Competition_Notification_Service;
+use Racketmanager\Services\Competition\League_Query_Service;
 
 class Competition_Notification_Service_Test extends TestCase {
+
+    public function test_contact_teams_queries_a_real_event_through_the_injected_repository(): void {
+        $competition = \Racketmanager\Tests\Helpers\Competition_Test_Factory::create( id: 10, name: 'Summer League' );
+        $competition->is_player_entry = false;
+        $event = new Event( (object) [ 'id' => 93, 'name' => 'Mens Doubles', 'seasons' => '{"2026":{"name":"2026"}}' ] );
+        $event->set_season( '2026' );
+        $repository = $this->createMock( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class );
+        $repository->expects( $this->once() )->method( 'find_by_competition_id' )->with( 10 )->willReturn( [ $event ] );
+        $repository->expects( $this->once() )->method( 'query_teams' )
+            ->with( 93, $this->callback( static fn( array $args ): bool => '2026' === $args['season'] ) )
+            ->willReturn( [] );
+        $mailer = $this->createMock( Mailer_Interface::class );
+        $mailer->expects( $this->once() )->method( 'send' )
+            ->with( [], 'Leigh and Westcliff Tennis - Summer League 2026 - Important Message', 'Hello Teams', $this->isArray() )
+            ->willReturn( true );
+
+        $service = new Competition_Notification_Service( $mailer, $repository );
+        $this->assertTrue( $service->contact_teams( $competition, '2026', 'Hello Teams' ) );
+    }
 
     protected function setUp(): void {
         parent::setUp();
@@ -36,32 +56,7 @@ class Competition_Notification_Service_Test extends TestCase {
                 return true;
             } );
 
-        $service = new Competition_Notification_Service( $mock_mailer );
-
-        $event = new class extends Event {
-            public function __construct() {
-                $this->competition = (object) [ 'type' => 'league' ];
-            }
-        };
-
-        $league = new class extends League {
-            public array $mock_teams = [];
-            public ?object $mock_team_dtls = null;
-            public function __construct() {
-                $this->id = 10;
-                $this->title = 'Premier Division';
-            }
-            public function get_league_teams( array $args = [] ): array {
-                return $this->mock_teams;
-            }
-            public function get_team_dtls( int $team_id, ?string $season = null ): object|false {
-                return $this->mock_team_dtls ?? false;
-            }
-        };
-
-        $league->event = $event;
-        $league->mock_teams = [ (object) [ 'id' => 1 ] ];
-        $league->mock_team_dtls = (object) [
+        $team_dtls = (object) [
             'captain'      => 'John Smith',
             'contactemail' => 'john@example.com',
             'club'         => (object) [
@@ -71,6 +66,26 @@ class Competition_Notification_Service_Test extends TestCase {
                 ],
             ],
         ];
+        $league_query = $this->createStub( League_Query_Service::class );
+        $league_query->method( 'get_league_teams' )->willReturn( [ (object) [ 'id' => 1 ] ] );
+        $league_query->method( 'get_team_dtls' )->willReturn( $team_dtls );
+
+        $service = new Competition_Notification_Service( $mock_mailer, null, $league_query );
+
+        $event = new class extends Event {
+            public function __construct() {
+                $this->competition = (object) [ 'type' => 'league' ];
+            }
+        };
+
+        $league = new class extends League {
+            public function __construct() {
+                $this->id = 10;
+                $this->title = 'Premier Division';
+            }
+        };
+
+        $league->event = $event;
 
         $result = $service->contact_league_teams( $league, '2026', 'Hello Teams' );
 
@@ -91,32 +106,7 @@ class Competition_Notification_Service_Test extends TestCase {
                 return true;
             } );
 
-        $service = new Competition_Notification_Service( $mock_mailer );
-
-        $event = new class extends Event {
-            public function __construct() {
-                $this->competition = (object) [ 'type' => 'league' ];
-            }
-        };
-
-        $league = new class extends League {
-            public array $mock_teams = [];
-            public ?object $mock_team_dtls = null;
-            public function __construct() {
-                $this->id = 10;
-                $this->title = 'Division 1';
-            }
-            public function get_league_teams( array $args = [] ): array {
-                return $this->mock_teams;
-            }
-            public function get_team_dtls( int $team_id, ?string $season = null ): object|false {
-                return $this->mock_team_dtls ?? false;
-            }
-        };
-
-        $league->event = $event;
-        $league->mock_teams = [ (object) [ 'id' => 2 ] ];
-        $league->mock_team_dtls = (object) [
+        $team_dtls = (object) [
             'title'        => 'Westcliff 1',
             'captain'      => 'Captain Bob',
             'contactemail' => 'bob@example.com',
@@ -127,6 +117,26 @@ class Competition_Notification_Service_Test extends TestCase {
                 ],
             ],
         ];
+        $league_query = $this->createStub( League_Query_Service::class );
+        $league_query->method( 'get_league_teams' )->willReturn( [ (object) [ 'id' => 2 ] ] );
+        $league_query->method( 'get_team_dtls' )->willReturn( $team_dtls );
+
+        $service = new Competition_Notification_Service( $mock_mailer, null, $league_query );
+
+        $event = new class extends Event {
+            public function __construct() {
+                $this->competition = (object) [ 'type' => 'league' ];
+            }
+        };
+
+        $league = new class extends League {
+            public function __construct() {
+                $this->id = 10;
+                $this->title = 'Division 1';
+            }
+        };
+
+        $league->event = $event;
 
         $result = $service->notify_withdrawn_team( $league, 2, '2026' );
 
@@ -175,13 +185,9 @@ class Competition_Notification_Service_Test extends TestCase {
 
     public function test_contact_teams_reads_events_from_injected_event_repository(): void {
         $event = new class extends Event {
-            public ?array $requested_args = null;
             public function __construct() {
+                $this->id = 5;
                 $this->current_season = [ 'name' => '2026' ];
-            }
-            public function get_teams( array $args = [] ): array {
-                $this->requested_args = $args;
-                return [];
             }
         };
 
@@ -190,6 +196,10 @@ class Competition_Notification_Service_Test extends TestCase {
             ->method( 'find_by_competition_id' )
             ->with( 31 )
             ->willReturn( [ $event ] );
+        $event_repository->expects( $this->once() )
+            ->method( 'query_teams' )
+            ->with( 5, [ 'season' => '2026' ] )
+            ->willReturn( [] );
 
         $mailer = $this->createMock( Mailer_Interface::class );
         $mailer->expects( $this->once() )->method( 'send' )->willReturn( true );
@@ -198,7 +208,6 @@ class Competition_Notification_Service_Test extends TestCase {
         $competition = \Racketmanager\Tests\Helpers\Competition_Test_Factory::create( id: 31 );
 
         $this->assertTrue( $service->contact_teams( $competition, '2026', 'Hello' ) );
-        $this->assertSame( [ 'season' => '2026' ], $event->requested_args );
     }
 
     public function test_contact_teams_requires_event_repository(): void {

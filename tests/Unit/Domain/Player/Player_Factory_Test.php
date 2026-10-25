@@ -59,10 +59,11 @@ class Player_Factory_Test extends TestCase {
 	public function test_factory_derives_link_with_btm_and_locked_user_name(): void {
 		$player = Player_Factory::from_array(
 			array(
-				'ID'           => '100',
-				'display_name' => 'Jane Smith',
-				'btm'          => '87654321',
-				'locked_user'  => '17',
+				'ID'               => '100',
+				'display_name'     => 'Jane Smith',
+				'btm'              => '87654321',
+				'locked_user'      => '17',
+				'locked_user_name' => 'User 17',
 			)
 		);
 

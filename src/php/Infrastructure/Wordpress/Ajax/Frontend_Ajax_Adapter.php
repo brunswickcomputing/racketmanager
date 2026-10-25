@@ -4,9 +4,16 @@ declare( strict_types=1 );
 namespace Racketmanager\Infrastructure\Wordpress\Ajax;
 
 use Exception;
-use Racketmanager\Domain\DTO\Competition\Cup_Entry_Request_DTO;
-use Racketmanager\Domain\DTO\Competition\League_Entry_Request_DTO;
-use Racketmanager\Domain\DTO\Player\Search_Players_Command;
+use Racketmanager\Application\Competition\Commands\Submit_Cup_Entry_Command;
+use Racketmanager\Application\Competition\Commands\Submit_Cup_Entry_Handler;
+use Racketmanager\Application\Competition\Commands\Submit_League_Entry_Command;
+use Racketmanager\Application\Competition\Commands\Submit_League_Entry_Handler;
+use Racketmanager\Application\Player\Commands\Update_Player_Command;
+use Racketmanager\Application\Player\Commands\Update_Player_Handler;
+use Racketmanager\Application\Player\Queries\Get_Player_Details_Handler;
+use Racketmanager\Application\Player\Queries\Get_Player_Details_Query;
+use Racketmanager\Application\Player\Queries\Search_Players_Handler;
+use Racketmanager\Application\Player\Queries\Search_Players_Query;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Duplicate_BTM_Exception;
 use Racketmanager\Exceptions\Duplicate_Email_Exception;
@@ -59,8 +66,17 @@ class Frontend_Ajax_Adapter {
         private Club_Service $club_service,
         private Tournament_Service $tournament_service,
         private Fixture_Repository_Interface $fixture_repository,
-        private Rubber_Repository_Interface $rubber_repository
-    ) {}
+        private Rubber_Repository_Interface $rubber_repository,
+        private Search_Players_Handler $search_players_handler,
+        private Get_Player_Details_Handler $get_player_details_handler,
+        private ?Submit_Cup_Entry_Handler $submit_cup_entry_handler = null,
+        private ?Submit_League_Entry_Handler $submit_league_entry_handler = null,
+        private ?Update_Player_Handler $update_player_handler = null
+    ) {
+        $this->submit_cup_entry_handler    = $this->submit_cup_entry_handler ?? new Submit_Cup_Entry_Handler( $this->competition_entry_service );
+        $this->submit_league_entry_handler = $this->submit_league_entry_handler ?? new Submit_League_Entry_Handler( $this->competition_entry_service );
+        $this->update_player_handler       = $this->update_player_handler ?? new Update_Player_Handler( $this->player_service );
+    }
 
     public function logged_out(): Response {
         $msg = __( 'Must be logged in to access this feature', 'racketmanager' );
@@ -155,9 +171,9 @@ class Frontend_Ajax_Adapter {
 
         $return    = new stdClass();
         $validator = new Validator();
-        $player_id = empty( $request['playerId'] ) ? null : (int) $request['playerId'];
+        $command   = Update_Player_Command::from_post( $request );
         try {
-            $player = $this->player_service->amend_player_details( $player_id, $request );
+            $player = $this->update_player_handler->handle( $command );
             if ( is_wp_error( $player ) ) {
                 $validator->error    = true;
                 $validator->err_flds = $player->get_error_codes();
@@ -218,9 +234,9 @@ class Frontend_Ajax_Adapter {
         if ( ! is_user_logged_in() ) {
             $validator = $validator->logged_in_entry();
         } else {
-            $request_dto = new Cup_Entry_Request_DTO( $request );
+            $command = Submit_Cup_Entry_Command::from_post( $request );
             try {
-                $response = $this->competition_entry_service->request_cup_entry( $request_dto );
+                $response = $this->submit_cup_entry_handler->handle( $command );
                 if ( is_wp_error( $response ) ) {
                     $validator->error    = true;
                     $validator->err_flds = $response->get_error_codes();
@@ -257,9 +273,9 @@ class Frontend_Ajax_Adapter {
         if ( ! is_user_logged_in() ) {
             $validator = $validator->logged_in_entry();
         } else {
-            $request_dto = new League_Entry_Request_DTO( $request );
+            $command = Submit_League_Entry_Command::from_post( $request );
             try {
-                $response = $this->competition_entry_service->request_league_entry( $request_dto );
+                $response = $this->submit_league_entry_handler->handle( $command );
                 if ( is_wp_error( $response ) ) {
                     $validator->error    = true;
                     $validator->err_flds = $response->get_error_codes();
@@ -293,12 +309,8 @@ class Frontend_Ajax_Adapter {
             return $security_error;
         }
 
-        $command = Search_Players_Command::from_request( $request );
-        if ( $command->search_string ) {
-            $output = player_search( $command->search_string );
-        } else {
-            $output = show_alert( __( 'Search string not supplied', 'racketmanager' ), 'danger' );
-        }
+        $query  = Search_Players_Query::from_request( $request );
+        $output = $this->search_players_handler->handle( $query );
 
         return $this->response_factory->create_raw_response( (string) $output );
     }
@@ -594,32 +606,11 @@ class Frontend_Ajax_Adapter {
             return $security_error;
         }
 
-        $type    = isset( $request['type'] ) ? sanitize_text_field( wp_unslash( (string) $request['type'] ) ) : null;
-        $name    = isset( $request['name'] ) ? sanitize_text_field( wp_unslash( (string) $request['name'] ) ) : null;
-        $gender  = ! empty( $request['partnerGender'] ) ? sanitize_text_field( wp_unslash( (string) $request['partnerGender'] ) ) : ( ! empty( $request['gender'] ) ? sanitize_text_field( wp_unslash( (string) $request['gender'] ) ) : null );
-        $club_id = empty( $request['club'] ) ? null : (int) $request['club'];
-        $players = $this->get_players_lookup( $type, $name, $gender, $club_id );
+        $query   = Get_Player_Details_Query::from_request( $request );
+        $players = $this->get_player_details_handler->handle( $query );
+        $encoded = wp_json_encode( $players );
 
-        return $this->response_factory->create_success_response( $players );
-    }
-
-    private function get_players_lookup( ?string $type = null, ?string $name = null, ?string $gender = null, ?int $club_id = null ): ?array {
-        $players = null;
-        if ( 'non_club' === $type ) {
-            $players = $this->registration_service->get_non_club_players( [ 'gender' => $gender ] );
-        } elseif ( 'club' === $type && $club_id ) {
-            $players = $this->club_service->get_players( $club_id, [ 'gender' => $gender ] );
-        } elseif ( 'registered' === $type ) {
-            $players = $this->registration_service->get_players( [ 'gender' => $gender ] );
-        } elseif ( 'championship' === $type ) {
-            $players = $this->player_service->get_all_players( [ 'name' => $name, 'gender' => $gender ] );
-        } elseif ( 'user' === $type ) {
-            $players = $this->player_service->get_all_players( [ 'name' => $name, 'gender' => $gender, 'is_user' => true ] );
-        } elseif ( 'all' === $type ) {
-            $players = $this->player_service->get_all_players( [ 'name' => $name, 'gender' => $gender, 'all' => true ] );
-        }
-
-        return $players;
+        return $this->response_factory->create_success_response( false === $encoded ? '[]' : $encoded );
     }
 
     private function nonce_failure_response( array $request = [], string $field = self::DEFAULT_NONCE_FIELD, string $action = self::DEFAULT_NONCE_ACTION, ?string $override_msg = null ): ?Response {

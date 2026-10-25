@@ -163,7 +163,7 @@ class Tournament_Fixtures_Admin_Service {
         return array(
             'form_title'   => $title,
             'submit_title' => $title,
-            'fixtures'     => $league->get_matches( $fixture_args ),
+            'fixtures'     => \Racketmanager\get_league_query_service()->get_matches( $league, $fixture_args ),
             'teams'        => $league->championship->get_final_teams( $final_key ) ?? array(),
             'max_fixtures' => $max_fixtures,
             'home_title'   => '',

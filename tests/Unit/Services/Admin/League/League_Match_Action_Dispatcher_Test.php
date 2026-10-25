@@ -12,6 +12,8 @@ use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Admin\League\League_Match_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
+use Racketmanager\Services\Fixture\Fixture_Result_Manager;
+use Racketmanager\Services\Fixture_Service;
 use stdClass;
 
 require_once __DIR__ . '/../../../../wp-stubs.php';
@@ -19,10 +21,24 @@ require_once __DIR__ . '/../../../../wp-stubs.php';
 #[AllowMockObjectsWithoutExpectations]
 final class League_Match_Action_Dispatcher_Test extends TestCase {
 
+    private function create_dispatcher(
+        ?Fixture_Repository_Interface $fixture_repo = null,
+        ?Fixture_Maintenance_Service $maintenance_service = null,
+        ?Action_Guard_Interface $guard = null,
+        ?Fixture_Result_Manager $result_manager = null,
+        ?Fixture_Service $fixture_service = null
+    ): League_Match_Action_Dispatcher {
+        return new League_Match_Action_Dispatcher(
+            $fixture_repo ?? $this->createMock( Fixture_Repository_Interface::class ),
+            $maintenance_service ?? $this->createMock( Fixture_Maintenance_Service::class ),
+            $guard ?? $this->createStub( Action_Guard_Interface::class ),
+            $result_manager ?? $this->createMock( Fixture_Result_Manager::class ),
+            $fixture_service ?? $this->createMock( Fixture_Service::class )
+        );
+    }
+
     public function test_delete_matches_nonce_failure_returns_error(): void {
-        $fixture_repo        = $this->createMock( Fixture_Repository_Interface::class );
-        $maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
-        $guard               = $this->createMock( Action_Guard_Interface::class );
+        $guard = $this->createMock( Action_Guard_Interface::class );
         $guard->expects( self::once() )
             ->method( 'assert_allowed' )
             ->with( 'racketmanager_nonce', 'racketmanager_matches-bulk', 'del_matches' )
@@ -32,7 +48,7 @@ final class League_Match_Action_Dispatcher_Test extends TestCase {
             public int $id = 5;
         };
 
-        $dispatcher = new League_Match_Action_Dispatcher( $fixture_repo, $maintenance_service, $guard );
+        $dispatcher = $this->create_dispatcher( guard: $guard );
         $result     = $dispatcher->handle(
             array( 'league_id' => '5' ),
             array(
@@ -48,19 +64,16 @@ final class League_Match_Action_Dispatcher_Test extends TestCase {
     }
 
     public function test_delete_matches_success(): void {
-        $fixture_repo        = $this->createMock( Fixture_Repository_Interface::class );
         $maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
         $maintenance_service->expects( self::exactly( 2 ) )
             ->method( 'delete_fixture' )
             ->willReturn( true );
 
-        $guard = $this->createStub( Action_Guard_Interface::class );
-
         $league = new class() {
             public int $id = 5;
         };
 
-        $dispatcher = new League_Match_Action_Dispatcher( $fixture_repo, $maintenance_service, $guard );
+        $dispatcher = $this->create_dispatcher( maintenance_service: $maintenance_service );
         $result     = $dispatcher->handle(
             array( 'league_id' => '5' ),
             array(
@@ -76,10 +89,6 @@ final class League_Match_Action_Dispatcher_Test extends TestCase {
     }
 
     public function test_add_matches_existing_final_returns_error(): void {
-        $fixture_repo        = $this->createMock( Fixture_Repository_Interface::class );
-        $maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
-        $guard               = $this->createStub( Action_Guard_Interface::class );
-
         $league = new class() {
             public int $id = 5;
             public function get_matches( array $args ): array {
@@ -87,7 +96,7 @@ final class League_Match_Action_Dispatcher_Test extends TestCase {
             }
         };
 
-        $dispatcher = new League_Match_Action_Dispatcher( $fixture_repo, $maintenance_service, $guard );
+        $dispatcher = $this->create_dispatcher();
         $result     = $dispatcher->handle(
             array( 'league_id' => '5' ),
             array(
@@ -106,23 +115,22 @@ final class League_Match_Action_Dispatcher_Test extends TestCase {
     }
 
     public function test_add_matches_success(): void {
-        $fixture_repo        = $this->createMock( Fixture_Repository_Interface::class );
-        $maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
-        $guard               = $this->createStub( Action_Guard_Interface::class );
-
-        $added_matches = array();
-        $league        = new class( $added_matches ) {
+        $league = new class() {
             public int $id = 5;
-            public function __construct( public array &$added_matches ) {}
             public function get_matches( array $args ): array {
                 return array();
             }
-            public function add_match( object $match ): void {
-                $this->added_matches[] = $match;
-            }
         };
 
-        $dispatcher = new League_Match_Action_Dispatcher( $fixture_repo, $maintenance_service, $guard );
+        $fixture_service = $this->createMock( Fixture_Service::class );
+        $fixture_service->expects( self::exactly( 2 ) )
+            ->method( 'add_match' )
+            ->with(
+                self::isInstanceOf( stdClass::class ),
+                $league
+            );
+
+        $dispatcher = $this->create_dispatcher( fixture_service: $fixture_service );
         $result     = $dispatcher->handle(
             array( 'league_id' => '5', 'group' => 'A' ),
             array(
@@ -143,9 +151,43 @@ final class League_Match_Action_Dispatcher_Test extends TestCase {
         self::assertSame( '2 Matches added', $result->message );
         self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
         self::assertSame( 'matches', $result->tab_override );
-        self::assertCount( 2, $added_matches );
-        self::assertSame( '2026-05-01 10:30:00', $added_matches[0]->date );
-        self::assertNull( $added_matches[0]->group );
+    }
+
+    public function test_add_matches_validates_all_rows_before_writing(): void {
+        $league = (object) [ 'id' => 5 ];
+        $fixture_service = $this->createMock( Fixture_Service::class );
+        $fixture_service->expects( self::never() )->method( 'add_match' );
+        $result = $this->create_dispatcher( fixture_service: $fixture_service )->handle(
+            array( 'league_id' => '5' ),
+            array(
+                'updateLeague' => 'match', 'mode' => 'add', 'match' => array( 0, 1 ),
+                'home_team' => array( '1', '3' ), 'away_team' => array( '2', '4' ),
+                'myDatePicker' => array( '2026-05-15', '2026-02-31' ),
+                'begin_hour' => array( '19', '18' ), 'begin_minutes' => array( '30', '00' ),
+            ),
+            $league
+        );
+
+        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
+        self::assertStringContainsString( 'row 2', $result->message );
+        self::assertStringContainsString( '2026-02-31', $result->message );
+    }
+
+    public function test_add_matches_skips_empty_date_without_overcounting(): void {
+        $fixture_service = $this->createMock( Fixture_Service::class );
+        $fixture_service->expects( self::once() )->method( 'add_match' );
+        $result = $this->create_dispatcher( fixture_service: $fixture_service )->handle(
+            array( 'league_id' => '5' ),
+            array(
+                'updateLeague' => 'match', 'mode' => 'add', 'match' => array( 0, 1 ),
+                'home_team' => array( '1', '3' ), 'away_team' => array( '2', '4' ),
+                'myDatePicker' => array( '2026-05-15', '' ),
+            ),
+            (object) array( 'id' => 5 )
+        );
+
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+        self::assertSame( '1 Match added', $result->message );
     }
 
     public function test_edit_matches_success(): void {
@@ -159,19 +201,19 @@ final class League_Match_Action_Dispatcher_Test extends TestCase {
             ->with( 55 )
             ->willReturn( $existing_match );
 
-        $maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
-        $guard               = $this->createStub( Action_Guard_Interface::class );
+        $fixture_service = $this->createMock( Fixture_Service::class );
+        $fixture_service->expects( self::once() )
+            ->method( 'update_match' )
+            ->with( $existing_match );
 
-        $updated_matches = array();
-        $league          = new class( $updated_matches ) {
+        $league = new class() {
             public int $id = 5;
-            public function __construct( public array &$updated_matches ) {}
-            public function update_match( object $match ): void {
-                $this->updated_matches[] = $match;
-            }
         };
 
-        $dispatcher = new League_Match_Action_Dispatcher( $fixture_repo, $maintenance_service, $guard );
+        $dispatcher = $this->create_dispatcher(
+            fixture_repo: $fixture_repo,
+            fixture_service: $fixture_service
+        );
         $result     = $dispatcher->handle(
             array( 'league_id' => '5' ),
             array(
@@ -191,24 +233,138 @@ final class League_Match_Action_Dispatcher_Test extends TestCase {
         self::assertSame( '1 Match updated', $result->message );
         self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
         self::assertSame( 'matches', $result->tab_override );
-        self::assertCount( 1, $updated_matches );
-        self::assertSame( '2026-06-01 14:00:00', $updated_matches[0]->date );
+        self::assertSame( '2026-06-01 14:00:00', $existing_match->date );
+        self::assertSame( '14:00', $existing_match->get_start_time() );
     }
 
-    public function test_update_results_success_and_no_updates(): void {
-        $fixture_repo        = $this->createMock( Fixture_Repository_Interface::class );
-        $maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
-        $guard               = $this->createStub( Action_Guard_Interface::class );
+    public function test_edit_matches_validates_all_rows_before_writing(): void {
+        $first = new Fixture();
+        $first->set_date( '2026-05-15 19:30:00' );
+        $second = new Fixture();
+        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+        $fixture_repo->method( 'find_by_id' )->willReturnMap( [ [ 55, $first ], [ 56, $second ] ] );
+        $fixture_service = $this->createMock( Fixture_Service::class );
+        $fixture_service->expects( self::never() )->method( 'update_match' );
+        $result = $this->create_dispatcher( fixture_repo: $fixture_repo, fixture_service: $fixture_service )->handle(
+            array( 'league_id' => '5' ),
+            array(
+                'updateLeague' => 'match', 'mode' => 'edit', 'match' => array( 55, 56 ),
+                'myDatePicker' => array( '2026-06-01', 'invalid-date' ),
+                'begin_hour' => array( '18', '18' ), 'begin_minutes' => array( '30', '30' ),
+            ),
+            (object) array( 'id' => 5 )
+        );
+
+        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
+        self::assertStringContainsString( 'row 2', $result->message );
+        self::assertSame( '2026-05-15 19:30:00', $first->get_date() );
+    }
+
+    public function test_edit_matches_keeps_existing_date_when_date_is_empty(): void {
+        $fixture = new Fixture();
+        $fixture->set_date( '2026-05-15 19:30:00' );
+        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+        $fixture_repo->method( 'find_by_id' )->willReturn( $fixture );
+        $fixture_service = $this->createMock( Fixture_Service::class );
+        $fixture_service->expects( self::once() )->method( 'update_match' );
+        $result = $this->create_dispatcher( fixture_repo: $fixture_repo, fixture_service: $fixture_service )->handle(
+            array( 'league_id' => '5' ),
+            array( 'updateLeague' => 'match', 'mode' => 'edit', 'match' => array( 55 ), 'myDatePicker' => array( '' ) ),
+            (object) array( 'id' => 5 )
+        );
+
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+        self::assertSame( '2026-05-15 19:30:00', $fixture->get_date() );
+        self::assertSame( '19:30', $fixture->get_start_time() );
+    }
+
+    public function test_edit_matches_keeps_existing_date_when_date_components_are_empty(): void {
+        $fixture = new Fixture();
+        $fixture->set_date( '2026-05-15 19:30:00' );
+        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+        $fixture_repo->method( 'find_by_id' )->willReturn( $fixture );
+        $fixture_service = $this->createMock( Fixture_Service::class );
+        $fixture_service->expects( self::once() )->method( 'update_match' );
+        $result = $this->create_dispatcher( fixture_repo: $fixture_repo, fixture_service: $fixture_service )->handle(
+            array( 'league_id' => '5' ),
+            array( 'updateLeague' => 'match', 'mode' => 'edit', 'match' => array( 55 ),
+                'year' => array( '' ), 'month' => array( '' ), 'day' => array( '' ) ),
+            (object) array( 'id' => 5 )
+        );
+
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+        self::assertSame( '2026-05-15 19:30:00', $fixture->get_date() );
+        self::assertSame( '19:30', $fixture->get_start_time() );
+    }
+
+    public function test_edit_matches_midnight_clears_start_time(): void {
+        $existing_match = new Fixture();
+        $existing_match->id = 56;
+        $existing_match->league_id = 5;
+        $existing_match->set_date( '2026-05-15 19:30:00' );
+        self::assertSame( '19:30', $existing_match->get_start_time() );
+
+        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+        $fixture_repo->expects( self::once() )
+            ->method( 'find_by_id' )
+            ->with( 56 )
+            ->willReturn( $existing_match );
+
+        $fixture_service = $this->createMock( Fixture_Service::class );
+        $fixture_service->expects( self::once() )
+            ->method( 'update_match' )
+            ->with( $existing_match );
 
         $league = new class() {
             public int $id = 5;
-            public function set_finals( bool $finals ): void {}
-            public function update_match_results( array $matches, array $home_points, array $away_points, array $custom, string $season, bool $final ): int {
-                return count( $matches );
-            }
         };
 
-        $dispatcher = new League_Match_Action_Dispatcher( $fixture_repo, $maintenance_service, $guard );
+        $dispatcher = $this->create_dispatcher(
+            fixture_repo: $fixture_repo,
+            fixture_service: $fixture_service
+        );
+        $result     = $dispatcher->handle(
+            array( 'league_id' => '5' ),
+            array(
+                'updateLeague'  => 'match',
+                'mode'          => 'edit',
+                'match'         => array( 0 => '56' ),
+                'home_team'     => array( 0 => 'Team Home' ),
+                'away_team'     => array( 0 => 'Team Away' ),
+                'myDatePicker'  => array( 0 => '2026-06-01' ),
+                'begin_hour'    => array( 0 => '00' ),
+                'begin_minutes' => array( 0 => '00' ),
+                'match_day'     => array( 0 => '3' ),
+            ),
+            $league
+        );
+
+        self::assertSame( '1 Match updated', $result->message );
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+        self::assertSame( 'matches', $result->tab_override );
+        self::assertSame( '2026-06-01 00:00:00', $existing_match->date );
+        self::assertNull( $existing_match->get_start_time() );
+    }
+
+    public function test_update_results_success_and_no_updates(): void {
+        $league     = ( new \ReflectionClass( \Racketmanager\Domain\Competition\League::class ) )->newInstanceWithoutConstructor();
+        $league->id = 5;
+
+        $result_manager = $this->createMock( Fixture_Result_Manager::class );
+        $result_manager->expects( self::once() )
+            ->method( 'update_match_results' )
+            ->with(
+                $league,
+                array( '1' => 101, '2' => 102 ),
+                array( '1' => 6, '2' => 4 ),
+                array( '1' => 0, '2' => 2 ),
+                array(),
+                '2026',
+                false
+            )
+            ->willReturn( 2 );
+
+        $dispatcher = $this->create_dispatcher( result_manager: $result_manager );
 
         $success = $dispatcher->handle(
             array( 'league_id' => '5' ),
@@ -239,9 +395,7 @@ final class League_Match_Action_Dispatcher_Test extends TestCase {
     }
 
     public function test_manage_matches_guard_failure(): void {
-        $fixture_repo        = $this->createMock( Fixture_Repository_Interface::class );
-        $maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
-        $guard               = $this->createMock( Action_Guard_Interface::class );
+        $guard = $this->createMock( Action_Guard_Interface::class );
         $guard->expects( self::once() )
             ->method( 'assert_allowed' )
             ->with( 'racketmanager_nonce', 'racketmanager_manage-matches', 'edit_matches' )
@@ -251,7 +405,7 @@ final class League_Match_Action_Dispatcher_Test extends TestCase {
             public int $id = 5;
         };
 
-        $dispatcher = new League_Match_Action_Dispatcher( $fixture_repo, $maintenance_service, $guard );
+        $dispatcher = $this->create_dispatcher( guard: $guard );
         $result     = $dispatcher->handle(
             array( 'league_id' => '5' ),
             array(
@@ -267,9 +421,7 @@ final class League_Match_Action_Dispatcher_Test extends TestCase {
     }
 
     public function test_update_results_guard_failure(): void {
-        $fixture_repo        = $this->createMock( Fixture_Repository_Interface::class );
-        $maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
-        $guard               = $this->createMock( Action_Guard_Interface::class );
+        $guard = $this->createMock( Action_Guard_Interface::class );
         $guard->expects( self::once() )
             ->method( 'assert_allowed' )
             ->with( 'racketmanager_nonce', 'racketmanager_matches-bulk', 'update_results' )
@@ -279,7 +431,7 @@ final class League_Match_Action_Dispatcher_Test extends TestCase {
             public int $id = 5;
         };
 
-        $dispatcher = new League_Match_Action_Dispatcher( $fixture_repo, $maintenance_service, $guard );
+        $dispatcher = $this->create_dispatcher( guard: $guard );
         $result     = $dispatcher->handle(
             array( 'league_id' => '5' ),
             array(
@@ -289,6 +441,83 @@ final class League_Match_Action_Dispatcher_Test extends TestCase {
         );
 
         self::assertSame( 'Results forbidden', $result->message );
+        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
+        self::assertSame( 'matches', $result->tab_override );
+    }
+
+    public function test_add_matches_with_invalid_date_returns_error_result(): void {
+        $guard = $this->createMock( Action_Guard_Interface::class );
+        $guard->expects( self::once() )
+            ->method( 'assert_allowed' )
+            ->with( 'racketmanager_nonce', 'racketmanager_manage-matches', 'edit_matches' );
+
+        $fixture_service = $this->createMock( Fixture_Service::class );
+        $fixture_service->expects( self::never() )->method( 'add_match' );
+
+        $league = new class() {
+            public int $id = 5;
+        };
+
+        $dispatcher = $this->create_dispatcher( guard: $guard, fixture_service: $fixture_service );
+        $result     = $dispatcher->handle(
+            array( 'league_id' => '5' ),
+            array(
+                'updateLeague' => 'match',
+                'mode'         => 'add',
+                'match'        => array( 0 ),
+                'home_team'    => array( '1' ),
+                'away_team'    => array( '2' ),
+                'myDatePicker' => array( '2026-02-31' ),
+                'begin_hour'   => array( '19' ),
+                'begin_minutes'=> array( '30' ),
+            ),
+            $league
+        );
+
+        self::assertSame( 'Invalid date format provided for match row 1: "2026-02-31 19:30:00"', $result->message );
+        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
+        self::assertSame( 'matches', $result->tab_override );
+    }
+
+    public function test_edit_matches_with_invalid_date_returns_error_result(): void {
+        $guard = $this->createMock( Action_Guard_Interface::class );
+        $guard->expects( self::once() )
+            ->method( 'assert_allowed' )
+            ->with( 'racketmanager_nonce', 'racketmanager_manage-matches', 'edit_matches' );
+
+        $fixture = new Fixture();
+        $fixture->set_id( 12 );
+
+        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+        $fixture_repo->expects( self::once() )->method( 'find_by_id' )->with( 12 )->willReturn( $fixture );
+
+        $fixture_service = $this->createMock( Fixture_Service::class );
+        $fixture_service->expects( self::never() )->method( 'update_match' );
+
+        $league = new class() {
+            public int $id = 5;
+        };
+
+        $dispatcher = $this->create_dispatcher(
+            fixture_repo: $fixture_repo,
+            guard: $guard,
+            fixture_service: $fixture_service
+        );
+
+        $result = $dispatcher->handle(
+            array( 'league_id' => '5' ),
+            array(
+                'updateLeague' => 'match',
+                'mode'         => 'edit',
+                'match'        => array( 12 ),
+                'myDatePicker' => array( 'invalid-date' ),
+                'begin_hour'   => array( '19' ),
+                'begin_minutes'=> array( '30' ),
+            ),
+            $league
+        );
+
+        self::assertSame( 'Invalid date format provided for match row 1: "invalid-date 19:30:00"', $result->message );
         self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
         self::assertSame( 'matches', $result->tab_override );
     }

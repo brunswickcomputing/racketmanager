@@ -22,9 +22,18 @@ class Competition_Notification_Service {
 
 	public function __construct(
 		?Mailer_Interface $mailer = null,
-		private ?Event_Repository_Interface $event_repository = null
+		private ?Event_Repository_Interface $event_repository = null,
+		private ?League_Query_Service $league_query_service = null
 	) {
 		$this->mailer = $mailer ?? new Wp_Mailer();
+	}
+
+	private function league_query(): League_Query_Service {
+		if ( $this->league_query_service instanceof League_Query_Service ) {
+			return $this->league_query_service;
+		}
+
+		return \Racketmanager\get_league_query_service();
 	}
 
 	/**
@@ -57,7 +66,10 @@ class Competition_Notification_Service {
 			$events = $this->event_repository->find_by_competition_id( (int) $competition->get_id() );
 			foreach ( $events as $event ) {
 				if ( $event ) {
-					$event_teams = $event->get_teams( [ 'season' => $event->current_season['name'] ] );
+					$season_args = [ 'season' => $event->current_season['name'] ?? '' ];
+					$event_teams = isset( $event->id )
+						? $this->event_repository->query_teams( (int) $event->id, $season_args )
+						: [];
 					if ( $event_teams ) {
 						$teams = array_merge( $teams, $event_teams );
 					}
@@ -66,7 +78,7 @@ class Competition_Notification_Service {
 			foreach ( $teams as $team ) {
 				$league = \Racketmanager\get_league( $team->league_id );
 				if ( $league ) {
-					$team_dtls = $league->get_team_dtls( $team->team_id );
+					$team_dtls = $this->league_query()->get_team_dtls( $league, $team->team_id );
 					if ( ! empty( $team_dtls->contactemail ) ) {
 						$headers[] = RACKETMANAGER_BCC_EMAIL . ucwords( $team_dtls->captain ) . ' <' . $team_dtls->contactemail . '>';
 					}
@@ -92,7 +104,7 @@ class Competition_Notification_Service {
 	public function contact_league_teams( League $league, string $season, string $email_message ): bool {
 		global $racketmanager;
 		$message_sent  = false;
-		$teams         = $league->get_league_teams( [ 'season' => $season ] );
+		$teams         = $this->league_query()->get_league_teams( $league, [ 'season' => $season ] );
 		$email_message = str_replace( '\"', '"', $email_message );
 		$headers       = [];
 		$raw_type      = $league->event->competition->type ?? 'league';
@@ -107,7 +119,7 @@ class Competition_Notification_Service {
 		$email_to      = [];
 
 		foreach ( $teams as $team ) {
-			$team_dtls = $league->get_team_dtls( $team->id );
+			$team_dtls = $this->league_query()->get_team_dtls( $league, $team->id );
 			if ( ! empty( $team_dtls->contactemail ) ) {
 				$email_to[]   = ucwords( $team_dtls->captain ) . ' <' . $team_dtls->contactemail . '>';
 				$message_sent = true;
@@ -135,7 +147,7 @@ class Competition_Notification_Service {
 	 */
 	public function notify_withdrawn_team( League $league, int $team_id, string $season ): bool {
 		global $racketmanager;
-		$teams         = $league->get_league_teams( [ 'season' => $season ] );
+		$teams         = $this->league_query()->get_league_teams( $league, [ 'season' => $season ] );
 		$raw_type      = $league->event->competition->type ?? 'league';
 		$comp_type     = $raw_type instanceof Competition_Type ? $raw_type->value : (string) $raw_type;
 		$email_from   = method_exists( $racketmanager, 'get_confirmation_email' )
@@ -144,14 +156,14 @@ class Competition_Notification_Service {
 		$headers      = [];
 		$headers[]    = RACKETMANAGER_FROM_EMAIL . ucfirst( $comp_type ) . ' Secretary <' . $email_from . '>';
 		$headers[]    = RACKETMANAGER_CC_EMAIL . ucfirst( $comp_type ) . ' Secretary <' . $email_from . '>';
-		$team_obj     = $league->get_team_dtls( $team_id );
+		$team_obj     = $this->league_query()->get_team_dtls( $league, $team_id );
 		$team_title   = $team_obj->title ?? '';
 		$email_subject = $league->title . ' ' . $season . ' - ' . __( 'Withdrawn team', 'racketmanager' ) . ' - ' . $team_title;
 		$email_to     = [];
 		$message_send = false;
 
 		foreach ( $teams as $team ) {
-			$team_dtls = $league->get_team_dtls( $team->id );
+			$team_dtls = $this->league_query()->get_team_dtls( $league, $team->id );
 			if ( ! empty( $team_dtls->contactemail ) ) {
 				$email_to[]   = ucwords( $team_dtls->captain ) . ' <' . $team_dtls->contactemail . '>';
 				$message_send = true;

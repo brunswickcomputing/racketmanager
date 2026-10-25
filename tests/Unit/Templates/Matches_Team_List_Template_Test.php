@@ -33,6 +33,7 @@ use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Fixture_Relation_Loader;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Settings_Service;
@@ -44,6 +45,7 @@ use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
 class Matches_Team_List_Template_Test extends TestCase {
+    use \Racketmanager\Tests\Helpers\Creates_League_Query_Service;
     use Manages_Wordpress_Globals;
     use Creates_Team_Match_Row_Presenter;
 
@@ -560,14 +562,15 @@ class Matches_Team_List_Template_Test extends TestCase {
             'is_player_entry' => false,
         ];
         $league->event = $event;
-        $league->method( 'get_team_dtls' )->willReturn( $team->info );
-        $league->method( 'get_league_team' )->willReturn( (object) [
+        $league_query = $this->createStub( League_Query_Service::class );
+        $league_query->method( 'get_team_dtls' )->willReturn( $team->info );
+        $league_query->method( 'get_league_team' )->willReturn( (object) [
             'rank' => '1',
             'done_matches' => 5,
             'points_formatted' => [ 'primary' => '10' ],
         ] );
-        $league->method( 'get_matches' )->willReturn( [] );
-        $league->method( 'get_players' )->willReturn( [ $player ] );
+        $league_query->method( 'get_matches' )->willReturn( [] );
+        $league_query->method( 'get_players' )->willReturn( [ $player ] );
 
         $league_service = $this->createStub( League_Service::class );
         $league_service->method( 'get_league' )->willReturn( $league );
@@ -592,7 +595,8 @@ class Matches_Team_List_Template_Test extends TestCase {
             team_service: $team_service,
             player_stats_service: $player_stats_service,
             tournament_presenter: $tournament_presenter,
-            team_details_presenter: $team_details_presenter
+            team_details_presenter: $team_details_presenter,
+            league_query_service: $league_query
         );
 
         $result = $handler->handle( new Get_League_Teams_Query( league_id: 1, team_id: '12' ) );
@@ -689,14 +693,15 @@ class Matches_Team_List_Template_Test extends TestCase {
             'is_player_entry' => false,
         ];
         $league->event = $event;
-        $league->method( 'get_team_dtls' )->willReturn( $team->info );
-        $league->method( 'get_league_team' )->willReturn( (object) [
+        $league_query = $this->createStub( League_Query_Service::class );
+        $league_query->method( 'get_team_dtls' )->willReturn( $team->info );
+        $league_query->method( 'get_league_team' )->willReturn( (object) [
             'rank' => '1',
             'done_matches' => 5,
             'points_formatted' => [ 'primary' => '10' ],
         ] );
-        $league->method( 'get_matches' )->willReturn( [] );
-        $league->method( 'get_players' )->willReturn( [ $player ] );
+        $league_query->method( 'get_matches' )->willReturn( [] );
+        $league_query->method( 'get_players' )->willReturn( [ $player ] );
 
         $league_service = $this->createStub( League_Service::class );
         $league_service->method( 'get_league' )->willReturn( $league );
@@ -721,7 +726,8 @@ class Matches_Team_List_Template_Test extends TestCase {
             team_service: $team_service,
             player_stats_service: $player_stats_service,
             tournament_presenter: $tournament_presenter,
-            team_details_presenter: $team_details_presenter
+            team_details_presenter: $team_details_presenter,
+            league_query_service: $league_query
         );
 
         $result = $handler->handle( new Get_League_Teams_Query( league_id: 1, team_id: '12' ) );

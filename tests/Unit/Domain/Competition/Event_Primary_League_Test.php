@@ -13,8 +13,8 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
@@ -24,25 +24,20 @@ require_once dirname( __DIR__, 3 ) . '/wp-stubs.php';
 class Event_Primary_League_Test extends TestCase {
     use Manages_Wordpress_Globals;
 
-    private Simple_Container $container;
     private $event_repository;
     private $league_repository;
+    private Event_Query_Service $event_query_service;
     private Event $event;
     private Competition $competition;
 
     protected function setUp(): void {
         parent::setUp();
         $this->backup_globals();
+        unset( $GLOBALS['racketmanager'] );
 
-        $this->container        = new Simple_Container();
         $this->event_repository = $this->createMock( Event_Repository_Interface::class );
         $this->league_repository = $this->createMock( League_Repository_Interface::class );
-
-        $this->container->set( 'event_repository', $this->event_repository );
-        $this->container->set( 'league_repository', $this->league_repository );
-
-        $competition_service = $this->createMock( Competition_Service::class );
-        $this->container->set( 'competition_service', $competition_service );
+        $this->event_query_service = new Event_Query_Service( $this->event_repository, league_repository: $this->league_repository );
 
         $this->competition = $this->createMock( Competition::class );
         $competition_settings = new Competition_Settings( [ 'mode' => 'tournament' ] );
@@ -53,13 +48,6 @@ class Event_Primary_League_Test extends TestCase {
         $this->competition->is_player_entry = true;
         $this->competition->standings = [];
         $this->competition->current_season = [ 'name' => '2026' ];
-        $competition_service->method( 'get_by_id' )->willReturn( $this->competition );
-
-        $racketmanager = $this->getMockBuilder( RacketManager::class )
-            ->disableOriginalConstructor()
-            ->getMock();
-        $racketmanager->container = $this->container;
-        $GLOBALS['racketmanager'] = $racketmanager;
 
         $event_raw                 = new stdClass();
         $event_raw->id             = 42;
@@ -71,7 +59,7 @@ class Event_Primary_League_Test extends TestCase {
         $event_raw->seasons        = '["2026"]';
         $event_raw->settings       = [];
 
-        $this->event = new Event( $event_raw );
+        $this->event = new Event( $event_raw, $this->competition );
     }
 
     protected function tearDown(): void {
@@ -81,7 +69,7 @@ class Event_Primary_League_Test extends TestCase {
 
     public function test_get_primary_league_id_returns_explicit_primary_league(): void {
         $this->event->primary_league = 101;
-        $this->assertSame( 101, $this->event->get_primary_league_id() );
+        $this->assertSame( 101, $this->event_query_service->get_primary_league_id( $this->event ) );
     }
 
     public function test_get_primary_league_id_falls_back_to_in_memory_leagues_array(): void {
@@ -91,7 +79,7 @@ class Event_Primary_League_Test extends TestCase {
         $league->id = 55;
         $this->event->leagues = [ $league ];
 
-        $this->assertSame( 55, $this->event->get_primary_league_id() );
+        $this->assertSame( 55, $this->event_query_service->get_primary_league_id( $this->event ) );
     }
 
     public function test_get_primary_league_id_lazily_loads_from_repository(): void {
@@ -104,7 +92,7 @@ class Event_Primary_League_Test extends TestCase {
             ->with( 42, $this->anything() )
             ->willReturn( [ $league_db_record ] );
 
-        $this->assertSame( 77, $this->event->get_primary_league_id() );
+        $this->assertSame( 77, $this->event_query_service->get_primary_league_id( $this->event ) );
     }
 
     public function test_get_primary_league_id_returns_null_when_no_leagues_exist(): void {
@@ -116,7 +104,7 @@ class Event_Primary_League_Test extends TestCase {
             ->with( 42, $this->anything() )
             ->willReturn( [] );
 
-        $this->assertNull( $this->event->get_primary_league_id() );
+        $this->assertNull( $this->event_query_service->get_primary_league_id( $this->event ) );
     }
 
     public function test_get_primary_league_returns_league_instance(): void {
@@ -127,7 +115,7 @@ class Event_Primary_League_Test extends TestCase {
         $this->event->leagues = [ $league ];
         $this->event->league_index = [ 88 => 0 ];
 
-        $result = $this->event->get_primary_league();
+        $result = $this->event_query_service->get_primary_league( $this->event );
         $this->assertSame( $league, $result );
     }
 
@@ -137,22 +125,10 @@ class Event_Primary_League_Test extends TestCase {
 
         $this->event_repository->method( 'query_leagues' )->willReturn( [] );
 
-        $this->assertNull( $this->event->get_primary_league() );
+        $this->assertNull( $this->event_query_service->get_primary_league( $this->event ) );
     }
 
     public function test_set_config_persists_primary_league_for_tournament_competition(): void {
-        $this->event_repository->expects( $this->once() )
-            ->method( 'update_settings_and_rules' )
-            ->with(
-                42,
-                $this->callback( function ( array $settings ): bool {
-                    return isset( $settings['primary_league'] ) && 99 === $settings['primary_league'];
-                } ),
-                $this->anything(),
-                $this->anything(),
-                $this->anything()
-            );
-
         $config = new stdClass();
         $config->name = 'Men\'s Singles';
         $config->type = 'singles';
@@ -163,22 +139,11 @@ class Event_Primary_League_Test extends TestCase {
 
         $this->assertTrue( $updated );
         $this->assertSame( 99, $this->event->primary_league );
+        $this->assertSame( 99, $this->event->settings['primary_league'] );
     }
 
     public function test_set_config_preserves_existing_primary_league_when_zero_or_empty_passed(): void {
         $this->event->primary_league = 123;
-
-        $this->event_repository->expects( $this->once() )
-            ->method( 'update_settings_and_rules' )
-            ->with(
-                42,
-                $this->callback( function ( array $settings ): bool {
-                    return isset( $settings['primary_league'] ) && 123 === $settings['primary_league'];
-                } ),
-                $this->anything(),
-                $this->anything(),
-                $this->anything()
-            );
 
         $config = new stdClass();
         $config->name = 'Men\'s Singles';
@@ -190,6 +155,7 @@ class Event_Primary_League_Test extends TestCase {
 
         $this->assertTrue( $updated );
         $this->assertSame( 123, $this->event->primary_league );
+        $this->assertSame( 123, $this->event->settings['primary_league'] );
     }
 
     public function test_set_config_does_not_write_primary_league_for_standard_league_competition_when_not_passed(): void {
@@ -206,18 +172,6 @@ class Event_Primary_League_Test extends TestCase {
         $this->event->competition = $league_competition;
         $this->event->primary_league = 0;
 
-        $this->event_repository->expects( $this->once() )
-            ->method( 'update_settings_and_rules' )
-            ->with(
-                42,
-                $this->callback( function ( array $settings ): bool {
-                    return ! array_key_exists( 'primary_league', $settings );
-                } ),
-                $this->anything(),
-                $this->anything(),
-                $this->anything()
-            );
-
         $config = new stdClass();
         $config->name = 'Division 1';
         $config->type = 'singles';
@@ -226,6 +180,7 @@ class Event_Primary_League_Test extends TestCase {
         $updated = $this->event->set_config( $config );
 
         $this->assertTrue( $updated );
+        $this->assertArrayNotHasKey( 'primary_league', $this->event->settings );
     }
 
     public function test_set_config_preserves_existing_age_limit_scoring_offset_when_omitted(): void {
@@ -233,21 +188,6 @@ class Event_Primary_League_Test extends TestCase {
         $this->event->age_offset = '1';
         $this->event->scoring = '3_sets';
         $this->event->primary_league = 50;
-
-        $this->event_repository->expects( $this->once() )
-            ->method( 'update_settings_and_rules' )
-            ->with(
-                42,
-                $this->callback( function ( array $settings ): bool {
-                    return $settings['age_limit'] === '45'
-                        && $settings['age_offset'] === '1'
-                        && $settings['scoring'] === '3_sets'
-                        && $settings['primary_league'] === 50;
-                } ),
-                $this->anything(),
-                $this->anything(),
-                $this->anything()
-            );
 
         $config = new stdClass();
         $config->name = 'Men\'s Singles';
@@ -261,23 +201,15 @@ class Event_Primary_League_Test extends TestCase {
         $this->assertSame( '1', $this->event->age_offset );
         $this->assertSame( '3_sets', $this->event->scoring );
         $this->assertSame( 50, $this->event->primary_league );
+        $this->assertSame( '45', $this->event->settings['age_limit'] );
+        $this->assertSame( '1', $this->event->settings['age_offset'] );
+        $this->assertSame( '3_sets', $this->event->settings['scoring'] );
+        $this->assertSame( 50, $this->event->settings['primary_league'] );
     }
 
     public function test_set_config_preserves_offset_for_non_tournament(): void {
         $this->event->competition->is_tournament = false;
         $this->event->offset = 3;
-
-        $this->event_repository->expects( $this->once() )
-            ->method( 'update_settings_and_rules' )
-            ->with(
-                42,
-                $this->callback( function ( array $settings ): bool {
-                    return isset( $settings['offset'] ) && 3 === $settings['offset'];
-                } ),
-                $this->anything(),
-                $this->anything(),
-                $this->anything()
-            );
 
         $config = new stdClass();
         $config->name = 'Men\'s Singles';
@@ -288,5 +220,6 @@ class Event_Primary_League_Test extends TestCase {
 
         $this->assertTrue( $updated );
         $this->assertSame( 3, $this->event->offset );
+        $this->assertSame( 3, $this->event->settings['offset'] );
     }
 }

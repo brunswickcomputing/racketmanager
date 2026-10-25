@@ -21,8 +21,6 @@ use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Validator\Validator_Club;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
-use function Racketmanager\get_league;
-use function Racketmanager\get_team;
 
 /**
  * RacketManager Club Admin Club functions
@@ -217,10 +215,15 @@ class Admin_Club extends Admin_Display {
             //phpcs:disable WordPress.Security.NonceVerification.Recommended
             if ( isset( $_GET['league_id'] ) ) {
                 $league_id  = intval( $_GET['league_id'] );
-                $league     = get_league( $league_id );
+                $league     = $this->league_service->get_league( $league_id );
+                if ( ! $league ) {
+                    $this->set_message( __( 'League not found', 'racketmanager' ), true );
+                    $this->show_message();
+                    return;
+                }
                 $season     = isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : '';
                 $match_days = Util_Lookup::get_match_days();
-                if ( $league->event->competition->is_player_entry ) {
+                if ( isset( $league->event->competition->is_player_entry ) && $league->event->competition->is_player_entry ) {
                     $file = 'player-team.php';
                 }
             } else {
@@ -244,9 +247,18 @@ class Admin_Club extends Admin_Display {
                 }
                 $edit = true;
                 if ( $league ) {
-                    $team = $league->get_team_dtls( $team_id );
+                    $team = $this->get_league_query_service()->get_team_dtls( $league, $team_id, $season ?: null );
                 } else {
-                    $team = get_team( $team_id );
+                    try {
+                        $team = $this->team_service->get_team_by_id( $team_id );
+                    } catch ( Team_Not_Found_Exception ) {
+                        $team = null;
+                    }
+                }
+                if ( ! $team ) {
+                    $this->set_message( __( 'Team not found', 'racketmanager' ), true );
+                    $this->show_message();
+                    return;
                 }
                 if ( ! isset( $team->roster ) ) {
                     $team->roster = array();
@@ -255,7 +267,7 @@ class Admin_Club extends Admin_Display {
                 $form_action = __( 'Update', 'racketmanager' );
                 $clubs = $this->club_service->get_clubs();
                 //phpcs:enable WordPress.Security.NonceVerification.Recommended
-                require_once RACKETMANAGER_PATH . 'templates/admin/includes/teams/' . $file;
+                require RACKETMANAGER_PATH . 'templates/admin/includes/teams/' . $file;
             } else {
                 $this->set_message( __( 'Team not specified', 'racketmanager' ), true );
                 $this->show_message();

@@ -9,12 +9,15 @@
 
 namespace Racketmanager\Services\Validator;
 
+use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Services\Competition\Event_Query_Service;
 use function Racketmanager\get_player;
 
 /**
  * Class to implement the Tournament Validator object
  */
 final class Validator_Tournament extends Validator_Config {
+
     /**
      * Validate name
      *
@@ -46,13 +49,23 @@ final class Validator_Tournament extends Validator_Config {
      * @param int $partner partner.
      * @param string $field_ref field reference.
      * @param string|null $field_name field name.
-     * @param object $event event object.
+     * @param Event $event event object.
      * @param string $season season name.
      * @param int $player_id player id.
      * @param string $date_end end date of competition.
+     * @param Event_Query_Service $event_query_service
      * @return object $validation updated validation object.
      */
-    public function partner( int $partner, string $field_ref, ?string $field_name, object $event, string $season, int $player_id, string $date_end ): object {
+    public function partner(
+        int $partner,
+        string $field_ref,
+        ?string $field_name,
+        Event $event,
+        string $season,
+        int $player_id,
+        string $date_end,
+        Event_Query_Service $event_query_service
+    ): object {
         if ( empty( $field_name ) ) {
             $err_flds = 'partner';
         } else {
@@ -64,14 +77,16 @@ final class Validator_Tournament extends Validator_Config {
             $this->err_msgs[] = __( 'Partner not selected', 'racketmanager' );
         } else {
             $partner_found = false;
-            $partner_teams = $event->get_teams(
-                array(
-                    'player' => $partner,
-                    'season' => $season,
-                )
+            $args          = array(
+                'player' => $partner,
+                'season' => $season,
             );
+
+            $partner_teams = $event_query_service->get_teams( $event, $args );
+
             foreach ( $partner_teams as $partner_team ) {
-                if ( ! in_array( $player_id, $partner_team->player_id, true ) ) {
+                $partner_player_ids = is_array( $partner_team->player_id ?? null ) ? $partner_team->player_id : array( $partner_team->player_id ?? null );
+                if ( ! in_array( $player_id, $partner_player_ids, true ) ) {
                     $partner_found = true;
                 }
             }

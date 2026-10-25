@@ -7,7 +7,7 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Details_DTO;
 use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Handler;
 use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Query;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Domain\Fixture\Services\Fixture_Detail_Service;
+use Racketmanager\Application\Fixture\Services\Fixture_Detail_Service;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 
 class Get_Fixture_Details_Handler_Test extends TestCase {

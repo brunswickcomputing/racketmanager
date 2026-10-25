@@ -142,6 +142,35 @@ class Tournament_Service {
         return $this->get_tournament_details( $tournament );
     }
 
+    /**
+     * Identify submitted event identifiers that are not open for entry in a tournament.
+     *
+     * Raw identifiers are resolved once against the tournament competition's events (scope and season
+     * checks included) before the tournament allowlist is applied. Unresolvable identifiers are rejected.
+     *
+     * @param Tournament $tournament Tournament.
+     * @param array      $event_identifiers Submitted event IDs or slugs.
+     * @return array The identifiers that are not allowed, in submitted order.
+     */
+    public function get_unavailable_entry_events( Tournament $tournament, array $event_identifiers ): array {
+        if ( empty( $event_identifiers ) ) {
+            return array();
+        }
+        $competition = $tournament->get_competition_object();
+        if ( ! $competition ) {
+            return array_values( $event_identifiers );
+        }
+        $events      = $this->competition_service->get_competition_events( $competition );
+        $unavailable = array();
+        foreach ( $event_identifiers as $identifier ) {
+            if ( ! $tournament->is_event_allowed( $identifier, true, $events ) ) {
+                $unavailable[] = $identifier;
+            }
+        }
+
+        return $unavailable;
+    }
+
     public function get_tournament_by_name( ?string $name ): ?Tournament {
         return $this->get_tournament( $name, 'name' );
     }

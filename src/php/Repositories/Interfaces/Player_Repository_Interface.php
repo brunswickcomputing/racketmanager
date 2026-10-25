@@ -24,6 +24,13 @@ interface Player_Repository_Interface extends Repository_Interface {
     public function find_all( array $args = array() ): array;
     public function find_players_summary( array $args = array() ): array;
     public function get_active_players(): array;
+
+    /**
+     * Get players who have played in a rubber (excludes tournament-entry-only players).
+     *
+     * @return array
+     */
+    public function get_active_rubber_players(): array;
     public function find( int|string $player_id, string $search_type = 'id' ): ?Player;
     public function find_by_btm( $player_id ): mixed;
     public function find_by_email( $player_id ): false|WP_User;
@@ -36,4 +43,5 @@ interface Player_Repository_Interface extends Repository_Interface {
     public function get_titles( $player_id ): array;
     public function find_active_players_by_competition_and_season( int $competition_id, string $season ): array;
     public function find_by_team( int $team_id ): array;
+    public function find_registered_player_autocomplete( string $term, string $type = 'name', ?string $gender = null, ?int $club_id = null, int $limit = 100 ): array;
 }

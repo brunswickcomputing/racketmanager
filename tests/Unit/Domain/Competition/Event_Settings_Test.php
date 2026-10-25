@@ -11,10 +11,10 @@ use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
-use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 use wpdb;
@@ -23,7 +23,7 @@ use wpdb;
 class Event_Settings_Test extends TestCase {
     use Manages_Wordpress_Globals;
 
-    private Simple_Container $container;
+    private $event_repository;
     private $fixture_repository;
     private $rubber_repository;
     private $league_repository;
@@ -32,20 +32,12 @@ class Event_Settings_Test extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->backup_globals();
+        unset( $GLOBALS['racketmanager'] );
 
-        $this->container          = new Simple_Container();
+        $this->event_repository   = $this->createMock( Event_Repository_Interface::class );
         $this->fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
         $this->rubber_repository  = $this->createMock( Rubber_Repository_Interface::class );
         $this->league_repository  = $this->createMock( League_Repository_Interface::class );
-
-        $this->container->set( 'fixture_repository', $this->fixture_repository );
-        $this->container->set( 'rubber_repository', $this->rubber_repository );
-        $this->container->set( 'league_repository', $this->league_repository );
-        $competition_service = $this->createMock( \Racketmanager\Services\Competition_Service::class );
-        $this->container->set( 'competition_service', $competition_service );
-
-        $registration_service = $this->createMock( \Racketmanager\Services\Registration_Service::class );
-        $this->container->set( 'registration_service', $registration_service );
 
         $competition = $this->createMock( \Racketmanager\Domain\Competition\Competition::class );
         $competition_settings = new \Racketmanager\Domain\Competition\Competition_Settings( ['mode' => 'league'] );
@@ -53,18 +45,6 @@ class Event_Settings_Test extends TestCase {
         $competition->type = \Racketmanager\Domain\Competition\Competition_Type::LEAGUE;
         $competition->is_player_entry = false;
         $competition->standings = [];
-        $competition_service->method('get_by_id')->willReturn($competition);
-
-        $racketmanager = $this->getMockBuilder( RacketManager::class )
-            ->disableOriginalConstructor()
-            ->onlyMethods( [ 'get_matches' ] )
-            ->getMock();
-        $racketmanager->container   = $this->container;
-        $racketmanager->time_format = 'H:i';
-        $racketmanager->date_format = 'Y-m-d';
-        $GLOBALS['racketmanager']   = $racketmanager;
-
-        $GLOBALS['wpdb']->racketmanager_events = 'wp_racketmanager_events';
 
         $event_raw = new stdClass();
         $event_raw->id = 10;
@@ -73,7 +53,7 @@ class Event_Settings_Test extends TestCase {
         $event_raw->competition_id = 1;
         $event_raw->seasons = '[]';
         $event_raw->num_rubbers = 4;
-        $this->event = new Event( $event_raw );
+        $this->event = new Event( $event_raw, $competition );
     }
 
     protected function tearDown(): void {
@@ -82,12 +62,16 @@ class Event_Settings_Test extends TestCase {
     }
 
     public function test_set_settings_creates_reverse_rubbers_using_repositories(): void {
-        $GLOBALS['racketmanager']->expects( $this->once() )
-            ->method( 'get_matches' )
-            ->with( [
-                'season'   => '2026',
-                'event_id' => 10,
-            ] )
+        $this->event_repository->expects( $this->once() )
+            ->method( 'query_matches' )
+            ->with(
+                10,
+                $this->callback(
+                    static function ( array $args ): bool {
+                        return 10 === ( $args['event_id'] ?? null ) && '2026' === ( $args['season'] ?? null );
+                    }
+                )
+            )
             ->willReturn( [
                 (object) [ 'id' => 100 ],
             ] );
@@ -99,7 +83,7 @@ class Event_Settings_Test extends TestCase {
         $fixture                = Fixture_Factory::from_object( $fixture_raw );
 
         $this->fixture_repository->expects( $this->once() )
-            ->method( 'find_by_id' )
+            ->method( 'find_by_id_with_relations' )
             ->with( 100 )
             ->willReturn( $fixture );
 
@@ -120,15 +104,30 @@ class Event_Settings_Test extends TestCase {
             ->method( 'save' )
             ->with( $this->isInstanceOf( Rubber::class ) );
 
-        $this->event->current_season = [ 'name' => '2026' ];
-        $this->event->set_settings( [
-            'reverse_rubbers' => '1',
-        ] );
+        $this->event_repository->expects( $this->once() )
+            ->method( 'update_settings_and_rules' )
+            ->with( 10, [ 'reverse_rubbers' => '1' ], 4, null, 'doubles' )
+            ->willReturn( true );
 
-        $this->assertNotNull( $GLOBALS['wpdb']->last_query );
-        $this->assertMatchesRegularExpression(
-            '/`num_rubbers`\s*=\s*4/',
-            $GLOBALS['wpdb']->last_query
+        $this->event->current_season = [ 'name' => '2026' ];
+        $query_service = new \Racketmanager\Services\Competition\Event_Query_Service(
+            $this->event_repository,
+            $this->fixture_repository,
+            $this->rubber_repository,
+            $this->league_repository
         );
+
+        $query_service->set_settings(
+            $this->event,
+            [
+                'reverse_rubbers' => '1',
+            ]
+        );
+        $this->assertSame( [ 'reverse_rubbers' => '1' ], $this->event->settings );
+    }
+
+    public function test_event_set_settings_updates_property_in_memory(): void {
+        $this->event->set_settings( [ 'test_setting' => 'abc' ] );
+        $this->assertSame( [ 'test_setting' => 'abc' ], $this->event->settings );
     }
 }

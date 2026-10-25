@@ -27,7 +27,7 @@ if ( $current_season['home_away'] ) {
     $col_field        = 'col-md-6';
 } else {
     $dates_array[] = $match_dates;
-    $columns       = array( '1' );
+    $columns       = array( 0 );
     $titles        = array( __( 'Match dates', 'racketmanager' ) );
     $col_field     = 'col-12';
 }
@@ -85,7 +85,7 @@ if ( empty( $league ) ) {
     <form method="post" class="form-control mb-3">
         <?php wp_nonce_field( 'racketmanager_add_championship-fixtures', 'racketmanager_nonce' ); ?>
         <?php
-        if ( ! empty( $vent ) ) {
+        if ( ! empty( $event ) ) {
             ?>
             <input type="hidden" name="event_id" value="<?php echo esc_attr( $event->id ); ?>" />
             <?php

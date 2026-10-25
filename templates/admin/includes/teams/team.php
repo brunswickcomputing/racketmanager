@@ -67,7 +67,7 @@ $competition_type = $league && isset( $league->event->competition->type ) ? ( $l
             <?php
             if ( $league && $edit ) {
                 ?>
-                <input type="hidden" name="clubId" value="<?php echo esc_html( $team->club_id ); ?>" />
+                <input type="hidden" name="clubId" value="<?php echo esc_html( $team->club_id ?? '' ); ?>" />
                 <?php
             }
             ?>
@@ -91,20 +91,20 @@ $competition_type = $league && isset( $league->event->competition->type ) ? ( $l
             <?php
             if ( $league && $edit ) {
                 ?>
-                <input type="hidden" name="team_type" value="<?php echo esc_html( $team->type ); ?>" />
+                <input type="hidden" name="team_type" value="<?php echo esc_html( $team->type ?? '' ); ?>" />
                 <?php
             }
             ?>
             <div class="input">
                 <select size='1' <?php echo ( $league && $edit ) ? ' disabled ' : null; ?> required name='team_type' id='team_type'>
-                    <option disabled <?php selected( 1, empty( $team->type ) ? 1 : null ); ?> value="1"> ?>>
+                    <option disabled <?php selected( 1, empty( $team->type ?? null ) ? 1 : null ); ?> value="1"> ?>>
                         <?php esc_html_e( 'Select', 'racketmanager' ); ?>
                     </option>
                     <?php
                     $event_types = Util_Lookup::get_event_types();
                     foreach ( $event_types as $key => $event_type ) {
                         ?>
-                        <option value="<?php echo esc_attr( $key ); ?>"<?php selected( $team->type, $key ); ?>><?php echo esc_html( $event_type ); ?></option>
+                        <option value="<?php echo esc_attr( $key ); ?>"<?php selected( $team->type ?? null, $key ); ?>><?php echo esc_html( $event_type ); ?></option>
                         <?php
                     }
                     ?>
@@ -115,25 +115,25 @@ $competition_type = $league && isset( $league->event->competition->type ) ? ( $l
             <div class="form-group">
                 <label for="captain"><?php esc_html_e( 'Captain', 'racketmanager' ); ?></label>
                 <div class="input">
-                    <input type="text" name="captain" id="captain" autocomplete="off" value="<?php echo esc_html( $team->captain ); ?>" size="30" /><input type="hidden" name="captainId" id="captainId" value="<?php echo esc_html( $team->captain_id ); ?>" />
+                    <input type="text" name="captain" id="captain" autocomplete="off" value="<?php echo esc_html( $team->captain ?? '' ); ?>" size="30" /><input type="hidden" name="captainId" id="captainId" value="<?php echo esc_html( $team->captain_id ?? '' ); ?>" />
                 </div>
             </div>
             <div class="form-group">
                 <label for="contactno"><?php esc_html_e( 'Contact Number', 'racketmanager' ); ?></label>
                 <div class="input">
-                    <input type="tel" name="contactno" id="contactno" autocomplete="tel" value="<?php echo esc_html( $team->contactno ); ?>" size="20" />
+                    <input type="tel" name="contactno" id="contactno" autocomplete="tel" value="<?php echo esc_html( $team->contactno ?? '' ); ?>" size="20" />
                 </div>
             </div>
             <div class="form-group">
                 <label for="contactemail"><?php esc_html_e( 'Contact Email', 'racketmanager' ); ?></label>
                 <div class="input">
-                    <input type="email" name="contactemail" id="contactemail" autocomplete="email" value="<?php echo esc_html( $team->contactemail ); ?>" size="30" />
+                    <input type="email" name="contactemail" id="contactemail" autocomplete="email" value="<?php echo esc_html( $team->contactemail ?? '' ); ?>" size="30" />
                 </div>
             </div>
             <div class="form-group">
                 <label for="matchtime"><?php esc_html_e( 'Match Time', 'racketmanager' ); ?></label>
                 <div class="input">
-                    <input type="time" name="matchtime" id="matchtime" value="<?php echo esc_html( $team->match_time ); ?>" size="5" />
+                    <input type="time" name="matchtime" id="matchtime" value="<?php echo esc_html( $team->match_time ?? '' ); ?>" size="5" />
                 </div>
             </div>
             <div class="form-group">

@@ -36,7 +36,6 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
         $league->id        = $id;
         $league->event     = $this->createMock( Event::class );
         $league->event->id = $event_id;
-        $league->method( 'get_league_teams' )->willReturn( array() );
 
         return $league;
     }

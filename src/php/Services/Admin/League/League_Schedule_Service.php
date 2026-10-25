@@ -10,8 +10,10 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Admin\League;
 
+use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
+use Racketmanager\Services\Competition\League_Schedule_Service as Competition_League_Schedule_Service;
 use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
 use Racketmanager\Util\Util;
 use stdClass;
@@ -26,6 +28,8 @@ class League_Schedule_Service {
 
     public function __construct(
         private readonly Fixture_Maintenance_Service $fixture_maintenance_service,
+        private readonly Competition_League_Schedule_Service $competition_schedule_service,
+        private readonly ?\Racketmanager\Services\Competition\Event_Query_Service $event_query_service = null,
     ) {
     }
 
@@ -58,13 +62,15 @@ class League_Schedule_Service {
             if ( $match_count ) {
                 $has_completed_matches = true;
             } else {
-                $leagues = $event->get_leagues();
+                $leagues = ! empty( $event->leagues )
+                    ? $event->leagues
+                    : ( $this->event_query_service ? $this->event_query_service->get_leagues( $event ) : \Racketmanager\get_event_query_service()->get_leagues( $event ) );
                 foreach ( $leagues as $league ) {
                     $league_obj = is_object( $league ) ? $league : get_league( (int) $league );
                     if ( null === $league_obj ) {
                         continue;
                     }
-                    $matches = $league_obj->get_matches( array( 'season' => $season ) );
+                    $matches = \Racketmanager\get_league_query_service()->get_matches( $league_obj, array( 'season' => $season ) );
                     foreach ( $matches as $match ) {
                         $this->fixture_maintenance_service->delete_fixture( (int) $match->id );
                         $deleted_any = true;
@@ -127,22 +133,30 @@ class League_Schedule_Service {
             );
         }
 
+        $counts = array( 'scheduled' => 0, 'skipped' => 0 );
         foreach ( $events as $event_id ) {
             $event = get_event( (int) $event_id );
             if ( null === $event ) {
+                ++$counts['skipped'];
                 continue;
             }
-            foreach ( $event->get_leagues() as $league ) {
-                $league_obj = is_object( $league ) ? $league : get_league( (int) $league );
-                if ( null !== $league_obj && method_exists( $league_obj, 'schedule_matches' ) ) {
-                    $league_obj->schedule_matches();
-                }
-            }
+            $event_counts = $this->competition_schedule_service->schedule_event_leagues( $event );
+            $counts['scheduled'] += $event_counts['scheduled'];
+            $counts['skipped']   += $event_counts['skipped'];
+        }
+
+        if ( 0 === $counts['scheduled'] ) {
+            return new Action_Result_DTO(
+                message: $counts['skipped'] ? sprintf( _n( 'No leagues scheduled (%d league skipped)', 'No leagues scheduled (%d leagues skipped)', $counts['skipped'], 'racketmanager' ), $counts['skipped'] ) : __( 'No leagues scheduled', 'racketmanager' ),
+                message_type: Admin_Message_Type::ERROR,
+                flash_data: $counts,
+            );
         }
 
         return new Action_Result_DTO(
-            message: __( 'Matches scheduled', 'racketmanager' ),
-            message_type: Admin_Message_Type::SUCCESS,
+            message: $counts['skipped'] ? sprintf( _n( 'Matches scheduled (%d league skipped)', 'Matches scheduled (%d leagues skipped)', $counts['skipped'], 'racketmanager' ), $counts['skipped'] ) : __( 'Matches scheduled', 'racketmanager' ),
+            message_type: $counts['skipped'] ? Admin_Message_Type::WARNING : Admin_Message_Type::SUCCESS,
+            flash_data: $counts,
         );
     }
 

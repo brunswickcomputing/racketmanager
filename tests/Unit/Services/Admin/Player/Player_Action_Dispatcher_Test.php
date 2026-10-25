@@ -441,4 +441,61 @@ final class Player_Action_Dispatcher_Test extends TestCase {
         self::assertSame( '1 deleted<br>Player 2 not found', $result->message );
         self::assertSame( Admin_Message_Type::WARNING, $result->message_type );
     }
+
+    public function test_update_player_invokes_injected_update_player_handler(): void {
+        $this->guard->expects( self::once() )->method( 'assert_allowed' );
+
+        $player = $this->createMock( Player::class );
+        $update_handler = $this->createMock( \Racketmanager\Application\Player\Commands\Update_Player_Handler::class );
+        $update_handler->expects( self::once() )
+            ->method( 'handle' )
+            ->with( self::callback( fn( \Racketmanager\Application\Player\Commands\Update_Player_Command $cmd ) => 10 === $cmd->player_id && 'Custom' === $cmd->first_name ) )
+            ->willReturn( $player );
+
+        $dispatcher = new Player_Action_Dispatcher(
+            player_service: $this->player_service,
+            action_guard: $this->guard,
+            update_player_handler: $update_handler
+        );
+
+        $result = $dispatcher->handle(
+            array(),
+            array(
+                'updatePlayer' => '1',
+                'playerId'     => '10',
+                'firstname'    => 'Custom',
+                'surname'      => 'Player',
+            )
+        );
+
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+    }
+
+    public function test_add_player_invokes_injected_create_player_handler(): void {
+        $this->guard->expects( self::once() )->method( 'assert_allowed' );
+
+        $player = $this->createMock( Player::class );
+        $create_handler = $this->createMock( \Racketmanager\Application\Player\Commands\Create_Player_Handler::class );
+        $create_handler->expects( self::once() )
+            ->method( 'handle' )
+            ->with( self::callback( fn( \Racketmanager\Application\Player\Commands\Create_Player_Command $cmd ) => 'New' === $cmd->first_name && 'Player' === $cmd->last_name ) )
+            ->willReturn( $player );
+
+        $dispatcher = new Player_Action_Dispatcher(
+            player_service: $this->player_service,
+            action_guard: $this->guard,
+            create_player_handler: $create_handler
+        );
+
+        $result = $dispatcher->handle(
+            array(),
+            array(
+                'addPlayer' => '1',
+                'firstname' => 'New',
+                'surname'   => 'Player',
+            )
+        );
+
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+    }
 }

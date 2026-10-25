@@ -33,7 +33,7 @@ if ( empty( $competition_club ) ) {
                         </div>
                         <?php
                         foreach ( $clubs as $club ) {
-                            $club_id  = is_object( $club ) ? (int) ( $club->id ?? 0 ) : (int) ( $club['id'] ?? 0 );
+                            $club_id  = is_object( $club ) ? $club->id ?? 0 : (int) ( $club['id'] ?? 0 );
                             $url_link = $club_links[ $club_id ] ?? '';
                             ?>
                             <div class="row mb-2 row-list">
@@ -75,10 +75,12 @@ if ( empty( $competition_club ) ) {
                     <span class="profile-icon">
                         <span class="profile-icon__abbr">
                             <?php
-                            $words    = explode( ' ', $competition_club->shortcode );
-                            $initials = null;
+                            $words    = array_filter( explode( ' ', $competition_club->shortcode ?? '' ) );
+                            $initials = '';
                             foreach ( $words as $w ) {
-                                $initials .= $w[0];
+                                if ( '' !== $w ) {
+                                    $initials .= $w[0];
+                                }
                             }
                             echo esc_html( $initials );
                             ?>
@@ -190,7 +192,7 @@ if ( empty( $competition_club ) ) {
                             </div>
                             <?php
                             foreach ( $competition_club->teams as $team ) {
-                                $team_id              = is_object( $team ) ? (int) ( $team->id ?? 0 ) : (int) ( $team['id'] ?? 0 );
+                                $team_id              = is_object( $team ) ? $team->id ?? 0 : (int) ( $team['id'] ?? 0 );
                                 $team_link            = $team_links[ $team_id ]['team_link'] ?? '';
                                 $league_or_event_link = $team_links[ $team_id ]['league_link'] ?? '';
                                 ?>
@@ -240,7 +242,7 @@ if ( empty( $competition_club ) ) {
                             <?php
                             foreach ( $competition_club->players as $player ) {
                                 $selected_player = false;
-                                $player_id       = is_object( $player ) ? (int) ( $player->id ?? ( $player->ID ?? 0 ) ) : (int) ( $player['id'] ?? 0 );
+                                $player_id       = is_object( $player ) ? $player->id ?? ( $player->ID ?? 0 ) : (int) ( $player['id'] ?? 0 );
                                 if ( $player_id === get_current_user_id() ) {
                                     $selected_player = true;
                                 }

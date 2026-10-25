@@ -6,6 +6,7 @@ declare(strict_types=1);
 namespace Racketmanager\Tests\Unit\Services\Admin\Championship;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Tournament\Commands\Generate_Tournament_Bracket_Handler;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
@@ -15,6 +16,40 @@ use Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 
 final class Draw_Action_Dispatcher_Test extends TestCase {
+
+    public function test_bracket_action_uses_injected_handler_only_after_guard(): void {
+        $legacy_service = $this->createMock( Draw_Action_Handler_Interface::class );
+        $legacy_service->expects( self::never() )->method( 'set_championship_fixtures' );
+        $bracket_service = $this->createMock( Draw_Action_Handler_Interface::class );
+        $bracket_service->expects( self::once() )->method( 'set_championship_fixtures' )
+            ->with( self::callback( static fn( Draw_Action_Request_DTO $dto ): bool =>
+                $dto->tournament_id === 5 && $dto->league_id === 12 && $dto->season === '2026'
+                && $dto->post['rounds'][0]['key'] === 'Final'
+            ) )
+            ->willReturn( new Action_Result_DTO( 'Fixtures replaced', Admin_Message_Type::SUCCESS ) );
+        $guard = $this->createMock( Action_Guard_Interface::class );
+        $guard->expects( self::once() )->method( 'assert_allowed' )
+            ->with( 'racketmanager_nonce', 'racketmanager_add_championship-fixtures', 'edit_matches' );
+        $dispatcher = new Draw_Action_Dispatcher( $legacy_service, $guard, new Generate_Tournament_Bracket_Handler( $bracket_service ) );
+        $dto = new Draw_Action_Request_DTO( 5, 12, '2026', [
+            'action' => 'replace',
+            'rounds' => [ [ 'round' => 1, 'key' => 'Final', 'match_date' => '2026-07-20', 'num_matches' => 1 ] ],
+        ] );
+        $response = $dispatcher->handle( $dto );
+        self::assertSame( 'Fixtures replaced', $response->message );
+        self::assertSame( 'fixtures', $response->tab_override );
+    }
+
+    public function test_bracket_action_denied_by_guard_does_not_generate(): void {
+        $bracket_service = $this->createMock( Draw_Action_Handler_Interface::class );
+        $bracket_service->expects( self::never() )->method( 'set_championship_fixtures' );
+        $guard = $this->createMock( Action_Guard_Interface::class );
+        $guard->expects( self::once() )->method( 'assert_allowed' )->willThrowException( new Invalid_Status_Exception( 'Forbidden' ) );
+        $dispatcher = new Draw_Action_Dispatcher( $this->createStub( Draw_Action_Handler_Interface::class ), $guard, new Generate_Tournament_Bracket_Handler( $bracket_service ) );
+        $response = $dispatcher->handle( new Draw_Action_Request_DTO( 5, 12, '2026', [ 'action' => 'add', 'rounds' => [ [ 'round' => 1 ] ] ] ) );
+        self::assertSame( Admin_Message_Type::ERROR, $response->message_type );
+        self::assertSame( 'Forbidden', $response->message );
+    }
 
     public function test_invokes_rank_teams_handler_with_mode_from_context(): void {
         $calls = array();

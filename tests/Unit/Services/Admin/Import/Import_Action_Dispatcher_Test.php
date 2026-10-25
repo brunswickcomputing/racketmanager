@@ -19,12 +19,15 @@ use Racketmanager\Domain\Player\Player;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Player_Exists_Exception;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Admin\Import\Import_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
+use Racketmanager\Services\Standings\Standings_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 use WP_Error;
@@ -40,6 +43,7 @@ final class Import_Action_Dispatcher_Test extends TestCase {
     private Player_Service $player_service;
     private Registration_Service $registration_service;
     private League_Team_Repository_Interface $league_team_repository;
+    private Standings_Service $standings_service;
     private object $racketmanager;
     private Import_Action_Dispatcher $dispatcher;
 
@@ -52,6 +56,7 @@ final class Import_Action_Dispatcher_Test extends TestCase {
         $this->player_service       = $this->createMock( Player_Service::class );
         $this->registration_service = $this->createMock( Registration_Service::class );
         $this->league_team_repository = $this->createMock( League_Team_Repository_Interface::class );
+        $this->standings_service = $this->createMock( Standings_Service::class );
 
         $this->racketmanager = $this->createMock( RacketManager::class );
         $this->racketmanager->method( 'get_team_id' )->willReturn( 10 );
@@ -62,6 +67,7 @@ final class Import_Action_Dispatcher_Test extends TestCase {
             $this->player_service,
             $this->registration_service,
             $this->league_team_repository,
+            $this->standings_service,
             $this->racketmanager,
         );
 
@@ -244,19 +250,34 @@ final class Import_Action_Dispatcher_Test extends TestCase {
     public function test_import_table_updates_league_team_records(): void {
         $mock_league = $this->createMock( League::class );
         $mock_league->id = 10;
-        $mock_league->expects( self::once() )
-            ->method( 'add_team' )
-            ->with( 10, '2026' )
-            ->willReturn( 101 );
-        $mock_league->expects( self::once() )
+        $mock_league->expects( self::never() )->method( 'add_team' );
+        $this->standings_service->expects( self::once() )
             ->method( 'set_teams_rank' )
-            ->with( '2026' );
+            ->with( $mock_league, '2026' );
 
         $GLOBALS['wp_stubs_leagues'][10] = $mock_league;
 
+        $league_repository = $this->createMock( League_Repository_Interface::class );
+        $league_repository->expects( self::once() )
+            ->method( 'add_team_to_league' )
+            ->with( 10, 10, '2026', null, null, 1 )
+            ->willReturn( 101 );
+        $league_query_service = new League_Query_Service( $league_repository );
+        $container            = new class( $league_query_service ) {
+            public function __construct( private League_Query_Service $league_query_service ) {
+            }
+
+            public function has( string $service ): bool {
+                return 'league_query_service' === $service;
+            }
+
+            public function get( string $service ): League_Query_Service {
+                return $this->league_query_service;
+            }
+        };
+
         global $racketmanager;
-        $racketmanager = $this->createMock( RacketManager::class );
-        $racketmanager->method( 'get_team_id' )->willReturn( 10 );
+        $racketmanager = (object) array( 'container' => $container );
 
         $contents = array(
             'Team,Done,Won,Draw,Lost,Points2,Points,Add,SetsWon,SetsAllowed,GamesWon,GamesAllowed',

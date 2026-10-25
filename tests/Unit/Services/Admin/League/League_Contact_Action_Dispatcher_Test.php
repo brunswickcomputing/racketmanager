@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Services\Admin\League;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Services\Admin\League\League_Contact_Action_Dispatcher;
@@ -42,19 +43,16 @@ final class League_Contact_Action_Dispatcher_Test extends TestCase {
     }
 
     public function test_sends_message_to_league_teams(): void {
-        $league = new class() {
-            public array $calls = array();
-            public function contact_teams( string $season, string $message ): bool {
-                $this->calls[] = array( $season, $message );
-                return true;
-            }
-        };
+        $league = $this->createMock( League::class );
         $league_service = $this->createMock( League_Service::class );
         $league_service->expects( self::once() )->method( 'get_league' )->with( 5 )->willReturn( $league );
         $competition_service = $this->createMock( Competition_Service::class );
         $competition_service->expects( self::never() )->method( 'get_competition' );
         $notification_service = $this->createMock( Competition_Notification_Service::class );
-        $notification_service->expects( self::never() )->method( 'contact_teams' );
+        $notification_service->expects( self::once() )
+            ->method( 'contact_league_teams' )
+            ->with( $league, '2026', '<p>Hi</p>' )
+            ->willReturn( true );
 
         $guard = $this->createMock( Action_Guard_Interface::class );
         $guard->expects( self::once() )->method( 'assert_allowed' );
@@ -63,7 +61,6 @@ final class League_Contact_Action_Dispatcher_Test extends TestCase {
             array( 'league_id' => '5', 'competition_id' => '9', 'season' => '2026', 'emailMessage' => '&lt;p&gt;Hi&lt;/p&gt;' )
         );
 
-        self::assertSame( array( array( '2026', '<p>Hi</p>' ) ), $league->calls );
         self::assertSame( 'Email sent to captains', $result->message );
         self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
     }

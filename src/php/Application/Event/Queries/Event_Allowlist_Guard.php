@@ -44,6 +44,17 @@ final class Event_Allowlist_Guard {
             return false;
         }
 
+        if ( ! $event instanceof Event ) {
+            // Fail closed: a raw row is only trusted once resolved to an in-scope Event of the competition.
+            if ( null === $competition_service ) {
+                return false;
+            }
+            $event = $competition_service->resolve_competition_event( $competition, $event, $season_name );
+            if ( ! $event instanceof Event ) {
+                return false;
+            }
+        }
+
         return $competition->is_event_allowed( $event, $season_name, false );
     }
 }

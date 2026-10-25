@@ -103,12 +103,6 @@ class Invoice {
      * @var object|string|null
      */
     public object|string|null $details;
-    /**
-     * Racketmanager
-     *
-     * @var object
-     */
-    public object $racketmanager;
 
     /**
      * Construct class instance

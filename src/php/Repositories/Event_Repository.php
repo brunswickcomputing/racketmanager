@@ -12,6 +12,8 @@ namespace Racketmanager\Repositories;
 use Racketmanager\Domain\Competition\Event_Factory;
 use Racketmanager\Domain\DTO\Competition\Event_Details_DTO;
 use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Util\Util;
 
@@ -21,12 +23,47 @@ use Racketmanager\Util\Util;
 class Event_Repository implements Event_Repository_Interface {
     private ?object $wpdb = null;
     private ?string $table_name = null;
+    private ?Competition_Repository_Interface $competition_repository;
 
-    public function __construct( ?object $db = null ) {
-        $this->wpdb = $db ?? ( $GLOBALS['wpdb'] ?? null );
+    public function __construct( ?object $db = null, ?Competition_Repository_Interface $competition_repository = null ) {
+        $this->wpdb                   = $db ?? ( $GLOBALS['wpdb'] ?? null );
+        $this->competition_repository = $competition_repository;
         if ( $this->wpdb ) {
             $this->table_name = $this->table( 'racketmanager_events' );
         }
+    }
+
+    /**
+     * Resolve the competition an event row belongs to.
+     *
+     * @param object $row Database row.
+     *
+     * @return Competition|null
+     */
+    private function resolve_competition( object $row ): ?Competition {
+        $competition_id = (int) ( $row->competition_id ?? 0 );
+        if ( $competition_id <= 0 ) {
+            return null;
+        }
+        $repository = $this->competition_repository;
+        if ( null === $repository && $this->wpdb ) {
+            $repository = new Competition_Repository();
+        }
+        return $repository ? $repository->find_by_id( $competition_id ) : null;
+    }
+
+    /**
+     * Build an Event from a database row, including its competition and league count.
+     *
+     * @param object $row Database row.
+     *
+     * @return Event
+     */
+    private function hydrate_event( object $row ): Event {
+        $event              = Event_Factory::from_object( $row, $this->resolve_competition( $row ) );
+        $event->num_leagues = $this->count_leagues( (int) $event->id );
+
+        return $event;
     }
 
     private function table( string $suffix ): string {
@@ -75,7 +112,7 @@ class Event_Repository implements Event_Repository_Interface {
             }
             return false;
         } else {
-            return $this->wpdb->update(
+            $updated = $this->wpdb->update(
                 $this->table_name,
                 array(
                     'name'           => $entity->get_name(),
@@ -103,6 +140,13 @@ class Event_Repository implements Event_Repository_Interface {
                     '%d'
                 ) // Where format
             ) !== false;
+            if ( $updated ) {
+                wp_cache_delete( $entity->get_id(), 'events' );
+                if ( $entity->get_name() ) {
+                    wp_cache_delete( $entity->get_name(), 'events' );
+                }
+            }
+            return $updated;
         }
     }
 
@@ -128,7 +172,7 @@ class Event_Repository implements Event_Repository_Interface {
             if ( ! $row ) {
                 return null;
             }
-            $event = Event_Factory::from_object( $row );
+            $event = $this->hydrate_event( $row );
 
             wp_cache_set( $event->id, $event, 'events' );
         }
@@ -156,7 +200,7 @@ class Event_Repository implements Event_Repository_Interface {
         if ( ! $row ) {
             return null;
         }
-        $event = Event_Factory::from_object( $row );
+        $event = $this->hydrate_event( $row );
         wp_cache_set( $event->id, $event, 'events' );
         return $event;
     }
@@ -229,7 +273,7 @@ class Event_Repository implements Event_Repository_Interface {
 
         $events = [];
         foreach ( $results as $row ) {
-            $event = $this->find_by_id( $row->id ) ?? Event_Factory::from_object( $row );
+            $event = $this->find_by_id( $row->id ) ?? $this->hydrate_event( $row );
             if ( ! $event ) {
                 continue;
             }
@@ -266,7 +310,7 @@ class Event_Repository implements Event_Repository_Interface {
             );
             $events = array_map(
                 function( $row ) {
-                    return Event_Factory::from_object( $row );
+                    return $this->hydrate_event( $row );
                 },
                 $results ?: []
             );
@@ -279,15 +323,25 @@ class Event_Repository implements Event_Repository_Interface {
         if ( ! $this->wpdb ) {
             return false;
         }
+        $existing = wp_cache_get( $id, 'events' );
+        $deleted  = false;
         if ( method_exists( $this->wpdb, 'delete' ) ) {
-            return $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) ) !== false;
+            $deleted = $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) ) !== false;
+        } else {
+            $deleted = $this->wpdb->query(
+                $this->wpdb->prepare(
+                    "DELETE FROM $this->table_name WHERE `id` = %d",
+                    $id
+                )
+            ) !== false;
         }
-        return $this->wpdb->query(
-            $this->wpdb->prepare(
-                "DELETE FROM $this->table_name WHERE `id` = %d",
-                $id
-            )
-        ) !== false;
+        if ( $deleted ) {
+            wp_cache_delete( $id, 'events' );
+            if ( $existing instanceof Event && ! empty( $existing->name ) ) {
+                wp_cache_delete( $existing->name, 'events' );
+            }
+        }
+        return $deleted;
     }
 
     /**
@@ -353,6 +407,7 @@ class Event_Repository implements Event_Repository_Interface {
         if ( ! $this->wpdb ) {
             return false;
         }
+        $existing = wp_cache_get( $id, 'events' );
         $result = $this->wpdb->query(
             $this->wpdb->prepare(
                 "UPDATE $this->table_name SET `name` = %s WHERE `id` = %d",
@@ -360,7 +415,15 @@ class Event_Repository implements Event_Repository_Interface {
                 $id
             )
         );
-        return $result !== false;
+        if ( $result !== false ) {
+            wp_cache_delete( $id, 'events' );
+            wp_cache_delete( $name, 'events' );
+            if ( $existing instanceof Event && ! empty( $existing->name ) ) {
+                wp_cache_delete( $existing->name, 'events' );
+            }
+            return true;
+        }
+        return false;
     }
 
     public function update_settings_and_rules( int $id, array $settings, ?int $num_rubbers, ?int $num_sets, string $type ): bool {
@@ -377,7 +440,11 @@ class Event_Repository implements Event_Repository_Interface {
                 $id
             )
         );
-        return $result !== false;
+        if ( $result !== false ) {
+            wp_cache_delete( $id, 'events' );
+            return true;
+        }
+        return false;
     }
 
     public function count_leagues( int $event_id ): int {
@@ -1248,7 +1315,11 @@ class Event_Repository implements Event_Repository_Interface {
                 $id
             )
         );
-        return $result !== false;
+        if ( $result !== false ) {
+            wp_cache_delete( $id, 'events' );
+            return true;
+        }
+        return false;
     }
 
     public function delete_league_teams_for_season( int $league_id, string $season ): bool {

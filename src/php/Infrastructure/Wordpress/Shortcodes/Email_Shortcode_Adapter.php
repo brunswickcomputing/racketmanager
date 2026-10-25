@@ -23,7 +23,8 @@ class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     public function __construct(
         private readonly Fixture_Repository_Interface $fixture_repository,
         private readonly Email_Shortcode_Presenter $presenter,
-        private readonly Shortcode_Template_Renderer $template_renderer
+        private readonly Shortcode_Template_Renderer $template_renderer,
+        private readonly ?\Racketmanager\Services\Competition\Event_Query_Service $event_query_service = null
     ) {
     }
 
@@ -290,7 +291,7 @@ class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $this->template_renderer->render_alert( __( 'Season not supplied', 'racketmanager' ) );
         }
         if ( method_exists( $league, 'set_season' ) ) {
-            $league->set_season( (string) $season );
+            \Racketmanager\get_league_query_service()->set_season( $league, (string) $season );
         }
 
         $vars     = $this->presenter->present_team_withdrawn_email( $team, $league, (string) $season, $args );
@@ -348,8 +349,10 @@ class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $this->template_renderer->render_alert( __( 'Event not found', 'racketmanager' ) );
         }
 
-        if ( method_exists( $event, 'get_leagues' ) ) {
-            $event->leagues = $event->get_leagues();
+        if ( $event instanceof \Racketmanager\Domain\Competition\Event ) {
+            $event->leagues = $this->event_query_service
+                ? $this->event_query_service->get_leagues( $event )
+                : \Racketmanager\get_event_query_service()->get_leagues( $event );
         }
         if ( method_exists( $event, 'set_season' ) && null !== $args['season'] ) {
             $event->set_season( (string) $args['season'] );

@@ -10,10 +10,14 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Admin\Club;
 
-use Exception;
+use InvalidArgumentException;
+use Racketmanager\Application\Admin\Commands\Add_Club_Role_Command;
+use Racketmanager\Application\Admin\Commands\Club_Role_Handler;
+use Racketmanager\Application\Admin\Commands\Delete_Club_Roles_Command;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
+use Racketmanager\Services\Admin\Admin_Command_Input as Input;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Club_Service;
 
@@ -22,10 +26,14 @@ use Racketmanager\Services\Club_Service;
  */
 readonly final class Club_Role_Action_Dispatcher {
 
+    private Club_Role_Handler $commands;
+
     public function __construct(
-        private Club_Service $club_service,
+        Club_Service $club_service,
         private Action_Guard_Interface $action_guard,
+        ?Club_Role_Handler $commands = null,
     ) {
+        $this->commands = $commands ?? new Club_Role_Handler( $club_service );
     }
 
     /**
@@ -57,29 +65,20 @@ readonly final class Club_Role_Action_Dispatcher {
             );
         }
 
-        $club_id = isset( $post['club_id'] ) ? (int) $post['club_id'] : null;
-        $role_id = isset( $post['role_id'] ) ? (int) $post['role_id'] : null;
-        $user_id = isset( $post['user_id'] ) ? (int) $post['user_id'] : null;
-
         try {
-            $club_role = $this->club_service->set_club_role( $club_id, $role_id, $user_id );
-            if ( $club_role ) {
-                return new Action_Result_DTO(
-                    message: __( 'Role added', 'racketmanager' ),
-                    message_type: Admin_Message_Type::SUCCESS,
-                );
-            }
-
-            return new Action_Result_DTO(
-                message: __( 'Unable to add role', 'racketmanager' ),
-                message_type: Admin_Message_Type::ERROR,
+            $command = new Add_Club_Role_Command(
+                club_id: Input::integer( $post, 'club_id' ),
+                role_id: Input::integer( $post, 'role_id' ),
+                user_id: Input::integer( $post, 'user_id' ),
             );
-        } catch ( Exception $e ) {
+        } catch ( InvalidArgumentException $e ) {
             return new Action_Result_DTO(
                 message: $e->getMessage(),
                 message_type: Admin_Message_Type::ERROR,
             );
         }
+
+        return $this->commands->handle_add_role( $command );
     }
 
     /**
@@ -95,27 +94,17 @@ readonly final class Club_Role_Action_Dispatcher {
             );
         }
 
-        $roles = isset( $post['role'] ) && is_array( $post['role'] ) ? $post['role'] : array();
-        if ( empty( $roles ) ) {
+        try {
+            $command = new Delete_Club_Roles_Command(
+                role: Input::column( $post, 'role' ),
+            );
+        } catch ( InvalidArgumentException $e ) {
             return new Action_Result_DTO(
-                message: __( 'No roles selected', 'racketmanager' ),
-                message_type: Admin_Message_Type::WARNING,
+                message: $e->getMessage(),
+                message_type: Admin_Message_Type::ERROR,
             );
         }
 
-        $messages = array();
-        foreach ( $roles as $role_id ) {
-            try {
-                $this->club_service->remove_club_role( (int) $role_id );
-                $messages[] = __( 'Role deleted', 'racketmanager' );
-            } catch ( Exception $e ) {
-                $messages[] = $e->getMessage();
-            }
-        }
-
-        return new Action_Result_DTO(
-            message: implode( '<br>', $messages ),
-            message_type: Admin_Message_Type::SUCCESS,
-        );
+        return $this->commands->handle_delete_roles( $command );
     }
 }

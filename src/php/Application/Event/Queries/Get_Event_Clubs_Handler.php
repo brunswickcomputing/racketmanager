@@ -10,6 +10,7 @@ use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Presentation\View_Models\Team_Matches_Group_View_Model;
 use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Stats_Service;
 use function is_array;
@@ -23,7 +24,8 @@ class Get_Event_Clubs_Handler {
         private readonly Club_Service $club_service,
         private readonly Player_Stats_Service $player_stats_service,
         private readonly Tournament_Presenter $tournament_presenter,
-        private readonly Competition_Shortcode_Presenter $competition_presenter
+        private readonly Competition_Shortcode_Presenter $competition_presenter,
+        private readonly Event_Query_Service $event_query_service
     ) {}
 
     public function handle( Get_Event_Clubs_Query $query ): Shortcode_View_Model {
@@ -39,7 +41,7 @@ class Get_Event_Clubs_Handler {
         }
 
         $event_club = null;
-        $event->set_season( $query->season );
+        $this->event_query_service->set_season( $event, $query->season );
 
         if ( ! Event_Allowlist_Guard::is_event_allowed( $event, $event->current_season['name'] ?? $query->season, $this->competition_service ) ) {
             return Shortcode_View_Model::for_error( __( 'Event not found for competition', 'racketmanager' ) );
@@ -52,7 +54,7 @@ class Get_Event_Clubs_Handler {
                 } else {
                     $club = $this->club_service->get_club_by_shortcode( (string) $query->club_id );
                 }
-                $event_club = $event->get_club( $club );
+                $event_club = $this->event_query_service->get_club( $event, $club );
                 $event_club->players = $this->player_stats_service->populate_players_stats(
                     $event_club->players,
                     $event,
@@ -95,7 +97,7 @@ class Get_Event_Clubs_Handler {
             }
         }
 
-        $event->clubs = $event->get_clubs( [ 'status' => 1 ] );
+        $event->clubs = $this->event_query_service->get_clubs( $event, [ 'status' => 1 ] );
         $filename     = ! empty( $query->template ) ? 'clubs-' . $query->template : 'clubs';
         $vars         = [
             'event'      => $event,

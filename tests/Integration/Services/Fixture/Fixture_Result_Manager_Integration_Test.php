@@ -10,6 +10,7 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Result_Service;
+use Racketmanager\Services\Standings\Standings_Service;
 use Racketmanager\Services\Competition\Knockout_Progression_Service;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
@@ -42,6 +43,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
     use Manages_Wordpress_Globals;
 
     private $result_service;
+    private $standings_service;
     private $progression_service;
     private $league_service;
     private $score_validator;
@@ -67,6 +69,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         parent::setUp();
         $this->backup_globals();
         $this->result_service = $this->createMock(Result_Service::class);
+        $this->standings_service = $this->createMock( Standings_Service::class );
         $this->progression_service = $this->createMock(Knockout_Progression_Service::class);
         $this->league_service = $this->createMock(League_Service::class);
         $this->score_validator = $this->createMock(Score_Validation_Service::class);
@@ -134,7 +137,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $service_provider->set_settings_service( $this->settings_service );
         $service_provider->set_result_reporting_service( $this->result_reporting_service );
         $this->fixture_finalization_service = new Fixture_Finalization_Service(
-            null,
+            $this->standings_service,
             $this->progression_service,
             $this->result_reporting_service
         );
@@ -167,7 +170,8 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
 
         $this->manager = new Fixture_Result_Manager(
             $service_provider,
-            $repository_provider
+            $repository_provider,
+            $this->standings_service
         );
 
         $GLOBALS['wp_stubs_current_user_can'] = true;
@@ -254,9 +258,9 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $this->league_service->expects( $this->atLeastOnce() )->method( 'get_league' )->with( 456 )->willReturn( $league );
         $GLOBALS['wp_stubs_leagues'][456] = $league;
 
-        $league->expects( $this->once() )
+        $this->standings_service->expects( $this->once() )
                ->method( 'update_standings' )
-               ->with( '2026' );
+               ->with( $league, '2026' );
 
         $this->progression_service->expects( $this->never() )
                                   ->method( 'reset_progression' );
@@ -297,7 +301,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
                ->method( 'reset_progression' )
                ->with( $this->isInstanceOf( Stage::class ), $fixture, $league );
 
-        $league->expects( $this->never() )
+        $this->standings_service->expects( $this->never() )
                ->method( 'update_standings' );
 
         // Result_Service::apply_to_fixture is expected to be called during reset to save the fixture.
@@ -365,9 +369,9 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $this->result_service->expects( $this->once() )
                              ->method( 'apply_to_fixture' );
 
-        $league->expects( $this->once() )
+        $this->standings_service->expects( $this->once() )
                ->method( 'update_standings' )
-               ->with( '2026' );
+               ->with( $league, '2026' );
 
         $request  = Result_Test_Factory::create_fixture_update_request( fixture_id: 123, sets: [], match_status: 'share', confirmed: 'Y' );
         $response = $this->manager->handle_fixture_result_update( $fixture, $request );

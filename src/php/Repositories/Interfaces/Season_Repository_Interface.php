@@ -16,7 +16,7 @@ use Racketmanager\Domain\Season\Season;
  */
 interface Season_Repository_Interface extends Repository_Interface {
     public function save( object $entity ): bool|int;
-    public function find_by_id( int|string|null $id ): ?Season;
+    public function find_by_id( int|string|null $id, string $type = 'id' ): ?Season;
     public function find_all(): array;
     public function delete( int $id ): bool;
 }

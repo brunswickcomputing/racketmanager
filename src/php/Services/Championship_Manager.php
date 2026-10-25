@@ -311,7 +311,7 @@ final class Championship_Manager {
                     }
 
                     if ( '-1' !== $team_switch ) {
-                        $switch_teams = $consolation_league->get_league_teams(
+                        $switch_teams = \Racketmanager\get_league_query_service()->get_league_teams( $consolation_league,
                             array(
                                 'team_id'          => $team_switch,
                                 'reset_query_args' => true,
@@ -319,11 +319,11 @@ final class Championship_Manager {
                         );
 
                         if ( ! $switch_teams ) {
-                            $consolation_league->add_team( $team_switch, $consolation_league->current_season['name'] );
+                            \Racketmanager\get_league_query_service()->add_team( $consolation_league, $team_switch, $consolation_league->current_season['name'] );
                         }
                     }
 
-                    $consolation_teams = $consolation_league->get_league_teams(
+                    $consolation_teams = \Racketmanager\get_league_query_service()->get_league_teams( $consolation_league,
                         array(
                             'team_name'        => $team_ref,
                             'reset_query_args' => true,

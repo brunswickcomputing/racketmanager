@@ -10,25 +10,33 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Admin\Competition;
 
+use InvalidArgumentException;
+use Racketmanager\Application\Admin\Commands\Competition_Handler;
+use Racketmanager\Application\Admin\Commands\Delete_Competition_Events_Command;
+use Racketmanager\Application\Admin\Commands\Update_Competition_Config_Command;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
-use Racketmanager\Exceptions\Competition_Not_Found_Exception;
-use Racketmanager\Exceptions\Competition_Not_Updated_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Services\Admin\Admin_Command_Input as Input;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Competition_Service;
 use stdClass;
-use function Racketmanager\get_event;
 
 /**
  * Handles competition configuration mutations and bulk event deletions for the competition admin screens.
  */
 readonly final class Competition_Action_Dispatcher {
 
+    private Competition_Handler $commands;
+
     public function __construct(
-        private Competition_Service $competition_service,
+        Competition_Service $competition_service,
         private Action_Guard_Interface $action_guard,
+        Event_Repository_Interface $event_repository,
+        ?Competition_Handler $commands = null,
     ) {
+        $this->commands = $commands ?? new Competition_Handler( $competition_service, $event_repository );
     }
 
     /**
@@ -65,61 +73,28 @@ readonly final class Competition_Action_Dispatcher {
             );
         }
 
-        $competition_id_passed = isset( $post['competition_id'] ) ? intval( $post['competition_id'] ) : null;
-        $competition_id_query  = isset( $query['competition_id'] ) ? intval( $query['competition_id'] ) : null;
-        $competition_id        = $competition_id_query ?? $competition_id_passed;
-
-        if ( empty( $competition_id ) || ( null !== $competition_id_passed && $competition_id !== $competition_id_passed ) ) {
-            return new Action_Result_DTO(
-                message: __( 'Invalid competition id', 'racketmanager' ),
-                message_type: Admin_Message_Type::ERROR,
-            );
-        }
-
-        $config = $this->get_config_input( $post );
-
         try {
-            $updates = $this->competition_service->amend_details( $competition_id, $config );
-            if ( is_wp_error( $updates ) ) {
-                $err_flds = $updates->get_error_codes();
-                $err_msgs = $updates->get_error_messages();
-                $errors   = array();
-                foreach ( $err_flds as $i => $field ) {
-                    $errors[ $field ] = $err_msgs[ $i ] ?? __( 'Invalid field', 'racketmanager' );
-                }
+            $competition_id_passed = Input::integer( $post, 'competition_id' );
+            $competition_id_query  = Input::integer( $query, 'competition_id' );
+            $competition_id        = $competition_id_query ?? $competition_id_passed;
 
-                return new Action_Result_DTO(
-                    message: __( 'Error with competition details', 'racketmanager' ),
-                    message_type: Admin_Message_Type::ERROR,
-                    flash_data: array(
-                        'errors'    => $errors,
-                        'form_data' => $this->sanitize_form_data( $post ),
-                    ),
-                );
-            }
+            $config    = $this->get_config_input( $post );
+            $form_data = $this->sanitize_form_data( $post );
 
-            if ( $updates ) {
-                return new Action_Result_DTO(
-                    message: __( 'Competition updated', 'racketmanager' ),
-                    message_type: Admin_Message_Type::SUCCESS,
-                );
-            }
-
-            return new Action_Result_DTO(
-                message: __( 'No updates', 'racketmanager' ),
-                message_type: Admin_Message_Type::WARNING,
+            $command = new Update_Competition_Config_Command(
+                competition_id: $competition_id,
+                competition_id_passed: $competition_id_passed,
+                config: $config,
+                form_data: $form_data,
             );
-        } catch ( Competition_Not_Updated_Exception $e ) {
-            return new Action_Result_DTO(
-                message: $e->getMessage(),
-                message_type: Admin_Message_Type::WARNING,
-            );
-        } catch ( Competition_Not_Found_Exception $e ) {
+        } catch ( InvalidArgumentException $e ) {
             return new Action_Result_DTO(
                 message: $e->getMessage(),
                 message_type: Admin_Message_Type::ERROR,
             );
         }
+
+        return $this->commands->handle_update_competition_config( $command );
     }
 
     /**
@@ -140,46 +115,34 @@ readonly final class Competition_Action_Dispatcher {
             );
         }
 
-        if ( isset( $post['action'] ) && 'delete' === $post['action'] ) {
-            $events = isset( $post['event'] ) ? (array) wp_unslash( $post['event'] ) : null;
-            if ( ! empty( $events ) ) {
-                $msg = array();
-                foreach ( $events as $event_id ) {
-                    $event = get_event( (int) $event_id );
-                    if ( null !== $event ) {
-                        $event->delete();
-                        /* translators: %s: event name */
-                        $msg[] = sprintf( __( '%s has been deleted', 'racketmanager' ), $event->name );
-                    }
-                }
-
-                if ( ! empty( $msg ) ) {
-                    return new Action_Result_DTO(
-                        message: implode( '<br>', $msg ),
-                        message_type: Admin_Message_Type::SUCCESS,
-                        tab_override: 'events',
-                    );
-                }
+        try {
+            $action = Input::text( $post, 'action' );
+            if ( empty( $action ) || 'delete' !== $action ) {
+                return new Action_Result_DTO(
+                    message: __( 'No action specified', 'racketmanager' ),
+                    message_type: Admin_Message_Type::WARNING,
+                    tab_override: 'events',
+                );
             }
 
+            $command = new Delete_Competition_Events_Command(
+                event: Input::column( $post, 'event' ),
+            );
+        } catch ( InvalidArgumentException $e ) {
             return new Action_Result_DTO(
-                message: __( 'No events were found to delete', 'racketmanager' ),
-                message_type: Admin_Message_Type::WARNING,
+                message: $e->getMessage(),
+                message_type: Admin_Message_Type::ERROR,
                 tab_override: 'events',
             );
         }
 
-        return new Action_Result_DTO(
-            message: __( 'No action specified', 'racketmanager' ),
-            message_type: Admin_Message_Type::WARNING,
-            tab_override: 'events',
-        );
+        return $this->commands->handle_delete_events( $command );
     }
 
     /**
      * @param array<string, mixed> $post
      */
-    private function get_config_input( array $post ): stdClass {
+    private function get_config_input( array $post ): object {
         $config                               = new stdClass();
         $config->name                         = isset( $post['competition_title'] ) ? sanitize_text_field( wp_unslash( strval( $post['competition_title'] ) ) ) : null;
         $config->sport                        = isset( $post['sport'] ) ? sanitize_text_field( wp_unslash( strval( $post['sport'] ) ) ) : null;

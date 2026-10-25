@@ -15,6 +15,7 @@ use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
@@ -46,8 +47,10 @@ final readonly class Get_Competition_Entry_Handler {
         private Competition_Entry_Service $competition_entry_service,
         private Finance_Service $finance_service,
         private Competition_Shortcode_Presenter $competition_presenter,
-        private Tournament_Presenter $tournament_presenter
-    ) {}
+        private Tournament_Presenter $tournament_presenter,
+        private Event_Query_Service $event_query_service
+    ) {
+    }
 
     public function handle( Get_Competition_Entry_Query $query ): Shortcode_View_Model {
         $is_tournament    = false;
@@ -213,14 +216,15 @@ final readonly class Get_Competition_Entry_Handler {
                 continue;
             }
             $event->status = '';
-            $event_teams   = $event->get_teams(
+            $event_teams   = $this->event_query_service->get_teams(
+                $event,
                 [
                     'season' => $season,
                     'club'   => $club_id,
                 ]
             );
             foreach ( $event_teams as $event_team ) {
-                $event_team->team_info     = $event->get_team_info( $event_team->team_id );
+                $event_team->team_info     = $this->event_query_service->get_team_info( $event, (int) $event_team->team_id );
                 $event->team               = $event_team;
                 $event->status             = 'checked';
                 $club->entry[ $event->id ] = $event;
@@ -284,14 +288,15 @@ final readonly class Get_Competition_Entry_Handler {
                 continue;
             }
             $event->status = '';
-            $event_teams   = $event->get_teams(
+            $event_teams   = $this->event_query_service->get_teams(
+                $event,
                 [
                     'season' => $season,
                     'club'   => $club_id,
                 ]
             );
             foreach ( $event_teams as $c => $event_team ) {
-                $event_team->team_info = $event->get_team_info( $event_team->team_id );
+                $event_team->team_info = $this->event_query_service->get_team_info( $event, (int) $event_team->team_id );
                 if ( '0' === $event_team->profile || '1' === $event_team->profile || '2' === $event_team->profile ) {
                     $event_team->status = 'checked';
                     $event->status      = 'checked';

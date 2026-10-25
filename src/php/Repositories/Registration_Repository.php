@@ -11,6 +11,7 @@ namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Club\Club_Player;
 use Racketmanager\Repositories\Interfaces\Registration_Repository_Interface;
+use Racketmanager\Util\Util;
 use wpdb;
 
 /**

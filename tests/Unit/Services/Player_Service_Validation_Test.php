@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Services;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Ports\Rating_Gateway_Interface;
+use Racketmanager\Exceptions\Player_Not_Updated_Exception;
 use Racketmanager\Gateways\Mail\Mailer_Interface;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Club_Repository;
@@ -194,5 +195,70 @@ final class Player_Service_Validation_Test extends TestCase {
         $result = $service->amend_player_details( 15, $request );
         $this->assertInstanceOf( Player::class, $result );
         $this->assertSame( 'Charles', $result->firstname );
+    }
+
+    public function test_validate_player_defaults_missing_or_empty_contactno_to_null(): void {
+        $base = [
+            'firstname' => 'Alice',
+            'surname'   => 'Smith',
+            'gender'    => 'F',
+            'btm'       => '12345678',
+            'email'     => 'alice.smith@example.com',
+        ];
+
+        $missing = $this->service->validate_player( $base );
+        $this->assertInstanceOf( stdClass::class, $missing );
+        $this->assertNull( $missing->contactno );
+
+        $empty = $this->service->validate_player( $base + [ 'contactno' => '' ] );
+        $this->assertInstanceOf( stdClass::class, $empty );
+        $this->assertNull( $empty->contactno );
+    }
+
+    public function test_amend_player_details_without_changes_and_null_contactno_raises_no_changes(): void {
+        $player = Player_Test_Factory::create_sparse( [
+            'id'            => 15,
+            'display_name'  => 'Charlie Brown',
+            'btm'           => '55555555',
+            'firstname'     => 'Charlie',
+            'surname'       => 'Brown',
+            'email'         => 'charlie@example.com',
+            'gender'        => 'M',
+            'contactno'     => null,
+            'year_of_birth' => null,
+            'locked'        => false,
+        ] );
+
+        $player_repo = $this->createMock( Player_Repository::class );
+        $player_repo->method( 'find' )->willReturn( $player );
+        $player_repo->expects( $this->never() )->method( 'update' );
+
+        $service = new Player_Service(
+            $this->createStub( RacketManager::class ),
+            $player_repo,
+            $this->createStub( Player_Error_Repository_Interface::class ),
+            $this->createStub( Club_Role_Repository_Interface::class ),
+            $this->createStub( Rating_Gateway_Interface::class ),
+            $this->createStub( League_Team_Repository::class ),
+            $this->createStub( Club_Repository::class ),
+            $this->createStub( Registration_Repository_Interface::class ),
+            $this->createStub( Mailer_Interface::class )
+        );
+
+        $this->expectException( Player_Not_Updated_Exception::class );
+        $this->expectExceptionMessage( 'No changes to update' );
+
+        $service->amend_player_details(
+            15,
+            [
+                'playerId'  => 15,
+                'firstname' => 'Charlie',
+                'surname'   => 'Brown',
+                'gender'    => 'M',
+                'btm'       => '55555555',
+                'email'     => 'charlie@example.com',
+                'contactno' => '',
+            ]
+        );
     }
 }

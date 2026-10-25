@@ -28,7 +28,7 @@ class Fixture_Finalization_Service_Test extends TestCase {
     use Manages_Wordpress_Globals;
 
     private Fixture_Finalization_Service $service;
-    private Standings_Service|Stub $standings_service;
+    private Standings_Service|MockObject $standings_service;
     private Knockout_Progression_Service|MockObject $progression_service;
     private Result_Reporting_Service|Stub $reporting_service;
     private Simple_Domain_Event_Dispatcher $dispatcher;
@@ -48,8 +48,9 @@ class Fixture_Finalization_Service_Test extends TestCase {
         $this->listener            = new Schedule_Fixture_Report_Listener( $this->reporting_service );
         $this->dispatcher->subscribe( Fixture_Result_Finalized_Event::class, $this->listener );
 
+        $this->standings_service = $this->createMock( Standings_Service::class );
         $this->service = new Fixture_Finalization_Service(
-            null, // standings_service
+            $this->standings_service,
             $this->progression_service,
             $this->reporting_service,
             $this->dispatcher
@@ -68,9 +69,9 @@ class Fixture_Finalization_Service_Test extends TestCase {
     public function test_finalize_updates_standings_when_requested(): void {
         $this->fixture->method( 'get_season' )->willReturn( '2026' );
 
-        $this->league->expects( $this->once() )
+        $this->standings_service->expects( $this->once() )
             ->method( 'update_standings' )
-            ->with( '2026' );
+            ->with( $this->league, '2026' );
 
         $outcomes = $this->service->finalize( $this->fixture, $this->league, $this->result, true );
 
@@ -78,7 +79,7 @@ class Fixture_Finalization_Service_Test extends TestCase {
     }
 
     public function test_finalize_skips_standings_when_not_requested(): void {
-        $this->league->expects( $this->never() )
+        $this->standings_service->expects( $this->never() )
             ->method( 'update_standings' );
 
         $outcomes = $this->service->finalize( $this->fixture, $this->league, $this->result, false );
@@ -127,7 +128,7 @@ class Fixture_Finalization_Service_Test extends TestCase {
         $this->league->method( 'get_name' )->willReturn( 'League 1' );
         $this->league->method( 'get_event_id' )->willReturn( 789 );
         $this->league->method( 'get_competition_type' )->willReturn( 'LTA' );
-        $this->league->expects( $this->once() )->method( 'update_standings' )->with( '2026' );
+        $this->standings_service->expects( $this->once() )->method( 'update_standings' )->with( $this->league, '2026' );
 
         $dispatched_events = [];
         $mock_dispatcher->expects( $this->once() )
@@ -137,7 +138,7 @@ class Fixture_Finalization_Service_Test extends TestCase {
             } );
 
         $service = new Fixture_Finalization_Service(
-            standings_service: null,
+            standings_service: $this->standings_service,
             progression_service: $this->progression_service,
             event_dispatcher: $mock_dispatcher
         );

@@ -87,7 +87,7 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
         $guard               = $this->createMock( Action_Guard_Interface::class );
         $guard->expects( self::never() )->method( 'assert_allowed' );
 
-        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service );
+        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service, $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) );
         $result     = $dispatcher->handle( array(), array() );
 
         self::assertNull( $result->message );
@@ -102,7 +102,7 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
             ->with( 'racketmanager_nonce', 'racketmanager_add-season', 'edit_seasons' )
             ->willThrowException( new Invalid_Status_Exception( 'Unauthorized' ) );
 
-        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service );
+        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service, $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             array(
@@ -121,7 +121,7 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
         $finance_service     = $this->createMock( Finance_Service::class );
         $guard               = $this->createStub( Action_Guard_Interface::class );
 
-        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service );
+        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service, $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -144,7 +144,7 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
             ->with( 1 )
             ->willReturn( $competition );
 
-        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service );
+        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service, $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) );
         // Missing required dates and fields
         $result = $dispatcher->handle(
             array( 'competition_id' => '1' ),
@@ -190,7 +190,7 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
                 )
             );
 
-        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service );
+        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service, $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) );
         $result = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             $this->create_season_payload()
@@ -210,7 +210,7 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
         $competition->expects( self::never() )->method( 'add_season' );
         $competition_service->method( 'get_competition' )->willReturn( $competition );
 
-        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service );
+        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service, $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             $this->create_season_payload( array(
@@ -233,7 +233,7 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
         $competition_service->expects( self::once() )->method( 'add_season' )->with( $competition )->willReturn( true );
         $competition_service->method( 'get_competition' )->willReturn( $competition );
 
-        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service );
+        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service, $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             $this->create_season_payload( array(
@@ -282,7 +282,7 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
             ->with( 1 )
             ->willReturn( $competition );
 
-        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service );
+        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service, $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) );
         $result = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             $this->create_season_payload( array(
@@ -328,7 +328,7 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
             ->with( 1 )
             ->willReturn( $competition );
 
-        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service );
+        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service, $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) );
         $result = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             $this->create_season_payload( array(
@@ -361,7 +361,7 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
             ->with( 1 )
             ->willReturn( $competition );
 
-        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service );
+        $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard, $this->season_service, $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) );
         // Missing dates to trigger validation error
         $result = $dispatcher->handle(
             array( 'competition_id' => '1' ),

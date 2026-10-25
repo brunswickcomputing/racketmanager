@@ -129,6 +129,7 @@ final class Tournament_Test extends TestCase {
         parent::setUp();
         $this->backup_globals();
         $this->queries       = [];
+        $this->registered_events = [];
         $this->service_calls = [];
         $this->register_competitions( [] );
     }
@@ -139,6 +140,13 @@ final class Tournament_Test extends TestCase {
     }
 
     private array $competitions_by_id = [];
+
+    /**
+     * Candidate events a caller (application service) would load and pass in explicitly.
+     *
+     * @var Event[]
+     */
+    private array $registered_events = [];
     private ?Competition_Service $competition_service = null;
 
     /**
@@ -168,25 +176,13 @@ final class Tournament_Test extends TestCase {
      * @param Event[] $events Events.
      */
     private function register_events( array $events ): void {
-        $rows = [];
-        $map  = [];
+        $map = [];
         foreach ( $events as $event ) {
-            $rows[]            = (object) [ 'id' => $event->id ];
             $map[ $event->id ] = $event;
         }
         $GLOBALS['wp_stubs_events'] = $map;
 
-        $wpdb                       = new \wpdb();
-        $wpdb->get_results_callback = function ( string $query ) use ( $rows ): array {
-            $this->queries[] = $query;
-            return str_contains( $query, 'racketmanager_events' ) ? $rows : [];
-        };
-        $GLOBALS['wpdb'] = $wpdb;
-
-        $repository = new \Racketmanager\Repositories\Competition_Repository();
-        foreach ( $this->competitions_by_id as $competition ) {
-            $competition->set_competition_repository( $repository );
-        }
+        $this->registered_events = $events;
     }
 
     private function create_competition( int $id = 10, array $seasons = [ '2026' => [ 'name' => '2026' ] ] ): Competition {
@@ -267,10 +263,10 @@ final class Tournament_Test extends TestCase {
         $this->register_events( [ $this->create_event( 101 ), $this->create_event( 102, 'Ladies Doubles' ) ] );
         $tournament = $this->create_tournament( [ 'entry_events' => [ 101 ] ] );
 
-        $this->assertTrue( $tournament->is_event_allowed( 101, true ) );
-        $this->assertTrue( $tournament->is_event_allowed( 101, false ) );
-        $this->assertFalse( $tournament->is_event_allowed( 102, true ) );
-        $this->assertFalse( $tournament->is_event_allowed( 102, false ) );
+        $this->assertTrue( $tournament->is_event_allowed( 101, true, $this->registered_events ) );
+        $this->assertTrue( $tournament->is_event_allowed( 101, false, $this->registered_events ) );
+        $this->assertFalse( $tournament->is_event_allowed( 102, true, $this->registered_events ) );
+        $this->assertFalse( $tournament->is_event_allowed( 102, false, $this->registered_events ) );
     }
 
     public function test_is_event_allowed_entry_closed_but_viewing_open_for_empty_allowlist(): void {
@@ -278,8 +274,8 @@ final class Tournament_Test extends TestCase {
         $this->register_events( [ $this->create_event( 101 ) ] );
         $tournament = $this->create_tournament( [ 'entry_events' => [] ] );
 
-        $this->assertTrue( $tournament->is_event_allowed( 101, false ) );
-        $this->assertFalse( $tournament->is_event_allowed( 101, true ) );
+        $this->assertTrue( $tournament->is_event_allowed( 101, false, $this->registered_events ) );
+        $this->assertFalse( $tournament->is_event_allowed( 101, true, $this->registered_events ) );
     }
 
     public function test_is_event_allowed_unrestricted_when_information_absent(): void {
@@ -287,8 +283,8 @@ final class Tournament_Test extends TestCase {
         $this->register_events( [ $this->create_event( 101 ) ] );
         $tournament = $this->create_tournament( null );
 
-        $this->assertTrue( $tournament->is_event_allowed( 101, true ) );
-        $this->assertTrue( $tournament->is_event_allowed( 101, false ) );
+        $this->assertTrue( $tournament->is_event_allowed( 101, true, $this->registered_events ) );
+        $this->assertTrue( $tournament->is_event_allowed( 101, false, $this->registered_events ) );
     }
 
     public function test_is_event_allowed_rejects_foreign_competition_and_out_of_season_events(): void {
@@ -298,10 +294,52 @@ final class Tournament_Test extends TestCase {
         $this->register_events( [ $foreign, $old ] );
         $tournament = $this->create_tournament( [ 'entry_events' => [ 101, 102 ] ] );
 
-        $this->assertFalse( $tournament->is_event_allowed( $foreign, true ) );
+        $this->assertFalse( $tournament->is_event_allowed( $foreign, true, $this->registered_events ) );
+        $this->assertFalse( $tournament->is_event_allowed( 101, true, $this->registered_events ) );
+        $this->assertFalse( $tournament->is_event_allowed( $old, true, $this->registered_events ) );
+        $this->assertFalse( $tournament->is_event_allowed( 102, false, $this->registered_events ) );
+    }
+
+    public function test_is_event_allowed_fails_closed_without_candidate_events(): void {
+        $this->register_competitions( [ 10 => $this->create_competition() ] );
+        $this->register_events( [ $this->create_event( 101 ), $this->create_event( 102, 'Ladies Doubles' ) ] );
+        $unrestricted = $this->create_tournament( null );
+
+        $this->assertFalse( $unrestricted->is_event_allowed( 101, true ) );
+        $this->assertFalse( $unrestricted->is_event_allowed( 101, false ) );
+        $this->assertFalse( $unrestricted->is_event_allowed( '101', true ) );
+        $this->assertFalse( $unrestricted->is_event_allowed( 'men-doubles', true ) );
+        $this->assertFalse( $unrestricted->is_event_allowed( 999999, true ) );
+        $this->assertFalse( $unrestricted->is_event_allowed( 101, true, [] ) );
+        $this->assertFalse( $unrestricted->is_event_allowed( (object) array( 'id' => 101 ), true ) );
+    }
+
+    public function test_is_event_allowed_rejects_foreign_and_out_of_season_numeric_ids_against_loaded_events(): void {
+        $this->register_competitions( [ 10 => $this->create_competition() ] );
+        $local   = $this->create_event( 101, 'Men Doubles' );
+        $foreign = $this->create_event( 1, 'Foreign Event', 999 );
+        $old     = $this->create_event( 102, 'Old Event', 10, [ '2024' => [ 'name' => '2024' ] ] );
+        $loaded  = [ $local, $foreign, $old ];
+        $tournament = $this->create_tournament( null );
+
+        $this->assertTrue( $tournament->is_event_allowed( 101, true, $loaded ) );
+        $this->assertTrue( $tournament->is_event_allowed( '101', true, $loaded ) );
+        $this->assertTrue( $tournament->is_event_allowed( 'men-doubles', true, $loaded ) );
+        $this->assertFalse( $tournament->is_event_allowed( 1, true, $loaded ), 'Foreign competition event' );
+        $this->assertFalse( $tournament->is_event_allowed( 102, true, $loaded ), 'Out of season event' );
+        $this->assertFalse( $tournament->is_event_allowed( 999999, true, $loaded ), 'Unknown event' );
+        $this->assertFalse( $tournament->is_event_allowed( 'foreign-event', true, $loaded ) );
+        $this->assertFalse( $tournament->is_event_allowed( 1, false, $loaded ) );
+    }
+
+    public function test_is_event_allowed_does_not_read_hidden_competition_events_state(): void {
+        $competition = $this->create_competition();
+        $this->register_competitions( [ 10 => $competition ] );
+        $competition->events = [ $this->create_event( 101 ) ];
+        $tournament          = $this->create_tournament( null );
+
         $this->assertFalse( $tournament->is_event_allowed( 101, true ) );
-        $this->assertFalse( $tournament->is_event_allowed( $old, true ) );
-        $this->assertFalse( $tournament->is_event_allowed( 102, false ) );
+        $this->assertSame( [], $tournament->get_entry_events() );
     }
 
     public function test_is_event_allowed_fails_closed_when_competition_is_not_found(): void {
@@ -310,9 +348,9 @@ final class Tournament_Test extends TestCase {
         $tournament = $this->create_tournament( null );
 
         $this->assertNull( $tournament->get_competition_object() );
-        $this->assertFalse( $tournament->is_event_allowed( 101, false ) );
-        $this->assertFalse( $tournament->is_event_allowed( 101, true ) );
-        $this->assertSame( [], $tournament->get_entry_events() );
+        $this->assertFalse( $tournament->is_event_allowed( 101, false, $this->registered_events ) );
+        $this->assertFalse( $tournament->is_event_allowed( 101, true, $this->registered_events ) );
+        $this->assertSame( [], $tournament->get_entry_events( $this->registered_events ) );
     }
 
     public function test_competition_is_cleared_when_competition_id_changed(): void {
@@ -321,16 +359,32 @@ final class Tournament_Test extends TestCase {
         $this->register_events( [ $own_event ] );
         $tournament = $this->create_tournament( null, 100 );
 
-        $this->assertTrue( $tournament->is_event_allowed( $own_event, true ) );
+        $this->assertTrue( $tournament->is_event_allowed( $own_event, true, $this->registered_events ) );
 
         $tournament->set_competition_id( 200 );
 
-        $this->assertFalse( $tournament->is_event_allowed( $own_event, true ) );
-        $this->assertFalse( $tournament->is_event_allowed( 101, true ) );
+        $this->assertFalse( $tournament->is_event_allowed( $own_event, true, $this->registered_events ) );
+        $this->assertFalse( $tournament->is_event_allowed( 101, true, $this->registered_events ) );
         $this->assertNull( $tournament->get_competition_object() );
 
         $tournament->set_competition( $this->competitions_by_id[200] );
         $this->assertSame( 200, $tournament->get_competition_object()->id );
+    }
+
+    public function test_is_event_allowed_handles_numeric_id_and_string_slug(): void {
+        $this->register_competitions( [ 10 => $this->create_competition() ] );
+        $this->register_events(
+            [
+                $this->create_event( 101, 'Men Doubles' ),
+                $this->create_event( 102, 'Ladies Doubles' ),
+            ]
+        );
+        $tournament = $this->create_tournament( [ 'entry_events' => [ 101 ] ] );
+
+        $this->assertTrue( $tournament->is_event_allowed( 101, true, $this->registered_events ) );
+        $this->assertTrue( $tournament->is_event_allowed( 'men-doubles', true, $this->registered_events ) );
+        $this->assertFalse( $tournament->is_event_allowed( 102, true, $this->registered_events ) );
+        $this->assertFalse( $tournament->is_event_allowed( 'ladies-doubles', true, $this->registered_events ) );
     }
 
     public function test_competition_cache_is_revalidated_when_competition_id_is_assigned_directly(): void {
@@ -355,19 +409,17 @@ final class Tournament_Test extends TestCase {
         );
         $tournament = $this->create_tournament( [ 'entry_events' => [ 101, 103, 104 ] ] );
 
-        $events = $tournament->get_entry_events();
+        $events = $tournament->get_entry_events( $this->registered_events );
 
         $this->assertSame( [ 101, 103 ], array_map( static fn( Event $event ): int => $event->id, $events ) );
-        $this->assertCount( 1, $this->queries );
-        $this->assertStringNotContainsString( 'league_teams', $this->queries[0] );
     }
 
     public function test_get_entry_events_returns_all_season_events_when_unrestricted_and_none_when_closed(): void {
         $this->register_competitions( [ 10 => $this->create_competition() ] );
         $this->register_events( [ $this->create_event( 101 ), $this->create_event( 102, 'Ladies Doubles' ) ] );
 
-        $this->assertCount( 2, $this->create_tournament( null )->get_entry_events() );
-        $this->assertSame( [], $this->create_tournament( [ 'entry_events' => [] ] )->get_entry_events() );
+        $this->assertCount( 2, $this->create_tournament( null )->get_entry_events( $this->registered_events ) );
+        $this->assertSame( [], $this->create_tournament( [ 'entry_events' => [] ] )->get_entry_events( $this->registered_events ) );
     }
 
     public function test_set_entry_events_updates_information_and_allowlist(): void {

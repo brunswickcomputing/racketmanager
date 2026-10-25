@@ -477,7 +477,6 @@ class Invoice_Presenter_Test extends TestCase {
             $invoice_dto->details = new stdClass();
             $invoice_dto->club = new stdClass();
             $invoice_dto->charge = new stdClass();
-            $invoice_dto->racketmanager = new stdClass();
             
             $charge_data = new stdClass();
             $charge_data->id = 1;

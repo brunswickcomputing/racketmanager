@@ -10,11 +10,14 @@ use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Util\Util;
 use Throwable;
 use function __;
+use function esc_html;
+use function is_admin;
 use function is_array;
 use function is_object;
 use function ob_end_clean;
 use function ob_get_level;
 use function sprintf;
+use function vsprintf;
 use function Racketmanager\show_alert;
 
 /**
@@ -151,6 +154,54 @@ class League_Standings_Presenter {
         }
 
         return '';
+    }
+
+    /**
+     * Render custom standings columns for a team.
+     *
+     * @param object $league League object or entity.
+     * @param object $team   Team data object.
+     * @param string $rule   Point rule ('manual', etc.).
+     * @return string
+     */
+    public static function render_custom_standings_columns( object $league, object $team, string $rule ): string {
+        $output      = '';
+        $fields_team = $league->fields_team ?? array();
+        if ( ! empty( $fields_team ) && is_array( $fields_team ) ) {
+            $point_2_format = $league->point_2_format ?? ( isset( $league->event->competition->settings['point_2_format'] ) ? $league->event->competition->settings['point_2_format'] : '%d-%d' );
+            foreach ( $fields_team as $key => $data ) {
+                if ( ! isset( $team->{$key} ) ) {
+                    if ( isset( $data['keys'] ) && is_array( $data['keys'] ) ) {
+                        $team->{$key} = array();
+                        foreach ( $data['keys'] as $k ) {
+                            $team->{$key}[ $k ] = '';
+                        }
+                    } else {
+                        $team->{$key} = '';
+                    }
+                }
+
+                if ( ( isset( $data['type'] ) && 'input' === $data['type'] ) && is_admin() && 'manual' === $rule ) {
+                    $output .= '<td class="column-' . esc_html( (string) $key ) . ' column-num d-none d-md-table-cell" data-colname="' . esc_html( (string) ( $data['label'] ?? '' ) ) . '">';
+                    if ( is_array( $team->{$key} ) ) {
+                        foreach ( $team->{$key} as $k => $v ) {
+                            $val     = $team->{$key}[ $k ] ?? '';
+                            $output .= '<input class="points" type="text" size="2" id="home_' . esc_html( (string) $team->id ) . '_' . esc_html( (string) $k ) . '" name="custom[' . esc_html( (string) $team->id ) . '][' . esc_html( (string) $key ) . '][' . esc_html( (string) $k ) . ']" value="' . esc_html( (string) $val ) . '" />';
+                        }
+                    } else {
+                        $output .= '<input class="points" type="text" size="2" id="home_' . esc_html( (string) $team->id ) . '" name="custom[' . esc_html( (string) $team->id ) . '][' . esc_html( (string) $key ) . ']" value="' . esc_html( (string) $team->{$key} ) . '" />';
+                    }
+                    $output .= '</td>';
+                } elseif ( self::is_column_visible( $league, (string) $key ) ) {
+                    $val = $team->{$key};
+                    if ( is_array( $val ) ) {
+                        $val = vsprintf( $point_2_format, $val );
+                    }
+                    $output .= '<td class="num column-' . esc_html( (string) $key ) . ' d-none d-md-table-cell d-none d-md-table-cell" data-colname="' . esc_html( (string) ( $data['label'] ?? '' ) ) . '">' . esc_html( (string) $val ) . '</td>';
+                }
+            }
+        }
+        return $output;
     }
 
     private function restore_buffer_level( int $level ): void {

@@ -218,7 +218,7 @@ final readonly class Team_Match_Row_Presenter {
 	private function extract( mixed $match ): array {
 		if ( $match instanceof Fixture ) {
 			$this->relation_loader->load( $match );
-			$teams  = $match->get_teams();
+			$teams  = $match->get_teams( __( 'Bye', 'racketmanager' ), __( 'Unknown', 'racketmanager' ) );
 			$home   = $teams['home'] ?? null;
 			$away   = $teams['away'] ?? null;
 			$league = $match->get_league();

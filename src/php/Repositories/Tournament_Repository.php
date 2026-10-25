@@ -486,7 +486,16 @@ class Tournament_Repository implements Tournament_Repository_Interface {
             ", $tournament_id, $event_id );
         $row   = $this->wpdb->get_row( $query );
         if ( $row ) {
-            return new Event( $row );
+            $competition = null;
+            $comp_svc    = $this->resolve_competition_service();
+            if ( $comp_svc && ! empty( $row->competition_id ) ) {
+                try {
+                    $competition = $comp_svc->get_by_id( $row->competition_id );
+                } catch ( \Throwable $e ) {
+                    $competition = null;
+                }
+            }
+            return new Event( $row, $competition );
         } else {
             return null;
         }

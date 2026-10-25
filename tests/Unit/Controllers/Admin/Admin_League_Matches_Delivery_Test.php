@@ -83,7 +83,7 @@ final class Admin_League_Matches_Delivery_Test extends TestCase {
                 return $this->matches;
             }
 
-            public function set_num_matches(): void {
+            public function set_num_matches( bool $total = false, ?\Racketmanager\Repositories\Interfaces\League_Repository_Interface $league_repository = null ): void {
                 $this->num_matches_set = true;
             }
         };

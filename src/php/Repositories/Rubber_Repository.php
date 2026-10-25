@@ -10,6 +10,7 @@
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Fixture\Rubber;
+use Racketmanager\Domain\Fixture\Fixture_Time_Parser;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Registration_Service;
 use wpdb;
@@ -38,7 +39,7 @@ class Rubber_Repository implements Rubber_Repository_Interface {
     public function save( object $entity ): bool|int {
         /** @var Rubber $entity */
         $data = array(
-            'date'          => $entity->get_date(),
+            'date'          => Fixture_Time_Parser::to_mysql_datetime( $entity->get_date() ),
             'match_id'      => $entity->get_match_id(),
             'rubber_number' => $entity->get_rubber_number(),
             'type'          => $entity->get_type(),
@@ -210,9 +211,10 @@ class Rubber_Repository implements Rubber_Repository_Interface {
      * @return bool
      */
     public function update_date_by_fixture_id( int $fixture_id, string $date ): bool {
+        $canonical_date = Fixture_Time_Parser::to_mysql_datetime( $date );
         $updated = $this->wpdb->update(
             $this->table_name,
-            array( 'date' => $date ),
+            array( 'date' => $canonical_date ),
             array( 'match_id' => $fixture_id ),
             array( '%s' ),
             array( '%d' )

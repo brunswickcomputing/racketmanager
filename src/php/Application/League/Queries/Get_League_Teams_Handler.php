@@ -7,6 +7,7 @@ use BackedEnum;
 use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Team_Service;
@@ -29,7 +30,8 @@ class Get_League_Teams_Handler {
 		private readonly Team_Service $team_service,
 		private readonly Player_Stats_Service $player_stats_service,
 		private readonly Tournament_Presenter $tournament_presenter,
-		private readonly Team_Details_Presenter $team_details_presenter
+		private readonly Team_Details_Presenter $team_details_presenter,
+		private readonly League_Query_Service $league_query_service
 	) {}
 
 	public function handle( Get_League_Teams_Query $query ): Shortcode_View_Model {
@@ -42,6 +44,9 @@ class Get_League_Teams_Handler {
 		}
 
 		$league->set_template( 'teams', $query->template );
+		if ( false !== $this->league_query_service->resolve_requested_season( $league ) ) {
+			$this->league_query_service->set_season( $league );
+		}
 		$league->set_group( $query->group ?? '' );
 
 		if ( $query->team_id ) {
@@ -56,13 +61,19 @@ class Get_League_Teams_Handler {
 				return Shortcode_View_Model::for_error( __( 'Team not found in league', 'racketmanager' ) );
 			}
 
-			$team->info      = $league->get_team_dtls( $team->id );
-			$team->standings = $league->get_league_team( $team->id );
+			$info            = $this->league_query_service->get_team_dtls( $league, $team->id );
+			if ( is_object( $info ) ) {
+				$team->info = $info;
+			}
+			$standings = $this->league_query_service->get_league_team( $league, $team->id );
+			if ( is_object( $standings ) || is_array( $standings ) ) {
+				$team->standings = $standings;
+			}
 			if ( empty( $team->standings->rank ) ) {
 				return Shortcode_View_Model::for_error( __( 'Team not found in league', 'racketmanager' ) );
 			}
 
-			$team_matches = $league->get_matches( [
+			$team_matches = $this->league_query_service->get_matches( $league, [
 				'team_id'          => $team->id,
 				'match_day'        => false,
 				'limit'            => 'false',
@@ -91,7 +102,7 @@ class Get_League_Teams_Handler {
 					]
 				);
 			}
-			$team->players = $league->get_players( [
+			$team->players = $this->league_query_service->get_players( $league, [
 				'team' => $team->id,
 			] );
 			$team->players = $this->player_stats_service->populate_players_stats(
@@ -126,11 +137,14 @@ class Get_League_Teams_Handler {
 			$team_args['group'] = $query->group;
 		}
 
-		$teams        = $league->get_league_teams( $team_args );
+		$teams        = $this->league_query_service->get_league_teams( $league, $team_args );
 		$league_teams = [];
 		if ( is_iterable( $teams ) ) {
 			foreach ( $teams as $team ) {
-				$team->info     = $league->get_team_dtls( $team->id );
+				$info = $this->league_query_service->get_team_dtls( $league, $team->id );
+				if ( is_object( $info ) ) {
+					$team->info = $info;
+				}
 				$league_teams[] = $team;
 			}
 		}

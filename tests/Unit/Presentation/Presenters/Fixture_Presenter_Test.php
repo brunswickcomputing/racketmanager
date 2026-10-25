@@ -16,6 +16,7 @@ use Racketmanager\Domain\DTO\Fixture\Fixture_Switch_Teams_Request;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Option_Request;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use ReflectionClass;
@@ -273,5 +274,105 @@ class Fixture_Presenter_Test extends TestCase {
         $this->assertSame( 42, $header->id );
         $this->assertSame( '14/10/2026', $header->formatted_date );
         $this->assertSame( '14:30', $header->match_time );
+    }
+
+    public function test_map_to_header_read_model_with_real_hydrated_timed_and_midnight_fixtures(): void {
+        $this->option_gateway->method( 'get_option' )->willReturnCallback(
+            fn( string $name, mixed $default = null ) => 'time_format' === $name ? 'H:i' : ( 'date_format' === $name ? 'd/m/Y' : $default )
+        );
+
+        // Real fixture with scheduled time (19:30)
+        $data_timed = (object) [
+            'id'     => 101,
+            'date'   => '2026-10-14 19:30:00',
+            'season' => '2026',
+            'status' => 0,
+        ];
+        $fixture_timed = Fixture_Factory::from_object( $data_timed );
+        $header_timed  = $this->presenter->map_to_header_read_model( new \Racketmanager\Application\Fixture\DTOs\Fixture_Details_DTO( $fixture_timed ) );
+
+        $this->assertSame( '19:30', $header_timed->start_time_display );
+        $this->assertSame( '19:30', $header_timed->match_time );
+        $this->assertTrue( $header_timed->is_pending );
+
+        // Real fixture with midnight time (00:00:00) => start_time_display should be empty
+        $data_midnight = (object) [
+            'id'     => 102,
+            'date'   => '2026-10-14 00:00:00',
+            'season' => '2026',
+            'status' => 0,
+        ];
+        $fixture_midnight = Fixture_Factory::from_object( $data_midnight );
+        $header_midnight  = $this->presenter->map_to_header_read_model( new \Racketmanager\Application\Fixture\DTOs\Fixture_Details_DTO( $fixture_midnight ) );
+
+        $this->assertSame( '', $header_midnight->start_time_display );
+        $this->assertSame( '00:00', $header_midnight->match_time );
+
+        // Real fixture with date-only ('2026-10-14') => start_time_display should be empty
+        $data_date_only = (object) [
+            'id'     => 103,
+            'date'   => '2026-10-14',
+            'season' => '2026',
+            'status' => 0,
+        ];
+        $fixture_date_only = Fixture_Factory::from_object( $data_date_only );
+        $header_date_only  = $this->presenter->map_to_header_read_model( new \Racketmanager\Application\Fixture\DTOs\Fixture_Details_DTO( $fixture_date_only ) );
+
+        $this->assertSame( '', $header_date_only->start_time_display );
+    }
+
+    public function test_map_to_fixture_option_vars_with_real_hydrated_timed_and_midnight_fixtures(): void {
+        $request     = new Fixture_Option_Request( 1, 'modal', 'schedule_match' );
+        $league      = $this->createStub( \Racketmanager\Domain\Competition\League::class );
+        $event       = $this->createStub( \Racketmanager\Domain\Competition\Event::class );
+        $competition = $this->createStub( \Racketmanager\Domain\Competition\Competition::class );
+
+        // Timed fixture -> datetime-local input type
+        $fixture_timed = Fixture_Factory::from_object( (object) [
+            'id'   => 1,
+            'date' => '2026-10-18 19:30:00',
+        ] );
+        $vars_timed = $this->presenter->map_to_fixture_option_vars(
+            new Fixture_Details_DTO( $fixture_timed, $league, $event, $competition ),
+            $request,
+            'Schedule Match',
+            'Save',
+            'schedule_action'
+        );
+
+        $this->assertSame( 'datetime-local', $vars_timed['date_input_type'] );
+        $this->assertSame( '2026-10-18 19:30:00', $vars_timed['date_input'] );
+
+        // Midnight fixture -> date input type
+        $fixture_midnight = Fixture_Factory::from_object( (object) [
+            'id'   => 2,
+            'date' => '2026-10-18 00:00:00',
+        ] );
+        $vars_midnight = $this->presenter->map_to_fixture_option_vars(
+            new Fixture_Details_DTO( $fixture_midnight, $league, $event, $competition ),
+            $request,
+            'Schedule Match',
+            'Save',
+            'schedule_action'
+        );
+
+        $this->assertSame( 'date', $vars_midnight['date_input_type'] );
+        $this->assertSame( '2026-10-18', $vars_midnight['date_input'] );
+
+        // Date-only fixture -> date input type
+        $fixture_date_only = Fixture_Factory::from_object( (object) [
+            'id'   => 3,
+            'date' => '2026-10-18',
+        ] );
+        $vars_date_only = $this->presenter->map_to_fixture_option_vars(
+            new Fixture_Details_DTO( $fixture_date_only, $league, $event, $competition ),
+            $request,
+            'Schedule Match',
+            'Save',
+            'schedule_action'
+        );
+
+        $this->assertSame( 'date', $vars_date_only['date_input_type'] );
+        $this->assertSame( '2026-10-18', $vars_date_only['date_input'] );
     }
 }

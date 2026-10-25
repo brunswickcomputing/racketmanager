@@ -15,6 +15,8 @@ use Racketmanager\Domain\Result\Result;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Championship_Manager;
+use Racketmanager\Services\Competition\League_Query_Service;
+use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Services\Result_Service;
@@ -310,12 +312,17 @@ class Championship_Manager_Test extends TestCase {
             31 => $this->createMock( League::class ),
             32 => $this->createMock( League::class ),
         ];
-        foreach ( $consolation_leagues as $consolation_league ) {
-            $consolation_league->expects( $this->once() )
-                ->method( 'get_league_teams' )
-                ->with( [ 'team_name' => '2_semi_101', 'reset_query_args' => true ] )
-                ->willReturn( [] );
+        foreach ( $consolation_leagues as $league_id => $consolation_league ) {
+            $consolation_league->id = $league_id;
         }
+        $league_query_service = $this->createMock( League_Query_Service::class );
+        $queried_leagues      = [];
+        $league_query_service->expects( $this->exactly( 2 ) )
+            ->method( 'get_league_teams' )
+            ->willReturnCallback( function ( object $consolation_league, array $args ) use ( &$queried_leagues ): array {
+                $queried_leagues[] = [ $consolation_league->id, $args ];
+                return [];
+            } );
 
         $resolved_ids = [];
         $league_service = $this->createMock( League_Service::class );
@@ -339,8 +346,29 @@ class Championship_Manager_Test extends TestCase {
         $league->method( 'get_season' )->willReturn( '2026' );
 
         $method = new \ReflectionMethod( Championship_Manager::class, 'set_consolation_team' );
-        $method->invoke( $manager, (object) [ 'loser_id' => 20, 'is_walkover' => true, 'id' => 101 ], 'semi', $league );
+        $old_racketmanager = $GLOBALS['racketmanager'] ?? null;
+        $had_racketmanager = array_key_exists( 'racketmanager', $GLOBALS );
+        $container         = new Simple_Container();
+        $container->set( 'league_query_service', $league_query_service );
+        $GLOBALS['racketmanager'] = (object) [ 'container' => $container ];
+
+        try {
+            $method->invoke( $manager, (object) [ 'loser_id' => 20, 'is_walkover' => true, 'id' => 101 ], 'semi', $league );
+        } finally {
+            if ( $had_racketmanager ) {
+                $GLOBALS['racketmanager'] = $old_racketmanager;
+            } else {
+                unset( $GLOBALS['racketmanager'] );
+            }
+        }
 
         $this->assertSame( [ 31, 32 ], $resolved_ids );
+        $this->assertSame(
+            [
+                [ 31, [ 'team_name' => '2_semi_101', 'reset_query_args' => true ] ],
+                [ 32, [ 'team_name' => '2_semi_101', 'reset_query_args' => true ] ],
+            ],
+            $queried_leagues
+        );
     }
 }

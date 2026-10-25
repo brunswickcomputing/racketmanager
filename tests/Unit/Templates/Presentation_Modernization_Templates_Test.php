@@ -53,6 +53,10 @@ use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Domain\Tournament\Tournament_Entry;
 use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
@@ -78,6 +82,7 @@ use stdClass;
 use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;
 
 final class Presentation_Modernization_Templates_Test extends TestCase {
+    use \Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
     use Creates_Competition_Season_Service;
     use Manages_Wordpress_Globals;
 
@@ -464,7 +469,8 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             competition_entry_service: $comp_entry_service,
             finance_service: $finance_service,
             competition_presenter: $comp_presenter,
-            tournament_presenter: $tourn_presenter
+            tournament_presenter: $tourn_presenter,
+            event_query_service: $this->event_query_service()
         );
 
         $competition = Competition_Test_Factory::create(
@@ -638,7 +644,8 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             competition_entry_service: $comp_entry_service,
             finance_service: $finance_service,
             competition_presenter: new Competition_Shortcode_Presenter( renderer: $this->view_renderer ),
-            tournament_presenter: new Tournament_Presenter( 'd/m/Y' )
+            tournament_presenter: new Tournament_Presenter( 'd/m/Y' ),
+            event_query_service: $this->event_query_service()
         );
 
         $today        = new \DateTimeImmutable( 'today', new \DateTimeZone( 'UTC' ) );
@@ -747,6 +754,28 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         return $event;
     }
 
+    private function event_team_row( int $id, int $club_id, string $name, string $league_title ): object {
+        return (object) [
+            'id'           => $id,
+            'team_id'      => $id,
+            'club_id'      => $club_id,
+            'name'         => $name,
+            'league_title' => $league_title,
+            'roster'       => null,
+            'team_type'    => 'D',
+        ];
+    }
+
+    /**
+     * @param array<int, Club> $clubs Clubs keyed by club id.
+     */
+    private function club_repository_with( array $clubs ): Club_Repository_Interface {
+        $repository = $this->createStub( Club_Repository_Interface::class );
+        $repository->method( 'find_by_id' )->willReturnCallback( static fn( $id ) => $clubs[ (int) $id ] ?? null );
+
+        return $repository;
+    }
+
     private function assert_no_unresolved_fallbacks( string $output ): void {
         $this->assertStringNotContainsString( 'href="/league/"', $output );
         $this->assertStringNotContainsString( 'href=""', $output );
@@ -787,7 +816,6 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         unset( $GLOBALS['racketmanager'] );
 
         $competition = $this->make_competition_stub();
-        $competition->method( 'get_teams' )->willReturn( [] );
         $service     = $this->createStub( Competition_Service::class );
         $service->method( 'get_by_id' )->willReturn( $competition );
         $service->method( 'get_teams_for_competition' )->willReturn(
@@ -822,10 +850,6 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $club        = Club_Test_Factory::create( 3, 'Westcliff Tennis Club', 'Westcliff TC' );
         $player      = Player_Test_Factory::create( 51, 'Roger Federer', null, 'Roger', 'Federer' );
         $team        = (object) [ 'id' => 11, 'name' => 'Westcliff 1', 'league_title' => 'Division One', 'event_name' => "Men's Doubles", 'rank' => 1 ];
-
-        $competition->method( 'get_teams' )->willReturn( [ $team ] );
-        $competition->method( 'get_matches' )->willReturn( [] );
-        $competition->method( 'get_players' )->willReturn( [ $player ] );
 
         $service = $this->createStub( Competition_Service::class );
         $service->method( 'get_by_id' )->willReturn( $competition );
@@ -917,12 +941,12 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $event       = $this->make_event_stub( $competition );
         $league_one  = (object) [ 'id' => 201, 'title' => 'Division One' ];
         $league_two  = (object) [ 'id' => 202, 'title' => 'Division Two' ];
-        $event->method( 'get_leagues' )->willReturn( [ $league_one, $league_two ] );
 
         $service = $this->createStub( Competition_Service::class );
         $service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $handler = new Get_Event_Standings_Handler( $service, new Competition_Shortcode_Presenter() );
+        $query_service = $this->event_query_service( $this->event_repository_with_results( [ 'query_leagues' => [ $league_one, $league_two ] ] ) );
+        $handler       = new Get_Event_Standings_Handler( $service, new Competition_Shortcode_Presenter(), $query_service );
         $vm      = $handler->handle( new Get_Event_Standings_Query( event_id: 77 ) );
 
         $this->assertFalse( $vm->is_error() );
@@ -964,8 +988,46 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
                 'players' => [ Player_Test_Factory::create( 51, 'Roger Federer', null, 'Roger', 'Federer' ) ],
             ]
         );
-        $event->method( 'get_clubs' )->willReturn( [ $listed_club_a, $listed_club_b ] );
-        $event->method( 'get_club' )->willReturn( $event_club );
+        $event_player = Player_Test_Factory::create( 51, 'Roger Federer', null, 'Roger', 'Federer' );
+
+        $event_repository = $this->createStub( Event_Repository_Interface::class );
+        $event_repository->method( 'query_clubs' )->willReturn(
+            [
+                (object) [ 'club_id' => 3, 'team_count' => 2 ],
+                (object) [ 'club_id' => 4, 'team_count' => 1 ],
+            ]
+        );
+        $event_repository->method( 'query_teams' )->willReturn(
+            [
+                (object) [
+                    'id'           => 11,
+                    'team_id'      => 11,
+                    'club_id'      => 3,
+                    'name'         => 'Westcliff 1',
+                    'league_title' => 'Division One',
+                    'rank'         => 1,
+                    'roster'       => null,
+                    'team_type'    => 'D',
+                ],
+            ]
+        );
+        $event_repository->method( 'query_players' )->willReturnCallback(
+            static fn( int $event_id, bool $is_player_entry, array $args = [] ) => ! empty( $args['count'] ) ? 9 : [ (object) [ 'player_id' => 51 ] ]
+        );
+        $event_repository->method( 'query_matches' )->willReturn( [] );
+
+        $club_repository = $this->createStub( Club_Repository_Interface::class );
+        $club_repository->method( 'find_by_id' )->willReturnCallback(
+            static fn( $id ) => match ( (int) $id ) {
+                3       => $listed_club_a,
+                4       => $listed_club_b,
+                default => null,
+            }
+        );
+        $player_repository = $this->createStub( Player_Repository_Interface::class );
+        $player_repository->method( 'find' )->willReturn( $event_player );
+
+        $query_service = $this->event_query_service( $event_repository, null, null, null, null, $club_repository, $player_repository );
 
         $service = $this->createStub( Competition_Service::class );
         $service->method( 'get_event_by_id' )->willReturn( $event );
@@ -974,7 +1036,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $stats = $this->createStub( Player_Stats_Service::class );
         $stats->method( 'populate_players_stats' )->willReturnArgument( 0 );
 
-        $handler = new Get_Event_Clubs_Handler( $service, $club_service, $stats, new Tournament_Presenter(), new Competition_Shortcode_Presenter() );
+        $handler = new Get_Event_Clubs_Handler( $service, $club_service, $stats, new Tournament_Presenter(), new Competition_Shortcode_Presenter(), $query_service );
 
         // List.
         $list_vm = $handler->handle( new Get_Event_Clubs_Query( event_id: 77 ) );
@@ -1020,11 +1082,23 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $event       = $this->make_event_stub( $competition );
         $club_a      = Club_Test_Factory::create( 3, 'Westcliff Tennis Club', 'Westcliff TC' );
         $club_b      = Club_Test_Factory::create( 4, 'Leigh Lawn', 'Leigh LTC' );
-        $event->method( 'get_teams' )->willReturn(
+        $event_repository = $this->event_repository_with_results(
             [
-                (object) [ 'id' => 11, 'name' => 'Westcliff 1', 'league_title' => 'Division One', 'club' => $club_a, 'player_count' => 6 ],
-                (object) [ 'id' => 12, 'name' => 'Leigh 2', 'league_title' => 'Division Two', 'club' => $club_b, 'player_count' => 5 ],
+                'query_teams'   => [
+                    $this->event_team_row( 11, 3, 'Westcliff 1', 'Division One' ),
+                    $this->event_team_row( 12, 4, 'Leigh 2', 'Division Two' ),
+                ],
+                'query_players' => 6,
             ]
+        );
+        $query_service   = $this->event_query_service(
+            $event_repository,
+            null,
+            null,
+            null,
+            $this->createStub( Team_Repository_Interface::class ),
+            $this->club_repository_with( [ 3 => $club_a, 4 => $club_b ] ),
+            $this->createStub( Player_Repository_Interface::class )
         );
 
         $service = $this->createStub( Competition_Service::class );
@@ -1036,7 +1110,8 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             new Tournament_Presenter(),
             null,
             new Team_Details_Presenter( $this->createStub( Option_Gateway_Interface::class ), $this->createStub( Settings_Service::class ) ),
-            new Competition_Shortcode_Presenter()
+            new Competition_Shortcode_Presenter(),
+            $query_service
         );
         $vm      = $handler->handle( new Get_Event_Teams_Query( event_id: 77, template: 'x' ) );
 
@@ -1078,12 +1153,17 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
 
         $competition = $this->make_competition_stub();
         $event       = $this->make_event_stub( $competition );
-        $event->method( 'get_players' )->willReturn(
+        $roger  = Player_Test_Factory::create( 51, 'Roger Federer', null, 'Roger', 'Federer' );
+        $rafael = Player_Test_Factory::create( 52, 'Rafael Nadal', null, 'Rafael', 'Nadal' );
+
+        $player_repository = $this->createStub( Player_Repository_Interface::class );
+        $player_repository->method( 'find' )->willReturnCallback( static fn( $id ) => 51 === (int) $id ? $roger : $rafael );
+        $event_repository  = $this->event_repository_with_results(
             [
-                new Players_List_DTO( (object) [ 'player_id' => 51, 'display_name' => 'Roger Federer', 'firstName' => 'Roger', 'surname' => 'Federer' ] ),
-                new Players_List_DTO( (object) [ 'player_id' => 52, 'display_name' => 'Rafael Nadal', 'firstName' => 'Rafael', 'surname' => 'Nadal' ] ),
+                'query_players' => [ (object) [ 'player_id' => 51 ], (object) [ 'player_id' => 52 ] ],
             ]
         );
+        $query_service     = $this->event_query_service( $event_repository, null, null, null, null, null, $player_repository );
 
         $service = $this->createStub( Competition_Service::class );
         $service->method( 'get_event_by_id' )->willReturn( $event );
@@ -1094,7 +1174,8 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             $this->createStub( Player_Query_Service::class ),
             $this->createStub( Player_Stats_Service::class ),
             new Player_Presenter(),
-            new Competition_Shortcode_Presenter()
+            new Competition_Shortcode_Presenter(),
+            $query_service
         );
         $vm      = $handler->handle( new Get_Event_Players_Query( event_id: 77 ) );
 
@@ -1152,7 +1233,8 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             $player_query_service,
             $player_stats_service,
             new Player_Presenter(),
-            new Competition_Shortcode_Presenter()
+            new Competition_Shortcode_Presenter(),
+            $this->event_query_service()
         );
 
         $vms = [
@@ -1199,10 +1281,6 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             'rank'       => 1,
         ];
 
-        $competition->method( 'get_teams' )->willReturn( [ $team ] );
-        $competition->method( 'get_matches' )->willReturn( [] );
-        $competition->method( 'get_players' )->willReturn( [ $player ] );
-
         $service = $this->createStub( Competition_Service::class );
         $service->method( 'get_by_id' )->willReturn( $competition );
         $service->method( 'get_teams_by_query' )->willReturn( [ $team ] );
@@ -1248,11 +1326,26 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $event->is_box = true;
 
         $club_a = Club_Test_Factory::create( 3, 'Westcliff Tennis Club', 'Westcliff TC' );
-        $team   = (object) [ 'id' => 11, 'name' => 'Westcliff 1', 'league_title' => 'Box One', 'club' => $club_a, 'player_count' => 4 ];
-        $event->method( 'get_teams' )->willReturn( [ $team ] );
+        $team   = $this->event_team_row( 11, 3, 'Westcliff 1', 'Box One' );
 
         $league = (object) [ 'id' => 301, 'title' => 'Box One' ];
-        $event->method( 'get_leagues' )->willReturn( [ $league ] );
+
+        $event_repository = $this->event_repository_with_results(
+            [
+                'query_teams'   => [ $team ],
+                'query_players' => 4,
+                'query_leagues' => [ $league ],
+            ]
+        );
+        $query_service    = $this->event_query_service(
+            $event_repository,
+            null,
+            null,
+            null,
+            $this->createStub( Team_Repository_Interface::class ),
+            $this->club_repository_with( [ 3 => $club_a ] ),
+            $this->createStub( Player_Repository_Interface::class )
+        );
 
         $service = $this->createStub( Competition_Service::class );
         $service->method( 'get_event_by_id' )->willReturn( $event );
@@ -1266,7 +1359,8 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             new Tournament_Presenter(),
             null,
             new Team_Details_Presenter( $this->createStub( Option_Gateway_Interface::class ), $this->createStub( Settings_Service::class ) ),
-            $presenter
+            $presenter,
+            $query_service
         );
         $teams_vm = $teams_handler->handle( new Get_Event_Teams_Query( event_id: 77, template: 'x' ) );
 
@@ -1292,7 +1386,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $this->assertStringContainsString( 'href="/league/box-one/2026/team/westcliff-1/"', $output );
 
         // 2. Box event standings links
-        $standings_handler = new Get_Event_Standings_Handler( $service, $presenter );
+        $standings_handler = new Get_Event_Standings_Handler( $service, $presenter, $query_service );
         $standings_vm      = $standings_handler->handle( new Get_Event_Standings_Query( event_id: 77 ) );
 
         $this->assertFalse( $standings_vm->is_error() );
@@ -1425,7 +1519,8 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             $query_service,
             $stats_service,
             new Player_Presenter(),
-            new Competition_Shortcode_Presenter()
+            new Competition_Shortcode_Presenter(),
+            $this->event_query_service()
         );
 
         $vm = $handler->handle( new Get_Event_Players_Query( event_id: 77, player_id: 51 ) );
@@ -1459,7 +1554,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $service = $this->createStub( Competition_Service::class );
         $service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $handler = new Get_Event_Handler( $service, new Competition_Shortcode_Presenter() );
+        $handler = new Get_Event_Handler( $service, new Competition_Shortcode_Presenter(), $this->event_query_service() );
         $vm      = $handler->handle( new Get_Event_Query( event_id: 77 ) );
 
         $this->assertFalse( $vm->is_error() );
@@ -1476,10 +1571,6 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
 
         $club   = Club_Test_Factory::create( 3, 'Westcliff Tennis Club', 'Westcliff TC' );
         $player = Player_Test_Factory::create( 51, 'Roger Federer', null, 'Roger', 'Federer' );
-
-        $competition->method( 'get_teams' )->willReturn( [] );
-        $competition->method( 'get_matches' )->willReturn( [] );
-        $competition->method( 'get_players' )->willReturn( [ $player ] );
 
         $service = $this->createStub( Competition_Service::class );
         $service->method( 'get_by_id' )->willReturn( $competition );

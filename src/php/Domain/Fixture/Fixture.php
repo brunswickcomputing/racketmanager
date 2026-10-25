@@ -415,6 +415,11 @@ class Fixture {
         $this->start_time          = $dto->start_time;
         $this->rubbers             = $dto->rubbers;
 
+        // Reconcile an explicit/direct start_time with the date. Derived or equal times leave the date untouched.
+        if ( null !== $this->date && Fixture_Time_Parser::extract_time_from_datetime( $this->date ) !== $this->start_time ) {
+            $this->date = Fixture_Time_Parser::merge_time_into_date( $this->date, $this->start_time );
+        }
+
         $this->set_status_flags();
     }
 
@@ -477,7 +482,36 @@ class Fixture {
      * @param string|null $date
      */
     public function set_date( ?string $date ): void {
-        $this->date = $date;
+        if ( null === $date || '' === trim( $date ) || str_starts_with( trim( $date ), '0000-00-00' ) ) {
+            $this->date       = $date;
+            $this->start_time = null;
+            return;
+        }
+
+        $extracted_time = Fixture_Time_Parser::extract_time_from_datetime( $date );
+
+        if ( null !== $extracted_time ) {
+            $this->date       = $date;
+            $this->start_time = $extracted_time;
+            return;
+        }
+
+        $trimmed_date = trim( $date );
+        if ( strlen( $trimmed_date ) >= 16 && ( ' ' === $trimmed_date[10] || 'T' === $trimmed_date[10] ) ) {
+            $time_part = substr( $trimmed_date, 11, 5 );
+            if ( '00:00' === $time_part ) {
+                $this->date       = $date;
+                $this->start_time = null;
+                return;
+            }
+        }
+
+        if ( null === $this->date && null !== $this->start_time ) {
+            $this->date = Fixture_Time_Parser::merge_time_into_date( $date, $this->start_time );
+        } else {
+            $this->date       = $date;
+            $this->start_time = null;
+        }
     }
 
     /**
@@ -617,9 +651,11 @@ class Fixture {
     /**
      * Get teams for this fixture.
      *
+     * Translated labels may be supplied by callers in the presentation layer.
+     *
      * @return array
      */
-    public function get_teams(): array {
+    public function get_teams( string $bye_label = 'Bye', string $unknown_label = 'Unknown' ): array {
         if ( is_array( $this->teams ) && ! empty( $this->teams ) ) {
             return $this->teams;
         }
@@ -628,11 +664,11 @@ class Fixture {
         $away_val = $this->get_away_team();
 
         $home_name = '-1' === (string) $home_val
-            ? __( 'Bye', 'racketmanager' )
-            : __( 'Unknown', 'racketmanager' );
+            ? $bye_label
+            : $unknown_label;
         $away_name = '-1' === (string) $away_val
-            ? __( 'Bye', 'racketmanager' )
-            : __( 'Unknown', 'racketmanager' );
+            ? $bye_label
+            : $unknown_label;
 
         $home_team_obj                  = new \stdClass();
         $home_team_obj->id              = $home_val;
@@ -1037,14 +1073,23 @@ class Fixture {
      * @return string|null
      */
     public function get_start_time(): ?string {
-        return $this->start_time;
+        try {
+            return Fixture_Time_Parser::normalize_start_time( $this->start_time );
+        } catch ( \InvalidArgumentException ) {
+            return null;
+        }
     }
 
     /**
      * @param string|null $start_time
+     * @throws \InvalidArgumentException If start_time is an invalid time format.
      */
     public function set_start_time( ?string $start_time ): void {
-        $this->start_time = $start_time;
+        $normalized       = Fixture_Time_Parser::normalize_start_time( $start_time );
+        $this->start_time = $normalized;
+        if ( null !== $this->date ) {
+            $this->date = Fixture_Time_Parser::merge_time_into_date( $this->date, $normalized );
+        }
     }
 
     /**
@@ -1135,7 +1180,7 @@ class Fixture {
     public function reset_finals_data( string $fixture_date ): bool {
         $update = false;
         if ( $this->date !== $fixture_date ) {
-            $this->date = $fixture_date;
+            $this->set_date( $fixture_date );
             $update     = true;
         }
         if ( ! is_null( $this->location ) ) {
@@ -1155,7 +1200,7 @@ class Fixture {
     public function set_finals_data( string $fixture_date, string $location ): bool {
         $update = false;
         if ( $this->date !== $fixture_date ) {
-            $this->date = $fixture_date;
+            $this->set_date( $fixture_date );
             $update     = true;
         }
         if ( $this->location !== $location ) {
@@ -1212,15 +1257,17 @@ class Fixture {
     /**
      * Get match title.
      *
+     * Translated labels may be supplied by callers in the presentation layer.
+     *
      * @return string
      */
-    public function get_title(): string {
+    public function get_title( string $bye_label = 'Bye', string $unknown_label = 'Unknown' ): string {
         if ( ! empty( $this->fixture_title ) ) {
             return $this->fixture_title;
         }
-        $teams     = $this->get_teams();
-        $home_name = ! empty( $teams['home']->title ) ? $teams['home']->title : __( 'Unknown', 'racketmanager' );
-        $away_name = ! empty( $teams['away']->title ) ? $teams['away']->title : __( 'Unknown', 'racketmanager' );
+        $teams     = $this->get_teams( $bye_label, $unknown_label );
+        $home_name = ! empty( $teams['home']->title ) ? $teams['home']->title : $unknown_label;
+        $away_name = ! empty( $teams['away']->title ) ? $teams['away']->title : $unknown_label;
         return sprintf( '%s - %s', $home_name, $away_name );
     }
 

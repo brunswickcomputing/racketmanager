@@ -13,11 +13,12 @@ require_once dirname( __DIR__, 2 ) . '/wp-stubs.php';
 final class Admin_League_Matches_Template_Test extends TestCase {
 
     protected function tearDown(): void {
-        unset( $GLOBALS['wp_stubs_options'] );
+        unset( $GLOBALS['wp_stubs_options'], $GLOBALS['wp_stubs_esc_html_callback'] );
         parent::tearDown();
     }
 
     public function test_league_matches_template_uses_preformatted_dates_without_mysql2date(): void {
+        $GLOBALS['wp_stubs_esc_html_callback'] = static fn( $text ) => htmlspecialchars( (string) $text, ENT_QUOTES, 'UTF-8' );
         $GLOBALS['wp_stubs_options'] = array(
             'date_format' => 'j M Y',
             'time_format' => 'H:i',
@@ -35,10 +36,7 @@ final class Admin_League_Matches_Template_Test extends TestCase {
             public int $num_rubbers = 0;
             public int $num_sets = 3;
             public array $current_season = array();
-
-            public function get_page_links( string $which = '' ): string {
-                return '';
-            }
+            public ?string $pagination_matches = '<span class="displaying-num">10 Matches</span><a class="page-numbers" href="?match_paged=2">2</a>';
         };
         $league->event          = $event;
         $league->current_season = array( 'num_match_days' => 0, 'name' => '2026' );
@@ -74,6 +72,9 @@ final class Admin_League_Matches_Template_Test extends TestCase {
         $this->assertStringContainsString( '18:30', $output );
         $this->assertStringContainsString( 'A vs B', $output );
         $this->assertStringContainsString( 'page=racketmanager-leagues&view=match&league_id=4&edit=55&season=2026', $output );
+        $this->assertStringContainsString( '<span class="displaying-num">10 Matches</span>', $output );
+        $this->assertStringContainsString( '<a class="page-numbers" href="?match_paged=2">2</a>', $output );
+        $this->assertStringNotContainsString( '&lt;span', $output );
         $this->assertStringNotContainsString( 'mysql2date', $output );
     }
 

@@ -78,7 +78,7 @@ final class Admin_Templates_Render_Test extends TestCase {
                 $this->config->type = 'league';
                 $this->config->age_group = 'open';
             }
-            public function get_events( array $args = array() ): array {
+            public function get_events( array $args = array(), ?\Racketmanager\Repositories\Interfaces\Competition_Repository_Interface $competition_repository = null ): array {
                 return array();
             }
         };

@@ -25,9 +25,12 @@ use Racketmanager\Application\Tournament\Queries\Get_Tournament_Winners_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Winners_Query;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Withdrawal_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Withdrawal_Query;
+use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
+use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use function __;
 use function is_array;
@@ -53,7 +56,8 @@ class Tournament_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly Get_Order_Of_Play_Handler $order_of_play_handler,
         private readonly Get_Latest_Tournament_Handler $latest_tournament_handler,
         private readonly Get_Tournament_Withdrawal_Handler $withdrawal_handler,
-        private readonly ?Shortcode_Template_Renderer $template_renderer = null
+        private readonly ?Shortcode_Template_Renderer $template_renderer = null,
+        private readonly ?Competition_Service $competition_service = null
     ) {}
 
     public function show_tournament( array|string $atts = [] ): string {
@@ -132,17 +136,34 @@ class Tournament_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      * @return object|null Resolved and allowed event, or null if invalid/not allowed.
      */
     public function resolve_tournament_event( object $tournament, int|string|object $event_identifier ): ?object {
-        if ( ! $tournament->is_event_allowed( $event_identifier ) ) {
+        if ( $event_identifier instanceof Event ) {
+            if ( ! $tournament->is_event_allowed( $event_identifier ) ) {
+                return null;
+            }
+            return $event_identifier;
+        }
+
+        $competition = method_exists( $tournament, 'get_competition_object' ) ? $tournament->get_competition_object() : null;
+        if ( ! $competition instanceof Competition ) {
             return null;
         }
 
-        $competition = $tournament->get_competition_object();
-        if ( ! $competition ) {
+        if ( ! $this->competition_service ) {
+            // Fail closed: raw IDs/slugs cannot be resolved without the application service.
             return null;
         }
 
-        $season = $tournament->season ?? null;
-        return $competition->resolve_event( $event_identifier, $season );
+        $season    = $tournament->season ?? null;
+        $event_obj = $this->competition_service->resolve_competition_event( $competition, $event_identifier, $season );
+        if ( ! $event_obj ) {
+            return null;
+        }
+
+        if ( ! $tournament->is_event_allowed( $event_obj ) ) {
+            return null;
+        }
+
+        return $event_obj;
     }
 
     /**
@@ -150,9 +171,14 @@ class Tournament_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      * @return array<int|string, mixed>
      */
     private function filter_allowed_events( object $tournament, array $items ): array {
+        $competition = method_exists( $tournament, 'get_competition_object' ) ? $tournament->get_competition_object() : null;
+        $candidates  = $competition instanceof Competition && $this->competition_service
+            ? $this->competition_service->get_competition_events( $competition )
+            : [];
+
         $filtered = [];
         foreach ( $items as $key => $item ) {
-            if ( $tournament->is_event_allowed( $item ) ) {
+            if ( $tournament->is_event_allowed( $item, false, $candidates ) ) {
                 $filtered[ $key ] = $item;
             }
         }

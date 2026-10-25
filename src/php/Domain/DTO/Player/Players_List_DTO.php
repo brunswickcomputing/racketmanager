@@ -32,6 +32,7 @@ class Players_List_DTO {
     public ?string $link;
     public ?string $gender;
     public ?string $btm;
+    public ?string $contactno;
     public ?string $user_nicename;
 
     public function __construct( object|array $data ) {
@@ -49,6 +50,7 @@ class Players_List_DTO {
         $this->email        = $data->email ?? ( $data->email_address ?? ( $data->user_email ?? null ) );
         $this->gender       = $data->gender ?? null;
         $this->btm          = $data->btm ?? ( $data->btm_number ?? null );
+        $this->contactno     = $data->contactno ?? ( $data->contact_no ?? null );
         $this->user_nicename = $data->user_nicename ?? null;
 
         if ( isset( $data->index ) && '' !== $data->index ) {

@@ -312,10 +312,11 @@ final class Plugin_Bootstrap_Test extends TestCase {
 
         $app->calculate_player_ratings( 42 );
 
-        $getter = new ReflectionMethod( RacketManager::class, 'get_fixture_maintenance_service' );
-        $maintenance = $this->createStub( Fixture_Maintenance_Service::class );
-        $container->set( 'fixture_maintenance_service', $maintenance );
-        self::assertSame( $maintenance, $getter->invoke( $app ) );
+        $orchestrator = $this->createMock( \Racketmanager\Services\Fixture\Pending_Result_Orchestrator_Interface::class );
+        $orchestrator->expects( self::once() )->method( 'chase_pending_results' )->with( 'league' );
+        $container->set( 'pending_result_orchestration_service', $orchestrator );
+
+        $app->chase_pending_results( 'league' );
     }
 
     public function test_racketmanager_constructor_delegates_hook_registration_to_bootstrap(): void {
@@ -327,6 +328,34 @@ final class Plugin_Bootstrap_Test extends TestCase {
         self::assertStringContainsString( '$this->plugin_bootstrap->boot( $this )', $constructor[1] );
         self::assertStringNotContainsString( 'add_action(', $constructor[1] );
         self::assertStringNotContainsString( 'add_filter(', $constructor[1] );
+    }
+
+    public function test_boot_calls_wpdb_show_errors(): void {
+        $prev_wpdb = $GLOBALS['wpdb'] ?? null;
+        try {
+            $plugin_dir = $this->create_temp_dir();
+            mkdir( $plugin_dir . '/src/php/sports', 0777, true );
+            file_put_contents( $plugin_dir . '/template-tags.php', '<?php' );
+            file_put_contents( $plugin_dir . '/functions.php', '<?php' );
+            $GLOBALS['wp_stubs_stylesheet_directory'] = $plugin_dir . '/missing-theme';
+
+            $recording_wpdb = new class {
+                public bool $show_errors_called = false;
+                public function show_errors(): void {
+                    $this->show_errors_called = true;
+                }
+            };
+            $GLOBALS['wpdb'] = $recording_wpdb;
+
+            $bootstrap = new Plugin_Bootstrap( new Simple_Container(), $plugin_dir . '/' );
+            /** @var RacketManager $app */
+            $app = ( new ReflectionClass( RacketManager::class ) )->newInstanceWithoutConstructor();
+            $bootstrap->boot( $app );
+
+            self::assertTrue( $recording_wpdb->show_errors_called );
+        } finally {
+            $GLOBALS['wpdb'] = $prev_wpdb;
+        }
     }
 
     /**

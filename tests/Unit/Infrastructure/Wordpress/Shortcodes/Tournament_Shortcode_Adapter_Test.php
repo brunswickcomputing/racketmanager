@@ -35,6 +35,7 @@ use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapt
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
+use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 
 class Tournament_Shortcode_Adapter_Test extends TestCase {
@@ -53,7 +54,8 @@ class Tournament_Shortcode_Adapter_Test extends TestCase {
             $overrides['order_of_play_handler'] ?? $this->createStub( Get_Order_Of_Play_Handler::class ),
             $overrides['latest_tournament_handler'] ?? $this->createStub( Get_Latest_Tournament_Handler::class ),
             $overrides['withdrawal_handler'] ?? $this->createStub( Get_Tournament_Withdrawal_Handler::class ),
-            $overrides['template_renderer'] ?? $this->createStub( Shortcode_Template_Renderer::class )
+            $overrides['template_renderer'] ?? $this->createStub( Shortcode_Template_Renderer::class ),
+            $overrides['competition_service'] ?? null
         );
     }
 
@@ -266,16 +268,17 @@ class Tournament_Shortcode_Adapter_Test extends TestCase {
     public function test_show_tournament_events_renders_allowed_single_event(): void {
         $event       = new Tournament_Event_DTO( 42, 'Men Singles', [ new Tournament_Event_Entry_DTO( 101, 'Alice Example', null, null, [] ) ], 4 );
         $resolved    = $this->createStub( Event::class );
-        $competition = $this->createMock( Competition::class );
-        $competition->expects( $this->once() )
-            ->method( 'resolve_event' )
-            ->with( $event, '2026' )
+        $competition = $this->createStub( Competition::class );
+        $service     = $this->createMock( Competition_Service::class );
+        $service->expects( $this->once() )
+            ->method( 'resolve_competition_event' )
+            ->with( $competition, $event, '2026' )
             ->willReturn( $resolved );
 
         $tournament = $this->createStub( Tournament::class );
         $tournament->season = '2026';
         $tournament->method( 'get_competition_object' )->willReturn( $competition );
-        $tournament->method( 'is_event_allowed' )->willReturnCallback( static fn( $identifier ): bool => $event === $identifier );
+        $tournament->method( 'is_event_allowed' )->willReturnCallback( static fn( $identifier ): bool => $event === $identifier || $resolved === $identifier );
         $vm         = Shortcode_View_Model::for_template( 'event', [
             'tournament' => $tournament,
             'event'      => $event,
@@ -291,8 +294,9 @@ class Tournament_Shortcode_Adapter_Test extends TestCase {
             ->willReturn( '<div>Allowed Event</div>' );
 
         $adapter = $this->create_adapter( [
-            'events_handler' => $handler,
-            'view_presenter' => $presenter,
+            'events_handler'      => $handler,
+            'view_presenter'      => $presenter,
+            'competition_service' => $service,
         ] );
 
         $this->assertSame( '<div>Allowed Event</div>', $adapter->show_tournament_events( [ 'id' => 8 ] ) );
@@ -389,16 +393,17 @@ class Tournament_Shortcode_Adapter_Test extends TestCase {
     public function test_show_draws_renders_allowed_single_draw_without_replacing_view_data(): void {
         $draw        = new Tournament_Event_DTO( 42, 'Men Singles', [], 4 );
         $resolved    = $this->createStub( Event::class );
-        $competition = $this->createMock( Competition::class );
-        $competition->expects( $this->once() )
-            ->method( 'resolve_event' )
-            ->with( $draw, '2026' )
+        $competition = $this->createStub( Competition::class );
+        $service     = $this->createMock( Competition_Service::class );
+        $service->expects( $this->once() )
+            ->method( 'resolve_competition_event' )
+            ->with( $competition, $draw, '2026' )
             ->willReturn( $resolved );
 
         $tournament = $this->createStub( Tournament::class );
         $tournament->season = '2026';
         $tournament->method( 'get_competition_object' )->willReturn( $competition );
-        $tournament->method( 'is_event_allowed' )->willReturnCallback( static fn( $identifier ): bool => $draw === $identifier );
+        $tournament->method( 'is_event_allowed' )->willReturnCallback( static fn( $identifier ): bool => $draw === $identifier || $resolved === $identifier );
         $vm = Shortcode_View_Model::for_template( 'draw', [
             'tournament' => $tournament,
             'draw'       => $draw,
@@ -414,8 +419,9 @@ class Tournament_Shortcode_Adapter_Test extends TestCase {
             ->willReturn( '<div>Allowed Draw</div>' );
 
         $adapter = $this->create_adapter( [
-            'draws_handler'  => $handler,
-            'view_presenter' => $presenter,
+            'draws_handler'       => $handler,
+            'view_presenter'      => $presenter,
+            'competition_service' => $service,
         ] );
 
         $this->assertSame( '<div>Allowed Draw</div>', $adapter->show_draws( [ 'id' => 8 ] ) );
@@ -447,6 +453,110 @@ class Tournament_Shortcode_Adapter_Test extends TestCase {
         ] );
 
         $this->assertSame( 'error view', $adapter->show_draws( [ 'id' => 8, 'draw' => 99 ] ) );
+    }
+
+    public function test_show_tournament_events_fails_closed_for_raw_event_without_competition_service(): void {
+        $competition = $this->createStub( Competition::class );
+        $tournament  = $this->createStub( Tournament::class );
+        $tournament->season = '2026';
+        $tournament->method( 'get_competition_object' )->willReturn( $competition );
+        $tournament->method( 'is_event_allowed' )->willReturn( true );
+        $vm = Shortcode_View_Model::for_template( 'event', [
+            'tournament' => $tournament,
+            'event'      => 42,
+        ] );
+
+        $handler = $this->createStub( Get_Tournament_Events_Handler::class );
+        $handler->method( 'handle' )->willReturn( $vm );
+
+        $presenter = $this->createMock( Shortcode_View_Presenter::class );
+        $presenter->expects( $this->once() )
+            ->method( 'render' )
+            ->with( $this->callback( static fn( Shortcode_View_Model $rendered ): bool =>
+                $rendered->is_error() && 'Event not found for tournament' === $rendered->error_message
+            ) )
+            ->willReturn( 'error view' );
+
+        $adapter = $this->create_adapter( [ 'events_handler' => $handler, 'view_presenter' => $presenter ] );
+
+        $this->assertSame( 'error view', $adapter->show_tournament_events( [ 'id' => 8 ] ) );
+    }
+
+    public function test_show_tournament_events_rejects_raw_event_the_service_cannot_resolve(): void {
+        $competition = $this->createStub( Competition::class );
+        $service     = $this->createMock( Competition_Service::class );
+        $service->expects( $this->once() )->method( 'resolve_competition_event' )->willReturn( null );
+        $tournament = $this->createMock( Tournament::class );
+        $tournament->season = '2026';
+        $tournament->method( 'get_competition_object' )->willReturn( $competition );
+        $tournament->expects( $this->never() )->method( 'is_event_allowed' );
+        $vm = Shortcode_View_Model::for_template( 'event', [
+            'tournament' => $tournament,
+            'event'      => 1,
+        ] );
+
+        $handler = $this->createStub( Get_Tournament_Events_Handler::class );
+        $handler->method( 'handle' )->willReturn( $vm );
+
+        $presenter = $this->createMock( Shortcode_View_Presenter::class );
+        $presenter->expects( $this->once() )
+            ->method( 'render' )
+            ->with( $this->callback( static fn( Shortcode_View_Model $rendered ): bool => $rendered->is_error() ) )
+            ->willReturn( 'error view' );
+
+        $adapter = $this->create_adapter( [
+            'events_handler'      => $handler,
+            'view_presenter'      => $presenter,
+            'competition_service' => $service,
+        ] );
+
+        $this->assertSame( 'error view', $adapter->show_tournament_events( [ 'id' => 8 ] ) );
+    }
+
+    public function test_show_tournament_events_list_loads_candidate_events_once_and_passes_them_to_tournament(): void {
+        $item_one    = (object) [ 'id' => 42, 'name' => 'Men Singles' ];
+        $item_two    = (object) [ 'id' => 1, 'name' => 'Foreign' ];
+        $candidates  = [ $this->createStub( Event::class ) ];
+        $competition = $this->createStub( Competition::class );
+        $service     = $this->createMock( Competition_Service::class );
+        $service->expects( $this->once() )
+            ->method( 'get_competition_events' )
+            ->with( $competition )
+            ->willReturn( $candidates );
+
+        $received   = [];
+        $tournament = $this->createStub( Tournament::class );
+        $tournament->method( 'get_competition_object' )->willReturn( $competition );
+        $tournament->method( 'is_event_allowed' )->willReturnCallback(
+            static function ( $item, $for_entry = false, $events = [] ) use ( &$received ): bool {
+                $received[] = [ $item->id, $for_entry, $events ];
+                return 42 === $item->id;
+            }
+        );
+        $vm = Shortcode_View_Model::for_template( 'events', [
+            'tournament' => $tournament,
+            'events'     => [ $item_one, $item_two ],
+        ] );
+
+        $handler = $this->createStub( Get_Tournament_Events_Handler::class );
+        $handler->method( 'handle' )->willReturn( $vm );
+
+        $presenter = $this->createMock( Shortcode_View_Presenter::class );
+        $presenter->expects( $this->once() )
+            ->method( 'render' )
+            ->with( $this->callback( static fn( Shortcode_View_Model $rendered ): bool =>
+                [ $item_one ] === array_values( $rendered->vars['events'] )
+            ) )
+            ->willReturn( 'list' );
+
+        $adapter = $this->create_adapter( [
+            'events_handler'      => $handler,
+            'view_presenter'      => $presenter,
+            'competition_service' => $service,
+        ] );
+
+        $this->assertSame( 'list', $adapter->show_tournament_events( [ 'id' => 8 ] ) );
+        $this->assertSame( [ [ 42, false, $candidates ], [ 1, false, $candidates ] ], $received );
     }
 
     /**

@@ -51,7 +51,10 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 * UPDATE: removed Public\Shortcodes_* facades and Racketmanager_Match; get_match() now returns ?Fixture
 * UPDATE: shortcode tags now resolve through Infrastructure\Wordpress\Shortcodes\*_Shortcode_Adapter classes registered in the service container (Shortcodes_Club, Shortcodes_Competition, Shortcodes_Email, Shortcodes_Event, Shortcodes_League, Shortcodes_Login, Shortcodes_Match, Shortcodes_Message, Shortcodes_Tournament)
 * UPDATE: migrate get_match() callers to an instance of Fixture_Repository (resolved from the container) and find_by_id(); the helper remains as an E_USER_DEPRECATED shim
-* UPDATE: get_competition(), get_rubber(), and match_add_players() remain as E_USER_DEPRECATED shims; prefer container-resolved repositories and services
+* UPDATE: get_competition(), get_club_role(), get_rubber(), and match_add_players() remain as E_USER_DEPRECATED shims; prefer container-resolved repositories and services
+* UPDATE: get_season() procedural helper is removed; season lookups resolve via Season_Service or Season_Repository::find_by_id()
+* DEPRECATION: Legacy class aliases in src/php/aliases.php are deprecated as of 10.0.0 and will be sunset in 11.0.0. Reference PSR-4 classes directly.
+* DEPRECATION: Orphan match templates (templates/match.php, templates/match-list.php, templates/match-teams.php, templates/match-teams-result.php, templates/forms/match-input.php) are deprecated as of 10.0.0 and will be removed in 11.0.0. Use modern shortcode adapters and view presenters.
 
 = 9.7.0 =
 * UPDATE: show timeout period on result notification
@@ -317,7 +320,7 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 * UPDATE: show player ratings on tournament entry
 * UPDATE: run tournament ratings when tournament open
 * UPDATE: check partner not already entered
-* UPDATE: ensure players only entered into an tournament event once  
+* UPDATE: ensure players only entered into an tournament event once
 * UPDATE: use scores from matches to calculate league points
 * UPDATE: only get matches for current season
 * UPDATE: store team rating against team in table
@@ -408,7 +411,7 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 * UPDATE: check for player clash when scheduling tournament finals
 
 = 8.17.0 =
-* BUGFIX: fix entry page display 
+* BUGFIX: fix entry page display
 * BUGFIX: handle event season not set
 * BUGFIX: handle competition season not found
 * BUGFIX: unable to register a player with a new club with an existing lta number
@@ -630,7 +633,7 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 * BUGFIX: remove extraneous '"'
 * BUGFIX: delete cached rubber after update
 * BUGFIX: ensure rewrites work
-* BUGFIX: only get championship matches 
+* BUGFIX: only get championship matches
 * BUGFIX: set walkover correctly
 * BUGFIX: fix get_rubber
 * BUGFIX: use correct field

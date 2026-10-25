@@ -101,12 +101,12 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         $this->assertStringContainsString( '/leagues/summer-event/2026/', $html );
         $this->assertStringNotContainsString( 'Start:', $html );
 
-        $played = Fixture_Test_Factory::create( date: '2026-10-12 19:30', start_time: '00:00', winner_id: 1, loser_id: 2, home_points: '3', away_points: '2' );
+        $played = Fixture_Test_Factory::create( date: '2026-10-12 00:00:00', start_time: '00:00', winner_id: 1, loser_id: 2, home_points: '3', away_points: '2' );
         $played->set_date_original( null );
         $html = $this->render_header( $played );
         $this->assertStringContainsString( 'class="score score--large "', $html );
         $this->assertStringContainsString( '<span class="score-separator">-</span>', $html );
-        $this->assertStringContainsString( 'Start: <time datetime="2026-10-12 19:30"></time>', $html );
+        $this->assertStringContainsString( 'Start: <time datetime="2026-10-12 00:00:00"></time>', $html );
     }
 
     public function test_header_status_cup_placeholder_host_and_missing_details(): void {

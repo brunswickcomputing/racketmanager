@@ -16,15 +16,24 @@ use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 use WP_Error;
 
 class Account_Ajax_Adapter_Test extends TestCase {
+    use Manages_Wordpress_Globals;
+
     private MockObject|Stub|Security_Service_Interface $security_service;
     private Account_Ajax_Adapter $adapter;
 
     protected function setUp(): void {
         parent::setUp();
+        $this->backup_globals();
+        $GLOBALS['racketmanager'] = new class {
+            public function get_options( string $type = '' ): array {
+                return [];
+            }
+        };
         $this->security_service = $this->createStub( Security_Service_Interface::class );
         $this->adapter          = $this->make_adapter();
         $_POST                  = array();
@@ -34,6 +43,7 @@ class Account_Ajax_Adapter_Test extends TestCase {
 
     protected function tearDown(): void {
         unset( $GLOBALS['wp_stubs_users'], $GLOBALS['wp_stubs_messages'], $GLOBALS['wp_stubs_user_meta'], $GLOBALS['wp_stubs_current_user_id'], $GLOBALS['wp_stubs_get_current_user_id'], $GLOBALS['wp_stubs_last_signon_args'], $GLOBALS['wp_stubs_signon_error'] );
+        $this->restore_globals();
         parent::tearDown();
     }
 
@@ -534,5 +544,40 @@ class Account_Ajax_Adapter_Test extends TestCase {
         $this->assertSame( 200, $response->get_status_code() );
         $this->assertSame( 'No updates', $response->get_content()->msg );
         $this->assertSame( 'warning', $response->get_content()->class );
+    }
+
+    public function test_update_account_returns_validation_error_when_btm_is_required_and_empty(): void {
+        $GLOBALS['wp_stubs_current_user_id'] = 5;
+        $this->security_service = $this->createMock( Security_Service_Interface::class );
+        $this->security_service->expects( $this->once() )
+            ->method( 'verify_nonce' )
+            ->with( 'valid', 'member_account' )
+            ->willReturn( true );
+
+        $GLOBALS['racketmanager'] = new class {
+            public function get_options( string $type = '' ): array {
+                return array( 'btm' => '1' );
+            }
+        };
+
+        $user = new User();
+        $user_repo = $this->createStub( User_Repository_Interface::class );
+        $user_repo->method( 'find' )->willReturn( $user );
+
+        $this->adapter = $this->make_adapter( null, $user_repo );
+
+        $request = array(
+            'racketmanager_nonce' => 'valid',
+            'username'            => 'player@example.test',
+            'firstname'           => 'John',
+            'lastname'            => 'Smith',
+            'gender'              => 'M',
+            'btm'                 => '',
+        );
+
+        $response = $this->adapter->update_account( $request );
+        $this->assertSame( 401, $response->get_status_code() );
+        $this->assertTrue( $response->get_content()->error );
+        $this->assertContains( 'btm', $response->get_content()->err_flds );
     }
 }

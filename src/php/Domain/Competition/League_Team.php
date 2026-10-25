@@ -13,9 +13,6 @@ use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Enums\Team_Profile;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
-use function Racketmanager\get_club;
-use function Racketmanager\get_league;
-use function Racketmanager\get_team;
 
 /**
  * Class to implement the League_Team object
@@ -61,7 +58,7 @@ class League_Team {
      *
      * @param int $team_id
      */
-    private int $team_id;
+    private ?int $team_id = null;
     /**
      * Win percent multiplication factor
      *
@@ -287,15 +284,15 @@ class League_Team {
     /**
      * Contact number variable
      *
-     * @var string
+     * @var ?string
      */
-    public string $contactno;
+    public ?string $contactno = null;
     /**
      * Content email variable
      *
-     * @var string
+     * @var ?string
      */
-    public string $contactemail;
+    public ?string $contactemail = null;
     /**
      * Match day variable
      *
@@ -353,9 +350,9 @@ class League_Team {
     /**
      * Rating variable
      *
-     * @var string|null
+     * @var float|null
      */
-    public ?string $rating = null;
+    public ?float $rating = null;
     /**
      * Straight set variable
      *
@@ -413,9 +410,9 @@ class League_Team {
     /**
      * Info variable
      *
-     * @var object
+     * @var object|null
      */
-    public object $info;
+    public ?object $info = null;
     /**
      * League variable
      *
@@ -425,15 +422,17 @@ class League_Team {
     /**
      * League status variable
      *
-     * @var string
+     * @var ?string
      */
-    public string $league_status;
+    public ?string $league_status = null;
     /**
      * Constructor
      *
      * @param object|null $league_team League_Team object.
      */
-    public function __construct( ?object $league_team = null ) {
+    public function __construct(
+        ?object $league_team = null
+    ) {
         if ( is_null( $league_team ) ) {
             return;
         }
@@ -470,16 +469,10 @@ class League_Team {
             } else {
                 $this->status_text = Util_Lookup::get_standing_status( $this->status );
             }
-            if ( ! empty( $this->club_id ) ) {
-                $this->club = get_club( $this->club_id );
-            } else {
+            if ( ! isset( $this->club ) ) {
                 $this->club = null;
             }
             $this->roster = maybe_unserialize( $this->roster );
-            if ( 'P' === $this->team_type && null !== $this->roster ) {
-                $team          = get_team( $this->id );
-                $this->players = $team->players;
-            }
             if ( 'W' === $this->status ) {
                 $this->is_withdrawn = true;
             } else {
@@ -518,7 +511,7 @@ class League_Team {
      * @return int Team identifier
      */
     public function get_team_id(): int {
-        return $this->team_id;
+        return $this->team_id ?? (int) ( $this->id ?? 0 );
     }
 
     /**
@@ -754,177 +747,6 @@ class League_Team {
         $this->win_percent = $this->done_matches > 0 ? round( ( $this->won_matches + $this->draw_matches / 2 ) / $this->done_matches, 3 ) * $this->pct_mult : 0;
     }
 
-    /**
-     * Get next match
-     *
-     * @return object next Match object
-     */
-    public function get_next_match(): object {
-        $league           = get_league( $this->league_id );
-        $this->next_match = $league->get_matches(
-            array(
-                'team_id'     => $this->id,
-                'time'        => 'next',
-                'limit'       => 1,
-                'reset_limit' => true,
-            )
-        );
-
-        return $this->next_match;
-    }
-
-
-    /**
-     * Get previous match
-     *
-     * @return object previous Match object
-     */
-    public function get_prev_match(): object {
-        $league           = get_league( $this->league_id );
-        $this->prev_match = $league->get_matches(
-            array(
-                'team_id'     => $this->id,
-                'time'        => 'prev',
-                'limit'       => 1,
-                'reset_limit' => true,
-            )
-        );
-        if ( $this->prev_match && '' === $this->prev_match->score ) {
-            $this->prev_match->score = 'N/A';
-        }
-        return $this->prev_match;
-    }
-    /**
-     * Get number of finished matches for team
-     *
-     * @return int
-     */
-    public function get_num_done_matches(): int {
-        $league = get_league( $this->league_id );
-        $num_matches = $league->get_matches(
-            array(
-                'count'            => true,
-                'team_id'          => $this->id,
-                'home_points'      => 'not_empty',
-                'away_points'      => 'not_empty',
-                'limit'            => false,
-                'cache'            => false,
-                'match_day'        => -1,
-                'reset_query_args' => true,
-                'withdrawn'        => false,
-                'status'           => array(
-                    'status_code' => 'Cancelled',
-                    'compare'     => 'not',
-                ),
-            )
-        );
-        $num_matches = apply_filters( 'racketmanager_done_matches_' . $league->sport, $num_matches, $this->id, $league->id );
-
-        $this->done_matches = $num_matches;
-
-        // re-compute win percentage.
-        $this->win_percent();
-
-        return $num_matches;
-    }
-
-    /**
-     * Get number of won matches
-     *
-     * @return int
-     */
-    public function get_num_won_matches(): int {
-        $league = get_league( $this->league_id );
-        $num_won = $league->get_matches(
-            array(
-                'count'            => true,
-                'winner_id'        => $this->id,
-                'limit'            => false,
-                'cache'            => false,
-                'match_day'        => -1,
-                'reset_query_args' => true,
-                'withdrawn'        => false,
-                'status'           => array(
-                    'status_code' => 'Cancelled',
-                    'compare'     => 'not',
-                ),
-            )
-        );
-        $num_won = apply_filters( 'racketmanager_won_matches_' . $league->sport, $num_won, $this->id, $league->id );
-
-        $this->won_matches = $num_won;
-
-        // re-compute win percentage.
-        $this->win_percent();
-
-        return $num_won;
-    }
-
-    /**
-     * Get number of draw matches
-     *
-     * @return int
-     */
-    public function get_num_draw_matches(): int {
-        $league = get_league( $this->league_id );
-        $num_draw = $league->get_matches(
-            array(
-                'count'            => true,
-                'team_id'          => $this->id,
-                'winner_id'        => -1,
-                'loser_id'         => -1,
-                'limit'            => false,
-                'cache'            => false,
-                'match_day'        => -1,
-                'reset_query_args' => true,
-                'withdrawn'        => false,
-                'status'           => array(
-                    'status_code' => 'Cancelled',
-                    'compare'     => 'not',
-                ),
-            )
-        );
-        $num_draw = apply_filters( 'racketmanager_tie_matches_' . $league->sport, $num_draw, $this->id, $league->id );
-
-        $this->draw_matches = $num_draw;
-
-        // re-compute win percentage.
-        $this->win_percent();
-
-        return $num_draw;
-    }
-
-    /**
-     * Get number of lost matches
-     *
-     * @return int
-     */
-    public function get_num_lost_matches(): int {
-        $league = get_league( $this->league_id );
-        $num_lost = $league->get_matches(
-            array(
-                'count'            => true,
-                'loser_id'         => $this->id,
-                'limit'            => false,
-                'cache'            => false,
-                'match_day'        => -1,
-                'reset_query_args' => true,
-                'withdrawn'        => false,
-                'status'           => array(
-                    'status_code' => 'Cancelled',
-                    'compare'     => 'not',
-                ),
-            )
-        );
-        $num_lost = apply_filters( 'racketmanager_lost_matches_' . $league->sport, $num_lost, $this->id, $league->id );
-
-        $this->lost_matches = $num_lost;
-
-        // re-compute win percentage.
-        $this->win_percent();
-
-        return $num_lost;
-    }
     /**
      * Set player rating
      *

@@ -5,6 +5,8 @@ namespace Racketmanager;
 
 /**
  * Backward-compatibility class aliases for reorganized domain models and commands.
+ *
+ * @deprecated 10.0.0 Class aliases are provided for temporary backward compatibility and will be sunset in v11.0.0. Reference PSR-4 classes directly.
  */
 $aliases = [
     // Club Context
@@ -28,6 +30,7 @@ $aliases = [
     // Finance Context
     \Racketmanager\Domain\Finance\Charge::class                   => 'Racketmanager\Domain\Charge',
     \Racketmanager\Domain\Finance\Invoice::class                  => 'Racketmanager\Domain\Invoice',
+    \Racketmanager\Application\Finance\Commands\Set_Purchase_Order_Command::class => 'Racketmanager\Domain\DTO\Finance\Set_Purchase_Order_Command',
 
     // Communication Context
     \Racketmanager\Domain\Communication\Message::class            => 'Racketmanager\Domain\Message',
@@ -52,6 +55,7 @@ $aliases = [
     \Racketmanager\Application\Club\Commands\Club_Players_Remove_Command::class => 'Racketmanager\Domain\DTO\Club\Club_Players_Remove_Command',
     \Racketmanager\Application\Club\Commands\Set_Club_Role_Command::class       => 'Racketmanager\Domain\DTO\Club\Set_Club_Role_Command',
     \Racketmanager\Application\Club\Commands\Update_Club_Command::class         => 'Racketmanager\Domain\DTO\Club\Update_Club_Command',
+
 ];
 
 foreach ( $aliases as $target => $alias ) {

@@ -117,6 +117,21 @@ class Team_Match_Row_Presenter_Test extends TestCase {
         $this->assertSame( '18:00', $row->score_text );
     }
 
+    public function test_pending_match_without_start_time_defaults_to_vs(): void {
+        $fixture = Fixture_Test_Factory::create( id: 504, date: '2026-10-12 00:00:00' );
+        $fixture->teams = [
+            'home' => (object) [ 'id' => 1, 'title' => 'Team A', 'club' => (object) [ 'id' => 10 ] ],
+            'away' => (object) [ 'id' => 2, 'title' => 'Team B', 'club' => (object) [ 'id' => 20 ] ],
+        ];
+        $fixture->league = (object) [ 'id' => 5, 'title' => 'Division 1' ];
+
+        $row = $this->create_team_match_row_presenter()->present( $fixture );
+
+        $this->assertTrue( $row->is_pending );
+        $this->assertSame( 'is-not-played', $row->score_class );
+        $this->assertSame( 'vs', $row->score_text );
+    }
+
     public function test_club_highlight_reports_win_loss_and_tie_from_the_club_perspective(): void {
         $presenter = $this->create_team_match_row_presenter();
         $options   = [ 'current_club' => 10 ];

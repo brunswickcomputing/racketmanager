@@ -16,6 +16,7 @@ use stdClass;
  * Interface to implement the League Team repository
  */
 interface League_Team_Repository_Interface extends Repository_Interface {
+    public function hydrate( object $row ): League_Team;
     public function save( object $entity ): bool|int;
     public function delete( int $id ): bool;
     public function find( int|string $id ): ?League_Team;

@@ -36,6 +36,7 @@ use stdClass;
 use WP_Error;
 
 class Ajax_Adapter_Test extends TestCase {
+    use \Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
     use Manages_Wordpress_Globals;
 
     protected function setUp(): void {
@@ -361,7 +362,6 @@ class Ajax_Adapter_Test extends TestCase {
         $event_s->competition_id = 10;
         $event_s->competition = $comp;
         $event_s->current_season = [ 'name' => '2026' ];
-        $event_s->method( 'get_teams' )->willReturn( [] );
 
         $club = $this->createStub( Club::class );
         $club->id = 100;
@@ -379,7 +379,7 @@ class Ajax_Adapter_Test extends TestCase {
             ->with( 'active', null, 100, null, true, null, 45 )
             ->willReturn( [ (object) [ 'id' => 1, 'name' => 'Senior Player' ] ] );
 
-        $handler = new Get_Team_Order_Players_Handler( $comp_service, $club_service, $reg_service, $settings_service );
+        $handler = new Get_Team_Order_Players_Handler( $comp_service, $club_service, $reg_service, $settings_service, $this->event_query_service() );
         $vm = $handler->handle( new Get_Team_Order_Players_Query( event_id: 77, club_id: 100 ) );
 
         $this->assertFalse( $vm->is_error() );
@@ -406,7 +406,6 @@ class Ajax_Adapter_Test extends TestCase {
         $event_o->competition_id = 10;
         $event_o->competition = $comp;
         $event_o->current_season = [ 'name' => '2026' ];
-        $event_o->method( 'get_teams' )->willReturn( [] );
 
         $club = $this->createStub( Club::class );
         $club->id = 100;
@@ -422,7 +421,7 @@ class Ajax_Adapter_Test extends TestCase {
             ->with( 'active', null, 100, null, true, null, null )
             ->willReturn( [ (object) [ 'id' => 2, 'name' => 'Open Player' ] ] );
 
-        $handler = new Get_Team_Order_Players_Handler( $comp_service, $club_service, $reg_service, $settings_service );
+        $handler = new Get_Team_Order_Players_Handler( $comp_service, $club_service, $reg_service, $settings_service, $this->event_query_service() );
         $vm = $handler->handle( new Get_Team_Order_Players_Query( event_id: 88, club_id: 100 ) );
 
         $this->assertFalse( $vm->is_error() );
@@ -510,7 +509,11 @@ class Ajax_Adapter_Test extends TestCase {
             $club_service,
             $tourn_service,
             $fixture_repo,
-            $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class )
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class ),
+            search_players_handler: $this->createStub( \Racketmanager\Application\Player\Queries\Search_Players_Handler::class ),
+            get_player_details_handler: new \Racketmanager\Application\Player\Queries\Get_Player_Details_Handler(
+                $this->createStub( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class )
+            )
         );
     }
 }

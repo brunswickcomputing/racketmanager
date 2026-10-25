@@ -11,6 +11,8 @@ declare( strict_types=1 );
 namespace Racketmanager\Services\Admin\Finance;
 
 use Exception;
+use Racketmanager\Application\Finance\Commands\Generate_Charge_Invoices_Command;
+use Racketmanager\Application\Finance\Commands\Generate_Charge_Invoices_Handler;
 use Racketmanager\Domain\Finance\Charge;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
@@ -25,10 +27,10 @@ use Racketmanager\Util\Util_Messages;
 use stdClass;
 
 final readonly class Finance_Charge_Action_Dispatcher {
-
     public function __construct(
         private Finance_Service $finance_service,
         private Action_Guard_Interface $action_guard,
+        private Generate_Charge_Invoices_Handler $generate_charge_invoices_handler,
     ) {
     }
 
@@ -116,8 +118,8 @@ final readonly class Finance_Charge_Action_Dispatcher {
             );
         }
 
-        $charge_id = isset( $post['chargesId'] ) ? intval( $post['chargesId'] ) : ( isset( $post['charges_id'] ) ? intval( $post['charges_id'] ) : null );
-        if ( empty( $charge_id ) ) {
+        $command = Generate_Charge_Invoices_Command::from_post( $post );
+        if ( empty( $command->charge_id ) ) {
             return new Action_Result_DTO(
                 message: __( 'Invalid charge', 'racketmanager' ),
                 message_type: Admin_Message_Type::ERROR,
@@ -126,25 +128,25 @@ final readonly class Finance_Charge_Action_Dispatcher {
         }
 
         try {
-            $result = $this->finance_service->send_invoices_for_charge( $charge_id, true );
+            $result = $this->generate_charge_invoices_handler->handle( $command );
             if ( $result ) {
                 return new Action_Result_DTO(
                     message: __( 'Invoices generated and sent', 'racketmanager' ),
                     message_type: Admin_Message_Type::SUCCESS,
-                    query_params: array( 'view' => 'charge', 'charges' => $charge_id ),
+                    query_params: array( 'view' => 'charge', 'charges' => $command->charge_id ),
                 );
             }
 
             return new Action_Result_DTO(
                 message: __( 'Error on invoice sending', 'racketmanager' ),
                 message_type: Admin_Message_Type::ERROR,
-                query_params: array( 'view' => 'charge', 'charges' => $charge_id ),
+                query_params: array( 'view' => 'charge', 'charges' => $command->charge_id ),
             );
         } catch ( Charge_Not_Found_Exception|Invoice_Not_Created_Exception $e ) {
             return new Action_Result_DTO(
                 message: $e->getMessage(),
                 message_type: Admin_Message_Type::ERROR,
-                query_params: array( 'view' => 'charge', 'charges' => $charge_id ),
+                query_params: array( 'view' => 'charge', 'charges' => $command->charge_id ),
             );
         }
     }

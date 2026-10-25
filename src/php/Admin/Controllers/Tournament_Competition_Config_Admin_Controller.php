@@ -68,11 +68,6 @@ final readonly class Tournament_Competition_Config_Admin_Controller {
                 }
             }
 
-            // Logic for display
-            $competition->config            = (object) $competition->get_settings();
-            $competition->config->type      = $competition->get_type();
-            $competition->config->age_group = $competition->age_group;
-
             $result['view_model'] = $this->build_view_model( $competition, $tournament );
 
         } catch ( Exception $e ) {
@@ -316,6 +311,10 @@ final readonly class Tournament_Competition_Config_Admin_Controller {
         $rules_options = $this->competition_service->get_rules_options( $competition->get_type() );
         $clubs         = $this->club_service->get_clubs( array( 'type' => 'affiliated' ) );
         $events        = $this->competition_service->get_events_for_competition( $competition->get_id() );
+        $config            = (object) $competition->get_settings();
+        $config->type      = $competition->get_type();
+        $config->age_group = $competition->age_group ?? null;
+        $title             = $competition->name ?? '';
 
         return new Tournament_Competition_Config_Page_View_Model(
             $competition,
@@ -323,7 +322,9 @@ final readonly class Tournament_Competition_Config_Admin_Controller {
             $rules_options,
             $clubs,
             $events,
-            $tab
+            $tab,
+            config: $config,
+            title: $title,
         );
     }
 }

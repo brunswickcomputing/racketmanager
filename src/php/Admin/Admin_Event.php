@@ -162,7 +162,7 @@ final class Admin_Event extends Admin_Display {
 
         $tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( strval( $_GET['tab'] ) ) ) : 'general';
 
-        $raw_leagues = ( ! $new_event && ( $competition->is_championship ?? false ) && isset( $event ) && method_exists( $event, 'get_leagues' ) ) ? $event->get_leagues() : array();
+        $raw_leagues = ( ! $new_event && ( $competition->is_championship ?? false ) && isset( $event ) && ( $event instanceof \Racketmanager\Domain\Competition\Event ) ) ? $this->get_event_query_service()->get_leagues( $event ) : array();
         $leagues     = is_array( $raw_leagues ) ? $raw_leagues : array();
 
         $vm = new Tournament_Event_Config_Page_View_Model(

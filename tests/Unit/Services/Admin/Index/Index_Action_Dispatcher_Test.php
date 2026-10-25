@@ -225,6 +225,25 @@ final class Index_Action_Dispatcher_Test extends TestCase {
         self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
     }
 
+    public function test_bulk_delete_reports_service_failure_after_completed_items(): void {
+        $service = $this->createMock( Competition_Service::class );
+        $service->expects( self::exactly( 2 ) )->method( 'remove' )
+            ->willReturnCallback( static function ( int $id ): void {
+                if ( 6 === $id ) {
+                    throw new \RuntimeException( 'Fixture 42 could not be deleted' );
+                }
+            } );
+
+        $result = new Index_Action_Dispatcher( $service, $this->createStub( Action_Guard_Interface::class ) )->handle(
+            array(),
+            array( 'doCompDel' => '1', 'action' => 'delete', 'competition' => array( 5, 6 ) )
+        );
+
+        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
+        self::assertStringContainsString( 'Deleted 5', $result->message );
+        self::assertStringContainsString( 'Fixture 42 could not be deleted', $result->message );
+    }
+
     private function validator_factory(
         bool $error = false,
         array $fields = array(),

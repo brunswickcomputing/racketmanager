@@ -17,6 +17,7 @@ use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Team_Service;
 use wpdb;
@@ -417,7 +418,8 @@ final class Team_Test extends TestCase {
         $event = $this->createMock( \Racketmanager\Domain\Competition\Event::class );
         $event->competition = (object) [ 'is_team_entry' => true ];
         $event->method( 'get_season' )->willReturn( '2026' );
-        $event->expects( $this->once() )->method( 'get_team_info' )->with( 10 )->willReturn( (object) [
+        $query = $this->createMock( Event_Query_Service::class );
+        $query->expects( $this->once() )->method( 'get_team_info' )->with( $event, 10 )->willReturn( (object) [
             'captain_id'   => 1,
             'match_day'    => 'Monday',
             'match_time'   => '18:00',
@@ -440,7 +442,7 @@ final class Team_Test extends TestCase {
             ->with( 2, '222', 'new@example.com' )
             ->willReturn( true );
 
-        $service = new Team_Service( $team_repo, $club_repo, $event_repo, $player_serv, $fixture_repo );
+        $service = new Team_Service( $team_repo, $club_repo, $event_repo, $player_serv, $fixture_repo, $query );
         $msg     = $service->update_team_event( 10, 5, 2, '222', 'new@example.com', 2, '19:30' );
         $this->assertSame( 'Team updated', $msg );
     }
@@ -455,7 +457,8 @@ final class Team_Test extends TestCase {
         $event = $this->createMock( \Racketmanager\Domain\Competition\Event::class );
         $event->competition = (object) [ 'is_team_entry' => true ];
         $event->method( 'get_season' )->willReturn( '2026' );
-        $event->expects( $this->once() )->method( 'get_team_info' )->with( 10 )->willReturn( (object) [
+        $query = $this->createMock( Event_Query_Service::class );
+        $query->expects( $this->once() )->method( 'get_team_info' )->with( $event, 10 )->willReturn( (object) [
             'captain_id'   => 2,
             'match_day'    => 'Wednesday',
             'match_time'   => '19:30',
@@ -467,7 +470,7 @@ final class Team_Test extends TestCase {
         $team_repo->expects( $this->never() )->method( 'update_event_settings' );
         $player_serv->expects( $this->never() )->method( 'update_contact_details' );
 
-        $service = new Team_Service( $team_repo, $club_repo, $event_repo, $player_serv, $fixture_repo );
+        $service = new Team_Service( $team_repo, $club_repo, $event_repo, $player_serv, $fixture_repo, $query );
         $msg     = $service->update_team_event( 10, 5, 2, '222', 'new@example.com', 2, '19:30' );
         $this->assertSame( 'No updates', $msg );
     }
@@ -482,7 +485,8 @@ final class Team_Test extends TestCase {
         $event = $this->createMock( \Racketmanager\Domain\Competition\Event::class );
         $event->competition = (object) [ 'is_team_entry' => true ];
         $event->method( 'get_season' )->willReturn( '2026' );
-        $event->expects( $this->once() )->method( 'get_team_info' )->with( 10 )->willReturn( (object) [
+        $query = $this->createMock( Event_Query_Service::class );
+        $query->expects( $this->once() )->method( 'get_team_info' )->with( $event, 10 )->willReturn( (object) [
             'captain_id'   => 1,
             'match_day'    => 'Monday',
             'match_time'   => '18:00',
@@ -493,7 +497,7 @@ final class Team_Test extends TestCase {
         $event_repo->expects( $this->once() )->method( 'find_by_id' )->with( 5 )->willReturn( $event );
         $team_repo->expects( $this->never() )->method( 'update_event_settings' );
 
-        $service = new Team_Service( $team_repo, $club_repo, $event_repo, $player_serv, $fixture_repo );
+        $service = new Team_Service( $team_repo, $club_repo, $event_repo, $player_serv, $fixture_repo, $query );
         // Missing captain (0)
         $msg = $service->update_team_event( 10, 5, 0, '111', 'old@example.com', 2, '19:30' );
         $this->assertSame( 'Team details missing', $msg );
@@ -509,7 +513,8 @@ final class Team_Test extends TestCase {
         $event = $this->createMock( \Racketmanager\Domain\Competition\Event::class );
         $event->competition = (object) [ 'is_team_entry' => true ];
         $event->method( 'get_season' )->willReturn( '2026' );
-        $event->expects( $this->once() )->method( 'get_team_info' )->with( 10 )->willReturn( (object) [
+        $query = $this->createMock( Event_Query_Service::class );
+        $query->expects( $this->once() )->method( 'get_team_info' )->with( $event, 10 )->willReturn( (object) [
             'captain_id'   => 1,
             'match_day'    => 'Monday',
             'match_time'   => '18:00',
@@ -522,7 +527,7 @@ final class Team_Test extends TestCase {
             ->method( 'update_event_settings' )
             ->willReturn( false );
 
-        $service = new Team_Service( $team_repo, $club_repo, $event_repo, $player_serv, $fixture_repo );
+        $service = new Team_Service( $team_repo, $club_repo, $event_repo, $player_serv, $fixture_repo, $query );
         $msg     = $service->update_team_event( 10, 5, 2, '111', 'old@example.com', 2, '19:30' );
         $this->assertSame( 'Team update error', $msg );
     }
@@ -537,7 +542,8 @@ final class Team_Test extends TestCase {
         $event = $this->createMock( \Racketmanager\Domain\Competition\Event::class );
         $event->competition = (object) [ 'is_team_entry' => true ];
         $event->method( 'get_season' )->willReturn( '2026' );
-        $event->expects( $this->once() )->method( 'get_team_info' )->with( 10 )->willReturn( (object) [
+        $query = $this->createMock( Event_Query_Service::class );
+        $query->expects( $this->once() )->method( 'get_team_info' )->with( $event, 10 )->willReturn( (object) [
             'captain_id'   => 2,
             'match_day'    => 'Tuesday',
             'match_time'   => '19:30',
@@ -553,7 +559,7 @@ final class Team_Test extends TestCase {
             ->method( 'update_contact_details' )
             ->willReturn( false );
 
-        $service = new Team_Service( $team_repo, $club_repo, $event_repo, $player_serv, $fixture_repo );
+        $service = new Team_Service( $team_repo, $club_repo, $event_repo, $player_serv, $fixture_repo, $query );
         $msg     = $service->update_team_event( 10, 5, 2, '222', 'new@example.com', 2, '19:30' );
         $this->assertSame( 'Error updating team contact', $msg );
     }
@@ -568,7 +574,8 @@ final class Team_Test extends TestCase {
         $event = $this->createMock( \Racketmanager\Domain\Competition\Event::class );
         $event->competition = (object) [ 'is_team_entry' => true ];
         $event->method( 'get_season' )->willReturn( '2026' );
-        $event->expects( $this->once() )->method( 'get_team_info' )->with( 10 )->willReturn( (object) [
+        $query = $this->createMock( Event_Query_Service::class );
+        $query->expects( $this->once() )->method( 'get_team_info' )->with( $event, 10 )->willReturn( (object) [
             'captain_id'   => 2,
             'match_day'    => 'Tuesday',
             'match_time'   => '19:30',
@@ -579,7 +586,7 @@ final class Team_Test extends TestCase {
         $event_repo->expects( $this->once() )->method( 'find_by_id' )->with( 5 )->willReturn( $event );
         $player_serv->expects( $this->once() )->method( 'get_player' )->with( 2 )->willThrowException( new Player_Not_Found_Exception( 'Player not found' ) );
 
-        $service = new Team_Service( $team_repo, $club_repo, $event_repo, $player_serv, $fixture_repo );
+        $service = new Team_Service( $team_repo, $club_repo, $event_repo, $player_serv, $fixture_repo, $query );
         $msg     = $service->update_team_event( 10, 5, 2, '222', 'new@example.com', 2, '19:30' );
         $this->assertSame( 'Player not found', $msg );
     }

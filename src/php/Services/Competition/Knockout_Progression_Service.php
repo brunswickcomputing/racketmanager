@@ -23,17 +23,20 @@ class Knockout_Progression_Service
     private League_Repository_Interface $league_repository;
     private Event_Repository_Interface $event_repository;
     private ?Notification_Service $notification_service = null;
+    private League_Query_Service|\Closure|null $league_query_service;
 
     public function __construct(
         ?Fixture_Repository_Interface $fixture_repository = null,
         ?League_Repository_Interface $league_repository = null,
         ?Event_Repository_Interface $event_repository = null,
-        ?Notification_Service $notification_service = null
+        ?Notification_Service $notification_service = null,
+        League_Query_Service|\Closure|null $league_query_service = null
     ) {
-        $this->fixture_repository = $fixture_repository ?? new Fixture_Repository();
-        $this->league_repository = $league_repository ?? new League_Repository();
         $this->event_repository = $event_repository ?? new Event_Repository();
+        $this->league_repository = $league_repository ?? new League_Repository( null, $this->event_repository );
+        $this->fixture_repository = $fixture_repository ?? new Fixture_Repository();
         $this->notification_service = $notification_service;
+        $this->league_query_service = $league_query_service;
     }
 
     /**
@@ -72,7 +75,7 @@ class Knockout_Progression_Service
         }
 
         if ($league && $fixture->get_season() && $league->get_season() !== $fixture->get_season()) {
-            $league->set_season($fixture->get_season(), true);
+            $this->league_query()->set_season( $league, $fixture->get_season(), true);
             // Re-fetch championship since season change affects round counts
             $championship = $league->championship;
         }
@@ -211,7 +214,7 @@ class Knockout_Progression_Service
         }
 
         if ($league && $fixture->get_season() && $league->get_season() !== $fixture->get_season()) {
-            $league->set_season($fixture->get_season(), true);
+            $this->league_query()->set_season( $league, $fixture->get_season(), true);
             // Re-fetch championship since season change affects round counts
             $championship = $league->championship;
         }
@@ -249,7 +252,7 @@ class Knockout_Progression_Service
         }
 
         if ($league && $fixture->get_season() && $league->get_season() !== $fixture->get_season()) {
-            $league->set_season($fixture->get_season(), true);
+            $this->league_query()->set_season( $league, $fixture->get_season(), true);
             // Re-fetch championship since season change affects round counts
             $championship = $league->championship;
         }
@@ -274,9 +277,9 @@ class Knockout_Progression_Service
             return;
         }
 
-        // Identify consolation leagues in this event
-        $consolation_league_ids = $event->get_leagues(['consolation' => true]);
-        if (empty($consolation_league_ids)) {
+        // Identify consolation leagues in this event (load + championship filter).
+        $consolation_leagues = $this->load_consolation_leagues($event);
+        if (empty($consolation_leagues)) {
             return;
         }
 
@@ -290,12 +293,7 @@ class Knockout_Progression_Service
 
         $team_ref = '2_' . $final_round . '_' . $fixture->get_id();
 
-        foreach ($consolation_league_ids as $c_league_id) {
-            $league_lookup_id = is_object($c_league_id) ? (int) ($c_league_id->id ?? 0) : (int) $c_league_id;
-            $c_league = $this->league_repository->find_by_id($league_lookup_id);
-            if (!$c_league) {
-                continue;
-            }
+        foreach ($consolation_leagues as $c_league) {
 
             // Find fixtures in consolation where this placeholder is assigned
             // We'll search by team_id which can be a placeholder string
@@ -416,14 +414,15 @@ class Knockout_Progression_Service
             return;
         }
 
-        $consolation_league_ids = $event->get_leagues(['consolation' => true]);
-        if (empty($consolation_league_ids)) {
+        $consolation_leagues = $this->load_consolation_leagues($event);
+        if (empty($consolation_leagues)) {
             return;
         }
 
         $placeholder = '2_' . $final_round . '_' . $fixture->get_id();
 
-        foreach ($consolation_league_ids as $c_league_id) {
+        foreach ($consolation_leagues as $c_league) {
+            $league_lookup_id = (int) $c_league->get_id();
             // Find fixtures in consolation where the winner or loser of the reset match might have been moved.
             // Since we don't know who the loser was, we check both teams.
             $teams_to_check = [(string)$fixture->get_home_team(), (string)$fixture->get_away_team()];
@@ -434,7 +433,7 @@ class Knockout_Progression_Service
                 }
 
                 $c_fixtures = $this->fixture_repository->find_by_league_and_team(
-                    (int)$c_league_id,
+                    $league_lookup_id,
                     $fixture->get_season(),
                     $team_id
                 );
@@ -468,5 +467,60 @@ class Knockout_Progression_Service
         } else {
             $fixture->set_away_team($team_id);
         }
+    }
+
+    /**
+     * Load consolation leagues for an event.
+     *
+     * Mirrors Event::get_leagues(['consolation' => true]): query candidates,
+     * load each via the league repository, and drop any whose championship
+     * is not a consolation draw.
+     *
+     * @return League[]
+     */
+    private function load_consolation_leagues(object $event): array
+    {
+        if (empty($event->id)) {
+            return [];
+        }
+
+        $raw = $this->event_repository->query_leagues((int) $event->id, ['consolation' => true]);
+        if (!is_array($raw) || empty($raw)) {
+            return [];
+        }
+
+        $leagues = [];
+        foreach ($raw as $item) {
+            $id = is_object($item) ? (int) ($item->id ?? 0) : (int) $item;
+            if ($id <= 0) {
+                continue;
+            }
+            $loaded = $this->league_repository->find_by_id($id);
+            if (!$loaded) {
+                continue;
+            }
+            $championship = $loaded->championship ?? null;
+            $is_consolation = $championship && (
+                method_exists($championship, 'is_consolation')
+                    ? $championship->is_consolation()
+                    : (bool) ($championship->is_consolation ?? false)
+            );
+            if (!$is_consolation) {
+                continue;
+            }
+            $leagues[] = $loaded;
+        }
+
+        return $leagues;
+    }
+
+    private function league_query(): League_Query_Service {
+        if ( $this->league_query_service instanceof \Closure ) {
+            $this->league_query_service = ( $this->league_query_service )();
+        }
+        if ( ! $this->league_query_service instanceof League_Query_Service ) {
+            throw new \LogicException( 'League_Query_Service is required by Knockout_Progression_Service but was not configured.' );
+        }
+        return $this->league_query_service;
     }
 }

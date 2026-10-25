@@ -4,10 +4,12 @@ declare( strict_types=1 );
 namespace Racketmanager\Services\Competition;
 
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Events\Competition_Season_Cascaded_Event;
 use Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 
 /**
@@ -18,6 +20,7 @@ class Competition_Season_Service {
 		private League_Team_Repository_Interface $league_team_repository,
 		private Club_Repository_Interface $club_repository,
 		private Event_Repository_Interface $event_repository,
+		private League_Repository_Interface $league_repository,
 		private ?Domain_Event_Dispatcher_Interface $event_dispatcher = null,
 	) {
 	}
@@ -120,13 +123,118 @@ class Competition_Season_Service {
 		];
 
 		foreach ( $events as $event ) {
-			if ( method_exists( $event, 'add_season' ) ) {
-				$event->add_season( $event_season, $this->league_team_repository );
+			if ( $event instanceof Event ) {
+				$this->add_season_to_event( $event, $event_season );
 			}
 		}
 
 		$this->event_dispatcher?->dispatch(
 			new Competition_Season_Cascaded_Event( (int) $competition->get_id(), (string) $season->name )
 		);
+	}
+
+	/**
+	 * Adds a season to an event, persists seasons, and seeds league teams for league competitions.
+	 *
+	 * Admin flash messaging is the caller's responsibility (e.g. Action_Result_DTO
+	 * "Event added" / "Season added to competition"). The legacy Event::add_season
+	 * `$racketmanager->set_message( 'Season added' )` is not reproduced here.
+	 *
+	 * @param Event $event Event entity.
+	 * @param array $season Season data.
+	 * @return void
+	 */
+	public function add_season_to_event( Event $event, array $season ): void {
+		$seasons                 = $event->get_seasons();
+		$seasons[ $season['name'] ] = $season;
+		$event->seasons          = $seasons;
+		$seasons = $event->get_seasons();
+		if ( ! empty( $event->id ) ) {
+			$this->event_repository->update_seasons( (int) $event->id, $seasons );
+		}
+
+		if ( $event->competition && ! empty( $event->competition->is_league ) ) {
+			$curr_season = end( $seasons );
+			$prev_season = prev( $seasons );
+			if ( $prev_season && ! empty( $prev_season['name'] ) && ! empty( $event->id ) ) {
+				$teams                = $this->build_event_constitution( (int) $event->id, array( 'season' => $prev_season['name'] ) );
+				$event->constitutions = $teams;
+			} else {
+				$teams = array();
+			}
+			$status    = '';
+			$profile   = '0';
+			$rank      = 1;
+			$league_id = null;
+			$league    = null;
+			foreach ( $teams as $team ) {
+				if ( $team->old_league_id !== $league_id ) {
+					$league_id = $team->old_league_id;
+					$league    = $this->league_repository->find_by_id( (int) $league_id );
+				}
+				if ( $league ) {
+					$league_team_id = $this->league_repository->add_team_to_league(
+						(int) $league->id,
+						(int) $team->team_id,
+						(string) $curr_season['name'],
+						(string) $rank,
+						$status,
+						(int) $profile
+					);
+					if ( $league_team_id ) {
+						$this->league_team_repository->update_details(
+							(int) $league_team_id,
+							(int) ( $team->captain ?? 0 ),
+							(string) ( $team->match_day ?? '' ),
+							(string) ( $team->match_time ?? '' )
+						);
+						$team->league_team_id = $league_team_id;
+					}
+					++$rank;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Build constitution array for an event.
+	 *
+	 * @param int $event_id Event ID.
+	 * @param array $args Query arguments.
+	 * @return array
+	 */
+	public function build_event_constitution( int $event_id, array $args = array() ): array {
+		$defaults = array(
+			'offset' => 0,
+			'limit'  => 99999999,
+			'season' => false,
+			'club'   => false,
+		);
+		$args     = array_merge( $defaults, $args );
+
+		$constitutions = $this->event_repository->build_constitution( $event_id, $args );
+
+		return self::normalize_constitution_rows( is_array( $constitutions ) ? $constitutions : array() );
+	}
+
+	/**
+	 * Normalize constitution rows for a new season (shared with Event_Query_Service).
+	 *
+	 * @param array $constitutions Raw constitution rows.
+	 * @return array
+	 */
+	public static function normalize_constitution_rows( array $constitutions ): array {
+		foreach ( $constitutions as $i => $constitution ) {
+			$constitution->rank = $constitution->old_rank;
+			if ( 'W' !== $constitution->status ) {
+				$constitution->status = '';
+			}
+			$constitution->profile   = '0';
+			$constitution->league_id = $constitution->old_league_id;
+
+			$constitutions[ $i ] = $constitution;
+		}
+
+		return $constitutions;
 	}
 }

@@ -244,9 +244,9 @@ $competition_type = $league->event->competition->type instanceof \BackedEnum ? $
 
     <div class="">
         <?php
-        if ( ! $league->event->competition->is_championship && $league->get_page_links( 'matches' ) ) {
+        if ( ! $league->event->competition->is_championship && ! empty( $league->pagination_matches ) ) {
             ?>
-            <div class=""><?php echo esc_html( $league->get_page_links( 'matches' ) ); ?></div>
+            <div class=""><?php echo wp_kses_post( $league->pagination_matches ); ?></div>
             <?php
         }
         ?>

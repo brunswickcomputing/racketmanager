@@ -6,6 +6,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Club\Club;
+use Racketmanager\Domain\Club\Club_Role;
 use Racketmanager\Domain\Player\User;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
@@ -15,6 +16,7 @@ use Racketmanager\Infrastructure\Wordpress\Ajax\Club_Ajax_Controller;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Registration_Service;
@@ -25,6 +27,7 @@ class Club_Ajax_Adapter_Test extends TestCase {
     private Club_Service|MockObject|Stub $club_service;
     private Registration_Service|MockObject|Stub $registration_service;
     private User_Repository_Interface|MockObject|Stub $user_repository;
+    private Club_Role_Repository_Interface|MockObject|Stub $club_role_repository;
     private Club_Ajax_Adapter $adapter;
 
     protected function setUp(): void {
@@ -33,6 +36,7 @@ class Club_Ajax_Adapter_Test extends TestCase {
         $this->club_service         = $this->createStub( Club_Service::class );
         $this->registration_service = $this->createStub( Registration_Service::class );
         $this->user_repository      = $this->createStub( User_Repository_Interface::class );
+        $this->club_role_repository = $this->createStub( Club_Role_Repository_Interface::class );
         $this->adapter              = $this->make_adapter();
         $_POST                      = array();
         $_REQUEST                   = array();
@@ -62,7 +66,8 @@ class Club_Ajax_Adapter_Test extends TestCase {
             $response_factory,
             $this->club_service,
             $this->registration_service,
-            $this->user_repository
+            $this->user_repository,
+            $this->club_role_repository
         );
     }
 
@@ -312,9 +317,12 @@ class Club_Ajax_Adapter_Test extends TestCase {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
         $request = $this->role_post();
         $this->stub_role_user( false );
-        $GLOBALS['wp_stubs_club_roles'][9] = (object) array( 'user' => (object) array( 'id' => 99 ) );
+        $role = new Club_Role();
+        $role->id = 9;
+        $role->user = (object) array( 'id' => 99 );
+        $this->club_role_repository->method( 'find' )->willReturn( $role );
         $this->club_service = $this->createMock( Club_Service::class );
-        $this->club_service->expects( $this->once() )->method( 'reassign_role_user' )->with( 9, 5 )->willReturn( $this->createStub( \Racketmanager\Domain\Club\Club_Role::class ) );
+        $this->club_service->expects( $this->once() )->method( 'reassign_role_user' )->with( 9, 5 )->willReturn( $this->createStub( Club_Role::class ) );
         $this->adapter = $this->make_adapter();
 
         $content = $this->adapter->set_club_role( $request )->get_content();
@@ -326,7 +334,10 @@ class Club_Ajax_Adapter_Test extends TestCase {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
         $request = $this->role_post();
         $this->stub_role_user( true );
-        $GLOBALS['wp_stubs_club_roles'][9] = (object) array( 'user' => (object) array( 'id' => 5 ) );
+        $role = new Club_Role();
+        $role->id = 9;
+        $role->user = (object) array( 'id' => 5 );
+        $this->club_role_repository->method( 'find' )->willReturn( $role );
         $this->club_service = $this->createMock( Club_Service::class );
         $this->club_service->expects( $this->never() )->method( 'reassign_role_user' );
         $this->adapter = $this->make_adapter();
@@ -339,7 +350,10 @@ class Club_Ajax_Adapter_Test extends TestCase {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
         $request = $this->role_post();
         $this->stub_role_user( false );
-        $GLOBALS['wp_stubs_club_roles'][9] = (object) array( 'user' => (object) array( 'id' => 5 ) );
+        $role = new Club_Role();
+        $role->id = 9;
+        $role->user = (object) array( 'id' => 5 );
+        $this->club_role_repository->method( 'find' )->willReturn( $role );
         $this->club_service = $this->createMock( Club_Service::class );
         $this->club_service->expects( $this->never() )->method( 'reassign_role_user' );
         $this->adapter = $this->make_adapter();

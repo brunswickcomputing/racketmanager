@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Domain\DTO\Fixture;
 
+use Racketmanager\Domain\Fixture\Fixture_Time_Parser;
 use Racketmanager\Exceptions\Fixture_Validation_Exception;
 
 /**
@@ -48,6 +49,9 @@ readonly class Fixture_Date_Update_Request {
 
         if ( empty( $this->schedule_date ) ) {
             $error_msgs[] = __( 'Schedule date not supplied', 'racketmanager' );
+            $error_flds[] = 'schedule-date';
+        } elseif ( str_starts_with( trim( $this->schedule_date ), '0000-00-00' ) || ! Fixture_Time_Parser::is_valid_datetime( $this->schedule_date ) ) {
+            $error_msgs[] = __( 'Invalid schedule date format', 'racketmanager' );
             $error_flds[] = 'schedule-date';
         }
 

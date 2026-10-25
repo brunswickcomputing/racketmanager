@@ -9,6 +9,7 @@
 
 namespace Racketmanager\Services;
 
+use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\DTO\Team\Team_Fixture_Settings_DTO;
 use Racketmanager\Domain\Fixture\Fixture_Team_Resolver_Interface;
@@ -34,6 +35,7 @@ class Team_Service implements Fixture_Team_Resolver_Interface {
     private Team_Repository $team_repository;
     private Club_Repository $club_repository;
     private Event_Repository $event_repository;
+    private Event_Query_Service $event_query_service;
     private Player_Service $player_service;
     private Fixture_Repository_Interface $fixture_repository;
 
@@ -46,13 +48,15 @@ class Team_Service implements Fixture_Team_Resolver_Interface {
         Club_Repository $club_repository,
         Event_Repository $event_repository,
         Player_Service $player_service,
-        Fixture_Repository_Interface $fixture_repository
+        Fixture_Repository_Interface $fixture_repository,
+        ?Event_Query_Service $event_query_service = null
     ) {
         $this->team_repository    = $team_repository;
         $this->club_repository    = $club_repository;
         $this->event_repository   = $event_repository;
         $this->player_service     = $player_service;
         $this->fixture_repository = $fixture_repository;
+        $this->event_query_service = $event_query_service ?? new Event_Query_Service( $event_repository, $fixture_repository );
     }
 
     /**
@@ -258,7 +262,7 @@ class Team_Service implements Fixture_Team_Resolver_Interface {
         }
 
         $match_day = is_null( $matchday ) ? '' : (string) Util_Lookup::get_match_day( $matchday );
-        $current   = $event->get_team_info( $team_id );
+        $current   = $this->event_query_service->get_team_info( $event, $team_id );
         $updates   = false;
         $msg       = null;
 

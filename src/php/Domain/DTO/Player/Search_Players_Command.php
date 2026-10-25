@@ -5,6 +5,8 @@ namespace Racketmanager\Domain\DTO\Player;
 
 /**
  * Command for searching players.
+ *
+ * @deprecated 2.0.0 Use \Racketmanager\Application\Player\Queries\Search_Players_Query instead.
  */
 readonly class Search_Players_Command {
     public function __construct(

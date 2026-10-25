@@ -5,12 +5,14 @@ namespace Racketmanager\Application\Event\Queries;
 
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
+use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition_Service;
 use function __;
 
 class Get_Event_Team_Matches_Handler {
     public function __construct(
-        private readonly Competition_Service $competition_service
+        private readonly Competition_Service $competition_service,
+        private readonly Event_Query_Service $event_query_service
     ) {}
 
     public function handle( Get_Event_Team_Matches_Query $query ): Shortcode_View_Model {
@@ -25,6 +27,8 @@ class Get_Event_Team_Matches_Handler {
             return Shortcode_View_Model::for_error( __( 'Event not found', 'racketmanager' ) );
         }
 
+        $this->event_query_service->set_season( $event, $query->season ?? null );
+
         if ( empty( $query->team_id ) ) {
             return Shortcode_View_Model::for_error( __( 'No team id supplied', 'racketmanager' ) );
         }
@@ -38,7 +42,7 @@ class Get_Event_Team_Matches_Handler {
             'team_id' => $query->team_id,
             'pending' => true,
         ];
-        $matches    = $event->get_matches( $match_args );
+        $matches    = $this->event_query_service->get_matches( $event, $match_args );
         $filename   = ! empty( $query->template ) ? 'team-matches-' . $query->template : 'team-matches';
 
         return Shortcode_View_Model::for_template(

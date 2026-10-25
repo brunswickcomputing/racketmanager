@@ -105,6 +105,8 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
         $this->assertSame( 'Club A 1', $adapter->home_title );
         $this->assertSame( 'Club B 1', $adapter->away_title );
         $this->assertSame( 'Club A 1 - Club B 1', $adapter->title );
+        $this->assertSame( '18:30', $adapter->start_time );
+        $this->assertSame( '18:30', $adapter->get_start_time() );
         $this->assertSame( [ $rubber ], $adapter->get_rubbers() );
     }
 
@@ -125,5 +127,37 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
         );
 
         $this->assertSame( '15/05/2026', $adapter->match_date );
+    }
+
+    public function test_adapter_exposes_start_time_for_timed_and_midnight_fixtures(): void {
+        // Timed fixture -> start_time property and getter return '19:30'
+        $data_timed       = new stdClass();
+        $data_timed->id   = 103;
+        $data_timed->date = '2026-05-15 19:30:00';
+        $fixture_timed    = Fixture_Factory::from_object( $data_timed );
+
+        $adapter_timed = new Fixture_Presentation_Adapter( fixture: $fixture_timed );
+        $this->assertSame( '19:30', $adapter_timed->start_time );
+        $this->assertSame( '19:30', $adapter_timed->get_start_time() );
+
+        // Midnight fixture -> start_time property and getter return null
+        $data_midnight       = new stdClass();
+        $data_midnight->id   = 104;
+        $data_midnight->date = '2026-05-15 00:00:00';
+        $fixture_midnight    = Fixture_Factory::from_object( $data_midnight );
+
+        $adapter_midnight = new Fixture_Presentation_Adapter( fixture: $fixture_midnight );
+        $this->assertNull( $adapter_midnight->start_time );
+        $this->assertNull( $adapter_midnight->get_start_time() );
+
+        // Date-only fixture -> start_time property and getter return null
+        $data_date_only       = new stdClass();
+        $data_date_only->id   = 105;
+        $data_date_only->date = '2026-05-15';
+        $fixture_date_only    = Fixture_Factory::from_object( $data_date_only );
+
+        $adapter_date_only = new Fixture_Presentation_Adapter( fixture: $fixture_date_only );
+        $this->assertNull( $adapter_date_only->start_time );
+        $this->assertNull( $adapter_date_only->get_start_time() );
     }
 }

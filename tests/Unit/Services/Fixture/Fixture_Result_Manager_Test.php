@@ -12,6 +12,7 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
 use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Domain\Result\Result;
 use Racketmanager\Presentation\Presenters\Notification_Presenter;
@@ -38,6 +39,7 @@ use Racketmanager\Services\Result\Result_Reporting_Service;
 use Racketmanager\Services\Result\Rubber_Result_Manager;
 use Racketmanager\Services\Result_Service;
 use Racketmanager\Services\Settings_Service;
+use Racketmanager\Services\Standings\Standings_Service;
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Services\View\View_Renderer_Interface;
@@ -335,6 +337,74 @@ class Fixture_Result_Manager_Test extends TestCase {
         $this->expectExceptionMessageIsOrContains( 'Fixture_Maintenance_Service has not been set.' );
 
         $manager->confirm_result( $fixture, 'admin' );
+    }
+
+    public static function batch_result_cases(): array {
+        return [
+            'confirmed league' => [ 'Y', false ],
+            'pending league' => [ 'N', false ],
+            'confirmed final' => [ 'Y', 'Final' ],
+            'pending final' => [ 'N', 'Final' ],
+        ];
+    }
+
+    #[DataProvider( 'batch_result_cases' )]
+    public function test_batch_results_refresh_standings_only_for_non_finals( string $confirmed, false|string $final ): void {
+        $fixture = Fixture_Factory::from_array( [ 'id' => 70, 'home_team' => '10', 'away_team' => '20', 'status' => 1 ] );
+        $repository = $this->createMock( Fixture_Repository_Interface::class );
+        $repository->expects( $this->exactly( 2 ) )->method( 'find_by_id' )->willReturnMap( [ [ 70, $fixture ], [ 71, null ] ] );
+        $provider = $this->createStub( Repository_Provider::class );
+        $provider->method( 'get_fixture_repository' )->willReturn( $repository );
+        $standings = $this->createMock( Standings_Service::class );
+        $league = new League( (object) [ 'title' => 'Division 1' ] );
+        $standings->expects( $final ? $this->never() : $this->once() )->method( 'update_standings' )->with( $league, '2026' );
+        $manager = $this->getMockBuilder( Fixture_Result_Manager::class )
+            ->setConstructorArgs( [ $this->create_stub_service_provider(), $provider, $standings ] )
+            ->onlyMethods( [ 'confirm_result', 'update_result' ] )->getMock();
+        $expected_result = $this->callback( static fn( Result $result ): bool =>
+            3.0 === $result->get_home_points() && 1.0 === $result->get_away_points()
+            && 'score entered' === $result->get_custom()['notes']
+        );
+        if ( 'Y' === $confirmed ) {
+            $manager->expects( $this->once() )->method( 'confirm_result' )->with( $fixture, '', null, $expected_result );
+            $manager->expects( $this->never() )->method( 'update_result' );
+        } else {
+            $manager->expects( $this->once() )->method( 'update_result' )->with( $fixture, $expected_result, 'N' );
+            $manager->expects( $this->never() )->method( 'confirm_result' );
+        }
+
+        $this->assertSame( 1, $manager->update_match_results( $league, [ 70, 71 ], [ 70 => '3' ], [ 70 => '1' ], [ 70 => [ 'notes' => 'score entered' ] ], '2026', $final, $confirmed ) );
+    }
+
+    public function test_empty_batch_does_not_require_standings_or_query_repository(): void {
+        $repository = $this->createMock( Fixture_Repository_Interface::class );
+        $repository->expects( $this->never() )->method( 'find_by_id' );
+        $league = new League( (object) [ 'title' => 'Division 1' ] );
+
+        $this->assertSame( 0, $this->manager->update_match_results( $league, [], [], [], [], '2026', fixture_repository: $repository ) );
+    }
+
+    public function test_batch_rejects_missing_standings_before_any_fixture_mutation(): void {
+        $repository = $this->createMock( Fixture_Repository_Interface::class );
+        $repository->expects( $this->never() )->method( 'find_by_id' );
+        $this->result_service->expects( $this->never() )->method( 'apply_to_fixture' );
+        $league = new League( (object) [ 'title' => 'Division 1' ] );
+
+        $this->expectException( LogicException::class );
+        $this->expectExceptionMessage( 'Standings_Service has not been configured.' );
+        $this->manager->update_match_results( $league, [ 70 ], [], [], [], '2026', fixture_repository: $repository );
+    }
+
+    public function test_reset_rejects_missing_standings_before_any_fixture_mutation(): void {
+        $fixture = $this->createMock( Fixture::class );
+        $fixture->method( 'get_league_id' )->willReturn( 12 );
+        $fixture->expects( $this->never() )->method( 'reset_result' );
+        $this->result_service->expects( $this->never() )->method( 'apply_to_fixture' );
+        $this->league_service->method( 'get_league' )->willReturn( new League( (object) [ 'title' => 'Division 1' ] ) );
+
+        $this->expectException( LogicException::class );
+        $this->expectExceptionMessage( 'Standings_Service has not been configured.' );
+        $this->manager->reset_result( $fixture );
     }
 
     private function create_service_provider_with_test_doubles( array $overrides = [] ): Service_Provider {

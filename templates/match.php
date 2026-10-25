@@ -2,9 +2,8 @@
 /**
  * Template page for a single match
  *
- * @deprecated 2.0.0 Orphan template (no caller in plugin source). Retained ONLY as a legacy
- * compatibility exception for custom themes; it is not an active, modernized template and
- * still renders from legacy variable ($match).
+ * @deprecated 10.0.0 Orphan template (no caller in plugin source). Retained ONLY as a legacy
+ * compatibility exception for custom themes; scheduled for removal in 11.0.0.
  *
  * @package Racketmanager/Templates
  *
@@ -16,6 +15,10 @@
  */
 
 namespace Racketmanager;
+
+if ( function_exists( '_deprecated_file' ) ) {
+    _deprecated_file( __FILE__, '10.0.0', null, 'Orphan template retained for custom theme backward compatibility; scheduled for removal in 11.0.0.' );
+}
 
 global $racketmanager;
 

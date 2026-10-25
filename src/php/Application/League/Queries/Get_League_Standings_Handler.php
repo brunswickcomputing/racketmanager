@@ -6,6 +6,7 @@ namespace Racketmanager\Application\League\Queries;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Presentation\View_Models\League_Standings_View_Model;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use function is_array;
 
@@ -14,8 +15,9 @@ use function is_array;
  */
 class Get_League_Standings_Handler {
     public function __construct(
-        private readonly ?League_Service $league_service = null,
-        private readonly ?League_Repository_Interface $league_repository = null
+        private readonly ?League_Service $league_service,
+        private readonly ?League_Repository_Interface $league_repository,
+        private readonly League_Query_Service $league_query_service
     ) {}
 
     public function handle( Get_League_Standings_Query $query ): ?League_Standings_View_Model {
@@ -33,7 +35,7 @@ class Get_League_Standings_Handler {
         }
 
         $league->set_template( 'standings', $query->template );
-        $league->set_season( $query->season ?? false );
+        $this->league_query_service->set_season( $league, $query->season ?? false );
         $league->set_group( $query->group ?? '' );
 
         $team_args           = [ 'orderby' => [ 'rank' => 'ASC' ], 'active' => true ];
@@ -41,7 +43,7 @@ class Get_League_Standings_Handler {
             $team_args['group'] = $query->group;
         }
 
-        $teams       = $league->get_league_teams( $team_args );
+        $teams       = $this->league_query_service->get_league_teams( $league, $team_args );
         $teams_array = is_array( $teams ) ? $teams : [];
         $league->teams = $teams_array;
 

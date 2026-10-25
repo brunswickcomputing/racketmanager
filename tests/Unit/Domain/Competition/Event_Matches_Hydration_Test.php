@@ -23,8 +23,8 @@ use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
+use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Fixture\Fixture_Relation_Loader;
 use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Team_Service;
@@ -35,7 +35,6 @@ use stdClass;
 class Event_Matches_Hydration_Test extends TestCase {
 	use Manages_Wordpress_Globals;
 
-	private Simple_Container $container;
 	private $event_repository;
 	private $fixture_repository;
 	private $rubber_repository;
@@ -44,31 +43,17 @@ class Event_Matches_Hydration_Test extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 		$this->backup_globals();
+		unset( $GLOBALS['racketmanager'] );
 
-		$this->container          = new Simple_Container();
 		$this->event_repository   = $this->createMock( Event_Repository_Interface::class );
 		$this->fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
 		$this->rubber_repository  = $this->createMock( Rubber_Repository_Interface::class );
-
-		$this->container->set( 'event_repository', $this->event_repository );
-		$this->container->set( 'fixture_repository', $this->fixture_repository );
-		$this->container->set( 'rubber_repository', $this->rubber_repository );
-
-		$competition_service = $this->createMock( Competition_Service::class );
-		$this->container->set( 'competition_service', $competition_service );
 
 		$competition                  = $this->createMock( Competition::class );
 		$competition->settings        = new Competition_Settings( array( 'mode' => 'league' ) );
 		$competition->type            = Competition_Type::LEAGUE;
 		$competition->is_player_entry = false;
 		$competition->standings       = array();
-		$competition_service->method( 'get_by_id' )->willReturn( $competition );
-
-		$racketmanager            = $this->getMockBuilder( RacketManager::class )
-			->disableOriginalConstructor()
-			->getMock();
-		$racketmanager->container = $this->container;
-		$GLOBALS['racketmanager'] = $racketmanager;
 
 		$event_raw                 = new stdClass();
 		$event_raw->id             = 42;
@@ -79,7 +64,7 @@ class Event_Matches_Hydration_Test extends TestCase {
 		$event_raw->num_rubbers    = 4;
 		$event_raw->num_sets       = 3;
 
-		$this->event = new Event( $event_raw );
+		$this->event = new Event( $event_raw, $competition );
 	}
 
 	protected function tearDown(): void {
@@ -131,7 +116,7 @@ class Event_Matches_Hydration_Test extends TestCase {
 				}
 			);
 
-		$matches = $this->event->get_matches( array( 'season' => '2026' ) );
+		$matches = $this->event_query_service()->get_matches( $this->event, array( 'season' => '2026' ) );
 
 		$this->assertCount( 2, $matches );
 		$this->assertInstanceOf( Fixture::class, $matches[0] );
@@ -159,7 +144,7 @@ class Event_Matches_Hydration_Test extends TestCase {
 		$this->fixture_repository->expects( $this->never() )
 			->method( 'find_by_id_with_relations' );
 
-		$result = $this->event->get_matches( array( 'count' => true ) );
+		$result = $this->event_query_service()->get_matches( $this->event, array( 'count' => true ) );
 
 		$this->assertSame( 3, $result );
 	}
@@ -190,7 +175,7 @@ class Event_Matches_Hydration_Test extends TestCase {
 			->with( 21 )
 			->willReturn( $fixture );
 
-		$matches = $this->event->get_matches( array( 'player' => 7 ) );
+		$matches = $this->event_query_service()->get_matches( $this->event, array( 'player' => 7 ) );
 
 		$this->assertCount( 1, $matches );
 		$this->assertSame( $fixture, $matches[0] );
@@ -220,7 +205,7 @@ class Event_Matches_Hydration_Test extends TestCase {
 				}
 			);
 
-		$matches = $this->event->get_matches( array() );
+		$matches = $this->event_query_service()->get_matches( $this->event );
 
 		$this->assertCount( 1, $matches );
 		$this->assertSame( 10, $matches[0]->id );
@@ -229,7 +214,6 @@ class Event_Matches_Hydration_Test extends TestCase {
 
 	public function test_get_matches_derives_title_from_team_service_and_trims_seconds_on_full_datetime(): void {
 		$league_repo = $this->createMock( League_Repository_Interface::class );
-		$this->container->set( 'league_repository', $league_repo );
 
 		$league_mock        = $this->createMock( League::class );
 		$league_mock->id    = 77;
@@ -240,12 +224,7 @@ class Event_Matches_Hydration_Test extends TestCase {
 			->with( 77 )
 			->willReturn( $league_mock );
 
-		$competition_service = $this->container->get( 'competition_service' );
-		$competition_service->method( 'get_league_repository' )
-			->willReturn( $league_repo );
-
 		$team_service = $this->createMock( Team_Service::class );
-		$this->container->set( 'team_service', $team_service );
 
 		$home_team = $this->createMock( Team::class );
 		$home_team->method( 'get_name' )->willReturn( 'Westcliff Men 1' );
@@ -288,7 +267,7 @@ class Event_Matches_Hydration_Test extends TestCase {
 			->with( 50 )
 			->willReturn( $fixture );
 
-		$matches = $this->event->get_matches( array() );
+		$matches = $this->event_query_service()->get_matches( $this->event );
 
 		$this->assertCount( 1, $matches );
 		$match = $matches[0];
@@ -326,11 +305,6 @@ class Event_Matches_Hydration_Test extends TestCase {
 	}
 
 	public function test_fixture_get_title_uses_unknown_and_bye_for_unresolved_team_ids(): void {
-		$team_service = $this->createMock( Team_Service::class );
-		$team_service->method( 'get_team_details' )
-			->willThrowException( new Team_Not_Found_Exception( 'Missing team' ) );
-		$this->container->set( 'team_service', $team_service );
-
 		$fixture_empty = Fixture_Factory::from_array(
 			array(
 				'id' => 61,
@@ -357,6 +331,29 @@ class Event_Matches_Hydration_Test extends TestCase {
 		);
 		$this->assertSame( 'Bye - Unknown', $fixture_with_bye->get_title() );
 		$this->assertSame( '-1', $fixture_with_bye->get_teams()['home']->id );
+	}
+
+	public function test_event_query_service_localizes_unresolved_fixture_title_at_boundary(): void {
+		$fixture = Fixture_Factory::from_array( array( 'id' => 63, 'home_team' => '-1', 'away_team' => '999' ) );
+		$this->event_repository->method( 'query_matches' )->willReturn( array( (object) array( 'id' => 63 ) ) );
+		$this->fixture_repository->method( 'find_by_id_with_relations' )->willReturn( $fixture );
+		$previous = $GLOBALS['wp_stubs_translate_callback'] ?? null;
+		$GLOBALS['wp_stubs_translate_callback'] = static fn( string $text ): string => match ( $text ) {
+			'Bye' => 'Freilos',
+			'Unknown' => 'Unbekannt',
+			default => $text,
+		};
+		try {
+			$matches = $this->event_query_service()->get_matches( $this->event );
+			$this->assertSame( 'Freilos - Unbekannt', $matches[0]->match_title );
+			$this->assertSame( 'Bye - Unknown', $fixture->get_title() );
+		} finally {
+			if ( null === $previous ) {
+				unset( $GLOBALS['wp_stubs_translate_callback'] );
+			} else {
+				$GLOBALS['wp_stubs_translate_callback'] = $previous;
+			}
+		}
 	}
 
 	public function test_fixture_final_round_is_included_in_scoring_context(): void {
@@ -399,7 +396,7 @@ class Event_Matches_Hydration_Test extends TestCase {
 		$player->display_name = 'Test Player';
 		$player->matches      = array();
 
-		$player_query_service = new Player_Query_Service();
+		$player_query_service = new Player_Query_Service( null, null, $this->fixture_repository, $this->event_repository, $this->rubber_repository );
 
 		$this->event_repository->method( 'query_matches' )->willReturn( array( (object) array( 'id' => 70 ) ) );
 		$this->fixture_repository->expects( $this->once() )->method( 'find_by_id_with_relations' )->with( 70 )->willReturn( $fixture );
@@ -462,7 +459,7 @@ class Event_Matches_Hydration_Test extends TestCase {
 		$player->display_name = 'Test Player';
 		$player->matches      = array();
 
-		$player_query_service = new Player_Query_Service();
+		$player_query_service = new Player_Query_Service( null, null, $this->fixture_repository, $this->event_repository, $this->rubber_repository );
 
 		$this->event_repository->method( 'query_matches' )->willReturn( array( (object) array( 'id' => 80 ) ) );
 		$this->fixture_repository->expects( $this->once() )->method( 'find_by_id_with_relations' )->with( 80 )->willReturn( $fixture );
@@ -517,14 +514,16 @@ class Event_Matches_Hydration_Test extends TestCase {
 		$this->assertStringContainsString( '<td>Division 1</td>', $output );
 	}
 
+	private function event_query_service(): Event_Query_Service {
+		return new Event_Query_Service( $this->event_repository, $this->fixture_repository, $this->rubber_repository );
+	}
+
 	private function get_event_matches_for_template( Fixture $fixture ): array {
 		$league_repository = $this->createMock( League_Repository_Interface::class );
 		$league            = $this->createMock( League::class );
 		$league->id        = 77;
 		$league->title     = 'Division 1';
 		$league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 77 )->willReturn( $league );
-		$this->container->set( 'league_repository', $league_repository );
-		$this->container->get( 'competition_service' )->method( 'get_league_repository' )->willReturn( $league_repository );
 
 		$home_team = $this->createMock( Team::class );
 		$home_team->method( 'get_name' )->willReturn( 'Westcliff Men 1' );
@@ -537,7 +536,6 @@ class Event_Matches_Hydration_Test extends TestCase {
 				array( 102, new Team_Details_DTO( $away_team ) ),
 			)
 		);
-		$this->container->set( 'team_service', $team_service );
 		$fixture = Fixture_Factory::from_array(
 			array(
 				'id'        => $fixture->get_id(),
@@ -553,7 +551,7 @@ class Event_Matches_Hydration_Test extends TestCase {
 		$this->event_repository->method( 'query_matches' )->willReturn( array( (object) array( 'id' => $fixture->id ) ) );
 		$this->fixture_repository->expects( $this->once() )->method( 'find_by_id_with_relations' )->with( $fixture->id )->willReturn( $fixture );
 
-		$matches = $this->event->get_matches( array() );
+		$matches = $this->event_query_service()->get_matches( $this->event );
 		$this->assertInstanceOf( Fixture::class, $matches[0] );
 		$this->assertNull( $matches[0]->fixture_title );
 		$this->assertSame( 'Westcliff Men 1 - Leigh Men 1', $matches[0]->match_title );

@@ -1081,7 +1081,10 @@ function withdrawn_team_email( array $args = array() ): string {
             return $racketmanager->option_service->is_lta_number_required();
         }
         if ( isset( $racketmanager->container ) && $racketmanager->container->has( Option_Service::class ) ) {
-            return $racketmanager->container->get( Option_Service::class )->is_lta_number_required();
+            $service = $racketmanager->container->get( Option_Service::class );
+            if ( $service instanceof Option_Service ) {
+                return $service->is_lta_number_required();
+            }
         }
         $options = $racketmanager?->get_options( 'rosters' );
         return is_array( $options ) && ! empty( $options['btm'] );

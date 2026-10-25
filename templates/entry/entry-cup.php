@@ -106,10 +106,12 @@ $additional_information = __( 'Additional information', 'racketmanager' );
                                         <span class="profile-icon">
                                             <span class="profile-icon__abbr">
                                                 <?php
-                                                $words    = explode( ' ', $club->shortcode );
-                                                $initials = null;
+                                                $words    = array_filter( explode( ' ', (string) ( $club->shortcode ?? '' ) ) );
+                                                $initials = '';
                                                 foreach ( $words as $w ) {
-                                                    $initials .= $w[0];
+                                                    if ( '' !== $w ) {
+                                                        $initials .= $w[0];
+                                                    }
                                                 }
                                                 echo esc_html( $initials );
                                                 ?>

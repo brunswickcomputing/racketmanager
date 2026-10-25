@@ -81,13 +81,28 @@ class Shortcodes_Email_Integration_Test extends TestCase {
             'league_id' => 10,
             'home_team' => '1',
             'away_team' => '2',
-            'date'      => '2026-06-01 19:00:00',
+            'date'      => '2026-06-01 00:00:00',
             'season'    => '2026',
             'host'      => 'home',
             'match_day' => 1,
         ] );
-        $this->fixture_repo->method( 'find_by_id' )->willReturnCallback( function ( int $id ) use ( $fixture ) {
-            return 555 === $id ? $fixture : null;
+        $timed_fixture = Fixture_Factory::from_object( (object) [
+            'id'            => 557,
+            'league_id'     => 10,
+            'home_team'     => '1',
+            'away_team'     => '2',
+            'date'          => '2026-06-08 19:30:00',
+            'date_original' => '2026-06-01 19:30:00',
+            'season'        => '2026',
+            'host'          => 'home',
+            'match_day'     => 1,
+        ] );
+        $this->fixture_repo->method( 'find_by_id' )->willReturnCallback( function ( int $id ) use ( $fixture, $timed_fixture ) {
+            return match ( $id ) {
+                555     => $fixture,
+                557     => $timed_fixture,
+                default => null,
+            };
         } );
 
         $league = $this->createMock( League::class );
@@ -236,6 +251,23 @@ class Shortcodes_Email_Integration_Test extends TestCase {
         $this->assertSame( '08/06/2026', $this->rendered['vars']['new_date'] );
         $this->assertSame( '08/06/2026', $this->rendered['vars']['match_date'] );
         $this->assertSame( '01/06/2026', $this->rendered['vars']['original_date'] );
+    }
+
+    public function test_show_match_date_change_notification_timed_fixture(): void {
+        $GLOBALS['wp_stubs_options']['date_format'] = 'd/m/Y';
+
+        $output = $this->shortcode->show_match_date_change_notification( [
+            'match'         => 557,
+            'original_date' => '2026-06-01 19:30:00',
+            'new_date'      => '2026-06-08 19:30:00',
+            'delay'         => false,
+        ] );
+
+        $this->assertSame( 'rendered_html_email/match-date-change-notification', $output );
+        $this->assertFalse( $this->rendered['vars']['delay'] );
+        $this->assertSame( '8 June 2026 19:30', $this->rendered['vars']['new_date'] );
+        $this->assertSame( '8 June 2026 19:30', $this->rendered['vars']['match_date'] );
+        $this->assertSame( '1 June 2026 19:30', $this->rendered['vars']['original_date'] );
     }
 
     public function test_match_date_change_shortcode_with_raw_mysql_dates_renders_formatted_dates_in_real_template(): void {

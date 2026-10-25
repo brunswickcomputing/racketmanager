@@ -5,7 +5,12 @@ namespace Racketmanager\Tests\Unit\Repositories;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\League_Team;
+use Racketmanager\Domain\Player\Player_Factory;
+use Racketmanager\Domain\Team\Team_Factory;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use wpdb;
@@ -29,6 +34,41 @@ class League_Team_Repository_Test extends TestCase {
     protected function tearDown(): void {
         $this->restore_globals();
         parent::tearDown();
+    }
+
+    public function test_hydrate_enriches_league_team(): void {
+        $club_repo = $this->createMock( Club_Repository_Interface::class );
+        $team_repo = $this->createMock( Team_Repository_Interface::class );
+
+        $club = new Club( (object) [ 'id' => 10, 'name' => 'Tennis Club' ] );
+        $club_repo->expects( $this->once() )
+            ->method( 'find_by_id' )
+            ->with( 10 )
+            ->willReturn( $club );
+
+        $player = Player_Factory::from_object( (object) [ 'id' => 77, 'display_name' => 'John Smith' ] );
+        $team   = Team_Factory::from_object( (object) [ 'id' => 25 ] );
+        $team->players = [ $player ];
+        $team_repo->expects( $this->once() )
+            ->method( 'find_by_id' )
+            ->with( 25 )
+            ->willReturn( $team );
+
+        $repository = new League_Team_Repository( $this->wpdb, $club_repo, $team_repo );
+
+        $row = (object) [
+            'id'        => 25,
+            'table_id'  => 500,
+            'club_id'   => 10,
+            'team_type' => 'P',
+            'roster'    => serialize( [ 77 ] ),
+        ];
+
+        $league_team = $repository->hydrate( $row );
+
+        $this->assertSame( $club, $league_team->club );
+        $this->assertCount( 1, $league_team->players );
+        $this->assertSame( $player, $league_team->players[0] );
     }
 
     public function test_find_by_id_returns_null_for_empty_id(): void {
@@ -270,5 +310,81 @@ class League_Team_Repository_Test extends TestCase {
             [ 'bonus' => true ]
         ) );
         $this->assertArrayNotHasKey( '105', $GLOBALS['wp_stubs_cache']['league-teams'] ?? [] );
+    }
+
+    public function test_construct_uses_injected_wpdb_instance(): void {
+        $custom_wpdb = $this->createMock( wpdb::class );
+        $custom_wpdb->prefix = 'custom_';
+        $repo = new League_Team_Repository( $custom_wpdb );
+
+        $custom_wpdb->expects( $this->once() )
+            ->method( 'prepare' )
+            ->with( $this->stringContains( 'custom_racketmanager_teams' ) )
+            ->willReturn( 'PREPARED' );
+        $custom_wpdb->expects( $this->once() )
+            ->method( 'get_row' )
+            ->with( 'PREPARED' )
+            ->willReturn( (object) [ 'id' => 999, 'table_id' => 999 ] );
+
+        $result = $repo->find_by_id( 999 );
+        $this->assertNotNull( $result );
+    }
+
+    private function make_repo( ?int $club_calls = null, ?int $team_calls = null, ?object $club = null, ?object $team = null, ?int $team_arg = null ): League_Team_Repository {
+        $club_repo = $this->createMock( Club_Repository_Interface::class );
+        $team_repo = $this->createMock( Team_Repository_Interface::class );
+        $club_repo->expects( $this->exactly( $club_calls ?? 0 ) )->method( 'find_by_id' )->willReturn( $club );
+        $m = $team_repo->expects( $this->exactly( $team_calls ?? 0 ) )->method( 'find_by_id' );
+        if ( null !== $team_arg ) {
+            $m->with( $team_arg );
+        }
+        $m->willReturn( $team );
+        return new League_Team_Repository( $this->wpdb, $club_repo, $team_repo );
+    }
+
+    public function test_hydrate_without_injected_repositories_does_not_enrich(): void {
+        $lt = ( new League_Team_Repository( $this->wpdb ) )->hydrate( (object) [ 'id' => 1, 'table_id' => 2, 'club_id' => 3, 'team_type' => 'P', 'roster' => serialize( [ 1 ] ) ] );
+        $this->assertNull( $lt->club );
+        $this->assertSame( [], $lt->players );
+    }
+
+    public function test_hydrate_non_player_team_skips_team_repository(): void {
+        $club = new Club( (object) [ 'id' => 3, 'name' => 'C' ] );
+        $lt   = $this->make_repo( 1, 0, $club )->hydrate( (object) [ 'id' => 1, 'table_id' => 2, 'club_id' => 3, 'team_type' => 'D', 'roster' => serialize( [ 1 ] ) ] );
+        $this->assertSame( $club, $lt->club );
+        $this->assertSame( [], $lt->players );
+    }
+
+    public function test_hydrate_null_roster_skips_team_lookup(): void {
+        $lt = $this->make_repo( 0, 0 )->hydrate( (object) [ 'id' => 1, 'table_id' => 2, 'team_type' => 'P', 'roster' => null ] );
+        $this->assertSame( [], $lt->players );
+    }
+
+    public function test_hydrate_empty_roster_still_loads_players(): void {
+        $player = Player_Factory::from_object( (object) [ 'id' => 5, 'display_name' => 'A B' ] );
+        $team   = Team_Factory::from_object( (object) [ 'id' => 9 ] );
+        $team->players = [ $player ];
+        $lt = $this->make_repo( 0, 1, null, $team, 9 )->hydrate( (object) [ 'id' => 9, 'table_id' => 2, 'team_type' => 'P', 'roster' => serialize( [] ) ] );
+        $this->assertSame( [ $player ], $lt->players );
+    }
+
+    public function test_hydrate_lowercase_p_is_not_a_player_team(): void {
+        $lt = $this->make_repo( 0, 0 )->hydrate( (object) [ 'id' => 9, 'table_id' => 2, 'team_type' => 'p', 'roster' => serialize( [ 1 ] ) ] );
+        $this->assertSame( [], $lt->players );
+    }
+
+    public function test_hydrate_empty_club_id_skips_club_lookup(): void {
+        $lt = $this->make_repo( 0, 0 )->hydrate( (object) [ 'id' => 1, 'table_id' => 2, 'club_id' => 0, 'team_type' => 'D' ] );
+        $this->assertNull( $lt->club );
+    }
+
+    public function test_hydrate_missing_team_yields_empty_players(): void {
+        $lt = $this->make_repo( 0, 1, null, null, 4 )->hydrate( (object) [ 'id' => 4, 'table_id' => 2, 'team_type' => 'P', 'roster' => serialize( [ 1 ] ) ] );
+        $this->assertSame( [], $lt->players );
+    }
+
+    public function test_hydrate_prefers_team_id_over_id(): void {
+        $team = Team_Factory::from_object( (object) [ 'id' => 77 ] );
+        $this->make_repo( 0, 1, null, $team, 77 )->hydrate( (object) [ 'id' => 4, 'team_id' => 77, 'table_id' => 2, 'team_type' => 'P', 'roster' => serialize( [ 1 ] ) ] );
     }
 }

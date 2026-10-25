@@ -8,6 +8,7 @@ use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
+use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Player_Query_Service;
@@ -26,7 +27,8 @@ class Get_Event_Players_Handler {
         private readonly Player_Query_Service $player_query_service,
         private readonly Player_Stats_Service $player_stats_service,
         private readonly Player_Presenter $player_presenter,
-        private readonly Competition_Shortcode_Presenter $competition_presenter
+        private readonly Competition_Shortcode_Presenter $competition_presenter,
+        private readonly Event_Query_Service $event_query_service
     ) {}
 
     public function handle( Get_Event_Players_Query $query ): Shortcode_View_Model {
@@ -41,7 +43,7 @@ class Get_Event_Players_Handler {
             return Shortcode_View_Model::for_error( __( 'Event not found', 'racketmanager' ) );
         }
 
-        $event->set_season( $query->season );
+        $this->event_query_service->set_season( $event, $query->season );
 
         if ( ! Event_Allowlist_Guard::is_event_allowed( $event, $event->current_season['name'] ?? $query->season, $this->competition_service ) ) {
             return Shortcode_View_Model::for_error( __( 'Event not found for competition', 'racketmanager' ) );
@@ -64,7 +66,7 @@ class Get_Event_Players_Handler {
             }
         } else {
             $current_season = isset( $event->current_season['name'] ) ? (string) $event->current_season['name'] : null;
-            $players        = $event->get_players( [ 'season' => $current_season ] );
+            $players        = $this->event_query_service->get_players( $event, [ 'season' => $current_season ] );
             $event->players = Util::get_players_list( $players );
             $player_links   = $this->competition_presenter->present_event_players_links( $event, $event->players ?? [] );
             $player_link    = $this->competition_presenter->get_event_player_base_url( $event );

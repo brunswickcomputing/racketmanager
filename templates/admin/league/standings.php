@@ -158,16 +158,24 @@ if ( $vm ) {
                     <td>
                         <a href="<?php echo esc_url( $team_link ); ?>">
                             <?php
-                            if ( $team->profile->is_withdrawn() ) {
+                            $is_withdrawn = false;
+                            if ( method_exists( $team, 'get_profile_enum' ) ) {
+                                $is_withdrawn = true === $team->get_profile_enum()?->is_withdrawn();
+                            } elseif ( isset( $team->profile ) ) {
+                                $is_withdrawn = is_object( $team->profile ) && method_exists( $team->profile, 'is_withdrawn' )
+                                    ? $team->profile->is_withdrawn()
+                                    : '3' === (string) $team->profile;
+                            }
+                            if ( $is_withdrawn ) {
                                 $title_text = $team->title . ' ' . __( 'has withdrawn', 'racketmanager' );
                                 ?>
                                 <s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="right" title="<?php echo esc_attr( $title_text ); ?>">
                                 <?php
                             }
-                            echo esc_html( $team->team_name);
+                            echo esc_html( $team->team_name ?? $team->title );
                             ?>
                             <?php
-                            if ( $team->profile->is_withdrawn() ) {
+                            if ( $is_withdrawn ) {
                                 ?>
                                 </s>
                                 <?php
@@ -295,7 +303,7 @@ if ( $vm ) {
                         }
                         ?>
                         <?php do_action( 'racketmanager_standings_columns_' . $league->sport, $team, $league->point_rule ); ?>
-                        <?php $league->display_standings_columns( $team, $league->point_rule ); ?>
+                        <?php echo \Racketmanager\Presentation\Presenters\League_Standings_Presenter::render_custom_standings_columns( $league, $team, $league->point_rule ); ?>
                         <td class="column-num">
                             <?php
                             if ( 'manual' !== $league->point_rule ) {

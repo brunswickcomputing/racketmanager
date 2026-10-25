@@ -115,6 +115,10 @@ final class Plugin_Bootstrap {
      * @param RacketManager $app Application instance.
      */
     public function boot( RacketManager $app ): void {
+        global $wpdb;
+        if ( isset( $wpdb ) && method_exists( $wpdb, 'show_errors' ) ) {
+            $wpdb->show_errors();
+        }
         $this->load_libraries();
         $this->register_hooks( $app );
     }

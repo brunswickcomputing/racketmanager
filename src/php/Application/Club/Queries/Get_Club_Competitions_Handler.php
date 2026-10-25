@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Club\Queries;
 
+use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
@@ -10,6 +11,7 @@ use Racketmanager\Presentation\View_Models\Club_Competition_View_Model;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition_Service;
 use function __;
 use function is_array;
@@ -26,8 +28,10 @@ class Get_Club_Competitions_Handler {
         private readonly Competition_Service $competition_service,
         private readonly Competition_Repository_Interface $competition_repository,
         private readonly Team_Details_Presenter $team_details_presenter,
-        private readonly Club_Presenter $club_presenter
-    ) {}
+        private readonly Club_Presenter $club_presenter,
+        private readonly Event_Query_Service $event_query_service
+    ) {
+    }
 
     public function handle( Get_Club_Competitions_Query $query ): Shortcode_View_Model {
         try {
@@ -75,8 +79,9 @@ class Get_Club_Competitions_Handler {
         $event_models = [];
 
         foreach ( $events as $event ) {
-            $teams = method_exists( $event, 'get_teams_info' )
-                ? $event->get_teams_info(
+            $teams = $event instanceof Event
+                ? $this->event_query_service->get_teams_info(
+                    $event,
                     [
                         'club'    => $club->id,
                         'orderby' => [ 'title' => 'ASC' ],

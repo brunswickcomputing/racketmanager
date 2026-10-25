@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Services\Standings;
 
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Domain\Enums\Fixture_Status;
 use Racketmanager\Domain\Fixture\Fixture;
@@ -15,6 +16,7 @@ use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Rubber_Repository;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Util\Util;
 use function Racketmanager\get_league_team;
@@ -28,19 +30,22 @@ class Standings_Service {
 	private ?League_Service $league_service = null;
 	private ?Fixture_Repository_Interface $fixture_repository = null;
 	private ?Rubber_Repository_Interface $rubber_repository = null;
+	private League_Query_Service|\Closure|null $league_query_service = null;
 
 	public function __construct(
 		?League_Repository_Interface $league_repository = null,
 		?League_Team_Repository_Interface $league_team_repository = null,
 		?League_Service $league_service = null,
 		?Fixture_Repository_Interface $fixture_repository = null,
-		?Rubber_Repository_Interface $rubber_repository = null
+		?Rubber_Repository_Interface $rubber_repository = null,
+		League_Query_Service|\Closure|null $league_query_service = null
 	) {
 		$this->league_repository      = $league_repository;
 		$this->league_team_repository = $league_team_repository;
 		$this->league_service         = $league_service;
 		$this->fixture_repository     = $fixture_repository;
 		$this->rubber_repository      = $rubber_repository;
+		$this->league_query_service   = $league_query_service;
 	}
 
 	private function get_fixture_repository(): Fixture_Repository_Interface {
@@ -58,7 +63,7 @@ class Standings_Service {
 			global $racketmanager;
 			$this->league_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'league_repository' )
 				? $racketmanager->container->get( 'league_repository' )
-				: new League_Repository();
+				: new League_Repository( null, fn() => \Racketmanager\get_event_repository_for_helpers() );
 		}
 		return $this->league_repository;
 	}
@@ -85,7 +90,7 @@ class Standings_Service {
 		if ( ! $league ) {
 			return [];
 		}
-		$teams = $league->get_league_teams( array( 'season' => (string) $season ) );
+		$teams = $this->league_query()->get_league_teams( $league, array( 'season' => (string) $season ) );
 		return $this->get_standings( $league, $teams, 0 );
 	}
 
@@ -124,7 +129,7 @@ class Standings_Service {
 
 		$rubbers_by_fixture = [];
 		foreach ( $teams as $i => $team ) {
-			$team       = get_league_team( $team );
+			$team       = $team instanceof League_Team ? $team : get_league_team( $team );
 			$match_args = array();
 
 			// get only home matches.
@@ -160,7 +165,7 @@ class Standings_Service {
 			$team->points_2_minus = 0;
 
 			// get matches.
-			$matches = $league->get_matches( $match_args );
+			$matches = $this->league_query()->get_matches( $league, $match_args );
 			if ( $league->num_rubbers > 0 ) {
 				foreach ( $matches as $match ) {
 					if ( $match instanceof Fixture && null === $match->rubbers ) {
@@ -194,7 +199,7 @@ class Standings_Service {
 			$team->win_percent();
 			$custom = $this->get_standings_data( $league, (int) $team->id, $team->custom, $matches );
 			foreach ( $custom as $key => $value ) {
-				$team->{$key} = $value;
+				$team->{$key} = $team instanceof League_Team && in_array( $key, [ 'sets_shared', 'no_player', 'no_team' ], true ) ? (string) $value : $value;
 			}
 			$teams[ $i ] = $team;
 		}
@@ -230,7 +235,7 @@ class Standings_Service {
 			if ( ! empty( $group ) ) {
 				$team_args['group'] = $group;
 			}
-			$teams = $league->get_league_teams( $team_args );
+			$teams = $this->league_query()->get_league_teams( $league, $team_args );
 
 			if ( ! empty( $teams ) && isset( $league->event->competition->settings['team_ranking'] ) && 'auto' === $league->event->competition->settings['team_ranking'] ) {
 				$league_service = $this->get_league_service();
@@ -292,7 +297,7 @@ class Standings_Service {
 	 */
 	public function update_standings( League $league, string $season ): void {
 		// update Standings for each team.
-		$league_teams = $league->get_league_teams(
+		$league_teams = $this->league_query()->get_league_teams( $league,
 			array(
 				'season' => $season,
 				'cache'  => false,
@@ -314,11 +319,8 @@ class Standings_Service {
 	 */
 	public function save_standings( League $league, object $league_team ): void {
 		if ( 'manual' !== $league->point_rule ) {
-			$league_team = get_league_team( $league_team );
-			$league_team->get_num_done_matches();
-			$league_team->get_num_won_matches();
-			$league_team->get_num_draw_matches();
-			$league_team->get_num_lost_matches();
+			$league_team = $league_team instanceof League_Team ? $league_team : get_league_team( $league_team );
+			$this->refresh_match_counts( $league, $league_team );
 
 			$league_team->points  = $this->calculate_points( $league, $league_team );
 			$league_team->diff    = 0;
@@ -368,7 +370,7 @@ class Standings_Service {
 			'minus' => 0,
 		);
 		if ( ! $matches ) {
-			$matches = $league->get_matches(
+			$matches = $this->league_query()->get_matches( $league,
 				array(
 					'team_id'          => $team->id,
 					'match_day'        => -1,
@@ -508,7 +510,7 @@ class Standings_Service {
 		$season = $league->get_season();
 
 		if ( ! $matches ) {
-			$matches = $league->get_matches(
+			$matches = $this->league_query()->get_matches( $league,
 				array(
 					'season'           => $season,
 					'team_id'          => $team_id,
@@ -684,5 +686,73 @@ class Standings_Service {
 			}
 		}
 		return $data;
+	}
+
+	/**
+	 * Recompute and store the done/won/drawn/lost match counts for a league team.
+	 *
+	 * @param League $league League the team belongs to.
+	 * @param League_Team $league_team League team to update.
+	 * @return void
+	 */
+	public function refresh_match_counts( League $league, League_Team $league_team ): void {
+		$base = array(
+			'count'            => true,
+			'limit'            => false,
+			'cache'            => false,
+			'match_day'        => -1,
+			'reset_query_args' => true,
+			'withdrawn'        => false,
+			'status'           => array(
+				'status_code' => 'Cancelled',
+				'compare'     => 'not',
+			),
+		);
+
+		$done = $this->league_query()->get_matches(
+			$league,
+			array_merge(
+				$base,
+				array(
+					'team_id'     => $league_team->id,
+					'home_points' => 'not_empty',
+					'away_points' => 'not_empty',
+				)
+			)
+		);
+		$league_team->done_matches = (int) apply_filters( 'racketmanager_done_matches_' . $league->sport, $done, $league_team->id, $league->id );
+		$league_team->win_percent();
+
+		$won = $this->league_query()->get_matches( $league, array_merge( $base, array( 'winner_id' => $league_team->id ) ) );
+		$league_team->won_matches = (int) apply_filters( 'racketmanager_won_matches_' . $league->sport, $won, $league_team->id, $league->id );
+		$league_team->win_percent();
+
+		$draw = $this->league_query()->get_matches(
+			$league,
+			array_merge(
+				$base,
+				array(
+					'team_id'   => $league_team->id,
+					'winner_id' => -1,
+					'loser_id'  => -1,
+				)
+			)
+		);
+		$league_team->draw_matches = (int) apply_filters( 'racketmanager_tie_matches_' . $league->sport, $draw, $league_team->id, $league->id );
+		$league_team->win_percent();
+
+		$lost = $this->league_query()->get_matches( $league, array_merge( $base, array( 'loser_id' => $league_team->id ) ) );
+		$league_team->lost_matches = (int) apply_filters( 'racketmanager_lost_matches_' . $league->sport, $lost, $league_team->id, $league->id );
+		$league_team->win_percent();
+	}
+
+	private function league_query(): League_Query_Service {
+		if ( $this->league_query_service instanceof \Closure ) {
+			$this->league_query_service = ( $this->league_query_service )();
+		}
+		if ( ! $this->league_query_service instanceof League_Query_Service ) {
+			throw new \LogicException( 'League_Query_Service is required by Standings_Service but was not configured.' );
+		}
+		return $this->league_query_service;
 	}
 }

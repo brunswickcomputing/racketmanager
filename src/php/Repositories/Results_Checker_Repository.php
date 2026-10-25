@@ -186,4 +186,92 @@ class Results_Checker_Repository implements Results_Checker_Repository_Interface
     public function delete( int $id ): bool {
         return (bool) $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) );
     }
+
+    /**
+     * Gets result checkers from the database
+     *
+     * @param array $args query arguments.
+     *
+     * @return array|int
+     */
+    public function find_all( array $args = array() ): array|int {
+        $defaults    = array(
+            'season'      => false,
+            'status'      => false,
+            'competition' => false,
+            'event'       => false,
+            'count'       => false,
+            'player'      => false,
+            'type'        => false,
+            'confirmed'   => false,
+            'match'       => false,
+        );
+        $args        = array_merge( $defaults, $args );
+        $season      = $args['season'];
+        $status      = $args['status'];
+        $competition = $args['competition'];
+        $event       = $args['event'];
+        $count       = $args['count'];
+        $player_id   = $args['player'];
+        $type        = $args['type'];
+        $confirmed   = $args['confirmed'];
+        $match_id    = $args['match'];
+
+        $fixtures_table = $this->wpdb->prefix . 'racketmanager_matches';
+        $leagues_table  = $this->wpdb->prefix . 'racketmanager_leagues';
+        $events_table   = $this->wpdb->prefix . 'racketmanager_events';
+
+        $sql = " FROM {$this->table_name} rc WHERE 1";
+
+        if ( $status && 'all' !== $status ) {
+            if ( 'outstanding' === $status ) {
+                $sql .= ' AND `status` IS NULL';
+            } else {
+                $sql .= $this->wpdb->prepare( ' AND `status` = %d', $status );
+            }
+        }
+        if ( $season && 'all' !== $season ) {
+            $sql .= $this->wpdb->prepare( " AND `match_id` IN (SELECT `id` FROM {$fixtures_table} WHERE `season` = %s)", $season );
+        }
+        if ( $competition && 'all' !== $competition ) {
+            $sql .= $this->wpdb->prepare( " AND `match_id` IN (SELECT m.`id` FROM {$fixtures_table} m, {$leagues_table} l WHERE m.`league_id` = l.`id` AND l.`event_id` IN (SELECT `id` FROM {$events_table} WHERE `competition_id` = %d))", $competition );
+        } elseif ( $event && 'all' !== $event ) {
+            $sql .= $this->wpdb->prepare( " AND `match_id` IN (SELECT m.`id` FROM {$fixtures_table} m, {$leagues_table} l WHERE m.`league_id` = l.`id` AND l.`event_id` = %d)", $event );
+        }
+        if ( $player_id ) {
+            $sql .= $this->wpdb->prepare( ' AND `player_id` = %d', $player_id );
+        }
+        if ( $type ) {
+            $sql .= $this->wpdb->prepare( ' AND `description` = %s', $type );
+        }
+        if ( $confirmed ) {
+            $sql .= $this->wpdb->prepare( " AND `match_id` IN (SELECT `id` FROM {$fixtures_table} WHERE `id` = rc.`match_id` AND `confirmed` != %s)", $confirmed );
+        }
+        if ( $match_id ) {
+            $sql .= $this->wpdb->prepare( ' AND `match_id` = %d', $match_id );
+        }
+        if ( $count ) {
+            $sql = 'SELECT COUNT(*)' . $sql;
+            return (int) $this->wpdb->get_var( $sql );
+        }
+        $sql  = 'SELECT `id`, `league_id`, `match_id`, `team_id`, `player_id`, `updated_date`, `updated_user`, `description`, `status`' . $sql;
+        $sql .= ' ORDER BY `match_id` DESC, `league_id` ASC, `team_id` ASC, `player_id` ASC';
+
+        $results_checkers = wp_cache_get( md5( $sql ), 'results_checkers' );
+        if ( ! $results_checkers ) {
+            $results_checkers = $this->wpdb->get_results( $sql );
+            wp_cache_set( md5( $sql ), $results_checkers, 'results_checkers' );
+        }
+        if ( ! is_array( $results_checkers ) ) {
+            return array();
+        }
+        $hydrated = array();
+        foreach ( $results_checkers as $row ) {
+            $result_check = $this->find_by_id( (int) $row->id );
+            if ( $result_check ) {
+                $hydrated[] = $result_check;
+            }
+        }
+        return $hydrated;
+    }
 }

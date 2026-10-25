@@ -14,6 +14,7 @@ use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Competition_Service;
 
@@ -25,6 +26,7 @@ readonly final class Event_Setup_Action_Dispatcher {
     public function __construct(
         private Competition_Service $competition_service,
         private Action_Guard_Interface $action_guard,
+        private Event_Repository_Interface $event_repository,
     ) {
     }
 
@@ -86,6 +88,10 @@ readonly final class Event_Setup_Action_Dispatcher {
                 message: __( 'No updates', 'racketmanager' ),
                 message_type: Admin_Message_Type::WARNING,
             );
+        }
+
+        if ( ! empty( $event->id ) ) {
+            $this->event_repository->update_seasons( (int) $event->id, $seasons );
         }
 
         return new Action_Result_DTO(

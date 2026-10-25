@@ -54,7 +54,7 @@ readonly final class League_Contact_Action_Dispatcher {
             if ( $league_id ) {
                 $league = $this->league_service->get_league( $league_id );
                 if ( $league ) {
-                    $sent = $league->contact_teams( $season, $message );
+                    $sent = $this->competition_notification_service->contact_league_teams( $league, $season, $message );
                 }
             } elseif ( $competition_id ) {
                 $competition = $this->competition_service->get_competition( $competition_id );

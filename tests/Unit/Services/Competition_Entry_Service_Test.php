@@ -41,6 +41,7 @@ use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Competition_Entry_Service;
+use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Notify_Service;
@@ -61,6 +62,7 @@ class Competition_Entry_Service_Test extends TestCase {
     private Competition_Entry_Service $service;
     private Competition_Service $competition_service;
     private Event_Repository_Interface|MockObject $event_repository;
+    private Event_Query_Service $event_query_service;
     private Team_Repository|MockObject $team_repository;
     private Club_Repository $club_repository;
     private League_Team_Repository|MockObject $league_team_repository;
@@ -90,6 +92,12 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->competition_to_return = null;
         $this->competition_service->method( 'get_by_id' )->willReturnCallback( fn() => $this->competition_to_return );
         $this->event_repository = $this->createMock( Event_Repository_Interface::class );
+        $this->event_query_service = new Event_Query_Service(
+            $this->event_repository,
+            null,
+            null,
+            $this->createStub( League_Repository::class )
+        );
         $this->team_repository = $this->createMock( Team_Repository::class );
         $this->club_repository = $this->createStub( Club_Repository::class );
         $this->league_team_repository = $this->createMock( League_Team_Repository::class );
@@ -117,7 +125,11 @@ class Competition_Entry_Service_Test extends TestCase {
 
         $this->tournament_entry_repository = $this->createMock( Tournament_Entry_Repository::class );
 
-        $this->service = new Competition_Entry_Service(
+        $this->service = $this->create_competition_entry_service();
+    }
+
+    private function create_competition_entry_service(): Competition_Entry_Service {
+        return new Competition_Entry_Service(
             plugin_instance: $this->plugin,
             club_repository: $this->club_repository,
             league_repository: $this->createStub( League_Repository::class ),
@@ -130,7 +142,8 @@ class Competition_Entry_Service_Test extends TestCase {
             finance_service: $this->finance_service,
             player_service: $this->player_service,
             tournament_service: $this->tournament_service,
-            notify_service: $this->notify_service
+            notify_service: $this->notify_service,
+            event_query_service: $this->event_query_service
         );
     }
 
@@ -3038,8 +3051,12 @@ class Competition_Entry_Service_Test extends TestCase {
         $event->primary_league = 0;
         $event->settings = [];
 
-        $this->event_repository->method( 'query_leagues' )
-            ->willReturn( [] );
+        $this->event_query_service = $this->createMock( Event_Query_Service::class );
+        $this->event_query_service->expects( $this->once() )
+            ->method( 'get_primary_league_id' )
+            ->with( $event )
+            ->willReturn( null );
+        $this->service = $this->create_competition_entry_service();
 
         $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event ] );
         $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
@@ -3066,8 +3083,12 @@ class Competition_Entry_Service_Test extends TestCase {
         $event->primary_league = 0;
         $event->settings = [];
 
-        $this->event_repository->method( 'query_leagues' )
-            ->willReturn( [ (object) [ 'id' => 3050 ] ] );
+        $this->event_query_service = $this->createMock( Event_Query_Service::class );
+        $this->event_query_service->expects( $this->once() )
+            ->method( 'get_primary_league_id' )
+            ->with( $event )
+            ->willReturn( 3050 );
+        $this->service = $this->create_competition_entry_service();
 
         $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
         $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
@@ -3234,6 +3255,7 @@ class Competition_Entry_Service_Test extends TestCase {
             }
         };
 
+        $this->event_query_service = $this->createMock( Event_Query_Service::class );
         $service = new Competition_Entry_Service(
             plugin_instance: $this->plugin,
             club_repository: $this->club_repository,
@@ -3248,6 +3270,7 @@ class Competition_Entry_Service_Test extends TestCase {
             player_service: $this->player_service,
             tournament_service: $this->tournament_service,
             notify_service: $this->notify_service,
+            event_query_service: $this->event_query_service,
             mailer: $fake_mailer,
             option_gateway: $option_gateway
         );
@@ -3275,6 +3298,10 @@ class Competition_Entry_Service_Test extends TestCase {
             ] );
 
         $event = $this->create_event( 10, 'MD' );
+        $event->seasons = wp_json_encode( [ '2025' => [ 'name' => '2025' ], '2026' => [ 'name' => '2026' ] ] );
+        $this->event_query_service->expects( $this->once() )->method( 'get_constitution' )
+            ->with( $event, [ 'season' => 2026, 'count' => true ] )
+            ->willReturn( 1 );
         $this->competition_service->method( 'get_events_for_competition' )
             ->willReturn( [ $event ] );
         $this->competition_service->method( 'get_leagues_for_event' )
@@ -3407,6 +3434,7 @@ class Competition_Entry_Service_Test extends TestCase {
             player_service: $this->player_service,
             tournament_service: $this->tournament_service,
             notify_service: $this->notify_service,
+            event_query_service: $this->event_query_service,
             mailer: $fake_mailer,
             option_gateway: $option_gateway
         );

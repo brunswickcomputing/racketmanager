@@ -66,6 +66,7 @@ class Admin_Import_Fixtures_Test extends TestCase {
             $this->player_service,
             $this->registration_service,
             $this->league_team_repository,
+            $this->createStub( \Racketmanager\Services\Standings\Standings_Service::class ),
             $GLOBALS['racketmanager']
         );
 

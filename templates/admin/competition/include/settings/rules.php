@@ -16,7 +16,7 @@ ksort( $rules_options );
 <div class="form-control">
     <?php
     foreach ( $rules_options as $option => $value ) {
-        $is_checked = ! empty( $competition->config->rules[ $option ] );
+        $is_checked = ! empty( $vm->config->rules[ $option ] );
         ?>
         <div class="form-check">
             <input type="checkbox" class="form-check-input" name="rules[<?php echo esc_html( $option ); ?>]" id="rules-<?php echo esc_html( $option ); ?>" value="1" <?php checked( true, $is_checked ); ?> <?php echo empty( $value ) ? 'disabled' : null; ?> />

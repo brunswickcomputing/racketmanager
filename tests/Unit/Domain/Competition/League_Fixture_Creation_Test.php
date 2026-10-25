@@ -19,7 +19,6 @@ use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Competition\League_Schedule_Service;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Fixture\Service_Provider as Fixture_Service_Provider;
-use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
@@ -30,11 +29,11 @@ class League_Fixture_Creation_Test extends TestCase {
     private $fixture_repository;
     private $rubber_repository;
     private Fixture_Service $fixture_service;
-    private Simple_Container $container;
 
     protected function setUp(): void {
         parent::setUp();
         $this->backup_globals();
+        unset( $GLOBALS['racketmanager'] );
 
         $this->fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
         $this->rubber_repository  = $this->createMock( Rubber_Repository_Interface::class );
@@ -49,14 +48,6 @@ class League_Fixture_Creation_Test extends TestCase {
 
         $service_provider = new Fixture_Service_Provider();
         $this->fixture_service = new Fixture_Service( $repository_provider, $service_provider );
-
-        $this->container = new Simple_Container();
-        $this->container->set( 'fixture_service', fn() => $this->fixture_service );
-        $this->container->set( 'fixture_repository', fn() => $this->fixture_repository );
-
-        $racketmanager            = new stdClass();
-        $racketmanager->container = $this->container;
-        $GLOBALS['racketmanager'] = $racketmanager;
     }
 
     protected function tearDown(): void {
@@ -64,29 +55,10 @@ class League_Fixture_Creation_Test extends TestCase {
         parent::tearDown();
     }
 
-    public function test_league_add_match_invokes_fixture_service(): void {
-        $league = (new \ReflectionClass( League::class ))->newInstanceWithoutConstructor();
-        $league->id = 50;
-        $league->set_fixture_service( $this->fixture_service );
-
-        $match_data = (object) [
-            'league_id' => 50,
-            'home_team' => '10',
-            'away_team' => '20',
-            'season'    => '2026',
-        ];
-
-        $this->fixture_repository->expects( $this->once() )
-            ->method( 'save' )
-            ->with( $this->isInstanceOf( Fixture::class ) );
-
-        $league->add_match( $match_data );
-    }
-
     public function test_league_create_match_schedule_invokes_fixture_service(): void {
         $league = (new \ReflectionClass( League::class ))->newInstanceWithoutConstructor();
         $league->id = 50;
-        $league->set_league_schedule_service( new League_Schedule_Service( $this->fixture_service ) );
+        $schedule_service = new League_Schedule_Service( $this->fixture_service );
 
         $rounds = [
             [
@@ -106,7 +78,7 @@ class League_Fixture_Creation_Test extends TestCase {
             ->method( 'save' )
             ->with( $this->isInstanceOf( Fixture::class ) );
 
-        $league->create_match_schedule( $rounds, $teams, $match_dates, '2026', false );
+        $schedule_service->create_match_schedule( $league, $rounds, $teams, $match_dates, '2026', false );
     }
 
     public function test_championship_legs_created_when_home_away_enabled_and_not_final(): void {

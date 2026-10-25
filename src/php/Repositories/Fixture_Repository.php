@@ -11,10 +11,14 @@ namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
+use Racketmanager\Domain\Fixture\Fixture_Time_Parser;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Fixture\Fixture_Relation_Loader;
 use Racketmanager\Services\Export\DTO\Export_Criteria;
+use Racketmanager\Util\Util;
 use RuntimeException;
 use wpdb;
 
@@ -27,25 +31,31 @@ class Fixture_Repository implements Fixture_Repository_Interface {
     private string $table_name;
     private ?Fixture_Relation_Loader $relation_loader;
     private ?Rubber_Repository_Interface $rubber_repository;
+    private ?League_Repository_Interface $league_repository;
+    private ?Team_Repository_Interface $team_repository;
 
     public function __construct(
         ?wpdb $db = null,
         ?Fixture_Relation_Loader $relation_loader = null,
-        ?Rubber_Repository_Interface $rubber_repository = null
+        ?Rubber_Repository_Interface $rubber_repository = null,
+        ?League_Repository_Interface $league_repository = null,
+        ?Team_Repository_Interface $team_repository = null
     ) {
         global $wpdb;
-        $this->wpdb       = $db ?? $wpdb;
-        $this->table_name = $this->wpdb->prefix . 'racketmanager_matches';
-        $this->relation_loader = $relation_loader;
+        $this->wpdb              = $db ?? $wpdb;
+        $this->table_name        = $this->wpdb->prefix . 'racketmanager_matches';
+        $this->relation_loader   = $relation_loader;
         $this->rubber_repository = $rubber_repository;
+        $this->league_repository = $league_repository;
+        $this->team_repository   = $team_repository;
     }
 
     public function save( object $entity ): bool|int {
         /** @var Fixture $entity */
         $data = array(
             'group'               => $entity->get_group(),
-            'date'                => $entity->get_date(),
-            'date_original'       => $entity->get_date_original(),
+            'date'                => Fixture_Time_Parser::to_mysql_datetime( $entity->get_date() ),
+            'date_original'       => Fixture_Time_Parser::to_mysql_datetime( $entity->get_date_original() ),
             'home_team'           => $entity->get_home_team(),
             'away_team'           => $entity->get_away_team(),
             'match_day'           => $entity->get_match_day(),
@@ -490,11 +500,12 @@ class Fixture_Repository implements Fixture_Repository_Interface {
     }
 
     public function update_date( int $id, string $date, ?string $original_date = null ): bool {
-        $data = array( 'date' => $date );
+        $canonical_date = Fixture_Time_Parser::to_mysql_datetime( $date );
+        $data = array( 'date' => $canonical_date );
         $format = array( '%s' );
 
         if ( null !== $original_date ) {
-            $data['date_original'] = $original_date;
+            $data['date_original'] = Fixture_Time_Parser::to_mysql_datetime( $original_date );
             $format[] = '%s';
         }
 
@@ -584,7 +595,11 @@ class Fixture_Repository implements Fixture_Repository_Interface {
      * @return Fixture|null
      */
     public function find_one_by_slug_criteria( array $criteria ): ?Fixture {
-        $league_id      = $criteria['league_slug'] ?? null;
+        if ( ! $this->league_repository ) {
+            return null;
+        }
+
+        $league_slug    = $criteria['league_slug'] ?? $criteria['league_id'] ?? null;
         $home_team_name = $criteria['home_team_slug'] ?? null;
         $away_team_name = $criteria['away_team_slug'] ?? null;
         $season         = $criteria['season'] ?? null;
@@ -592,64 +607,55 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         $round          = $criteria['round'] ?? null;
         $leg            = $criteria['leg'] ?? null;
 
-        if ( ! $league_id ) {
+        if ( empty( $league_slug ) ) {
             return null;
         }
 
-        $match_args = [
-//            'id'     => $league_id, //TODO: not needed for league->get_matches but will be for refactor
-            'season' => $season,
-        ];
+        $league = null;
+        if ( is_numeric( $league_slug ) ) {
+            $league = $this->league_repository->find_by_id( (int) $league_slug );
+        } elseif ( is_string( $league_slug ) ) {
+            $league = $this->league_repository->find_by_name( $league_slug );
+        }
 
+        if ( ! $league || empty( $league->id ) ) {
+            return null;
+        }
+
+        $home_team_id = null;
         if ( $home_team_name ) {
             $home_team_id = $this->get_team_id_by_title( $home_team_name );
-            if ( $home_team_id ) {
-                $match_args['home_team'] = $home_team_id;
+            if ( ! $home_team_id ) {
+                return null;
             }
         }
 
+        $away_team_id = null;
         if ( $away_team_name ) {
             $away_team_id = $this->get_team_id_by_title( $away_team_name );
-            if ( $away_team_id ) {
-                $match_args['away_team'] = $away_team_id;
+            if ( ! $away_team_id ) {
+                return null;
             }
         }
 
-        if ( $match_day ) {
-            $match_args['match_day'] = $match_day;
-        }
+        $query_args = array(
+            'season'          => $season,
+            'home_team'       => $home_team_id,
+            'away_team'       => $away_team_id,
+            'match_day'       => $match_day,
+            'final'           => $round,
+            'leg'             => $leg,
+            'is_championship' => ! empty( $league->is_championship ),
+            'current_season'  => $league->current_season['name'] ?? null,
+        );
 
-        if ( $round ) {
-            $match_args['final'] = $round;
-        }
+        $rows = $this->league_repository->query_matches( (int) $league->id, $query_args );
 
-        if ( $leg ) {
-            $match_args['leg'] = $leg;
-        }
-
-        $league = \Racketmanager\get_league( $league_id );
-        if ( ! $league ) {
+        if ( empty( $rows ) || ! is_array( $rows ) || count( $rows ) !== 1 ) {
             return null;
         }
 
-        $matches = $league->get_matches( $match_args );
-        if ( $matches instanceof Fixture ) {
-            return $matches;
-        }
-
-        if ( is_array( $matches ) && count( $matches ) === 1 ) {
-            $row = $matches[0];
-            if ( $row instanceof Fixture ) {
-                return $row;
-            }
-            return $this->find_by_id( (int) $row->id );
-        }
-
-        if ( is_object( $matches ) && isset( $matches->id ) ) {
-            return $this->find_by_id( (int) $matches->id );
-        }
-
-        return null;
+        return $this->hydrate_fixture( $rows[0], true );
     }
 
     /**
@@ -673,7 +679,7 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         $args = array_merge( $defaults, $args );
 
         $matches_table        = $this->table_name;
-        $leagues_table        = $this->wpdb->prefix . 'racketmanager';
+        $leagues_table        = $this->wpdb->prefix . 'racketmanager_leagues';
         $rubbers_table        = $this->wpdb->prefix . 'racketmanager_rubbers';
         $rubber_players_table = $this->wpdb->prefix . 'racketmanager_rubber_players';
         $events_table         = $this->wpdb->prefix . 'racketmanager_events';
@@ -738,15 +744,246 @@ class Fixture_Repository implements Fixture_Repository_Interface {
     }
 
     /**
+     * Get matches without using a league object.
+     *
+     * @param array $match_args query arguments.
+     *
+     * @return array|int $matches
+     */
+    public function find_all( array $match_args = array() ): array|int {
+        $defaults = array(
+            'leagueId'            => false,
+            'season'              => false,
+            'final'               => false,
+            'competition_type'    => false,
+            'orderby'             => array(
+                'league_id' => 'ASC',
+                'id'        => 'ASC',
+            ),
+            'competition_id'      => false,
+            'event_id'            => false,
+            'confirmed'           => false,
+            'match_date'          => false,
+            'time'                => false,
+            'timeOffset'          => false,
+            'history'             => false,
+            'club'                => false,
+            'league_name'         => false,
+            'team'                => false,
+            'team_name'           => false,
+            'home_team'           => false,
+            'home_club'           => false,
+            'away_team'           => false,
+            'match_day'           => false,
+            'competition_name'    => false,
+            'count'               => false,
+            'confirmationPending' => false,
+            'resultPending'       => false,
+            'status'              => false,
+            'tournament_id'       => false,
+            'player'              => false,
+            'type'                => false,
+            'complete'            => false,
+            'age_group'           => false,
+        );
+
+        $match_args           = array_merge( $defaults, $match_args );
+        $league_id            = $match_args['leagueId'];
+        $season               = $match_args['season'];
+        $final                = $match_args['final'];
+        $competition_type     = $match_args['competition_type'];
+        $orderby              = $match_args['orderby'];
+        $competition_id       = $match_args['competition_id'];
+        $event_id             = $match_args['event_id'];
+        $confirmed            = $match_args['confirmed'];
+        $match_date           = $match_args['match_date'];
+        $time                 = $match_args['time'];
+        $time_offset          = $match_args['timeOffset'];
+        $history              = $match_args['history'];
+        $club                 = $match_args['club'];
+        $league_name          = $match_args['league_name'];
+        $team                 = $match_args['team'];
+        $team_name            = $match_args['team_name'];
+        $home_team            = $match_args['home_team'];
+        $home_club            = $match_args['home_club'];
+        $away_team            = $match_args['away_team'];
+        $match_day            = $match_args['match_day'];
+        $competition_name     = $match_args['competition_name'];
+        $count                = $match_args['count'];
+        $confirmation_pending = $match_args['confirmationPending'];
+        $result_pending       = $match_args['resultPending'];
+        $status               = $match_args['status'];
+        $tournament_id        = $match_args['tournament_id'];
+        $player               = $match_args['player'];
+        $type                 = $match_args['type'];
+        $complete             = $match_args['complete'];
+        $age_group            = $match_args['age_group'];
+
+        $leagues_table        = $this->wpdb->prefix . 'racketmanager_leagues';
+        $events_table         = $this->wpdb->prefix . 'racketmanager_events';
+        $competitions_table   = $this->wpdb->prefix . 'racketmanager_competitions';
+        $teams_table          = $this->wpdb->prefix . 'racketmanager_teams';
+        $tournaments_table    = $this->wpdb->prefix . 'racketmanager_tournaments';
+        $team_players_table   = $this->wpdb->prefix . 'racketmanager_team_players';
+        $rubbers_table        = $this->wpdb->prefix . 'racketmanager_rubbers';
+        $rubber_players_table = $this->wpdb->prefix . 'racketmanager_rubber_players';
+
+        $sql_from = " FROM {$this->table_name} AS m, {$leagues_table} AS l";
+        if ( $count ) {
+            $sql        = "SELECT COUNT(*) FROM {$this->table_name} WHERE 1 = 1";
+            $sql_fields = '';
+        } else {
+            $sql_fields = "SELECT m.`final` AS final_round, m.`group`, `home_team`, `away_team`, DATE_FORMAT(m.`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(m.`date`, '%e') AS day, DATE_FORMAT(m.`date`, '%c') AS month, DATE_FORMAT(m.`date`, '%Y') AS year, DATE_FORMAT(m.`date`, '%H') AS `hour`, DATE_FORMAT(m.`date`, '%i') AS `minutes`, `match_day`, `location`, l.`id` AS `league_id`, m.`home_points`, m.`away_points`, m.`winner_id`, m.`loser_id`, m.`post_id`, `season`, m.`id` AS `id`, m.`custom`, m.`confirmed`, m.`home_captain`, m.`away_captain`, m.`comments`, m.`updated`, `event_id`, m.`status`, `leg`, `winner_id_tie`, `loser_id_tie`";
+            $sql        = ' WHERE m.`league_id` = l.`id`';
+        }
+
+        if ( $match_date ) {
+            $sql .= " AND DATEDIFF('" . htmlspecialchars( wp_strip_all_tags( $match_date ) ) . "', `date`) = 0";
+        }
+        if ( $competition_name ) {
+            $sql .= " AND `league_id` in (select `id` from {$leagues_table} WHERE `event_id` in (SELECT e.`id` FROM {$events_table} e, {$competitions_table} c WHERE c.`name` = '" . $competition_name . "' AND e.`competition_id` = c.`id`))";
+        }
+        if ( $competition_id ) {
+            $sql .= " AND `league_id` in (select `id` from {$leagues_table} WHERE `event_id` IN (select `id` from {$events_table} WHERE `competition_id` = '" . $competition_id . "') )";
+        }
+        if ( $event_id ) {
+            $sql .= " AND `league_id` in (select `id` from {$leagues_table} WHERE `event_id` = '" . $event_id . "')";
+        }
+        if ( $league_id ) {
+            $sql .= " AND `league_id`  = '" . $league_id . "'";
+        }
+        if ( $league_name ) {
+            $sql .= " AND `league_id` in (select `id` from {$leagues_table} WHERE `title` = '" . $league_name . "')";
+        }
+        if ( $season ) {
+            $sql .= " AND `season`  = '" . $season . "'";
+        }
+        if ( $final ) {
+            if ( 'all' === $final ) {
+                $sql .= " AND `final` != ''";
+            } else {
+                $sql .= " AND `final`  = '" . $final . "'";
+            }
+        }
+        if ( $competition_type ) {
+            $sql .= " AND `league_id` in (select `id` from {$leagues_table} WHERE `event_id` in (select e.`id` from {$events_table} e, {$competitions_table} c WHERE e.`competition_id` = c.`id` AND c.`type` = '" . $competition_type . "'))";
+        }
+        if ( $tournament_id ) {
+            $sql .= " AND `league_id` in (select `id` from {$leagues_table} WHERE `event_id` in (SELECT e.`id` FROM {$events_table} e, {$competitions_table} c, {$tournaments_table} t WHERE e.`competition_id` = c.`id` AND c.`id` = t.`competition_id` AND t.`id` = " . $tournament_id . '))';
+        }
+        if ( $time_offset ) {
+            $time_offset = intval( $time_offset ) . ':00:00';
+        } else {
+            $time_offset = '00:00:00';
+        }
+        if ( $status ) {
+            $sql .= " AND `confirmed` = '" . $status . "'";
+        }
+        if ( $confirmed ) {
+            $sql .= " AND `confirmed` in ('P','A','C')";
+            if ( $time_offset ) {
+                $sql .= " AND ADDTIME(`updated`,'" . $time_offset . "') <= NOW()";
+            }
+        }
+        if ( $confirmation_pending ) {
+            $confirmation_pending = intval( $confirmation_pending ) . ':00:00';
+            $sql_fields          .= ",ADDTIME(`updated`,'" . $confirmation_pending . "') as confirmation_overdue_date, TIME_FORMAT(TIMEDIFF(now(),ADDTIME(`updated`,'" . $confirmation_pending . "')), '%H')/24 as overdue_time";
+        }
+        if ( $result_pending ) {
+            $result_pending = intval( $result_pending ) . ':00:00';
+            $sql_fields    .= ",ADDTIME(`date`,'" . $result_pending . "') as result_overdue_date, TIME_FORMAT(TIMEDIFF(now(),ADDTIME(`date`,'" . $result_pending . "')), '%H')/24 as overdue_time";
+        }
+        if ( $time ) {
+            if ( 'latest' === $time ) {
+                $sql .= " AND (`home_points` != '' OR `away_points` != '')";
+            } elseif ( 'outstanding' === $time ) {
+                $sql .= " AND ADDTIME(`date`,'" . $time_offset . "') <= NOW() AND `winner_id` = 0 AND `confirmed` IS NULL";
+            } elseif ( is_numeric( $time ) ) {
+                $sql .= ' AND m.`date` > now() - INTERVAL ' . $time . ' DAY';
+            }
+        }
+        if ( $history ) {
+            $sql .= ' AND `updated` >= NOW() - INTERVAL ' . $history . ' DAY';
+        }
+
+        if ( $club ) {
+            $sql .= " AND (`home_team` IN (SELECT `id` FROM {$teams_table} WHERE `club_id` = " . $club . ") OR `away_team` IN (SELECT `id` FROM {$teams_table} WHERE `club_id` = " . $club . '))';
+        }
+        if ( $team ) {
+            $sql .= ' AND (`home_team` = ' . $team . ' OR `away_team` = ' . $team . ')';
+        }
+        if ( $home_club ) {
+            $sql .= " AND `home_team` IN (SELECT `id` FROM {$teams_table} WHERE `club_id` = " . $home_club . ')';
+        }
+        if ( ! empty( $home_team ) ) {
+            $sql .= ' AND `home_team` = ' . $home_team . ' ';
+        }
+        if ( ! empty( $away_team ) ) {
+            $sql .= ' AND `away_team` = ' . $away_team . ' ';
+        }
+        if ( ! empty( $team_name ) ) {
+            $sql .= " AND (`home_team` IN (SELECT `id` FROM {$teams_table} WHERE `title` LIKE '%" . $team_name . "%') OR `away_team` IN (SELECT `id` FROM {$teams_table} WHERE `title` LIKE '%" . $team_name . "%'))";
+        }
+        if ( $match_day && intval( $match_day ) > 0 ) {
+            $sql .= ' AND `match_day` = ' . $match_day . ' ';
+        }
+        if ( $player ) {
+            if ( $tournament_id ) {
+                $sql_from .= " ,{$team_players_table} tp";
+                $sql      .= " AND ((m.`home_team` = tp.`team_id` AND tp.`player_id` = '$player') OR (m.`away_team` = tp.`team_id` AND tp.`player_id` = '$player'))";
+            } else {
+                $sql_from .= " ,{$rubbers_table} r, {$rubber_players_table} rp";
+                $sql      .= " AND m.`id` = r.`match_id` AND r.`id` = rp.`rubber_id` AND `player_id` = '$player'";
+            }
+        }
+        if ( $type ) {
+            $sql .= " AND `league_id` in (select `id` from {$leagues_table} WHERE `event_id` in (select e.`id` from {$events_table} e WHERE e.`type` like '%%" . $type . "%%'))";
+        }
+        if ( $complete ) {
+            $sql .= ' AND m.`winner_id` != 0';
+        }
+        if ( $age_group ) {
+            $sql .= " AND `league_id` in (select `id` from {$leagues_table} WHERE `event_id` in (SELECT e.`id` FROM {$events_table} e, {$competitions_table} c WHERE e.`competition_id` = c.`id` and `age_group` = '" . $age_group . "'))";
+        }
+        if ( $count ) {
+            return intval(
+                $this->wpdb->get_var( $sql )
+            );
+        }
+        $order   = Util::order_by_string( $orderby );
+        $sql     = $sql_fields . $sql_from . $sql . $order;
+        $matches = wp_cache_get( md5( $sql ), 'matches' );
+        if ( ! $matches ) {
+            $matches = $this->wpdb->get_results( $sql );
+            wp_cache_set( md5( $sql ), $matches, 'matches' );
+        }
+        if ( ! is_array( $matches ) ) {
+            return array();
+        }
+        $hydrated_matches = array();
+        foreach ( $matches as $i => $match ) {
+            $match_id = (int) ( is_object( $match ) ? $match->id : $match );
+            $fixture  = $this->find_by_id( $match_id );
+            if ( $player && $fixture ) {
+                $rubber_repo = $this->rubber_repository ?? new Rubber_Repository();
+                $fixture->set_rubbers( $rubber_repo->find_by_fixture_id( (int) $fixture->get_id(), (int) $player ) );
+            }
+            if ( $fixture ) {
+                $hydrated_matches[ $i ] = $fixture;
+            }
+        }
+        return $hydrated_matches;
+    }
+
+    /**
      * Helper to get team ID by title.
      *
      * @param string $title
      * @return int
      */
     private function get_team_id_by_title( string $title ): int {
-        global $racketmanager;
-        if ( isset( $racketmanager ) && method_exists( $racketmanager, 'get_team_id' ) ) {
-            return $racketmanager->get_team_id( $title );
+        if ( $this->team_repository ) {
+            return $this->team_repository->find_id_by_title( $title );
         }
 
         $teams_table = $this->wpdb->prefix . 'racketmanager_teams';

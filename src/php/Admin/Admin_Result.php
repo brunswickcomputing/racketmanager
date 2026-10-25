@@ -15,6 +15,7 @@ use LogicException;
 use Racketmanager\Admin\Presenters\Admin_Results_Match_Presenter;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
+use Racketmanager\Presentation\Presenters\Results_Checker_Presenter;
 use Racketmanager\Services\Admin\Result\Results_Checker_Action_Dispatcher_Interface;
 use Racketmanager\Services\Container\Simple_Container;
 
@@ -30,12 +31,14 @@ class Admin_Result extends Admin_Display {
 
     private ?Results_Checker_Action_Dispatcher_Interface $results_checker_dispatcher = null;
     private Admin_Results_Match_Presenter $results_match_presenter;
+    private Results_Checker_Presenter $results_checker_presenter;
 
     public function __construct(
         $plugin_instance,
         ?Admin_Action_Adapter $admin_action_adapter = null,
         ?Results_Checker_Action_Dispatcher_Interface $results_checker_action_dispatcher = null,
         ?Admin_Results_Match_Presenter $results_match_presenter = null,
+        ?Results_Checker_Presenter $results_checker_presenter = null,
     ) {
         parent::__construct( $plugin_instance );
         if ( null !== $admin_action_adapter ) {
@@ -43,6 +46,7 @@ class Admin_Result extends Admin_Display {
         }
         $this->results_checker_dispatcher = $results_checker_action_dispatcher;
         $this->results_match_presenter    = $results_match_presenter ?? $this->resolve_results_match_presenter();
+        $this->results_checker_presenter  = $results_checker_presenter ?? $this->resolve_results_checker_presenter();
     }
 
     /**
@@ -60,7 +64,6 @@ class Admin_Result extends Admin_Display {
      * Show RacketManager results page
      */
     public function display_results_page(): void {
-        global $racketmanager;
         if ( ! current_user_can( 'view_leagues' ) ) {
             $this->set_message( $this->no_permission, true );
             $this->show_message();
@@ -68,7 +71,7 @@ class Admin_Result extends Admin_Display {
         }
 
         if ( isset( $_POST['doResultsChecker'] ) ) {
-            $dispatcher = $this->results_checker_dispatcher ?? $racketmanager->container->get( 'results_checker_action_dispatcher' );
+            $dispatcher = $this->results_checker_dispatcher ?? $this->racketmanager->container->get( 'results_checker_action_dispatcher' );
             $result     = $dispatcher->handle( $_POST );
             if ( $this->deliver_results_action_result( $result, $_GET, array( 'tab' => 'resultschecker' ) ) ) {
                 return;
@@ -84,7 +87,7 @@ class Admin_Result extends Admin_Display {
         $results_check_filter = isset( $_GET['filterResultsChecker'] ) ? sanitize_text_field( wp_unslash( strval( $_GET['filterResultsChecker'] ) ) ) : 'outstanding';
         $tab                  = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( strval( $_GET['tab'] ) ) ) : 'resultschecker';
 
-        $results_checkers = $racketmanager->get_result_warnings(
+        $results_checkers = $this->racketmanager->get_result_warnings(
             array(
                 'season'      => $season_select,
                 'competition' => $competition_select,
@@ -92,8 +95,7 @@ class Admin_Result extends Admin_Display {
                 'status'      => $results_check_filter,
             )
         );
-        $presenter        = $racketmanager->container->get( 'results_checker_presenter' );
-        $results_checkers = $presenter->present_collection( $results_checkers, $results_check_filter );
+        $results_checkers = $this->results_checker_presenter->present_collection( $results_checkers, $results_check_filter );
 
         $league_result_pending      = $this->option_value( 'league', 'resultPending' );
         $tournament_result_pending  = $this->option_value( 'tournament', 'resultPending' );
@@ -194,13 +196,11 @@ class Admin_Result extends Admin_Display {
      * @return \Racketmanager\Admin\View_Models\Admin_Results_Match_View_Model[]
      */
     private function present_results_matches( array $match_args, string $referrer, bool $include_result_path = true, string $default_tooltip = '', mixed $result_pending = null ): array {
-        global $racketmanager;
-
         if ( empty( $match_args['resultPending'] ) ) {
             unset( $match_args['resultPending'] );
         }
 
-        $matches = $racketmanager->get_matches( $match_args );
+        $matches = $this->racketmanager->get_matches( $match_args );
         if ( ! is_array( $matches ) ) {
             $matches = array();
         }
@@ -235,8 +235,7 @@ class Admin_Result extends Admin_Display {
     }
 
     private function option_value( string $group, string $key ): mixed {
-        global $racketmanager;
-        $options = $racketmanager->get_options( $group );
+        $options = $this->racketmanager->get_options( $group );
 
         return is_array( $options ) ? ( $options[ $key ] ?? '' ) : '';
     }
@@ -248,5 +247,14 @@ class Admin_Result extends Admin_Display {
         }
 
         return $container->get( 'admin_results_match_presenter' );
+    }
+
+    private function resolve_results_checker_presenter(): Results_Checker_Presenter {
+        $container = $this->racketmanager->container ?? null;
+        if ( ! $container instanceof Simple_Container || ! $container->has( 'results_checker_presenter' ) ) {
+            throw new LogicException( 'The results checker presenter is not registered.' );
+        }
+
+        return $container->get( 'results_checker_presenter' );
     }
 }

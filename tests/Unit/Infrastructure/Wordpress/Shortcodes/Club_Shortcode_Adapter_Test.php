@@ -47,6 +47,7 @@ use Racketmanager\Presentation\View_Models\Event_Header_View_Model;
 use Racketmanager\Presentation\View_Models\Player_View_Model;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
@@ -58,10 +59,12 @@ use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
 use Racketmanager\Tests\Helpers\Creates_Test_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class Club_Shortcode_Adapter_Test extends TestCase {
+    use Creates_Event_Query_Service;
     use Creates_Test_Container;
     use Manages_Wordpress_Globals;
 
@@ -70,6 +73,9 @@ class Club_Shortcode_Adapter_Test extends TestCase {
 
     /** @var array<int, Event[]> Events returned by Competition_Service::get_events_for_competition(), keyed by competition id. */
     private array $competition_events = [];
+
+    /** @var array<int, array> Teams per event id. */
+    private array $event_teams = [];
 
     protected function setUp(): void {
         parent::setUp();
@@ -681,17 +687,8 @@ class Club_Shortcode_Adapter_Test extends TestCase {
             public function __construct() {
                 // no-op
             }
-            public function get_player_stats( array $args ): array {
-                return [];
-            }
-            public function get_team_info( int $team_id ): object {
-                return (object) [ 'id' => $team_id ];
-            }
             public function get_seasons(): array {
                 return json_decode( $this->seasons, true ) ?? [];
-            }
-            public function get_primary_league(): ?League {
-                return $this->primary_league_obj;
             }
         };
         $event->id             = $id;
@@ -850,6 +847,59 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $adapter->show_club_team( [] );
         $this->assertSame( 'club/team', $this->rendered[0]['path'] );
         $this->assertSame( 101, $this->rendered[0]['vars']['event']->id );
+    }
+
+    public function test_show_club_team_and_event_resolve_query_var_season_and_reject_unknown_season(): void {
+        $competition = $this->create_test_competition( 10, [ 101 ] );
+        $competition->set_seasons( [
+            '2025' => [ 'name' => '2025', 'entry_events' => [ 101 ] ],
+            '2026' => [ 'name' => '2026', 'entry_events' => [ 101 ] ],
+        ] );
+        $event = $this->create_test_event( 101, 'Mens Doubles', 10, $competition, '2026' );
+        $event->seasons = json_encode( [
+            '2025' => [ 'name' => '2025' ],
+            '2026' => [ 'name' => '2026' ],
+        ] );
+
+        $GLOBALS['wp_stubs_events']['mens doubles'] = $event;
+        $GLOBALS['wp_stubs_teams']['first team']    = (object) [ 'id' => 3 ];
+
+        $adapter = $this->adapter( [
+            'club_service' => $this->club_service_for( $this->club() ),
+            'renderer'     => $this->capturing_renderer(),
+        ] );
+
+        // 1. Valid query var season 2025 in show_club_event
+        $this->rendered = [];
+        $GLOBALS['query_vars']['event']  = 'mens-doubles';
+        $GLOBALS['query_vars']['season'] = '2025';
+        $adapter->show_club_event( [] );
+        $this->assertSame( 'club/event', $this->rendered[0]['path'] );
+        $this->assertSame( '2025', $this->rendered[0]['vars']['current_season']['name'] );
+        $this->assertSame( '2025', $this->rendered[0]['vars']['event_header']->curr_season );
+
+        // 2. Valid query var season 2025 in show_club_team
+        $this->rendered = [];
+        $GLOBALS['query_vars']['team']   = 'first-team';
+        $GLOBALS['query_vars']['event']  = 'mens-doubles';
+        $GLOBALS['query_vars']['season'] = '2025';
+        $adapter->show_club_team( [] );
+        $this->assertSame( 'club/team', $this->rendered[0]['path'] );
+        $this->assertSame( '2025', $this->rendered[0]['vars']['event']->current_season['name'] );
+
+        // 3. Unknown query var season 1999 in show_club_team yields allowlist rejection
+        $this->rendered = [];
+        $GLOBALS['query_vars']['season'] = '1999';
+        $adapter->show_club_team( [] );
+        $this->assertSame( 'alert', $this->rendered[0]['path'] );
+        $this->assertSame( 'Event not found for competition', $this->rendered[0]['vars']['msg'] );
+
+        // 4. Unknown query var season 1999 in show_club_event yields allowlist rejection
+        $this->rendered = [];
+        $GLOBALS['query_vars']['season'] = '1999';
+        $adapter->show_club_event( [] );
+        $this->assertSame( 'alert', $this->rendered[0]['path'] );
+        $this->assertSame( 'Event not found for competition', $this->rendered[0]['vars']['msg'] );
     }
 
     public function test_show_team_edit_modal_enforces_allowlist(): void {
@@ -1020,12 +1070,16 @@ class Club_Shortcode_Adapter_Test extends TestCase {
      */
     private function event_with_teams( int $id, string $name, ?array $team = null, bool $with_season = true ): Event {
         $event = $this->createStub( Event::class );
-        $event->method( 'get_teams_info' )->willReturn( null === $team ? [] : [ (object) $team ] );
         $event->id   = $id;
         $event->name = $name;
+        // Event_Query_Service::get_teams_info() returns no teams for an event whose get_season() is empty, so the
+        // season stays resolvable here; only the `current_season` property (used for URLs) is left unset.
+        $event->method( 'get_season' )->willReturn( '2026' );
         if ( $with_season ) {
             $event->current_season = [ 'name' => '2026' ];
+            $event->method( 'get_seasons' )->willReturn( [ '2026' => [ 'name' => '2026' ] ] );
         }
+        $this->event_teams[ $id ] = null === $team ? [] : [ (object) $team ];
 
         return $event;
     }
@@ -1135,6 +1189,12 @@ class Club_Shortcode_Adapter_Test extends TestCase {
             static fn( string $option, mixed $default = false ) => 'racketmanager_display' === $option ? ( $overrides['display'] ?? [] ) : $default
         );
 
+        $event_repository = $this->createStub( Event_Repository_Interface::class );
+        $event_repository->method( 'get_teams_info' )->willReturnCallback(
+            fn( int $event_id ) => $this->event_teams[ $event_id ] ?? []
+        );
+        $event_query_service = $overrides['event_query_service'] ?? $this->event_query_service( $event_repository );
+
         return new Club_Shortcode_Adapter(
             $club_service,
             new Get_Club_Handler( $club_service, $settings, $club_presenter, $security ),
@@ -1142,10 +1202,11 @@ class Club_Shortcode_Adapter_Test extends TestCase {
             new Get_Club_Players_Handler( $club_service, $players, $registration, $club_presenter, $option_gateway, new Player_Presenter() ),
             new Get_Club_Roles_Handler( $club_service ),
             new Get_Club_Role_Modal_Handler( $club_service ),
-            new Get_Club_Competitions_Handler( $club_service, $competitions, $repository, new Team_Details_Presenter( new Wp_Option_Gateway(), $settings ), $club_presenter ),
+            new Get_Club_Competitions_Handler( $club_service, $competitions, $repository, new Team_Details_Presenter( new Wp_Option_Gateway(), $settings ), $club_presenter, $event_query_service ),
             new Get_Club_Invoices_Handler( $club_service, $finance, new Invoice_Presenter(), $club_presenter, $settings ),
             new Shortcode_View_Presenter( $template_renderer ),
-            $overrides['competition_presenter'] ?? new Competition_Shortcode_Presenter( $renderer )
+            $overrides['competition_presenter'] ?? new Competition_Shortcode_Presenter( $renderer ),
+            $event_query_service
         );
     }
 }

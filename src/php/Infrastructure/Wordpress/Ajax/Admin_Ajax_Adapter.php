@@ -16,10 +16,12 @@ use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\League_Team_Repository;
+use Racketmanager\Services\Competition\Competition_Notification_Service;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Services\Settings_Service;
+use Racketmanager\Services\Standings\Standings_Service;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Util\Util;
 use stdClass;
@@ -48,7 +50,9 @@ class Admin_Ajax_Adapter {
         private Notification_Service $notification_service,
         private Fixture_Repository_Interface $fixture_repository,
         private Settings_Service $settings_service,
-        private ?League_Team_Repository_Interface $league_team_repository = null
+        private ?League_Team_Repository_Interface $league_team_repository,
+        private Competition_Notification_Service $competition_notification_service,
+        private Standings_Service $standings_service
     ) {}
 
     private function get_league_team_repository(): League_Team_Repository_Interface {
@@ -81,7 +85,9 @@ class Admin_Ajax_Adapter {
             $league_entry->amend_points( $command->points );
             $this->get_league_team_repository()->amend_points( (int) $command->table_id, (float) $command->points );
             $league = get_league( $league_entry->league_id );
-            $league?->set_teams_rank( $league_entry->season );
+            if ( $league ) {
+                $this->standings_service->set_teams_rank( $league, $league_entry->season );
+            }
 
             return $this->response_factory->create_success_response();
         }
@@ -196,7 +202,7 @@ class Admin_Ajax_Adapter {
         }
 
         $season = $event->current_season;
-        $event->send_constitution( $season );
+        $this->competition_notification_service->send_constitution( $event, $season );
 
         return $this->response_factory->create_success_response( __( 'Constitution emailed', 'racketmanager' ) );
     }

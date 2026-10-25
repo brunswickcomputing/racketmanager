@@ -29,12 +29,14 @@ use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Presentation\View_Models\Tournament_Header_View_Model;
 
 class Competition_Entry_Flow_Test extends TestCase {
+    use Creates_Event_Query_Service;
     use Manages_Wordpress_Globals;
 
     protected function setUp(): void {
@@ -80,7 +82,8 @@ class Competition_Entry_Flow_Test extends TestCase {
             racketmanager: $plugin,
             club_entry_selection: new Club_Entry_Selection_Service( $club_service, $player_service ),
             competition_shortcode_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
-            tournament_presenter: new Tournament_Presenter()
+            tournament_presenter: new Tournament_Presenter(),
+            event_query_service: $this->event_query_service()
         );
 
         $output = $adapter->show_competition_entry();
@@ -121,7 +124,8 @@ class Competition_Entry_Flow_Test extends TestCase {
                 template_renderer: $renderer,
                 club_entry_selection: new Club_Entry_Selection_Service( $club_service, $player_service ),
                 competition_shortcode_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
-                tournament_presenter: new Tournament_Presenter()
+                tournament_presenter: new Tournament_Presenter(),
+                event_query_service: $this->event_query_service()
             );
             $this->assertStringContainsString( 'entry-' . $type->value, $adapter->show_competition_entry() );
         }
@@ -155,7 +159,8 @@ class Competition_Entry_Flow_Test extends TestCase {
                 $club_service, $player_service
             ),
             competition_shortcode_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
-            tournament_presenter: new Tournament_Presenter()
+            tournament_presenter: new Tournament_Presenter(),
+            event_query_service: $this->event_query_service()
         );
         $GLOBALS['query_vars'] = [ 'competition_name' => 'Summer League' ];
         $this->assertStringContainsString( 'No season specified', $adapter->show_competition_entry() );
@@ -204,9 +209,21 @@ class Competition_Entry_Flow_Test extends TestCase {
             template_renderer: $renderer,
             club_entry_selection: new Club_Entry_Selection_Service( $club_service, $player_service ),
             competition_shortcode_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
-            tournament_presenter: new Tournament_Presenter()
+            tournament_presenter: new Tournament_Presenter(),
+            event_query_service: $this->event_query_service()
         );
         $this->assertStringContainsString( 'Autumn Open', $adapter->show_competition_entry() );
+    }
+
+    public function test_entry_without_event_query_service_fails_with_configuration_error(): void {
+        $GLOBALS['wp_stubs_is_user_logged_in'] = true;
+        $adapter = new Competition_Shortcode_Adapter(
+            template_renderer: new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) )
+        );
+
+        $this->expectException( \LogicException::class );
+        $this->expectExceptionMessage( 'Event_Query_Service' );
+        $adapter->show_competition_entry();
     }
 
     public function test_payment_and_completion_use_typed_lookup_and_render_the_correct_views(): void {
@@ -350,7 +367,8 @@ class Competition_Entry_Flow_Test extends TestCase {
             competition_entry_service: $this->createStub( Competition_Entry_Service::class ),
             finance_service: $this->createStub( Finance_Service::class ),
             competition_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
-            tournament_presenter: new Tournament_Presenter()
+            tournament_presenter: new Tournament_Presenter(),
+            event_query_service: $this->event_query_service()
         );
         $vm = $handler->handle( new \Racketmanager\Application\Competition\Queries\Get_Competition_Entry_Query() );
         $this->assertTrue( $vm->is_error() );
@@ -371,7 +389,8 @@ class Competition_Entry_Flow_Test extends TestCase {
             competition_entry_service: $this->createStub( Competition_Entry_Service::class ),
             finance_service: $this->createStub( Finance_Service::class ),
             competition_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
-            tournament_presenter: new Tournament_Presenter()
+            tournament_presenter: new Tournament_Presenter(),
+            event_query_service: $this->event_query_service()
         );
         $vm = $handler->handle( new \Racketmanager\Application\Competition\Queries\Get_Competition_Entry_Query( tournament_name: 'Unknown' ) );
         $this->assertTrue( $vm->is_error() );

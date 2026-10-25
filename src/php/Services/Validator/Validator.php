@@ -72,41 +72,59 @@ class Validator {
     /**
      * Constructor
      */
-    public function __construct() {
+    public function __construct(
+        ?Competition_Service $competition_service = null,
+        ?Club_Service $club_service = null,
+        ?Player_Service $player_service = null,
+        ?Registration_Service $registration_service = null
+    ) {
         global $racketmanager;
         $this->error        = false;
         $this->err_flds     = array();
         $this->err_msgs     = array();
         $this->err_statuses = array();
         $this->status       = null;
-        $this->msg      = null;
-        $this->err      = new WP_Error();
+        $this->msg          = null;
+        $this->err          = new WP_Error();
+
+        $this->competition_service  = $competition_service;
+        $this->club_service         = $club_service;
+        $this->player_service       = $player_service;
+        $this->registration_service = $registration_service;
 
         $c = $racketmanager->container ?? null;
         if ( $c && method_exists( $c, 'get' ) ) {
-            try {
-                $comp = $c->get( 'competition_service' );
-                $this->competition_service = $comp instanceof Competition_Service ? $comp : null;
-            } catch ( \Throwable ) {
-                $this->competition_service = null;
+            if ( null === $this->competition_service ) {
+                try {
+                    $comp = $c->get( 'competition_service' );
+                    $this->competition_service = $comp instanceof Competition_Service ? $comp : null;
+                } catch ( \Throwable ) {
+                    $this->competition_service = null;
+                }
             }
-            try {
-                $club = $c->get( 'club_service' );
-                $this->club_service = $club instanceof Club_Service ? $club : null;
-            } catch ( \Throwable ) {
-                $this->club_service = null;
+            if ( null === $this->club_service ) {
+                try {
+                    $club = $c->get( 'club_service' );
+                    $this->club_service = $club instanceof Club_Service ? $club : null;
+                } catch ( \Throwable ) {
+                    $this->club_service = null;
+                }
             }
-            try {
-                $player = $c->get( 'player_service' );
-                $this->player_service = $player instanceof Player_Service ? $player : null;
-            } catch ( \Throwable ) {
-                $this->player_service = null;
+            if ( null === $this->player_service ) {
+                try {
+                    $player = $c->get( 'player_service' );
+                    $this->player_service = $player instanceof Player_Service ? $player : null;
+                } catch ( \Throwable ) {
+                    $this->player_service = null;
+                }
             }
-            try {
-                $reg = $c->get( 'registration_service' );
-                $this->registration_service = $reg instanceof Registration_Service ? $reg : null;
-            } catch ( \Throwable ) {
-                $this->registration_service = null;
+            if ( null === $this->registration_service ) {
+                try {
+                    $reg = $c->get( 'registration_service' );
+                    $this->registration_service = $reg instanceof Registration_Service ? $reg : null;
+                } catch ( \Throwable ) {
+                    $this->registration_service = null;
+                }
             }
         }
     }

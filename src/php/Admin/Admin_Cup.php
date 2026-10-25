@@ -152,7 +152,9 @@ final class Admin_Cup extends Admin_Championship {
         $draw_sizes         = array();
         $i                  = 0;
         foreach ( $competition_events as $event ) {
-            $leagues = $event->get_leagues();
+            $leagues = $event instanceof \Racketmanager\Domain\Competition\Event
+                ? $this->get_event_query_service()->get_leagues( $event )
+                : ( method_exists( $event, 'get_leagues' ) ? $event->get_leagues() : ( $event->leagues ?? array() ) );
             if ( $leagues ) {
                 foreach ( $leagues as $league ) {
                     $league_id = is_object( $league ) ? ( $league->id ?? null ) : ( $league['id'] ?? null );
@@ -160,8 +162,8 @@ final class Admin_Cup extends Admin_Championship {
                         if ( ! empty( $league->is_championship ) && isset( $league->championship->num_teams_first_round ) ) {
                             $draw_sizes[ $league_id ] = (string) $league->championship->num_teams_first_round;
                         } else {
-                            if ( method_exists( $league, 'set_num_matches' ) ) {
-                                $league->set_num_matches( true );
+                            if ( is_object( $league ) ) {
+                                \Racketmanager\get_league_query_service()->set_num_matches( $league, true );
                             }
                             $draw_sizes[ $league_id ] = (string) ( $league->num_matches_total ?? '' );
                         }
@@ -368,7 +370,7 @@ final class Admin_Cup extends Admin_Championship {
         $league_id = isset( $_GET['league'] ) ? intval( $_GET['league'] ) : ( isset( $_GET['league_id'] ) ? intval( $_GET['league_id'] ) : null );
         $league    = get_league( $league_id );
         if ( $league ) {
-            $match_count = $league->get_matches(
+            $match_count = \Racketmanager\get_league_query_service()->get_matches( $league,
                 array(
                     'count' => true,
                     'final' => 'all',
@@ -556,7 +558,7 @@ final class Admin_Cup extends Admin_Championship {
                         if ( 'final' !== $final_key && ! empty( $league->current_season['home_away'] ) && 'true' === $league->current_season['home_away'] ) {
                             $match_args['leg'] = 1;
                         }
-                        $matches      = $league->get_matches( $match_args );
+                        $matches      = \Racketmanager\get_league_query_service()->get_matches( $league, $match_args );
                         $teams        = $league->championship->get_final_teams( $final_key );
                         $submit_title = $form_title;
                     }

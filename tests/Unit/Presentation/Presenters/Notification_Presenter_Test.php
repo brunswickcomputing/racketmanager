@@ -238,6 +238,41 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
         }
 
         #[AllowMockObjectsWithoutExpectations]
+        public function test_present_date_change_notification_with_mixed_timed_and_untimed_dates(): void {
+            $fixture = $this->createStub( Fixture::class );
+            $fixture->method( 'get_id' )->willReturn( 5 );
+            $fixture->method( 'get_league_id' )->willReturn( 10 );
+            $fixture->method( 'get_season' )->willReturn( '2026' );
+            $fixture->method( 'get_home_team' )->willReturn( '101' );
+            $fixture->method( 'get_away_team' )->willReturn( '102' );
+            $fixture->method( 'get_date' )->willReturn( '2026-06-25 00:00:00' );
+            $fixture->method( 'get_date_original' )->willReturn( '2026-06-18 19:00:00' );
+            $fixture->method( 'get_start_time' )->willReturn( null );
+
+            $this->setup_notification_services( competition_name: 'Division 1' );
+
+            // Old timed -> New date-only (midnight)
+            $vars_to_untimed = $this->presenter->present_date_change_notification( $fixture, [
+                'competition_type' => 'league',
+                'new_date'         => '2026-06-25 00:00:00',
+                'original_date'    => '2026-06-18 19:00:00',
+            ] );
+
+            $this->assertSame( '25/06/2026', $vars_to_untimed['match_date'] );
+            $this->assertSame( '18 June 2026 19:00', $vars_to_untimed['original_date'] );
+
+            // Old date-only -> New timed
+            $vars_to_timed = $this->presenter->present_date_change_notification( $fixture, [
+                'competition_type' => 'league',
+                'new_date'         => '2026-06-25 19:30:00',
+                'original_date'    => '2026-06-18 00:00:00',
+            ] );
+
+            $this->assertSame( '25 June 2026 19:30', $vars_to_timed['match_date'] );
+            $this->assertSame( '18/06/2026', $vars_to_timed['original_date'] );
+        }
+
+        #[AllowMockObjectsWithoutExpectations]
         public function test_present_team_withdrawn_notification_includes_site_info(): void {
             $fixture = $this->createStub( Fixture::class );
             $fixture->method( 'get_id' )->willReturn( 6 );

@@ -11,6 +11,10 @@ declare( strict_types=1 );
 namespace Racketmanager\Services\Admin\Player;
 
 use Exception;
+use Racketmanager\Application\Player\Commands\Create_Player_Command;
+use Racketmanager\Application\Player\Commands\Create_Player_Handler;
+use Racketmanager\Application\Player\Commands\Update_Player_Command;
+use Racketmanager\Application\Player\Commands\Update_Player_Handler;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Duplicate_BTM_Exception;
@@ -29,10 +33,17 @@ use Racketmanager\Services\Player_Service;
  */
 readonly final class Player_Action_Dispatcher {
 
+    private Update_Player_Handler $update_player_handler;
+    private Create_Player_Handler $create_player_handler;
+
     public function __construct(
         private Player_Service $player_service,
         private Action_Guard_Interface $action_guard,
+        ?Update_Player_Handler $update_player_handler = null,
+        ?Create_Player_Handler $create_player_handler = null,
     ) {
+        $this->update_player_handler = $update_player_handler ?? new Update_Player_Handler( $this->player_service );
+        $this->create_player_handler = $create_player_handler ?? new Create_Player_Handler( $this->player_service );
     }
 
     /**
@@ -73,8 +84,8 @@ readonly final class Player_Action_Dispatcher {
             );
         }
 
-        $player_id = isset( $post['playerId'] ) && '' !== strval( $post['playerId'] ) ? intval( $post['playerId'] ) : null;
-        if ( empty( $player_id ) ) {
+        $command = Update_Player_Command::from_post( $post );
+        if ( empty( $command->player_id ) ) {
             return new Action_Result_DTO(
                 message: __( 'Player not found', 'racketmanager' ),
                 message_type: Admin_Message_Type::ERROR,
@@ -84,7 +95,7 @@ readonly final class Player_Action_Dispatcher {
         $sanitized_form_data = $this->sanitize_form_data( $post );
 
         try {
-            $player = $this->player_service->amend_player_details( $player_id, $sanitized_form_data );
+            $player = $this->update_player_handler->handle( $command );
             if ( is_wp_error( $player ) ) {
                 $errors = array();
                 foreach ( $player->get_error_codes() as $code ) {
@@ -175,10 +186,11 @@ readonly final class Player_Action_Dispatcher {
             );
         }
 
+        $command = Create_Player_Command::from_post( $post );
         $sanitized_form_data = $this->sanitize_form_data( $post );
 
         try {
-            $player = $this->player_service->add_new_player( $sanitized_form_data );
+            $player = $this->create_player_handler->handle( $command );
             if ( is_wp_error( $player ) ) {
                 $errors = array();
                 foreach ( $player->get_error_codes() as $code ) {

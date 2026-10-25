@@ -9,6 +9,7 @@ use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
+use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Team_Service;
@@ -23,7 +24,8 @@ class Get_Event_Teams_Handler {
 		private readonly Tournament_Presenter $tournament_presenter,
 		private readonly ?Team_Service $team_service,
 		private readonly Team_Details_Presenter $team_details_presenter,
-		private readonly Competition_Shortcode_Presenter $competition_presenter
+		private readonly Competition_Shortcode_Presenter $competition_presenter,
+		private readonly Event_Query_Service $event_query_service
 	) {}
 
 	public function handle( Get_Event_Teams_Query $query ): Shortcode_View_Model {
@@ -38,14 +40,14 @@ class Get_Event_Teams_Handler {
 			return Shortcode_View_Model::for_error( __( 'Event not found', 'racketmanager' ) );
 		}
 
-		$event->set_season( $query->season );
+		$this->event_query_service->set_season( $event, $query->season );
 		$current_season = $event->current_season['name'] ?? '';
 
 		if ( ! Event_Allowlist_Guard::is_event_allowed( $event, $current_season ?: $query->season, $this->competition_service ) ) {
 			return Shortcode_View_Model::for_error( __( 'Event not found for competition', 'racketmanager' ) );
 		}
 
-		$event->teams   = $event->get_teams( [
+		$event->teams   = $this->event_query_service->get_teams( $event, [
 			'season'  => $current_season,
 			'orderby' => [ 'name' => 'ASC' ],
 		] );
@@ -60,8 +62,8 @@ class Get_Event_Teams_Handler {
 				$team = null;
 			}
 			if ( $team ) {
-				$team->info    = $event->get_team_info( $team->id );
-				$team->matches = $event->get_matches( [
+				$team->info    = $this->event_query_service->get_team_info( $event, $team->id );
+				$team->matches = $this->event_query_service->get_matches( $event, [
 					'team_id'          => $team->id,
 					'match_day'        => false,
 					'limit'            => 'false',
@@ -82,7 +84,7 @@ class Get_Event_Teams_Handler {
 							]
 						);
 				}
-				$team->players = $event->get_players( [
+				$team->players = $this->event_query_service->get_players( $event, [
 					'team' => $team->id,
 				] );
 				$team->players = $this->player_stats_service->populate_players_stats( $team->players, $event, $current_season, 'event' );

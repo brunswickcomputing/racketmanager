@@ -27,7 +27,7 @@ final class Event_Setup_Action_Dispatcher_Test extends TestCase {
             ->with( 'racketmanager_nonce', 'racketmanager_add_championship-matches', 'edit_matches' )
             ->willThrowException( new Invalid_Status_Exception( 'Security token invalid' ) );
 
-        $result = ( new Event_Setup_Action_Dispatcher( $competition_service, $guard ) )->handle(
+        $result = ( new Event_Setup_Action_Dispatcher( $competition_service, $guard, $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) ) )->handle(
             array( 'event_id' => '7' ),
             array(
                 'action' => 'update',
@@ -44,7 +44,7 @@ final class Event_Setup_Action_Dispatcher_Test extends TestCase {
         $competition_service = $this->createMock( Competition_Service::class );
         $competition_service->expects( self::never() )->method( 'get_event_by_id' );
 
-        $result = ( new Event_Setup_Action_Dispatcher( $competition_service, $this->createStub( Action_Guard_Interface::class ) ) )->handle(
+        $result = ( new Event_Setup_Action_Dispatcher( $competition_service, $this->createStub( Action_Guard_Interface::class ), $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) ) )->handle(
             array( 'event_id' => '7' ),
             array(
                 'action' => 'update',
@@ -72,7 +72,7 @@ final class Event_Setup_Action_Dispatcher_Test extends TestCase {
         $competition_service = $this->createMock( Competition_Service::class );
         $competition_service->expects( self::once() )->method( 'get_event_by_id' )->with( 7 )->willReturn( $event );
 
-        $result = ( new Event_Setup_Action_Dispatcher( $competition_service, $this->createStub( Action_Guard_Interface::class ) ) )->handle(
+        $result = ( new Event_Setup_Action_Dispatcher( $competition_service, $this->createStub( Action_Guard_Interface::class ), $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) ) )->handle(
             array( 'event_id' => '7' ),
             array(
                 'action' => 'update',
@@ -94,7 +94,7 @@ final class Event_Setup_Action_Dispatcher_Test extends TestCase {
         $competition_service = $this->createMock( Competition_Service::class );
         $competition_service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $result = ( new Event_Setup_Action_Dispatcher( $competition_service, $this->createStub( Action_Guard_Interface::class ) ) )->handle(
+        $result = ( new Event_Setup_Action_Dispatcher( $competition_service, $this->createStub( Action_Guard_Interface::class ), $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) ) )->handle(
             array( 'event_id' => '7' ),
             array(
                 'action' => 'update',

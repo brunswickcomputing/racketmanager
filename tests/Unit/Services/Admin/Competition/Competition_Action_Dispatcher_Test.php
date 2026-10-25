@@ -11,6 +11,7 @@ use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Updated_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Services\Admin\Competition\Competition_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Competition_Service;
@@ -23,12 +24,24 @@ final class Competition_Action_Dispatcher_Test extends TestCase {
     use Manages_Wordpress_Globals;
 
 
+    private function create_dispatcher(
+        Competition_Service $competition_service,
+        Action_Guard_Interface $guard,
+        ?Event_Repository_Interface $repository = null,
+    ): Competition_Action_Dispatcher {
+        return new Competition_Action_Dispatcher(
+            $competition_service,
+            $guard,
+            $repository ?? $this->createStub( Event_Repository_Interface::class )
+        );
+    }
+
     public function test_unhandled_action_returns_empty_dto(): void {
         $competition_service = $this->createMock( Competition_Service::class );
         $guard               = $this->createMock( Action_Guard_Interface::class );
         $guard->expects( self::never() )->method( 'assert_allowed' );
 
-        $dispatcher = new Competition_Action_Dispatcher( $competition_service, $guard );
+        $dispatcher = $this->create_dispatcher( $competition_service, $guard );
         $result     = $dispatcher->handle( array(), array() );
 
         self::assertNull( $result->message );
@@ -44,7 +57,7 @@ final class Competition_Action_Dispatcher_Test extends TestCase {
 
         $competition_service->expects( self::never() )->method( 'amend_details' );
 
-        $dispatcher = new Competition_Action_Dispatcher( $competition_service, $guard );
+        $dispatcher = $this->create_dispatcher( $competition_service, $guard );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             array(
@@ -63,7 +76,7 @@ final class Competition_Action_Dispatcher_Test extends TestCase {
 
         $competition_service->expects( self::never() )->method( 'amend_details' );
 
-        $dispatcher = new Competition_Action_Dispatcher( $competition_service, $guard );
+        $dispatcher = $this->create_dispatcher( $competition_service, $guard );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             array(
@@ -85,7 +98,7 @@ final class Competition_Action_Dispatcher_Test extends TestCase {
             ->with( 1, self::isObject() )
             ->willReturn( 1 );
 
-        $dispatcher = new Competition_Action_Dispatcher( $competition_service, $guard );
+        $dispatcher = $this->create_dispatcher( $competition_service, $guard );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             array(
@@ -108,7 +121,7 @@ final class Competition_Action_Dispatcher_Test extends TestCase {
             ->method( 'amend_details' )
             ->willReturn( 0 );
 
-        $dispatcher = new Competition_Action_Dispatcher( $competition_service, $guard );
+        $dispatcher = $this->create_dispatcher( $competition_service, $guard );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             array(
@@ -130,7 +143,7 @@ final class Competition_Action_Dispatcher_Test extends TestCase {
             ->method( 'amend_details' )
             ->willReturn( $wp_error );
 
-        $dispatcher = new Competition_Action_Dispatcher( $competition_service, $guard );
+        $dispatcher = $this->create_dispatcher( $competition_service, $guard );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             array(
@@ -159,7 +172,7 @@ final class Competition_Action_Dispatcher_Test extends TestCase {
             ->method( 'amend_details' )
             ->willReturn( $wp_error );
 
-        $dispatcher = new Competition_Action_Dispatcher( $competition_service, $guard );
+        $dispatcher = $this->create_dispatcher( $competition_service, $guard );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             array(
@@ -220,7 +233,7 @@ final class Competition_Action_Dispatcher_Test extends TestCase {
             ->method( 'amend_details' )
             ->willThrowException( new Competition_Not_Updated_Exception( 'Could not update' ) );
 
-        $dispatcher = new Competition_Action_Dispatcher( $competition_service, $guard );
+        $dispatcher = $this->create_dispatcher( $competition_service, $guard );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
             array(
@@ -237,7 +250,7 @@ final class Competition_Action_Dispatcher_Test extends TestCase {
         $competition_service = $this->createMock( Competition_Service::class );
         $guard               = $this->createMock( Action_Guard_Interface::class );
 
-        $dispatcher = new Competition_Action_Dispatcher( $competition_service, $guard );
+        $dispatcher = $this->create_dispatcher( $competition_service, $guard );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -254,7 +267,7 @@ final class Competition_Action_Dispatcher_Test extends TestCase {
         $competition_service = $this->createMock( Competition_Service::class );
         $guard               = $this->createMock( Action_Guard_Interface::class );
 
-        $dispatcher = new Competition_Action_Dispatcher( $competition_service, $guard );
+        $dispatcher = $this->create_dispatcher( $competition_service, $guard );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -273,21 +286,17 @@ final class Competition_Action_Dispatcher_Test extends TestCase {
         $competition_service = $this->createMock( Competition_Service::class );
         $guard               = $this->createMock( Action_Guard_Interface::class );
 
-        $this->racketmanager->container->expects( self::once() )->method('get')->with('competition_service')->willReturn($competition_service);
-
-        $competition = $this->createMock(\Racketmanager\Domain\Competition\Competition::class);
-        $competition->settings = new \Racketmanager\Domain\Competition\Competition_Settings(['mode' => 'default']);
-        $competition_service->method('get_by_id')->willReturn($competition);
-
         $event = new \Racketmanager\Domain\Competition\Event( (object) array(
             'id'             => 5,
             'name'           => 'Men Singles',
             'type'           => 'singles',
             'competition_id' => 1,
         ) );
-        $GLOBALS['wp_stubs_events'][5] = $event;
+        $repository = $this->createMock( Event_Repository_Interface::class );
+        $repository->expects( self::once() )->method( 'find_by_id' )->with( 5 )->willReturn( $event );
+        $competition_service->expects( self::once() )->method( 'delete_event' )->with( $event );
 
-        $dispatcher = new Competition_Action_Dispatcher( $competition_service, $guard );
+        $dispatcher = new Competition_Action_Dispatcher( $competition_service, $guard, $repository );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -299,6 +308,43 @@ final class Competition_Action_Dispatcher_Test extends TestCase {
 
         self::assertSame( 'Men Singles has been deleted', $result->message );
         self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+        self::assertSame( 'events', $result->tab_override );
+    }
+
+    public function test_bulk_delete_uses_injected_repository_instead_of_global_event_lookup(): void {
+        $competition_service = $this->createMock( Competition_Service::class );
+        $guard               = $this->createMock( Action_Guard_Interface::class );
+        $repository          = $this->createMock( Event_Repository_Interface::class );
+        $event               = new Event( (object) array( 'id' => 905, 'name' => 'Repository Event', 'type' => 'singles', 'competition_id' => 1 ) );
+        $GLOBALS['wp_stubs_events'][905] = new Event( (object) array( 'id' => 905, 'name' => 'Wrong Global Event', 'type' => 'singles', 'competition_id' => 1 ) );
+
+        $guard->expects( self::once() )->method( 'assert_allowed' )
+            ->with( 'racketmanager_event_nonce', 'racketmanager_events-bulk', 'edit_leagues' );
+        $repository->expects( self::once() )->method( 'find_by_id' )->with( 905 )->willReturn( $event );
+        $competition_service->expects( self::once() )->method( 'delete_event' )->with( $event );
+
+        $result = ( new Competition_Action_Dispatcher( $competition_service, $guard, $repository ) )->handle(
+            array(),
+            array( 'doActionEvent' => '1', 'action' => 'delete', 'event' => array( '905' ) )
+        );
+
+        self::assertSame( 'Repository Event has been deleted', $result->message );
+    }
+
+    public function test_bulk_delete_events_reports_service_failure(): void {
+        $competition_service = $this->createMock( Competition_Service::class );
+        $competition_service->expects( self::once() )->method( 'delete_event' )
+            ->willThrowException( new \RuntimeException( 'Fixture delete failed' ) );
+        $event = new Event( (object) array( 'id' => 58, 'name' => 'Women Singles', 'type' => 'singles', 'competition_id' => 1 ) );
+        $repository = $this->createStub( Event_Repository_Interface::class );
+        $repository->method( 'find_by_id' )->willReturn( $event );
+
+        $result = ( new Competition_Action_Dispatcher( $competition_service, $this->createStub( Action_Guard_Interface::class ), $repository ) )->handle(
+            array(), array( 'doActionEvent' => '1', 'action' => 'delete', 'event' => array( 58 ) )
+        );
+
+        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
+        self::assertSame( 'Fixture delete failed', $result->message );
         self::assertSame( 'events', $result->tab_override );
     }
 

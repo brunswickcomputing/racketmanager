@@ -33,6 +33,7 @@ use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class Parent_Page_Templates_Test extends TestCase {
+    use \Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
     use Creates_Competition_Season_Service;
     use Manages_Wordpress_Globals;
 
@@ -47,6 +48,11 @@ class Parent_Page_Templates_Test extends TestCase {
         $this->backup_globals();
         $_GET                        = [];
         $_POST                       = [];
+        $_REQUEST                    = [];
+        $GLOBALS['query_vars']       = [];
+        unset( $GLOBALS['wp_query'] );
+        global $wp;
+        $wp                          = (object) [ 'query_vars' => [] ];
         $this->templates_dir         = dirname( __DIR__, 3 ) . '/templates/';
         $this->renderer              = new Php_View_Renderer( $this->templates_dir );
         $this->competition_presenter = new Competition_Shortcode_Presenter( $this->renderer );
@@ -57,6 +63,11 @@ class Parent_Page_Templates_Test extends TestCase {
     }
 
     protected function tearDown(): void {
+        $_GET                  = [];
+        $_POST                 = [];
+        $_REQUEST              = [];
+        $GLOBALS['query_vars'] = [];
+        unset( $GLOBALS['wp_query'] );
         $this->restore_globals();
         parent::tearDown();
     }
@@ -276,7 +287,7 @@ class Parent_Page_Templates_Test extends TestCase {
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $handler = new Get_Event_Handler( $comp_service, $this->competition_presenter );
+        $handler = new Get_Event_Handler( $comp_service, $this->competition_presenter, $this->event_query_service() );
         $query   = new Get_Event_Query(
             event_id: 50,
             season: '2026',
@@ -323,7 +334,7 @@ class Parent_Page_Templates_Test extends TestCase {
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $handler = new Get_Event_Handler( $comp_service, $this->competition_presenter );
+        $handler = new Get_Event_Handler( $comp_service, $this->competition_presenter, $this->event_query_service() );
         $query   = new Get_Event_Query(
             event_id: 60,
             season: '2026',
@@ -367,7 +378,7 @@ class Parent_Page_Templates_Test extends TestCase {
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $handler = new Get_Event_Handler( $comp_service, $this->competition_presenter );
+        $handler = new Get_Event_Handler( $comp_service, $this->competition_presenter, $this->event_query_service() );
         $query   = new Get_Event_Query(
             event_id: 70,
             season: '2026',

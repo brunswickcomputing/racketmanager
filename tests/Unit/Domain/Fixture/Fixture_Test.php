@@ -179,4 +179,238 @@ final class Fixture_Test extends TestCase {
         $fixture->set_rubbers( array() );
         $this->assertSame( array(), $fixture->get_rubbers() );
     }
+
+    public function test_set_date_synchronizes_start_time_with_valid_time(): void {
+        $fixture = new Fixture();
+
+        $fixture->set_date( '2026-05-15 19:30:00' );
+        $this->assertSame( '2026-05-15 19:30:00', $fixture->get_date() );
+        $this->assertSame( '19:30', $fixture->get_start_time() );
+
+        $fixture->set_date( '2026-05-15 14:15' );
+        $this->assertSame( '2026-05-15 14:15', $fixture->get_date() );
+        $this->assertSame( '14:15', $fixture->get_start_time() );
+
+        $fixture->set_date( '2026-05-15T16:45:00' );
+        $this->assertSame( '2026-05-15T16:45:00', $fixture->get_date() );
+        $this->assertSame( '16:45', $fixture->get_start_time() );
+    }
+
+    public function test_set_date_clears_start_time_for_date_only_and_midnight(): void {
+        $fixture = new Fixture();
+
+        $fixture->set_date( '2026-05-15 19:30:00' );
+        $this->assertSame( '19:30', $fixture->get_start_time() );
+
+        $fixture->set_date( '2026-06-01' );
+        $this->assertSame( '2026-06-01', $fixture->get_date() );
+        $this->assertNull( $fixture->get_start_time() );
+
+        $fixture->set_date( '2026-06-01 19:30:00' );
+        $this->assertSame( '19:30', $fixture->get_start_time() );
+
+        $fixture->set_date( '2026-06-02 00:00:00' );
+        $this->assertSame( '2026-06-02 00:00:00', $fixture->get_date() );
+        $this->assertNull( $fixture->get_start_time() );
+
+        $fixture->set_date( '2026-06-01 19:30:00' );
+        $fixture->set_date( '0000-00-00 00:00:00' );
+        $this->assertNull( $fixture->get_start_time() );
+
+        $fixture->set_date( '2026-06-01 19:30:00' );
+        $fixture->set_date( null );
+        $this->assertNull( $fixture->get_date() );
+        $this->assertNull( $fixture->get_start_time() );
+    }
+
+    public function test_set_start_time_merges_date_without_mutating_date_original(): void {
+        $fixture = Fixture_Factory::from_object( (object) [
+            'id'            => 10,
+            'date'          => '2026-06-15 10:00:00',
+            'date_original' => '2026-06-01 09:00:00',
+        ] );
+
+        $this->assertSame( '10:00', $fixture->get_start_time() );
+        $this->assertSame( '2026-06-15 10:00:00', $fixture->get_date() );
+        $this->assertSame( '2026-06-01 09:00:00', $fixture->get_date_original() );
+
+        $fixture->set_start_time( '18:30' );
+        $this->assertSame( '18:30', $fixture->get_start_time() );
+        $this->assertSame( '2026-06-15 18:30:00', $fixture->get_date() );
+        $this->assertSame( '2026-06-01 09:00:00', $fixture->get_date_original() );
+
+        $fixture->set_start_time( '  20:00:00  ' );
+        $this->assertSame( '20:00', $fixture->get_start_time() );
+        $this->assertSame( '2026-06-15 20:00:00', $fixture->get_date() );
+        $this->assertSame( '2026-06-01 09:00:00', $fixture->get_date_original() );
+
+        $fixture->set_start_time( null );
+        $this->assertNull( $fixture->get_start_time() );
+        $this->assertSame( '2026-06-15 00:00:00', $fixture->get_date() );
+        $this->assertSame( '2026-06-01 09:00:00', $fixture->get_date_original() );
+
+        $fixture->set_start_time( '00:00' );
+        $this->assertNull( $fixture->get_start_time() );
+        $this->assertSame( '2026-06-15 00:00:00', $fixture->get_date() );
+        $this->assertSame( '2026-06-01 09:00:00', $fixture->get_date_original() );
+    }
+
+    public function test_set_start_time_when_date_is_null(): void {
+        $fixture = new Fixture();
+        $fixture->set_start_time( '14:30' );
+
+        $this->assertSame( '14:30', $fixture->get_start_time() );
+        $this->assertNull( $fixture->get_date() );
+    }
+
+    public function test_staged_construction_merges_subsequent_date_only_set_date(): void {
+        $fixture = new Fixture();
+        $fixture->set_start_time( '18:30' );
+        $this->assertNull( $fixture->get_date() );
+        $this->assertSame( '18:30', $fixture->get_start_time() );
+
+        $fixture->set_date( '2026-06-15' );
+        $this->assertSame( '2026-06-15 18:30:00', $fixture->get_date() );
+        $this->assertSame( '18:30', $fixture->get_start_time() );
+    }
+
+    public function test_set_start_time_on_date_only_date_merges_datetime(): void {
+        $fixture = new Fixture();
+        $fixture->set_date( '2026-06-15' );
+        $this->assertSame( '2026-06-15', $fixture->get_date() );
+        $this->assertNull( $fixture->get_start_time() );
+
+        $fixture->set_start_time( '18:30' );
+        $this->assertSame( '2026-06-15 18:30:00', $fixture->get_date() );
+        $this->assertSame( '18:30', $fixture->get_start_time() );
+    }
+
+    public function test_set_start_time_throws_exception_on_invalid_string_and_preserves_schedule(): void {
+        $fixture = new Fixture();
+        $fixture->set_date( '2026-06-15 19:30:00' );
+        $this->assertSame( '2026-06-15 19:30:00', $fixture->get_date() );
+        $this->assertSame( '19:30', $fixture->get_start_time() );
+
+        $invalid_values = [ '7pm', '25:00', '19.30', 'invalid', '12:60', '-01:00' ];
+
+        foreach ( $invalid_values as $invalid_value ) {
+            $exception_thrown = false;
+            try {
+                $fixture->set_start_time( $invalid_value );
+            } catch ( \InvalidArgumentException ) {
+                $exception_thrown = true;
+            }
+
+            $this->assertTrue( $exception_thrown, sprintf( 'Expected InvalidArgumentException for "%s"', $invalid_value ) );
+            $this->assertSame( '2026-06-15 19:30:00', $fixture->get_date(), 'Date must remain untouched after invalid time' );
+            $this->assertSame( '19:30', $fixture->get_start_time(), 'Start time must remain untouched after invalid time' );
+        }
+    }
+
+    public function test_set_date_iso_format_and_empty_handling(): void {
+        $fixture = new Fixture();
+
+        $fixture->set_date( '2026-05-15T19:30:00' );
+        $this->assertSame( '19:30', $fixture->get_start_time() );
+
+        $fixture->set_date( '2026-05-15T00:00:00' );
+        $this->assertNull( $fixture->get_start_time() );
+
+        $fixture->set_start_time( '18:30' );
+        $fixture->set_date( '' );
+        $this->assertNull( $fixture->get_start_time() );
+
+        $fixture->set_start_time( '18:30' );
+        $fixture->set_date( '0000-00-00 00:00:00' );
+        $this->assertNull( $fixture->get_start_time() );
+    }
+
+    public function test_get_start_time_normalizes_empty_and_midnight_values(): void {
+        $fixture = new Fixture();
+
+        $fixture->start_time = '00:00:00';
+        $this->assertNull( $fixture->get_start_time() );
+
+        $fixture->start_time = '00:00';
+        $this->assertNull( $fixture->get_start_time() );
+
+        $fixture->start_time = '';
+        $this->assertNull( $fixture->get_start_time() );
+
+        $fixture->start_time = '19:45:00';
+        $this->assertSame( '19:45', $fixture->get_start_time() );
+    }
+
+    public function test_finals_data_synchronizes_start_time(): void {
+        $fixture = Fixture_Factory::from_object( (object) [
+            'id'   => 10,
+            'date' => '2026-06-01 10:00:00',
+        ] );
+
+        $this->assertSame( '10:00', $fixture->get_start_time() );
+
+        $fixture->set_finals_data( '2026-06-15 15:30:00', 'Court 1' );
+        $this->assertSame( '2026-06-15 15:30:00', $fixture->get_date() );
+        $this->assertSame( '15:30', $fixture->get_start_time() );
+
+        $fixture->reset_finals_data( '2026-06-20' );
+        $this->assertSame( '2026-06-20', $fixture->get_date() );
+        $this->assertNull( $fixture->get_start_time() );
+    }
+
+    public function test_hydration_preserves_date_string_format_and_precision_exactly(): void {
+        $fixture_seconds = Fixture_Factory::from_object( (object) [
+            'id'   => 101,
+            'date' => '2026-05-15 19:30:45',
+        ] );
+        $this->assertSame( '2026-05-15 19:30:45', $fixture_seconds->get_date() );
+        $this->assertSame( '19:30', $fixture_seconds->get_start_time() );
+
+        $fixture_16_char = Fixture_Factory::from_object( (object) [
+            'id'   => 102,
+            'date' => '2026-10-12 19:30',
+        ] );
+        $this->assertSame( '2026-10-12 19:30', $fixture_16_char->get_date() );
+        $this->assertSame( '19:30', $fixture_16_char->get_start_time() );
+
+        $fixture_iso_offset = Fixture_Factory::from_object( (object) [
+            'id'   => 103,
+            'date' => '2026-05-15T19:30:00+01:00',
+        ] );
+        $this->assertSame( '2026-05-15T19:30:00+01:00', $fixture_iso_offset->get_date() );
+        $this->assertSame( '19:30', $fixture_iso_offset->get_start_time() );
+    }
+
+    public function test_direct_dto_derives_start_time_when_not_provided(): void {
+        $dto_timed = new Fixture_Hydration_DTO( date: '2026-05-15 19:30:00' );
+        $fixture_timed = new Fixture( $dto_timed );
+        $this->assertSame( '2026-05-15 19:30:00', $fixture_timed->get_date() );
+        $this->assertSame( '19:30', $fixture_timed->get_start_time() );
+
+        $dto_date_only = new Fixture_Hydration_DTO( date: '2026-05-15' );
+        $fixture_date_only = new Fixture( $dto_date_only );
+        $this->assertSame( '2026-05-15', $fixture_date_only->get_date() );
+        $this->assertNull( $fixture_date_only->get_start_time() );
+    }
+
+    public function test_from_object_handles_invalid_explicit_start_time_leniently(): void {
+        $fixture_with_time = Fixture_Factory::from_object( (object) [
+            'id'         => 104,
+            'date'       => '2026-05-15 19:30:00',
+            'start_time' => '7pm',
+        ] );
+        $this->assertSame( '2026-05-15 19:30:00', $fixture_with_time->get_date() );
+        $this->assertSame( '19:30', $fixture_with_time->get_start_time() );
+
+        $fixture_without_time = Fixture_Factory::from_object( (object) [
+            'id'         => 105,
+            'date'       => '2026-05-15',
+            'start_time' => '25:00',
+        ] );
+        $this->assertSame( '2026-05-15', $fixture_without_time->get_date() );
+        $this->assertNull( $fixture_without_time->get_start_time() );
+
+        $this->expectException( \InvalidArgumentException::class );
+        $fixture_with_time->set_start_time( '7pm' );
+    }
 }

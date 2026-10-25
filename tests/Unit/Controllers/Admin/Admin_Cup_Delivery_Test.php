@@ -503,7 +503,7 @@ final class Admin_Cup_Delivery_Test extends TestCase {
                 $this->event        = $event;
                 $this->championship = $championship;
             }
-            public function get_matches( array $args = array() ): array {
+            public function get_matches( array $args = array(), ?\Racketmanager\Repositories\Interfaces\Event_Repository_Interface $event_repository = null, ?\Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface $fixture_repository = null, ?\Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface $rubber_repository = null ): array {
                 return array( (object) array( 'id' => 77, 'date' => '2024-05-01 10:00:00', 'home_team' => 1, 'away_team' => 2, 'location' => '', 'final_round' => 'quarter' ) );
             }
         };
@@ -643,26 +643,22 @@ final class Admin_Cup_Delivery_Test extends TestCase {
         $prop->setAccessible( true );
         $prop->setValue( $champ_obj, 8 );
 
-        $champ_league                  = $this->createMock( League::class );
-        $champ_league->id              = 12;
-        $champ_league->title           = 'Men Championship Draw';
+        $champ_league                  = new League( (object) array( 'id' => 12, 'title' => 'Men Championship Draw' ) );
         $champ_league->num_teams_total = 16;
         $champ_league->is_championship = true;
         $champ_league->championship    = $champ_obj;
 
-        $non_champ_league                  = $this->createMock( League::class );
-        $non_champ_league->id              = 13;
-        $non_champ_league->title           = 'Ladies Plate Draw';
+        $non_champ_league                  = new League( (object) array( 'id' => 13, 'title' => 'Ladies Plate Draw' ) );
         $non_champ_league->num_teams_total = 10;
         $non_champ_league->is_championship = false;
-        $non_champ_league->expects( self::once() )
-            ->method( 'set_num_matches' )
-            ->with( true )
-            ->willReturnCallback(
-                static function () use ( $non_champ_league ): void {
-                    $non_champ_league->num_matches_total = 14;
-                }
-            );
+
+        $league_repository = $this->createStub( League_Repository_Interface::class );
+        $league_repository->method( 'query_matches' )->willReturn( 14 );
+        $this->container->set( 'league_query_service', new \Racketmanager\Services\Competition\League_Query_Service(
+            $league_repository,
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class ),
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class )
+        ) );
 
         $event = new class( array( $champ_league, $non_champ_league ) ) {
             public array $leagues = array();
@@ -670,7 +666,7 @@ final class Admin_Cup_Delivery_Test extends TestCase {
             public function __construct( array $leagues_list ) {
                 $this->leagues_list = $leagues_list;
             }
-            public function get_leagues(): array {
+            public function get_leagues( array $args = [], ?\Racketmanager\Repositories\Interfaces\Event_Repository_Interface $event_repository = null ): array {
                 return $this->leagues_list;
             }
         };

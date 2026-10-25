@@ -27,19 +27,13 @@ final class Player_Factory {
 	}
 
 	/**
-	 * Derive WordPress-backed display fields that are not persisted on the DTO.
+	 * Derive display fields that are not persisted on the DTO.
 	 *
 	 * @param Player $player
 	 * @return void
 	 */
 	private static function apply_derived_fields( Player $player ): void {
-		if ( ! empty( $player->locked_user ) && empty( $player->locked_user_name ) ) {
-			if ( ! function_exists( 'get_userdata' ) ) {
-				throw new RuntimeException( 'get_userdata() is required to resolve Player locked_user_name.' );
-			}
-			$user_data              = get_userdata( $player->locked_user );
-			$player->locked_user_name = ( $user_data && isset( $user_data->display_name ) ) ? $user_data->display_name : '';
-		} elseif ( empty( $player->locked_user_name ) ) {
+		if ( empty( $player->locked_user_name ) ) {
 			$player->locked_user_name = '';
 		}
 		if ( empty( $player->link ) && ! empty( $player->display_name ) ) {

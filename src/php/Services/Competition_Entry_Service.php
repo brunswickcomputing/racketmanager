@@ -43,11 +43,15 @@ use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Club_Repository;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Repositories\Tournament_Entry_Repository;
 use Racketmanager\Repositories\Tournament_Repository;
+use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Validator\Validator_Entry_Form;
 use Racketmanager\Util\Util_Lookup;
@@ -76,12 +80,30 @@ class Competition_Entry_Service {
     private Tournament_Service $tournament_service;
     private Mailer_Interface $mailer;
     private Email_Date_Formatter $date_formatter;
+    private Event_Query_Service $event_query_service;
 
     /**
      * Constructor
      *
      */
-    public function __construct( RacketManager $plugin_instance, Club_Repository $club_repository, League_Repository $league_repository, League_Team_Repository $league_team_repository, Team_Repository $team_repository, Tournament_Repository $tournament_repository, Tournament_Entry_Repository $tournament_entry_repository, Club_Service $club_service, Competition_Service $competition_service, Finance_Service $finance_service, Player_Service $player_service, Tournament_Service $tournament_service, Notify_Service $notify_service, ?Mailer_Interface $mailer = null, ?Option_Gateway_Interface $option_gateway = null ) {
+    public function __construct(
+        RacketManager $plugin_instance,
+        Club_Repository $club_repository,
+        League_Repository $league_repository,
+        League_Team_Repository $league_team_repository,
+        Team_Repository $team_repository,
+        Tournament_Repository $tournament_repository,
+        Tournament_Entry_Repository $tournament_entry_repository,
+        Club_Service $club_service,
+        Competition_Service $competition_service,
+        Finance_Service $finance_service,
+        Player_Service $player_service,
+        Tournament_Service $tournament_service,
+        Notify_Service $notify_service,
+        Event_Query_Service $event_query_service,
+        ?Mailer_Interface $mailer = null,
+        ?Option_Gateway_Interface $option_gateway = null
+    ) {
         $this->racketmanager               = $plugin_instance;
         $this->club_repository             = $club_repository;
         $this->club_service                = $club_service;
@@ -95,6 +117,7 @@ class Competition_Entry_Service {
         $this->player_service              = $player_service;
         $this->tournament_service          = $tournament_service;
         $this->notify_service              = $notify_service;
+        $this->event_query_service         = $event_query_service;
         $this->mailer                      = $mailer ?? new Wp_Mailer();
         $this->date_formatter              = new Email_Date_Formatter( $option_gateway );
     }
@@ -136,7 +159,7 @@ class Competition_Entry_Service {
                     $return->error = true;
                     $msg[]         = __( 'No leagues found for event', 'racketmanager' ) . ' ' . $event->name;
                 } elseif ( count( $event->get_seasons() ) > 1 ) {
-                    $constitution = $event->get_constitution( array(
+                    $constitution = $this->event_query_service->get_constitution( $event, array(
                         'season' => $season,
                         'count'  => true,
                     ) );
@@ -871,7 +894,7 @@ class Competition_Entry_Service {
                 $validator = $validator->match_day( $match_day, $field_ref );
                 $validator = $validator->match_time( $match_time, $field_ref, $match_day, $start_times );
                 $validator = $validator->captain( $captain, $contactno, $contactemail, $field_ref );
-                $league_id = $event->get_primary_league_id();
+                $league_id = $this->event_query_service->get_primary_league_id( $event );
                 if ( empty( $league_id ) || (int) $league_id <= 0 ) {
                     $validator->set_errors( 'event-' . $event_id, __( 'No league configured for event', 'racketmanager' ) );
                     continue;
@@ -1167,7 +1190,7 @@ class Competition_Entry_Service {
                     $validator = $validator->event();
                     continue;
                 }
-                $league_id = $event->get_primary_league_id();
+                $league_id = $this->event_query_service->get_primary_league_id( $event );
                 if ( empty( $league_id ) || (int) $league_id <= 0 ) {
                     $validator->set_errors( 'event', __( 'No league configured for event', 'racketmanager' ) );
                     continue;
@@ -1537,7 +1560,7 @@ class Competition_Entry_Service {
             $validator->set_errors( $err_field, $e->getMessage(), 404 );
         }
         if ( empty( $validator->error ) ) {
-            $league_id = $event->get_primary_league_id();
+            $league_id = $this->event_query_service->get_primary_league_id( $event );
             if ( empty( $league_id ) || (int) $league_id <= 0 ) {
                 $validator->set_errors( $err_field, __( 'No league configured for event', 'racketmanager' ) );
             } else {

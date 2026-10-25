@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Container\Providers;
 
+use Racketmanager\Application\Finance\Commands\Set_Purchase_Order_Handler;
 use Racketmanager\Application\General\Queries\Get_Alert_Handler;
 use Racketmanager\Application\General\Queries\Get_Favourites_Handler;
 use Racketmanager\Application\General\Queries\Get_Invoice_Handler;
@@ -37,6 +38,8 @@ use Racketmanager\Infrastructure\Wordpress\Ajax\Finance_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Finance_Ajax_Controller;
 use Racketmanager\Infrastructure\Wordpress\Assets\Asset_Manager;
 use Racketmanager\Infrastructure\Wordpress\Bootstrap\Plugin_Bootstrap;
+use Racketmanager\Infrastructure\Wordpress\Component\Component_Coordinator;
+use Racketmanager\Infrastructure\Wordpress\Component\Component_Coordinator_Interface;
 use Racketmanager\Infrastructure\Wordpress\Export\Export_Delivery_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory;
@@ -61,9 +64,13 @@ use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Contracts\Data_Exporter_Interface;
 use Racketmanager\Services\Export\Export_Service;
 use Racketmanager\Services\Finance_Service;
+use Racketmanager\Services\Mail\Mail_Filter_Service;
+use Racketmanager\Services\Mail\Mail_Filter_Service_Interface;
 use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Services\Notify_Service;
 use Racketmanager\Services\Season_Service;
+use Racketmanager\Services\Seo\Page_Title_Service;
+use Racketmanager\Services\Seo\Page_Title_Service_Interface;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
@@ -105,6 +112,18 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->set( 'json_response_factory', fn() => new Json_Response_Factory() );
         $container->set( 'ajax_registry', fn() => new Ajax_Registry() );
         $container->set( 'view_renderer', fn() => new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) );
+        $container->set( 'page_title_service', fn(): Page_Title_Service => new Page_Title_Service( $app?->site_name ) );
+        $container->set( Page_Title_Service::class, fn( Simple_Container $c ): Page_Title_Service => $c->get( 'page_title_service' ) );
+        $container->set( Page_Title_Service_Interface::class, fn( Simple_Container $c ): Page_Title_Service => $c->get( 'page_title_service' ) );
+        $container->set( 'mail_filter_service', fn( Simple_Container $c ): Mail_Filter_Service => new Mail_Filter_Service( $c->get( 'message_repository' ) ) );
+        $container->set( Mail_Filter_Service::class, fn( Simple_Container $c ): Mail_Filter_Service => $c->get( 'mail_filter_service' ) );
+        $container->set( Mail_Filter_Service_Interface::class, fn( Simple_Container $c ): Mail_Filter_Service => $c->get( 'mail_filter_service' ) );
+        $container->set( 'component_coordinator', fn( Simple_Container $c ): Component_Coordinator => new Component_Coordinator(
+            $c,
+            $c->get( 'ajax_registry' )
+        ) );
+        $container->set( Component_Coordinator::class, fn( Simple_Container $c ): Component_Coordinator => $c->get( 'component_coordinator' ) );
+        $container->set( Component_Coordinator_Interface::class, fn( Simple_Container $c ): Component_Coordinator_Interface => $c->get( 'component_coordinator' ) );
 
         // Core Repositories
         $container->set( 'season_repository', fn() => new Season_Repository() );
@@ -171,7 +190,9 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             $c->get( 'notification_presenter' ),
             $c->get( 'view_renderer' ),
             $c->get( 'racketmanager_app' ),
-            $c->get( 'mailer' )
+            $c->get( 'mailer' ),
+            $c->get( 'event_query_service' ),
+            fn() => $c->get( 'league_query_service' )
         ) );
 
         // Export Services
@@ -196,10 +217,17 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         ) );
         $container->set( 'account_ajax_controller', fn( Simple_Container $c ) => new Account_Ajax_Controller( $app, $c->get( 'account_ajax_adapter' ) ) );
 
-        $container->set( 'finance_ajax_adapter', fn( Simple_Container $c ) => new Finance_Ajax_Adapter(
-            $c->get( 'security_service' ),
-            $c->get( 'json_response_factory' ),
+        $container->set( 'set_purchase_order_handler', fn( Simple_Container $c ) => new Set_Purchase_Order_Handler(
             $c->get( 'finance_service' )
+        ) );
+
+        $container->set( 'finance_ajax_adapter', fn( Simple_Container $c ) => new Finance_Ajax_Adapter(
+            security_service: $c->get( 'security_service' ),
+            response_factory: $c->get( 'json_response_factory' ),
+            finance_service: $c->get( 'finance_service' ),
+            set_purchase_order_handler: $c->get( 'set_purchase_order_handler' ),
+            get_purchase_order_handler: $c->get( 'get_purchase_order_handler' ),
+            view_presenter: $c->get( 'shortcode_view_presenter' )
         ) );
         $container->set( 'finance_ajax_controller', fn( Simple_Container $c ) => new Finance_Ajax_Controller( $app, $c->get( 'finance_ajax_adapter' ) ) );
 

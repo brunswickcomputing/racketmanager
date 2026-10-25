@@ -11,7 +11,8 @@ final readonly class Get_Team_Order_Players_Query {
     public function __construct(
         public ?int $event_id = null,
         public ?string $event_name = null,
-        public int|string|null $club_id = null
+        public int|string|null $club_id = null,
+        public ?string $season = null
     ) {}
 
     public static function from_atts( array|string $atts = [], array $query_vars = [] ): self {
@@ -36,11 +37,13 @@ final readonly class Get_Team_Order_Players_Query {
         }
 
         $club_id = $atts_array['club_id'] ?? ( $atts_array['club'] ?? ( $atts_array['clubs'] ?? null ) );
+        $season  = ! empty( $atts_array['season'] ) ? (string) $atts_array['season'] : null;
 
         return new self(
             event_id: $event_id,
             event_name: $event_name,
-            club_id: $club_id
+            club_id: $club_id,
+            season: $season
         );
     }
 }

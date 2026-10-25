@@ -89,7 +89,7 @@ final class Tournament_Team_Admin_Controller {
         }
 
         if ( $league ) {
-            $team = $league->get_team_dtls( $team_id );
+            $team = \Racketmanager\get_league_query_service()->get_team_dtls( $league, $team_id );
         } else {
             $team = $this->team_service->get_team_by_id( $team_id );
         }

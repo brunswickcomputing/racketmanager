@@ -584,12 +584,12 @@ class Shortcodes {
      * @return array of leagues with draws.
      */
     public function get_draw( object $event, string $season ): array {
-        $leagues = $event->get_leagues();
+        $leagues = \Racketmanager\get_event_query_service()->get_leagues( $event );
         foreach ( $leagues as $l => $league ) {
             $league = get_league( $league->id );
             $finals = array_reverse( $league->championship->get_finals() );
             foreach ( $finals as $f => $final ) {
-                $matches = $league->get_matches( array(
+                $matches = \Racketmanager\get_league_query_service()->get_matches( $league, array(
                         'season'  => $season,
                         'final'   => $final['key'],
                         'orderby' => array(

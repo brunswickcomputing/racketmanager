@@ -260,7 +260,7 @@ class Rest_Resources extends WP_REST_Controller {
             $event = is_object( $event ) ? $event : get_event( $event );
             if ( $event ) {
                 if ( empty( $is_league ) ) {
-                    $leagues = $event->get_leagues();
+                    $leagues = \Racketmanager\get_event_query_service()->get_leagues( $event );
                 } else {
                     $leagues = array( $league );
                 }
@@ -269,7 +269,7 @@ class Rest_Resources extends WP_REST_Controller {
                     if ( null === $league_item ) {
                         continue;
                     }
-                    $teams  = $league_item->get_league_teams(
+                    $teams  = \Racketmanager\get_league_query_service()->get_league_teams( $league_item,
                         array(
                             'season' => $season,
                             'club'   => $club_id,
@@ -352,7 +352,7 @@ class Rest_Resources extends WP_REST_Controller {
                 if ( $event ) {
                     $validator = $validator->season_set( $season, $event->get_seasons() );
                     if ( empty( $validator->error ) ) {
-                        $matches = $event->get_matches( $match_args );
+                        $matches = \Racketmanager\get_event_query_service()->get_matches( $event, $match_args );
                     }
                 } else {
                     $validator->error = true;
@@ -363,7 +363,7 @@ class Rest_Resources extends WP_REST_Controller {
             $league = un_seo_url( $league_name );
             $league = get_league( $league );
             if ( $league ) {
-                $matches = $league->get_matches( $match_args );
+                $matches = \Racketmanager\get_league_query_service()->get_matches( $league, $match_args );
             } else {
                 $validator->error = true;
                 $validator->err_msgs[] = __( 'League not found', 'racketmanager' );

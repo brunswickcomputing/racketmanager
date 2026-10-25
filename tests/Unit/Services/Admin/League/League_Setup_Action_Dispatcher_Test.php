@@ -28,7 +28,7 @@ final class League_Setup_Action_Dispatcher_Test extends TestCase {
             ->with( 'racketmanager_nonce', 'racketmanager_add_championship-matches', 'edit_matches' )
             ->willThrowException( new Invalid_Status_Exception( 'Security token invalid' ) );
 
-        $result = ( new League_Setup_Action_Dispatcher( $competition_service, $guard ) )->handle(
+        $result = ( new League_Setup_Action_Dispatcher( $competition_service, $guard, $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) ) )->handle(
             array( 'competition_id' => '3' ),
             array(
                 'action' => 'update',
@@ -51,7 +51,7 @@ final class League_Setup_Action_Dispatcher_Test extends TestCase {
             ->with( 'racketmanager_nonce', 'racketmanager_calculate_ratings', 'edit_matches' )
             ->willThrowException( new Invalid_Status_Exception( 'You do not have permission to perform this task' ) );
 
-        $result = ( new League_Setup_Action_Dispatcher( $competition_service, $guard ) )->handle(
+        $result = ( new League_Setup_Action_Dispatcher( $competition_service, $guard, $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) ) )->handle(
             array(),
             array( 'rank' => '1', 'competition_id' => '3', 'season' => '2026' )
         );
@@ -67,7 +67,7 @@ final class League_Setup_Action_Dispatcher_Test extends TestCase {
         $competition_service = $this->createMock( Competition_Service::class );
         $competition_service->expects( self::never() )->method( 'get_competition' );
 
-        $result = ( new League_Setup_Action_Dispatcher( $competition_service, $this->createStub( Action_Guard_Interface::class ) ) )->handle(
+        $result = ( new League_Setup_Action_Dispatcher( $competition_service, $this->createStub( Action_Guard_Interface::class ), $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) ) )->handle(
             array( 'competition_id' => '3' ),
             array(
                 'action' => 'update',
@@ -105,7 +105,7 @@ final class League_Setup_Action_Dispatcher_Test extends TestCase {
         $competition_service->expects( self::once() )->method( 'get_competition' )->with( 3 )->willReturn( $competition );
         $competition_service->expects( self::once() )->method( 'get_events_for_competition' )->with( 3, 2026 )->willReturn( array( $event ) );
 
-        $result = ( new League_Setup_Action_Dispatcher( $competition_service, $this->createStub( Action_Guard_Interface::class ) ) )->handle(
+        $result = ( new League_Setup_Action_Dispatcher( $competition_service, $this->createStub( Action_Guard_Interface::class ), $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) ) )->handle(
             array( 'competition_id' => '3' ),
             array(
                 'action' => 'update',
@@ -126,7 +126,7 @@ final class League_Setup_Action_Dispatcher_Test extends TestCase {
         $competition_service = $this->createMock( Competition_Service::class );
         $competition_service->expects( self::once() )->method( 'calculate_team_ratings' )->with( 3, 2026 );
 
-        $success = ( new League_Setup_Action_Dispatcher( $competition_service, $this->createStub( Action_Guard_Interface::class ) ) )->handle(
+        $success = ( new League_Setup_Action_Dispatcher( $competition_service, $this->createStub( Action_Guard_Interface::class ), $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) ) )->handle(
             array(),
             array( 'rank' => '1', 'competition_id' => '3', 'season' => '2026' )
         );
@@ -137,7 +137,7 @@ final class League_Setup_Action_Dispatcher_Test extends TestCase {
         $failing = $this->createMock( Competition_Service::class );
         $failing->expects( self::once() )->method( 'calculate_team_ratings' )->willThrowException( new Season_Not_Found_Exception( 'Season missing' ) );
 
-        $error = ( new League_Setup_Action_Dispatcher( $failing, $this->createStub( Action_Guard_Interface::class ) ) )->handle(
+        $error = ( new League_Setup_Action_Dispatcher( $failing, $this->createStub( Action_Guard_Interface::class ), $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) ) )->handle(
             array(),
             array( 'rank' => '1', 'competition_id' => '3', 'season' => '2026' )
         );

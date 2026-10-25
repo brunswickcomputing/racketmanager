@@ -5,6 +5,8 @@ namespace Racketmanager\Tests\Unit\Services\Admin\Finance;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Finance\Commands\Generate_Charge_Invoices_Command;
+use Racketmanager\Application\Finance\Commands\Generate_Charge_Invoices_Handler;
 use Racketmanager\Domain\Finance\Charge;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Charge_Not_Deleted_Exception;
@@ -24,13 +26,19 @@ final class Finance_Charge_Action_Dispatcher_Test extends TestCase {
 
     private Finance_Service $finance_service;
     private Action_Guard_Interface $guard;
+    private Generate_Charge_Invoices_Handler $generate_charge_invoices_handler;
     private Finance_Charge_Action_Dispatcher $dispatcher;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->finance_service = $this->createMock( Finance_Service::class );
-        $this->guard           = $this->createMock( Action_Guard_Interface::class );
-        $this->dispatcher      = new Finance_Charge_Action_Dispatcher( $this->finance_service, $this->guard );
+        $this->finance_service                  = $this->createMock( Finance_Service::class );
+        $this->guard                            = $this->createMock( Action_Guard_Interface::class );
+        $this->generate_charge_invoices_handler = new Generate_Charge_Invoices_Handler( $this->finance_service );
+        $this->dispatcher                       = new Finance_Charge_Action_Dispatcher(
+            $this->finance_service,
+            $this->guard,
+            $this->generate_charge_invoices_handler
+        );
     }
 
     public function test_unhandled_action_returns_empty_dto(): void {
@@ -231,6 +239,65 @@ final class Finance_Charge_Action_Dispatcher_Test extends TestCase {
         self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
     }
 
+    public function test_generate_invoices_executes_injected_handler_with_command(): void {
+        $this->guard->expects( self::once() )->method( 'assert_allowed' );
+
+        $handler = $this->createMock( Generate_Charge_Invoices_Handler::class );
+        $handler->expects( self::once() )
+            ->method( 'handle' )
+            ->with( self::callback( function ( Generate_Charge_Invoices_Command $cmd ): bool {
+                return 42 === $cmd->charge_id && true === $cmd->send_email;
+            } ) )
+            ->willReturn( true );
+
+        $dispatcher = new Finance_Charge_Action_Dispatcher(
+            $this->finance_service,
+            $this->guard,
+            generate_charge_invoices_handler: $handler
+        );
+
+        $result = $dispatcher->handle(
+            array(),
+            array(
+                'generateInvoices' => '1',
+                'chargesId'        => '42',
+            )
+        );
+
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+        self::assertSame( array( 'view' => 'charge', 'charges' => 42 ), $result->query_params );
+    }
+
+    public function test_generate_invoices_with_send_flag_false_delegates_to_handler(): void {
+        $this->guard->expects( self::once() )->method( 'assert_allowed' );
+
+        $handler = $this->createMock( Generate_Charge_Invoices_Handler::class );
+        $handler->expects( self::once() )
+            ->method( 'handle' )
+            ->with( self::callback( function ( Generate_Charge_Invoices_Command $cmd ): bool {
+                return 42 === $cmd->charge_id && false === $cmd->send_email;
+            } ) )
+            ->willReturn( true );
+
+        $dispatcher = new Finance_Charge_Action_Dispatcher(
+            $this->finance_service,
+            $this->guard,
+            generate_charge_invoices_handler: $handler
+        );
+
+        $result = $dispatcher->handle(
+            array(),
+            array(
+                'generateInvoices' => '1',
+                'chargesId'        => '42',
+                'send'             => '0',
+            )
+        );
+
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+        self::assertSame( array( 'view' => 'charge', 'charges' => 42 ), $result->query_params );
+    }
+
     public function test_save_charge_guard_failure(): void {
         $this->guard->expects( self::once() )
             ->method( 'assert_allowed' )
@@ -410,5 +477,18 @@ final class Finance_Charge_Action_Dispatcher_Test extends TestCase {
 
         self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
         self::assertSame( array( 'view' => 'charges' ), $result->query_params );
+    }
+
+    public function test_constructor_requires_generate_charge_invoices_handler(): void {
+        $ctor = new \ReflectionMethod( Finance_Charge_Action_Dispatcher::class, '__construct' );
+        $params = [];
+        foreach ( $ctor->getParameters() as $param ) {
+            $params[ $param->getName() ] = $param;
+        }
+
+        $this->assertArrayHasKey( 'generate_charge_invoices_handler', $params );
+        $this->assertFalse( $params['generate_charge_invoices_handler']->isOptional(), 'generate_charge_invoices_handler must be required.' );
+        $this->assertFalse( $params['generate_charge_invoices_handler']->allowsNull(), 'generate_charge_invoices_handler must not allow null.' );
+        $this->assertSame( Generate_Charge_Invoices_Handler::class, (string) $params['generate_charge_invoices_handler']->getType() );
     }
 }

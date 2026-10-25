@@ -214,4 +214,12 @@ class Fixture_Maintenance_Service_Test extends TestCase {
             ->willReturn( true );
         $this->assertTrue( $this->service->update_fixture_date( 123, '2023-01-01', '2022-12-31' ) );
     }
+
+    public function test_update_fixture_date_with_time_calls_repository(): void {
+        $this->fixture_repository->expects( $this->once() )
+            ->method( 'update_date' )
+            ->with( 123, '2026-05-15 19:30:00', '2026-05-01 18:00:00' )
+            ->willReturn( true );
+        $this->assertTrue( $this->service->update_fixture_date( 123, '2026-05-15 19:30:00', '2026-05-01 18:00:00' ) );
+    }
 }

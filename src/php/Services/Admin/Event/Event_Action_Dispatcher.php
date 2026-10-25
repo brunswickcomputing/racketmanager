@@ -16,9 +16,11 @@ use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
-use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
+use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Validator\Validator_Config;
 use stdClass;
 
@@ -29,8 +31,10 @@ readonly final class Event_Action_Dispatcher {
 
     public function __construct(
         private Competition_Service $competition_service,
+        private Competition_Season_Service $competition_season_service,
         private Action_Guard_Interface $action_guard,
-        private League_Team_Repository_Interface $league_team_repository,
+        private Event_Repository_Interface $event_repository,
+        private League_Service $league_service,
     ) {
     }
 
@@ -114,7 +118,15 @@ readonly final class Event_Action_Dispatcher {
         $event_data->num_sets       = $config->num_sets;
         $event_data->num_rubbers    = $config->num_rubbers;
         $event_data->type           = $config->type;
-        $event                      = new Event( $event_data );
+        $event                      = new Event( $event_data, $competition );
+        $event_id                   = $this->event_repository->insert_event( $event );
+        if ( ! $event_id ) {
+            return new Action_Result_DTO(
+                __( 'Could not create event', 'racketmanager' ),
+                Admin_Message_Type::ERROR
+            );
+        }
+        $event->set_id( (int) $event_id );
 
         $add_season = false;
         foreach ( $competition->get_seasons() as $competition_season ) {
@@ -127,11 +139,16 @@ readonly final class Event_Action_Dispatcher {
                 $event_season['home_away']      = $competition_season['home_away'] ?? false;
                 $event_season['num_match_days'] = $competition_season['num_match_days'] ?? 0;
                 $event_season['match_dates']    = $competition_season['match_dates'] ?? array();
-                $event->add_season( $event_season, $this->league_team_repository );
+                $this->competition_season_service->add_season_to_event( $event, $event_season );
             }
         }
 
-        $league_id = $event->add_league( $event->name );
+        try {
+            $league    = $this->league_service->add_league_to_event( (int) $event->id, $event->name );
+            $league_id = $league->id ?? false;
+        } catch ( Event_Not_Found_Exception ) {
+            $league_id = false;
+        }
         if ( false !== $league_id ) {
             $config->primary_league = $league_id;
         }
@@ -140,12 +157,28 @@ readonly final class Event_Action_Dispatcher {
         if ( false === $league_id ) {
             $league_error = __( 'Could not create league for event', 'racketmanager' );
         } elseif ( ! empty( $competition->is_championship ) ) {
-            if ( false === $event->add_league( $event->name . ' ' . __( 'Plate', 'racketmanager' ) ) ) {
+            try {
+                $plate_league    = $this->league_service->add_league_to_event( (int) $event->id, $event->name . ' ' . __( 'Plate', 'racketmanager' ) );
+                $plate_league_id = $plate_league->id ?? false;
+            } catch ( Event_Not_Found_Exception ) {
+                $plate_league_id = false;
+            }
+            if ( false === $plate_league_id ) {
                 $league_error = __( 'Could not create plate league for event', 'racketmanager' );
             }
         }
 
-        $event->set_config( $config );
+        $updates = $event->set_config( $config );
+        if ( $updates && ! empty( $event->id ) ) {
+            $this->event_repository->update_settings_and_rules(
+                (int) $event->id,
+                $event->settings,
+                $event->num_rubbers,
+                $event->num_sets,
+                $event->type
+            );
+            $this->event_repository->update_name( (int) $event->id, $event->name );
+        }
 
         if ( null !== $league_error ) {
             return new Action_Result_DTO(
@@ -240,6 +273,16 @@ readonly final class Event_Action_Dispatcher {
         }
 
         $updates = $event->set_config( $config );
+        if ( $updates && ! empty( $event->id ) ) {
+            $this->event_repository->update_settings_and_rules(
+                (int) $event->id,
+                $event->settings,
+                $event->num_rubbers,
+                $event->num_sets,
+                $event->type
+            );
+            $this->event_repository->update_name( (int) $event->id, $event->name );
+        }
 
         if ( $updates ) {
             return new Action_Result_DTO(

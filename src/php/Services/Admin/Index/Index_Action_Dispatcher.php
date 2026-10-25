@@ -162,7 +162,14 @@ readonly final class Index_Action_Dispatcher implements Index_Action_Dispatcher_
             if ( $id <= 0 ) {
                 continue;
             }
-            $this->competition_service->remove( $id );
+            try {
+                $this->competition_service->remove( $id );
+            } catch ( \RuntimeException | \InvalidArgumentException $e ) {
+                return new Action_Result_DTO(
+                    message: implode( '<br>', array_merge( $messages, array( $e->getMessage() ) ) ),
+                    message_type: Admin_Message_Type::ERROR,
+                );
+            }
             $messages[] = sprintf( __( 'Deleted %d', 'racketmanager' ), $id );
         }
 

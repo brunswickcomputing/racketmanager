@@ -47,6 +47,13 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 9.7.5 =
+* BUGFIX: prevent match notification email dispatch when match involves a bye
+* BUGFIX: handle null string argument in seo_url and un_seo_url
+* BUGFIX: fix syntax error in team details format comparison
+* BUGFIX: pass custom field name for contact email validation in tournament entry
+* UPDATE: harden email shortcode link generation with null-safe property access
+
 = 9.7.4 =
 * UPDATE: restrict frontend event listings for competitions, tournaments, and clubs to active season allowlists
 * UPDATE: guard direct query parameters and URL access against unoffered competition and tournament events

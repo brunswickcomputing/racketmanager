@@ -1033,7 +1033,7 @@ final class Racketmanager_Match {
         }
         if ( 'both' === $team || 'home' === $team ) {
             if ( is_numeric( $this->home_team ) ) {
-                if ( '-1' === $this->home_team ) {
+                if ( '-1' == $this->home_team || -1 === intval( $this->home_team ) ) {
                     $this->teams['home'] = (object) array(
                         'id'     => -1,
                         'title'  => 'Bye',
@@ -1055,7 +1055,7 @@ final class Racketmanager_Match {
         }
         if ( 'both' === $team || 'away' === $team ) {
             if ( is_numeric( $this->away_team ) ) {
-                if ( '-1' === $this->away_team ) {
+                if ( '-1' == $this->away_team || -1 === intval( $this->away_team ) ) {
                     $this->teams['away'] = (object) array(
                         'id'     => -1,
                         'title'  => 'Bye',
@@ -1986,7 +1986,19 @@ final class Racketmanager_Match {
     public function notify_next_match_teams(): bool {
         global $racketmanager;
 
-        if ( ( ( '-1' === $this->home_team || '-1' === $this->away_team ) || ( ! isset( $this->host ) ) ) || ( 'S' === $this->teams['home']->team_type || 'S' === $this->teams['away']->team_type ) ) {
+        if (
+            intval( $this->home_team ) <= 0 ||
+            intval( $this->away_team ) <= 0 ||
+            '-1' == $this->home_team ||
+            '-1' == $this->away_team ||
+            ! isset( $this->host ) ||
+            empty( $this->teams['home'] ) ||
+            empty( $this->teams['away'] ) ||
+            'Bye' === ( $this->teams['home']->title ?? '' ) ||
+            'Bye' === ( $this->teams['away']->title ?? '' ) ||
+            'S' === ( $this->teams['home']->team_type ?? '' ) ||
+            'S' === ( $this->teams['away']->team_type ?? '' )
+        ) {
             return false;
         }
         $email_to = $this->get_email_to();

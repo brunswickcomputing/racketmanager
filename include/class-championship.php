@@ -431,13 +431,13 @@ final class Championship {
     public function set_teams( object $match, ?string $home_id, ?string $away_id ): void {
         $match = get_match( $match );
         $match = $match->set_teams( $home_id, $away_id );
-        if ( is_numeric( $match->home_team ) && is_numeric( $match->away_team ) ) {
+        if ( is_numeric( $match->home_team ) && intval( $match->home_team ) > 0 && is_numeric( $match->away_team ) && intval( $match->away_team ) > 0 ) {
             $match->notify_next_match_teams();
         }
         if ( ! empty( $match->linked_match ) ) {
             $linked_match = get_match( $match->linked_match );
             $linked_match = $linked_match->set_teams( $home_id, $away_id );
-            if ( is_numeric( $linked_match->home_team ) && is_numeric( $linked_match->away_team ) ) {
+            if ( is_numeric( $linked_match->home_team ) && intval( $linked_match->home_team ) > 0 && is_numeric( $linked_match->away_team ) && intval( $linked_match->away_team ) > 0 ) {
                 $linked_match->notify_next_match_teams();
             }
         }

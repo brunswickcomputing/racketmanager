@@ -58,9 +58,12 @@ function log_trace( string $message = '' ): void {
 /**
  * Create SEO friendly string
  *
- * @param string $string_field query string.
+ * @param string|null $string_field query string.
  */
-function seo_url( string $string_field ): string {
+function seo_url( ?string $string_field = '' ): string {
+    if ( empty( $string_field ) ) {
+        return '';
+    }
     // Lower case everything.
     $string_field = strtolower( $string_field );
     // Make alphanumeric (removes all other characters).
@@ -75,9 +78,12 @@ function seo_url( string $string_field ): string {
 /**
  * Reverses SEO friendly string
  *
- * @param string $string_field query string.
+ * @param string|null $string_field query string.
  */
-function un_seo_url( string $string_field ): string {
+function un_seo_url( ?string $string_field = '' ): string {
+    if ( empty( $string_field ) ) {
+        return '';
+    }
     // Convert dash to whitespaces.
     $string_field = str_replace( '-', ' ', $string_field );
     // Convert underscore to dash.

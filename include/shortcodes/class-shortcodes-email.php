@@ -69,8 +69,8 @@ class Shortcodes_Email extends Shortcodes {
 		if ( 'tournament' === $competition_type ) {
 			$tournament      = get_tournament( $tournament );
 			$tournament_link = '<a href="' . $racketmanager->site_url . $tournament->link . '">' . $tournament->name . '</a>';
-			$draw_link       = '<a href="' . $racketmanager->site_url .  $tournament->link . 'draw/' . seo_url( $match->league->event->name ) . '/">' . $match->league->event->name . '</a>';
-			$match_link      = $racketmanager->site_url . $tournament->link . '/match/' . seo_url( $match->league->title ) . '/' . seo_url( $match->teams['home']->title ) . '-vs-' . seo_url( $match->teams['away']->title ) . '/' . $match->id . '/';
+			$draw_link       = '<a href="' . $racketmanager->site_url .  $tournament->link . 'draw/' . seo_url( $match->league->event->name ?? '' ) . '/">' . ( $match->league->event->name ?? '' ) . '</a>';
+			$match_link      = $racketmanager->site_url . $tournament->link . 'match/' . seo_url( $match->league->title ?? '' ) . '/' . seo_url( $match->teams['home']->title ?? '' ) . '-vs-' . seo_url( $match->teams['away']->title ?? '' ) . '/' . $match->id . '/';
 			if ( substr( $match->league->type, 1, 1 ) === 'D' ) {
 				$teams['home']->title = __( 'Home Players', 'racketmanager' );
 				$teams['away']->title = __( 'Away Players', 'racketmanager' );
@@ -83,7 +83,7 @@ class Shortcodes_Email extends Shortcodes {
 				$away_dtls['title']   = 'Away Player';
 			}
 		} elseif ( 'cup' === $competition_type ) {
-			$cup_link   = '<a href="' . $racketmanager->site_url . '/cups/' . seo_url( $match->league->title ) . '/' . $match->season . '/">' . $match->league->title . '</a>';
+			$cup_link   = '<a href="' . $racketmanager->site_url . '/cups/' . seo_url( $match->league->title ?? '' ) . '/' . $match->season . '/">' . ( $match->league->title ?? '' ) . '</a>';
 			$match_link = $racketmanager->site_url . $match->link;
 			if ( ! empty( $match->leg ) ) {
 				$match_link .= 'leg-' . $match->leg . '/';
@@ -451,16 +451,16 @@ class Shortcodes_Email extends Shortcodes {
 		if ( 'tournament' === $competition_type ) {
 			$tournament       = get_tournament( $tournament );
 			$tournament->link = '<a href="' . $racketmanager->site_url . $tournament->link . '">' . $tournament->name . '</a>';
-			$draw_link        = '<a href="' . $racketmanager->site_url . $tournament->link . 'draw/' . seo_url( $match->league->event->name ) . '/">' . $match->league->event->name . '</a>';
-			$match_link       = $racketmanager->site_url . $tournament->link . 'match/' . seo_url( $match->league->title ) . '/' . seo_url( $match->teams['home']->title ) . '-vs-' . seo_url( $match->teams['away']->title ) . '/' . $match->id . '/';
+			$draw_link        = '<a href="' . $racketmanager->site_url . $tournament->link . 'draw/' . seo_url( $match->league->event->name ?? '' ) . '/">' . ( $match->league->event->name ?? '' ) . '</a>';
+			$match_link       = $racketmanager->site_url . $tournament->link . 'match/' . seo_url( $match->league->title ?? '' ) . '/' . seo_url( $match->teams['home']->title ?? '' ) . '-vs-' . seo_url( $match->teams['away']->title ?? '' ) . '/' . $match->id . '/';
 		} elseif ( 'cup' === $competition_type ) {
-			$competition_link = '<a href="' . $racketmanager->site_url . '/cups/' . seo_url( $match->league->title ) . '/' . $match->season . '/">' . $match->league->title . '</a>';
+			$competition_link = '<a href="' . $racketmanager->site_url . '/cups/' . seo_url( $match->league->title ?? '' ) . '/' . $match->season . '/">' . ( $match->league->title ?? '' ) . '</a>';
 			$match_link       = $racketmanager->site_url . $match->link;
 			if ( ! empty( $match->leg ) ) {
 				$match_link .= 'leg-' . $match->leg . '/';
 			}
 		} elseif ( 'league' === $competition_type ) {
-			$competition_link = '<a href="' . $racketmanager->site_url . '/leagues/' . seo_url( $match->league->event->name ) . '/' . $match->season . '/">' . $match->league->title . '</a>';
+			$competition_link = '<a href="' . $racketmanager->site_url . '/leagues/' . seo_url( $match->league->event->name ?? '' ) . '/' . $match->season . '/">' . ( $match->league->title ?? '' ) . '</a>';
 			$match_link       = $racketmanager->site_url . $match->link;
 		}
 

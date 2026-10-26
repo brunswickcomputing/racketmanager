@@ -10,6 +10,7 @@
 const fs = require('fs');
 const path = require('path');
 const { parse } = require('@babel/parser');
+const { compareCodeUnits } = require('./sort');
 
 const PLUGIN_ROOT = path.resolve(__dirname, '..', '..', '..', '..');
 
@@ -42,7 +43,7 @@ function walk(relativeDir, extension, root = PLUGIN_ROOT) {
     }
   };
   visit(absoluteDir);
-  return result.sort();
+  return result.sort(compareCodeUnits);
 }
 
 // `unambiguous` picks module vs script from the presence of import/export; `errorRecovery` keeps

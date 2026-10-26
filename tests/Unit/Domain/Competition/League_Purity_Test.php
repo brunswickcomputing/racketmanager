@@ -347,7 +347,7 @@ final class League_Purity_Test extends TestCase {
 
 	public function test_constructor_only_accepts_an_event_as_second_argument(): void {
 		$this->expectException( \TypeError::class );
-		new League( (object) array( 'id' => 10 ), $this->createStub( League_Repository_Interface::class ) );
+		$this->assertInstanceOf( League::class, new League( (object) array( 'id' => 10 ), $this->createStub( League_Repository_Interface::class ) ) );
 	}
 
 	public function test_get_league_teams_rolls_back_team_query_args_on_exception(): void {

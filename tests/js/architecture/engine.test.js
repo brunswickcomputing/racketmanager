@@ -8,13 +8,14 @@ const { parseJs, walkAst, isNameToken, lineOf, walk } = require('./support/sourc
 const { RULES, getRule, evaluate, isNamespaceIdiom, globalMember } = require('./support/rules');
 const { Baseline, updateRequested, normalise } = require('./support/baseline');
 const { assertRuleHolds, failureMessage } = require('./support/ratchet');
+const { compareCodeUnits } = require('./support/sort');
 
 const jquery = getRule('js.jquery_reference');
 const windowGlobal = getRule('js.window_global_assignment');
 const inlineHandler = getRule('templates.inline_event_handler');
 
 const file = (name, source) => ({ file: name, source });
-const keys = (violations) => violations.map((violation) => violation.key()).sort();
+const keys = (violations) => violations.map((violation) => violation.key()).sort(compareCodeUnits);
 
 let tmpDir;
 beforeAll(() => {
@@ -439,7 +440,7 @@ describe('catalogue', () => {
   test('walk returns sorted plugin-relative forward-slash paths and tolerates missing dirs', () => {
     const js = walk('src/js', '.js');
     expect(js.length).toBeGreaterThan(50);
-    expect(js).toEqual([...js].sort());
+    expect(js).toEqual([...js].sort(compareCodeUnits));
     expect(js.every((p) => p.startsWith('src/js/') && !p.includes('\\'))).toBe(true);
     expect(walk('does/not/exist', '.js')).toEqual([]);
   });

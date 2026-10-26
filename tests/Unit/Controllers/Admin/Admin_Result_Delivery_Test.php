@@ -397,7 +397,7 @@ final class Admin_Result_Delivery_Test extends TestCase {
         $this->expectException( \LogicException::class );
         $this->expectExceptionMessage( 'The results checker presenter is not registered.' );
 
-        new Admin_Result( $plugin );
+        $this->assertInstanceOf( Admin_Result::class, new Admin_Result( $plugin ) );
     }
 
     public function test_constructor_throws_logic_exception_when_admin_results_match_presenter_is_not_registered(): void {
@@ -415,7 +415,7 @@ final class Admin_Result_Delivery_Test extends TestCase {
         $this->expectException( \LogicException::class );
         $this->expectExceptionMessage( 'The admin results match presenter is not registered.' );
 
-        new Admin_Result( $plugin );
+        $this->assertInstanceOf( Admin_Result::class, new Admin_Result( $plugin ) );
     }
 
     public function test_display_results_page_uses_injected_presenter_and_ignores_global_racketmanager(): void {

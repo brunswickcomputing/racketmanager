@@ -321,10 +321,10 @@ class Finance_Ajax_Adapter_Test extends TestCase {
 
     public function test_direct_construction_without_required_args_fails_fast(): void {
         $this->expectException( \ArgumentCountError::class );
-        new Finance_Ajax_Adapter(
+        $this->assertInstanceOf( Finance_Ajax_Adapter::class, new Finance_Ajax_Adapter(
             $this->security_service,
             $this->createStub( Json_Response_Factory_Interface::class ),
             $this->finance_service
-        );
+        ) );
     }
 }

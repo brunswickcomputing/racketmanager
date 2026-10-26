@@ -10,6 +10,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { compareCodeUnits } = require('./sort');
 
 const ENV_UPDATE = 'RM_ARCH_UPDATE_BASELINE';
 const DEFAULT_PATH = path.resolve(__dirname, '..', 'baseline.json');
@@ -37,7 +38,7 @@ function normalise(entries) {
   if (!entries || typeof entries !== 'object' || Array.isArray(entries)) {
     return normalised;
   }
-  for (const ruleId of Object.keys(entries).sort()) {
+  for (const ruleId of Object.keys(entries).sort(compareCodeUnits)) {
     const keys = entries[ruleId];
     const ruleEntries = {};
     if (Array.isArray(keys)) {
@@ -54,7 +55,7 @@ function normalise(entries) {
         }
       }
     }
-    const sortedKeys = Object.keys(ruleEntries).sort();
+    const sortedKeys = Object.keys(ruleEntries).sort(compareCodeUnits);
     if (sortedKeys.length > 0) {
       normalised[ruleId] = {};
       for (const key of sortedKeys) {
@@ -133,7 +134,7 @@ class Baseline {
     const newViolations = {};
     const stale = {};
     let accepted = 0;
-    for (const key of Object.keys(grouped).sort()) {
+    for (const key of Object.keys(grouped).sort(compareCodeUnits)) {
       const count = grouped[key].length;
       const tolerated = allowed[key] || 0;
       if (count > tolerated) {
@@ -146,7 +147,7 @@ class Baseline {
         }
       }
     }
-    for (const key of Object.keys(allowed).sort()) {
+    for (const key of Object.keys(allowed).sort(compareCodeUnits)) {
       if (!grouped[key]) {
         stale[key] = { allowed: allowed[key], count: 0 };
       }

@@ -105,7 +105,7 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
     #[DataProvider( 'invalid_commands_provider' )]
     public function test_commands_reject_invalid_ids( string $class, array $arguments ): void {
         $this->expectException( InvalidArgumentException::class );
-        new $class( ...$arguments );
+        self::assertInstanceOf( $class, new $class( ...$arguments ) );
     }
 
     public function test_update_competition_config_command_validates_and_handles(): void {

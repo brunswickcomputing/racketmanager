@@ -216,7 +216,7 @@ final class Source_Scanner_Test extends TestCase {
         self::assertSame(
             [
                 [ 'kind' => 'require_once', 'target' => 'templates/admin/includes/.php', 'line' => 31 ],
-                [ 'kind' => 'include', 'target' => 'templates/includes/.php', 'line' => 32 ],
+                [ 'kind' => 'include_once', 'target' => 'templates/includes/.php', 'line' => 32 ],
             ],
             $template->includes
         );

@@ -16,7 +16,7 @@ use Racketmanager\Application\Admin\Commands\Results_Checker_Handler;
 use Racketmanager\Application\Admin\Commands\Set_League_Match_Dates_Command;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
-use Racketmanager\Domain\DTOs\Results_Checker_Data;
+use Racketmanager\Domain\DTO\Result\Results_Checker_Data;
 use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
@@ -46,7 +46,7 @@ final class Admin_Commands_Test extends TestCase {
     #[DataProvider( 'invalid_commands' )]
     public function test_commands_reject_invalid_selected_ids_before_execution( string $class, array $arguments ): void {
         $this->expectException( InvalidArgumentException::class );
-        new $class( ...$arguments );
+        self::assertInstanceOf( $class, new $class( ...$arguments ) );
     }
 
     public static function invalid_commands(): array {
@@ -73,10 +73,10 @@ final class Admin_Commands_Test extends TestCase {
     public function test_match_dates_command_rejects_out_of_order_rounds(): void {
         $this->expectException( InvalidArgumentException::class );
         $this->expectExceptionMessage( 'Match date for round 2 after next round date' );
-        new Set_League_Match_Dates_Command( 3, 2026, [
+        self::assertInstanceOf( Set_League_Match_Dates_Command::class, new Set_League_Match_Dates_Command( 3, 2026, [
             [ 'round' => '1', 'match_date' => '2026-06-08' ],
             [ 'round' => '2', 'match_date' => '2026-06-01' ],
-        ] );
+        ] ) );
     }
 
     public function test_match_dates_command_exposes_only_validated_dates(): void {
@@ -112,7 +112,7 @@ final class Admin_Commands_Test extends TestCase {
 
     public function test_ranking_column_lengths_are_validated_before_service_sort(): void {
         $this->expectException( InvalidArgumentException::class );
-        new Rank_League_Teams_Command( 'ratings', [ 1, 2 ], null, [ 12 ], false );
+        self::assertInstanceOf( Rank_League_Teams_Command::class, new Rank_League_Teams_Command( 'ratings', [ 1, 2 ], null, [ 12 ], false ) );
     }
 
     #[DataProvider( 'ranking_modes' )]

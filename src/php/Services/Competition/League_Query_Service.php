@@ -208,9 +208,16 @@ class League_Query_Service {
 
 				$get_details = $query_args['get_details'] ?? ( $team_query_args['get_details'] ?? false );
 				if ( $get_details ) {
+					// Team details (match day/time, captain, league status) live on the league_teams row
+					// of the season being queried, so they must be read for that season rather than the
+					// league's current season.
+					$details_season = $repo_args['season'] ?? null;
+					if ( empty( $details_season ) || 'any' === $details_season ) {
+						$details_season = null;
+					}
 					foreach ( $teams as $team ) {
 						if ( isset( $team->id ) ) {
-							$team_dtls = $this->get_team_dtls( $league, (int) $team->id );
+							$team_dtls = $this->get_team_dtls( $league, (int) $team->id, $details_season );
 							if ( is_object( $team_dtls ) ) {
 								$team->match_day     = $team_dtls->match_day ?? null;
 								$team->match_time    = $team_dtls->match_time ?? null;

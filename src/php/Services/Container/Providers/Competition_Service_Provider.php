@@ -54,6 +54,7 @@ use Racketmanager\Application\Tournament\Queries\Get_Tournament_Overview_Handler
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Players_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Winners_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Withdrawal_Handler;
+use Racketmanager\Domain\Competition\Scheduling\Competition_Scheduler;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Tournament_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Tournament_Ajax_Controller;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Competition_Shortcode_Adapter;
@@ -73,6 +74,7 @@ use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Tournament_Entry_Repository;
 use Racketmanager\Repositories\Tournament_Repository;
+use Racketmanager\Services\Competition\Competition_Schedule_Service;
 use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition\Competition_Notification_Service;
 use Racketmanager\Services\Competition\Event_Query_Service;
@@ -145,6 +147,16 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'league_repository' ),
             $c->get( 'event_query_service' ),
             fn() => $c->get( 'league_query_service' )
+        ) );
+
+        $container->set( 'competition_scheduler', fn() => new Competition_Scheduler() );
+        $container->set( 'competition_schedule_service', fn( Simple_Container $c ) => new Competition_Schedule_Service(
+            $c->get( 'event_repository' ),
+            $c->get( 'league_repository' ),
+            $c->get( 'event_query_service' ),
+            $c->get( 'league_query_service' ),
+            $c->get( 'fixture_service' ),
+            $c->get( 'competition_scheduler' )
         ) );
 
         // Services

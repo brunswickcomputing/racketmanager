@@ -365,6 +365,35 @@ class League_Team_Repository implements League_Team_Repository_Interface {
     }
 
     /**
+     * Find team titles of active league entries without a match day for the given events and season.
+     *
+     * Withdrawn entries (`profile = 3`) are excluded so validation covers the same team set the
+     * competition scheduler loads (`status => active`).
+     *
+     * @param int[]  $event_ids
+     * @param string $season
+     *
+     * @return string[] team titles.
+     */
+    public function find_teams_missing_match_day( array $event_ids, string $season ): array {
+        $event_ids = array_values( array_filter( array_map( 'intval', $event_ids ) ) );
+        if ( empty( $event_ids ) ) {
+            return array();
+        }
+        $leagues_table = $this->wpdb->prefix . 'racketmanager_leagues';
+        $teams_table   = $this->wpdb->prefix . 'racketmanager_teams';
+        $placeholders  = implode( ',', array_fill( 0, count( $event_ids ), '%d' ) );
+        $params        = array_merge( $event_ids, array( $season ) );
+        $rows          = $this->wpdb->get_col(
+            $this->wpdb->prepare(
+                "SELECT t.`title` FROM $teams_table t, $this->table_name t1, $leagues_table l WHERE t.`id` = t1.`team_id` AND (t1.`match_day` IS NULL OR t1.`match_day` = '') AND t1.`profile` != 3 AND l.`id` = t1.`league_id` AND l.`event_id` IN ($placeholders) AND t1.`season` = %s ORDER BY t.`title`",
+                $params
+            )
+        );
+        return is_array( $rows ) ? array_map( 'strval', $rows ) : array();
+    }
+
+    /**
      * Get clubs for an event and season
      *
      * @param int|null $event_id

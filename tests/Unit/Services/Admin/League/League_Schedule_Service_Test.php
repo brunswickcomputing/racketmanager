@@ -4,205 +4,171 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Services\Admin\League;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\Competition\Scheduling\Schedule_Result_DTO;
+use Racketmanager\Domain\Competition\Scheduling\Scheduled_Match_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
-use Racketmanager\RacketManager;
+use Racketmanager\Exceptions\Schedule_Validation_Exception;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Admin\League\League_Schedule_Service;
-use Racketmanager\Services\Competition\League_Schedule_Service as Competition_League_Schedule_Service;
+use Racketmanager\Services\Competition\Competition_Schedule_Service;
+use Racketmanager\Services\Competition\Event_Query_Service;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
-use Racketmanager\Tests\Helpers\Creates_League_Query_Service;
-use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
-use Racketmanager\Services\Container\Simple_Container;
-use stdClass;
-use wpdb;
+use ReflectionClass;
 
 require_once __DIR__ . '/../../../../wp-stubs.php';
 
 #[AllowMockObjectsWithoutExpectations]
 final class League_Schedule_Service_Test extends TestCase {
-    use Creates_League_Query_Service, Manages_Wordpress_Globals;
 
-    private Fixture_Maintenance_Service $fixture_maintenance_service;
-    private Competition_League_Schedule_Service $competition_schedule_service;
+    private Fixture_Maintenance_Service&MockObject $fixture_maintenance_service;
+    private Competition_Schedule_Service&MockObject $competition_schedule_service;
+    private Event_Repository_Interface&MockObject $event_repository;
+    private League_Repository_Interface&MockObject $league_repository;
+    private League_Team_Repository_Interface&MockObject $league_team_repository;
+    private Event_Query_Service&MockObject $event_query_service;
+    private League_Query_Service&MockObject $league_query_service;
     private League_Schedule_Service $service;
+    /** @var array<int, Event> */
+    private array $events = array();
 
     protected function setUp(): void {
         parent::setUp();
-        $this->backup_globals();
-        $this->fixture_maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
-        $this->competition_schedule_service = $this->createMock( Competition_League_Schedule_Service::class );
-        $this->service                     = new League_Schedule_Service( $this->fixture_maintenance_service, $this->competition_schedule_service );
-        $GLOBALS['wp_stubs_events']        = array();
-        $GLOBALS['wp_stubs_leagues']       = array();
-        $GLOBALS['wp_stubs_teams']         = array();
-    }
+        $this->fixture_maintenance_service  = $this->createMock( Fixture_Maintenance_Service::class );
+        $this->competition_schedule_service = $this->createMock( Competition_Schedule_Service::class );
+        $this->event_repository             = $this->createMock( Event_Repository_Interface::class );
+        $this->league_repository            = $this->createMock( League_Repository_Interface::class );
+        $this->league_team_repository       = $this->createMock( League_Team_Repository_Interface::class );
+        $this->event_query_service          = $this->createMock( Event_Query_Service::class );
+        $this->league_query_service         = $this->createMock( League_Query_Service::class );
+        $this->events                       = array();
+        $this->event_repository->method( 'find_by_id' )->willReturnCallback( fn( $id ) => $this->events[ (int) $id ] ?? null );
+        $this->league_team_repository->method( 'find_teams_missing_match_day' )->willReturn( array() );
 
-    protected function tearDown(): void {
-        $this->restore_globals();
-        parent::tearDown();
+        $this->service = new League_Schedule_Service(
+            $this->fixture_maintenance_service,
+            $this->competition_schedule_service,
+            $this->event_repository,
+            $this->league_repository,
+            $this->league_team_repository,
+            $this->event_query_service,
+            $this->league_query_service
+        );
     }
 
     /**
-     * Create a mocked wpdb instance that realistically formats prepared statements
+     * @param array<string, array<string, mixed>> $extra_seasons additional seasons keyed by name.
      */
-    private function create_wpdb_mock(): wpdb {
-        $wpdb_mock = $this->createMock( wpdb::class );
-        $wpdb_mock->racketmanager              = 'wp_racketmanager';
-        $wpdb_mock->racketmanager_teams        = 'wp_racketmanager_teams';
-        $wpdb_mock->racketmanager_league_teams = 'wp_racketmanager_league_teams';
-        $wpdb_mock->racketmanager_seasons      = 'wp_racketmanager_seasons';
-        $wpdb_mock->method( 'prepare' )
-            ->willReturnCallback( function ( string $query, ...$args ) {
-                if ( empty( $args ) ) {
-                    return $query;
-                }
-                $formatted = $query;
-                foreach ( $args as $arg ) {
-                    $formatted = preg_replace( '/%[sd]/', (string) $arg, $formatted, 1 );
-                }
-                return $formatted;
-            } );
-        return $wpdb_mock;
-    }
-
-    private function create_event_mock(
+    private function create_event(
         int $id = 10,
         string $name = 'Event 1',
         int $num_match_days = 6,
-        array $match_dates = array( '2026-05-01', '2026-05-08' ),
+        ?array $match_dates = array( '2026-05-01', '2026-05-08' ),
         bool $home_away = true,
-        string $season = '2026'
+        string $season = '2026',
+        array $extra_seasons = array()
     ): Event {
-        $event                 = $this->createMock( Event::class );
-        $event->id             = $id;
-        $event->name           = $name;
-        $event->current_season = array(
+        $event       = ( new ReflectionClass( Event::class ) )->newInstanceWithoutConstructor();
+        $event->id   = $id;
+        $event->name = $name;
+        $season_data = array(
+            'name'           => $season,
             'num_match_days' => $num_match_days,
-            'match_dates'    => $match_dates,
             'home_away'      => $home_away,
         );
-        $event->method( 'get_season' )->willReturn( $season );
+        if ( null !== $match_dates ) {
+            $season_data['match_dates'] = $match_dates;
+        }
+        $event->current_season = $season_data;
+        $event->seasons        = array( $season => $season_data ) + $extra_seasons;
+        $this->events[ $id ]   = $event;
         return $event;
     }
 
-    private function setup_racketmanager_mock( int|callable $match_count = 0, ?\Racketmanager\Services\Competition\League_Query_Service $lqs = null ): RacketManager {
-        $racketmanager = $this->createMock( RacketManager::class );
-        $container = $this->createMock( Simple_Container::class );
-        $racketmanager->container = $container;
-
-        if ( $lqs ) {
-            $container->method( 'has' )->willReturnCallback( static fn( string $id ): bool => 'league_query_service' === $id );
-            $container->method( 'get' )->willReturnCallback( static fn( string $id ): ?object => 'league_query_service' === $id ? $lqs : null );
-        }
-
-        if ( is_callable( $match_count ) ) {
-            $racketmanager->method( 'get_matches' )->willReturnCallback( $match_count );
-        } else {
-            $racketmanager->method( 'get_matches' )->willReturn( $match_count );
-        }
-        $GLOBALS['racketmanager'] = $racketmanager;
-        return $racketmanager;
+    private function create_league( int $id, string $title ): League {
+        $league        = ( new ReflectionClass( League::class ) )->newInstanceWithoutConstructor();
+        $league->id    = $id;
+        $league->title = $title;
+        return $league;
     }
 
-    private function setup_wpdb_group_update_mock( callable $get_results_callback, array &$updated_groups = array() ): wpdb {
-        $wpdb_mock = $this->create_wpdb_mock();
-        $wpdb_mock->method( 'get_results' )->willReturnCallback( $get_results_callback );
-        $wpdb_mock->method( 'query' )
-            ->willReturnCallback( function ( string $query ) use ( &$updated_groups ) {
-                $updated_groups[] = $query;
-                return 1;
-            } );
-        $GLOBALS['wpdb'] = $wpdb_mock;
-        return $wpdb_mock;
-    }
-
-    private function setup_different_divisions_wpdb_mock(
-        object $event_team,
-        array $teams,
-        array $league_taken_groups = array(),
-        array &$updated_groups = array()
-    ): wpdb {
-        return $this->setup_wpdb_group_update_mock(
-            function ( string $query ) use ( $event_team, $teams, $league_taken_groups ) {
-                if ( str_contains( $query, 'GROUP BY t.`club_id`, tbl.`match_day`' ) ) {
-                    return array( $event_team );
-                }
-                if ( str_contains( $query, 'tbl.`match_time` =' ) ) {
-                    return $teams;
-                }
-                foreach ( $league_taken_groups as $league_id => $values ) {
-                    if ( str_contains( $query, '`league_id` = ' . $league_id ) ) {
-                        return is_array( $values ) ? $values : array( (object) array( 'value' => (string) $values ) );
-                    }
-                }
-                return array();
-            },
-            $updated_groups
+    private function valid_result( int $retry = 3, array $alerts = array(), array $pairings = array() ): Schedule_Result_DTO {
+        $match = new Scheduled_Match_DTO( is_bye: false, date: '2026-05-01', home_id: 1, away_id: 2, home: 'A', away: 'B', time: '19:00', location: 'LWC', resource: 'r' );
+        $bye   = new Scheduled_Match_DTO( is_bye: true, date: '2026-05-01', bye_team_id: 3, bye_team: 'C' );
+        return new Schedule_Result_DTO(
+            retry: $retry,
+            is_valid: true,
+            total_weeks: 2,
+            schedule: array(
+                100 => array(
+                    'league_id'   => 100,
+                    'league_name' => 'Division 1',
+                    'weeks'       => array(
+                        1 => array( $match, $bye ),
+                        2 => array( $match ),
+                    ),
+                ),
+            ),
+            alerts: $alerts,
+            resource_pairings: $pairings,
         );
     }
+
+    /* ---------------------------------------------------------------- delete */
 
     public function test_delete_event_matches_success_deletes_each_fixture(): void {
-        $event     = $this->createMock( Event::class );
-        $event->id = 10;
-        $event->method( 'get_season' )->willReturn( '2026' );
+        $event          = $this->create_event( 10 );
+        $league         = $this->create_league( 100, 'Division 1' );
+        $event->leagues = array( $league );
 
-        $league          = new League( (object) array( 'title' => 'Division 1' ) );
-        $league->id      = 100;
-        $league->seasons = array( '2026' => array( 'name' => '2026' ) );
-        $match1          = (object) array( 'id' => 101 );
-        $match2          = (object) array( 'id' => 102 );
+        $this->event_repository->expects( self::once() )
+            ->method( 'count_by_event_season' )
+            ->with( 10, '2026', true )
+            ->willReturn( 0 );
+        $this->league_query_service->expects( self::once() )
+            ->method( 'get_matches' )
+            ->with( $league, array( 'season' => '2026' ) )
+            ->willReturn( array( (object) array( 'id' => 101 ), (object) array( 'id' => 102 ) ) );
 
-        $league_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );
-        $league_repo->expects( self::once() )->method( 'query_matches' )
-            ->with( 100, self::callback( static fn( array $args ): bool => '2026' === $args['season'] ), false )
-            ->willReturn( array( $match1, $match2 ) );
-
-        $fixture_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class );
-        $fixture_repo->method( 'find_by_id' )->willReturnCallback( function($id) {
-            $fixture = $this->createMock( \Racketmanager\Domain\Fixture\Fixture::class );
-            $fixture->id = $id;
-            $fixture->method( 'get_id' )->willReturn($id);
-            return $fixture;
-        });
-
-        $lqs = $this->league_query_service( $league_repo, null, $fixture_repo );
-
-        $event->leagues                 = array( $league );
-        $GLOBALS['wp_stubs_events'][10] = $event;
-
-        $this->setup_racketmanager_mock(
-            static function ( array $args ): int {
-                self::assertSame(
-                    array( 'count' => true, 'event_id' => 10, 'season' => '2026', 'time' => 'latest' ),
-                    $args
-                );
-                return 0;
-            },
-            $lqs
-        );
-
+        $deleted = array();
         $this->fixture_maintenance_service->expects( self::exactly( 2 ) )
             ->method( 'delete_fixture' )
-            ->willReturnCallback( function ( int $fixture_id ) {
-                self::assertContains( $fixture_id, array( 101, 102 ) );
+            ->willReturnCallback( static function ( int $fixture_id ) use ( &$deleted ): bool {
+                $deleted[] = $fixture_id;
                 return true;
             } );
 
         $result = $this->service->delete_event_matches( array( 10 ) );
 
+        self::assertSame( array( 101, 102 ), $deleted );
         self::assertSame( 'Matches deleted', $result->message );
         self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
     }
 
-    public function test_delete_event_matches_returns_error_when_event_has_completed_matches(): void {
-        $event     = $this->createMock( Event::class );
-        $event->id = 10;
-        $event->method( 'get_season' )->willReturn( '2026' );
-        $GLOBALS['wp_stubs_events'][10] = $event;
+    public function test_delete_event_matches_loads_leagues_via_query_service_and_resolves_ids(): void {
+        $this->create_event( 10 );
+        $league = $this->create_league( 100, 'Division 1' );
 
-        $this->setup_racketmanager_mock( 3 );
+        $this->event_repository->method( 'count_by_event_season' )->willReturn( 0 );
+        $this->event_query_service->expects( self::once() )->method( 'get_leagues' )->willReturn( array( 100 ) );
+        $this->league_repository->expects( self::once() )->method( 'find_by_id' )->with( 100 )->willReturn( $league );
+        $this->league_query_service->method( 'get_matches' )->willReturn( array( (object) array( 'id' => 7 ) ) );
+        $this->fixture_maintenance_service->expects( self::once() )->method( 'delete_fixture' )->with( 7 );
+
+        $result = $this->service->delete_event_matches( array( 10 ) );
+
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+    }
+
+    public function test_delete_event_matches_returns_error_when_event_has_completed_matches(): void {
+        $this->create_event( 10 );
+        $this->event_repository->method( 'count_by_event_season' )->willReturn( 3 );
         $this->fixture_maintenance_service->expects( self::never() )->method( 'delete_fixture' );
 
         $result = $this->service->delete_event_matches( array( 10 ) );
@@ -212,42 +178,14 @@ final class League_Schedule_Service_Test extends TestCase {
     }
 
     public function test_delete_event_matches_returns_warning_when_some_events_have_completed_matches(): void {
-        $event1     = $this->createMock( Event::class );
-        $event1->id = 10;
-        $event1->method( 'get_season' )->willReturn( '2026' );
+        $this->create_event( 10 );
+        $event2          = $this->create_event( 20, 'Event 2' );
+        $event2->leagues = array( $this->create_league( 100, 'Division 1' ) );
 
-        $event2     = $this->createMock( Event::class );
-        $event2->id = 20;
-        $event2->method( 'get_season' )->willReturn( '2026' );
-
-        $league    = $this->createMock( League::class );
-        $league->id = 100;
-        $league->current_season = ['name' => '2026'];
-        $match     = (object) array( 'id' => 201, 'season' => '2026' );
-
-        $league_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );
-        $league_repo->method( 'query_matches' )->willReturn( array( $match ) );
-
-        $fixture_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class );
-        $fixture_repo->method( 'find_by_id' )->willReturnCallback( function($id) {
-            $fixture = $this->createMock( \Racketmanager\Domain\Fixture\Fixture::class );
-            $fixture->id = $id;
-            $fixture->method( 'get_id' )->willReturn($id);
-            return $fixture;
-        });
-
-        $lqs = $this->league_query_service( $league_repo, null, $fixture_repo );
-
-        $event2->leagues = array( $league );
-
-        $GLOBALS['wp_stubs_events'][10] = $event1;
-        $GLOBALS['wp_stubs_events'][20] = $event2;
-
-        $this->setup_racketmanager_mock( fn( array $args ) => ( 10 === $args['event_id'] ) ? 2 : 0, $lqs );
-
-        $this->fixture_maintenance_service->expects( self::once() )
-            ->method( 'delete_fixture' )
-            ->with( 201 );
+        $this->event_repository->method( 'count_by_event_season' )
+            ->willReturnCallback( static fn( int $event_id ): int => 10 === $event_id ? 2 : 0 );
+        $this->league_query_service->method( 'get_matches' )->willReturn( array( (object) array( 'id' => 201 ) ) );
+        $this->fixture_maintenance_service->expects( self::once() )->method( 'delete_fixture' )->with( 201 );
 
         $result = $this->service->delete_event_matches( array( 10, 20 ) );
 
@@ -255,544 +193,293 @@ final class League_Schedule_Service_Test extends TestCase {
         self::assertSame( Admin_Message_Type::WARNING, $result->message_type );
     }
 
-    public function test_schedule_league_matches_validation_fails_with_existing_matches(): void {
-        $event       = $this->create_event_mock( 10, 'Summer League' );
-        $GLOBALS['wp_stubs_events'][10] = $event;
+    public function test_delete_event_matches_uses_posted_non_current_season(): void {
+        $event          = $this->create_event( 10, 'Event 1', 6, array( '2026-05-01' ), true, '2026', array( '2025' => array( 'name' => '2025', 'num_match_days' => 6 ) ) );
+        $league         = $this->create_league( 100, 'Division 1' );
+        $event->leagues = array( $league );
 
-        $this->setup_racketmanager_mock( 5 );
+        $this->event_repository->expects( self::once() )
+            ->method( 'count_by_event_season' )
+            ->with( 10, '2025', true )
+            ->willReturn( 0 );
+        $this->league_query_service->expects( self::once() )
+            ->method( 'get_matches' )
+            ->with( $league, array( 'season' => '2025' ) )
+            ->willReturn( array( (object) array( 'id' => 301 ) ) );
+        $this->fixture_maintenance_service->expects( self::once() )->method( 'delete_fixture' )->with( 301 );
 
-        $result = $this->service->schedule_league_matches( array( 10 ) );
+        $result = $this->service->delete_event_matches( array( 10 ), ' 2025 ' );
+
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+    }
+
+    public function test_delete_event_matches_preflights_all_events_before_deleting_anything(): void {
+        $event1          = $this->create_event( 10, 'Event 1', 6, array( '2026-05-01', '2026-05-08' ), true, '2026', array( '2025' => array( 'name' => '2025', 'num_match_days' => 6, 'home_away' => true, 'match_dates' => array( '2025-05-01', '2025-05-08' ) ) ) );
+        $event1->leagues = array( $this->create_league( 100, 'Division 1' ) );
+        $event2          = $this->create_event( 20, 'Event 2' );
+        $event2->leagues = array( $this->create_league( 200, 'Division 2' ) );
+
+        $this->event_repository->expects( self::never() )->method( 'count_by_event_season' );
+        $this->league_query_service->expects( self::never() )->method( 'get_matches' );
+        $this->fixture_maintenance_service->expects( self::never() )->method( 'delete_fixture' );
+
+        $result = $this->service->delete_event_matches( array( 10, 20 ), '2025' );
+
+        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
+        self::assertSame( 'Season 2025 is not available for Event 2', $result->message );
+    }
+
+    public function test_delete_event_matches_rejects_posted_season_the_event_does_not_have(): void {
+        $event          = $this->create_event( 10, 'Event 1' );
+        $event->leagues = array( $this->create_league( 100, 'Division 1' ) );
+
+        $this->event_repository->expects( self::never() )->method( 'count_by_event_season' );
+        $this->league_query_service->expects( self::never() )->method( 'get_matches' );
+        $this->fixture_maintenance_service->expects( self::never() )->method( 'delete_fixture' );
+
+        $result = $this->service->delete_event_matches( array( 10 ), '1999' );
+
+        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
+        self::assertSame( 'Season 1999 is not available for Event 1', $result->message );
+    }
+
+    /* ------------------------------------------------------------ validation */
+
+    public function test_validate_events_fails_with_existing_matches(): void {
+        $this->create_event( 10, 'Summer League' );
+        $this->event_repository->expects( self::once() )->method( 'count_by_event_season' )->with( 10, '2026' )->willReturn( 5 );
+        $this->competition_schedule_service->expects( self::never() )->method( 'schedule_events' );
+
+        $result = $this->service->schedule_league_matches( array( 10 ), '2026' );
 
         self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
         self::assertStringContainsString( 'Summer League already has matches scheduled for 2026', $result->message );
     }
 
-    public function test_schedule_league_matches_validation_fails_with_differing_match_days(): void {
-        $GLOBALS['wp_stubs_events'][10] = $this->create_event_mock( 10, 'Event 1', 5 );
-        $GLOBALS['wp_stubs_events'][20] = $this->create_event_mock( 20, 'Event 2', 6 );
+    public function test_validate_events_fails_with_differing_match_days(): void {
+        $this->create_event( 10, 'Event 1', 5 );
+        $this->create_event( 20, 'Event 2', 6 );
+        $this->event_repository->method( 'count_by_event_season' )->willReturn( 0 );
 
-        $this->setup_racketmanager_mock( 0 );
+        $validation = $this->service->validate_events( array( 10, 20 ), '2026' );
 
-        $result = $this->service->schedule_league_matches( array( 10, 20 ) );
-
-        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
-        self::assertStringContainsString( 'Events have different number of match days', $result->message );
+        self::assertFalse( $validation->success );
+        self::assertStringContainsString( 'Events have different number of match days', $validation->message );
     }
 
-    public function test_schedule_league_matches_validation_fails_with_differing_match_dates(): void {
-        $GLOBALS['wp_stubs_events'][10] = $this->create_event_mock( 10, 'Event 1', 6, array( '2026-05-01', '2026-05-08' ) );
-        $GLOBALS['wp_stubs_events'][20] = $this->create_event_mock( 20, 'Event 2', 6, array( '2026-05-02', '2026-05-09' ) );
+    public function test_validate_events_fails_with_differing_match_dates(): void {
+        $this->create_event( 10, 'Event 1', 6, array( '2026-05-01', '2026-05-08' ) );
+        $this->create_event( 20, 'Event 2', 6, array( '2026-05-02', '2026-05-09' ) );
+        $this->event_repository->method( 'count_by_event_season' )->willReturn( 0 );
 
-        $this->setup_racketmanager_mock( 0 );
+        $validation = $this->service->validate_events( array( 10, 20 ), '2026' );
 
-        $result = $this->service->schedule_league_matches( array( 10, 20 ) );
-
-        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
-        self::assertStringContainsString( 'Events have different match dates', $result->message );
+        self::assertFalse( $validation->success );
+        self::assertStringContainsString( 'Events have different match dates', $validation->message );
     }
 
-    public function test_schedule_league_matches_validation_fails_with_differing_home_away_setting(): void {
-        $GLOBALS['wp_stubs_events'][10] = $this->create_event_mock( 10, 'Event 1', 6, array( '2026-05-01', '2026-05-08' ), true );
-        $GLOBALS['wp_stubs_events'][20] = $this->create_event_mock( 20, 'Event 2', 6, array( '2026-05-01', '2026-05-08' ), false );
+    public function test_validate_events_fails_with_differing_home_away_setting(): void {
+        $this->create_event( 10, 'Event 1', 6, array( '2026-05-01', '2026-05-08' ), true );
+        $this->create_event( 20, 'Event 2', 6, array( '2026-05-01', '2026-05-08' ), false );
+        $this->event_repository->method( 'count_by_event_season' )->willReturn( 0 );
 
-        $this->setup_racketmanager_mock( 0 );
+        $validation = $this->service->validate_events( array( 10, 20 ), '2026' );
 
-        $result = $this->service->schedule_league_matches( array( 10, 20 ) );
-
-        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
-        self::assertStringContainsString( 'Events have different home / away setting', $result->message );
+        self::assertFalse( $validation->success );
+        self::assertStringContainsString( 'Events have different home / away setting', $validation->message );
     }
 
-    public function test_schedule_league_matches_validation_fails_with_missing_match_dates_on_first_event(): void {
-        $event                 = $this->createMock( Event::class );
-        $event->id             = 10;
-        $event->name           = 'Premier Event';
-        $event->current_season = array( 'num_match_days' => 6 );
-        $event->method( 'get_season' )->willReturn( '2026' );
-        $GLOBALS['wp_stubs_events'][10] = $event;
+    public function test_validate_events_fails_with_missing_match_dates_on_first_event(): void {
+        $this->create_event( 10, 'Premier Event', 6, null );
+        $this->event_repository->method( 'count_by_event_season' )->willReturn( 0 );
 
-        $this->setup_racketmanager_mock( 0 );
+        $validation = $this->service->validate_events( array( 10 ), '2026' );
 
-        $result = $this->service->schedule_league_matches( array( 10 ) );
-
-        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
-        self::assertStringContainsString( 'Events match dates not set for Premier Event', $result->message );
+        self::assertFalse( $validation->success );
+        self::assertStringContainsString( 'Events match dates not set for Premier Event', $validation->message );
     }
 
     public function test_validate_events_fails_when_teams_have_missing_match_days(): void {
-        $GLOBALS['wp_stubs_events'][10] = $this->create_event_mock( 10, 'Event 1' );
-        $this->setup_racketmanager_mock( 0 );
+        $this->create_event( 10 );
+        $this->event_repository->method( 'count_by_event_season' )->willReturn( 0 );
 
-        $wpdb_mock = $this->create_wpdb_mock();
-        $wpdb_mock->method( 'get_var' )->willReturn( '2026' );
-        $wpdb_mock->method( 'get_results' )->willReturn( array( (object) array( 'title' => 'Club A 1st' ), (object) array( 'title' => 'Club B 2nd' ) ) );
-        $GLOBALS['wpdb'] = $wpdb_mock;
+        $league_team_repository = $this->createMock( League_Team_Repository_Interface::class );
+        $league_team_repository->expects( self::once() )
+            ->method( 'find_teams_missing_match_day' )
+            ->with( array( 10 ), '2026' )
+            ->willReturn( array( 'Club A 1st', 'Club B 2nd' ) );
+        $service = new League_Schedule_Service(
+            $this->fixture_maintenance_service,
+            $this->competition_schedule_service,
+            $this->event_repository,
+            $this->league_repository,
+            $league_team_repository,
+            $this->event_query_service,
+            $this->league_query_service
+        );
 
-        $validation = $this->service->validate_events( array( 10 ) );
+        $validation = $service->validate_events( array( 10 ), '2026' );
 
         self::assertFalse( $validation->success );
         self::assertStringContainsString( 'Missing match days for Club A 1st and Club B 2nd', $validation->message );
     }
 
     public function test_validate_events_success_with_single_event(): void {
-        $GLOBALS['wp_stubs_events'][10] = $this->create_event_mock( 10, 'Event 1', 10 );
-        $this->setup_racketmanager_mock( 0 );
+        $this->create_event( 10, 'Event 1', 10 );
+        $this->event_repository->method( 'count_by_event_season' )->willReturn( 0 );
 
-        $wpdb_mock = $this->create_wpdb_mock();
-        $wpdb_mock->method( 'get_var' )->willReturn( '2026' );
-        $wpdb_mock->method( 'get_results' )->willReturn( array() );
-        $GLOBALS['wpdb'] = $wpdb_mock;
-
-        $validation = $this->service->validate_events( array( 10 ) );
+        $validation = $this->service->validate_events( array( 10 ), '2026' );
 
         self::assertTrue( $validation->success );
+        self::assertSame( '2026', $validation->season );
         self::assertSame( 5, $validation->num_rounds );
         self::assertTrue( $validation->home_away );
+        self::assertSame( array( '2026-05-01', '2026-05-08' ), $validation->match_dates );
     }
 
-    public function test_handle_teams_in_same_division_assigns_first_round_slots(): void {
-        $wpdb_mock = $this->create_wpdb_mock();
+    public function test_validate_events_falls_back_to_current_season_when_none_posted(): void {
+        $this->create_event( 10, 'Event 1', 4, array( '2026-05-01' ), false, '2026' );
+        $this->event_repository->expects( self::once() )
+            ->method( 'count_by_event_season' )
+            ->with( 10, '2026' )
+            ->willReturn( 0 );
 
-        $club_league = (object) array( 'club_id' => 1, 'league_id' => 100 );
-        $team_a = (object) array( 'id' => 501, 'team_id' => 11, 'league_id' => 100 );
-        $team_b = (object) array( 'id' => 502, 'team_id' => 12, 'league_id' => 100 );
+        $validation = $this->service->validate_events( array( 10 ), null );
 
-        $wpdb_mock->method( 'get_results' )
-            ->willReturnCallback( function ( string $query ) use ( $club_league, $team_a, $team_b ) {
-                if ( str_contains( $query, 'GROUP BY t.`club_id`, tbl.`league_id`' ) ) {
-                    return array( $club_league );
-                }
-                if ( str_contains( $query, 'ORDER BY tbl.`team_id`' ) ) {
-                    return array( $team_a, $team_b );
-                }
-                return array();
-            } );
+        self::assertTrue( $validation->success );
+        self::assertSame( '2026', $validation->season );
+        self::assertFalse( $validation->home_away );
+        self::assertSame( 4, $validation->num_rounds );
+    }
 
-        $updated_groups = array();
-        $wpdb_mock->method( 'query' )
-            ->willReturnCallback( function ( string $query ) use ( &$updated_groups ) {
-                $updated_groups[] = $query;
-                return 1;
-            } );
-
-        $GLOBALS['wpdb'] = $wpdb_mock;
-
-        $validation = new stdClass();
-        $validation->success  = true;
-        $validation->messages = array();
-
-        $result = $this->service->handle_teams_in_same_division( array( 10 ), '2026', $validation, array( 1, 2, 3, 4, 5, 6 ) );
-
-        self::assertTrue( $result->success );
-        self::assertSame(
+    public function test_validate_events_uses_settings_of_requested_non_current_season(): void {
+        $this->create_event(
+            10,
+            'Event 1',
+            6,
+            array( '2026-05-01' ),
+            true,
+            '2026',
             array(
-                'UPDATE wp_racketmanager_league_teams SET `group` = 2 WHERE `id` = 501',
-                'UPDATE wp_racketmanager_league_teams SET `group` = 5 WHERE `id` = 502',
-            ),
-            $updated_groups
+                '2025' => array(
+                    'name'           => '2025',
+                    'num_match_days' => 8,
+                    'match_dates'    => array( '2025-05-01' ),
+                    'home_away'      => false,
+                ),
+            )
         );
+        $this->event_repository->expects( self::once() )
+            ->method( 'count_by_event_season' )
+            ->with( 10, '2025' )
+            ->willReturn( 0 );
+
+        $validation = $this->service->validate_events( array( 10 ), '2025' );
+
+        self::assertTrue( $validation->success );
+        self::assertSame( '2025', $validation->season );
+        self::assertSame( 8, $validation->num_rounds );
+        self::assertFalse( $validation->home_away );
+        self::assertSame( array( '2025-05-01' ), $validation->match_dates );
     }
 
-    public function test_handle_teams_in_different_divisions_with_same_match_day_assigns_alternating_slots(): void {
-        $event_team = (object) array( 'club_id' => 1, 'match_day' => 'Monday', 'match_time' => '19:00' );
-        $team_div1  = (object) array( 'id' => 501, 'team_id' => 11, 'league_id' => 100, 'group' => '' );
-        $team_div2  = (object) array( 'id' => 502, 'team_id' => 12, 'league_id' => 200, 'group' => '' );
-        $updated_groups = array();
+    public function test_validate_events_rejects_season_not_configured_for_event(): void {
+        $this->create_event( 10, 'Event 1' );
+        $this->event_repository->expects( self::never() )->method( 'count_by_event_season' );
+        $this->competition_schedule_service->expects( self::never() )->method( 'schedule_events' );
 
-        $this->setup_different_divisions_wpdb_mock( $event_team, array( $team_div1, $team_div2 ), array(), $updated_groups );
+        $result = $this->service->schedule_league_matches( array( 10 ), '1999' );
 
-        $validation = (object) array( 'success' => true, 'messages' => array() );
-        $result = $this->service->handle_teams_in_different_divisions_with_same_match_day( array( 10, 20 ), '2026', 6, $validation, array( 1, 2, 3, 4, 5, 6 ) );
-
-        self::assertTrue( $result->success );
-        self::assertSame(
-            array(
-                'UPDATE wp_racketmanager_league_teams SET `group` = 1 WHERE `id` = 501',
-                'UPDATE wp_racketmanager_league_teams SET `group` = 4 WHERE `id` = 502',
-            ),
-            $updated_groups
-        );
+        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
+        self::assertSame( 'Season 1999 is not available for Event 1', $result->message );
     }
 
-    public function test_handle_teams_in_different_divisions_with_same_match_day_resolves_alt_ref_when_team1_has_group(): void {
-        $event_team = (object) array( 'club_id' => 1, 'match_day' => 'Monday', 'match_time' => '19:00' );
-        // Team 1 in div 1 already has group '2' assigned
-        $team_div1  = (object) array( 'id' => 501, 'team_id' => 11, 'league_id' => 100, 'group' => '2' );
-        $team_div2  = (object) array( 'id' => 502, 'team_id' => 12, 'league_id' => 200, 'group' => '' );
-        $updated_groups = array();
+    /* --------------------------------------------------------- orchestration */
 
-        $this->setup_different_divisions_wpdb_mock( $event_team, array( $team_div1, $team_div2 ), array( 100 => '2' ), $updated_groups );
+    public function test_schedule_league_matches_success_reports_attempts_and_flash_report(): void {
+        $this->create_event( 10, 'Premier Event', 6, array( '2026-05-01', '2026-05-08', '2026-05-15', '2026-05-22', '2026-05-29', '2026-06-05' ) );
+        $this->event_repository->method( 'count_by_event_season' )->willReturn( 0 );
 
-        $validation = (object) array( 'success' => true, 'messages' => array() );
-        $result = $this->service->handle_teams_in_different_divisions_with_same_match_day( array( 10, 20 ), '2026', 6, $validation, array( 1, 2, 3, 4, 5, 6 ) );
-
-        self::assertTrue( $result->success );
-        self::assertSame(
-            array(
-                'UPDATE wp_racketmanager_league_teams SET `group` = 2 WHERE `id` = 501',
-                'UPDATE wp_racketmanager_league_teams SET `group` = 5 WHERE `id` = 502',
-            ),
-            $updated_groups
-        );
-    }
-
-    public function test_handle_teams_in_different_divisions_with_same_match_day_resolves_ref_when_team2_has_group(): void {
-        $event_team = (object) array( 'club_id' => 1, 'match_day' => 'Monday', 'match_time' => '19:00' );
-        $team_div1  = (object) array( 'id' => 501, 'team_id' => 11, 'league_id' => 100, 'group' => '' );
-        // Team 2 in div 2 already has group '5'
-        $team_div2  = (object) array( 'id' => 502, 'team_id' => 12, 'league_id' => 200, 'group' => '5' );
-        $updated_groups = array();
-
-        $this->setup_different_divisions_wpdb_mock( $event_team, array( $team_div1, $team_div2 ), array( 200 => '5' ), $updated_groups );
-
-        $validation = (object) array( 'success' => true, 'messages' => array() );
-        $result = $this->service->handle_teams_in_different_divisions_with_same_match_day( array( 10, 20 ), '2026', 6, $validation, array( 1, 2, 3, 4, 5, 6 ) );
-
-        self::assertTrue( $result->success );
-        self::assertSame(
-            array(
-                'UPDATE wp_racketmanager_league_teams SET `group` = 2 WHERE `id` = 501',
-                'UPDATE wp_racketmanager_league_teams SET `group` = 5 WHERE `id` = 502',
-            ),
-            $updated_groups
-        );
-    }
-
-    public function test_handle_teams_in_different_divisions_with_same_match_day_reports_error_when_alt_ref_clashes(): void {
-        $event_team = (object) array( 'club_id' => 1, 'match_day' => 'Monday', 'match_time' => '19:00' );
-        // Team 1 has group 2
-        $team_div1  = (object) array( 'id' => 501, 'team_id' => 11, 'league_id' => 100, 'group' => '2' );
-        $team_div2  = (object) array( 'id' => 502, 'team_id' => 12, 'league_id' => 200, 'group' => '' );
-        // In division 2 (league 200), group 5 is already taken by another team!
-
-        $this->setup_different_divisions_wpdb_mock( $event_team, array( $team_div1, $team_div2 ), array( 100 => '2', 200 => '5' ) );
-
-        $GLOBALS['wp_stubs_teams'][11]   = (object) array( 'title' => 'Club A 1st' );
-        $GLOBALS['wp_stubs_leagues'][100] = (object) array( 'title' => 'Division 1' );
-
-        $validation = (object) array( 'success' => true, 'messages' => array() );
-        $result = $this->service->handle_teams_in_different_divisions_with_same_match_day( array( 10, 20 ), '2026', 6, $validation, array( 1, 2, 3, 4, 5, 6 ) );
-
-        self::assertFalse( $result->success );
-        self::assertNotEmpty( $result->messages );
-        self::assertStringContainsString( '1 - Error in scheduling Club A 1st in Division 1', $result->messages[0] );
-    }
-
-    public function test_handle_teams_in_different_divisions_with_same_match_day_handles_wrap_around_for_alt_ref(): void {
-        $event_team = (object) array( 'club_id' => 1, 'match_day' => 'Monday', 'match_time' => '19:00' );
-        // Team 1 has group 5. With 6 max teams, 5 + 3 = 8 > 6 => alt_ref = 2.
-        $team_div1  = (object) array( 'id' => 501, 'team_id' => 11, 'league_id' => 100, 'group' => '5' );
-        $team_div2  = (object) array( 'id' => 502, 'team_id' => 12, 'league_id' => 200, 'group' => '' );
-        $updated_groups = array();
-
-        $this->setup_different_divisions_wpdb_mock( $event_team, array( $team_div1, $team_div2 ), array( 100 => '5' ), $updated_groups );
-
-        $validation = (object) array( 'success' => true, 'messages' => array() );
-        $result = $this->service->handle_teams_in_different_divisions_with_same_match_day( array( 10, 20 ), '2026', 6, $validation, array( 1, 2, 3, 4, 5, 6 ) );
-
-        self::assertTrue( $result->success );
-        self::assertSame(
-            array(
-                'UPDATE wp_racketmanager_league_teams SET `group` = 5 WHERE `id` = 501',
-                'UPDATE wp_racketmanager_league_teams SET `group` = 2 WHERE `id` = 502',
-            ),
-            $updated_groups
-        );
-    }
-
-    public function test_handle_teams_in_different_divisions_with_same_match_day_handles_wrap_around_for_ref(): void {
-        $event_team = (object) array( 'club_id' => 1, 'match_day' => 'Monday', 'match_time' => '19:00' );
-        $team_div1  = (object) array( 'id' => 501, 'team_id' => 11, 'league_id' => 100, 'group' => '' );
-        // Team 2 has group 2. With 6 max teams, 2 - 3 = -1 < 1 => ref = 5.
-        $team_div2  = (object) array( 'id' => 502, 'team_id' => 12, 'league_id' => 200, 'group' => '2' );
-        $updated_groups = array();
-
-        $this->setup_different_divisions_wpdb_mock( $event_team, array( $team_div1, $team_div2 ), array( 200 => '2' ), $updated_groups );
-
-        $validation = (object) array( 'success' => true, 'messages' => array() );
-        $result = $this->service->handle_teams_in_different_divisions_with_same_match_day( array( 10, 20 ), '2026', 6, $validation, array( 1, 2, 3, 4, 5, 6 ) );
-
-        self::assertTrue( $result->success );
-        self::assertSame(
-            array(
-                'UPDATE wp_racketmanager_league_teams SET `group` = 5 WHERE `id` = 501',
-                'UPDATE wp_racketmanager_league_teams SET `group` = 2 WHERE `id` = 502',
-            ),
-            $updated_groups
-        );
-    }
-
-    public function test_handle_teams_in_different_divisions_with_same_match_day_fails_when_both_groups_assigned_do_not_alternate(): void {
-        $event_team = (object) array( 'club_id' => 1, 'match_day' => 'Monday', 'match_time' => '19:00' );
-        // Both teams have pre-assigned group '2' (non-alternating clash: team 2 should have '5' for 6 max teams)
-        $team_div1  = (object) array( 'id' => 501, 'team_id' => 11, 'league_id' => 100, 'group' => '2' );
-        $team_div2  = (object) array( 'id' => 502, 'team_id' => 12, 'league_id' => 200, 'group' => '2' );
-
-        $this->setup_different_divisions_wpdb_mock( $event_team, array( $team_div1, $team_div2 ), array( 100 => '2', 200 => '2' ) );
-
-        $GLOBALS['wp_stubs_teams'][11]   = (object) array( 'title' => 'Club A 1st' );
-        $GLOBALS['wp_stubs_leagues'][100] = (object) array( 'title' => 'Division 1' );
-
-        $validation = (object) array( 'success' => true, 'messages' => array() );
-        $result = $this->service->handle_teams_in_different_divisions_with_same_match_day( array( 10, 20 ), '2026', 6, $validation, array( 1, 2, 3, 4, 5, 6 ) );
-
-        self::assertFalse( $result->success );
-        self::assertNotEmpty( $result->messages );
-        self::assertStringContainsString( '1 - Error in scheduling Club A 1st in Division 1', $result->messages[0] );
-    }
-
-    public function test_same_division_round_one_pair_with_groups_1_and_6_is_accepted_for_six_teams(): void {
-        $this->assert_same_division_pair_groups_are_accepted( 1, 6, 6 );
-    }
-
-    public function test_same_division_round_one_pair_with_groups_3_and_4_is_accepted_for_six_teams(): void {
-        $this->assert_same_division_pair_groups_are_accepted( 3, 4, 6 );
-    }
-
-    public function test_same_division_round_one_pair_with_groups_2_and_5_is_accepted_for_eight_teams(): void {
-        $this->assert_same_division_pair_groups_are_accepted( 2, 5, 8 );
-    }
-
-    private function assert_same_division_pair_groups_are_accepted( int $group1, int $group2, int $max_teams ): void {
-        $event_team = (object) array( 'club_id' => 1, 'match_day' => 'Monday', 'match_time' => '19:00' );
-        $team_div1  = (object) array( 'id' => 501, 'team_id' => 11, 'league_id' => 100, 'group' => (string) $group1 );
-        $team_div2  = (object) array( 'id' => 502, 'team_id' => 12, 'league_id' => 100, 'group' => (string) $group2 );
-        $taken      = array(
-            (object) array( 'value' => (string) $group1 ),
-            (object) array( 'value' => (string) $group2 ),
-        );
-        $updated_groups = array();
-
-        $this->setup_wpdb_group_update_mock(
-            function ( string $query ) use ( $event_team, $team_div1, $team_div2, $taken ) {
-                if ( str_contains( $query, 'GROUP BY t.`club_id`, tbl.`match_day`' ) ) {
-                    return array( $event_team );
-                }
-                if ( str_contains( $query, 'tbl.`match_time` =' ) ) {
-                    return array( $team_div1, $team_div2 );
-                }
-                if ( str_contains( $query, '`group` as `value`' ) ) {
-                    return $taken;
-                }
-                return array();
-            },
-            $updated_groups
-        );
-
-        $validation = (object) array( 'success' => true, 'messages' => array() );
-        $result = $this->service->handle_teams_in_different_divisions_with_same_match_day( array( 10 ), '2026', $max_teams, $validation, range( 1, $max_teams ) );
-
-        self::assertTrue( $result->success );
-        self::assertSame(
-            array(
-                'UPDATE wp_racketmanager_league_teams SET `group` = ' . $group1 . ' WHERE `id` = 501',
-                'UPDATE wp_racketmanager_league_teams SET `group` = ' . $group2 . ' WHERE `id` = 502',
-            ),
-            $updated_groups
-        );
-    }
-
-    public function test_handle_teams_in_different_divisions_with_same_match_day_succeeds_when_both_groups_assigned_alternate(): void {
-        $event_team = (object) array( 'club_id' => 1, 'match_day' => 'Monday', 'match_time' => '19:00' );
-        // Both teams have pre-assigned alternating groups: '2' and '5'
-        $team_div1  = (object) array( 'id' => 501, 'team_id' => 11, 'league_id' => 100, 'group' => '2' );
-        $team_div2  = (object) array( 'id' => 502, 'team_id' => 12, 'league_id' => 200, 'group' => '5' );
-        $updated_groups = array();
-
-        $this->setup_different_divisions_wpdb_mock( $event_team, array( $team_div1, $team_div2 ), array( 100 => '2', 200 => '5' ), $updated_groups );
-
-        $validation = (object) array( 'success' => true, 'messages' => array() );
-        $result = $this->service->handle_teams_in_different_divisions_with_same_match_day( array( 10, 20 ), '2026', 6, $validation, array( 1, 2, 3, 4, 5, 6 ) );
-
-        self::assertTrue( $result->success );
-        self::assertSame(
-            array(
-                'UPDATE wp_racketmanager_league_teams SET `group` = 2 WHERE `id` = 501',
-                'UPDATE wp_racketmanager_league_teams SET `group` = 5 WHERE `id` = 502',
-            ),
-            $updated_groups
-        );
-    }
-
-    public function test_handle_teams_in_different_divisions_with_same_match_day_fails_when_no_refs(): void {
-        $event_team = (object) array( 'club_id' => 1, 'match_day' => 'Monday', 'match_time' => '19:00' );
-        $team_div1  = (object) array( 'id' => 501, 'team_id' => 11, 'league_id' => 100, 'group' => '' );
-        $team_div2  = (object) array( 'id' => 502, 'team_id' => 12, 'league_id' => 200, 'group' => '' );
-
-        // Table groups already take all refs
-        $taken = array(
-            (object) array( 'value' => '1' ),
-            (object) array( 'value' => '2' ),
-            (object) array( 'value' => '3' ),
-            (object) array( 'value' => '4' ),
-            (object) array( 'value' => '5' ),
-            (object) array( 'value' => '6' ),
-        );
-
-        $wpdb_mock = $this->create_wpdb_mock();
-        $wpdb_mock->method( 'get_results' )
-            ->willReturnCallback( function ( string $query ) use ( $event_team, $team_div1, $team_div2, $taken ) {
-                if ( str_contains( $query, 'GROUP BY t.`club_id`, tbl.`match_day`' ) ) {
-                    return array( $event_team );
-                }
-                if ( str_contains( $query, 'tbl.`match_time` =' ) ) {
-                    return array( $team_div1, $team_div2 );
-                }
-                return $taken;
-            } );
-        $GLOBALS['wpdb'] = $wpdb_mock;
-
-        $GLOBALS['wp_stubs_teams'][11]   = (object) array( 'title' => 'Club A 1st' );
-        $GLOBALS['wp_stubs_leagues'][100] = (object) array( 'title' => 'Division 1' );
-
-        $validation = (object) array( 'success' => true, 'messages' => array() );
-        $result = $this->service->handle_teams_in_different_divisions_with_same_match_day( array( 10, 20 ), '2026', 6, $validation, array( 1, 2, 3, 4, 5, 6 ) );
-
-        self::assertFalse( $result->success );
-        self::assertNotEmpty( $result->messages );
-        self::assertStringContainsString( '3 - Error in scheduling Club A 1st in Division 1', $result->messages[0] );
-    }
-
-    public function test_schedule_league_matches_orchestrates_full_flow(): void {
-        $event  = $this->create_event_mock( 10, 'Premier Event', 6, array( '2026-05-01', '2026-05-08', '2026-05-15', '2026-05-22', '2026-05-29', '2026-06-05' ) );
-        $league = $this->createMock( League::class );
-
-        $GLOBALS['wp_stubs_events'][10] = $event;
-        $this->setup_racketmanager_mock( 0 );
-
-        $wpdb_mock = $this->create_wpdb_mock();
-        $wpdb_mock->method( 'get_var' )->willReturn( '2026' );
-        $wpdb_mock->method( 'get_results' )->willReturn( array() );
-        $wpdb_mock->method( 'query' )->willReturn( 1 );
-        $GLOBALS['wpdb'] = $wpdb_mock;
+        $alerts   = array( array( 'type' => 'equity_compromise', 'team_name' => 'A', 'division' => 'Division 1', 'count' => 4, 'ideal' => 3 ) );
+        $pairings = array( '1_Monday 19:00_C0' => array( array( 'id' => 1, 'name' => 'A', 'division' => 'Division 1' ) ) );
 
         $this->competition_schedule_service->expects( self::once() )
-            ->method( 'schedule_event_leagues' )
-            ->with( $event )
-            ->willReturn( array( 'scheduled' => 1, 'skipped' => 0 ) );
+            ->method( 'schedule_events' )
+            ->with( array( 10 ), '2026', 4, true, array( '2026-05-01', '2026-05-08', '2026-05-15', '2026-05-22', '2026-05-29', '2026-06-05' ) )
+            ->willReturn( $this->valid_result( 7, $alerts, $pairings ) );
 
-        $result = $this->service->schedule_league_matches( array( 10 ) );
+        $result = $this->service->schedule_league_matches( array( 10 ), '2026' );
 
         self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
-        self::assertSame( 'Matches scheduled', $result->message );
-        self::assertSame( array( 'scheduled' => 1, 'skipped' => 0 ), $result->flash_data );
-    }
-
-    public function test_schedule_league_matches_skips_invalid_league_objects(): void {
-        $event  = $this->create_event_mock( 10, 'Premier Event', 6, array( '2026-05-01', '2026-05-08', '2026-05-15', '2026-05-22', '2026-05-29', '2026-06-05' ) );
-        $raw_row = (object) array( 'id' => 999 );
-
-        $GLOBALS['wp_stubs_events'][10] = $event;
-        $this->setup_racketmanager_mock( 0 );
-
-        $wpdb_mock = $this->create_wpdb_mock();
-        $wpdb_mock->method( 'get_var' )->willReturn( '2026' );
-        $wpdb_mock->method( 'get_results' )->willReturn( array() );
-        $wpdb_mock->method( 'query' )->willReturn( 1 );
-        $GLOBALS['wpdb'] = $wpdb_mock;
-
-        $this->competition_schedule_service->expects( self::once() )
-            ->method( 'schedule_event_leagues' )
-            ->with( $event )
-            ->willReturn( array( 'scheduled' => 0, 'skipped' => 1 ) );
-
-        $result = $this->service->schedule_league_matches( array( 10 ) );
-
-        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
-        self::assertSame( 'No leagues scheduled (1 league skipped)', $result->message );
-        self::assertSame( array( 'scheduled' => 0, 'skipped' => 1 ), $result->flash_data );
-    }
-
-    public function test_schedule_league_matches_reports_empty_event(): void {
-        $event = $this->create_event_mock();
-        $GLOBALS['wp_stubs_events'][10] = $event;
-        $this->setup_racketmanager_mock( 0 );
-
-        $wpdb_mock = $this->create_wpdb_mock();
-        $wpdb_mock->method( 'get_var' )->willReturn( '2026' );
-        $wpdb_mock->method( 'get_results' )->willReturn( array() );
-        $GLOBALS['wpdb'] = $wpdb_mock;
-
-        $this->competition_schedule_service->expects( self::once() )
-            ->method( 'schedule_event_leagues' )
-            ->with( $event )
-            ->willReturn( array( 'scheduled' => 0, 'skipped' => 0 ) );
-
-        $result = $this->service->schedule_league_matches( array( 10 ) );
-        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
-        self::assertSame( 'No leagues scheduled', $result->message );
-    }
-
-    public function test_schedule_league_matches_warns_when_some_leagues_are_skipped(): void {
-        $event = $this->create_event_mock();
-        $GLOBALS['wp_stubs_events'][10] = $event;
-        $this->setup_racketmanager_mock( 0 );
-
-        $wpdb_mock = $this->create_wpdb_mock();
-        $wpdb_mock->method( 'get_var' )->willReturn( '2026' );
-        $wpdb_mock->method( 'get_results' )->willReturn( array() );
-        $GLOBALS['wpdb'] = $wpdb_mock;
-
-        $this->competition_schedule_service->expects( self::once() )
-            ->method( 'schedule_event_leagues' )
-            ->with( $event )
-            ->willReturn( array( 'scheduled' => 1, 'skipped' => 1 ) );
-
-        $result = $this->service->schedule_league_matches( array( 10 ) );
-        self::assertSame( Admin_Message_Type::WARNING, $result->message_type );
-        self::assertSame( 'Matches scheduled (1 league skipped)', $result->message );
-        self::assertSame( array( 'scheduled' => 1, 'skipped' => 1 ), $result->flash_data );
-    }
-
-    public function test_schedule_league_matches_fails_when_setup_cannot_resolve_clashes(): void {
-        $event  = $this->create_event_mock( 10, 'Premier Event', 6, array( '2026-05-01', '2026-05-08', '2026-05-15', '2026-05-22', '2026-05-29', '2026-06-05' ) );
-        $league = $this->createMock( League::class );
-        $league->id = 100;
-
-        $league_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );
-        $league_repo->method( 'query_matches' )->willReturn( array() );
-
-        $lqs = $this->league_query_service( $league_repo );
-
-        $GLOBALS['wp_stubs_events'][10] = $event;
-        $this->setup_racketmanager_mock( 0, $lqs );
-
-        $wpdb_mock = $this->create_wpdb_mock();
-        $wpdb_mock->method( 'get_var' )->willReturn( '2026' );
-
-        $event_team = (object) array( 'club_id' => 1, 'match_day' => 'Monday', 'match_time' => '19:00' );
-        $team_div1  = (object) array( 'id' => 501, 'team_id' => 11, 'league_id' => 100, 'group' => '' );
-        $team_div2  = (object) array( 'id' => 502, 'team_id' => 12, 'league_id' => 200, 'group' => '' );
-
-        // Table groups already take all refs
-        $taken = array(
-            (object) array( 'value' => '1' ),
-            (object) array( 'value' => '2' ),
-            (object) array( 'value' => '3' ),
-            (object) array( 'value' => '4' ),
+        self::assertSame( 'Matches scheduled after 7 attempts', $result->message );
+        self::assertSame(
+            array(
+                'retry'             => 7,
+                'conflicts'         => array(),
+                'alerts'            => $alerts,
+                'resource_pairings' => $pairings,
+                'scheduled'         => 2,
+            ),
+            $result->flash_data
         );
+    }
 
-        $wpdb_mock->method( 'get_results' )
-            ->willReturnCallback( function ( string $query ) use ( $event_team, $team_div1, $team_div2, $taken ) {
-                if ( str_contains( $query, 'GROUP BY t.`club_id`, tbl.`match_day`' ) ) {
-                    return array( $event_team );
-                }
-                if ( str_contains( $query, 'tbl.`match_time` =' ) ) {
-                    return array( $team_div1, $team_div2 );
-                }
-                if ( str_contains( $query, '`group` as `value`' ) ) {
-                    return $taken;
-                }
-                return array();
-            } );
+    public function test_schedule_league_matches_uses_num_rounds_plus_one_without_home_away(): void {
+        $this->create_event( 10, 'Event 1', 5, array( '2026-05-01' ), false );
+        $this->event_repository->method( 'count_by_event_season' )->willReturn( 0 );
 
-        $GLOBALS['wpdb'] = $wpdb_mock;
-        $GLOBALS['wp_stubs_leagues'][100] = (object) array( 'title' => 'Division 1' );
-        $GLOBALS['wp_stubs_teams'][11]   = (object) array( 'title' => 'Club A 1st' );
+        $this->competition_schedule_service->expects( self::once() )
+            ->method( 'schedule_events' )
+            ->with( array( 10 ), '2026', 6, false, array( '2026-05-01' ) )
+            ->willReturn( new Schedule_Result_DTO( retry: 1, is_valid: true, total_weeks: 5 ) );
 
-        $result = $this->service->schedule_league_matches( array( 10 ) );
+        $result = $this->service->schedule_league_matches( array( 10 ), '2026' );
+
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+        self::assertSame( 0, $result->flash_data['scheduled'] );
+    }
+
+    public function test_schedule_league_matches_returns_error_with_conflicts_when_schedule_invalid(): void {
+        $this->create_event( 10 );
+        $this->event_repository->method( 'count_by_event_season' )->willReturn( 0 );
+
+        $conflicts = array( array( 'week' => 2, 'division' => 'Division 1', 'court' => '1_Monday 19:00_C0', 'home' => 'A', 'with' => 'B' ) );
+        $this->competition_schedule_service->expects( self::once() )
+            ->method( 'schedule_events' )
+            ->willReturn( new Schedule_Result_DTO( retry: 375550, is_valid: false, total_weeks: 10, conflicts: $conflicts ) );
+
+        $result = $this->service->schedule_league_matches( array( 10 ), '2026' );
 
         self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
-        self::assertSame( 'Unable to generate schedule for selected events', $result->message );
+        self::assertSame( 'Scheduling failed after 375550 attempts', $result->message );
+        self::assertSame( 375550, $result->flash_data['retry'] );
+        self::assertSame( $conflicts, $result->flash_data['conflicts'] );
+        self::assertSame( 0, $result->flash_data['scheduled'] );
+    }
+
+    public function test_schedule_league_matches_maps_schedule_validation_exception_to_error(): void {
+        $this->create_event( 10 );
+        $this->event_repository->method( 'count_by_event_season' )->willReturn( 0 );
+
+        $this->competition_schedule_service->method( 'schedule_events' )
+            ->willThrowException( new Schedule_Validation_Exception( array( 'Division 1 has 7 teams but the schedule only allows 6', 'League 5 not found' ) ) );
+
+        $result = $this->service->schedule_league_matches( array( 10 ), '2026' );
+
+        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
+        self::assertSame( 'Division 1 has 7 teams but the schedule only allows 6<br>League 5 not found', $result->message );
+        self::assertSame( array(), $result->flash_data );
+    }
+
+    public function test_schedule_league_matches_validation_failure_does_not_call_schedule_service(): void {
+        $this->create_event( 10, 'Event 1', 5 );
+        $this->create_event( 20, 'Event 2', 6 );
+        $this->event_repository->method( 'count_by_event_season' )->willReturn( 0 );
+        $this->competition_schedule_service->expects( self::never() )->method( 'schedule_events' );
+
+        $result = $this->service->schedule_league_matches( array( 10, 20 ), '2026' );
+
+        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
+        self::assertStringContainsString( 'Events have different number of match days', $result->message );
     }
 }

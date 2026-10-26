@@ -434,6 +434,7 @@ class Admin_Display {
                 'redirect'     => Admin_Redirect_Url_Builder::league_screen( $query, $extra_args ),
                 'message'      => $result->message,
                 'message_type' => Admin_Message_Mapper::to_legacy( $result->message_type ),
+                'flash_data'   => $result->flash_data,
             ),
             true
         );

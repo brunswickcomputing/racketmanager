@@ -598,6 +598,84 @@ class Admin_Plan_Templates_Test extends TestCase {
         $this->assertStringNotContainsString( 'data-event-id="2"', $output );
         $this->assertStringContainsString( 'name="event[1]"', $output );
         $this->assertStringContainsString( 'name="event[2]"', $output );
+        $this->assertStringContainsString( '<input type="hidden" name="season" value="2026" />', $output );
+        $this->assertStringNotContainsString( 'id="schedule-report"', $output );
+    }
+
+    public function test_league_schedule_renders_scheduling_report_with_escaped_output(): void {
+        $vm = new Admin_League_Schedule_Page_View_Model(
+            competition: $this->make_competition(),
+            season: '2026',
+            competition_id: 10,
+            events: [],
+            schedule_report: [
+                'retry'             => 42,
+                'scheduled'         => 0,
+                'conflicts'         => [
+                    [ 'week' => 3, 'division' => 'Division <1>', 'court' => '5_Mon 18:00_C0', 'home' => 'Club A & Co', 'with' => 'Club A Ladies' ],
+                ],
+                'alerts'            => [
+                    [ 'type' => 'equity_compromise', 'team_name' => 'Club B', 'division' => 'Division 2', 'count' => 6, 'ideal' => 5 ],
+                ],
+                'resource_pairings' => [
+                    '5_Mon 18:00_C0' => [
+                        [ 'id' => 1, 'name' => 'Club A & Co', 'division' => 'Division <1>' ],
+                        [ 'id' => 2, 'name' => 'Club A Ladies', 'division' => 'Ladies 1' ],
+                    ],
+                ],
+            ],
+        );
+
+        $GLOBALS['wp_stubs_esc_html_callback'] = static fn( $text ): string => htmlspecialchars( (string) $text, ENT_QUOTES, 'UTF-8' );
+        try {
+            $output = $this->render_template( self::TEMPLATE_SHOW_SCHEDULE, [ 'vm' => $vm ] );
+        } finally {
+            unset( $GLOBALS['wp_stubs_esc_html_callback'] );
+        }
+
+        $this->assertStringContainsString( 'id="schedule-report"', $output );
+        $this->assertStringContainsString( '<details open>', $output );
+        $this->assertStringContainsString( 'Scheduling report - 42 attempts, 0 fixtures created', $output );
+        $this->assertStringContainsString( 'Court conflicts', $output );
+        $this->assertStringContainsString( '<td>3</td>', $output );
+        $this->assertStringContainsString( 'Club A &amp; Co', $output );
+        $this->assertStringContainsString( 'Division &lt;1&gt;', $output );
+        $this->assertStringNotContainsString( 'Division <1>', $output );
+        $this->assertStringContainsString( 'Club A Ladies', $output );
+        $this->assertStringContainsString( '5_Mon 18:00_C0', $output );
+        $this->assertStringContainsString( 'Home and away equity', $output );
+        $this->assertStringContainsString( 'Club B (Division 2) has 6 home matches (ideal 5)', $output );
+        $this->assertStringContainsString( 'Court sharing', $output );
+        $this->assertStringContainsString( '<span class="text-muted">(Ladies 1)</span>', $output );
+    }
+
+    public function test_league_schedule_report_without_conflicts_is_collapsed(): void {
+        $vm = new Admin_League_Schedule_Page_View_Model(
+            competition: $this->make_competition(),
+            season: '2026',
+            competition_id: 10,
+            events: [],
+            schedule_report: [
+                'retry'             => 1,
+                'scheduled'         => 30,
+                'conflicts'         => [],
+                'alerts'            => [],
+                'resource_pairings' => [
+                    '5_Mon 18:00_C0' => [
+                        [ 'id' => 1, 'name' => 'Club A', 'division' => 'Division 1' ],
+                    ],
+                ],
+            ],
+        );
+
+        $output = $this->render_template( self::TEMPLATE_SHOW_SCHEDULE, [ 'vm' => $vm ] );
+
+        $this->assertStringContainsString( 'id="schedule-report"', $output );
+        $this->assertStringContainsString( '<details >', $output );
+        $this->assertStringContainsString( 'Scheduling report - 1 attempts, 30 fixtures created', $output );
+        $this->assertStringNotContainsString( 'Court conflicts', $output );
+        $this->assertStringNotContainsString( 'Home and away equity', $output );
+        $this->assertStringContainsString( 'Court sharing', $output );
     }
 
     public function test_empty_league_schedule_and_order_of_play_rendering(): void {
@@ -709,6 +787,67 @@ class Admin_Plan_Templates_Test extends TestCase {
         $this->assertStringNotContainsString( 'data-event-id="102"', $output );
         $this->assertStringContainsString( 'event_id=101', $output );
         $this->assertStringContainsString( 'event_id=102', $output );
+        $this->assertStringNotContainsString( 'id="schedule-report"', $output );
+    }
+
+    public function test_admin_league_schedule_counts_follow_viewed_season_and_renders_flash_report(): void {
+        $event1 = (object) [
+            'id'     => 101,
+            'name'   => 'Premier League',
+            'season' => '2026',
+        ];
+
+        $competition = $this->createStub( Competition::class );
+        $competition->method( 'get_id' )->willReturn( 55 );
+        $competition->method( 'get_type' )->willReturn( 'league' );
+        $competition->id   = 55;
+        $competition->name = 'Premier Leagues';
+
+        $comp_service = $this->createStub( Competition_Service::class );
+        $comp_service->method( 'get_competition' )->willReturn( $competition );
+        $comp_service->method( 'get_events_for_competition' )->willReturn( [ $event1 ] );
+        $comp_service->method( 'get_by_id' )->willReturn( $competition );
+
+        $seasons_counted = [];
+        $event_repo      = $this->createStub( Event_Repository_Interface::class );
+        $event_repo->method( 'count_by_event_season' )->willReturnCallback(
+            static function ( int $event_id, string $season, bool $completed_only ) use ( &$seasons_counted ): int {
+                $seasons_counted[] = $season;
+                if ( '2025' === $season ) {
+                    return $completed_only ? 0 : 8;
+                }
+
+                return 0;
+            }
+        );
+
+        $flash_store = $this->createStub( \Racketmanager\Admin\Flash\Admin_Flash_Message_Store::class );
+        $flash_store->method( 'pop' )->willReturn(
+            [
+                'message'      => 'Scheduling failed after 9 attempts',
+                'message_type' => true,
+                'flash_data'   => [
+                    'retry'             => 9,
+                    'scheduled'         => 0,
+                    'conflicts'         => [
+                        [ 'week' => 1, 'division' => 'Premier League', 'court' => '7_Tue 19:00_C0', 'home' => 'Club X', 'with' => 'Club X 2' ],
+                    ],
+                    'alerts'            => [],
+                    'resource_pairings' => [],
+                ],
+            ]
+        );
+
+        $output = $this->execute_admin_league_schedule_page( $comp_service, $event_repo, season: '2025', flash_store: $flash_store );
+
+        $this->assertSame( [ '2025', '2025' ], $seasons_counted, 'Match counts must use the viewed season, not the event season.' );
+        $this->assertStringContainsString( 'data-event-id="101"', $output );
+        $this->assertStringContainsString( 'season=2025', $output );
+        $this->assertStringContainsString( '<input type="hidden" name="season" value="2025" />', $output );
+        $this->assertStringContainsString( 'id="schedule-report"', $output );
+        $this->assertStringContainsString( 'Scheduling report - 9 attempts, 0 fixtures created', $output );
+        $this->assertStringContainsString( 'Club X 2', $output );
+        $this->assertStringContainsString( '7_Tue 19:00_C0', $output );
     }
 
     public function test_admin_league_schedule_delivery_with_no_events(): void {
@@ -744,12 +883,15 @@ class Admin_Plan_Templates_Test extends TestCase {
         Competition_Service $comp_service,
         Event_Repository_Interface $event_repo,
         string $competition_id = '55',
+        ?string $season = null,
+        ?\Racketmanager\Admin\Flash\Admin_Flash_Message_Store $flash_store = null,
     ): string {
         $container = $this->create_admin_delivery_container(
             services: [
                 'competition_service' => $comp_service,
                 'event_repository'    => $event_repo,
-            ]
+            ],
+            flash_store: $flash_store,
         );
 
         $racketmanager = $this->createStub( RacketManager::class );
@@ -761,6 +903,9 @@ class Admin_Plan_Templates_Test extends TestCase {
         $GLOBALS['wp_stubs_current_user_can'] = true;
         $_GET['competition_id']               = $competition_id;
         unset( $_GET['season'], $_POST['scheduleAction'] );
+        if ( null !== $season ) {
+            $_GET['season'] = $season;
+        }
 
         ob_start();
         try {

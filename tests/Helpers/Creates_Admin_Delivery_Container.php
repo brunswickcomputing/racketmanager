@@ -162,7 +162,18 @@ trait Creates_Admin_Delivery_Container {
         $container->set( 'league_match_action_dispatcher', fn() => $services['league_match_action_dispatcher'] ?? new League_Match_Action_Dispatcher( $fixture_repository, $fixture_maintenance, $guard_instance, $fixture_result_mgr, $fixture_service ) );
         $container->set( 'league_constitution_action_dispatcher', fn() => $services['league_constitution_action_dispatcher'] ?? new League_Constitution_Action_Dispatcher( $guard_instance, $league_team_repo, $league_service, $services['competition_league_schedule_service'] ?? $this->createStub( \Racketmanager\Services\Competition\League_Schedule_Service::class ), $league_repo, $services['event_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ), $services['team_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Team_Repository_Interface::class ), $services['promotion_relegation_service'] ?? $this->createStub( \Racketmanager\Services\Competition\Promotion_Relegation_Service::class ) ) );
         $container->set( 'league_event_action_dispatcher', fn() => $services['league_event_action_dispatcher'] ?? new League_Event_Action_Dispatcher( $league_service, $guard_instance ) );
-        $container->set( 'league_schedule_action_dispatcher', fn() => $services['league_schedule_action_dispatcher'] ?? new League_Schedule_Action_Dispatcher( new League_Schedule_Service( $fixture_maintenance, $services['competition_league_schedule_service'] ?? $this->createStub( \Racketmanager\Services\Competition\League_Schedule_Service::class ) ), $guard_instance ) );
+        $container->set( 'league_schedule_action_dispatcher', fn( Simple_Container $c ) => $services['league_schedule_action_dispatcher'] ?? new League_Schedule_Action_Dispatcher(
+            $services['league_schedule_service'] ?? new League_Schedule_Service(
+                $fixture_maintenance,
+                $services['competition_schedule_service'] ?? $this->createStub( \Racketmanager\Services\Competition\Competition_Schedule_Service::class ),
+                $event_repo,
+                $league_repo,
+                $league_team_repo,
+                $services['event_query_service'] ?? $this->createStub( \Racketmanager\Services\Competition\Event_Query_Service::class ),
+                $c->get( 'league_query_service' )
+            ),
+            $guard_instance
+        ) );
 
         $container->set( 'club_action_dispatcher', fn() => $services['club_action_dispatcher'] ?? new Club_Action_Dispatcher( $club_service, $player_service, $guard_instance ) );
         $container->set( 'club_player_action_dispatcher', fn() => $services['club_player_action_dispatcher'] ?? new Club_Player_Action_Dispatcher( $registration_service, $player_service, $guard_instance ) );

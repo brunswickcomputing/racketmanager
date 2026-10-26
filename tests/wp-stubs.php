@@ -550,6 +550,15 @@ namespace {
                 }
                 return null; 
             }
+            public function get_col( $query = null, $x = 0 ) {
+                $results = $this->get_results( $query );
+                $column  = array();
+                foreach ( (array) $results as $row ) {
+                    $values   = array_values( (array) $row );
+                    $column[] = $values[ $x ] ?? null;
+                }
+                return $column;
+            }
             public function insert( $table, $data, $format = null ) { 
                 $this->last_id++;
                 $this->insert_id = $this->last_id;

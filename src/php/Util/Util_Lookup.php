@@ -32,6 +32,10 @@ class Util_Lookup {
         $event_types['WD'] = __( 'Ladies Doubles', 'racketmanager' );
         $event_types['MD'] = __( 'Mens Doubles', 'racketmanager' );
         $event_types['XD'] = __( 'Mixed Doubles', 'racketmanager' );
+        $event_types['MT'] = __( 'Male Team Tennis', 'racketmanager' );
+        $event_types['WT'] = __( 'Female Team Tennis', 'racketmanager' );
+        $event_types['XT'] = __( 'Mixed Team Tennis', 'racketmanager' );
+        $event_types['OT'] = __( 'Open Team Tennis', 'racketmanager' );
         $event_types['LD'] = __( 'The League', 'racketmanager' );
         return $event_types;
     }

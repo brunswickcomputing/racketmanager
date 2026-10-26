@@ -46,6 +46,7 @@ readonly final class League_Schedule_Action_Dispatcher {
 
         $action = isset( $post['actionSchedule'] ) ? sanitize_text_field( wp_unslash( strval( $post['actionSchedule'] ) ) ) : null;
         $events = isset( $post['event'] ) && is_array( $post['event'] ) ? array_values( wp_unslash( $post['event'] ) ) : array();
+        $season = $this->resolve_season( $query, $post );
 
         switch ( $action ) {
             case 'schedule':
@@ -55,7 +56,7 @@ readonly final class League_Schedule_Action_Dispatcher {
                         message_type: Admin_Message_Type::WARNING,
                     );
                 }
-                return $this->league_schedule_service->schedule_league_matches( $events );
+                return $this->league_schedule_service->schedule_league_matches( $events, $season );
 
             case 'delete':
                 if ( empty( $events ) ) {
@@ -64,7 +65,7 @@ readonly final class League_Schedule_Action_Dispatcher {
                         message_type: Admin_Message_Type::WARNING,
                     );
                 }
-                return $this->league_schedule_service->delete_event_matches( $events );
+                return $this->league_schedule_service->delete_event_matches( $events, $season );
 
             default:
                 return new Action_Result_DTO(
@@ -72,5 +73,24 @@ readonly final class League_Schedule_Action_Dispatcher {
                     message_type: Admin_Message_Type::WARNING,
                 );
         }
+    }
+
+    /**
+     * Season being scheduled or deleted: the posted hidden `season` input, falling back to the
+     * `season` query parameter of the schedule page. Null lets the service use the events' current season.
+     *
+     * @param array<string, mixed> $query
+     * @param array<string, mixed> $post
+     */
+    private function resolve_season( array $query, array $post ): ?string {
+        foreach ( array( $post, $query ) as $source ) {
+            if ( isset( $source['season'] ) && is_scalar( $source['season'] ) ) {
+                $season = sanitize_text_field( wp_unslash( strval( $source['season'] ) ) );
+                if ( '' !== $season ) {
+                    return $season;
+                }
+            }
+        }
+        return null;
     }
 }

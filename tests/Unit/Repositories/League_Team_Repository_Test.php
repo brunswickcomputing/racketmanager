@@ -387,4 +387,62 @@ class League_Team_Repository_Test extends TestCase {
         $team = Team_Factory::from_object( (object) [ 'id' => 77 ] );
         $this->make_repo( 0, 1, null, $team, 77 )->hydrate( (object) [ 'id' => 4, 'team_id' => 77, 'table_id' => 2, 'team_type' => 'P', 'roster' => serialize( [ 1 ] ) ] );
     }
+
+    public function test_find_teams_missing_match_day_returns_empty_without_query_for_empty_or_invalid_ids(): void {
+        $this->wpdb->expects( $this->never() )->method( 'prepare' );
+        $this->wpdb->expects( $this->never() )->method( 'get_col' );
+
+        $this->assertSame( [], $this->repository->find_teams_missing_match_day( [], '2026' ) );
+        $this->assertSame( [], $this->repository->find_teams_missing_match_day( [ 0, 'abc', null ], '2026' ) );
+    }
+
+    public function test_find_teams_missing_match_day_prepares_placeholders_per_event_and_season(): void {
+        $captured_sql    = null;
+        $captured_params = null;
+        $this->wpdb->expects( $this->once() )
+            ->method( 'prepare' )
+            ->willReturnCallback( function ( string $sql, $params ) use ( &$captured_sql, &$captured_params ) {
+                $captured_sql    = $sql;
+                $captured_params = $params;
+                return 'PREPARED';
+            } );
+        $this->wpdb->expects( $this->once() )
+            ->method( 'get_col' )
+            ->with( 'PREPARED' )
+            ->willReturn( [ 'Alpha', 123, 'Charlie' ] );
+
+        $result = $this->repository->find_teams_missing_match_day( [ 5, '7', 9 ], '2026' );
+
+        $this->assertSame( [ 'Alpha', '123', 'Charlie' ], $result );
+        $this->assertSame( [ 5, 7, 9, '2026' ], $captured_params );
+        $this->assertStringContainsString( 'l.`event_id` IN (%d,%d,%d)', $captured_sql );
+        $this->assertStringContainsString( 't1.`season` = %s', $captured_sql );
+        $this->assertStringContainsString( "(t1.`match_day` IS NULL OR t1.`match_day` = '')", $captured_sql );
+        $this->assertStringContainsString( 'wp_racketmanager_teams t', $captured_sql );
+        $this->assertStringContainsString( 'wp_racketmanager_league_teams t1', $captured_sql );
+        $this->assertStringContainsString( 'wp_racketmanager_leagues l', $captured_sql );
+        $this->assertStringContainsString( 'ORDER BY t.`title`', $captured_sql );
+    }
+
+    public function test_find_teams_missing_match_day_excludes_withdrawn_entries(): void {
+        $captured_sql = null;
+        $this->wpdb->expects( $this->once() )
+            ->method( 'prepare' )
+            ->willReturnCallback( function ( string $sql ) use ( &$captured_sql ) {
+                $captured_sql = $sql;
+                return 'PREPARED';
+            } );
+        $this->wpdb->method( 'get_col' )->willReturn( [] );
+
+        $this->repository->find_teams_missing_match_day( [ 5 ], '2026' );
+
+        $this->assertStringContainsString( 't1.`profile` != 3', $captured_sql );
+    }
+
+    public function test_find_teams_missing_match_day_returns_empty_when_result_is_not_an_array(): void {
+        $this->wpdb->method( 'prepare' )->willReturn( 'PREPARED' );
+        $this->wpdb->expects( $this->once() )->method( 'get_col' )->willReturn( null );
+
+        $this->assertSame( [], $this->repository->find_teams_missing_match_day( [ 5 ], '2026' ) );
+    }
 }

@@ -602,7 +602,8 @@ final class Admin_League extends Admin_Display {
                 return;
             }
         }
-        $this->apply_flash_message();
+        $flash           = $this->apply_flash_message();
+        $schedule_report = is_array( $flash['flash_data'] ?? null ) ? $flash['flash_data'] : array();
         $this->show_message();
         $competition_id = intval( $_GET['competition_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         $competition    = $this->competition_service->get_competition( $competition_id );
@@ -630,11 +631,14 @@ final class Admin_League extends Admin_Display {
                 continue;
             }
 
-            $event_id     = (int) ( method_exists( $event, 'get_id' ) ? $event->get_id() : ( $event->id ?? 0 ) );
-            $event_name   = (string) ( method_exists( $event, 'get_name' ) ? $event->get_name() : ( $event->name ?? '' ) );
-            $event_season = (string) ( method_exists( $event, 'get_season' ) ? $event->get_season() : ( $event->season ?? $season ) );
+            $event_id   = (int) ( method_exists( $event, 'get_id' ) ? $event->get_id() : ( $event->id ?? 0 ) );
+            $event_name = (string) ( method_exists( $event, 'get_name' ) ? $event->get_name() : ( $event->name ?? '' ) );
+            // Counts (and the "Send fixtures" affordance) follow the season being viewed, which is also
+            // the season the schedule/delete actions act on; fall back to the event's own season only
+            // when no season could be resolved for the page.
+            $event_season = (string) $season;
             if ( '' === $event_season ) {
-                $event_season = (string) $season;
+                $event_season = (string) ( method_exists( $event, 'get_season' ) ? $event->get_season() : ( $event->season ?? '' ) );
             }
 
             $match_count            = $this->get_event_repository()->count_by_event_season( $event_id, $event_season, false );
@@ -653,6 +657,7 @@ final class Admin_League extends Admin_Display {
             competition: $competition,
             season: (string) $season,
             events: $events_data,
+            schedule_report: $schedule_report,
         );
 
         $events = $vm->events;

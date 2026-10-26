@@ -292,6 +292,34 @@ class Modular_Service_Providers_Test extends TestCase {
         }
     }
 
+    public function test_competition_provider_wires_competition_schedule_service(): void {
+        $container = Container_Bootstrap::boot( $this->app );
+
+        $this->assertTrue( $container->has( 'competition_scheduler' ) );
+        $this->assertTrue( $container->has( 'competition_schedule_service' ) );
+
+        $scheduler = $container->get( 'competition_scheduler' );
+        $this->assertInstanceOf( \Racketmanager\Domain\Competition\Scheduling\Competition_Scheduler::class, $scheduler );
+
+        $service = $container->get( 'competition_schedule_service' );
+        $this->assertInstanceOf( \Racketmanager\Services\Competition\Competition_Schedule_Service::class, $service );
+        $this->assertSame( $scheduler, ( new \ReflectionProperty( $service, 'scheduler' ) )->getValue( $service ) );
+        $this->assertSame( $container->get( 'fixture_service' ), ( new \ReflectionProperty( $service, 'fixture_service' ) )->getValue( $service ) );
+        $this->assertSame( $container->get( 'league_query_service' ), ( new \ReflectionProperty( $service, 'league_query_service' ) )->getValue( $service ) );
+        $this->assertSame( $container->get( 'event_query_service' ), ( new \ReflectionProperty( $service, 'event_query_service' ) )->getValue( $service ) );
+    }
+
+    public function test_admin_provider_wires_league_schedule_service_to_competition_schedule_service(): void {
+        $container = Container_Bootstrap::boot( $this->app );
+
+        $service = $container->get( 'league_schedule_service' );
+        $this->assertInstanceOf( \Racketmanager\Services\Admin\League\League_Schedule_Service::class, $service );
+        $this->assertSame( $container->get( 'competition_schedule_service' ), ( new \ReflectionProperty( $service, 'competition_schedule_service' ) )->getValue( $service ) );
+        $this->assertSame( $container->get( 'event_repository' ), ( new \ReflectionProperty( $service, 'event_repository' ) )->getValue( $service ) );
+        $this->assertSame( $container->get( 'league_team_repository' ), ( new \ReflectionProperty( $service, 'league_team_repository' ) )->getValue( $service ) );
+        $this->assertSame( $container->get( 'league_query_service' ), ( new \ReflectionProperty( $service, 'league_query_service' ) )->getValue( $service ) );
+    }
+
     public function test_fixture_service_provider_wires_fixture_details_assembler_and_handler(): void {
         $container = Container_Bootstrap::boot( $this->app );
 

@@ -184,8 +184,12 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
 
         $container->set( 'league_schedule_service', fn( Simple_Container $c ) => new League_Schedule_Service(
             $c->get( 'fixture_maintenance_service' ),
-            $c->get( 'competition_league_schedule_service' ),
-            $c->get( 'event_query_service' )
+            $c->get( 'competition_schedule_service' ),
+            $c->get( 'event_repository' ),
+            $c->get( 'league_repository' ),
+            $c->get( 'league_team_repository' ),
+            $c->get( 'event_query_service' ),
+            $c->get( 'league_query_service' )
         ) );
 
         // Action Dispatchers

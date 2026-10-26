@@ -33,8 +33,8 @@ final class Testable_League_Admin_Display extends Admin_Display {
         return $this->deliver_league_action_result( $result, $query );
     }
 
-    public function expose_flash(): void {
-        $this->apply_flash_message();
+    public function expose_flash(): array {
+        return $this->apply_flash_message();
     }
 
     public function get_exposed_message(): string {
@@ -405,5 +405,46 @@ final class League_Admin_Delivery_Test extends TestCase {
 
         self::assertSame( 'Matches scheduled', $get_display->get_exposed_message() );
         self::assertFalse( $get_display->get_exposed_error() );
+    }
+
+    public function test_schedule_delivery_carries_flash_report_through_prg_and_pops_once(): void {
+        list( $display, $redirector, $adapter, $message_service ) = $this->create_roundtrip_environment();
+
+        $report = array(
+            'retry'             => 12,
+            'scheduled'         => 0,
+            'conflicts'         => array( array( 'week' => 1, 'division' => 'Div 1', 'court' => '5_Mon 18:00_C0', 'home' => 'A', 'with' => 'B' ) ),
+            'alerts'            => array(),
+            'resource_pairings' => array( '5_Mon 18:00_C0' => array( array( 'id' => 1, 'name' => 'A', 'division' => 'Div 1' ) ) ),
+        );
+
+        $redirected = $display->expose_deliver(
+            new Action_Result_DTO(
+                message: 'Scheduling failed after 12 attempts',
+                message_type: Admin_Message_Type::ERROR,
+                flash_data: $report,
+            ),
+            array(
+                'page'           => 'racketmanager-leagues',
+                'view'           => 'plan',
+                'competition_id' => '3',
+                'season'         => '2025',
+            )
+        );
+
+        self::assertTrue( $redirected );
+        self::assertStringContainsString( 'season=2025', $redirector->redirect_url );
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $get_display = new Testable_League_Admin_Display( $adapter, $message_service );
+        $flash       = $get_display->expose_flash();
+
+        self::assertSame( 'Scheduling failed after 12 attempts', $get_display->get_exposed_message() );
+        self::assertNotFalse( $get_display->get_exposed_error() );
+        self::assertSame( $report, $flash['flash_data'] ?? null );
+
+        // A second page load must not see a stale report.
+        $second_display = new Testable_League_Admin_Display( $adapter, $message_service );
+        self::assertSame( array(), $second_display->expose_flash() );
     }
 }

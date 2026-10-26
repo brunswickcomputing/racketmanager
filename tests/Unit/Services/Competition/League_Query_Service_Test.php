@@ -144,6 +144,65 @@ class League_Query_Service_Test extends TestCase {
 		$this->assertCount( 1, $result );
 	}
 
+	public function test_get_league_teams_with_details_reads_team_details_for_requested_season(): void {
+		$league                 = new League( (object) array( 'id' => 42, 'title' => 'Premier Division' ) );
+		$league->seasons        = array( '2025' => array( 'name' => '2025' ), '2026' => array( 'name' => '2026' ) );
+		$league->current_season = array( 'name' => '2026' );
+
+		$team_row           = new stdClass();
+		$team_row->table_id = 10;
+		$team_row->team_id  = 100;
+
+		$league_team         = $this->createStub( League_Team::class );
+		$league_team->id     = 100;
+		$league_team->custom = array();
+		$league_team->roster = array();
+		$league_team->title  = 'Team A';
+
+		$this->league_team_repository->expects( $this->once() )->method( 'find_by_id' )->with( 10 )->willReturn( $league_team );
+		$this->league_repository->expects( $this->once() )
+			->method( 'query_league_teams' )
+			->with( 42, $this->callback( static fn( array $args ): bool => '2025' === ( $args['season'] ?? null ) ), false )
+			->willReturn( array( $team_row ) );
+		$this->league_repository->expects( $this->once() )
+			->method( 'get_team_details' )
+			->with( 42, 100, '2025' )
+			->willReturn( (object) array( 'id' => 100, 'title' => 'Team A', 'match_day' => 'Tuesday', 'match_time' => '18:30', 'league_status' => '' ) );
+
+		$result = $this->service->get_league_teams( $league, array( 'season' => '2025', 'get_details' => true ) );
+
+		$this->assertCount( 1, $result );
+		$this->assertSame( 'Tuesday', $result[0]->match_day );
+		$this->assertSame( '18:30', $result[0]->match_time );
+	}
+
+	public function test_get_league_teams_with_details_defaults_to_current_season(): void {
+		$league                 = new League( (object) array( 'id' => 42, 'title' => 'Premier Division' ) );
+		$league->seasons        = array( '2026' => array( 'name' => '2026' ) );
+		$league->current_season = array( 'name' => '2026' );
+
+		$team_row           = new stdClass();
+		$team_row->table_id = 10;
+		$team_row->team_id  = 100;
+
+		$league_team         = $this->createStub( League_Team::class );
+		$league_team->id     = 100;
+		$league_team->custom = array();
+		$league_team->roster = array();
+		$league_team->title  = 'Team A';
+
+		$this->league_team_repository->method( 'find_by_id' )->willReturn( $league_team );
+		$this->league_repository->method( 'query_league_teams' )->willReturn( array( $team_row ) );
+		$this->league_repository->expects( $this->once() )
+			->method( 'get_team_details' )
+			->with( 42, 100, '2026' )
+			->willReturn( (object) array( 'id' => 100, 'title' => 'Team A', 'match_day' => 'Monday', 'match_time' => '19:00' ) );
+
+		$result = $this->service->get_league_teams( $league, array( 'get_details' => true ) );
+
+		$this->assertSame( 'Monday', $result[0]->match_day );
+	}
+
 	public function test_get_team_dtls_enriches_club_and_players_via_repositories_without_globals(): void {
 		unset( $GLOBALS['racketmanager'] );
 

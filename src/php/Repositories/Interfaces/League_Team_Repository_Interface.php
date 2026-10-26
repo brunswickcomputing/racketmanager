@@ -41,6 +41,11 @@ interface League_Team_Repository_Interface extends Repository_Interface {
     ): bool;
     public function find_club_ids_where_player_is_captain( int $player_id, ?int $club_id = null ): array;
     public function find_by_event_id( ?int $event_id, ?int $season = null, ?int $team_id = null, ?int $club_id = null ): array;
+    /**
+     * @param int[] $event_ids
+     * @return string[] titles of teams without a match day.
+     */
+    public function find_teams_missing_match_day( array $event_ids, string $season ): array;
     public function get_clubs_by_event_id( ?int $event_id, ?int $season = null ): array;
     public function get_clubs_by_competition_id( ?int $competition_id, ?int $season = null ): array;
     public function find_teams_to_withdraw_from_league( int $club_id, string $season, int $event_id, array $team_ids ): array;

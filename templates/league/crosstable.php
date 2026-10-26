@@ -9,6 +9,10 @@ namespace Racketmanager;
 
 /** @var object $league */
 /** @var array  $teams */
+/** @var array  $crosstable_columns Column teams in league order (pre-computed by Get_League_Crosstable_Handler). */
+/** @var array  $crosstable_cells   Score matrix keyed by [ row team id ][ column team id ] (pre-computed by Get_League_Crosstable_Handler). */
+$crosstable_columns = $crosstable_columns ?? array();
+$crosstable_cells   = $crosstable_cells ?? array();
 ?>
 <div class="module module--card">
     <div class="module__banner">
@@ -45,8 +49,9 @@ namespace Racketmanager;
                                     <td><?php echo esc_html( $team->title ); ?></td>
                                     <?php
                                     for ( $i = 1; $i <= $num_teams; $i++ ) {
+                                        $column_team_id = isset( $crosstable_columns[ $i - 1 ]->id ) ? (int) $crosstable_columns[ $i - 1 ]->id : null;
                                         ?>
-                                        <td><?php echo \Racketmanager\get_league_query_service()->get_crosstable_field( $league, $team->id, $league->teams[ $i - 1 ]->id ); ?></td>
+                                        <td><?php echo $crosstable_cells[ (int) $team->id ][ $column_team_id ] ?? '&nbsp;'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
                                         <?php
                                     }
                                     ?>

@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * RacketManager API: RacketManager class
  *
@@ -355,14 +356,13 @@ class RacketManager {
 
         if ( file_exists( $dir ) ) {
             $handle = opendir( $dir );
-            do {
-                $file      = readdir( $handle );
+            while ( false !== ( $file = readdir( $handle ) ) ) {
                 $file_info = pathinfo( $dir . '/' . $file );
                 $file_type = ( isset( $file_info['extension'] ) ) ? $file_info['extension'] : '';
                 if ( '.' !== $file && '..' !== $file && ! is_dir( $file ) && ! str_starts_with( $file, '.' ) && 'php' === $file_type ) {
                     $files[ $file ] = $dir . '/' . $file;
                 }
-            } while ( false !== $file );
+            }
         }
 
         return $files;

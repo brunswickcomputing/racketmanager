@@ -7,7 +7,7 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Details_DTO;
 use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Handler;
 use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Query;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Application\Fixture\Services\Fixture_Detail_Service;
+use Racketmanager\Application\Fixture\Services\Fixture_Details_Assembler;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 
 class Get_Fixture_Details_Handler_Test extends TestCase {
@@ -18,7 +18,7 @@ class Get_Fixture_Details_Handler_Test extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->repository = $this->createMock(Fixture_Repository_Interface::class);
-        $this->detail_service = $this->createStub(Fixture_Detail_Service::class);
+        $this->detail_service = $this->createStub(Fixture_Details_Assembler::class);
         $this->handler = new Get_Fixture_Details_Handler($this->repository, $this->detail_service);
     }
 
@@ -47,7 +47,7 @@ class Get_Fixture_Details_Handler_Test extends TestCase {
     }
 
     public function test_handle_success_with_id() {
-        $this->detail_service = $this->createMock(Fixture_Detail_Service::class);
+        $this->detail_service = $this->createMock(Fixture_Details_Assembler::class);
         $this->handler = new Get_Fixture_Details_Handler($this->repository, $this->detail_service);
 
         $fixture = $this->createStub(Fixture::class);

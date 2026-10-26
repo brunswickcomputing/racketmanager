@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Championship Manager API: Championship_Manager class
  *

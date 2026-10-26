@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * League_Standings_DTO API: League_Standings_DTO class
  *

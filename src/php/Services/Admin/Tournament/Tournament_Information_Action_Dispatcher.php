@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Tournament information action dispatcher
  *
@@ -10,7 +11,7 @@ namespace Racketmanager\Services\Admin\Tournament;
 
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
-use Racketmanager\Domain\DTO\Tournament\Tournament_Information_Request_DTO;
+use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Information_Request_DTO;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;

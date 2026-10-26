@@ -9,7 +9,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\League;
-use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Result_Update_Request;
 use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;

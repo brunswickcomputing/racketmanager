@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Event_Repository class
  *
@@ -273,7 +274,7 @@ class Event_Repository implements Event_Repository_Interface {
 
         $events = [];
         foreach ( $results as $row ) {
-            $event = $this->find_by_id( $row->id ) ?? $this->hydrate_event( $row );
+            $event = $this->find_by_id( (int) $row->id ) ?? $this->hydrate_event( $row );
             if ( ! $event ) {
                 continue;
             }
@@ -300,7 +301,7 @@ class Event_Repository implements Event_Repository_Interface {
      * @return Event[]
      */
     public function find_by_competition_id( int $competition_id ): array {
-        $events = wp_cache_get( md5( $competition_id ), 'events' );
+        $events = wp_cache_get( md5( (string) $competition_id ), 'events' );
         if ( ! $events && $this->wpdb ) {
             $results = $this->wpdb->get_results(
                 $this->wpdb->prepare(
@@ -314,7 +315,7 @@ class Event_Repository implements Event_Repository_Interface {
                 },
                 $results ?: []
             );
-            wp_cache_set( md5( $competition_id ), $events, 'events' );
+            wp_cache_set( md5( (string) $competition_id ), $events, 'events' );
         }
         return $events ?: [];
     }

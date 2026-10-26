@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Event API: Event class
  *
@@ -9,6 +10,7 @@
 
 namespace Racketmanager\Domain\Competition;
 
+use Racketmanager\Domain\Shared\Typed_Property_Hydrator;
 use Racketmanager\Domain\Value_Objects\Json_Encoder;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
@@ -448,36 +450,7 @@ class Event {
             if ( 'standings' === $key ) {
                 $this->$key = array_merge( $this->$key ?? array(), (array) $value );
             } else {
-                if ( property_exists( $this, $key ) ) {
-                    $rp   = new \ReflectionProperty( $this, $key );
-                    $type = $rp->getType();
-                    if ( $type instanceof \ReflectionNamedType ) {
-                        $typeName = $type->getName();
-                        if ( null === $value && ! $type->allowsNull() ) {
-                            continue;
-                        }
-                        if ( '' === $value ) {
-                            if ( 'int' === $typeName ) {
-                                $value = 0;
-                            } elseif ( 'float' === $typeName ) {
-                                $value = 0.0;
-                            } elseif ( 'bool' === $typeName ) {
-                                $value = false;
-                            } elseif ( 'array' === $typeName ) {
-                                $value = array();
-                            } elseif ( $type->allowsNull() && 'string' !== $typeName ) {
-                                $value = null;
-                            }
-                        } elseif ( 'int' === $typeName && is_numeric( $value ) ) {
-                            $value = (int) $value;
-                        } elseif ( 'float' === $typeName && is_numeric( $value ) ) {
-                            $value = (float) $value;
-                        } elseif ( 'bool' === $typeName && ( is_bool( $value ) || is_numeric( $value ) ) ) {
-                            $value = (bool) $value;
-                        }
-                    }
-                }
-                $this->$key = $value;
+                Typed_Property_Hydrator::assign( $this, $key, $value );
             }
         }
 
@@ -840,7 +813,7 @@ class Event {
                 $updates = true;
             }
             $settings->offset = $offset;
-            $this->offset     = $offset;
+            $this->offset     = (int) $offset;
         }
 
         if ( ! empty( $config->primary_league ) && (int) $config->primary_league > 0 ) {

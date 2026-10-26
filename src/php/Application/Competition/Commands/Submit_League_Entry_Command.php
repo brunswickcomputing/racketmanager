@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Competition\Commands;
 
-use Racketmanager\Domain\DTO\Competition\League_Entry_Request_DTO;
+use Racketmanager\Infrastructure\Wordpress\Request\Competition\League_Entry_Request_DTO;
 
 /**
  * Command DTO for submitting a league competition entry.

@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Tournament Tournaments Admin Controller (tournaments list)
  *

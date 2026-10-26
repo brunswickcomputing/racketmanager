@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Team_Service class
  *
@@ -261,7 +262,7 @@ class Team_Service implements Fixture_Team_Resolver_Interface {
             throw new Event_Not_Found_Exception( Util_Messages::event_not_found( $event_id ) );
         }
 
-        $match_day = is_null( $matchday ) ? '' : (string) Util_Lookup::get_match_day( $matchday );
+        $match_day = is_null( $matchday ) ? '' : Util_Lookup::get_match_day( (string) $matchday );
         $current   = $this->event_query_service->get_team_info( $event, $team_id );
         $updates   = false;
         $msg       = null;

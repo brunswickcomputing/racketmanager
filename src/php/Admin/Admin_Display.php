@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * RacketManager-Admin API: RacketManager-admin-display class
  *

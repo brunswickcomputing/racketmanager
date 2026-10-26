@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Club_Role Repository class
  *
@@ -193,7 +194,7 @@ class Club_Role_Repository implements Club_Role_Repository_Interface {
         $sql        = "SELECT `id` FROM $this->table_name " . $search;
         $club_roles = wp_cache_get( md5( $sql ), 'club-roles' );
         if ( ! $club_roles ) {
-            $club_roles = $this->build_club_roles( $sql, $group );
+            $club_roles = $this->build_club_roles( $sql, (string) $group );
         }
         return $club_roles;
     }
@@ -213,7 +214,7 @@ class Club_Role_Repository implements Club_Role_Repository_Interface {
             $sql
         ); // db call OK.
         foreach ( $roles as $club_role_ref ) {
-            $club_role = $this->find( $club_role_ref->id );
+            $club_role = $this->find( (int) $club_role_ref->id );
             if ( $club_role ) {
                 if ( $group ) {
                     if ( ! isset( $club_roles[ $club_role->role_id ] ) ) {
@@ -296,7 +297,7 @@ class Club_Role_Repository implements Club_Role_Repository_Interface {
                 $sql,
                 $params,
             );
-            return $this->wpdb->get_col($query);
+            return array_map( 'intval', $this->wpdb->get_col( $query ) );
         } else {
             return array();
         }

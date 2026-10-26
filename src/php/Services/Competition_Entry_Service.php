@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Competition_Entry_Service class
  *
@@ -13,10 +14,10 @@ use ArrayAccess;
 use Exception;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\DTO\Team\Team_Entry_DTO;
-use Racketmanager\Domain\DTO\Tournament\Tournament_Entry_Request_DTO;
+use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Entry_Request_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Entry_Response_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Invoice_Details_DTO;
-use Racketmanager\Domain\DTO\Tournament\Tournament_Partner_Request_DTO;
+use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Partner_Request_DTO;
 use Racketmanager\Domain\Enums\Team_Profile;
 use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Player\Player;
@@ -465,7 +466,7 @@ class Competition_Entry_Service {
                         continue;
                     }
 
-                    $existing_league_teams = $this->league_team_repository->find_by_event_id( $event_id, $request->season, (int) $team_id );
+                    $existing_league_teams = $this->league_team_repository->find_by_event_id( $event_id, '' === (string) $request->season ? null : (int) $request->season, (int) $team_id );
                     if ( ! empty( $existing_league_teams ) ) {
                         $active_league_ids = array();
                         foreach ( $existing_league_teams as $existing_league_team ) {
@@ -539,7 +540,7 @@ class Competition_Entry_Service {
                 foreach ( $courts_needed as $week ) {
                     foreach ( $week as $match_day => $match_day_value ) {
                         foreach ( $match_day_value as $match_time => $court_data ) {
-                            $validator = $validator->court_needs( $request->num_courts_available, $court_data, $match_day, $match_time );
+                            $validator = $validator->court_needs( $request->num_courts_available, $court_data, (string) $match_day, (string) $match_time );
                         }
                     }
                 }
@@ -677,7 +678,7 @@ class Competition_Entry_Service {
             $league_event_entry['event'] = $event_entry->name;
             $league_entries              = array();
             foreach ( $event_entry->team as $team_entry ) {
-                $match_day = Util_Lookup::get_match_day( $team_entry->match_day );
+                $match_day = Util_Lookup::get_match_day( (string) $team_entry->match_day );
 
                 if ( empty( $team_entry->id ) ) {
                     $team    = $this->club_service->create_team( $club_id, $event_entry->type );
@@ -685,7 +686,7 @@ class Competition_Entry_Service {
                 } else {
                     $team_id = $team_entry->id;
                 }
-                $league_teams = $this->league_team_repository->find_by_event_id( $event_id, $club_entry->season, $team_id );
+                $league_teams = $this->league_team_repository->find_by_event_id( $event_id, '' === (string) $club_entry->season ? null : (int) $club_entry->season, $team_id );
                 if ( $league_teams ) {
                     $active_rows         = array();
                     $pending_or_new_rows = array();
@@ -862,7 +863,7 @@ class Competition_Entry_Service {
             $validator   = $validator->season_set( $request->season, $competition->get_seasons() );
             $validator   = $validator->competition_open( $competition );
             $start_times = $this->get_start_times( $competition->settings );
-            $validator   = $validator->club( $request->club_id );
+            $validator   = $validator->club( null === $request->club_id ? null : (string) $request->club_id );
             $validator   = $validator->events_entry( $request->events_entered );
             foreach ( $request->events_entered as $event_id => $team ) {
                 try {
@@ -878,7 +879,7 @@ class Competition_Entry_Service {
                 $contactemail = $team->email ?? null;
                 $match_day    = $team->match_day ?? null;
                 $match_time   = $team->match_time ?? null;
-                $field_ref    = $event_id;
+                $field_ref    = (string) $event_id;
                 $validator    = $validator->events_has_teams( $team_id, $event_id );
                 if ( empty( $team_id ) ) {
                     continue;
@@ -958,7 +959,7 @@ class Competition_Entry_Service {
             $event_id     = $event_entry->id;
             $team         = $event_entry->team;
             $team_id      = $team->id;
-            $league_teams = $this->league_team_repository->find_by_event_id( $event_id, $club_entry->season, $team_id );
+            $league_teams = $this->league_team_repository->find_by_event_id( $event_id, '' === (string) $club_entry->season ? null : (int) $club_entry->season, $team_id );
             if ( ! $league_teams && ( empty( $team->league_id ) || (int) $team->league_id <= 0 ) ) {
                 throw new League_Not_Found_Exception( Util_Messages::league_not_found_for_event( (int) $event_id ) );
             }
@@ -972,7 +973,7 @@ class Competition_Entry_Service {
             $team         = $event_entry->team;
             $team_id      = $team->id;
             $match_day    = Util_Lookup::get_match_day( $team->match_day );
-            $league_teams = $this->league_team_repository->find_by_event_id( $event_id, $club_entry->season, $team_id );
+            $league_teams = $this->league_team_repository->find_by_event_id( $event_id, '' === (string) $club_entry->season ? null : (int) $club_entry->season, $team_id );
             if ( $league_teams ) {
                 foreach ( $league_teams as $league_team ) {
                     $league_team->set_captain( $team->captain_id );
@@ -1154,7 +1155,7 @@ class Competition_Entry_Service {
                 $validator = $validator->telephone( $request->phone );
             }
             $validator = $validator->email( $request->email, $player_id );
-            $validator = $validator->btm( $request->lta_number, $player_id );
+            $validator = $validator->btm( '' === $request->lta_number ? null : (int) $request->lta_number, $player_id );
             $club = null;
             if ( ! empty( $request->club_id ) ) {
                 try {
@@ -1197,7 +1198,7 @@ class Competition_Entry_Service {
                 }
                 $league_id        = (int) $league_id;
                 $entry->league_id = $league_id;
-                $player_team      = $this->league_team_repository->player_already_entered_league( $player_id, $league_id, $season );
+                $player_team      = $this->league_team_repository->player_already_entered_league( $player_id, $league_id, (int) $season );
                 if ( substr( $event->type, 1, 1 ) === 'D' ) {
                     $entry->is_doubles = true;
                     $err_field         = 'partner-' . $event_id;
@@ -1206,7 +1207,7 @@ class Competition_Entry_Service {
                     } else {
                         try {
                             $partner      = $this->player_service->get_player( $entry->partner_id );
-                            $partner_team = $this->league_team_repository->player_already_entered_league( $partner->get_id(), $league_id, $season );
+                            $partner_team = $this->league_team_repository->player_already_entered_league( $partner->get_id(), $league_id, (int) $season );
                             if ( ! empty( $partner_team ) && ( empty( $player_team->team_id ) || $player_team->team_id !== $partner_team->team_id ) ) {
                                 $validator->set_errors( $err_field, __( 'Partner is in another team in this event', 'racketmanager' ) );
                             } else {
@@ -1343,13 +1344,13 @@ class Competition_Entry_Service {
         }
 
         try {
-            $this->player_service->handle_tournament_entry_personal_information( $player_id, $tournament_entry->btm, $tournament_entry->contactno, $tournament_entry->contactemail );
+            $this->player_service->handle_tournament_entry_personal_information( $player_id, '' === (string) $tournament_entry->btm ? null : (int) $tournament_entry->btm, $tournament_entry->contactno, $tournament_entry->contactemail );
         } catch ( Player_Update_Exception|Exception $e ) {
             error_log( $e->getMessage() );
         }
 
         if ( ! empty( $tournament_entry->missed_events ) ) {
-            $entries_to_withdraw = $this->league_team_repository->find_player_teams_by_player_for_events( $player_id, $tournament_entry->missed_events, $tournament->season );
+            $entries_to_withdraw = $this->league_team_repository->find_player_teams_by_player_for_events( $player_id, $tournament_entry->missed_events, (int) $tournament->season );
             foreach ( $entries_to_withdraw as $entry_to_withdraw ) {
                 $entry_to_withdraw->set_entered_state( Team_Profile::WITHDRAWN );
                 $this->league_team_repository->save( $entry_to_withdraw );
@@ -1380,7 +1381,7 @@ class Competition_Entry_Service {
                 $league_team = new League_Team();
                 $league_team->set_team_id( $team_id );
                 $league_team->set_league_id( (int) $entry->league_id );
-                $league_team->set_season( $tournament->season );
+                $league_team->set_season( (int) $tournament->season );
                 $league_team->set_captain( $player_id );
                 $league_team->set_entered_state( Team_Profile::ACTIVE );
                 $this->league_team_repository->save( $league_team );

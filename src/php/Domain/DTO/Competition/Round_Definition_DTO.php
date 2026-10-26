@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Round_Definition_DTO API: Round_Definition_DTO class
  *

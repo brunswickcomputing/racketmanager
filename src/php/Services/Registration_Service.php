@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Registration_Service class
  *
@@ -13,12 +14,14 @@ use Racketmanager\Domain\Club\Club_Player;
 use Racketmanager\Domain\Club\Events\Club_Player_Registered_Event;
 use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
 use Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface;
+use Racketmanager\Domain\Ports\Clock_Interface;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Already_Registered_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Registration_Not_Found_Exception;
 use Racketmanager\Gateways\Mail\Mailer_Interface;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
+use Racketmanager\Infrastructure\Time\Wordpress_Clock;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Registration_Repository_Interface;
 use Racketmanager\Repositories\Club_Repository;
@@ -38,6 +41,7 @@ class Registration_Service {
     private ?RacketManager $racketmanager;
     private Mailer_Interface $mailer;
     private ?Domain_Event_Dispatcher_Interface $event_dispatcher;
+    private Clock_Interface $clock;
 
     /**
      * Constructor
@@ -49,8 +53,9 @@ class Registration_Service {
      * @param Player_Service $player_service
      * @param Mailer_Interface|null $mailer
      * @param Domain_Event_Dispatcher_Interface|null $event_dispatcher
+     * @param Clock_Interface|null $clock
      */
-    public function __construct( $plugin_instance, Registration_Repository_Interface $club_player_repository, Player_Repository $player_repository, Club_Repository $club_repository, Player_Service $player_service, ?Mailer_Interface $mailer = null, ?Domain_Event_Dispatcher_Interface $event_dispatcher = null ) {
+    public function __construct( $plugin_instance, Registration_Repository_Interface $club_player_repository, Player_Repository $player_repository, Club_Repository $club_repository, Player_Service $player_service, ?Mailer_Interface $mailer = null, ?Domain_Event_Dispatcher_Interface $event_dispatcher = null, ?Clock_Interface $clock = null ) {
         $this->racketmanager          = $plugin_instance;
         $this->club_player_repository = $club_player_repository;
         $this->player_repository      = $player_repository;
@@ -58,6 +63,7 @@ class Registration_Service {
         $this->player_service         = $player_service;
         $this->mailer                 = $mailer ?? new Wp_Mailer();
         $this->event_dispatcher       = $event_dispatcher;
+        $this->clock                  = $clock ?? new Wordpress_Clock();
     }
 
     /**
@@ -170,7 +176,7 @@ class Registration_Service {
         if ( ! $registration ) {
             throw new Registration_Not_Found_Exception( __( 'Registration not found to approve', 'racketmanager' ) );
         }
-        $registration->approve( $approving_user );
+        $registration->approve( $approving_user, $this->clock->now() );
         $this->club_player_repository->save( $registration );
     }
 
@@ -187,7 +193,7 @@ class Registration_Service {
         if ( ! $registration ) {
             throw new Registration_Not_Found_Exception( __( 'Registration not found to remove', 'racketmanager' ) );
         }
-        $registration->approve( $removing_user );
+        $registration->approve( $removing_user, $this->clock->now() );
         $this->club_player_repository->save( $registration );
     }
 

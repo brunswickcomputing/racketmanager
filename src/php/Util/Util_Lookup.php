@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * RacketManager_Util API: RacketManager_Util_Lookup class
  *
@@ -505,7 +506,7 @@ class Util_Lookup {
     public static function get_player_id( int|null|string $player_id = null ): ?string {
         global $wp;
         if ( $player_id ) {
-            return $player_id;
+            return (string) $player_id;
         }
         if ( ! empty( $_GET['player'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $player_id = un_seo_url( htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['player'] ) ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended

@@ -8,8 +8,8 @@ use Racketmanager\Application\Competition\Commands\Submit_Cup_Entry_Command;
 use Racketmanager\Application\Competition\Commands\Submit_Cup_Entry_Handler;
 use Racketmanager\Application\Competition\Commands\Submit_League_Entry_Command;
 use Racketmanager\Application\Competition\Commands\Submit_League_Entry_Handler;
-use Racketmanager\Domain\DTO\Competition\Cup_Entry_Request_DTO;
-use Racketmanager\Domain\DTO\Competition\League_Entry_Request_DTO;
+use Racketmanager\Infrastructure\Wordpress\Request\Competition\Cup_Entry_Request_DTO;
+use Racketmanager\Infrastructure\Wordpress\Request\Competition\League_Entry_Request_DTO;
 use Racketmanager\Services\Competition_Entry_Service;
 use WP_Error;
 

@@ -102,6 +102,9 @@ function log_trace( string $message = '' ): void {
 /**
  * Create SEO friendly string
  *
+ * @deprecated 10.1.0 Use \Racketmanager\Util\Util::seo_url() instead.
+ * @see \Racketmanager\Util\Util::seo_url()
+ *
  * @param string $string_field query string.
  */
 function seo_url( string $string_field ): string {
@@ -118,6 +121,9 @@ function seo_url( string $string_field ): string {
 }
 /**
  * Reverses SEO friendly string
+ *
+ * @deprecated 10.1.0 Use \Racketmanager\Util\Util::un_seo_url() instead.
+ * @see \Racketmanager\Util\Util::un_seo_url()
  *
  * @param string $string_field query string.
  */
@@ -178,6 +184,9 @@ function wp_get_current_url(): ?string {
 /**
  * Get Club object
  *
+ * @deprecated 10.1.0 Use the `club_repository` container entry (Club_Repository_Interface::find_by_id()) instead.
+ * @see \Racketmanager\Repositories\Interfaces\Club_Repository_Interface::find_by_id()
+ *
  * @param object|int|string|null $club Club ID or club object. Defaults to global $club.
  * @param string $search_term type of search.
  *
@@ -210,6 +219,9 @@ function get_club( object|int|string|null $club = null, string $search_term = 'i
 /**
  * Resolve the competition repository for procedural helpers, preferring the container.
  *
+ * @deprecated 10.1.0 Inject the `competition_repository` container entry instead.
+ * @see \Racketmanager\Repositories\Interfaces\Competition_Repository_Interface
+ *
  * @return Competition_Repository_Interface
  */
 function get_competition_repository_for_helpers(): Competition_Repository_Interface {
@@ -225,6 +237,7 @@ function get_competition_repository_for_helpers(): Competition_Repository_Interf
  * Get Competition object
  *
  * @deprecated 10.0.0 Use \Racketmanager\Services\Competition_Service::get_competition() instead.
+ * @see \Racketmanager\Services\Competition_Service::get_competition()
  *
  * @param Competition|int|string|null $competition Competition ID or competition object. Defaults to global $competition.
  * @param string|null                 $search_term type of search.
@@ -297,6 +310,9 @@ function get_competition( Competition|int|string|null $competition = null, ?stri
 /**
  * Resolve the event repository for procedural helpers, preferring the container.
  *
+ * @deprecated 10.1.0 Inject the `event_repository` container entry instead.
+ * @see \Racketmanager\Repositories\Interfaces\Event_Repository_Interface
+ *
  * @return Event_Repository_Interface
  */
 function get_event_repository_for_helpers() {
@@ -310,6 +326,9 @@ function get_event_repository_for_helpers() {
 
 /**
  * Get Event object
+ *
+ * @deprecated 10.1.0 Use the `event_repository` container entry (Event_Repository_Interface::find_by_id() / find_by_name()) instead.
+ * @see \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::find_by_id()
  *
  * @param object|int|string|null $event Event ID or event object. Defaults to global $event.
  * @param string $search_term type of search.
@@ -345,6 +364,9 @@ function get_event( object|int|string|null $event = null, string $search_term = 
 /**
  * Resolve the league repository for procedural helpers, preferring the container.
  *
+ * @deprecated 10.1.0 Inject the `league_repository` container entry instead.
+ * @see \Racketmanager\Repositories\Interfaces\League_Repository_Interface
+ *
  * @return League_Repository_Interface
  */
 function get_league_repository_for_helpers() {
@@ -358,6 +380,9 @@ function get_league_repository_for_helpers() {
 
 /**
  * Resolve the fixture repository for procedural helpers, preferring the container.
+ *
+ * @deprecated 10.1.0 Inject the `fixture_repository` container entry instead.
+ * @see \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface
  *
  * @return Fixture_Repository_Interface
  */
@@ -379,6 +404,9 @@ function get_fixture_repository_for_helpers() {
 /**
  * Resolve the club repository for procedural helpers, preferring the container.
  *
+ * @deprecated 10.1.0 Inject the `club_repository` container entry instead.
+ * @see \Racketmanager\Repositories\Interfaces\Club_Repository_Interface
+ *
  * @return Club_Repository_Interface
  */
 function get_club_repository_for_helpers(): Club_Repository_Interface {
@@ -392,6 +420,9 @@ function get_club_repository_for_helpers(): Club_Repository_Interface {
 
 /**
  * Resolve the league team repository for procedural helpers, preferring the container.
+ *
+ * @deprecated 10.1.0 Inject the `league_team_repository` container entry instead.
+ * @see \Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface
  *
  * @return League_Team_Repository_Interface
  */
@@ -411,6 +442,9 @@ function get_league_team_repository_for_helpers() {
 /**
  * Resolve the team repository for procedural helpers, preferring the container.
  *
+ * @deprecated 10.1.0 Inject the `team_repository` container entry instead.
+ * @see \Racketmanager\Repositories\Interfaces\Team_Repository_Interface
+ *
  * @return Team_Repository_Interface
  */
 function get_team_repository_for_helpers() {
@@ -424,6 +458,9 @@ function get_team_repository_for_helpers() {
 
 /**
  * Resolve the rubber repository for procedural helpers, preferring the container.
+ *
+ * @deprecated 10.1.0 Inject the `rubber_repository` container entry instead.
+ * @see \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface
  *
  * @return Rubber_Repository_Interface
  */
@@ -441,6 +478,9 @@ function get_rubber_repository_for_helpers() {
  *
  * Event no longer stores repositories, so code outside the container (legacy
  * admin screens, templates) runs Event data methods through this service.
+ *
+ * @deprecated 10.1.0 Inject the `event_query_service` container entry instead.
+ * @see \Racketmanager\Services\Competition\Event_Query_Service
  *
  * @return Event_Query_Service
  */
@@ -467,6 +507,9 @@ function get_event_query_service(): Event_Query_Service {
  * League no longer stores repositories, so code outside the container (legacy
  * admin screens, templates) runs League data methods through this service.
  *
+ * @deprecated 10.1.0 Inject the `league_query_service` container entry instead.
+ * @see \Racketmanager\Services\Competition\League_Query_Service
+ *
  * @return League_Query_Service
  */
 function get_league_query_service(): League_Query_Service {
@@ -488,6 +531,9 @@ function get_league_query_service(): League_Query_Service {
 
 /**
  * Get League object
+ *
+ * @deprecated 10.1.0 Use the `league_repository` container entry (League_Repository_Interface::find_by_id() / find_by_name()) instead.
+ * @see \Racketmanager\Repositories\Interfaces\League_Repository_Interface::find_by_id()
  *
  * @param object|int|string|null $league League ID or league object. Defaults to global $league.
  *
@@ -536,6 +582,7 @@ function get_league( object|int|string|null $league = null ): ?League {
  *
  * @deprecated 2.0.0 Returns \Racketmanager\Domain\Fixture\Fixture instead of legacy Racketmanager_Match.
  *                   Use \Racketmanager\Repositories\Fixture_Repository::find_by_id() instead.
+ * @see \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::find_by_id()
  *
  * @param object|int|null $match Match/Fixture ID or object. Defaults to global $match.
  *
@@ -576,6 +623,7 @@ function get_match( object|int|null $match = null ): ?Fixture {
  * Get Rubber object
  *
  * @deprecated 2.0.0 Use \Racketmanager\Repositories\Rubber_Repository::find_by_id() instead.
+ * @see \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::find_by_id()
  *
  * @param object|int|null $rubber Rubber ID or rubber object. Defaults to global $rubber.
  *
@@ -618,6 +666,9 @@ function get_rubber( object|int|null $rubber = null ): Rubber|null {
 /**
  * Get Tournament Entry object
  *
+ * @deprecated 10.1.0 Use the `tournament_entry_repository` container entry (Tournament_Entry_Repository_Interface::find_by_id()) instead.
+ * @see \Racketmanager\Repositories\Interfaces\Tournament_Entry_Repository_Interface::find_by_id()
+ *
  * @param object|int|string|null $tournament_entry tournament entry ID or tournament entry object. Defaults to global $tournament.
  * @param string $search_term search term - defaults to id.
  *
@@ -655,6 +706,9 @@ function get_tournament_entry( object|int|string|null $tournament_entry = null, 
 /**
  * Get Team object
  *
+ * @deprecated 10.1.0 Use the `team_repository` container entry (Team_Repository_Interface::find_by_id()) instead.
+ * @see \Racketmanager\Repositories\Interfaces\Team_Repository_Interface::find_by_id()
+ *
  * @param object|int|null|string $team Team ID or team object. Defaults to global $team.
  *
  * @return object|null Team|null
@@ -682,6 +736,9 @@ function get_team( object|int|string|null $team = null ): ?object {
 
 /**
  * Get Player object
+ *
+ * @deprecated 10.1.0 Use the `player_repository` container entry (Player_Repository_Interface::find()) instead.
+ * @see \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::find()
  *
  * @param int|string|null $player Player ID or player object. Defaults to global $player.
  * @param string $search_term search type term (defaults to id).
@@ -716,6 +773,9 @@ function get_player( int|string|object|null $player = null, string $search_term 
 
 /**
  * Get User object
+ *
+ * @deprecated 10.1.0 Use the `user_repository` container entry (User_Repository_Interface::find()) instead.
+ * @see \Racketmanager\Repositories\Interfaces\User_Repository_Interface::find()
  *
  * @param object|int|string|null $user User ID or user object. Defaults to global $user.
  *
@@ -764,6 +824,9 @@ function get_user( object|int|string|null $user = null ): ?object {
 
 /**
  * Wrap a domain User as a compatibility Legacy_User with an injected message repository.
+ *
+ * @deprecated 10.1.0 Use the `legacy_user_factory` container entry (Legacy_User_Factory::from_user()) instead.
+ * @see \Racketmanager\Infrastructure\Legacy\Legacy_User_Factory::from_user()
  */
 function to_legacy_user( User $user ): Legacy_User {
     global $racketmanager;
@@ -780,6 +843,9 @@ function to_legacy_user( User $user ): Legacy_User {
 
 /**
  * Get LeagueTeam object
+ *
+ * @deprecated 10.1.0 Use the `league_team_repository` container entry (League_Team_Repository_Interface::find()) instead.
+ * @see \Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface::find()
  *
  * @param object|int|null $league_team LeagueTeam ID or LeagueTeam object. Defaults to global $league_team.
  * @return object|null
@@ -810,6 +876,9 @@ function get_league_team( object|int|null $league_team = null ): League_Team|nul
 /**
  * Get a result check object
  *
+ * @deprecated 10.1.0 Use the `results_checker_repository` container entry (Results_Checker_Repository_Interface::find_by_id()) instead.
+ * @see \Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface::find_by_id()
+ *
  * @param int|null|object $results_check results_check ID or results_check object. Defaults to global $results_check.
  * @return object|null results_check|null
  */
@@ -839,6 +908,9 @@ function get_result_check( object|int|null $results_check = null ): ?object {
 
 /**
  * Get message object
+ *
+ * @deprecated 10.1.0 Use the `message_repository` container entry (Message_Repository_Interface::find()) instead.
+ * @see \Racketmanager\Repositories\Interfaces\Message_Repository_Interface::find()
  *
  * @param int|null $message message ID or message object. Defaults to global $message.
  *
@@ -879,6 +951,7 @@ function get_message( object|int|string|null $message = null ): Message|null {
  *
  * @return array
  * @deprecated 2.0.0 Use Fixture_Detail_Service::collect_fixture_player_ids().
+ * @see \Racketmanager\Services\Fixture\Fixture_Detail_Service::collect_fixture_player_ids()
  */
 function match_add_players( array $match_players, object $match ): array {
     trigger_error( 'match_add_players() is deprecated since version 2.0.0! Use Fixture_Detail_Service::collect_fixture_player_ids() instead.', E_USER_DEPRECATED ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error
@@ -894,6 +967,9 @@ function match_add_players( array $match_players, object $match ): array {
 }
 /**
  * Resolve the club role repository for procedural helpers, preferring the container.
+ *
+ * @deprecated 10.1.0 Inject the `club_role_repository` container entry instead.
+ * @see \Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface
  *
  * @return Club_Role_Repository_Interface
  */

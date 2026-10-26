@@ -20,6 +20,8 @@ use Racketmanager\Util\Util;
 /** @var string $match_type */
 /** @var object $is_update_allowed */
 $tournament_link = empty( $tournament ) ? null : ( new \Racketmanager\Presentation\Presenters\Tournament_Presenter() )->get_link( $tournament );
+$league_slug     = Util::seo_url( (string) ( $match->league->title ?? '' ) );
+$event_slug      = Util::seo_url( (string) ( $match->league->event->name ?? '' ) );
 $user_can_update     = $is_update_allowed->user_can_update;
 $user_type           = $is_update_allowed->user_type;
 $user_team           = $is_update_allowed->user_team;
@@ -148,7 +150,7 @@ if ( $match->is_walkover ) {
                                             $page_referrer = wp_get_referer();
                                             if ( ! $page_referrer ) {
                                                 $comp_type     = isset( $match->league->event->competition ) && method_exists( $match->league->event->competition, 'get_type' ) ? $match->league->event->competition->get_type() : ( $match->league->event->competition->type ?? 'league' );
-                                                $page_referrer = $comp_type . '/' . seo_url( $match->league->title ?? '' ) . '/' . ( $match->season ?? '' ) . '/';
+                                                $page_referrer = $comp_type . '/' . $league_slug . '/' . ( $match->season ?? '' ) . '/';
                                                 if ( ! empty( $tournament ) ) {
                                                     $page_referrer = $tournament_link . 'matches/';
                                                 }
@@ -407,8 +409,9 @@ if ( $match->is_walkover ) {
                                                                                             } elseif ( ! empty( $rubber->players[ $opponent ][ $player_number ] ) ) {
                                                                                                 $player_detail = $rubber->players[ $opponent ][ $player_number ];
                                                                                                 if ( empty( $player_detail->system_record ) ) {
+                                                                                                    $profile_url = $player_detail->profile_url ?? ( '/' . $match->league->event->competition->get_type() . 's/' . $event_slug . '/' . $match->season . '/player/' . Util::seo_url( (string) $player_detail->display_name ) . '/' );
                                                                                                     ?>
-                                                                                                    <a href="/<?php echo esc_attr( $match->league->event->competition->get_type() ); ?>s/<?php echo esc_attr( seo_url( $match->league->event->name ) ); ?>/<?php echo esc_attr( $match->season ); ?>/player/<?php echo esc_attr( seo_url( $player_detail->display_name ) ); ?>/">
+                                                                                                    <a href="<?php echo esc_attr( $profile_url ); ?>">
                                                                                                     <?php
                                                                                                 }
                                                                                                 ?>

@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Court_Schedule_DTO API: Court_Schedule_DTO class
  *

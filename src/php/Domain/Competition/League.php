@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * League API: League class
  *
@@ -10,6 +11,8 @@
 namespace Racketmanager\Domain\Competition;
 
 use Racketmanager\Domain\Competition\League_Team;
+use Racketmanager\Domain\Shared\Serialized_Column;
+use Racketmanager\Domain\Shared\Typed_Property_Hydrator;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Tournament\Championship;
 use stdClass;
@@ -624,36 +627,7 @@ class League {
             if ( 'standings' === $key ) {
                 $this->$key = array_merge( $this->$key ?? array(), (array) $value );
             } else {
-                if ( property_exists( $this, $key ) ) {
-                    $rp   = new \ReflectionProperty( $this, $key );
-                    $type = $rp->getType();
-                    if ( $type instanceof \ReflectionNamedType ) {
-                        $typeName = $type->getName();
-                        if ( null === $value && ! $type->allowsNull() ) {
-                            continue;
-                        }
-                        if ( '' === $value ) {
-                            if ( 'int' === $typeName ) {
-                                $value = 0;
-                            } elseif ( 'float' === $typeName ) {
-                                $value = 0.0;
-                            } elseif ( 'bool' === $typeName ) {
-                                $value = false;
-                            } elseif ( 'array' === $typeName ) {
-                                $value = array();
-                            } elseif ( $type->allowsNull() && 'string' !== $typeName ) {
-                                $value = null;
-                            }
-                        } elseif ( 'int' === $typeName && is_numeric( $value ) ) {
-                            $value = (int) $value;
-                        } elseif ( 'float' === $typeName && is_numeric( $value ) ) {
-                            $value = (float) $value;
-                        } elseif ( 'bool' === $typeName && ( is_bool( $value ) || is_numeric( $value ) ) ) {
-                            $value = (bool) $value;
-                        }
-                    }
-                }
-                $this->$key = $value;
+                Typed_Property_Hydrator::assign( $this, $key, $value );
             }
         }
 
@@ -683,7 +657,7 @@ class League {
         $this->groups          = trim( $this->groups ?? '' );
         $this->mode            = $this->event && isset( $this->event->competition->settings['mode'] ) ? $this->event->competition->settings['mode'] : ( $this->mode ?? 'default' );
         $this->num_sets        = (int) ( $this->event->num_sets ?? 3 );
-        $this->num_sets_to_win = floor( $this->num_sets / 2 ) + 1;
+        $this->num_sets_to_win = (int) floor( $this->num_sets / 2 ) + 1;
         $this->num_rubbers     = (int) ( $this->event->num_rubbers ?? 0 );
         $this->type            = $this->event->type ?? '';
         $comp_type             = $this->event && isset( $this->event->competition->type ) ? $this->event->competition->type : '';
@@ -979,7 +953,7 @@ class League {
         }
 
         $this->current_season = $data;
-        $this->num_match_days = $data['num_match_days'] ?? 0;
+        $this->num_match_days = (int) ( $data['num_match_days'] ?? 0 );
 
         $this->set_team_query_arg( 'season', $this->current_season['name'] );
         $this->set_match_query_arg( 'season', $this->current_season['name'] );
@@ -1040,10 +1014,10 @@ class League {
      */
     public function set_num_pages( string $which = 'matches' ): void {
         if ( 'matches' === $which ) {
-            $this->num_pages_matches = ( 0 === $this->num_matches_per_page ) ? 1 : ceil( $this->num_matches / $this->num_matches_per_page );
+            $this->num_pages_matches = ( 0 === $this->num_matches_per_page ) ? 1 : (int) ceil( $this->num_matches / $this->num_matches_per_page );
         }
         if ( 'teams' === $which ) {
-            $this->num_pages_teams = ( 0 === $this->num_teams_per_page ) ? 1 : ceil( $this->num_teams / $this->num_teams_per_page );
+            $this->num_pages_teams = ( 0 === $this->num_teams_per_page ) ? 1 : (int) ceil( $this->num_teams / $this->num_teams_per_page );
         }
     }
 
@@ -1434,7 +1408,12 @@ class League {
         $this->seasons[ $season ]['rounds'] = $rounds;
     }
 
-    /** Decode only legacy PHP-serialized arrays; leave JSON and malformed values unchanged. */
+    /**
+     * Decode only legacy PHP-serialized arrays; leave JSON and non-array values unchanged.
+     *
+     * Delegates to Serialized_Column; a malformed serialized array yields `false` (as `unserialize()` did)
+     * so callers casting with `(array)` and `is_array()` checks keep their historical behaviour.
+     */
     private static function decode_serialized_array( mixed $value ): mixed {
         if ( ! is_string( $value ) ) {
             return $value;
@@ -1443,7 +1422,8 @@ class League {
         if ( ! preg_match( '/^a:\d+:\{.*\}$/sD', $serialized ) ) {
             return $value;
         }
-        return @unserialize( $serialized );
+        $decoded = Serialized_Column::decode( $serialized );
+        return is_string( $decoded ) ? false : $decoded;
     }
 
 }

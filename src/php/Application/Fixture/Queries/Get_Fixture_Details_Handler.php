@@ -1,18 +1,19 @@
 <?php
+declare( strict_types=1 );
 
 namespace Racketmanager\Application\Fixture\Queries;
 
 use Racketmanager\Application\Fixture\DTOs\Fixture_Details_DTO;
-use Racketmanager\Application\Fixture\Services\Fixture_Detail_Service;
+use Racketmanager\Application\Fixture\Services\Fixture_Details_Assembler;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 
 class Get_Fixture_Details_Handler {
     private Fixture_Repository_Interface $repository;
-    private Fixture_Detail_Service $detail_service;
+    private Fixture_Details_Assembler $detail_service;
 
     public function __construct(
         Fixture_Repository_Interface $repository,
-        Fixture_Detail_Service $detail_service
+        Fixture_Details_Assembler $detail_service
     ) {
         $this->repository = $repository;
         $this->detail_service = $detail_service;

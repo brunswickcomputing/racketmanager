@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Charge_Details_DTO API: Charge_Details_DTO class
  *
@@ -35,11 +36,11 @@ class Charge_Details_DTO {
      * @param stdClass $data
      */
     public function __construct( stdClass $data ) {
-        $this->id               = $data->id;
-        $this->competition_id   = $data->competition_id;
-        $this->season           = $data->season;
-        $this->status           = $data->status;
-        $this->date             = $data->date;
+        $this->id               = (int) $data->id;
+        $this->competition_id   = (int) $data->competition_id;
+        $this->season           = (string) $data->season;
+        $this->status           = (string) $data->status;
+        $this->date             = (string) $data->date;
         $this->fee_competition  = isset( $data->fee_competition ) ? (string) $data->fee_competition : null;
         $this->fee_event        = isset( $data->fee_event ) ? (string) $data->fee_event : null;
         $this->charge_name      = $data->season . ' ' . $data->competition_name;

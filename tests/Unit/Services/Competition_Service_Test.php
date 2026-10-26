@@ -10,6 +10,8 @@ use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Season_Collection;
 use Racketmanager\Domain\Competition\Competition_Settings;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
+use Racketmanager\Exceptions\Season_Not_Found_Exception;
+use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Championship_Rounds_Request_DTO;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
@@ -342,5 +344,42 @@ class Competition_Service_Test extends TestCase {
 
         $this->assertSame( [ 11 ], array_map( static fn( $event ) => $event->id, $entry ) );
         $this->assertSame( [ 11 ], array_map( static fn( $event ) => $event->id, $frontend ) );
+    }
+
+    public function test_get_competition_by_season_accepts_int_season_against_string_keyed_seasons(): void {
+        $competition = $this->make_season_competition();
+        $this->competition_repository->method( 'find_by_id' )->willReturn( $competition );
+
+        $this->assertSame( $competition, $this->service->get_competition_by_season( 10, 2026 ) );
+        $this->assertSame( [ 'name' => '2026' ], $this->service->is_season_valid_for_competition( $competition, 2026 ) );
+    }
+
+    public function test_get_competition_by_season_throws_season_not_found_for_unknown_int_season(): void {
+        $competition = $this->make_season_competition();
+        $this->competition_repository->method( 'find_by_id' )->willReturn( $competition );
+
+        $this->expectException( Season_Not_Found_Exception::class );
+        $this->service->get_competition_by_season( 10, 2030 );
+    }
+
+    public function test_set_championship_round_dates_for_competition_season_accepts_string_season_and_int_request_season(): void {
+        $competition = $this->make_season_competition();
+        $this->competition_repository->method( 'find_by_id' )->willReturn( $competition );
+        $this->competition_repository->expects( $this->once() )->method( 'save' )->with( $competition )->willReturn( true );
+
+        $request = new Championship_Rounds_Request_DTO(
+            [
+                'season' => '2026',
+                'rounds' => [
+                    1 => [ 'key' => 'final', 'num_matches' => 1, 'round' => 1, 'match_date' => '2026-07-20' ],
+                    2 => [ 'key' => 'semi', 'num_matches' => 2, 'round' => 2, 'match_date' => '2026-07-13' ],
+                ],
+            ]
+        );
+
+        $this->assertTrue( $this->service->set_championship_round_dates_for_competition_season( 10, '2026', $request ) );
+        $season = $competition->get_season_by_name( '2026' );
+        $this->assertSame( [ '2026-07-13', '2026-07-20' ], $season['match_dates'] );
+        $this->assertSame( 2, $season['num_match_days'] );
     }
 }

@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Activator API: Activator class (PSR-4)
  *

@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Club_Role API: Club class
  *
@@ -8,6 +9,7 @@
  */
 namespace Racketmanager\Domain\Club;
 
+use Racketmanager\Domain\Shared\Typed_Property_Hydrator;
 use Racketmanager\Util\Util_Lookup;
 
 /**
@@ -64,10 +66,10 @@ class Club_Role {
     public function __construct( ?object $club_role = null ) {
         if ( ! is_null( $club_role ) ) {
             foreach ( get_object_vars( $club_role ) as $key => $value ) {
-                $this->$key = $value;
+                Typed_Property_Hydrator::assign( $this, $key, $value );
             }
             if ( !empty( $this->role_id ) ) {
-                $this->role = Util_Lookup::get_club_role( $this->role_id );
+                $this->role = Util_Lookup::get_club_role( (string) $this->role_id );
             } elseif( $this->role ) {
                 $this->role_id = Util_Lookup::get_club_role_ref( $this->role );
             }

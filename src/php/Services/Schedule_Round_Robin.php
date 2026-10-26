@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Schedule_Round_Robin API: stripe class
  *

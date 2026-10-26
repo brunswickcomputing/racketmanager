@@ -317,11 +317,11 @@ final class Layer_Rules {
             new Layer_Rule(
                 'domain.no_wordpress_functions',
                 'Domain code must not call WordPress runtime functions (wp_*, sanitize_*, esc_*, __/_e/_n, options, hooks, users, time, URLs, absint/maybe_unserialize/stripslashes_deep)',
-                'Backlog P1-4: move *_Request DTOs to Infrastructure/Wordpress/Request; replace mysql2date/current_time/__ with a Clock/translator port and maybe_unserialize/stripslashes_deep/sanitize_title with repository-side hydration (audit L3).',
+                'Parse HTTP input in Infrastructure/Wordpress/Request; take time from Domain/Ports/Clock_Interface; decode serialized columns with Domain/Shared/Serialized_Column, compare slugs with Domain/Shared/Slug and encode JSON with Domain/Value_Objects/Json_Encoder (audit L3, P1-4 done).',
                 [ self::DOMAIN ],
                 Rule_Kind::FORBIDDEN_FUNCTION_CALL,
                 self::WORDPRESS_FUNCTIONS,
-                Rule_Mode::RATCHET
+                Rule_Mode::STRICT
             ),
             new Layer_Rule(
                 'domain.no_util_static',
@@ -490,11 +490,11 @@ final class Layer_Rules {
             new Layer_Rule(
                 'all.strict_types',
                 'Every src/php file declares strict_types=1',
-                'Backlog P1-5: add `declare( strict_types=1 );` directory by directory and run the Unit suite after each (audit L12).',
+                'Add `declare( strict_types=1 );` directly after the opening `<?php` tag; coerce at the call site with explicit casts rather than loosening declared types (audit L12, P1-5 done).',
                 [ self::SRC ],
                 Rule_Kind::REQUIRE_STRICT_TYPES,
                 [],
-                Rule_Mode::RATCHET
+                Rule_Mode::STRICT
             ),
             new Layer_Rule(
                 'all.no_extract',
@@ -530,7 +530,7 @@ final class Layer_Rules {
                 [ self::TEMPLATES ],
                 Rule_Kind::FORBIDDEN_FUNCTION_CALL,
                 self::LEGACY_HELPERS,
-                Rule_Mode::RATCHET
+                Rule_Mode::STRICT
             ),
             new Layer_Rule(
                 'admin.no_template_require',

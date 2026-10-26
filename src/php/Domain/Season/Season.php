@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Season API: season class
  *
@@ -24,8 +25,8 @@ class Season {
         if ( is_null( $season ) ) {
             return;
         }
-        $this->id = $season->id;
-        $this->name = $season->name;
+        $this->id   = isset( $season->id ) ? (int) $season->id : null;
+        $this->name = (string) ( $season->name ?? '' );
     }
 
     public function get_name(): string {

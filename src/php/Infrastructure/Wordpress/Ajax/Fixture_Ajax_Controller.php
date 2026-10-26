@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * AJAX Front end fixture controller
  *

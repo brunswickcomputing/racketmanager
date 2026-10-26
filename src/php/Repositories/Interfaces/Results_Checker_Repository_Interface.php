@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Results_Checker_Repository_Interface interface
  *

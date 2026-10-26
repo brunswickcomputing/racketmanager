@@ -17,9 +17,9 @@ use Racketmanager\Application\Tournament\Commands\Withdraw_Tournament_Entry_Hand
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
-use Racketmanager\Domain\DTO\Tournament\Tournament_Entry_Request_DTO;
+use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Entry_Request_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Entry_Response_DTO;
-use Racketmanager\Domain\DTO\Tournament\Tournament_Partner_Request_DTO;
+use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Partner_Request_DTO;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Stripe_API_Exception;

@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Scheduled_Fixture_DTO API: Scheduled_Fixture_DTO class
  *

@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Tournament\Commands;
 
-use Racketmanager\Domain\DTO\Tournament\Tournament_Partner_Request_DTO;
+use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Partner_Request_DTO;
 
 /**
  * Command DTO for validating/submitting a tournament partner selection.

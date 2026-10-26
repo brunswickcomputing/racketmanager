@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Tournament_Entry_Response_DTO API: Tournament_Entry_Response_DTO class
  *

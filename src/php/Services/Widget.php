@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * RacketManagerWidget API: RacketManagerWidget class (moved to PSR-4)
  *

@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * RacketManager_Util API: RacketManager-util class
  *

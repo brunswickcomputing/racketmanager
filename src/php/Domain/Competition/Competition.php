@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Competition API: Competition class
  *
@@ -10,6 +11,7 @@
 namespace Racketmanager\Domain\Competition;
 
 use Racketmanager\Domain\DTO\Competition\Competition_Hydration_DTO;
+use Racketmanager\Domain\Shared\Slug;
 use Racketmanager\Domain\Value_Objects\Json_Encoder;
 use Racketmanager\Util\Util;
 use stdClass;
@@ -616,6 +618,7 @@ class Competition {
         $this->is_tournament   = $this->type->is_tournament();
         $this->is_team_entry   = $this->type->is_team_entry();
         $this->is_player_entry = $this->type->is_player_entry();
+        $this->entry_type      = (string) ( $this->settings->all()['entry_type'] ?? ( $this->is_team_entry ? 'team' : 'player' ) );
 
         if ( $this->is_cup ) {
             $this->finals = Competition_Policy::generate_cup_finals();
@@ -733,7 +736,7 @@ class Competition {
         $this->is_open     = 'open' === $this->current_phase;
         $this->is_pending  = 'pending' === $this->current_phase;
 
-        $this->num_match_days = $data['num_match_days'] ?? 0;
+        $this->num_match_days = (int) ( $data['num_match_days'] ?? 0 );
         $this->current_season = $data;
     }
 
@@ -928,6 +931,7 @@ class Competition {
             }
         } elseif ( is_string( $event ) && '' !== trim( $event ) ) {
             $clean_name = str_replace( '-', ' ', $event );
+            $event_slug = Slug::normalise( $event ); // '' when nothing slug-able survives: never a match.
             foreach ( $events as $candidate ) {
                 if (
                     $candidate instanceof Event &&
@@ -935,7 +939,7 @@ class Competition {
                         $candidate->name === ucwords( $event ) ||
                         strcasecmp( $candidate->name, $event ) === 0 ||
                         strcasecmp( $candidate->name, $clean_name ) === 0 ||
-                        ( function_exists( 'sanitize_title' ) && sanitize_title( $candidate->name ) === sanitize_title( $event ) )
+                        ( '' !== $event_slug && Slug::normalise( (string) $candidate->name ) === $event_slug )
                     )
                 ) {
                     $event_obj = $candidate;

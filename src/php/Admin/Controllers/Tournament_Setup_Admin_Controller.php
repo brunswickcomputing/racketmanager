@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Tournament Setup Admin Controller
  *
@@ -10,7 +11,7 @@ namespace Racketmanager\Admin\Controllers;
 
 use Racketmanager\Admin\Presenters\Admin_Error_Bag_Mapper;
 use Racketmanager\Admin\View_Models\Tournament_Setup_Page_View_Model;
-use Racketmanager\Domain\DTO\Tournament\Championship_Rounds_Request_DTO;
+use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Championship_Rounds_Request_DTO;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
@@ -242,7 +243,7 @@ readonly final class Tournament_Setup_Admin_Controller {
         $tournament  = $tournament_details->tournament;
         $competition = $tournament_details->competition;
 
-        $season           = $tournament->get_season();
+        $season            = (string) $tournament->get_season();
         $tournament_season = $competition->get_season_by_name( $season );
         $match_dates       = $tournament_season['match_dates'] ?? array();
 

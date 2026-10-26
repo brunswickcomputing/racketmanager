@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Team_Fixture_Settings_DTO API: Team_Fixture_Settings_DTO class
  *
@@ -35,7 +36,7 @@ class Team_Fixture_Settings_DTO {
         $this->captain_email      = $data->captain_email;
         $this->captain_contact_no = $data->captain_contact_no;
         $this->match_day          = $data->match_day;
-        $this->match_day_num      = Util_Lookup::get_match_day_number( $data->match_day );
+        $this->match_day_num      = Util_Lookup::get_match_day_number( (string) ( $data->match_day ?? '' ) );
         $this->match_time         = $data->match_time;
     }
 

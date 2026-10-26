@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Mapper: legacy Validator_* -> Error_Bag
  *

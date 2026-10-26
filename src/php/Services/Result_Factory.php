@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Result Factory: Result_Factory class
  *
@@ -73,8 +74,8 @@ class Result_Factory {
                 $status,
                 $custom
             );
-            $winner_id = $determined['winner_id'];
-            $loser_id  = $determined['loser_id'];
+            $winner_id = (int) $determined['winner_id'];
+            $loser_id  = (int) $determined['loser_id'];
         }
 
         return new Result(

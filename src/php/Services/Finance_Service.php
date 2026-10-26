@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Finance_Service class
  *
@@ -250,7 +251,7 @@ class Finance_Service {
         $club_events = array();
         $events      = $this->competition_service->get_events_for_competition( $charge->get_competition_id() );
         foreach ( $events as $event ) {
-            $teams     = $this->competition_service->get_teams_for_event( $event->get_id(), $charge->get_season(), $club->id );
+            $teams     = $this->competition_service->get_teams_for_event( $event->get_id(), null === $charge->get_season() ? null : (int) $charge->get_season(), $club->id );
             $num_teams = count( $teams );
             if ( $num_teams > 0 ) {
                 $currency          = $this->get_currency();
@@ -560,7 +561,7 @@ class Finance_Service {
     public function set_charge_used( string $key ): bool {
         $charge = $this->charge_repository->find_by_id( $key );
         if ( ! $charge ) {
-            throw new Charge_Not_Found_Exception( Util_Messages::charge_not_found( $key ) );
+            throw new Charge_Not_Found_Exception( Util_Messages::charge_not_found( is_numeric( $key ) ? (int) $key : null ) );
         }
         if ( $charge->is_final() ) {
             return false;

@@ -9,6 +9,10 @@ namespace Racketmanager;
 
 /** @var array  $teams */
 /** @var object $league */
+/** @var array  $crosstable_teams Hydrated League_Team rows in display order (pre-computed by Admin_League). */
+/** @var array  $crosstable_cells Score matrix keyed by [ row team id ][ column team id ] (pre-computed by Admin_League). */
+$crosstable_teams = $crosstable_teams ?? $teams;
+$crosstable_cells = $crosstable_cells ?? array();
 ?>
 <div class="container">
     <div class="table-responsive">
@@ -27,16 +31,16 @@ namespace Racketmanager;
             </thead>
             <tbody>
                 <?php
-                foreach ( $teams as $rank => $team ) {
-                    $team = get_league_team( $team );
+                foreach ( $crosstable_teams as $rank => $team ) {
                     ?>
                     <tr>
                         <th scope="row"><?php echo esc_html( $rank + 1 ); ?></th>
                         <td><?php echo esc_html( $team->title ); ?></td>
                         <?php
                         for ( $i = 1; $i <= $league->num_teams; $i++ ) {
+                            $column_team_id = isset( $crosstable_teams[ $i - 1 ] ) ? (int) $crosstable_teams[ $i - 1 ]->id : null;
                             ?>
-                            <td class="fixture"><?php echo \Racketmanager\get_league_query_service()->get_crosstable_field( $league, $team->id, $teams[ $i - 1 ]->id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+                            <td class="fixture"><?php echo $crosstable_cells[ (int) $team->id ][ $column_team_id ] ?? '&nbsp;'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
                             <?php
                         }
                         ?>

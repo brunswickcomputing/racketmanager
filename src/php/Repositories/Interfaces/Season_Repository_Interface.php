@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Season_Repository_Interface interface
  *

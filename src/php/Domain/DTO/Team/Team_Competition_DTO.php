@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Team_Competition_DTO API: Team_Competition_DTO class
  *

@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Message API: message class (moved to PSR-4)
  *
@@ -8,6 +9,8 @@
  */
 
 namespace Racketmanager\Domain\Communication;
+
+use Racketmanager\Domain\Shared\Typed_Property_Hydrator;
 
 /**
  * Class to implement the message object
@@ -76,7 +79,7 @@ class Message {
     public function __construct( ?object $message = null ) {
         if ( ! is_null( $message ) ) {
             foreach ( get_object_vars( $message ) as $key => $value ) {
-                $this->$key = $value;
+                Typed_Property_Hydrator::assign( $this, $key, $value );
             }
             if ( isset( $this->sender ) ) {
                 $sender           = $this->sender;

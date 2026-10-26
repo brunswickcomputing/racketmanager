@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 
 namespace Racketmanager\Services\Fixture;
 
@@ -6,9 +7,9 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Confirmation_Context;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Reset_Response;
-use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
-use Racketmanager\Domain\DTO\Fixture\Team_Result_Update_Request;
-use Racketmanager\Domain\DTO\Fixture\Team_Result_Confirmation_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Result_Update_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Team_Result_Update_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Team_Result_Confirmation_Request;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response;
 use Racketmanager\Domain\DTO\Fixture\Team_Result_Response;
 use Racketmanager\Domain\DTO\Player\Player_Warnings_Response;
@@ -1053,9 +1054,9 @@ class Fixture_Result_Manager {
         }
 
         if ( 'home' === $team && ! $fixture->get_home_approver() ) {
-            $fixture->set_home_approver( (string) $current_user_id );
+            $fixture->set_home_approver( (int) $current_user_id );
         } elseif ( 'away' === $team && ! $fixture->get_away_approver() ) {
-            $fixture->set_away_approver( (string) $current_user_id );
+            $fixture->set_away_approver( (int) $current_user_id );
         }
     }
 

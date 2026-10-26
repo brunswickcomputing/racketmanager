@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Tournament_Service class
  *
@@ -14,15 +15,15 @@ use Racketmanager\Admin\Presenters\Admin_Date_Presenter;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
 use Racketmanager\Domain\Finance\Charge;
 use Racketmanager\Domain\Competition\Competition;
-use Racketmanager\Domain\DTO\Tournament\Championship_Rounds_Request_DTO;
+use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Championship_Rounds_Request_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Details_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Event_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Event_Entry_DTO;
-use Racketmanager\Domain\DTO\Tournament\Tournament_Finals_Config_Request_DTO;
-use Racketmanager\Domain\DTO\Tournament\Tournament_Finals_Request_DTO;
-use Racketmanager\Domain\DTO\Tournament\Tournament_Information_Request_DTO;
+use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Finals_Config_Request_DTO;
+use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Finals_Request_DTO;
+use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Information_Request_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Player_DTO;
-use Racketmanager\Domain\DTO\Tournament\Tournament_Request_DTO;
+use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Request_DTO;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Tournament\Tournament;
@@ -221,7 +222,7 @@ class Tournament_Service {
     public function get_events_with_details_for_tournament( ?int $tournament_id ): array {
         $events = $this->tournament_repository->find_events_by_tournament_with_details( $tournament_id );
         foreach ( $events as $i => $event ) {
-            $event->draw_size = pow( 2, ceil( log( $event->num_teams, 2 ) ) );
+            $event->draw_size = pow( 2, ceil( log( (float) $event->num_teams, 2 ) ) );
             $events[ $i ]     = $event;
         }
 
@@ -304,7 +305,7 @@ class Tournament_Service {
         if ( is_wp_error( $validator ) ) {
             return $validator;
         }
-        $tournament->update_from_request( $tournament_request );
+        $tournament->update_from_request( $tournament_request->to_update_dto() );
         $charge = $this->set_tournament_fees( $tournament_request );
         try {
             $updates = $this->save_tournament_and_fees( $tournament, $charge );
@@ -1090,7 +1091,7 @@ class Tournament_Service {
         $leagues = $this->tournament_repository->find_leagues_by_event_for_tournament( $tournament->get_id() );
         $events  = array();
         foreach ( $leagues as $league ) {
-            $league->draw_size               = pow( 2, ceil( log( $league->total_entries, 2 ) ) );
+            $league->draw_size               = pow( 2, ceil( log( (float) $league->total_entries, 2 ) ) );
             $events[ $league->event_name ][] = $league;
         }
 
@@ -1220,7 +1221,7 @@ class Tournament_Service {
         $season  = (string) ( $post['season'] ?? ( $query['season'] ?? ( $league->season ?? '' ) ) );
         $event   = $this->get_draw_details_for_tournament( $tournament, $league->get_event_id() );
         $matches = array();
-        $teams   = $this->league_service->get_league_standings( $league->get_id(), $season );
+        $teams   = $this->league_service->get_league_standings( $league->get_id(), '' === $season ? null : (int) $season );
         $finals  = array();
 
         if ( $event ) {

@@ -22,7 +22,7 @@ use Racketmanager\Domain\Player\Player_Factory;
 use Racketmanager\Domain\Scoring\Set_Score;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Tournament\Tournament;
-use Racketmanager\Domain\DTO\Fixture\Fixture_Option_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Option_Request;
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use ReflectionClass;
 use Racketmanager\Gateways\Option\Option_Gateway_Interface;

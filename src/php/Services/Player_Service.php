@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Player__Service class
  *
@@ -367,7 +368,7 @@ class Player_Service {
             // if ( empty( $player->btm ) ) {
             //     $this->check_results_warning( 'btm' );
             // }
-            $player->set_btm( $btm );
+            $player->set_btm( (string) $btm );
             $updates['btm'] = true;
             $this->player_repository->update( $player, $updates );
 

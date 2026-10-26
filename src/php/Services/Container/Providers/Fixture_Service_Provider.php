@@ -12,7 +12,7 @@ use Racketmanager\Application\Matches\Queries\Get_Match_Header_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Match_Score_Handler;
 use Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface;
 use Racketmanager\Domain\Fixture\Events\Fixture_Result_Finalized_Event;
-use Racketmanager\Application\Fixture\Services\Fixture_Detail_Service as Application_Fixture_Detail_Service;
+use Racketmanager\Application\Fixture\Services\Fixture_Details_Assembler;
 use Racketmanager\Infrastructure\Persistence\Legacy_Fixture_Listing_Finder;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Fixture_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Fixture_Ajax_Controller;
@@ -196,7 +196,7 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
         $container->set( Pending_Result_Orchestration_Service::class, fn( Simple_Container $c ): Pending_Result_Orchestration_Service => $c->get( 'pending_result_orchestration_service' ) );
         $container->set( Pending_Result_Orchestrator_Interface::class, fn( Simple_Container $c ): Pending_Result_Orchestrator_Interface => $c->get( 'pending_result_orchestration_service' ) );
 
-        $container->set( 'application_fixture_detail_service', fn( Simple_Container $c ) => new Application_Fixture_Detail_Service(
+        $container->set( 'fixture_details_assembler', fn( Simple_Container $c ) => new Fixture_Details_Assembler(
             $c->get( 'league_repository' ),
             $c->get( 'event_repository' ),
             $c->get( 'competition_repository' ),
@@ -209,8 +209,10 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             $c->get( 'fixture_permission_service' ),
             $c->get( 'club_role_repository' )
         ) );
-        $container->set( Application_Fixture_Detail_Service::class, fn( Simple_Container $c ) => $c->get( 'application_fixture_detail_service' ) );
-        $container->set( 'domain_fixture_detail_service', fn( Simple_Container $c ) => $c->get( 'application_fixture_detail_service' ) );
+        $container->set( Fixture_Details_Assembler::class, fn( Simple_Container $c ) => $c->get( 'fixture_details_assembler' ) );
+        // Deprecated 10.1.0: former keys kept for backward compatibility; removed in v11.0.
+        $container->set( 'application_fixture_detail_service', fn( Simple_Container $c ) => $c->get( 'fixture_details_assembler' ) );
+        $container->set( 'domain_fixture_detail_service', fn( Simple_Container $c ) => $c->get( 'fixture_details_assembler' ) );
 
         $container->set( 'result_service', fn( Simple_Container $c ) => new Result_Service(
             $c->get( 'fixture_repository' ),
@@ -280,7 +282,7 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
         // Query Handlers
         $container->set( 'get_fixture_details_handler', fn( Simple_Container $c ) => new Get_Fixture_Details_Handler(
             $c->get( 'fixture_repository' ),
-            $c->get( 'application_fixture_detail_service' )
+            $c->get( 'fixture_details_assembler' )
         ) );
         $container->set( Get_Fixture_Details_Handler::class, fn( Simple_Container $c ) => $c->get( 'get_fixture_details_handler' ) );
 

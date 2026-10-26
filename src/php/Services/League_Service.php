@@ -1,8 +1,9 @@
 <?php
+declare( strict_types=1 );
 
 namespace Racketmanager\Services;
 
-use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Result_Update_Request;
 use Racketmanager\Domain\Enums\Team_Profile;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Team;

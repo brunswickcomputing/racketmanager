@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 
 namespace Racketmanager\Application\Account\Commands;
 
@@ -13,7 +14,7 @@ class Delete_Messages_Command {
     }
 
     public static function from_post( array $post, int $user_id ): self {
-        $message_type = isset( $post['message_type'] ) ? sanitize_text_field( wp_unslash( $post['message_type'] ) ) : null;
+        $message_type = isset( $post['message_type'] ) ? sanitize_text_field( wp_unslash( (string) $post['message_type'] ) ) : null;
 
         return new self(
             message_type: $message_type,

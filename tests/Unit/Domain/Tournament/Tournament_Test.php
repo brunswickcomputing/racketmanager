@@ -9,8 +9,9 @@ use Racketmanager\Domain\Competition\Competition_Factory;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\DTO\Competition\Competition_Hydration_DTO;
+use Racketmanager\Domain\DTO\Tournament\Tournament_Update_DTO;
 use Racketmanager\Domain\Tournament\Tournament;
-use Racketmanager\Domain\DTO\Tournament\Tournament_Request_DTO;
+use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Request_DTO;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
@@ -73,7 +74,8 @@ final class Tournament_Test extends TestCase {
             'grade'            => 'A',
             'num_entries'      => 32,
         ];
-        $request = new Tournament_Request_DTO($request_data);
+        $request = ( new Tournament_Request_DTO( $request_data ) )->to_update_dto();
+        $this->assertInstanceOf( Tournament_Update_DTO::class, $request );
 
         $tournament->update_from_request($request);
 

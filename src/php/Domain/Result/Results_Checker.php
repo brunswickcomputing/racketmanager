@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Results_Checker API: Results_Checker class
  *
@@ -9,7 +10,7 @@
 
 namespace Racketmanager\Domain\Result;
 
-use Racketmanager\Domain\DTOs\Results_Checker_Data;
+use Racketmanager\Domain\DTO\Result\Results_Checker_Data;
 use stdClass;
 
 /**
@@ -76,15 +77,29 @@ class Results_Checker {
             return;
         }
 
-        $this->id                = $data->id ?? 0;
-        $this->league_id         = $data->league_id ?? 0;
-        $this->match_id          = $data->match_id ?? 0;
-        $this->team_id           = $data->team_id ?? 0;
-        $this->player_id         = $data->player_id ?? null;
-        $this->rubber_id         = $data->rubber_id ?? null;
-        $this->description       = $data->description ?? '';
-        $this->status            = $data->status ?? null;
-        $this->updated_date      = $data->updated_date ?? null;
-        $this->updated_user      = $data->updated_user ?? null;
+        $this->id                = (int) ( $data->id ?? 0 );
+        $this->league_id         = (int) ( $data->league_id ?? 0 );
+        $this->match_id          = (int) ( $data->match_id ?? 0 );
+        $this->team_id           = (int) ( $data->team_id ?? 0 );
+        $this->player_id         = self::nullable_int( $data->player_id ?? null );
+        $this->rubber_id         = self::nullable_int( $data->rubber_id ?? null );
+        $this->description       = (string) ( $data->description ?? '' );
+        $this->status            = self::nullable_int( $data->status ?? null );
+        $this->updated_date      = isset( $data->updated_date ) ? (string) $data->updated_date : null;
+        $this->updated_user      = self::nullable_int( $data->updated_user ?? null );
+    }
+
+    /**
+     * Cast a database value to a nullable int (DB rows arrive as strings).
+     *
+     * @param mixed $value Raw value.
+     *
+     * @return int|null
+     */
+    private static function nullable_int( mixed $value ): ?int {
+        if ( null === $value || '' === $value ) {
+            return null;
+        }
+        return (int) $value;
     }
 }

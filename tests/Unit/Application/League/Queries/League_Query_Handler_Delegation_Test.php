@@ -243,6 +243,8 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 			->method( 'get_league_teams' )
 			->with( $league, [ 'orderby' => [ 'rank' => 'ASC' ] ] )
 			->willReturn( $teams );
+		// $league->teams stays empty (the mock does not populate it): no columns, hence no cell queries.
+		$league_query->expects( $this->never() )->method( 'get_crosstable_field' );
 
 		$handler = new Get_League_Crosstable_Handler(
 			$this->league_service( $league ),
@@ -255,6 +257,45 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 		$this->assertFalse( $vm->is_error() );
 		$this->assertSame( 'crosstable', $vm->template );
 		$this->assertSame( $teams, $vm->vars['teams'] );
+		$this->assertSame( [], $vm->vars['crosstable_columns'] );
+		$this->assertSame( [], $vm->vars['crosstable_cells'] );
+	}
+
+	public function test_crosstable_handler_precomputes_cells_for_every_row_and_column(): void {
+		$league       = $this->league();
+		$teams        = [
+			(object) [ 'id' => 101, 'title' => 'Westcliff 1', 'rank' => 1 ],
+			(object) [ 'id' => 202, 'title' => 'Leigh 2', 'rank' => 2 ],
+		];
+		// League order differs from the ranked order and carries a third team that has no ranked row.
+		$league_order = [ $teams[1], $teams[0], (object) [ 'id' => 303, 'title' => 'Thorpe 3', 'rank' => 3 ] ];
+		$league_query = $this->createMock( League_Query_Service::class );
+		$league_query->method( 'get_league_teams' )
+			->willReturnCallback( static function ( League $l ) use ( $teams, $league_order ): array {
+				$l->teams = $league_order;
+				return $teams;
+			} );
+		$league_query->expects( $this->exactly( 4 ) )
+			->method( 'get_crosstable_field' )
+			->willReturnCallback( static fn( League $l, int $team_id, int $opponent_id ): string => $team_id === $opponent_id ? '&nbsp;' : "{$team_id}v{$opponent_id}" );
+
+		$handler = new Get_League_Crosstable_Handler(
+			$this->league_service( $league ),
+			$this->template_renderer(),
+			$league_query
+		);
+
+		$vm = $handler->handle( new Get_League_Crosstable_Query( league_id: 7 ) );
+
+		// Columns follow the league order, capped to the number of ranked rows the template renders.
+		$this->assertSame( [ $teams[1], $teams[0] ], $vm->vars['crosstable_columns'] );
+		$this->assertSame(
+			[
+				101 => [ 202 => '101v202', 101 => '&nbsp;' ],
+				202 => [ 202 => '&nbsp;', 101 => '202v101' ],
+			],
+			$vm->vars['crosstable_cells']
+		);
 	}
 
 	public function test_last_5_handler_delegates_to_league_query_service(): void {

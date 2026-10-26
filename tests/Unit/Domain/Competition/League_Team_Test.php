@@ -55,6 +55,33 @@ class League_Team_Test extends TestCase {
         $this->assertSame( 'Team Alpha', $league_team->title );
     }
 
+    public function test_hydrates_serialized_custom_and_roster_columns(): void {
+        $row = (object) [
+            'id'             => 25,
+            'table_id'       => 500,
+            'team_id'        => 25,
+            'league_id'      => 3,
+            'season'         => '2026',
+            'roster'         => serialize( [ 77, 78 ] ),
+            'custom'         => serialize( [ 'add_points' => 2, 'title' => "O\\'Brien Park" ] ),
+            'points_plus'    => 10.0,
+            'points_minus'   => 2.0,
+            'points_2_plus'  => 5,
+            'points_2_minus' => 1,
+            'diff'           => 8,
+            'status'         => '',
+            'title'          => 'Team Alpha',
+        ];
+
+        $league_team = new League_Team( $row );
+
+        $this->assertSame( [ 77, 78 ], $league_team->roster );
+        $this->assertSame( [ 'add_points' => 2, 'title' => "O'Brien Park" ], $league_team->custom );
+        $this->assertSame( "O'Brien Park", $league_team->title ); // custom keys are merged over the row and unslashed.
+        $this->assertEqualsWithDelta( 2.0, $league_team->add_points, 0.0001 );
+        $this->assertEqualsWithDelta( 12.0, $league_team->points_plus, 0.0001 );
+    }
+
     public function test_factory_from_object_creates_pure_entity(): void {
         $row = (object) [
             'id'        => 25,

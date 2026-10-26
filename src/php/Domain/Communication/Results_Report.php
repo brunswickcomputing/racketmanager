@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Results_Report API: Results_Report class
  *
@@ -8,6 +9,8 @@
  */
 
 namespace Racketmanager\Domain\Communication;
+
+use Racketmanager\Domain\Value_Objects\Json_Encoder;
 
 /**
  * Class to implement the results report object
@@ -52,7 +55,7 @@ class Results_Report {
                 $this->data = json_decode( $this->result_object );
             }
             if ( ! isset( $this->result_object ) && isset( $this->data ) ) {
-                $this->result_object = wp_json_encode( $this->data );
+                $this->result_object = Json_Encoder::encode( $this->data );
             }
         }
     }

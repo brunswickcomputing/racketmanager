@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Tournament Contact Admin Controller
  *
@@ -11,7 +12,7 @@ namespace Racketmanager\Admin\Controllers;
 use Racketmanager\Admin\Presenters\Admin_Message_Mapper;
 use Racketmanager\Admin\View_Models\Tournament_Contact_Page_View_Model;
 use Racketmanager\Domain\DTO\Admin\Tournament_Contact_Action_Result_DTO;
-use Racketmanager\Domain\DTO\Tournament\Tournament_Contact_Request_DTO;
+use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Contact_Request_DTO;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Admin\Tournament\Tournament_Contact_Action_Dispatcher;

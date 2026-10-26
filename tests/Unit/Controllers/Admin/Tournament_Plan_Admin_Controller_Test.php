@@ -88,7 +88,7 @@ class Tournament_Plan_Admin_Controller_Test extends TestCase {
 
         $tournament_service->expects( self::once() )
             ->method( 'save_finals_plan_for_tournament' )
-            ->with( $tournament_id, self::isInstanceOf( \Racketmanager\Domain\DTO\Tournament\Tournament_Finals_Request_DTO::class ) )
+            ->with( $tournament_id, self::isInstanceOf( \Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Finals_Request_DTO::class ) )
             ->willReturn( true );
 
         $controller = $this->make_controller( $tournament_service, $guard );
@@ -174,7 +174,7 @@ class Tournament_Plan_Admin_Controller_Test extends TestCase {
 
         $tournament_service->expects( self::once() )
             ->method( 'set_finals_config_for_tournament' )
-            ->with( $tournament_id, self::isInstanceOf( \Racketmanager\Domain\DTO\Tournament\Tournament_Finals_Config_Request_DTO::class ) )
+            ->with( $tournament_id, self::isInstanceOf( \Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Finals_Config_Request_DTO::class ) )
             ->willReturn( true );
 
         $controller = $this->make_controller( $tournament_service, $guard );

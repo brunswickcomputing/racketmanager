@@ -1,20 +1,21 @@
 <?php
+declare( strict_types=1 );
 
 namespace Racketmanager\Infrastructure\Wordpress\Ajax;
 
 use Exception;
 use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Handler;
 use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Query;
-use Racketmanager\Domain\DTO\Fixture\Fixture_Date_Update_Request;
-use Racketmanager\Domain\DTO\Fixture\Fixture_Reset_Request;
-use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
-use Racketmanager\Domain\DTO\Fixture\Fixture_Status_Options_Request;
-use Racketmanager\Domain\DTO\Fixture\Fixture_Switch_Teams_Request;
-use Racketmanager\Domain\DTO\Fixture\Fixture_Option_Request;
-use Racketmanager\Domain\DTO\Fixture\Rubber_Status_Options_Request;
-use Racketmanager\Domain\DTO\Fixture\Fixture_Status_Update_Request;
-use Racketmanager\Domain\DTO\Fixture\Team_Result_Confirmation_Request;
-use Racketmanager\Domain\DTO\Fixture\Team_Result_Update_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Date_Update_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Reset_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Result_Update_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Status_Options_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Switch_Teams_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Option_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Rubber_Status_Options_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Status_Update_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Team_Result_Confirmation_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Team_Result_Update_Request;
 use Racketmanager\Domain\Fixture\Fixture_Time_Parser;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Fixture_Not_Found_Exception;

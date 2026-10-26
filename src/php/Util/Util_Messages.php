@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Util_Messages API: Util_Messages class
  *

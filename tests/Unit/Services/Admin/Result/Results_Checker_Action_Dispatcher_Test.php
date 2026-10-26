@@ -12,7 +12,7 @@ namespace Tests\Unit\Services\Admin\Result;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
-use Racketmanager\Domain\DTOs\Results_Checker_Data;
+use Racketmanager\Domain\DTO\Result\Results_Checker_Data;
 use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;

@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Event_Details_DTO API: Event_Details_DTO class
  *
@@ -8,6 +9,8 @@
  */
 
 namespace Racketmanager\Domain\DTO\Competition;
+
+use Racketmanager\Domain\Shared\Serialized_Column;
 
 /**
  * Class to implement the Event Details Data Transfer Object
@@ -24,7 +27,7 @@ class Event_Details_DTO {
     public mixed $age_offset;
 
     public function __construct( $data ) {
-        $settings          = maybe_unserialize( $data->settings );
+        $settings          = Serialized_Column::decode_array( $data->settings ?? null );
         $this->event_id    = (int) $data->event_id;
         $this->event_name  = $data->event_name;
         $this->format      = $data->format;

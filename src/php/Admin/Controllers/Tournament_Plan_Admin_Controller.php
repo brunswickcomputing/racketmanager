@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Tournament Plan Admin Controller
  *
@@ -11,8 +12,8 @@ namespace Racketmanager\Admin\Controllers;
 use Racketmanager\Admin\Presenters\Admin_Error_Bag_Mapper;
 use Racketmanager\Admin\Presenters\Admin_Plan_Presenter;
 use Racketmanager\Admin\View_Models\Tournament_Plan_Page_View_Model;
-use Racketmanager\Domain\DTO\Tournament\Tournament_Finals_Config_Request_DTO;
-use Racketmanager\Domain\DTO\Tournament\Tournament_Finals_Request_DTO;
+use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Finals_Config_Request_DTO;
+use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Finals_Request_DTO;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;

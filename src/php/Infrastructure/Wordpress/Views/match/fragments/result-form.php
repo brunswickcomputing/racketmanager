@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Template fragment for fixture result entry form
  *

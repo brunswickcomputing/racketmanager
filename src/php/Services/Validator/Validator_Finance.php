@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Entry Form Validation API: Finance validator class
  *

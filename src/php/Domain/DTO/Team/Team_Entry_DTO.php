@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Team_Entry_DTO API: Team_Entry_DTO class
  *

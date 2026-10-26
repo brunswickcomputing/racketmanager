@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Club_Service class
  *
@@ -238,7 +239,7 @@ class Club_Service {
      * @return bool|Club_Role
      */
     public function set_club_role( int $club_id, int $role_id, int $user_id ): bool|Club_Role {
-        $role_details = Util_Lookup::get_club_role( $role_id );
+        $role_details = Util_Lookup::get_club_role( (string) $role_id );
         if ( $role_details ) {
             if ( 1 === $role_details->limit ) {
                 $club_role = $this->club_role_repository->search( array( 'club' => $club_id, 'role' => $role_id ) );

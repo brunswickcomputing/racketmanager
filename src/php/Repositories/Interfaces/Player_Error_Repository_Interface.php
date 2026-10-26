@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Player_Error_Repository_Interface interface
  *

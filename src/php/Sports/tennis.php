@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Sports registrar for Tennis (PSR-4)
  *

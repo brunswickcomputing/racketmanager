@@ -19,6 +19,7 @@ final class Template_Tags_Decoupling_Test extends TestCase {
     }
 
     protected function tearDown(): void {
+        unset( $GLOBALS['wp_stubs_wp_get_referer'] );
         $this->restore_globals();
         parent::tearDown();
     }
@@ -130,6 +131,8 @@ final class Template_Tags_Decoupling_Test extends TestCase {
         $this->assertStringContainsString( 'Men Doubles', $list_out );
         $this->assertStringContainsString( 'Matches', $list_out );
         $this->assertStringContainsString( 'Leg 1', $list_out );
+        // Event link slug is computed in the template via Util::seo_url() (no legacy seo_url() helper).
+        $this->assertStringContainsString( 'href="/leagues/men-doubles/2026/"', $list_out );
 
         // 3. match-teams.php
         $match = $match_obj;
@@ -160,6 +163,8 @@ final class Template_Tags_Decoupling_Test extends TestCase {
         $this->assertStringContainsString( 'How does it work?', $result_out );
         $this->assertStringContainsString( 'Results', $result_out );
         $this->assertStringContainsString( 'Players', $result_out );
+        // No referrer: the cancel link falls back to <type>/<league slug>/<season>/ built with Util::seo_url().
+        $this->assertStringContainsString( 'id="cancelResults" href="league/division-1/2026/"', $result_out );
 
         // 5. forms/match-input.php
         $match = $match_obj;
@@ -176,5 +181,109 @@ final class Template_Tags_Decoupling_Test extends TestCase {
             $this->assertSame( '10.0.0', $entry['version'] );
             $this->assertStringContainsString( 'Orphan template', $entry['message'] );
         }
+    }
+
+    public function test_match_teams_result_view_mode_links_players_and_honours_referrer(): void {
+        $templates_dir = dirname( __DIR__, 2 ) . '/templates';
+
+        $competition = new class() {
+            public string $type = 'league';
+            public function get_type(): string {
+                return 'league';
+            }
+        };
+        $league      = (object) [
+            'id'              => 50,
+            'title'           => 'Division 1',
+            'is_championship' => false,
+            'num_sets'        => 3,
+            'scoring'         => 'S',
+            'event'           => (object) [
+                'name'        => 'Men Doubles',
+                'competition' => $competition,
+            ],
+        ];
+        $rubber      = (object) [
+            'id'            => 900,
+            'rubber_number' => 1,
+            'type'          => 'MS',
+            'winner_id'     => null,
+            'is_walkover'   => false,
+            'is_retired'    => false,
+            'is_abandoned'  => false,
+            'is_invalid'    => false,
+            'is_shared'     => false,
+            'walkover'      => null,
+            'retired'       => null,
+            'invalid'       => null,
+            'sets'          => [],
+            'players'       => [
+                'home' => [ 1 => (object) [ 'display_name' => "Chris O'Brien", 'class' => '', 'description' => '' ] ],
+                'away' => [ 1 => (object) [ 'display_name' => 'Pat Lee', 'class' => '', 'description' => '', 'profile_url' => '/players/pat-lee/' ] ],
+            ],
+        ];
+        $match_obj   = (object) [
+            'id'          => 100,
+            'season'      => '2026',
+            'home_team'   => '1',
+            'away_team'   => '2',
+            'num_rubbers' => 1,
+            'leg'         => null,
+            'final_round' => null,
+            'comments'    => [],
+            'league'      => $league,
+            'teams'       => [
+                'home' => (object) [ 'title' => 'Home Team' ],
+                'away' => (object) [ 'title' => 'Away Team' ],
+            ],
+        ];
+        $match       = new class( $match_obj, $rubber ) {
+            public int $id = 100;
+            public bool $is_walkover = false;
+            public bool $is_shared = false;
+            public bool $is_retired = false;
+            public function __construct( private object $orig, private object $rubber ) {}
+            public function get_rubbers(): array { return [ $this->rubber ]; }
+            public function __get( $name ) { return $this->orig->$name ?? null; }
+        };
+
+        // View mode (no update rights): player names are rendered as profile links.
+        $is_update_allowed = (object) [
+            'user_can_update'     => false,
+            'user_type'           => 'player',
+            'user_team'           => null,
+            'match_approval_mode' => false,
+            'match_update'        => false,
+            'message'             => 'not allowed',
+        ];
+        $home_club_player  = [ 'm' => [], 'f' => [] ];
+        $away_club_player  = [ 'm' => [], 'f' => [] ];
+        ob_start();
+        include $templates_dir . '/match-teams-result.php';
+        $view_out = ob_get_clean();
+
+        $this->assertStringContainsString( 'href="/leagues/men-doubles/2026/player/chris-obrien/"', $view_out );
+        $this->assertStringContainsString( "Chris O'Brien", $view_out );
+        $this->assertStringContainsString( 'href="/players/pat-lee/"', $view_out, 'A pre-supplied profile_url must be used as-is.' );
+        $this->assertStringNotContainsString( 'player/pat-lee/', $view_out );
+        $this->assertStringNotContainsString( 'id="cancelResults"', $view_out );
+
+        // Edit mode with a referrer: the cancel link uses wp_get_referer() rather than the computed league URL.
+        $GLOBALS['wp_stubs_wp_get_referer'] = 'https://example.test/leagues/division-1/2026/';
+        $is_update_allowed                  = (object) [
+            'user_can_update'     => true,
+            'user_type'           => 'admin',
+            'user_team'           => null,
+            'match_approval_mode' => false,
+            'match_update'        => true,
+            'message'             => 'allowed',
+        ];
+        ob_start();
+        include $templates_dir . '/match-teams-result.php';
+        $edit_out = ob_get_clean();
+
+        $this->assertStringContainsString( 'id="cancelResults" href="https://example.test/leagues/division-1/2026/"', $edit_out );
+        $this->assertStringNotContainsString( 'href="league/division-1/2026/"', $edit_out );
+        $this->assertStringNotContainsString( 'player/chris-obrien/', $edit_out, 'Edit mode renders selects, not profile links.' );
     }
 }

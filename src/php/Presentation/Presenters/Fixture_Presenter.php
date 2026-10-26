@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 
 namespace Racketmanager\Presentation\Presenters;
 
@@ -11,13 +12,13 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Header_Read_Model;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Result_Read_Model;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Status_Read_Model;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Switch_Teams_Read_Model;
-use Racketmanager\Domain\DTO\Fixture\Fixture_Date_Update_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Date_Update_Request;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
-use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
-use Racketmanager\Domain\DTO\Fixture\Fixture_Status_Update_Request;
-use Racketmanager\Domain\DTO\Fixture\Fixture_Switch_Teams_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Result_Update_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Status_Update_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Switch_Teams_Request;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response;
-use Racketmanager\Domain\DTO\Fixture\Fixture_Option_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Option_Request;
 use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
 use Racketmanager\Domain\Enums\Fixture_Reset_Status;
 use Racketmanager\Domain\Fixture\Fixture;
@@ -413,7 +414,15 @@ readonly class Fixture_Presenter {
     public function map_to_result_read_model(
         Fixture $fixture, Fixture_Update_Response $response, Fixture_Result_Update_Request $request
     ): Fixture_Result_Read_Model {
-        return new Fixture_Result_Read_Model( $this->get_update_message( $response ), $fixture->get_home_points(), $fixture->get_away_points(), $fixture->get_winner_id(), $request->sets );
+        $home_points = $fixture->get_home_points();
+        $away_points = $fixture->get_away_points();
+        return new Fixture_Result_Read_Model(
+            $this->get_update_message( $response ),
+            null === $home_points ? null : (int) $home_points,
+            null === $away_points ? null : (int) $away_points,
+            $fixture->get_winner_id(),
+            $request->sets
+        );
     }
 
     public function get_update_message( Fixture_Update_Response $response ): string {

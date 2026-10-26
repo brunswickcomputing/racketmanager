@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * WordPress admin action guard (nonce and capability)
  *

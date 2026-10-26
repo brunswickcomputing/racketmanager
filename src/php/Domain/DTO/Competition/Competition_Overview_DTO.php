@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Competition_Overview_DTO API: Competition_Overview_DTO class
  *

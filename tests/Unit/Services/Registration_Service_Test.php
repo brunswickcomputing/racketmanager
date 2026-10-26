@@ -18,6 +18,7 @@ use Racketmanager\Repositories\Interfaces\Registration_Repository_Interface;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
+use Racketmanager\Tests\Support\Fixed_Clock;
 
 final class Registration_Service_Test extends TestCase {
 
@@ -131,5 +132,53 @@ final class Registration_Service_Test extends TestCase {
         $this->assertSame( 20, $dispatched_events[0]->player_id );
         $this->assertSame( 1, $dispatched_events[0]->registered_by_user_id );
         $this->assertSame( 'approved', $dispatched_events[0]->status );
+    }
+
+    public function test_approve_registration_stamps_the_injected_clock_time(): void {
+        $registration = new Club_Player( (object) [ 'id' => 100, 'club_id' => 5, 'player_id' => 20, 'status' => 'pending' ] );
+
+        $club_player_repo = $this->createMock( Registration_Repository_Interface::class );
+        $club_player_repo->expects( $this->once() )->method( 'find' )->with( 100 )->willReturn( $registration );
+        $club_player_repo->expects( $this->once() )->method( 'save' )->with( $registration );
+
+        $service = $this->service_with_clock( $club_player_repo, new Fixed_Clock( '2026-03-01 12:34:56' ) );
+
+        $service->approve_registration( 100, 7 );
+
+        $this->assertSame( 'approved', $registration->get_status() );
+        $this->assertSame( 7, $registration->get_created_user() );
+        $this->assertSame( '2026-03-01 12:34:56', $registration->get_created_date() );
+    }
+
+    /**
+     * Legacy behaviour preserved: remove_registration() still routes through Club_Player::approve()
+     * (pre-10.1.0 logic, out of scope for the WordPress-purity refactor); only the timestamp source changed.
+     */
+    public function test_remove_registration_stamps_the_injected_clock_time(): void {
+        $registration = new Club_Player( (object) [ 'id' => 100, 'club_id' => 5, 'player_id' => 20, 'status' => 'pending' ] );
+
+        $club_player_repo = $this->createMock( Registration_Repository_Interface::class );
+        $club_player_repo->expects( $this->once() )->method( 'find' )->with( 100 )->willReturn( $registration );
+        $club_player_repo->expects( $this->once() )->method( 'save' )->with( $registration );
+
+        $service = $this->service_with_clock( $club_player_repo, new Fixed_Clock( '2026-07-15 08:00:00' ) );
+
+        $service->remove_registration( 100, 9 );
+
+        $this->assertSame( 9, $registration->get_created_user() );
+        $this->assertSame( '2026-07-15 08:00:00', $registration->get_created_date() );
+    }
+
+    private function service_with_clock( Registration_Repository_Interface $club_player_repo, Fixed_Clock $clock ): Registration_Service {
+        return new Registration_Service(
+            plugin_instance: $this->createStub( RacketManager::class ),
+            club_player_repository: $club_player_repo,
+            player_repository: $this->createStub( Player_Repository::class ),
+            club_repository: $this->createStub( Club_Repository::class ),
+            player_service: $this->createStub( Player_Service::class ),
+            mailer: $this->createStub( Mailer_Interface::class ),
+            event_dispatcher: null,
+            clock: $clock
+        );
     }
 }

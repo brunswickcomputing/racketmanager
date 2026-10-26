@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Club_Player Repository class
  *
@@ -186,7 +187,7 @@ class Registration_Repository implements Registration_Repository_Interface {
      * @return Club_Player|null
      */
     public function find( int $club_player_id ): ?Club_Player {
-        $key = md5( $club_player_id );
+        $key = md5( (string) $club_player_id );
         $row = wp_cache_get( $key, 'club_players' );
         if ( ! $row ) {
             $row = $this->wpdb->get_row(

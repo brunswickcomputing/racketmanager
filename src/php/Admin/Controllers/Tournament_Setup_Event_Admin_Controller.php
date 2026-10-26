@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Tournament Setup-Event Admin Controller
  *
@@ -124,8 +125,8 @@ readonly final class Tournament_Setup_Event_Admin_Controller {
             )
         );
 
-        $event_dtls       = $league->event->get_season_by_name( $season );
-        $competition_dtls = $league->event->competition->get_season_by_name( $season );
+        $event_dtls       = $league->event->get_season_by_name( (string) $season );
+        $competition_dtls = $league->event->competition->get_season_by_name( (string) $season );
         $match_dates      = empty( $event_dtls['match_dates'] )
             ? ( $competition_dtls['match_dates'] ?? array() )
             : $event_dtls['match_dates'];

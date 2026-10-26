@@ -32,6 +32,7 @@ if ( isset( $league->event->competition->type ) ) {
         : (string) $league->event->competition->type;
 }
 $event_name     = $league->event->name ?? ( $league->title ?? ( $league->name ?? '' ) );
+$event_slug     = Util::seo_url( (string) $event_name );
 $season_str     = (string) ( $season ?? '' );
 $home_team_name = is_object( $home_team ?? null ) ? ( $home_team->name ?? $home_team->title ?? '' ) : (string) ( $home_team ?? '' );
 $away_team_name = is_object( $away_team ?? null ) ? ( $away_team->name ?? $away_team->title ?? '' ) : (string) ( $away_team ?? '' );
@@ -41,7 +42,7 @@ $date_format    = $racketmanager->date_format ?? get_option( 'date_format', 'd/m
         <div class="module__content">
             <div class="module-container">
                 <div class="text-center">
-                    <a href="/<?php echo esc_attr( $competition_type ); ?>s/<?php echo esc_attr( seo_url( $event_name ) ); ?>/<?php echo esc_attr( $season_str ); ?>/">
+                    <a href="/<?php echo esc_attr( $competition_type ); ?>s/<?php echo esc_attr( $event_slug ); ?>/<?php echo esc_attr( $season_str ); ?>/">
                         <span class="nav-link__value"><?php echo esc_html( $event_name ); ?></span>
                     </a>
                     <div class="text-center mb-3">

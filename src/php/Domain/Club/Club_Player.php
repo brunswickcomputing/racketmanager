@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Club_Player API: Club class
  *
@@ -8,12 +9,16 @@
  */
 namespace Racketmanager\Domain\Club;
 
+use DateTimeImmutable;
+use Racketmanager\Domain\Shared\Typed_Property_Hydrator;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 
 /**
  * Class to implement the Club_Player object
  */
 class Club_Player {
+    /** MySQL datetime format used for the approval / removal timestamps (matches `current_time( 'mysql' )`). */
+    private const string DATE_FORMAT = 'Y-m-d H:i:s';
     /**
      * Id
      *
@@ -95,7 +100,7 @@ class Club_Player {
     public function __construct( ?object $club_player = null ) {
         if ( ! is_null( $club_player ) ) {
             foreach ( get_object_vars( $club_player ) as $key => $value ) {
-                $this->$key = $value;
+                Typed_Property_Hydrator::assign( $this, $key, $value );
             }
         }
     }
@@ -235,32 +240,34 @@ class Club_Player {
     /**
      * Approve registration
      *
-     * @param int $user_id
+     * @param int               $user_id approving user.
+     * @param DateTimeImmutable $now     approval time (site-local, see Clock_Interface).
      *
      * @return void
      */
-    public function approve( int $user_id ): void {
-        if ($this->status !== 'pending') {
-            throw new Invalid_Status_Exception( __('Registration is not pending approval', 'racketmanager' ) );
+    public function approve( int $user_id, DateTimeImmutable $now ): void {
+        if ( 'pending' !== $this->status ) {
+            throw new Invalid_Status_Exception( 'Registration is not pending approval' );
         }
         $this->status       = 'approved';
-        $this->created_date = current_time('mysql');
+        $this->created_date = $now->format( self::DATE_FORMAT );
         $this->created_user = $user_id;
     }
 
     /**
      * Remove registration
      *
-     * @param int $user_id
+     * @param int               $user_id removing user.
+     * @param DateTimeImmutable $now     removal time (site-local, see Clock_Interface).
      *
      * @return void
      */
-    public function remove( int $user_id): void {
-        if ($this->status === 'removed') {
-            throw new Invalid_Status_Exception(__('Registration is already removed', 'racketmanager' ) );
+    public function remove( int $user_id, DateTimeImmutable $now ): void {
+        if ( 'removed' === $this->status ) {
+            throw new Invalid_Status_Exception( 'Registration is already removed' );
         }
         $this->status       = 'removed';
-        $this->removed_date = current_time('mysql');
+        $this->removed_date = $now->format( self::DATE_FORMAT );
         $this->removed_user = $user_id;
     }
 }

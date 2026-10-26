@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Tournament API: tournament class
  *
@@ -10,7 +11,7 @@ namespace Racketmanager\Domain\Tournament;
 
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Hydration_DTO;
-use Racketmanager\Domain\DTO\Tournament\Tournament_Request_DTO;
+use Racketmanager\Domain\DTO\Tournament\Tournament_Update_DTO;
 use Racketmanager\Domain\Value_Objects\Date_Range;
 use Racketmanager\Util\Util;
 use stdClass;
@@ -453,7 +454,7 @@ class Tournament {
     }
 
     public function get_season(): int {
-        return $this->season;
+        return (int) $this->season;
     }
 
     public function set_season( ?string $season ): void {
@@ -729,13 +730,13 @@ class Tournament {
     }
 
     /**
-     * Update tournament state from a Request DTO.
+     * Update tournament state from already-sanitised request values.
      *
-     * @param Tournament_Request_DTO $request The request DTO containing updated data.
+     * @param Tournament_Update_DTO $request The update DTO containing the new attribute values.
      *
      * @return self
      */
-    public function update_from_request( Tournament_Request_DTO $request ): self {
+    public function update_from_request( Tournament_Update_DTO $request ): self {
         $this->set_name( $request->name );
         $this->set_competition_id( $request->competition_id );
         $this->set_season( $request->season );

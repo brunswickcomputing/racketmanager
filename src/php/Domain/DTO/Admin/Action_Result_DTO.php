@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Standard admin action result DTO
  *

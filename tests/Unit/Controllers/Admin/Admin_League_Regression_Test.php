@@ -81,6 +81,102 @@ final class Admin_League_Regression_Test extends TestCase {
 		$this->assertInstanceOf( Event_Query_Service::class, $reflection->invoke( $screen ) );
 	}
 
+	public function test_crosstable_teams_are_hydrated_and_cells_precomputed_for_the_template(): void {
+		$hydrated        = new League_Team( (object) array( 'id' => 22, 'title' => 'Leigh 2' ) );
+		$already_entity  = new League_Team( (object) array( 'id' => 11, 'title' => 'Westcliff 1' ) );
+		$raw_row         = (object) array( 'id' => 22, 'table_id' => 22, 'title' => 'Leigh 2' );
+		$league          = $this->createStub( \Racketmanager\Domain\Competition\League::class );
+		$league->id      = 7;
+
+		$league_team_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface::class );
+		$league_team_repository->expects( self::once() )->method( 'hydrate' )->with( $raw_row )->willReturn( $hydrated );
+
+		$league_query_service = $this->createMock( League_Query_Service::class );
+		$league_query_service->expects( self::exactly( 4 ) )
+			->method( 'get_crosstable_field' )
+			->willReturnCallback( static fn( $l, int $team_id, int $opponent_id ): string => $team_id === $opponent_id ? '&nbsp;' : "{$team_id}v{$opponent_id}" );
+
+		$this->container->set( 'league_team_repository', fn() => $league_team_repository );
+		$screen = new Admin_League( $this->plugin, null, null, $league_query_service );
+
+		$hydrate = new \ReflectionMethod( $screen, 'hydrate_crosstable_teams' );
+		$teams   = $hydrate->invoke( $screen, array( $already_entity, $raw_row, 'not-a-team' ) );
+		$this->assertSame( array( $already_entity, $hydrated ), $teams );
+
+		$build = new \ReflectionMethod( $screen, 'build_crosstable_cells' );
+		$this->assertSame(
+			array(
+				11 => array( 11 => '&nbsp;', 22 => '11v22' ),
+				22 => array( 11 => '22v11', 22 => '&nbsp;' ),
+			),
+			$build->invoke( $screen, $league, $teams )
+		);
+		$this->assertSame( array(), $this->warnings );
+	}
+
+	/**
+	 * Controller-to-template contract: display_league_page() hands the hydrated teams and the
+	 * pre-computed score matrix to templates/admin/league/crosstable.php (which no longer calls
+	 * get_league_team()/get_league_query_service()).
+	 *
+	 * Runs in its own process because show-league.php includes its tab partials with require_once.
+	 */
+	#[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
+	#[\PHPUnit\Framework\Attributes\PreserveGlobalState( false )]
+	public function test_display_league_page_renders_precomputed_crosstable_for_non_championship_league(): void {
+		$_GET        = array( 'league_id' => '42', 'season' => '2026', 'tab' => 'crosstable' );
+		$competition = Competition_Test_Factory::create( id: 1, name: 'Premier League', type: Competition_Type::LEAGUE );
+		$event       = new \Racketmanager\Domain\Competition\Event(
+			(object) array(
+				'id'      => 93,
+				'name'    => 'Mixed Doubles',
+				'seasons' => array( '2026' => array( 'name' => '2026' ) ),
+			),
+			$competition
+		);
+		$league      = new \Racketmanager\Domain\Competition\League( (object) array( 'id' => 42, 'title' => 'Division 1' ), $event );
+		$league->set_season( '2026' );
+		$league->num_teams = 2;
+		$GLOBALS['wp_stubs_leagues'][42] = $league;
+
+		$westcliff = new League_Team( $this->league_table_row( 11, 'Westcliff 1', 1 ) );
+		$raw_leigh = $this->league_table_row( 22, 'Leigh 2', 2 );
+		$leigh     = new League_Team( $this->league_table_row( 22, 'Leigh 2', 2 ) );
+
+		$league_team_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface::class );
+		$league_team_repository->expects( self::once() )->method( 'hydrate' )->with( $raw_leigh )->willReturn( $leigh );
+		$this->container->set( 'league_team_repository', fn() => $league_team_repository );
+
+		$league_query_service = $this->createMock( League_Query_Service::class );
+		$league_query_service->method( 'get_league_teams' )->willReturnCallback(
+			static function ( object $l ) use ( $westcliff, $raw_leigh ): array {
+				$l->teams = array( $westcliff, $raw_leigh );
+				return $l->teams;
+			}
+		);
+		$league_query_service->method( 'get_matches' )->willReturn( array() );
+		$league_query_service->expects( self::exactly( 4 ) )
+			->method( 'get_crosstable_field' )
+			->with( $league, self::anything(), self::anything() )
+			->willReturnCallback( static fn( $l, int $team_id, int $opponent_id ): string => $team_id === $opponent_id ? '&nbsp;' : "{$team_id}v{$opponent_id}" );
+
+		$this->screen = new Admin_League( $this->plugin, null, null, $league_query_service );
+
+		ob_start();
+		try {
+			$this->screen->display_league_page();
+			$output = (string) ob_get_contents();
+		} finally {
+			ob_end_clean();
+		}
+
+		$this->assertSame( array(), $this->warnings );
+		$this->assertStringContainsString( "activaTab('crosstable')", $output );
+		$this->assertStringContainsString( 'aria-describedby="Crosstable Division 1"', $output );
+		$this->assertMatchesRegularExpression( '/<th scope="row">1<\/th>\s*<td>Westcliff 1<\/td>\s*<td class="fixture">&nbsp;<\/td>\s*<td class="fixture">11v22<\/td>/', $output );
+		$this->assertMatchesRegularExpression( '/<th scope="row">2<\/th>\s*<td>Leigh 2<\/td>\s*<td class="fixture">22v11<\/td>\s*<td class="fixture">&nbsp;<\/td>/', $output );
+	}
+
 	public function test_display_match_page_with_missing_league_shows_not_found_message(): void {
 		$_GET = array( 'league_id' => '999', 'season' => '2026' );
 
@@ -335,6 +431,34 @@ final class Admin_League_Regression_Test extends TestCase {
 
 		$this->assertSame( array(), $this->warnings );
 		$this->assertStringContainsString( 'Legacy Team has withdrawn', $output );
+	}
+
+	/**
+	 * Minimal league-table row (the standings partial reads every column).
+	 */
+	private function league_table_row( int $id, string $title, int $rank ): \stdClass {
+		return (object) array(
+			'table_id'      => $id,
+			'id'            => $id,
+			'title'         => $title,
+			'profile'       => 0,
+			'rank'          => $rank,
+			'old_rank'      => $rank,
+			'points_plus'   => 0,
+			'points_minus'  => 0,
+			'add_points'    => 0,
+			'done_matches'  => 0,
+			'won_matches'   => 0,
+			'draw_matches'  => 0,
+			'lost_matches'  => 0,
+			'status'        => '',
+			'group'         => '',
+			'rating'        => null,
+			'games_won'     => 0,
+			'games_allowed' => 0,
+			'sets_won'      => 0,
+			'sets_allowed'  => 0,
+		);
 	}
 
 	/**

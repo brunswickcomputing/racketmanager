@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Players_List_DTO API: Players_List_DTO class
  *
@@ -13,8 +14,6 @@ use Racketmanager\Util\Util;
 use function class_exists;
 use function function_exists;
 use function is_array;
-use function sanitize_title;
-use function Racketmanager\seo_url;
 
 /**
  * Class to implement the Players List Data Transfer Object

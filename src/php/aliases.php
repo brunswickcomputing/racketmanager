@@ -56,6 +56,35 @@ $aliases = [
     \Racketmanager\Application\Club\Commands\Set_Club_Role_Command::class       => 'Racketmanager\Domain\DTO\Club\Set_Club_Role_Command',
     \Racketmanager\Application\Club\Commands\Update_Club_Command::class         => 'Racketmanager\Domain\DTO\Club\Update_Club_Command',
 
+    // Naming-collision fixes (10.1.0)
+    \Racketmanager\Application\Fixture\Services\Fixture_Details_Assembler::class => 'Racketmanager\Application\Fixture\Services\Fixture_Detail_Service',
+    \Racketmanager\Domain\DTO\Result\Results_Checker_Data::class               => 'Racketmanager\Domain\DTOs\Results_Checker_Data',
+
+    // Relocated request DTOs (10.1.0)
+    \Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Date_Update_Request::class => 'Racketmanager\Domain\DTO\Fixture\Fixture_Date_Update_Request',
+    \Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Option_Request::class => 'Racketmanager\Domain\DTO\Fixture\Fixture_Option_Request',
+    \Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Reset_Request::class => 'Racketmanager\Domain\DTO\Fixture\Fixture_Reset_Request',
+    \Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Result_Update_Request::class => 'Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request',
+    \Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Status_Options_Request::class => 'Racketmanager\Domain\DTO\Fixture\Fixture_Status_Options_Request',
+    \Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Status_Update_Request::class => 'Racketmanager\Domain\DTO\Fixture\Fixture_Status_Update_Request',
+    \Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Switch_Teams_Request::class => 'Racketmanager\Domain\DTO\Fixture\Fixture_Switch_Teams_Request',
+    \Racketmanager\Infrastructure\Wordpress\Request\Fixture\Rubber_Status_Options_Request::class => 'Racketmanager\Domain\DTO\Fixture\Rubber_Status_Options_Request',
+    \Racketmanager\Infrastructure\Wordpress\Request\Fixture\Team_Result_Confirmation_Request::class => 'Racketmanager\Domain\DTO\Fixture\Team_Result_Confirmation_Request',
+    \Racketmanager\Infrastructure\Wordpress\Request\Fixture\Team_Result_Update_Request::class => 'Racketmanager\Domain\DTO\Fixture\Team_Result_Update_Request',
+    \Racketmanager\Infrastructure\Wordpress\Request\Tournament\Championship_Rounds_Request_DTO::class => 'Racketmanager\Domain\DTO\Tournament\Championship_Rounds_Request_DTO',
+    \Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Contact_Request_DTO::class => 'Racketmanager\Domain\DTO\Tournament\Tournament_Contact_Request_DTO',
+    \Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Entry_Request_DTO::class => 'Racketmanager\Domain\DTO\Tournament\Tournament_Entry_Request_DTO',
+    \Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Finals_Config_Request_DTO::class => 'Racketmanager\Domain\DTO\Tournament\Tournament_Finals_Config_Request_DTO',
+    \Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Finals_Request_DTO::class => 'Racketmanager\Domain\DTO\Tournament\Tournament_Finals_Request_DTO',
+    \Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Information_Request_DTO::class => 'Racketmanager\Domain\DTO\Tournament\Tournament_Information_Request_DTO',
+    \Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Partner_Request_DTO::class => 'Racketmanager\Domain\DTO\Tournament\Tournament_Partner_Request_DTO',
+    \Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Request_DTO::class => 'Racketmanager\Domain\DTO\Tournament\Tournament_Request_DTO',
+    \Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Payment_Command::class => 'Racketmanager\Domain\DTO\Tournament\Tournament_Payment_Command',
+    \Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Withdrawal_Command::class => 'Racketmanager\Domain\DTO\Tournament\Tournament_Withdrawal_Command',
+    \Racketmanager\Infrastructure\Wordpress\Request\Competition\Cup_Entry_Request_DTO::class => 'Racketmanager\Domain\DTO\Competition\Cup_Entry_Request_DTO',
+    \Racketmanager\Infrastructure\Wordpress\Request\Competition\League_Entry_Request_DTO::class => 'Racketmanager\Domain\DTO\Competition\League_Entry_Request_DTO',
+    \Racketmanager\Infrastructure\Wordpress\Request\Player\Search_Players_Command::class => 'Racketmanager\Domain\DTO\Player\Search_Players_Command',
+
 ];
 
 foreach ( $aliases as $target => $alias ) {

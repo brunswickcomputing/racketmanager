@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Charges_With_Totals_DTO API: Charges_With_Totals_DTO class
  *

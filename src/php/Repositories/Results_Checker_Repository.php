@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Results_Checker_Repository class
  *
@@ -10,7 +11,7 @@
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Result\Results_Checker;
-use Racketmanager\Domain\DTOs\Results_Checker_Data;
+use Racketmanager\Domain\DTO\Result\Results_Checker_Data;
 use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
 use wpdb;
 

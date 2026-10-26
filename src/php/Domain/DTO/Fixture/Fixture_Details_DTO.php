@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Fixture_Details_DTO API: Fixture_Details_DTO class
  *

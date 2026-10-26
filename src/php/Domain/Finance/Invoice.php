@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Invoice API: invoice class (moved to PSR-4)
  *

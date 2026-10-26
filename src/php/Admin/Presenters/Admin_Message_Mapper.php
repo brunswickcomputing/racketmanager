@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Admin message mapper (domain -> legacy bridge)
  *

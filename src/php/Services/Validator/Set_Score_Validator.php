@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 
 namespace Racketmanager\Services\Validator;
 
@@ -248,7 +249,7 @@ class Set_Score_Validator {
                 $this->error      = true;
                 $this->err_msgs[] = __( 'Tie break score should be empty', 'racketmanager' );
                 $this->err_flds[] = $set_prefix . 'tiebreak';
-            } elseif ( ! is_numeric( $set['tiebreak'] ) || strval( round( $set['tiebreak'] ) ) !== $set['tiebreak'] ) {
+            } elseif ( ! is_numeric( $set['tiebreak'] ) || strval( round( (float) $set['tiebreak'] ) ) !== $set['tiebreak'] ) {
                 $this->error      = true;
                 $this->err_msgs[] = $tie_break_whole_number;
                 $this->err_flds[] = $set_prefix . 'tiebreak';

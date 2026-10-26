@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * League_Team API: League Team class
  *
@@ -11,6 +12,8 @@ namespace Racketmanager\Domain\Competition;
 
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Enums\Team_Profile;
+use Racketmanager\Domain\Shared\Serialized_Column;
+use Racketmanager\Domain\Shared\Typed_Property_Hydrator;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 
@@ -441,7 +444,7 @@ class League_Team {
             if ( empty( $league_team->custom ) ) {
                 $league_team->custom = array();
             } else {
-                $league_team->custom = stripslashes_deep( (array) maybe_unserialize( $league_team->custom ) );
+                $league_team->custom = Serialized_Column::unslash( Serialized_Column::decode_array( $league_team->custom ) );
                 $league_team         = (object) array_merge( (array) $league_team, (array) $league_team->custom );
             }
             foreach ( get_object_vars( $league_team ) as $key => $value ) {
@@ -449,7 +452,7 @@ class League_Team {
                 if ( 'profile' === $key ) {
                     $this->profile = Team_Profile::from_value( (int) $value );
                 } else {
-                    $this->$key = $value;
+                    Typed_Property_Hydrator::assign( $this, $key, $value );
                 }
             }
 
@@ -472,7 +475,7 @@ class League_Team {
             if ( ! isset( $this->club ) ) {
                 $this->club = null;
             }
-            $this->roster = maybe_unserialize( $this->roster );
+            $this->roster = Serialized_Column::decode_legacy( $this->roster );
             if ( 'W' === $this->status ) {
                 $this->is_withdrawn = true;
             } else {
@@ -828,7 +831,7 @@ class League_Team {
         $this->team_id = $team_id;
     }
     public function set_season( ?int $season ): void {
-        $this->season = $season;
+        $this->season = (string) $season;
     }
     public function set_league_id( ?int $league_id ): void {
         $this->league_id = $league_id;

@@ -673,6 +673,12 @@ namespace {
         }
     }
 
+    if ( ! function_exists( 'sanitize_key' ) ) {
+        function sanitize_key( $key ) {
+            return is_string( $key ) ? (string) preg_replace( '/[^a-z0-9_\-]/', '', strtolower( $key ) ) : '';
+        }
+    }
+
     if ( ! function_exists( 'is_email' ) ) {
         function is_email( $email ) {
             if ( ! is_string( $email ) ) {
@@ -776,6 +782,12 @@ namespace {
     if ( ! function_exists( 'current_time' ) ) {
         function current_time( string $type, $gmt = 0 ): string {
             return date( 'Y-m-d H:i:s' );
+        }
+    }
+
+    if ( ! function_exists( 'wp_timezone' ) ) {
+        function wp_timezone(): DateTimeZone {
+            return new DateTimeZone( date_default_timezone_get() );
         }
     }
 

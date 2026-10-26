@@ -44,4 +44,27 @@ class Results_Report_Test extends TestCase {
         $this->assertSame( 'home', $report->data->winner );
         $this->assertSame( 'great match', $report->data->notes );
     }
+
+    public function test_encoding_is_byte_identical_to_wp_json_encode_default_flags(): void {
+        $payload = (object) [
+            'winner'  => 'home',
+            'notes'   => 'Café / "quoted" & <tag>',
+            'sets'    => [ [ 6, 4 ], [ 7, 5 ] ],
+            'nothing' => null,
+            'ratio'   => 0.5,
+        ];
+
+        $report = new Results_Report( (object) [ 'id' => 1, 'match_id' => 2, 'data' => $payload ] );
+
+        $this->assertSame( wp_json_encode( $payload ), $report->result_object );
+        $this->assertSame( json_encode( $payload ), $report->result_object );
+        $this->assertEquals( $payload, json_decode( $report->result_object ) );
+    }
+
+    public function test_encoding_recovers_from_invalid_utf8_instead_of_returning_false(): void {
+        $report = new Results_Report( (object) [ 'id' => 1, 'match_id' => 2, 'data' => (object) [ 'notes' => "bad \xB1 byte" ] ] );
+
+        $this->assertIsString( $report->result_object );
+        $this->assertNotFalse( json_decode( $report->result_object ) );
+    }
 }

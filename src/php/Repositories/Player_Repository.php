@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Player_Repository class
  *
@@ -227,7 +228,7 @@ class Player_Repository implements Player_Repository_Interface {
             if ( $players ) {
                 $i = 0;
                 foreach ( $players as $player ) {
-                    $player        = $this->find( $player->ID );
+                    $player        = $this->find( (int) $player->ID );
                     $players[ $i ] = $player;
                     ++ $i;
                 }
@@ -342,7 +343,7 @@ class Player_Repository implements Player_Repository_Interface {
             if ( $players ) {
                 $i = 0;
                 foreach ( $players as $player ) {
-                    $player        = $this->find( $player->player_id );
+                    $player        = $this->find( (int) $player->player_id );
                     $players[ $i ] = $player;
                     ++ $i;
                 }
@@ -369,7 +370,7 @@ class Player_Repository implements Player_Repository_Interface {
             if ( $players ) {
                 $i = 0;
                 foreach ( $players as $player ) {
-                    $player        = $this->find( $player->player_id );
+                    $player        = $this->find( (int) $player->player_id );
                     $players[ $i ] = $player;
                     ++ $i;
                 }

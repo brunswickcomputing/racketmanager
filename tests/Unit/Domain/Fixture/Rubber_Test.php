@@ -270,4 +270,72 @@ class Rubber_Test extends TestCase {
             $this->assertFalse( $rubber->is_shared() );
         }
     }
+
+    public function test_hydrates_serialized_custom_column_and_strips_slashes(): void {
+        $custom = [
+            'sets'     => [ 1 => [ 'player1' => '6', 'player2' => '4' ], 2 => [ 'player1' => '7', 'player2' => '5' ] ],
+            'walkover' => 'home',
+            'invalid'  => "Rain delay at O\\'Neill Park",
+        ];
+
+        $rubber = new Rubber( (object) [
+            'id'       => 10,
+            'match_id' => 100,
+            'date'     => '2026-06-01 10:30:00',
+            'type'     => 'XD',
+            'custom'   => serialize( $custom ),
+        ] );
+
+        $this->assertSame( $custom['sets'], $rubber->sets );
+        $this->assertSame( $custom['sets'], $rubber->custom['sets'] );
+        $this->assertSame( "Rain delay at O'Neill Park", $rubber->custom['invalid'] );
+        $this->assertSame( "Rain delay at O'Neill Park", $rubber->invalid );
+        $this->assertTrue( $rubber->is_invalid );
+        $this->assertTrue( $rubber->is_walkover );
+        $this->assertSame( 'home', $rubber->walkover );
+    }
+
+    public function test_hydrates_serialized_custom_containing_stdclass_rows(): void {
+        $custom = [ 'sets' => [ 1 => (object) [ 'player1' => '6', 'player2' => '3' ] ] ];
+
+        $rubber = new Rubber( (object) [ 'id' => 1, 'match_id' => 2, 'custom' => serialize( $custom ) ] );
+
+        $this->assertInstanceOf( stdClass::class, $rubber->sets[1] );
+        $this->assertSame( '6', $rubber->sets[1]->player1 );
+    }
+
+    public function test_custom_column_that_is_not_serialized_is_tolerated(): void {
+        $rubber = new Rubber( (object) [ 'id' => 1, 'match_id' => 2, 'custom' => '' ] );
+        $this->assertSame( [], $rubber->sets );
+        $this->assertSame( [], $rubber->get_custom() );
+
+        $rubber = new Rubber( (object) [ 'id' => 1, 'match_id' => 2, 'custom' => [ 'sets' => [ 1 => [ 'player1' => '6' ] ] ] ] );
+        $this->assertSame( [ 1 => [ 'player1' => '6' ] ], $rubber->sets );
+    }
+
+    public function test_date_and_time_slices_match_mysql2date(): void {
+        $date   = '2026-06-01 19:05:00';
+        $rubber = new Rubber( (object) [ 'id' => 1, 'match_id' => 2, 'date' => $date ] );
+
+        $this->assertSame( mysql2date( 'Y-m-d', $date ), $rubber->rubber_date );
+        $this->assertSame( mysql2date( 'H:i', $date ), $rubber->start_time );
+        $this->assertSame( '2026-06-01', $rubber->rubber_date );
+        $this->assertSame( '19:05', $rubber->start_time );
+        $this->assertSame( 2026, $rubber->year );
+        $this->assertSame( 6, $rubber->month );
+        $this->assertSame( 1, $rubber->day );
+        $this->assertSame( '19', $rubber->hour );
+        $this->assertSame( '05', $rubber->minutes );
+    }
+
+    public function test_midnight_time_means_no_start_time_and_zero_date_means_not_applicable(): void {
+        $rubber = new Rubber( (object) [ 'id' => 1, 'match_id' => 2, 'date' => '2026-06-01 00:00:00' ] );
+        $this->assertSame( '2026-06-01', $rubber->rubber_date );
+        $this->assertSame( '', $rubber->start_time );
+
+        $rubber = new Rubber( (object) [ 'id' => 1, 'match_id' => 2, 'date' => '0000-00-00 00:00:00' ] );
+        $this->assertSame( 'N/A', $rubber->rubber_date );
+        $this->assertSame( '', $rubber->start_time );
+        $this->assertSame( 0, $rubber->year );
+    }
 }

@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Match Validation API: Match validator class
  *
@@ -463,7 +464,7 @@ class Validator_Fixture extends Validator {
         foreach ( $player_numbers as $player_number ) {
             $player_ref = $team_players[ $player_number ] ?? '';
             if ( empty( $player_ref ) || 'NaN' === $player_ref ) {
-                $this->add_player_error( 'Player not selected', $rubber, $opponent, $player_number );
+                $this->add_player_error( 'Player not selected', (int) $rubber, $opponent, $player_number );
                 continue;
             }
 
@@ -473,7 +474,7 @@ class Validator_Fixture extends Validator {
                     $this->validate_player_eligibility( $player_ref, $rubber, $opponent, $player_number, $playoff, $reverse_rubber, $type, $is_singles_doubles_setup );
                 }
             } catch ( Registration_Not_Found_Exception ) {
-                $this->add_player_error( 'Player not selected', $rubber, $opponent, $player_number );
+                $this->add_player_error( 'Player not selected', (int) $rubber, $opponent, $player_number );
             }
         }
     }
@@ -506,7 +507,7 @@ class Validator_Fixture extends Validator {
         if ( ! $player_found ) {
             $this->handle_new_player( $player_ref, $rubber, $opponent, $player_number, $playoff, $reverse_rubber, $type, $is_singles_doubles_setup );
         } elseif ( ! $playoff && ! $reverse_rubber ) {
-            $this->add_player_error( 'Player already selected', $rubber, $opponent, $player_number );
+            $this->add_player_error( 'Player already selected', (int) $rubber, $opponent, $player_number );
         }
     }
 
@@ -524,9 +525,9 @@ class Validator_Fixture extends Validator {
      */
     private function handle_new_player( int|string $player_ref, int|string $rubber, string $opponent, int $player_number, bool $playoff, bool $reverse_rubber, ?string $type = null, bool $is_singles_doubles_setup = false ): void {
         if ( $playoff ) {
-            $this->add_player_error( 'Player for playoff must have played', $rubber, $opponent, $player_number );
+            $this->add_player_error( 'Player for playoff must have played', (int) $rubber, $opponent, $player_number );
         } elseif ( $reverse_rubber ) {
-            $this->add_player_error( 'Player for reverse rubber must have played', $rubber, $opponent, $player_number );
+            $this->add_player_error( 'Player for reverse rubber must have played', (int) $rubber, $opponent, $player_number );
         } else {
             $this->players_involved[] = $player_ref;
             if ( $is_singles_doubles_setup && ! empty( $type ) ) {

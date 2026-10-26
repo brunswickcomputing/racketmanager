@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * RacketManager-Rubber API: RacketManager-rubber class
  *
@@ -9,6 +10,8 @@
 
 namespace Racketmanager\Domain\Fixture;
 
+use Racketmanager\Domain\Shared\Serialized_Column;
+use Racketmanager\Domain\Shared\Typed_Property_Hydrator;
 use stdClass;
 
 /**
@@ -260,26 +263,27 @@ class Rubber {
 
         if ( ! is_null( $rubber ) ) {
             if ( ! empty( $rubber->custom ) ) {
-                $custom = stripslashes_deep( (array) maybe_unserialize( $rubber->custom ) );
+                $custom = Serialized_Column::unslash( Serialized_Column::decode_array( $rubber->custom ) );
                 $rubber = (object) array_merge( (array) $rubber, (array) $custom );
             }
 
             foreach ( get_object_vars( $rubber ) as $key => $value ) {
-                $this->$key = $value;
+                Typed_Property_Hydrator::assign( $this, $key, $value );
             }
 
-            $this->custom = stripslashes_deep( maybe_unserialize( $this->custom ) );
+            $this->custom = Serialized_Column::decode_unslashed( $this->custom );
             $this->sets   = $this->custom['sets'] ?? array();
 
             if ( ! empty( $this->date ) && ! str_starts_with( $this->date, '0000-00-00' ) ) {
-                $this->rubber_date = function_exists( 'mysql2date' ) ? mysql2date( 'Y-m-d', $this->date ) : substr( $this->date, 0, 10 );
+                // `date` is a MySQL DATETIME in site-local time; slicing it is equivalent to mysql2date( 'Y-m-d' | 'H:i' ).
+                $this->rubber_date = substr( $this->date, 0, 10 );
                 $this->year        = (int) substr( $this->date, 0, 4 );
                 $this->month       = (int) substr( $this->date, 5, 2 );
                 $this->day         = (int) substr( $this->date, 8, 2 );
                 $time              = substr( $this->date, 11, 5 );
                 $this->hour        = substr( $time, 0, 2 );
                 $this->minutes     = substr( $time, 3, 2 );
-                $this->start_time  = ( '00:00' === $time ) ? '' : ( function_exists( 'mysql2date' ) ? mysql2date( 'H:i', $this->date ) : $time );
+                $this->start_time  = ( '00:00' === $time ) ? '' : $time;
             } else {
                 $this->rubber_date = ( ! empty( $this->date ) && str_starts_with( $this->date, '0000-00-00' ) ) ? 'N/A' : '';
                 $this->year        = 0;

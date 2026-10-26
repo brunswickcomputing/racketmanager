@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Championship Admin Service (generic)
  *
@@ -788,7 +789,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         array $event_season,
         string $action
     ): void {
-        \Racketmanager\get_league_query_service()->set_rounds( $league, $season, $rounds );
+        \Racketmanager\get_league_query_service()->set_rounds( $league, (string) $season, $rounds );
         if ( 'replace' === $action ) {
             $this->fixture_service->delete_fixtures_for_season( $league->id, (string) $season );
         }

@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Invoice_Full_Details_DTO API: Invoice_Full_Details_DTO class
  *

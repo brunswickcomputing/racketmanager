@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 
 namespace Racketmanager\Services;
 
@@ -92,12 +93,12 @@ class Result_Service {
         }
 
         $favourited_users = array();
-        $users            = Util::get_users_for_favourite( 'league', $league->id );
+        $users            = Util::get_users_for_favourite( 'league', (string) $league->id );
         foreach ( $users as $user ) {
             $favourited_users[] = $user;
         }
 
-        $users = Util::get_users_for_favourite( 'competition', $league->event->id );
+        $users = Util::get_users_for_favourite( 'competition', (string) $league->event->id );
         foreach ( $users as $user ) {
             $favourited_users[] = $user;
         }
@@ -106,12 +107,12 @@ class Result_Service {
         $away_team = $this->team_repository->find_by_id( (int) $fixture->get_away_team() );
 
         if ( $home_team ) {
-            $users = Util::get_users_for_favourite( 'team', $home_team->get_id() );
+            $users = Util::get_users_for_favourite( 'team', (string) $home_team->get_id() );
             foreach ( $users as $user ) {
                 $favourited_users[] = $user;
             }
             if ( $home_team->get_club_id() ) {
-                $users = Util::get_users_for_favourite( 'club', $home_team->get_club_id() );
+                $users = Util::get_users_for_favourite( 'club', (string) $home_team->get_club_id() );
                 foreach ( $users as $user ) {
                     $favourited_users[] = $user;
                 }
@@ -119,12 +120,12 @@ class Result_Service {
         }
 
         if ( $away_team ) {
-            $users = Util::get_users_for_favourite( 'team', $away_team->get_id() );
+            $users = Util::get_users_for_favourite( 'team', (string) $away_team->get_id() );
             foreach ( $users as $user ) {
                 $favourited_users[] = $user;
             }
             if ( $away_team->get_club_id() ) {
-                $users = Util::get_users_for_favourite( 'club', $away_team->get_club_id() );
+                $users = Util::get_users_for_favourite( 'club', (string) $away_team->get_club_id() );
                 foreach ( $users as $user ) {
                     $favourited_users[] = $user;
                 }

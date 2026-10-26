@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * RacketManager-Admin API: RacketManager-club class
  *
@@ -163,8 +164,8 @@ class Admin_Club extends Admin_Display {
         } catch ( Club_Not_Found_Exception $e ) {
             $this->set_message( $e->getMessage(), true );
         }
-        $active  = isset( $_GET['active'] ) ? sanitize_text_field( wp_unslash( $_GET['active'] ) ) : false;
-        $gender  = isset( $_GET['gender'] ) ? sanitize_text_field( wp_unslash( $_GET['gender'] ) ) : false;
+        $active  = isset( $_GET['active'] ) ? sanitize_text_field( wp_unslash( $_GET['active'] ) ) : null;
+        $gender  = isset( $_GET['gender'] ) ? sanitize_text_field( wp_unslash( $_GET['gender'] ) ) : null;
         $players = $this->registration_service->get_registered_players_list( $active, null, $club_id, $gender );
         require_once RACKETMANAGER_PATH . 'templates/admin/club/show-club-players.php';
     }
@@ -292,7 +293,7 @@ class Admin_Club extends Admin_Display {
         $validator = $validator->capability( 'edit_teams' );
         if ( empty( $validator->error ) ) {
             $club_id   = isset( $_GET['club_id'] ) ? intval( $_GET['club_id'] ) : null;
-            $validator = $validator->club( $club_id );
+            $validator = $validator->club( null === $club_id ? null : (string) $club_id );
         }
         if ( ! empty( $validator->error ) ) {
             if ( empty( $validator->msg ) ) {

@@ -149,6 +149,25 @@ class Club_Role_Repository_Test extends TestCase {
         $this->assertSame( $user2, $roles[1]->user );
     }
 
+    /**
+     * Real $wpdb rows return every column as a string; build_club_roles() must cast before calling find( int ).
+     */
+    public function test_build_club_roles_accepts_string_ids_from_database_rows(): void {
+        $this->wpdb->expects( $this->once() )
+            ->method( 'get_results' )
+            ->willReturn( array( (object) array( 'id' => '16' ) ) );
+
+        $this->wpdb->expects( $this->once() )
+            ->method( 'get_row' )
+            ->willReturn( (object) array( 'id' => '16', 'user_id' => '0', 'club_id' => '135', 'role_id' => '1' ) );
+        $this->wpdb->method( 'prepare' )->willReturnArgument( 0 );
+
+        $roles = $this->repository->search( array( 'club' => 135 ) );
+
+        $this->assertCount( 1, $roles );
+        $this->assertSame( 16, $roles[0]->get_id() );
+    }
+
     public function test_save_insert_sets_id_and_flushes_cache(): void {
         $role = new Club_Role( (object) array(
             'club_id' => 7,

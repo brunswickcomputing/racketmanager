@@ -6,6 +6,8 @@ namespace Racketmanager\Tests\Unit\Services\Container;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\RacketManager;
 use Racketmanager\Application\League\Queries\Get_League_Last_5_Handler;
+use Racketmanager\Domain\Ports\Clock_Interface;
+use Racketmanager\Infrastructure\Time\Wordpress_Clock;
 use Racketmanager\Services\Container\Container_Bootstrap;
 use Racketmanager\Services\Container\Providers\Admin_Service_Provider;
 use Racketmanager\Services\Container\Providers\Club_Service_Provider;
@@ -63,6 +65,9 @@ class Modular_Service_Providers_Test extends TestCase {
         $provider->register( $container );
 
         $this->assertTrue( $container->has( 'mailer' ) );
+        $this->assertTrue( $container->has( 'clock' ) );
+        $this->assertInstanceOf( Wordpress_Clock::class, $container->get( 'clock' ) );
+        $this->assertSame( $container->get( 'clock' ), $container->get( Clock_Interface::class ) );
         $this->assertTrue( $container->has( 'payment_gateway' ) );
         $this->assertTrue( $container->has( 'rating_gateway' ) );
         $this->assertTrue( $container->has( 'wtn_api_client' ) );
@@ -287,16 +292,16 @@ class Modular_Service_Providers_Test extends TestCase {
         }
     }
 
-    public function test_fixture_service_provider_wires_application_fixture_detail_service_and_handler(): void {
+    public function test_fixture_service_provider_wires_fixture_details_assembler_and_handler(): void {
         $container = Container_Bootstrap::boot( $this->app );
 
-        $this->assertTrue( $container->has( 'application_fixture_detail_service' ) );
-        $this->assertTrue( $container->has( \Racketmanager\Application\Fixture\Services\Fixture_Detail_Service::class ) );
+        $this->assertTrue( $container->has( 'fixture_details_assembler' ) );
+        $this->assertTrue( $container->has( \Racketmanager\Application\Fixture\Services\Fixture_Details_Assembler::class ) );
         $this->assertTrue( $container->has( 'get_fixture_details_handler' ) );
         $this->assertTrue( $container->has( \Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Handler::class ) );
 
-        $service = $container->get( 'application_fixture_detail_service' );
-        $this->assertInstanceOf( \Racketmanager\Application\Fixture\Services\Fixture_Detail_Service::class, $service );
+        $service = $container->get( 'fixture_details_assembler' );
+        $this->assertInstanceOf( \Racketmanager\Application\Fixture\Services\Fixture_Details_Assembler::class, $service );
 
         $handler = $container->get( 'get_fixture_details_handler' );
         $this->assertInstanceOf( \Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Handler::class, $handler );

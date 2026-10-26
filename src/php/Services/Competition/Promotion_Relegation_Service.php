@@ -45,11 +45,11 @@ class Promotion_Relegation_Service {
 
 		$club_ids = array();
 		foreach ( $teams as $team_dtls ) {
-			$team = $this->team_repository->find_by_id( $team_dtls->team_id );
+			$team = $this->team_repository->find_by_id( (int) $team_dtls->team_id );
 			if ( ! $team ) {
 				return false;
 			}
-			$club_ids[ $team_dtls->team_id ] = $team->club_id;
+			$club_ids[ (int) $team_dtls->team_id ] = (int) $team->club_id;
 		}
 
 		$event_id = isset( $event->id ) ? (int) $event->id : 0;
@@ -91,8 +91,8 @@ class Promotion_Relegation_Service {
 
 		foreach ( $teams as $team_dtls ) {
 			$status    = null;
-			$team_id   = $team_dtls->team_id;
-			$league_id = $team_dtls->league_id;
+			$team_id   = (int) $team_dtls->team_id;
+			$league_id = (int) $team_dtls->league_id;
 
 			if ( $league_id !== $curr_league_id ) {
 				if ( empty( $rank ) ) {

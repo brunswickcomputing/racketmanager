@@ -3,9 +3,9 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Helpers;
 
-use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
-use Racketmanager\Domain\DTO\Fixture\Team_Result_Confirmation_Request;
-use Racketmanager\Domain\DTO\Fixture\Team_Result_Update_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Result_Update_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Team_Result_Confirmation_Request;
+use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Team_Result_Update_Request;
 use Racketmanager\Domain\DTO\Rubber\Rubber_Update_Result;
 
 final class Result_Test_Factory {

@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * RacketManager-Admin API: RacketManager-admin-league class
  *
@@ -15,6 +16,8 @@ use Racketmanager\Admin\Presenters\Admin_League_Matches_Presenter;
 use Racketmanager\Admin\Presenters\Admin_League_Schedule_Presenter;
 use Racketmanager\Admin\View_Models\Admin_League_Schedule_Event_View_Model;
 use Racketmanager\Admin\View_Models\Admin_League_Schedule_Page_View_Model;
+use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
@@ -183,7 +186,7 @@ final class Admin_League extends Admin_Display {
             $current_season->is_active = false;
         }
         $current_season->is_open = false;
-        $current_season->entries = $this->competition_service->get_clubs_for_competition( $competition_id, (string) $season );
+        $current_season->entries = $this->competition_service->get_clubs_for_competition( $competition_id, null !== $season ? (int) $season : null );
         $entry_urls              = $this->admin_entry_link_presenter->club_entry_urls( $competition, (string) $season, (array) ( $current_season->entries ?? array() ) );
         require_once RACKETMANAGER_PATH . 'templates/admin/league/show-season.php';
     }
@@ -247,6 +250,50 @@ final class Admin_League extends Admin_Display {
             }
         }
     }
+    /**
+     * Hydrate the league table rows into League_Team objects for the crosstable view.
+     *
+     * Non-objects and rows the repository cannot hydrate are dropped and the result is
+     * re-indexed 0..n-1: the template derives the displayed rank from that position, which
+     * matches the sequential lists returned by get_league_teams()/get_standings().
+     *
+     * @param array $teams Team rows (League_Team objects or raw table rows).
+     *
+     * @return League_Team[] Hydrated teams in their original order.
+     */
+    private function hydrate_crosstable_teams( array $teams ): array {
+        $hydrated   = array();
+        $repository = null;
+        foreach ( $teams as $team ) {
+            if ( ! $team instanceof League_Team && is_object( $team ) ) {
+                $repository ??= $this->racketmanager->container->get( 'league_team_repository' );
+                $team         = $repository->hydrate( $team );
+            }
+            if ( $team instanceof League_Team ) {
+                $hydrated[] = $team;
+            }
+        }
+        return $hydrated;
+    }
+
+    /**
+     * Pre-compute the crosstable score matrix so the template only echoes values.
+     *
+     * @param League        $league League.
+     * @param League_Team[] $teams  Teams in display order (rows and columns).
+     *
+     * @return array<int, array<int, string>> Matrix keyed by [ row team id ][ column team id ].
+     */
+    private function build_crosstable_cells( League $league, array $teams ): array {
+        $cells = array();
+        foreach ( $teams as $row_team ) {
+            foreach ( $teams as $column_team ) {
+                $cells[ (int) $row_team->id ][ (int) $column_team->id ] = $this->get_league_query_service()->get_crosstable_field( $league, (int) $row_team->id, (int) $column_team->id );
+            }
+        }
+        return $cells;
+    }
+
     /**
      * Display league page
      */
@@ -363,6 +410,12 @@ final class Admin_League extends Admin_Display {
                     }
                     if ( isset( $_GET['match_day'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
                         $tab = 'matches';
+                    }
+                    $crosstable_teams = array();
+                    $crosstable_cells = array();
+                    if ( ! $cup ) {
+                        $crosstable_teams = $this->hydrate_crosstable_teams( is_array( $teams ) ? $teams : array() );
+                        $crosstable_cells = $this->build_crosstable_cells( $league, $crosstable_teams );
                     }
                     require_once RACKETMANAGER_PATH . 'templates/admin/show-league.php';
                 } else {
@@ -619,7 +672,7 @@ final class Admin_League extends Admin_Display {
             if ( empty( $validator->error ) ) {
                 $event     = $this->get_event_repository()->find_by_id( $event_id );
                 $season    = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
-                $validator = $validator->season_set( $season, $event->get_seasons() );
+                $validator = $validator->season_set( null === $season ? null : (string) $season, $event->get_seasons() );
             }
         }
         if ( ! empty( $validator->error ) ) {

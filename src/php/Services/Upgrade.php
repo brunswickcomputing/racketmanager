@@ -31,10 +31,12 @@ class Upgrade {
 
     /**
      * Initialise the upgrade class
+     *
+     * @param RacketManager $plugin_instance plugin instance providing options and the container.
+     * @param wpdb          $database        database connection the upgrade steps run against.
      */
-    public function __construct( $plugin_instance ) {
-        global $wpdb;
-        $this->wpdb             = $wpdb;
+    public function __construct( RacketManager $plugin_instance, wpdb $database ) {
+        $this->wpdb             = $database;
         $this->racketmanager    = $plugin_instance;
         $this->options          = $this->racketmanager->options;
         $this->installed        = $this->options['dbversion'] ?? null;
@@ -73,8 +75,7 @@ class Upgrade {
         * Update version and dbversion
         */
         $this->options['dbversion'] = RACKETMANAGER_DBVERSION;
-        global $racketmanager;
-        $racketmanager->update_plugin_options( $this->options );
+        $this->racketmanager->update_plugin_options( $this->options );
     }
 
     /**

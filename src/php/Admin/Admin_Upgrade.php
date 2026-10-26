@@ -10,6 +10,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Admin;
 
+use Racketmanager\Services\Upgrade;
 use Racketmanager\Services\Validator\Validator;
 
 /**
@@ -49,6 +50,7 @@ class Admin_Upgrade extends Admin_Display {
                 $this->show_message();
                 return;
             }
+            $upgrade = new Upgrade( $this->racketmanager, $GLOBALS['wpdb'] );
             require_once RACKETMANAGER_PATH . 'templates/admin/upgrade/do-upgrade.php';
         } else {
             require_once RACKETMANAGER_PATH . 'templates/admin/show-upgrade.php';

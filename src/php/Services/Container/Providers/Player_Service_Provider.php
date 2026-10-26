@@ -15,16 +15,15 @@ use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Player_Error_Repository_Interface;
 use Racketmanager\Repositories\Player_Error_Repository;
+use Racketmanager\Repositories\Interfaces\Player_Statistics_Repository_Interface;
 use Racketmanager\Repositories\Player_Repository;
+use Racketmanager\Repositories\Player_Statistics_Repository;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Validator\Player_Details_Validator;
 use Racketmanager\Services\Validator\Player_Validation_Service;
-
-use RuntimeException;
-use wpdb;
 
 /**
  * Service provider for Player bounded context.
@@ -42,22 +41,17 @@ final readonly class Player_Service_Provider implements Service_Provider_Interfa
 
         $container->set( 'player_error_repository', fn(): Player_Error_Repository_Interface => new Player_Error_Repository() );
 
-        // Services
-        $container->set( 'player_query_service', function ( Simple_Container $c ) {
-            global $wpdb;
-            if ( ! $wpdb instanceof wpdb ) {
-                throw new RuntimeException( 'Player_Query_Service requires a wpdb instance.' );
-            }
+        $container->set( 'player_statistics_repository', fn(): Player_Statistics_Repository_Interface => new Player_Statistics_Repository() );
 
-            return new Player_Query_Service(
-                $wpdb,
-                $c->get( 'competition_repository' ),
-                $c->get( 'fixture_repository' ),
-                $c->get( 'event_repository' ),
-                $c->get( 'rubber_repository' ),
-                fn() => $c->get( 'event_query_service' )
-            );
-        } );
+        // Services
+        $container->set( 'player_query_service', fn( Simple_Container $c ) => new Player_Query_Service(
+            $c->get( 'player_statistics_repository' ),
+            $c->get( 'competition_repository' ),
+            $c->get( 'fixture_repository' ),
+            $c->get( 'event_repository' ),
+            $c->get( 'rubber_repository' ),
+            fn() => $c->get( 'event_query_service' )
+        ) );
 
         $container->set( 'player_stats_service', fn( Simple_Container $c ) => new Player_Stats_Service(
             $c->get( 'player_query_service' )

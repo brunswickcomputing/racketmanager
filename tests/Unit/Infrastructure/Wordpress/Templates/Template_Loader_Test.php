@@ -521,7 +521,7 @@ final class Template_Loader_Test extends TestCase {
 
             $GLOBALS['racketmanager'] = $app;
 
-            $upgrade = new \Racketmanager\Services\Upgrade( $app );
+            $upgrade = new \Racketmanager\Services\Upgrade( $app, $mock_wpdb );
             $method  = new \ReflectionMethod( $upgrade, 'v10_0_18' );
             $method->invoke( $upgrade );
         } finally {

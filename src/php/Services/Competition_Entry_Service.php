@@ -31,7 +31,6 @@ use Racketmanager\Exceptions\Charge_Not_Found_Exception;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Clubs_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
-use Racketmanager\Exceptions\Database_Operation_Exception;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
@@ -1479,7 +1478,6 @@ class Competition_Entry_Service {
     }
 
     public function add_team_with_players( array $players, string $type ): int|false {
-        global $wpdb;
         // 1. Generate name (First Last / First Last)
         $names      = [];
         $player_ids = [];
@@ -1492,25 +1490,8 @@ class Competition_Entry_Service {
         $team->set_type( $type );
         $team->set_team_type( 'P' );
 
-        $wpdb->query( 'START TRANSACTION' );
-        try {
-            $team_id = $this->team_repository->save( $team );
-            if ( ! $team_id ) {
-                throw new Database_Operation_Exception( __( 'Unable to save team', 'racketmanager' ) );
-            }
-            // 4. Batch insert the current players
-            $saved_players = $this->team_repository->save_team_players( $team_id, $player_ids );
-            if ( ! $saved_players ) {
-                throw new Database_Operation_Exception( __( 'Unable to save team players', 'racketmanager' ) );
-            }
-            $wpdb->query( 'COMMIT' );
-
-            return $team_id;
-        } catch ( Database_Operation_Exception ) {
-            $wpdb->query( 'ROLLBACK' );
-
-            return false;
-        }
+        // 2. Persist the team and its players atomically
+        return $this->team_repository->save_with_players( $team, $player_ids );
     }
 
     private function set_tournament_entry( int $tournament_id, int $player_id, ?int $club_id = null, null|int|float|string $payment_required = null ): void {

@@ -9,10 +9,11 @@ use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Player\Player_Factory;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Statistics_Repository_Interface;
+use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use RuntimeException;
-use wpdb;
 
 final class Player_Query_Service_Test extends TestCase {
 	private function make_player(): \Racketmanager\Domain\Player\Player {
@@ -75,15 +76,17 @@ final class Player_Query_Service_Test extends TestCase {
 			)
 			->willReturn( $matches );
 
-		$service = new Player_Query_Service( $this->make_wpdb( array() ), null, $repository );
+		$service = new Player_Query_Service( $this->make_statistics_repository(), null, $repository );
 		return $service->get_matches( $player, null, '2026', 'all' );
 	}
 
-	private function make_wpdb( array $rows ): wpdb {
-		$wpdb                      = new wpdb();
-		$wpdb->get_results_callback = static fn() => $rows;
+	private function make_statistics_repository( array $rows = array() ): Player_Statistics_Repository_Interface {
+		$repository = $this->createStub( Player_Statistics_Repository_Interface::class );
+		$repository->method( 'find_competitions_played' )->willReturn( $rows );
+		$repository->method( 'find_team_stats' )->willReturn( $rows );
+		$repository->method( 'find_player_stats' )->willReturn( $rows );
 
-		return $wpdb;
+		return $repository;
 	}
 
 	public function test_get_stats_teams_returns_db_shaped_rows(): void {
@@ -99,7 +102,12 @@ final class Player_Query_Service_Test extends TestCase {
 				'loser_id'    => '20',
 			),
 		);
-		$service = new Player_Query_Service( $this->make_wpdb( $rows ) );
+		$repository = $this->createMock( Player_Statistics_Repository_Interface::class );
+		$repository->expects( $this->once() )
+			->method( 'find_team_stats' )
+			->with( 7, null )
+			->willReturn( $rows );
+		$service = new Player_Query_Service( $repository );
 
 		$result = $service->get_stats_teams( $this->make_player() );
 
@@ -125,9 +133,14 @@ final class Player_Query_Service_Test extends TestCase {
 				'loser_id'  => '8',
 			),
 		);
-		$service = new Player_Query_Service( $this->make_wpdb( $rows ) );
+		$repository = $this->createMock( Player_Statistics_Repository_Interface::class );
+		$repository->expects( $this->once() )
+			->method( 'find_player_stats' )
+			->with( 7, '2025' )
+			->willReturn( $rows );
+		$service = new Player_Query_Service( $repository );
 
-		$result = $service->get_stats_players( $this->make_player() );
+		$result = $service->get_stats_players( $this->make_player(), array( 'season' => 2025 ) );
 
 		$this->assertCount( 1, $result );
 		$this->assertSame( 'players', $result[0]->stat_type );
@@ -150,7 +163,13 @@ final class Player_Query_Service_Test extends TestCase {
 			->with( 3 )
 			->willReturn( null );
 
-		$service = new Player_Query_Service( $this->make_wpdb( $rows ), $repository );
+		$statistics = $this->createMock( Player_Statistics_Repository_Interface::class );
+		$statistics->expects( $this->once() )
+			->method( 'find_competitions_played' )
+			->with( 7, null, null )
+			->willReturn( $rows );
+
+		$service = new Player_Query_Service( $statistics, $repository );
 		$result  = $service->get_competitions( $this->make_player() );
 
 		$this->assertCount( 1, $result );
@@ -177,13 +196,81 @@ final class Player_Query_Service_Test extends TestCase {
 			->with( 31 )
 			->willReturn( $competition );
 
-		$service = new Player_Query_Service( $this->make_wpdb( $rows ), $repository );
-		$result  = $service->get_competitions( $player );
+		$statistics = $this->createMock( Player_Statistics_Repository_Interface::class );
+		$statistics->expects( $this->once() )
+			->method( 'find_competitions_played' )
+			->with( 43107, 'MS', '2026' )
+			->willReturn( $rows );
+
+		$service = new Player_Query_Service( $statistics, $repository );
+		$result  = $service->get_competitions( $player, array( 'type' => 'MS', 'season' => '2026' ) );
 
 		$this->assertCount( 1, $result );
 		$this->assertSame( 2026, $result[0]->season );
 		$this->assertSame( '2026-01-10', $result[0]->date_start );
 		$this->assertSame( '2026-12-20', $result[0]->date_end );
+	}
+
+	public function test_get_competitions_uses_competition_service_when_supplied(): void {
+		$rows        = array( (object) array( 'id' => '31', 'name' => 'Summer League', 'season' => '2026' ) );
+		$competition = Competition_Test_Factory::create(
+			id: 31,
+			seasons: Competition_Test_Factory::season_map( '2026', array( 'date_start' => '2026-01-10', 'date_end' => '2026-12-20' ) )
+		);
+		$competition_service = $this->createMock( Competition_Service::class );
+		$competition_service->expects( $this->once() )
+			->method( 'get_competition' )
+			->with( 31 )
+			->willReturn( $competition );
+		$repository = $this->createMock( Competition_Repository_Interface::class );
+		$repository->expects( $this->never() )->method( 'find_by_id' );
+
+		$service = new Player_Query_Service( $this->make_statistics_repository( $rows ), $repository );
+		$result  = $service->get_competitions( $this->make_player(), array(), $competition_service );
+
+		$this->assertCount( 1, $result );
+		$this->assertSame( $competition, $result[0] );
+		$this->assertSame( '2026-01-10', $result[0]->date_start );
+	}
+
+	public function test_get_competitions_drops_competitions_with_unknown_season(): void {
+		$rows        = array(
+			(object) array( 'id' => '31', 'name' => 'Summer League', 'season' => '2019' ),
+			(object) array( 'id' => '32', 'name' => 'Winter League', 'season' => '2026' ),
+		);
+		$unknown     = Competition_Test_Factory::create( id: 31, seasons: Competition_Test_Factory::season_map( '2026', array() ) );
+		$known       = Competition_Test_Factory::create( id: 32, seasons: Competition_Test_Factory::season_map( '2026', array( 'date_start' => '2026-01-10' ) ) );
+		$repository  = $this->createStub( Competition_Repository_Interface::class );
+		$repository->method( 'find_by_id' )->willReturnMap( array( array( 31, $unknown ), array( 32, $known ) ) );
+
+		$service = new Player_Query_Service( $this->make_statistics_repository( $rows ), $repository );
+		$result  = $service->get_competitions( $this->make_player() );
+
+		$this->assertCount( 1, $result );
+		$this->assertSame( $known, $result[0] );
+		$this->assertSame( 2026, $result[0]->season );
+	}
+
+	public function test_empty_and_false_filters_are_passed_as_null(): void {
+		$statistics = $this->createMock( Player_Statistics_Repository_Interface::class );
+		$statistics->expects( $this->once() )
+			->method( 'find_competitions_played' )
+			->with( 7, null, null )
+			->willReturn( array() );
+		$statistics->expects( $this->once() )
+			->method( 'find_team_stats' )
+			->with( 7, null )
+			->willReturn( array() );
+		$statistics->expects( $this->once() )
+			->method( 'find_player_stats' )
+			->with( 7, null )
+			->willReturn( array() );
+
+		$service = new Player_Query_Service( $statistics, $this->createStub( Competition_Repository_Interface::class ) );
+
+		$this->assertSame( array(), $service->get_competitions( $this->make_player(), array( 'type' => '', 'season' => false ) ) );
+		$this->assertSame( array(), $service->get_stats_teams( $this->make_player(), array( 'season' => '' ) ) );
+		$this->assertSame( array(), $service->get_stats_players( $this->make_player(), array( 'season' => null ) ) );
 	}
 
 	public function test_get_matches_aggregates_singles_for_home_player(): void {
@@ -249,7 +336,7 @@ final class Player_Query_Service_Test extends TestCase {
 				)
 			)
 			->willReturn( array( $match ) );
-		$service = new Player_Query_Service( $this->make_wpdb( array() ), $repository );
+		$service = new Player_Query_Service( $this->make_statistics_repository(), $repository );
 
 		$result = $service->get_matches( $player, $competition, '2026', 'competition' );
 
@@ -258,37 +345,29 @@ final class Player_Query_Service_Test extends TestCase {
 		$this->assertSame( 'Division 2', $player->matches['Division 2']['league']->title );
 	}
 
-	public function test_get_stats_teams_throws_when_wpdb_missing(): void {
-		$original = $GLOBALS['wpdb'] ?? null;
-		unset( $GLOBALS['wpdb'] );
-		try {
-			$service = new Player_Query_Service();
-			$this->expectException( RuntimeException::class );
-			$this->expectExceptionMessage( 'Player_Query_Service requires a wpdb instance.' );
-			$service->get_stats_teams( $this->make_player() );
-		} finally {
-			if ( null !== $original ) {
-				$GLOBALS['wpdb'] = $original;
-			}
-		}
+	public function test_get_stats_teams_throws_when_statistics_repository_missing(): void {
+		$service = new Player_Query_Service();
+		$this->expectException( RuntimeException::class );
+		$this->expectExceptionMessage( 'Player_Query_Service requires a Player_Statistics_Repository_Interface.' );
+		$service->get_stats_teams( $this->make_player() );
 	}
 
 	public function test_get_matches_all_throws_without_fixture_repository(): void {
-		$service = new Player_Query_Service( $this->make_wpdb( array() ) );
+		$service = new Player_Query_Service( $this->make_statistics_repository() );
 		$this->expectException( RuntimeException::class );
 		$this->expectExceptionMessage( 'Player_Query_Service requires a Fixture_Repository_Interface.' );
 		$service->get_matches( $this->make_player(), null, '2026', 'all' );
 	}
 
 	public function test_get_matches_competition_throws_without_competition_repository(): void {
-		$service = new Player_Query_Service( $this->make_wpdb( array() ) );
+		$service = new Player_Query_Service( $this->make_statistics_repository() );
 		$this->expectException( RuntimeException::class );
 		$this->expectExceptionMessage( 'Player_Query_Service requires a Competition_Repository_Interface.' );
 		$service->get_matches( $this->make_player(), Competition_Test_Factory::create( id: 31 ), '2026', 'competition' );
 	}
 
 	public function test_get_matches_unknown_source_returns_empty(): void {
-		$service = new Player_Query_Service( $this->make_wpdb( array() ) );
+		$service = new Player_Query_Service( $this->make_statistics_repository() );
 
 		$this->assertSame( array(), $service->get_matches( $this->make_player(), null, '2026', 'unknown' ) );
 	}

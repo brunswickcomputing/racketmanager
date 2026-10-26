@@ -17,10 +17,9 @@ use Racketmanager\Domain\Player\Player;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Statistics_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
-use Racketmanager\Util\Util;
 use RuntimeException;
-use wpdb;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
 
@@ -28,21 +27,21 @@ use function Racketmanager\get_league;
  * Service for querying player matches, competitions, and raw match statistics.
  */
 class Player_Query_Service {
-	private ?wpdb $wpdb;
+	private ?Player_Statistics_Repository_Interface $statistics_repository;
 	private ?Competition_Repository_Interface $competition_repository;
 	private ?Fixture_Repository_Interface $fixture_repository;
 	private ?Event_Repository_Interface $event_repository;
 	private ?Rubber_Repository_Interface $rubber_repository;
 
 	public function __construct(
-		?wpdb $wpdb = null,
+		?Player_Statistics_Repository_Interface $statistics_repository = null,
 		?Competition_Repository_Interface $competition_repository = null,
 		?Fixture_Repository_Interface $fixture_repository = null,
 		?Event_Repository_Interface $event_repository = null,
 		?Rubber_Repository_Interface $rubber_repository = null,
 		private Event_Query_Service|\Closure|null $event_query_service = null
 	) {
-		$this->wpdb                   = $wpdb;
+		$this->statistics_repository  = $statistics_repository;
 		$this->competition_repository = $competition_repository;
 		$this->fixture_repository     = $fixture_repository;
 		$this->event_repository       = $event_repository;
@@ -60,16 +59,26 @@ class Player_Query_Service {
 		return $this->event_query_service;
 	}
 
-	private function get_wpdb(): wpdb {
-		if ( $this->wpdb instanceof wpdb ) {
-			return $this->wpdb;
-		}
-		if ( isset( $GLOBALS['wpdb'] ) && $GLOBALS['wpdb'] instanceof wpdb ) {
-			$this->wpdb = $GLOBALS['wpdb'];
-			return $this->wpdb;
+	private function get_statistics_repository(): Player_Statistics_Repository_Interface {
+		if ( $this->statistics_repository ) {
+			return $this->statistics_repository;
 		}
 
-		throw new RuntimeException( 'Player_Query_Service requires a wpdb instance.' );
+		throw new RuntimeException( 'Player_Query_Service requires a Player_Statistics_Repository_Interface.' );
+	}
+
+	/**
+	 * Normalise a legacy search argument (false / '' / null mean "no filter").
+	 *
+	 * @param mixed $value
+	 * @return string|null
+	 */
+	private function filter_value( mixed $value ): ?string {
+		if ( false === $value || null === $value || '' === $value ) {
+			return null;
+		}
+
+		return (string) $value;
 	}
 
 	private function get_competition_repository(): Competition_Repository_Interface {
@@ -295,42 +304,18 @@ class Player_Query_Service {
 	 * @return array
 	 */
 	public function get_competitions( Player $player, array|string $args = array(), ?Competition_Service $competition_service = null ): array {
-		$wpdb = $this->get_wpdb();
-
 		$defaults     = array(
 			'type'   => false,
 			'season' => false,
 		);
 		$args         = array_merge( $defaults, (array) $args );
-		$type         = $args['type'];
-		$season       = $args['season'];
-		$search_terms = array();
-		if ( $type ) {
-			$search_terms[] = $wpdb->prepare( 'c.`type` = %s', $type );
-		}
-		if ( $season ) {
-			$search_terms[] = $wpdb->prepare( 'm.`season` = %s', $season );
-		}
 		$player_id    = (int) ( $player->id ?? $player->ID ?? 0 );
-		$sql          = $wpdb->prepare(
-			"SELECT c.id, c.name, m.season FROM $wpdb->racketmanager_rubber_players rp, $wpdb->racketmanager_rubbers r, $wpdb->racketmanager_matches m, $wpdb->racketmanager l, $wpdb->racketmanager_events e, $wpdb->racketmanager_competitions c WHERE rp.`player_id` = %d AND rp.rubber_id = r.id AND r.match_id = m.id AND m.league_id = l.id AND l.event_id = e.id AND e.competition_id = c.id",
-			$player_id
+		$competitions = $this->get_statistics_repository()->find_competitions_played(
+			$player_id,
+			$this->filter_value( $args['type'] ),
+			$this->filter_value( $args['season'] )
 		);
-		$sql         .= Util::search_string( $search_terms );
-		$sql         .= ' GROUP BY c.id, c.name, m.season';
-		$sql         .= ' ORDER BY m.season DESC, c.name ASC';
-		$competitions = wp_cache_get( md5( $sql ), 'player_competitions' );
-		if ( ! $competitions ) {
-			$competitions = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,
-			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-				$sql
-			);
-			wp_cache_set( md5( $sql ), $competitions, 'player_competitions' );
-		}
-		if ( ! is_array( $competitions ) ) {
-			return array();
-		}
-		$i = 0;
+		$i            = 0;
 		foreach ( $competitions as $competition ) {
 			if ( $competition_service ) {
 				$competition_dtl = $competition_service->get_competition( (int) $competition->id );
@@ -361,32 +346,13 @@ class Player_Query_Service {
 	 * @return array
 	 */
 	public function get_stats_teams( Player $player, array|string $args = array() ): array {
-		$wpdb         = $this->get_wpdb();
-		$defaults     = array(
+		$defaults  = array(
 			'season' => false,
 		);
-		$args         = array_merge( $defaults, (array) $args );
-		$season       = $args['season'];
-		$search_terms = array();
-		if ( $season ) {
-			$search_terms[] = $wpdb->prepare( 'm.`season` = %s', $season );
-		}
-		$search    = Util::search_string( $search_terms );
+		$args      = array_merge( $defaults, (array) $args );
 		$player_id = (int) ( $player->ID ?? $player->id ?? 0 );
-		$sql       = $wpdb->prepare(
-			"SELECT 'teams' as `stat_type`, m.`season`, e.`type` ,rp.`player_team`, m.`home_team`, m.`away_team`, r.`winner_id`, r.`loser_id` FROM $wpdb->racketmanager_rubber_players rp, $wpdb->racketmanager_rubbers r, $wpdb->racketmanager_matches m, $wpdb->racketmanager l, $wpdb->racketmanager_events e WHERE rp.`player_id` = %d AND rp.`rubber_id` = r.`id` AND r.`match_id` = m.`id` AND m.`league_id` = l.`id` AND l.`event_id` = e.`id` ",
-			$player_id
-		);
-		$sql      .= $search . ' ORDER BY m.`season`, e.`type`';
-		$matches   = wp_cache_get( md5( $sql ), 'player_stats_teams' );
-		if ( ! $matches ) {
-			$matches = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,
-			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-				$sql
-			);
-			wp_cache_set( md5( $sql ), $matches, 'player_stats_teams' );
-		}
-		return is_array( $matches ) ? $matches : array();
+
+		return $this->get_statistics_repository()->find_team_stats( $player_id, $this->filter_value( $args['season'] ) );
 	}
 
 	/**
@@ -397,31 +363,12 @@ class Player_Query_Service {
 	 * @return array
 	 */
 	public function get_stats_players( Player $player, array|string $args = array() ): array {
-		$wpdb         = $this->get_wpdb();
-		$defaults     = array(
+		$defaults  = array(
 			'season' => false,
 		);
-		$args         = array_merge( $defaults, (array) $args );
-		$season       = $args['season'];
-		$search_terms = array();
-		if ( $season ) {
-			$search_terms[] = $wpdb->prepare( 'm.`season` = %s', $season );
-		}
-		$search    = Util::search_string( $search_terms );
+		$args      = array_merge( $defaults, (array) $args );
 		$player_id = (int) ( $player->ID ?? $player->id ?? 0 );
-		$sql       = $wpdb->prepare(
-			"SELECT 'players' as `stat_type`,m.`season`, e.`type` ,tp.`team_id`, m.`home_team`, m.`away_team`, m.`winner_id`, m.`loser_id` FROM $wpdb->racketmanager_team_players tp, $wpdb->racketmanager_teams t,$wpdb->racketmanager_matches m, $wpdb->racketmanager l, $wpdb->racketmanager_events e WHERE tp.`player_id` = %d AND tp.`team_id` = t.`id` AND (m.`home_team` = t.`id` OR m.`away_team` = t.`id`) AND m.`league_id` = l.`id` AND l.`event_id` = e.`id` ",
-			$player_id
-		);
-		$sql      .= $search . ' ORDER BY m.`season`, e.`type`';
-		$matches   = wp_cache_get( md5( $sql ), 'player_stats_players' );
-		if ( ! $matches ) {
-			$matches = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,
-			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-				$sql
-			);
-			wp_cache_set( md5( $sql ), $matches, 'player_stats_players' );
-		}
-		return is_array( $matches ) ? $matches : array();
+
+		return $this->get_statistics_repository()->find_player_stats( $player_id, $this->filter_value( $args['season'] ) );
 	}
 }

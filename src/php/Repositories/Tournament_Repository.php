@@ -13,20 +13,26 @@ namespace Racketmanager\Repositories;
 use Closure;
 use Racketmanager\Domain\DTO\Player\Players_List_DTO;
 use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\Finance\Charge;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Domain\Tournament\Tournament_Factory;
+use Racketmanager\Repositories\Concerns\Wpdb_Transactions;
+use Racketmanager\Repositories\Interfaces\Charge_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Tournament_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Util\Util;
 use stdClass;
+use Throwable;
 use wpdb;
 
 /**
  * Class to implement the Tournament repository
  */
 class Tournament_Repository implements Tournament_Repository_Interface {
+    use Wpdb_Transactions;
+
     private wpdb $wpdb;
     private string $table_name;
     private string $competition_table;
@@ -75,6 +81,52 @@ class Tournament_Repository implements Tournament_Repository_Interface {
     private function resolve_competition_service(): ?Competition_Service {
         $resolved = $this->resolve_collaborator( $this->competition_service );
         return $resolved instanceof Competition_Service ? $resolved : null;
+    }
+
+    /**
+     * Save a tournament and its charge record inside a single transaction.
+     *
+     * A `false` value in the result means the corresponding save failed and the
+     * whole transaction was rolled back; `charge` is `null` when the tournament
+     * save failed so the charge was never attempted.
+     *
+     * @param Tournament                  $tournament
+     * @param Charge                      $charge
+     * @param Charge_Repository_Interface $charge_repository
+     *
+     * @return array{tournament: bool|int, charge: bool|int|null}
+     */
+    public function save_with_charge( Tournament $tournament, Charge $charge, Charge_Repository_Interface $charge_repository ): array {
+        $this->begin_transaction();
+        try {
+            $tournament_result = $this->save( $tournament );
+            if ( false === $tournament_result ) {
+                $this->rollback();
+
+                return array(
+                    'tournament' => false,
+                    'charge'     => null,
+                );
+            }
+            $charge_result = $charge_repository->save( $charge );
+            if ( false === $charge_result ) {
+                $this->rollback();
+
+                return array(
+                    'tournament' => $tournament_result,
+                    'charge'     => false,
+                );
+            }
+            $this->commit();
+        } catch ( Throwable $exception ) {
+            $this->rollback();
+            throw $exception;
+        }
+
+        return array(
+            'tournament' => $tournament_result,
+            'charge'     => $charge_result,
+        );
     }
 
     public function save( object $entity ): bool|int {

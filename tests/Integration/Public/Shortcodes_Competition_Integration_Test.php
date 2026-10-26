@@ -106,7 +106,7 @@ class Shortcodes_Competition_Integration_Test extends TestCase {
         $players_handler  = new Get_Competition_Players_Handler(
             $comp_service,
             $player_service,
-            new \Racketmanager\Services\Player_Query_Service(),
+            new \Racketmanager\Services\Player_Query_Service( new \Racketmanager\Repositories\Player_Statistics_Repository() ),
             new \Racketmanager\Services\Player_Stats_Service(),
             new Player_Presenter(),
             $presenter, $this->competition_season_service() );
@@ -135,7 +135,7 @@ class Shortcodes_Competition_Integration_Test extends TestCase {
                 $comp_service,
                 $tournament_svc,
                 $player_service,
-                new \Racketmanager\Services\Player_Query_Service(),
+                new \Racketmanager\Services\Player_Query_Service( new \Racketmanager\Repositories\Player_Statistics_Repository() ),
                 $presenter
             ),
             view_presenter: $view_presenter,

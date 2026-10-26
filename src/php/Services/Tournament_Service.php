@@ -380,34 +380,18 @@ class Tournament_Service {
      * @param Charge $charge
      *
      * @return bool
+     * @throws Database_Operation_Exception when either record fails to save (the repository rolls back the transaction).
      */
     private function save_tournament_and_fees( Tournament $tournament, Charge $charge ): bool {
-        global $wpdb;
-        $wpdb->query( 'START TRANSACTION' );
-        try {
-            $response = $this->tournament_repository->save( $tournament );
-            if ( false === $response ) {
-                throw new Database_Operation_Exception( Util_Messages::tournament_failed_to_save() );
-            } elseif ( 0 === $response ) {
-                $updates = false;
-            } else {
-                $updates = true;
-            }
-            $response = $this->charge_repository->save( $charge );
-            if ( false === $response ) {
-                throw new Database_Operation_Exception( Util_Messages::charge_failed_to_save() );
-            } elseif ( 0 === $response ) {
-                $fee_updates = false;
-            } else {
-                $fee_updates = true;
-            }
-            $wpdb->query( 'COMMIT' );
-        } catch ( Database_Operation_Exception $e ) {
-            $wpdb->query( 'ROLLBACK' );
-            throw new Database_Operation_Exception( $e->getMessage() );
+        $result = $this->tournament_repository->save_with_charge( $tournament, $charge, $this->charge_repository );
+        if ( false === $result['tournament'] ) {
+            throw new Database_Operation_Exception( Util_Messages::tournament_failed_to_save() );
+        }
+        if ( false === $result['charge'] ) {
+            throw new Database_Operation_Exception( Util_Messages::charge_failed_to_save() );
         }
 
-        return $updates || $fee_updates;
+        return 0 !== $result['tournament'] || 0 !== $result['charge'];
     }
 
     private function set_competition_dates( Tournament_Request_DTO $tournament_request ): void {

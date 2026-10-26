@@ -121,6 +121,8 @@ $team_repo = new class implements \Racketmanager\Repositories\Interfaces\Team_Re
 	public function find_team_settings_for_event( int $teamId, int $eventId ): ?\Racketmanager\Domain\DTO\Team\Team_Fixture_Settings_DTO { return null; }
 	public function find_team_by_players( array $player_ids ): ?int { return null; }
 	public function save_team_players( int $team_id, array $player_ids ): bool { return true; }
+	public function save_with_players( \Racketmanager\Domain\Team\Team $team, array $player_ids ): int|false { return 99; }
+	public function delete_with_fixtures( int $team_id, \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface $fixture_repository ): bool { return true; }
 	public function update_event_settings( int $team_id, int $event_id, string $season, string $captain, string $match_day, ?string $match_time ): bool { return true; }
 	public function delete( int $id ): bool { return true; }
 	public function find( int|string $id ): ?object { return $this->find_by_id( $id ); }

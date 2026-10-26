@@ -86,7 +86,7 @@ final class Competition_Repository_Player_Query_Test extends TestCase {
 		};
 
 		$player  = Player_Factory::from_array( array( 'ID' => '7', 'display_name' => 'Test Player' ) );
-		$service = new Player_Query_Service( $wpdb, $competition_repository );
+		$service = new Player_Query_Service( null, $competition_repository );
 		$matches = $service->get_matches( $player, $competition, '2026', 'competition' );
 
 		$this->assertSame( $league, $fixture->get_league() );

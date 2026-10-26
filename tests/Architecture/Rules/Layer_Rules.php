@@ -406,11 +406,11 @@ final class Layer_Rules {
             new Layer_Rule(
                 'services.no_wpdb',
                 'Services must not run raw $wpdb queries',
-                'Backlog P2-6: move the SQL into a repository (League_Team_Repository, Player_Repository, Season_Repository, Team_Repository) (audit L7).',
+                'Persistence belongs in Repositories/; inject a Repositories\Interfaces\* port (e.g. Player_Statistics_Repository_Interface) or add a transaction-owning repository method such as Team_Repository::save_with_players() (audit L7, P2-6 done).',
                 [ self::SERVICES ],
                 Rule_Kind::FORBIDDEN_VARIABLE,
                 [ 'wpdb' ],
-                Rule_Mode::RATCHET
+                Rule_Mode::STRICT
             ),
             new Layer_Rule(
                 'services.no_global_racketmanager',

@@ -29,6 +29,8 @@ interface Team_Repository_Interface extends Repository_Interface {
     public function find_team_settings_for_event( int $teamId, int $eventId ): ?Team_Fixture_Settings_DTO;
     public function find_team_by_players( array $player_ids ): ?int;
     public function save_team_players( int $team_id, array $player_ids ): bool;
+    public function save_with_players( Team $team, array $player_ids ): int|false;
+    public function delete_with_fixtures( int $team_id, Fixture_Repository_Interface $fixture_repository ): bool;
     public function update_event_settings( int $team_id, int $event_id, string $season, string $captain, string $match_day, ?string $match_time ): bool;
     public function find_all( array $args = array() ): array|int;
 }

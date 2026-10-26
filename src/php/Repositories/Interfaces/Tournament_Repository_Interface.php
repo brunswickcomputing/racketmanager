@@ -10,6 +10,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Repositories\Interfaces;
 
+use Racketmanager\Domain\Finance\Charge;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Domain\Competition\Event;
 use stdClass;
@@ -19,6 +20,12 @@ use stdClass;
  */
 interface Tournament_Repository_Interface extends Repository_Interface {
     public function save( object $entity ): bool|int;
+    /**
+     * Save a tournament and its charge inside one transaction.
+     *
+     * @return array{tournament: bool|int, charge: bool|int|null} A `false` value means that save failed and the transaction was rolled back.
+     */
+    public function save_with_charge( Tournament $tournament, Charge $charge, Charge_Repository_Interface $charge_repository ): array;
     public function find_by_id( int|string|null $id ): ?Tournament;
     public function find_tournament_overview( int $tournament_id ): ?stdClass;
     public function find_active( ?string $age_group = null ): ?Tournament;

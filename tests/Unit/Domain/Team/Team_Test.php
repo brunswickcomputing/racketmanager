@@ -264,148 +264,55 @@ final class Team_Test extends TestCase {
         $this->assertTrue( $deleted );
     }
 
-    public function test_team_service_delete_team_transaction_success(): void {
-        $wpdb = $this->createMock( wpdb::class );
-        $GLOBALS['wpdb'] = $wpdb;
-
-        $wpdb->expects( $this->exactly( 2 ) )
-            ->method( 'query' )
-            ->willReturnCallback( function( $sql ) {
-                static $step = 0;
-                $step++;
-                if ( 1 === $step ) {
-                    $this->assertSame( 'START TRANSACTION', $sql );
-                } elseif ( 2 === $step ) {
-                    $this->assertSame( 'COMMIT', $sql );
-                }
-                return true;
-            } );
-
+    public function test_team_service_delete_team_delegates_to_repository_composite(): void {
         $team_repo    = $this->createMock( Team_Repository::class );
         $club_repo    = $this->createMock( Club_Repository::class );
         $event_repo   = $this->createMock( Event_Repository::class );
         $player_serv  = $this->createMock( Player_Service::class );
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
 
-        $fixture_repo->expects( $this->once() )
-            ->method( 'delete_by_team' )
-            ->with( 100 )
-            ->willReturn( true );
-
         $team_repo->expects( $this->once() )
-            ->method( 'delete' )
-            ->with( 100 )
+            ->method( 'delete_with_fixtures' )
+            ->with( 100, $this->identicalTo( $fixture_repo ) )
             ->willReturn( true );
+        $team_repo->expects( $this->never() )->method( 'delete' );
+        $fixture_repo->expects( $this->never() )->method( 'delete_by_team' );
 
         $service = new Team_Service( $team_repo, $club_repo, $event_repo, $player_serv, $fixture_repo );
         $result  = $service->delete_team( 100 );
         $this->assertTrue( $result );
     }
 
-    public function test_team_service_delete_team_fixture_delete_failure_rolls_back(): void {
-        $wpdb = $this->createMock( wpdb::class );
-        $GLOBALS['wpdb'] = $wpdb;
-
-        $wpdb->expects( $this->exactly( 2 ) )
-            ->method( 'query' )
-            ->willReturnCallback( function( $sql ) {
-                static $step = 0;
-                $step++;
-                if ( 1 === $step ) {
-                    $this->assertSame( 'START TRANSACTION', $sql );
-                } elseif ( 2 === $step ) {
-                    $this->assertSame( 'ROLLBACK', $sql );
-                }
-                return true;
-            } );
-
+    public function test_team_service_delete_team_casts_string_id_and_returns_repository_failure(): void {
         $team_repo    = $this->createMock( Team_Repository::class );
         $club_repo    = $this->createMock( Club_Repository::class );
         $event_repo   = $this->createMock( Event_Repository::class );
         $player_serv  = $this->createMock( Player_Service::class );
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
-
-        $fixture_repo->expects( $this->once() )
-            ->method( 'delete_by_team' )
-            ->with( 100 )
-            ->willReturn( false );
-
-        $team_repo->expects( $this->never() )
-            ->method( 'delete' );
-
-        $service = new Team_Service( $team_repo, $club_repo, $event_repo, $player_serv, $fixture_repo );
-        $result  = $service->delete_team( 100 );
-        $this->assertFalse( $result );
-    }
-
-    public function test_team_service_delete_team_team_delete_failure_rolls_back(): void {
-        $wpdb = $this->createMock( wpdb::class );
-        $GLOBALS['wpdb'] = $wpdb;
-
-        $wpdb->expects( $this->exactly( 2 ) )
-            ->method( 'query' )
-            ->willReturnCallback( function( $sql ) {
-                static $step = 0;
-                $step++;
-                if ( 1 === $step ) {
-                    $this->assertSame( 'START TRANSACTION', $sql );
-                } elseif ( 2 === $step ) {
-                    $this->assertSame( 'ROLLBACK', $sql );
-                }
-                return true;
-            } );
-
-        $team_repo    = $this->createMock( Team_Repository::class );
-        $club_repo    = $this->createMock( Club_Repository::class );
-        $event_repo   = $this->createMock( Event_Repository::class );
-        $player_serv  = $this->createMock( Player_Service::class );
-        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
-
-        $fixture_repo->expects( $this->once() )
-            ->method( 'delete_by_team' )
-            ->with( 100 )
-            ->willReturn( true );
 
         $team_repo->expects( $this->once() )
-            ->method( 'delete' )
-            ->with( 100 )
+            ->method( 'delete_with_fixtures' )
+            ->with( $this->identicalTo( 100 ), $this->identicalTo( $fixture_repo ) )
             ->willReturn( false );
 
         $service = new Team_Service( $team_repo, $club_repo, $event_repo, $player_serv, $fixture_repo );
-        $result  = $service->delete_team( 100 );
+        $result  = $service->delete_team( '100' );
         $this->assertFalse( $result );
     }
 
-    public function test_team_service_delete_team_exception_rolls_back(): void {
-        $wpdb = $this->createMock( wpdb::class );
-        $GLOBALS['wpdb'] = $wpdb;
-
-        $wpdb->expects( $this->exactly( 2 ) )
-            ->method( 'query' )
-            ->willReturnCallback( function( $sql ) {
-                static $step = 0;
-                $step++;
-                if ( 1 === $step ) {
-                    $this->assertSame( 'START TRANSACTION', $sql );
-                } elseif ( 2 === $step ) {
-                    $this->assertSame( 'ROLLBACK', $sql );
-                }
-                return true;
-            } );
-
+    public function test_team_service_delete_team_returns_false_for_empty_id_without_calling_repository(): void {
         $team_repo    = $this->createMock( Team_Repository::class );
         $club_repo    = $this->createMock( Club_Repository::class );
         $event_repo   = $this->createMock( Event_Repository::class );
         $player_serv  = $this->createMock( Player_Service::class );
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
 
-        $fixture_repo->expects( $this->once() )
-            ->method( 'delete_by_team' )
-            ->willThrowException( new \RuntimeException( 'DB Error' ) );
+        $team_repo->expects( $this->never() )->method( 'delete_with_fixtures' );
 
         $service = new Team_Service( $team_repo, $club_repo, $event_repo, $player_serv, $fixture_repo );
-        $result  = $service->delete_team( 100 );
-        $this->assertFalse( $result );
+        $this->assertFalse( $service->delete_team( null ) );
+        $this->assertFalse( $service->delete_team( 0 ) );
+        $this->assertFalse( $service->delete_team( '' ) );
     }
 
     public function test_team_service_update_team_event_success(): void {

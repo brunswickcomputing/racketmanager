@@ -3,18 +3,17 @@
  * Run Upgrade page administration panel
  *
  * @package  Racketmanager/Templates
+ *
+ * @var Racketmanager\Services\Upgrade $upgrade Upgrade runner built by Admin_Upgrade.
  */
 
 namespace Racketmanager;
-
-use Racketmanager\Services\Upgrade;
 
 ?>
 <div class="container">
     <h1><?php esc_html_e( 'Upgrade RacketManager', 'racketmanager' ); ?></h1>
     <p><?php esc_html_e( 'Upgrade database structure...', 'racketmanager' ); ?></p>
     <?php
-    $upgrade = new Upgrade( $this->racketmanager );
     $upgrade->run();
     ?>
     <p><?php esc_html_e( 'finished', 'racketmanager' ); ?></p>

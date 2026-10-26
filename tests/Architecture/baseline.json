@@ -339,7 +339,6 @@
         "src/php/Services/Login.php|global $racketmanager": 6,
         "src/php/Services/Result_Service.php|global $racketmanager": 2,
         "src/php/Services/Standings/Standings_Service.php|global $racketmanager": 3,
-        "src/php/Services/Upgrade.php|global $racketmanager": 1,
         "src/php/Services/Validator/Validator.php|global $racketmanager": 1,
         "src/php/Services/Validator/Validator_Fixture.php|global $racketmanager": 1,
         "src/php/Services/Widget.php|global $racketmanager": 1,
@@ -405,14 +404,6 @@
         "src/php/Services/View/Shortcode_Template_Renderer.php|depends on Racketmanager\\Presentation\\Presenters\\Club_Presenter": 1,
         "src/php/Services/View/Shortcode_Template_Renderer.php|depends on Racketmanager\\Presentation\\Presenters\\Favourite_Presenter": 1,
         "src/php/Services/View/Shortcode_Template_Renderer.php|depends on Racketmanager\\Presentation\\Presenters\\Player_Presenter": 1
-    },
-    "services.no_wpdb": {
-        "src/php/Services/Competition_Entry_Service.php|$wpdb": 4,
-        "src/php/Services/Container/Providers/Player_Service_Provider.php|$wpdb": 3,
-        "src/php/Services/Player_Query_Service.php|$wpdb": 34,
-        "src/php/Services/Team_Service.php|$wpdb": 11,
-        "src/php/Services/Tournament_Service.php|$wpdb": 4,
-        "src/php/Services/Upgrade.php|$wpdb": 2
     },
     "templates.no_global_racketmanager": {
         "templates/forms/match-input.php|$GLOBALS['racketmanager']": 3,

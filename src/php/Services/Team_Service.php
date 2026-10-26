@@ -206,34 +206,7 @@ class Team_Service implements Fixture_Team_Resolver_Interface {
         if ( ! $team_id ) {
             return false;
         }
-        $team_id = (int) $team_id;
-        global $wpdb;
-
-        if ( $wpdb ) {
-            $wpdb->query( 'START TRANSACTION' );
-        }
-        try {
-            $fixtures_deleted = $this->fixture_repository->delete_by_team( $team_id );
-            if ( ! $fixtures_deleted ) {
-                if ( $wpdb ) {
-                    $wpdb->query( 'ROLLBACK' );
-                }
-                return false;
-            }
-
-            $deleted = $this->team_repository->delete( $team_id );
-            if ( $deleted && $wpdb ) {
-                $wpdb->query( 'COMMIT' );
-            } elseif ( $wpdb ) {
-                $wpdb->query( 'ROLLBACK' );
-            }
-            return (bool) $deleted;
-        } catch ( \Throwable $e ) {
-            if ( $wpdb ) {
-                $wpdb->query( 'ROLLBACK' );
-            }
-            return false;
-        }
+        return $this->team_repository->delete_with_fixtures( (int) $team_id, $this->fixture_repository );
     }
 
     /**

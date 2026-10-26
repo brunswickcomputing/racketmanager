@@ -15,15 +15,21 @@ use Racketmanager\Domain\DTO\Team\Team_Competition_DTO;
 use Racketmanager\Domain\DTO\Team\Team_Fixture_Settings_DTO;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Team\Team_Factory;
+use Racketmanager\Exceptions\Database_Operation_Exception;
+use Racketmanager\Repositories\Concerns\Wpdb_Transactions;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Util\Util;
+use Throwable;
 use wpdb;
 
 /**
  * Class to implement the Team repository
  */
 class Team_Repository implements Team_Repository_Interface {
+    use Wpdb_Transactions;
+
     private ?object $wpdb = null;
     private ?string $table_name = null;
     private ?string $team_players_table = null;
@@ -417,6 +423,82 @@ class Team_Repository implements Team_Repository_Interface {
         }
         wp_cache_delete( $team_id, 'teams' );
         return $success;
+    }
+
+    /**
+     * Save a team and its players atomically.
+     *
+     * Opens a transaction, saves the team then its players and commits. When either
+     * step fails, or no valid team id can be derived from the saved entity, the
+     * transaction is rolled back and false is returned.
+     *
+     * @param Team $team
+     * @param array $player_ids
+     *
+     * @return int|false the persisted team id, or false when the save was rolled back
+     */
+    public function save_with_players( Team $team, array $player_ids ): int|false {
+        $this->begin_transaction();
+        try {
+            $saved = $this->save( $team );
+            if ( ! $saved ) {
+                throw new Database_Operation_Exception( __( 'Unable to save team', 'racketmanager' ) );
+            }
+            // save() returns the new id on insert but bool true on update: always take the id from the entity.
+            $team_id = (int) ( $team->get_id() ?? 0 );
+            if ( $team_id <= 0 ) {
+                throw new Database_Operation_Exception( __( 'Unable to save team', 'racketmanager' ) );
+            }
+            $saved_players = $this->save_team_players( $team_id, $player_ids );
+            if ( ! $saved_players ) {
+                throw new Database_Operation_Exception( __( 'Unable to save team players', 'racketmanager' ) );
+            }
+            $this->commit();
+
+            return $team_id;
+        } catch ( Database_Operation_Exception ) {
+            $this->rollback();
+
+            return false;
+        } catch ( Throwable $e ) {
+            $this->rollback();
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Delete a team together with its fixtures atomically.
+     *
+     * Opens a transaction, deletes the team's fixtures through the supplied fixture
+     * repository, then deletes the team and commits. Any failure or exception rolls
+     * the transaction back and returns false.
+     *
+     * @param int $team_id
+     * @param Fixture_Repository_Interface $fixture_repository
+     *
+     * @return bool
+     */
+    public function delete_with_fixtures( int $team_id, Fixture_Repository_Interface $fixture_repository ): bool {
+        $this->begin_transaction();
+        try {
+            $fixtures_deleted = $fixture_repository->delete_by_team( $team_id );
+            if ( ! $fixtures_deleted ) {
+                $this->rollback();
+                return false;
+            }
+
+            $deleted = $this->delete( $team_id );
+            if ( $deleted ) {
+                $this->commit();
+            } else {
+                $this->rollback();
+            }
+            return (bool) $deleted;
+        } catch ( Throwable ) {
+            $this->rollback();
+            return false;
+        }
     }
 
     /**

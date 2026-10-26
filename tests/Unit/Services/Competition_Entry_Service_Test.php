@@ -49,7 +49,6 @@ use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
-use Racketmanager\Tests\Helpers\Recording_Wpdb;
 use Racketmanager\Util\Util_Messages;
 use stdClass;
 use WP_Error;
@@ -1735,16 +1734,11 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15 );
 
         $saved_team = null;
-        $this->team_repository->expects( $this->once() )->method( 'save' )->willReturnCallback( function( $team ) use ( &$saved_team ) {
-            $saved_team = $team;
-            return 501;
-        } );
-        $saved_players_team_id = null;
         $saved_player_ids = null;
-        $this->team_repository->expects( $this->once() )->method( 'save_team_players' )->with( 501, [ 10 ] )->willReturnCallback( function( $t_id, $p_ids ) use ( &$saved_players_team_id, &$saved_player_ids ) {
-            $saved_players_team_id = $t_id;
+        $this->team_repository->expects( $this->once() )->method( 'save_with_players' )->willReturnCallback( function( $team, $p_ids ) use ( &$saved_team, &$saved_player_ids ) {
+            $saved_team       = $team;
             $saved_player_ids = $p_ids;
-            return true;
+            return 501;
         } );
 
         $saved_league_team = null;
@@ -1767,7 +1761,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->assertSame( 'Player 10', $saved_team->get_name() );
         $this->assertSame( 'MS', $saved_team->get_type() );
         $this->assertSame( 'P', $saved_team->get_team_type() );
-        $this->assertSame( 501, $saved_players_team_id );
+        $this->assertSame( [ 10 ], $saved_player_ids );
         $this->assertSame( [ 10 ], $saved_player_ids );
 
         $this->assertInstanceOf( League_Team::class, $saved_league_team );
@@ -1908,11 +1902,10 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->team_repository->expects( $this->once() )->method( 'find_team_by_players' )->with( [ 10, 30 ] )->willReturn( null );
 
         $saved_team = null;
-        $this->team_repository->expects( $this->once() )->method( 'save' )->willReturnCallback( function( $team ) use ( &$saved_team ) {
+        $this->team_repository->expects( $this->once() )->method( 'save_with_players' )->with( $this->isInstanceOf( Team::class ), [ 10, 30 ] )->willReturnCallback( function( $team ) use ( &$saved_team ) {
             $saved_team = $team;
             return 201;
         } );
-        $this->team_repository->expects( $this->once() )->method( 'save_team_players' )->with( 201, [ 10, 30 ] )->willReturn( true );
 
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
         $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15 );
@@ -2043,8 +2036,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
 
         // Team save fails, returning 0
-        $this->team_repository->expects( $this->once() )->method( 'save' )->willReturn( 0 );
-        $this->team_repository->expects( $this->never() )->method( 'save_team_players' );
+        $this->team_repository->expects( $this->once() )->method( 'save_with_players' )->willReturn( false );
         $this->league_team_repository->expects( $this->never() )->method( 'save' );
 
         $dto = $this->create_tournament_entry_request( [
@@ -2089,8 +2081,7 @@ class Competition_Entry_Service_Test extends TestCase {
             ->willReturn( null );
 
         // Team save fails, returning 0
-        $this->team_repository->expects( $this->once() )->method( 'save' )->willReturn( 0 );
-        $this->team_repository->expects( $this->never() )->method( 'save_team_players' );
+        $this->team_repository->expects( $this->once() )->method( 'save_with_players' )->willReturn( false );
 
         // Crucial assertions: old league team must NOT be deleted, no new league team saved, no financials/entry saved
         $this->league_team_repository->expects( $this->never() )->method( 'delete' );
@@ -2144,12 +2135,8 @@ class Competition_Entry_Service_Test extends TestCase {
 
         // Event 10 succeeds creating team 501, Event 20 fails returning 0
         $this->team_repository->expects( $this->exactly( 2 ) )
-            ->method( 'save' )
-            ->willReturnOnConsecutiveCalls( 501, 0 );
-        $this->team_repository->expects( $this->once() )
-            ->method( 'save_team_players' )
-            ->with( 501, [ 10 ] )
-            ->willReturn( true );
+            ->method( 'save_with_players' )
+            ->willReturnOnConsecutiveCalls( 501, false );
 
         // Crucial assertions: NO league team saves (not for event 10, not for missed event 30 withdrawal)
         $this->league_team_repository->expects( $this->never() )->method( 'save' );
@@ -2207,8 +2194,7 @@ class Competition_Entry_Service_Test extends TestCase {
             [ [ 10 ], null ],
             [ [ 10, 30 ], 450 ],
         ] );
-        $this->team_repository->expects( $this->once() )->method( 'save' )->willReturn( 501 );
-        $this->team_repository->expects( $this->once() )->method( 'save_team_players' )->with( 501, [ 10 ] )->willReturn( true );
+        $this->team_repository->expects( $this->once() )->method( 'save_with_players' )->with( $this->isInstanceOf( Team::class ), [ 10 ] )->willReturn( 501 );
 
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
         $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 25 );
@@ -2284,80 +2270,51 @@ class Competition_Entry_Service_Test extends TestCase {
         ], $operations[2] );
     }
 
-    public function test_add_team_with_players_rolls_back_transaction_on_database_exception(): void {
-        $recording_wpdb = new Recording_Wpdb();
-        $GLOBALS['wpdb'] = $recording_wpdb;
-
-        $player = $this->create_tournament_player( 10, 'M', 1990 );
-        $this->team_repository->method( 'save' )->willThrowException( new Database_Operation_Exception( 'Unable to save team' ) );
-        $this->team_repository->expects( $this->never() )->method( 'save_team_players' );
-
-        $result = $this->service->add_team_with_players( [ $player ], 'MS' );
-
-        $this->assertFalse( $result );
-
-        $query_sqls = array_column( $recording_wpdb->executed, 'sql' );
-        $this->assertContains( 'START TRANSACTION', $query_sqls );
-        $this->assertContains( 'ROLLBACK', $query_sqls );
-        $this->assertNotContains( 'COMMIT', $query_sqls );
-    }
-
-    public function test_add_team_with_players_rolls_back_transaction_when_team_id_is_empty(): void {
-        $recording_wpdb = new Recording_Wpdb();
-        $GLOBALS['wpdb'] = $recording_wpdb;
-
-        $player = $this->create_tournament_player( 10, 'M', 1990 );
-        $this->team_repository->method( 'save' )->willReturn( 0 );
-        $this->team_repository->expects( $this->never() )->method( 'save_team_players' );
-
-        $result = $this->service->add_team_with_players( [ $player ], 'MS' );
-
-        $this->assertFalse( $result );
-
-        $query_sqls = array_column( $recording_wpdb->executed, 'sql' );
-        $this->assertContains( 'START TRANSACTION', $query_sqls );
-        $this->assertContains( 'ROLLBACK', $query_sqls );
-        $this->assertNotContains( 'COMMIT', $query_sqls );
-    }
-
-    public function test_add_team_with_players_rolls_back_transaction_when_save_team_players_fails(): void {
-        $recording_wpdb = new Recording_Wpdb();
-        $GLOBALS['wpdb'] = $recording_wpdb;
-
+    public function test_add_team_with_players_builds_team_and_delegates_to_save_with_players(): void {
         $player1 = $this->create_tournament_player( 10, 'M', 1990 );
         $player2 = $this->create_tournament_player( 20, 'M', 1992 );
 
-        $this->team_repository->method( 'save' )->willReturn( 777 );
-        $this->team_repository->expects( $this->once() )->method( 'save_team_players' )->with( 777, [ 10, 20 ] )->willReturn( false );
-
-        $result = $this->service->add_team_with_players( [ $player1, $player2 ], 'MD' );
-
-        $this->assertFalse( $result );
-
-        $query_sqls = array_column( $recording_wpdb->executed, 'sql' );
-        $this->assertContains( 'START TRANSACTION', $query_sqls );
-        $this->assertContains( 'ROLLBACK', $query_sqls );
-        $this->assertNotContains( 'COMMIT', $query_sqls );
-    }
-
-    public function test_add_team_with_players_commits_transaction_on_success(): void {
-        $recording_wpdb = new Recording_Wpdb();
-        $GLOBALS['wpdb'] = $recording_wpdb;
-
-        $player1 = $this->create_tournament_player( 10, 'M', 1990 );
-        $player2 = $this->create_tournament_player( 20, 'M', 1992 );
-
-        $this->team_repository->method( 'save' )->willReturn( 777 );
-        $this->team_repository->expects( $this->once() )->method( 'save_team_players' )->with( 777, [ 10, 20 ] )->willReturn( true );
+        $saved_team = null;
+        $this->team_repository->expects( $this->once() )
+            ->method( 'save_with_players' )
+            ->with( $this->isInstanceOf( Team::class ), [ 10, 20 ] )
+            ->willReturnCallback( function( Team $team ) use ( &$saved_team ) {
+                $saved_team = $team;
+                return 777;
+            } );
+        $this->team_repository->expects( $this->never() )->method( 'save' );
+        $this->team_repository->expects( $this->never() )->method( 'save_team_players' );
 
         $result = $this->service->add_team_with_players( [ $player1, $player2 ], 'MD' );
 
         $this->assertSame( 777, $result );
+        $this->assertInstanceOf( Team::class, $saved_team );
+        $this->assertNull( $saved_team->get_id() );
+        $this->assertSame( 'Player 10 / Player 20', $saved_team->get_name() );
+        $this->assertSame( 'MD', $saved_team->get_type() );
+        $this->assertSame( 'P', $saved_team->get_team_type() );
+    }
 
-        $query_sqls = array_column( $recording_wpdb->executed, 'sql' );
-        $this->assertContains( 'START TRANSACTION', $query_sqls );
-        $this->assertContains( 'COMMIT', $query_sqls );
-        $this->assertNotContains( 'ROLLBACK', $query_sqls );
+    public function test_add_team_with_players_single_player_uses_player_name_as_team_name(): void {
+        $player = $this->create_tournament_player( 10, 'M', 1990 );
+
+        $this->team_repository->expects( $this->once() )
+            ->method( 'save_with_players' )
+            ->with(
+                $this->callback( fn( Team $team ) => 'Player 10' === $team->get_name() && 'MS' === $team->get_type() && 'P' === $team->get_team_type() ),
+                [ 10 ]
+            )
+            ->willReturn( 501 );
+
+        $this->assertSame( 501, $this->service->add_team_with_players( [ $player ], 'MS' ) );
+    }
+
+    public function test_add_team_with_players_returns_false_when_repository_rolls_back(): void {
+        $player = $this->create_tournament_player( 10, 'M', 1990 );
+
+        $this->team_repository->expects( $this->once() )->method( 'save_with_players' )->willReturn( false );
+
+        $this->assertFalse( $this->service->add_team_with_players( [ $player ], 'MS' ) );
     }
 
     public function test_tournament_entry_partial_payment_calculates_remaining_balance_and_assigns_fee_and_invoice_dto(): void {

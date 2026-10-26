@@ -6,6 +6,9 @@ namespace Racketmanager\Tests\Unit\Services;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use Racketmanager\Domain\Finance\Charge;
+use Racketmanager\Domain\Tournament\Tournament;
+use Racketmanager\Exceptions\Database_Operation_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Charge_Repository;
@@ -184,5 +187,68 @@ class Tournament_Service_Test extends TestCase {
         $competition_service->expects( self::never() )->method( 'get_competition_events' );
 
         self::assertSame( [], $this->make_entry_service( $competition_service )->get_unavailable_entry_events( $this->make_entry_tournament( null ), [] ) );
+    }
+
+    /**
+     * Invoke the private save_tournament_and_fees() against a service whose tournament repository
+     * answers save_with_charge() with the given result.
+     */
+    private function save_tournament_and_fees_with( array $composite_result ): bool {
+        $tournament        = new Tournament();
+        $charge            = new Charge();
+        $charge_repository = $this->createMock( Charge_Repository::class );
+        $charge_repository->expects( self::never() )->method( 'save' );
+
+        $tournament_repository = $this->createMock( Tournament_Repository_Interface::class );
+        $tournament_repository->expects( self::once() )
+            ->method( 'save_with_charge' )
+            ->with( self::identicalTo( $tournament ), self::identicalTo( $charge ), self::identicalTo( $charge_repository ) )
+            ->willReturn( $composite_result );
+        $tournament_repository->expects( self::never() )->method( 'save' );
+
+        $service = new Tournament_Service(
+            $this->createMock( RacketManager::class ),
+            $tournament_repository,
+            $charge_repository,
+            $this->createMock( Event_Repository_Interface::class ),
+            $this->createMock( Fixture_Service::class ),
+            $this->createMock( League_Team_Repository_Interface::class ),
+            $this->createMock( Tournament_Entry_Repository_Interface::class ),
+            $this->createMock( Competition_Service::class ),
+            $this->createMock( Player_Service::class ),
+            $this->createMock( Player_Stats_Service::class ),
+            $this->createMock( Club_Service::class ),
+            $this->createMock( Finance_Service::class ),
+            $this->createMock( League_Service::class )
+        );
+
+        $method = new \ReflectionMethod( $service, 'save_tournament_and_fees' );
+
+        return $method->invoke( $service, $tournament, $charge );
+    }
+
+    public function test_save_tournament_and_fees_throws_tournament_message_when_tournament_save_fails(): void {
+        $this->expectException( Database_Operation_Exception::class );
+        $this->expectExceptionMessage( Util_Messages::tournament_failed_to_save() );
+
+        $this->save_tournament_and_fees_with( [ 'tournament' => false, 'charge' => null ] );
+    }
+
+    public function test_save_tournament_and_fees_throws_charge_message_when_charge_save_fails(): void {
+        $this->expectException( Database_Operation_Exception::class );
+        $this->expectExceptionMessage( Util_Messages::charge_failed_to_save() );
+
+        $this->save_tournament_and_fees_with( [ 'tournament' => 7, 'charge' => false ] );
+    }
+
+    public function test_save_tournament_and_fees_reports_updates_when_either_record_changed(): void {
+        self::assertTrue( $this->save_tournament_and_fees_with( [ 'tournament' => 7, 'charge' => 9 ] ) );
+        self::assertTrue( $this->save_tournament_and_fees_with( [ 'tournament' => 0, 'charge' => 9 ] ) );
+        self::assertTrue( $this->save_tournament_and_fees_with( [ 'tournament' => true, 'charge' => 0 ] ) );
+        self::assertTrue( $this->save_tournament_and_fees_with( [ 'tournament' => 7, 'charge' => 0 ] ) );
+    }
+
+    public function test_save_tournament_and_fees_reports_no_updates_when_both_records_unchanged(): void {
+        self::assertFalse( $this->save_tournament_and_fees_with( [ 'tournament' => 0, 'charge' => 0 ] ) );
     }
 }

@@ -15,6 +15,7 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Services\Result_Factory;
 use Racketmanager\Services\Result_Service;
@@ -26,6 +27,7 @@ final class Championship_Manager {
         private Fixture_Repository_Interface $fixture_repository,
         private League_Service $league_service,
         private Event_Repository_Interface $event_repository,
+        private League_Query_Service $league_query_service,
         private ?Notification_Service $notification_service = null
     ) {
     }
@@ -312,7 +314,7 @@ final class Championship_Manager {
                     }
 
                     if ( '-1' !== $team_switch ) {
-                        $switch_teams = \Racketmanager\get_league_query_service()->get_league_teams( $consolation_league,
+                        $switch_teams = $this->league_query_service->get_league_teams( $consolation_league,
                             array(
                                 'team_id'          => $team_switch,
                                 'reset_query_args' => true,
@@ -320,11 +322,11 @@ final class Championship_Manager {
                         );
 
                         if ( ! $switch_teams ) {
-                            \Racketmanager\get_league_query_service()->add_team( $consolation_league, $team_switch, $consolation_league->current_season['name'] );
+                            $this->league_query_service->add_team( $consolation_league, $team_switch, $consolation_league->current_season['name'] );
                         }
                     }
 
-                    $consolation_teams = \Racketmanager\get_league_query_service()->get_league_teams( $consolation_league,
+                    $consolation_teams = $this->league_query_service->get_league_teams( $consolation_league,
                         array(
                             'team_name'        => $team_ref,
                             'reset_query_args' => true,

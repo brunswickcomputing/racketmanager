@@ -7,10 +7,11 @@ use Racketmanager\Domain\Result\Result;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Gateways\Mail\Mailer_Interface;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
+use Racketmanager\Domain\Competition\League;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Util\Util;
-use function Racketmanager\get_league;
 
 class Result_Service {
     /**
@@ -28,10 +29,27 @@ class Result_Service {
      */
     private Mailer_Interface $mailer;
 
-    public function __construct( Fixture_Repository_Interface $fixture_repository, Team_Repository_Interface $team_repository, ?Mailer_Interface $mailer = null ) {
+    /**
+     * League lookups by fixture league id; without a repository no league can be resolved.
+     */
+    private ?League_Repository_Interface $league_repository;
+
+    public function __construct( Fixture_Repository_Interface $fixture_repository, Team_Repository_Interface $team_repository, ?Mailer_Interface $mailer = null, ?League_Repository_Interface $league_repository = null ) {
+        $this->league_repository = $league_repository;
         $this->fixture_repository = $fixture_repository;
         $this->team_repository    = $team_repository;
         $this->mailer             = $mailer ?? new Wp_Mailer();
+    }
+
+    /**
+     * Look the fixture's league up by id through the injected repository (null when unknown).
+     */
+    private function find_league( Fixture $fixture ): ?League {
+        $league_id = (int) $fixture->get_league_id();
+        if ( $league_id <= 0 || null === $this->league_repository ) {
+            return null;
+        }
+        return $this->league_repository->find_by_id( $league_id );
     }
 
     /**
@@ -44,7 +62,7 @@ class Result_Service {
     public function apply_to_fixture( Fixture $fixture, Result $result, ?string $confirmed = null ): void {
         global $racketmanager;
         
-        $league = get_league( $fixture->get_league_id() );
+        $league = $this->find_league( $fixture );
         $competition_type = $league?->event?->competition?->type ?? 'league';
         $rm_options = $racketmanager->get_options();
         $result_confirmation = $rm_options[ $competition_type ]['resultConfirmation'] ?? 'manual';
@@ -87,7 +105,7 @@ class Result_Service {
     public function notify_favourites( Fixture $fixture ): void {
         global $racketmanager;
 
-        $league = get_league( $fixture->get_league_id() );
+        $league = $this->find_league( $fixture );
         if ( ! $league ) {
             return;
         }

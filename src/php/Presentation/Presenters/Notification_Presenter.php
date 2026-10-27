@@ -7,6 +7,7 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Presentation\Formatters\Email_Date_Formatter;
 use Racketmanager\Presentation\View_Models\Send_Fixtures_Match_Row_View_Model;
@@ -15,6 +16,7 @@ use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Tournament_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Export\DTO\Export_Criteria;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
@@ -24,7 +26,6 @@ use Racketmanager\Util\Util;
 use stdClass;
 use function __;
 use function sanitize_title;
-use function Racketmanager\seo_url;
 
 readonly class Notification_Presenter {
 
@@ -39,6 +40,7 @@ readonly class Notification_Presenter {
         private Fixture_Permission_Service $permission_service,
         private string $site_url,
         private string $site_name,
+        private League_Query_Service $league_query_service,
         private ?Rubber_Repository_Interface $rubber_repository = null,
         private ?Option_Gateway_Interface $option_gateway = null,
     ) {
@@ -114,7 +116,7 @@ readonly class Notification_Presenter {
         $dto = is_numeric( $team_id ) ? $this->team_service->get_team_details( (int) $team_id ) : $this->team_service->derive_team_details( (string) $team_id );
 
         if ( $dto && is_numeric( $team_id ) && method_exists( $league, 'get_status' ) ) {
-            $status            = \Racketmanager\get_league_query_service()->get_status( $league, (int) $team_id, $season );
+            $status            = $this->league_query_service->get_status( $league, (int) $team_id, $season );
             $dto->is_withdrawn = ( 'W' === $status );
         }
 
@@ -226,15 +228,15 @@ readonly class Notification_Presenter {
                 $data['tournament']      = $tournament;
                 $tournament_path         = ( new Tournament_Presenter() )->get_link( (object) $tournament );
                 $data['tournament_link'] = '<a href="' . $this->site_url . $tournament_path . '">' . $tournament->name . '</a>';
-                $data['draw_link']       = '<a href="' . $this->site_url . $tournament_path . 'draw/' . seo_url( $fixture_details->event->get_name() ) . '/">' . $fixture_details->event->get_name() . '</a>';
-                $data['action_url']      = $this->site_url . $tournament_path . 'match/' . seo_url( $fixture_details->league->get_name() ) . '/' . seo_url( $fixture_details->home_team->team->get_name() ) . '-vs-' . seo_url( $fixture_details->away_team->team->get_name() ) . '/' . $fixture->get_id() . '/';
+                $data['draw_link']       = '<a href="' . $this->site_url . $tournament_path . 'draw/' . Seo_Slug::encode( $fixture_details->event->get_name() ) . '/">' . $fixture_details->event->get_name() . '</a>';
+                $data['action_url']      = $this->site_url . $tournament_path . 'match/' . Seo_Slug::encode( $fixture_details->league->get_name() ) . '/' . Seo_Slug::encode( $fixture_details->home_team->team->get_name() ) . '-vs-' . Seo_Slug::encode( $fixture_details->away_team->team->get_name() ) . '/' . $fixture->get_id() . '/';
             }
 
             $suffix                     = str_contains( $fixture_details->event->get_type() ?? '', 'D' ) ? ' Players' : ' Player';
             $data['home_dtls']['title'] = 'Home' . $suffix;
             $data['away_dtls']['title'] = 'Away' . $suffix;
         } elseif ( 'cup' === $competition_type ) {
-            $data['cup_link']           = '<a href="' . $this->site_url . '/cups/' . seo_url( $fixture_details->league->get_name() ) . '/' . $fixture->get_season() . '/">' . $fixture_details->league->get_name() . '</a>';
+            $data['cup_link']           = '<a href="' . $this->site_url . '/cups/' . Seo_Slug::encode( $fixture_details->league->get_name() ) . '/' . $fixture->get_season() . '/">' . $fixture_details->league->get_name() . '</a>';
             $data['action_url']         = $this->fixture_link_service->get_fixture_link( $fixture, $fixture_details->league, $fixture_details->home_team, $fixture_details->away_team );
             $data['template']           = 'match-notification-cup';
             $data['home_dtls']['title'] = 'Home Team';
@@ -388,17 +390,17 @@ readonly class Notification_Presenter {
             if ( $tournament ) {
                 $tournament_path = ( new Tournament_Presenter() )->get_link( (object) $tournament );
                 $tournament_link = '<a href="' . $this->site_url . $tournament_path . '">' . $tournament->name . '</a>';
-                $draw_link       = '<a href="' . $this->site_url . $tournament_path . 'draw/' . seo_url( $match_adapter->league->event->name ?? '' ) . '/">' . ( $match_adapter->league->event->name ?? '' ) . '</a>';
-                $match_link      = $this->site_url . $tournament_path . 'match/' . seo_url( $match_adapter->league->title ?? '' ) . '/' . seo_url( $match_adapter->teams['home']->title ?? '' ) . '-vs-' . seo_url( $match_adapter->teams['away']->title ?? '' ) . '/' . $fixture->get_id() . '/';
+                $draw_link       = '<a href="' . $this->site_url . $tournament_path . 'draw/' . Seo_Slug::encode( $match_adapter->league->event->name ?? '' ) . '/">' . ( $match_adapter->league->event->name ?? '' ) . '</a>';
+                $match_link      = $this->site_url . $tournament_path . 'match/' . Seo_Slug::encode( $match_adapter->league->title ?? '' ) . '/' . Seo_Slug::encode( $match_adapter->teams['home']->title ?? '' ) . '-vs-' . Seo_Slug::encode( $match_adapter->teams['away']->title ?? '' ) . '/' . $fixture->get_id() . '/';
             }
         } elseif ( 'cup' === $competition_type ) {
-            $competition_link = '<a href="' . $this->site_url . '/cups/' . seo_url( $match_adapter->league->title ?? '' ) . '/' . $match_adapter->season . '/">' . ( $match_adapter->league->title ?? '' ) . '</a>';
+            $competition_link = '<a href="' . $this->site_url . '/cups/' . Seo_Slug::encode( $match_adapter->league->title ?? '' ) . '/' . $match_adapter->season . '/">' . ( $match_adapter->league->title ?? '' ) . '</a>';
             $match_link       = $this->site_url . $match_adapter->link;
             if ( ! empty( $match_adapter->leg ) ) {
                 $match_link .= 'leg-' . $match_adapter->leg . '/';
             }
         } elseif ( 'league' === $competition_type ) {
-            $competition_link = '<a href="' . $this->site_url . '/leagues/' . seo_url( $match_adapter->league->event->name ?? '' ) . '/' . $match_adapter->season . '/">' . ( $match_adapter->league->title ?? '' ) . '</a>';
+            $competition_link = '<a href="' . $this->site_url . '/leagues/' . Seo_Slug::encode( $match_adapter->league->event->name ?? '' ) . '/' . $match_adapter->season . '/">' . ( $match_adapter->league->title ?? '' ) . '</a>';
             $match_link       = $this->site_url . $match_adapter->link;
         }
 
@@ -512,7 +514,7 @@ readonly class Notification_Presenter {
     public function present_club_player_notification( array $args ): array {
         $club       = (string) ( $args['club'] ?? '' );
         $player     = (string) ( $args['player'] ?? '' );
-        $action_url = $this->site_url . '/clubs/' . seo_url( $club ) . '/' . seo_url( $player ) . '/';
+        $action_url = $this->site_url . '/clubs/' . Seo_Slug::encode( $club ) . '/' . Seo_Slug::encode( $player ) . '/';
 
         return array_merge( $args, array(
             'action'        => $args['action'] ?? false,

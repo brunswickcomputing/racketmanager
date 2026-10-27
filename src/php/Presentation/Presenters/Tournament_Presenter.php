@@ -10,6 +10,7 @@ use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\Enums\Match_Outcome;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Scoring\Set_Score;
+use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Domain\Value_Objects\Date_Range;
 use Racketmanager\Presentation\View_Models\Team_Match_Row_View_Model;
@@ -35,7 +36,6 @@ use function is_array;
 use function is_object;
 use function is_user_logged_in;
 use function mysql2date;
-use function Racketmanager\seo_url;
 use function trim;
 
 /**
@@ -472,7 +472,7 @@ readonly class Tournament_Presenter {
     public function get_entry_link( object $tournament, string $site_url = '' ): string {
         $name = $tournament->name ?? ( method_exists( $tournament, 'get_name' ) ? $tournament->get_name() : '' );
 
-        return rtrim( $site_url, '/' ) . '/entry-form/' . seo_url( (string) $name ) . '-tournament/';
+        return rtrim( $site_url, '/' ) . '/entry-form/' . Seo_Slug::encode( (string) $name ) . '-tournament/';
     }
 
     /**
@@ -491,7 +491,7 @@ readonly class Tournament_Presenter {
             $is_selected = ( $current_date === (string) $date );
             $tabs[] = new Tournament_Match_Date_Tab_View_Model(
                 date: (string) $date,
-                matches_link: '/tournament/' . seo_url( (string) $name ) . '/matches/' . $date . '/',
+                matches_link: '/tournament/' . Seo_Slug::encode( (string) $name ) . '/matches/' . $date . '/',
                 weekday: (string) mysql2date( 'D', (string) $date ),
                 day: (string) mysql2date( 'j', (string) $date ),
                 month: (string) mysql2date( 'M', (string) $date ),
@@ -764,11 +764,11 @@ readonly class Tournament_Presenter {
                         $match_day = $fixture ? ( method_exists( $fixture, 'get_match_day' ) ? $fixture->get_match_day() : ( $fixture->match_day ?? '' ) ) : ( $league->match_day ?? '' );
                         $match_ref = 'day' . $match_day;
                     }
-                    $match_link = '/match/' . seo_url( (string) $league_title ) . '/' . $season . '/' . $match_ref . '/' . seo_url( (string) $home_name ) . '-vs-' . seo_url( (string) $away_name ) . '/';
+                    $match_link = '/match/' . Seo_Slug::encode( (string) $league_title ) . '/' . $season . '/' . $match_ref . '/' . Seo_Slug::encode( (string) $home_name ) . '-vs-' . Seo_Slug::encode( (string) $away_name ) . '/';
                 }
             } else {
                 $tourn_name = $tournament->name ?? ( method_exists( $tournament, 'get_name' ) ? $tournament->get_name() : '' );
-                $match_link = '/tournament/' . seo_url( (string) $tourn_name ) . '/match/' . seo_url( (string) $league_title ) . '/' . seo_url( (string) $home_name ) . '-vs-' . seo_url( (string) $away_name ) . '/' . $fixture_id . '/';
+                $match_link = '/tournament/' . Seo_Slug::encode( (string) $tourn_name ) . '/match/' . Seo_Slug::encode( (string) $league_title ) . '/' . Seo_Slug::encode( (string) $home_name ) . '-vs-' . Seo_Slug::encode( (string) $away_name ) . '/' . $fixture_id . '/';
             }
             $user_can_update = (bool) ( $is_update_allowed?->user_can_update ?? false );
         }
@@ -830,7 +830,7 @@ readonly class Tournament_Presenter {
         if ( ! empty( $tournament ) ) {
             $tournament_link = $this->get_link( $tournament );
             $event_name      = $league?->event?->name ?? ( $event->name ?? '' );
-            $draw_link       = $tournament_link . 'draw/' . seo_url( (string) $event_name ) . '/';
+            $draw_link       = $tournament_link . 'draw/' . Seo_Slug::encode( (string) $event_name ) . '/';
             $show_draw_link  = true;
         }
 
@@ -901,7 +901,7 @@ readonly class Tournament_Presenter {
 					if ( ! empty( $tournament ) ) {
 						$tourn_name  = $tournament->name ?? ( method_exists( $tournament, 'get_name' ) ? $tournament->get_name() : '' );
 						$tourn_id    = $tournament->id ?? ( method_exists( $tournament, 'get_id' ) ? $tournament->get_id() : '' );
-						$player_link = '/tournament/' . seo_url( (string) $tourn_name ) . '/player/' . seo_url( $player_name ) . '/';
+						$player_link = '/tournament/' . Seo_Slug::encode( (string) $tourn_name ) . '/player/' . Seo_Slug::encode( $player_name ) . '/';
 						$is_link     = true;
 					}
 					$titles[] = new Tournament_Match_Card_Title_Item_View_Model(

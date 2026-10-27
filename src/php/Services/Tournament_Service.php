@@ -10,6 +10,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services;
 
+use LogicException;
 use Racketmanager\Admin\Presenters\Admin_Championship_Finals_Presenter;
 use Racketmanager\Admin\Presenters\Admin_Date_Presenter;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
@@ -25,6 +26,7 @@ use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Informa
 use Racketmanager\Domain\DTO\Tournament\Tournament_Player_DTO;
 use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Request_DTO;
 use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
@@ -42,6 +44,7 @@ use Racketmanager\RacketManager;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Repositories\Interfaces\Charge_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Tournament_Entry_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Tournament_Repository_Interface;
@@ -52,7 +55,6 @@ use Racketmanager\Util\Util_Lookup;
 use Racketmanager\Util\Util_Messages;
 use stdClass;
 use WP_Error;
-use function Racketmanager\get_league;
 
 /**
  * Class to implement the Tournament Management Service
@@ -72,6 +74,7 @@ class Tournament_Service {
     private Finance_Service $finance_service;
     private League_Service $league_service;
     private Mailer_Interface $mailer;
+    private ?League_Repository_Interface $league_repository;
 
     /**
      * Constructor
@@ -91,7 +94,8 @@ class Tournament_Service {
         Club_Service $club_service,
         Finance_Service $finance_service,
         League_Service $league_service,
-        ?Mailer_Interface $mailer = null
+        ?Mailer_Interface $mailer = null,
+        ?League_Repository_Interface $league_repository = null
     ) {
         $this->racketmanager               = $plugin_instance;
         $this->tournament_repository       = $tournament_repository;
@@ -107,6 +111,14 @@ class Tournament_Service {
         $this->finance_service             = $finance_service;
         $this->league_service              = $league_service;
         $this->mailer                      = $mailer ?? new Wp_Mailer();
+        $this->league_repository           = $league_repository;
+    }
+
+    private function league_repository(): League_Repository_Interface {
+        if ( null === $this->league_repository ) {
+            throw new LogicException( 'Tournament_Service requires a League_Repository_Interface to load league draws.' );
+        }
+        return $this->league_repository;
     }
 
     public function get_tournaments( array $criteria = array() ): array {
@@ -701,7 +713,10 @@ class Tournament_Service {
         );
 
         foreach ( $leagues as $index => $league ) {
-            $league = get_league( $league->id );
+            $league = $league instanceof League ? $league : $this->league_repository()->find_by_id( (int) $league->id );
+            if ( ! $league ) {
+                continue;
+            }
             // Assuming $league is already a populated object/entity
             $championship_finals = array_reverse( $league->championship->get_finals() );
             $active_finals       = [];

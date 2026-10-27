@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Infrastructure\Security;
 
-use function function_exists;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use function in_array;
 use function is_array;
 use function is_object;
@@ -21,12 +21,13 @@ final class Target_Season_Validator {
     /**
      * Validate and sanitize a target season against a target object.
      *
-     * @param object      $target      Target entity (Competition, Tournament, League, or Event).
-     * @param string      $target_name Name of target type ('competition', 'tournament', 'league', 'event').
-     * @param string|null $season      Raw season string to validate.
+     * @param object                           $target           Target entity (Competition, Tournament, League, or Event).
+     * @param string                           $target_name      Name of target type ('competition', 'tournament', 'league', 'event').
+     * @param string|null                      $season           Raw season string to validate.
+     * @param Event_Repository_Interface|null  $event_repository Used to load a league's event when only its event_id is known.
      * @return string|null Validated season string, or null if invalid/mismatched.
      */
-    public static function validate( object $target, string $target_name, ?string $season ): ?string {
+    public static function validate( object $target, string $target_name, ?string $season, ?Event_Repository_Interface $event_repository = null ): ?string {
         if ( null === $season || ! preg_match( '/^[A-Za-z0-9 _-]+$/', $season ) ) {
             return null;
         }
@@ -46,8 +47,8 @@ final class Target_Season_Validator {
                 $event = $target->event;
             } elseif ( method_exists( $target, 'get_event' ) && $target->get_event() ) {
                 $event = $target->get_event();
-            } elseif ( isset( $target->event_id ) && $target->event_id && function_exists( 'Racketmanager\get_event' ) ) {
-                $event = \Racketmanager\get_event( (int) $target->event_id );
+            } elseif ( isset( $target->event_id ) && $target->event_id && null !== $event_repository ) {
+                $event = $event_repository->find_by_id( (int) $target->event_id );
             }
 
             if ( $event ) {

@@ -32,6 +32,7 @@ use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Team_Repository;
@@ -67,6 +68,8 @@ class Competition_Entry_Service_Test extends TestCase {
     private League_Team_Repository|MockObject $league_team_repository;
     private Tournament_Entry_Repository|MockObject $tournament_entry_repository;
     private Player_Service|MockObject $player_service;
+    /** @var array<string, array<int|string, Player>> players the Validator finds, keyed by search term then value. */
+    private array $validator_players = [];
     private Notify_Service $notify_service;
     private Tournament_Repository $tournament_repository;
     private Tournament_Service $tournament_service;
@@ -111,6 +114,12 @@ class Competition_Entry_Service_Test extends TestCase {
         $container->set( 'competition_service', $this->competition_service );
         $container->set( 'event_repository', $this->event_repository );
         $container->set( 'player_service', $this->player_service );
+        $this->validator_players = [];
+        $player_repository       = $this->createStub( Player_Repository_Interface::class );
+        $player_repository->method( 'find' )->willReturnCallback(
+            fn( $value, string $search_term = 'id' ): ?Player => $this->validator_players[ $search_term ][ $value ] ?? null
+        );
+        $container->set( 'player_repository', $player_repository );
         $this->plugin->container = $container;
         $GLOBALS['racketmanager'] = $this->plugin;
 
@@ -1416,7 +1425,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $player = $this->create_tournament_player( 10, 'M', 1990 );
         $this->player_service->method( 'get_player' )->willReturn( $player );
 
-        $GLOBALS['wp_stubs_players']['email']['taken@test.local'] = (object) [ 'ID' => 99, 'display_name' => 'Taken Player' ];
+        $this->validator_players['email']['taken@test.local'] = Player::from_array( [ 'ID' => 99, 'display_name' => 'Taken Player' ] );
 
         $dto = $this->create_tournament_entry_request( [
             'contactemail' => 'taken@test.local',
@@ -2373,7 +2382,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->assertInstanceOf( Tournament_Entry_Response_DTO::class, $result );
         $this->assertSame( 1, $result->status );
         $this->assertTrue( $result->payment_required );
-        $this->assertSame( '/entry-form/' . \Racketmanager\seo_url( $tournament->name ) . '-tournament/payment/', $result->return_link );
+        $this->assertSame( '/entry-form/summer-tournament-tournament/payment/', $result->return_link );
         $this->assertSame( 'Tournament entered and payment outstanding', $result->message );
         $this->assertSame( 'success', $result->message_type );
 
@@ -2450,7 +2459,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->assertInstanceOf( Tournament_Entry_Response_DTO::class, $result );
         $this->assertSame( 1, $result->status );
         $this->assertTrue( $result->payment_required );
-        $this->assertSame( '/entry-form/' . \Racketmanager\seo_url( $tournament->name ) . '-tournament/payment/', $result->return_link );
+        $this->assertSame( '/entry-form/summer-tournament-tournament/payment/', $result->return_link );
         $this->assertSame( 'Tournament entered and payment outstanding', $result->message );
         $this->assertSame( 'success', $result->message_type );
 

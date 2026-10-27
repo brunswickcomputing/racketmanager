@@ -69,9 +69,11 @@ class Championship_Admin_Integration_Test extends TestCase {
                 $this->createStub( Result_Service::class ),
                 $fixture_repo,
                 $league_service,
-                $event_repo
+                $event_repo,
+                $this->createStub( \Racketmanager\Services\Competition\League_Query_Service::class )
             ),
-            $event_repo
+            $event_repo,
+            $this->createStub( \Racketmanager\Services\Competition\League_Query_Service::class )
         );
     }
 
@@ -232,7 +234,8 @@ class Championship_Admin_Integration_Test extends TestCase {
             $result_service,
             $fixture_repository,
             $league_service,
-            $this->createStub( Event_Repository_Interface::class )
+            $this->createStub( Event_Repository_Interface::class ),
+            $this->createStub( \Racketmanager\Services\Competition\League_Query_Service::class )
         );
 
         $admin_service = $this->create_admin_service(

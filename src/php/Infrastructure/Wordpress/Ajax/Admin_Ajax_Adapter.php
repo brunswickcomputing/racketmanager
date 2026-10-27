@@ -13,8 +13,11 @@ use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Services\Competition\Competition_Notification_Service;
 use Racketmanager\Services\Competition_Entry_Service;
@@ -26,10 +29,6 @@ use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Util\Util;
 use stdClass;
 use function Racketmanager\event_dropdown;
-use function Racketmanager\get_event;
-use function Racketmanager\get_league;
-use function Racketmanager\get_league_team;
-use function Racketmanager\get_team;
 use function Racketmanager\league_dropdown;
 use function Racketmanager\match_dropdown;
 use function Racketmanager\season_dropdown;
@@ -52,7 +51,10 @@ class Admin_Ajax_Adapter {
         private Settings_Service $settings_service,
         private ?League_Team_Repository_Interface $league_team_repository,
         private Competition_Notification_Service $competition_notification_service,
-        private Standings_Service $standings_service
+        private Standings_Service $standings_service,
+        private League_Repository_Interface $league_repository,
+        private Event_Repository_Interface $event_repository,
+        private Team_Repository_Interface $team_repository
     ) {}
 
     private function get_league_team_repository(): League_Team_Repository_Interface {
@@ -80,11 +82,11 @@ class Admin_Ajax_Adapter {
             return $this->response_factory->create_success_response();
         }
 
-        $league_entry = get_league_team( $command->table_id );
+        $league_entry = $this->get_league_team_repository()->find_by_id( (int) $command->table_id );
         if ( $league_entry ) {
             $league_entry->amend_points( $command->points );
             $this->get_league_team_repository()->amend_points( (int) $command->table_id, (float) $command->points );
-            $league = get_league( $league_entry->league_id );
+            $league = $league_entry->league_id ? $this->league_repository->find_by_id( (int) $league_entry->league_id ) : null;
             if ( $league ) {
                 $this->standings_service->set_teams_rank( $league, $league_entry->season );
             }
@@ -104,7 +106,7 @@ class Admin_Ajax_Adapter {
         $stadium = null;
         $team_id = isset( $request['team_id'] ) ? (int) $request['team_id'] : null;
         if ( $team_id ) {
-            $team = get_team( $team_id );
+            $team = $this->team_repository->find_by_id( $team_id );
             if ( $team ) {
                 $stadium = trim( (string) $team->stadium );
             }
@@ -196,7 +198,7 @@ class Admin_Ajax_Adapter {
             return $this->response_factory->create_error_response( __( 'Event not specified', 'racketmanager' ), 500 );
         }
 
-        $event = get_event( $event_id );
+        $event = $this->event_repository->find_by_id( $event_id );
         if ( ! $event ) {
             return $this->response_factory->create_error_response( __( 'Event not found', 'racketmanager' ), 500 );
         }
@@ -313,7 +315,7 @@ class Admin_Ajax_Adapter {
         }
 
         $event_id = isset( $request['eventId'] ) ? (int) $request['eventId'] : null;
-        $event    = get_event( $event_id );
+        $event    = $event_id ? $this->event_repository->find_by_id( $event_id ) : null;
         if ( ! $event ) {
             return $this->response_factory->create_error_response( __( 'Event not found', 'racketmanager' ), 404 );
         }

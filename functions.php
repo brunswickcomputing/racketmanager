@@ -23,6 +23,7 @@ use Racketmanager\Domain\Player\User;
 use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Domain\Season\Season;
+use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Tournament\Tournament_Entry;
 use Racketmanager\Infrastructure\Legacy\Legacy_User;
@@ -102,38 +103,24 @@ function log_trace( string $message = '' ): void {
 /**
  * Create SEO friendly string
  *
- * @deprecated 10.1.0 Use \Racketmanager\Util\Util::seo_url() instead.
- * @see \Racketmanager\Util\Util::seo_url()
+ * @deprecated 10.1.0 Use \Racketmanager\Domain\Shared\Seo_Slug::encode() instead.
+ * @see \Racketmanager\Domain\Shared\Seo_Slug::encode()
  *
  * @param string $string_field query string.
  */
 function seo_url( string $string_field ): string {
-    // Lower case everything.
-    $string_field = strtolower( $string_field );
-    // Make alphanumeric (removes all other characters).
-    $string_field = preg_replace( '/[^a-z0-9_\s-]/', '', $string_field );
-    // Clean up multiple whitespaces.
-    $string_field = preg_replace( '/\s+/', ' ', $string_field );
-    // Convert dash to underscore.
-    $string_field = str_replace( '-', '_', $string_field );
-    // Convert whitespaces to dash.
-    return preg_replace( '/\s/', '-', $string_field );
+    return Seo_Slug::encode( $string_field );
 }
 /**
  * Reverses SEO friendly string
  *
- * @deprecated 10.1.0 Use \Racketmanager\Util\Util::un_seo_url() instead.
- * @see \Racketmanager\Util\Util::un_seo_url()
+ * @deprecated 10.1.0 Use \Racketmanager\Domain\Shared\Seo_Slug::decode() instead.
+ * @see \Racketmanager\Domain\Shared\Seo_Slug::decode()
  *
  * @param string $string_field query string.
  */
 function un_seo_url( string $string_field ): string {
-    // Convert dash to whitespaces.
-    $string_field = str_replace( '-', ' ', $string_field );
-    // Convert underscore to dash.
-    $string_field = str_replace( '_', '-', $string_field );
-    // Lower case everything.
-    return strtolower( $string_field );
+    return Seo_Slug::decode( $string_field );
 }
 /**
  * Create formatted url
@@ -375,7 +362,7 @@ function get_league_repository_for_helpers() {
         return $racketmanager->container->get( 'league_repository' );
     }
 
-    return new League_Repository( null, fn() => get_event_repository_for_helpers() );
+    return new League_Repository( null, fn() => get_event_repository_for_helpers(), fn() => get_league_query_service() );
 }
 
 /**

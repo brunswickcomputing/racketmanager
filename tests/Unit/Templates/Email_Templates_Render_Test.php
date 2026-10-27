@@ -102,6 +102,7 @@ final class Email_Templates_Render_Test extends TestCase {
             $permission_service,
             'https://example.com',
             'Test Tennis League',
+            $this->createStub( \Racketmanager\Services\Competition\League_Query_Service::class ),
             option_gateway: $this->option_gateway
         );
     }

@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
+use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Player\Player_Factory;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Event;
@@ -528,10 +529,20 @@ class Player_Validation_Service_Test extends TestCase {
             'last_name'    => 'Player',
         ] );
 
-        $player_repo->expects( $this->once() )
+        // BTM is registered to ID 99 (the same existing player).
+        // If lookup resolved player_id = 99, validation passes.
+        // If lookup failed, Validator::btm would flag a conflict because player_id would be null.
+        $player_repo->expects( $this->exactly( 3 ) )
             ->method( 'find' )
-            ->with( 'Existing Player', 'name' )
-            ->willReturn( $existing );
+            ->willReturnCallback(
+                static function ( int|string $value, string $search_type ) use ( $existing ): ?Player {
+                    return match ( true ) {
+                        'name' === $search_type && 'Existing Player' === $value => $existing,
+                        'btm' === $search_type && 11223344 === (int) $value   => $existing,
+                        default                                                   => null,
+                    };
+                }
+            );
 
         $service = new Player_Validation_Service(
             $this->registration_service,
@@ -539,15 +550,6 @@ class Player_Validation_Service_Test extends TestCase {
             $this->fixture_repository,
             $player_repo
         );
-
-        // BTM is registered to ID 99 (the same existing player).
-        // If lookup resolved player_id = 99, validation passes.
-        // If lookup failed, Validator::btm would flag a conflict because player_id would be null.
-        $GLOBALS['wp_stubs_players'] = [
-            'btm' => [
-                '11223344' => (object) [ 'ID' => 99, 'display_name' => 'Existing Player' ],
-            ],
-        ];
 
         $input = [
             'firstname' => 'Existing',

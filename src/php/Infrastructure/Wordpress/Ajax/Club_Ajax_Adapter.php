@@ -77,7 +77,7 @@ class Club_Ajax_Adapter {
         }
 
         $command   = Update_Club_Command::from_post( $request );
-        $validator = new Validator_Club( $this->club_role_repository );
+        $validator = new Validator_Club( $this->club_role_repository, user_repository: $this->user_repository );
         $validator = $validator->club( $command->club_id !== null ? (string) $command->club_id : null );
         $validator = $validator->address( $command->address );
         $validator = $validator->telephone( $command->match_secretary_contact_no, 'matchSecretaryContactNo', true );
@@ -122,7 +122,7 @@ class Club_Ajax_Adapter {
         }
 
         $command   = Club_Player_Request_Command::from_post( $request, (int) wp_get_current_user()->ID );
-        $validator = new Validator_Club( $this->club_role_repository );
+        $validator = new Validator_Club( $this->club_role_repository, user_repository: $this->user_repository );
         try {
             $response = $this->registration_service->register_player_to_club( $command->club_id, $command->user_id, $request );
             if ( is_wp_error( $response ) ) {
@@ -191,7 +191,7 @@ class Club_Ajax_Adapter {
         }
 
         $command   = Set_Club_Role_Command::from_post( $request );
-        $validator = new Validator_Club( $this->club_role_repository );
+        $validator = new Validator_Club( $this->club_role_repository, user_repository: $this->user_repository );
         $validator = $validator->club( $command->club_id !== null ? (string) $command->club_id : null );
         $validator = $validator->club_role( $command->club_role_id );
         $validator = $validator->user( $command->user_id );

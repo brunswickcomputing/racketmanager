@@ -5,6 +5,7 @@ namespace Racketmanager\Services\Competition;
 
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\Competition\League_Factory;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Fixture_Service;
@@ -224,7 +225,7 @@ class League_Schedule_Service {
 	 */
 	public function schedule_event_leagues( object $event ): array {
 		$leagues = $event instanceof Event
-			? ( $this->event_query_service ? $this->event_query_service->get_leagues( $event ) : \Racketmanager\get_event_query_service()->get_leagues( $event ) )
+			? $this->event_query()->get_leagues( $event )
 			: ( method_exists( $event, 'get_leagues' ) ? $event->get_leagues() : ( $event->leagues ?? array() ) );
 		$result  = array( 'scheduled' => 0, 'skipped' => 0 );
 		if ( ! is_iterable( $leagues ) ) {
@@ -253,11 +254,27 @@ class League_Schedule_Service {
 		if ( $this->league_repository ) {
 			return $this->league_repository->find_by_id( (int) $id );
 		}
-		// Support legacy callers that construct this service without a repository.
-		$resolved = is_object( $league ) && isset( $league->title, $league->event_id )
-			? \Racketmanager\get_league( $league )
-			: \Racketmanager\get_league( (int) $id );
-		return $resolved instanceof League ? $resolved : null;
+		// Without a repository only a raw league row can be resolved (legacy get_league() object path):
+		// hydrate it through the factory (event from the row or the event query service) and set its season.
+		if ( is_object( $league ) && isset( $league->title, $league->event_id ) ) {
+			$event = isset( $league->event ) && $league->event instanceof Event ? $league->event : null;
+			if ( null === $event && $this->event_query_service instanceof Event_Query_Service ) {
+				$event = $this->event_query_service->get_event( (int) $league->event_id );
+			}
+			$hydrated = League_Factory::from_object( $league, $event );
+			if ( $hydrated instanceof League && $this->league_query_service ) {
+				$this->league_query()->set_season( $hydrated, false, true );
+			}
+			return $hydrated;
+		}
+		return null;
+	}
+
+	private function event_query(): Event_Query_Service {
+		if ( ! $this->event_query_service instanceof Event_Query_Service ) {
+			throw new \LogicException( 'Event_Query_Service is required by League_Schedule_Service but was not configured.' );
+		}
+		return $this->event_query_service;
 	}
 
 	private function league_query(): League_Query_Service {

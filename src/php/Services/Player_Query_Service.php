@@ -12,7 +12,11 @@ declare( strict_types=1 );
 namespace Racketmanager\Services;
 
 use Racketmanager\Services\Competition\Event_Query_Service;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\Competition\League_Factory;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
@@ -20,8 +24,6 @@ use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Statistics_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use RuntimeException;
-use function Racketmanager\get_event;
-use function Racketmanager\get_league;
 
 /**
  * Service for querying player matches, competitions, and raw match statistics.
@@ -39,7 +41,8 @@ class Player_Query_Service {
 		?Fixture_Repository_Interface $fixture_repository = null,
 		?Event_Repository_Interface $event_repository = null,
 		?Rubber_Repository_Interface $rubber_repository = null,
-		private Event_Query_Service|\Closure|null $event_query_service = null
+		private Event_Query_Service|\Closure|null $event_query_service = null,
+		private League_Query_Service|\Closure|null $league_query_service = null
 	) {
 		$this->statistics_repository  = $statistics_repository;
 		$this->competition_repository = $competition_repository;
@@ -57,6 +60,54 @@ class Player_Query_Service {
 		}
 
 		return $this->event_query_service;
+	}
+
+	private function get_league_query_service(): League_Query_Service {
+		if ( $this->league_query_service instanceof \Closure ) {
+			$this->league_query_service = ( $this->league_query_service )();
+		}
+		if ( ! $this->league_query_service instanceof League_Query_Service ) {
+			throw new RuntimeException( 'Player_Query_Service requires a League_Query_Service.' );
+		}
+
+		return $this->league_query_service;
+	}
+
+	/**
+	 * Resolve a league grouping the way the legacy get_league() helper did for objects:
+	 * a League entity is returned as is, a raw row is built through League_Factory
+	 * (event from the row or the event repository) and its season is set.
+	 */
+	private function resolve_league( object $grouping ): ?League {
+		if ( $grouping instanceof League ) {
+			return $grouping;
+		}
+		$event = null;
+		if ( isset( $grouping->event ) && is_object( $grouping->event ) ) {
+			$event = $grouping->event instanceof Event ? $grouping->event : new Event( $grouping->event );
+		} elseif ( ! empty( $grouping->event_id ) && $this->event_repository ) {
+			$event = $this->event_repository->find_by_id( (int) $grouping->event_id );
+		}
+		$league = League_Factory::from_object( $grouping, $event );
+		if ( $league ) {
+			$this->get_league_query_service()->set_season( $league, false, true );
+		}
+		return $league;
+	}
+
+	/**
+	 * Resolve an event grouping the way the legacy get_event() helper did for objects:
+	 * an Event entity is returned as is, a raw row is hydrated with its competition.
+	 */
+	private function resolve_event( object $grouping ): ?Event {
+		if ( $grouping instanceof Event ) {
+			return $grouping;
+		}
+		$competition = null;
+		if ( ! empty( $grouping->competition_id ) && $this->competition_repository ) {
+			$competition = $this->competition_repository->find_by_id( (int) $grouping->competition_id );
+		}
+		return new Event( $grouping, $competition instanceof Competition ? $competition : null );
 	}
 
 	private function get_statistics_repository(): Player_Statistics_Repository_Interface {
@@ -111,8 +162,8 @@ class Player_Query_Service {
 	public function get_matches( Player $player, ?object $grouping, ?string $season, string $match_source, ?int $period = null, ?string $type = null ): array {
 		$statistics = array();
 		if ( 'league' === $match_source ) {
-			$league  = $grouping ? get_league( $grouping ) : null;
-			$matches = $league ? \Racketmanager\get_league_query_service()->get_matches( $league,
+			$league  = $grouping ? $this->resolve_league( $grouping ) : null;
+			$matches = $league ? $this->get_league_query_service()->get_matches( $league,
 				array(
 					'season'    => $season,
 					'player'    => $player->id,
@@ -124,7 +175,7 @@ class Player_Query_Service {
 				)
 			) : array();
 		} elseif ( 'event' === $match_source ) {
-			$event   = $grouping ? get_event( $grouping ) : null;
+			$event   = $grouping ? $this->resolve_event( $grouping ) : null;
 			$matches = $event ? $this->get_event_query_service()->get_matches(
 				$event,
 				array(

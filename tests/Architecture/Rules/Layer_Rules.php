@@ -450,11 +450,11 @@ final class Layer_Rules {
             new Layer_Rule(
                 'all.no_legacy_helper_calls',
                 'Layered code and template-tags.php must not call the root helper functions (get_league, get_event, get_team, get_club, get_player, get_league_team, get_user, get_message, seo_url, un_seo_url, get_*_repository_for_helpers, get_*_query_service)',
-                'Backlog P2-7: inject the repository interface / service, or Presentation\Formatters\Slug_Formatter for seo_url (audit L6).',
+                'Inject the Repositories\Interfaces\* port or the *_Query_Service; use Domain\Shared\Seo_Slug for slugs (audit L6, P2-7 done).',
                 [ self::SRC, self::TEMPLATE_TAGS ],
                 Rule_Kind::FORBIDDEN_FUNCTION_CALL,
                 self::LEGACY_HELPERS,
-                Rule_Mode::RATCHET
+                Rule_Mode::STRICT
             ),
             new Layer_Rule(
                 'all.no_deprecated_helper_calls',

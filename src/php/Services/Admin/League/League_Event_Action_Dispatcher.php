@@ -15,8 +15,8 @@ use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
-use function Racketmanager\get_league;
 
 /**
  * Handles event mutations for the league admin screen (add/update league in event, delete leagues).
@@ -26,6 +26,7 @@ readonly final class League_Event_Action_Dispatcher {
     public function __construct(
         private League_Service $league_service,
         private Action_Guard_Interface $action_guard,
+        private League_Query_Service $league_query_service,
     ) {
     }
 
@@ -78,7 +79,7 @@ readonly final class League_Event_Action_Dispatcher {
             }
         }
 
-        $league = get_league( $league_id );
+        $league = $this->league_service->get_league( $league_id );
         if ( null === $league ) {
             return new Action_Result_DTO(
                 message: __( 'League not found', 'racketmanager' ),
@@ -94,7 +95,7 @@ readonly final class League_Event_Action_Dispatcher {
         }
 
         $sequence = isset( $post['sequence'] ) ? sanitize_text_field( wp_unslash( strval( $post['sequence'] ) ) ) : null;
-        \Racketmanager\get_league_query_service()->update( $league, $league_name, $sequence );
+        $this->league_query_service->update( $league, $league_name, $sequence );
 
         return new Action_Result_DTO(
             message: __( 'League Updated', 'racketmanager' ),
@@ -123,7 +124,7 @@ readonly final class League_Event_Action_Dispatcher {
         $messages = array();
         try {
             foreach ( $leagues as $league_id ) {
-                $league = get_league( intval( $league_id ) );
+                $league = $this->league_service->get_league( intval( $league_id ) );
                 if ( null !== $league ) {
                     $this->league_service->delete_league( $league );
                     $messages[] = $league->title . ' ' . __( 'deleted', 'racketmanager' );

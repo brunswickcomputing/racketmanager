@@ -190,6 +190,48 @@ class Ajax_Adapter_Test extends TestCase {
         $this->assertArrayNotHasKey( 'season', $passed_args );
     }
 
+    public function test_tab_data_loads_league_event_through_injected_event_repository_when_only_event_id_is_known(): void {
+        $event = $this->createStub( Event::class );
+        $event->id = 30;
+        $event->method( 'get_seasons' )->willReturn( [ '2026' => [ 'name' => '2026' ] ] );
+
+        $event_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class );
+        $event_repository->expects( $this->exactly( 2 ) )->method( 'find_by_id' )->with( 30 )->willReturn( $event );
+
+        $adapter = $this->create_frontend_adapter( $event_repository );
+
+        $league = new \Racketmanager\Domain\Competition\League( (object) [ 'id' => 50, 'title' => 'Division 1', 'event_id' => 30 ] );
+        $this->assertNull( $league->event );
+        $GLOBALS['wp_stubs_leagues'][50] = $league;
+
+        $passed_args = null;
+        $GLOBALS['racketmanager_league_overview_callback'] = function ( $id, $args ) use ( &$passed_args ) {
+            $passed_args = $args;
+            return 'league overview content';
+        };
+
+        $adapter->tab_data( [
+            'security' => 'valid_nonce',
+            'target'   => 'league',
+            'targetId' => 50,
+            'tab'      => 'overview',
+            'link_id'  => 'league_link',
+            'season'   => '2026',
+        ] );
+        $this->assertSame( '2026', $passed_args['season'] ?? null );
+
+        $passed_args = null;
+        $adapter->tab_data( [
+            'security' => 'valid_nonce',
+            'target'   => 'league',
+            'targetId' => 50,
+            'tab'      => 'overview',
+            'link_id'  => 'league_link',
+            'season'   => '2025',
+        ] );
+        $this->assertArrayNotHasKey( 'season', $passed_args );
+    }
+
     public function test_tab_data_validates_league_target_with_event_json_seasons(): void {
         $adapter = $this->create_frontend_adapter();
 
@@ -198,8 +240,7 @@ class Ajax_Adapter_Test extends TestCase {
         $event->seasons = json_encode( [ '2026' => [ 'name' => '2026' ] ] );
         $event->method( 'get_seasons' )->willReturn( [ '2026' => [ 'name' => '2026' ] ] );
 
-        $league = new stdClass();
-        $league->id = 50;
+        $league = new \Racketmanager\Domain\Competition\League( (object) [ 'id' => 50, 'title' => 'Division 1' ] );
         $league->event = $event;
         $GLOBALS['wp_stubs_leagues'][50] = $league;
 
@@ -458,7 +499,7 @@ class Ajax_Adapter_Test extends TestCase {
         $this->assertCount( 1, $res['x'] );
     }
 
-    private function create_frontend_adapter(): Frontend_Ajax_Adapter {
+    private function create_frontend_adapter( ?\Racketmanager\Repositories\Interfaces\Event_Repository_Interface $event_repository = null ): Frontend_Ajax_Adapter {
         $sec_service  = $this->createStub( Security_Service_Interface::class );
         $sec_service->method( 'verify_nonce' )->willReturn( true );
 
@@ -498,6 +539,11 @@ class Ajax_Adapter_Test extends TestCase {
 
         $fixture_repo = $this->createStub( Fixture_Repository_Interface::class );
 
+        $league_repo = $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );
+        $league_repo->method( 'find_by_id' )->willReturnCallback(
+            static fn( $id ) => $GLOBALS['wp_stubs_leagues'][ (int) $id ] ?? null
+        );
+
         return new Frontend_Ajax_Adapter(
             $sec_service,
             $resp_factory,
@@ -513,7 +559,9 @@ class Ajax_Adapter_Test extends TestCase {
             search_players_handler: $this->createStub( \Racketmanager\Application\Player\Queries\Search_Players_Handler::class ),
             get_player_details_handler: new \Racketmanager\Application\Player\Queries\Get_Player_Details_Handler(
                 $this->createStub( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class )
-            )
+            ),
+            league_repository: $league_repo,
+            event_repository: $event_repository ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class )
         );
     }
 }

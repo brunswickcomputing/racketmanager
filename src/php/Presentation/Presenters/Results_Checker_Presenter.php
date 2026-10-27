@@ -6,13 +6,13 @@ namespace Racketmanager\Presentation\Presenters;
 use Racketmanager\Domain\Enums\Results_Checker_Status;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Result\Results_Checker;
+use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Presentation\View_Models\Results_Checker_View_Model;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
-use function Racketmanager\seo_url;
 
 /**
  * Presenter for Results Checker
@@ -160,14 +160,7 @@ readonly class Results_Checker_Presenter {
      * @return string
      */
     private function format_player_link( string $player_name, string $shortcode ): string {
-        if ( function_exists( 'Racketmanager\Util\seo_url' ) ) {
-            return '/clubs/' . seo_url( $shortcode ) . '/players/' . seo_url( $player_name ) . '/';
-        }
-
-        $formatted_shortcode = str_replace( ' ', '-', strtolower( $shortcode ) );
-        $formatted_player    = str_replace( ' ', '-', strtolower( $player_name ) );
-
-        return "/clubs/$formatted_shortcode/players/$formatted_player/";
+        return '/clubs/' . Seo_Slug::encode( $shortcode ) . '/players/' . Seo_Slug::encode( $player_name ) . '/';
     }
 
     /**

@@ -7,14 +7,15 @@ use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Standings\Standings_Service;
-use function Racketmanager\get_team;
 
 final readonly class League_Team_Handler {
     public function __construct(
         private League_Service $league_service,
-        private Standings_Service $standings_service
+        private Standings_Service $standings_service,
+        private Team_Repository_Interface $team_repository
     ) {
     }
 
@@ -56,7 +57,7 @@ final readonly class League_Team_Handler {
         $messages = array();
         try {
             foreach ( $teams as $team_id ) {
-                $team = get_team( $team_id );
+                $team = $team_id ? $this->team_repository->find_by_id( (int) $team_id ) : null;
                 $this->league_service->withdraw_team( $league, intval( $team_id ), (string) $season );
                 $team_title = ( $team && isset( $team->title ) ) ? $team->title : strval( $team_id );
                 $messages[] = $team_title . ' ' . __( 'withdrawn', 'racketmanager' );

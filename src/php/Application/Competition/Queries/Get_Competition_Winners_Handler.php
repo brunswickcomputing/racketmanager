@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Competition\Queries;
 
+use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
@@ -10,7 +11,6 @@ use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
 use function is_numeric;
-use function Racketmanager\un_seo_url;
 use function __;
 
 /**
@@ -30,7 +30,7 @@ class Get_Competition_Winners_Handler {
         }
 
         if ( is_string( $comp_id ) ) {
-            $comp_id = un_seo_url( $comp_id );
+            $comp_id = Seo_Slug::decode( $comp_id );
         }
 
         try {

@@ -13,6 +13,7 @@ use Racketmanager\Admin\View_Models\Tournament_Team_Page_View_Model;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
@@ -33,6 +34,7 @@ final class Tournament_Team_Admin_Controller {
         private readonly Team_Service $team_service,
         private readonly Club_Service $club_service,
         private readonly Action_Guard_Interface $action_guard,
+        private readonly League_Query_Service $league_query_service,
     ) {
     }
 
@@ -90,7 +92,7 @@ final class Tournament_Team_Admin_Controller {
         }
 
         if ( $league ) {
-            $team = \Racketmanager\get_league_query_service()->get_team_dtls( $league, $team_id );
+            $team = $this->league_query_service->get_team_dtls( $league, $team_id );
         } else {
             $team = $this->team_service->get_team_by_id( $team_id );
         }

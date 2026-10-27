@@ -114,7 +114,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             'profile'   => '0',
         ] );
 
-        $GLOBALS['wp_stubs_league_teams'][7929] = $league_team;
+        $repo->expects( self::atLeastOnce() )->method( 'find_by_id' )->with( 7929 )->willReturn( $league_team );
 
         $dispatcher = new League_Constitution_Action_Dispatcher( $guard, $repo, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
         $result     = $dispatcher->handle(
@@ -561,7 +561,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
 
         $league     = $this->createMock( \Racketmanager\Domain\Competition\League::class );
         $league->id = 7;
-        $GLOBALS['wp_stubs_leagues'][7] = $league;
+        $this->league_repository->method( 'find_by_id' )->willReturnCallback( static fn( int $id ) => 7 === $id ? $league : null );
 
         $league_service->expects( self::once() )
             ->method( 'delete_team' )
@@ -590,7 +590,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
 
         $league     = $this->createMock( \Racketmanager\Domain\Competition\League::class );
         $league->id = 7;
-        $GLOBALS['wp_stubs_leagues'][7] = $league;
+        $this->league_repository->method( 'find_by_id' )->willReturnCallback( static fn( int $id ) => 7 === $id ? $league : null );
 
         $league_service->expects( self::once() )
             ->method( 'delete_team' )
@@ -623,7 +623,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             ->willReturn( 1 );
 
         $league     = new \Racketmanager\Domain\Competition\League( (object) array( 'id' => 200, 'title' => 'Div 1' ) );
-        $GLOBALS['wp_stubs_leagues'][200] = $league;
+        $league_repository->expects( self::atLeastOnce() )->method( 'find_by_id' )->with( 200 )->willReturn( $league );
 
         $dispatcher = new League_Constitution_Action_Dispatcher(
             $guard,
@@ -664,7 +664,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             ->willReturn( false );
 
         $league     = new \Racketmanager\Domain\Competition\League( (object) array( 'id' => 200, 'title' => 'Div 1' ) );
-        $GLOBALS['wp_stubs_leagues'][200] = $league;
+        $league_repository->expects( self::atLeastOnce() )->method( 'find_by_id' )->with( 200 )->willReturn( $league );
 
         $dispatcher = new League_Constitution_Action_Dispatcher(
             $guard,
@@ -705,7 +705,8 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             ->willReturn( 1 );
 
         $league     = new \Racketmanager\Domain\Competition\League( (object) array( 'id' => 200, 'title' => 'Div 1' ) );
-        $GLOBALS['wp_stubs_leagues'][200] = $league;
+        $league_repository->expects( self::atLeastOnce() )->method( 'find_by_id' )->with( 200 )->willReturn( $league );
+        $this->team_repository->method( 'find_by_id' )->willReturnCallback( static fn( int $id ) => 10 === $id ? new Team( (object) array( 'id' => 10, 'title' => 'Team Ten' ) ) : null );
 
         $dispatcher = new League_Constitution_Action_Dispatcher(
             $guard,
@@ -728,8 +729,38 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             )
         );
 
-        self::assertStringContainsString( 'added', $result->message );
+        self::assertSame( 'Team Ten added', $result->message );
         self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+    }
+
+    public function test_add_teams_returns_error_when_league_not_found(): void {
+        $league_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );
+        $league_repository->expects( self::once() )->method( 'find_by_id' )->with( 404 )->willReturn( null );
+        $league_repository->expects( self::never() )->method( 'add_team_to_league' );
+
+        $dispatcher = new League_Constitution_Action_Dispatcher(
+            $this->createStub( Action_Guard_Interface::class ),
+            $this->league_team_repository,
+            $this->createStub( League_Service::class ),
+            $this->league_schedule_service,
+            $league_repository,
+            $this->event_repository,
+            $this->team_repository,
+            $this->promotion_relegation_service
+        );
+
+        $result = $dispatcher->handle(
+            array(),
+            array(
+                'action'    => 'addTeamsToLeague',
+                'league_id' => 404,
+                'season'    => '2026',
+                'team'      => array( 10 ),
+            )
+        );
+
+        self::assertStringContainsString( 'could not be added', $result->message );
+        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
     }
 
     public function test_add_teams_failure_returns_error(): void {
@@ -742,7 +773,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             ->willReturn( false );
 
         $league     = new \Racketmanager\Domain\Competition\League( (object) array( 'id' => 200, 'title' => 'Div 1' ) );
-        $GLOBALS['wp_stubs_leagues'][200] = $league;
+        $league_repository->expects( self::atLeastOnce() )->method( 'find_by_id' )->with( 200 )->willReturn( $league );
 
         $dispatcher = new League_Constitution_Action_Dispatcher(
             $guard,

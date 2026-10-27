@@ -50,7 +50,8 @@ final readonly class Player_Service_Provider implements Service_Provider_Interfa
             $c->get( 'fixture_repository' ),
             $c->get( 'event_repository' ),
             $c->get( 'rubber_repository' ),
-            fn() => $c->get( 'event_query_service' )
+            fn() => $c->get( 'event_query_service' ),
+            fn() => $c->get( 'league_query_service' )
         ) );
 
         $container->set( 'player_stats_service', fn( Simple_Container $c ) => new Player_Stats_Service(

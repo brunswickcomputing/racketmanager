@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Competition\Queries;
 
+use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
@@ -10,7 +11,6 @@ use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Tournament_Service;
-use function Racketmanager\un_seo_url;
 use function __;
 
 class Get_Competitions_Handler {
@@ -27,7 +27,7 @@ class Get_Competitions_Handler {
             return Shortcode_View_Model::error( __( 'Competition type not set', 'racketmanager' ) );
         }
 
-        $type  = un_seo_url( $query->type );
+        $type  = Seo_Slug::decode( $query->type );
         $args  = [ 'type' => $type ];
         if ( $query->age_group ) {
             $args['age_group'] = $query->age_group;

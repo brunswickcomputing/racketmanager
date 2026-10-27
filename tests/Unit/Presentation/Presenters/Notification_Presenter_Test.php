@@ -9,15 +9,6 @@ namespace Racketmanager\Presentation\Presenters {
     }
 }
 
-namespace Racketmanager {
-
-    if ( ! function_exists( 'Racketmanager\seo_url' ) ) {
-        function seo_url( $url ): string {
-            return strtolower( str_replace( ' ', '-', $url ) );
-        }
-    }
-}
-
 namespace Racketmanager\Tests\Unit\Presentation\Presenters {
 
     use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -28,6 +19,7 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
     use Racketmanager\Presentation\Presenters\Notification_Presenter;
     use Racketmanager\Services\Fixture\Fixture_Link_Service;
     use Racketmanager\Services\Fixture\Fixture_Permission_Service;
+    use Racketmanager\Services\Competition\League_Query_Service;
     use Racketmanager\Services\Competition_Service;
     use Racketmanager\Services\Team_Service;
     use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
@@ -148,6 +140,44 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
 
             $this->assertNotNull( $vars['tournament'], 'Tournament should not be null even for leagues' );
             $this->assertEquals( 'League Name', $vars['tournament']->name );
+        }
+
+        #[AllowMockObjectsWithoutExpectations]
+        public function test_present_match_notification_marks_withdrawn_team_via_injected_league_query_service(): void {
+            $fixture = $this->createStub( Fixture::class );
+            $fixture->method( 'get_id' )->willReturn( 4 );
+            $fixture->method( 'get_league_id' )->willReturn( 10 );
+            $fixture->method( 'get_season' )->willReturn( '2024' );
+            $fixture->method( 'get_home_team' )->willReturn( '101' );
+            $fixture->method( 'get_away_team' )->willReturn( '102' );
+
+            $this->setup_notification_services( competition_name: 'League Name', event_id: null, competition_id: null, event_name: null, event_type: null );
+            $league = $this->league_repository->find_by_id( 10 );
+
+            $league_query_service = $this->createMock( League_Query_Service::class );
+            $league_query_service->expects( $this->exactly( 2 ) )
+                ->method( 'get_status' )
+                ->with( $league, $this->logicalOr( 101, 102 ), '2024' )
+                ->willReturnCallback( static fn( object $l, int $team_id, string $season ): string => 101 === $team_id ? 'W' : 'A' );
+
+            $presenter = new Notification_Presenter(
+                $this->createStub( Team_Repository_Interface::class ),
+                $this->createStub( Club_Repository_Interface::class ),
+                $this->tournament_repository,
+                $this->fixture_repository,
+                $this->fixture_link_service,
+                $this->team_service,
+                $this->competition_service,
+                $this->permission_service,
+                'https://example.com',
+                'Test Site',
+                $league_query_service
+            );
+
+            $vars = $presenter->present_match_notification( $fixture, [ 'competition_type' => 'league', 'competition' => 'League Name' ] );
+
+            $this->assertTrue( $vars['fixture_details']->home_team->is_withdrawn );
+            $this->assertFalse( $vars['fixture_details']->away_team->is_withdrawn );
         }
 
         #[AllowMockObjectsWithoutExpectations]
@@ -327,7 +357,8 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
                 $this->competition_service,
                 $this->permission_service,
                 'https://example.com',
-                'Test Site'
+                'Test Site',
+                $this->createStub( \Racketmanager\Services\Competition\League_Query_Service::class )
             );
         }
 

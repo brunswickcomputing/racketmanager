@@ -16,10 +16,12 @@ use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Team\Team;
+use Racketmanager\Domain\Tournament\Championship;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Charge_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Tournament_Entry_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Tournament_Repository_Interface;
@@ -65,6 +67,7 @@ final class Tournament_Service_Draw_View_Model_Test extends TestCase {
         $league_service      = $this->createMock( League_Service::class );
         $competition_service = $this->createMock( Competition_Service::class );
         $fixture_service     = $this->createMock( Fixture_Service::class );
+        $league_repository   = $this->createMock( League_Repository_Interface::class );
 
         $service = new Tournament_Service(
             plugin_instance: $plugin,
@@ -80,35 +83,29 @@ final class Tournament_Service_Draw_View_Model_Test extends TestCase {
             club_service: $this->createStub( Club_Service::class ),
             finance_service: $this->createStub( Finance_Service::class ),
             league_service: $league_service,
+            league_repository: $league_repository,
         );
 
         $tournament     = $this->createStub( Tournament::class );
         $tournament->id = 99;
         $tournament->method( 'get_id' )->willReturn( 99 );
 
-        $league_entity = new class() {
-            public int $id = 55;
-            public string $season = '2026';
-            public array $finals = array();
-            public object $championship;
-            public function __construct() {
-                $this->championship = new class() {
-                    public function get_finals(): array {
-                        return array(
-                            array( 'key' => 'semi', 'name' => 'Semi Final' ),
-                            array( 'key' => 'final', 'name' => 'Championship Final' ),
-                        );
-                    }
-                };
-            }
-            public function get_id(): int {
-                return 55;
-            }
-            public function get_event_id(): int {
-                return 12;
-            }
-        };
-        $GLOBALS['wp_stubs_leagues'] = array( 55 => $league_entity );
+        $championship = $this->createStub( Championship::class );
+        $championship->method( 'get_finals' )->willReturn(
+            array(
+                array( 'key' => 'semi', 'name' => 'Semi Final' ),
+                array( 'key' => 'final', 'name' => 'Championship Final' ),
+            )
+        );
+        $league_entity               = new League( (object) array( 'id' => 55, 'title' => 'Draw', 'event_id' => 12 ) );
+        $league_entity->id           = 55;
+        $league_entity->season       = '2026';
+        $league_entity->finals       = array();
+        $league_entity->championship = $championship;
+        $league_repository->expects( $this->once() )
+            ->method( 'find_by_id' )
+            ->with( 55 )
+            ->willReturn( $league_entity );
 
         $competition                = $this->createStub( Competition::class );
         $competition->id            = 1;

@@ -15,6 +15,9 @@ use Racketmanager\Admin\Presenters\Admin_Championship_Finals_Presenter;
 use Racketmanager\Admin\Presenters\Admin_Date_Presenter;
 use Racketmanager\Admin\Presenters\Admin_League_Schedule_Presenter;
 use Racketmanager\Admin\Presenters\Admin_Message_Mapper;
+use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\Competition\League_Factory;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Updated_Exception;
 use Racketmanager\Exceptions\Fixture_Not_Found_Exception;
@@ -23,8 +26,11 @@ use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Services\Admin\Admin_Message_Service;
 use Racketmanager\Services\Admin\Club\Club_Action_Dispatcher;
@@ -56,10 +62,6 @@ use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\Validator\Validator;
 use stdClass;
-use function Racketmanager\get_club;
-use function Racketmanager\get_league;
-use function Racketmanager\get_league_team;
-use function Racketmanager\get_team;
 use function Racketmanager\show_alert;
 
 /**
@@ -112,6 +114,9 @@ class Admin_Display {
     protected Admin_Club $admin_club;
     protected Fixture_Repository_Interface $fixture_repository;
     protected Event_Repository_Interface $event_repository;
+    protected League_Repository_Interface $league_repository;
+    protected Club_Repository_Interface $club_repository;
+    protected Team_Repository_Interface $team_repository;
     protected \Racketmanager\Services\Competition\Event_Query_Service $event_query_service;
     protected \Racketmanager\Services\Competition\League_Query_Service $league_query_service;
     protected ?Admin_League_Schedule_Presenter $admin_league_schedule_presenter = null;
@@ -135,7 +140,13 @@ class Admin_Display {
     /**
      * Constructor
      */
-    public function __construct( ?RacketManager $racketmanager = null, ?Simple_Container $container = null ) {
+    public function __construct(
+        ?RacketManager $racketmanager = null,
+        ?Simple_Container $container = null,
+        ?League_Repository_Interface $league_repository = null,
+        ?Club_Repository_Interface $club_repository = null,
+        ?Team_Repository_Interface $team_repository = null,
+    ) {
         if ( $racketmanager instanceof RacketManager ) {
             $this->racketmanager = $racketmanager;
         }
@@ -158,12 +169,11 @@ class Admin_Display {
         $this->event_repository     = $c->has( 'event_repository' )
             ? $c->get( 'event_repository' )
             : new \Racketmanager\Repositories\Event_Repository();
-        $this->event_query_service  = $c->has( 'event_query_service' )
-            ? $c->get( 'event_query_service' )
-            : \Racketmanager\get_event_query_service();
-        $this->league_query_service = $c->has( 'league_query_service' )
-            ? $c->get( 'league_query_service' )
-            : \Racketmanager\get_league_query_service();
+        $this->league_repository    = $league_repository ?? $c->get( 'league_repository' );
+        $this->club_repository      = $club_repository ?? $c->get( 'club_repository' );
+        $this->team_repository      = $team_repository ?? $c->get( 'team_repository' );
+        $this->event_query_service  = $c->get( 'event_query_service' );
+        $this->league_query_service = $c->get( 'league_query_service' );
         if ( $c->has( 'admin_league_schedule_presenter' ) ) {
             $this->admin_league_schedule_presenter = $c->get( 'admin_league_schedule_presenter' );
         }
@@ -288,7 +298,7 @@ class Admin_Display {
             $this->show_contact_preview();
         } else {
             if ( isset( $_GET['league_id'] ) ) {
-                $league      = get_league( intval( $_GET['league_id'] ) );
+                $league      = $this->league_repository->find_by_id( intval( $_GET['league_id'] ) );
                 $object_type = 'league';
                 $object_name = 'league_id';
                 $object_id   = $league->id;
@@ -335,7 +345,7 @@ class Admin_Display {
             return;
         }
         if ( isset( $_POST['league_id'] ) ) {
-            $league      = get_league( intval( $_POST['league_id'] ) );
+            $league      = $this->league_repository->find_by_id( intval( $_POST['league_id'] ) );
             $title       = $league->title;
             $object_type = 'league';
             $object      = $league;
@@ -766,7 +776,7 @@ class Admin_Display {
             return;
         }
         if ( isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
-            $league   = get_league( $league );
+            $league   = $this->resolve_league( $league );
             $season   = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
             $messages = array();
             if ( isset( $_POST['team'] ) && $league ) {
@@ -802,13 +812,13 @@ class Admin_Display {
             return;
         }
         if ( isset( $_POST['action'] ) && 'withdraw' === $_POST['action'] ) {
-            $league   = get_league( $league );
+            $league   = $this->resolve_league( $league );
             $season   = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
             $messages = array();
             if ( isset( $_POST['team'] ) && $league ) {
                 try {
                     foreach ( $_POST['team'] as $team_id ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-                        $team = get_team( $team_id );
+                        $team = $this->team_repository->find_by_id( (int) $team_id );
                         $this->league_service->withdraw_team( $league, intval( $team_id ), (string) $season );
                         $messages[] = $team->title . ' ' . __( 'withdrawn', 'racketmanager' );
                     }
@@ -841,7 +851,7 @@ class Admin_Display {
             $this->show_message();
             return;
         }
-        $league      = get_league( $league_id );
+        $league      = $league_id ? $this->league_repository->find_by_id( (int) $league_id ) : null;
         $league_type = $league->type;
         if ( 'LD' === $league_type ) {
             $league_type = 'XD';
@@ -890,7 +900,6 @@ class Admin_Display {
         );
         if ( $clubs ) {
             foreach ( $clubs as $club ) {
-                $club       = get_club( $club );
                 $club_teams = $this->team_service->get_teams_for_club( $club->id, $league_type );
                 if ( $club_teams ) {
                     foreach ( $club_teams as $team ) {
@@ -910,7 +919,7 @@ class Admin_Display {
      * @return array
      */
     private function get_consolation_teams( object $league ): array {
-        $primary_league = get_league( $league->event->primary_league );
+        $primary_league = $this->resolve_league( $league->event->primary_league );
         $teams          = $this->get_league_query_service()->get_league_teams( $primary_league );
         $t              = 0;
         foreach ( $teams as $team ) {
@@ -1220,6 +1229,41 @@ class Admin_Display {
             ? $container->get( 'admin_championship_finals_presenter' )
             : new Admin_Championship_Finals_Presenter( new Admin_Date_Presenter() );
         return $presenter->present_finals( $active_finals, null, $league, $season );
+    }
+
+    /**
+     * Resolve a league from an id, a name, a League instance or a raw league row.
+     *
+     * Mirrors the legacy get_league() helper semantics without the global fallback.
+     *
+     * @param int|string|object|null $league league id, name, League instance or raw object.
+     *
+     * @return League|null
+     */
+    protected function resolve_league( int|string|object|null $league ): ?League {
+        if ( empty( $league ) ) {
+            return null;
+        }
+        if ( $league instanceof League ) {
+            return $league;
+        }
+        if ( is_object( $league ) ) {
+            $event = null;
+            if ( isset( $league->event ) && is_object( $league->event ) ) {
+                $event = $league->event instanceof Event ? $league->event : new Event( $league->event );
+            } elseif ( ! empty( $league->event_id ) ) {
+                $event = $this->event_repository->find_by_id( (int) $league->event_id );
+            }
+            $resolved = League_Factory::from_object( $league, $event );
+            if ( $resolved ) {
+                $this->league_query_service->set_season( $resolved, false, true );
+            }
+            return $resolved;
+        }
+        if ( is_numeric( $league ) ) {
+            return $this->league_repository->find_by_id( (int) $league );
+        }
+        return $this->league_repository->find_by_name( (string) $league );
     }
 
     protected function get_event_query_service(): \Racketmanager\Services\Competition\Event_Query_Service {

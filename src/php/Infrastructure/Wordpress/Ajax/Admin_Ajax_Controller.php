@@ -128,7 +128,10 @@ class Admin_Ajax_Controller {
             $c->has( 'settings_service' ) ? $c->get( 'settings_service' ) : new \Racketmanager\Services\Settings_Service(),
             null,
             $c->get( 'competition_notification_service' ),
-            $c->get( 'standings_service' )
+            $c->get( 'standings_service' ),
+            $c->get( 'league_repository' ),
+            $c->get( 'event_repository' ),
+            $c->get( 'team_repository' )
         );
     }
 

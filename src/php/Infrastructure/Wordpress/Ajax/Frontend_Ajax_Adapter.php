@@ -27,7 +27,9 @@ use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\Infrastructure\Security\Target_Season_Validator;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Entry_Service;
@@ -41,7 +43,6 @@ use Racketmanager\Services\Validator\Validator_Entry_Form;
 use stdClass;
 use function is_user_logged_in;
 use function Racketmanager\event_team_match_dropdown;
-use function Racketmanager\get_league;
 use function Racketmanager\player_search;
 use function Racketmanager\show_alert;
 use function Racketmanager\show_team_edit_modal;
@@ -71,7 +72,9 @@ class Frontend_Ajax_Adapter {
         private Get_Player_Details_Handler $get_player_details_handler,
         private ?Submit_Cup_Entry_Handler $submit_cup_entry_handler = null,
         private ?Submit_League_Entry_Handler $submit_league_entry_handler = null,
-        private ?Update_Player_Handler $update_player_handler = null
+        private ?Update_Player_Handler $update_player_handler = null,
+        private ?League_Repository_Interface $league_repository = null,
+        private ?Event_Repository_Interface $event_repository = null
     ) {
         $this->submit_cup_entry_handler    = $this->submit_cup_entry_handler ?? new Submit_Cup_Entry_Handler( $this->competition_entry_service );
         $this->submit_league_entry_handler = $this->submit_league_entry_handler ?? new Submit_League_Entry_Handler( $this->competition_entry_service );
@@ -342,7 +345,7 @@ class Frontend_Ajax_Adapter {
                     }
                     break;
                 case 'league':
-                    $target = get_league( $target_id );
+                    $target = $target_id ? $this->league_repository()->find_by_id( $target_id ) : null;
                     break;
                 case 'tournament':
                     try {
@@ -373,7 +376,7 @@ class Frontend_Ajax_Adapter {
                     if ( empty( $output ) ) {
                         $season = isset( $request['season'] ) ? sanitize_text_field( wp_unslash( (string) $request['season'] ) ) : null;
                         if ( ! empty( $season ) ) {
-                            $valid_season = Target_Season_Validator::validate( $target, $target_ref, $season );
+                            $valid_season = Target_Season_Validator::validate( $target, $target_ref, $season, $this->event_repository );
                             if ( ! empty( $valid_season ) ) {
                                 $args['season'] = $valid_season;
                             }
@@ -611,6 +614,14 @@ class Frontend_Ajax_Adapter {
         $encoded = wp_json_encode( $players );
 
         return $this->response_factory->create_success_response( false === $encoded ? '[]' : $encoded );
+    }
+
+    private function league_repository(): League_Repository_Interface {
+        if ( null === $this->league_repository ) {
+            throw new \LogicException( 'Frontend_Ajax_Adapter requires a League_Repository_Interface to resolve league targets.' );
+        }
+
+        return $this->league_repository;
     }
 
     private function nonce_failure_response( array $request = [], string $field = self::DEFAULT_NONCE_FIELD, string $action = self::DEFAULT_NONCE_ACTION, ?string $override_msg = null ): ?Response {

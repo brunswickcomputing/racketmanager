@@ -11,11 +11,22 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Rest;
 
+use LogicException;
+use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Event as Competition_Event;
+use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\Competition\League_Factory;
+use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Infrastructure\Wordpress\Rest\Rest_Controller_Adapter;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Competition\Event_Query_Service;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Season_Service;
 use Racketmanager\Services\Stripe_Settings;
@@ -31,10 +42,6 @@ use WP_REST_Controller;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
-use function Racketmanager\get_event;
-use function Racketmanager\get_league;
-use function Racketmanager\seo_url;
-use function Racketmanager\un_seo_url;
 
 /**
  * Class to implement the Rest_Resources object
@@ -62,6 +69,11 @@ class Rest_Resources extends WP_REST_Controller {
     private ?Club_Service $club_service;
     private ?Season_Service $season_service;
     private Rest_Controller_Adapter $adapter;
+    private ?League_Query_Service $league_query_service;
+    private ?Event_Query_Service $event_query_service;
+    private ?League_Repository_Interface $league_repository;
+    private ?Event_Repository_Interface $event_repository;
+    private ?Competition_Repository_Interface $competition_repository;
 
     /**
      * Constructor
@@ -71,6 +83,10 @@ class Rest_Resources extends WP_REST_Controller {
      * @param Club_Service|null            $club_service
      * @param Season_Service|null          $season_service
      * @param Rest_Controller_Adapter|null $adapter
+     * @param League_Query_Service|null    $league_query_service
+     * @param Event_Query_Service|null     $event_query_service
+     * @param League_Repository_Interface|null $league_repository
+     * @param Event_Repository_Interface|null  $event_repository
      * @return void
      */
     public function __construct(
@@ -78,25 +94,119 @@ class Rest_Resources extends WP_REST_Controller {
         ?Competition_Service $competition_service = null,
         ?Club_Service $club_service = null,
         ?Season_Service $season_service = null,
-        ?Rest_Controller_Adapter $adapter = null
+        ?Rest_Controller_Adapter $adapter = null,
+        ?League_Query_Service $league_query_service = null,
+        ?Event_Query_Service $event_query_service = null,
+        ?League_Repository_Interface $league_repository = null,
+        ?Event_Repository_Interface $event_repository = null
     ) {
         $this->racketmanager = $plugin_instance;
         $c                   = $this->racketmanager->container ?? null;
         if ( $c ) {
-            $this->competition_service = $competition_service ?? ( method_exists( $c, 'get' ) ? $c->get( 'competition_service' ) : null );
-            $this->club_service        = $club_service ?? ( method_exists( $c, 'get' ) ? $c->get( 'club_service' ) : null );
-            $this->season_service      = $season_service ?? ( method_exists( $c, 'get' ) ? $c->get( 'season_service' ) : null );
-            $this->adapter             = $adapter ?? ( ( method_exists( $c, 'has' ) && $c->has( 'rest_controller_adapter' ) ) ? $c->get( 'rest_controller_adapter' ) : new Rest_Controller_Adapter() );
+            $this->competition_service  = $competition_service ?? ( method_exists( $c, 'get' ) ? $c->get( 'competition_service' ) : null );
+            $this->club_service         = $club_service ?? ( method_exists( $c, 'get' ) ? $c->get( 'club_service' ) : null );
+            $this->season_service       = $season_service ?? ( method_exists( $c, 'get' ) ? $c->get( 'season_service' ) : null );
+            $this->adapter              = $adapter ?? ( ( method_exists( $c, 'has' ) && $c->has( 'rest_controller_adapter' ) ) ? $c->get( 'rest_controller_adapter' ) : new Rest_Controller_Adapter( ( method_exists( $c, 'has' ) && $c->has( 'league_repository' ) ) ? $c->get( 'league_repository' ) : null ) );
+            $this->league_query_service = $league_query_service ?? ( ( method_exists( $c, 'has' ) && $c->has( 'league_query_service' ) ) ? $c->get( 'league_query_service' ) : null );
+            $this->event_query_service  = $event_query_service ?? ( ( method_exists( $c, 'has' ) && $c->has( 'event_query_service' ) ) ? $c->get( 'event_query_service' ) : null );
+            $this->league_repository    = $league_repository ?? ( ( method_exists( $c, 'has' ) && $c->has( 'league_repository' ) ) ? $c->get( 'league_repository' ) : null );
+            $this->event_repository     = $event_repository ?? ( ( method_exists( $c, 'has' ) && $c->has( 'event_repository' ) ) ? $c->get( 'event_repository' ) : null );
+            $this->competition_repository = ( method_exists( $c, 'has' ) && $c->has( 'competition_repository' ) ) ? $c->get( 'competition_repository' ) : null;
         } else {
-            $this->competition_service = $competition_service;
-            $this->club_service        = $club_service;
-            $this->season_service      = $season_service;
-            $this->adapter             = $adapter ?? new Rest_Controller_Adapter();
+            $this->competition_service  = $competition_service;
+            $this->club_service         = $club_service;
+            $this->season_service       = $season_service;
+            $this->adapter              = $adapter ?? new Rest_Controller_Adapter();
+            $this->league_query_service = $league_query_service;
+            $this->event_query_service  = $event_query_service;
+            $this->league_repository    = $league_repository;
+            $this->event_repository     = $event_repository;
+            $this->competition_repository = null;
         }
 
         $this->version   = '1';
         $this->namespace = 'racketmanager/v' . $this->version;
     }
+
+    private function league_query(): League_Query_Service {
+        if ( ! $this->league_query_service instanceof League_Query_Service ) {
+            throw new LogicException( 'League_Query_Service is required by Rest_Resources but was not configured.' );
+        }
+        return $this->league_query_service;
+    }
+
+    private function event_query(): Event_Query_Service {
+        if ( ! $this->event_query_service instanceof Event_Query_Service ) {
+            throw new LogicException( 'Event_Query_Service is required by Rest_Resources but was not configured.' );
+        }
+        return $this->event_query_service;
+    }
+
+    /**
+     * Resolve a league from an id, name, League instance or raw row object.
+     *
+     * Mirrors the legacy `Racketmanager\get_league()` helper (without the implicit global fallback).
+     *
+     * @param object|int|string|null $league league id, name, League or row object.
+     *
+     * @return League|null
+     */
+    private function resolve_league( object|int|string|null $league ): ?League {
+        if ( $league instanceof League ) {
+            return $league;
+        }
+        if ( is_object( $league ) ) {
+            $event = null;
+            if ( isset( $league->event ) && is_object( $league->event ) ) {
+                $event = $league->event instanceof Competition_Event ? $league->event : new Competition_Event( $league->event );
+            } elseif ( ! empty( $league->event_id ) ) {
+                $event = $this->event_repository?->find_by_id( (int) $league->event_id );
+            }
+            $resolved = League_Factory::from_object( $league, $event );
+            if ( $resolved && $this->league_query_service instanceof League_Query_Service ) {
+                $this->league_query_service->set_season( $resolved, false, true );
+            }
+            return $resolved;
+        }
+        if ( empty( $league ) ) {
+            return null;
+        }
+        if ( is_numeric( $league ) ) {
+            return $this->league_repository?->find_by_id( (int) $league );
+        }
+        return $this->league_repository?->find_by_name( (string) $league );
+    }
+
+    /**
+     * Resolve an event from an id, name, Event instance or raw row object.
+     *
+     * Mirrors the legacy `Racketmanager\get_event()` helper (without the implicit global fallback).
+     *
+     * @param object|int|string|null $event       event id, name, Event or row object.
+     * @param string                 $search_term 'id' or 'name'.
+     *
+     * @return Competition_Event|null
+     */
+    private function resolve_event( object|int|string|null $event, string $search_term = 'id' ): ?Competition_Event {
+        if ( $event instanceof Competition_Event ) {
+            return $event;
+        }
+        if ( is_object( $event ) ) {
+            $competition = null;
+            if ( ! empty( $event->competition_id ) ) {
+                $competition = $this->competition_repository?->find_by_id( (int) $event->competition_id );
+            }
+            return new Competition_Event( $event, $competition instanceof Competition ? $competition : null );
+        }
+        if ( empty( $event ) ) {
+            return null;
+        }
+        if ( 'name' === $search_term ) {
+            return $this->event_repository?->find_by_name( (string) $event );
+        }
+        return $this->event_repository?->find_by_id( $event );
+    }
+
     /**
      * Register the routes for the objects of the controller.
      */
@@ -206,7 +316,7 @@ class Rest_Resources extends WP_REST_Controller {
         $club_id = null;
         $club_obj = null;
         if ( $club ) {
-            $club_name = un_seo_url( $club );
+            $club_name = Seo_Slug::decode( $club );
             try {
                 $club_obj = $this->club_service?->get_club_by_shortcode( $club_name );
                 $club_id  = $club_obj?->id;
@@ -220,7 +330,7 @@ class Rest_Resources extends WP_REST_Controller {
         $league_name      = $query->league;
         $validator        = new Validator();
         if ( $competition_name ) {
-            $competition_name = un_seo_url( $competition_name );
+            $competition_name = Seo_Slug::decode( $competition_name );
             try {
                 $events = $this->competition_service?->get_events_for_competition( $competition_name, null !== $season && '' !== $season ? (int) $season : null ) ?? array();
             } catch ( Competition_Not_Found_Exception $e ) {
@@ -228,10 +338,10 @@ class Rest_Resources extends WP_REST_Controller {
                 $validator->err_msgs[] = $e;
             }
         } elseif ( $event_name ) {
-            $event_name = un_seo_url( $event_name );
+            $event_name = Seo_Slug::decode( $event_name );
             $validator  = $validator->event( $event_name );
             if ( empty( $validator->error ) ) {
-                $event = get_event( $event_name, 'name' );
+                $event = $this->resolve_event( $event_name, 'name' );
                 if ( $event ) {
                     $validator = $validator->season_set( $season, $event->get_seasons() );
                     if ( empty( $validator->error ) ) {
@@ -240,8 +350,8 @@ class Rest_Resources extends WP_REST_Controller {
                 }
             }
         } elseif ( $league_name ) {
-            $league = un_seo_url( $league_name );
-            $league = get_league( $league );
+            $league = Seo_Slug::decode( $league_name );
+            $league = $this->resolve_league( $league );
             if ( $league ) {
                 $is_league = true;
                 $events[]  = $league->event;
@@ -257,19 +367,19 @@ class Rest_Resources extends WP_REST_Controller {
         }
         $data = array();
         foreach ( $events as $event ) {
-            $event = is_object( $event ) ? $event : get_event( $event );
+            $event = is_object( $event ) ? $event : $this->resolve_event( $event );
             if ( $event ) {
                 if ( empty( $is_league ) ) {
-                    $leagues = \Racketmanager\get_event_query_service()->get_leagues( $event );
+                    $leagues = $this->event_query()->get_leagues( $event );
                 } else {
                     $leagues = array( $league );
                 }
                 foreach ( $leagues as $league_item ) {
-                    $league_item = get_league( $league_item->id );
+                    $league_item = $this->resolve_league( $league_item->id );
                     if ( null === $league_item ) {
                         continue;
                     }
-                    $teams  = \Racketmanager\get_league_query_service()->get_league_teams( $league_item,
+                    $teams  = $this->league_query()->get_league_teams( $league_item,
                         array(
                             'season' => $season,
                             'club'   => $club_id,
@@ -307,7 +417,7 @@ class Rest_Resources extends WP_REST_Controller {
         $club       = $query->club;
         $home       = $query->home;
         if ( $club ) {
-            $club_name = un_seo_url( $club );
+            $club_name = Seo_Slug::decode( $club );
             try {
                 $club_obj           = $this->club_service?->get_club_by_shortcode( $club_name );
                 $match_args['club'] = $club_obj?->id;
@@ -329,7 +439,7 @@ class Rest_Resources extends WP_REST_Controller {
         $league_name      = $query->league;
         $validator        = new Validator();
         if ( $competition_name ) {
-            $competition_name = un_seo_url( $competition_name );
+            $competition_name = Seo_Slug::decode( $competition_name );
             $validator        = $validator->competition( $competition_name );
             if ( empty( $validator->error ) ) {
                 $competition = $this->competition_service?->get_competition( $competition_name, 'name' );
@@ -345,14 +455,14 @@ class Rest_Resources extends WP_REST_Controller {
                 }
             }
         } elseif ( $event_name ) {
-            $event_name = un_seo_url( $event_name );
+            $event_name = Seo_Slug::decode( $event_name );
             $validator  = $validator->event( $event_name );
             if ( empty( $validator->error ) ) {
-                $event = get_event( $event_name, 'name' );
+                $event = $this->resolve_event( $event_name, 'name' );
                 if ( $event ) {
                     $validator = $validator->season_set( $season, $event->get_seasons() );
                     if ( empty( $validator->error ) ) {
-                        $matches = \Racketmanager\get_event_query_service()->get_matches( $event, $match_args );
+                        $matches = $this->event_query()->get_matches( $event, $match_args );
                     }
                 } else {
                     $validator->error = true;
@@ -360,10 +470,10 @@ class Rest_Resources extends WP_REST_Controller {
                 }
             }
         } elseif ( $league_name ) {
-            $league = un_seo_url( $league_name );
-            $league = get_league( $league );
+            $league = Seo_Slug::decode( $league_name );
+            $league = $this->resolve_league( $league );
             if ( $league ) {
-                $matches = \Racketmanager\get_league_query_service()->get_matches( $league, $match_args );
+                $matches = $this->league_query()->get_matches( $league, $match_args );
             } else {
                 $validator->error = true;
                 $validator->err_msgs[] = __( 'League not found', 'racketmanager' );
@@ -571,7 +681,7 @@ class Rest_Resources extends WP_REST_Controller {
             return array();
         }
         foreach ( $clubs as $i => $club ) {
-            $clubs[ $i ] = is_object( $club ) ? seo_url( (string) ( $club->shortcode ?? '' ) ) : seo_url( (string) $club );
+            $clubs[ $i ] = is_object( $club ) ? Seo_Slug::encode( (string) ( $club->shortcode ?? '' ) ) : Seo_Slug::encode( (string) $club );
         }
         return $clubs;
     }
@@ -586,7 +696,7 @@ class Rest_Resources extends WP_REST_Controller {
             return array();
         }
         foreach ( $competitions as $i => $competition ) {
-            $competitions[ $i ] = is_object( $competition ) ? seo_url( (string) ( $competition->name ?? '' ) ) : seo_url( (string) $competition );
+            $competitions[ $i ] = is_object( $competition ) ? Seo_Slug::encode( (string) ( $competition->name ?? '' ) ) : Seo_Slug::encode( (string) $competition );
         }
         return $competitions;
     }
@@ -601,7 +711,7 @@ class Rest_Resources extends WP_REST_Controller {
             return array();
         }
         foreach ( $events as $i => $event ) {
-            $events[ $i ] = is_object( $event ) ? seo_url( (string) ( $event->name ?? '' ) ) : seo_url( (string) $event );
+            $events[ $i ] = is_object( $event ) ? Seo_Slug::encode( (string) ( $event->name ?? '' ) ) : Seo_Slug::encode( (string) $event );
         }
         return $events;
     }
@@ -616,7 +726,7 @@ class Rest_Resources extends WP_REST_Controller {
             return array();
         }
         foreach ( $leagues as $i => $league ) {
-            $leagues[ $i ] = is_object( $league ) ? seo_url( (string) ( $league->title ?? '' ) ) : seo_url( (string) $league );
+            $leagues[ $i ] = is_object( $league ) ? Seo_Slug::encode( (string) ( $league->title ?? '' ) ) : Seo_Slug::encode( (string) $league );
         }
         return $leagues;
     }
@@ -632,7 +742,7 @@ class Rest_Resources extends WP_REST_Controller {
         }
         foreach ( $seasons as $i => $season ) {
             $name = is_object( $season ) ? ( method_exists( $season, 'get_name' ) ? $season->get_name() : ( $season->name ?? '' ) ) : (string) $season;
-            $seasons[ $i ] = seo_url( (string) $name );
+            $seasons[ $i ] = Seo_Slug::encode( (string) $name );
         }
         return $seasons;
     }

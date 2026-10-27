@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Competition\Queries;
 
+use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
@@ -16,7 +17,6 @@ use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Util\Util;
 use function asort;
 use function is_numeric;
-use function Racketmanager\un_seo_url;
 use function __;
 
 /**
@@ -40,7 +40,7 @@ class Get_Competition_Players_Handler {
         }
 
         if ( is_string( $comp_id ) ) {
-            $comp_id = un_seo_url( $comp_id );
+            $comp_id = Seo_Slug::decode( $comp_id );
         }
 
         try {
@@ -63,7 +63,7 @@ class Get_Competition_Players_Handler {
         $player_link          = null;
 
         if ( ! empty( $query->player_identifier ) ) {
-            $player_identifier = un_seo_url( $query->player_identifier );
+            $player_identifier = Seo_Slug::decode( $query->player_identifier );
             try {
                 if ( is_numeric( $player_identifier ) ) {
                     $player = $this->player_service->get_player( (int) $player_identifier );

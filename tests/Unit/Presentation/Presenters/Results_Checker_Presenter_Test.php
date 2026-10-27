@@ -145,8 +145,7 @@ class Results_Checker_Presenter_Test extends TestCase {
         $this->assertEquals( 'Team 10 vs Team 20', $view_model->match_title );
         $this->assertEquals( 'Team A', $view_model->team_title );
         $this->assertEquals( 'John Doe', $view_model->player_name );
-        $this->assertStringContainsString( 'club-a', $view_model->player_link );
-        $this->assertStringContainsString( 'john-doe', $view_model->player_link );
+        $this->assertSame( '/clubs/club_a/players/john-doe/', $view_model->player_link );
         $this->assertEquals( 'Test Description', $view_model->description );
         $this->assertEquals( 'Approved', $view_model->status_desc );
         $this->assertTrue( $view_model->show_status );

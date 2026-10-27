@@ -3,13 +3,13 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\General\Queries;
 
+use Racketmanager\Domain\Shared\Seo_Slug;
 use function function_exists;
 use function get_query_var;
 use function is_array;
 use function sanitize_text_field;
 use function shortcode_atts;
 use function wp_unslash;
-use function Racketmanager\un_seo_url;
 
 class Get_Player_Query {
     public function __construct(
@@ -43,9 +43,7 @@ class Get_Player_Query {
 
         $player_name = null;
         if ( null !== $raw_player_name ) {
-            $player_name = function_exists( 'Racketmanager\un_seo_url' )
-                ? un_seo_url( $raw_player_name )
-                : ( function_exists( 'un_seo_url' ) ? \un_seo_url( $raw_player_name ) : $raw_player_name );
+            $player_name = Seo_Slug::decode( $raw_player_name );
         }
 
         $btm = null;

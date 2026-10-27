@@ -9,6 +9,7 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Admin\Import\Import_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
@@ -60,21 +61,27 @@ class Admin_Import_Fixtures_Test extends TestCase {
     }
 
     public function test_import_fixtures_creates_fixtures(): void {
-        $dispatcher = new Import_Action_Dispatcher(
+        $league_repository = $this->createMock( League_Repository_Interface::class );
+        $dispatcher        = new Import_Action_Dispatcher(
             $this->action_guard,
             $this->fixture_service,
             $this->player_service,
             $this->registration_service,
             $this->league_team_repository,
             $this->createStub( \Racketmanager\Services\Standings\Standings_Service::class ),
-            $GLOBALS['racketmanager']
+            $this->createStub( \Racketmanager\Services\Competition\League_Query_Service::class ),
+            $GLOBALS['racketmanager'],
+            $league_repository
         );
 
         $mock_league = (new \ReflectionClass( League::class ))->newInstanceWithoutConstructor();
         $mock_league->id = 99;
         $mock_league->title = 'Test League';
         $mock_league->name = 'Test League';
-        $GLOBALS['wp_stubs_leagues'][99] = $mock_league;
+        $league_repository->expects( $this->once() )
+            ->method( 'find_by_id' )
+            ->with( 99 )
+            ->willReturn( $mock_league );
 
         $contents = [
             'Date,MatchDay,Home,Away,Location,Group,Time',

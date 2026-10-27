@@ -11,6 +11,7 @@ use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Admin\League\League_Match_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\Fixture_Service;
@@ -26,14 +27,16 @@ final class League_Match_Action_Dispatcher_Test extends TestCase {
         ?Fixture_Maintenance_Service $maintenance_service = null,
         ?Action_Guard_Interface $guard = null,
         ?Fixture_Result_Manager $result_manager = null,
-        ?Fixture_Service $fixture_service = null
+        ?Fixture_Service $fixture_service = null,
+        ?League_Query_Service $league_query_service = null
     ): League_Match_Action_Dispatcher {
         return new League_Match_Action_Dispatcher(
             $fixture_repo ?? $this->createMock( Fixture_Repository_Interface::class ),
             $maintenance_service ?? $this->createMock( Fixture_Maintenance_Service::class ),
             $guard ?? $this->createStub( Action_Guard_Interface::class ),
             $result_manager ?? $this->createMock( Fixture_Result_Manager::class ),
-            $fixture_service ?? $this->createMock( Fixture_Service::class )
+            $fixture_service ?? $this->createMock( Fixture_Service::class ),
+            league_query_service: $league_query_service ?? $this->createStub( League_Query_Service::class )
         );
     }
 
@@ -91,12 +94,15 @@ final class League_Match_Action_Dispatcher_Test extends TestCase {
     public function test_add_matches_existing_final_returns_error(): void {
         $league = new class() {
             public int $id = 5;
-            public function get_matches( array $args ): array {
-                return array( new stdClass() );
-            }
         };
 
-        $dispatcher = $this->create_dispatcher();
+        $league_query_service = $this->createMock( League_Query_Service::class );
+        $league_query_service->expects( self::once() )
+            ->method( 'get_matches' )
+            ->with( $league, self::isArray() )
+            ->willReturn( array( new stdClass() ) );
+
+        $dispatcher = $this->create_dispatcher( league_query_service: $league_query_service );
         $result     = $dispatcher->handle(
             array( 'league_id' => '5' ),
             array(

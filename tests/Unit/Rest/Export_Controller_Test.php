@@ -52,6 +52,26 @@ namespace Racketmanager\Tests\Unit\Rest {
             parent::tearDown();
         }
 
+        public function test_fallback_adapter_receives_the_container_league_repository(): void {
+            $league_repository = $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );
+
+            $container = new Simple_Container();
+            $container->set( 'exporter', fn() => $this->exporter );
+            $container->set( 'league_repository', fn() => $league_repository );
+
+            $plugin            = $this->createStub( RacketManager::class );
+            $plugin->container = $container;
+
+            $controller = new Export_Controller( $plugin );
+
+            $adapter = ( new \ReflectionProperty( Export_Controller::class, 'adapter' ) )->getValue( $controller );
+            self::assertInstanceOf( \Racketmanager\Infrastructure\Wordpress\Rest\Rest_Controller_Adapter::class, $adapter );
+            self::assertSame(
+                $league_repository,
+                ( new \ReflectionProperty( \Racketmanager\Infrastructure\Wordpress\Rest\Rest_Controller_Adapter::class, 'league_repository' ) )->getValue( $adapter )
+            );
+        }
+
         public function test_get_calendar_calls_exporter_and_returns_response(): void {
             $request = new WP_REST_Request( 'GET', '/racketmanager/v1/export/calendar' );
             $request->set_param( 'league_id', 123 );

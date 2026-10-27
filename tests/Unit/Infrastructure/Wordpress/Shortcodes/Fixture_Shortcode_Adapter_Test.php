@@ -28,16 +28,13 @@ class Fixture_Shortcode_Adapter_Test extends TestCase {
         if (!function_exists('get_query_var')) {
             eval('function get_query_var($var) { return $GLOBALS["query_vars"][$var] ?? null; }');
         }
-        if (!function_exists('Racketmanager\un_seo_url')) {
-            eval('namespace Racketmanager { function un_seo_url($s) { return str_replace("-", " ", $s); } }');
-        }
         $GLOBALS['query_vars'] = [];
     }
 
-    public function test_handle_uses_un_seo_url_and_nulls_empty_vars(): void {
+    public function test_handle_decodes_slugs_with_seo_slug_and_nulls_empty_vars(): void {
         $GLOBALS['query_vars'] = [
-            'league_name' => 'premier-league',
-            'teamHome' => 'team-a',
+            'league_name' => 'Premier_League',
+            'teamHome' => 'Leigh-Westcliff_A',
             'teamAway' => 'team-b',
             'match_day' => '0', // Should be null
             'leg' => '', // Should be null
@@ -55,8 +52,8 @@ class Fixture_Shortcode_Adapter_Test extends TestCase {
         $this->assertNotNull($captured_query);
         $criteria = $captured_query->slug_criteria;
         
-        $this->assertEquals('premier league', $criteria['league_slug']);
-        $this->assertEquals('team a', $criteria['home_team_slug']);
+        $this->assertEquals('premier-league', $criteria['league_slug']);
+        $this->assertEquals('leigh westcliff-a', $criteria['home_team_slug']);
         $this->assertEquals('team b', $criteria['away_team_slug']);
         $this->assertNull($criteria['match_day']);
         $this->assertNull($criteria['leg']);

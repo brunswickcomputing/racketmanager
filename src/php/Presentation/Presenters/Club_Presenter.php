@@ -4,13 +4,13 @@ declare( strict_types=1 );
 namespace Racketmanager\Presentation\Presenters;
 
 use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
+use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Presentation\View_Models\Club_Competition_View_Model;
 use Racketmanager\Presentation\View_Models\Club_Event_View_Model;
 use Racketmanager\Presentation\View_Models\Club_Roster_Player_View_Model;
 use Racketmanager\Presentation\View_Models\Club_View_Model;
 use Racketmanager\Util\Util_Lookup;
-use function Racketmanager\seo_url;
 
 /**
  * Presenter for Club domain objects and templates.
@@ -34,7 +34,7 @@ readonly class Club_Presenter {
     ): Club_View_Model {
         $shortcode = (string) ( $club->shortcode ?? ( method_exists( $club, 'get_shortcode' ) ? $club->get_shortcode() : '' ) );
         $address   = isset( $club->address ) ? (string) $club->address : ( method_exists( $club, 'get_address' ) ? $club->get_address() : null );
-        $slug      = function_exists( 'Racketmanager\seo_url' ) ? seo_url( $shortcode ) : ( function_exists( 'seo_url' ) ? \seo_url( $shortcode ) : sanitize_title( $shortcode ) );
+        $slug      = Seo_Slug::encode( $shortcode );
         $roles     = isset( $club->roles ) && is_array( $club->roles ) ? $club->roles : [];
         $teams     = isset( $club->teams ) && is_array( $club->teams ) ? $club->teams : [];
 
@@ -101,7 +101,7 @@ readonly class Club_Presenter {
      */
     public function get_link( object $club, ?string $subpage = null ): string {
         $shortcode = $club->shortcode ?? ( method_exists( $club, 'get_shortcode' ) ? $club->get_shortcode() : '' );
-        $slug      = function_exists( 'Racketmanager\seo_url' ) ? seo_url( (string) $shortcode ) : ( function_exists( 'seo_url' ) ? \seo_url( (string) $shortcode ) : sanitize_title( (string) $shortcode ) );
+        $slug      = Seo_Slug::encode( (string) $shortcode );
 
         if ( ! empty( $subpage ) ) {
             return '/clubs/' . $slug . '/' . trim( $subpage, '/' ) . '/';
@@ -172,7 +172,7 @@ readonly class Club_Presenter {
      */
     public function present_roster_player( Club_Player_DTO $club_player, object $club, bool $use_wtn = false ): Club_Roster_Player_View_Model {
         $display_name = (string) $club_player->display_name;
-        $slug         = function_exists( 'Racketmanager\seo_url' ) ? seo_url( $display_name ) : sanitize_title( $display_name );
+        $slug         = Seo_Slug::encode( $display_name );
 
         return new Club_Roster_Player_View_Model(
             registration_id: $club_player->registration_id,
@@ -217,10 +217,10 @@ readonly class Club_Presenter {
      */
     public function get_club_competition_link( object|string $competition, object|string $club, ?string $season_name = null ): string {
         $comp_name = is_object( $competition ) ? ( $competition->name ?? '' ) : (string) $competition;
-        $comp_slug = function_exists( 'Racketmanager\seo_url' ) ? seo_url( (string) $comp_name ) : sanitize_title( (string) $comp_name );
+        $comp_slug = Seo_Slug::encode( (string) $comp_name );
 
         $club_shortcode = is_object( $club ) ? ( $club->shortcode ?? ( method_exists( $club, 'get_shortcode' ) ? $club->get_shortcode() : '' ) ) : (string) $club;
-        $club_slug      = function_exists( 'Racketmanager\seo_url' ) ? seo_url( (string) $club_shortcode ) : sanitize_title( (string) $club_shortcode );
+        $club_slug      = Seo_Slug::encode( (string) $club_shortcode );
 
         $season = $season_name ?? ( is_object( $competition ) ? ( $competition->current_season['name'] ?? '' ) : '' );
 
@@ -236,10 +236,10 @@ readonly class Club_Presenter {
      */
     public function get_club_event_link( object|string $event, object|string $club ): string {
         $club_shortcode = is_object( $club ) ? ( $club->shortcode ?? ( method_exists( $club, 'get_shortcode' ) ? $club->get_shortcode() : '' ) ) : (string) $club;
-        $club_slug      = function_exists( 'Racketmanager\seo_url' ) ? seo_url( (string) $club_shortcode ) : sanitize_title( (string) $club_shortcode );
+        $club_slug      = Seo_Slug::encode( (string) $club_shortcode );
 
         $event_name = is_object( $event ) ? ( $event->name ?? '' ) : (string) $event;
-        $event_slug = function_exists( 'Racketmanager\seo_url' ) ? seo_url( (string) $event_name ) : sanitize_title( (string) $event_name );
+        $event_slug = Seo_Slug::encode( (string) $event_name );
 
         if ( '' === $club_slug || '' === $event_slug ) {
             return '';

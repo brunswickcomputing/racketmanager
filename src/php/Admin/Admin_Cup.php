@@ -23,15 +23,15 @@ use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
 use Racketmanager\Services\Admin\Cup\Cup_Plan_Action_Dispatcher;
 use Racketmanager\Services\Admin\Cup\Cup_Setup_Action_Dispatcher;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Validator\Validator_Plan;
 use Racketmanager\Util\Util;
-use function Racketmanager\get_club;
-use function Racketmanager\get_league;
-use function Racketmanager\get_team;
 
 /**
  * RacketManager administration functions
@@ -57,9 +57,15 @@ final class Admin_Cup extends Admin_Championship {
         ?Draw_Action_Dispatcher $draw_action_dispatcher = null,
         ?Admin_Plan_Presenter $admin_plan_presenter = null,
         ?Admin_Entry_Link_Presenter $admin_entry_link_presenter = null,
+        ?League_Repository_Interface $league_repository = null,
+        ?Club_Repository_Interface $club_repository = null,
+        ?Team_Repository_Interface $team_repository = null,
     ) {
         parent::__construct( $plugin_instance );
         $c                                 = $this->racketmanager->container;
+        $this->league_repository           = $league_repository ?? $c->get( 'league_repository' );
+        $this->club_repository             = $club_repository ?? $c->get( 'club_repository' );
+        $this->team_repository             = $team_repository ?? $c->get( 'team_repository' );
         $this->admin_action_adapter        = $actions ?? $c->get( 'admin_action_adapter' );
         $this->cup_setup_action_dispatcher = $cup_setup_action_dispatcher ?? $c->get( 'cup_setup_action_dispatcher' );
         $this->cup_plan_action_dispatcher  = $cup_plan_action_dispatcher ?? $c->get( 'cup_plan_action_dispatcher' );
@@ -163,7 +169,7 @@ final class Admin_Cup extends Admin_Championship {
                             $draw_sizes[ $league_id ] = (string) $league->championship->num_teams_first_round;
                         } else {
                             if ( is_object( $league ) ) {
-                                \Racketmanager\get_league_query_service()->set_num_matches( $league, true );
+                                $this->league_query_service->set_num_matches( $league, true );
                             }
                             $draw_sizes[ $league_id ] = (string) ( $league->num_matches_total ?? '' );
                         }
@@ -253,7 +259,7 @@ final class Admin_Cup extends Admin_Championship {
             $this->show_message();
             return;
         }
-        $league = get_league( $league_id );
+        $league = $league_id ? $this->league_repository->find_by_id( (int) $league_id ) : null;
         if ( $league ) {
             if ( count( $league->championship->groups ) > 0 ) {
                 $league->set_group( $league->championship->groups[0] );
@@ -368,9 +374,9 @@ final class Admin_Cup extends Admin_Championship {
             return;
         }
         $league_id = isset( $_GET['league'] ) ? intval( $_GET['league'] ) : ( isset( $_GET['league_id'] ) ? intval( $_GET['league_id'] ) : null );
-        $league    = get_league( $league_id );
+        $league    = $league_id ? $this->league_repository->find_by_id( (int) $league_id ) : null;
         if ( $league ) {
-            $match_count = \Racketmanager\get_league_query_service()->get_matches( $league,
+            $match_count = $this->league_query_service->get_matches( $league,
                 array(
                     'count' => true,
                     'final' => 'all',
@@ -456,7 +462,7 @@ final class Admin_Cup extends Admin_Championship {
         $cup_season             = (object) $competition->get_season_by_name( (string) $season );
         $cup_season->venue_name = null;
         if ( isset( $cup_season->venue ) ) {
-            $venue_club = get_club( $cup_season->venue );
+            $venue_club = $cup_season->venue ? $this->club_repository->find_by_id( (int) $cup_season->venue ) : null;
             if ( $venue_club ) {
                 $cup_season->venue_name = $venue_club->shortcode;
             }
@@ -531,7 +537,7 @@ final class Admin_Cup extends Admin_Championship {
         if ( $competition_id ) {
             $competition = $this->competition_service->get_competition( $competition_id );
             if ( $competition && $league_id ) {
-                $league = get_league( $league_id );
+                $league = $this->league_repository->find_by_id( (int) $league_id );
                 if ( $league ) {
                     $is_finals       = false;
                     $single_cup_game = false;
@@ -558,7 +564,7 @@ final class Admin_Cup extends Admin_Championship {
                         if ( 'final' !== $final_key && ! empty( $league->current_season['home_away'] ) && 'true' === $league->current_season['home_away'] ) {
                             $match_args['leg'] = 1;
                         }
-                        $matches      = \Racketmanager\get_league_query_service()->get_matches( $league, $match_args );
+                        $matches      = $this->league_query_service->get_matches( $league, $match_args );
                         $teams        = $league->championship->get_final_teams( $final_key );
                         $submit_title = $form_title;
                     }
@@ -590,7 +596,7 @@ final class Admin_Cup extends Admin_Championship {
         if ( $competition_id ) {
             $competition = $this->competition_service->get_competition( $competition_id );
             if ( $competition && $league_id && $match_id ) {
-                $league = get_league( $league_id );
+                $league = $this->league_repository->find_by_id( (int) $league_id );
                 if ( $league ) {
                     $match = $this->fixture_repository->find_by_id( (int) $match_id );
                     if ( $match ) {
@@ -607,14 +613,14 @@ final class Admin_Cup extends Admin_Championship {
                         $final           = $league->championship->get_finals( $final_key );
                         $final_teams     = $league->championship->get_final_teams( $final['key'] ?? '' );
                         if ( is_numeric( $match->home_team ) ) {
-                            $home_team  = get_team( $match->home_team );
+                            $home_team  = $this->team_repository->find_by_id( (int) $match->home_team );
                             $home_title = $home_team?->title;
                         } else {
                             $home_team  = $final_teams[ $match->home_team ] ?? null;
                             $home_title = $home_team ? $home_team->title : null;
                         }
                         if ( is_numeric( $match->away_team ) ) {
-                            $away_team  = get_team( $match->away_team );
+                            $away_team  = $this->team_repository->find_by_id( (int) $match->away_team );
                             $away_title = $away_team?->title;
                         } else {
                             $away_team  = $final_teams[ $match->away_team ] ?? null;

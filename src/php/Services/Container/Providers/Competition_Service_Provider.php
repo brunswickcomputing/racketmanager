@@ -107,7 +107,10 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
         // Repositories
         $container->set( 'competition_repository', fn( Simple_Container $c ) => new Competition_Repository(
             static fn() => $c->has( 'fixture_repository' ) ? $c->get( 'fixture_repository' ) : null,
-            static fn() => $c->has( 'fixture_relation_loader' ) ? $c->get( 'fixture_relation_loader' ) : null
+            static fn() => $c->has( 'fixture_relation_loader' ) ? $c->get( 'fixture_relation_loader' ) : null,
+            static fn() => $c->get( 'club_repository' ),
+            static fn() => $c->get( 'player_repository' ),
+            static fn() => $c->get( 'event_repository' )
         ) );
         $container->set( 'event_repository', fn( Simple_Container $c ) => new Event_Repository( null, $c->get( 'competition_repository' ) ) );
         $container->set( 'league_team_repository', fn( Simple_Container $c ) => new League_Team_Repository( null, $c->get( 'club_repository' ), $c->get( 'team_repository' ) ) );
@@ -118,7 +121,8 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
 
         $container->set( 'league_repository', fn( Simple_Container $c ) => new League_Repository(
             $c->has( 'wpdb' ) ? $c->get( 'wpdb' ) : null,
-            fn() => $c->get( 'event_repository' )
+            fn() => $c->get( 'event_repository' ),
+            fn() => $c->get( 'league_query_service' )
         ) );
 
         $container->set( 'league_query_service', fn( Simple_Container $c ) => new League_Query_Service(
@@ -183,7 +187,8 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
         $container->set( 'competition_notification_service', fn( Simple_Container $c ) => new Competition_Notification_Service(
             $c->get( 'mailer' ),
             $c->get( 'event_repository' ),
-            $c->get( 'league_query_service' )
+            $c->get( 'league_query_service' ),
+            $c->get( 'league_repository' )
         ) );
 
         $container->set( 'promotion_relegation_service', fn( Simple_Container $c ) => new Promotion_Relegation_Service(
@@ -240,7 +245,8 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
                 $c->get( 'club_service' ),
                 $c->get( 'finance_service' ),
                 $c->get( 'league_service' ),
-                $c->get( 'mailer' )
+                $c->get( 'mailer' ),
+                $c->get( 'league_repository' )
             );
             $c->get( 'fixture_link_service' )->set_tournament_service( $service );
             return $service;
@@ -543,6 +549,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'fixture_repository' ),
             $c->get( 'league_service' ),
             $c->get( 'event_repository' ),
+            $c->get( 'league_query_service' ),
             $c->has( 'notification_service' ) ? $c->get( 'notification_service' ) : null
         ) );
 

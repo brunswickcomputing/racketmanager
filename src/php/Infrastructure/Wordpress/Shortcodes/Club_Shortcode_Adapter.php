@@ -16,20 +16,20 @@ use Racketmanager\Application\Club\Queries\Get_Club_Role_Modal_Query;
 use Racketmanager\Application\Club\Queries\Get_Club_Roles_Handler;
 use Racketmanager\Application\Club\Queries\Get_Club_Roles_Query;
 use Racketmanager\Application\Event\Queries\Event_Allowlist_Guard;
+use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Presentation\Presenters\Club_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Util\Util_Lookup;
 use function current_user_can;
 use function get_query_var;
 use function is_user_logged_in;
-use function Racketmanager\get_event;
-use function Racketmanager\get_team;
-use function Racketmanager\un_seo_url;
 use function shortcode_atts;
 use function wp_get_current_user;
 use function __;
@@ -57,7 +57,9 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly Get_Club_Invoices_Handler $invoices_handler,
         private readonly Shortcode_View_Presenter $view_presenter,
         private readonly Competition_Shortcode_Presenter $competition_shortcode_presenter,
-        private readonly Event_Query_Service $event_query_service
+        private readonly Event_Query_Service $event_query_service,
+        private readonly Event_Repository_Interface $event_repository,
+        private readonly Team_Repository_Interface $team_repository
     ) {
     }
 
@@ -99,7 +101,7 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         $referrer    = function_exists( 'wp_get_referer' ) ? wp_get_referer() : false;
         $query       = new Get_Club_Players_Query(
             club_name: $this->club_name_from_request(),
-            player_name: $player_name ? un_seo_url( (string) $player_name ) : null,
+            player_name: $player_name ? Seo_Slug::decode( (string) $player_name ) : null,
             template: $this->template_attribute( $atts ),
             referrer: $referrer ?: null
         );
@@ -147,7 +149,7 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         $competition_name = get_query_var( 'competition_name' );
         $query            = new Get_Club_Competitions_Query(
             club_name: $this->club_name_from_request(),
-            competition_name: $competition_name ? un_seo_url( (string) $competition_name ) : null,
+            competition_name: $competition_name ? Seo_Slug::decode( (string) $competition_name ) : null,
             template: $this->template_attribute( $atts )
         );
 
@@ -191,7 +193,7 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         if ( ! $event_name ) {
             return $this->view_presenter->render_error( __( 'Event id not supplied', 'racketmanager' ) );
         }
-        $event = get_event( un_seo_url( (string) $event_name ), 'name' );
+        $event = $this->event_repository->find_by_name( Seo_Slug::decode( (string) $event_name ) );
         if ( ! $event ) {
             return $this->view_presenter->render_error( __( 'Event not found', 'racketmanager' ) );
         }
@@ -276,7 +278,7 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         if ( ! $team_name ) {
             return $this->view_presenter->render_error( __( 'Team not supplied', 'racketmanager' ) );
         }
-        $team = get_team( un_seo_url( (string) $team_name ) );
+        $team = $this->team_repository->find_by_id( Seo_Slug::decode( (string) $team_name ) );
         if ( ! $team ) {
             return $this->view_presenter->render_error( __( 'Team not found', 'racketmanager' ) );
         }
@@ -285,7 +287,7 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         if ( ! $event_name ) {
             return $this->view_presenter->render_error( __( 'Event id not supplied', 'racketmanager' ) );
         }
-        $event = get_event( un_seo_url( (string) $event_name ), 'name' );
+        $event = $this->event_repository->find_by_name( Seo_Slug::decode( (string) $event_name ) );
         if ( ! $event ) {
             return $this->view_presenter->render_error( __( 'Event not found', 'racketmanager' ) );
         }
@@ -339,8 +341,8 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $this->view_presenter->render_error( __( 'Event id not supplied', 'racketmanager' ), 'modal' );
         }
 
-        $team  = get_team( $team_id );
-        $event = get_event( $event_id );
+        $team  = $this->team_repository->find_by_id( $team_id );
+        $event = $this->event_repository->find_by_id( $event_id );
         if ( ! $team ) {
             return $this->view_presenter->render_error( __( 'Team not found', 'racketmanager' ), 'modal' );
         }
@@ -377,6 +379,6 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     }
 
     private function club_name_from_request(): string {
-        return un_seo_url( (string) get_query_var( 'club_name' ) );
+        return Seo_Slug::decode( (string) get_query_var( 'club_name' ) );
     }
 }

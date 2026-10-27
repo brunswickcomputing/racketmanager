@@ -20,7 +20,10 @@ use Racketmanager\Infrastructure\Wordpress\Ajax\Frontend_Ajax_Controller;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
+use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
@@ -42,9 +45,17 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
     private Fixture_Repository_Interface|MockObject|Stub $fixture_repository;
     private \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface|MockObject|Stub $rubber_repository;
     private Frontend_Ajax_Adapter $adapter;
+    /** @var array<int, Team> teams the Validator can find by id. */
+    private array $validator_teams = [];
+    /** @var array<int, Event> events the Validator can find by id. */
+    private array $validator_events = [];
+    private mixed $previous_racketmanager = null;
 
     protected function setUp(): void {
         parent::setUp();
+        $this->validator_teams  = [];
+        $this->validator_events = [];
+        $this->install_validator_container();
         $this->security_service          = $this->createStub( Security_Service_Interface::class );
         $this->competition_service       = $this->createStub( Competition_Service::class );
         $this->competition_entry_service = $this->createStub( Competition_Entry_Service::class );
@@ -64,7 +75,30 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
 
     protected function tearDown(): void {
         parent::tearDown();
-        unset( $GLOBALS['wp_stubs_is_user_logged_in'], $GLOBALS['wp_stubs_teams'] );
+        unset( $GLOBALS['wp_stubs_is_user_logged_in'] );
+        if ( null === $this->previous_racketmanager ) {
+            unset( $GLOBALS['racketmanager'] );
+        } else {
+            $GLOBALS['racketmanager'] = $this->previous_racketmanager;
+        }
+    }
+
+    /**
+     * Validator resolves its team / event repositories from the plugin container,
+     * so expose stubs there instead of relying on the legacy get_team()/get_event() helpers.
+     */
+    private function install_validator_container(): void {
+        $this->previous_racketmanager = $GLOBALS['racketmanager'] ?? null;
+        $team_repository              = $this->createStub( Team_Repository_Interface::class );
+        $team_repository->method( 'find_by_id' )->willReturnCallback( fn( $id ): ?Team => $this->validator_teams[ (int) $id ] ?? null );
+        $event_repository = $this->createStub( Event_Repository_Interface::class );
+        $event_repository->method( 'find_by_id' )->willReturnCallback( fn( $id ): ?Event => $this->validator_events[ (int) $id ] ?? null );
+        $container = new Simple_Container();
+        $container->set( 'team_repository', $team_repository );
+        $container->set( 'event_repository', $event_repository );
+        $plugin                   = $this->createStub( RacketManager::class );
+        $plugin->container        = $container;
+        $GLOBALS['racketmanager'] = $plugin;
     }
 
     private function make_adapter( ?\Racketmanager\Application\Player\Queries\Get_Player_Details_Handler $get_player_details_handler = null ): Frontend_Ajax_Adapter {
@@ -776,7 +810,8 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
 
     public function test_update_team_direct_input_success(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $GLOBALS['wp_stubs_teams'][20] = (object) [ 'id' => 20 ];
+        $this->validator_teams[20]  = $this->createStub( Team::class );
+        $this->validator_events[10] = $this->createStub( Event::class );
 
         $team_service = $this->createMock( Team_Service::class );
         $team_service->expects( $this->once() )

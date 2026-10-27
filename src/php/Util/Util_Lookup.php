@@ -12,7 +12,7 @@ namespace Racketmanager\Util;
 
 use Racketmanager\Domain\Enums\Club_Role;
 use Racketmanager\Domain\Enums\Fixture_Status;
-use function Racketmanager\un_seo_url;
+use Racketmanager\Domain\Shared\Seo_Slug;
 
 class Util_Lookup {
     /**
@@ -513,9 +513,9 @@ class Util_Lookup {
             return (string) $player_id;
         }
         if ( ! empty( $_GET['player'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            $player_id = un_seo_url( htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['player'] ) ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $player_id = Seo_Slug::decode( htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['player'] ) ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
         } elseif ( isset( $wp->query_vars['player'] ) ) {
-            $player_id = un_seo_url( get_query_var( 'player' ) );
+            $player_id = Seo_Slug::decode( get_query_var( 'player' ) );
         } else {
             $player_id = null;
         }

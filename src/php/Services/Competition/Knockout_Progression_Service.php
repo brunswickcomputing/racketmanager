@@ -34,10 +34,19 @@ class Knockout_Progression_Service
         League_Query_Service|\Closure|null $league_query_service = null
     ) {
         $this->event_repository = $event_repository ?? new Event_Repository();
-        $this->league_repository = $league_repository ?? new League_Repository( null, $this->event_repository );
-        $this->fixture_repository = $fixture_repository ?? new Fixture_Repository();
         $this->notification_service = $notification_service;
         $this->league_query_service = $league_query_service;
+        $this->league_repository = $league_repository ?? new League_Repository(
+            null,
+            $this->event_repository,
+            function (): ?League_Query_Service {
+                if ( $this->league_query_service instanceof \Closure ) {
+                    $this->league_query_service = ( $this->league_query_service )();
+                }
+                return $this->league_query_service instanceof League_Query_Service ? $this->league_query_service : null;
+            }
+        );
+        $this->fixture_repository = $fixture_repository ?? new Fixture_Repository();
     }
 
     /**

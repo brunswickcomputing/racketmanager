@@ -20,6 +20,7 @@ use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Tournament_Service;
 
@@ -30,6 +31,7 @@ readonly final class Tournament_Setup_Event_Admin_Controller {
         private League_Service $league_service,
         private Draw_Action_Dispatcher $draw_action_dispatcher,
         private Action_Guard_Interface $action_guard,
+        private League_Query_Service $league_query_service,
     ) {
     }
 
@@ -118,7 +120,7 @@ readonly final class Tournament_Setup_Event_Admin_Controller {
             throw new Invalid_Status_Exception( __( 'League not found', 'racketmanager' ) );
         }
 
-        $match_count = \Racketmanager\get_league_query_service()->get_matches( $league,
+        $match_count = $this->league_query_service->get_matches( $league,
             array(
                 'count' => true,
                 'final' => 'all',

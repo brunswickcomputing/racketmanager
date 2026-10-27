@@ -3,13 +3,13 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Tournament\Queries;
 
+use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Util\Util_Lookup;
 
 use function htmlspecialchars;
 use function is_array;
 use function is_numeric;
 use function is_string;
-use function Racketmanager\un_seo_url;
 use function trim;
 use function wp_strip_all_tags;
 use function wp_unslash;
@@ -47,9 +47,9 @@ final class Get_Tournament_Players_Query {
         $players = $atts_array['players'] ?? null;
         if ( ! $players ) {
             if ( ! empty( $get['player'] ) ) {
-                $players = un_seo_url( htmlspecialchars( wp_strip_all_tags( wp_unslash( (string) $get['player'] ) ) ) );
+                $players = Seo_Slug::decode( htmlspecialchars( wp_strip_all_tags( wp_unslash( (string) $get['player'] ) ) ) );
             } elseif ( isset( $query_vars['player'] ) ) {
-                $players = un_seo_url( (string) $query_vars['player'] );
+                $players = Seo_Slug::decode( (string) $query_vars['player'] );
             }
         }
 

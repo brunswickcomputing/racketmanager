@@ -186,6 +186,7 @@ final class Layer_Rules_Test extends TestCase {
                 'application.no_global_racketmanager',
                 'application.no_concrete_repositories',
                 'services.no_wpdb',
+                'all.no_legacy_helper_calls',
                 'all.no_deprecated_helper_calls',
                 'all.no_alias_class_references',
                 'all.strict_types',

@@ -225,8 +225,12 @@ class Account_Ajax_Adapter_Test extends TestCase {
             ->method( 'verify_nonce' )
             ->with( 'valid', 'ajax-nonce' )
             ->willReturn( true );
-        $this->adapter = $this->make_adapter();
-        $GLOBALS['wp_stubs_messages'][10] = (object) array( 'status' => 'unread' );
+        $message_repo = $this->createMock( Message_Repository_Interface::class );
+        $message_repo->expects( $this->once() )
+            ->method( 'find_by_id' )
+            ->with( 10 )
+            ->willReturn( new Message( (object) array( 'id' => 10, 'status' => 'unread' ) ) );
+        $this->adapter = $this->make_adapter( $message_repo );
 
         $good = $this->adapter->get_user_message( array( 'security' => 'valid', 'message_id' => 10 ) );
         $this->assertSame( 200, $good->get_status_code() );

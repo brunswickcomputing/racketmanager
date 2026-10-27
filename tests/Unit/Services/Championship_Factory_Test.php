@@ -56,7 +56,7 @@ final class Championship_Factory_Test extends TestCase {
 		);
 	}
 
-	private function factory( ?League_Repository_Interface $repo = null, ?League_Query_Service $qs = null ): Championship_Factory {
+	private function factory( ?League_Repository_Interface $repo = null, League_Query_Service|\Closure|null $qs = null ): Championship_Factory {
 		return new Championship_Factory( $repo, $qs );
 	}
 
@@ -237,6 +237,58 @@ final class Championship_Factory_Test extends TestCase {
 		$this->assertSame( 3, $championship->num_teams );
 		$this->assertSame( 2, $championship->num_rounds );
 		$this->assertSame( 4, $championship->num_teams_first_round );
+	}
+
+	public function test_lazy_league_query_resolver_is_resolved_once_and_drives_consolation_progression(): void {
+		$primary = $this->make_primary_league_with_championship();
+		$qs      = $this->createMock( League_Query_Service::class );
+		$qs->expects( $this->exactly( 2 ) )
+			->method( 'get_matches' )
+			->with( $primary, $this->arrayHasKey( 'pending' ) )
+			->willReturn( 3 );
+		$repo = $this->createMock( League_Repository_Interface::class );
+		$repo->expects( $this->exactly( 2 ) )->method( 'find_by_id' )->with( 1 )->willReturn( $primary );
+
+		$resolutions = 0;
+		$resolver    = function () use ( &$resolutions, $qs ): League_Query_Service {
+			++$resolutions;
+			return $qs;
+		};
+
+		$factory = $this->factory( $repo, $resolver );
+		$this->assertSame( 0, $resolutions, 'resolver must not run at construction time' );
+
+		$first  = $factory->create( $this->consolation_league( 2 ), $this->settings() );
+		$second = $factory->create( $this->consolation_league( 2 ), $this->settings() );
+
+		$this->assertSame( 1, $resolutions, 'resolver must be invoked exactly once across repeated create() calls' );
+		foreach ( array( $first, $second ) as $championship ) {
+			$this->assertSame( 0, $championship->num_teams );
+			$this->assertSame( 3, $championship->num_rounds );
+			$this->assertSame( 8, $championship->num_teams_first_round );
+		}
+	}
+
+	public function test_resolver_returning_non_service_skips_outstanding_matches_check(): void {
+		$primary = $this->make_primary_league_with_championship();
+
+		$championship = $this->factory( $this->repo_returning( $primary ), fn() => null )
+			->create( $this->consolation_league( 2 ), $this->settings() );
+
+		// Documented degraded behaviour: without a query service the check is skipped and the draw is sized from the teams.
+		$this->assertSame( 2, $championship->num_teams );
+		$this->assertSame( 1, $championship->num_rounds );
+		$this->assertSame( 2, $championship->num_teams_first_round );
+	}
+
+	public function test_null_league_query_service_skips_outstanding_matches_check(): void {
+		$primary = $this->make_primary_league_with_championship();
+
+		$championship = $this->factory( $this->repo_returning( $primary ), null )
+			->create( $this->consolation_league( 2 ), $this->settings() );
+
+		$this->assertSame( 2, $championship->num_teams );
+		$this->assertSame( 1, $championship->num_rounds );
 	}
 
 	public function test_league_that_is_its_own_primary_is_not_consolation(): void {

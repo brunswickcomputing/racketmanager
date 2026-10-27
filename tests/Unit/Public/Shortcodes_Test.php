@@ -5,9 +5,13 @@ namespace Racketmanager\Tests\Unit\Public;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Domain\Club\Club;
+use Racketmanager\Domain\Competition\League;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Public\Shortcodes;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
@@ -96,6 +100,59 @@ class Shortcodes_Test extends TestCase {
         $this->assertStringContainsString( 'Division 2', $output );
         $this->assertStringContainsString( 'Green Team', $output );
         $this->assertStringContainsString( 'Yellow Team', $output );
+    }
+
+    public function test_get_league_uses_league_repository_resolved_from_container(): void {
+        $league            = new League( (object) [ 'id' => 42, 'title' => 'Container League' ] );
+        $league_repository = $this->createMock( League_Repository_Interface::class );
+        $league_repository->expects( self::once() )->method( 'find_by_id' )->with( 42 )->willReturn( $league );
+
+        $container = $this->create_test_container();
+        $container->set( 'league_repository', fn() => $league_repository );
+
+        $shortcodes = $this->create_shortcodes_instance( [], $container );
+
+        $this->assertSame( $league, $shortcodes->get_league( 42 ) );
+    }
+
+    public function test_get_league_without_id_falls_back_to_global_league(): void {
+        $global_league     = new League( (object) [ 'id' => 5, 'title' => 'Global League' ] );
+        $league_repository = $this->createMock( League_Repository_Interface::class );
+        $league_repository->expects( self::never() )->method( 'find_by_id' );
+        $league_repository->expects( self::never() )->method( 'find_by_name' );
+
+        $container = $this->create_test_container();
+        $container->set( 'league_repository', fn() => $league_repository );
+
+        $shortcodes        = $this->create_shortcodes_instance( [], $container );
+        $GLOBALS['league'] = $global_league;
+
+        $this->assertSame( $global_league, $shortcodes->get_league( 0 ) );
+
+        unset( $GLOBALS['league'] );
+        $this->assertNull( $shortcodes->get_league( 0 ) );
+    }
+
+    public function test_show_latest_results_resolves_club_from_club_repository(): void {
+        global $wp;
+
+        $club              = $this->createStub( Club::class );
+        $club->id          = 9;
+        $club_repository   = $this->createMock( Club_Repository_Interface::class );
+        $club_repository->expects( self::once() )->method( 'find_by_id' )->with( 'park club', 'shortcode' )->willReturn( $club );
+
+        $container = $this->create_test_container();
+        $container->set( 'club_repository', fn() => $club_repository );
+
+        $wp             = new \stdClass();
+        $wp->query_vars = [ 'club_name' => 'park-club' ];
+        unset( $GLOBALS['wp_query'] );
+        $GLOBALS['query_vars']['club_name'] = 'park-club';
+
+        $shortcodes = $this->create_shortcodes_instance( [], $container );
+        $output     = $shortcodes->show_latest_results( [ 'days' => 7 ] );
+
+        $this->assertIsString( $output );
     }
 
     private function create_shortcodes_instance( array $matches = [], ?Simple_Container $container = null ): Shortcodes {

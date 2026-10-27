@@ -21,15 +21,15 @@ use Racketmanager\Exceptions\Player_Already_Registered_Exception;
 use Racketmanager\Exceptions\Player_Exists_Exception;
 use Racketmanager\Exceptions\Registration_Not_Found_Exception;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Fixture_Service;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Standings\Standings_Service;
 use Racketmanager\Util\Util;
 use stdClass;
-use function Racketmanager\get_league;
-use function Racketmanager\get_league_team;
 
 /**
  * Handles CSV datasets import operations for leagues, fixtures, players, and club player registrations.
@@ -41,7 +41,9 @@ readonly final class Import_Action_Dispatcher implements Import_Action_Dispatche
      * @param Fixture_Service        $fixture_service
      * @param Player_Service         $player_service
      * @param Registration_Service   $registration_service
+     * @param League_Query_Service   $league_query_service
      * @param object|null            $racketmanager
+     * @param League_Repository_Interface|null $league_repository Resolves the league an import targets.
      */
     public function __construct(
         private Action_Guard_Interface $action_guard,
@@ -50,8 +52,24 @@ readonly final class Import_Action_Dispatcher implements Import_Action_Dispatche
         private Registration_Service $registration_service,
         private League_Team_Repository_Interface $league_team_repository,
         private Standings_Service $standings_service,
+        private League_Query_Service $league_query_service,
         private ?object $racketmanager = null,
+        private ?League_Repository_Interface $league_repository = null,
     ) {
+    }
+
+    /**
+     * Resolve the target league of an import (legacy get_league( $id ) semantics: id → find_by_id, 0 → null).
+     */
+    private function find_league( int $league_id ): ?object {
+        if ( $league_id <= 0 ) {
+            return null;
+        }
+        if ( null === $this->league_repository ) {
+            throw new \LogicException( 'Import_Action_Dispatcher requires a League_Repository_Interface to resolve a league by id.' );
+        }
+
+        return $this->league_repository->find_by_id( $league_id );
     }
 
     /**
@@ -193,7 +211,7 @@ readonly final class Import_Action_Dispatcher implements Import_Action_Dispatche
      * @param string        $season Season.
      */
     public function import_table( array $contents, string $delimiter, int $league_id, string $season ): Action_Result_DTO {
-        $league = get_league( $league_id );
+        $league = $this->find_league( $league_id );
         if ( ! $league ) {
             return new Action_Result_DTO(
                 message: __( 'League not found', 'racketmanager' ),
@@ -210,7 +228,7 @@ readonly final class Import_Action_Dispatcher implements Import_Action_Dispatche
                 $team    = $line[0];
                 $team_id = $this->get_team_id( $team );
                 if ( ! empty( $team_id ) ) {
-                    $table_id = \Racketmanager\get_league_query_service()->add_team( $league, $team_id, $season );
+                    $table_id = $this->league_query_service->add_team( $league, $team_id, $season );
                     if ( $table_id ) {
                         $points_2 = array( 0, 0 );
                         if ( isset( $line[5] ) ) {
@@ -266,7 +284,7 @@ readonly final class Import_Action_Dispatcher implements Import_Action_Dispatche
      * @param string        $season Season.
      */
     public function import_fixtures( array $contents, string $delimiter, int $league_id, string $season ): Action_Result_DTO {
-        $league = get_league( $league_id );
+        $league = $this->find_league( $league_id );
         if ( ! $league ) {
             return new Action_Result_DTO(
                 message: __( 'League not found', 'racketmanager' ),

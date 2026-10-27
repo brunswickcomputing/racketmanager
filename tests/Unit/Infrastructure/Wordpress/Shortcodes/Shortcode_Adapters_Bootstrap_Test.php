@@ -543,7 +543,9 @@ class Shortcode_Adapters_Bootstrap_Test extends TestCase {
             $overrides['invoices'] ?? $this->createStub( Get_Club_Invoices_Handler::class ),
             $overrides['view_presenter'] ?? $this->createStub( Shortcode_View_Presenter::class ),
             $overrides['competition_presenter'] ?? $this->createStub( Competition_Shortcode_Presenter::class ),
-            $overrides['event_query_service'] ?? $this->createStub( \Racketmanager\Services\Competition\Event_Query_Service::class )
+            $overrides['event_query_service'] ?? $this->createStub( \Racketmanager\Services\Competition\Event_Query_Service::class ),
+            $overrides['event_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ),
+            $overrides['team_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Team_Repository_Interface::class )
         );
     }
 
@@ -750,7 +752,13 @@ class Shortcode_Adapters_Bootstrap_Test extends TestCase {
         return new Email_Shortcode_Adapter(
             $overrides['fixture_repository'] ?? $this->createStub( Fixture_Repository_Interface::class ),
             $overrides['presenter'] ?? $this->createStub( Email_Shortcode_Presenter::class ),
-            $overrides['template_renderer'] ?? $this->createStub( Shortcode_Template_Renderer::class )
+            $overrides['template_renderer'] ?? $this->createStub( Shortcode_Template_Renderer::class ),
+            $overrides['event_query_service'] ?? $this->createStub( \Racketmanager\Services\Competition\Event_Query_Service::class ),
+            $overrides['league_query_service'] ?? $this->createStub( \Racketmanager\Services\Competition\League_Query_Service::class ),
+            $overrides['team_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Team_Repository_Interface::class ),
+            $overrides['league_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class ),
+            $overrides['event_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ),
+            $overrides['competition_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Competition_Repository_Interface::class )
         );
     }
 

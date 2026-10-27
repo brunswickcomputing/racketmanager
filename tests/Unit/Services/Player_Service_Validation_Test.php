@@ -159,7 +159,13 @@ final class Player_Service_Validation_Test extends TestCase {
         ] );
 
         $player_repo = $this->createMock( Player_Repository::class );
-        $player_repo->expects( $this->exactly( 2 ) )->method( 'find' )->with( 15 )->willReturn( $player );
+        // Two id lookups by the service plus the Validator's btm and email uniqueness checks.
+        $player_repo->expects( $this->exactly( 4 ) )
+            ->method( 'find' )
+            ->willReturnCallback( function ( $value, string $search_term = 'id' ) use ( $player ): ?Player {
+                $this->assertContains( [ $value, $search_term ], [ [ 15, 'id' ], [ 55555555, 'btm' ], [ 'charlie@example.com', 'email' ] ] );
+                return $player;
+            } );
         $player_repo->expects( $this->once() )
             ->method( 'update' )
             ->with(

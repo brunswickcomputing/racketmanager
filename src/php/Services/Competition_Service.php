@@ -37,8 +37,6 @@ use Racketmanager\Util\Util_Lookup;
 use Racketmanager\Util\Util_Messages;
 use stdClass;
 use WP_Error;
-use function Racketmanager\get_league;
-use function Racketmanager\get_league_team;
 
 /**
  * Class to implement the Competition Management Service
@@ -792,8 +790,8 @@ class Competition_Service {
             if ( $league_standings ) {
                 foreach ( $league_standings as $league_standing ) {
                     $points       = 0;
-                    $league       = get_league( $league_standing->id );
-                    $league_title = explode( ' ', $league->title );
+                    $league       = empty( $league_standing->id ) ? null : $this->league_repository->find_by_id( (int) $league_standing->id );
+                    $league_title = explode( ' ', (string) ( $league->title ?? '' ) );
                     $league_no    = end( $league_title );
                     if ( ! $competition->is_league ) {
                         $position = 0;
@@ -848,7 +846,7 @@ class Competition_Service {
                     $team_points += $points;
                 }
             }
-            $league_team = get_league_team( $team->table_id );
+            $league_team = empty( $team->table_id ) ? null : $this->league_team_repository->find_by_id( (int) $team->table_id );
             $league_team?->set_rating($team_points);
         }
     }

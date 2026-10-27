@@ -7,6 +7,7 @@ use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Club\Club_Role;
+use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Player\User;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
@@ -16,9 +17,12 @@ use Racketmanager\Infrastructure\Wordpress\Ajax\Club_Ajax_Controller;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
 use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Registration_Service;
 use WP_Error;
 
@@ -29,9 +33,17 @@ class Club_Ajax_Adapter_Test extends TestCase {
     private User_Repository_Interface|MockObject|Stub $user_repository;
     private Club_Role_Repository_Interface|MockObject|Stub $club_role_repository;
     private Club_Ajax_Adapter $adapter;
+    /** @var array<int, Club> clubs the Validator can find by id. */
+    private array $validator_clubs = [];
+    /** @var array<int, Player> players the Validator can find by id. */
+    private array $validator_players = [];
+    private mixed $previous_racketmanager = null;
 
     protected function setUp(): void {
         parent::setUp();
+        $this->validator_clubs   = [];
+        $this->validator_players = [];
+        $this->install_validator_container();
         $this->security_service     = $this->createStub( Security_Service_Interface::class );
         $this->club_service         = $this->createStub( Club_Service::class );
         $this->registration_service = $this->createStub( Registration_Service::class );
@@ -40,7 +52,34 @@ class Club_Ajax_Adapter_Test extends TestCase {
         $this->adapter              = $this->make_adapter();
         $_POST                      = array();
         $_REQUEST                   = array();
-        unset( $GLOBALS['wp_stubs_clubs'], $GLOBALS['wp_stubs_players'], $GLOBALS['wp_stubs_users'], $GLOBALS['wp_stubs_club_roles'] );
+        unset( $GLOBALS['wp_stubs_club_roles'] );
+    }
+
+    protected function tearDown(): void {
+        if ( null === $this->previous_racketmanager ) {
+            unset( $GLOBALS['racketmanager'] );
+        } else {
+            $GLOBALS['racketmanager'] = $this->previous_racketmanager;
+        }
+        parent::tearDown();
+    }
+
+    /**
+     * Validator_Club resolves its club / player repositories from the plugin container,
+     * so expose stubs there instead of relying on the legacy get_club()/get_player() helpers.
+     */
+    private function install_validator_container(): void {
+        $this->previous_racketmanager = $GLOBALS['racketmanager'] ?? null;
+        $club_repository              = $this->createStub( Club_Repository_Interface::class );
+        $club_repository->method( 'find_by_id' )->willReturnCallback( fn( $id ): ?Club => $this->validator_clubs[ (int) $id ] ?? null );
+        $player_repository = $this->createStub( Player_Repository_Interface::class );
+        $player_repository->method( 'find' )->willReturnCallback( fn( $id ): ?Player => $this->validator_players[ (int) $id ] ?? null );
+        $container = new Simple_Container();
+        $container->set( 'club_repository', $club_repository );
+        $container->set( 'player_repository', $player_repository );
+        $plugin                   = $this->createStub( RacketManager::class );
+        $plugin->container        = $container;
+        $GLOBALS['racketmanager'] = $plugin;
     }
 
     private function make_adapter(): Club_Ajax_Adapter {
@@ -118,9 +157,8 @@ class Club_Ajax_Adapter_Test extends TestCase {
             'matchSecretaryContactNo' => '07700',
             'matchSecretaryEmail'     => 'sec@example.test',
         );
-        $GLOBALS['wp_stubs_clubs'][12]     = (object) array( 'id' => 12 );
-        $GLOBALS['wp_stubs_clubs']['12']   = $GLOBALS['wp_stubs_clubs'][12];
-        $GLOBALS['wp_stubs_players'][44]   = (object) array( 'ID' => 44, 'display_name' => 'Sec' );
+        $this->validator_clubs[12]   = $this->createStub( Club::class );
+        $this->validator_players[44] = Player::from_array( array( 'ID' => 44, 'display_name' => 'Sec' ) );
 
         $this->club_service = $this->createMock( Club_Service::class );
         $club               = $this->createStub( Club::class );
@@ -228,10 +266,9 @@ class Club_Ajax_Adapter_Test extends TestCase {
         $user->email      = 'old@example.test';
         $this->user_repository = $this->createStub( User_Repository_Interface::class );
         $this->user_repository->method( 'find' )->willReturn( $user );
+        $this->user_repository->method( 'find_by_id' )->willReturn( $user );
         $this->user_repository->method( 'update_contact' )->willReturn( $contact_updated );
-        $GLOBALS['wp_stubs_clubs'][12]   = (object) array( 'id' => 12 );
-        $GLOBALS['wp_stubs_clubs']['12'] = $GLOBALS['wp_stubs_clubs'][12];
-        $GLOBALS['wp_stubs_users'][5]    = $user;
+        $this->validator_clubs[12] = $this->createStub( Club::class );
     }
 
     public function test_update_club_validation_error_returns_status_and_message(): void {

@@ -22,10 +22,10 @@ use Racketmanager\Application\Admin\Commands\Save_League_Standings_Command;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Standings\Standings_Service;
-use function Racketmanager\get_league;
 
 /**
  * Handles team mutations for the league admin screen (delete/withdraw, add teams, ranking).
@@ -35,12 +35,19 @@ readonly final class League_Team_Action_Dispatcher {
     private League_Team_Handler $commands;
 
     public function __construct(
-        League_Service $league_service,
+        private League_Service $league_service,
         private Action_Guard_Interface $action_guard,
         Standings_Service $standings_service,
         ?League_Team_Handler $commands = null,
+        ?Team_Repository_Interface $team_repository = null,
     ) {
-        $this->commands = $commands ?? new League_Team_Handler( $league_service, $standings_service );
+        if ( null === $commands ) {
+            if ( null === $team_repository ) {
+                throw new \LogicException( 'League_Team_Action_Dispatcher requires a League_Team_Handler or a Team_Repository_Interface.' );
+            }
+            $commands = new League_Team_Handler( $league_service, $standings_service, $team_repository );
+        }
+        $this->commands = $commands;
     }
 
     /**
@@ -83,7 +90,7 @@ readonly final class League_Team_Action_Dispatcher {
             return null;
         }
 
-        return get_league( $league_id );
+        return $this->league_service->get_league( $league_id );
     }
 
     /**

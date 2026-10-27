@@ -16,8 +16,11 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\DTO\Competition\Competition_Overview_DTO;
 use Racketmanager\Domain\DTO\Competition\Competition_Summary_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Services\Fixture\Fixture_Relation_Loader;
 use wpdb;
 
@@ -38,20 +41,35 @@ class Competition_Repository implements Competition_Repository_Interface {
     private ?Closure $fixture_relation_loader_resolver;
     private ?Fixture_Repository_Interface $fixture_repository = null;
     private ?Fixture_Relation_Loader $fixture_relation_loader = null;
+    private ?Closure $club_repository_resolver;
+    private ?Closure $player_repository_resolver;
+    private ?Closure $event_repository_resolver;
+    private ?Club_Repository_Interface $club_repository = null;
+    private ?Player_Repository_Interface $player_repository = null;
+    private ?Event_Repository_Interface $event_repository = null;
 
     /**
      * Create a new Competition_Repository instance
      *
      * @param Closure|null $fixture_repository_resolver Lazily resolves the fixture repository (avoids a construction cycle).
      * @param Closure|null $fixture_relation_loader_resolver Lazily resolves the fixture relation loader.
+     * @param Closure|null $club_repository_resolver Lazily resolves the club repository used to hydrate team rows.
+     * @param Closure|null $player_repository_resolver Lazily resolves the player repository used to hydrate player rows.
+     * @param Closure|null $event_repository_resolver Lazily resolves the event repository used to hydrate event rows (avoids a construction cycle).
      */
     public function __construct(
         ?Closure $fixture_repository_resolver = null,
-        ?Closure $fixture_relation_loader_resolver = null
+        ?Closure $fixture_relation_loader_resolver = null,
+        ?Closure $club_repository_resolver = null,
+        ?Closure $player_repository_resolver = null,
+        ?Closure $event_repository_resolver = null
     ) {
         global $wpdb;
         $this->fixture_repository_resolver      = $fixture_repository_resolver;
         $this->fixture_relation_loader_resolver = $fixture_relation_loader_resolver;
+        $this->club_repository_resolver         = $club_repository_resolver;
+        $this->player_repository_resolver       = $player_repository_resolver;
+        $this->event_repository_resolver        = $event_repository_resolver;
         $this->wpdb                             = $wpdb;
         $this->table_name           = $this->wpdb->prefix . 'racketmanager_competitions';
         $this->events_table         = $this->wpdb->prefix . 'racketmanager_events';
@@ -465,7 +483,7 @@ class Competition_Repository implements Competition_Repository_Interface {
 		}
 		foreach ( $teams as $i => $team ) {
 			$team->roster       = maybe_unserialize( $team->roster );
-			$team->club         = \Racketmanager\get_club( $team->club_id );
+			$team->club         = empty( $team->club_id ) ? null : $this->get_club_repository()->find_by_id( $team->club_id );
 			$team->title        = $team->name;
 			$team->player_count = $this->find_players(
 				$competition_id,
@@ -550,7 +568,8 @@ class Competition_Repository implements Competition_Repository_Interface {
 
 		return array_map(
 			function ( $row ) {
-				return \Racketmanager\get_player( (int) $row->id );
+				$id = (int) $row->id;
+				return $id > 0 ? $this->get_player_repository()->find( $id ) : null;
 			},
 			$rows
 		);
@@ -583,7 +602,8 @@ class Competition_Repository implements Competition_Repository_Interface {
 
 		return array_map(
 			function ( $row ) {
-				return \Racketmanager\get_event( (int) $row->id );
+				$id = (int) $row->id;
+				return $id > 0 ? $this->get_event_repository()->find_by_id( $id ) : null;
 			},
 			$rows
 		);
@@ -729,6 +749,39 @@ class Competition_Repository implements Competition_Repository_Interface {
 			}
 		}
 		return $this->fixture_repository;
+	}
+
+	/**
+	 * Resolve the club repository lazily (defaults to a fresh Club_Repository, as the legacy helper did).
+	 */
+	private function get_club_repository(): Club_Repository_Interface {
+		if ( null === $this->club_repository ) {
+			$resolved              = $this->club_repository_resolver ? ( $this->club_repository_resolver )() : null;
+			$this->club_repository = $resolved instanceof Club_Repository_Interface ? $resolved : new Club_Repository();
+		}
+		return $this->club_repository;
+	}
+
+	/**
+	 * Resolve the player repository lazily (defaults to a fresh Player_Repository, as the legacy helper did).
+	 */
+	private function get_player_repository(): Player_Repository_Interface {
+		if ( null === $this->player_repository ) {
+			$resolved                = $this->player_repository_resolver ? ( $this->player_repository_resolver )() : null;
+			$this->player_repository = $resolved instanceof Player_Repository_Interface ? $resolved : new Player_Repository();
+		}
+		return $this->player_repository;
+	}
+
+	/**
+	 * Resolve the event repository lazily (defaults to an Event_Repository bound to this competition repository).
+	 */
+	private function get_event_repository(): Event_Repository_Interface {
+		if ( null === $this->event_repository ) {
+			$resolved               = $this->event_repository_resolver ? ( $this->event_repository_resolver )() : null;
+			$this->event_repository = $resolved instanceof Event_Repository_Interface ? $resolved : new Event_Repository( null, $this );
+		}
+		return $this->event_repository;
 	}
 
 	/**

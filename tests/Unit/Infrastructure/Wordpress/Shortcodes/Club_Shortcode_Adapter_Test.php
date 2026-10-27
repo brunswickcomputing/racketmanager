@@ -24,6 +24,7 @@ use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
 use Racketmanager\Domain\DTO\Competition\Competition_Hydration_DTO;
 use Racketmanager\Domain\Finance\Invoice;
 use Racketmanager\Domain\Player\Player;
+use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Value_Objects\Currency;
 use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
@@ -48,6 +49,7 @@ use Racketmanager\Presentation\View_Models\Player_View_Model;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
@@ -636,7 +638,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $GLOBALS['query_vars']['team'] = 'first-team';
         $this->assertStringContainsString( 'Team not found', $adapter->show_club_team( [] ) );
 
-        $GLOBALS['wp_stubs_teams']['first team'] = (object) [ 'id' => 3 ];
+        $GLOBALS['wp_stubs_teams']['first team'] = new Team( (object) [ 'id' => 3, 'title' => 'First Team' ] );
         $this->assertStringContainsString( 'Event id not supplied', $adapter->show_club_team( [] ) );
 
         $unknown = $this->adapter( [ 'club_service' => $this->club_service_unknown() ] );
@@ -827,7 +829,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
 
         $GLOBALS['wp_stubs_events']['mens doubles']   = $allowed_event;
         $GLOBALS['wp_stubs_events']['ladies doubles'] = $blocked_event;
-        $GLOBALS['wp_stubs_teams']['first team']      = (object) [ 'id' => 3 ];
+        $GLOBALS['wp_stubs_teams']['first team']      = new Team( (object) [ 'id' => 3, 'title' => 'First Team' ] );
 
         $adapter = $this->adapter( [
             'club_service' => $this->club_service_for( $this->club() ),
@@ -862,7 +864,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         ] );
 
         $GLOBALS['wp_stubs_events']['mens doubles'] = $event;
-        $GLOBALS['wp_stubs_teams']['first team']    = (object) [ 'id' => 3 ];
+        $GLOBALS['wp_stubs_teams']['first team']    = new Team( (object) [ 'id' => 3, 'title' => 'First Team' ] );
 
         $adapter = $this->adapter( [
             'club_service' => $this->club_service_for( $this->club() ),
@@ -909,7 +911,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
 
         $GLOBALS['wp_stubs_events'][101] = $allowed_event;
         $GLOBALS['wp_stubs_events'][103] = $blocked_event;
-        $GLOBALS['wp_stubs_teams'][3]    = (object) [ 'id' => 3 ];
+        $GLOBALS['wp_stubs_teams'][3]    = new Team( (object) [ 'id' => 3, 'title' => 'First Team' ] );
 
         $adapter = $this->adapter( [
             'club_service' => $this->club_service_for( $this->club() ),
@@ -937,8 +939,8 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $GLOBALS['wp_stubs_events']['missing event'] = $missing_event;
         $GLOBALS['wp_stubs_events'][999]             = $foreign_event;
         $GLOBALS['wp_stubs_events'][888]             = $missing_event;
-        $GLOBALS['wp_stubs_teams']['first team']     = (object) [ 'id' => 3 ];
-        $GLOBALS['wp_stubs_teams'][3]                = (object) [ 'id' => 3 ];
+        $GLOBALS['wp_stubs_teams']['first team']     = new Team( (object) [ 'id' => 3, 'title' => 'First Team' ] );
+        $GLOBALS['wp_stubs_teams'][3]                = new Team( (object) [ 'id' => 3, 'title' => 'First Team' ] );
         $GLOBALS['query_vars']['season']             = '2026';
 
         $adapter = $this->adapter( [
@@ -1195,6 +1197,22 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         );
         $event_query_service = $overrides['event_query_service'] ?? $this->event_query_service( $event_repository );
 
+        $lookup_event_repository = $overrides['event_repository'] ?? $this->createStub( Event_Repository_Interface::class );
+        if ( ! isset( $overrides['event_repository'] ) ) {
+            $lookup_event_repository->method( 'find_by_name' )->willReturnCallback(
+                static fn( string $name ) => $GLOBALS['wp_stubs_events'][ $name ] ?? null
+            );
+            $lookup_event_repository->method( 'find_by_id' )->willReturnCallback(
+                static fn( $id ) => $GLOBALS['wp_stubs_events'][ $id ] ?? null
+            );
+        }
+        $team_repository = $overrides['team_repository'] ?? $this->createStub( Team_Repository_Interface::class );
+        if ( ! isset( $overrides['team_repository'] ) ) {
+            $team_repository->method( 'find_by_id' )->willReturnCallback(
+                static fn( int|string|null $id ) => $GLOBALS['wp_stubs_teams'][ $id ] ?? null
+            );
+        }
+
         return new Club_Shortcode_Adapter(
             $club_service,
             new Get_Club_Handler( $club_service, $settings, $club_presenter, $security ),
@@ -1206,7 +1224,9 @@ class Club_Shortcode_Adapter_Test extends TestCase {
             new Get_Club_Invoices_Handler( $club_service, $finance, new Invoice_Presenter(), $club_presenter, $settings ),
             new Shortcode_View_Presenter( $template_renderer ),
             $overrides['competition_presenter'] ?? new Competition_Shortcode_Presenter( $renderer ),
-            $event_query_service
+            $event_query_service,
+            $lookup_event_repository,
+            $team_repository
         );
     }
 }

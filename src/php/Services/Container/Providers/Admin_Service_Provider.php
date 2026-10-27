@@ -156,7 +156,8 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'team_repository' ),
             $c->get( 'fixture_repository' ),
             $c->get( 'championship_manager' ),
-            $c->get( 'event_repository' )
+            $c->get( 'event_repository' ),
+            $c->get( 'league_query_service' )
         ) );
 
         $container->set( 'draw_action_handler', function ( Simple_Container $c ) {
@@ -179,7 +180,8 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'tournament_service' ),
             $c->get( 'fixture_service' ),
             $c->get( 'league_service' ),
-            $c->get( 'team_service' )
+            $c->get( 'team_service' ),
+            $c->get( 'league_query_service' )
         ) );
 
         $container->set( 'league_schedule_service', fn( Simple_Container $c ) => new League_Schedule_Service(
@@ -245,7 +247,8 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
 
         $container->set( 'league_team_handler', fn( Simple_Container $c ) => new \Racketmanager\Application\Admin\Commands\League_Team_Handler(
             $c->get( 'league_service' ),
-            $c->get( 'standings_service' )
+            $c->get( 'standings_service' ),
+            $c->get( 'team_repository' )
         ) );
 
         $container->set( 'league_team_action_dispatcher', fn( Simple_Container $c ) => new League_Team_Action_Dispatcher(
@@ -259,7 +262,8 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'fixture_repository' ),
             $c->get( 'fixture_maintenance_service' ),
             $c->get( 'fixture_result_manager' ),
-            $c->get( 'fixture_service' )
+            $c->get( 'fixture_service' ),
+            $c->get( 'league_query_service' )
         ) );
 
         $container->set( 'league_match_action_dispatcher', fn( Simple_Container $c ) => new League_Match_Action_Dispatcher(
@@ -268,7 +272,8 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'action_guard' ),
             $c->get( 'fixture_result_manager' ),
             $c->get( 'fixture_service' ),
-            commands: $c->get( 'league_match_handler' )
+            commands: $c->get( 'league_match_handler' ),
+            league_repository: $c->get( 'league_repository' )
         ) );
 
         $container->set( 'league_constitution_handler', fn( Simple_Container $c ) => new \Racketmanager\Application\Admin\Commands\League_Constitution_Handler(
@@ -295,7 +300,8 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
 
         $container->set( 'league_event_action_dispatcher', fn( Simple_Container $c ) => new League_Event_Action_Dispatcher(
             $c->get( 'league_service' ),
-            $c->get( 'action_guard' )
+            $c->get( 'action_guard' ),
+            $c->get( 'league_query_service' )
         ) );
 
         $container->set( 'league_schedule_action_dispatcher', fn( Simple_Container $c ) => new League_Schedule_Action_Dispatcher(
@@ -451,7 +457,9 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'registration_service' ),
             $c->get( 'league_team_repository' ),
             $c->get( 'standings_service' ),
-            $c->has( 'racketmanager_app' ) ? $c->get( 'racketmanager_app' ) : null
+            $c->get( 'league_query_service' ),
+            $c->has( 'racketmanager_app' ) ? $c->get( 'racketmanager_app' ) : null,
+            $c->get( 'league_repository' )
         ) );
 
         $container->set( 'options_action_dispatcher', fn( Simple_Container $c ) => new Options_Action_Dispatcher(
@@ -535,14 +543,16 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'league_service' ),
             $c->get( 'team_service' ),
             $c->get( 'club_service' ),
-            $c->get( 'action_guard' )
+            $c->get( 'action_guard' ),
+            $c->get( 'league_query_service' )
         ) );
 
         $container->set( 'tournament_setup_event_admin_controller', fn( Simple_Container $c ) => new Tournament_Setup_Event_Admin_Controller(
             $c->get( 'tournament_service' ),
             $c->get( 'league_service' ),
             $c->get( 'draw_action_dispatcher' ),
-            $c->get( 'action_guard' )
+            $c->get( 'action_guard' ),
+            $c->get( 'league_query_service' )
         ) );
 
         $container->set( 'tournament_contact_admin_controller', fn( Simple_Container $c ) => new Tournament_Contact_Admin_Controller(
@@ -589,7 +599,10 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'settings_service' ),
             $c->get( 'league_team_repository' ),
             $c->get( 'competition_notification_service' ),
-            $c->get( 'standings_service' )
+            $c->get( 'standings_service' ),
+            $c->get( 'league_repository' ),
+            $c->get( 'event_repository' ),
+            $c->get( 'team_repository' )
         ) );
         $container->set( 'admin_ajax_controller', fn( Simple_Container $c ) => new Admin_Ajax_Controller( $app, $c->get( 'admin_ajax_adapter' ) ) );
 
@@ -609,7 +622,9 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             submit_league_entry_handler: $c->get( 'submit_league_entry_handler' ),
             update_player_handler: $c->get( 'update_player_handler' ),
             search_players_handler: $c->get( 'search_players_handler' ),
-            get_player_details_handler: $c->get( 'get_player_details_handler' )
+            get_player_details_handler: $c->get( 'get_player_details_handler' ),
+            league_repository: $c->get( 'league_repository' ),
+            event_repository: $c->get( 'event_repository' )
         ) );
         $container->set( 'frontend_ajax_controller', fn( Simple_Container $c ) => new Frontend_Ajax_Controller( $app, $c->get( 'frontend_ajax_adapter' ) ) );
 

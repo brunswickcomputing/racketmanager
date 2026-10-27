@@ -3,10 +3,9 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\League\Queries;
 
-use function function_exists;
+use Racketmanager\Domain\Shared\Seo_Slug;
 use function is_array;
 use function preg_replace;
-use function Racketmanager\un_seo_url;
 use function trim;
 
 /**
@@ -38,7 +37,7 @@ final readonly class Get_League_Players_Query {
         $season     = isset( $atts_array['season'] ) && false !== $atts_array['season'] && '' !== $atts_array['season'] ? (string) $atts_array['season'] : null;
 
         if ( ! $player_id && isset( $query_vars['player_id'] ) ) {
-            $player_id = function_exists( 'Racketmanager\un_seo_url' ) ? un_seo_url( (string) $query_vars['player_id'] ) : (string) $query_vars['player_id'];
+            $player_id = Seo_Slug::decode( (string) $query_vars['player_id'] );
         }
 
         return new self(

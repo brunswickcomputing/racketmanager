@@ -42,7 +42,6 @@ use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Util\Util_Messages;
 use stdClass;
 use WP_Error;
-use function Racketmanager\get_club;
 
 /**
  * Class to implement the Player Management Service
@@ -509,7 +508,7 @@ class Player_Service {
             }
         }
         if ( $club_id ) {
-            $club = get_club( $club_id );
+            $club = $this->club_repository->find_by_id( $club_id );
         } else {
             $club = null;
         }

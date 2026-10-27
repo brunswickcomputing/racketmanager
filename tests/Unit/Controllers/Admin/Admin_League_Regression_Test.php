@@ -215,10 +215,10 @@ final class Admin_League_Regression_Test extends TestCase {
 		$event->competition    = $competition;
 		$event->current_season = array( 'name' => '2026' );
 		$event->method( 'get_seasons' )->willReturn( array( '2026' => array( 'name' => '2026' ) ) );
-		$GLOBALS['wp_stubs_events'][10] = $event;
 
+		// Looked up twice through the container repository: once by the Validator, once by the screen.
 		$event_repository = $this->createMock( Event_Repository_Interface::class );
-		$event_repository->expects( self::once() )->method( 'find_by_id' )->with( 10 )->willReturn( $event );
+		$event_repository->expects( self::exactly( 2 ) )->method( 'find_by_id' )->with( 10 )->willReturn( $event );
 
 		$this->container->set( 'event_repository', fn() => $event_repository );
 		$this->screen = new Admin_League( $this->plugin );

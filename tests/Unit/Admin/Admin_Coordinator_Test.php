@@ -328,6 +328,67 @@ final class Admin_Coordinator_Test extends TestCase {
         self::assertSame( $ajax_controller, $admin->ajax_admin );
     }
 
+    public function test_add_meta_box_resolves_current_league_from_container_league_repository(): void {
+        $competition = \Racketmanager\Tests\Helpers\Competition_Test_Factory::create( id: 1, type: \Racketmanager\Domain\Competition\Competition_Type::LEAGUE );
+        $event       = new \Racketmanager\Domain\Competition\Event( (object) array( 'id' => 9, 'name' => 'Event', 'seasons' => array( '2026' => array( 'name' => '2026' ) ) ), $competition );
+        $league      = new \Racketmanager\Domain\Competition\League( (object) array( 'id' => 42, 'title' => 'Division 1' ), $event );
+        $league->set_season( '2026' );
+
+        $league_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );
+        $league_repository->expects( self::once() )->method( 'find_by_id' )->with( 42 )->willReturn( $league );
+
+        $container = new Simple_Container();
+        $container->set( 'league_repository', fn() => $league_repository );
+
+        $wpdb                       = new \wpdb();
+        $wpdb->get_results_callback = static fn() => array( (object) array( 'id' => 42, 'title' => 'Division 1' ) );
+        $wpdb->get_row_callback     = static fn() => (object) array( 'id' => 77, 'league_id' => '42', 'season' => '2026' );
+        $GLOBALS['wpdb']            = $wpdb;
+        $GLOBALS['post']            = (object) array( 'ID' => 5 );
+
+        $admin = new Admin(
+            $container,
+            null,
+            $this->createStub( Admin_Display::class ),
+            new Asset_Manager()
+        );
+
+        ob_start();
+        try {
+            $admin->add_meta_box( $GLOBALS['post'] );
+        } finally {
+            $html = (string) ob_get_clean();
+        }
+
+        self::assertStringContainsString( "name='curr_match_id' value=\"77\"", $html );
+        self::assertStringContainsString( "<select name='season'></select>", $html );
+    }
+
+    public function test_add_meta_box_without_league_repository_renders_without_current_league(): void {
+        $wpdb                       = new \wpdb();
+        $wpdb->get_results_callback = static fn() => array( (object) array( 'id' => 42, 'title' => 'Division 1' ) );
+        $wpdb->get_row_callback     = static fn() => null;
+        $GLOBALS['wpdb']            = $wpdb;
+        $GLOBALS['post']            = (object) array( 'ID' => 5 );
+
+        $admin = new Admin(
+            new Simple_Container(),
+            null,
+            $this->createStub( Admin_Display::class ),
+            new Asset_Manager()
+        );
+
+        ob_start();
+        try {
+            $admin->add_meta_box( $GLOBALS['post'] );
+        } finally {
+            $html = (string) ob_get_clean();
+        }
+
+        self::assertStringContainsString( 'Division 1', $html );
+        self::assertStringNotContainsString( "<select name='season'></select>", $html );
+    }
+
     public function test_register_admin_hooks_is_idempotent(): void {
         $GLOBALS['wp_stubs_added_actions'] = [];
         $container = new Simple_Container();

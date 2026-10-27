@@ -12,8 +12,8 @@ namespace Racketmanager\Services\Validator;
 
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
-use function Racketmanager\get_player;
-use function Racketmanager\get_user;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
 
 /**
  * Class to implement the Club Validator object
@@ -25,9 +25,15 @@ final class Validator_Club extends Validator {
      * Constructor
      *
      * @param Club_Role_Repository_Interface|null $club_role_repository
+     * @param Player_Repository_Interface|null    $player_repository  Resolved from the container / instantiated lazily when null.
+     * @param User_Repository_Interface|null      $user_repository    Resolved from the container / instantiated lazily when null.
      */
-    public function __construct( ?Club_Role_Repository_Interface $club_role_repository = null ) {
-        parent::__construct();
+    public function __construct(
+        ?Club_Role_Repository_Interface $club_role_repository = null,
+        ?Player_Repository_Interface $player_repository = null,
+        ?User_Repository_Interface $user_repository = null
+    ) {
+        parent::__construct( player_repository: $player_repository, user_repository: $user_repository );
         $this->club_role_repository = $club_role_repository ?? new Club_Role_Repository();
     }
     /**
@@ -89,7 +95,7 @@ final class Validator_Club extends Validator {
             $this->err_flds[] = $error_field;
             $this->err_msgs[] = __( 'Match secretary must be specified', 'racketmanager' );
         } else {
-            $player = get_player( $match_secretary );
+            $player = $this->player_repository()->find( $match_secretary );
             if ( ! $player ) {
                 $this->error      = true;
                 $this->err_flds[] = $error_field;
@@ -134,7 +140,7 @@ final class Validator_Club extends Validator {
             $this->err_flds[] = $error_field;
             $this->err_msgs[] = __( 'User must be specified', 'racketmanager' );
         } else {
-            $user = get_user( $user_id );
+            $user = $this->user_repository()->find_by_id( $user_id );
             if ( ! $user ) {
                 $this->error      = true;
                 $this->err_flds[] = $error_field;

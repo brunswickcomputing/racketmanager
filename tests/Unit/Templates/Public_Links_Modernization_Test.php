@@ -150,7 +150,8 @@ final class Public_Links_Modernization_Test extends TestCase {
             competition_service: $this->createStub( Competition_Service::class ),
             permission_service: $this->createStub( \Racketmanager\Services\Fixture\Fixture_Permission_Service::class ),
             site_url: 'https://tennis.example.com',
-            site_name: 'Test Tennis'
+            site_name: 'Test Tennis',
+            league_query_service: $this->createStub( League_Query_Service::class )
         );
 
         $vars = $notif_presenter->present_event_constitution( $event, '2024-r1' );

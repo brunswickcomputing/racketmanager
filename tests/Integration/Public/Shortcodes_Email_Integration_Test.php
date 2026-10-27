@@ -158,7 +158,13 @@ class Shortcodes_Email_Integration_Test extends TestCase {
         $this->shortcode = new Email_Shortcode_Adapter(
             $this->fixture_repo,
             $this->presenter,
-            $template_renderer
+            $template_renderer,
+            $this->createStub( \Racketmanager\Services\Competition\Event_Query_Service::class ),
+            $this->createStub( \Racketmanager\Services\Competition\League_Query_Service::class ),
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Team_Repository_Interface::class ),
+            $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class ),
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ),
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Competition_Repository_Interface::class )
         );
         $this->container->set( 'email_shortcode_adapter', fn() => $this->shortcode );
     }
@@ -291,7 +297,13 @@ class Shortcodes_Email_Integration_Test extends TestCase {
         $adapter = new Email_Shortcode_Adapter(
             $fixture_repo,
             $this->presenter,
-            new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) )
+            new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
+            $this->createStub( \Racketmanager\Services\Competition\Event_Query_Service::class ),
+            $this->createStub( \Racketmanager\Services\Competition\League_Query_Service::class ),
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Team_Repository_Interface::class ),
+            $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class ),
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ),
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Competition_Repository_Interface::class )
         );
 
         $warnings = [];
@@ -326,7 +338,13 @@ class Shortcodes_Email_Integration_Test extends TestCase {
         $adapter = new Email_Shortcode_Adapter(
             $this->fixture_repo,
             $this->presenter,
-            new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) )
+            new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
+            $this->createStub( \Racketmanager\Services\Competition\Event_Query_Service::class ),
+            $this->createStub( \Racketmanager\Services\Competition\League_Query_Service::class ),
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Team_Repository_Interface::class ),
+            $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class ),
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ),
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Competition_Repository_Interface::class )
         );
 
         $html = $adapter->show_match_date_change_notification( [

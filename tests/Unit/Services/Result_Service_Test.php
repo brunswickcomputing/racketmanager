@@ -10,6 +10,7 @@ use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Result\Result;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Result_Service;
 use stdClass;
@@ -36,13 +37,15 @@ class RacketManager_Mock implements Result_Service_Mock_Interface {
 class Result_Service_Test extends TestCase {
     private $fixture_repository;
     private $team_repository;
+    private $league_repository;
     private $service;
 
     protected function setUp(): void {
         parent::setUp();
         $this->fixture_repository = $this->createMock(Fixture_Repository_Interface::class);
         $this->team_repository = $this->createMock(Team_Repository_Interface::class);
-        $this->service = new Result_Service($this->fixture_repository, $this->team_repository);
+        $this->league_repository = $this->createMock(League_Repository_Interface::class);
+        $this->service = new Result_Service($this->fixture_repository, $this->team_repository, null, $this->league_repository);
 
         global $racketmanager;
         $racketmanager = $this->getMockBuilder(RacketManager_Mock::class)
@@ -169,7 +172,10 @@ class Result_Service_Test extends TestCase {
         $event->competition = $competition;
         $league->event = $event;
 
-        $GLOBALS['wp_stubs_leagues'][456] = $league;
+        $this->league_repository->expects($this->once())
+            ->method('find_by_id')
+            ->with(456)
+            ->willReturn($league);
 
         $home_team = $this->createMock(Team::class);
         $home_team->method('get_id')->willReturn(100);

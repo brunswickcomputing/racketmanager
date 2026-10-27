@@ -44,6 +44,8 @@ final class Import_Action_Dispatcher_Test extends TestCase {
     private Registration_Service $registration_service;
     private League_Team_Repository_Interface $league_team_repository;
     private Standings_Service $standings_service;
+    private League_Query_Service $league_query_service;
+    private League_Repository_Interface $league_repository;
     private object $racketmanager;
     private Import_Action_Dispatcher $dispatcher;
 
@@ -57,6 +59,8 @@ final class Import_Action_Dispatcher_Test extends TestCase {
         $this->registration_service = $this->createMock( Registration_Service::class );
         $this->league_team_repository = $this->createMock( League_Team_Repository_Interface::class );
         $this->standings_service = $this->createMock( Standings_Service::class );
+        $this->league_query_service = $this->createMock( League_Query_Service::class );
+        $this->league_repository    = $this->createMock( League_Repository_Interface::class );
 
         $this->racketmanager = $this->createMock( RacketManager::class );
         $this->racketmanager->method( 'get_team_id' )->willReturn( 10 );
@@ -68,7 +72,9 @@ final class Import_Action_Dispatcher_Test extends TestCase {
             $this->registration_service,
             $this->league_team_repository,
             $this->standings_service,
+            $this->league_query_service,
             $this->racketmanager,
+            $this->league_repository,
         );
 
         $GLOBALS['wp_stubs_filesystem_method']     = 'direct';
@@ -255,29 +261,15 @@ final class Import_Action_Dispatcher_Test extends TestCase {
             ->method( 'set_teams_rank' )
             ->with( $mock_league, '2026' );
 
-        $GLOBALS['wp_stubs_leagues'][10] = $mock_league;
+        $this->league_repository->expects( self::once() )
+            ->method( 'find_by_id' )
+            ->with( 10 )
+            ->willReturn( $mock_league );
 
-        $league_repository = $this->createMock( League_Repository_Interface::class );
-        $league_repository->expects( self::once() )
-            ->method( 'add_team_to_league' )
-            ->with( 10, 10, '2026', null, null, 1 )
+        $this->league_query_service->expects( self::once() )
+            ->method( 'add_team' )
+            ->with( $mock_league, 10, '2026' )
             ->willReturn( 101 );
-        $league_query_service = new League_Query_Service( $league_repository );
-        $container            = new class( $league_query_service ) {
-            public function __construct( private League_Query_Service $league_query_service ) {
-            }
-
-            public function has( string $service ): bool {
-                return 'league_query_service' === $service;
-            }
-
-            public function get( string $service ): League_Query_Service {
-                return $this->league_query_service;
-            }
-        };
-
-        global $racketmanager;
-        $racketmanager = (object) array( 'container' => $container );
 
         $contents = array(
             'Team,Done,Won,Draw,Lost,Points2,Points,Add,SetsWon,SetsAllowed,GamesWon,GamesAllowed',

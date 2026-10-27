@@ -26,6 +26,7 @@ class Tournament_Team_Admin_Controller_Test extends TestCase {
     private $team_service;
     private $club_service;
     private $guard;
+    private $league_query_service;
     private $controller;
 
     protected function setUp(): void {
@@ -34,13 +35,15 @@ class Tournament_Team_Admin_Controller_Test extends TestCase {
         $this->team_service       = $this->createMock( Team_Service::class );
         $this->club_service       = $this->createStub( Club_Service::class );
         $this->guard              = $this->createStub( Action_Guard_Interface::class );
+        $this->league_query_service = $this->createMock( \Racketmanager\Services\Competition\League_Query_Service::class );
 
         $this->controller = new Tournament_Team_Admin_Controller(
             $this->tournament_service,
             $this->league_service,
             $this->team_service,
             $this->club_service,
-            $this->guard
+            $this->guard,
+            $this->league_query_service
         );
     }
 
@@ -75,5 +78,32 @@ class Tournament_Team_Admin_Controller_Test extends TestCase {
 
         self::assertArrayHasKey( 'view_model', $result );
         self::assertInstanceOf( Tournament_Team_Page_View_Model::class, $result['view_model'] );
+    }
+
+    public function test_handle_uses_injected_league_query_service_when_league_given(): void {
+        $competition                  = new stdClass();
+        $competition->is_player_entry = false;
+        $event                        = $this->createStub( \Racketmanager\Domain\Competition\Event::class );
+        $event->competition           = $competition;
+        $league                       = $this->createStub( \Racketmanager\Domain\Competition\League::class );
+        $league->event                = $event;
+
+        $this->league_service->method( 'get_league' )->willReturn( $league );
+
+        $team_obj            = new stdClass();
+        $team_obj->id        = 123;
+        $team_obj->title     = 'Test Team';
+        $team_obj->roster    = [];
+        $team_obj->team_type = 'C';
+        $team                = new \Racketmanager\Domain\Team\Team( $team_obj );
+
+        $this->league_query_service->expects( self::once() )->method( 'get_team_dtls' )->with( $league, 123 )->willReturn( $team );
+        $this->team_service->expects( self::never() )->method( 'get_team_by_id' );
+        $this->club_service->method( 'get_clubs' )->willReturn( [] );
+
+        $result = $this->controller->handle( [ 'edit' => '123', 'league_id' => '7', 'season' => '2026' ] );
+
+        self::assertArrayHasKey( 'view_model', $result );
+        self::assertSame( $team, $result['view_model']->team );
     }
 }

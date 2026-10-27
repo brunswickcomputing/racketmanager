@@ -11,19 +11,38 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services;
 
+use Closure;
 use Racketmanager\Domain\Tournament\Championship;
 use Racketmanager\Domain\Tournament\Championship_Settings;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Util\Util;
-use function Racketmanager\get_league;
-use function Racketmanager\get_league_query_service;
 
 final class Championship_Factory {
+    /**
+     * @param League_Repository_Interface|null   $league_repository    league repository.
+     * @param League_Query_Service|Closure|null $league_query_service league query service, or a lazy resolver
+     *                                                                (used by League_Repository to avoid a cycle).
+     *                                                                When null (or when the resolver does not yield a
+     *                                                                League_Query_Service) the consolation
+     *                                                                "outstanding first-round matches" check is
+     *                                                                skipped and the draw is sized from the team count.
+     */
     public function __construct(
         private ?League_Repository_Interface $league_repository = null,
-        private ?League_Query_Service $league_query_service = null,
+        private League_Query_Service|Closure|null $league_query_service = null,
     ) {
+    }
+
+    /**
+     * Resolve the league query service lazily (exactly once) and cache it; null when unavailable.
+     */
+    private function league_query(): ?League_Query_Service {
+        if ( $this->league_query_service instanceof Closure ) {
+            $resolved                   = ( $this->league_query_service )();
+            $this->league_query_service = $resolved instanceof League_Query_Service ? $resolved : null;
+        }
+        return $this->league_query_service;
     }
 
     /**
@@ -196,9 +215,7 @@ final class Championship_Factory {
             );
         }
 
-        $primary_league = $this->league_repository
-            ? $this->league_repository->find_by_id( (int) $primary_league_id )
-            : ( function_exists( '\\Racketmanager\\get_league' ) ? get_league( (int) $primary_league_id ) : null );
+        $primary_league = $this->league_repository?->find_by_id( (int) $primary_league_id );
 
         if ( ! $primary_league || ! isset( $primary_league->championship ) ) {
             $num_rounds            = (int) ceil( log( max( 1, $num_teams ), 2 ) );
@@ -220,8 +237,7 @@ final class Championship_Factory {
             : ( $league->current_season->name ?? null );
 
         $outstanding_matches = false;
-        $query_service       = $this->league_query_service
-            ?? ( function_exists( '\\Racketmanager\\get_league_query_service' ) ? get_league_query_service() : null );
+        $query_service       = $this->league_query();
         if ( null !== $query_service ) {
             $outstanding_matches = (bool) $query_service->get_matches(
                 $primary_league,

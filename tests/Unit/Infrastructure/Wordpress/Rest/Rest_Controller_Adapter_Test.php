@@ -389,6 +389,86 @@ final class Rest_Controller_Adapter_Test extends TestCase {
         self::assertSame( 'Winner of Match 4', $dto3->away_team );
     }
 
+    /**
+     * Point the global plugin at a container without `competition_service`, so league titles can only
+     * come from the adapter's injected League_Repository_Interface.
+     */
+    private function use_container_without_competition_service(): void {
+        global $racketmanager;
+        $plugin            = $this->createStub( RacketManager::class );
+        $plugin->container = new Simple_Container();
+        $racketmanager     = $plugin;
+    }
+
+    public function test_build_match_response_resolves_league_title_through_injected_repository_and_caches_it(): void {
+        $this->use_container_without_competition_service();
+
+        $league        = $this->createStub( League::class );
+        $league->title = 'Men\'s "Division" 2';
+        $league->method( 'get_name' )->willReturn( '' );
+
+        $league_repo = $this->createMock( League_Repository_Interface::class );
+        $league_repo->expects( $this->once() )->method( 'find_by_id' )->with( 7 )->willReturn( $league );
+
+        $adapter = new Rest_Controller_Adapter( $league_repo );
+
+        $f1            = new Fixture();
+        $f1->league_id = 7;
+        $f2            = new Fixture();
+        $f2->league_id = 7;
+
+        self::assertSame( 'Men\'s Division 2', $adapter->build_match_response( $f1 )->league );
+        // Second match with the same league id is served from the memo, not the repository.
+        self::assertSame( 'Men\'s Division 2', $adapter->build_match_response( $f2 )->league );
+    }
+
+    public function test_build_match_response_returns_empty_league_title_when_repository_finds_nothing(): void {
+        $this->use_container_without_competition_service();
+
+        $league_repo = $this->createMock( League_Repository_Interface::class );
+        $league_repo->expects( $this->once() )->method( 'find_by_id' )->with( 7 )->willReturn( null );
+
+        $adapter = new Rest_Controller_Adapter( $league_repo );
+
+        $f1            = new Fixture();
+        $f1->league_id = 7;
+        $f2            = new Fixture();
+        $f2->league_id = 7;
+
+        self::assertSame( '', $adapter->build_match_response( $f1 )->league );
+        // The miss is memoized too.
+        self::assertSame( '', $adapter->build_match_response( $f2 )->league );
+    }
+
+    public function test_build_match_response_never_queries_repository_for_zero_or_non_numeric_league_id(): void {
+        $this->use_container_without_competition_service();
+
+        $league_repo = $this->createMock( League_Repository_Interface::class );
+        $league_repo->expects( $this->never() )->method( 'find_by_id' );
+
+        $adapter = new Rest_Controller_Adapter( $league_repo );
+
+        $zero            = new Fixture();
+        $zero->league_id = 0;
+        self::assertSame( '', $adapter->build_match_response( $zero )->league );
+
+        $non_numeric            = new \stdClass();
+        $non_numeric->league_id = 'abc';
+        $non_numeric->home_team = '';
+        $non_numeric->away_team = '';
+        self::assertSame( '', $adapter->build_match_response( $non_numeric )->league );
+    }
+
+    public function test_build_match_response_without_repository_leaves_league_title_empty(): void {
+        $this->use_container_without_competition_service();
+
+        $adapter       = new Rest_Controller_Adapter();
+        $f1            = new Fixture();
+        $f1->league_id = 7;
+
+        self::assertSame( '', $adapter->build_match_response( $f1 )->league );
+    }
+
     public function test_build_match_response_with_unplayed_fixture_omits_score_and_status(): void {
         global $racketmanager;
         $plugin = $this->createStub( RacketManager::class );

@@ -16,7 +16,6 @@ use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Championship_Manager;
 use Racketmanager\Services\Competition\League_Query_Service;
-use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Services\Result_Service;
@@ -42,6 +41,7 @@ class Championship_Manager_Test extends TestCase {
             $this->fixture_repository,
             $this->createStub( League_Service::class ),
             $this->createStub( Event_Repository_Interface::class ),
+            $this->createStub( League_Query_Service::class ),
             $this->notification_service
         );
     }
@@ -188,6 +188,7 @@ class Championship_Manager_Test extends TestCase {
             $this->fixture_repository,
             $league_service,
             $this->createStub( Event_Repository_Interface::class ),
+            $this->createStub( League_Query_Service::class ),
             $this->notification_service
         );
 
@@ -290,6 +291,7 @@ class Championship_Manager_Test extends TestCase {
             $this->fixture_repository,
             $league_service,
             $this->createStub( Event_Repository_Interface::class ),
+            $this->createStub( League_Query_Service::class ),
             $this->notification_service
         );
 
@@ -338,6 +340,7 @@ class Championship_Manager_Test extends TestCase {
             $this->fixture_repository,
             $league_service,
             $event_repository,
+            $league_query_service,
             $this->notification_service
         );
         $league = $this->createMock( League::class );
@@ -346,21 +349,7 @@ class Championship_Manager_Test extends TestCase {
         $league->method( 'get_season' )->willReturn( '2026' );
 
         $method = new \ReflectionMethod( Championship_Manager::class, 'set_consolation_team' );
-        $old_racketmanager = $GLOBALS['racketmanager'] ?? null;
-        $had_racketmanager = array_key_exists( 'racketmanager', $GLOBALS );
-        $container         = new Simple_Container();
-        $container->set( 'league_query_service', $league_query_service );
-        $GLOBALS['racketmanager'] = (object) [ 'container' => $container ];
-
-        try {
-            $method->invoke( $manager, (object) [ 'loser_id' => 20, 'is_walkover' => true, 'id' => 101 ], 'semi', $league );
-        } finally {
-            if ( $had_racketmanager ) {
-                $GLOBALS['racketmanager'] = $old_racketmanager;
-            } else {
-                unset( $GLOBALS['racketmanager'] );
-            }
-        }
+        $method->invoke( $manager, (object) [ 'loser_id' => 20, 'is_walkover' => true, 'id' => 101 ], 'semi', $league );
 
         $this->assertSame( [ 31, 32 ], $resolved_ids );
         $this->assertSame(

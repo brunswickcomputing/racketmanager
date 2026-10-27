@@ -6,6 +6,7 @@ namespace Racketmanager\Services\Notification;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Result\Results_Checker;
+use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Gateways\Mail\Mailer_Interface;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\Presentation\Presenters\Notification_Presenter;
@@ -21,7 +22,6 @@ use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Util\Util;
-use function Racketmanager\seo_url;
 
 /**
  * Service for handling fixture-related notifications.
@@ -763,8 +763,8 @@ class Notification_Service {
                     $headers[] = 'cc: ' . $club->match_secretary->display_name . ' <' . $club->match_secretary->email . '>';
                 }
 
-                $league_title_slug = seo_url( $league->title ?? '' );
-                $team_title_slug   = seo_url( $team->title ?? '' );
+                $league_title_slug = Seo_Slug::encode( $league->title ?? '' );
+                $team_title_slug   = Seo_Slug::encode( $team->title ?? '' );
                 $team_label        = __( 'team', 'racketmanager' );
                 $action_url        = ( $this->app->site_url ?? '' ) . '/' . $comp_type . '/' . $league_title_slug . '/' . ( $team->season ?? '' ) . '/' . $team_label . '/' . $team_title_slug;
 

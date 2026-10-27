@@ -28,17 +28,21 @@ class League_Repository implements League_Repository_Interface {
     private ?string $table_name = null;
     /** @var Event_Repository_Interface|Closure|null */
     private mixed $event_repository = null;
+    /** Lazy resolver returning the League_Query_Service (needed by Championship_Factory); kept lazy to avoid a container cycle. */
+    private ?Closure $league_query_service_resolver = null;
 
     public function __construct(
         ?object $db = null,
-        Event_Repository_Interface|Closure|null $event_repository = null
+        Event_Repository_Interface|Closure|null $event_repository = null,
+        ?Closure $league_query_service_resolver = null
     ) {
         $this->wpdb = $db ?? ( $GLOBALS['wpdb'] ?? null );
         if ( $this->wpdb ) {
             $prefix = isset( $this->wpdb->prefix ) ? (string) $this->wpdb->prefix : 'wp_';
             $this->table_name = $prefix . 'racketmanager_leagues';
         }
-        $this->event_repository = $event_repository;
+        $this->event_repository              = $event_repository;
+        $this->league_query_service_resolver = $league_query_service_resolver;
     }
 
     private function get_event_repository(): ?Event_Repository_Interface {
@@ -186,7 +190,7 @@ class League_Repository implements League_Repository_Interface {
             if ( 'championship' === ( $league->mode ?? '' ) ) {
                 $settings_data        = isset( $league->settings ) ? (array) $league->settings : array();
                 $settings             = Championship_Settings::from_array( $settings_data );
-                $factory              = new Championship_Factory( $this );
+                $factory              = new Championship_Factory( $this, $this->league_query_service_resolver );
                 $league->championship = $factory->create( $league, $settings, null );
             }
         }

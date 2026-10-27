@@ -3,8 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Competition\Queries;
 
+use Racketmanager\Domain\Shared\Seo_Slug;
 use function is_array;
-use function Racketmanager\un_seo_url;
 use function shortcode_atts;
 
 final readonly class Get_Competition_Entry_Query {
@@ -37,7 +37,7 @@ final readonly class Get_Competition_Entry_Query {
 
         $competition_name = $query_vars['competition_name'] ?? null;
         if ( $competition_name ) {
-            $competition_name = un_seo_url( (string) $competition_name );
+            $competition_name = Seo_Slug::decode( (string) $competition_name );
         }
 
         $type = isset( $query_vars['competition_type'] ) ? (string) $query_vars['competition_type'] : null;
@@ -46,12 +46,12 @@ final readonly class Get_Competition_Entry_Query {
         if ( $competition_name && 'tournament' === $type ) {
             $tournament_name = $competition_name;
         } elseif ( ! empty( $query_vars['tournament'] ) ) {
-            $tournament_name = un_seo_url( (string) $query_vars['tournament'] );
+            $tournament_name = Seo_Slug::decode( (string) $query_vars['tournament'] );
         }
 
         $season    = isset( $query_vars['season'] ) ? (string) $query_vars['season'] : null;
-        $club_name = ! empty( $query_vars['club_name'] ) ? un_seo_url( (string) $query_vars['club_name'] ) : null;
-        $player_id = ! empty( $query_vars['player_id'] ) ? un_seo_url( (string) $query_vars['player_id'] ) : null;
+        $club_name = ! empty( $query_vars['club_name'] ) ? Seo_Slug::decode( (string) $query_vars['club_name'] ) : null;
+        $player_id = ! empty( $query_vars['player_id'] ) ? Seo_Slug::decode( (string) $query_vars['player_id'] ) : null;
 
         return new self(
             competition_name: $competition_name,

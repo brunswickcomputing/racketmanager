@@ -3,7 +3,13 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Repositories;
 
+use Closure;
 use Racketmanager\Domain\Player\User;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
 use Racketmanager\Util\Util;
 use stdClass;
@@ -25,13 +31,58 @@ use function update_user_meta;
 use function wp_set_auth_cookie;
 use function wp_set_password;
 use function wp_update_user;
-use function Racketmanager\get_club;
-use function Racketmanager\get_event;
-use function Racketmanager\get_league;
-use function Racketmanager\get_player;
-use function Racketmanager\get_team;
 
 class User_Repository implements User_Repository_Interface {
+    private ?Closure $league_repository_resolver;
+    private ?Closure $club_repository_resolver;
+    private ?Closure $event_repository_resolver;
+    private ?Closure $player_repository_resolver;
+    private ?Closure $team_repository_resolver;
+    private ?League_Repository_Interface $league_repository = null;
+    private ?Club_Repository_Interface $club_repository = null;
+    private ?Event_Repository_Interface $event_repository = null;
+    private ?Player_Repository_Interface $player_repository = null;
+    private ?Team_Repository_Interface $team_repository = null;
+
+    /**
+     * Favourite lookups are resolved lazily so that the container can hand the
+     * repositories over without instantiating them when a user is loaded.
+     */
+    public function __construct(
+        ?Closure $league_repository_resolver = null,
+        ?Closure $club_repository_resolver = null,
+        ?Closure $event_repository_resolver = null,
+        ?Closure $player_repository_resolver = null,
+        ?Closure $team_repository_resolver = null
+    ) {
+        $this->league_repository_resolver = $league_repository_resolver;
+        $this->club_repository_resolver   = $club_repository_resolver;
+        $this->event_repository_resolver  = $event_repository_resolver;
+        $this->player_repository_resolver = $player_repository_resolver;
+        $this->team_repository_resolver   = $team_repository_resolver;
+    }
+
+    private function league_repository(): League_Repository_Interface {
+        return $this->league_repository ??= $this->league_repository_resolver
+            ? ( $this->league_repository_resolver )()
+            : new League_Repository( null, fn() => $this->event_repository() );
+    }
+
+    private function club_repository(): Club_Repository_Interface {
+        return $this->club_repository ??= $this->club_repository_resolver ? ( $this->club_repository_resolver )() : new Club_Repository();
+    }
+
+    private function event_repository(): Event_Repository_Interface {
+        return $this->event_repository ??= $this->event_repository_resolver ? ( $this->event_repository_resolver )() : new Event_Repository();
+    }
+
+    private function player_repository(): Player_Repository_Interface {
+        return $this->player_repository ??= $this->player_repository_resolver ? ( $this->player_repository_resolver )() : new Player_Repository();
+    }
+
+    private function team_repository(): Team_Repository_Interface {
+        return $this->team_repository ??= $this->team_repository_resolver ? ( $this->team_repository_resolver )() : new Team_Repository();
+    }
     public function find( int|string $user_id ): ?User {
         $id = 0;
         if ( is_numeric( $user_id ) ) {
@@ -218,23 +269,23 @@ class User_Repository implements User_Repository_Interface {
         foreach ( $meta_favourites as $i => $favourite ) {
             $favourite_item = new stdClass();
             if ( 'league' === $favourites_type ) {
-                $league                 = get_league( $favourite );
+                $league                 = $this->find_favourite_league( $favourite );
                 $favourite_item->name   = is_object( $league ) ? ( $league->title ?? '' ) : '';
                 $favourite_item->detail = is_object( $league ) ? $league : null;
             } elseif ( 'club' === $favourites_type ) {
-                $club                   = get_club( $favourite );
+                $club                   = $favourite ? $this->club_repository()->find_by_id( $favourite ) : null;
                 $favourite_item->name   = is_object( $club ) ? ( $club->name ?? '' ) : '';
                 $favourite_item->detail = is_object( $club ) ? $club : null;
             } elseif ( 'competition' === $favourites_type ) {
-                $event                  = get_event( $favourite );
+                $event                  = $favourite ? $this->event_repository()->find_by_id( $favourite ) : null;
                 $favourite_item->name   = is_object( $event ) ? ( $event->name ?? '' ) : '';
                 $favourite_item->detail = is_object( $event ) ? $event : null;
             } elseif ( 'player' === $favourites_type ) {
-                $player                 = get_player( $favourite );
+                $player                 = $favourite ? $this->player_repository()->find( $favourite ) : null;
                 $favourite_item->name   = is_object( $player ) ? ( $player->display_name ?? '' ) : '';
                 $favourite_item->detail = is_object( $player ) ? $player : null;
             } elseif ( 'team' === $favourites_type ) {
-                $team                   = get_team( $favourite );
+                $team                   = $favourite ? $this->team_repository()->find_by_id( $favourite ) : null;
                 $favourite_item->name   = is_object( $team ) ? ( $team->title ?? '' ) : '';
                 $favourite_item->detail = is_object( $team ) ? $team : null;
             }
@@ -242,6 +293,15 @@ class User_Repository implements User_Repository_Interface {
             $favourites[ $i ]   = $favourite_item;
         }
         return $favourites;
+    }
+
+    private function find_favourite_league( mixed $favourite ): ?object {
+        if ( empty( $favourite ) ) {
+            return null;
+        }
+        return is_numeric( $favourite )
+            ? $this->league_repository()->find_by_id( (int) $favourite )
+            : $this->league_repository()->find_by_name( (string) $favourite );
     }
 
     private function sync_opt_ins( int $user_id, User $entity ): bool {

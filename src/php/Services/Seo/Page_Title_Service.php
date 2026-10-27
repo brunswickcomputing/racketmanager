@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Seo;
 
-use Racketmanager\Util\Util;
+use Racketmanager\Domain\Shared\Seo_Slug;
 
 /**
  * Service responsible for constructing dynamic page and document titles.
@@ -33,12 +33,7 @@ class Page_Title_Service implements Page_Title_Service_Interface {
 		$slug      = function_exists( 'get_post_field' ) ? (string) get_post_field( 'post_name' ) : '';
 		$site_name = $site_name ?? $this->site_name ?? ( function_exists( 'get_bloginfo' ) ? (string) get_bloginfo( 'name' ) : '' );
 
-		$un_seo = static function( string $val ): string {
-			if ( function_exists( '\Racketmanager\un_seo_url' ) ) {
-				return \Racketmanager\un_seo_url( $val );
-			}
-			return Util::un_seo_url( $val );
-		};
+		$un_seo = static fn( string $val ): string => Seo_Slug::decode( $val );
 
 		$event       = isset( $wp->query_vars['event'] ) && is_string( $wp->query_vars['event'] ) ? ucwords( $un_seo( $wp->query_vars['event'] ) ) : '';
 		$season      = isset( $wp->query_vars['season'] ) && is_string( $wp->query_vars['season'] ) ? ucwords( $un_seo( $wp->query_vars['season'] ) ) : '';

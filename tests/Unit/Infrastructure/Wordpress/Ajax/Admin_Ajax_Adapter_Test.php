@@ -20,8 +20,11 @@ use Racketmanager\Infrastructure\Wordpress\Ajax\Ajax_Registry;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Competition\Competition_Notification_Service;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
@@ -40,6 +43,9 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     private League_Team_Repository_Interface|MockObject|Stub $league_team_repository;
     private Competition_Notification_Service|MockObject|Stub $competition_notification_service;
     private Standings_Service|MockObject $standings_service;
+    private League_Repository_Interface|Stub $league_repository;
+    private Event_Repository_Interface|Stub $event_repository;
+    private Team_Repository_Interface|Stub $team_repository;
     private Admin_Ajax_Adapter $adapter;
 
     protected function setUp(): void {
@@ -53,6 +59,21 @@ class Admin_Ajax_Adapter_Test extends TestCase {
         $this->league_team_repository    = $this->createStub( League_Team_Repository_Interface::class );
         $this->competition_notification_service = $this->createStub( Competition_Notification_Service::class );
         $this->standings_service = $this->createMock( Standings_Service::class );
+        $this->league_team_repository->method( 'find_by_id' )->willReturnCallback(
+            static fn( int|string|null $id ) => $GLOBALS['wp_stubs_league_teams'][ (int) $id ] ?? null
+        );
+        $this->league_repository = $this->createStub( League_Repository_Interface::class );
+        $this->league_repository->method( 'find_by_id' )->willReturnCallback(
+            static fn( $id ) => $GLOBALS['wp_stubs_leagues'][ (int) $id ] ?? null
+        );
+        $this->event_repository = $this->createStub( Event_Repository_Interface::class );
+        $this->event_repository->method( 'find_by_id' )->willReturnCallback(
+            static fn( $id ) => $GLOBALS['wp_stubs_events'][ (int) $id ] ?? null
+        );
+        $this->team_repository = $this->createStub( Team_Repository_Interface::class );
+        $this->team_repository->method( 'find_by_id' )->willReturnCallback(
+            static fn( int|string|null $id ) => $GLOBALS['wp_stubs_teams'][ (int) $id ] ?? null
+        );
         $this->adapter                   = $this->make_adapter();
         $_POST                           = [];
         $_GET                            = [];
@@ -94,7 +115,10 @@ class Admin_Ajax_Adapter_Test extends TestCase {
             $settings ?? new Settings_Service( [] ),
             $this->league_team_repository,
             $this->competition_notification_service,
-            $this->standings_service
+            $this->standings_service,
+            $this->league_repository,
+            $this->event_repository,
+            $this->team_repository
         );
     }
 
@@ -186,6 +210,10 @@ class Admin_Ajax_Adapter_Test extends TestCase {
         $this->standings_service->expects( $this->once() )->method( 'set_teams_rank' )->with( $league, '2026' );
 
         $league_team_repo = $this->createMock( League_Team_Repository_Interface::class );
+        $league_team_repo->expects( $this->once() )
+            ->method( 'find_by_id' )
+            ->with( 5 )
+            ->willReturn( $league_team );
         $league_team_repo->expects( $this->once() )
             ->method( 'amend_points' )
             ->with( 5, 3.0 )
@@ -311,9 +339,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     public function test_insert_home_stadium_success(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
 
-        $team = new class {
-            public string $stadium = 'Court 1';
-        };
+        $team = new \Racketmanager\Domain\Team\Team( (object) [ 'id' => 12, 'title' => 'Home Team', 'stadium' => 'Court 1' ] );
         $GLOBALS['wp_stubs_teams'] = [ 12 => $team ];
 
         $response = $this->adapter->insert_home_stadium( [

@@ -12,6 +12,7 @@ namespace Racketmanager\Services\Admin\Tournament;
 use Racketmanager\Admin\View_Models\Tournament_Fixtures_Page_View_Model;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Team_Service;
@@ -28,12 +29,14 @@ class Tournament_Fixtures_Admin_Service {
      * @param Fixture_Service    $fixture_service
      * @param League_Service     $league_service
      * @param Team_Service       $team_service
+     * @param League_Query_Service $league_query_service
      */
     public function __construct(
         private readonly Tournament_Service $tournament_service,
         private readonly Fixture_Service $fixture_service,
         private readonly League_Service $league_service,
         private readonly Team_Service $team_service,
+        private readonly League_Query_Service $league_query_service,
     ) {
     }
 
@@ -164,7 +167,7 @@ class Tournament_Fixtures_Admin_Service {
         return array(
             'form_title'   => $title,
             'submit_title' => $title,
-            'fixtures'     => \Racketmanager\get_league_query_service()->get_matches( $league, $fixture_args ),
+            'fixtures'     => $this->league_query_service->get_matches( $league, $fixture_args ),
             'teams'        => $league->championship->get_final_teams( $final_key ) ?? array(),
             'max_fixtures' => $max_fixtures,
             'home_title'   => '',

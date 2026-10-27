@@ -77,7 +77,7 @@ class Player_Details_Validator {
         $locked        = isset( $source['locked'] );
         $year_of_birth = empty( $source['year_of_birth'] ) ? null : intval( $source['year_of_birth'] );
 
-        $validator     = new Validator();
+        $validator     = new Validator( player_repository: $this->player_repository );
         $validator     = $validator->first_name( $firstname );
         $validator     = $validator->surname( $surname );
         $validator     = $validator->gender( $gender );

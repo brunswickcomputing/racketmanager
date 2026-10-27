@@ -196,6 +196,9 @@ final class Admin_Ajax_Controller_Test extends TestCase {
                 'fixture_repository'               => $this->createStub( \Racketmanager\Repositories\Fixture_Repository::class ),
                 'competition_notification_service' => $this->createStub( \Racketmanager\Services\Competition\Competition_Notification_Service::class ),
                 'standings_service'                 => $this->createStub( \Racketmanager\Services\Standings\Standings_Service::class ),
+                'league_repository'                => $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class ),
+                'event_repository'                 => $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ),
+                'team_repository'                  => $this->createStub( \Racketmanager\Repositories\Interfaces\Team_Repository_Interface::class ),
                 default                            => null,
             };
         } );

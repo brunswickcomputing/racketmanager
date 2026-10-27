@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Event\Queries;
 
-use function function_exists;
+use Racketmanager\Domain\Shared\Seo_Slug;
 use function is_array;
 use function is_numeric;
 use function str_replace;
@@ -41,8 +41,7 @@ final readonly class Get_Event_Players_Query {
         $player_id = $atts_array['players'] ?? ( $atts_array['player_id'] ?? null );
 
         if ( empty( $player_id ) && ! empty( $query_vars['player_id'] ) ) {
-            $player_raw = (string) $query_vars['player_id'];
-            $player_id  = function_exists( 'Racketmanager\un_seo_url' ) ? \Racketmanager\un_seo_url( $player_raw ) : str_replace( '-', ' ', $player_raw );
+            $player_id = Seo_Slug::decode( (string) $query_vars['player_id'] );
         }
 
         return new self(

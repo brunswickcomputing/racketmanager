@@ -10,7 +10,12 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Public;
 
+use LogicException;
+use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\Competition\League_Factory;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
@@ -20,10 +25,15 @@ use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Fixture_Presentation_Adapter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Competition\Event_Query_Service;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
@@ -36,13 +46,7 @@ use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Util\Util_Lookup;
-use function Racketmanager\get_club;
-use function Racketmanager\get_league;
-use function Racketmanager\get_player;
-use function Racketmanager\get_user;
-use function Racketmanager\player_search;
 use function Racketmanager\show_alert;
-use function Racketmanager\un_seo_url;
 
 /**
  * Class to implement shortcode functions
@@ -85,11 +89,23 @@ class Shortcodes {
     protected ?Fixture_Permission_Service $fixture_permission_service = null;
     protected ?Club_Presenter $club_presenter = null;
     protected ?Player_Presenter $player_presenter = null;
+    protected ?League_Query_Service $league_query_service = null;
+    protected ?Event_Query_Service $event_query_service = null;
+    private ?League_Repository_Interface $league_repository = null;
+    private ?Event_Repository_Interface $event_repository = null;
+    private ?Club_Repository_Interface $club_repository = null;
 
     /**
      * Initialise shortcodes
      */
-    public function __construct( $plugin_instance ) {
+    public function __construct(
+        $plugin_instance,
+        ?League_Query_Service $league_query_service = null,
+        ?Event_Query_Service $event_query_service = null,
+        ?League_Repository_Interface $league_repository = null,
+        ?Event_Repository_Interface $event_repository = null,
+        ?Club_Repository_Interface $club_repository = null
+    ) {
         $this->racketmanager = $plugin_instance;
 
         $this->competition_not_found            = __( 'Competition not found', 'racketmanager' );
@@ -130,7 +146,68 @@ class Shortcodes {
             $this->fixture_permission_service = $c->has( 'fixture_permission_service' ) ? $c->get( 'fixture_permission_service' ) : null;
             $this->club_presenter             = $c->has( 'club_presenter' ) ? $c->get( 'club_presenter' ) : new Club_Presenter();
             $this->player_presenter           = $c->has( 'player_presenter' ) ? $c->get( 'player_presenter' ) : new Player_Presenter();
+            $this->league_query_service       = $league_query_service ?? ( $c->has( 'league_query_service' ) ? $c->get( 'league_query_service' ) : null );
+            $this->event_query_service        = $event_query_service ?? ( $c->has( 'event_query_service' ) ? $c->get( 'event_query_service' ) : null );
+            $this->league_repository          = $league_repository ?? ( $c->has( 'league_repository' ) ? $c->get( 'league_repository' ) : null );
+            $this->event_repository           = $event_repository ?? ( $c->has( 'event_repository' ) ? $c->get( 'event_repository' ) : null );
+            $this->club_repository            = $club_repository ?? ( $c->has( 'club_repository' ) ? $c->get( 'club_repository' ) : null );
+        } else {
+            $this->league_query_service = $league_query_service;
+            $this->event_query_service  = $event_query_service;
+            $this->league_repository    = $league_repository;
+            $this->event_repository     = $event_repository;
+            $this->club_repository      = $club_repository;
         }
+    }
+
+    /**
+     * Resolve a league from an id, name, League instance or raw row object.
+     *
+     * Mirrors the legacy `Racketmanager\get_league()` helper (minus the implicit global fallback,
+     * which callers must perform explicitly).
+     *
+     * @param object|int|string|null $league league id, name, League or row object.
+     *
+     * @return League|null
+     */
+    private function resolve_league( object|int|string|null $league ): ?League {
+        if ( $league instanceof League ) {
+            return $league;
+        }
+        if ( is_object( $league ) ) {
+            $event = null;
+            if ( isset( $league->event ) && is_object( $league->event ) ) {
+                $event = $league->event instanceof Event ? $league->event : new Event( $league->event );
+            } elseif ( ! empty( $league->event_id ) ) {
+                $event = $this->event_repository?->find_by_id( (int) $league->event_id );
+            }
+            $resolved = League_Factory::from_object( $league, $event );
+            if ( $resolved && $this->league_query_service instanceof League_Query_Service ) {
+                $this->league_query_service->set_season( $resolved, false, true );
+            }
+            return $resolved;
+        }
+        if ( empty( $league ) ) {
+            return null;
+        }
+        if ( is_numeric( $league ) ) {
+            return $this->league_repository?->find_by_id( (int) $league );
+        }
+        return $this->league_repository?->find_by_name( (string) $league );
+    }
+
+    protected function league_query(): League_Query_Service {
+        if ( ! $this->league_query_service instanceof League_Query_Service ) {
+            throw new LogicException( 'League_Query_Service is required by Shortcodes but was not configured.' );
+        }
+        return $this->league_query_service;
+    }
+
+    protected function event_query(): Event_Query_Service {
+        if ( ! $this->event_query_service instanceof Event_Query_Service ) {
+            throw new LogicException( 'Event_Query_Service is required by Shortcodes but was not configured.' );
+        }
+        return $this->event_query_service;
     }
 
     /**
@@ -169,7 +246,7 @@ class Shortcodes {
             $match_date = gmdate( 'Y-m-d' );
         }
         if ( isset( $wp->query_vars['competition_type'] ) ) {
-            $competition_type = un_seo_url( get_query_var( 'competition_type' ) );
+            $competition_type = Seo_Slug::decode( get_query_var( 'competition_type' ) );
         }
         $matches      = $racketmanager->get_matches( array(
                 'match_date'       => $match_date,
@@ -192,7 +269,7 @@ class Shortcodes {
             }
             $match_league = method_exists( $match, 'get_league' ) ? $match->get_league() : ( $match->league ?? null );
             if ( ! $match_league && ! empty( $match->league_id ) ) {
-                $match_league = isset( $this->competition_service ) ? $this->competition_service->get_league_repository()->find_by_id( (int) $match->league_id ) : ( function_exists( '\Racketmanager\get_league' ) ? get_league( (int) $match->league_id ) : null );
+                $match_league = isset( $this->competition_service ) ? $this->competition_service->get_league_repository()->find_by_id( (int) $match->league_id ) : $this->league_repository?->find_by_id( (int) $match->league_id );
                 if ( $match_league ) {
                     $match->league = $match_league;
                 }
@@ -338,17 +415,17 @@ class Shortcodes {
         $age_group        = $args['age_group'];
         if ( isset( $wp->query_vars['club_name'] ) ) {
             $club_name = str_replace( '-', ' ', get_query_var( 'club_name' ) );
-            $club      = get_club( $club_name, 'shortcode' );
-            $club_id   = $club->id;
+            $club      = $this->club_repository?->find_by_id( $club_name, 'shortcode' );
+            $club_id   = $club?->id;
         }
         if ( isset( $wp->query_vars['days'] ) ) {
             $days = str_replace( '-', ' ', get_query_var( 'days' ) );
         }
         if ( isset( $wp->query_vars['competition_type'] ) ) {
-            $competition_type = un_seo_url( get_query_var( 'competition_type' ) );
+            $competition_type = Seo_Slug::decode( get_query_var( 'competition_type' ) );
         }
         if ( isset( $wp->query_vars['competition_name'] ) ) {
-            $competition_name = un_seo_url( get_query_var( 'competition_name' ) );
+            $competition_name = Seo_Slug::decode( get_query_var( 'competition_name' ) );
             $competition      = $this->competition_repository->find_by_name( $competition_name );
             if ( $competition ) {
                 $competition_id = $competition->id;
@@ -384,7 +461,7 @@ class Shortcodes {
             }
             $match_league = method_exists( $match, 'get_league' ) ? $match->get_league() : ( $match->league ?? null );
             if ( ! $match_league && ! empty( $match->league_id ) ) {
-                $match_league = isset( $this->competition_service ) ? $this->competition_service->get_league_repository()->find_by_id( (int) $match->league_id ) : ( function_exists( '\Racketmanager\get_league' ) ? get_league( (int) $match->league_id ) : null );
+                $match_league = isset( $this->competition_service ) ? $this->competition_service->get_league_repository()->find_by_id( (int) $match->league_id ) : $this->league_repository?->find_by_id( (int) $match->league_id );
                 if ( $match_league ) {
                     $match->league = $match_league;
                 }
@@ -568,9 +645,10 @@ class Shortcodes {
         global $league;
 
         if ( 0 === $league_id ) {
-            $league = get_league();
+            // Legacy no-arg get_league() fell back to the global $league; read it explicitly and resolve it.
+            $league = $this->resolve_league( $GLOBALS['league'] ?? null );
         } else {
-            $league = get_league( $league_id );
+            $league = $this->resolve_league( $league_id );
         }
 
         return $league ?: null;
@@ -585,12 +663,12 @@ class Shortcodes {
      * @return array of leagues with draws.
      */
     public function get_draw( object $event, string $season ): array {
-        $leagues = \Racketmanager\get_event_query_service()->get_leagues( $event );
+        $leagues = $this->event_query()->get_leagues( $event );
         foreach ( $leagues as $l => $league ) {
-            $league = get_league( $league->id );
+            $league = $this->resolve_league( $league->id );
             $finals = array_reverse( $league->championship->get_finals() );
             foreach ( $finals as $f => $final ) {
-                $matches = \Racketmanager\get_league_query_service()->get_matches( $league, array(
+                $matches = $this->league_query()->get_matches( $league, array(
                         'season'  => $season,
                         'final'   => $final['key'],
                         'orderby' => array(

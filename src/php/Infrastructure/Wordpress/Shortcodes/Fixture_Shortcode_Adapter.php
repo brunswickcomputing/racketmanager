@@ -5,9 +5,9 @@ namespace Racketmanager\Infrastructure\Wordpress\Shortcodes;
 
 use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Handler;
 use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Query;
+use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use function get_query_var;
-use function Racketmanager\un_seo_url;
 use function shortcode_atts;
 
 /**
@@ -81,9 +81,9 @@ readonly class Fixture_Shortcode_Adapter implements Shortcode_Adapter_Interface 
      */
     private function get_slug_criteria(): array {
         return [
-            'league_slug'    => un_seo_url( (string) get_query_var( 'league_name' ) ) ?: null,
-            'home_team_slug' => un_seo_url( (string) get_query_var( 'teamHome' ) ) ?: null,
-            'away_team_slug' => un_seo_url( (string) get_query_var( 'teamAway' ) ) ?: null,
+            'league_slug'    => Seo_Slug::decode( (string) get_query_var( 'league_name' ) ) ?: null,
+            'home_team_slug' => Seo_Slug::decode( (string) get_query_var( 'teamHome' ) ) ?: null,
+            'away_team_slug' => Seo_Slug::decode( (string) get_query_var( 'teamAway' ) ) ?: null,
             'match_day'      => get_query_var( 'match_day' ) ? (int) get_query_var( 'match_day' ) : null,
             'season'         => get_query_var( 'season' ) ?: null,
             'round'          => get_query_var( 'round' ) ?: null,

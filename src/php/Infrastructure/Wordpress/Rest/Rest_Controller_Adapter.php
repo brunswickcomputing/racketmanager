@@ -12,6 +12,7 @@ use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Export\DTO\Export_Criteria;
 use Racketmanager\Services\Export\Formatters\Export_Formatter_Interface;
 use Racketmanager\Util\Util_Lookup;
@@ -39,6 +40,12 @@ class Rest_Controller_Adapter {
      * @var array<string, string>
      */
     private array $team_title_cache = array();
+
+    /**
+     * @param League_Repository_Interface|null $league_repository Used to resolve league titles from a league id when the match carries none.
+     */
+    public function __construct( private readonly ?League_Repository_Interface $league_repository = null ) {
+    }
 
     /**
      * Clear memoized title caches.
@@ -337,8 +344,8 @@ class Rest_Controller_Adapter {
                 }
             }
 
-            if ( function_exists( '\Racketmanager\get_league' ) ) {
-                $league = \Racketmanager\get_league( $league_id );
+            if ( null !== $this->league_repository && is_numeric( $league_id ) && (int) $league_id > 0 ) {
+                $league = $this->league_repository->find_by_id( (int) $league_id );
                 if ( is_object( $league ) ) {
                     $name  = method_exists( $league, 'get_name' ) ? $league->get_name() : '';
                     $title = '' !== $name ? $name : ( $league->title ?? ( method_exists( $league, 'get_title' ) ? $league->get_title() : '' ) );

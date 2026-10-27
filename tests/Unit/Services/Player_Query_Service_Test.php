@@ -6,10 +6,12 @@ namespace Racketmanager\Tests\Unit\Services;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
+use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Player\Player_Factory;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Statistics_Repository_Interface;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
@@ -370,5 +372,75 @@ final class Player_Query_Service_Test extends TestCase {
 		$service = new Player_Query_Service( $this->make_statistics_repository() );
 
 		$this->assertSame( array(), $service->get_matches( $this->make_player(), null, '2026', 'unknown' ) );
+	}
+
+	private function league_query_service_expecting_player_matches( object $league, int $player_id ): League_Query_Service {
+		$league_query_service = $this->createMock( League_Query_Service::class );
+		$league_query_service->expects( $this->once() )
+			->method( 'get_matches' )
+			->with(
+				$league,
+				$this->callback(
+					static fn( array $args ): bool => '2026' === $args['season'] && $player_id === $args['player'] && false === $args['match_day'] && 'all' === $args['final']
+				)
+			)
+			->willReturn( array() );
+
+		return $league_query_service;
+	}
+
+	public function test_get_matches_league_uses_injected_league_query_service_instance(): void {
+		$player  = $this->make_player();
+		$league  = $this->createStub( League::class );
+		$service = new Player_Query_Service(
+			$this->make_statistics_repository(),
+			null,
+			null,
+			null,
+			null,
+			null,
+			$this->league_query_service_expecting_player_matches( $league, (int) $player->id )
+		);
+
+		$this->assertSame( array(), $service->get_matches( $player, $league, '2026', 'league' ) );
+	}
+
+	public function test_get_matches_league_resolves_lazy_league_query_service_once(): void {
+		$player      = $this->make_player();
+		$league      = $this->createStub( League::class );
+		$resolutions = 0;
+		$resolved    = $this->createMock( League_Query_Service::class );
+		$resolved->expects( $this->exactly( 2 ) )->method( 'get_matches' )->with( $league, $this->isArray() )->willReturn( array() );
+
+		$service = new Player_Query_Service(
+			$this->make_statistics_repository(),
+			null,
+			null,
+			null,
+			null,
+			null,
+			function () use ( &$resolutions, $resolved ): League_Query_Service {
+				++$resolutions;
+				return $resolved;
+			}
+		);
+
+		$this->assertSame( 0, $resolutions );
+		$service->get_matches( $player, $league, '2026', 'league' );
+		$service->get_matches( $player, $league, '2026', 'league' );
+		$this->assertSame( 1, $resolutions, 'closure must be resolved once and cached' );
+	}
+
+	public function test_get_matches_league_throws_without_league_query_service(): void {
+		$service = new Player_Query_Service( $this->make_statistics_repository() );
+		$this->expectException( RuntimeException::class );
+		$this->expectExceptionMessage( 'Player_Query_Service requires a League_Query_Service.' );
+		$service->get_matches( $this->make_player(), $this->createStub( League::class ), '2026', 'league' );
+	}
+
+	public function test_get_matches_league_without_grouping_does_not_need_league_query_service(): void {
+		$service = new Player_Query_Service( $this->make_statistics_repository() );
+
+		$this->assertSame( array(), $service->get_matches( $this->make_player(), null, '2026', 'league' ) );
 	}
 }

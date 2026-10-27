@@ -217,7 +217,8 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
         $container->set( 'result_service', fn( Simple_Container $c ) => new Result_Service(
             $c->get( 'fixture_repository' ),
             $c->get( 'team_repository' ),
-            $c->get( 'mailer' )
+            $c->get( 'mailer' ),
+            $c->get( 'league_repository' )
         ) );
 
         $container->set( 'score_validation_service', fn() => new Score_Validation_Service() );

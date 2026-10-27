@@ -555,7 +555,7 @@ class League_Query_Service {
 		if ( 'championship' === ( $league->mode ?? '' ) ) {
 			$settings_data        = isset( $league->settings ) ? (array) $league->settings : array();
 			$settings             = Championship_Settings::from_array( $settings_data );
-			$factory              = new Championship_Factory( $this->league_repository );
+			$factory              = new Championship_Factory( $this->league_repository, $this );
 			$league->championship = $factory->create( $league, $settings, $final );
 		}
 	}

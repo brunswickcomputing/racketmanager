@@ -8,8 +8,10 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
+use Racketmanager\Domain\Team\Team;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Admin\League\League_Team_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\League_Service;
@@ -20,10 +22,17 @@ require_once __DIR__ . '/../../../../wp-stubs.php';
 #[AllowMockObjectsWithoutExpectations]
 final class League_Team_Action_Dispatcher_Test extends TestCase {
     private Standings_Service $standings_service;
+    private Team_Repository_Interface $team_repository;
 
     protected function setUp(): void {
         parent::setUp();
         $this->standings_service = $this->createMock( Standings_Service::class );
+        $this->team_repository   = $this->createStub( Team_Repository_Interface::class );
+    }
+
+    public function test_constructor_requires_handler_or_team_repository(): void {
+        $this->expectException( \LogicException::class );
+        new League_Team_Action_Dispatcher( $this->createStub( League_Service::class ), $this->createStub( Action_Guard_Interface::class ), $this->standings_service );
     }
 
     public function test_nonce_failure_on_bulk_action_returns_error(): void {
@@ -38,7 +47,7 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
             public int $id = 5;
         };
 
-        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service );
+        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $this->team_repository );
         $result     = $dispatcher->handle(
             array( 'league_id' => '5' ),
             array(
@@ -71,7 +80,7 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
                 }
             );
 
-        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service );
+        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $this->team_repository );
         $result     = $dispatcher->handle(
             array( 'league_id' => '5' ),
             array(
@@ -99,7 +108,11 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
             ->method( 'withdraw_team' )
             ->with( $league, 10, '2026' );
 
-        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service );
+        $team            = new Team( (object) array( 'id' => 10, 'title' => 'Leigh A' ) );
+        $team_repository = $this->createMock( Team_Repository_Interface::class );
+        $team_repository->expects( self::once() )->method( 'find_by_id' )->with( 10 )->willReturn( $team );
+
+        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $team_repository );
         $result     = $dispatcher->handle(
             array( 'league_id' => '5' ),
             array(
@@ -111,8 +124,30 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
             $league
         );
 
-        self::assertStringContainsString( 'withdrawn', strval( $result->message ) );
+        self::assertSame( 'Leigh A withdrawn', strval( $result->message ) );
         self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+    }
+
+    public function test_withdraw_teams_falls_back_to_team_id_when_team_not_found(): void {
+        $league_service = $this->createStub( League_Service::class );
+        $guard          = $this->createStub( Action_Guard_Interface::class );
+        $league         = new class() {
+            public int $id = 5;
+        };
+
+        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $this->team_repository );
+        $result     = $dispatcher->handle(
+            array( 'league_id' => '5' ),
+            array(
+                'doAction' => '1',
+                'action'   => 'withdraw',
+                'season'   => '2026',
+                'team'     => array( '10' ),
+            ),
+            $league
+        );
+
+        self::assertSame( '10 withdrawn', strval( $result->message ) );
     }
 
     public function test_add_teams_success(): void {
@@ -131,7 +166,7 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
             }
         };
 
-        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service );
+        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $this->team_repository );
         $result     = $dispatcher->handle(
             array( 'league_id' => '5' ),
             array(
@@ -163,7 +198,7 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
             }
         };
 
-        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service );
+        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $this->team_repository );
         $result     = $dispatcher->handle(
             array( 'league_id' => '5' ),
             array(
@@ -201,7 +236,7 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
             }
         };
 
-        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service );
+        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $this->team_repository );
         $result     = $dispatcher->handle(
             array( 'league_id' => '5' ),
             array(
@@ -229,7 +264,7 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
             public int $id = 5;
         };
 
-        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service );
+        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $this->team_repository );
         $result     = $dispatcher->handle(
             array( 'league_id' => '5' ),
             array(
@@ -257,7 +292,7 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
             public int $id = 5;
         };
 
-        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service );
+        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $this->team_repository );
         $result     = $dispatcher->handle(
             array( 'league_id' => '5' ),
             array(
@@ -283,7 +318,7 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
             public int $id = 5;
         };
 
-        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service );
+        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $this->team_repository );
         $result     = $dispatcher->handle(
             array( 'league_id' => '5' ),
             array(
@@ -308,7 +343,7 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
             public int $id = 5;
         };
 
-        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service );
+        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $this->team_repository );
 
         $success = $dispatcher->handle(
             array( 'league_id' => '5' ),
@@ -347,7 +382,7 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
             [ 1 => 'note' ]
         );
 
-        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service );
+        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $this->team_repository );
         $result     = $dispatcher->handle(
             array( 'league_id' => '5' ),
             array(
@@ -381,7 +416,7 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
             ->method( 'delete_team' )
             ->willThrowException( new \RuntimeException( 'Failed to delete fixture for team' ) );
 
-        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service );
+        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $this->team_repository );
         $result     = $dispatcher->handle(
             array( 'league_id' => '5' ),
             array(
@@ -409,7 +444,7 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
             ->method( 'withdraw_team' )
             ->willThrowException( new \RuntimeException( 'Fixture result manager required' ) );
 
-        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service );
+        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $this->team_repository );
         $result     = $dispatcher->handle(
             array( 'league_id' => '5' ),
             array(
@@ -437,7 +472,7 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
             ->method( 'withdraw_team' )
             ->willThrowException( new League_Not_Found_Exception( 'Cannot withdraw team from League: League not found.' ) );
 
-        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service );
+        $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $this->team_repository );
         $result     = $dispatcher->handle(
             array( 'league_id' => '999' ),
             array(

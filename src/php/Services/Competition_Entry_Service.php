@@ -21,6 +21,7 @@ use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Partner
 use Racketmanager\Domain\Enums\Team_Profile;
 use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Player\Player;
+use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Presentation\Formatters\Email_Date_Formatter;
@@ -58,8 +59,6 @@ use Racketmanager\Util\Util_Lookup;
 use Racketmanager\Util\Util_Messages;
 use stdClass;
 use WP_Error;
-use function Racketmanager\get_league;
-use function Racketmanager\seo_url;
 
 /**
  * Class to implement the Competition Entry Management Service
@@ -180,7 +179,7 @@ class Competition_Entry_Service {
             $return->msg     = __( 'Competition type not valid', 'racketmanager' );
         }
         if ( empty( $return->error ) ) {
-            $url              = $this->racketmanager->site_url . '/entry-form/' . seo_url( $competition->name ) . '/' . $season . '/';
+            $url              = $this->racketmanager->site_url . '/entry-form/' . Seo_Slug::encode( $competition->name ) . '/' . $season . '/';
             $competition_name = $competition->name . ' ' . $season;
             $clubs            = $this->racketmanager->get_clubs();
             $headers          = array();
@@ -197,7 +196,7 @@ class Competition_Entry_Service {
                     $match_secretary = $this->player_service->get_match_secretary_details( $club->id );
                     $email_subject   = $this->racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entry Open', 'racketmanager' ) . ' - ' . $club->name;
                     $email_to        = $match_secretary->display_name . ' <' . $match_secretary->email . '>';
-                    $action_url      = $url . seo_url( $club->shortcode ) . '/';
+                    $action_url      = $url . Seo_Slug::encode( $club->shortcode ) . '/';
                     $email_message   = $this->racketmanager->shortcodes->load_template( 'competition-entry-open', array(
                         'email_subject'        => $email_subject,
                         'from_email'           => $from_email,
@@ -286,7 +285,7 @@ class Competition_Entry_Service {
             $season_dtls->venue_name = $this->get_venue_name( $season_dtls->venue );
         }
         $days_remaining   = $this->get_remaining_days( $season_dtls->date_closing );
-        $url              = $this->racketmanager->site_url . '/entry-form/' . seo_url( $competition->get_name() ) . '/' . $season . '/';
+        $url              = $this->racketmanager->site_url . '/entry-form/' . Seo_Slug::encode( $competition->get_name() ) . '/' . $season . '/';
         $competition_name = $competition->get_name() . ' ' . $season;
         $headers          = array();
         $from_email       = $this->racketmanager->get_confirmation_email( $competition->get_type() );
@@ -301,7 +300,7 @@ class Competition_Entry_Service {
                 $match_secretary = $this->player_service->get_match_secretary_details( $club->id );
                 $email_subject   = $this->racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entries Closing Soon', 'racketmanager' ) . ' - ' . $club->name;
                 $email_to        = $match_secretary->display_name . ' <' . $match_secretary->email . '>';
-                $action_url      = $url . seo_url( $club->shortcode ) . '/';
+                $action_url      = $url . Seo_Slug::encode( $club->shortcode ) . '/';
                 $email_message   = $this->racketmanager->shortcodes->load_template( 'competition-entry-open', array(
                     'email_subject'        => $email_subject,
                     'from_email'           => $from_email,
@@ -1087,7 +1086,7 @@ class Competition_Entry_Service {
             foreach ( $clubs as $club ) {
                 $email_subject = $base_subject . ' - ' . $club->name;
                 $email_to      = $club->match_secretary->display_name . ' <' . $club->match_secretary->email . '>';
-                $action_url    = $url . seo_url( $club->shortcode ) . '/';
+                $action_url    = $url . Seo_Slug::encode( $club->shortcode ) . '/';
                 $email_message = $this->racketmanager->shortcodes->load_template( 'tournament-entry-open', array(
                         'email_subject' => $email_subject,
                         'from_email'    => $from_email,
@@ -1452,7 +1451,7 @@ class Competition_Entry_Service {
         switch ( $status ) {
             case 1:
                 $msg              = __( 'Tournament entered and payment outstanding', 'racketmanager' );
-                $return_link      = '/entry-form/' . seo_url( $tournament->name ) . '-tournament/payment/';
+                $return_link      = '/entry-form/' . Seo_Slug::encode( $tournament->name ) . '-tournament/payment/';
                 $payment_required = true;
                 $message_type     = 'success';
                 break;

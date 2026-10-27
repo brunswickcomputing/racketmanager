@@ -147,7 +147,9 @@ class Frontend_Ajax_Controller {
             get_player_details_handler: $get_player_details_handler,
             submit_cup_entry_handler: $c->has( 'submit_cup_entry_handler' ) ? $c->get( 'submit_cup_entry_handler' ) : null,
             submit_league_entry_handler: $c->has( 'submit_league_entry_handler' ) ? $c->get( 'submit_league_entry_handler' ) : null,
-            update_player_handler: $c->has( 'update_player_handler' ) ? $c->get( 'update_player_handler' ) : null
+            update_player_handler: $c->has( 'update_player_handler' ) ? $c->get( 'update_player_handler' ) : null,
+            league_repository: $c->has( 'league_repository' ) ? $c->get( 'league_repository' ) : null,
+            event_repository: $c->has( 'event_repository' ) ? $c->get( 'event_repository' ) : null
         );
     }
 

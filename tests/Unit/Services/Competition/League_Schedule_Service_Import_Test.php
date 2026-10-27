@@ -23,7 +23,6 @@ class League_Schedule_Service_Import_Test extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 		$this->backup_globals();
-		$GLOBALS['wp_stubs_leagues'] = array();
 	}
 
 	protected function tearDown(): void {
@@ -87,9 +86,11 @@ class League_Schedule_Service_Import_Test extends TestCase {
 			}
 		};
 
-		$GLOBALS['wp_stubs_leagues'][999] = (object) [ 'id' => 999 ]; // Not an instance of League
+		$repository = $this->createMock( League_Repository_Interface::class );
+		$repository->expects( $this->once() )->method( 'find_by_id' )->with( 999 )->willReturn( null ); // Not a League
 
 		$service = $this->getMockBuilder( League_Schedule_Service::class )
+			->setConstructorArgs( array( null, null, $repository ) )
 			->onlyMethods( [ 'schedule_league' ] )
 			->getMock();
 
@@ -103,17 +104,20 @@ class League_Schedule_Service_Import_Test extends TestCase {
 		$this->assertSame( array( 'scheduled' => 2, 'skipped' => 1 ), $service->generate_box_league_matches( $event ) );
 	}
 
-	public function test_generate_box_league_matches_resolves_numeric_league_ids_from_helper(): void {
+	public function test_generate_box_league_matches_resolves_numeric_league_ids_from_repository(): void {
 		$league = ( new \ReflectionClass( League::class ) )->newInstanceWithoutConstructor();
 		$league->id = 55;
-		$GLOBALS['wp_stubs_leagues'][55] = $league;
 
 		$event = (object) [
 			'leagues' => [ 55, 999 ],
 		];
-		$GLOBALS['wp_stubs_leagues'][999] = null;
+		$repository = $this->createMock( League_Repository_Interface::class );
+		$repository->expects( $this->exactly( 2 ) )
+			->method( 'find_by_id' )
+			->willReturnCallback( static fn( int $id ): ?League => 55 === $id ? $league : null );
 
 		$service = $this->getMockBuilder( League_Schedule_Service::class )
+			->setConstructorArgs( array( null, null, $repository ) )
 			->onlyMethods( [ 'schedule_league' ] )
 			->getMock();
 
@@ -137,6 +141,27 @@ class League_Schedule_Service_Import_Test extends TestCase {
 		$service->expects( $this->once() )->method( 'schedule_league' )->with( $league );
 
 		$this->assertSame( array( 'scheduled' => 1, 'skipped' => 0 ), $service->generate_box_league_matches( (object) array( 'leagues' => array( $row ) ) ) );
+	}
+
+	public function test_generate_box_league_matches_without_repository_hydrates_raw_rows_and_skips_bare_ids(): void {
+		$event     = ( new \ReflectionClass( \Racketmanager\Domain\Competition\Event::class ) )->newInstanceWithoutConstructor();
+		$event->id = 12;
+		$event_query = $this->createMock( \Racketmanager\Services\Competition\Event_Query_Service::class );
+		$event_query->expects( $this->once() )->method( 'get_event' )->with( 12 )->willReturn( $event );
+		$league_query = $this->createMock( \Racketmanager\Services\Competition\League_Query_Service::class );
+		$league_query->expects( $this->once() )
+			->method( 'set_season' )
+			->with( $this->callback( static fn( $l ): bool => $l instanceof League && 55 === (int) $l->id && $l->event === $event ), false, true );
+		$service = $this->getMockBuilder( League_Schedule_Service::class )
+			->setConstructorArgs( array( null, null, null, $event_query, $league_query ) )
+			->onlyMethods( array( 'schedule_league' ) )
+			->getMock();
+		$service->expects( $this->once() )
+			->method( 'schedule_league' )
+			->with( $this->callback( static fn( $l ): bool => $l instanceof League && 'Division 1' === $l->title ) );
+
+		$row = (object) array( 'id' => 55, 'event_id' => 12, 'title' => 'Division 1' );
+		$this->assertSame( array( 'scheduled' => 1, 'skipped' => 1 ), $service->generate_box_league_matches( (object) array( 'leagues' => array( $row, 77 ) ) ) );
 	}
 
 	public function test_generate_box_league_matches_counts_empty_and_unresolvable_lists(): void {

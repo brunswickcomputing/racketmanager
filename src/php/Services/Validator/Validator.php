@@ -10,6 +10,18 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Validator;
 
+use Racketmanager\Repositories\Club_Repository;
+use Racketmanager\Repositories\Event_Repository;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
+use Racketmanager\Repositories\League_Repository;
+use Racketmanager\Repositories\Player_Repository;
+use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Repositories\User_Repository;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Registration_Service;
@@ -17,11 +29,6 @@ use Racketmanager\Services\Player_Service;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use WP_Error;
-use function Racketmanager\get_club;
-use function Racketmanager\get_event;
-use function Racketmanager\get_league;
-use function Racketmanager\get_player;
-use function Racketmanager\get_team;
 use function Racketmanager\is_lta_number_required;
 
 /**
@@ -69,15 +76,31 @@ class Validator {
     protected ?Registration_Service $registration_service = null;
     protected ?Club_Service $club_service = null;
     protected ?Competition_Service $competition_service = null;
+    protected ?Team_Repository_Interface $team_repository = null;
+    protected ?Player_Repository_Interface $player_repository = null;
+    protected ?Club_Repository_Interface $club_repository = null;
+    protected ?Event_Repository_Interface $event_repository = null;
+    protected ?League_Repository_Interface $league_repository = null;
+    protected ?User_Repository_Interface $user_repository = null;
 
     /**
      * Constructor
+     *
+     * Repositories left as null are resolved from the plugin container when one is
+     * available and otherwise instantiated lazily on first use (mirroring the
+     * legacy get_* helpers this class used to call).
      */
     public function __construct(
         ?Competition_Service $competition_service = null,
         ?Club_Service $club_service = null,
         ?Player_Service $player_service = null,
-        ?Registration_Service $registration_service = null
+        ?Registration_Service $registration_service = null,
+        ?Team_Repository_Interface $team_repository = null,
+        ?Player_Repository_Interface $player_repository = null,
+        ?Club_Repository_Interface $club_repository = null,
+        ?Event_Repository_Interface $event_repository = null,
+        ?League_Repository_Interface $league_repository = null,
+        ?User_Repository_Interface $user_repository = null
     ) {
         global $racketmanager;
         $this->error        = false;
@@ -92,9 +115,21 @@ class Validator {
         $this->club_service         = $club_service;
         $this->player_service       = $player_service;
         $this->registration_service = $registration_service;
+        $this->team_repository      = $team_repository;
+        $this->player_repository    = $player_repository;
+        $this->club_repository      = $club_repository;
+        $this->event_repository     = $event_repository;
+        $this->league_repository    = $league_repository;
+        $this->user_repository      = $user_repository;
 
         $c = $racketmanager->container ?? null;
         if ( $c && method_exists( $c, 'get' ) ) {
+            $this->team_repository   ??= $this->repository_from_container( $c, 'team_repository', Team_Repository_Interface::class );
+            $this->player_repository ??= $this->repository_from_container( $c, 'player_repository', Player_Repository_Interface::class );
+            $this->club_repository   ??= $this->repository_from_container( $c, 'club_repository', Club_Repository_Interface::class );
+            $this->event_repository  ??= $this->repository_from_container( $c, 'event_repository', Event_Repository_Interface::class );
+            $this->league_repository ??= $this->repository_from_container( $c, 'league_repository', League_Repository_Interface::class );
+            $this->user_repository   ??= $this->repository_from_container( $c, 'user_repository', User_Repository_Interface::class );
             if ( null === $this->competition_service ) {
                 try {
                     $comp = $c->get( 'competition_service' );
@@ -128,6 +163,49 @@ class Validator {
                 }
             }
         }
+    }
+
+    /**
+     * Resolve a repository from the container, ignoring missing / wrongly typed entries.
+     *
+     * @template T of object
+     * @param class-string<T> $interface
+     * @return T|null
+     */
+    private function repository_from_container( object $c, string $key, string $interface ): ?object {
+        try {
+            if ( method_exists( $c, 'has' ) && ! $c->has( $key ) ) {
+                return null;
+            }
+            $repository = $c->get( $key );
+            return $repository instanceof $interface ? $repository : null;
+        } catch ( \Throwable ) {
+            return null;
+        }
+    }
+
+    protected function team_repository(): Team_Repository_Interface {
+        return $this->team_repository ??= new Team_Repository();
+    }
+
+    protected function player_repository(): Player_Repository_Interface {
+        return $this->player_repository ??= new Player_Repository();
+    }
+
+    protected function club_repository(): Club_Repository_Interface {
+        return $this->club_repository ??= new Club_Repository();
+    }
+
+    protected function event_repository(): Event_Repository_Interface {
+        return $this->event_repository ??= new Event_Repository();
+    }
+
+    protected function league_repository(): League_Repository_Interface {
+        return $this->league_repository ??= new League_Repository( null, fn() => $this->event_repository() );
+    }
+
+    protected function user_repository(): User_Repository_Interface {
+        return $this->user_repository ??= new User_Repository();
     }
 
     /**
@@ -185,8 +263,8 @@ class Validator {
             $error_message = __( 'Team id not found', 'racketmanager' );
             $status        = 404;
             $this->set_errors( $error_field, $error_message, $status );
-        } else { // TODO: remove get_team
-            $team = get_team( $team_id );
+        } else {
+            $team = $this->team_repository()->find_by_id( $team_id );
             if ( ! $team ) {
                 $error_field   = 'contactno';
                 $error_message = __( 'Team not found', 'racketmanager' );
@@ -209,7 +287,7 @@ class Validator {
             $this->err_flds[] = 'contactno';
             $this->err_msgs[] = __( 'Player id required', 'racketmanager' );
         } else {
-            $player = get_player( $player_id );
+            $player = $this->player_repository()->find( $player_id );
             if ( ! $player ) {
                 $this->error      = true;
                 $this->err_flds[] = 'contactno';
@@ -315,7 +393,7 @@ class Validator {
                 $this->err->add( $err_field, __( 'Email address is required', 'racketmanager' ) );
             }
         } else {
-            $player = get_player( $email, 'email' );
+            $player = $this->player_repository()->find( $email, 'email' );
             if ( $player && $player_id !== $player->ID ) {
                 $this->error      = true;
                 $this->err_flds[] = $err_field;
@@ -343,7 +421,7 @@ class Validator {
                 $this->err->add( 'btm', __( 'LTA Tennis Number is required', 'racketmanager' ) );
             }
         } else {
-            $player = get_player( $btm, 'btm' );
+            $player = $this->player_repository()->find( $btm, 'btm' );
             if ( $player && $player_id !== $player->ID ) {
                 $this->error      = true;
                 $this->err_flds[] = 'btm';
@@ -407,7 +485,7 @@ class Validator {
             $this->err_flds[] = $error_field;
             $this->err_msgs[] = __( 'Club not found', 'racketmanager' );
         } else {
-            $club = get_club( $club_id );
+            $club = $this->club_repository()->find_by_id( $club_id );
             if ( ! $club ) {
                 $this->error      = true;
                 $this->err_flds[] = $error_field;
@@ -495,11 +573,11 @@ class Validator {
             $error_message = __( 'Event id not found', 'racketmanager' );
             $status        = 404;
             $this->set_errors( $error_field, $error_message, $status );
-        } else { // TODO:remove event lookup
+        } else {
             if ( is_int( $event ) ) {
-                $event = get_event( $event );
+                $event = $this->event_repository()->find_by_id( $event );
             } elseif ( is_string( $event ) ) {
-                $event = get_event( $event, 'name' );
+                $event = $this->event_repository()->find_by_name( $event );
             }
             if ( ! $event ) {
                 $error_field   = 'event';
@@ -683,7 +761,7 @@ class Validator {
             $this->err_msgs[] = __( 'League id not found', 'racketmanager' );
             $this->status     = 404;
         } else {
-            $league = get_league( $league_ref );
+            $league = $this->league_repository()->find_by_id( $league_ref );
             if ( ! $league ) {
                 $this->error      = true;
                 $this->err_flds[] = 'league_id';

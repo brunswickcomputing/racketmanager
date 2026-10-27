@@ -133,7 +133,13 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->set( 'season_repository', fn() => new Season_Repository() );
         $container->set( 'charge_repository', fn() => new Charge_Repository() );
         $container->set( 'invoice_repository', fn() => new Invoice_Repository() );
-        $container->set( 'user_repository', fn() => new User_Repository() );
+        $container->set( 'user_repository', fn( Simple_Container $c ) => new User_Repository(
+            fn() => $c->get( 'league_repository' ),
+            fn() => $c->get( 'club_repository' ),
+            fn() => $c->get( 'event_repository' ),
+            fn() => $c->get( 'player_repository' ),
+            fn() => $c->get( 'team_repository' )
+        ) );
         $container->set( 'message_repository', fn() => new Message_Repository() );
         $container->set( 'legacy_user_factory', fn( Simple_Container $c ) => new Legacy_User_Factory( $c->get( 'message_repository' ) ) );
 
@@ -184,6 +190,7 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             $c->get( 'fixture_permission_service' ),
             $app?->site_url ?? '',
             $app?->site_name ?? '',
+            $c->get( 'league_query_service' ),
             $c->get( 'rubber_repository' ),
             $c->get( 'option_gateway' )
         ) );
@@ -206,7 +213,7 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             $c->get( 'fixture_detail_service' ),
             $c->get( 'club_repository' )
         ) );
-        $container->set( 'rest_controller_adapter', fn() => new Rest_Controller_Adapter() );
+        $container->set( 'rest_controller_adapter', fn( Simple_Container $c ) => new Rest_Controller_Adapter( $c->get( 'league_repository' ) ) );
         $container->set( 'export_delivery_adapter', fn( Simple_Container $c ) => new Export_Delivery_Adapter(
             $c->get( 'racketmanager_app' )
         ) );
@@ -265,7 +272,13 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
                 $c->get( 'club_presenter' ),
                 $c->get( 'player_presenter' ),
                 $c->get( 'favourite_presenter' )
-            )
+            ),
+            event_query_service: $c->get( 'event_query_service' ),
+            league_query_service: $c->get( 'league_query_service' ),
+            team_repository: $c->get( 'team_repository' ),
+            league_repository: $c->get( 'league_repository' ),
+            event_repository: $c->get( 'event_repository' ),
+            competition_repository: $c->get( 'competition_repository' )
         ) );
 
         // General / Auth / Message Queries & Shortcodes

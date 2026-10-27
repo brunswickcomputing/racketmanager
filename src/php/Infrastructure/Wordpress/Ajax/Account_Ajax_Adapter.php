@@ -17,8 +17,6 @@ use Racketmanager\Repositories\Message_Repository;
 use Racketmanager\Repositories\User_Repository;
 use Racketmanager\Util\Util;
 use stdClass;
-use function Racketmanager\get_message;
-use function Racketmanager\get_user;
 use function Racketmanager\show_alert;
 use function Racketmanager\show_message;
 
@@ -126,7 +124,7 @@ class Account_Ajax_Adapter {
         }
 
         $message_id        = isset( $request['message_id'] ) ? (int) $request['message_id'] : 0;
-        $message_dtl       = get_message( $message_id );
+        $message_dtl       = $message_id ? $this->message_repository->find_by_id( $message_id ) : null;
         $validator         = new stdClass();
         $validator->status = $message_dtl?->status;
         $validator->output = show_message( $message_id );

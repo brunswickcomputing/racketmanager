@@ -13,10 +13,6 @@ use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Competition\League_Schedule_Service as Competition_League_Schedule_Service;
 use Racketmanager\Services\Competition\Promotion_Relegation_Service;
 use Racketmanager\Services\League_Service;
-use function Racketmanager\get_event;
-use function Racketmanager\get_league;
-use function Racketmanager\get_league_team;
-use function Racketmanager\get_team;
 
 final readonly class League_Constitution_Handler {
     public function __construct(
@@ -43,7 +39,7 @@ final readonly class League_Constitution_Handler {
                 $league  = $leagues[ $table_id ] ?? null;
 
                 if ( null !== $team && null !== $league ) {
-                    $league_obj = get_league( intval( $league ) );
+                    $league_obj = intval( $league ) > 0 ? $this->league_repository->find_by_id( intval( $league ) ) : null;
                     if ( ! $league_obj ) {
                         continue;
                     }
@@ -95,14 +91,14 @@ final readonly class League_Constitution_Handler {
 
             if ( 'insert' === $constitution_action && null !== $league_id ) {
                 $profile = '0';
-                $league  = get_league( $league_id );
+                $league  = $league_id > 0 ? $this->league_repository->find_by_id( $league_id ) : null;
                 $rank_str = null !== $rank ? (string) $rank : null;
                 $inserted = $league ? $this->league_repository->add_team_to_league( (int) $league->id, (int) $team, $latest_season, $rank_str, $status, (int) $profile ) : false;
                 if ( $inserted ) {
                     ++$updates;
                 }
             } elseif ( 'update' === $constitution_action ) {
-                $league_team = get_league_team( $table_id );
+                $league_team = $table_id ? $this->league_team_repository->find_by_id( (int) $table_id ) : null;
                 if ( null !== $league_team && ( $league_id !== $league_team->league_id || $rank !== intval( $league_team->rank ) || $status !== $league_team->status || $profile !== $league_team->get_profile() ) ) {
                     $this->league_team_repository->set_constitution_rank( (int) $table_id, $league_id, $rank, $status, $profile );
                     $league_team->set_constitution_rank( $league_id, $rank, $status, $profile );
@@ -145,7 +141,7 @@ final readonly class League_Constitution_Handler {
         }
 
         if ( null === $event && $event_id ) {
-            $event = get_event( $event_id );
+            $event = $this->event_repository->find_by_id( $event_id );
         }
 
         if ( null === $event ) {
@@ -220,14 +216,14 @@ final readonly class League_Constitution_Handler {
         }
 
         $league_id = isset( $command->league_id ) ? intval( $command->league_id ) : 0;
-        $league    = get_league( $league_id );
+        $league    = $league_id > 0 ? $this->league_repository->find_by_id( $league_id ) : null;
         $season    = isset( $command->season ) ? $command->season : '';
         $messages  = array();
         $errors    = 0;
 
         foreach ( $teams as $team_id ) {
             $inserted = $league ? $this->league_repository->add_team_to_league( (int) $league->id, (int) $team_id, $season, '99', 'NT', 1 ) : false;
-            $team     = get_team( $team_id );
+            $team     = $team_id ? $this->team_repository->find_by_id( (int) $team_id ) : null;
             if ( $inserted ) {
                 $messages[] = ( $team?->title ?? $team_id ) . ' ' . __( 'added', 'racketmanager' );
             } else {
@@ -261,7 +257,7 @@ final readonly class League_Constitution_Handler {
         }
 
         if ( null === $event ) {
-            $event = get_event( $event_id );
+            $event = $this->event_repository->find_by_id( $event_id );
         }
 
         if ( null === $event ) {

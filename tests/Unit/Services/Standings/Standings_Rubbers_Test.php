@@ -5,10 +5,12 @@ namespace Racketmanager\Tests\Unit\Services\Standings;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Standings\Standings_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
@@ -55,19 +57,21 @@ class Standings_Rubbers_Test extends TestCase {
         $fixture_repository = $this->createStub( Fixture_Repository_Interface::class );
         $fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
 
-        $team = new class extends \stdClass {
-            public int $id = 10;
-            public string $season = '2026';
-            public array $custom = [];
-
-            public function win_percent(): void {}
-        };
-        $GLOBALS['wp_stubs_league_teams'] = [ 10 => $team ];
+        $team         = new League_Team();
+        $team->id     = 10;
+        $team->season = '2026';
+        $team->custom = [];
+        $league_team_repository = $this->createMock( League_Team_Repository_Interface::class );
+        $league_team_repository->expects( $this->once() )->method( 'find_by_id' )->with( 10 )->willReturn( $team );
 
         $repository = $this->createMock( Rubber_Repository_Interface::class );
         $repository->expects( $this->once() )->method( 'find_by_fixture_id' )->with( 70 )->willReturn( [ $rubber ] );
 
-        $standings = ( new Standings_Service( rubber_repository: $repository, league_query_service: $this->league_query_service( $league_repository, null, $fixture_repository ) ) )->get_standings( $league, [ 10 ], 0 );
+        $standings = ( new Standings_Service(
+            league_team_repository: $league_team_repository,
+            rubber_repository: $repository,
+            league_query_service: $this->league_query_service( $league_repository, null, $fixture_repository )
+        ) )->get_standings( $league, [ 10 ], 0 );
 
         $this->assertSame( [ $rubber ], $fixture->get_rubbers() );
         $this->assertSame( 1, $standings[0]->rubbers_won );

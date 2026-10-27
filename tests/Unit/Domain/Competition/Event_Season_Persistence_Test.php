@@ -704,12 +704,13 @@ final class Event_Season_Persistence_Test extends TestCase {
 			'final'
 		);
 
-		$league_mock                    = $this->createMock( League::class );
+		$league_mock                    = $this->createStub( League::class );
 		$league_mock->id                = 18;
 		$league_mock->event_id          = 35;
 		$league_mock->num_rubbers       = 2;
 		$league_mock->championship      = $championship;
-		$league_mock->expects( $this->once() )->method( 'set_rounds' );
+		$league_query_service = $this->createMock( \Racketmanager\Services\Competition\League_Query_Service::class );
+		$league_query_service->expects( $this->once() )->method( 'set_rounds' )->with( $league_mock, self::isString(), self::isArray() );
 
 		$league_service          = $this->createStub( League_Service::class );
 		$fixture_service         = $this->createStub( Fixture_Service::class );
@@ -745,7 +746,8 @@ final class Event_Season_Persistence_Test extends TestCase {
 			$team_repo,
 			$fixture_repo,
 			$championship_manager,
-			$event_repo
+			$event_repo,
+			$league_query_service
 		);
 
 		$ref_method = new \ReflectionMethod( Championship_Admin_Service::class, 'apply_championship_rounds_and_fixtures' );
@@ -789,12 +791,13 @@ final class Event_Season_Persistence_Test extends TestCase {
 			'final'
 		);
 
-		$league_mock               = $this->createMock( League::class );
+		$league_mock               = $this->createStub( League::class );
 		$league_mock->id           = 19;
 		$league_mock->event_id     = 36;
 		$league_mock->num_rubbers  = 2;
 		$league_mock->championship = $championship;
-		$league_mock->expects( $this->once() )->method( 'set_rounds' );
+		$league_query_service = $this->createMock( \Racketmanager\Services\Competition\League_Query_Service::class );
+		$league_query_service->expects( $this->once() )->method( 'set_rounds' )->with( $league_mock, self::isString(), self::isArray() );
 
 		$league_service       = $this->createStub( League_Service::class );
 		$fixture_service      = $this->createStub( Fixture_Service::class );
@@ -820,7 +823,8 @@ final class Event_Season_Persistence_Test extends TestCase {
 			$team_repo,
 			$fixture_repo,
 			$championship_manager,
-			$event_repo
+			$event_repo,
+			$league_query_service
 		);
 
 		$ref_method = new \ReflectionMethod( Championship_Admin_Service::class, 'apply_championship_rounds_and_fixtures' );

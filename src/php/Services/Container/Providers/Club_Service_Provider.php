@@ -143,7 +143,9 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
             invoices_handler: $c->get( 'get_club_invoices_handler' ),
             view_presenter: $c->get( 'shortcode_view_presenter' ),
             competition_shortcode_presenter: $c->get( 'competition_shortcode_presenter' ),
-            event_query_service: $c->get( 'event_query_service' )
+            event_query_service: $c->get( 'event_query_service' ),
+            event_repository: $c->get( 'event_repository' ),
+            team_repository: $c->get( 'team_repository' )
         ) );
 
         // AJAX Adapter & Controller

@@ -17,16 +17,18 @@ use Racketmanager\Application\Admin\Commands\Manage_League_Matches_Command;
 use Racketmanager\Application\Admin\Commands\Update_League_Results_Command;
 
 
+use LogicException;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\Fixture_Service;
-use function Racketmanager\get_league;
 
 /**
  * Handles match/fixture mutations for the league admin screen (delete matches, manage matches, update results).
@@ -42,8 +44,16 @@ readonly final class League_Match_Action_Dispatcher {
         Fixture_Result_Manager $fixture_result_manager,
         Fixture_Service $fixture_service,
         ?League_Match_Handler $commands = null,
+        ?League_Query_Service $league_query_service = null,
+        private ?League_Repository_Interface $league_repository = null,
     ) {
-        $this->commands = $commands ?? new League_Match_Handler( $fixture_repository, $fixture_maintenance_service, $fixture_result_manager, $fixture_service );
+        $this->commands = $commands ?? new League_Match_Handler(
+            $fixture_repository,
+            $fixture_maintenance_service,
+            $fixture_result_manager,
+            $fixture_service,
+            $league_query_service ?? throw new LogicException( 'League_Match_Action_Dispatcher requires either a League_Match_Handler or a League_Query_Service.' )
+        );
     }
 
     /**
@@ -82,7 +92,11 @@ readonly final class League_Match_Action_Dispatcher {
             return null;
         }
 
-        return get_league( $league_id );
+        if ( null === $this->league_repository ) {
+            throw new LogicException( 'League_Match_Action_Dispatcher requires a League_Repository_Interface to resolve a league by id.' );
+        }
+
+        return $this->league_repository->find_by_id( $league_id );
     }
 
     /**

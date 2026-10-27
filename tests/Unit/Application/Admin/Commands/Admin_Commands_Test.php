@@ -30,6 +30,7 @@ use Racketmanager\Services\Admin\League\League_Match_Action_Dispatcher;
 use Racketmanager\Services\Admin\League\League_Setup_Action_Dispatcher;
 use Racketmanager\Services\Admin\League\League_Team_Action_Dispatcher;
 use Racketmanager\Services\Admin\Result\Results_Checker_Action_Dispatcher;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Competition\League_Schedule_Service;
 use Racketmanager\Services\Competition\Promotion_Relegation_Service;
@@ -64,7 +65,7 @@ final class Admin_Commands_Test extends TestCase {
         $league = $this->createStub( League::class );
         $service = $this->createMock( League_Service::class );
         $service->expects( self::once() )->method( 'delete_team' )->with( $league, 10, '2026' );
-        $handler = new League_Team_Handler( $service, $this->createStub( Standings_Service::class ) );
+        $handler = new League_Team_Handler( $service, $this->createStub( Standings_Service::class ), $this->createStub( Team_Repository_Interface::class ) );
         $result = $handler->delete_teams( new Delete_League_Teams_Command( '2026', [ '10' ] ), $league );
         self::assertSame( '10 deleted', $result->message );
         self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
@@ -94,7 +95,7 @@ final class Admin_Commands_Test extends TestCase {
         $matches = [ 'num_done_matches' => [ 10 => '3' ], 'num_won_matches' => [ 10 => '2' ], 'num_draw_matches' => [ 10 => '0' ], 'num_lost_matches' => [ 10 => '1' ] ];
         $custom = [ 10 => [ 'sets' => '4.0' ] ];
         $standings->expects( self::once() )->method( 'save_standings_manually' )->with( $league, [ 10 ], $points, $matches, $custom );
-        $dispatcher = new League_Team_Action_Dispatcher( $this->createStub( League_Service::class ), $this->createStub( Action_Guard_Interface::class ), $standings );
+        $dispatcher = new League_Team_Action_Dispatcher( $this->createStub( League_Service::class ), $this->createStub( Action_Guard_Interface::class ), $standings, team_repository: $this->createStub( Team_Repository_Interface::class ) );
         $result = $dispatcher->handle( [], $points + $matches + [ 'updateLeague' => 'teams_manual', 'team_id' => [ 10 ], 'custom' => $custom, 'rating_points' => 'unused' ], $league );
         self::assertSame( 'Standings Table updated', $result->message );
     }
@@ -104,7 +105,7 @@ final class Admin_Commands_Test extends TestCase {
         $manager = $this->createMock( Fixture_Result_Manager::class );
         $manager->expects( self::once() )->method( 'update_match_results' )
             ->with( $league, [ '7' ], [ 7 => '0.0' ], [ 7 => '' ], [ 7 => [ 'sets' => '2' ] ], '2026', false )->willReturn( 1 );
-        $dispatcher = new League_Match_Action_Dispatcher( $this->createStub( Fixture_Repository_Interface::class ), $this->createStub( Fixture_Maintenance_Service::class ), $this->createStub( Action_Guard_Interface::class ), $manager, $this->createStub( Fixture_Service::class ) );
+        $dispatcher = new League_Match_Action_Dispatcher( $this->createStub( Fixture_Repository_Interface::class ), $this->createStub( Fixture_Maintenance_Service::class ), $this->createStub( Action_Guard_Interface::class ), $manager, $this->createStub( Fixture_Service::class ), league_query_service: $this->createStub( League_Query_Service::class ) );
         $result = $dispatcher->handle( [], [ 'updateLeague' => 'results', 'matches' => [ '7' ], 'season' => '2026', 'home_points' => [ 7 => '0.0' ], 'away_points' => [ 7 => '' ], 'custom' => [ 7 => [ 'sets' => '2' ] ], 'myDatePicker' => 'unused' ], $league );
         self::assertSame( 'Updated Results of 1 matches', $result->message );
         self::assertSame( 'matches', $result->tab_override );
@@ -121,7 +122,7 @@ final class Admin_Commands_Test extends TestCase {
         $service = $this->createMock( League_Service::class );
         $service->expects( self::once() )->method( 'rank_teams' )
             ->with( $league, $mode, $expected, [ '10', '20' ] )->willReturn( true );
-        $dispatcher = new League_Team_Action_Dispatcher( $service, $this->createStub( Action_Guard_Interface::class ), $this->createStub( Standings_Service::class ) );
+        $dispatcher = new League_Team_Action_Dispatcher( $service, $this->createStub( Action_Guard_Interface::class ), $this->createStub( Standings_Service::class ), team_repository: $this->createStub( Team_Repository_Interface::class ) );
         $result = $dispatcher->handle( [], $post + [ 'table_id' => [ '10', '20' ] ], $league );
         self::assertSame( 'Team ranking saved', $result->message );
     }
@@ -158,7 +159,7 @@ final class Admin_Commands_Test extends TestCase {
     public function test_malformed_selected_team_is_rejected_before_any_team_is_deleted(): void {
         $service = $this->createMock( League_Service::class );
         $service->expects( self::never() )->method( 'delete_team' );
-        $dispatcher = new League_Team_Action_Dispatcher( $service, $this->createStub( Action_Guard_Interface::class ), $this->createStub( Standings_Service::class ) );
+        $dispatcher = new League_Team_Action_Dispatcher( $service, $this->createStub( Action_Guard_Interface::class ), $this->createStub( Standings_Service::class ), team_repository: $this->createStub( Team_Repository_Interface::class ) );
         $result = $dispatcher->handle( [], [ 'doAction' => 1, 'action' => 'delete', 'team' => [ '10', [ '20' ] ] ], $this->createStub( League::class ) );
         self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
         self::assertSame( 'Invalid field: team', $result->message );
@@ -167,7 +168,7 @@ final class Admin_Commands_Test extends TestCase {
     public function test_match_delete_ignores_unrelated_edit_fields(): void {
         $maintenance = $this->createMock( Fixture_Maintenance_Service::class );
         $maintenance->expects( self::once() )->method( 'delete_fixture' )->with( 7 );
-        $dispatcher = new League_Match_Action_Dispatcher( $this->createStub( Fixture_Repository_Interface::class ), $maintenance, $this->createStub( Action_Guard_Interface::class ), $this->createStub( Fixture_Result_Manager::class ), $this->createStub( Fixture_Service::class ) );
+        $dispatcher = new League_Match_Action_Dispatcher( $this->createStub( Fixture_Repository_Interface::class ), $maintenance, $this->createStub( Action_Guard_Interface::class ), $this->createStub( Fixture_Result_Manager::class ), $this->createStub( Fixture_Service::class ), league_query_service: $this->createStub( League_Query_Service::class ) );
         $result = $dispatcher->handle( [], [ 'delMatches' => 1, 'match' => [ '7' ], 'season' => [], 'home_points' => [ new \stdClass() ] ], $this->createStub( League::class ) );
         self::assertSame( 'Match id 7 deleted', $result->message );
         self::assertSame( 'matches', $result->tab_override );
@@ -176,7 +177,7 @@ final class Admin_Commands_Test extends TestCase {
     public function test_match_creation_sanitizes_once_and_ignores_edit_only_date_columns(): void {
         $service = $this->createMock( Fixture_Service::class );
         $service->expects( self::once() )->method( 'add_match' )->with( self::callback( static fn( object $fixture ): bool => "O'Brien" === $fixture->location && '2026-06-01 19:30:00' === $fixture->date ), self::isInstanceOf( League::class ) );
-        $dispatcher = new League_Match_Action_Dispatcher( $this->createStub( Fixture_Repository_Interface::class ), $this->createStub( Fixture_Maintenance_Service::class ), $this->createStub( Action_Guard_Interface::class ), $this->createStub( Fixture_Result_Manager::class ), $service );
+        $dispatcher = new League_Match_Action_Dispatcher( $this->createStub( Fixture_Repository_Interface::class ), $this->createStub( Fixture_Maintenance_Service::class ), $this->createStub( Action_Guard_Interface::class ), $this->createStub( Fixture_Result_Manager::class ), $service, league_query_service: $this->createStub( League_Query_Service::class ) );
         $result = $dispatcher->handle( [], [
             'updateLeague' => 'match', 'mode' => 'add', 'match' => [ 0 ], 'league_id' => '5', 'season' => '2026',
             'home_team' => [ '10' ], 'away_team' => [ '20' ], 'myDatePicker' => [ '2026-06-01' ],

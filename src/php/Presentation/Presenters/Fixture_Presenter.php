@@ -12,6 +12,7 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Header_Read_Model;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Result_Read_Model;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Status_Read_Model;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Switch_Teams_Read_Model;
+use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Date_Update_Request;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Result_Update_Request;
@@ -36,7 +37,6 @@ use function is_numeric;
 use function is_object;
 use function is_string;
 use function mysql2date;
-use function Racketmanager\seo_url;
 
 readonly class Fixture_Presenter {
 
@@ -563,9 +563,9 @@ readonly class Fixture_Presenter {
         return new Fixture_Header_Read_Model(
             id: (int) $fixture->get_id(),
             event_name: $event->name,
-            event_url: '/' . $comp_type . 's/' . seo_url( $event->name ) . '/' . $fixture->get_season() . '/',
+            event_url: '/' . $comp_type . 's/' . Seo_Slug::encode( $event->name ) . '/' . $fixture->get_season() . '/',
             league_title: ( 'cup' === $comp_type ) ? '' : ( $league->title ?? '' ),
-            league_url: '/' . $comp_type . '/' . seo_url( $league->title ?? '' ) . '/' . $fixture->get_season() . '/',
+            league_url: '/' . $comp_type . '/' . Seo_Slug::encode( $league->title ?? '' ) . '/' . $fixture->get_season() . '/',
             season: $fixture->get_season(),
             round_name: $fixture->get_final() ? Util::get_final_name( $fixture->get_final() ) : null,
             match_day: $fixture->get_match_day() ? (int) $fixture->get_match_day() : null,
@@ -574,10 +574,10 @@ readonly class Fixture_Presenter {
             formatted_date: (string) mysql2date( $date_format, $fixture->get_date() ),
             original_date_formatted: $fixture->get_date_original() ? (string) mysql2date( 'j F Y H:i', $fixture->get_date_original() ) : null,
             home_team_name: $home_name,
-            home_team_url: '/' . $comp_type . '/' . seo_url( $league->title ?? '' ) . '/' . $fixture->get_season() . '/team/' . seo_url( $home_name ) . '/',
+            home_team_url: '/' . $comp_type . '/' . Seo_Slug::encode( $league->title ?? '' ) . '/' . $fixture->get_season() . '/team/' . Seo_Slug::encode( $home_name ) . '/',
             home_team_withdrawn: $home_team_dto->is_withdrawn ?? false,
             away_team_name: $away_name,
-            away_team_url: '/' . $comp_type . '/' . seo_url( $league->title ?? '' ) . '/' . $fixture->get_season() . '/team/' . seo_url( $away_name ) . '/',
+            away_team_url: '/' . $comp_type . '/' . Seo_Slug::encode( $league->title ?? '' ) . '/' . $fixture->get_season() . '/team/' . Seo_Slug::encode( $away_name ) . '/',
             away_team_withdrawn: $away_team_dto->is_withdrawn ?? false,
             show_home_away_labels: empty( $fixture->get_host() ),
             is_pending: $fixture->is_pending(),
@@ -760,7 +760,7 @@ readonly class Fixture_Presenter {
                     'id' => $p_id,
                     'gender' => $player_detail->gender ?? 'm',
                     'name' => $player_detail->display_name ?? '',
-                    'url' => empty( $player_detail->system_record ) ? '/' . $competition->get_type() . 's/' . seo_url( $event->name ) . '/' . $dto->fixture->get_season() . '/player/' . seo_url( $player_detail->display_name ?? '' ) . '/' : null,
+                    'url' => empty( $player_detail->system_record ) ? '/' . $competition->get_type() . 's/' . Seo_Slug::encode( $event->name ) . '/' . $dto->fixture->get_season() . '/player/' . Seo_Slug::encode( $player_detail->display_name ?? '' ) . '/' : null,
                     'class' => $player_detail->class ?? '',
                     'description' => $player_detail->description ?? '',
                     'is_system_record' => ! empty( $player_detail->system_record ),

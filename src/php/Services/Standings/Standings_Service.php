@@ -19,7 +19,6 @@ use Racketmanager\Repositories\Rubber_Repository;
 use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Util\Util;
-use function Racketmanager\get_league_team;
 
 /**
  * Service for calculating and managing competition standings (league tables).
@@ -48,32 +47,57 @@ class Standings_Service {
 		$this->league_query_service   = $league_query_service;
 	}
 
+	/**
+	 * Resolve an optional collaborator from the plugin container when it was not injected.
+	 */
+	private function from_container( string $key ): mixed {
+		global $racketmanager;
+		return isset( $racketmanager->container ) && $racketmanager->container->has( $key )
+			? $racketmanager->container->get( $key )
+			: null;
+	}
+
 	private function get_fixture_repository(): Fixture_Repository_Interface {
 		if ( null === $this->fixture_repository ) {
-			global $racketmanager;
-			$this->fixture_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
-				? $racketmanager->container->get( 'fixture_repository' )
-				: new Fixture_Repository();
+			$this->fixture_repository = $this->from_container( 'fixture_repository' ) ?? new Fixture_Repository();
 		}
 		return $this->fixture_repository;
 	}
 
 	private function get_league_repository(): League_Repository_Interface {
 		if ( null === $this->league_repository ) {
-			global $racketmanager;
-			$this->league_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'league_repository' )
-				? $racketmanager->container->get( 'league_repository' )
-				: new League_Repository( null, fn() => \Racketmanager\get_event_repository_for_helpers() );
+			$this->league_repository = $this->from_container( 'league_repository' ) ?? new League_Repository();
 		}
 		return $this->league_repository;
 	}
 
+	private function get_league_team_repository(): League_Team_Repository_Interface {
+		if ( null === $this->league_team_repository ) {
+			$this->league_team_repository = $this->from_container( 'league_team_repository' ) ?? new League_Team_Repository();
+		}
+		return $this->league_team_repository;
+	}
+
+	/**
+	 * Resolve a league team reference the way the legacy get_league_team() helper did:
+	 * an entity is returned as is, a raw row is hydrated, an id is looked up.
+	 */
+	private function resolve_league_team( object|int|string|null $league_team ): ?League_Team {
+		if ( $league_team instanceof League_Team ) {
+			return $league_team;
+		}
+		if ( is_object( $league_team ) ) {
+			return $this->get_league_team_repository()->hydrate( $league_team );
+		}
+		if ( empty( $league_team ) ) {
+			return null;
+		}
+		return $this->get_league_team_repository()->find_by_id( $league_team );
+	}
+
 	private function get_league_service(): ?League_Service {
 		if ( null === $this->league_service ) {
-			global $racketmanager;
-			$this->league_service = isset( $racketmanager->container ) && $racketmanager->container->has( 'league_service' )
-				? $racketmanager->container->get( 'league_service' )
-				: null;
+			$this->league_service = $this->from_container( 'league_service' );
 		}
 		return $this->league_service;
 	}
@@ -129,7 +153,10 @@ class Standings_Service {
 
 		$rubbers_by_fixture = [];
 		foreach ( $teams as $i => $team ) {
-			$team       = $team instanceof League_Team ? $team : get_league_team( $team );
+			$team       = $this->resolve_league_team( $team );
+			if ( ! $team ) {
+				continue;
+			}
 			$match_args = array();
 
 			// get only home matches.
@@ -319,7 +346,10 @@ class Standings_Service {
 	 */
 	public function save_standings( League $league, object $league_team ): void {
 		if ( 'manual' !== $league->point_rule ) {
-			$league_team = $league_team instanceof League_Team ? $league_team : get_league_team( $league_team );
+			$league_team = $this->resolve_league_team( $league_team );
+			if ( ! $league_team ) {
+				return;
+			}
 			$this->refresh_match_counts( $league, $league_team );
 
 			$league_team->points  = $this->calculate_points( $league, $league_team );

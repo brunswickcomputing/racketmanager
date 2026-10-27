@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Presentation\Presenters;
 
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Presentation\Formatters\Email_Date_Formatter;
@@ -21,7 +22,6 @@ use function is_string;
 use function sanitize_title;
 use function strlen;
 use function substr;
-use function Racketmanager\seo_url;
 
 /**
  * Presenter specifically responsible for preparing view data for email and notification shortcodes.
@@ -88,8 +88,8 @@ readonly class Email_Shortcode_Presenter {
             $tournament      = $this->tournament_service->get_tournament( $tournament_param );
             $tournament_path = ( new Tournament_Presenter() )->get_link( $tournament );
             $tournament_link = '<a href="' . $this->site_url . $tournament_path . '">' . $tournament->name . '</a>';
-            $draw_link       = '<a href="' . $this->site_url . $tournament_path . 'draw/' . seo_url( $match->league->event->name ?? '' ) . '/">' . ( $match->league->event->name ?? '' ) . '</a>';
-            $match_link      = $this->site_url . $tournament_path . 'match/' . seo_url( $match->league->title ?? '' ) . '/' . seo_url( $match->teams['home']->title ?? '' ) . '-vs-' . seo_url( $match->teams['away']->title ?? '' ) . '/' . $match->id . '/';
+            $draw_link       = '<a href="' . $this->site_url . $tournament_path . 'draw/' . Seo_Slug::encode( $match->league->event->name ?? '' ) . '/">' . ( $match->league->event->name ?? '' ) . '</a>';
+            $match_link      = $this->site_url . $tournament_path . 'match/' . Seo_Slug::encode( $match->league->title ?? '' ) . '/' . Seo_Slug::encode( $match->teams['home']->title ?? '' ) . '-vs-' . Seo_Slug::encode( $match->teams['away']->title ?? '' ) . '/' . $match->id . '/';
 
             $league_type = $match->league->type ?? '';
             if ( is_string( $league_type ) && strlen( $league_type ) >= 2 && 'D' === substr( $league_type, 1, 1 ) ) {
@@ -104,7 +104,7 @@ readonly class Email_Shortcode_Presenter {
                 $away_dtls['title']   = 'Away Player';
             }
         } elseif ( 'cup' === $competition_type ) {
-            $cup_link   = '<a href="' . $this->site_url . '/cups/' . seo_url( $match->league->title ?? '' ) . '/' . ( $match->season ?? '' ) . '/">' . ( $match->league->title ?? '' ) . '</a>';
+            $cup_link   = '<a href="' . $this->site_url . '/cups/' . Seo_Slug::encode( $match->league->title ?? '' ) . '/' . ( $match->season ?? '' ) . '/">' . ( $match->league->title ?? '' ) . '</a>';
             $match_link = $this->site_url . ( $match->link ?? '' );
             if ( ! empty( $match->leg ) ) {
                 $match_link .= 'leg-' . $match->leg . '/';
@@ -328,7 +328,7 @@ readonly class Email_Shortcode_Presenter {
     public function present_club_player_notification( array $args ): array {
         $club       = $args['club'] ?? '';
         $player     = $args['player'] ?? '';
-        $action_url = $this->site_url . '/clubs/' . seo_url( (string) $club ) . '/' . seo_url( (string) $player ) . '/';
+        $action_url = $this->site_url . '/clubs/' . Seo_Slug::encode( (string) $club ) . '/' . Seo_Slug::encode( (string) $player ) . '/';
 
         return [
             'action'        => $args['action'] ?? false,
@@ -372,16 +372,16 @@ readonly class Email_Shortcode_Presenter {
             $tournament      = $this->tournament_service->get_tournament( $tournament_param );
             $tournament_path = ( new Tournament_Presenter() )->get_link( $tournament );
             $tournament_link = '<a href="' . $this->site_url . $tournament_path . '">' . $tournament->name . '</a>';
-            $draw_link       = '<a href="' . $this->site_url . $tournament_path . 'draw/' . seo_url( $match->league->event->name ?? '' ) . '/">' . ( $match->league->event->name ?? '' ) . '</a>';
-            $match_link      = $this->site_url . $tournament_path . 'match/' . seo_url( $match->league->title ?? '' ) . '/' . seo_url( $match->teams['home']->title ?? '' ) . '-vs-' . seo_url( $match->teams['away']->title ?? '' ) . '/' . $match->id . '/';
+            $draw_link       = '<a href="' . $this->site_url . $tournament_path . 'draw/' . Seo_Slug::encode( $match->league->event->name ?? '' ) . '/">' . ( $match->league->event->name ?? '' ) . '</a>';
+            $match_link      = $this->site_url . $tournament_path . 'match/' . Seo_Slug::encode( $match->league->title ?? '' ) . '/' . Seo_Slug::encode( $match->teams['home']->title ?? '' ) . '-vs-' . Seo_Slug::encode( $match->teams['away']->title ?? '' ) . '/' . $match->id . '/';
         } elseif ( 'cup' === $competition_type ) {
-            $competition_link = '<a href="' . $this->site_url . '/cups/' . seo_url( $match->league->title ?? '' ) . '/' . ( $match->season ?? '' ) . '/">' . ( $match->league->title ?? '' ) . '</a>';
+            $competition_link = '<a href="' . $this->site_url . '/cups/' . Seo_Slug::encode( $match->league->title ?? '' ) . '/' . ( $match->season ?? '' ) . '/">' . ( $match->league->title ?? '' ) . '</a>';
             $match_link       = $this->site_url . ( $match->link ?? '' );
             if ( ! empty( $match->leg ) ) {
                 $match_link .= 'leg-' . $match->leg . '/';
             }
         } elseif ( 'league' === $competition_type ) {
-            $competition_link = '<a href="' . $this->site_url . '/leagues/' . seo_url( $match->league->event->name ?? '' ) . '/' . ( $match->season ?? '' ) . '/">' . ( $match->league->title ?? '' ) . '</a>';
+            $competition_link = '<a href="' . $this->site_url . '/leagues/' . Seo_Slug::encode( $match->league->event->name ?? '' ) . '/' . ( $match->season ?? '' ) . '/">' . ( $match->league->title ?? '' ) . '</a>';
             $match_link       = $this->site_url . ( $match->link ?? '' );
         }
 

@@ -30,6 +30,7 @@ use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Championship_Manager;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Tournament_Service;
@@ -46,6 +47,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         private Fixture_Repository_Interface $fixture_repository,
         private Championship_Manager $championship_manager,
         private Event_Repository_Interface $event_repository,
+        private League_Query_Service $league_query_service,
     ) {
     }
 
@@ -509,7 +511,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
             $rank  = $parts[0] ?? '';
             $group = $parts[1] ?? '';
 
-            $teams = \Racketmanager\get_league_query_service()->get_league_teams( $league,
+            $teams = $this->league_query_service->get_league_teams( $league,
                 array(
                     'rank'             => $rank,
                     'group'            => $group,
@@ -527,10 +529,10 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         if ( null !== $resolved_team_id && - 1 !== $resolved_team_id ) {
             if ( 'home' === $side ) {
                 $fixture->home_team     = $resolved_team_id;
-                $fixture->teams['home'] = \Racketmanager\get_league_query_service()->get_team_dtls( $league, $resolved_team_id );
+                $fixture->teams['home'] = $this->league_query_service->get_team_dtls( $league, $resolved_team_id );
             } else {
                 $fixture->away_team     = $resolved_team_id;
-                $fixture->teams['away'] = \Racketmanager\get_league_query_service()->get_team_dtls( $league, $resolved_team_id );
+                $fixture->teams['away'] = $this->league_query_service->get_team_dtls( $league, $resolved_team_id );
             }
         }
 
@@ -789,7 +791,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         array $event_season,
         string $action
     ): void {
-        \Racketmanager\get_league_query_service()->set_rounds( $league, (string) $season, $rounds );
+        $this->league_query_service->set_rounds( $league, (string) $season, $rounds );
         if ( 'replace' === $action ) {
             $this->fixture_service->delete_fixtures_for_season( $league->id, (string) $season );
         }

@@ -14,6 +14,7 @@ namespace Racketmanager;
 use Racketmanager\Admin\Admin_Display;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Admin_Ajax_Controller;
 use Racketmanager\Infrastructure\Wordpress\Assets\Asset_Manager;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Container\Container_Bootstrap;
 use Racketmanager\Services\Container\Simple_Container;
 use WP_Error;
@@ -48,6 +49,7 @@ class Admin {
     public ?Simple_Container $container = null;
     public ?RacketManager $racketmanager = null;
     public ?Asset_Manager $asset_manager = null;
+    private ?League_Repository_Interface $league_repository = null;
     private bool $hooks_registered = false;
 
     /**
@@ -58,6 +60,7 @@ class Admin {
      * @param Admin_Display|null          $admin_display
      * @param Asset_Manager|null          $asset_manager
      * @param Admin_Ajax_Controller|null  $ajax_admin
+     * @param League_Repository_Interface|null $league_repository
      */
     public function __construct(
         ?Simple_Container $container = null,
@@ -65,14 +68,16 @@ class Admin {
         ?Admin_Display $admin_display = null,
         ?Asset_Manager $asset_manager = null,
         ?Admin_Ajax_Controller $ajax_admin = null,
+        ?League_Repository_Interface $league_repository = null,
     ) {
         self::$instance = $this;
 
-        $this->container     = $container;
-        $this->racketmanager = $racketmanager;
-        $this->asset_manager = $asset_manager;
-        $this->admin_display = $admin_display;
-        $this->ajax_admin    = $ajax_admin;
+        $this->container         = $container;
+        $this->racketmanager     = $racketmanager;
+        $this->asset_manager     = $asset_manager;
+        $this->admin_display     = $admin_display;
+        $this->ajax_admin        = $ajax_admin;
+        $this->league_repository = $league_repository ?? ( $this->container?->has( 'league_repository' ) ? $this->container->get( 'league_repository' ) : null );
 
         if ( $this->ajax_admin && $this->container?->has( 'ajax_registry' ) ) {
             $this->ajax_admin->register_hooks( $this->container->get( 'ajax_registry' ) );
@@ -575,7 +580,7 @@ class Admin {
                     $match_id    = $match->id;
                     $league_id   = $match->league_id;
                     $season      = $match->season;
-                    $curr_league = get_league( $league_id );
+                    $curr_league = ( $league_id && $this->league_repository ) ? $this->league_repository->find_by_id( (int) $league_id ) : null;
                 }
             }
             ?>

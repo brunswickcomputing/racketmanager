@@ -10,6 +10,7 @@ use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Time_Parser;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\Fixture_Service;
@@ -19,7 +20,8 @@ final readonly class League_Match_Handler {
         private Fixture_Repository_Interface $fixture_repository,
         private Fixture_Maintenance_Service $fixture_maintenance_service,
         private Fixture_Result_Manager $fixture_result_manager,
-        private Fixture_Service $fixture_service
+        private Fixture_Service $fixture_service,
+        private League_Query_Service $league_query_service
     ) {
     }
 
@@ -88,7 +90,7 @@ final readonly class League_Match_Handler {
         $final  = isset( $command->final ) ? $command->final : null;
 
         if ( $final ) {
-            $final_exists = \Racketmanager\get_league_query_service()->get_matches( $league,
+            $final_exists = $this->league_query_service->get_matches( $league,
                 array(
                     'final'  => $final,
                     'season' => $season,

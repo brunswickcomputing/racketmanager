@@ -41,7 +41,14 @@ class Export_Controller extends WP_REST_Controller {
     ) {
         $this->racketmanager = $plugin_instance;
         $this->exporter      = $exporter ?? $this->racketmanager->container->get( 'exporter' );
-        $this->adapter       = $adapter ?? ( isset( $this->racketmanager->container ) && $this->racketmanager->container->has( 'rest_controller_adapter' ) ? $this->racketmanager->container->get( 'rest_controller_adapter' ) : new Rest_Controller_Adapter() );
+        $container           = $this->racketmanager->container ?? null;
+        if ( $adapter ) {
+            $this->adapter = $adapter;
+        } elseif ( $container && $container->has( 'rest_controller_adapter' ) ) {
+            $this->adapter = $container->get( 'rest_controller_adapter' );
+        } else {
+            $this->adapter = new Rest_Controller_Adapter( ( $container && $container->has( 'league_repository' ) ) ? $container->get( 'league_repository' ) : null );
+        }
         $this->namespace     = 'racketmanager/v1';
         $this->rest_base     = 'export';
     }

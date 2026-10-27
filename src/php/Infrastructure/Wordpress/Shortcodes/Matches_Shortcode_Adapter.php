@@ -13,6 +13,7 @@ use Racketmanager\Application\Matches\Queries\Get_Match_Header_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Match_Header_Query;
 use Racketmanager\Application\Matches\Queries\Get_Match_Score_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Match_Score_Query;
+use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Presentation\Presenters\Match_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Matches_List_Presenter;
 use function get_permalink;
@@ -20,7 +21,6 @@ use function get_query_var;
 use function get_the_ID;
 use function gmdate;
 use function is_numeric;
-use function Racketmanager\un_seo_url;
 use function sanitize_text_field;
 use function shortcode_atts;
 use function wp_unslash;
@@ -67,7 +67,7 @@ class Matches_Shortcode_Adapter implements Shortcode_Adapter_Interface {
 
         $competition_type = (string) $args['competition_type'];
         if ( $this->has_query_var( 'competition_type' ) ) {
-            $competition_type = un_seo_url( (string) get_query_var( 'competition_type' ) );
+            $competition_type = Seo_Slug::decode( (string) get_query_var( 'competition_type' ) );
         }
 
         $query  = new Get_Daily_Matches_Query(
@@ -112,11 +112,11 @@ class Matches_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         }
         $competition_type = (string) $args['competition_type'];
         if ( $this->has_query_var( 'competition_type' ) ) {
-            $competition_type = un_seo_url( (string) get_query_var( 'competition_type' ) );
+            $competition_type = Seo_Slug::decode( (string) get_query_var( 'competition_type' ) );
         }
         $competition_name = null;
         if ( $this->has_query_var( 'competition_name' ) ) {
-            $competition_name = un_seo_url( (string) get_query_var( 'competition_name' ) );
+            $competition_name = Seo_Slug::decode( (string) get_query_var( 'competition_name' ) );
         }
         $age_group = $args['age_group'];
         if ( $this->has_query_var( 'age_group' ) ) {

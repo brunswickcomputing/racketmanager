@@ -5,6 +5,7 @@ namespace Racketmanager\Presentation\Presenters;
 
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Player\Player_Ranking;
+use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Presentation\View_Models\Club_Link_View_Model;
 use Racketmanager\Presentation\View_Models\Club_Membership_View_Model;
@@ -14,7 +15,6 @@ use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use function get_option;
 use function mysql2date;
-use function Racketmanager\seo_url;
 use function str_starts_with;
 
 /**
@@ -303,14 +303,14 @@ readonly class Player_Presenter {
      * Generate canonical player profile link.
      */
     public function get_player_link( string $player_name, ?string $club_shortcode = null, ?string $base_url = null ): string {
-        $slug = function_exists( 'Racketmanager\seo_url' ) ? seo_url( $player_name ) : sanitize_title( $player_name );
+        $slug = Seo_Slug::encode( $player_name );
 
         if ( ! empty( $base_url ) ) {
             return rtrim( $base_url, '/' ) . '/' . $slug . '/';
         }
 
         if ( ! empty( $club_shortcode ) ) {
-            $club_slug = function_exists( 'Racketmanager\seo_url' ) ? seo_url( $club_shortcode ) : sanitize_title( $club_shortcode );
+            $club_slug = Seo_Slug::encode( $club_shortcode );
             return '/clubs/' . $club_slug . '/players/' . $slug . '/';
         }
 
@@ -325,7 +325,7 @@ readonly class Player_Presenter {
             return '';
         }
 
-        return '/clubs/' . ( function_exists( 'Racketmanager\seo_url' ) ? seo_url( $club_name ) : sanitize_title( $club_name ) ) . '/';
+        return '/clubs/' . Seo_Slug::encode( $club_name ) . '/';
     }
 
     /**

@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Util;
 
 use NumberFormatter;
+use Racketmanager\Domain\Shared\Seo_Slug;
 use stdClass;
 
 defined( 'ABSPATH' ) || die( 'Access denied !' );
@@ -794,32 +795,22 @@ class Util {
     /**
      * Create SEO friendly string
      *
+     * @see Seo_Slug::encode()
+     *
      * @param string $string_field query string.
      */
     public static function seo_url( string $string_field ): string {
-        // Lower case everything.
-        $string_field = strtolower( $string_field );
-        // Make alphanumeric (removes all other characters).
-        $string_field = preg_replace( '/[^a-z0-9_\s-]/', '', $string_field );
-        // Clean up multiple whitespaces.
-        $string_field = preg_replace( '/\s+/', ' ', $string_field );
-        // Convert dash to underscore.
-        $string_field = str_replace( '-', '_', $string_field );
-        // Convert whitespaces to dash.
-        return preg_replace( '/\s/', '-', $string_field );
+        return Seo_Slug::encode( $string_field );
     }
     /**
      * Reverses SEO friendly string
      *
+     * @see Seo_Slug::decode()
+     *
      * @param string $string_field query string.
      */
     public static function un_seo_url( string $string_field ): string {
-        // Convert dash to whitespaces.
-        $string_field = str_replace( '-', ' ', $string_field );
-        // Convert underscore to dash.
-        $string_field = str_replace( '_', '-', $string_field );
-        // Lower case everything.
-        return strtolower( $string_field );
+        return Seo_Slug::decode( $string_field );
     }
 
 }

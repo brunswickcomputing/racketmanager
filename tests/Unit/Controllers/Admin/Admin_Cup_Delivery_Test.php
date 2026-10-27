@@ -79,8 +79,16 @@ final class Admin_Cup_Delivery_Test extends TestCase {
         $racketmanager->container = $this->container;
         $GLOBALS['racketmanager'] = $racketmanager;
 
-        $this->screen = new Admin_Cup(
-            $racketmanager,
+        $this->screen = $this->create_screen();
+    }
+
+    /**
+     * Build the screen; query services are resolved from the container in the constructor,
+     * so tests that rebind them must rebuild the screen afterwards.
+     */
+    private function create_screen(): Admin_Cup {
+        return new Admin_Cup(
+            $GLOBALS['racketmanager'],
             $this->container->get( 'admin_action_adapter' ),
             $this->cup_setup_dispatcher,
             $this->cup_plan_dispatcher,
@@ -422,36 +430,114 @@ final class Admin_Cup_Delivery_Test extends TestCase {
         $competition = $this->create_test_competition( 5, '2024' );
         $this->competition_service->expects( self::once() )->method( 'get_by_id' )->with( 5 )->willReturn( $competition );
 
-        $event = new class {
-            public int $offset = 0;
-            public $competition;
-            public function get_season_by_name( string $name ): array {
-                return array( 'match_dates' => array( '2024-05-01' ) );
-            }
-        };
-
-        $league = new class( $event, $competition ) {
-            public int $id = 12;
-            public $event;
-            public $competition;
-            public array $seasons = array();
-            public function __construct( $event, $competition ) {
-                $this->event = $event;
-                $this->event->competition = $competition;
-                $this->competition = $competition;
-            }
-            public function get_matches( array $args = array() ): int {
-                return 0;
-            }
-        };
-
-        $GLOBALS['wp_stubs_leagues'][12] = $league;
+        $league            = $this->create_test_league( 12, $competition, 'Cup League' );
+        $league_repository = $this->createMock( League_Repository_Interface::class );
+        $league_repository->expects( self::once() )->method( 'find_by_id' )->with( 12 )->willReturn( $league );
+        $league_repository->method( 'query_matches' )->willReturn( 0 );
+        $this->bind_league_repository( $league_repository );
 
         ob_start();
         $this->screen->display_setup_event_page();
         $output = ob_get_clean();
 
         $this->assertNotEmpty( $output );
+    }
+
+    public function test_display_setup_event_page_without_league_does_not_hit_repository(): void {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_GET                      = array( 'page' => 'racketmanager-cups', 'view' => 'setup-event', 'competition_id' => '5', 'season' => '2024' );
+
+        $competition = $this->create_test_competition( 5, '2024' );
+        $this->competition_service->expects( self::once() )->method( 'get_by_id' )->with( 5 )->willReturn( $competition );
+
+        $league_repository = $this->createMock( League_Repository_Interface::class );
+        $league_repository->expects( self::never() )->method( 'find_by_id' );
+        $this->bind_league_repository( $league_repository );
+
+        ob_start();
+        $this->screen->display_setup_event_page();
+        $output = ob_get_clean();
+
+        $this->assertSame( '', $output );
+    }
+
+    public function test_display_cup_plan_page_resolves_venue_club_from_club_repository(): void {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_GET                      = array( 'page' => 'racketmanager-cups', 'view' => 'plan', 'competition_id' => '5', 'season' => '2024' );
+
+        $this->container->set( 'fixture_relation_loader', new Fixture_Relation_Loader( $this->createStub( League_Repository_Interface::class ) ) );
+
+        $competition = Competition_Test_Factory::create(
+            id: 5,
+            name: 'Test Cup',
+            type: \Racketmanager\Domain\Competition\Competition_Type::CUP,
+            seasons: Competition_Test_Factory::season_map(
+                '2024',
+                array(
+                    'venue'          => 7,
+                    'match_dates'    => array( '2024-05-01' ),
+                    'starttime'      => '10:00',
+                    'time_increment' => '01:00:00',
+                    'num_courts'     => 4,
+                )
+            ),
+            settings: array( 'fixed_match_dates' => false ),
+            finals: array(
+                array(
+                    'round'       => 1,
+                    'name'        => 'Final',
+                    'num_matches' => 1,
+                ),
+            )
+        );
+        $this->competition_service->expects( self::once() )->method( 'get_competition_by_season' )->with( 5, 2024 )->willReturn( $competition );
+        $this->competition_service->method( 'get_events_for_competition' )->willReturn( array() );
+        $this->competition_service->method( 'get_matches_for_competition' )->willReturn( array() );
+        $this->flash_store->method( 'pop' )->willReturn( array() );
+
+        $club            = new \Racketmanager\Domain\Club\Club( (object) array( 'id' => 7, 'name' => 'Venue Club', 'shortcode' => 'VEN' ) );
+        $club_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\Club_Repository_Interface::class );
+        $club_repository->expects( self::once() )->method( 'find_by_id' )->with( 7 )->willReturn( $club );
+        $this->container->set( 'club_repository', fn() => $club_repository );
+        $this->screen = $this->create_screen();
+
+        ob_start();
+        try {
+            $this->screen->display_cup_plan_page();
+        } finally {
+            $output = ob_get_clean();
+        }
+
+        $this->assertStringContainsString( 'VEN', $output );
+    }
+
+    private function create_test_league( int $id, Competition $competition, string $title ): League {
+        $event = new \Racketmanager\Domain\Competition\Event(
+            (object) array(
+                'id'      => 3,
+                'name'    => 'Cup Event',
+                'seasons' => array( '2024' => array( 'name' => '2024', 'match_dates' => array( '2024-05-01' ) ) ),
+            ),
+            $competition
+        );
+        $league = new League( (object) array( 'id' => $id, 'title' => $title ), $event );
+        $league->mode            = 'championship';
+        $league->num_teams_total = 8;
+        $league->set_season( '2024' );
+        return $league;
+    }
+
+    /**
+     * Rebind the league repository and rebuild the screen so the constructor picks it up.
+     */
+    private function bind_league_repository( League_Repository_Interface $league_repository ): void {
+        $this->container->set( 'league_repository', fn() => $league_repository );
+        $this->container->set( 'league_query_service', new \Racketmanager\Services\Competition\League_Query_Service(
+            $league_repository,
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class ),
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class )
+        ) );
+        $this->screen = $this->create_screen();
     }
 
     public function test_display_cup_matches_page_renders_via_legacy_locals_fallback(): void {
@@ -461,54 +547,13 @@ final class Admin_Cup_Delivery_Test extends TestCase {
         $competition = $this->create_test_competition( 5, '2024' );
         $this->competition_service->expects( self::once() )->method( 'get_competition' )->with( 5 )->willReturn( $competition );
 
-        $event_competition = (object) array(
-            'id'            => 5,
-            'name'          => 'Test Cup',
-            'type'          => \Racketmanager\Domain\Competition\Competition_Type::CUP,
-            'is_cup'        => true,
-            'is_league'     => false,
-            'is_tournament' => false,
-            'is_team_entry' => true,
-        );
-        $event             = new class( $event_competition ) {
-            public int $id = 3;
-            public string $name = 'Cup Event';
-            public $competition;
-            public function __construct( $competition ) {
-                $this->competition = $competition;
-            }
-            public function get_season_by_name( string $name ): array {
-                return array();
-            }
-        };
-        $championship      = new class {
-            public bool $is_consolation = false;
-            public int $num_teams_first_round = 8;
-            public function get_finals( $key ): array {
-                return array( 'num_matches' => 0, 'round' => 1, 'key' => $key );
-            }
-            public function get_final_teams( $key ): array {
-                return array();
-            }
-        };
-        $league            = new class( $event, $championship ) {
-            public int $id = 12;
-            public string $title = 'Cup League';
-            public string $sport = 'tennis';
-            public bool $is_championship = true;
-            public array $current_season = array( 'name' => '2024' );
-            public $event;
-            public $championship;
-            public function __construct( $event, $championship ) {
-                $this->event        = $event;
-                $this->championship = $championship;
-            }
-            public function get_matches( array $args = array(), ?\Racketmanager\Repositories\Interfaces\Event_Repository_Interface $event_repository = null, ?\Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface $fixture_repository = null, ?\Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface $rubber_repository = null ): array {
-                return array( (object) array( 'id' => 77, 'date' => '2024-05-01 10:00:00', 'home_team' => 1, 'away_team' => 2, 'location' => '', 'final_round' => 'quarter' ) );
-            }
-        };
-
-        $GLOBALS['wp_stubs_leagues'][12] = $league;
+        $league            = $this->create_test_league( 12, $competition, 'Cup League' );
+        $league_repository = $this->createMock( League_Repository_Interface::class );
+        $league_repository->expects( self::once() )->method( 'find_by_id' )->with( 12 )->willReturn( $league );
+        $league_repository->method( 'query_league_teams' )->willReturn( 8 );
+        $league_repository->method( 'query_matches' )->willReturn( array() );
+        $this->bind_league_repository( $league_repository );
+        $this->container->get( 'league_query_service' )->set_season( $league, '2024', true );
 
         ob_start();
         try {
@@ -520,7 +565,7 @@ final class Admin_Cup_Delivery_Test extends TestCase {
         $this->assertStringContainsString( 'page=racketmanager-cups', $output );
         $this->assertStringContainsString( 'Cup League', $output );
         $this->assertStringContainsString( 'Quarter Final', $output );
-        $this->assertStringContainsString( 'view=draw&amp;competition_id=5&amp;league=12&amp;season=2024', $output );
+        $this->assertStringContainsString( 'view=draw&amp;competition_id=5&amp;season=2024&amp;league=12', $output );
     }
 
     public function test_display_cup_plan_page_renders_with_season_and_flash_errors(): void {
@@ -659,6 +704,7 @@ final class Admin_Cup_Delivery_Test extends TestCase {
             $this->createStub( \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class ),
             $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class )
         ) );
+        $this->screen = $this->create_screen();
 
         $event = new class( array( $champ_league, $non_champ_league ) ) {
             public array $leagues = array();

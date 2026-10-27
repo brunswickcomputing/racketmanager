@@ -15,6 +15,7 @@ use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Response_DTO;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Tournament_Service;
 use ReflectionClass;
@@ -22,10 +23,7 @@ use ReflectionClass;
 require_once __DIR__ . '/../../../wp-stubs.php';
 
 final class Tournament_Setup_Event_Admin_Controller_Test extends TestCase {
-    use \Racketmanager\Tests\Helpers\Stubs_League_Query_Service;
-
     protected function tearDown(): void {
-        $this->restore_league_query_service_global();
         unset( $_SERVER['REQUEST_METHOD'] );
         parent::tearDown();
     }
@@ -44,7 +42,8 @@ final class Tournament_Setup_Event_Admin_Controller_Test extends TestCase {
 
         $league = $this->createStub( League::class );
         $league->event = $event;
-        $this->install_league_query_service_mock()->method( 'get_matches' )->willReturn( 5 );
+        $league_query_service = $this->createMock( League_Query_Service::class );
+        $league_query_service->expects( self::once() )->method( 'get_matches' )->with( $league, self::isArray() )->willReturn( 5 );
 
         $tournament_service = $this->createMock( Tournament_Service::class );
         $tournament_service
@@ -72,7 +71,8 @@ final class Tournament_Setup_Event_Admin_Controller_Test extends TestCase {
             $tournament_service,
             $league_service,
             $dispatcher,
-            $guard
+            $guard,
+            $league_query_service
         );
 
         $result = $controller->setup_event_page(
@@ -122,7 +122,8 @@ final class Tournament_Setup_Event_Admin_Controller_Test extends TestCase {
             $tournament_service,
             $league_service,
             $dispatcher,
-            $guard
+            $guard,
+            $this->createStub( League_Query_Service::class )
         );
 
         $result = $controller->setup_event_page(

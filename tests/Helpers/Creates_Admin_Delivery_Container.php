@@ -109,6 +109,8 @@ trait Creates_Admin_Delivery_Container {
         }
         $league_team_repo     = $services['league_team_repository'] ?? $this->createStub( League_Team_Repository_Interface::class );
         $league_repo          = $services['league_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );
+        $team_repo            = $services['team_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Team_Repository_Interface::class );
+        $club_repo            = $services['club_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Club_Repository_Interface::class );
         $score_validation     = $services['score_validation_service'] ?? $this->createStub( Score_Validation_Service::class );
         $fixture_result_mgr   = $services['fixture_result_manager'] ?? $this->createStub( \Racketmanager\Services\Fixture\Fixture_Result_Manager::class );
 
@@ -135,12 +137,23 @@ trait Creates_Admin_Delivery_Container {
         $container->set( 'admin_entry_link_presenter', fn() => $services['admin_entry_link_presenter'] ?? new \Racketmanager\Admin\Presenters\Admin_Entry_Link_Presenter() );
         $container->set( 'league_team_repository', fn() => $league_team_repo );
         $container->set( 'league_repository', fn() => $league_repo );
+        $container->set( 'team_repository', fn() => $team_repo );
+        $container->set( 'club_repository', fn() => $club_repo );
         $container->set( 'league_query_service', fn( Simple_Container $c ) => $services['league_query_service'] ?? new \Racketmanager\Services\Competition\League_Query_Service(
             $c->get( 'league_repository' ),
             fn() => $c->get( 'fixture_repository' ),
             fn() => $services['rubber_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class ),
             fn() => $services['team_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Team_Repository_Interface::class ),
             fn() => $c->get( 'league_team_repository' ),
+            fn() => $services['club_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Club_Repository_Interface::class ),
+            fn() => $services['player_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class ),
+        ) );
+        $container->set( 'event_query_service', fn( Simple_Container $c ) => $services['event_query_service'] ?? new \Racketmanager\Services\Competition\Event_Query_Service(
+            $c->get( 'event_repository' ),
+            fn() => $c->get( 'fixture_repository' ),
+            fn() => $services['rubber_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class ),
+            fn() => $c->get( 'league_repository' ),
+            fn() => $services['team_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Team_Repository_Interface::class ),
             fn() => $services['club_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Club_Repository_Interface::class ),
             fn() => $services['player_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class ),
         ) );
@@ -158,10 +171,10 @@ trait Creates_Admin_Delivery_Container {
         $container->set( 'league_setup_action_dispatcher', fn() => $services['league_setup_action_dispatcher'] ?? new League_Setup_Action_Dispatcher( $competition_service, $guard_instance, $services['event_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) ) );
         $container->set( 'event_setup_action_dispatcher', fn() => $services['event_setup_action_dispatcher'] ?? new Event_Setup_Action_Dispatcher( $competition_service, $guard_instance, $services['event_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) ) );
         $container->set( 'season_delete_action_dispatcher', fn() => $services['season_delete_action_dispatcher'] ?? new Season_Delete_Action_Dispatcher( $competition_service, $guard_instance ) );
-        $container->set( 'league_team_action_dispatcher', fn() => $services['league_team_action_dispatcher'] ?? new League_Team_Action_Dispatcher( $league_service, $guard_instance, $standings_service ) );
-        $container->set( 'league_match_action_dispatcher', fn() => $services['league_match_action_dispatcher'] ?? new League_Match_Action_Dispatcher( $fixture_repository, $fixture_maintenance, $guard_instance, $fixture_result_mgr, $fixture_service ) );
+        $container->set( 'league_team_action_dispatcher', fn( Simple_Container $c ) => $services['league_team_action_dispatcher'] ?? new League_Team_Action_Dispatcher( $league_service, $guard_instance, $standings_service, team_repository: $c->get( 'team_repository' ) ) );
+        $container->set( 'league_match_action_dispatcher', fn( Simple_Container $c ) => $services['league_match_action_dispatcher'] ?? new League_Match_Action_Dispatcher( $fixture_repository, $fixture_maintenance, $guard_instance, $fixture_result_mgr, $fixture_service, league_query_service: $c->get( 'league_query_service' ), league_repository: $league_repo ) );
         $container->set( 'league_constitution_action_dispatcher', fn() => $services['league_constitution_action_dispatcher'] ?? new League_Constitution_Action_Dispatcher( $guard_instance, $league_team_repo, $league_service, $services['competition_league_schedule_service'] ?? $this->createStub( \Racketmanager\Services\Competition\League_Schedule_Service::class ), $league_repo, $services['event_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ), $services['team_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Team_Repository_Interface::class ), $services['promotion_relegation_service'] ?? $this->createStub( \Racketmanager\Services\Competition\Promotion_Relegation_Service::class ) ) );
-        $container->set( 'league_event_action_dispatcher', fn() => $services['league_event_action_dispatcher'] ?? new League_Event_Action_Dispatcher( $league_service, $guard_instance ) );
+        $container->set( 'league_event_action_dispatcher', fn( Simple_Container $c ) => $services['league_event_action_dispatcher'] ?? new League_Event_Action_Dispatcher( $league_service, $guard_instance, $c->get( 'league_query_service' ) ) );
         $container->set( 'league_schedule_action_dispatcher', fn( Simple_Container $c ) => $services['league_schedule_action_dispatcher'] ?? new League_Schedule_Action_Dispatcher(
             $services['league_schedule_service'] ?? new League_Schedule_Service(
                 $fixture_maintenance,
@@ -194,13 +207,16 @@ trait Creates_Admin_Delivery_Container {
         $container->set( 'cup_plan_action_dispatcher', fn() => $services['cup_plan_action_dispatcher'] ?? new Cup_Plan_Action_Dispatcher( $competition_service, $guard_instance ) );
         $container->set( 'draw_action_dispatcher', fn() => $services['draw_action_dispatcher'] ?? new Draw_Action_Dispatcher( $this->createStub( \Racketmanager\Services\Admin\Championship\Draw_Action_Resolver::class ), $this->createStub( \Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface::class ), $guard_instance ) );
 
-        $container->set( 'import_action_dispatcher', fn() => $services['import_action_dispatcher'] ?? new Import_Action_Dispatcher(
+        $container->set( 'import_action_dispatcher', fn( Simple_Container $c ) => $services['import_action_dispatcher'] ?? new Import_Action_Dispatcher(
             $guard_instance,
             $this->createStub( \Racketmanager\Services\Fixture_Service::class ),
             $player_service,
             $registration_service,
             $league_team_repo,
-            $standings_service
+            $standings_service,
+            $c->get( 'league_query_service' ),
+            null,
+            $league_repo
         ) );
         $container->set( 'index_action_dispatcher', fn() => $services['index_action_dispatcher'] ?? new Index_Action_Dispatcher( $competition_service, $guard_instance ) );
         $container->set( 'options_action_dispatcher', fn() => $services['options_action_dispatcher'] ?? new Options_Action_Dispatcher( $this->createStub( \Racketmanager\Services\Options_Service::class ), $guard_instance ) );

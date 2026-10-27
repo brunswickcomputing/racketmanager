@@ -12,7 +12,6 @@ namespace Racketmanager\Services\Validator;
 
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Services\Competition\Event_Query_Service;
-use function Racketmanager\get_player;
 
 /**
  * Class to implement the Tournament Validator object
@@ -113,7 +112,7 @@ final class Validator_Tournament extends Validator_Config {
         if ( empty( $event->age_limit ) || 'open' === $event->age_limit ) {
             return;
         }
-        $partner = get_player( $partner_id );
+        $partner = $this->player_repository()->find( $partner_id );
         if ( ! $partner ) {
             $this->error      = true;
             $this->err_flds[] = $err_flds;

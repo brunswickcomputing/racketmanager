@@ -20,6 +20,48 @@ require $plugin_root . '/functions.php';
 require $plugin_root . '/template-tags.php';
 require $plugin_root . '/tests/wp-stubs.php';
 
+// Verify the production slug helpers are the functions.php shims and delegate to Seo_Slug.
+$seo_url_reflection = new \ReflectionFunction( '\\Racketmanager\\seo_url' );
+if ( ! str_ends_with( (string) $seo_url_reflection->getFileName(), '/functions.php' ) ) {
+	fwrite( STDERR, "Racketmanager\\seo_url is not loaded from functions.php.\n" );
+	exit( 1 );
+}
+
+$slug_samples = [
+	'Mixed Doubles',
+	"Men's Singles",
+	'Over-45 Mixed',
+	"Tab\tNew\nLine",
+	'Café & Bar',
+	'  Two   spaces ',
+	'!!!',
+	'',
+];
+foreach ( $slug_samples as $slug_sample ) {
+	if ( \Racketmanager\seo_url( $slug_sample ) !== \Racketmanager\Domain\Shared\Seo_Slug::encode( $slug_sample ) ) {
+		fwrite( STDERR, "Racketmanager\\seo_url does not match Seo_Slug::encode().\n" );
+		exit( 1 );
+	}
+}
+
+$decoded_slug_samples = [
+	'mixed-doubles',
+	'over_45-mixed',
+	'Mixed-DOUBLES',
+	'-two-spaces-',
+	'',
+];
+foreach ( $decoded_slug_samples as $decoded_slug_sample ) {
+	if ( \Racketmanager\un_seo_url( $decoded_slug_sample ) !== \Racketmanager\Domain\Shared\Seo_Slug::decode( $decoded_slug_sample ) ) {
+		fwrite( STDERR, "Racketmanager\\un_seo_url does not match Seo_Slug::decode().\n" );
+		exit( 1 );
+	}
+}
+if ( 'mixed doubles' !== \Racketmanager\un_seo_url( 'Mixed-DOUBLES' ) ) {
+	fwrite( STDERR, "Racketmanager\\un_seo_url did not lower-case mixed-case input.\n" );
+	exit( 1 );
+}
+
 // Setup mock wpdb
 global $wpdb;
 $wpdb = new \wpdb( 'test', 'test', 'test', 'localhost' );

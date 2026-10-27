@@ -10,6 +10,7 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Gateways\Mail\Mailer_Interface;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use LogicException;
 use function Racketmanager\constitution_notification;
 use function Racketmanager\withdrawn_team_email;
@@ -23,17 +24,26 @@ class Competition_Notification_Service {
 	public function __construct(
 		?Mailer_Interface $mailer = null,
 		private ?Event_Repository_Interface $event_repository = null,
-		private ?League_Query_Service $league_query_service = null
+		private ?League_Query_Service $league_query_service = null,
+		private ?League_Repository_Interface $league_repository = null
 	) {
 		$this->mailer = $mailer ?? new Wp_Mailer();
 	}
 
 	private function league_query(): League_Query_Service {
-		if ( $this->league_query_service instanceof League_Query_Service ) {
-			return $this->league_query_service;
+		if ( ! $this->league_query_service instanceof League_Query_Service ) {
+			throw new LogicException( 'League_Query_Service is required by Competition_Notification_Service but was not configured.' );
 		}
 
-		return \Racketmanager\get_league_query_service();
+		return $this->league_query_service;
+	}
+
+	private function league_repository(): League_Repository_Interface {
+		if ( ! $this->league_repository instanceof League_Repository_Interface ) {
+			throw new LogicException( 'League_Repository_Interface is required by Competition_Notification_Service but was not configured.' );
+		}
+
+		return $this->league_repository;
 	}
 
 	/**
@@ -76,7 +86,7 @@ class Competition_Notification_Service {
 				}
 			}
 			foreach ( $teams as $team ) {
-				$league = \Racketmanager\get_league( $team->league_id );
+				$league = empty( $team->league_id ) ? null : $this->league_repository()->find_by_id( (int) $team->league_id );
 				if ( $league ) {
 					$team_dtls = $this->league_query()->get_team_dtls( $league, $team->team_id );
 					if ( ! empty( $team_dtls->contactemail ) ) {

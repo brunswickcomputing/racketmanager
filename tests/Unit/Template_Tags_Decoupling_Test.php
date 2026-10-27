@@ -286,4 +286,88 @@ final class Template_Tags_Decoupling_Test extends TestCase {
         $this->assertStringNotContainsString( 'href="league/division-1/2026/"', $edit_out );
         $this->assertStringNotContainsString( 'player/chris-obrien/', $edit_out, 'Edit mode renders selects, not profile links.' );
     }
+
+    public function test_match_teams_result_renders_unique_comments_ids(): void {
+        $templates_dir = dirname( __DIR__, 2 ) . '/templates';
+
+        $competition = new class() {
+            public string $type = 'league';
+            public function get_type(): string {
+                return 'league';
+            }
+        };
+        $league      = (object) [
+            'id'              => 50,
+            'title'           => 'Division 1',
+            'is_championship' => false,
+            'num_sets'        => 3,
+            'scoring'         => 'S',
+            'event'           => (object) [
+                'name'        => 'Men Doubles',
+                'competition' => $competition,
+            ],
+        ];
+        $match_obj   = (object) [
+            'id'            => 100,
+            'season'        => '2026',
+            'home_team'     => '1',
+            'away_team'     => '2',
+            'home_captain'  => 10,
+            'away_captain'  => 20,
+            'captain_names' => [ 'home' => 'Alice Home', 'away' => 'Bob Away' ],
+            'num_rubbers'   => 0,
+            'leg'           => null,
+            'final_round'   => null,
+            'comments'      => [
+                'result' => 'Match overall comment',
+                'home'   => 'Home team comment',
+                'away'   => 'Away team comment',
+            ],
+            'league'        => $league,
+            'teams'         => [
+                'home' => (object) [ 'title' => 'Home Team' ],
+                'away' => (object) [ 'title' => 'Away Team' ],
+            ],
+        ];
+        $match       = new class( $match_obj ) {
+            public int $id = 100;
+            public bool $is_walkover = false;
+            public bool $is_shared = false;
+            public bool $is_retired = false;
+            public function __construct( private object $orig ) {}
+            public function get_rubbers(): array { return []; }
+            public function __get( $name ) { return $this->orig->$name ?? null; }
+            public function __isset( $name ) { return isset( $this->orig->$name ); }
+        };
+
+        $is_update_allowed = (object) [
+            'user_can_update'     => true,
+            'user_type'           => 'captain',
+            'user_team'           => 'home',
+            'match_approval_mode' => false,
+            'match_update'        => true,
+            'message'             => 'allowed',
+        ];
+        $home_club_player  = [ 'm' => [], 'f' => [] ];
+        $away_club_player  = [ 'm' => [], 'f' => [] ];
+
+        ob_start();
+        include $templates_dir . '/match-teams-result.php';
+        $output = ob_get_clean();
+
+        // Overall match comments
+        $this->assertStringContainsString( 'name="matchComments[result]" id="matchComments"', $output );
+        $this->assertStringContainsString( '<label for="matchComments">', $output );
+
+        // Opponent specific comments
+        $this->assertStringContainsString( 'name="matchComments[home]" id="matchComments-home"', $output );
+        $this->assertStringContainsString( '<label for="matchComments-home">', $output );
+        $this->assertStringContainsString( 'name="matchComments[away]" id="matchComments-away"', $output );
+        $this->assertStringContainsString( '<label for="matchComments-away">', $output );
+
+        // Ensure id="matchComments" is unique and not reused for opponent fields
+        $this->assertSame( 1, substr_count( $output, 'id="matchComments"' ) );
+        $this->assertSame( 1, substr_count( $output, 'id="matchComments-home"' ) );
+        $this->assertSame( 1, substr_count( $output, 'id="matchComments-away"' ) );
+    }
 }

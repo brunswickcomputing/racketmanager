@@ -243,8 +243,8 @@ if ( $match->is_walkover ) {
                                                                         if ( $match_update && 'admin' !== $user_type ) {
                                                                             ?>
                                                                             <div class="match-comments form-floating">
-                                                                                <textarea class="form-control result-comments" placeholder="Leave a comment here" name="matchComments[<?php echo esc_attr( $opponent ); ?>]" id="matchComments"><?php echo esc_html( $match->comments[ $opponent ] ); ?></textarea>
-                                                                                <label for="matchComments"><?php esc_html_e( 'Comments', 'racketmanager' ); ?></label>
+                                                                                <textarea class="form-control result-comments" placeholder="Leave a comment here" name="matchComments[<?php echo esc_attr( $opponent ); ?>]" id="matchComments-<?php echo esc_attr( $opponent ); ?>"><?php echo esc_html( $match->comments[ $opponent ] ); ?></textarea>
+                                                                                <label for="matchComments-<?php echo esc_attr( $opponent ); ?>"><?php esc_html_e( 'Comments', 'racketmanager' ); ?></label>
                                                                             </div>
                                                                             <?php
                                                                         } elseif ( ! empty( $match->comments ) ) {

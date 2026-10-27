@@ -91,8 +91,8 @@ namespace Racketmanager;
                         </div>
                     </div>
                     <div class="form-floating mb-3">
-                        <input type="email" class="form-control <?php echo empty( $email_error ) ? null : 'is-invalid'; ?>" placeholder="<?php esc_html_e( 'Email', 'racketmanager' ); ?>" name="user_login" id="user_login" aria-describedby="emailFeedback"/>
-                        <label for="user_login"><?php esc_html_e( 'Email', 'racketmanager' ); ?></label>
+                        <input type="email" class="form-control <?php echo empty( $email_error ) ? null : 'is-invalid'; ?>" placeholder="<?php esc_html_e( 'Email', 'racketmanager' ); ?>" name="user_login" id="reset_user_login" aria-describedby="emailFeedback"/>
+                        <label for="reset_user_login"><?php esc_html_e( 'Email', 'racketmanager' ); ?></label>
                         <?php
                         if ( $email_error ) {
                             ?>

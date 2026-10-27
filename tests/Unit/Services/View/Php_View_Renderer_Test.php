@@ -165,6 +165,11 @@ class Php_View_Renderer_Test extends TestCase {
         $this->assertStringContainsString( 'action="https://example.com/wp-login.php"', $output );
         $this->assertStringContainsString( 'name="log"', $output );
         $this->assertStringContainsString( 'id="user_login"', $output );
+        $this->assertStringContainsString( 'for="user_login"', $output );
+        $this->assertStringContainsString( 'id="reset_user_login"', $output );
+        $this->assertStringContainsString( 'for="reset_user_login"', $output );
+        $this->assertSame( 1, substr_count( $output, 'id="user_login"' ) );
+        $this->assertSame( 1, substr_count( $output, 'id="reset_user_login"' ) );
         $this->assertStringContainsString( 'name="pwd"', $output );
         $this->assertStringContainsString( 'id="user_pass"', $output );
         $this->assertStringContainsString( 'name="racketmanager_login_nonce"', $output );

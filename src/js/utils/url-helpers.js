@@ -183,7 +183,7 @@ export function slugify(str) {
         .replaceAll(/[^\w-]+/g, '')     // Remove all non-word chars
         .replaceAll(/-{2,}/g, '-')      // Replace multiple '-' with single '-'
         .replace(/^-+/, '')             // Trim '-' from the start
-        .replace(/-+$/, '');            // Trim '-' from the end
+        .replace(/-$/, '');             // Trim single remaining '-' from the end (runs already collapsed above)
 }
 
 /**

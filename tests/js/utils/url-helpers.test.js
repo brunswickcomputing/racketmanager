@@ -187,6 +187,10 @@ describe('url-helpers', () => {
         test('converts non-string input', () => {
             expect(slugify(42)).toBe('42');
         });
+        test('removes long trailing/leading hyphen runs efficiently', () => {
+            expect(slugify('a' + '-'.repeat(10000))).toBe('a');
+            expect(slugify('-'.repeat(10000) + 'a')).toBe('a');
+        });
     });
 
     describe('isAbsoluteUrl', () => {

@@ -7,6 +7,8 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Season\Season_Hydration_DTO;
 use Racketmanager\Domain\Season\Season;
 use Racketmanager\Domain\Season\Season_Factory;
+use stdClass;
+use TypeError;
 
 final class Season_Factory_Test extends TestCase {
 
@@ -26,7 +28,7 @@ final class Season_Factory_Test extends TestCase {
     }
 
     public function test_from_object_without_id_yields_null_id_and_empty_name(): void {
-        $season = Season_Factory::from_object( new \stdClass() );
+        $season = Season_Factory::from_object( new stdClass() );
 
         $this->assertNull( $season->get_id() );
         $this->assertSame( '', $season->get_name() );
@@ -47,7 +49,10 @@ final class Season_Factory_Test extends TestCase {
         $empty = new Season();
         $this->assertNull( $empty->get_id() );
 
-        $this->expectException( \TypeError::class );
-        new Season( $row );
+        $this->expectException( TypeError::class );
+        $this->assertInstanceOf(
+            Season::class,
+            new Season( $row )
+        );
     }
 }

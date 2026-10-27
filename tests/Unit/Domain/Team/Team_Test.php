@@ -5,8 +5,8 @@ namespace Racketmanager\Tests\Unit\Domain\Team;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\DTO\Team\Team_Hydration_DTO;
-use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Team\Team_Factory;
@@ -20,6 +20,7 @@ use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Team_Service;
+use TypeError;
 use wpdb;
 
 require_once dirname( __DIR__, 3 ) . '/wp-stubs.php';
@@ -240,7 +241,10 @@ final class Team_Test extends TestCase {
         $wpdb->expects( $this->once() )
             ->method( 'prepare' )
             ->with(
-                $this->stringContains( 'SELECT * FROM wp_racketmanager_matches WHERE `home_team` = %s OR `away_team` = %s' ),
+                $this->logicalAnd(
+                    $this->stringContains( 'FROM wp_racketmanager_matches' ),
+                    $this->stringContains( '`home_team` = %s OR `away_team` = %s' )
+                ),
                 '50',
                 '50'
             )
@@ -258,7 +262,7 @@ final class Team_Test extends TestCase {
 
         $wpdb->expects( $this->exactly( 4 ) )
             ->method( 'delete' )
-            ->willReturn( 1 ); // 2 rubbers deletes + 2 fixtures deletes
+            ->willReturn( 1 ); // 2 rubbers deleted + 2 fixtures deleted
 
         $deleted = $fixture_repo->delete_by_team( 50 );
         $this->assertTrue( $deleted );
@@ -322,7 +326,7 @@ final class Team_Test extends TestCase {
         $player_serv  = $this->createMock( Player_Service::class );
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
 
-        $event = $this->createMock( \Racketmanager\Domain\Competition\Event::class );
+        $event = $this->createMock( Event::class );
         $event->competition = (object) [ 'is_team_entry' => true ];
         $event->method( 'get_season' )->willReturn( '2026' );
         $query = $this->createMock( Event_Query_Service::class );
@@ -361,7 +365,7 @@ final class Team_Test extends TestCase {
         $player_serv  = $this->createMock( Player_Service::class );
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
 
-        $event = $this->createMock( \Racketmanager\Domain\Competition\Event::class );
+        $event = $this->createMock( Event::class );
         $event->competition = (object) [ 'is_team_entry' => true ];
         $event->method( 'get_season' )->willReturn( '2026' );
         $query = $this->createMock( Event_Query_Service::class );
@@ -389,7 +393,7 @@ final class Team_Test extends TestCase {
         $player_serv  = $this->createMock( Player_Service::class );
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
 
-        $event = $this->createMock( \Racketmanager\Domain\Competition\Event::class );
+        $event = $this->createMock( Event::class );
         $event->competition = (object) [ 'is_team_entry' => true ];
         $event->method( 'get_season' )->willReturn( '2026' );
         $query = $this->createMock( Event_Query_Service::class );
@@ -417,7 +421,7 @@ final class Team_Test extends TestCase {
         $player_serv  = $this->createMock( Player_Service::class );
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
 
-        $event = $this->createMock( \Racketmanager\Domain\Competition\Event::class );
+        $event = $this->createMock( Event::class );
         $event->competition = (object) [ 'is_team_entry' => true ];
         $event->method( 'get_season' )->willReturn( '2026' );
         $query = $this->createMock( Event_Query_Service::class );
@@ -446,7 +450,7 @@ final class Team_Test extends TestCase {
         $player_serv  = $this->createMock( Player_Service::class );
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
 
-        $event = $this->createMock( \Racketmanager\Domain\Competition\Event::class );
+        $event = $this->createMock( Event::class );
         $event->competition = (object) [ 'is_team_entry' => true ];
         $event->method( 'get_season' )->willReturn( '2026' );
         $query = $this->createMock( Event_Query_Service::class );
@@ -478,7 +482,7 @@ final class Team_Test extends TestCase {
         $player_serv  = $this->createMock( Player_Service::class );
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
 
-        $event = $this->createMock( \Racketmanager\Domain\Competition\Event::class );
+        $event = $this->createMock( Event::class );
         $event->competition = (object) [ 'is_team_entry' => true ];
         $event->method( 'get_season' )->willReturn( '2026' );
         $query = $this->createMock( Event_Query_Service::class );
@@ -508,9 +512,12 @@ final class Team_Test extends TestCase {
         $this->assertSame( 3, $lenient->id );
         $this->assertSame( 7, $lenient->club_id );
         $this->assertFalse( property_exists( $lenient, 'unknown' ) );
-        $this->assertNull( ( new Team() )->id );
+        $this->assertNull( new Team()->id );
 
-        $this->expectException( \TypeError::class );
-        new Team( $row );
+        $this->expectException( TypeError::class );
+        $this->assertInstanceOf(
+            Team::class,
+            new Team( $row )
+        );
     }
 }

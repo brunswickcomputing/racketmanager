@@ -12,16 +12,19 @@ use Racketmanager\Domain\DTO\Competition\Competition_Hydration_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Update_DTO;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Domain\Tournament\Tournament_Factory;
+use Racketmanager\Domain\Value_Objects\Date_Range;
 use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Request_DTO;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
+use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use ReflectionClass;
+use ReflectionException;
 use stdClass;
+use TypeError;
 
-    require_once dirname( __DIR__, 3 ) . '/wp-stubs.php';
+require_once dirname( __DIR__, 3 ) . '/wp-stubs.php';
 
-    use function Racketmanager\seo_url;
 
 final class Tournament_Test extends TestCase {
     use Manages_Wordpress_Globals;
@@ -38,11 +41,11 @@ final class Tournament_Test extends TestCase {
         $data->season = '2026';
 
         $tournament = Tournament::from_object( $data );
-        $presenter = new \Racketmanager\Presentation\Presenters\Tournament_Presenter( 'Y-m-d' );
+        $presenter = new Tournament_Presenter( 'Y-m-d' );
         $view_model = $presenter->present_dates( $tournament );
 
         $this->assertEquals('/tournament/test-tournament/', $presenter->get_link( $tournament ));
-        $this->assertEquals('http://example.com/entry-form/test-tournament-tournament/', $presenter->get_entry_link( $tournament, 'http://example.com' ));
+        $this->assertEquals('https://example.com/entry-form/test-tournament-tournament/', $presenter->get_entry_link( $tournament, 'https://example.com' ));
         $this->assertEquals('2026-12-31', $view_model->date_display);
         $this->assertEquals('2026-11-30', $view_model->date_closing_display);
         $this->assertEquals('2026-12-05', $view_model->date_withdrawal_display);
@@ -75,7 +78,7 @@ final class Tournament_Test extends TestCase {
             'grade'            => 'A',
             'num_entries'      => 32,
         ];
-        $request = ( new Tournament_Request_DTO( $request_data ) )->to_update_dto();
+        $request = new Tournament_Request_DTO( $request_data )->to_update_dto();
         $this->assertInstanceOf( Tournament_Update_DTO::class, $request );
 
         $tournament->update_from_request($request);
@@ -161,14 +164,14 @@ final class Tournament_Test extends TestCase {
     private function register_competitions( array $competitions ): void {
         $this->competitions_by_id = $competitions;
         $this->competition_service = new class( $competitions, $this->service_calls ) extends Competition_Service {
-            public function __construct( private array $competitions, private array &$calls ) {}
+            public function __construct( private readonly array $competitions, private array &$calls ) {}
 
-            public function get_by_id( null|string|int $id ): Competition {
-                $this->calls[] = (int) $id;
-                if ( ! isset( $this->competitions[ (int) $id ] ) ) {
+            public function get_by_id( null|string|int $competition_id ): Competition {
+                $this->calls[] = (int) $competition_id;
+                if ( ! isset( $this->competitions[ (int) $competition_id ] ) ) {
                     throw new Competition_Not_Found_Exception( 'Competition not found' );
                 }
-                return $this->competitions[ (int) $id ];
+                return $this->competitions[ (int) $competition_id ];
             }
         };
     }
@@ -201,13 +204,16 @@ final class Tournament_Test extends TestCase {
         );
     }
 
+    /**
+     * @throws ReflectionException
+     */
     private function create_event(
         int $id,
         string $name = 'Men Doubles',
         int $competition_id = 10,
         array $seasons = [ '2026' => [ 'name' => '2026' ] ]
     ): Event {
-        $event                 = ( new ReflectionClass( Event::class ) )->newInstanceWithoutConstructor();
+        $event                 = new ReflectionClass( Event::class )->newInstanceWithoutConstructor();
         $event->id             = $id;
         $event->name           = $name;
         $event->competition_id = $competition_id;
@@ -261,6 +267,9 @@ final class Tournament_Test extends TestCase {
         $this->assertSame( [], $tournament->get_allowlist_event_ids( true ) );
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function test_is_event_allowed_with_attached_competition(): void {
         $this->register_competitions( [ 10 => $this->create_competition() ] );
         $this->register_events( [ $this->create_event( 101 ), $this->create_event( 102, 'Ladies Doubles' ) ] );
@@ -272,6 +281,9 @@ final class Tournament_Test extends TestCase {
         $this->assertFalse( $tournament->is_event_allowed( 102, false, $this->registered_events ) );
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function test_is_event_allowed_entry_closed_but_viewing_open_for_empty_allowlist(): void {
         $this->register_competitions( [ 10 => $this->create_competition() ] );
         $this->register_events( [ $this->create_event( 101 ) ] );
@@ -281,6 +293,9 @@ final class Tournament_Test extends TestCase {
         $this->assertFalse( $tournament->is_event_allowed( 101, true, $this->registered_events ) );
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function test_is_event_allowed_unrestricted_when_information_absent(): void {
         $this->register_competitions( [ 10 => $this->create_competition() ] );
         $this->register_events( [ $this->create_event( 101 ) ] );
@@ -290,6 +305,9 @@ final class Tournament_Test extends TestCase {
         $this->assertTrue( $tournament->is_event_allowed( 101, false, $this->registered_events ) );
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function test_is_event_allowed_rejects_foreign_competition_and_out_of_season_events(): void {
         $this->register_competitions( [ 10 => $this->create_competition() ] );
         $foreign   = $this->create_event( 101, 'Men Doubles', 999 );
@@ -303,6 +321,9 @@ final class Tournament_Test extends TestCase {
         $this->assertFalse( $tournament->is_event_allowed( 102, false, $this->registered_events ) );
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function test_is_event_allowed_fails_closed_without_candidate_events(): void {
         $this->register_competitions( [ 10 => $this->create_competition() ] );
         $this->register_events( [ $this->create_event( 101 ), $this->create_event( 102, 'Ladies Doubles' ) ] );
@@ -317,6 +338,9 @@ final class Tournament_Test extends TestCase {
         $this->assertFalse( $unrestricted->is_event_allowed( (object) array( 'id' => 101 ), true ) );
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function test_is_event_allowed_rejects_foreign_and_out_of_season_numeric_ids_against_loaded_events(): void {
         $this->register_competitions( [ 10 => $this->create_competition() ] );
         $local   = $this->create_event( 101, 'Men Doubles' );
@@ -335,6 +359,9 @@ final class Tournament_Test extends TestCase {
         $this->assertFalse( $tournament->is_event_allowed( 1, false, $loaded ) );
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function test_is_event_allowed_does_not_read_hidden_competition_events_state(): void {
         $competition = $this->create_competition();
         $this->register_competitions( [ 10 => $competition ] );
@@ -345,6 +372,9 @@ final class Tournament_Test extends TestCase {
         $this->assertSame( [], $tournament->get_entry_events() );
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function test_is_event_allowed_fails_closed_when_competition_is_not_found(): void {
         $this->register_competitions( [] );
         $this->register_events( [ $this->create_event( 101 ) ] );
@@ -356,6 +386,9 @@ final class Tournament_Test extends TestCase {
         $this->assertSame( [], $tournament->get_entry_events( $this->registered_events ) );
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function test_competition_is_cleared_when_competition_id_changed(): void {
         $this->register_competitions( [ 100 => $this->create_competition( 100 ), 200 => $this->create_competition( 200 ) ] );
         $own_event = $this->create_event( 101, 'Men Doubles', 100 );
@@ -374,6 +407,9 @@ final class Tournament_Test extends TestCase {
         $this->assertSame( 200, $tournament->get_competition_object()->id );
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function test_is_event_allowed_handles_numeric_id_and_string_slug(): void {
         $this->register_competitions( [ 10 => $this->create_competition() ] );
         $this->register_events(
@@ -400,6 +436,9 @@ final class Tournament_Test extends TestCase {
         $this->assertNull( $tournament->get_competition_object() );
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function test_get_entry_events_lists_configured_events_before_any_team_has_entered(): void {
         $this->register_competitions( [ 10 => $this->create_competition() ] );
         $this->register_events(
@@ -417,6 +456,9 @@ final class Tournament_Test extends TestCase {
         $this->assertSame( [ 101, 103 ], array_map( static fn( Event $event ): int => $event->id, $events ) );
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function test_get_entry_events_returns_all_season_events_when_unrestricted_and_none_when_closed(): void {
         $this->register_competitions( [ 10 => $this->create_competition() ] );
         $this->register_events( [ $this->create_event( 101 ), $this->create_event( 102, 'Ladies Doubles' ) ] );
@@ -448,18 +490,18 @@ final class Tournament_Test extends TestCase {
         $tournament = Tournament::from_object( $data );
 
         $tournament_window = $tournament->get_tournament_window();
-        $this->assertInstanceOf( \Racketmanager\Domain\Value_Objects\Date_Range::class, $tournament_window );
+        $this->assertInstanceOf( Date_Range::class, $tournament_window );
         $this->assertSame( '2026-07-01', $tournament_window->get_start_string() );
         $this->assertSame( '2026-07-15', $tournament_window->get_end_string() );
 
         $entry_window = $tournament->get_entry_window();
-        $this->assertInstanceOf( \Racketmanager\Domain\Value_Objects\Date_Range::class, $entry_window );
+        $this->assertInstanceOf( Date_Range::class, $entry_window );
         $this->assertSame( '2026-05-01', $entry_window->get_start_string() );
         $this->assertSame( '2026-06-15', $entry_window->get_end_string() );
         $this->assertTrue( $entry_window->contains( '2026-05-15' ) );
 
         $withdrawal_window = $tournament->get_withdrawal_window();
-        $this->assertInstanceOf( \Racketmanager\Domain\Value_Objects\Date_Range::class, $withdrawal_window );
+        $this->assertInstanceOf( Date_Range::class, $withdrawal_window );
         $this->assertSame( '2026-05-01', $withdrawal_window->get_start_string() );
         $this->assertSame( '2026-06-20', $withdrawal_window->get_end_string() );
     }
@@ -676,9 +718,12 @@ final class Tournament_Test extends TestCase {
         $this->assertSame( 5, $lenient->id );
         $this->assertSame( 2, $lenient->competition_id );
         $this->assertFalse( property_exists( $lenient, 'unknown' ) );
-        $this->assertNull( ( new Tournament() )->id );
+        $this->assertNull( new Tournament()->id );
 
-        $this->expectException( \TypeError::class );
-        new Tournament( $row );
+        $this->expectException( TypeError::class );
+        $this->assertInstanceOf(
+            Tournament::class,
+            new Tournament( $row )
+        );
     }
 }

@@ -7,6 +7,8 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Entry_Hydration_DTO;
 use Racketmanager\Domain\Tournament\Tournament_Entry;
 use Racketmanager\Domain\Tournament\Tournament_Entry_Factory;
+use ReflectionProperty;
+use TypeError;
 
 final class Tournament_Entry_Factory_Test extends TestCase {
 
@@ -39,8 +41,8 @@ final class Tournament_Entry_Factory_Test extends TestCase {
 
         $this->assertNull( $entry->get_id() );
         $this->assertSame( 2, $entry->get_player_id() );
-        $this->assertFalse( ( new \ReflectionProperty( Tournament_Entry::class, 'tournament_id' ) )->isInitialized( $entry ) );
-        $this->assertFalse( ( new \ReflectionProperty( Tournament_Entry::class, 'status' ) )->isInitialized( $entry ) );
+        $this->assertFalse( new ReflectionProperty( Tournament_Entry::class, 'tournament_id' )->isInitialized( $entry ) );
+        $this->assertFalse( new ReflectionProperty( Tournament_Entry::class, 'status' )->isInitialized( $entry ) );
     }
 
     public function test_from_array_and_lenient_entity_helpers_match_from_object(): void {
@@ -56,7 +58,10 @@ final class Tournament_Entry_Factory_Test extends TestCase {
         $this->assertNull( $empty->get_id() );
         $this->assertNull( $empty->get_fee() );
 
-        $this->expectException( \TypeError::class );
-        new Tournament_Entry( (object) [ 'id' => 1 ] );
+        $this->expectException( TypeError::class );
+        $this->assertInstanceOf(
+            Tournament_Entry::class,
+            new Tournament_Entry( (object) [ 'id' => 1 ] )
+        );
     }
 }

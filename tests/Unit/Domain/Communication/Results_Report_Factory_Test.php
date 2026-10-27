@@ -7,6 +7,8 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Communication\Results_Report;
 use Racketmanager\Domain\Communication\Results_Report_Factory;
 use Racketmanager\Domain\DTO\Communication\Results_Report_Hydration_DTO;
+use ReflectionProperty;
+use TypeError;
 
 final class Results_Report_Factory_Test extends TestCase {
 
@@ -42,7 +44,7 @@ final class Results_Report_Factory_Test extends TestCase {
         foreach ( [ 'not json', '' ] as $result_object ) {
             $report = Results_Report_Factory::from_object( (object) [ 'id' => 1, 'match_id' => 2, 'result_object' => $result_object ] );
 
-            $property = new \ReflectionProperty( Results_Report::class, 'data' );
+            $property = new ReflectionProperty( Results_Report::class, 'data' );
             $this->assertTrue( $property->isInitialized( $report ), "data must be initialised for '$result_object'" );
             $this->assertNull( $property->getValue( $report ) );
             $this->assertSame( $result_object, $report->result_object );
@@ -65,7 +67,10 @@ final class Results_Report_Factory_Test extends TestCase {
         $this->assertSame( 0, $empty->id );
         $this->assertFalse( isset( $empty->match_id ) );
 
-        $this->expectException( \TypeError::class );
-        new Results_Report( (object) [ 'id' => 1 ] );
+        $this->expectException( TypeError::class );
+        $this->assertInstanceOf(
+            Results_Report::class,
+            new Results_Report( (object) [ 'id' => 1 ] )
+        );
     }
 }

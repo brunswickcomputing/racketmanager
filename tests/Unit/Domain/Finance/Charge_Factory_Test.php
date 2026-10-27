@@ -8,6 +8,7 @@ use Racketmanager\Domain\DTO\Finance\Charge_Hydration_DTO;
 use Racketmanager\Domain\Enums\Charge_Status;
 use Racketmanager\Domain\Finance\Charge;
 use Racketmanager\Domain\Finance\Charge_Factory;
+use TypeError;
 
 final class Charge_Factory_Test extends TestCase {
 
@@ -50,7 +51,10 @@ final class Charge_Factory_Test extends TestCase {
         $this->assertNull( $empty->get_id() );
         $this->assertSame( 'draft', $empty->get_status() );
 
-        $this->expectException( \TypeError::class );
-        new Charge( (object) [ 'id' => 1 ] );
+        $this->expectException( TypeError::class );
+        $this->assertInstanceOf(
+            Charge::class,
+            new Charge( (object) [ 'id' => 1 ] )
+        );
     }
 }

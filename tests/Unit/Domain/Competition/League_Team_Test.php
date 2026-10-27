@@ -10,6 +10,10 @@ use Racketmanager\Domain\Competition\League_Team_Factory;
 use Racketmanager\Domain\DTO\Competition\League_Team_Hydration_DTO;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use ReflectionClass;
+use ReflectionIntersectionType;
+use ReflectionNamedType;
+use ReflectionUnionType;
+use TypeError;
 
 require_once dirname( __DIR__, 3 ) . '/wp-stubs.php';
 
@@ -99,8 +103,11 @@ class League_Team_Test extends TestCase {
     }
 
     public function test_constructor_accepts_only_the_hydration_dto(): void {
-        $this->expectException( \TypeError::class );
-        new League_Team( (object) [ 'id' => 1 ] );
+        $this->expectException( TypeError::class );
+        $this->assertInstanceOf(
+            League_Team::class,
+			new League_Team( (object) [ 'id' => 1 ] )
+        );
     }
 
     public function test_factory_create_from_dto_lenient_from_object_and_from_array_hydrate_identically(): void {
@@ -157,14 +164,14 @@ class League_Team_Test extends TestCase {
     }
 
     public function test_league_team_has_no_methods_with_repository_or_service_parameters(): void {
-        $methods = ( new ReflectionClass( League_Team::class ) )->getMethods();
+        $methods = new ReflectionClass( League_Team::class )->getMethods();
         foreach ( $methods as $method ) {
             foreach ( $method->getParameters() as $param ) {
                 $type = $param->getType();
                 if ( null === $type ) {
                     continue;
                 }
-                $types = $type instanceof \ReflectionUnionType || $type instanceof \ReflectionIntersectionType
+                $types = $type instanceof ReflectionUnionType || $type instanceof ReflectionIntersectionType
                     ? $type->getTypes()
                     : [ $type ];
                 foreach ( $types as $t ) {
@@ -185,7 +192,7 @@ class League_Team_Test extends TestCase {
     }
 
     public function test_league_team_does_not_store_repository_or_service_properties(): void {
-        $properties = ( new ReflectionClass( League_Team::class ) )->getProperties();
+        $properties = new ReflectionClass( League_Team::class )->getProperties();
         foreach ( $properties as $property ) {
             $name = $property->getName();
             $this->assertDoesNotMatchRegularExpression(
@@ -195,14 +202,14 @@ class League_Team_Test extends TestCase {
             );
 
             $type = $property->getType();
-            if ( $type instanceof \ReflectionNamedType ) {
+            if ( $type instanceof ReflectionNamedType ) {
                 $typeName = $type->getName();
                 $this->assertDoesNotMatchRegularExpression(
                     '/(Repository|Service|Container)/i',
                     $typeName,
                     "Property \$$name type $typeName must not reference repository, service, or container."
                 );
-            } elseif ( $type instanceof \ReflectionUnionType || $type instanceof \ReflectionIntersectionType ) {
+            } elseif ( $type instanceof ReflectionUnionType || $type instanceof ReflectionIntersectionType ) {
                 foreach ( $type->getTypes() as $subType ) {
                     $typeName = $subType->getName();
                     $this->assertDoesNotMatchRegularExpression(

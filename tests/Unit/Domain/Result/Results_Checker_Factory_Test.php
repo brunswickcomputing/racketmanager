@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Result\Results_Checker_Data;
 use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Domain\Result\Results_Checker_Factory;
+use TypeError;
 
 final class Results_Checker_Factory_Test extends TestCase {
 
@@ -70,7 +71,10 @@ final class Results_Checker_Factory_Test extends TestCase {
         $this->assertSame( 0, $empty->id );
         $this->assertSame( '', $empty->description );
 
-        $this->expectException( \TypeError::class );
-        new Results_Checker( (object) [ 'id' => 1 ] );
+        $this->expectException( TypeError::class );
+        $this->assertInstanceOf(
+            Results_Checker::class,
+            new Results_Checker( (object) [ 'id' => 1 ] )
+        );
     }
 }

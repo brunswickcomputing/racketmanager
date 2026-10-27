@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Player\Player_Hydration_DTO;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Player\Player_Factory;
+use Racketmanager\Domain\Player\Player_Ranking;
 
 class Player_Factory_Test extends TestCase {
 	public function test_create_from_dto(): void {
@@ -114,13 +115,13 @@ class Player_Factory_Test extends TestCase {
 		) );
 
 		$singles_ranking = $player->get_ranking( 'singles' );
-		$this->assertInstanceOf( \Racketmanager\Domain\Player\Player_Ranking::class, $singles_ranking );
+		$this->assertInstanceOf( Player_Ranking::class, $singles_ranking );
 		$this->assertTrue( $singles_ranking->has_rating() );
 		$this->assertSame( 22.5, $singles_ranking->get_rating() );
 		$this->assertSame( '22.5', $singles_ranking->get_raw_value() );
 
 		$doubles_ranking = $player->get_ranking( 'doubles' );
-		$this->assertInstanceOf( \Racketmanager\Domain\Player\Player_Ranking::class, $doubles_ranking );
+		$this->assertInstanceOf( Player_Ranking::class, $doubles_ranking );
 		$this->assertFalse( $doubles_ranking->has_rating() );
 		$this->assertNull( $doubles_ranking->get_rating() );
 		$this->assertSame( '-', $doubles_ranking->get_raw_value() );

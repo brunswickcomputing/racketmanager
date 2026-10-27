@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Player\Player_Error_Hydration_DTO;
 use Racketmanager\Domain\Player\Player_Error;
 use Racketmanager\Domain\Player\Player_Error_Factory;
+use TypeError;
 
 final class Player_Error_Factory_Test extends TestCase {
 
@@ -42,7 +43,10 @@ final class Player_Error_Factory_Test extends TestCase {
         $this->assertNull( $empty->get_id() );
         $this->assertFalse( isset( $empty->message ) );
 
-        $this->expectException( \TypeError::class );
-        new Player_Error( (object) [ 'id' => 1 ] );
+        $this->expectException( TypeError::class );
+        $this->assertInstanceOf(
+            Player_Error::class,
+            new Player_Error( (object) [ 'id' => 1 ] )
+        );
     }
 }

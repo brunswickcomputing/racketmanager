@@ -7,11 +7,12 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Player\User_Hydration_DTO;
 use Racketmanager\Domain\Player\User;
 use Racketmanager\Domain\Player\User_Factory;
+use TypeError;
 
 final class User_Factory_Test extends TestCase {
 
     public function test_create_from_dto_mirrors_aliases_onto_wordpress_and_plugin_properties(): void {
-        $user = User_Factory::create_from_dto( new User_Hydration_DTO( id: 42, email: 'test@example.com', fullname: 'John Doe', user_login: 'jdoe', firstname: 'John', favourites: [ 'club' => [ 1 ] ] ) );
+        $user = User_Factory::create_from_dto( new User_Hydration_DTO( id: 42, email: 'test@example.com', fullname: 'John Doe', firstname: 'John', user_login: 'jdoe', favourites: [ 'club' => [ 1 ] ] ) );
 
         $this->assertInstanceOf( User::class, $user );
         $this->assertSame( 42, $user->id );
@@ -67,7 +68,10 @@ final class User_Factory_Test extends TestCase {
         $this->assertSame( '', $empty->email );
         $this->assertFalse( isset( $empty->id ) );
 
-        $this->expectException( \TypeError::class );
-        new User( (object) [ 'ID' => 1 ] );
+        $this->expectException( TypeError::class );
+        $this->assertInstanceOf(
+            User::class,
+            new User( (object) [ 'ID' => 1 ] )
+        );
     }
 }

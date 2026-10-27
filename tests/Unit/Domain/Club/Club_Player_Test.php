@@ -37,9 +37,9 @@ final class Club_Player_Test extends TestCase {
         $registration = $this->registration( 'approved' );
 
         $this->expectException( Invalid_Status_Exception::class );
-        $this->expectExceptionMessage( 'Registration is not pending approval' );
+        $this->expectExceptionMessageIsOrContains( 'Registration is not pending approval' );
 
-        $registration->approve( 7, ( new Fixed_Clock() )->now() );
+        $registration->approve( 7, new Fixed_Clock()->now() );
     }
 
     public function test_remove_records_user_and_site_local_mysql_timestamp(): void {
@@ -57,9 +57,9 @@ final class Club_Player_Test extends TestCase {
         $registration = $this->registration( 'removed' );
 
         $this->expectException( Invalid_Status_Exception::class );
-        $this->expectExceptionMessage( 'Registration is already removed' );
+        $this->expectExceptionMessageIsOrContains( 'Registration is already removed' );
 
-        $registration->remove( 9, ( new Fixed_Clock() )->now() );
+        $registration->remove( 9, new Fixed_Clock()->now() );
     }
 
     public function test_timestamp_is_formatted_in_the_clock_timezone_not_converted(): void {

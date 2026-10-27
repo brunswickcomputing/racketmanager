@@ -8,6 +8,8 @@ use Racketmanager\Domain\DTO\Finance\Invoice_Hydration_DTO;
 use Racketmanager\Domain\Enums\Invoice_Status;
 use Racketmanager\Domain\Finance\Invoice;
 use Racketmanager\Domain\Finance\Invoice_Factory;
+use ReflectionProperty;
+use TypeError;
 
 final class Invoice_Factory_Test extends TestCase {
 
@@ -71,8 +73,8 @@ final class Invoice_Factory_Test extends TestCase {
         $this->assertSame( 'draft', $invoice->get_status() );
         $this->assertTrue( $invoice->is_draft() );
         $this->assertNull( $invoice->get_money() );
-        $this->assertFalse( ( new \ReflectionProperty( Invoice::class, 'amount' ) )->isInitialized( $invoice ) );
-        $this->assertFalse( ( new \ReflectionProperty( Invoice::class, 'date' ) )->isInitialized( $invoice ) );
+        $this->assertFalse( new ReflectionProperty( Invoice::class, 'amount' )->isInitialized( $invoice ) );
+        $this->assertFalse( new ReflectionProperty( Invoice::class, 'date' )->isInitialized( $invoice ) );
     }
 
     public function test_from_array_and_lenient_entity_helpers_match_from_object(): void {
@@ -88,7 +90,10 @@ final class Invoice_Factory_Test extends TestCase {
         $this->assertNull( $empty->get_id() );
         $this->assertSame( 'draft', $empty->get_status() );
 
-        $this->expectException( \TypeError::class );
-        new Invoice( (object) [ 'id' => 1 ] );
+        $this->expectException( TypeError::class );
+        $this->assertInstanceOf(
+            Invoice::class,
+            new Invoice( (object) [ 'id' => 1 ] )
+        );
     }
 }

@@ -91,7 +91,7 @@ final class Legacy_User_Test extends TestCase {
 
 		$this->assertInstanceOf( Legacy_User::class, $legacy );
 		$this->assertInstanceOf( User::class, $legacy );
-		$this->assertInstanceOf( \Racketmanager\Domain\User::class, $legacy );
+		$this->assertInstanceOf( User::class, $legacy );
 		$this->assertSame( 1, $legacy->id );
 		$this->assertSame( 5, $legacy->get_messages( [ 'count' => true ] ) );
 	}
@@ -122,9 +122,11 @@ final class Legacy_User_Test extends TestCase {
 
 	public function test_constructor_rejects_raw_object(): void {
 		$this->expectException( \TypeError::class );
-		new Legacy_User( (object) [ 'ID' => 1 ], null );
+        $this->assertInstanceOf(
+            Legacy_User::class,
+            new Legacy_User( (object) [ 'ID' => 1 ], null )
+        );
 	}
-
 	public function test_user_repository_still_hydrates_domain_user(): void {
 		$wpdb            = $this->createStub( wpdb::class );
 		$GLOBALS['wpdb'] = $wpdb;

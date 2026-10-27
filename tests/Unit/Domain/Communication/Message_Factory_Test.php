@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Communication\Message;
 use Racketmanager\Domain\Communication\Message_Factory;
 use Racketmanager\Domain\DTO\Communication\Message_Hydration_DTO;
+use TypeError;
 
 final class Message_Factory_Test extends TestCase {
 
@@ -56,7 +57,10 @@ final class Message_Factory_Test extends TestCase {
         $this->assertFalse( isset( $empty->id ) );
         $this->assertSame( '', $empty->from_name );
 
-        $this->expectException( \TypeError::class );
-        new Message( (object) [ 'id' => 1 ] );
+        $this->expectException( TypeError::class );
+        $this->assertInstanceOf(
+            Message::class,
+            new Message( (object) [ 'id' => 1 ] )
+        );
     }
 }

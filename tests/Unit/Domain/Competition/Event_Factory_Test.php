@@ -11,6 +11,7 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Event_Factory;
 use Racketmanager\Domain\DTO\Competition\Event_Hydration_DTO;
 use stdClass;
+use TypeError;
 
 final class Event_Factory_Test extends TestCase {
 	private function sample_competition( int $id = 1 ): Competition {
@@ -23,25 +24,25 @@ final class Event_Factory_Test extends TestCase {
 
 	public function test_from_array_with_missing_type_throws_invalid_argument_exception(): void {
 		$this->expectException( InvalidArgumentException::class );
-		$this->expectExceptionMessage( 'Event type is required.' );
+		$this->expectExceptionMessageIsOrContains( 'Event type is required.' );
 		Event_Factory::from_array( array( 'id' => 3, 'name' => 'X' ), $this->sample_competition() );
 	}
 
 	public function test_from_array_with_empty_name_throws_invalid_argument_exception(): void {
 		$this->expectException( InvalidArgumentException::class );
-		$this->expectExceptionMessage( 'Event name is required.' );
+		$this->expectExceptionMessageIsOrContains( 'Event name is required.' );
 		Event_Factory::from_array( array( 'id' => 3, 'name' => '   ', 'type' => 'singles' ), $this->sample_competition() );
 	}
 
 	public function test_from_array_with_missing_competition_id_and_no_competition_throws_invalid_argument_exception(): void {
 		$this->expectException( InvalidArgumentException::class );
-		$this->expectExceptionMessage( 'Event competition_id is required.' );
+		$this->expectExceptionMessageIsOrContains( 'Event competition_id is required.' );
 		Event_Factory::from_array( array( 'id' => 3, 'name' => 'Men Singles', 'type' => 'MS' ), null );
 	}
 
 	public function test_from_array_with_mismatched_competition_id_throws_invalid_argument_exception(): void {
 		$this->expectException( InvalidArgumentException::class );
-		$this->expectExceptionMessage( 'Event competition_id 5 does not match Competition id 10.' );
+		$this->expectExceptionMessageIsOrContains( 'Event competition_id 5 does not match Competition id 10.' );
 		Event_Factory::from_array(
 			array(
 				'id'             => 3,
@@ -55,7 +56,7 @@ final class Event_Factory_Test extends TestCase {
 
 	public function test_from_array_with_negative_id_throws_invalid_argument_exception(): void {
 		$this->expectException( InvalidArgumentException::class );
-		$this->expectExceptionMessage( 'Event id must be non-negative.' );
+		$this->expectExceptionMessageIsOrContains( 'Event id must be non-negative.' );
 		Event_Factory::from_array(
 			array(
 				'id'             => -1,
@@ -137,8 +138,11 @@ final class Event_Factory_Test extends TestCase {
 	}
 
 	public function test_constructor_accepts_only_the_hydration_dto(): void {
-		$this->expectException( \TypeError::class );
-		new Event( (object) array( 'id' => 1, 'name' => 'Raw' ) );
+		$this->expectException( TypeError::class );
+        $this->assertInstanceOf(
+            Event::class,
+            new Event( (object) array( 'id' => 1, 'name' => 'Raw' ) )
+        );
 	}
 
 	public function test_constructor_from_dto_merges_settings_over_columns_and_derives_competition_id(): void {

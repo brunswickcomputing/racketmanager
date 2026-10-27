@@ -8,6 +8,7 @@ use Racketmanager\Domain\Club\Club_Role;
 use Racketmanager\Domain\Club\Club_Role_Factory;
 use Racketmanager\Domain\DTO\Club\Club_Role_Hydration_DTO;
 use Racketmanager\Util\Util_Lookup;
+use TypeError;
 
 final class Club_Role_Factory_Test extends TestCase {
 
@@ -50,7 +51,10 @@ final class Club_Role_Factory_Test extends TestCase {
         $this->assertNull( $empty->get_id() );
         $this->assertNull( $empty->role );
 
-        $this->expectException( \TypeError::class );
-        new Club_Role( (object) [ 'id' => 1 ] );
+        $this->expectException( TypeError::class );
+        $this->assertInstanceOf(
+            Club_Role::class,
+            new Club_Role( (object) [ 'id' => 1 ] )
+        );
     }
 }

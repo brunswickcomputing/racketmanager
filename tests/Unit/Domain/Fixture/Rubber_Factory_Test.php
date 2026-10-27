@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Fixture\Rubber_Hydration_DTO;
 use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Domain\Fixture\Rubber_Factory;
+use TypeError;
 
 final class Rubber_Factory_Test extends TestCase {
 
@@ -22,8 +23,8 @@ final class Rubber_Factory_Test extends TestCase {
             away_points: 3.5,
             type: 'MD',
             rubber_number: 2,
-            walkover: 'home',
             reverse_rubbers: true,
+            walkover: 'home',
         ) );
 
         $this->assertInstanceOf( Rubber::class, $rubber );
@@ -98,7 +99,10 @@ final class Rubber_Factory_Test extends TestCase {
         $this->assertSame( '-:-', $empty->score );
         $this->assertSame( array(), $empty->players );
 
-        $this->expectException( \TypeError::class );
-        new Rubber( (object) [ 'id' => 1 ] );
+        $this->expectException( TypeError::class );
+        $this->assertInstanceOf(
+            Rubber::class,
+            new Rubber( (object) [ 'id' => 1 ] )
+        );
     }
 }

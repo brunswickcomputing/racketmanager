@@ -26,7 +26,7 @@ $is_column_visible = fn( string $key ): bool => isset( $vm ) && $vm instanceof L
             if ( ! empty( $teams ) ) {
                 ?>
                 <div class="table-responsive">
-                    <table class="table table-striped table-borderless align-middle" aria-describedby="<?php esc_html_e( 'Standings table', 'racketmanager' ) . ' ' . esc_html( $league->title ); ?>">
+                    <table class="table table-striped table-borderless align-middle" aria-describedby="<?php echo esc_html__( 'Standings table', 'racketmanager' ) . ' ' . esc_html( $league->title ); ?>">
                         <thead class="">
                             <tr>
                                 <th class="num" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_attr_e( 'Position', 'racketmanager' ); ?>">

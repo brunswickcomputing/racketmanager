@@ -3,12 +3,30 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Ajax;
 
+use ArgumentCountError;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\General\Queries\Get_Alert_Handler;
+use Racketmanager\Application\General\Queries\Get_Alert_Query;
+use Racketmanager\Application\General\Queries\Get_Player_Search_Handler;
+use Racketmanager\Application\General\Queries\Get_Player_Search_Query;
+use Racketmanager\Application\Player\Commands\Update_Player_Command;
+use Racketmanager\Application\Player\Commands\Update_Player_Handler;
+use Racketmanager\Application\Player\Queries\Get_Player_Details_Handler;
+use Racketmanager\Application\Player\Queries\Get_Player_Details_Query;
+use Racketmanager\Application\Player\Queries\Search_Players_Handler;
+use Racketmanager\Application\Player\Queries\Search_Players_Query;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
+use Racketmanager\Domain\DTO\Team\Team_Fixture_Settings_DTO;
+use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
+use Racketmanager\Domain\Fixture\Rubber;
+use Racketmanager\Exceptions\Event_Not_Found_Exception;
+use Racketmanager\Exceptions\Registration_Not_Found_Exception;
 use Racketmanager\Infrastructure\Wordpress\Request\Competition\Cup_Entry_Request_DTO;
 use Racketmanager\Infrastructure\Wordpress\Request\Competition\League_Entry_Request_DTO;
 use Racketmanager\Domain\Player\Player;
@@ -19,9 +37,13 @@ use Racketmanager\Infrastructure\Wordpress\Ajax\Frontend_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Frontend_Ajax_Controller;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
+use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Club_Service;
@@ -31,6 +53,7 @@ use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
+use ReflectionMethod;
 
 #[AllowMockObjectsWithoutExpectations]
 class Frontend_Ajax_Adapter_Test extends TestCase {
@@ -43,7 +66,7 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
     private Club_Service|MockObject|Stub $club_service;
     private Tournament_Service|MockObject|Stub $tournament_service;
     private Fixture_Repository_Interface|MockObject|Stub $fixture_repository;
-    private \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface|MockObject|Stub $rubber_repository;
+    private Rubber_Repository_Interface|MockObject|Stub $rubber_repository;
     private Frontend_Ajax_Adapter $adapter;
     /** @var array<int, Team> teams the Validator can find by id. */
     private array $validator_teams = [];
@@ -65,7 +88,7 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         $this->club_service              = $this->createStub( Club_Service::class );
         $this->tournament_service        = $this->createStub( Tournament_Service::class );
         $this->fixture_repository        = $this->createStub( Fixture_Repository_Interface::class );
-        $this->rubber_repository         = $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );
+        $this->rubber_repository         = $this->createStub( Rubber_Repository_Interface::class );
         $this->adapter                   = $this->make_adapter();
         $_POST                           = [];
         $_GET                            = [];
@@ -101,9 +124,9 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         $GLOBALS['racketmanager'] = $plugin;
     }
 
-    private function make_adapter( ?\Racketmanager\Application\Player\Queries\Get_Player_Details_Handler $get_player_details_handler = null ): Frontend_Ajax_Adapter {
-        $get_player_details_handler ??= new \Racketmanager\Application\Player\Queries\Get_Player_Details_Handler(
-            $this->createStub( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class )
+    private function make_adapter( ?Get_Player_Details_Handler $get_player_details_handler = null ): Frontend_Ajax_Adapter {
+        $get_player_details_handler ??= new Get_Player_Details_Handler(
+            $this->createStub( Player_Repository_Interface::class )
         );
         $response_factory = $this->createStub( Json_Response_Factory_Interface::class );
         $response_factory->method( 'create_success_response' )->willReturnCallback(
@@ -116,22 +139,22 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
             static fn( $content, $status = null ) => new Response( $content, $status ?? 200 )
         );
 
-        $player_search_handler = $this->createStub( \Racketmanager\Application\General\Queries\Get_Player_Search_Handler::class );
-        $alert_handler         = $this->createStub( \Racketmanager\Application\General\Queries\Get_Alert_Handler::class );
-        $view_presenter        = $this->createStub( \Racketmanager\Presentation\Presenters\Shortcode_View_Presenter::class );
-        $view_presenter->method( 'render' )->willReturnCallback( function ( \Racketmanager\Presentation\View_Models\Shortcode_View_Model $vm ) {
+        $player_search_handler = $this->createStub( Get_Player_Search_Handler::class );
+        $alert_handler         = $this->createStub( Get_Alert_Handler::class );
+        $view_presenter        = $this->createStub( Shortcode_View_Presenter::class );
+        $view_presenter->method( 'render' )->willReturnCallback( function ( Shortcode_View_Model $vm ) {
             if ( isset( $vm->vars['msg'] ) ) {
                 return '<div class="alert alert-' . ( $vm->vars['class'] ?? 'danger' ) . '">' . $vm->vars['msg'] . '</div>';
             }
             return '<div>Player search for: ' . ( $vm->vars['players'] ?? '' ) . '</div>';
         } );
-        $player_search_handler->method( 'handle' )->willReturnCallback( function ( \Racketmanager\Application\General\Queries\Get_Player_Search_Query $q ) {
-            return \Racketmanager\Presentation\View_Models\Shortcode_View_Model::for_template( 'players-list', [ 'players' => $q->search ] );
+        $player_search_handler->method( 'handle' )->willReturnCallback( function ( Get_Player_Search_Query $q ) {
+            return Shortcode_View_Model::for_template( 'players-list', [ 'players' => $q->search ] );
         } );
-        $alert_handler->method( 'handle' )->willReturnCallback( function ( \Racketmanager\Application\General\Queries\Get_Alert_Query $q ) {
-            return \Racketmanager\Presentation\View_Models\Shortcode_View_Model::for_template( 'alert', [ 'msg' => $q->msg, 'class' => $q->type ] );
+        $alert_handler->method( 'handle' )->willReturnCallback( function ( Get_Alert_Query $q ) {
+            return Shortcode_View_Model::for_template( 'alert', [ 'msg' => $q->msg, 'class' => $q->type ] );
         } );
-        $search_players_handler = new \Racketmanager\Application\Player\Queries\Search_Players_Handler(
+        $search_players_handler = new Search_Players_Handler(
             player_search_handler: $player_search_handler,
             alert_handler: $alert_handler,
             view_presenter: $view_presenter
@@ -154,14 +177,14 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         );
     }
 
-    private function create_player_dto( string|float|null $wtn_d = null ): \Racketmanager\Domain\DTO\Club\Club_Player_DTO {
-        $player = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
+    private function create_player_dto( string|float|null $wtn_d = null ): Club_Player_DTO {
+        $player = $this->createStub( Club_Player_DTO::class );
         $player->wtn = null !== $wtn_d ? [ 'D' => $wtn_d ] : [];
         return $player;
     }
 
     /**
-     * @param array<int, \Racketmanager\Domain\DTO\Club\Club_Player_DTO> $players
+     * @param array<int, Club_Player_DTO> $players
      */
     private function create_registration_service_for_players( array $players ): Registration_Service {
         $reg_service = $this->createStub( Registration_Service::class );
@@ -180,8 +203,8 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         $this->competition_service = $competition_service;
     }
 
-    private function create_rubber_with_recorder( int $rubber_number, ?array &$recorded_players, int $id = 1 ): \Racketmanager\Domain\Fixture\Rubber {
-        $rubber = $this->createStub( \Racketmanager\Domain\Fixture\Rubber::class );
+    private function create_rubber_with_recorder( int $rubber_number, ?array &$recorded_players, int $id = 1 ): Rubber {
+        $rubber = $this->createStub( Rubber::class );
         $rubber->method( 'get_id' )->willReturn( $id );
         $rubber->rubber_number = $rubber_number;
         $rubber->method( 'set_players' )->willReturnCallback(
@@ -321,7 +344,7 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         $competition_service = $this->createMock( Competition_Service::class );
         $competition_service->expects( $this->once() )->method( 'get_event_by_id' )
             ->with( 999 )
-            ->willThrowException( new \Racketmanager\Exceptions\Event_Not_Found_Exception( 'Event not found' ) );
+            ->willThrowException( new Event_Not_Found_Exception( 'Event not found' ) );
         $this->competition_service = $competition_service;
         $this->adapter             = $this->make_adapter();
 
@@ -358,7 +381,7 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         $reg_service = $this->createMock( Registration_Service::class );
         $reg_service->expects( $this->once() )->method( 'get_registration' )
             ->with( 404 )
-            ->willThrowException( new \Racketmanager\Exceptions\Registration_Not_Found_Exception( 'Player registration not found' ) );
+            ->willThrowException( new Registration_Not_Found_Exception( 'Player registration not found' ) );
 
         $this->registration_service = $reg_service;
         $this->adapter              = $this->make_adapter();
@@ -536,9 +559,9 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         ] );
 
         $rubber1_players_called = null;
-        $match = \Racketmanager\Domain\Fixture\Fixture_Factory::from_array( [ 'id' => 555, 'home_team' => '100', 'away_team' => '200' ] );
+        $match = Fixture_Factory::from_array( [ 'id' => 555, 'home_team' => '100', 'away_team' => '200' ] );
         $rubber = $this->create_rubber_with_recorder( 1, $rubber1_players_called, 1 );
-        $this->rubber_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );
+        $this->rubber_repository = $this->createMock( Rubber_Repository_Interface::class );
         $this->rubber_repository->expects( $this->once() )->method( 'find_by_fixture_id' )->with( 555 )->willReturn( [ $rubber ] );
         $this->rubber_repository->expects( $this->once() )->method( 'save_players' )->with( 1, [ 'home' => [ 'p1' => 1, 'p2' => 2 ] ] );
 
@@ -560,7 +583,7 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         $content = $response->get_content();
         $this->assertTrue( $content->valid );
         $this->assertSame( 'Team players set', $content->msg );
-        $this->assertSame( [ 'home' => [ 'p1' => 1, 'p2' => 2 ] ], $rubber1_players_called );
+        $this->assertSame( $rubber1_players_called, [ 'home' => [ 'p1' => 1, 'p2' => 2 ] ] );
     }
 
     public function test_validate_team_order_set_team_away_opponent_persists_players(): void {
@@ -571,9 +594,9 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         ] );
 
         $rubber1_players_called = null;
-        $match = \Racketmanager\Domain\Fixture\Fixture_Factory::from_array( [ 'id' => 555, 'home_team' => '100', 'away_team' => '200' ] );
+        $match = Fixture_Factory::from_array( [ 'id' => 555, 'home_team' => '100', 'away_team' => '200' ] );
         $rubber = $this->create_rubber_with_recorder( 1, $rubber1_players_called, 1 );
-        $this->rubber_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );
+        $this->rubber_repository = $this->createMock( Rubber_Repository_Interface::class );
         $this->rubber_repository->expects( $this->once() )->method( 'find_by_fixture_id' )->with( 555 )->willReturn( [ $rubber ] );
         $this->rubber_repository->expects( $this->once() )->method( 'save_players' )->with( 1, [ 'away' => [ 'p1' => 1, 'p2' => 2 ] ] );
 
@@ -595,7 +618,7 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         $content = $response->get_content();
         $this->assertTrue( $content->valid );
         $this->assertSame( 'Team players set', $content->msg );
-        $this->assertSame( [ 'away' => [ 'p1' => 1, 'p2' => 2 ] ], $rubber1_players_called );
+        $this->assertSame( $rubber1_players_called, [ 'away' => [ 'p1' => 1, 'p2' => 2 ] ] );
     }
 
     public function test_validate_team_order_set_team_no_matching_opponent_returns_unable_to_set_team(): void {
@@ -605,7 +628,7 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
             2 => $this->create_player_dto( 10.0 ),
         ] );
 
-        $match = $this->createStub( \Racketmanager\Domain\Fixture\Fixture::class );
+        $match = $this->createStub( Fixture::class );
         $match->home_team = '100';
         $match->away_team = '200';
         $match->method( 'get_rubbers' )->willReturn( [] );
@@ -633,7 +656,7 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
     public function test_get_player_details_performs_lookup(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
 
-        $player_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class );
+        $player_repo = $this->createMock( Player_Repository_Interface::class );
         $player_repo->expects( $this->once() )
             ->method( 'find_registered_player_autocomplete' )
             ->with( 'Smith', 'name', 'M', null, 100 )
@@ -650,7 +673,7 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
                 ],
             ] );
 
-        $handler       = new \Racketmanager\Application\Player\Queries\Get_Player_Details_Handler( $player_repo );
+        $handler       = new Get_Player_Details_Handler( $player_repo );
         $this->adapter = $this->make_adapter( $handler );
 
         $response = $this->adapter->get_player_details( [
@@ -676,7 +699,7 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
     public function test_get_player_details_reads_partner_gender_key(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
 
-        $player_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class );
+        $player_repo = $this->createMock( Player_Repository_Interface::class );
         $player_repo->expects( $this->once() )
             ->method( 'find_registered_player_autocomplete' )
             ->with( 'Jane', 'name', 'F', null, 100 )
@@ -693,7 +716,7 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
                 ],
             ] );
 
-        $handler       = new \Racketmanager\Application\Player\Queries\Get_Player_Details_Handler( $player_repo );
+        $handler       = new Get_Player_Details_Handler( $player_repo );
         $this->adapter = $this->make_adapter( $handler );
 
         $response = $this->adapter->get_player_details( [
@@ -724,7 +747,7 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
     public function test_get_player_details_btm_lookup(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
 
-        $player_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class );
+        $player_repo = $this->createMock( Player_Repository_Interface::class );
         $player_repo->expects( $this->once() )
             ->method( 'find_registered_player_autocomplete' )
             ->with( '999888', 'btm', null, null, 100 )
@@ -741,7 +764,7 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
                 ],
             ] );
 
-        $handler       = new \Racketmanager\Application\Player\Queries\Get_Player_Details_Handler( $player_repo );
+        $handler       = new Get_Player_Details_Handler( $player_repo );
         $this->adapter = $this->make_adapter( $handler );
 
         $response = $this->adapter->get_player_details( [
@@ -772,7 +795,7 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
             'match_day'          => 'Monday',
             'match_time'         => '19:00',
         ];
-        $team_info = new \Racketmanager\Domain\DTO\Team\Team_Fixture_Settings_DTO( $raw_data );
+        $team_info = new Team_Fixture_Settings_DTO( $raw_data );
         $this->team_service = $this->createMock( Team_Service::class );
         $this->team_service->expects( $this->once() )
             ->method( 'get_latest_team_details_for_event' )
@@ -876,10 +899,10 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         ];
 
         $player = $this->createStub( Player::class );
-        $update_handler = $this->createMock( \Racketmanager\Application\Player\Commands\Update_Player_Handler::class );
+        $update_handler = $this->createMock( Update_Player_Handler::class );
         $update_handler->expects( $this->once() )
             ->method( 'handle' )
-            ->with( $this->callback( fn( \Racketmanager\Application\Player\Commands\Update_Player_Command $c ) => 42 === $c->player_id && 'Injected' === $c->first_name ) )
+            ->with( $this->callback( fn( Update_Player_Command $c ) => 42 === $c->player_id && 'Injected' === $c->first_name ) )
             ->willReturn( $player );
 
         $response_factory = $this->createMock( Json_Response_Factory_Interface::class );
@@ -899,8 +922,8 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
             tournament_service: $this->tournament_service,
             fixture_repository: $this->fixture_repository,
             rubber_repository: $this->rubber_repository,
-            search_players_handler: $this->createStub( \Racketmanager\Application\Player\Queries\Search_Players_Handler::class ),
-            get_player_details_handler: $this->createStub( \Racketmanager\Application\Player\Queries\Get_Player_Details_Handler::class ),
+            search_players_handler: $this->createStub( Search_Players_Handler::class ),
+            get_player_details_handler: $this->createStub( Get_Player_Details_Handler::class ),
             update_player_handler: $update_handler
         );
 
@@ -917,10 +940,10 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
             'search_string' => 'Federer',
         ];
 
-        $search_handler = $this->createMock( \Racketmanager\Application\Player\Queries\Search_Players_Handler::class );
+        $search_handler = $this->createMock( Search_Players_Handler::class );
         $search_handler->expects( $this->once() )
             ->method( 'handle' )
-            ->with( $this->callback( fn( \Racketmanager\Application\Player\Queries\Search_Players_Query $q ) => 'Federer' === $q->search_string ) )
+            ->with( $this->callback( fn( Search_Players_Query $q ) => 'Federer' === $q->search_string ) )
             ->willReturn( '<div class="players">Federer Results</div>' );
 
         $response_factory = $this->createMock( Json_Response_Factory_Interface::class );
@@ -941,7 +964,7 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
             fixture_repository: $this->fixture_repository,
             rubber_repository: $this->rubber_repository,
             search_players_handler: $search_handler,
-            get_player_details_handler: $this->createStub( \Racketmanager\Application\Player\Queries\Get_Player_Details_Handler::class )
+            get_player_details_handler: $this->createStub( Get_Player_Details_Handler::class )
         );
 
         $response = $adapter->search_players( $request );
@@ -959,10 +982,10 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
             'gender'   => 'F',
         ];
 
-        $details_handler = $this->createMock( \Racketmanager\Application\Player\Queries\Get_Player_Details_Handler::class );
+        $details_handler = $this->createMock( Get_Player_Details_Handler::class );
         $details_handler->expects( $this->once() )
             ->method( 'handle' )
-            ->with( $this->callback( fn( \Racketmanager\Application\Player\Queries\Get_Player_Details_Query $q ) => 'name' === $q->type && 'Serena' === $q->name && 'F' === $q->gender ) )
+            ->with( $this->callback( fn( Get_Player_Details_Query $q ) => 'name' === $q->type && 'Serena' === $q->name && 'F' === $q->gender ) )
             ->willReturn( [ [ 'id' => 10, 'name' => 'Serena' ] ] );
 
         $response_factory = $this->createMock( Json_Response_Factory_Interface::class );
@@ -982,7 +1005,7 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
             tournament_service: $this->tournament_service,
             fixture_repository: $this->fixture_repository,
             rubber_repository: $this->rubber_repository,
-            search_players_handler: $this->createStub( \Racketmanager\Application\Player\Queries\Search_Players_Handler::class ),
+            search_players_handler: $this->createStub( Search_Players_Handler::class ),
             get_player_details_handler: $details_handler
         );
 
@@ -992,14 +1015,14 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_constructor_requires_player_query_handlers(): void {
-        $ctor = new \ReflectionMethod( Frontend_Ajax_Adapter::class, '__construct' );
+        $ctor = new ReflectionMethod( Frontend_Ajax_Adapter::class, '__construct' );
         $params = [];
         foreach ( $ctor->getParameters() as $param ) {
             $params[ $param->getName() ] = $param;
         }
 
         $this->assertArrayNotHasKey( 'player_repository', $params, 'Adapter must not build handlers from a repository.' );
-        foreach ( [ 'search_players_handler' => \Racketmanager\Application\Player\Queries\Search_Players_Handler::class, 'get_player_details_handler' => \Racketmanager\Application\Player\Queries\Get_Player_Details_Handler::class ] as $name => $class ) {
+        foreach ( [ 'search_players_handler' => Search_Players_Handler::class, 'get_player_details_handler' => Get_Player_Details_Handler::class ] as $name => $class ) {
             $this->assertArrayHasKey( $name, $params );
             $this->assertFalse( $params[ $name ]->isOptional(), "$name must be a required constructor argument." );
             $this->assertFalse( $params[ $name ]->allowsNull(), "$name must not be nullable." );
@@ -1009,26 +1032,29 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_direct_construction_without_details_handler_fails_fast(): void {
-        $this->expectException( \ArgumentCountError::class );
-        new Frontend_Ajax_Adapter(
-            security_service: $this->security_service,
-            response_factory: $this->createStub( Json_Response_Factory_Interface::class ),
-            competition_service: $this->competition_service,
-            competition_entry_service: $this->competition_entry_service,
-            team_service: $this->team_service,
-            player_service: $this->player_service,
-            registration_service: $this->registration_service,
-            club_service: $this->club_service,
-            tournament_service: $this->tournament_service,
-            fixture_repository: $this->fixture_repository,
-            rubber_repository: $this->rubber_repository,
-            search_players_handler: $this->createStub( \Racketmanager\Application\Player\Queries\Search_Players_Handler::class )
+        $this->expectException( ArgumentCountError::class );
+        $this->assertInstanceOf(
+            Frontend_Ajax_Adapter::class,
+            new Frontend_Ajax_Adapter(
+                security_service: $this->security_service,
+                response_factory: $this->createStub( Json_Response_Factory_Interface::class ),
+                competition_service: $this->competition_service,
+                competition_entry_service: $this->competition_entry_service,
+                team_service: $this->team_service,
+                player_service: $this->player_service,
+                registration_service: $this->registration_service,
+               club_service: $this->club_service,
+                tournament_service: $this->tournament_service,
+                fixture_repository: $this->fixture_repository,
+                rubber_repository: $this->rubber_repository,
+                search_players_handler: $this->createStub( Search_Players_Handler::class )
+            )
         );
     }
 
     public function test_get_player_details_name_type_returns_json_string_without_secrets(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $player_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class );
+        $player_repo = $this->createMock( Player_Repository_Interface::class );
         $player_repo->expects( $this->once() )
             ->method( 'find_registered_player_autocomplete' )
             ->with( 'jo', 'name', 'M', null, 100 )
@@ -1056,7 +1082,7 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         $this->player_service       = $player_service;
         $this->registration_service = $reg_service;
         $this->adapter              = $this->make_adapter(
-            new \Racketmanager\Application\Player\Queries\Get_Player_Details_Handler( $player_repo )
+            new Get_Player_Details_Handler( $player_repo )
         );
 
         $response = $this->adapter->get_player_details( [
@@ -1093,14 +1119,14 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
 
     public function test_get_player_details_empty_name_returns_empty_json_array(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $player_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class );
+        $player_repo = $this->createMock( Player_Repository_Interface::class );
         $player_repo->expects( $this->never() )->method( 'find_registered_player_autocomplete' );
         $player_service = $this->createMock( Player_Service::class );
         $player_service->expects( $this->never() )->method( 'get_all_players' );
 
         $this->player_service = $player_service;
         $this->adapter        = $this->make_adapter(
-            new \Racketmanager\Application\Player\Queries\Get_Player_Details_Handler( $player_repo )
+            new Get_Player_Details_Handler( $player_repo )
         );
 
         $response = $this->adapter->get_player_details( [

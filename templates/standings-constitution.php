@@ -11,7 +11,7 @@ namespace Racketmanager;
 /** @var array  $teams */
 if ( ! empty( $teams ) ) {
     ?>
-    <table class="table table-striped table-borderless" aria-describedby="<?php esc_html_e( 'Standing table', 'racketmanager' ); ?>" title="<?php esc_html_e( 'Standings', 'racketmanager' ) . ' ' . $league->title; ?>">
+    <table class="table table-striped table-borderless" aria-describedby="<?php esc_html_e( 'Standing table', 'racketmanager' ); ?>" title="<?php echo esc_html__( 'Standings', 'racketmanager' ) . ' ' . esc_html( $league->title ); ?>">
         <thead class="">
         <tr>
             <th><?php esc_html_e( 'Team', 'racketmanager' ); ?></th>

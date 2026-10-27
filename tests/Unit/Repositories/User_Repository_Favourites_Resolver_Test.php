@@ -49,8 +49,9 @@ final class User_Repository_Favourites_Resolver_Test extends TestCase {
             return $this->createStub( League_Repository_Interface::class );
         };
 
-        new User_Repository( $spy, $spy, $spy, $spy, $spy );
+        $repository = new User_Repository( $spy, $spy, $spy, $spy, $spy );
 
+        $this->assertInstanceOf( User_Repository::class, $repository );
         $this->assertSame( 0, $calls );
     }
 

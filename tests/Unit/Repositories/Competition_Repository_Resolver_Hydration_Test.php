@@ -63,8 +63,9 @@ final class Competition_Repository_Resolver_Hydration_Test extends TestCase {
 			return $this->createStub( Club_Repository_Interface::class );
 		};
 
-		new Competition_Repository( null, null, $spy, $spy, $spy );
+		$repository = new Competition_Repository( null, null, $spy, $spy, $spy );
 
+		$this->assertInstanceOf( Competition_Repository::class, $repository );
 		$this->assertSame( 0, $calls );
 	}
 

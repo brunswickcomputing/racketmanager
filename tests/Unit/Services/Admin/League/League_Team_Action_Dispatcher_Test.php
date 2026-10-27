@@ -32,7 +32,8 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
 
     public function test_constructor_requires_handler_or_team_repository(): void {
         $this->expectException( \LogicException::class );
-        new League_Team_Action_Dispatcher( $this->createStub( League_Service::class ), $this->createStub( Action_Guard_Interface::class ), $this->standings_service );
+        $dispatcher = new League_Team_Action_Dispatcher( $this->createStub( League_Service::class ), $this->createStub( Action_Guard_Interface::class ), $this->standings_service );
+        self::assertInstanceOf( League_Team_Action_Dispatcher::class, $dispatcher );
     }
 
     public function test_nonce_failure_on_bulk_action_returns_error(): void {

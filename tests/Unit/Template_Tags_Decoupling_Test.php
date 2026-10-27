@@ -4,9 +4,6 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Club\Club;
-use Racketmanager\Domain\Competition\League;
-use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 final class Template_Tags_Decoupling_Test extends TestCase {

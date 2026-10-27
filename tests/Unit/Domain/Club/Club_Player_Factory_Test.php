@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Club\Club_Player;
 use Racketmanager\Domain\Club\Club_Player_Factory;
 use Racketmanager\Domain\DTO\Club\Club_Player_Hydration_DTO;
+use TypeError;
 
 final class Club_Player_Factory_Test extends TestCase {
 
@@ -75,7 +76,10 @@ final class Club_Player_Factory_Test extends TestCase {
         $this->assertNull( $empty->get_id() );
         $this->assertNull( $empty->get_status() );
 
-        $this->expectException( \TypeError::class );
-        new Club_Player( (object) [ 'id' => 1 ] );
+        $this->expectException( TypeError::class );
+        $this->assertInstanceOf(
+            Club_Player::class,
+            new Club_Player( (object) [ 'id' => 1 ] )
+        );
     }
 }

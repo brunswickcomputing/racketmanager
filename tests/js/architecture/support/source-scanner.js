@@ -2,7 +2,7 @@
 //
 // JS files are tokenised/parsed with @babel/parser (already installed as a dependency of the
 // project's @babel/core devDependency — no new package), so comments, strings, template-literal
-// text and regex literals can never be mistaken for code and the regex-vs-division ambiguity does
+// text and regex literals can never be mistaken for code, and the regex-vs-division ambiguity does
 // not exist. Rules then inspect the token stream (identifier references) or walk the AST
 // (assignments). Templates are scanned as raw text because the inline-handler pattern is an HTML
 // attribute, which may legitimately sit inside a PHP string.
@@ -78,12 +78,18 @@ function parseJs(source) {
     result = {
       ast: null,
       tokens: [],
-      error: String(caught.message || caught).replace(/\s*\(\d+:\d+\)\s*$/, ''),
+      error: stripPosition(caught.message || caught),
       errorLine: (caught.loc && caught.loc.line) || 1,
     };
   }
   parseCache.set(source, result);
   return result;
+}
+
+// Babel appends the error position as "(line:col)"; drop it (and any surrounding trailing
+// whitespace) so messages are stable across edits. Anchored-only regex + trimEnd keeps this linear.
+function stripPosition(message) {
+  return String(message).trimEnd().replace(/\(\d+:\d+\)$/, '').trimEnd();
 }
 
 /**

@@ -5,6 +5,22 @@
  */
 
 /**
+ * Validate that selector is a non-empty string or valid DOM element / object
+ *
+ * @param {*} selector - Selector to validate
+ * @returns {boolean} True if selector is valid
+ */
+function isValidSelector(selector) {
+    if (selector === null || selector === undefined) {
+        return false;
+    }
+    if (typeof selector === 'string') {
+        return selector.trim().length > 0;
+    }
+    return true;
+}
+
+/**
  * Check if jQuery is loaded
  *
  * @returns {boolean} True if available
@@ -57,6 +73,9 @@ export function isAutocompleteAvailable() {
  * @param {number} checkInterval - How often to check (ms)
  */
 export function whenAutocompleteReady(callback, timeout = 5000, checkInterval = 100) {
+    if (typeof callback !== 'function') {
+        return;
+    }
     const startTime = Date.now();
 
     const checkAutocomplete = () => {
@@ -75,11 +94,14 @@ export function whenAutocompleteReady(callback, timeout = 5000, checkInterval = 
 /**
  * Safely initialize autocomplete
  *
- * @param {string} selector - jQuery selector (can match multiple elements)
+ * @param {string|Element|jQuery} selector - jQuery selector (can match multiple elements)
  * @param {Object} options - Autocomplete options
  * @returns {boolean} True if at least one element initialized successfully
  */
-export function safeAutocomplete(selector, options) {
+export function safeAutocomplete(selector, options = {}) {
+    if (!isValidSelector(selector)) {
+        return false;
+    }
     if (!isAutocompleteAvailable()) {
         console.error('jQuery UI Autocomplete is not available');
         return false;
@@ -102,11 +124,11 @@ export function safeAutocomplete(selector, options) {
 /**
  * Destroy autocomplete instance
  *
- * @param {string} selector - jQuery selector
+ * @param {string|Element|jQuery} selector - jQuery selector
  * @returns {boolean} True if destroyed successfully
  */
 export function destroyAutocomplete(selector) {
-    if (!isAutocompleteAvailable()) {
+    if (!isValidSelector(selector) || !isAutocompleteAvailable()) {
         return false;
     }
 
@@ -128,11 +150,14 @@ export function destroyAutocomplete(selector) {
 /**
  * Safely initialize datepicker
  *
- * @param {string} selector - jQuery selector
+ * @param {string|Element|jQuery} selector - jQuery selector
  * @param {Object} options - Datepicker options
  * @returns {boolean} True if initialized successfully
  */
-export function safeDatepicker(selector, options) {
+export function safeDatepicker(selector, options = {}) {
+    if (!isValidSelector(selector)) {
+        return false;
+    }
     if (!isjQueryUIAvailable() || typeof jQuery.fn.datepicker !== 'function') {
         console.error('jQuery UI Datepicker is not available');
         return false;
@@ -150,11 +175,14 @@ export function safeDatepicker(selector, options) {
 /**
  * Safely initialize sortable
  *
- * @param {string} selector - jQuery selector
+ * @param {string|Element|jQuery} selector - jQuery selector
  * @param {Object} options - Sortable options
  * @returns {boolean} True if initialized successfully
  */
-export function safeSortable(selector, options) {
+export function safeSortable(selector, options = {}) {
+    if (!isValidSelector(selector)) {
+        return false;
+    }
     if (!isjQueryUIAvailable() || typeof jQuery.fn.sortable !== 'function') {
         console.error('jQuery UI Sortable is not available');
         return false;
@@ -172,11 +200,14 @@ export function safeSortable(selector, options) {
 /**
  * Safely initialize tooltip
  *
- * @param {string} selector - jQuery selector
+ * @param {string|Element|jQuery} selector - jQuery selector
  * @param {Object} options - Tooltip options
  * @returns {boolean} True if initialized successfully
  */
-export function safeTooltip(selector, options) {
+export function safeTooltip(selector, options = {}) {
+    if (!isValidSelector(selector)) {
+        return false;
+    }
     if (!isjQueryUIAvailable() || typeof jQuery.fn.tooltip !== 'function') {
         console.error('jQuery UI Tooltip is not available');
         return false;
@@ -214,6 +245,9 @@ export function logJQueryStatus() {
  * @param {Function} callback - Function to call when ready
  */
 export function whenjQueryReady(callback) {
+    if (typeof callback !== 'function') {
+        return;
+    }
     if (isjQueryAvailable()) {
         jQuery(callback);
     } else {
@@ -227,7 +261,7 @@ export function whenjQueryReady(callback) {
  * @param {Object} options - jQuery AJAX options
  * @returns {Promise} Promise that resolves with response
  */
-export function safeAjax(options) {
+export function safeAjax(options = {}) {
     if (!isjQueryAvailable()) {
         return Promise.reject(new Error('jQuery is not available'));
     }
@@ -238,7 +272,12 @@ export function safeAjax(options) {
             dataType: 'json',
             error: function(xhr, status, error) {
                 console.error('AJAX Error:', status, error);
-                reject({ xhr, status, error });
+                const errorMessage = error || (xhr && xhr.statusText) || 'AJAX request failed';
+                const ajaxError = new Error(`AJAX Error: ${status || 'unknown'} - ${errorMessage}`);
+                ajaxError.xhr = xhr;
+                ajaxError.status = status;
+                ajaxError.error = error;
+                reject(ajaxError);
             },
             success: function(response) {
                 resolve(response);
@@ -252,13 +291,13 @@ export function safeAjax(options) {
 /**
  * Safely trigger jQuery event
  *
- * @param {string} selector - jQuery selector
+ * @param {string|Element|jQuery} selector - jQuery selector
  * @param {string} eventName - Event name
  * @param {*} data - Optional event data
  * @returns {boolean} True if triggered successfully
  */
 export function safeTrigger(selector, eventName, data = null) {
-    if (!isjQueryAvailable()) {
+    if (!isValidSelector(selector) || !isjQueryAvailable() || typeof eventName !== 'string') {
         return false;
     }
 
@@ -267,7 +306,7 @@ export function safeTrigger(selector, eventName, data = null) {
         return false;
     }
 
-    if (data) {
+    if (data !== null && data !== undefined) {
         $elements.trigger(eventName, data);
     } else {
         $elements.trigger(eventName);
@@ -279,13 +318,13 @@ export function safeTrigger(selector, eventName, data = null) {
 /**
  * Safely attach event handler
  *
- * @param {string} selector - jQuery selector
+ * @param {string|Element|jQuery} selector - jQuery selector
  * @param {string} eventName - Event name
  * @param {Function} handler - Event handler
  * @returns {boolean} True if attached successfully
  */
 export function safeOn(selector, eventName, handler) {
-    if (!isjQueryAvailable()) {
+    if (!isValidSelector(selector) || !isjQueryAvailable() || typeof eventName !== 'string' || typeof handler !== 'function') {
         return false;
     }
 
@@ -301,12 +340,12 @@ export function safeOn(selector, eventName, handler) {
 /**
  * Safely remove event handler
  *
- * @param {string} selector - jQuery selector
+ * @param {string|Element|jQuery} selector - jQuery selector
  * @param {string} eventName - Event name (optional)
  * @returns {boolean} True if removed successfully
  */
 export function safeOff(selector, eventName = null) {
-    if (!isjQueryAvailable()) {
+    if (!isValidSelector(selector) || !isjQueryAvailable()) {
         return false;
     }
 
@@ -315,7 +354,7 @@ export function safeOff(selector, eventName = null) {
         return false;
     }
 
-    if (eventName) {
+    if (typeof eventName === 'string') {
         $elements.off(eventName);
     } else {
         $elements.off();
@@ -327,34 +366,34 @@ export function safeOff(selector, eventName = null) {
 /**
  * Check if element exists in DOM
  *
- * @param {string} selector - jQuery selector
+ * @param {string|Element|jQuery} selector - jQuery selector
  * @returns {boolean} True if element exists
  */
 export function elementExists(selector) {
-    return isjQueryAvailable() && jQuery(selector).length > 0;
+    return isValidSelector(selector) && isjQueryAvailable() && jQuery(selector).length > 0;
 }
 
 /**
  * Get element count matching selector
  *
- * @param {string} selector - jQuery selector
+ * @param {string|Element|jQuery} selector - jQuery selector
  * @returns {number} Number of matching elements
  */
 export function getElementCount(selector) {
-    return isjQueryAvailable() ? jQuery(selector).length : 0;
+    return (isValidSelector(selector) && isjQueryAvailable()) ? jQuery(selector).length : 0;
 }
 
 /**
  * Safely animate element
  *
- * @param {string} selector - jQuery selector
+ * @param {string|Element|jQuery} selector - jQuery selector
  * @param {Object} properties - Animation properties
  * @param {number} duration - Animation duration (ms)
  * @param {Function} callback - Completion callback
  * @returns {boolean} True if animation started
  */
 export function safeAnimate(selector, properties, duration = 400, callback = null) {
-    if (!isjQueryAvailable()) {
+    if (!isValidSelector(selector) || !isjQueryAvailable() || !properties || typeof properties !== 'object') {
         return false;
     }
 
@@ -363,7 +402,7 @@ export function safeAnimate(selector, properties, duration = 400, callback = nul
         return false;
     }
 
-    if (callback) {
+    if (typeof callback === 'function') {
         $elements.animate(properties, duration, callback);
     } else {
         $elements.animate(properties, duration);
@@ -375,13 +414,13 @@ export function safeAnimate(selector, properties, duration = 400, callback = nul
 /**
  * Safely show element with animation
  *
- * @param {string} selector - jQuery selector
- * @param {number} duration - Animation duration (ms)
+ * @param {string|Element|jQuery} selector - jQuery selector
+ * @param {number|string} duration - Animation duration (ms)
  * @param {Function} callback - Completion callback
  * @returns {boolean} True if shown
  */
 export function safeShow(selector, duration = 400, callback = null) {
-    if (!isjQueryAvailable()) {
+    if (!isValidSelector(selector) || !isjQueryAvailable()) {
         return false;
     }
 
@@ -390,11 +429,19 @@ export function safeShow(selector, duration = 400, callback = null) {
         return false;
     }
 
-    if (duration) {
-        $elements.show(duration, callback);
+    const isFnCallback = typeof callback === 'function';
+
+    if (duration !== null && duration !== undefined && duration !== 0) {
+        if (isFnCallback) {
+            $elements.show(duration, callback);
+        } else {
+            $elements.show(duration);
+        }
     } else {
         $elements.show();
-        if (callback) callback();
+        if (isFnCallback) {
+            callback();
+        }
     }
 
     return true;
@@ -403,13 +450,13 @@ export function safeShow(selector, duration = 400, callback = null) {
 /**
  * Safely hide element with animation
  *
- * @param {string} selector - jQuery selector
- * @param {number} duration - Animation duration (ms)
+ * @param {string|Element|jQuery} selector - jQuery selector
+ * @param {number|string} duration - Animation duration (ms)
  * @param {Function} callback - Completion callback
  * @returns {boolean} True if hidden
  */
 export function safeHide(selector, duration = 400, callback = null) {
-    if (!isjQueryAvailable()) {
+    if (!isValidSelector(selector) || !isjQueryAvailable()) {
         return false;
     }
 
@@ -418,11 +465,19 @@ export function safeHide(selector, duration = 400, callback = null) {
         return false;
     }
 
-    if (duration) {
-        $elements.hide(duration, callback);
+    const isFnCallback = typeof callback === 'function';
+
+    if (duration !== null && duration !== undefined && duration !== 0) {
+        if (isFnCallback) {
+            $elements.hide(duration, callback);
+        } else {
+            $elements.hide(duration);
+        }
     } else {
         $elements.hide();
-        if (callback) callback();
+        if (isFnCallback) {
+            callback();
+        }
     }
 
     return true;
@@ -431,14 +486,14 @@ export function safeHide(selector, duration = 400, callback = null) {
 /**
  * Delegate event handler (for dynamic content)
  *
- * @param {string} containerSelector - Container selector
+ * @param {string|Element|jQuery} containerSelector - Container selector
  * @param {string} targetSelector - Target element selector
  * @param {string} eventName - Event name
  * @param {Function} handler - Event handler
  * @returns {boolean} True if delegated successfully
  */
 export function safeDelegate(containerSelector, targetSelector, eventName, handler) {
-    if (!isjQueryAvailable()) {
+    if (!isValidSelector(containerSelector) || !isjQueryAvailable() || typeof targetSelector !== 'string' || typeof eventName !== 'string' || typeof handler !== 'function') {
         return false;
     }
 

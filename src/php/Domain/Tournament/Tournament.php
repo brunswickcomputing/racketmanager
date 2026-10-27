@@ -222,9 +222,9 @@ class Tournament {
     /**
      * Payments
      *
-     * @var int|null
+     * @var float|null
      */
-    public ?int $payments;
+    public ?float $payments;
     /**
      * Entries
      *

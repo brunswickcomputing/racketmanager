@@ -875,7 +875,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
 
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15.0 );
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
         $this->team_repository->method( 'find_team_by_players' )->willReturn( 1 );
 
@@ -897,7 +897,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event_open, $event_senior ] );
         $this->competition_service->method( 'get_event_by_id' )->willReturnCallback( fn( $id ) => (int) $id === 10 ? $event_open : $event_senior );
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 25 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 25.0 );
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
         $this->team_repository->method( 'find_team_by_players' )->willReturn( 1 );
 
@@ -1027,7 +1027,7 @@ class Competition_Entry_Service_Test extends TestCase {
 
         // 2. Submit with eligible partner -> passes
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15.0 );
         $this->team_repository->method( 'find_team_by_players' )->willReturn( 1 );
 
         $dto_eligible = $this->create_tournament_entry_request( [
@@ -1049,7 +1049,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $player = $this->create_tournament_player( 70, 'M', 1990 );
         $this->player_service->method( 'get_player' )->willReturn( $player );
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15.0 );
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
         $this->team_repository->method( 'find_team_by_players' )->willReturn( 1 );
 
@@ -1082,7 +1082,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $player = $this->create_tournament_player( 70, 'M', 1990 );
         $this->player_service->method( 'get_player' )->willReturn( $player );
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15.0 );
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
         $this->team_repository->method( 'find_team_by_players' )->willReturn( 170 );
 
@@ -1152,7 +1152,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $player = $this->create_tournament_player( 95, 'M', 1990 );
         $this->player_service->method( 'get_player' )->willReturn( $player );
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15.0 );
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
         $this->team_repository->method( 'find_team_by_players' )->willReturn( 1 );
 
@@ -1201,7 +1201,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $player = $this->create_tournament_player( 10, 'M', 1990 );
         $this->player_service->method( 'get_player' )->willReturn( $player );
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15.0 );
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
         $this->team_repository->method( 'find_team_by_players' )->willReturn( 1 );
 
@@ -1373,7 +1373,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $player = $this->create_tournament_player( 10, 'M', 1990 );
         $this->player_service->method( 'get_player' )->willReturn( $player );
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15.0 );
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
         $this->team_repository->method( 'find_team_by_players' )->willReturn( 1 );
 
@@ -1708,7 +1708,7 @@ class Competition_Entry_Service_Test extends TestCase {
 
         $this->league_team_repository->method( 'find_player_teams_by_player_for_events' )->willReturn( [ $entry_to_withdraw ] );
 
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 0 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 0.0 );
 
         $captured_template = null;
         $shortcodes = $this->createStub( \Racketmanager\Public\Shortcodes::class );
@@ -1740,7 +1740,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->team_repository->expects( $this->once() )->method( 'find_team_by_players' )->with( [ 10 ] )->willReturn( null );
 
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15.0 );
 
         $saved_team = null;
         $saved_player_ids = null;
@@ -1792,7 +1792,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->team_repository->expects( $this->once() )->method( 'find_team_by_players' )->with( [ 10 ] )->willReturn( 301 );
 
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15.0 );
 
         $this->team_repository->expects( $this->never() )->method( 'save' );
         $this->team_repository->expects( $this->never() )->method( 'save_team_players' );
@@ -1833,7 +1833,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( $existing_team );
 
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15.0 );
 
         $this->team_repository->expects( $this->never() )->method( 'find_team_by_players' );
         $this->league_team_repository->expects( $this->never() )->method( 'delete' );
@@ -1865,7 +1865,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->team_repository->expects( $this->once() )->method( 'find_team_by_players' )->with( [ 10, 20 ] )->willReturn( 401 );
 
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15.0 );
 
         $this->team_repository->expects( $this->never() )->method( 'save' );
         $this->team_repository->expects( $this->never() )->method( 'save_team_players' );
@@ -1917,7 +1917,7 @@ class Competition_Entry_Service_Test extends TestCase {
         } );
 
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15.0 );
 
         $this->league_team_repository->expects( $this->once() )->method( 'delete' )->with( 800 )->willReturn( true );
 
@@ -1965,7 +1965,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->team_repository->expects( $this->once() )->method( 'find_team_by_players' )->with( [ 10, 30 ] )->willReturn( 450 );
 
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15.0 );
 
         $this->league_team_repository->expects( $this->once() )->method( 'delete' )->with( 800 )->willReturn( true );
         $this->team_repository->expects( $this->never() )->method( 'save' );
@@ -2010,7 +2010,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( $existing_team );
 
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15.0 );
 
         $this->team_repository->expects( $this->never() )->method( 'find_team_by_players' );
         $this->league_team_repository->expects( $this->never() )->method( 'delete' );
@@ -2206,7 +2206,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->team_repository->expects( $this->once() )->method( 'save_with_players' )->with( $this->isInstanceOf( Team::class ), [ 10 ] )->willReturn( 501 );
 
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 25 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 25.0 );
 
         $operations = [];
         $saved_league_teams = [];
@@ -2347,7 +2347,7 @@ class Competition_Entry_Service_Test extends TestCase {
         // Fees: Event fee = 10.0, Competition fee = 5.0. 2 events entered => fee = 25.0
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
         // Player previously paid 10.0 -> remaining balance due is 15.0
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 10 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 10.0 );
 
         /** @var Tournament_Invoice_Details_DTO|null $captured_invoice */
         $captured_invoice = null;
@@ -2423,7 +2423,7 @@ class Competition_Entry_Service_Test extends TestCase {
         // Fee: Event fee = 10.0, Competition fee = 5.0 => total fee = 15.0
         // Paid = 5.0 => remaining balance due = 10.0
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 5 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 5.0 );
 
         /** @var Tournament_Invoice_Details_DTO|null $captured_invoice */
         $captured_invoice = null;
@@ -2488,7 +2488,7 @@ class Competition_Entry_Service_Test extends TestCase {
 
         // Fee = 15.0, paid = 5.0 -> balance due = 10.0
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 5 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 5.0 );
 
         $this->finance_service->expects( $this->once() )->method( 'cancel_player_invoices_by_tournament' );
         $this->finance_service->expects( $this->once() )->method( 'add_player_invoice_for_tournament' );
@@ -2523,7 +2523,7 @@ class Competition_Entry_Service_Test extends TestCase {
 
         // Fee = 15.0, paid = 15.0 -> balance due = 0.0
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15.0 );
 
         $this->finance_service->expects( $this->once() )
             ->method( 'cancel_player_invoices_by_tournament' )
@@ -2575,7 +2575,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->team_repository->method( 'find_team_by_players' )->willReturn( 500 );
 
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15.0 );
 
         /** @var Tournament_Entry|null $captured_entry */
         $captured_entry = null;
@@ -2648,7 +2648,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->team_repository->method( 'find_team_by_players' )->willReturn( 500 );
 
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 5 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 5.0 );
 
         $existing_entry = new Tournament_Entry( (object) [
             'id'            => 123,
@@ -2700,7 +2700,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $player = $this->create_tournament_player( 10, 'M', 1990 );
         $this->player_service->method( 'get_player' )->willReturn( $player );
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15.0 );
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
         $this->team_repository->method( 'find_team_by_players' )->willReturn( 100 );
 
@@ -2767,7 +2767,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->team_repository->method( 'find_team_by_players' )->willReturn( 500 );
 
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 5 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 5.0 );
 
         $existing_entry = new Tournament_Entry( (object) [
             'id'            => 123,
@@ -2822,7 +2822,7 @@ class Competition_Entry_Service_Test extends TestCase {
         // Fees: Event fee = 10.0, Competition fee = 5.0 => total fee = 15.0
         // Paid total = 25.0 => total balance due = -10.0 (refund outstanding)
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 25 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 25.0 );
 
         /** @var Tournament_Invoice_Details_DTO|null $captured_invoice */
         $captured_invoice = null;
@@ -2888,7 +2888,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->team_repository->method( 'find_team_by_players' )->willReturn( 500 );
 
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 0.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 10 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 10.0 );
 
         /** @var League_Team|null $captured_league_team */
         $captured_league_team = null;
@@ -2976,7 +2976,7 @@ class Competition_Entry_Service_Test extends TestCase {
             } );
 
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 0.0 ] );
-        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 20 );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 20.0 );
 
         /** @var League_Team|null $captured_singles_league_team */
         $captured_singles_league_team = null;

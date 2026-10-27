@@ -29,7 +29,7 @@ readonly class Tournament_Hydration_DTO {
 	 * @param string|null $grade
 	 * @param int|null $num_entries
 	 * @param string $type
-	 * @param int|null $payments
+	 * @param float|null $payments
 	 * @param null|object|array $information
 	 */
 	public function __construct(
@@ -52,7 +52,7 @@ readonly class Tournament_Hydration_DTO {
 		public ?string $grade = null,
 		public ?int $num_entries = null,
 		public string $type = '',
-		public ?int $payments = null,
+		public ?float $payments = null,
 		public null|object|array $information = null
 	) {
 	}
@@ -109,7 +109,7 @@ readonly class Tournament_Hydration_DTO {
 			grade: isset( $data->grade ) ? (string) $data->grade : null,
 			num_entries: isset( $data->num_entries ) ? (int) $data->num_entries : null,
 			type: (string) ( $data->type ?? '' ),
-			payments: isset( $data->payments ) ? (int) $data->payments : null,
+			payments: isset( $data->payments ) ? (float) $data->payments : null,
 			information: is_array( $information ) ? (object) $information : ( is_object( $information ) ? $information : null )
 		);
 	}

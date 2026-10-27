@@ -626,7 +626,10 @@ class Finance_Service {
         }
     }
 
-    public function get_tournament_paid_total_for_player( ?int $player_id, ?int $tournament_id ): int {
+    public function get_tournament_paid_total_for_player( ?int $player_id, ?int $tournament_id ): float {
+        if ( null === $player_id || null === $tournament_id ) {
+            return 0.0;
+        }
         return $this->invoice_repository->find_tournament_paid_total_by_player( $player_id, $tournament_id );
     }
 

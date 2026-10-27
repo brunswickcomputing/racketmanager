@@ -494,4 +494,49 @@ class Finance_Service_Test extends TestCase {
         self::assertSame( 'draft', $invoice->get_status() );
         self::assertStringContainsString( 'sent', $sent_msg );
     }
+
+    public function test_get_tournament_paid_total_for_player_returns_repository_float(): void {
+        $invoice_repo = $this->createMock( Invoice_Repository_Interface::class );
+        $invoice_repo->expects( self::once() )
+            ->method( 'find_tournament_paid_total_by_player' )
+            ->with( 2245, 23 )
+            ->willReturn( 12.5 );
+
+        $service = new Finance_Service(
+            $this->app,
+            $this->charge_repo,
+            $invoice_repo,
+            $this->club_repo,
+            $this->tournament_repo,
+            $this->competition_service,
+            $this->player_service,
+            $this->createStub( Payment_Gateway_Interface::class ),
+            $this->createStub( Mailer_Interface::class )
+        );
+
+        $result = $service->get_tournament_paid_total_for_player( 2245, 23 );
+
+        self::assertIsFloat( $result );
+        self::assertSame( 12.5, $result );
+    }
+
+    public function test_get_tournament_paid_total_for_player_returns_zero_when_ids_missing(): void {
+        $invoice_repo = $this->createMock( Invoice_Repository_Interface::class );
+        $invoice_repo->expects( self::never() )->method( 'find_tournament_paid_total_by_player' );
+
+        $service = new Finance_Service(
+            $this->app,
+            $this->charge_repo,
+            $invoice_repo,
+            $this->club_repo,
+            $this->tournament_repo,
+            $this->competition_service,
+            $this->player_service,
+            $this->createStub( Payment_Gateway_Interface::class ),
+            $this->createStub( Mailer_Interface::class )
+        );
+
+        self::assertSame( 0.0, $service->get_tournament_paid_total_for_player( null, 23 ) );
+        self::assertSame( 0.0, $service->get_tournament_paid_total_for_player( 2245, null ) );
+    }
 }

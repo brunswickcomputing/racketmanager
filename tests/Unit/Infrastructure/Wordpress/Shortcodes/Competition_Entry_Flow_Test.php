@@ -185,7 +185,7 @@ class Competition_Entry_Flow_Test extends TestCase {
         $player_service = $this->createStub( Player_Service::class );
         $player_service->method( 'get_player' )->willReturn( $player );
         $finance = $this->createStub( Finance_Service::class );
-        $finance->method( 'get_tournament_paid_total_for_player' )->willReturn( 0 );
+        $finance->method( 'get_tournament_paid_total_for_player' )->willReturn( 0.0 );
         $renderer = $this->createMock( Shortcode_Template_Renderer::class );
         $renderer->expects( $this->once() )->method( 'render' )
             ->willReturnCallback( static function ( string $template, array $vars, $type ) use ( $tournament, $player ): string {

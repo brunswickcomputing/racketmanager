@@ -70,6 +70,19 @@ final class Tournament_Collaborator_Wiring_Test extends TestCase {
 		$this->assertSame( '2026-08-01', $dates->date_closing_display );
 	}
 
+	public function test_tournament_hydration_dto_hydrates_payments_as_float(): void {
+		$dto = Tournament_Hydration_DTO::from_object( (object) [ 'id' => 1, 'payments' => '12.50' ] );
+		$this->assertIsFloat( $dto->payments );
+		$this->assertSame( 12.5, $dto->payments );
+
+		$dto_without = Tournament_Hydration_DTO::from_object( (object) [ 'id' => 1 ] );
+		$this->assertNull( $dto_without->payments );
+
+		$tournament           = new Tournament();
+		$tournament->payments = 12.5;
+		$this->assertSame( 12.5, $tournament->payments );
+	}
+
 	public function test_tournament_in_pure_isolation_without_wordpress_globals_or_container(): void {
 		// Verify globals are completely absent
 		$this->assertArrayNotHasKey( 'racketmanager', $GLOBALS );

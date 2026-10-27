@@ -10,7 +10,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Domain\Fixture;
 
-use Racketmanager\Domain\Shared\Serialized_Column;
+use Racketmanager\Domain\DTO\Fixture\Rubber_Hydration_DTO;
 use Racketmanager\Domain\Shared\Typed_Property_Hydrator;
 use stdClass;
 
@@ -256,23 +256,20 @@ class Rubber {
     /**
      * Rubber construction function
      *
-     * @param object|null $rubber rubber object.
+     * @param Rubber_Hydration_DTO|null $dto hydration DTO (custom column already decoded and merged).
      */
-    public function __construct( ?object $rubber = null ) {
+    public function __construct( ?Rubber_Hydration_DTO $dto = null ) {
         $this->players = array();
 
-        if ( ! is_null( $rubber ) ) {
-            if ( ! empty( $rubber->custom ) ) {
-                $custom = Serialized_Column::unslash( Serialized_Column::decode_array( $rubber->custom ) );
-                $rubber = (object) array_merge( (array) $rubber, (array) $custom );
-            }
-
-            foreach ( get_object_vars( $rubber ) as $key => $value ) {
+        if ( ! is_null( $dto ) ) {
+            foreach ( get_object_vars( $dto ) as $key => $value ) {
+                if ( null === $value ) {
+                    continue; // Column absent from the row: keep the property default.
+                }
                 Typed_Property_Hydrator::assign( $this, $key, $value );
             }
 
-            $this->custom = Serialized_Column::decode_unslashed( $this->custom );
-            $this->sets   = $this->custom['sets'] ?? array();
+            $this->sets = $this->custom['sets'] ?? array();
 
             if ( ! empty( $this->date ) && ! str_starts_with( $this->date, '0000-00-00' ) ) {
                 // `date` is a MySQL DATETIME in site-local time; slicing it is equivalent to mysql2date( 'Y-m-d' | 'H:i' ).
@@ -308,14 +305,30 @@ class Rubber {
             $this->is_abandoned = ! empty( $this->custom['abandoned'] );
             $this->is_invalid   = ! empty( $this->custom['invalid'] );
 
-            if ( isset( $rubber->players ) && is_array( $rubber->players ) ) {
-                $this->players = $rubber->players;
-            }
-
             $this->title           = ( $this->type ?? '' ) . ( $this->rubber_number ?? '' );
-            $this->reverse_rubbers = isset( $rubber->reverse_rubbers ) ? (bool) $rubber->reverse_rubbers : false;
-            $this->reverse_rubber  = isset( $rubber->reverse_rubber ) ? (bool) $rubber->reverse_rubber : false;
+            $this->reverse_rubbers = $dto->reverse_rubbers ?? false;
+            $this->reverse_rubber  = $dto->reverse_rubber ?? false;
         }
+    }
+
+    /**
+     * Create a Rubber from a raw row without factory validation.
+     *
+     * @param object $row rubber row.
+     * @return static
+     */
+    public static function from_object( object $row ): static {
+        return new static( Rubber_Hydration_DTO::from_object( $row ) );
+    }
+
+    /**
+     * Create a Rubber from an associative array without factory validation.
+     *
+     * @param array $data rubber data.
+     * @return static
+     */
+    public static function from_array( array $data ): static {
+        return static::from_object( (object) $data );
     }
 
     /**

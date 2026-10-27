@@ -230,7 +230,7 @@ class Competition_Entry_Flow_Test extends TestCase {
         $GLOBALS['query_vars'] = [ 'competition_type' => 'tournament', 'tournament' => 'Autumn Open' ];
         $tournament = $this->tournament();
         $player = $this->player();
-        $entry = new Tournament_Entry( (object) [
+        $entry = Tournament_Entry::from_object( (object) [
             'id' => 42, 'tournament_id' => 8, 'player_id' => 1, 'status' => 1, 'fee' => 30,
         ] );
         $tournament_service = $this->createStub( Tournament_Service::class );

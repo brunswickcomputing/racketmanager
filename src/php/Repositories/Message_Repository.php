@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Communication\Message;
+use Racketmanager\Domain\Communication\Message_Factory;
 use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;
 use Racketmanager\Util\Util;
 use wpdb;
@@ -48,7 +49,7 @@ class Message_Repository implements Message_Repository_Interface {
                 return null;
             }
 
-            $message = new Message( $row );
+            $message = Message_Factory::from_object( $row );
             wp_cache_set( $message->id, $message, 'message' );
         }
 

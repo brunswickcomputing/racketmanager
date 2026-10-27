@@ -131,7 +131,7 @@ class Finance_Service {
         if ( is_wp_error( $validator ) ) {
             return $validator;
         }
-        $charge  = new Charge( $new_charge );
+        $charge  = Charge::from_object( $new_charge );
         $updates = $this->charge_repository->save( $charge );
         if ( $updates ) {
             return $charge;

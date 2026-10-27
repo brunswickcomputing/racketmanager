@@ -56,7 +56,7 @@ class Club_Role_Repository_Test extends TestCase {
             ->willReturn( $row );
         $this->wpdb->method( 'prepare' )->willReturnArgument( 0 );
 
-        $user = new User( (object) array( 'ID' => 42, 'display_name' => 'Alice Smith' ) );
+        $user = User::from_object( (object) array( 'ID' => 42, 'display_name' => 'Alice Smith' ) );
         $this->user_repository->expects( $this->once() )
             ->method( 'find' )
             ->with( 42 )
@@ -132,8 +132,8 @@ class Club_Role_Repository_Test extends TestCase {
             );
         $this->wpdb->method( 'prepare' )->willReturnArgument( 0 );
 
-        $user1 = new User( (object) array( 'ID' => 50, 'display_name' => 'User One' ) );
-        $user2 = new User( (object) array( 'ID' => 51, 'display_name' => 'User Two' ) );
+        $user1 = User::from_object( (object) array( 'ID' => 50, 'display_name' => 'User One' ) );
+        $user2 = User::from_object( (object) array( 'ID' => 51, 'display_name' => 'User Two' ) );
 
         $this->user_repository->expects( $this->exactly( 2 ) )
             ->method( 'find' )
@@ -169,7 +169,7 @@ class Club_Role_Repository_Test extends TestCase {
     }
 
     public function test_save_insert_sets_id_and_flushes_cache(): void {
-        $role = new Club_Role( (object) array(
+        $role = Club_Role::from_object( (object) array(
             'club_id' => 7,
             'role_id' => 1,
             'user_id' => 15,

@@ -49,7 +49,7 @@ final class Club_Test_Factory {
             static fn( $value ) => null !== $value
         );
 
-        $club = new Club( $club_data );
+        $club = Club::from_object( $club_data );
 
         foreach ( $overrides as $key => $value ) {
             if ( ! property_exists( Club::class, $key ) ) {

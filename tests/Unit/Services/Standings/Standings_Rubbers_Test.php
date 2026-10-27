@@ -42,7 +42,7 @@ class Standings_Rubbers_Test extends TestCase {
         $rubber->away_points = 0;
         $rubber->sets = [ 1 => [ 'player1' => 6, 'player2' => 2 ], 2 => [ 'player1' => 6, 'player2' => 3 ] ];
 
-        $league = new League( (object) [ 'title' => 'Division 1' ] );
+        $league = League::from_object( (object) [ 'title' => 'Division 1' ] );
         $league->id = 12;
         $league->seasons = [ '2026' => [ 'name' => '2026' ] ];
         $league->current_season = [ 'name' => '2026' ];

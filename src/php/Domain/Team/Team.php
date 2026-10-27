@@ -174,14 +174,12 @@ class Team {
 	/**
 	 * Constructor
 	 *
-	 * @param object|null $team Team object or hydration DTO.
+	 * @param Team_Hydration_DTO|null $dto Hydration DTO.
 	 */
-	public function __construct( ?object $team = null ) {
-		if ( is_null( $team ) ) {
+	public function __construct( ?Team_Hydration_DTO $dto = null ) {
+		if ( is_null( $dto ) ) {
 			return;
 		}
-
-		$dto = $team instanceof Team_Hydration_DTO ? $team : Team_Hydration_DTO::from_object( $team );
 
 		$this->id          = $dto->id;
 		$this->title       = $dto->title;
@@ -213,6 +211,26 @@ class Team {
 				$this->title    = $team_name;
 			}
 		}
+	}
+
+	/**
+	 * Create from a generic object (e.g. database row) without factory validation.
+	 *
+	 * @param object $row
+	 * @return static
+	 */
+	public static function from_object( object $row ): static {
+		return new static( Team_Hydration_DTO::from_object( $row ) );
+	}
+
+	/**
+	 * Create from an array without factory validation.
+	 *
+	 * @param array $data
+	 * @return static
+	 */
+	public static function from_array( array $data ): static {
+		return static::from_object( (object) $data );
 	}
 
 	/**

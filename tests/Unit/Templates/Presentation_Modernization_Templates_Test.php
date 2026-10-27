@@ -201,7 +201,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $entry = new Tournament_Entry();
         $entry->id = 10;
 
-        $charge = new Charge( (object) [ 'id' => 1 ] );
+        $charge = Charge::from_object( (object) [ 'id' => 1 ] );
 
         $tournament_service->method( 'get_tournament_by_name' )->willReturn( $tournament );
         $player_service->method( 'get_player' )->willReturn( $player );
@@ -501,7 +501,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             ]
         );
 
-        $club = new Club( (object) [
+        $club = Club::from_object( (object) [
             'id'        => 5,
             'name'      => 'Leigh Tennis Club',
             'shortcode' => 'LTC',
@@ -666,7 +666,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             ]
         );
 
-        $tournament = new Tournament( (object) [
+        $tournament = Tournament::from_object( (object) [
             'id'             => 1,
             'competition_id' => 8,
             'name'           => 'Summer Open',

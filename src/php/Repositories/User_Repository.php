@@ -353,33 +353,9 @@ class User_Repository implements User_Repository_Interface {
     }
 
     private function hydrate_user( object $wp_user ): User {
-        $data = $wp_user instanceof \WP_User || isset( $wp_user->data ) ? $wp_user->data : $wp_user;
-        $user = new User();
-        $user->ID = (int) ( $data->ID ?? $data->id ?? 0 );
-        $user->id = $user->ID;
-
-        foreach (
-            array(
-                'user_login',
-                'user_pass',
-                'user_nicename',
-                'user_email',
-                'user_url',
-                'user_registered',
-                'user_activation_key',
-                'user_status',
-                'display_name',
-            ) as $field
-        ) {
-            if ( isset( $data->$field ) ) {
-                $user->$field = (string) $data->$field;
-            }
-        }
-        $id = $user->ID;
-        $user->email = $user->user_email ?? '';
-        $user->user_email = $user->email;
-        $user->fullname = $user->display_name ?? '';
-        $user->display_name = $user->fullname;
+        // User_Hydration_DTO reads the WP_User `data` columns and resolves the ID/email/display_name aliases.
+        $user = User::from_object( $wp_user );
+        $id   = $user->ID;
 
         $user->firstname     = (string) get_user_meta( $id, 'first_name', true );
         $user->surname       = (string) get_user_meta( $id, 'last_name', true );

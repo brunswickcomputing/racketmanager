@@ -330,8 +330,8 @@ final class Admin_Coordinator_Test extends TestCase {
 
     public function test_add_meta_box_resolves_current_league_from_container_league_repository(): void {
         $competition = \Racketmanager\Tests\Helpers\Competition_Test_Factory::create( id: 1, type: \Racketmanager\Domain\Competition\Competition_Type::LEAGUE );
-        $event       = new \Racketmanager\Domain\Competition\Event( (object) array( 'id' => 9, 'name' => 'Event', 'seasons' => array( '2026' => array( 'name' => '2026' ) ) ), $competition );
-        $league      = new \Racketmanager\Domain\Competition\League( (object) array( 'id' => 42, 'title' => 'Division 1' ), $event );
+        $event       = \Racketmanager\Domain\Competition\Event::from_object( (object) array( 'id' => 9, 'name' => 'Event', 'seasons' => array( '2026' => array( 'name' => '2026' ) ) ), $competition );
+        $league      = \Racketmanager\Domain\Competition\League::from_object( (object) array( 'id' => 42, 'title' => 'Division 1' ), $event );
         $league->set_season( '2026' );
 
         $league_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );

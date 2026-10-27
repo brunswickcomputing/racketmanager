@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Tournament\Tournament_Entry;
+use Racketmanager\Domain\Tournament\Tournament_Entry_Factory;
 use Racketmanager\Repositories\Interfaces\Tournament_Entry_Repository_Interface;
 use Racketmanager\Util\Util;
 use wpdb;
@@ -47,7 +48,7 @@ class Tournament_Entry_Repository implements Tournament_Entry_Repository_Interfa
                 return null;
             }
 
-            $tournament_entry = new Tournament_Entry( $tournament_entry );
+            $tournament_entry = Tournament_Entry_Factory::from_object( $tournament_entry );
 
             wp_cache_set( $id, $tournament_entry, 'tournament_entries' );
         }
@@ -73,7 +74,7 @@ class Tournament_Entry_Repository implements Tournament_Entry_Repository_Interfa
                 return null;
             }
 
-            $tournament_entry = new Tournament_Entry( $tournament_entry );
+            $tournament_entry = Tournament_Entry_Factory::from_object( $tournament_entry );
 
             wp_cache_set( $tournament_entry_key, $tournament_entry, 'tournament_entries' );
         }

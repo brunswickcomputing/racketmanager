@@ -377,7 +377,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
 
     public function test_show_club_role_modal_passes_role_modal_and_lookup(): void {
         $club_service = $this->createMock( Club_Service::class );
-        $role         = new Club_Role( (object) [
+        $role         = Club_Role::from_object( (object) [
             'id'      => 5,
             'role_id' => 1,
             'club_id' => 10,
@@ -638,7 +638,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $GLOBALS['query_vars']['team'] = 'first-team';
         $this->assertStringContainsString( 'Team not found', $adapter->show_club_team( [] ) );
 
-        $GLOBALS['wp_stubs_teams']['first team'] = new Team( (object) [ 'id' => 3, 'title' => 'First Team' ] );
+        $GLOBALS['wp_stubs_teams']['first team'] = Team::from_object( (object) [ 'id' => 3, 'title' => 'First Team' ] );
         $this->assertStringContainsString( 'Event id not supplied', $adapter->show_club_team( [] ) );
 
         $unknown = $this->adapter( [ 'club_service' => $this->club_service_unknown() ] );
@@ -829,7 +829,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
 
         $GLOBALS['wp_stubs_events']['mens doubles']   = $allowed_event;
         $GLOBALS['wp_stubs_events']['ladies doubles'] = $blocked_event;
-        $GLOBALS['wp_stubs_teams']['first team']      = new Team( (object) [ 'id' => 3, 'title' => 'First Team' ] );
+        $GLOBALS['wp_stubs_teams']['first team']      = Team::from_object( (object) [ 'id' => 3, 'title' => 'First Team' ] );
 
         $adapter = $this->adapter( [
             'club_service' => $this->club_service_for( $this->club() ),
@@ -864,7 +864,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         ] );
 
         $GLOBALS['wp_stubs_events']['mens doubles'] = $event;
-        $GLOBALS['wp_stubs_teams']['first team']    = new Team( (object) [ 'id' => 3, 'title' => 'First Team' ] );
+        $GLOBALS['wp_stubs_teams']['first team']    = Team::from_object( (object) [ 'id' => 3, 'title' => 'First Team' ] );
 
         $adapter = $this->adapter( [
             'club_service' => $this->club_service_for( $this->club() ),
@@ -911,7 +911,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
 
         $GLOBALS['wp_stubs_events'][101] = $allowed_event;
         $GLOBALS['wp_stubs_events'][103] = $blocked_event;
-        $GLOBALS['wp_stubs_teams'][3]    = new Team( (object) [ 'id' => 3, 'title' => 'First Team' ] );
+        $GLOBALS['wp_stubs_teams'][3]    = Team::from_object( (object) [ 'id' => 3, 'title' => 'First Team' ] );
 
         $adapter = $this->adapter( [
             'club_service' => $this->club_service_for( $this->club() ),
@@ -939,8 +939,8 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $GLOBALS['wp_stubs_events']['missing event'] = $missing_event;
         $GLOBALS['wp_stubs_events'][999]             = $foreign_event;
         $GLOBALS['wp_stubs_events'][888]             = $missing_event;
-        $GLOBALS['wp_stubs_teams']['first team']     = new Team( (object) [ 'id' => 3, 'title' => 'First Team' ] );
-        $GLOBALS['wp_stubs_teams'][3]                = new Team( (object) [ 'id' => 3, 'title' => 'First Team' ] );
+        $GLOBALS['wp_stubs_teams']['first team']     = Team::from_object( (object) [ 'id' => 3, 'title' => 'First Team' ] );
+        $GLOBALS['wp_stubs_teams'][3]                = Team::from_object( (object) [ 'id' => 3, 'title' => 'First Team' ] );
         $GLOBALS['query_vars']['season']             = '2026';
 
         $adapter = $this->adapter( [

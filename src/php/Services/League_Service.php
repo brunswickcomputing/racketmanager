@@ -105,7 +105,7 @@ class League_Service {
             $league->title = $name;
         }
         $league->event_id = $event->get_id();
-        $league           = new League( $league, $event );
+        $league           = League::from_object( $league, $event );
         $this->league_repository->save( $league );
 
         return $league;

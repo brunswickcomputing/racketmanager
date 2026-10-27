@@ -295,7 +295,7 @@ class Notification_Service_Test extends TestCase {
         // For get_confirmation_email resolution (it uses league_team_repository and player_repository)
         $home_league_team = new stdClass();
         $home_league_team->captain = 5;
-        $home_league_team_domain = new League_Team($home_league_team);
+        $home_league_team_domain = League_Team::from_object($home_league_team);
 
         $this->league_team_repository->expects( $this->once() )
             ->method('find_by_team_league_and_season')
@@ -330,7 +330,7 @@ class Notification_Service_Test extends TestCase {
 
         $away_league_team = new stdClass();
         $away_league_team->captain = 6;
-        $away_league_team_domain = new League_Team($away_league_team);
+        $away_league_team_domain = League_Team::from_object($away_league_team);
 
         $this->league_team_repository->expects( $this->once() )
             ->method('find_by_team_league_and_season')
@@ -987,7 +987,7 @@ class Notification_Service_Test extends TestCase {
         ];
         $this->club_repository->method('find_by_id')->willReturn($club);
 
-        $event = new Event( (object) [ 'id' => 93, 'name' => 'Summer League', 'seasons' => '{"2026":{"name":"2026"}}' ] );
+        $event = \Racketmanager\Domain\Competition\Event::from_object( (object) [ 'id' => 93, 'name' => 'Summer League', 'seasons' => '{"2026":{"name":"2026"}}' ] );
         $event->competition = (object) ['type' => Competition_Type::LEAGUE];
         $this->event_repository->expects($this->once())->method('query_leagues')->with(93, $this->anything())
             ->willReturn([(object) ['id' => 456]]);

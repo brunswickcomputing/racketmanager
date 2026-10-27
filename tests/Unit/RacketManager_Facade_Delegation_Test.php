@@ -72,7 +72,7 @@ final class RacketManager_Facade_Delegation_Test extends TestCase {
         $mock->expects( $this->once() )
             ->method( 'find_by_id' )
             ->with( 7, 'id' )
-            ->willReturn( new Season( (object) [ 'id' => 7, 'name' => '2026' ] ) );
+            ->willReturn( Season::from_object( (object) [ 'id' => 7, 'name' => '2026' ] ) );
 
         $this->container->set( 'season_repository', fn() => $mock );
 
@@ -84,7 +84,7 @@ final class RacketManager_Facade_Delegation_Test extends TestCase {
 
     public function test_get_season_returns_false_when_id_and_name_do_not_match(): void {
         $mock = $this->createStub( Season_Repository_Interface::class );
-        $mock->method( 'find_by_id' )->willReturn( new Season( (object) [ 'id' => 7, 'name' => '2026' ] ) );
+        $mock->method( 'find_by_id' )->willReturn( Season::from_object( (object) [ 'id' => 7, 'name' => '2026' ] ) );
         $this->container->set( 'season_repository', fn() => $mock );
 
         $this->assertFalse( $this->facade->get_season( [ 'id' => 7, 'name' => '2025' ] ) );

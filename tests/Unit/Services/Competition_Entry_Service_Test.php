@@ -196,10 +196,10 @@ class Competition_Entry_Service_Test extends TestCase {
         $raw->name = 'Mens Doubles Event ' . $id;
         $raw->type = $type;
         $raw->num_rubbers = $num_rubbers;
-        $raw->match_days_allowed = [ '1' => '1', '2' => '1', '5' => '1', '6' => '1' ];
+        $raw->settings = array( 'match_days_allowed' => [ '1' => '1', '2' => '1', '5' => '1', '6' => '1' ] );
         $raw->seasons = '[]';
         $raw->competition_id = 1;
-        return new Event( $raw );
+        return Event::from_object( $raw );
     }
 
     private function create_mock_team( int $id, string $title ): Team {
@@ -647,7 +647,7 @@ class Competition_Entry_Service_Test extends TestCase {
             'league_id' => 1001,
             'profile'   => 0, // Team_Profile::PENDING
         ];
-        $pending_league_team = new League_Team( $pending_team_row );
+        $pending_league_team = League_Team::from_object( $pending_team_row );
 
         $this->assertSame( Team_Profile::PENDING, $pending_league_team->get_profile_enum() );
 
@@ -810,7 +810,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $raw->num_entries = 4;
         $raw->link = '/tournament/summer-2026';
         $raw->entry_link = '/tournament/summer-2026/entry';
-        $tournament = new Tournament( $raw );
+        $tournament = Tournament::from_object( $raw );
         $tournament->is_open = true;
         $this->tournament_repository->method( 'find_by_id' )->willReturnCallback( fn( $tid ) => (int) $tid === $id ? $tournament : null );
         return $tournament;
@@ -833,15 +833,17 @@ class Competition_Entry_Service_Test extends TestCase {
         $raw->id = $id;
         $raw->name = 'Tournament Event ' . $id;
         $raw->type = $type;
-        $raw->age_limit = $age_limit;
-        $raw->age_offset = $age_offset;
         $raw->num_rubbers = 1;
-        $raw->match_days_allowed = [ '1' => '1', '2' => '1' ];
         $raw->seasons = '[]';
         $raw->competition_id = 1;
-        $raw->primary_league = 1000 + $id;
-        $raw->league_index = [ ( 1000 + $id ) => '1' ];
-        return new Event( $raw );
+        $raw->settings = array(
+            'age_limit'          => $age_limit,
+            'age_offset'         => $age_offset,
+            'match_days_allowed' => [ '1' => '1', '2' => '1' ],
+            'primary_league'     => 1000 + $id,
+            'league_index'       => [ ( 1000 + $id ) => '1' ],
+        );
+        return Event::from_object( $raw );
     }
 
     public function test_tournament_entry_rejects_man_41_in_senior_45_event(): void {
@@ -2650,7 +2652,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
         $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 5.0 );
 
-        $existing_entry = new Tournament_Entry( (object) [
+        $existing_entry = Tournament_Entry::from_object( (object) [
             'id'            => 123,
             'tournament_id' => 1,
             'player_id'     => 10,
@@ -2769,7 +2771,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
         $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 5.0 );
 
-        $existing_entry = new Tournament_Entry( (object) [
+        $existing_entry = Tournament_Entry::from_object( (object) [
             'id'            => 123,
             'tournament_id' => 1,
             'player_id'     => 10,

@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Infrastructure\Legacy;
 
+use Racketmanager\Domain\DTO\Player\User_Hydration_DTO;
 use Racketmanager\Domain\Player\User;
 use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;
 
@@ -14,10 +15,10 @@ use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;
  */
 class Legacy_User extends User {
     public function __construct(
-        ?object $user = null,
+        ?User_Hydration_DTO $dto = null,
         private readonly ?Message_Repository_Interface $message_repository = null,
     ) {
-        parent::__construct( $user );
+        parent::__construct( $dto );
     }
 
     /**

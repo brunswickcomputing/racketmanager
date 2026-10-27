@@ -670,7 +670,7 @@ class General_Shortcode_Handlers_Test extends TestCase {
         $club_active->name = 'Current Club Display';
         $club_active->shortcode = 'Current Club';
 
-        $reg_active = new Club_Player( (object) [
+        $reg_active = Club_Player::from_object( (object) [
             'id'           => 10,
             'player_id'    => 42,
             'club_id'      => 1,
@@ -683,7 +683,7 @@ class General_Shortcode_Handlers_Test extends TestCase {
         $club_removed->name = 'Old Club Display';
         $club_removed->shortcode = 'Old Club';
 
-        $reg_removed = new Club_Player( (object) [
+        $reg_removed = Club_Player::from_object( (object) [
             'id'           => 11,
             'player_id'    => 42,
             'club_id'      => 2,

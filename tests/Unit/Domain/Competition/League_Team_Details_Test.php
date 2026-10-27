@@ -34,7 +34,7 @@ final class League_Team_Details_Test extends TestCase {
     }
 
     public function test_get_league_teams_with_details_keeps_captain_id_and_exposes_captain_name(): void {
-        $league_team = new League_Team( (object) [
+        $league_team = League_Team::from_object( (object) [
             'id'             => 940,
             'table_id'       => 77,
             'title'          => 'Leigh A',
@@ -71,7 +71,7 @@ final class League_Team_Details_Test extends TestCase {
             'points_2_minus' => 0,
         ] );
 
-        $league = new League( (object) [
+        $league = League::from_object( (object) [
             'id'       => 2397,
             'title'    => 'Division 1',
             'event_id' => 10,

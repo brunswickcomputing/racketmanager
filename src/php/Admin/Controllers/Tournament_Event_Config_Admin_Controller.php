@@ -174,7 +174,7 @@ final class Tournament_Event_Config_Admin_Controller {
         $event_data->num_sets       = $config->num_sets;
         $event_data->num_rubbers    = $config->num_rubbers;
         $event_data->type           = $config->type;
-        $event = new Event( $event_data, $competition instanceof \Racketmanager\Domain\Competition\Competition ? $competition : null );
+        $event = Event::from_object( $event_data, $competition instanceof \Racketmanager\Domain\Competition\Competition ? $competition : null );
         $event_id = $this->event_repository->insert_event( $event );
         if ( ! $event_id ) {
             return array(

@@ -10,7 +10,9 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Domain\Finance;
 
+use Racketmanager\Domain\DTO\Finance\Invoice_Hydration_DTO;
 use Racketmanager\Domain\Enums\Invoice_Status;
+use Racketmanager\Domain\Shared\Typed_Property_Hydrator;
 use Racketmanager\Domain\Value_Objects\Currency;
 use Racketmanager\Domain\Value_Objects\Money;
 
@@ -108,23 +110,37 @@ class Invoice {
     /**
      * Construct class instance
      *
-     * @param object|null $invoice invoice object.
+     * @param Invoice_Hydration_DTO|null $dto hydration DTO.
      */
-    public function __construct( ?object $invoice = null ) {
-        if ( ! is_null( $invoice ) ) {
-            if ( isset( $invoice->details ) && is_string( $invoice->details ) ) {
-                $invoice->details = json_decode( $invoice->details );
-            }
-            foreach ( get_object_vars( $invoice ) as $key => $value ) {
-                if ( 'id' === $key || 'invoice_number' === $key || 'billable_id' === $key || 'charge_id' === $key ) {
-                    $this->$key = ( null === $value || '' === $value ) ? null : (int) $value;
-                } elseif ( 'amount' === $key ) {
-                    $this->$key = (string) $value;
-                } else {
-                    $this->$key = $value;
-                }
-            }
+    public function __construct( ?Invoice_Hydration_DTO $dto = null ) {
+        if ( is_null( $dto ) ) {
+            return;
         }
+        foreach ( get_object_vars( $dto ) as $key => $value ) {
+            Typed_Property_Hydrator::assign( $this, $key, $value );
+        }
+    }
+
+    /**
+     * Create from a generic object (e.g., database row) without factory validation.
+     *
+     * @param object $row invoice row.
+     *
+     * @return static
+     */
+    public static function from_object( object $row ): static {
+        return new static( Invoice_Hydration_DTO::from_object( $row ) );
+    }
+
+    /**
+     * Create from an array without factory validation.
+     *
+     * @param array $data invoice data.
+     *
+     * @return static
+     */
+    public static function from_array( array $data ): static {
+        return static::from_object( (object) $data );
     }
 
     public function set_id( int $insert_id ): void {

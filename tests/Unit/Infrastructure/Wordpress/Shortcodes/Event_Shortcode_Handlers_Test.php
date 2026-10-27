@@ -118,7 +118,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $presenter = $this->competition_presenter();
         $stats = $this->createStub( Player_Stats_Service::class );
         $club_service = $this->createStub( Club_Service::class );
-        $club_service->method( 'get_club' )->willReturn( new \Racketmanager\Domain\Club\Club( (object) [ 'id' => 1 ] ) );
+        $club_service->method( 'get_club' )->willReturn( \Racketmanager\Domain\Club\Club::from_object( (object) [ 'id' => 1 ] ) );
         [ $handler, $query ] = match ( $name ) {
             'event' => [ new Get_Event_Handler( $competition_service, $presenter, $service ), new Get_Event_Query( event_id: 93, season: '2026' ) ],
             'partner' => [ new Get_Event_Partner_Handler( $competition_service, $this->createStub( Player_Service::class ), $service ), new Get_Event_Partner_Query( event_id: 93, season: '2026' ) ],

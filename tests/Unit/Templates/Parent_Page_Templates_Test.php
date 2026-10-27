@@ -89,7 +89,7 @@ class Parent_Page_Templates_Test extends TestCase {
         );
         $competition->is_cup = false;
 
-        $club = new Club( (object) [
+        $club = Club::from_object( (object) [
             'id'        => 1,
             'name'      => 'Central Club',
             'shortcode' => 'Central Club',
@@ -165,7 +165,7 @@ class Parent_Page_Templates_Test extends TestCase {
         );
         $competition->is_cup = true;
 
-        $club = new Club( (object) [
+        $club = Club::from_object( (object) [
             'id'        => 2,
             'name'      => 'Memorial Ground',
             'shortcode' => 'Memorial Ground',

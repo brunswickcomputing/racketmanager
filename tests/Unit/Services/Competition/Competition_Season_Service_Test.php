@@ -657,7 +657,7 @@ class Competition_Season_Service_Test extends TestCase {
 	}
 
 	private function make_event( int $id = 5, array $seasons = [], ?Competition $competition = null ): Event {
-		return new Event(
+		return Event::from_object(
 			(object) [
 				'id'             => $id,
 				'name'           => 'Men Doubles ' . $id,

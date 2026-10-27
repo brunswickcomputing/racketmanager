@@ -76,7 +76,7 @@ final class Season_Repository_Test extends TestCase {
 
 	public function test_numeric_name_and_numeric_id_do_not_collide_in_cache(): void {
 		// Season A: ID 2024, name "Winter 2023"
-		$season_a = new Season( (object) [
+		$season_a = Season::from_object( (object) [
 			'id'   => 2024,
 			'name' => 'Winter 2023',
 		] );
@@ -84,7 +84,7 @@ final class Season_Repository_Test extends TestCase {
 		wp_cache_set( 'name_Winter 2023', $season_a, 'seasons' );
 
 		// Season B: ID 55, name "2024"
-		$season_b = new Season( (object) [
+		$season_b = Season::from_object( (object) [
 			'id'   => 55,
 			'name' => '2024',
 		] );
@@ -119,7 +119,7 @@ final class Season_Repository_Test extends TestCase {
 	}
 
 	public function test_save_insert_populates_id_and_cache(): void {
-		$season = new Season( (object) [ 'id' => null, 'name' => '2026' ] );
+		$season = Season::from_object( (object) [ 'id' => null, 'name' => '2026' ] );
 		$this->db->insert_id = 99;
 
 		$result = $this->repository->save( $season );
@@ -131,7 +131,7 @@ final class Season_Repository_Test extends TestCase {
 	}
 
 	public function test_save_update_updates_cache(): void {
-		$season = new Season( (object) [ 'id' => 99, 'name' => '2026 Revised' ] );
+		$season = Season::from_object( (object) [ 'id' => 99, 'name' => '2026 Revised' ] );
 
 		$result = $this->repository->save( $season );
 
@@ -141,7 +141,7 @@ final class Season_Repository_Test extends TestCase {
 	}
 
 	public function test_delete_invalidates_cache(): void {
-		$season = new Season( (object) [ 'id' => 15, 'name' => 'Delete Me' ] );
+		$season = Season::from_object( (object) [ 'id' => 15, 'name' => 'Delete Me' ] );
 		wp_cache_set( 'id_15', $season, 'seasons' );
 		wp_cache_set( 'name_Delete Me', $season, 'seasons' );
 

@@ -84,7 +84,7 @@ class Player_Query_Service {
 		}
 		$event = null;
 		if ( isset( $grouping->event ) && is_object( $grouping->event ) ) {
-			$event = $grouping->event instanceof Event ? $grouping->event : new Event( $grouping->event );
+			$event = $grouping->event instanceof Event ? $grouping->event : Event::from_object( $grouping->event );
 		} elseif ( ! empty( $grouping->event_id ) && $this->event_repository ) {
 			$event = $this->event_repository->find_by_id( (int) $grouping->event_id );
 		}
@@ -107,7 +107,7 @@ class Player_Query_Service {
 		if ( ! empty( $grouping->competition_id ) && $this->competition_repository ) {
 			$competition = $this->competition_repository->find_by_id( (int) $grouping->competition_id );
 		}
-		return new Event( $grouping, $competition instanceof Competition ? $competition : null );
+		return Event::from_object( $grouping, $competition instanceof Competition ? $competition : null );
 	}
 
 	private function get_statistics_repository(): Player_Statistics_Repository_Interface {

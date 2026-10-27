@@ -739,7 +739,7 @@ class Competition_Entry_Service {
                     $league_team->rank       = 99;
                     $league_team->status     = 'NT';
                     $league_team->profile    = 1;
-                    $league_team             = new League_Team( $league_team );
+                    $league_team             = League_Team::from_object( $league_team );
                     $this->league_team_repository->save( $league_team );
                 }
                 try {
@@ -987,7 +987,7 @@ class Competition_Entry_Service {
                 $league_team->captain    = $team->captain_id;
                 $league_team->match_day  = $match_day;
                 $league_team->match_time = $team->match_time;
-                $league_team             = new League_Team( $league_team );
+                $league_team             = League_Team::from_object( $league_team );
                 $this->league_team_repository->save( $league_team );
             }
             try {

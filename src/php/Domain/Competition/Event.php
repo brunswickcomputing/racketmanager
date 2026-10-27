@@ -10,6 +10,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Domain\Competition;
 
+use Racketmanager\Domain\DTO\Competition\Event_Hydration_DTO;
 use Racketmanager\Domain\Shared\Typed_Property_Hydrator;
 use Racketmanager\Domain\Value_Objects\Json_Encoder;
 use Racketmanager\Util\Util_Lookup;
@@ -430,23 +431,33 @@ class Event {
     /**
      * Constructor
      *
-     * @param object $event Event object.
-     * @param Competition|null $competition
+     * Hydrates from the typed DTO only: table columns are applied first, then the decoded `settings`
+     * keys (settings take precedence over columns, as the legacy row merge did). `new Event()` yields
+     * an empty entity.
+     *
+     * @param Event_Hydration_DTO|null $dto Event hydration DTO.
+     * @param Competition|null         $competition
      */
     public function __construct(
-        object $event,
+        ?Event_Hydration_DTO $dto = null,
         ?Competition $competition = null
     ) {
-        if ( isset( $event->settings ) ) {
-            $unserialized         = self::decode_serialized_array( $event->settings );
-            $event->settings      = is_array( $unserialized ) ? $unserialized : array();
-            $event->settings_keys = array_keys( $event->settings );
-            $event                = (object) array_merge( (array) $event, $event->settings );
-        } else {
-            $event->settings = array();
+        if ( null === $dto ) {
+            return;
         }
+        $columns = array(
+            'id'             => $dto->id,
+            'name'           => $dto->name,
+            'type'           => $dto->type,
+            'num_sets'       => $dto->num_sets,
+            'num_rubbers'    => $dto->num_rubbers,
+            'competition_id' => $dto->competition_id,
+            'settings'       => $dto->settings,
+            'seasons'        => $dto->seasons,
+            'settings_keys'  => array_keys( $dto->settings ),
+        );
 
-        foreach ( get_object_vars( $event ) as $key => $value ) {
+        foreach ( array_merge( $columns, $dto->settings ) as $key => $value ) {
             if ( 'standings' === $key ) {
                 $this->$key = array_merge( $this->$key ?? array(), (array) $value );
             } else {
@@ -460,11 +471,6 @@ class Event {
             $this->competition = $competition;
             if ( isset( $competition->id ) && (int) $competition->id > 0 && 0 === (int) ( $this->competition_id ?? 0 ) ) {
                 $this->competition_id = (int) $competition->id;
-            }
-        } elseif ( isset( $event->competition ) && $event->competition instanceof Competition ) {
-            $this->competition = $event->competition;
-            if ( isset( $event->competition->id ) && (int) $event->competition->id > 0 && 0 === (int) ( $this->competition_id ?? 0 ) ) {
-                $this->competition_id = (int) $event->competition->id;
             }
         }
         if ( ! isset( $this->reverse_rubbers ) ) {
@@ -506,6 +512,55 @@ class Event {
                 $this->is_box = true;
             }
         }
+    }
+
+    /**
+     * Lenient hydration from a raw row (no factory invariants).
+     *
+     * A `Competition` attached to the row (`$row->competition`) is honoured when no explicit
+     * competition is supplied, mirroring the legacy constructor.
+     *
+     * @param object           $row         Raw row (e.g. `$wpdb` result or stdClass fixture).
+     * @param Competition|null $competition Optional parent competition.
+     *
+     * @return static
+     */
+    public static function from_object( object $row, ?Competition $competition = null ): static {
+        if ( null === $competition && isset( $row->competition ) && $row->competition instanceof Competition ) {
+            $competition = $row->competition;
+        }
+
+        $row_data    = get_object_vars( $row );
+        $dto         = Event_Hydration_DTO::from_object( $row );
+        $num_sets    = array_key_exists( 'num_sets', $row_data ) && '' === $row_data['num_sets'] ? 0 : $dto->num_sets;
+        $num_rubbers = array_key_exists( 'num_rubbers', $row_data ) && '' === $row_data['num_rubbers'] ? 0 : $dto->num_rubbers;
+
+        if ( $num_sets !== $dto->num_sets || $num_rubbers !== $dto->num_rubbers ) {
+            $dto = new Event_Hydration_DTO(
+                id: $dto->id,
+                name: $dto->name,
+                type: $dto->type,
+                num_sets: $num_sets,
+                num_rubbers: $num_rubbers,
+                competition_id: $dto->competition_id,
+                settings: $dto->settings,
+                seasons: $dto->seasons
+            );
+        }
+
+        return new static( $dto, $competition );
+    }
+
+    /**
+     * Lenient hydration from an associative array (no factory invariants).
+     *
+     * @param array            $data        Row data.
+     * @param Competition|null $competition Optional parent competition.
+     *
+     * @return static
+     */
+    public static function from_array( array $data, ?Competition $competition = null ): static {
+        return static::from_object( (object) $data, $competition );
     }
 
     /** Decode only legacy PHP-serialized arrays; leave JSON and malformed values unchanged. */

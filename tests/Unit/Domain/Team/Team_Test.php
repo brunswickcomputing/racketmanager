@@ -89,20 +89,20 @@ final class Team_Test extends TestCase {
     }
 
     public function test_team_entity_title_expansion_and_has_player(): void {
-        $team = new Team( (object) [ 'id' => 5, 'title' => '1_semi-final_1' ] );
+        $team = Team::from_object( (object) [ 'id' => 5, 'title' => '1_semi-final_1' ] );
         $this->assertSame( '1_semi-final_1', $team->team_ref );
         $this->assertSame( 'Winner of', $team->title );
 
-        $loser_team = new Team( (object) [ 'id' => 6, 'title' => '2_final_1' ] );
+        $loser_team = Team::from_object( (object) [ 'id' => 6, 'title' => '2_final_1' ] );
         $this->assertSame( '2_final_1', $loser_team->team_ref );
         $this->assertSame( 'Loser of', $loser_team->title );
 
-        $plain_team = new Team( (object) [ 'id' => 7, 'title' => 'Leigh 1' ] );
+        $plain_team = Team::from_object( (object) [ 'id' => 7, 'title' => 'Leigh 1' ] );
         $this->assertNull( $plain_team->team_ref );
         $this->assertSame( 'Leigh 1', $plain_team->title );
 
         // Bye team
-        $bye = new Team( (object) [ 'id' => -1, 'title' => 'Bye' ] );
+        $bye = Team::from_object( (object) [ 'id' => -1, 'title' => 'Bye' ] );
         $this->assertFalse( $bye->has_player( 10 ) );
 
         // Loaded players array
@@ -496,5 +496,21 @@ final class Team_Test extends TestCase {
         $service = new Team_Service( $team_repo, $club_repo, $event_repo, $player_serv, $fixture_repo, $query );
         $msg     = $service->update_team_event( 10, 5, 2, '222', 'new@example.com', 2, '19:30' );
         $this->assertSame( 'Player not found', $msg );
+    }
+
+    public function test_constructor_only_accepts_hydration_dto_and_lenient_from_object_matches_factory(): void {
+        $row = (object) [ 'id' => '3', 'title' => 'Leigh_A', 'club_id' => '7', 'unknown' => 'dropped' ];
+
+        $lenient = Team::from_object( $row );
+
+        $this->assertEquals( Team_Factory::from_object( $row ), $lenient );
+        $this->assertEquals( $lenient, Team::from_array( (array) $row ) );
+        $this->assertSame( 3, $lenient->id );
+        $this->assertSame( 7, $lenient->club_id );
+        $this->assertFalse( property_exists( $lenient, 'unknown' ) );
+        $this->assertNull( ( new Team() )->id );
+
+        $this->expectException( \TypeError::class );
+        new Team( $row );
     }
 }

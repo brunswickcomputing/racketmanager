@@ -64,7 +64,7 @@ class Event_Matches_Hydration_Test extends TestCase {
 		$event_raw->num_rubbers    = 4;
 		$event_raw->num_sets       = 3;
 
-		$this->event = new Event( $event_raw, $competition );
+		$this->event = Event::from_object( $event_raw, $competition );
 	}
 
 	protected function tearDown(): void {
@@ -432,7 +432,7 @@ class Event_Matches_Hydration_Test extends TestCase {
 			),
 		);
 
-		$rubber          = new Rubber( $rubber_raw );
+		$rubber          = Rubber::from_object( $rubber_raw );
 		$rubber->title   = 'Rubber 1';
 		$rubber->players = array(
 			'home' => array(

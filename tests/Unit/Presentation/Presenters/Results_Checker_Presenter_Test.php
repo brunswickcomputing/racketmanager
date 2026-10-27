@@ -98,7 +98,7 @@ class Results_Checker_Presenter_Test extends TestCase {
         $racketmanager->container = $this->createStub(\Racketmanager\Services\Container\Simple_Container::class);
         $racketmanager->container->method('get')->willReturn($this->createStub(\Racketmanager\Services\Player_Service::class));
         
-        $team = new Team( $team_obj );
+        $team = Team::from_object( $team_obj );
 
         $player_obj = new stdClass();
         $player_obj->display_name = 'John Doe';

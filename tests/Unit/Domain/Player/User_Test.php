@@ -13,7 +13,7 @@ final class User_Test extends TestCase {
 		$data->user_email   = 'test@example.com';
 		$data->display_name = 'John Doe';
 
-		$user = new User( $data );
+		$user = User::from_object( $data );
 
 		$this->assertSame( 42, $user->id );
 		$this->assertSame( 42, $user->ID );

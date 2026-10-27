@@ -412,7 +412,7 @@ class Entry_And_Match_Templates_Test extends TestCase {
             },
         ];
 
-        $tournament = new Tournament( (object) [
+        $tournament = Tournament::from_object( (object) [
             'id'             => 1,
             'competition_id' => 8,
             'name'           => 'Summer Open',
@@ -455,7 +455,7 @@ class Entry_And_Match_Templates_Test extends TestCase {
             new Club_Player()
         );
         $registration_service->method( 'get_clubs_for_player' )->willReturn( [ $club_dto ] );
-        $comp_entry_service->method( 'get_tournament_entry_by_tournament_and_player' )->willReturn( new Tournament_Entry( (object) [
+        $comp_entry_service->method( 'get_tournament_entry_by_tournament_and_player' )->willReturn( Tournament_Entry::from_object( (object) [
             'id'            => 10,
             'tournament_id' => 1,
             'player_id'     => 42,
@@ -928,7 +928,7 @@ class Entry_And_Match_Templates_Test extends TestCase {
         $club_active->name      = 'Westcliff Hardcourt Tennis Club';
         $club_active->shortcode = 'Westcliff Hardcourt';
 
-        $reg_active = new Club_Player( (object) [
+        $reg_active = Club_Player::from_object( (object) [
             'id'             => 101,
             'player_id'      => 42,
             'club_id'        => 10,
@@ -944,7 +944,7 @@ class Entry_And_Match_Templates_Test extends TestCase {
         $club_archive->name      = 'Leigh Tennis Club';
         $club_archive->shortcode = 'Leigh TC';
 
-        $reg_archive = new Club_Player( (object) [
+        $reg_archive = Club_Player::from_object( (object) [
             'id'             => 102,
             'player_id'      => 42,
             'club_id'        => 20,

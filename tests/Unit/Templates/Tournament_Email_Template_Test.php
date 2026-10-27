@@ -27,7 +27,7 @@ final class Tournament_Email_Template_Test extends TestCase {
     }
 
     public function test_renders_tournament_entry_open_template_with_tournament_dates(): void {
-        $tournament = new Tournament( (object) [
+        $tournament = Tournament::from_object( (object) [
             'id'   => 1,
             'name' => 'Spring Open',
         ] );
@@ -64,7 +64,7 @@ final class Tournament_Email_Template_Test extends TestCase {
     }
 
     public function test_renders_tournament_withdrawal_template_with_tournament_dates(): void {
-        $tournament = new Tournament( (object) [
+        $tournament = Tournament::from_object( (object) [
             'id'   => 1,
             'name' => 'Autumn Open',
         ] );

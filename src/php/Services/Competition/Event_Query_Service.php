@@ -682,7 +682,7 @@ class Event_Query_Service {
 							$rubber_data->rubber_number = $ix;
 							$rubber_data->date          = $fixture->get_date();
 							$rubber_data->match_id      = $fixture->get_id();
-							$rubber_entity              = new Rubber( $rubber_data );
+							$rubber_entity              = Rubber::from_object( $rubber_data );
 							$rubber_repo->save( $rubber_entity );
 						}
 					}

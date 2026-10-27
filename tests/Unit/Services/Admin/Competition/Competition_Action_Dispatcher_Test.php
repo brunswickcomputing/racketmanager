@@ -286,7 +286,7 @@ final class Competition_Action_Dispatcher_Test extends TestCase {
         $competition_service = $this->createMock( Competition_Service::class );
         $guard               = $this->createMock( Action_Guard_Interface::class );
 
-        $event = new \Racketmanager\Domain\Competition\Event( (object) array(
+        $event = Event::from_object( (object) array(
             'id'             => 5,
             'name'           => 'Men Singles',
             'type'           => 'singles',
@@ -315,8 +315,8 @@ final class Competition_Action_Dispatcher_Test extends TestCase {
         $competition_service = $this->createMock( Competition_Service::class );
         $guard               = $this->createMock( Action_Guard_Interface::class );
         $repository          = $this->createMock( Event_Repository_Interface::class );
-        $event               = new Event( (object) array( 'id' => 905, 'name' => 'Repository Event', 'type' => 'singles', 'competition_id' => 1 ) );
-        $GLOBALS['wp_stubs_events'][905] = new Event( (object) array( 'id' => 905, 'name' => 'Wrong Global Event', 'type' => 'singles', 'competition_id' => 1 ) );
+        $event               = Event::from_object( (object) array( 'id' => 905, 'name' => 'Repository Event', 'type' => 'singles', 'competition_id' => 1 ) );
+        $GLOBALS['wp_stubs_events'][905] = Event::from_object( (object) array( 'id' => 905, 'name' => 'Wrong Global Event', 'type' => 'singles', 'competition_id' => 1 ) );
 
         $guard->expects( self::once() )->method( 'assert_allowed' )
             ->with( 'racketmanager_event_nonce', 'racketmanager_events-bulk', 'edit_leagues' );
@@ -335,7 +335,7 @@ final class Competition_Action_Dispatcher_Test extends TestCase {
         $competition_service = $this->createMock( Competition_Service::class );
         $competition_service->expects( self::once() )->method( 'delete_event' )
             ->willThrowException( new \RuntimeException( 'Fixture delete failed' ) );
-        $event = new Event( (object) array( 'id' => 58, 'name' => 'Women Singles', 'type' => 'singles', 'competition_id' => 1 ) );
+        $event = Event::from_object( (object) array( 'id' => 58, 'name' => 'Women Singles', 'type' => 'singles', 'competition_id' => 1 ) );
         $repository = $this->createStub( Event_Repository_Interface::class );
         $repository->method( 'find_by_id' )->willReturn( $event );
 

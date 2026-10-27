@@ -36,23 +36,19 @@ final class League_Factory {
 			throw new InvalidArgumentException( sprintf( 'League event_id %d does not match Event id %d.', $dto->event_id, (int) $event->id ) );
 		}
 
-		$std_object = $dto->to_std_class();
-		if ( null === $std_object->event_id && isset( $event->id ) ) {
-			$std_object->event_id = (int) $event->id;
-		}
-
+		// The constructor derives event_id from the Event when the DTO value is null.
 		if ( ! empty( $event->competition->sport ) ) {
 			$sport_class = 'Racketmanager\\sports\\League_' . ucfirst( $event->competition->sport );
 			if ( class_exists( $sport_class ) ) {
 				return new $sport_class(
-					$std_object,
+					$dto,
 					$event
 				);
 			}
 		}
 
 		return new League(
-			$std_object,
+			$dto,
 			$event
 		);
 	}

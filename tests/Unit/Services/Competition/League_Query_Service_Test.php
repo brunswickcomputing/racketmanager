@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\DTO\Competition\League_Hydration_DTO;
 use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Player\Player;
@@ -105,7 +106,7 @@ class League_Query_Service_Test extends TestCase {
 		$league_row->id     = 42;
 		$league_row->title  = 'Premier Division';
 		$league_row->sport  = 'tennis';
-		$league             = new League( $league_row );
+		$league             = League::from_object( $league_row );
 
 		$team_row                 = new stdClass();
 		$team_row->table_id       = 10;
@@ -145,7 +146,7 @@ class League_Query_Service_Test extends TestCase {
 	}
 
 	public function test_get_league_teams_with_details_reads_team_details_for_requested_season(): void {
-		$league                 = new League( (object) array( 'id' => 42, 'title' => 'Premier Division' ) );
+		$league                 = League::from_object( (object) array( 'id' => 42, 'title' => 'Premier Division' ) );
 		$league->seasons        = array( '2025' => array( 'name' => '2025' ), '2026' => array( 'name' => '2026' ) );
 		$league->current_season = array( 'name' => '2026' );
 
@@ -177,7 +178,7 @@ class League_Query_Service_Test extends TestCase {
 	}
 
 	public function test_get_league_teams_with_details_defaults_to_current_season(): void {
-		$league                 = new League( (object) array( 'id' => 42, 'title' => 'Premier Division' ) );
+		$league                 = League::from_object( (object) array( 'id' => 42, 'title' => 'Premier Division' ) );
 		$league->seasons        = array( '2026' => array( 'name' => '2026' ) );
 		$league->current_season = array( 'name' => '2026' );
 
@@ -210,7 +211,7 @@ class League_Query_Service_Test extends TestCase {
 		$league_row->id     = 42;
 		$league_row->title  = 'Premier Division';
 		$league_row->sport  = 'tennis';
-		$league             = new League( $league_row );
+		$league             = League::from_object( $league_row );
 
 		$team_details = (object) array(
 			'id'             => 10,
@@ -255,7 +256,7 @@ class League_Query_Service_Test extends TestCase {
 	}
 
 	public function test_get_team_dtls_returns_bye_team_without_querying_repository(): void {
-		$league = new League( (object) array( 'id' => 42, 'title' => 'Premier Division' ) );
+		$league = League::from_object( (object) array( 'id' => 42, 'title' => 'Premier Division' ) );
 		$this->league_repository->expects( $this->never() )->method( 'get_team_details' );
 
 		$team = $this->service->get_team_dtls( $league, -1 );
@@ -266,7 +267,7 @@ class League_Query_Service_Test extends TestCase {
 	}
 
 	public function test_get_team_dtls_returns_false_when_team_not_found(): void {
-		$league = new League( (object) array( 'id' => 42, 'title' => 'Premier Division' ) );
+		$league = League::from_object( (object) array( 'id' => 42, 'title' => 'Premier Division' ) );
 		$this->league_repository->expects( $this->once() )
 			->method( 'get_team_details' )
 			->with( 42, 99, 'default' )
@@ -276,7 +277,7 @@ class League_Query_Service_Test extends TestCase {
 	}
 
 	public function test_get_team_dtls_generates_team_name_when_title_contains_underscore(): void {
-		$league = new League( (object) array( 'id' => 42, 'title' => 'Premier Division' ) );
+		$league = League::from_object( (object) array( 'id' => 42, 'title' => 'Premier Division' ) );
 		$team_details = (object) array(
 			'id'             => 10,
 			'title'          => 'Leigh_Men_A',
@@ -305,7 +306,7 @@ class League_Query_Service_Test extends TestCase {
 	}
 
 	public function test_get_league_team_returns_cached_team_without_repository_lookup(): void {
-		$league       = new League( (object) array( 'id' => 42, 'title' => 'Premier Division' ) );
+		$league       = League::from_object( (object) array( 'id' => 42, 'title' => 'Premier Division' ) );
 		$cached       = (object) array( 'id' => 7, 'title' => 'Cached Team' );
 		$league->teams = array( $cached );
 		$league->team_index = array( 7 => 0 );
@@ -316,7 +317,7 @@ class League_Query_Service_Test extends TestCase {
 	}
 
 	public function test_get_league_team_loads_uncached_team_through_query_service_repositories(): void {
-		$league                 = new League( (object) array( 'id' => 42, 'title' => 'Premier Division' ) );
+		$league                 = League::from_object( (object) array( 'id' => 42, 'title' => 'Premier Division' ) );
 		$league->current_season = array( 'name' => '2026' );
 		$team_details            = (object) array(
 			'id'             => 7,
@@ -350,7 +351,7 @@ class League_Query_Service_Test extends TestCase {
 		$league_row->title   = 'Premier Division';
 		$league_row->sport   = 'tennis';
 		$league_row->seasons = array( '2026' => array( 'name' => '2026' ) );
-		$league              = new League( $league_row );
+		$league              = League::from_object( $league_row );
 
 		$fixture_mock = $this->createStub( Fixture::class );
 		$this->fixture_repository->expects( $this->once() )
@@ -377,7 +378,7 @@ class League_Query_Service_Test extends TestCase {
 		$league_row->title   = 'Premier Division';
 		$league_row->sport   = 'tennis';
 		$league_row->seasons = array( '2026' => array( 'name' => '2026' ) );
-		$league              = new League( $league_row );
+		$league              = League::from_object( $league_row );
 
 		$player_mock                = $this->createMock( Player::class );
 		$player_mock->system_record = false;
@@ -422,7 +423,7 @@ class League_Query_Service_Test extends TestCase {
 		$league_row->title = 'Premier Division';
 		$league_row->sport = 'tennis';
 
-		return new League( $league_row );
+		return League::from_object( $league_row );
 	}
 
 	public function test_get_players_explicit_season_overrides_current_season(): void {
@@ -514,9 +515,8 @@ class League_Query_Service_Test extends TestCase {
 		$league_row         = new stdClass();
 		$league_row->id     = 42;
 		$league_row->title  = 'Premier Division';
-		$league_row->sport  = 'tennis';
 		$league             = $this->getMockBuilder( League::class )
-			->setConstructorArgs( array( $league_row ) )
+			->setConstructorArgs( array( League_Hydration_DTO::from_object( $league_row ) ) )
 			->onlyMethods( array( 'add_team' ) )
 			->getMock();
 		$league->expects( $this->never() )->method( 'add_team' );
@@ -535,7 +535,7 @@ class League_Query_Service_Test extends TestCase {
 		$league_row->id     = 42;
 		$league_row->title  = 'Premier Division';
 		$league_row->sport  = 'tennis';
-		$league             = new League( $league_row );
+		$league             = League::from_object( $league_row );
 
 		$this->team_repository->expects( $this->once() )
 			->method( 'find_id_by_title' )
@@ -556,7 +556,7 @@ class League_Query_Service_Test extends TestCase {
 		$league_row->id     = 42;
 		$league_row->title  = 'Premier Division';
 		$league_row->sport  = 'tennis';
-		$league             = new League( $league_row );
+		$league             = League::from_object( $league_row );
 
 		$this->team_repository->expects( $this->once() )
 			->method( 'find_id_by_title' )
@@ -574,7 +574,7 @@ class League_Query_Service_Test extends TestCase {
 		$league_row->id     = 42;
 		$league_row->title  = 'Premier Division';
 		$league_row->sport  = 'tennis';
-		$league             = new League( $league_row );
+		$league             = League::from_object( $league_row );
 
 		$this->league_repository->expects( $this->never() )->method( 'add_team_to_league' );
 
@@ -583,7 +583,7 @@ class League_Query_Service_Test extends TestCase {
 	}
 
 	public function test_add_team_does_not_persist_when_league_has_no_id(): void {
-		$league = new League( new stdClass() );
+		$league = League::from_object( new stdClass() );
 		$this->league_repository->expects( $this->never() )->method( 'add_team_to_league' );
 
 		$this->assertFalse( $this->service->add_team( $league, 10, '2026' ) );
@@ -594,7 +594,7 @@ class League_Query_Service_Test extends TestCase {
 		$league_row->id     = 42;
 		$league_row->title  = 'Old Title';
 		$league_row->sport  = 'tennis';
-		$league             = new League( $league_row );
+		$league             = League::from_object( $league_row );
 		$this->assertSame( 2, ( new \ReflectionMethod( League::class, 'update' ) )->getNumberOfParameters() );
 
 		$this->league_repository->expects( $this->once() )
@@ -614,7 +614,7 @@ class League_Query_Service_Test extends TestCase {
 	}
 
 	public function test_update_mutates_entity_without_persisting_when_it_has_no_id(): void {
-		$league = new League( (object) array( 'title' => 'Old Title' ) );
+		$league = League::from_object( (object) array( 'title' => 'Old Title' ) );
 		$this->league_repository->expects( $this->never() )->method( 'update_title_and_sequence' );
 
 		$this->service->update( $league, 'New Title', '2' );
@@ -626,7 +626,7 @@ class League_Query_Service_Test extends TestCase {
 		$league_row->id     = 42;
 		$league_row->title  = 'Premier Division';
 		$league_row->sport  = 'tennis';
-		$league             = new League( $league_row );
+		$league             = League::from_object( $league_row );
 
 		$this->league_repository->expects( $this->once() )
 			->method( 'get_rank' )
@@ -641,7 +641,7 @@ class League_Query_Service_Test extends TestCase {
 		$league_row->id     = 42;
 		$league_row->title  = 'Premier Division';
 		$league_row->sport  = 'tennis';
-		$league             = new League( $league_row );
+		$league             = League::from_object( $league_row );
 
 		$this->league_repository->expects( $this->once() )
 			->method( 'get_status' )
@@ -652,7 +652,7 @@ class League_Query_Service_Test extends TestCase {
 	}
 
 	private function league_for_query_service(): League {
-		$league = new League( (object) array(
+		$league = League::from_object( (object) array(
 			'id'      => 42,
 			'title'   => 'Premier Division',
 			'sport'   => 'tennis',
@@ -928,7 +928,7 @@ class League_Query_Service_Test extends TestCase {
 		$league_row->title   = 'Premier Division';
 		$league_row->sport   = 'tennis';
 		$league_row->seasons = array( '2026' => array( 'name' => '2026' ) );
-		$league              = new League( $league_row );
+		$league              = League::from_object( $league_row );
 
 		$this->league_repository->expects( $this->once() )
 			->method( 'query_league_teams' )
@@ -947,11 +947,11 @@ class League_Query_Service_Test extends TestCase {
 		$league_row->sport   = 'tennis';
 		$league_row->settings = array( 'num_advance' => 2 );
 		$league_row->seasons = array( '2026' => array( 'name' => '2026' ) );
-		$event               = new \Racketmanager\Domain\Competition\Event(
+		$event               = \Racketmanager\Domain\Competition\Event::from_object(
 			(object) array( 'id' => 93, 'name' => 'Event', 'seasons' => $league_row->seasons ),
 			\Racketmanager\Tests\Helpers\Competition_Test_Factory::create()
 		);
-		$league              = new League( $league_row, $event );
+		$league              = League::from_object( $league_row, $event );
 		$league->mode        = 'championship';
 
 		$this->league_repository->expects( $this->once() )
@@ -971,7 +971,7 @@ class League_Query_Service_Test extends TestCase {
 		$league_row->id     = 42;
 		$league_row->title  = 'Premier Division';
 		$league_row->sport  = 'tennis';
-		$league             = new League( $league_row );
+		$league             = League::from_object( $league_row );
 
 		$this->league_repository->expects( $this->once() )
 			->method( 'get_match_day' )
@@ -988,7 +988,7 @@ class League_Query_Service_Test extends TestCase {
 		$league_row->title   = 'Premier Division';
 		$league_row->sport   = 'tennis';
 		$league_row->seasons = array( '2026' => array( 'name' => '2026' ) );
-		$league              = new League( $league_row );
+		$league              = League::from_object( $league_row );
 
 		$this->league_repository->expects( $this->once() )
 			->method( 'update_seasons' )
@@ -1004,14 +1004,14 @@ class League_Query_Service_Test extends TestCase {
 		$league_row->id    = 42;
 		$league_row->title = 'Premier Division';
 		$league_row->sport = 'tennis';
-		$league            = new League( $league_row );
+		$league            = League::from_object( $league_row );
 		$league->set_team_query_arg( 'get_details', true );
 
 		$team_row           = new stdClass();
 		$team_row->table_id = 10;
 		$team_row->id       = 10;
 
-		$league_team = new League_Team(
+		$league_team = League_Team::from_object(
 			(object) array(
 				'id'             => 10,
 				'table_id'       => 10,
@@ -1062,13 +1062,13 @@ class League_Query_Service_Test extends TestCase {
 		$league_row->id    = 42;
 		$league_row->title = 'Premier Division';
 		$league_row->sport = 'tennis';
-		$league            = new League( $league_row );
+		$league            = League::from_object( $league_row );
 
 		$team_row           = new stdClass();
 		$team_row->table_id = 10;
 		$team_row->id       = 10;
 
-		$league_team = new League_Team(
+		$league_team = League_Team::from_object(
 			(object) array(
 				'id'             => 10,
 				'table_id'       => 10,
@@ -1134,7 +1134,7 @@ class League_Query_Service_Test extends TestCase {
 
   public function test_get_league_teams_returns_empty_results_when_league_has_no_id(): void {
     $this->league_repository->expects( $this->never() )->method( 'query_league_teams' );
-    $league = new League( new stdClass() );
+    $league = League::from_object( new stdClass() );
 
     $this->assertSame( array(), $this->service->get_league_teams( $league ) );
     $this->assertSame( 0, $this->service->get_league_teams( $league, array( 'count' => true ) ) );

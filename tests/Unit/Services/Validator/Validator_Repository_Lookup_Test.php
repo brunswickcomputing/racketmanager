@@ -212,7 +212,7 @@ final class Validator_Repository_Lookup_Test extends TestCase {
         $event_repository->expects( $this->once() )
             ->method( 'find_by_name' )
             ->with( 'Mens Singles' )
-            ->willReturn( new Event( (object) [ 'id' => 10, 'name' => 'Mens Singles' ] ) );
+            ->willReturn( Event::from_object( (object) [ 'id' => 10, 'name' => 'Mens Singles' ] ) );
         $event_repository->expects( $this->never() )->method( 'find_by_id' );
 
         $validator = $this->make_validator( event_repository: $event_repository );
@@ -277,7 +277,7 @@ final class Validator_Repository_Lookup_Test extends TestCase {
         $league_repository->expects( $this->once() )
             ->method( 'find_by_id' )
             ->with( 9 )
-            ->willReturn( new League( (object) [ 'id' => 9, 'title' => 'Division 1' ] ) );
+            ->willReturn( League::from_object( (object) [ 'id' => 9, 'title' => 'Division 1' ] ) );
 
         $validator = $this->make_validator( league_repository: $league_repository );
         $validator->league( 9 );
@@ -397,7 +397,7 @@ final class Validator_Repository_Lookup_Test extends TestCase {
 
     public function test_validator_club_user_uses_user_repository_find_by_id(): void {
         $user_repository = $this->createMock( User_Repository_Interface::class );
-        $user_repository->expects( $this->once() )->method( 'find_by_id' )->with( 4 )->willReturn( new User( (object) [ 'ID' => 4 ] ) );
+        $user_repository->expects( $this->once() )->method( 'find_by_id' )->with( 4 )->willReturn( User::from_object( (object) [ 'ID' => 4 ] ) );
 
         $validator = new Validator_Club( $this->createStub( Club_Role_Repository_Interface::class ), null, $user_repository );
         $validator->user( 4 );

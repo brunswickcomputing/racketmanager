@@ -69,7 +69,7 @@ class Tournament_Team_Admin_Controller_Test extends TestCase {
         $team_obj->title = 'Test Team';
         $team_obj->roster = [];
         $team_obj->team_type = 'C';
-        $team = new \Racketmanager\Domain\Team\Team( $team_obj );
+        $team = \Racketmanager\Domain\Team\Team::from_object( $team_obj );
 
         $this->team_service->expects( self::once() )->method( 'get_team_by_id' )->with( 123 )->willReturn( $team );
         $this->club_service->method( 'get_clubs' )->willReturn( [] );
@@ -95,7 +95,7 @@ class Tournament_Team_Admin_Controller_Test extends TestCase {
         $team_obj->title     = 'Test Team';
         $team_obj->roster    = [];
         $team_obj->team_type = 'C';
-        $team                = new \Racketmanager\Domain\Team\Team( $team_obj );
+        $team                = \Racketmanager\Domain\Team\Team::from_object( $team_obj );
 
         $this->league_query_service->expects( self::once() )->method( 'get_team_dtls' )->with( $league, 123 )->willReturn( $team );
         $this->team_service->expects( self::never() )->method( 'get_team_by_id' );

@@ -25,7 +25,7 @@ class Message_Test extends TestCase {
             'message_object' => 'Serialized message content',
         ];
 
-        $message = new Message( $data );
+        $message = Message::from_object( $data );
 
         $this->assertSame( 10, $message->id );
         $this->assertSame( 25, $message->userid );

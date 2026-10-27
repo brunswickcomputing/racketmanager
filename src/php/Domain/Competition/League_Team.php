@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Domain\Competition;
 
 use Racketmanager\Domain\Club\Club;
+use Racketmanager\Domain\DTO\Competition\League_Team_Hydration_DTO;
 use Racketmanager\Domain\Enums\Team_Profile;
 use Racketmanager\Domain\Shared\Serialized_Column;
 use Racketmanager\Domain\Shared\Typed_Property_Hydrator;
@@ -313,7 +314,7 @@ class League_Team {
      *
      * @var ?int
      */
-    public ?int $old_rank;
+    public ?int $old_rank = null;
     /**
      * Team ref variable
      *
@@ -431,72 +432,91 @@ class League_Team {
     /**
      * Constructor
      *
-     * @param object|null $league_team League_Team object.
+     * Hydrates from the typed DTO only (`custom` keys are already merged over the row by the DTO).
+     * `new League_Team()` yields an empty entity.
+     *
+     * @param League_Team_Hydration_DTO|null $dto League_Team hydration DTO.
      */
     public function __construct(
-        ?object $league_team = null
+        ?League_Team_Hydration_DTO $dto = null
     ) {
-        if ( is_null( $league_team ) ) {
+        if ( is_null( $dto ) ) {
             return;
         }
 
-        if ( ! is_null( $league_team ) ) {
-            if ( empty( $league_team->custom ) ) {
-                $league_team->custom = array();
+        foreach ( get_object_vars( $dto ) as $key => $value ) {
+            if ( null === $value ) {
+                continue; // Column absent from the row: keep the property default.
+            }
+            if ( 'profile' === $key ) {
+                $this->profile = Team_Profile::from_value( (int) $value );
             } else {
-                $league_team->custom = Serialized_Column::unslash( Serialized_Column::decode_array( $league_team->custom ) );
-                $league_team         = (object) array_merge( (array) $league_team, (array) $league_team->custom );
-            }
-            foreach ( get_object_vars( $league_team ) as $key => $value ) {
-                $key = trim( $key );
-                if ( 'profile' === $key ) {
-                    $this->profile = Team_Profile::from_value( (int) $value );
-                } else {
-                    Typed_Property_Hydrator::assign( $this, $key, $value );
-                }
-            }
-
-            $this->points_plus += $this->add_points; // add or subtract extra points.
-            $this->points       = array(
-                'plus'  => $this->points_plus,
-                'minus' => $this->points_minus,
-            );
-            $this->points_2     = array(
-                'plus'  => $this->points_2_plus,
-                'minus' => $this->points_2_minus,
-            );
-            $this->diff         = ( $this->diff > 0 ) ? '+' . $this->diff : $this->diff;
-            $this->win_percent();
-            if ( empty( $this->status ) ) {
-                $this->status_text = '';
-            } else {
-                $this->status_text = Util_Lookup::get_standing_status( $this->status );
-            }
-            if ( ! isset( $this->club ) ) {
-                $this->club = null;
-            }
-            $this->roster = Serialized_Column::decode_legacy( $this->roster );
-            if ( 'W' === $this->status ) {
-                $this->is_withdrawn = true;
-            } else {
-                $this->is_withdrawn = false;
-            }
-            $this->status_icon = '';
-            if ( '+' === $this->status ) {
-                $this->status_icon = 'arrow-up';
-            } elseif ( '-' === $this->status ) {
-                $this->status_icon = 'arrow-down';
-            } elseif ( '=' === $this->status ) {
-                $this->status_icon = 'dot';
-            }
-            if ( ! empty( $this->title ) && str_contains( $this->title, '_' ) ) {
-                $team_name = Util::generate_team_name( $this->title );
-                if ( ! empty( $team_name ) ) {
-                    $this->team_ref = $this->title;
-                    $this->title    = $team_name;
-                }
+                Typed_Property_Hydrator::assign( $this, $key, $value );
             }
         }
+
+        $this->points_plus += $this->add_points; // add or subtract extra points.
+        $this->points       = array(
+            'plus'  => $this->points_plus,
+            'minus' => $this->points_minus,
+        );
+        $this->points_2     = array(
+            'plus'  => $this->points_2_plus,
+            'minus' => $this->points_2_minus,
+        );
+        $this->diff         = ( $this->diff > 0 ) ? '+' . $this->diff : $this->diff;
+        $this->win_percent();
+        if ( empty( $this->status ) ) {
+            $this->status_text = '';
+        } else {
+            $this->status_text = Util_Lookup::get_standing_status( $this->status );
+        }
+        if ( ! isset( $this->club ) ) {
+            $this->club = null;
+        }
+        $this->roster = Serialized_Column::decode_legacy( $this->roster );
+        if ( 'W' === $this->status ) {
+            $this->is_withdrawn = true;
+        } else {
+            $this->is_withdrawn = false;
+        }
+        $this->status_icon = '';
+        if ( '+' === $this->status ) {
+            $this->status_icon = 'arrow-up';
+        } elseif ( '-' === $this->status ) {
+            $this->status_icon = 'arrow-down';
+        } elseif ( '=' === $this->status ) {
+            $this->status_icon = 'dot';
+        }
+        if ( ! empty( $this->title ) && str_contains( $this->title, '_' ) ) {
+            $team_name = Util::generate_team_name( $this->title );
+            if ( ! empty( $team_name ) ) {
+                $this->team_ref = $this->title;
+                $this->title    = $team_name;
+            }
+        }
+    }
+
+    /**
+     * Lenient hydration from a raw row (no factory invariants).
+     *
+     * @param object $row Raw row (e.g. `$wpdb` result or stdClass fixture).
+     *
+     * @return static
+     */
+    public static function from_object( object $row ): static {
+        return new static( League_Team_Hydration_DTO::from_object( $row ) );
+    }
+
+    /**
+     * Lenient hydration from an associative array (no factory invariants).
+     *
+     * @param array $data Row data.
+     *
+     * @return static
+     */
+    public static function from_array( array $data ): static {
+        return static::from_object( (object) $data );
     }
 
     /**

@@ -10,6 +10,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Domain\Communication;
 
+use Racketmanager\Domain\DTO\Communication\Message_Hydration_DTO;
 use Racketmanager\Domain\Shared\Typed_Property_Hydrator;
 
 /**
@@ -74,11 +75,11 @@ class Message {
     /**
      * Construct class instance
      *
-     * @param object|null $message message object.
+     * @param Message_Hydration_DTO|null $dto hydration DTO.
      */
-    public function __construct( ?object $message = null ) {
-        if ( ! is_null( $message ) ) {
-            foreach ( get_object_vars( $message ) as $key => $value ) {
+    public function __construct( ?Message_Hydration_DTO $dto = null ) {
+        if ( ! is_null( $dto ) ) {
+            foreach ( get_object_vars( $dto ) as $key => $value ) {
                 Typed_Property_Hydrator::assign( $this, $key, $value );
             }
             if ( isset( $this->sender ) ) {
@@ -101,6 +102,28 @@ class Message {
                 }
             }
         }
+    }
+
+    /**
+     * Create from a generic object (e.g., database row) without factory validation.
+     *
+     * @param object $row message row.
+     *
+     * @return static
+     */
+    public static function from_object( object $row ): static {
+        return new static( Message_Hydration_DTO::from_object( $row ) );
+    }
+
+    /**
+     * Create from an array without factory validation.
+     *
+     * @param array $data message data.
+     *
+     * @return static
+     */
+    public static function from_array( array $data ): static {
+        return static::from_object( (object) $data );
     }
 
     /**

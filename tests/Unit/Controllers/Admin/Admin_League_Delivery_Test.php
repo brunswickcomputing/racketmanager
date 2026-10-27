@@ -60,12 +60,12 @@ final class Admin_League_Delivery_Test extends TestCase {
         $_GET = array( 'league_id' => '42', 'season' => '2026', 'final' => 'semi', 'mode' => 'edit' );
         $_POST = array();
         $competition = Competition_Test_Factory::create( id: 1, type: Competition_Type::CUP );
-        $event = new \Racketmanager\Domain\Competition\Event( (object) array(
+        $event = \Racketmanager\Domain\Competition\Event::from_object( (object) array(
             'id' => 93,
             'name' => 'Event',
             'seasons' => array( '2026' => array( 'name' => '2026' ) ),
         ), $competition );
-        $league = new \Racketmanager\Domain\Competition\League( (object) array( 'id' => 42, 'title' => 'Finals' ), $event );
+        $league = \Racketmanager\Domain\Competition\League::from_object( (object) array( 'id' => 42, 'title' => 'Finals' ), $event );
         $league->mode = 'championship';
         $league->num_teams_total = 8;
         $league->set_season( '2026' );
@@ -191,12 +191,12 @@ final class Admin_League_Delivery_Test extends TestCase {
         $prop->setAccessible( true );
         $prop->setValue( $champ_obj, 16 );
 
-        $league_champ                  = new \Racketmanager\Domain\Competition\League( (object) array( 'id' => 101, 'title' => 'Division Cup' ) );
+        $league_champ                  = \Racketmanager\Domain\Competition\League::from_object( (object) array( 'id' => 101, 'title' => 'Division Cup' ) );
         $league_champ->is_championship = true;
         $league_champ->num_teams_total = 8;
         $league_champ->championship    = $champ_obj;
 
-        $league_std                  = new \Racketmanager\Domain\Competition\League( (object) array( 'id' => 102, 'title' => 'Division 1' ) );
+        $league_std                  = \Racketmanager\Domain\Competition\League::from_object( (object) array( 'id' => 102, 'title' => 'Division 1' ) );
         $league_std->is_championship = false;
         $league_std->num_teams_total = 6;
 

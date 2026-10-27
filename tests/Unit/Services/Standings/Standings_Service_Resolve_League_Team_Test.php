@@ -39,7 +39,7 @@ final class Standings_Service_Resolve_League_Team_Test extends TestCase {
         $competition->settings        = new Competition_Settings( [ 'team_ranking' => 'auto' ] );
         $competition->standings       = [];
         $competition->is_player_entry = false;
-        return new Event( (object) [ 'name' => 'League', 'seasons' => [] ], $competition );
+        return Event::from_object( (object) [ 'name' => 'League', 'seasons' => [] ], $competition );
     }
 
     private function league(): League {

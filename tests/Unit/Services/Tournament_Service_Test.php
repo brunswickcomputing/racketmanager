@@ -116,7 +116,7 @@ class Tournament_Service_Test extends TestCase {
         if ( null !== $information ) {
             $data->information = json_encode( $information );
         }
-        $tournament = new \Racketmanager\Domain\Tournament\Tournament( $data );
+        $tournament = \Racketmanager\Domain\Tournament\Tournament::from_object( $data );
         $tournament->set_competition( $competition );
 
         return $tournament;
@@ -178,7 +178,7 @@ class Tournament_Service_Test extends TestCase {
 
         self::assertSame( [ 11 ], $service->get_unavailable_entry_events( $this->make_entry_tournament( null ), [ 11 ] ) );
 
-        $orphan = new \Racketmanager\Domain\Tournament\Tournament( (object) [ 'id' => 1, 'name' => 'T', 'competition_id' => 10, 'season' => '2026' ] );
+        $orphan = \Racketmanager\Domain\Tournament\Tournament::from_object( (object) [ 'id' => 1, 'name' => 'T', 'competition_id' => 10, 'season' => '2026' ] );
         self::assertSame( [ 11 ], $service->get_unavailable_entry_events( $orphan, [ 11 ] ) );
     }
 

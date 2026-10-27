@@ -4,6 +4,9 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Domain\DTO\Competition;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\Competition\Event_Factory;
+use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Competition\Event_Hydration_DTO;
 use Racketmanager\Domain\DTO\Competition\League_Hydration_DTO;
 use stdClass;
@@ -39,17 +42,19 @@ class Competition_Hydration_DTO_Test extends TestCase {
 		$this->assertSame( array( '2025' => array( 'name' => '2025' ) ), $dto->seasons );
 	}
 
-	public function test_league_dto_to_std_class_copies_settings_keys(): void {
+	public function test_league_constructed_from_dto_merges_settings_keys(): void {
 		$dto = new League_Hydration_DTO(
 			id: 1,
 			title: 'Div 1',
 			event_id: 2,
-			settings: array( 'point_rule' => 'three' )
+			settings: array( 'num_teams_per_page' => 14 )
 		);
-		$object = $dto->to_std_class();
-		$this->assertSame( 'Div 1', $object->title );
-		$this->assertSame( 'Div 1', $object->name );
-		$this->assertSame( 'three', $object->point_rule );
+		$league = new League( $dto );
+		$this->assertSame( 'Div 1', $league->title );
+		$this->assertSame( 'Div 1', $league->name );
+		$this->assertSame( 2, $league->event_id );
+		$this->assertSame( 14, $league->num_teams_per_page );
+		$this->assertFalse( method_exists( $dto, 'to_std_class' ) );
 	}
 
 	public function test_event_dto_unserializes_settings_and_keeps_json_seasons(): void {
@@ -68,27 +73,42 @@ class Competition_Hydration_DTO_Test extends TestCase {
 		$this->assertSame( array( array( 'name' => '2026' ) ), $dto->seasons );
 	}
 
-	public function test_event_dto_missing_fields_use_defaults(): void {
+	/**
+	 * The DTO deliberately keeps `num_sets`/`num_rubbers` nullable so the lenient `Event::from_object()`
+	 * path mirrors the raw constructor; the legacy 3/0 defaults live on the validating factory path.
+	 */
+	public function test_event_dto_missing_fields_are_nullable_and_factory_restores_legacy_defaults(): void {
 		$dto = Event_Hydration_DTO::from_array( array() );
 		$this->assertNull( $dto->id );
 		$this->assertSame( '', $dto->name );
-		$this->assertSame( 3, $dto->num_sets );
-		$this->assertSame( 0, $dto->num_rubbers );
+		$this->assertNull( $dto->num_sets );
+		$this->assertNull( $dto->num_rubbers );
 		$this->assertSame( array(), $dto->settings );
+
+		$lenient = Event::from_array( array( 'id' => 1, 'name' => 'Ev', 'type' => 'MS', 'competition_id' => 2 ) );
+		$this->assertNull( $lenient->num_sets );
+		$this->assertNull( $lenient->num_rubbers );
+
+		$validated = Event_Factory::from_array( array( 'id' => 1, 'name' => 'Ev', 'type' => 'MS', 'competition_id' => 2 ) );
+		$this->assertSame( Event_Factory::DEFAULT_NUM_SETS, $validated->num_sets );
+		$this->assertSame( Event_Factory::DEFAULT_NUM_RUBBERS, $validated->num_rubbers );
+		$this->assertSame( 3, $validated->get_num_sets() );
 	}
 
-	public function test_event_dto_to_std_class_encodes_array_seasons(): void {
+	public function test_event_constructed_from_dto_merges_settings_and_encodes_array_seasons(): void {
 		$dto = new Event_Hydration_DTO(
 			id: 2,
 			name: 'Mixed',
 			settings: array( 'point_rule' => 'three' ),
 			seasons: array( array( 'name' => '2026' ) )
 		);
-		$object = $dto->to_std_class();
-		$this->assertSame( 'Mixed', $object->name );
-		$this->assertSame( 'three', $object->point_rule );
-		$this->assertIsString( $object->seasons );
-		$this->assertStringContainsString( '2026', $object->seasons );
+		$event = new Event( $dto );
+		$this->assertSame( 'Mixed', $event->name );
+		$this->assertSame( 'three', $event->point_rule );
+		$this->assertSame( array( 'point_rule' ), $event->settings_keys );
+		$this->assertIsString( $event->seasons );
+		$this->assertStringContainsString( '2026', $event->seasons );
+		$this->assertFalse( method_exists( $dto, 'to_std_class' ) );
 	}
 
 	public function test_event_dto_accepts_json_settings(): void {

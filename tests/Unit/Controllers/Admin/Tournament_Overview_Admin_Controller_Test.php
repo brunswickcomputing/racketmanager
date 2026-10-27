@@ -47,7 +47,7 @@ class Tournament_Overview_Admin_Controller_Test extends TestCase {
         $tournament_obj->date_withdrawal = '2023-12-15';
         $tournament_obj->venue = 1;
         $tournament_obj->num_entries = 0;
-        $tournament = new Tournament( $tournament_obj );
+        $tournament = Tournament::from_object( $tournament_obj );
         
         $overview = new stdClass();
         $events = [];

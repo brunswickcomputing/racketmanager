@@ -11,6 +11,7 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\DTO\Competition\Competition_Hydration_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Update_DTO;
 use Racketmanager\Domain\Tournament\Tournament;
+use Racketmanager\Domain\Tournament\Tournament_Factory;
 use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Request_DTO;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Services\Competition_Service;
@@ -36,7 +37,7 @@ final class Tournament_Test extends TestCase {
         $data->date_withdrawal = '2026-12-05';
         $data->season = '2026';
 
-        $tournament = new Tournament( $data );
+        $tournament = Tournament::from_object( $data );
         $presenter = new \Racketmanager\Presentation\Presenters\Tournament_Presenter( 'Y-m-d' );
         $view_model = $presenter->present_dates( $tournament );
 
@@ -58,7 +59,7 @@ final class Tournament_Test extends TestCase {
         $data->id = 1;
         $data->name = 'Original Name';
         $data->date = '2026-12-31';
-        $tournament = new Tournament($data);
+        $tournament = Tournament::from_object($data);
 
         $request_data = [
             'tournamentName'   => 'Updated Name',
@@ -98,7 +99,7 @@ final class Tournament_Test extends TestCase {
         $data->id = 1;
         $data->name = 'Test';
         $data->date_end = '2026-12-31';
-        $tournament = new Tournament($data);
+        $tournament = Tournament::from_object($data);
 
         // finals[R1] = round 6
         // finals[R2] = round 5
@@ -226,7 +227,7 @@ final class Tournament_Test extends TestCase {
         if ( null !== $information ) {
             $data->information = json_encode( $information );
         }
-        $tournament = new Tournament( $data );
+        $tournament = Tournament::from_object( $data );
         if ( isset( $this->competitions_by_id[ $competition_id ] ) ) {
             $tournament->set_competition( $this->competitions_by_id[ $competition_id ] );
         }
@@ -444,7 +445,7 @@ final class Tournament_Test extends TestCase {
         $data->date_withdrawal = '2026-06-20';
         $data->season = '2026';
 
-        $tournament = new Tournament( $data );
+        $tournament = Tournament::from_object( $data );
 
         $tournament_window = $tournament->get_tournament_window();
         $this->assertInstanceOf( \Racketmanager\Domain\Value_Objects\Date_Range::class, $tournament_window );
@@ -472,7 +473,7 @@ final class Tournament_Test extends TestCase {
         $data->date_closing = 'invalid-date';
         $data->date_withdrawal = null;
 
-        $tournament = new Tournament( $data );
+        $tournament = Tournament::from_object( $data );
 
         $this->assertNull( $tournament->get_tournament_window() );
         $this->assertNull( $tournament->get_entry_window() );
@@ -483,7 +484,7 @@ final class Tournament_Test extends TestCase {
         // HEAD equivalence: a null/missing end date is normalised to '' and treated as elapsed
         $data_null = new stdClass();
         $data_null->date_end = null;
-        $tournament_null = new Tournament( $data_null );
+        $tournament_null = Tournament::from_object( $data_null );
         $this->assertTrue( $tournament_null->is_complete() );
         $this->assertSame( 'end', $tournament_null->get_current_phase() );
 
@@ -491,7 +492,7 @@ final class Tournament_Test extends TestCase {
         $data_inverted = new stdClass();
         $data_inverted->date_start = '2026-08-01';
         $data_inverted->date_end = '2026-07-01';
-        $tournament_inverted = new Tournament( $data_inverted );
+        $tournament_inverted = Tournament::from_object( $data_inverted );
         $this->assertNull( $tournament_inverted->get_tournament_window() );
     }
 
@@ -506,7 +507,7 @@ final class Tournament_Test extends TestCase {
         $future_20 = gmdate( 'Y-m-d', strtotime( '+20 days' ) );
 
         // 1. Ended phase: today > date_end
-        $t_end = new Tournament( (object) [
+        $t_end = Tournament::from_object( (object) [
             'date_open' => $past_10,
             'date_closing' => $past_10,
             'date_withdrawal' => $past_2,
@@ -517,7 +518,7 @@ final class Tournament_Test extends TestCase {
         $this->assertTrue( $t_end->is_complete() );
 
         // 2. Started phase: today >= date_start and today <= date_end
-        $t_start = new Tournament( (object) [
+        $t_start = Tournament::from_object( (object) [
             'date_open' => $past_10,
             'date_closing' => $past_10,
             'date_withdrawal' => $past_2,
@@ -529,7 +530,7 @@ final class Tournament_Test extends TestCase {
         $this->assertFalse( $t_start->is_complete() );
 
         // 3. Withdraw phase: today > date_withdrawal, before date_start
-        $t_withdraw = new Tournament( (object) [
+        $t_withdraw = Tournament::from_object( (object) [
             'date_open' => $past_10,
             'date_closing' => $past_10,
             'date_withdrawal' => $yesterday,
@@ -540,7 +541,7 @@ final class Tournament_Test extends TestCase {
         $this->assertTrue( $t_withdraw->is_withdrawal() );
 
         // 4. Closed phase: today > date_closing, before date_withdrawal
-        $t_close = new Tournament( (object) [
+        $t_close = Tournament::from_object( (object) [
             'date_open' => $past_10,
             'date_closing' => $yesterday,
             'date_withdrawal' => $tomorrow,
@@ -552,7 +553,7 @@ final class Tournament_Test extends TestCase {
         $this->assertTrue( $t_close->is_active() );
 
         // 5. Open phase: today >= date_open and today <= date_closing
-        $t_open = new Tournament( (object) [
+        $t_open = Tournament::from_object( (object) [
             'date_open' => $today,
             'date_closing' => $tomorrow,
             'date_withdrawal' => $future_10,
@@ -564,7 +565,7 @@ final class Tournament_Test extends TestCase {
         $this->assertFalse( $t_open->is_active() );
 
         // 6. Before open / unconfigured
-        $t_future = new Tournament( (object) [
+        $t_future = Tournament::from_object( (object) [
             'date_open' => $tomorrow,
             'date_closing' => $future_10,
             'date_end' => $future_20,
@@ -642,7 +643,7 @@ final class Tournament_Test extends TestCase {
                                 'date_open' => $v_open,
                             ];
                             $expected = $head_evaluator( $dates );
-                            $tournament = new Tournament( (object) $dates );
+                            $tournament = Tournament::from_object( (object) $dates );
 
                             $this->assertSame( $expected['phase'], $tournament->get_current_phase() );
                             $this->assertSame( $expected['is_complete'], $tournament->is_complete() );
@@ -656,5 +657,28 @@ final class Tournament_Test extends TestCase {
                 }
             }
         }
+    }
+
+    public function test_constructor_only_accepts_hydration_dto_and_lenient_from_object_matches_factory(): void {
+        $row = (object) [
+            'id'             => '5',
+            'name'           => 'Spring Open',
+            'competition_id' => '2',
+            'season'         => '2026',
+            'date_closing'   => '2026-03-01',
+            'unknown'        => 'dropped',
+        ];
+
+        $lenient = Tournament::from_object( $row );
+
+        $this->assertEquals( Tournament_Factory::from_object( $row ), $lenient );
+        $this->assertEquals( $lenient, Tournament::from_array( (array) $row ) );
+        $this->assertSame( 5, $lenient->id );
+        $this->assertSame( 2, $lenient->competition_id );
+        $this->assertFalse( property_exists( $lenient, 'unknown' ) );
+        $this->assertNull( ( new Tournament() )->id );
+
+        $this->expectException( \TypeError::class );
+        new Tournament( $row );
     }
 }

@@ -45,7 +45,7 @@ final class League_Read_Api_Characterization_Test extends TestCase {
 	}
 
 	private function league( array $overrides = array() ): League {
-		$league                 = new League( (object) array_merge( array(
+		$league                 = League::from_object( (object) array_merge( array(
 			'id'      => 42,
 			'title'   => 'Division 1',
 			'sport'   => 'tennis',
@@ -173,7 +173,7 @@ final class League_Read_Api_Characterization_Test extends TestCase {
 				return array( (object) array( 'table_id' => 77 ) );
 			}
 		);
-		$team = new League_Team( (object) array(
+		$team = League_Team::from_object( (object) array(
 			'id'             => 940,
 			'table_id'       => 77,
 			'title'          => 'Leigh A',

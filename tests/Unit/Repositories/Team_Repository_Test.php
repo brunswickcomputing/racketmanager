@@ -80,7 +80,7 @@ final class Team_Repository_Test extends TestCase {
 
 		$this->db->insert_id = 55;
 
-		$team = new Team(
+		$team = Team::from_object(
 			(object) array(
 				'title'     => 'New Team Title',
 				'stadium'   => 'Court 1',
@@ -105,7 +105,7 @@ final class Team_Repository_Test extends TestCase {
 		// Existing team in DB with old title (read with a scalar query).
 		$this->db->get_var_return = 'Old Team Title';
 
-		$team = new Team(
+		$team = Team::from_object(
 			(object) array(
 				'id'        => 10,
 				'title'     => 'Updated Team Title',
@@ -138,7 +138,7 @@ final class Team_Repository_Test extends TestCase {
 		$this->db->get_var_return = 'Old Team Title';
 		$this->db->update_return  = false;
 
-		$team = new Team(
+		$team = Team::from_object(
 			(object) array(
 				'id'        => 10,
 				'title'     => 'Updated Team Title',
@@ -161,7 +161,7 @@ final class Team_Repository_Test extends TestCase {
 
 		$this->db->insert_return = false;
 
-		$team = new Team(
+		$team = Team::from_object(
 			(object) array(
 				'title'     => 'New Team Title',
 				'stadium'   => 'Court 1',

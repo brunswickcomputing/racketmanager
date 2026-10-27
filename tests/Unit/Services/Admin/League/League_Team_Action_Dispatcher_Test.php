@@ -109,7 +109,7 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
             ->method( 'withdraw_team' )
             ->with( $league, 10, '2026' );
 
-        $team            = new Team( (object) array( 'id' => 10, 'title' => 'Leigh A' ) );
+        $team            = Team::from_object( (object) array( 'id' => 10, 'title' => 'Leigh A' ) );
         $team_repository = $this->createMock( Team_Repository_Interface::class );
         $team_repository->expects( self::once() )->method( 'find_by_id' )->with( 10 )->willReturn( $team );
 
@@ -373,7 +373,7 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
         $league_service = $this->createMock( League_Service::class );
         $guard          = $this->createStub( Action_Guard_Interface::class );
 
-        $league = new League( (object) [ 'title' => 'Division 1' ] );
+        $league = League::from_object( (object) [ 'title' => 'Division 1' ] );
         $league->id = 5;
         $this->standings_service->expects( self::once() )->method( 'save_standings_manually' )->with(
             $league,

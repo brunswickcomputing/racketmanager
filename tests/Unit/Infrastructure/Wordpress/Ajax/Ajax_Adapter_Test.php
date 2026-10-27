@@ -200,7 +200,7 @@ class Ajax_Adapter_Test extends TestCase {
 
         $adapter = $this->create_frontend_adapter( $event_repository );
 
-        $league = new \Racketmanager\Domain\Competition\League( (object) [ 'id' => 50, 'title' => 'Division 1', 'event_id' => 30 ] );
+        $league = \Racketmanager\Domain\Competition\League::from_object( (object) [ 'id' => 50, 'title' => 'Division 1', 'event_id' => 30 ] );
         $this->assertNull( $league->event );
         $GLOBALS['wp_stubs_leagues'][50] = $league;
 
@@ -240,7 +240,7 @@ class Ajax_Adapter_Test extends TestCase {
         $event->seasons = json_encode( [ '2026' => [ 'name' => '2026' ] ] );
         $event->method( 'get_seasons' )->willReturn( [ '2026' => [ 'name' => '2026' ] ] );
 
-        $league = new \Racketmanager\Domain\Competition\League( (object) [ 'id' => 50, 'title' => 'Division 1' ] );
+        $league = \Racketmanager\Domain\Competition\League::from_object( (object) [ 'id' => 50, 'title' => 'Division 1' ] );
         $league->event = $event;
         $GLOBALS['wp_stubs_leagues'][50] = $league;
 

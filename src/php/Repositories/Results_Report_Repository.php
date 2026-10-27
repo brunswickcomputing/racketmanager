@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Communication\Results_Report;
+use Racketmanager\Domain\Communication\Results_Report_Factory;
 use Racketmanager\Repositories\Interfaces\Results_Report_Repository_Interface;
 use wpdb;
 
@@ -86,7 +87,7 @@ class Results_Report_Repository implements Results_Report_Repository_Interface {
             return null;
         }
 
-        return new Results_Report( $row );
+        return Results_Report_Factory::from_object( $row );
     }
 
     /**
@@ -107,7 +108,7 @@ class Results_Report_Repository implements Results_Report_Repository_Interface {
             return null;
         }
 
-        return new Results_Report( $row );
+        return Results_Report_Factory::from_object( $row );
     }
 
     /**

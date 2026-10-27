@@ -77,11 +77,11 @@ final class League_Repository_Championship_Factory_Test extends TestCase {
 	private function event_repository(): Event_Repository_Interface {
 		// League mode is derived from the competition settings; 'championship' makes the repository build a Championship.
 		$competition = new Competition( 'Club Cup', 'cup', 'open', null, array( 'mode' => 'championship' ), 5 );
-		$event       = new Event(
+		$event       = Event::from_object(
 			(object) array(
 				'id'             => 30,
 				'name'           => 'Mens Singles',
-				'primary_league' => 1,
+				'settings'       => array( 'primary_league' => 1 ),
 				'seasons'        => wp_json_encode( array( '2026' => array( 'name' => '2026', 'num_match_days' => 3 ) ) ),
 			),
 			$competition

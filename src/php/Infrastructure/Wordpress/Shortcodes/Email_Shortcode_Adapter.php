@@ -383,7 +383,7 @@ class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $team;
         }
         if ( is_object( $team ) ) {
-            return new Team( $team );
+            return Team::from_object( $team );
         }
         return $this->team_repository->find_by_id( is_numeric( $team ) ? (int) $team : (string) $team );
     }
@@ -399,7 +399,7 @@ class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         if ( is_object( $league ) ) {
             $event = null;
             if ( isset( $league->event ) && is_object( $league->event ) ) {
-                $event = $league->event instanceof Event ? $league->event : new Event( $league->event );
+                $event = $league->event instanceof Event ? $league->event : Event::from_object( $league->event );
             } elseif ( ! empty( $league->event_id ) ) {
                 $event = $this->event_repository->find_by_id( (int) $league->event_id );
             }
@@ -425,7 +425,7 @@ class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             if ( ! empty( $event->competition_id ) ) {
                 $competition = $this->competition_repository->find_by_id( (int) $event->competition_id );
             }
-            return new Event( $event, $competition );
+            return Event::from_object( $event, $competition );
         }
         return $this->event_repository->find_by_id( is_numeric( $event ) ? (int) $event : $event );
     }

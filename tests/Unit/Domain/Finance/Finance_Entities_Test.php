@@ -72,7 +72,7 @@ final class Finance_Entities_Test extends TestCase {
             'details'        => '{"item":"Entry fee"}',
         ];
 
-        $invoice = new Invoice( $row );
+        $invoice = Invoice::from_object( $row );
         self::assertSame( 5, $invoice->id );
         self::assertSame( 1001, $invoice->invoice_number );
         self::assertSame( 2, $invoice->charge_id );
@@ -131,7 +131,7 @@ final class Finance_Entities_Test extends TestCase {
             'total'           => '60.00',
         ];
 
-        $charge = new Charge( $row );
+        $charge = Charge::from_object( $row );
         self::assertSame( 10, $charge->id );
         self::assertSame( 2, $charge->competition_id );
         self::assertSame( '2026', $charge->season );
@@ -276,7 +276,7 @@ final class Finance_Entities_Test extends TestCase {
     }
 
     public function test_charge_empty_db_status_is_safe(): void {
-        $charge = new Charge( (object) [ 'status' => '' ] );
+        $charge = Charge::from_object( (object) [ 'status' => '' ] );
         self::assertSame( '', $charge->get_status() );
         self::assertNull( $charge->get_status_enum() );
     }

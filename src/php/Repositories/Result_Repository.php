@@ -11,7 +11,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Repositories;
 
-use Racketmanager\Domain\Communication\Results_Report;
+use Racketmanager\Domain\Communication\Results_Report_Factory;
 use Racketmanager\Repositories\Interfaces\Result_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Results_Report_Repository_Interface;
 use stdClass;
@@ -148,7 +148,7 @@ class Result_Repository implements Result_Repository_Interface {
             $results_report->result_object = wp_json_encode( $report_data );
         }
 
-        $report_entity = new Results_Report( $results_report );
+        $report_entity = Results_Report_Factory::from_object( $results_report );
         return $this->results_report_repository->save( $report_entity );
     }
 }

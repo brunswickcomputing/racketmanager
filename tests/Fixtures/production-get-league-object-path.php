@@ -60,7 +60,7 @@ $league_row = static fn( string $mode ): object => (object) array(
 	'event_id' => 93,
 	'settings' => array( 'num_advance' => 2 ),
 	'seasons'  => $seasons,
-	'event'    => new Event(
+	'event'    => Event::from_object(
 		(object) array( 'id' => 93, 'name' => 'Event', 'seasons' => $seasons ),
 		Competition_Test_Factory::create( settings: array( 'mode' => $mode ) )
 	),

@@ -39,7 +39,7 @@ final class Competition_Deletion_Service_Test extends TestCase {
     }
 
     private function event(): Event {
-        $event = new Event( (object) array( 'id' => 55, 'competition_id' => 10, 'name' => 'Doubles', 'type' => 'doubles' ) );
+        $event = Event::from_object( (object) array( 'id' => 55, 'competition_id' => 10, 'name' => 'Doubles', 'type' => 'doubles' ) );
         $event->set_seasons( array( 2025 => array( 'name' => '2025' ), 2026 => array( 'name' => '2026' ) ) );
         return $event;
     }

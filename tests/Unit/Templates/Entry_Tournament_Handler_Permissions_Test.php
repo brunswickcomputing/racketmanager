@@ -174,7 +174,7 @@ final class Entry_Tournament_Handler_Permissions_Test extends TestCase {
             }
         };
 
-        $tournament = new Tournament( (object) [
+        $tournament = Tournament::from_object( (object) [
             'id'             => 1,
             'competition_id' => 8,
             'name'           => 'Summer Open',
@@ -209,7 +209,7 @@ final class Entry_Tournament_Handler_Permissions_Test extends TestCase {
         $registration_service->method( 'get_clubs_for_player' )->willReturn( [
             new Club_Player_DTO( $player, Club_Test_Factory::create( id: 1, name: 'Leigh Tennis Club', shortcode: 'LTC' ), new Club_Player() ),
         ] );
-        $comp_entry_service->method( 'get_tournament_entry_by_tournament_and_player' )->willReturn( new Tournament_Entry( (object) [
+        $comp_entry_service->method( 'get_tournament_entry_by_tournament_and_player' )->willReturn( Tournament_Entry::from_object( (object) [
             'id'            => 10,
             'tournament_id' => 1,
             'player_id'     => self::PLAYER_ID,

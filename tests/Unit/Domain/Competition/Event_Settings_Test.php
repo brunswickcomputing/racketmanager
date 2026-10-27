@@ -53,7 +53,7 @@ class Event_Settings_Test extends TestCase {
         $event_raw->competition_id = 1;
         $event_raw->seasons = '[]';
         $event_raw->num_rubbers = 4;
-        $this->event = new Event( $event_raw, $competition );
+        $this->event = Event::from_object( $event_raw, $competition );
     }
 
     protected function tearDown(): void {

@@ -9,6 +9,7 @@ declare( strict_types=1 );
  */
 namespace Racketmanager\Domain\Club;
 
+use Racketmanager\Domain\DTO\Club\Club_Role_Hydration_DTO;
 use Racketmanager\Domain\Shared\Typed_Property_Hydrator;
 use Racketmanager\Util\Util_Lookup;
 
@@ -61,19 +62,42 @@ class Club_Role {
     /**
      * Constructor
      *
-     * @param object|null $club_role Club_Role object.
+     * @param Club_Role_Hydration_DTO|null $dto hydration DTO.
      */
-    public function __construct( ?object $club_role = null ) {
-        if ( ! is_null( $club_role ) ) {
-            foreach ( get_object_vars( $club_role ) as $key => $value ) {
+    public function __construct( ?Club_Role_Hydration_DTO $dto = null ) {
+        if ( ! is_null( $dto ) ) {
+            foreach ( get_object_vars( $dto ) as $key => $value ) {
                 Typed_Property_Hydrator::assign( $this, $key, $value );
             }
             if ( !empty( $this->role_id ) ) {
                 $this->role = Util_Lookup::get_club_role( (string) $this->role_id );
             } elseif( $this->role ) {
-                $this->role_id = Util_Lookup::get_club_role_ref( $this->role );
+                $role_desc = is_object( $this->role ) && isset( $this->role->desc )
+                    ? (string) $this->role->desc
+                    : (string) $this->role;
+                $this->role_id = Util_Lookup::get_club_role_ref( $role_desc );
             }
         }
+    }
+
+    /**
+     * Create a Club_Role from a raw row without factory validation.
+     *
+     * @param object $row club role row.
+     * @return static
+     */
+    public static function from_object( object $row ): static {
+        return new static( Club_Role_Hydration_DTO::from_object( $row ) );
+    }
+
+    /**
+     * Create a Club_Role from an associative array without factory validation.
+     *
+     * @param array $data club role data.
+     * @return static
+     */
+    public static function from_array( array $data ): static {
+        return static::from_object( (object) $data );
     }
 
     /**

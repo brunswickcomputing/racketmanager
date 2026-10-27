@@ -96,6 +96,35 @@ final class Legacy_User_Test extends TestCase {
 		$this->assertSame( 5, $legacy->get_messages( [ 'count' => true ] ) );
 	}
 
+	public function test_factory_copies_hydrated_user_fields_through_the_dto(): void {
+		$repo = $this->createMock( Message_Repository_Interface::class );
+		$repo->expects( $this->once() )
+			->method( 'find_by_user' )
+			->with( 42, [] )
+			->willReturn( [] );
+
+		$domain_user             = User::from_object( (object) [ 'ID' => 42, 'user_email' => 'legacy@example.test', 'display_name' => 'Legacy Name', 'favourites' => [ 'club' => [ 3 ] ] ] );
+		$domain_user->firstname  = 'Legacy';
+		$domain_user->surname    = 'Name';
+
+		$legacy = ( new Legacy_User_Factory( $repo ) )->from_user( $domain_user );
+
+		$this->assertSame( 42, $legacy->id );
+		$this->assertSame( 42, $legacy->ID );
+		$this->assertSame( 'legacy@example.test', $legacy->email );
+		$this->assertSame( 'legacy@example.test', $legacy->user_email );
+		$this->assertSame( 'Legacy Name', $legacy->fullname );
+		$this->assertSame( 'Legacy', $legacy->firstname );
+		$this->assertSame( 'Name', $legacy->surname );
+		$this->assertSame( [ 3 ], $legacy->get_favourites( 'club' ) );
+		$this->assertSame( [], $legacy->get_messages( [] ) );
+	}
+
+	public function test_constructor_rejects_raw_object(): void {
+		$this->expectException( \TypeError::class );
+		new Legacy_User( (object) [ 'ID' => 1 ], null );
+	}
+
 	public function test_user_repository_still_hydrates_domain_user(): void {
 		$wpdb            = $this->createStub( wpdb::class );
 		$GLOBALS['wpdb'] = $wpdb;

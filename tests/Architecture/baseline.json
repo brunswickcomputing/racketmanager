@@ -167,26 +167,6 @@
     "application.no_superglobals": {
         "src/php/Application/Login/Queries/Get_Login_Form_Query.php|$_SERVER": 1
     },
-    "domain.no_untyped_constructor": {
-        "src/php/Domain/Club/Club.php|Racketmanager\\Domain\\Club\\Club::__construct($club: ?object)": 1,
-        "src/php/Domain/Club/Club_Player.php|Racketmanager\\Domain\\Club\\Club_Player::__construct($club_player: ?object)": 1,
-        "src/php/Domain/Club/Club_Role.php|Racketmanager\\Domain\\Club\\Club_Role::__construct($club_role: ?object)": 1,
-        "src/php/Domain/Communication/Message.php|Racketmanager\\Domain\\Communication\\Message::__construct($message: ?object)": 1,
-        "src/php/Domain/Communication/Results_Report.php|Racketmanager\\Domain\\Communication\\Results_Report::__construct($results_report: ?object)": 1,
-        "src/php/Domain/Competition/Event.php|Racketmanager\\Domain\\Competition\\Event::__construct($event: object)": 1,
-        "src/php/Domain/Competition/League.php|Racketmanager\\Domain\\Competition\\League::__construct($league: object)": 1,
-        "src/php/Domain/Competition/League_Team.php|Racketmanager\\Domain\\Competition\\League_Team::__construct($league_team: ?object)": 1,
-        "src/php/Domain/Finance/Charge.php|Racketmanager\\Domain\\Finance\\Charge::__construct($charges: ?object)": 1,
-        "src/php/Domain/Finance/Invoice.php|Racketmanager\\Domain\\Finance\\Invoice::__construct($invoice: ?object)": 1,
-        "src/php/Domain/Fixture/Rubber.php|Racketmanager\\Domain\\Fixture\\Rubber::__construct($rubber: ?object)": 1,
-        "src/php/Domain/Player/Player_Error.php|Racketmanager\\Domain\\Player\\Player_Error::__construct($player_error: ?object)": 1,
-        "src/php/Domain/Player/User.php|Racketmanager\\Domain\\Player\\User::__construct($user: ?object)": 1,
-        "src/php/Domain/Result/Results_Checker.php|Racketmanager\\Domain\\Result\\Results_Checker::__construct($data: Racketmanager\\Domain\\DTO\\Result\\Results_Checker_Data|stdClass|null)": 1,
-        "src/php/Domain/Season/Season.php|Racketmanager\\Domain\\Season\\Season::__construct($season: ?object)": 1,
-        "src/php/Domain/Team/Team.php|Racketmanager\\Domain\\Team\\Team::__construct($team: ?object)": 1,
-        "src/php/Domain/Tournament/Tournament.php|Racketmanager\\Domain\\Tournament\\Tournament::__construct($tournament: ?object)": 1,
-        "src/php/Domain/Tournament/Tournament_Entry.php|Racketmanager\\Domain\\Tournament\\Tournament_Entry::__construct($tournament_entry: ?object)": 1
-    },
     "domain.no_util_static": {
         "src/php/Domain/Club/Club_Role.php|Racketmanager\\Util\\Util_Lookup::get_club_role()": 1,
         "src/php/Domain/Club/Club_Role.php|Racketmanager\\Util\\Util_Lookup::get_club_role_ref()": 1,

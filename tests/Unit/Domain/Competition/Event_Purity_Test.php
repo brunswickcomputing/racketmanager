@@ -24,7 +24,7 @@ class Event_Purity_Test extends TestCase {
 		$event_raw->competition_id = 3;
 		$event_raw->seasons        = '[]';
 
-		$event = new Event( $event_raw );
+		$event = Event::from_object( $event_raw );
 
 		$this->assertSame( 11, $event->id );
 		$this->assertSame( 'Open Singles', $event->name );
@@ -47,7 +47,7 @@ class Event_Purity_Test extends TestCase {
 		$event_raw->competition_id = 4;
 		$event_raw->seasons        = wp_json_encode( array( '2026' => array( 'name' => '2026' ) ) );
 
-		$event = new Event( $event_raw, $competition );
+		$event = Event::from_object( $event_raw, $competition );
 
 		$this->assertSame( $competition, $event->competition );
 		$this->assertSame( array( 'points' => 1 ), $event->standings );

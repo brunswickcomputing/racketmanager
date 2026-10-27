@@ -9,6 +9,9 @@ declare( strict_types=1 );
  */
 namespace Racketmanager\Domain\Player;
 
+use Racketmanager\Domain\DTO\Player\User_Hydration_DTO;
+use Racketmanager\Domain\Shared\Typed_Property_Hydrator;
+
 /**
  * Class to implement the User object
  */
@@ -226,20 +229,40 @@ class User {
     /**
      * Constructor
      *
-     * @param object|null $user User object.
+     * @param User_Hydration_DTO|null $dto hydration DTO (WordPress/plugin aliases already resolved).
      */
-    public function __construct( ?object $user = null ) {
-        if ( ! is_null( $user ) ) {
-            foreach ( $user as $key => $value ) {
-                $this->$key = $value;
+    public function __construct( ?User_Hydration_DTO $dto = null ) {
+        if ( ! is_null( $dto ) ) {
+            foreach ( get_object_vars( $dto ) as $key => $value ) {
+                if ( null === $value ) {
+                    continue; // Column absent from the row: keep the property default.
+                }
+                Typed_Property_Hydrator::assign( $this, $key, $value );
             }
-            $this->id           = $this->ID ?? $this->id ?? 0;
             $this->ID           = $this->id;
-            $this->email        = $this->user_email ?? $this->email ?? '';
             $this->user_email   = $this->email;
-            $this->fullname     = $this->display_name ?? $this->fullname ?? '';
             $this->display_name = $this->fullname;
         }
+    }
+
+    /**
+     * Create a User from a WordPress user, a row or a plugin-shaped object without factory validation.
+     *
+     * @param object $row user object.
+     * @return static
+     */
+    public static function from_object( object $row ): static {
+        return new static( User_Hydration_DTO::from_object( $row ) );
+    }
+
+    /**
+     * Create a User from an associative array without factory validation.
+     *
+     * @param array $data user data.
+     * @return static
+     */
+    public static function from_array( array $data ): static {
+        return static::from_object( (object) $data );
     }
 
     /**

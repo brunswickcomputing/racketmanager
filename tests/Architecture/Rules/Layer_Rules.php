@@ -335,11 +335,11 @@ final class Layer_Rules {
             new Layer_Rule(
                 'domain.no_untyped_constructor',
                 'Domain entities must hydrate from typed DTOs, not ?object/stdClass',
-                'Backlog P2-8: add a *_Hydration_DTO + factory and drop the ?object constructor parameter (audit L1).',
+                'Entities must hydrate from a typed *_Hydration_DTO (or be constructed empty) — active-record ?object/stdClass constructors are forbidden (audit L1, P2-8 done).',
                 [ self::DOMAIN ],
                 Rule_Kind::FORBIDDEN_CONSTRUCTOR_PARAM_TYPE,
                 [ 'object', 'stdClass' ],
-                Rule_Mode::RATCHET,
+                Rule_Mode::STRICT,
                 [ self::DOMAIN . 'DTO/' ]
             ),
         ];

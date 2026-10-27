@@ -1250,7 +1250,7 @@ class Admin_Display {
         if ( is_object( $league ) ) {
             $event = null;
             if ( isset( $league->event ) && is_object( $league->event ) ) {
-                $event = $league->event instanceof Event ? $league->event : new Event( $league->event );
+                $event = $league->event instanceof Event ? $league->event : Event::from_object( $league->event );
             } elseif ( ! empty( $league->event_id ) ) {
                 $event = $this->event_repository->find_by_id( (int) $league->event_id );
             }

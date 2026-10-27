@@ -229,7 +229,7 @@ class Account_Ajax_Adapter_Test extends TestCase {
         $message_repo->expects( $this->once() )
             ->method( 'find_by_id' )
             ->with( 10 )
-            ->willReturn( new Message( (object) array( 'id' => 10, 'status' => 'unread' ) ) );
+            ->willReturn( Message::from_object( (object) array( 'id' => 10, 'status' => 'unread' ) ) );
         $this->adapter = $this->make_adapter( $message_repo );
 
         $good = $this->adapter->get_user_message( array( 'security' => 'valid', 'message_id' => 10 ) );

@@ -82,30 +82,6 @@ readonly class League_Hydration_DTO {
 		return self::from_object( (object) $data );
 	}
 
-	/**
-	 * Convert DTO to a standard object compatible with legacy entity hydration.
-	 *
-	 * @return \stdClass
-	 */
-	public function to_std_class(): \stdClass {
-		$obj = new \stdClass();
-		$obj->id = $this->id;
-		$obj->title = $this->title;
-		$obj->name = $this->title;
-		$obj->event_id = $this->event_id;
-		$obj->sequence = $this->sequence;
-		$obj->settings = $this->settings;
-		$obj->seasons = $this->seasons;
-
-		foreach ( $this->settings as $key => $val ) {
-			if ( ! isset( $obj->{$key} ) ) {
-				$obj->{$key} = $val;
-			}
-		}
-
-		return $obj;
-	}
-
 	/** Decode only legacy PHP-serialized arrays; leave JSON and malformed values unchanged. */
 	private static function decode_serialized_array( mixed $value ): mixed {
 		if ( ! is_string( $value ) ) {

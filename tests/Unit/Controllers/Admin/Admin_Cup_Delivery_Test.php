@@ -495,7 +495,7 @@ final class Admin_Cup_Delivery_Test extends TestCase {
         $this->competition_service->method( 'get_matches_for_competition' )->willReturn( array() );
         $this->flash_store->method( 'pop' )->willReturn( array() );
 
-        $club            = new \Racketmanager\Domain\Club\Club( (object) array( 'id' => 7, 'name' => 'Venue Club', 'shortcode' => 'VEN' ) );
+        $club            = \Racketmanager\Domain\Club\Club::from_object( (object) array( 'id' => 7, 'name' => 'Venue Club', 'shortcode' => 'VEN' ) );
         $club_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\Club_Repository_Interface::class );
         $club_repository->expects( self::once() )->method( 'find_by_id' )->with( 7 )->willReturn( $club );
         $this->container->set( 'club_repository', fn() => $club_repository );
@@ -512,7 +512,7 @@ final class Admin_Cup_Delivery_Test extends TestCase {
     }
 
     private function create_test_league( int $id, Competition $competition, string $title ): League {
-        $event = new \Racketmanager\Domain\Competition\Event(
+        $event = \Racketmanager\Domain\Competition\Event::from_object(
             (object) array(
                 'id'      => 3,
                 'name'    => 'Cup Event',
@@ -520,7 +520,7 @@ final class Admin_Cup_Delivery_Test extends TestCase {
             ),
             $competition
         );
-        $league = new League( (object) array( 'id' => $id, 'title' => $title ), $event );
+        $league = League::from_object( (object) array( 'id' => $id, 'title' => $title ), $event );
         $league->mode            = 'championship';
         $league->num_teams_total = 8;
         $league->set_season( '2024' );
@@ -688,12 +688,12 @@ final class Admin_Cup_Delivery_Test extends TestCase {
         $prop->setAccessible( true );
         $prop->setValue( $champ_obj, 8 );
 
-        $champ_league                  = new League( (object) array( 'id' => 12, 'title' => 'Men Championship Draw' ) );
+        $champ_league                  = League::from_object( (object) array( 'id' => 12, 'title' => 'Men Championship Draw' ) );
         $champ_league->num_teams_total = 16;
         $champ_league->is_championship = true;
         $champ_league->championship    = $champ_obj;
 
-        $non_champ_league                  = new League( (object) array( 'id' => 13, 'title' => 'Ladies Plate Draw' ) );
+        $non_champ_league                  = League::from_object( (object) array( 'id' => 13, 'title' => 'Ladies Plate Draw' ) );
         $non_champ_league->num_teams_total = 10;
         $non_champ_league->is_championship = false;
 

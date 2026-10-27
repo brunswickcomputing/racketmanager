@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Finance\Charge;
+use Racketmanager\Domain\Finance\Charge_Factory;
 use Racketmanager\Repositories\Interfaces\Charge_Repository_Interface;
 use Racketmanager\Domain\DTO\Finance\Charge_Details_DTO;
 use Racketmanager\Domain\DTO\Finance\Charges_With_Totals_DTO;
@@ -106,7 +107,7 @@ class Charge_Repository implements Charge_Repository_Interface {
                 return null;
             }
 
-            $charge = new Charge( $charge );
+            $charge = Charge_Factory::from_object( $charge );
 
             wp_cache_set( $charge->id, $charge, 'charges' );
         }

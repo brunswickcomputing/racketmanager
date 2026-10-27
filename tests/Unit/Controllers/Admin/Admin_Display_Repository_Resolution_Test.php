@@ -68,8 +68,8 @@ final class Admin_Display_Repository_Resolution_Test extends TestCase {
 
     private function create_league( int $id ): League {
         $competition = Competition_Test_Factory::create( id: 1, type: Competition_Type::LEAGUE );
-        $event       = new Event( (object) array( 'id' => 9, 'name' => 'Event', 'seasons' => array( '2026' => array( 'name' => '2026' ) ) ), $competition );
-        return new League( (object) array( 'id' => $id, 'title' => 'League ' . $id ), $event );
+        $event       = Event::from_object( (object) array( 'id' => 9, 'name' => 'Event', 'seasons' => array( '2026' => array( 'name' => '2026' ) ) ), $competition );
+        return League::from_object( (object) array( 'id' => $id, 'title' => 'League ' . $id ), $event );
     }
 
     private function resolve( Admin_Display $screen, mixed $league ): ?League {
@@ -102,7 +102,7 @@ final class Admin_Display_Repository_Resolution_Test extends TestCase {
     public function test_resolve_league_with_raw_row_hydrates_league_without_repository_lookup(): void {
         $this->league_repository->expects( self::never() )->method( 'find_by_id' );
         $competition = Competition_Test_Factory::create( id: 1, type: Competition_Type::LEAGUE );
-        $event       = new Event( (object) array( 'id' => 9, 'name' => 'Event', 'seasons' => array( '2026' => array( 'name' => '2026' ) ) ), $competition );
+        $event       = Event::from_object( (object) array( 'id' => 9, 'name' => 'Event', 'seasons' => array( '2026' => array( 'name' => '2026' ) ) ), $competition );
         $row         = (object) array( 'id' => 55, 'title' => 'Raw League', 'event' => $event, 'event_id' => 9 );
 
         $resolved = $this->resolve( $this->create_screen(), $row );
@@ -131,7 +131,7 @@ final class Admin_Display_Repository_Resolution_Test extends TestCase {
 
     public function test_withdraw_teams_action_accepts_league_object_and_uses_team_repository(): void {
         $league  = $this->create_league( 42 );
-        $team    = new Team( (object) array( 'id' => 101, 'title' => 'Westcliff 1', 'club_id' => 5 ) );
+        $team    = Team::from_object( (object) array( 'id' => 101, 'title' => 'Westcliff 1', 'club_id' => 5 ) );
         $_POST   = array(
             'action'              => 'withdraw',
             'racketmanager_nonce' => 'nonce',
@@ -153,7 +153,7 @@ final class Admin_Display_Repository_Resolution_Test extends TestCase {
 
     public function test_delete_teams_action_with_raw_row_hydrates_league_via_event_repository(): void {
         $competition                 = Competition_Test_Factory::create( id: 1, type: Competition_Type::LEAGUE );
-        $event                       = new Event( (object) array( 'id' => 9, 'name' => 'Event', 'seasons' => array( '2026' => array( 'name' => '2026' ) ) ), $competition );
+        $event                       = Event::from_object( (object) array( 'id' => 9, 'name' => 'Event', 'seasons' => array( '2026' => array( 'name' => '2026' ) ) ), $competition );
         $GLOBALS['wp_stubs_events'][9] = $event;
         $_POST                       = array(
             'action'              => 'delete',

@@ -35,7 +35,7 @@ final class User_Repository_Favourites_Resolver_Test extends TestCase {
     }
 
     private function user(): User {
-        return new User( (object) [ 'ID' => self::USER_ID ] );
+        return User::from_object( (object) [ 'ID' => self::USER_ID ] );
     }
 
     private function set_favourites( string $type, array $ids ): void {
@@ -61,7 +61,7 @@ final class User_Repository_Favourites_Resolver_Test extends TestCase {
         $league_repository = $this->createMock( League_Repository_Interface::class );
         $league_repository->expects( $this->exactly( 2 ) )
             ->method( 'find_by_id' )
-            ->willReturnCallback( fn( int $id ) => new League( (object) [ 'id' => $id, 'title' => 'Division ' . $id ] ) );
+            ->willReturnCallback( fn( int $id ) => League::from_object( (object) [ 'id' => $id, 'title' => 'Division ' . $id ] ) );
 
         $calls      = 0;
         $repository = new User_Repository( function () use ( &$calls, $league_repository ) {
@@ -88,7 +88,7 @@ final class User_Repository_Favourites_Resolver_Test extends TestCase {
         $league_repository->expects( $this->once() )
             ->method( 'find_by_id' )
             ->with( 9 )
-            ->willReturn( new League( (object) [ 'id' => 9, 'title' => 'Division 1' ] ) );
+            ->willReturn( League::from_object( (object) [ 'id' => 9, 'title' => 'Division 1' ] ) );
         $league_repository->expects( $this->never() )->method( 'find_by_name' );
 
         $repository = new User_Repository( fn() => $league_repository );
@@ -105,7 +105,7 @@ final class User_Repository_Favourites_Resolver_Test extends TestCase {
         $league_repository->expects( $this->once() )
             ->method( 'find_by_name' )
             ->with( 'Mens Division 1' )
-            ->willReturn( new League( (object) [ 'id' => 3, 'title' => 'Mens Division 1' ] ) );
+            ->willReturn( League::from_object( (object) [ 'id' => 3, 'title' => 'Mens Division 1' ] ) );
         $league_repository->expects( $this->never() )->method( 'find_by_id' );
 
         $repository = new User_Repository( fn() => $league_repository );
@@ -152,7 +152,7 @@ final class User_Repository_Favourites_Resolver_Test extends TestCase {
         $event_repository->expects( $this->once() )
             ->method( 'find_by_id' )
             ->with( 10 )
-            ->willReturn( new Event( (object) [ 'id' => 10, 'name' => 'Mens Singles' ] ) );
+            ->willReturn( Event::from_object( (object) [ 'id' => 10, 'name' => 'Mens Singles' ] ) );
 
         $repository = new User_Repository( null, null, fn() => $event_repository );
         $favourites = $repository->get_favourites( $this->user(), 'competition' );
@@ -226,11 +226,11 @@ final class User_Repository_Favourites_Resolver_Test extends TestCase {
         $team->title = 'Leigh A';
 
         $league_repository = $this->createStub( League_Repository_Interface::class );
-        $league_repository->method( 'find_by_id' )->willReturn( new League( (object) [ 'id' => 9, 'title' => 'Division 1' ] ) );
+        $league_repository->method( 'find_by_id' )->willReturn( League::from_object( (object) [ 'id' => 9, 'title' => 'Division 1' ] ) );
         $club_repository = $this->createStub( Club_Repository_Interface::class );
         $club_repository->method( 'find_by_id' )->willReturn( $club );
         $event_repository = $this->createStub( Event_Repository_Interface::class );
-        $event_repository->method( 'find_by_id' )->willReturn( new Event( (object) [ 'id' => 10, 'name' => 'Mens Singles' ] ) );
+        $event_repository->method( 'find_by_id' )->willReturn( Event::from_object( (object) [ 'id' => 10, 'name' => 'Mens Singles' ] ) );
         $player_repository = $this->createStub( Player_Repository_Interface::class );
         $player_repository->method( 'find' )->willReturn( new Player( new Player_Hydration_DTO( id: 7, display_name: 'Jane Doe' ) ) );
         $team_repository = $this->createStub( Team_Repository_Interface::class );

@@ -27,7 +27,7 @@ class Standings_Match_Counts_Test extends TestCase {
     }
 
     private function league(): League {
-        $league = new League( (object) [ 'id' => 100, 'sport' => 'tennis', 'seasons' => [ '2026' => [ 'name' => '2026' ] ] ] );
+        $league = League::from_object( (object) [ 'id' => 100, 'sport' => 'tennis', 'seasons' => [ '2026' => [ 'name' => '2026' ] ] ] );
         $league->current_season = [ 'name' => '2026' ];
 
         return $league;
@@ -43,7 +43,7 @@ class Standings_Match_Counts_Test extends TestCase {
                 return count( $captured );
             } );
 
-        $league_team = new League_Team( (object) [ 'id' => 50, 'league_id' => 100 ] );
+        $league_team = League_Team::from_object( (object) [ 'id' => 50, 'league_id' => 100 ] );
         $this->service( $repo )->refresh_match_counts( $this->league(), $league_team );
 
         $this->assertSame( 1, $league_team->done_matches );

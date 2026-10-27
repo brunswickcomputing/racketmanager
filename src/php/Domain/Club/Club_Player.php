@@ -10,6 +10,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Domain\Club;
 
 use DateTimeImmutable;
+use Racketmanager\Domain\DTO\Club\Club_Player_Hydration_DTO;
 use Racketmanager\Domain\Shared\Typed_Property_Hydrator;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 
@@ -95,14 +96,35 @@ class Club_Player {
     /**
      * Constructor
      *
-     * @param object|null $club_player Club_Player object.
+     * @param Club_Player_Hydration_DTO|null $dto hydration DTO.
      */
-    public function __construct( ?object $club_player = null ) {
-        if ( ! is_null( $club_player ) ) {
-            foreach ( get_object_vars( $club_player ) as $key => $value ) {
+    public function __construct( ?Club_Player_Hydration_DTO $dto = null ) {
+        if ( ! is_null( $dto ) ) {
+            // Nullable properties receive null, non-nullable ones keep their default when the column is absent.
+            foreach ( get_object_vars( $dto ) as $key => $value ) {
                 Typed_Property_Hydrator::assign( $this, $key, $value );
             }
         }
+    }
+
+    /**
+     * Create a Club_Player from a raw row without factory validation.
+     *
+     * @param object $row club player row.
+     * @return static
+     */
+    public static function from_object( object $row ): static {
+        return new static( Club_Player_Hydration_DTO::from_object( $row ) );
+    }
+
+    /**
+     * Create a Club_Player from an associative array without factory validation.
+     *
+     * @param array $data club player data.
+     * @return static
+     */
+    public static function from_array( array $data ): static {
+        return static::from_object( (object) $data );
     }
 
     /**

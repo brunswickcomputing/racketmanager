@@ -72,7 +72,7 @@ final class Production_Hydration_Regression_Test extends TestCase {
             ),
         );
 
-        $event = new Event( $event_raw, $competition );
+        $event = Event::from_object( $event_raw, $competition );
 
         $this->assertSame( 12, $event->id );
         $this->assertSame( 1, $event->competition_id );
@@ -91,7 +91,7 @@ final class Production_Hydration_Regression_Test extends TestCase {
         $competition->settings = new Competition_Settings( array( 'mode' => 'league' ) );
         $competition->type     = Competition_Type::LEAGUE;
 
-        $event = new Event(
+        $event = Event::from_object(
             (object) array(
                 'id'             => '12',
                 'name'           => 'Summer League Event',
@@ -118,7 +118,7 @@ final class Production_Hydration_Regression_Test extends TestCase {
         $competition           = $this->createStub( Competition::class );
         $competition->settings = new Competition_Settings( array( 'mode' => 'league' ) );
         $competition->type     = Competition_Type::LEAGUE;
-        $event                 = new Event( (object) array( 'id' => 12, 'name' => 'Summer', 'competition_id' => 1 ), $competition );
+        $event                 = Event::from_object( (object) array( 'id' => 12, 'name' => 'Summer', 'competition_id' => 1 ), $competition );
 
         $league_raw = (object) array(
             'id'       => '34',
@@ -139,7 +139,7 @@ final class Production_Hydration_Regression_Test extends TestCase {
             ),
         );
 
-        $league = new League( $league_raw, $event );
+        $league = League::from_object( $league_raw, $event );
 
         $this->assertSame( 34, $league->id );
         $this->assertSame( 'Division 1', $league->title );
@@ -156,9 +156,9 @@ final class Production_Hydration_Regression_Test extends TestCase {
         $competition           = $this->createStub( Competition::class );
         $competition->settings = new Competition_Settings( array( 'mode' => 'league' ) );
         $competition->type     = Competition_Type::LEAGUE;
-        $event                 = new Event( (object) array( 'id' => 12, 'name' => 'Summer', 'competition_id' => 1 ), $competition );
+        $event                 = Event::from_object( (object) array( 'id' => 12, 'name' => 'Summer', 'competition_id' => 1 ), $competition );
 
-        $league = new League(
+        $league = League::from_object(
             (object) array(
                 'id'       => '34',
                 'title'    => 'Division 1',
@@ -182,7 +182,7 @@ final class Production_Hydration_Regression_Test extends TestCase {
         $competition           = $this->createStub( Competition::class );
         $competition->settings = new Competition_Settings( array( 'mode' => 'league' ) );
         $competition->type     = Competition_Type::LEAGUE;
-        $event                 = new Event(
+        $event                 = Event::from_object(
             (object) array(
                 'id'             => 12,
                 'name'           => 'Summer',
@@ -192,7 +192,7 @@ final class Production_Hydration_Regression_Test extends TestCase {
             $competition
         );
 
-        return new League( (object) array( 'id' => 10, 'title' => 'Premier Division' ), $event );
+        return League::from_object( (object) array( 'id' => 10, 'title' => 'Premier Division' ), $event );
     }
 
     private function make_player( int $id, array $wtn, ?string $contactno = null, ?string $email = null ): Player {
@@ -220,7 +220,7 @@ final class Production_Hydration_Regression_Test extends TestCase {
 
         $teams_by_table_id = array(
             // numeric-string, float and non-numeric ratings: only the numeric ones are summed.
-            101 => new League_Team(
+            101 => League_Team::from_object(
                 (object) array(
                     'id'      => 201,
                     'table_id' => 101,
@@ -233,9 +233,9 @@ final class Production_Hydration_Regression_Test extends TestCase {
                 )
             ),
             // no players: rating is left untouched.
-            102 => new League_Team( (object) array( 'id' => 202, 'table_id' => 102, 'title' => 'Team B' ) ),
+            102 => League_Team::from_object( (object) array( 'id' => 202, 'table_id' => 102, 'title' => 'Team B' ) ),
             // players without a rating for the discipline: rating is 0.0.
-            103 => new League_Team(
+            103 => League_Team::from_object(
                 (object) array(
                     'id'      => 203,
                     'table_id' => 103,
@@ -243,7 +243,7 @@ final class Production_Hydration_Regression_Test extends TestCase {
                     'players' => array( 1 => $this->make_player( 4, array( 'S' => '7.0' ) ) ),
                 )
             ),
-            104 => new League_Team( (object) array( 'id' => 204, 'table_id' => 104, 'title' => 'Team D' ) ),
+            104 => League_Team::from_object( (object) array( 'id' => 204, 'table_id' => 104, 'title' => 'Team D' ) ),
         );
 
         $details = array(
@@ -321,7 +321,7 @@ final class Production_Hydration_Regression_Test extends TestCase {
         $competition->settings = new Competition_Settings( array( 'mode' => 'league' ) );
         $competition->type = Competition_Type::LEAGUE;
 
-        $event = new Event( $event_raw, $competition );
+        $event = Event::from_object( $event_raw, $competition );
         $event->current_season = array( 'name' => '2026' );
 
         $club_dto = new \Racketmanager\Domain\DTO\Club\Club_Hydration_DTO(

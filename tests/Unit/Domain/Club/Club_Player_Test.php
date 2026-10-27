@@ -11,7 +11,7 @@ use Racketmanager\Tests\Support\Fixed_Clock;
 final class Club_Player_Test extends TestCase {
 
     private function registration( string $status ): Club_Player {
-        return new Club_Player( (object) [
+        return Club_Player::from_object( (object) [
             'id'             => 100,
             'club_id'        => 5,
             'player_id'      => 20,

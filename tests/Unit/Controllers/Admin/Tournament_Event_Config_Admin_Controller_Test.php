@@ -322,7 +322,7 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $event_raw->seasons        = '["2026"]';
         $event_raw->settings       = [ 'primary_league' => 555 ];
 
-        $event = new Event( $event_raw );
+        $event = Event::from_object( $event_raw );
         $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
 
         $this->event_repository->expects( $this->once() )
@@ -379,7 +379,7 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $event_raw->seasons        = '["2026"]';
         $event_raw->settings       = [];
 
-        $event = new Event( $event_raw );
+        $event = Event::from_object( $event_raw );
         $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
 
         $this->event_repository->expects( $this->atLeastOnce() )->method( 'query_leagues' )
@@ -439,7 +439,7 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $event_raw->seasons        = '["2026"]';
         $event_raw->settings       = [ 'primary_league' => 555 ];
 
-        $event = new Event( $event_raw );
+        $event = Event::from_object( $event_raw );
         $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
 
         $this->event_repository->expects( $this->once() )
@@ -526,7 +526,7 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $event_raw->seasons        = '["2026"]';
         $event_raw->settings       = [ 'primary_league' => 101 ];
 
-        $event = new Event( $event_raw );
+        $event = Event::from_object( $event_raw );
         $this->event_repository->method( 'query_leagues' )->willReturn( [ $league1, $league2 ] );
         $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
 
@@ -578,7 +578,7 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $event_raw->seasons        = '["2026"]';
         $event_raw->settings       = [ 'primary_league' => 101 ];
 
-        $event = new Event( $event_raw );
+        $event = Event::from_object( $event_raw );
         $this->event_repository->method( 'query_leagues' )->willReturn( [ $league1 ] );
         $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
 
@@ -616,7 +616,7 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $event_raw->seasons        = '["2026"]';
         $event_raw->settings       = [];
 
-        $event = new Event( $event_raw );
+        $event = Event::from_object( $event_raw );
         $this->event_repository->expects( $this->never() )->method( 'query_leagues' );
         $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
 

@@ -40,7 +40,7 @@ class Event_Query_Service_Test extends TestCase {
         parent::tearDown();
     }
     private function event(): Event {
-        $event = new Event( (object) [
+        $event = Event::from_object( (object) [
             'id' => 93,
             'name' => 'Mens Doubles',
             'type' => 'MD',
@@ -392,7 +392,7 @@ class Event_Query_Service_Test extends TestCase {
         $event_repository = $this->createStub( Event_Repository_Interface::class );
         $service          = $this->service( $event_repository );
 
-        $event = new Event( (object) [
+        $event = Event::from_object( (object) [
             'id'      => 93,
             'name'    => 'Mens Doubles',
             'type'    => 'MD',
@@ -418,7 +418,7 @@ class Event_Query_Service_Test extends TestCase {
         $event_repository = $this->createStub( Event_Repository_Interface::class );
         $service          = $this->service( $event_repository );
 
-        $event = new Event( (object) [
+        $event = Event::from_object( (object) [
             'id'      => 93,
             'name'    => 'Mens Doubles',
             'type'    => 'MD',

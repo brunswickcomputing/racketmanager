@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Domain\Tournament;
 
+use Racketmanager\Domain\DTO\Tournament\Tournament_Entry_Hydration_DTO;
+
 /**
  * Class to implement the Tournament Entry object (moved to PSR-4)
  */
@@ -53,18 +55,46 @@ class Tournament_Entry {
     /**
      * Constructor
      *
-     * @param object|null $tournament_entry Tournament Entry object.
+     * @param Tournament_Entry_Hydration_DTO|null $dto hydration DTO.
      */
-    public function __construct( ?object $tournament_entry = null ) {
-        if ( is_null( $tournament_entry ) ) {
+    public function __construct( ?Tournament_Entry_Hydration_DTO $dto = null ) {
+        if ( is_null( $dto ) ) {
             return;
         }
-        $this->id            = $tournament_entry->id ?? null;
-        $this->tournament_id = $tournament_entry->tournament_id;
-        $this->player_id     = $tournament_entry->player_id;
-        $this->status        = $tournament_entry->status;
-        $this->fee           = $tournament_entry->fee;
-        $this->club_id       = $tournament_entry->club_id ?? null;
+        $this->id = $dto->id;
+        if ( null !== $dto->tournament_id ) {
+            $this->tournament_id = $dto->tournament_id;
+        }
+        if ( null !== $dto->player_id ) {
+            $this->player_id = $dto->player_id;
+        }
+        if ( null !== $dto->status ) {
+            $this->status = $dto->status;
+        }
+        $this->fee     = $dto->fee;
+        $this->club_id = $dto->club_id;
+    }
+
+    /**
+     * Create from a generic object (e.g., database row) without factory validation.
+     *
+     * @param object $row tournament entry row.
+     *
+     * @return static
+     */
+    public static function from_object( object $row ): static {
+        return new static( Tournament_Entry_Hydration_DTO::from_object( $row ) );
+    }
+
+    /**
+     * Create from an array without factory validation.
+     *
+     * @param array $data tournament entry data.
+     *
+     * @return static
+     */
+    public static function from_array( array $data ): static {
+        return static::from_object( (object) $data );
     }
 
     public function get_id(): ?int {

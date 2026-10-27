@@ -37,7 +37,7 @@ class Tournament_Entry_Repository_Test extends TestCase {
     }
 
     public function test_find_by_id_returns_cached_entry(): void {
-        $entry = new Tournament_Entry( (object) [
+        $entry = Tournament_Entry::from_object( (object) [
             'id'            => 10,
             'tournament_id' => 1,
             'player_id'     => 2,

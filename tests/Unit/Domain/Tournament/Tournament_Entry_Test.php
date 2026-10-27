@@ -25,7 +25,7 @@ class Tournament_Entry_Test extends TestCase {
             'club_id'       => 7,
         ];
 
-        $entry = new Tournament_Entry( $data );
+        $entry = Tournament_Entry::from_object( $data );
 
         $this->assertSame( 55, $entry->get_id() );
         $this->assertSame( 12, $entry->get_tournament_id() );

@@ -42,7 +42,7 @@ class League_Season_Matches_Deletion_Test extends TestCase {
 	}
 
 	private function make_event(): Event {
-		return new Event(
+		return Event::from_object(
 			(object) array(
 				'id'             => 10,
 				'name'           => 'Men Doubles',
@@ -73,7 +73,7 @@ class League_Season_Matches_Deletion_Test extends TestCase {
 			),
 		);
 
-		$league                       = $with_event ? new League( $league_raw, $this->make_event() ) : new League( $league_raw );
+		$league                       = $with_event ? League::from_object( $league_raw, $this->make_event() ) : League::from_object( $league_raw );
 		$league->num_matches_per_page = 30;
 
 		return $league;

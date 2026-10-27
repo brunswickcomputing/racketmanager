@@ -18,7 +18,7 @@ use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
 
 final class Tournament_Presenter_Test extends TestCase {
 	public function test_formats_dates_with_configured_format(): void {
-		$tournament = new Tournament( (object) [ 'name' => 'Cup', 'date_end' => '2026-08-20', 'date_closing' => '2026-08-01' ] );
+		$tournament = Tournament::from_object( (object) [ 'name' => 'Cup', 'date_end' => '2026-08-20', 'date_closing' => '2026-08-01' ] );
 
 		$dates = ( new Tournament_Presenter( 'd/m/Y' ) )->present_dates( $tournament );
 
@@ -27,7 +27,7 @@ final class Tournament_Presenter_Test extends TestCase {
 	}
 
 	public function test_uses_fallbacks_for_missing_dates(): void {
-		$tournament = new Tournament( (object) [ 'name' => 'Cup', 'date_end' => '0000-00-00', 'date_start' => '0000-00-00' ] );
+		$tournament = Tournament::from_object( (object) [ 'name' => 'Cup', 'date_end' => '0000-00-00', 'date_start' => '0000-00-00' ] );
 
 		$dates = ( new Tournament_Presenter() )->present_dates( $tournament );
 
@@ -39,14 +39,14 @@ final class Tournament_Presenter_Test extends TestCase {
 	}
 
 	public function test_get_link_builds_relative_url_from_tournament_name(): void {
-		$tournament = new Tournament( (object) [ 'name' => 'Leigh Summer Open 2026' ] );
+		$tournament = Tournament::from_object( (object) [ 'name' => 'Leigh Summer Open 2026' ] );
 		$presenter  = new Tournament_Presenter();
 
 		$this->assertSame( '/tournament/leigh-summer-open-2026/', $presenter->get_link( $tournament ) );
 	}
 
 	public function test_get_entry_link_formats_url_handling_trailing_slashes_in_site_url(): void {
-		$tournament = new Tournament( (object) [ 'name' => 'Winter Closed 2026' ] );
+		$tournament = Tournament::from_object( (object) [ 'name' => 'Winter Closed 2026' ] );
 		$presenter  = new Tournament_Presenter();
 
 		$this->assertSame( 'https://tennis.org/entry-form/winter-closed-2026-tournament/', $presenter->get_entry_link( $tournament, 'https://tennis.org' ) );
@@ -59,7 +59,7 @@ final class Tournament_Presenter_Test extends TestCase {
 	}
 
 	public function test_present_dates_integrates_with_date_range_windows_and_boundaries(): void {
-		$tournament = new Tournament( (object) [
+		$tournament = Tournament::from_object( (object) [
 			'name'            => 'Championships 2026',
 			'date_start'      => '2026-07-01',
 			'date_end'        => '2026-07-15',
@@ -87,7 +87,7 @@ final class Tournament_Presenter_Test extends TestCase {
 		$presenter = new Tournament_Presenter( 'd/m/Y' );
 
 		// 1. Partial dates: missing date_start
-		$partial_tournament = new Tournament( (object) [
+		$partial_tournament = Tournament::from_object( (object) [
 			'name'       => 'Partial Tournament',
 			'date_start' => null,
 			'date_end'   => '2026-07-15',
@@ -101,7 +101,7 @@ final class Tournament_Presenter_Test extends TestCase {
 		$this->assertNull( $header->date_end_display );
 
 		// 2. Reversed dates: start > end
-		$reversed_tournament = new Tournament( (object) [
+		$reversed_tournament = Tournament::from_object( (object) [
 			'name'       => 'Reversed Tournament',
 			'date_start' => '2026-08-20',
 			'date_end'   => '2026-08-01',
@@ -115,7 +115,7 @@ final class Tournament_Presenter_Test extends TestCase {
 		$this->assertSame( '01/08/2026', $rev_header->date_end_display );
 
 		// 3. Zero / empty dates
-		$zero_tournament = new Tournament( (object) [
+		$zero_tournament = Tournament::from_object( (object) [
 			'name'       => 'Zero Tournament',
 			'date_start' => '0000-00-00',
 			'date_end'   => '',

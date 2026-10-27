@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Domain\Competition;
 
 use Racketmanager\Domain\Competition\League_Team;
+use Racketmanager\Domain\DTO\Competition\League_Hydration_DTO;
 use Racketmanager\Domain\Shared\Serialized_Column;
 use Racketmanager\Domain\Shared\Typed_Property_Hydrator;
 use Racketmanager\Domain\Team\Team;
@@ -606,21 +607,31 @@ class League {
     /**
      * Constructor
      *
-     * @param object     $league League object.
-     * @param Event|null $event Optional event object.
+     * Hydrates from the typed DTO only: table columns are applied first, then the decoded `settings`
+     * keys (settings take precedence over columns, as the legacy row merge did). `new League()` yields
+     * an empty entity.
+     *
+     * @param League_Hydration_DTO|null $dto   League hydration DTO.
+     * @param Event|null                $event Optional event object.
      */
     public function __construct(
-        object $league,
+        ?League_Hydration_DTO $dto = null,
         ?Event $event = null
     ) {
-        if ( isset( $league->settings ) ) {
-            $league->settings = (array) self::decode_serialized_array( $league->settings );
-            $league           = (object) array_merge( (array) $league, $league->settings );
-        } else {
-            $league->settings = array();
+        if ( null === $dto ) {
+            return;
         }
+        $columns = array(
+            'id'       => $dto->id,
+            'title'    => $dto->title,
+            'name'     => $dto->title,
+            'event_id' => $dto->event_id,
+            'sequence' => $dto->sequence,
+            'settings' => $dto->settings,
+            'seasons'  => $dto->seasons,
+        );
 
-        foreach ( get_object_vars( $league ) as $key => $value ) {
+        foreach ( array_merge( $columns, $dto->settings ) as $key => $value ) {
             if ( 'event' === $key ) {
                 continue;
             }
@@ -634,8 +645,8 @@ class League {
         if ( null !== $event ) {
             $this->event    = $event;
             $this->event_id = (int) ( $event->id ?? 0 );
-        } elseif ( isset( $league->event_id ) && is_numeric( $league->event_id ) ) {
-            $this->event_id = (int) $league->event_id;
+        } elseif ( null !== $dto->event_id ) {
+            $this->event_id = (int) $dto->event_id;
         }
 
         $this->title = stripslashes( $this->title ?? '' );
@@ -690,6 +701,30 @@ class League {
         }
     }
 
+
+    /**
+     * Lenient hydration from a raw row (no factory invariants, no sport subclass resolution).
+     *
+     * @param object     $row   Raw row (e.g. `$wpdb` result or stdClass fixture).
+     * @param Event|null $event Optional parent event.
+     *
+     * @return static
+     */
+    public static function from_object( object $row, ?Event $event = null ): static {
+        return new static( League_Hydration_DTO::from_object( $row ), $event );
+    }
+
+    /**
+     * Lenient hydration from an associative array (no factory invariants).
+     *
+     * @param array      $data  Row data.
+     * @param Event|null $event Optional parent event.
+     *
+     * @return static
+     */
+    public static function from_array( array $data, ?Event $event = null ): static {
+        return static::from_object( (object) $data, $event );
+    }
 
 	public function __serialize(): array {
 		return get_object_vars( $this );

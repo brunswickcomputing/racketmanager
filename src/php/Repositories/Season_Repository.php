@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Season\Season;
+use Racketmanager\Domain\Season\Season_Factory;
 use Racketmanager\Repositories\Interfaces\Season_Repository_Interface;
 use wpdb;
 
@@ -121,7 +122,7 @@ class Season_Repository implements Season_Repository_Interface {
             if ( ! $season ) {
                 return null;
             }
-            $season = new Season( $season );
+            $season = Season_Factory::from_object( $season );
             wp_cache_set( $cache_key, $season, 'seasons' );
             if ( 'id' === $type && $season->get_name() ) {
                 wp_cache_set( 'name_' . $season->get_name(), $season, 'seasons' );
@@ -144,7 +145,7 @@ class Season_Repository implements Season_Repository_Interface {
 
         return array_map(
             function ( $row ) {
-                return new Season( $row );
+                return Season_Factory::from_object( $row );
             },
             $results
         );

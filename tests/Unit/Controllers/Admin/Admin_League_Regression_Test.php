@@ -82,8 +82,8 @@ final class Admin_League_Regression_Test extends TestCase {
 	}
 
 	public function test_crosstable_teams_are_hydrated_and_cells_precomputed_for_the_template(): void {
-		$hydrated        = new League_Team( (object) array( 'id' => 22, 'title' => 'Leigh 2' ) );
-		$already_entity  = new League_Team( (object) array( 'id' => 11, 'title' => 'Westcliff 1' ) );
+		$hydrated        = League_Team::from_object( (object) array( 'id' => 22, 'title' => 'Leigh 2' ) );
+		$already_entity  = League_Team::from_object( (object) array( 'id' => 11, 'title' => 'Westcliff 1' ) );
 		$raw_row         = (object) array( 'id' => 22, 'table_id' => 22, 'title' => 'Leigh 2' );
 		$league          = $this->createStub( \Racketmanager\Domain\Competition\League::class );
 		$league->id      = 7;
@@ -126,7 +126,7 @@ final class Admin_League_Regression_Test extends TestCase {
 	public function test_display_league_page_renders_precomputed_crosstable_for_non_championship_league(): void {
 		$_GET        = array( 'league_id' => '42', 'season' => '2026', 'tab' => 'crosstable' );
 		$competition = Competition_Test_Factory::create( id: 1, name: 'Premier League', type: Competition_Type::LEAGUE );
-		$event       = new \Racketmanager\Domain\Competition\Event(
+		$event       = \Racketmanager\Domain\Competition\Event::from_object(
 			(object) array(
 				'id'      => 93,
 				'name'    => 'Mixed Doubles',
@@ -134,14 +134,14 @@ final class Admin_League_Regression_Test extends TestCase {
 			),
 			$competition
 		);
-		$league      = new \Racketmanager\Domain\Competition\League( (object) array( 'id' => 42, 'title' => 'Division 1' ), $event );
+		$league      = \Racketmanager\Domain\Competition\League::from_object( (object) array( 'id' => 42, 'title' => 'Division 1' ), $event );
 		$league->set_season( '2026' );
 		$league->num_teams = 2;
 		$GLOBALS['wp_stubs_leagues'][42] = $league;
 
-		$westcliff = new League_Team( $this->league_table_row( 11, 'Westcliff 1', 1 ) );
+		$westcliff = League_Team::from_object( $this->league_table_row( 11, 'Westcliff 1', 1 ) );
 		$raw_leigh = $this->league_table_row( 22, 'Leigh 2', 2 );
-		$leigh     = new League_Team( $this->league_table_row( 22, 'Leigh 2', 2 ) );
+		$leigh     = League_Team::from_object( $this->league_table_row( 22, 'Leigh 2', 2 ) );
 
 		$league_team_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface::class );
 		$league_team_repository->expects( self::once() )->method( 'hydrate' )->with( $raw_leigh )->willReturn( $leigh );
@@ -342,7 +342,7 @@ final class Admin_League_Regression_Test extends TestCase {
 	}
 
 	public function test_standings_template_marks_withdrawn_team_using_profile_getter(): void {
-		$withdrawn = new League_Team(
+		$withdrawn = League_Team::from_object(
 			(object) array(
 				'table_id'      => 1,
 				'id'            => 1,
@@ -366,7 +366,7 @@ final class Admin_League_Regression_Test extends TestCase {
 				'sets_allowed'  => 0,
 			)
 		);
-		$active    = new League_Team(
+		$active    = League_Team::from_object(
 			(object) array(
 				'table_id'      => 2,
 				'id'            => 2,

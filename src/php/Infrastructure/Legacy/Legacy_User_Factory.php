@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Infrastructure\Legacy;
 
+use Racketmanager\Domain\DTO\Player\User_Hydration_DTO;
 use Racketmanager\Domain\Player\User;
 use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;
 
@@ -16,6 +17,6 @@ final class Legacy_User_Factory {
     }
 
     public function from_user( User $user ): Legacy_User {
-        return new Legacy_User( $user, $this->message_repository );
+        return new Legacy_User( User_Hydration_DTO::from_object( $user ), $this->message_repository );
     }
 }

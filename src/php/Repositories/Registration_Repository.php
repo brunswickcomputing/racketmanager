@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Club\Club_Player;
+use Racketmanager\Domain\Club\Club_Player_Factory;
 use Racketmanager\Repositories\Interfaces\Registration_Repository_Interface;
 use Racketmanager\Util\Util;
 use wpdb;
@@ -129,7 +130,7 @@ class Registration_Repository implements Registration_Repository_Interface {
                 $id
             )
         );
-        return $row ? new Club_Player( $row ) : null;
+        return $row ? Club_Player_Factory::from_object( $row ) : null;
     }
 
     /**
@@ -154,7 +155,7 @@ class Registration_Repository implements Registration_Repository_Interface {
         $results = $this->wpdb->get_results( $query );
         return array_map(
             function( $row ) {
-                return new Club_Player( $row );
+                return Club_Player_Factory::from_object( $row );
             },
             $results
         );
@@ -176,7 +177,7 @@ class Registration_Repository implements Registration_Repository_Interface {
                 $player_id
             )
         );
-        return $row ? new Club_Player( $row ) : null;
+        return $row ? Club_Player_Factory::from_object( $row ) : null;
     }
 
     /**
@@ -198,7 +199,7 @@ class Registration_Repository implements Registration_Repository_Interface {
             );
             wp_cache_set( $key, $row, 'club_players' );
         }
-        return $row ? new Club_Player( $row ) : null;
+        return $row ? Club_Player_Factory::from_object( $row ) : null;
     }
 
     /**

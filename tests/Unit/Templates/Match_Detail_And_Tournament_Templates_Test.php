@@ -134,7 +134,7 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 	}
 
 	public function test_render_match_tournament_championship_draw_real_template(): void {
-		$tournament = new Tournament( (object) [
+		$tournament = Tournament::from_object( (object) [
 			'id'         => 101,
 			'name'       => 'Summer Championship 2026',
 			'date_start' => '2026-07-01',
@@ -145,8 +145,8 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$player1 = Player_Factory::from_object( (object) [ 'id' => 1, 'display_name' => 'Roger Federer', 'first_name' => 'Roger', 'last_name' => 'Federer' ] );
 		$player2 = Player_Factory::from_object( (object) [ 'id' => 2, 'display_name' => 'Rafael Nadal', 'first_name' => 'Rafael', 'last_name' => 'Nadal' ] );
 
-		$team1 = new Team( (object) [ 'id' => 10, 'title' => 'Roger Federer', 'players' => [ $player1 ] ] );
-		$team2 = new Team( (object) [ 'id' => 20, 'title' => 'Rafael Nadal', 'players' => [ $player2 ] ] );
+		$team1 = Team::from_object( (object) [ 'id' => 10, 'title' => 'Roger Federer', 'players' => [ $player1 ] ] );
+		$team2 = Team::from_object( (object) [ 'id' => 20, 'title' => 'Rafael Nadal', 'players' => [ $player2 ] ] );
 
 		$home_team_dto = new Team_Details_DTO( $team1 );
 		$away_team_dto = new Team_Details_DTO( $team2 );
@@ -244,7 +244,7 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 	}
 
 	private function build_tournament_match_view_model( ?string $referrer ): \Racketmanager\Presentation\View_Models\Shortcode_View_Model {
-		$tournament = new Tournament( (object) [
+		$tournament = Tournament::from_object( (object) [
 			'id'         => 101,
 			'name'       => 'Summer Championship 2026',
 			'date_start' => '2026-07-01',
@@ -254,8 +254,8 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 
 		$player1 = Player_Factory::from_object( (object) [ 'id' => 1, 'display_name' => 'Roger Federer', 'first_name' => 'Roger', 'last_name' => 'Federer' ] );
 		$player2 = Player_Factory::from_object( (object) [ 'id' => 2, 'display_name' => 'Rafael Nadal', 'first_name' => 'Rafael', 'last_name' => 'Nadal' ] );
-		$team1   = new Team( (object) [ 'id' => 10, 'title' => 'Roger Federer', 'players' => [ $player1 ] ] );
-		$team2   = new Team( (object) [ 'id' => 20, 'title' => 'Rafael Nadal', 'players' => [ $player2 ] ] );
+		$team1   = Team::from_object( (object) [ 'id' => 10, 'title' => 'Roger Federer', 'players' => [ $player1 ] ] );
+		$team2   = Team::from_object( (object) [ 'id' => 20, 'title' => 'Rafael Nadal', 'players' => [ $player2 ] ] );
 
 		$fixture = Fixture_Test_Factory::create( id: 555, home_team: '10', away_team: '20', date: '2026-07-05 09:05:00', final: 'final', league_id: 202 );
 		$fixture->start_time = '09:05';
@@ -331,7 +331,7 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 	}
 
 	public function test_render_match_tournament_league_box_real_template(): void {
-		$tournament = new Tournament( (object) [
+		$tournament = Tournament::from_object( (object) [
 			'id'         => 102,
 			'name'       => 'Autumn Box League',
 			'date_start' => '2026-09-01',
@@ -342,8 +342,8 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$player1 = Player_Factory::from_object( (object) [ 'id' => 3, 'display_name' => 'Team Alpha Player', 'first_name' => 'Alpha', 'last_name' => 'Player' ] );
 		$player2 = Player_Factory::from_object( (object) [ 'id' => 4, 'display_name' => 'Team Beta Player', 'first_name' => 'Beta', 'last_name' => 'Player' ] );
 
-		$team1 = new Team( (object) [ 'id' => 30, 'title' => 'Team Alpha', 'players' => [ $player1 ] ] );
-		$team2 = new Team( (object) [ 'id' => 40, 'title' => 'Team Beta', 'players' => [ $player2 ] ] );
+		$team1 = Team::from_object( (object) [ 'id' => 30, 'title' => 'Team Alpha', 'players' => [ $player1 ] ] );
+		$team2 = Team::from_object( (object) [ 'id' => 40, 'title' => 'Team Beta', 'players' => [ $player2 ] ] );
 
 		$fixture = Fixture_Test_Factory::create(
 			id: 777,
@@ -444,8 +444,8 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$fixture->home_captain = 101;
 		$fixture->away_captain = 202;
 
-		$home_team = new Team( (object) [ 'id' => 10, 'title' => 'Leigh 1' ] );
-		$away_team = new Team( (object) [ 'id' => 20, 'title' => 'Westcliff 1' ] );
+		$home_team = Team::from_object( (object) [ 'id' => 10, 'title' => 'Leigh 1' ] );
+		$away_team = Team::from_object( (object) [ 'id' => 20, 'title' => 'Westcliff 1' ] );
 
 		$rubber_1 = $this->make_rubber( 1, 1, 'MD', [
 			'home' => [
@@ -559,8 +559,8 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		);
 		$fixture->season = '2026';
 
-		$home_team = new Team( (object) [ 'id' => 10, 'title' => 'Leigh 1' ] );
-		$away_team = new Team( (object) [ 'id' => 20, 'title' => 'Westcliff 1' ] );
+		$home_team = Team::from_object( (object) [ 'id' => 10, 'title' => 'Leigh 1' ] );
+		$away_team = Team::from_object( (object) [ 'id' => 20, 'title' => 'Westcliff 1' ] );
 
 		$league                  = $this->createStub( League::class );
 		$league->scoring         = 'pairs';
@@ -624,8 +624,8 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 			league_id: 505
 		);
 
-		$home_team = new Team( (object) [ 'id' => 10, 'title' => 'Home Team' ] );
-		$away_team = new Team( (object) [ 'id' => 20, 'title' => 'Away Team' ] );
+		$home_team = Team::from_object( (object) [ 'id' => 10, 'title' => 'Home Team' ] );
+		$away_team = Team::from_object( (object) [ 'id' => 20, 'title' => 'Away Team' ] );
 
 		$dto = new Fixture_Details_DTO(
 			fixture: $fixture,
@@ -664,7 +664,7 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 	}
 
 	public function test_render_match_tournament_played_admin_shows_reset_menu(): void {
-		$tournament = new Tournament( (object) [
+		$tournament = Tournament::from_object( (object) [
 			'id'         => 103,
 			'name'       => 'Played Finals',
 			'date_start' => '2026-07-01',
@@ -674,8 +674,8 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 
 		$player1 = Player_Factory::from_object( (object) [ 'id' => 1, 'display_name' => 'Ada Lovelace', 'first_name' => 'Ada', 'last_name' => 'Lovelace' ] );
 		$player2 = Player_Factory::from_object( (object) [ 'id' => 2, 'display_name' => 'Grace Hopper', 'first_name' => 'Grace', 'last_name' => 'Hopper' ] );
-		$team1   = new Team( (object) [ 'id' => 10, 'title' => 'Ada Lovelace', 'players' => [ $player1 ] ] );
-		$team2   = new Team( (object) [ 'id' => 20, 'title' => 'Grace Hopper', 'players' => [ $player2 ] ] );
+		$team1   = Team::from_object( (object) [ 'id' => 10, 'title' => 'Ada Lovelace', 'players' => [ $player1 ] ] );
+		$team2   = Team::from_object( (object) [ 'id' => 20, 'title' => 'Grace Hopper', 'players' => [ $player2 ] ] );
 
 		$fixture = Fixture_Test_Factory::create(
 			id: 999,

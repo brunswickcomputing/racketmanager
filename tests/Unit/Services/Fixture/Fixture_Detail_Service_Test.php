@@ -157,7 +157,7 @@ namespace Racketmanager\Tests\Unit\Services\Fixture {
             $fixture->method( 'get_home_team' )->willReturn( '100' );
             $fixture->method( 'get_away_team' )->willReturn( '200' );
 
-            $league = new League( (object) [
+            $league = \Racketmanager\Domain\Competition\League::from_object( (object) [
                 'id'       => 10,
                 'event_id' => 20,
                 'name'     => 'Premier League',

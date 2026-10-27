@@ -40,7 +40,7 @@ class League_Team_Repository_Test extends TestCase {
         $club_repo = $this->createMock( Club_Repository_Interface::class );
         $team_repo = $this->createMock( Team_Repository_Interface::class );
 
-        $club = new Club( (object) [ 'id' => 10, 'name' => 'Tennis Club' ] );
+        $club = Club::from_object( (object) [ 'id' => 10, 'name' => 'Tennis Club' ] );
         $club_repo->expects( $this->once() )
             ->method( 'find_by_id' )
             ->with( 10 )
@@ -84,7 +84,7 @@ class League_Team_Repository_Test extends TestCase {
             'title'    => 'Test Team',
             'season'   => 2026,
         ];
-        $league_team = new League_Team( $data );
+        $league_team = League_Team::from_object( $data );
 
         $GLOBALS['wp_stubs_cache_enabled'] = true;
         $GLOBALS['wp_stubs_cache']['league-teams']['7929'] = $league_team;
@@ -349,7 +349,7 @@ class League_Team_Repository_Test extends TestCase {
     }
 
     public function test_hydrate_non_player_team_skips_team_repository(): void {
-        $club = new Club( (object) [ 'id' => 3, 'name' => 'C' ] );
+        $club = Club::from_object( (object) [ 'id' => 3, 'name' => 'C' ] );
         $lt   = $this->make_repo( 1, 0, $club )->hydrate( (object) [ 'id' => 1, 'table_id' => 2, 'club_id' => 3, 'team_type' => 'D', 'roster' => serialize( [ 1 ] ) ] );
         $this->assertSame( $club, $lt->club );
         $this->assertSame( [], $lt->players );

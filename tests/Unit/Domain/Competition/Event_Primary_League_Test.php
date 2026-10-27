@@ -59,7 +59,7 @@ class Event_Primary_League_Test extends TestCase {
         $event_raw->seasons        = '["2026"]';
         $event_raw->settings       = [];
 
-        $this->event = new Event( $event_raw, $this->competition );
+        $this->event = Event::from_object( $event_raw, $this->competition );
     }
 
     protected function tearDown(): void {

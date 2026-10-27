@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Racketmanager\Domain\DTO\Competition;
 
 use InvalidArgumentException;
-use Racketmanager\Domain\Value_Objects\Json_Encoder;
 
 /**
  * Data Transfer Object for hydrating an Event entity from raw data.
@@ -14,8 +13,8 @@ readonly class Event_Hydration_DTO {
 	 * @param int|null $id
 	 * @param string $name
 	 * @param string $type
-	 * @param int $num_sets
-	 * @param int $num_rubbers
+	 * @param int|null $num_sets
+	 * @param int|null $num_rubbers
 	 * @param int|null $competition_id
 	 * @param array $settings
 	 * @param array|string $seasons
@@ -24,8 +23,8 @@ readonly class Event_Hydration_DTO {
 		public ?int $id = null,
 		public string $name = '',
 		public string $type = '',
-		public int $num_sets = 3,
-		public int $num_rubbers = 0,
+		public ?int $num_sets = null,
+		public ?int $num_rubbers = null,
 		public ?int $competition_id = null,
 		public array $settings = [],
 		public array|string $seasons = []
@@ -70,8 +69,8 @@ readonly class Event_Hydration_DTO {
 			id: isset( $data->id ) && '' !== (string) $data->id ? (int) $data->id : null,
 			name: $name,
 			type: $type,
-			num_sets: isset( $data->num_sets ) && '' !== (string) $data->num_sets ? (int) $data->num_sets : 3,
-			num_rubbers: isset( $data->num_rubbers ) && '' !== (string) $data->num_rubbers ? (int) $data->num_rubbers : 0,
+			num_sets: isset( $data->num_sets ) && '' !== (string) $data->num_sets ? (int) $data->num_sets : null,
+			num_rubbers: isset( $data->num_rubbers ) && '' !== (string) $data->num_rubbers ? (int) $data->num_rubbers : null,
 			competition_id: isset( $data->competition_id ) && '' !== (string) $data->competition_id && (int) $data->competition_id > 0 ? (int) $data->competition_id : null,
 			settings: (array) $settings,
 			seasons: $seasons
@@ -86,31 +85,6 @@ readonly class Event_Hydration_DTO {
 	 */
 	public static function from_array( array $data ): self {
 		return self::from_object( (object) $data );
-	}
-
-	/**
-	 * Convert DTO to a standard object compatible with legacy entity hydration.
-	 *
-	 * @return \stdClass
-	 */
-	public function to_std_class(): \stdClass {
-		$obj = new \stdClass();
-		$obj->id = $this->id;
-		$obj->name = $this->name;
-		$obj->type = $this->type;
-		$obj->num_sets = $this->num_sets;
-		$obj->num_rubbers = $this->num_rubbers;
-		$obj->competition_id = $this->competition_id;
-		$obj->settings = $this->settings;
-		$obj->seasons = is_array( $this->seasons ) ? Json_Encoder::encode( $this->seasons ) : $this->seasons;
-
-		foreach ( $this->settings as $key => $val ) {
-			if ( ! isset( $obj->{$key} ) ) {
-				$obj->{$key} = $val;
-			}
-		}
-
-		return $obj;
 	}
 
 	/** Decode only legacy PHP-serialized arrays; leave JSON and malformed values unchanged. */

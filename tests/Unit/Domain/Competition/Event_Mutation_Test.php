@@ -50,7 +50,7 @@ class Event_Mutation_Test extends TestCase {
 		$event_raw->num_rubbers = 4;
 		$event_raw->num_sets = 3;
 
-		$this->event = new Event( $event_raw, $competition );
+		$this->event = Event::from_object( $event_raw, $competition );
 	}
 
 	protected function tearDown(): void {
@@ -178,7 +178,7 @@ class Event_Mutation_Test extends TestCase {
 	}
 
 	public function test_set_season_explicit_unknown_season_falls_back_to_latest(): void {
-		$event = new Event( (object) [
+		$event = Event::from_object( (object) [
 			'id'      => 10,
 			'name'    => 'Men Singles',
 			'type'    => 'singles',
@@ -195,7 +195,7 @@ class Event_Mutation_Test extends TestCase {
 	}
 
 	public function test_set_season_default_arguments_unknown_season_falls_back_to_latest_and_sets_match_days(): void {
-		$event = new Event( (object) [
+		$event = Event::from_object( (object) [
 			'id'      => 10,
 			'name'    => 'Men Singles',
 			'type'    => 'singles',
@@ -212,7 +212,7 @@ class Event_Mutation_Test extends TestCase {
 	}
 
 	public function test_set_season_strict_mode_evaluates_to_false_for_unknown_season(): void {
-		$event = new Event( (object) [
+		$event = Event::from_object( (object) [
 			'id'      => 10,
 			'name'    => 'Men Singles',
 			'type'    => 'singles',
@@ -228,7 +228,7 @@ class Event_Mutation_Test extends TestCase {
 	}
 
 	public function test_set_season_force_overwrite_updates_current_season(): void {
-		$event = new Event( (object) [
+		$event = Event::from_object( (object) [
 			'id'      => 10,
 			'name'    => 'Men Singles',
 			'type'    => 'singles',
@@ -260,7 +260,7 @@ class Event_Mutation_Test extends TestCase {
 		);
 
 		// Event configured only for 2025 and 2026
-		$event = new Event(
+		$event = Event::from_object(
 			(object) [
 				'id'      => 10,
 				'name'    => 'Men Singles',

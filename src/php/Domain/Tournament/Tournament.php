@@ -249,14 +249,12 @@ class Tournament {
     /**
      * Constructor
      *
-     * @param Tournament_Hydration_DTO|object|null $tournament Hydration DTO or raw tournament row.
+     * @param Tournament_Hydration_DTO|null $dto Hydration DTO.
      */
-    public function __construct( ?object $tournament = null ) {
-        if ( is_null( $tournament ) ) {
+    public function __construct( ?Tournament_Hydration_DTO $dto = null ) {
+        if ( is_null( $dto ) ) {
             return;
         }
-
-        $dto = $tournament instanceof Tournament_Hydration_DTO ? $tournament : Tournament_Hydration_DTO::from_object( $tournament );
 
         $this->id               = $dto->id;
         $this->name             = $dto->name;
@@ -278,6 +276,26 @@ class Tournament {
         $this->num_courts       = $dto->num_courts;
         $this->start_time       = $dto->start_time;
         $this->set_tournament_info();
+    }
+
+    /**
+     * Create from a generic object (e.g. database row) without factory validation.
+     *
+     * @param object $row
+     * @return static
+     */
+    public static function from_object( object $row ): static {
+        return new static( Tournament_Hydration_DTO::from_object( $row ) );
+    }
+
+    /**
+     * Create from an array without factory validation.
+     *
+     * @param array $data
+     * @return static
+     */
+    public static function from_array( array $data ): static {
+        return static::from_object( (object) $data );
     }
 
     public function set_tournament_info(): void {

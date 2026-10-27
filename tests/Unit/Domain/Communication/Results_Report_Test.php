@@ -20,7 +20,7 @@ class Results_Report_Test extends TestCase {
             'data'     => (object) [ 'home_score' => 4, 'away_score' => 2 ],
         ];
 
-        $report = new Results_Report( $data );
+        $report = Results_Report::from_object( $data );
 
         $this->assertSame( 15, $report->id );
         $this->assertSame( 101, $report->match_id );
@@ -36,7 +36,7 @@ class Results_Report_Test extends TestCase {
             'result_object' => '{"winner":"home","notes":"great match"}',
         ];
 
-        $report = new Results_Report( $data );
+        $report = Results_Report::from_object( $data );
 
         $this->assertSame( 20, $report->id );
         $this->assertSame( 102, $report->match_id );
@@ -54,7 +54,7 @@ class Results_Report_Test extends TestCase {
             'ratio'   => 0.5,
         ];
 
-        $report = new Results_Report( (object) [ 'id' => 1, 'match_id' => 2, 'data' => $payload ] );
+        $report = Results_Report::from_object( (object) [ 'id' => 1, 'match_id' => 2, 'data' => $payload ] );
 
         $this->assertSame( wp_json_encode( $payload ), $report->result_object );
         $this->assertSame( json_encode( $payload ), $report->result_object );
@@ -62,7 +62,7 @@ class Results_Report_Test extends TestCase {
     }
 
     public function test_encoding_recovers_from_invalid_utf8_instead_of_returning_false(): void {
-        $report = new Results_Report( (object) [ 'id' => 1, 'match_id' => 2, 'data' => (object) [ 'notes' => "bad \xB1 byte" ] ] );
+        $report = Results_Report::from_object( (object) [ 'id' => 1, 'match_id' => 2, 'data' => (object) [ 'notes' => "bad \xB1 byte" ] ] );
 
         $this->assertIsString( $report->result_object );
         $this->assertNotFalse( json_decode( $report->result_object ) );

@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Fixture\Rubber;
+use Racketmanager\Domain\Fixture\Rubber_Factory;
 use Racketmanager\Domain\Fixture\Fixture_Time_Parser;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Registration_Service;
@@ -114,7 +115,7 @@ class Rubber_Repository implements Rubber_Repository_Interface {
             if ( ! $rubber ) {
                 return null;
             }
-            $rubber = new Rubber( $rubber );
+            $rubber = Rubber_Factory::from_object( $rubber );
             $rubber->players = $this->find_players_by_rubber_id( (int) $rubber->get_id() );
 
             wp_cache_set( (int) $rubber->get_id(), $rubber, 'rubbers' );
@@ -150,7 +151,7 @@ class Rubber_Repository implements Rubber_Repository_Interface {
         $rubbers = [];
         if ( is_array( $results ) ) {
             foreach ( $results as $row ) {
-                $rubber = new Rubber( $row );
+                $rubber = Rubber_Factory::from_object( $row );
                 $rubber->players = $this->find_players_by_rubber_id( (int) $rubber->get_id() );
                 $rubbers[] = $rubber;
             }

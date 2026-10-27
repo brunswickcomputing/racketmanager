@@ -112,7 +112,7 @@ class Mail_Filter_Service implements Mail_Filter_Service_Interface {
 						$message_object->message_object = $message;
 						$message_object->sender         = $from;
 						$message_object->status         = 1;
-						$message_entity                 = new Message( $message_object );
+						$message_entity                 = Message::from_object( $message_object );
 						$this->message_repository->save( $message_entity );
 					}
 				}

@@ -177,7 +177,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $competition->method( 'get_league_repository' )->willReturn( $league_repository );
         $teams = $this->createStub( Team_Service::class );
         $teams->method( 'get_team_details' )->willReturnCallback( static function ( int $id ) {
-            return new \Racketmanager\Domain\DTO\Team\Team_Details_DTO( new Team( (object) [ 'id' => $id, 'title' => 'Team ' . $id ] ) );
+            return new \Racketmanager\Domain\DTO\Team\Team_Details_DTO( Team::from_object( (object) [ 'id' => $id, 'title' => 'Team ' . $id ] ) );
         } );
 
         $handler = new Get_League_Championship_Handler(
@@ -702,8 +702,8 @@ class League_Shortcode_Handlers_Test extends TestCase {
             (object) [ 'table_id' => 10, 'id' => 10, 'title' => 'Red Team' ],
             (object) [ 'table_id' => 20, 'id' => 20, 'title' => 'Blue Team' ],
         ] );
-        $red_team = new \Racketmanager\Domain\Competition\League_Team( (object) [ 'table_id' => 10, 'id' => 10, 'title' => 'Red Team' ] );
-        $blue_team = new \Racketmanager\Domain\Competition\League_Team( (object) [ 'table_id' => 20, 'id' => 20, 'title' => 'Blue Team' ] );
+        $red_team = \Racketmanager\Domain\Competition\League_Team::from_object( (object) [ 'table_id' => 10, 'id' => 10, 'title' => 'Red Team' ] );
+        $blue_team = \Racketmanager\Domain\Competition\League_Team::from_object( (object) [ 'table_id' => 20, 'id' => 20, 'title' => 'Blue Team' ] );
         $league_team_repo = $this->createStub( \Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface::class );
         $league_team_repo->method( 'find_by_id' )->willReturnMap( [ [ 10, $red_team ], [ 20, $blue_team ] ] );
         $options = $this->createStub( Option_Gateway_Interface::class );
@@ -800,8 +800,8 @@ class League_Shortcode_Handlers_Test extends TestCase {
                 (object) [ 'table_id' => 20, 'id' => 20, 'title' => 'Beta Team' ],
             ];
         } );
-        $alpha_team = new \Racketmanager\Domain\Competition\League_Team( (object) [ 'table_id' => 10, 'id' => 10, 'title' => 'Alpha Team' ] );
-        $beta_team  = new \Racketmanager\Domain\Competition\League_Team( (object) [ 'table_id' => 20, 'id' => 20, 'title' => 'Beta Team' ] );
+        $alpha_team = \Racketmanager\Domain\Competition\League_Team::from_object( (object) [ 'table_id' => 10, 'id' => 10, 'title' => 'Alpha Team' ] );
+        $beta_team  = \Racketmanager\Domain\Competition\League_Team::from_object( (object) [ 'table_id' => 20, 'id' => 20, 'title' => 'Beta Team' ] );
         $league_team_repo = $this->createStub( \Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface::class );
         $league_team_repo->method( 'find_by_id' )->willReturnMap( [ [ 10, $alpha_team ], [ 20, $beta_team ] ] );
         $options = $this->createStub( Option_Gateway_Interface::class );

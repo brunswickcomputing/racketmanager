@@ -1003,7 +1003,7 @@ class Admin_Plan_Templates_Test extends TestCase {
         $team = new Team();
         $team->set_id( $id );
         $team->set_name( $name );
-        $club = null !== $club_shortcode ? new Club( (object) [ 'name' => 'Club ' . $club_shortcode, 'shortcode' => $club_shortcode ] ) : null;
+        $club = null !== $club_shortcode ? Club::from_object( (object) [ 'name' => 'Club ' . $club_shortcode, 'shortcode' => $club_shortcode ] ) : null;
 
         return new Team_Details_DTO( $team, $club );
     }

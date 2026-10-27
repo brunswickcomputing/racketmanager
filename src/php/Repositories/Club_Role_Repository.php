@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Club\Club_Role;
+use Racketmanager\Domain\Club\Club_Role_Factory;
 use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
 use Racketmanager\Util\Util;
@@ -126,7 +127,7 @@ class Club_Role_Repository implements Club_Role_Repository_Interface {
      * @return Club_Role
      */
     public function hydrate_club_role( object $row ): Club_Role {
-        $club_role = new Club_Role( $row );
+        $club_role = Club_Role_Factory::from_object( $row );
         $this->hydrate_user( $club_role );
         return $club_role;
     }

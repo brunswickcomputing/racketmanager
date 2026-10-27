@@ -562,7 +562,7 @@ class Player_Service {
                 $player_error->player_id    = $player->id;
                 $player_error->message      = $message;
                 $player_error->created_date = current_time( 'mysql' );
-                $player_error               = new Player_Error( $player_error );
+                $player_error               = Player_Error::from_object( $player_error );
                 $this->player_error_repository->save( $player_error );
                 throw new WTN_Error_Exception( $message );
             }

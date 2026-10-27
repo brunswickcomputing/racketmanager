@@ -12,6 +12,7 @@ namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\DTO\Finance\Invoice_Details_DTO;
 use Racketmanager\Domain\Finance\Invoice;
+use Racketmanager\Domain\Finance\Invoice_Factory;
 use Racketmanager\Repositories\Interfaces\Invoice_Repository_Interface;
 use Racketmanager\Util\Util;
 use wpdb;
@@ -48,7 +49,7 @@ class Invoice_Repository implements Invoice_Repository_Interface {
                 return null;
             }
 
-            $invoice = new Invoice( $invoice );
+            $invoice = Invoice_Factory::from_object( $invoice );
 
             wp_cache_set( $id, $invoice, 'invoices' );
         }
@@ -168,7 +169,7 @@ class Invoice_Repository implements Invoice_Repository_Interface {
                 return null;
             }
 
-            $invoice = new Invoice( $invoice );
+            $invoice = Invoice_Factory::from_object( $invoice );
 
             wp_cache_set( $cache_key, $invoice, 'invoices' );
         }

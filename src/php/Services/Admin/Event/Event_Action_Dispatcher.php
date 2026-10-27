@@ -112,13 +112,12 @@ readonly final class Event_Action_Dispatcher {
         }
 
         $event_data                 = new stdClass();
-        $event_data->config         = $config;
         $event_data->name           = $config->name;
         $event_data->competition_id = $competition->id;
         $event_data->num_sets       = $config->num_sets;
         $event_data->num_rubbers    = $config->num_rubbers;
         $event_data->type           = $config->type;
-        $event                      = new Event( $event_data, $competition );
+        $event                      = Event::from_object( $event_data, $competition );
         $event_id                   = $this->event_repository->insert_event( $event );
         if ( ! $event_id ) {
             return new Action_Result_DTO(

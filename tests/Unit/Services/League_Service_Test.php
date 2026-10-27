@@ -109,7 +109,7 @@ class League_Service_Test extends TestCase {
             )
             ->willReturn( [ (object) ['id' => 101] ] );
 
-        $league = new League( (object) [ 'title' => 'Division 1' ] );
+        $league = League::from_object( (object) [ 'title' => 'Division 1' ] );
         $league->id = $league_id;
         $league->seasons = [ '2024' => [ 'name' => '2024' ] ];
         $this->league_repository->method( 'find_by_id' )->willReturn( $league );
@@ -137,7 +137,7 @@ class League_Service_Test extends TestCase {
         $data->lost_matches = 0;
         $data->draw_matches = 0;
 
-        $league_team = new League_Team( $data );
+        $league_team = League_Team::from_object( $data );
 
         self::assertInstanceOf( Team_Profile::class, $league_team->get_profile_enum() );
         self::assertEquals( Team_Profile::ACTIVE, $league_team->get_profile_enum() );
@@ -169,7 +169,7 @@ class League_Service_Test extends TestCase {
                 [789, $league_id, $season, $league_team2]
             ]);
 
-        $league = new League( (object) [ 'title' => 'Division 1' ] );
+        $league = League::from_object( (object) [ 'title' => 'Division 1' ] );
         $league->id = $league_id;
         $league->seasons = [ (string) $season => [ 'name' => (string) $season ] ];
         $this->league_repository->method('find_by_id')->willReturn($league);
@@ -226,7 +226,7 @@ class League_Service_Test extends TestCase {
         $team1_data->league_id = 1;
         $team1_data->season = '2024';
         $team1_data->profile = '1';
-        $team1 = new League_Team($team1_data);
+        $team1 = League_Team::from_object($team1_data);
 
         $team2_data = new stdClass();
         $team2_data->id = $team2_id;
@@ -234,7 +234,7 @@ class League_Service_Test extends TestCase {
         $team2_data->league_id = 1;
         $team2_data->season = '2024';
         $team2_data->profile = '1';
-        $team2 = new League_Team($team2_data);
+        $team2 = League_Team::from_object($team2_data);
 
         $this->league_team_repository->method('find_by_id')
             ->willReturnMap([
@@ -802,7 +802,7 @@ class League_Service_Test extends TestCase {
     }
 
     public function test_add_league_to_event_returns_created_league(): void {
-        $event = new \Racketmanager\Domain\Competition\Event( (object) array(
+        $event = \Racketmanager\Domain\Competition\Event::from_object( (object) array(
             'id'             => 5,
             'name'           => 'Men Singles',
             'type'           => 'singles',
@@ -824,7 +824,7 @@ class League_Service_Test extends TestCase {
     }
 
     public function test_add_league_to_event_with_empty_name_generates_sequenced_title(): void {
-        $event = new \Racketmanager\Domain\Competition\Event( (object) array(
+        $event = \Racketmanager\Domain\Competition\Event::from_object( (object) array(
             'id'             => 5,
             'name'           => 'Men Singles',
             'type'           => 'singles',
@@ -863,7 +863,7 @@ class League_Service_Test extends TestCase {
     public function test_add_league_to_event_with_real_league_repository(): void {
         global $wpdb;
         $real_repo = new \Racketmanager\Repositories\League_Repository();
-        $event     = new \Racketmanager\Domain\Competition\Event( (object) array(
+        $event     = \Racketmanager\Domain\Competition\Event::from_object( (object) array(
             'id'             => 10,
             'name'           => 'Ladies Doubles',
             'type'           => 'doubles',

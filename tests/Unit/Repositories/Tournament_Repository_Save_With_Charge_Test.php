@@ -67,7 +67,7 @@ final class Tournament_Repository_Save_With_Charge_Test extends TestCase {
 	}
 
 	private function make_tournament( ?int $id = null ): Tournament {
-		return new Tournament( (object) [ 'id' => $id, 'name' => 'Spring Open', 'competition_id' => 10, 'season' => '2026' ] );
+		return Tournament::from_object( (object) [ 'id' => $id, 'name' => 'Spring Open', 'competition_id' => 10, 'season' => '2026' ] );
 	}
 
 	public function test_commits_and_returns_both_ids_when_tournament_insert_and_charge_save_succeed(): void {

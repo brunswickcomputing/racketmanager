@@ -11,7 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Result\Results_Checker;
-use Racketmanager\Domain\DTO\Result\Results_Checker_Data;
+use Racketmanager\Domain\Result\Results_Checker_Factory;
 use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
 use wpdb;
 
@@ -103,20 +103,7 @@ class Results_Checker_Repository implements Results_Checker_Repository_Interface
             return null;
         }
 
-        $data = new Results_Checker_Data(
-            id: (int) $row->id,
-            league_id: (int) $row->league_id,
-            match_id: (int) $row->match_id,
-            team_id: (int) $row->team_id,
-            player_id: isset( $row->player_id ) ? (int) $row->player_id : null,
-            rubber_id: isset( $row->rubber_id ) ? (int) $row->rubber_id : null,
-            description: $row->description ?? '',
-            status: isset( $row->status ) ? (int) $row->status : null,
-            updated_user: isset( $row->updated_user ) ? (int) $row->updated_user : null,
-            updated_date: $row->updated_date ?? null
-        );
-
-        return new Results_Checker( $data );
+        return Results_Checker_Factory::from_object( $row );
     }
 
     /**
@@ -136,21 +123,9 @@ class Results_Checker_Repository implements Results_Checker_Repository_Interface
         $checkers = [];
         if ( is_array( $results ) ) {
             foreach ( $results as $row ) {
-            $data = new Results_Checker_Data(
-                id: (int) $row->id,
-                league_id: (int) $row->league_id,
-                match_id: (int) $row->match_id,
-                team_id: (int) $row->team_id,
-                player_id: isset( $row->player_id ) ? (int) $row->player_id : null,
-                rubber_id: isset( $row->rubber_id ) ? (int) $row->rubber_id : null,
-                description: $row->description ?? '',
-                status: isset( $row->status ) ? (int) $row->status : null,
-                updated_user: isset( $row->updated_user ) ? (int) $row->updated_user : null,
-                updated_date: $row->updated_date ?? null
-            );
-            $checkers[] = new Results_Checker( $data );
+                $checkers[] = Results_Checker_Factory::from_object( $row );
+            }
         }
-    }
 
         return $checkers;
     }

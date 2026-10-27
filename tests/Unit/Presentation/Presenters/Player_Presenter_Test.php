@@ -310,7 +310,7 @@ class Player_Presenter_Test extends TestCase {
         $club->name           = 'Westcliff Hardcourt Tennis Club';
         $club->shortcode      = 'Westcliff Hardcourt';
 
-        $registration = new Club_Player( (object) [
+        $registration = Club_Player::from_object( (object) [
             'id'             => 55,
             'player_id'      => 42,
             'club_id'        => 101,
@@ -355,7 +355,7 @@ class Player_Presenter_Test extends TestCase {
         $club = new Club();
         $club->id = 101;
 
-        $registration = new Club_Player( (object) [
+        $registration = Club_Player::from_object( (object) [
             'id'            => 57,
             'player_id'     => 42,
             'club_id'       => 101,
@@ -380,7 +380,7 @@ class Player_Presenter_Test extends TestCase {
         $club->id             = 101;
         $club->name           = 'Leigh TC';
 
-        $registration = new Club_Player( (object) [
+        $registration = Club_Player::from_object( (object) [
             'id'             => 56,
             'player_id'      => 42,
             'club_id'        => 101,

@@ -112,7 +112,7 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 
 	public function test_teams_handler_skips_info_assignment_when_team_details_missing(): void {
 		$league = $this->league();
-		$team   = new League_Team(
+		$team   = League_Team::from_object(
 			(object) [
 				'id'             => 101,
 				'table_id'       => 1,

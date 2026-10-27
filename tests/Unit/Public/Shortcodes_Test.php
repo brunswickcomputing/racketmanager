@@ -103,7 +103,7 @@ class Shortcodes_Test extends TestCase {
     }
 
     public function test_get_league_uses_league_repository_resolved_from_container(): void {
-        $league            = new League( (object) [ 'id' => 42, 'title' => 'Container League' ] );
+        $league            = League::from_object( (object) [ 'id' => 42, 'title' => 'Container League' ] );
         $league_repository = $this->createMock( League_Repository_Interface::class );
         $league_repository->expects( self::once() )->method( 'find_by_id' )->with( 42 )->willReturn( $league );
 
@@ -116,7 +116,7 @@ class Shortcodes_Test extends TestCase {
     }
 
     public function test_get_league_without_id_falls_back_to_global_league(): void {
-        $global_league     = new League( (object) [ 'id' => 5, 'title' => 'Global League' ] );
+        $global_league     = League::from_object( (object) [ 'id' => 5, 'title' => 'Global League' ] );
         $league_repository = $this->createMock( League_Repository_Interface::class );
         $league_repository->expects( self::never() )->method( 'find_by_id' );
         $league_repository->expects( self::never() )->method( 'find_by_name' );

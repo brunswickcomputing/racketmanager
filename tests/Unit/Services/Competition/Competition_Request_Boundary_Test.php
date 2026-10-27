@@ -42,7 +42,7 @@ final class Competition_Request_Boundary_Test extends TestCase {
     }
 
     private function league(): League {
-        return new League( (object) [
+        return League::from_object( (object) [
             'id' => 42,
             'title' => 'Test League',
             'seasons' => [ '2025' => [ 'name' => '2025' ], '2026' => [ 'name' => '2026' ] ],
@@ -237,7 +237,7 @@ final class Competition_Request_Boundary_Test extends TestCase {
     }
 
     public function test_event_request_season_overrides_attribute_unless_forced(): void {
-        $event = new Event( (object) [ 'id' => 93, 'name' => 'Event', 'seasons' => [ '2025' => [ 'name' => '2025' ], '2026' => [ 'name' => '2026' ] ] ] );
+        $event = Event::from_object( (object) [ 'id' => 93, 'name' => 'Event', 'seasons' => [ '2025' => [ 'name' => '2025' ], '2026' => [ 'name' => '2026' ] ] ] );
         $service = $this->event_query_service();
         $_GET = [ 'season' => '2025', 'season_93' => '2026' ];
         $GLOBALS['wp']->query_vars['season'] = '2025';
@@ -291,7 +291,7 @@ final class Competition_Request_Boundary_Test extends TestCase {
     public function test_requested_final_is_passed_to_championship_factory(): void {
         $_GET['final'] = 'semi';
         $league = $this->league();
-        $league->event = new Event( (object) [ 'id' => 93, 'name' => 'Event', 'seasons' => $league->seasons ], \Racketmanager\Tests\Helpers\Competition_Test_Factory::create() );
+        $league->event = Event::from_object( (object) [ 'id' => 93, 'name' => 'Event', 'seasons' => $league->seasons ], \Racketmanager\Tests\Helpers\Competition_Test_Factory::create() );
         $league->mode = 'championship';
         $repository = $this->createStub( League_Repository_Interface::class );
         $repository->method( 'query_league_teams' )->willReturn( 8 );

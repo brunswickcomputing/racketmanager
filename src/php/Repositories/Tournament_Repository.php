@@ -13,6 +13,7 @@ namespace Racketmanager\Repositories;
 use Closure;
 use Racketmanager\Domain\DTO\Player\Players_List_DTO;
 use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\Competition\Event_Factory;
 use Racketmanager\Domain\Finance\Charge;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
@@ -548,7 +549,7 @@ class Tournament_Repository implements Tournament_Repository_Interface {
                     $competition = null;
                 }
             }
-            return new Event( $row, $competition );
+            return Event_Factory::from_object( $row, $competition );
         } else {
             return null;
         }

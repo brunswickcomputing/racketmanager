@@ -97,7 +97,7 @@ final class Tournament_Service_Draw_View_Model_Test extends TestCase {
                 array( 'key' => 'final', 'name' => 'Championship Final' ),
             )
         );
-        $league_entity               = new League( (object) array( 'id' => 55, 'title' => 'Draw', 'event_id' => 12 ) );
+        $league_entity               = League::from_object( (object) array( 'id' => 55, 'title' => 'Draw', 'event_id' => 12 ) );
         $league_entity->id           = 55;
         $league_entity->season       = '2026';
         $league_entity->finals       = array();

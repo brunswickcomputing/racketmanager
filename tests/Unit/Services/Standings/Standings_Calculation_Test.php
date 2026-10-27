@@ -32,7 +32,7 @@ class Standings_Calculation_Test extends TestCase {
             'seasons'  => $overrides['seasons'] ?? [ '2024-25' => [ 'name' => '2024-25' ] ],
         ];
 
-        $league = new League( $league_raw );
+        $league = League::from_object( $league_raw );
         $league->num_rubbers     = $overrides['num_rubbers'] ?? 6;
         $league->num_sets        = $overrides['num_sets'] ?? 2;
         $league->num_sets_to_win = $overrides['num_sets_to_win'] ?? 2;

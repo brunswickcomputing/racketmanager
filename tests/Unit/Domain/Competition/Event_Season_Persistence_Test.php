@@ -49,7 +49,7 @@ final class Event_Season_Persistence_Test extends TestCase {
 	}
 
 	private function make_event( int $id = 5, array $seasons = array() ): Event {
-		return new Event(
+		return Event::from_object(
 			(object) array(
 				'id'             => $id,
 				'name'           => 'Men Doubles ' . $id,
@@ -78,7 +78,7 @@ final class Event_Season_Persistence_Test extends TestCase {
 	public function test_legacy_serialized_settings_and_seasons_keep_their_keys_and_json_wire_format(): void {
 		$seasons  = array( '2026' => array( 'name' => '2026', 'rounds' => array( 1, 2 ) ) );
 		$settings = array( 'mode' => 'knockout' );
-		$event    = new Event( (object) array(
+		$event    = Event::from_object( (object) array(
 			'name'     => 'Open',
 			'settings' => serialize( $settings ),
 			'seasons'  => serialize( $seasons ),
@@ -93,7 +93,7 @@ final class Event_Season_Persistence_Test extends TestCase {
 	}
 
 	public function test_invalid_serialized_settings_are_empty_and_invalid_seasons_remain_unmodified(): void {
-		$event = new Event( (object) array( 'name' => 'Open', 'settings' => 'a:2:{bad', 'seasons' => 'not-json' ) );
+		$event = Event::from_object( (object) array( 'name' => 'Open', 'settings' => 'a:2:{bad', 'seasons' => 'not-json' ) );
 		$this->assertSame( array(), $event->get_settings() );
 		$this->assertSame( 'not-json', $event->get_seasons_json() );
 		$this->assertSame( array(), $event->get_seasons() );
@@ -101,7 +101,7 @@ final class Event_Season_Persistence_Test extends TestCase {
 
 	public function test_native_json_encoding_keeps_wordpress_default_shape_and_sanitizes_invalid_utf8(): void {
 		$invalid_name = "Broken\xB1";
-		$event = new Event( (object) array( 'name' => 'Open', 'seasons' => array( '2026' => array( 'name' => $invalid_name ) ) ) );
+		$event = Event::from_object( (object) array( 'name' => 'Open', 'seasons' => array( '2026' => array( 'name' => $invalid_name ) ) ) );
 		$expected = function_exists( 'mb_convert_encoding' ) ? 'Broken?' : 'Broken�';
 		$this->assertSame( json_encode( array( '2026' => array( 'name' => $expected ) ) ), $event->get_seasons_json() );
 		$this->assertSame( $expected, $event->get_seasons()['2026']['name'] );
@@ -306,7 +306,7 @@ final class Event_Season_Persistence_Test extends TestCase {
 		);
 		$fixture = \Racketmanager\Domain\Fixture\Fixture_Factory::from_object( $fixture_raw );
 
-		$rubber = new Rubber( (object) array( 'id' => 501, 'match_id' => 101 ) );
+		$rubber = Rubber::from_object( (object) array( 'id' => 501, 'match_id' => 101 ) );
 
 		$event_repo = $this->createStub( Event_Repository_Interface::class );
 		$event_repo->method( 'query_matches' )->willReturn( array( (object) array( 'id' => 101 ) ) );

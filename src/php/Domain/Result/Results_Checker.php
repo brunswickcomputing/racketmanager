@@ -11,7 +11,6 @@ declare( strict_types=1 );
 namespace Racketmanager\Domain\Result;
 
 use Racketmanager\Domain\DTO\Result\Results_Checker_Data;
-use stdClass;
 
 /**
  * Class to implement the result checker object
@@ -70,36 +69,44 @@ class Results_Checker {
     /**
      * Results_Checker constructor.
      *
-     * @param Results_Checker_Data|stdClass|null $data Data DTO or object.
+     * @param Results_Checker_Data|null $data Data DTO.
      */
-    public function __construct( Results_Checker_Data|stdClass|null $data = null ) {
+    public function __construct( ?Results_Checker_Data $data = null ) {
         if ( ! $data ) {
             return;
         }
 
-        $this->id                = (int) ( $data->id ?? 0 );
-        $this->league_id         = (int) ( $data->league_id ?? 0 );
-        $this->match_id          = (int) ( $data->match_id ?? 0 );
-        $this->team_id           = (int) ( $data->team_id ?? 0 );
-        $this->player_id         = self::nullable_int( $data->player_id ?? null );
-        $this->rubber_id         = self::nullable_int( $data->rubber_id ?? null );
-        $this->description       = (string) ( $data->description ?? '' );
-        $this->status            = self::nullable_int( $data->status ?? null );
-        $this->updated_date      = isset( $data->updated_date ) ? (string) $data->updated_date : null;
-        $this->updated_user      = self::nullable_int( $data->updated_user ?? null );
+        $this->id           = $data->id ?? 0;
+        $this->league_id    = $data->league_id ?? 0;
+        $this->match_id     = $data->match_id ?? 0;
+        $this->team_id      = $data->team_id ?? 0;
+        $this->player_id    = $data->player_id;
+        $this->rubber_id    = $data->rubber_id;
+        $this->description  = $data->description ?? '';
+        $this->status       = $data->status;
+        $this->updated_date = $data->updated_date;
+        $this->updated_user = $data->updated_user;
     }
 
     /**
-     * Cast a database value to a nullable int (DB rows arrive as strings).
+     * Create from a generic object (e.g., database row) without factory validation.
      *
-     * @param mixed $value Raw value.
+     * @param object $row results checker row.
      *
-     * @return int|null
+     * @return static
      */
-    private static function nullable_int( mixed $value ): ?int {
-        if ( null === $value || '' === $value ) {
-            return null;
-        }
-        return (int) $value;
+    public static function from_object( object $row ): static {
+        return new static( Results_Checker_Data::from_object( $row ) );
+    }
+
+    /**
+     * Create from an array without factory validation.
+     *
+     * @param array $data results checker data.
+     *
+     * @return static
+     */
+    public static function from_array( array $data ): static {
+        return static::from_object( (object) $data );
     }
 }

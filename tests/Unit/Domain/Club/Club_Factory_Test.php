@@ -135,4 +135,38 @@ final class Club_Factory_Test extends TestCase {
         $this->assertSame( 2005, $club->founded );
         $this->assertSame( [ 10, 20 ], $club->players );
     }
+
+    public function test_constructor_accepts_dto_directly_and_rejects_raw_objects(): void {
+        $dto  = new Club_Hydration_DTO( id: 5, name: 'Direct DTO Club', shortcode: 'DDC' );
+        $club = new Club( $dto );
+
+        $this->assertSame( 5, $club->id );
+        $this->assertSame( 'Direct DTO Club', $club->name );
+        $this->assertSame( 'DDC', $club->shortcode );
+
+        $empty = new Club();
+        $this->assertNull( $empty->id );
+        $this->assertSame( '', $empty->name );
+
+        $this->expectException( \TypeError::class );
+        new Club( (object) [ 'id' => 1, 'name' => 'Raw' ] );
+    }
+
+    public function test_lenient_from_object_matches_factory_output_and_drops_unknown_keys(): void {
+        $row = (object) [
+            'id'          => '31',
+            'name'        => 'Parity Club',
+            'founded'     => '1901',
+            'unknown_key' => 'ignored',
+        ];
+
+        $lenient   = Club::from_object( $row );
+        $validated = Club_Factory::from_object( $row );
+
+        $this->assertEquals( $validated, $lenient );
+        $this->assertSame( 31, $lenient->id );
+        $this->assertSame( 1901, $lenient->founded );
+        $this->assertFalse( property_exists( $lenient, 'unknown_key' ) );
+        $this->assertEquals( $lenient, Club::from_array( (array) $row ) );
+    }
 }

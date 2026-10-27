@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Player\Player_Error;
+use Racketmanager\Domain\Player\Player_Error_Factory;
 use Racketmanager\Repositories\Interfaces\Player_Error_Repository_Interface;
 use wpdb;
 
@@ -105,7 +106,7 @@ class Player_Error_Repository implements Player_Error_Repository_Interface {
             $player_error_id
         );
         $row   = $this->wpdb->get_row($query);
-        return $row ? new Player_Error( $row ) : null;
+        return $row ? Player_Error_Factory::from_object( $row ) : null;
     }
 
     /**

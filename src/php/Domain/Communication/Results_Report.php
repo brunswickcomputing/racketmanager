@@ -10,7 +10,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Domain\Communication;
 
-use Racketmanager\Domain\Value_Objects\Json_Encoder;
+use Racketmanager\Domain\DTO\Communication\Results_Report_Hydration_DTO;
 
 /**
  * Class to implement the results report object
@@ -44,19 +44,45 @@ class Results_Report {
     /**
      * Construct class instance
      *
-     * @param object|null $results_report results_report object.
+     * @param Results_Report_Hydration_DTO|null $dto hydration DTO (keeps `result_object` and `data` in sync).
      */
-    public function __construct( ?object $results_report = null ) {
-        if ( ! is_null( $results_report ) ) {
-            foreach ( get_object_vars( $results_report ) as $key => $value ) {
-                $this->$key = $value;
-            }
-            if ( ! isset( $this->data ) && isset( $this->result_object ) ) {
-                $this->data = json_decode( $this->result_object );
-            }
-            if ( ! isset( $this->result_object ) && isset( $this->data ) ) {
-                $this->result_object = Json_Encoder::encode( $this->data );
-            }
+    public function __construct( ?Results_Report_Hydration_DTO $dto = null ) {
+        if ( is_null( $dto ) ) {
+            return;
         }
+        if ( null !== $dto->id ) {
+            $this->id = $dto->id;
+        }
+        if ( null !== $dto->match_id ) {
+            $this->match_id = $dto->match_id;
+        }
+        if ( null !== $dto->result_object ) {
+            $this->result_object = $dto->result_object;
+        }
+        if ( null !== $dto->data || is_string( $dto->result_object ) ) {
+            $this->data = $dto->data;
+        }
+    }
+
+    /**
+     * Create from a generic object (e.g., database row) without factory validation.
+     *
+     * @param object $row results report row.
+     *
+     * @return static
+     */
+    public static function from_object( object $row ): static {
+        return new static( Results_Report_Hydration_DTO::from_object( $row ) );
+    }
+
+    /**
+     * Create from an array without factory validation.
+     *
+     * @param array $data results report data.
+     *
+     * @return static
+     */
+    public static function from_array( array $data ): static {
+        return static::from_object( (object) $data );
     }
 }

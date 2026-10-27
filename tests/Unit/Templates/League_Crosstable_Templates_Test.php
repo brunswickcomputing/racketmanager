@@ -105,8 +105,8 @@ final class League_Crosstable_Templates_Test extends TestCase {
     }
 
     public function test_admin_crosstable_uses_hydrated_teams_for_rank_rows_and_columns(): void {
-        $westcliff = new League_Team( (object) array( 'id' => 11, 'title' => 'Westcliff 1' ) );
-        $leigh     = new League_Team( (object) array( 'id' => 22, 'title' => 'Leigh 2' ) );
+        $westcliff = League_Team::from_object( (object) array( 'id' => 11, 'title' => 'Westcliff 1' ) );
+        $leigh     = League_Team::from_object( (object) array( 'id' => 22, 'title' => 'Leigh 2' ) );
         $league    = $this->league();
         $league->num_teams = 2;
 
@@ -134,7 +134,7 @@ final class League_Crosstable_Templates_Test extends TestCase {
     }
 
     public function test_admin_crosstable_prints_blank_cells_when_num_teams_exceeds_hydrated_teams(): void {
-        $westcliff = new League_Team( (object) array( 'id' => 11, 'title' => 'Westcliff 1' ) );
+        $westcliff = League_Team::from_object( (object) array( 'id' => 11, 'title' => 'Westcliff 1' ) );
         $league    = $this->league();
         $league->num_teams = 3; // league expects three teams, only one entered so far
 

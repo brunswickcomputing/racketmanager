@@ -9,6 +9,8 @@ declare( strict_types=1 );
  */
 namespace Racketmanager\Domain\Season;
 
+use Racketmanager\Domain\DTO\Season\Season_Hydration_DTO;
+
 /**
  * Class to implement the season object
  */
@@ -19,14 +21,34 @@ class Season {
     /**
      * Construct class instance
      *
-     * @param object|null $season invoice object.
+     * @param Season_Hydration_DTO|null $dto Hydration DTO.
      */
-    public function __construct( ?object $season = null ) {
-        if ( is_null( $season ) ) {
+    public function __construct( ?Season_Hydration_DTO $dto = null ) {
+        if ( is_null( $dto ) ) {
             return;
         }
-        $this->id   = isset( $season->id ) ? (int) $season->id : null;
-        $this->name = (string) ( $season->name ?? '' );
+        $this->id   = $dto->id;
+        $this->name = $dto->name;
+    }
+
+    /**
+     * Create from a generic object (e.g. database row) without factory validation.
+     *
+     * @param object $row
+     * @return static
+     */
+    public static function from_object( object $row ): static {
+        return new static( Season_Hydration_DTO::from_object( $row ) );
+    }
+
+    /**
+     * Create from an array without factory validation.
+     *
+     * @param array $data
+     * @return static
+     */
+    public static function from_array( array $data ): static {
+        return static::from_object( (object) $data );
     }
 
     public function get_name(): string {

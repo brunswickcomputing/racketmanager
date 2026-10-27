@@ -46,7 +46,7 @@ class Rubber_Repository_Test extends TestCase {
             'id'       => 10,
             'match_id' => 100,
         ];
-        $rubber = new Rubber( $data );
+        $rubber = Rubber::from_object( $data );
 
         $GLOBALS['wp_stubs_cache_enabled'] = true;
         $GLOBALS['wp_stubs_cache']['rubbers']['10'] = $rubber;
@@ -111,7 +111,7 @@ class Rubber_Repository_Test extends TestCase {
     }
 
     public function test_save_inserts_new_rubber_and_sets_id(): void {
-        $rubber = new Rubber( (object) [
+        $rubber = Rubber::from_object( (object) [
             'match_id'      => 100,
             'type'          => 'MD',
             'rubber_number' => 1,
@@ -136,7 +136,7 @@ class Rubber_Repository_Test extends TestCase {
     }
 
     public function test_save_updates_existing_rubber(): void {
-        $rubber = new Rubber( (object) [
+        $rubber = Rubber::from_object( (object) [
             'id'            => 88,
             'match_id'      => 100,
             'type'          => 'MD',
@@ -162,7 +162,7 @@ class Rubber_Repository_Test extends TestCase {
     }
 
     public function test_save_canonicalizes_rubber_datetime(): void {
-        $rubber = new Rubber( (object) [
+        $rubber = Rubber::from_object( (object) [
             'id'            => 88,
             'match_id'      => 100,
             'type'          => 'MD',
@@ -186,7 +186,7 @@ class Rubber_Repository_Test extends TestCase {
     }
 
     public function test_save_throws_on_invalid_rubber_datetime(): void {
-        $rubber = new Rubber( (object) [
+        $rubber = Rubber::from_object( (object) [
             'id'       => 88,
             'match_id' => 100,
             'date'     => '2026-13-45 25:99',
@@ -479,7 +479,7 @@ class Rubber_Repository_Test extends TestCase {
 
     public function test_reset_result_deletes_players_and_updates_rubber(): void {
         $GLOBALS['wp_stubs_cache_enabled'] = true;
-        $rubber = new Rubber( (object) [ 'id' => 10, 'match_id' => 100, 'home_points' => 2.0 ] );
+        $rubber = Rubber::from_object( (object) [ 'id' => 10, 'match_id' => 100, 'home_points' => 2.0 ] );
         $GLOBALS['wp_stubs_cache']['rubbers']['10'] = $rubber;
 
         $this->wpdb->expects( $this->once() )

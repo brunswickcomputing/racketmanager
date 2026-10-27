@@ -93,7 +93,7 @@ final class Registration_Service_Test extends TestCase {
 
         $club_player_repo->expects( $this->once() )->method( 'find_by_club_and_player' )->with( 5, 20 )->willReturn( null );
 
-        $created_registration = new Club_Player( (object) [
+        $created_registration = Club_Player::from_object( (object) [
             'id'             => 100,
             'club_id'        => 5,
             'player_id'      => 20,
@@ -135,7 +135,7 @@ final class Registration_Service_Test extends TestCase {
     }
 
     public function test_approve_registration_stamps_the_injected_clock_time(): void {
-        $registration = new Club_Player( (object) [ 'id' => 100, 'club_id' => 5, 'player_id' => 20, 'status' => 'pending' ] );
+        $registration = Club_Player::from_object( (object) [ 'id' => 100, 'club_id' => 5, 'player_id' => 20, 'status' => 'pending' ] );
 
         $club_player_repo = $this->createMock( Registration_Repository_Interface::class );
         $club_player_repo->expects( $this->once() )->method( 'find' )->with( 100 )->willReturn( $registration );
@@ -155,7 +155,7 @@ final class Registration_Service_Test extends TestCase {
      * (pre-10.1.0 logic, out of scope for the WordPress-purity refactor); only the timestamp source changed.
      */
     public function test_remove_registration_stamps_the_injected_clock_time(): void {
-        $registration = new Club_Player( (object) [ 'id' => 100, 'club_id' => 5, 'player_id' => 20, 'status' => 'pending' ] );
+        $registration = Club_Player::from_object( (object) [ 'id' => 100, 'club_id' => 5, 'player_id' => 20, 'status' => 'pending' ] );
 
         $club_player_repo = $this->createMock( Registration_Repository_Interface::class );
         $club_player_repo->expects( $this->once() )->method( 'find' )->with( 100 )->willReturn( $registration );

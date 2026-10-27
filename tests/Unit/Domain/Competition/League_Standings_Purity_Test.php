@@ -17,7 +17,7 @@ final class League_Standings_Purity_Test extends TestCase {
     }
 
     public function test_standings_configuration_survives_serialization_without_services(): void {
-        $league = new League( (object) [ 'title' => 'Division 1', 'standings' => [ 'points' => 1 ] ] );
+        $league = League::from_object( (object) [ 'title' => 'Division 1', 'standings' => [ 'points' => 1 ] ] );
         $restored = unserialize( serialize( $league ) );
 
         $this->assertSame( $league->standings, $restored->standings );

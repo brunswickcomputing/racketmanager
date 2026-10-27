@@ -105,7 +105,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             ->with( 7929, 2347, 2, 'W1', '1' )
             ->willReturn( true );
 
-        $league_team = new League_Team( (object) [
+        $league_team = League_Team::from_object( (object) [
             'id'        => 1532,
             'table_id'  => 7929,
             'league_id' => 2000,
@@ -307,7 +307,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
                 'max_teams'        => 4,
                 'lowest_promotion' => 1,
             ) );
-        $event = new Event( (object) array( 'id' => 93, 'name' => 'Mixed U10 Summer', 'type' => 'XD' ), $competition );
+        $event = Event::from_object( (object) array( 'id' => 93, 'name' => 'Mixed U10 Summer', 'type' => 'XD' ), $competition );
 
         $league                  = $this->createStub( League::class );
         $league->id              = 50;
@@ -385,7 +385,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             'max_teams'        => 4,
             'lowest_promotion' => 1,
         ) );
-        $event = new Event( (object) array( 'id' => 93, 'name' => 'Mixed U10 Summer', 'type' => 'XD' ), $competition );
+        $event = Event::from_object( (object) array( 'id' => 93, 'name' => 'Mixed U10 Summer', 'type' => 'XD' ), $competition );
 
         $league     = $this->createStub( League::class );
         $league->id = 50;
@@ -622,7 +622,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             ->with( 200, 10, '2026', '1', 'A', 0 )
             ->willReturn( 1 );
 
-        $league     = new \Racketmanager\Domain\Competition\League( (object) array( 'id' => 200, 'title' => 'Div 1' ) );
+        $league     = League::from_object( (object) array( 'id' => 200, 'title' => 'Div 1' ) );
         $league_repository->expects( self::atLeastOnce() )->method( 'find_by_id' )->with( 200 )->willReturn( $league );
 
         $dispatcher = new League_Constitution_Action_Dispatcher(
@@ -663,7 +663,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             ->with( 200, 10, '2026', '1', 'A', 0 )
             ->willReturn( false );
 
-        $league     = new \Racketmanager\Domain\Competition\League( (object) array( 'id' => 200, 'title' => 'Div 1' ) );
+        $league     = League::from_object( (object) array( 'id' => 200, 'title' => 'Div 1' ) );
         $league_repository->expects( self::atLeastOnce() )->method( 'find_by_id' )->with( 200 )->willReturn( $league );
 
         $dispatcher = new League_Constitution_Action_Dispatcher(
@@ -704,9 +704,9 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             ->with( 200, 10, '2026', '99', 'NT', 1 )
             ->willReturn( 1 );
 
-        $league     = new \Racketmanager\Domain\Competition\League( (object) array( 'id' => 200, 'title' => 'Div 1' ) );
+        $league     = League::from_object( (object) array( 'id' => 200, 'title' => 'Div 1' ) );
         $league_repository->expects( self::atLeastOnce() )->method( 'find_by_id' )->with( 200 )->willReturn( $league );
-        $this->team_repository->method( 'find_by_id' )->willReturnCallback( static fn( int $id ) => 10 === $id ? new Team( (object) array( 'id' => 10, 'title' => 'Team Ten' ) ) : null );
+        $this->team_repository->method( 'find_by_id' )->willReturnCallback( static fn( int $id ) => 10 === $id ? Team::from_object( (object) array( 'id' => 10, 'title' => 'Team Ten' ) ) : null );
 
         $dispatcher = new League_Constitution_Action_Dispatcher(
             $guard,
@@ -772,7 +772,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             ->with( 200, 10, '2026', '99', 'NT', 1 )
             ->willReturn( false );
 
-        $league     = new \Racketmanager\Domain\Competition\League( (object) array( 'id' => 200, 'title' => 'Div 1' ) );
+        $league     = League::from_object( (object) array( 'id' => 200, 'title' => 'Div 1' ) );
         $league_repository->expects( self::atLeastOnce() )->method( 'find_by_id' )->with( 200 )->willReturn( $league );
 
         $dispatcher = new League_Constitution_Action_Dispatcher(

@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Domain\Finance;
 
+use Racketmanager\Domain\DTO\Finance\Charge_Hydration_DTO;
 use Racketmanager\Domain\Enums\Charge_Status;
 use Racketmanager\Domain\Value_Objects\Currency;
 use Racketmanager\Domain\Value_Objects\Money;
@@ -69,20 +70,42 @@ class Charge {
     /**
      * Construct class instance
      *
-     * @param object|null $charges charges object.
+     * @param Charge_Hydration_DTO|null $dto hydration DTO.
      */
-    public function __construct( ?object $charges = null ) {
-        if ( is_null( $charges ) ) {
+    public function __construct( ?Charge_Hydration_DTO $dto = null ) {
+        if ( is_null( $dto ) ) {
             return;
         }
-        $this->id              = isset( $charges->id ) && '' !== (string) $charges->id ? (int) $charges->id : null;
-        $this->competition_id  = isset( $charges->competition_id ) && '' !== (string) $charges->competition_id ? (int) $charges->competition_id : null;
-        $this->season          = isset( $charges->season ) ? (string) $charges->season : null;
-        $this->status          = isset( $charges->status ) ? (string) $charges->status : 'draft';
-        $this->date            = isset( $charges->date ) ? (string) $charges->date : null;
-        $this->fee_competition = isset( $charges->fee_competition ) && '' !== (string) $charges->fee_competition ? (float) $charges->fee_competition : null;
-        $this->fee_event       = isset( $charges->fee_event ) && '' !== (string) $charges->fee_event ? (float) $charges->fee_event : null;
-        $this->total           = isset( $charges->total ) && '' !== (string) $charges->total ? (float) $charges->total : null;
+        $this->id              = $dto->id;
+        $this->competition_id  = $dto->competition_id;
+        $this->season          = $dto->season;
+        $this->status          = $dto->status;
+        $this->date            = $dto->date;
+        $this->fee_competition = $dto->fee_competition;
+        $this->fee_event       = $dto->fee_event;
+        $this->total           = $dto->total;
+    }
+
+    /**
+     * Create from a generic object (e.g., database row) without factory validation.
+     *
+     * @param object $row charge row.
+     *
+     * @return static
+     */
+    public static function from_object( object $row ): static {
+        return new static( Charge_Hydration_DTO::from_object( $row ) );
+    }
+
+    /**
+     * Create from an array without factory validation.
+     *
+     * @param array $data charge data.
+     *
+     * @return static
+     */
+    public static function from_array( array $data ): static {
+        return static::from_object( (object) $data );
     }
 
     public function get_id(): int|null {

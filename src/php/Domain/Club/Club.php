@@ -165,14 +165,12 @@ class Club {
 	/**
 	 * Constructor
 	 *
-	 * @param object|Club_Hydration_DTO|null $club Club object or hydration DTO.
+	 * @param Club_Hydration_DTO|null $dto Hydration DTO.
 	 */
-	public function __construct( ?object $club = null ) {
-		if ( is_null( $club ) ) {
+	public function __construct( ?Club_Hydration_DTO $dto = null ) {
+		if ( is_null( $dto ) ) {
 			return;
 		}
-
-		$dto = $club instanceof Club_Hydration_DTO ? $club : Club_Hydration_DTO::from_object( $club );
 
 		$this->id              = $dto->id;
 		$this->name            = $dto->name;
@@ -195,6 +193,26 @@ class Club {
 		$this->entry           = $dto->entry;
 		$this->competitions    = $dto->competitions;
 		$this->match_secretary = $dto->match_secretary;
+	}
+
+	/**
+	 * Create from a generic object (e.g. database row) without factory validation.
+	 *
+	 * @param object $row
+	 * @return static
+	 */
+	public static function from_object( object $row ): static {
+		return new static( Club_Hydration_DTO::from_object( $row ) );
+	}
+
+	/**
+	 * Create from an array without factory validation.
+	 *
+	 * @param array $data
+	 * @return static
+	 */
+	public static function from_array( array $data ): static {
+		return static::from_object( (object) $data );
 	}
 
 	/**

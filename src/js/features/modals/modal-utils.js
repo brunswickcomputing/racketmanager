@@ -193,7 +193,7 @@ export function setModalSubmitEnabled(modalSelector, enabled) {
  * Create a confirmation modal
  *
  * @param {Object} options - Modal configuration
- * @returns {Promise} Promise that resolves on confirm, rejects on cancel
+ * @returns {Promise<boolean>} Promise that resolves true on confirm, rejects with Error on cancel
  */
 export function confirmModal(options = {}) {
     const defaults = {
@@ -240,9 +240,11 @@ export function confirmModal(options = {}) {
 
         const $modal = jQuery('#confirmModal');
         const modal = new bootstrap.Modal($modal[0]);
+        let isConfirmed = false;
 
         // Handle confirm
         jQuery('#confirmBtn').on('click', function() {
+            isConfirmed = true;
             modal.hide();
             resolve(true);
         });
@@ -250,7 +252,9 @@ export function confirmModal(options = {}) {
         // Handle cancel/close
         $modal.on('hidden.bs.modal', function() {
             $modal.remove();
-            reject(false);
+            if (!isConfirmed) {
+                reject(new Error('Confirmation cancelled'));
+            }
         });
 
         modal.show();

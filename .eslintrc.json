@@ -30,6 +30,13 @@
       "rules": {
         "no-undef": "off"
       }
+    },
+    {
+      "files": ["tests/js/**/*.js"],
+      "env": {
+        "jest": true,
+        "node": true
+      }
     }
   ]
 }

@@ -7,10 +7,11 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Admin\Admin_Tournament;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
+use Racketmanager\Admin\View_Models\Contact_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Team_Page_View_Model;
-use Racketmanager\Admin\View_Models\Tournament_Teams_List_Page_View_Model;
+use Racketmanager\Admin\View_Models\Teams_List_Page_View_Model;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Admin\Admin_Message_Service;
@@ -23,6 +24,7 @@ use Throwable;
 
 interface Admin_Controller_Mock_Interface {
     public function teams_page();
+    public function contact_page();
     public function handle();
 }
 
@@ -33,11 +35,12 @@ class Admin_Tournament_Test extends TestCase {
 
     private Admin_Tournament $admin_tournament;
     private Simple_Container $container;
+    private View_Renderer_Interface $renderer;
 
     protected function setUp(): void {
         parent::setUp();
         $racketmanager     = $this->createStub( RacketManager::class );
-        $renderer          = $this->createMock( View_Renderer_Interface::class );
+        $this->renderer    = $this->createMock( View_Renderer_Interface::class );
         $flash_store = $this->createStub( Admin_Flash_Message_Store::class );
         $message_service = new Admin_Message_Service( $flash_store );
         $this->container          = new Simple_Container();
@@ -45,7 +48,7 @@ class Admin_Tournament_Test extends TestCase {
 
         $this->admin_tournament = new Admin_Tournament(
             $racketmanager,
-            $renderer,
+            $this->renderer,
             $message_service
         );
     }
@@ -59,11 +62,11 @@ class Admin_Tournament_Test extends TestCase {
      * @throws Throwable
      */
     public function test_display_teams_list_calls_apply_result_message(): void {
-        $controller = $this->createStub( Admin_Controller_Mock_Interface::class );
+        $controller = $this->createMock( Admin_Controller_Mock_Interface::class );
 
-        $this->container->set( 'tournament_teams_admin_controller', $controller );
+        $this->container->set( 'teams_admin_controller', $controller );
 
-        $vm = ( new ReflectionClass( Tournament_Teams_List_Page_View_Model::class ) )
+        $vm = ( new ReflectionClass( Teams_List_Page_View_Model::class ) )
             ->newInstanceWithoutConstructor();
 
         $result = [
@@ -72,7 +75,22 @@ class Admin_Tournament_Test extends TestCase {
             'message_type' => 'success'
         ];
 
-        $controller->method( 'teams_page' )->willReturn( $result );
+        $controller->expects( self::once() )
+            ->method( 'teams_page' )
+            ->with(
+                $_GET,
+                $_POST,
+                self::callback( function( $context ): bool {
+                    return $context instanceof \Racketmanager\Admin\Controllers\Admin_Page_Context
+                        && 'racketmanager-tournaments' === $context->page
+                        && 'tournament' === $context->target_type;
+                } )
+            )
+            ->willReturn( $result );
+
+        $this->renderer->expects( self::once() )
+            ->method( 'render' )
+            ->with( 'admin/includes/teams-list', $vm );
 
         ob_start();
         try {
@@ -84,6 +102,34 @@ class Admin_Tournament_Test extends TestCase {
         }
 
         $this->assertStringContainsString( 'Test message', $output );
+    }
+
+    public function test_display_contact_page_routes_correctly_with_context(): void {
+        $controller = $this->createMock( Admin_Controller_Mock_Interface::class );
+
+        $this->container->set( 'contact_admin_controller', $controller );
+
+        $vm = ( new ReflectionClass( Contact_Page_View_Model::class ) )
+            ->newInstanceWithoutConstructor();
+
+        $controller->expects( self::once() )
+            ->method( 'contact_page' )
+            ->with(
+                $_GET,
+                $_POST,
+                self::callback( function( $context ): bool {
+                    return $context instanceof \Racketmanager\Admin\Controllers\Admin_Page_Context
+                        && 'racketmanager-tournaments' === $context->page
+                        && 'tournament' === $context->target_type;
+                } )
+            )
+            ->willReturn( [ 'view_model' => $vm ] );
+
+        $this->renderer->expects( self::once() )
+            ->method( 'render' )
+            ->with( 'admin/includes/contact', $vm );
+
+        $this->admin_tournament->display_contact_page();
     }
 
     public function test_display_competition_config_page_routes_correctly(): void {
@@ -148,6 +194,10 @@ class Admin_Tournament_Test extends TestCase {
         $controller->expects( self::once() )
             ->method( 'handle' )
             ->willReturn( [ 'view_model' => $vm ] );
+
+        $this->renderer->expects( self::once() )
+            ->method( 'render' )
+            ->with( 'admin/includes/teams/team', $vm );
 
         $this->admin_tournament->display_team_page();
     }

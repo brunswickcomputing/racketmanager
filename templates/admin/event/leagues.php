@@ -44,7 +44,7 @@ $league_edit        = $league_edit ?? null;
             <table class="table table-striped">
                 <thead class="table-dark">
                     <tr>
-                        <th class="check-column"><label for="checkAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('leagues-filter'));" /></th>
+                        <th class="check-column"><label for="checkAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAll" data-action="check-all" data-target="leagues-filter" /></th>
                         <th class="">
                             <?php
                             if ( $event->is_championship ) {

@@ -7,10 +7,11 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Competitions_Page_View_Model;
 use Racketmanager\Admin\View_Models\Index_Page_View_Model;
 use Racketmanager\Util\Util_Lookup;
 
-if ( isset( $vm ) && $vm instanceof Index_Page_View_Model ) {
+if ( isset( $vm ) && ( $vm instanceof Index_Page_View_Model || $vm instanceof Competitions_Page_View_Model ) ) {
     $competitions     = $vm->competitions;
     $age_groups       = $vm->age_groups;
     $age_group_select = $vm->age_group_select;
@@ -65,7 +66,7 @@ if ( isset( $vm ) && $vm instanceof Index_Page_View_Model ) {
         <table class="table table-striped">
             <thead class="table-dark">
                 <tr>
-                    <th class="check-column"><label for="check-all-competitions" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?>></label><input type="checkbox" id="check-all-competitions" onclick="Racketmanager.checkAll(document.getElementById('competitions-filter'));" /></th>
+                    <th class="check-column"><label for="check-all-competitions" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?>></label><input type="checkbox" id="check-all-competitions" data-action="check-all" data-target="competitions-filter" /></th>
                     <th class="d-none d-md-table-cell">ID</th>
                     <th class=""><?php esc_html_e( 'Competition', 'racketmanager' ); ?></th>
                     <th class="centered"><?php esc_html_e( 'Age Group', 'racketmanager' ); ?></th>

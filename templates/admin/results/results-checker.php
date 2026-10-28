@@ -92,7 +92,7 @@ use Racketmanager\Domain\Season\Season;
                 <thead class="table-dark">
                     <tr>
                         <th class="check-column">
-                            <label class="visually-hidden" for="checkAll"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('results-checker-action'));" />
+                            <label class="visually-hidden" for="checkAll"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAll" data-action="check-all" data-target="results-checker-action" />
                         </th>
                         <th class=""><?php esc_html_e( 'Date', 'racketmanager' ); ?></th>
                         <th class=""><?php esc_html_e( 'Match', 'racketmanager' ); ?></th>

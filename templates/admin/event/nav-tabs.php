@@ -23,7 +23,11 @@ $competition_type = $event->competition->type instanceof \BackedEnum ? $event->c
     </div>
 </div>
 
-<?php $this->show_message(); ?>
+<?php
+if ( isset( $this ) && method_exists( $this, 'show_message' ) ) {
+    $this->show_message();
+}
+?>
 <div class="row">
     <div class="container">
         <nav class="navbar navbar-expand-lg bg-body-tertiary">

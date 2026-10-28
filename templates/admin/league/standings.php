@@ -48,7 +48,7 @@ if ( $vm ) {
         <thead class="table-dark">
             <tr>
                 <th scope="col" class="check-column">
-                    <label for="check-all-teams" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="check-all-teams" onclick="Racketmanager.checkAll(document.getElementById('teams-filter'));" />
+                    <label for="check-all-teams" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="check-all-teams" data-action="check-all" data-target="teams-filter" />
                 </th>
                 <th class="column-num" scope="col"><?php esc_html_e( 'Rank', 'racketmanager' ); ?></th>
                 <?php
@@ -322,7 +322,7 @@ if ( $vm ) {
                             ?>
                         </td>
                         <td class="column-num">
-                            <label for="add_points_<?php echo esc_html( $team->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Add points', 'racketmanager' ); ?></label><input type="text" size="3" style="text-align: center;" id="add_points_<?php echo esc_html( $team->id ); ?>" name="add_points[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->add_points ); ?>" onblur="Racketmanager.saveAddPoints(this.value, <?php echo esc_html( $team->table_id ); ?> )" />
+                            <label for="add_points_<?php echo esc_html( $team->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Add points', 'racketmanager' ); ?></label><input type="text" size="3" style="text-align: center;" id="add_points_<?php echo esc_html( $team->id ); ?>" name="add_points[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->add_points ); ?>" data-action="save-add-points" data-table-id="<?php echo esc_attr( $team->table_id ); ?>" />
                             <span class="loading" id="loading_<?php echo esc_html( $team->table_id ); ?>"></span>
                             <span id="feedback_<?php echo esc_html( $team->table_id ); ?>"></span>
                         </td>

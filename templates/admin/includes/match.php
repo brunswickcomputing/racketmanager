@@ -9,57 +9,27 @@ namespace Racketmanager;
 
 use Racketmanager\Admin\View_Models\Tournament_Fixtures_Page_View_Model;
 
-// Preferred input: a single $vm (view model).
-// BC fallback: if $vm isn't provided, this template continues using legacy locals.
-$vm = $vm ?? null;
+/** @var Tournament_Fixtures_Page_View_Model $vm */
+$league          = $vm->league;
+$tournament      = $vm->tournament;
+$competition     = $vm->competition;
+$season          = $vm->season;
+$form_title      = $vm->form_title;
+$submit_title    = $vm->submit_title;
+$fixtures        = $vm->fixtures;
+$edit            = $vm->edit;
+$bulk            = $vm->bulk;
+$is_finals       = $vm->is_finals;
+$mode            = $vm->mode;
+$teams           = $vm->teams;
+$single_cup_game = $vm->single_cup_game;
+$max_fixtures    = $vm->max_fixtures;
+$final_key       = $vm->final_key;
 
-if ( $vm instanceof Tournament_Fixtures_Page_View_Model ) {
-    $league          = $vm->league;
-    $tournament      = $vm->tournament;
-    $competition     = $vm->competition;
-    $season          = $vm->season;
-    $form_title      = $vm->form_title;
-    $submit_title    = $vm->submit_title;
-    $fixtures        = $vm->fixtures;
-    $edit            = $vm->edit;
-    $bulk            = $vm->bulk;
-    $is_finals       = $vm->is_finals;
-    $mode            = $vm->mode;
-    $teams           = $vm->teams;
-    $single_cup_game = $vm->single_cup_game;
-    $max_fixtures    = $vm->max_fixtures;
-    $final_key       = $vm->final_key;
-
-    // Optional fields
-    $home_title = $vm->home_title;
-    $away_title = $vm->away_title;
-    $match_day  = $vm->match_day;
-} else {
-    $fixtures_list  = $fixtures ?? ( $matches ?? array() );
-    $max_count      = $max_fixtures ?? ( $max_matches ?? count( $fixtures_list ) );
-    $resolved_comp  = $competition ?? ( isset( $league->event->competition ) ? $league->event->competition : null );
-    $resolved_tourn = $tournament ?? $resolved_comp;
-    $vm             = (object) array(
-        'league'          => $league ?? null,
-        'tournament'      => $resolved_tourn,
-        'competition'     => $resolved_comp,
-        'season'          => strval( $season ?? '' ),
-        'form_title'      => strval( $form_title ?? '' ),
-        'submit_title'    => strval( $submit_title ?? '' ),
-        'fixtures'        => $fixtures_list,
-        'edit'            => (bool) ( $edit ?? false ),
-        'bulk'            => (bool) ( $bulk ?? false ),
-        'is_finals'       => (bool) ( $is_finals ?? false ),
-        'mode'            => strval( $mode ?? '' ),
-        'teams'           => $teams ?? array(),
-        'single_cup_game' => (bool) ( $single_cup_game ?? false ),
-        'max_fixtures'    => (int) $max_count,
-        'final_key'       => $final_key ?? null,
-        'home_title'      => $home_title ?? null,
-        'away_title'      => $away_title ?? null,
-        'match_day'       => $match_day ?? null,
-    );
-}
+// Optional fields
+$home_title = $vm->home_title;
+$away_title = $vm->away_title;
+$match_day  = $vm->match_day;
 
 /** @var object $league */
 /** @var object $tournament */
@@ -217,7 +187,7 @@ $form_action = '/wp-admin/admin.php?page=racketmanager-' . $competition_type . '
                                     }
                                 }
                                 ?>
-                                <td><label for="myDatePicker[<?php echo esc_html( $i ); ?>]"></label><input type="date" name="myDatePicker[<?php echo esc_html( $i ); ?>]" id="myDatePicker[<?php echo esc_html( $i ); ?>]" class="" value="<?php echo esc_html( $date ); ?>" onChange="Racketmanager.setMatchDate(this.value, <?php echo esc_html( $i ); ?>, <?php echo esc_html( $vm->max_fixtures ); ?>, '<?php echo esc_html( $vm->mode ); ?>');" /></td>
+                                <td><label for="myDatePicker[<?php echo esc_html( $i ); ?>]"></label><input type="date" name="myDatePicker[<?php echo esc_html( $i ); ?>]" id="myDatePicker[<?php echo esc_html( $i ); ?>]" class="" value="<?php echo esc_html( $date ); ?>" data-action="set-match-date" data-index="<?php echo esc_attr( $i ); ?>" data-max-fixtures="<?php echo esc_attr( $vm->max_fixtures ); ?>" data-mode="<?php echo esc_attr( $vm->mode ); ?>" /></td>
                                 <?php
                             }
                             ?>
@@ -235,7 +205,7 @@ $form_action = '/wp-admin/admin.php?page=racketmanager-' . $competition_type . '
                                 }
                                 ?>
                                 <td>
-                                    <label for="match_day_<?php echo esc_html( $i ); ?>" class="visually-hidden"><?php esc_html_e( 'Match day', 'racketmanager' ); ?></label><select size="1" name="match_day[<?php echo esc_html( $i ); ?>]" id="match_day_<?php echo esc_html( $i ); ?>" onChange="Racketmanager.setMatchDayPopUp(this.value, <?php echo esc_html( $i ); ?>, <?php echo esc_html( $vm->max_fixtures ); ?>, '<?php echo esc_html( $vm->mode ); ?>');">
+                                    <label for="match_day_<?php echo esc_html( $i ); ?>" class="visually-hidden"><?php esc_html_e( 'Match day', 'racketmanager' ); ?></label><select size="1" name="match_day[<?php echo esc_html( $i ); ?>]" id="match_day_<?php echo esc_html( $i ); ?>" data-action="set-match-day-pop-up" data-index="<?php echo esc_attr( $i ); ?>" data-max-fixtures="<?php echo esc_attr( $vm->max_fixtures ); ?>" data-mode="<?php echo esc_attr( $vm->mode ); ?>">
                                         <?php
                                         for ( $d = 1; $d <= $vm->league->current_season['num_match_days']; $d++ ) {
                                             ?>
@@ -264,7 +234,7 @@ $form_action = '/wp-admin/admin.php?page=racketmanager-' . $competition_type . '
                                     <?php
                                 } else {
                                     ?>
-                                    <label for="home_team_<?php echo esc_html( $i ); ?>" class="visually-hidden"><?php esc_html_e( 'Home team', 'racketmanager' ); ?></label><select size="1" name="home_team[<?php echo esc_html( $i ); ?>]" id="home_team_<?php echo esc_html( $i ); ?>" onChange="Racketmanager.insertHomeStadium(document.getElementById('home_team_<?php echo esc_html( $i ); ?>').value, <?php echo esc_html( $i ); ?>)">
+                                    <label for="home_team_<?php echo esc_html( $i ); ?>" class="visually-hidden"><?php esc_html_e( 'Home team', 'racketmanager' ); ?></label><select size="1" name="home_team[<?php echo esc_html( $i ); ?>]" id="home_team_<?php echo esc_html( $i ); ?>" data-action="insert-home-stadium" data-index="<?php echo esc_attr( $i ); ?>">
                                         <?php
                                         foreach ( $vm->teams as $team ) {
                                             ?>
@@ -300,7 +270,7 @@ $form_action = '/wp-admin/admin.php?page=racketmanager-' . $competition_type . '
                                     <?php
                                 } else {
                                     ?>
-                                    <label for="away_team_<?php echo esc_html( $i ); ?>" class="visually-hidden"><?php esc_html_e( 'Away team', 'racketmanager' ); ?></label><select size="1" name="away_team[<?php echo esc_html( $i ); ?>]" id="away_team_<?php echo esc_html( $i ); ?>"<?php echo empty( $vm->final_key ) ? null : ' onChange="Racketmanager.insertHomeStadium(document.getElementById(\'home_team_' . esc_html( $i ) . '\').value, ' . esc_html( $i ) . ');"'; ?>>
+                                    <label for="away_team_<?php echo esc_html( $i ); ?>" class="visually-hidden"><?php esc_html_e( 'Away team', 'racketmanager' ); ?></label><select size="1" name="away_team[<?php echo esc_html( $i ); ?>]" id="away_team_<?php echo esc_html( $i ); ?>"<?php echo empty( $vm->final_key ) ? null : ' data-action="insert-home-stadium" data-index="' . esc_attr( $i ) . '"'; ?>>
                                         <?php
                                         foreach ( $vm->teams as $team ) {
                                             ?>
@@ -377,7 +347,7 @@ $form_action = '/wp-admin/admin.php?page=racketmanager-' . $competition_type . '
                             if ( $vm->single_cup_game ) {
                                 ?>
                                 <td>
-                                    <input type="button" value="<?php esc_html_e( 'Notify teams', 'racketmanager' ); ?>" class="btn btn-secondary" onclick="Racketmanager.notifyTeams(<?php echo esc_html( $vm->fixtures[ $i ]->id ); ?>)" /><span class="notify-message" id="notifyMessage-<?php echo esc_html( $vm->fixtures[ $i ]->id ); ?>"></span>
+                                    <input type="button" value="<?php esc_html_e( 'Notify teams', 'racketmanager' ); ?>" class="btn btn-secondary" data-action="notify-teams" data-match-id="<?php echo esc_attr( $vm->fixtures[ $i ]->id ); ?>" /><span class="notify-message" id="notifyMessage-<?php echo esc_html( $vm->fixtures[ $i ]->id ); ?>"></span>
                                 </td>
                                 <?php
                             }

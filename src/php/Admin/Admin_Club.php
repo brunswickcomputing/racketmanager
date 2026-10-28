@@ -1,321 +1,132 @@
 <?php
 declare( strict_types=1 );
 /**
- * RacketManager-Admin API: RacketManager-club class
+ * RacketManager-Admin API: RacketManager-admin-club class
  *
  * @author Paul Moffat
  * @package RacketManager
- * @subpackage Admin/Club
+ * @subpackage RacketManager-Admin-Club
  */
 
 namespace Racketmanager\Admin;
 
-use Exception;
+use Racketmanager\Admin\Controllers\Club_Admin_Controller;
+use Racketmanager\Admin\Controllers\Club_Players_Admin_Controller;
+use Racketmanager\Admin\Controllers\Club_Roles_Admin_Controller;
+use Racketmanager\Admin\Controllers\Club_Team_Admin_Controller;
+use Racketmanager\Admin\Controllers\Club_Teams_Admin_Controller;
+use Racketmanager\Admin\Controllers\Clubs_Admin_Controller;
+use Racketmanager\Admin\View_Models\Club_Page_View_Model;
+use Racketmanager\Admin\View_Models\Club_Players_Page_View_Model;
+use Racketmanager\Admin\View_Models\Club_Roles_Page_View_Model;
+use Racketmanager\Admin\View_Models\Club_Teams_Page_View_Model;
+use Racketmanager\Admin\View_Models\Clubs_Page_View_Model;
+use Racketmanager\Admin\View_Models\Tournament_Team_Page_View_Model;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
-use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
-use Racketmanager\Exceptions\Player_Already_Registered_Exception;
-use Racketmanager\Exceptions\Registration_Not_Found_Exception;
-use Racketmanager\Exceptions\Team_Not_Found_Exception;
+use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Services\Validator\Validator;
-use Racketmanager\Services\Validator\Validator_Club;
-use Racketmanager\Util\Util_Lookup;
-use stdClass;
+use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
+use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
+use Racketmanager\Services\Admin\Admin_Message_Service;
+use Racketmanager\Services\Container\Simple_Container;
 
-/**
- * RacketManager Club Admin Club functions
- * Class to implement RacketManager Admin Club
- *
- * @author Paul Moffat
- * @package RacketManager
- * @subpackage Admin/Club
- */
-class Admin_Club extends Admin_Display {
-    /**
-     * Function to handle administration club displays
-     *
-     * @param string|null $view
-     *
-     * @return void
-     */
+final readonly class Admin_Club {
+    use Completes_Admin_Requests;
+
+    public function __construct(
+        private Simple_Container $container,
+        private Admin_Message_Service $message_service,
+        Admin_Action_Adapter $actions,
+        Admin_Screen_Presenter $screens,
+    ) {
+        $this->actions = $actions;
+        $this->screens = $screens;
+    }
+
     public function handle_display( ?string $view ): void {
-        $view_map = [
-                'teams'   => [ $this, 'display_teams_page' ],
-                'team'    => [ $this, 'display_team_page' ],
-                'club'    => [ $this, 'display_club_page' ],
-                'players' => [ $this, 'display_club_players_page' ],
-                'roles'   => [ $this, 'display_roles_page' ],
-                'player'  => [ $this->get_admin_player(), 'display_player_page' ],
-        ];
+        $view_map = array(
+            'clubs'   => array( $this, 'display_clubs_page' ),
+            'club'    => array( $this, 'display_club_page' ),
+            'players' => array( $this, 'display_club_players_page' ),
+            'teams'   => array( $this, 'display_teams_page' ),
+            'team'    => array( $this, 'display_team_page' ),
+            'roles'   => array( $this, 'display_roles_page' ),
+            'player'  => array( $this, 'display_player_page' ),
+        );
+
         try {
-            // Resolve the callback or fall back to default
-            $callback = $view_map[ $view ] ?? [ $this, 'display_clubs_page' ];
-
-            call_user_func( $callback );
-
-        } catch ( Club_Not_Found_Exception|Invalid_Status_Exception $e ) {
-            $this->set_message( $e->getMessage(), true );
-            $this->show_message();
+            $callback = $view_map[ $view ] ?? array( $this, 'display_clubs_page' );
+            $callback();
+        } catch ( Club_Not_Found_Exception | Tournament_Not_Found_Exception | Invalid_Status_Exception | Player_Not_Found_Exception $e ) {
+            $this->message_service->set_message( $e->getMessage(), true );
+            $this->message_service->show_message();
         }
     }
 
-    private function get_admin_player(): Admin_Player {
-        return $this->admin_players ??= new Admin_Player( $this->racketmanager );
-    }
-
-    /**
-     * Display clubs page
-     */
     public function display_clubs_page(): void {
-        $this->apply_flash_message();
+        $this->screens->apply_flash();
 
-        if ( isset( $_POST['doClubDel'] ) || isset( $_POST['doSchedulePlayerRatings'] ) ) {
-            $result = $this->club_action_dispatcher->handle( $_GET, $_POST );
-            if ( $this->deliver_club_action_result( $result, $_GET ) ) {
-                return;
-            }
-        }
+        /** @var Clubs_Admin_Controller $controller */
+        $controller = $this->container->get( 'clubs_admin_controller' );
 
-        $validator = new Validator_Club();
-        $validator = $validator->capability( 'edit_teams' );
-        if ( ! empty( $validator->error ) ) {
-            $this->set_message( $validator->msg, true );
-            $this->show_message();
-            return;
-        }
-
-        $this->show_message();
-        $clubs = $this->club_service->get_clubs();
-        require RACKETMANAGER_PATH . 'templates/admin/show-clubs.php';
+        $this->complete_request(
+            $controller->clubs_page( $_GET, $_POST ),
+            Clubs_Page_View_Model::class,
+            'admin/show-clubs'
+        );
     }
-    /**
-     * Display club page
-     */
+
     public function display_club_page(): void {
-        $this->apply_flash_message();
+        $this->screens->apply_flash();
 
-        if ( isset( $_POST['addClub'] ) || isset( $_POST['editClub'] ) ) {
-            $result = $this->club_action_dispatcher->handle( $_GET, $_POST );
-            if ( $this->deliver_club_action_result( $result, $_GET ) ) {
-                return;
-            }
-        }
-
-        $club_id   = null;
-        $validator = new Validator_Club();
-        $validator = $validator->capability( 'edit_teams' );
-        if ( ! empty( $validator->error ) ) {
-            $this->set_message( $validator->msg, true );
-            $this->show_message();
-            return;
-        }
-        $club_id = isset( $_GET[ 'club_id' ] ) ? (int) $_GET[ 'club_id' ] : null;
-        if ( $club_id ) {
-            try {
-                $club = $this->club_service->get_club( $club_id );
-            } catch ( Club_Not_Found_Exception $e ) {
-                $this->set_message( $e->getMessage(), true );
-                $this->show_message();
-                return;
-            }
-            $edit = true;
-        } else {
-            $edit = false;
-            $club = null;
-        }
-
-        $this->show_message();
-        if ( $edit ) {
-            $form_title  = __( 'Edit Club', 'racketmanager' );
-            $form_action = __( 'Update', 'racketmanager' );
-        } else {
-            $form_title  = __( 'Add Club', 'racketmanager' );
-            $form_action = __( 'Add', 'racketmanager' );
-        }
-        require_once RACKETMANAGER_PATH . 'templates/admin/includes/club.php';
+        /** @var Club_Admin_Controller $controller */
+        $controller = $this->container->get( 'club_admin_controller' );
+        $this->complete_request( $controller->club_page( $_GET, $_POST ), Club_Page_View_Model::class, 'admin/includes/club' );
     }
 
-    /**
-     * Display club players page
-     */
     public function display_club_players_page(): void {
-        $this->apply_flash_message();
+        $this->screens->apply_flash();
 
-        if ( isset( $_POST['addPlayer'] ) || isset( $_POST['doClubPlayerDel'] ) || isset( $_POST['doPlayerRatings'] ) ) {
-            $result = $this->club_player_action_dispatcher->handle( $_GET, $_POST );
-            if ( $this->deliver_club_action_result( $result, $_GET ) ) {
-                return;
-            }
-        }
-
-        $validator = new Validator();
-        $validator = $validator->capability( 'edit_teams' );
-        if ( ! empty( $validator->error ) ) {
-            $this->set_message( $validator->msg, true );
-            $this->show_message();
-            return;
-        }
-
-        $this->show_message();
-        $club_id = isset( $_GET['club_id'] ) ? intval( $_GET['club_id'] ) : null;
-        try {
-            $club = $this->club_service->get_club( $club_id );
-        } catch ( Club_Not_Found_Exception $e ) {
-            $this->set_message( $e->getMessage(), true );
-        }
-        $active  = isset( $_GET['active'] ) ? sanitize_text_field( wp_unslash( $_GET['active'] ) ) : null;
-        $gender  = isset( $_GET['gender'] ) ? sanitize_text_field( wp_unslash( $_GET['gender'] ) ) : null;
-        $players = $this->registration_service->get_registered_players_list( $active, null, $club_id, $gender );
-        require_once RACKETMANAGER_PATH . 'templates/admin/club/show-club-players.php';
+        /** @var Club_Players_Admin_Controller $controller */
+        $controller = $this->container->get( 'club_players_admin_controller' );
+        $this->complete_request( $controller->club_players_page( $_GET, $_POST ), Club_Players_Page_View_Model::class, 'admin/club/show-club-players' );
     }
-    /**
-     * Display teams page
-     */
+
     public function display_teams_page(): void {
-        $this->apply_flash_message();
+        $this->screens->apply_flash();
 
-        if ( isset( $_POST['addTeam'] ) || isset( $_POST['editTeam'] ) || isset( $_POST['doTeamDel'] ) ) {
-            $result = $this->club_team_action_dispatcher->handle( $_GET, $_POST );
-            if ( $this->deliver_club_action_result( $result, $_GET ) ) {
-                return;
-            }
-        }
-
-        $club_id   = null;
-        $validator = new Validator();
-        $validator = $validator->capability( 'edit_teams' );
-        if ( ! empty( $validator->error ) ) {
-            throw new Invalid_Argument_Exception( $validator->msg );
-        }
-        $club_id = isset( $_GET['club_id'] ) ? intval( $_GET['club_id'] ) : null;
-        try {
-            $club = $this->club_service->get_club( $club_id );
-        } catch ( Club_Not_Found_Exception $e ) {
-            throw new Club_Not_Found_Exception( $e->getMessage() );
-        }
-
-        $this->show_message();
-        $teams = $this->team_service->get_teams_for_club( $club_id );
-        require_once RACKETMANAGER_PATH . 'templates/admin/club/show-teams.php';
+        /** @var Club_Teams_Admin_Controller $controller */
+        $controller = $this->container->get( 'club_teams_admin_controller' );
+        $this->complete_request( $controller->club_teams_page( $_GET, $_POST ), Club_Teams_Page_View_Model::class, 'admin/club/show-teams' );
     }
 
-    /**
-     * Display team page
-     */
     public function display_team_page(): void {
-        $this->apply_flash_message();
+        $this->screens->apply_flash();
 
-        if ( ! current_user_can( 'edit_teams' ) ) {
-            $this->set_message( $this->invalid_permissions, true );
-            $this->show_message();
-        } else {
-            $file   = 'team.php';
-            $edit   = false;
-            $league = false;
-            //phpcs:disable WordPress.Security.NonceVerification.Recommended
-            if ( isset( $_GET['league_id'] ) ) {
-                $league_id  = intval( $_GET['league_id'] );
-                $league     = $this->league_service->get_league( $league_id );
-                if ( ! $league ) {
-                    $this->set_message( __( 'League not found', 'racketmanager' ), true );
-                    $this->show_message();
-                    return;
-                }
-                $season     = isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : '';
-                $match_days = Util_Lookup::get_match_days();
-                if ( isset( $league->event->competition->is_player_entry ) && $league->event->competition->is_player_entry ) {
-                    $file = 'player-team.php';
-                }
-            } else {
-                $league_id = '';
-                $season    = '';
-                if ( isset( $_GET['club_id'] ) ) {
-                    $club_id = intval( $_GET['club_id'] );
-                } else {
-                    $club_id = '';
-                }
-            }
-            $team_id       = isset( $_GET['edit'] ) ? intval( $_GET['edit'] ) : null;
-            $tournament_id = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
-            if ( $team_id ) {
-                if ( $tournament_id ) {
-                    try {
-                        $tournament = $this->tournament_service->get_tournament( $tournament_id );
-                    } catch ( Tournament_Not_Found_Exception $e ) {
-                        throw new Tournament_Not_Found_Exception( $e->getMessage() );
-                    }
-                }
-                $edit = true;
-                if ( $league ) {
-                    $team = $this->get_league_query_service()->get_team_dtls( $league, $team_id, $season ?: null );
-                } else {
-                    try {
-                        $team = $this->team_service->get_team_by_id( $team_id );
-                    } catch ( Team_Not_Found_Exception ) {
-                        $team = null;
-                    }
-                }
-                if ( ! $team ) {
-                    $this->set_message( __( 'Team not found', 'racketmanager' ), true );
-                    $this->show_message();
-                    return;
-                }
-                if ( ! isset( $team->roster ) ) {
-                    $team->roster = array();
-                }
-                $form_title  = __( 'Edit Team', 'racketmanager' );
-                $form_action = __( 'Update', 'racketmanager' );
-                $clubs = $this->club_service->get_clubs();
-                //phpcs:enable WordPress.Security.NonceVerification.Recommended
-                require RACKETMANAGER_PATH . 'templates/admin/includes/teams/' . $file;
-            } else {
-                $this->set_message( __( 'Team not specified', 'racketmanager' ), true );
-                $this->show_message();
-            }
-        }
+        /** @var Club_Team_Admin_Controller $controller */
+        $controller = $this->container->get( 'club_team_admin_controller' );
+
+        $this->complete_request(
+            $controller->team_page( $_GET, $_POST ),
+            Tournament_Team_Page_View_Model::class,
+            static fn( object $vm ): string => 'admin/includes/teams/' . preg_replace( '/\.php$/', '', $vm->file ),
+            strict: false
+        );
     }
-    /**
-     * Display roles page
-     */
+
     public function display_roles_page(): void {
-        $this->apply_flash_message();
+        $this->screens->apply_flash();
 
-        if ( isset( $_POST['addRole'] ) || isset( $_POST['delRole'] ) ) {
-            $result = $this->club_role_action_dispatcher->handle( $_GET, $_POST );
-            if ( $this->deliver_club_action_result( $result, $_GET ) ) {
-                return;
-            }
-        }
+        /** @var Club_Roles_Admin_Controller $controller */
+        $controller = $this->container->get( 'club_roles_admin_controller' );
+        $this->complete_request( $controller->club_roles_page( $_GET, $_POST ), Club_Roles_Page_View_Model::class, 'admin/club/show-roles' );
+    }
 
-        $club_id   = null;
-        $validator = new Validator();
-        $validator = $validator->capability( 'edit_teams' );
-        if ( empty( $validator->error ) ) {
-            $club_id   = isset( $_GET['club_id'] ) ? intval( $_GET['club_id'] ) : null;
-            $validator = $validator->club( null === $club_id ? null : (string) $club_id );
-        }
-        if ( ! empty( $validator->error ) ) {
-            if ( empty( $validator->msg ) ) {
-                $msg = $validator->err_msgs[0];
-            } else {
-                $msg = $validator->msg;
-            }
-            $this->set_message( $msg, true );
-            $this->show_message();
-            return;
-        }
-        try {
-            $club = $this->club_service->get_club( $club_id );
-        } catch ( Club_Not_Found_Exception $e ) {
-            $this->set_message( $e->getMessage(), true );
-            $this->show_message();
-            return;
-        }
+    public function display_player_page(): void {
+        /** @var Admin_Player $admin_player */
+        $admin_player = $this->container->get( 'admin_player_screen' );
 
-        $this->show_message();
-        $roles        = $this->club_service->get_roles_for_club( $club_id );
-        $club_players = $this->registration_service->get_registered_players_list( 'active', null, $club->id );
-        require_once RACKETMANAGER_PATH . 'templates/admin/club/show-roles.php';
+        $admin_player->handle_display( 'player' );
     }
 }

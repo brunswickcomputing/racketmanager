@@ -7,6 +7,7 @@ if ( file_exists( $autoload ) ) {
 }
 
 require_once __DIR__ . '/wp-stubs.php';
+require_once __DIR__ . '/../src/php/Admin/View_Models/Legacy_View_Model_Aliases.php';
 
 // Fallback (and also a supplement) for when:
 // - composer hasn't been run in this plugin folder, OR

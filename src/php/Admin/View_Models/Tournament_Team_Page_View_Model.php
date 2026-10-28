@@ -9,7 +9,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Admin\View_Models;
 
-readonly final class Tournament_Team_Page_View_Model {
+final readonly class Tournament_Team_Page_View_Model {
 
     /**
      * @param object $team
@@ -21,6 +21,7 @@ readonly final class Tournament_Team_Page_View_Model {
      * @param string $file
      * @param string $season
      * @param array $match_days
+     * @param int|null $club_id Club context from the request; null for league forms.
      */
     public function __construct(
         public object $team,
@@ -32,6 +33,7 @@ readonly final class Tournament_Team_Page_View_Model {
         public string $file,
         public string $season = '',
         public array $match_days = array(),
+        public ?int $club_id = null,
     ) {
     }
 
@@ -51,7 +53,7 @@ readonly final class Tournament_Team_Page_View_Model {
             'season'      => $this->season,
             'match_days'  => $this->match_days,
             'edit'        => true, // This controller is only for editing existing teams in this context
-            'club_id'     => isset( $this->team->club_id ) ? $this->team->club_id : '',
+            'club_id'     => $this->club_id ?? ( $this->team->club_id ?? '' ),
             'league_id'   => isset( $this->league->id ) ? $this->league->id : '',
         );
     }

@@ -81,7 +81,7 @@ final class Admin_Competition_Delivery_Test extends TestCase {
         $racketmanager->container = $this->container;
         $GLOBALS['racketmanager'] = $racketmanager;
 
-        $this->screen = new Admin_Competition( $racketmanager );
+        $this->screen = $this->container->get( 'admin_competition_screen' );
     }
 
     protected function tearDown(): void {
@@ -173,11 +173,13 @@ final class Admin_Competition_Delivery_Test extends TestCase {
 
     public function test_config_get_denied_user_renders_permission_notice_without_template(): void {
         $GLOBALS['wp_stubs_current_user_can'] = false;
+        $this->guard->expects( self::once() )->method( 'assert_capability' )->with( 'edit_leagues' )
+            ->willThrowException( new Invalid_Status_Exception( 'You do not have permission to perform this task' ) );
         $this->renderer->expects( self::never() )->method( 'render' );
         $_GET['competition_id'] = '1';
         ob_start();
         try {
-            $this->screen->display_config_page();
+            $this->screen->handle_display( 'config' );
             self::assertStringContainsString( 'You do not have permission to perform this task', ob_get_contents() );
         } finally {
             ob_end_clean();
@@ -186,11 +188,13 @@ final class Admin_Competition_Delivery_Test extends TestCase {
 
     public function test_season_get_denied_user_renders_permission_notice_without_template(): void {
         $GLOBALS['wp_stubs_current_user_can'] = false;
+        $this->guard->expects( self::once() )->method( 'assert_capability' )->with( 'edit_seasons' )
+            ->willThrowException( new Invalid_Status_Exception( 'You do not have permission to perform this task' ) );
         $this->renderer->expects( self::never() )->method( 'render' );
         $_GET = array( 'competition_id' => '1', 'season' => '2025' );
         ob_start();
         try {
-            $this->screen->display_season_modify_page();
+            $this->screen->handle_display( 'modify' );
             self::assertStringContainsString( 'You do not have permission to perform this task', ob_get_contents() );
         } finally {
             ob_end_clean();
@@ -207,8 +211,8 @@ final class Admin_Competition_Delivery_Test extends TestCase {
         ) );
         $competition->method( 'get_season_by_name' )->willReturn( null );
 
-        $this->competition_service->expects( self::atLeastOnce() )
-            ->method( 'get_competition' )
+        $this->competition_service->expects( self::once() )
+            ->method( 'get_by_id' )
             ->with( 1 )
             ->willReturn( $competition );
 
@@ -218,7 +222,7 @@ final class Admin_Competition_Delivery_Test extends TestCase {
 
         ob_start();
         try {
-            $this->screen->display_season_modify_page();
+            $this->screen->handle_display( 'modify' );
             self::assertStringContainsString( 'Season not found for competition', ob_get_contents() );
         } finally {
             ob_end_clean();
@@ -234,12 +238,12 @@ final class Admin_Competition_Delivery_Test extends TestCase {
             new Tournament_Not_Found_Exception( 'Tournament not found' )
         );
         $this->container->set( 'tournament_service', fn() => $tournament_service );
-        $this->screen = new Admin_Competition( $GLOBALS['racketmanager'] );
+        $this->screen = $this->container->get( 'admin_competition_screen' );
         $this->renderer->expects( self::never() )->method( 'render' );
         $_GET = array( 'competition_id' => '1', 'tournament' => '999999' );
         ob_start();
         try {
-            $this->screen->display_config_page();
+            $this->screen->handle_display( 'config' );
             self::assertStringContainsString( 'Tournament not found', ob_get_contents() );
         } finally {
             ob_end_clean();
@@ -252,7 +256,7 @@ final class Admin_Competition_Delivery_Test extends TestCase {
         $_GET['competition_id'] = '999999';
         ob_start();
         try {
-            $this->screen->display_season_modify_page();
+            $this->screen->handle_display( 'modify' );
             self::assertStringContainsString( 'Competition not found', ob_get_contents() );
         } finally {
             ob_end_clean();
@@ -441,8 +445,8 @@ final class Admin_Competition_Delivery_Test extends TestCase {
             'grade' => 'A',
         ) );
 
-        $this->competition_service->expects( self::atLeastOnce() )
-            ->method( 'get_competition' )
+        $this->competition_service->expects( self::once() )
+            ->method( 'get_by_id' )
             ->with( 1 )
             ->willReturn( $competition );
 
@@ -535,7 +539,8 @@ final class Admin_Competition_Delivery_Test extends TestCase {
         $real_renderer = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
         $this->container->set( 'view_renderer', static fn() => $real_renderer );
         $this->container->set( 'admin_screen_presenter', static fn( $c ) => new \Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter( $real_renderer, $c->get( 'admin_message_service' ) ) );
-        $this->screen = new Admin_Competition( $GLOBALS['racketmanager'] );
+        $this->container->set( 'admin_competition_screen', fn( $c ) => new Admin_Competition( $c, $c->get( 'admin_message_service' ), $c->get( 'admin_action_adapter' ), $c->get( 'admin_screen_presenter' ) ) );
+        $this->screen = $this->container->get( 'admin_competition_screen' );
 
         $_GET['competition_id'] = '1';
 
@@ -591,7 +596,8 @@ final class Admin_Competition_Delivery_Test extends TestCase {
         $real_renderer = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
         $this->container->set( 'view_renderer', static fn() => $real_renderer );
         $this->container->set( 'admin_screen_presenter', static fn( $c ) => new \Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter( $real_renderer, $c->get( 'admin_message_service' ) ) );
-        $this->screen = new Admin_Competition( $GLOBALS['racketmanager'] );
+        $this->container->set( 'admin_competition_screen', fn( $c ) => new Admin_Competition( $c, $c->get( 'admin_message_service' ), $c->get( 'admin_action_adapter' ), $c->get( 'admin_screen_presenter' ) ) );
+        $this->screen = $this->container->get( 'admin_competition_screen' );
 
         $_GET['competition_id'] = '1';
 

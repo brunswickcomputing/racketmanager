@@ -1095,4 +1095,24 @@ class Competition_Service {
         return true;
     }
 
+    public function get_contact_preview( Competition $competition, string $season, string $email_title, string $email_intro, array $email_body, string $email_close ): string {
+        $email_subject = $this->racketmanager->site_name . ' - ' . $competition->name . ' ' . $season . ' - ' . __( 'Important Message', 'racketmanager' );
+
+        return strval(
+            $this->racketmanager->shortcodes->load_template(
+                'contact-teams',
+                array(
+                    'competition'   => $competition,
+                    'organisation'  => $this->racketmanager->site_name,
+                    'season'        => $season,
+                    'title_text'    => $email_title,
+                    'intro'         => $email_intro,
+                    'body'          => $email_body,
+                    'closing_text'  => $email_close,
+                    'email_subject' => $email_subject,
+                ),
+                'email'
+            )
+        );
+    }
 }

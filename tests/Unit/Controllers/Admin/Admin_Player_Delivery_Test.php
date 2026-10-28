@@ -93,14 +93,7 @@ final class Admin_Player_Delivery_Test extends TestCase {
         $racketmanager->container = $this->container;
         $GLOBALS['racketmanager'] = $racketmanager;
 
-        $this->screen = new Admin_Player(
-            $racketmanager,
-            $actions,
-            $screens,
-            $this->player_action_dispatcher,
-            $this->player_error_action_dispatcher,
-            $this->player_request_action_dispatcher
-        );
+        $this->screen = $this->container->get( 'admin_player_screen' );
     }
 
     protected function tearDown(): void {
@@ -181,7 +174,7 @@ final class Admin_Player_Delivery_Test extends TestCase {
         $this->renderer->expects( self::never() )->method( 'render' );
 
         ob_start();
-        $this->screen->display_player_page();
+        $this->screen->handle_display( 'player' );
         $output = ob_get_clean();
 
         self::assertStringContainsString( 'Player 999 not found', $output );
@@ -453,14 +446,17 @@ final class Admin_Player_Delivery_Test extends TestCase {
     }
 
     public function test_permission_denied_stops_execution(): void {
-        $GLOBALS['wp_stubs_current_user_can'] = false;
+        $this->guard->expects( self::once() )
+            ->method( 'assert_capability' )
+            ->with( 'view_leagues' )
+            ->willThrowException( new \Racketmanager\Exceptions\Invalid_Status_Exception( 'Capability missing' ) );
 
         $this->renderer->expects( self::never() )->method( 'render' );
 
         ob_start();
-        $this->screen->display_player_page();
+        $this->screen->handle_display( 'player' );
         $output = ob_get_clean();
 
-        self::assertNotEmpty( $output );
+        self::assertStringContainsString( 'Capability missing', $output );
     }
 }

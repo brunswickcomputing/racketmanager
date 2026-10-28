@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 /**
- * Tournament contact page view model
+ * Tournament Contact Page View Model (BC alias stub)
  *
  * @package RacketManager
  * @subpackage Admin/View_Models
@@ -9,20 +9,4 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Admin\View_Models;
 
-final readonly class Tournament_Contact_Page_View_Model {
-
-    public function __construct(
-        public object $tournament,
-        public string $object_name,
-        public int $object_id,
-        public string $season,
-        public string $tab,
-        public string $email_title,
-        public string $email_intro,
-        public array $email_body,
-        public string $email_close,
-        public string $email_message,
-    ) {
-    }
-
-}
+require_once __DIR__ . '/Legacy_View_Model_Aliases.php';

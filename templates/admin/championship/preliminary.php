@@ -56,7 +56,7 @@ if ( $vm ) {
         </div>
         <?php
     }
-    $teams = $vm->teams;
+    $teams = $vm ? $vm->teams : ( isset( $teams ) && is_array( $teams ) ? $teams : array() );
     require_once RACKETMANAGER_PATH . 'templates/admin/league/standings.php';
     ?>
 </div>

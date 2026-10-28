@@ -15,6 +15,9 @@ use Racketmanager\Domain\DTO\Finance\Charge_Details_DTO;
 use Racketmanager\Domain\DTO\Finance\Invoice_Full_Details_DTO;
 use Racketmanager\Domain\Finance\Invoice;
 use Racketmanager\Domain\Value_Objects\Currency;
+use Racketmanager\Exceptions\Charge_Not_Found_Exception;
+use Racketmanager\Exceptions\Invalid_Status_Exception;
+use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
 use Racketmanager\Presentation\Presenters\Invoice_Presenter;
 use Racketmanager\RacketManager;
@@ -74,7 +77,7 @@ final class Admin_Finances_Delivery_Test extends TestCase {
         $racketmanager->container = $this->container;
         $GLOBALS['racketmanager'] = $racketmanager;
 
-        $this->screen = new Admin_Finances( $racketmanager );
+        $this->screen = $this->container->get( 'admin_finances_screen' );
     }
 
     protected function tearDown(): void {
@@ -133,7 +136,10 @@ final class Admin_Finances_Delivery_Test extends TestCase {
 
     public function test_display_finances_page_without_capability_shows_message(): void {
         $this->expectOutputRegex( '/You do not have sufficient permissions to access this page/' );
-        $GLOBALS['wp_stubs_current_user_can'] = false;
+        $this->guard->expects( self::once() )
+            ->method( 'assert_capability' )
+            ->with( 'edit_leagues' )
+            ->willThrowException( new Invalid_Status_Exception( 'You do not have sufficient permissions to access this page' ) );
 
         $this->renderer->expects( self::never() )->method( 'render' );
 
@@ -330,5 +336,37 @@ final class Admin_Finances_Delivery_Test extends TestCase {
         self::assertSame( 'club-invoices', $holder->vm->view );
         self::assertSame( 'Club invoices', $holder->vm->breadcrumb );
         self::assertTrue( $holder->vm->errors->has( 'status' ) );
+    }
+
+    public function test_handle_display_charge_not_found_shows_message_without_render(): void {
+        $_GET['charges'] = '99';
+
+        $this->expect_flash_pop();
+        $this->finance_service->expects( self::once() )
+            ->method( 'get_charge_with_details' )
+            ->with( 99 )
+            ->willThrowException( new Charge_Not_Found_Exception( 'Charge not found' ) );
+
+        $this->renderer->expects( self::never() )->method( 'render' );
+        $this->redirector->expects( self::never() )->method( 'redirect' );
+        $this->expectOutputRegex( '/Charge not found/' );
+
+        $this->screen->handle_display( 'charge' );
+    }
+
+    public function test_handle_display_invoice_not_found_shows_message_without_render(): void {
+        $_GET['invoice'] = '999';
+
+        $this->expect_flash_pop();
+        $this->finance_service->expects( self::once() )
+            ->method( 'get_full_invoice_details' )
+            ->with( 999 )
+            ->willThrowException( new Invoice_Not_Found_Exception( 'Invoice not found' ) );
+
+        $this->renderer->expects( self::never() )->method( 'render' );
+        $this->redirector->expects( self::never() )->method( 'redirect' );
+        $this->expectOutputRegex( '/Invoice not found/' );
+
+        $this->screen->handle_display( 'invoice' );
     }
 }

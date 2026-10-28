@@ -7,21 +7,16 @@
 
 namespace Racketmanager;
 
-use Racketmanager\Admin\View_Models\Tournament_Teams_List_Page_View_Model;
+use Racketmanager\Admin\View_Models\Teams_List_Page_View_Model;
 
-// Preferred input.
-$vm = isset( $vm ) && ( $vm instanceof Tournament_Teams_List_Page_View_Model ) ? $vm : null;
-
-// BC fallback.
-if ( $vm ) {
-    $league        = $vm->league;
-    $league_id     = $vm->league_id;
-    $season        = $vm->season;
-    $tournament_id = $vm->tournament_id ?? 0;
-    $tournament    = $vm->tournament;
-    $teams         = $vm->teams;
-    $type          = $vm->type;
-}
+/** @var Teams_List_Page_View_Model $vm */
+$league        = $vm->league;
+$league_id     = $vm->league_id;
+$season        = $vm->season;
+$tournament_id = $vm->tournament_id ?? 0;
+$tournament    = $vm->tournament;
+$teams         = $vm->teams;
+$type          = $vm->type;
 
 /** @var object $league */
 /** @var int $league_id */
@@ -95,7 +90,7 @@ $main_title = $page_link . ' - ' . $page_title;
         </div>
         <div class="container">
             <div class="row table-header">
-                <div class="col-1 check-column"><label for="checkAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('teams-filter'));" /></div>
+                <div class="col-1 check-column"><label for="checkAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAll" data-action="check-all" data-target="teams-filter" /></div>
                 <div class="col-1 column-num">ID</div>
                 <div class="col-3"><?php esc_html_e( 'Title', 'racketmanager' ); ?></div>
                 <div class="col-3"><?php esc_html_e( 'Affiliated Club', 'racketmanager' ); ?></div>

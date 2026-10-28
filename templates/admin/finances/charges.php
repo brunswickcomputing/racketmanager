@@ -81,7 +81,7 @@ $charges           = $vm->charges;
                     <tr>
                         <th class="check-column">
                             <label for="selectAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label>
-                            <input name="selectAll" id="selectAll" type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('charges-action'));" />
+                            <input name="selectAll" id="selectAll" type="checkbox" data-action="check-all" data-target="charges-action" />
                         </th>
                         <th class=""><?php esc_html_e( 'Name', 'racketmanager' ); ?></th>
                         <th class=""><?php esc_html_e( 'Status', 'racketmanager' ); ?></th>

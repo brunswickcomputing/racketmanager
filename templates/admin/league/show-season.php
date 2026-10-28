@@ -7,9 +7,16 @@
 
 namespace Racketmanager;
 
-/** @var string $tab */
-/** @var object $competition */
-/** @var string $season */
+use Racketmanager\Admin\View_Models\League_Overview_Page_View_Model;
+
+/** @var League_Overview_Page_View_Model $vm */
+$competition          = $vm->competition;
+$season               = $vm->season;
+$competition_overview = $vm->competition_overview;
+$competition_events   = $vm->competition_events;
+$current_season       = $vm->current_season;
+$entry_urls           = $vm->entry_urls;
+$tab                  = $vm->tab;
 ?>
 <script type='text/javascript'>
 jQuery(document).ready(function(){

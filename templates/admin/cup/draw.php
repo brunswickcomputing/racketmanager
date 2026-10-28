@@ -7,6 +7,15 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Cup_Draw_Page_View_Model;
+
+/** @var Cup_Draw_Page_View_Model $vm */
+$competition = $vm->competition;
+$league      = $vm->league;
+$season      = (string) $vm->season;
+$tab         = $vm->tab;
+$finals      = $vm->finals;
+
 /** @var string $tab */
 /** @var object $competition */
 /** @var string $season */

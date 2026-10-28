@@ -40,7 +40,7 @@ readonly final class Event_Setup_Action_Dispatcher {
         }
 
         try {
-            $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_add_championship-matches', 'edit_matches' );
+            $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_add_championship-fixtures', 'edit_matches' );
         } catch ( Invalid_Status_Exception $e ) {
             return new Action_Result_DTO(
                 message: $e->getMessage(),

@@ -7,11 +7,11 @@
 
 namespace Racketmanager;
 
-use Racketmanager\Admin\View_Models\Tournament_Contact_Page_View_Model;
+use Racketmanager\Admin\View_Models\Contact_Page_View_Model;
 
 /** @var string $tab */
 /** @var object $league */
-/** @var Tournament_Contact_Page_View_Model $vm */
+/** @var Contact_Page_View_Model $vm */
 /** @var object $competition */
 /** @var object $tournament */
 /** @var string $object_name */
@@ -21,6 +21,14 @@ use Racketmanager\Admin\View_Models\Tournament_Contact_Page_View_Model;
 /** @var string $email_intro */
 /** @var string $email_close */
 /** @var string $email_message */
+if ( isset( $vm ) && $vm instanceof Contact_Page_View_Model ) {
+    $league      = $vm->league;
+    $competition = $vm->competition;
+    $tournament  = $vm->tournament;
+    $object_name = $vm->object_name;
+    $object_id   = $vm->object_id;
+    $season      = $vm->season;
+}
 $admin_page = 'admin.php?page=racketmanager-';
 $and_season = '&amp;season=';
 $and_view   = 's&amp;view=contact&';
@@ -131,7 +139,7 @@ jQuery(document).ready(function(){
             <?php
             if ( $vm->email_message ) {
                 ?>
-                <iframe id="iframeMsg" title="<?php esc_html_e( 'Email message', 'racketmanager' ); ?>" onload='setIframeHeight(this.id)' style="height:200px;width:100%;border:none;overflow:hidden;" srcdoc='<?php echo $vm->email_message; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>'></iframe>
+                <iframe id="iframeMsg" title="<?php esc_html_e( 'Email message', 'racketmanager' ); ?>" data-action="set-iframe-height" style="height:200px;width:100%;border:none;overflow:hidden;" srcdoc='<?php echo $vm->email_message; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>'></iframe>
                 <?php
             } else {
                 ?>

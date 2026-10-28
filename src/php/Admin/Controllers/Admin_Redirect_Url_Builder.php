@@ -507,4 +507,113 @@ final class Admin_Redirect_Url_Builder {
 
         return add_query_arg( $args, admin_url( 'admin.php' ) );
     }
+
+    /**
+     * Build redirect URL for teams list view mutations across contexts.
+     *
+     * @param array<string, mixed> $query
+     * @param array<string, mixed> $post
+     * @param Admin_Page_Context   $context
+     * @param int|null             $league_id
+     * @param int|null             $tournament_id
+     * @param int|null             $event_id
+     * @param string|null          $season
+     * @param string|null          $type
+     * @param int|null             $competition_id
+     *
+     * @return string
+     */
+    public static function teams_view(
+        array $query,
+        array $post,
+        Admin_Page_Context $context,
+        ?int $league_id,
+        ?int $tournament_id = null,
+        ?int $event_id = null,
+        ?string $season = null,
+        ?string $type = null,
+        ?int $competition_id = null
+    ): string {
+        if ( 'tournament' === $context->target_type || 'racketmanager-tournaments' === $context->page ) {
+            return self::tournament_draw_view( $query, $post, 'draw', $tournament_id, $league_id, 'preliminary' );
+        }
+
+        if ( 'cup' === $context->target_type || 'racketmanager-cups' === $context->page ) {
+            $extra = array(
+                'view'   => 'draw',
+                'league' => $league_id,
+                'tab'    => 'teams',
+            );
+            if ( null !== $competition_id ) {
+                $extra['competition_id'] = $competition_id;
+            }
+            if ( null !== $season && '' !== $season ) {
+                $extra['season'] = $season;
+            }
+            return self::cup_screen( $query, $extra );
+        }
+
+        if ( 'constitution' === $type && null !== $event_id ) {
+            $extra = array(
+                'view'     => 'constitution',
+                'event_id' => $event_id,
+            );
+            if ( null !== $season && '' !== $season ) {
+                $extra['season'] = $season;
+            }
+            return self::league_screen( $query, $extra );
+        }
+
+        $extra = array(
+            'view'      => 'league',
+            'league_id' => $league_id,
+        );
+        if ( null !== $season && '' !== $season ) {
+            $extra['season'] = $season;
+        }
+        return self::league_screen( $query, $extra );
+    }
+
+    /**
+     * Build redirect URL for contact page mutations across contexts.
+     *
+     * @param array<string, mixed> $query
+     * @param array<string, mixed> $post
+     * @param Admin_Page_Context   $context
+     * @param int|null             $object_id
+     * @param string|null          $object_name
+     * @param string|null          $season
+     *
+     * @return string
+     */
+    public static function contact_view(
+        array $query,
+        array $post,
+        Admin_Page_Context $context,
+        ?int $object_id = null,
+        ?string $object_name = null,
+        ?string $season = null
+    ): string {
+        $page = $context->page;
+        $args = array(
+            'page' => $page,
+            'view' => 'contact',
+        );
+
+        if ( 'tournament' === $context->target_type || 'racketmanager-tournaments' === $page ) {
+            if ( $object_id ) {
+                $args['tournament'] = $object_id;
+            }
+        } elseif ( $object_name && $object_id ) {
+            $args[ $object_name ] = $object_id;
+        }
+
+        if ( $season ) {
+            $args['season'] = $season;
+        }
+
+        $args = array_merge( $args, self::preserve_optional_context_params( $query, $post ) );
+
+        return add_query_arg( $args, admin_url( 'admin.php' ) );
+    }
 }

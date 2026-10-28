@@ -428,7 +428,8 @@ final class Layer_Rules {
                 [ self::SERVICES ],
                 Rule_Kind::FORBIDDEN_DEPENDENCY,
                 [ self::PRESENTATION_OR_ADMIN ],
-                Rule_Mode::RATCHET
+                Rule_Mode::RATCHET,
+                [ self::SERVICES . 'Container/Container_Bootstrap.php' ]
             ),
             new Layer_Rule(
                 'repositories.no_service_imports',

@@ -7,13 +7,15 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Club_Players_Page_View_Model;
 use Racketmanager\Util\Util_Lookup;
 
-/** @var object $club */
-/** @var string $active */
-/** @var string $gender */
-/** @var int    $club_id */
-/** @var array  $players */
+/** @var Club_Players_Page_View_Model $vm */
+$club    = $vm->club;
+$players = $vm->players;
+$active  = $vm->active;
+$gender  = $vm->gender;
+$club_id = $vm->club_id;
 ?>
 <div class="container">
     <div class="row justify-content-end">
@@ -68,7 +70,7 @@ use Racketmanager\Util\Util_Lookup;
             <table class="table table-striped">
                 <thead class="table-dark">
                     <tr>
-                        <th class="col-1 col-md-1 check-column"><label for="checkAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('players-action'));" /></th>
+                        <th class="col-1 col-md-1 check-column"><label for="checkAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAll" data-action="check-all" data-target="players-action" /></th>
                         <th class="col-4 col-md-2"><?php esc_html_e( 'Name', 'racketmanager' ); ?></th>
                         <th class="col-4 col-md-2"><?php esc_html_e( 'Rating', 'racketmanager' ); ?></th>
                         <th class="col-2 col-md-1"><?php esc_html_e( 'LTA Tennis Number', 'racketmanager' ); ?></th>

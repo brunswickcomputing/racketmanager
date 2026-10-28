@@ -10,23 +10,12 @@ namespace Racketmanager;
 use Racketmanager\Admin\View_Models\Admin_League_Schedule_Page_View_Model;
 use Racketmanager\Admin\View_Models\Admin_League_Schedule_Event_View_Model;
 
-// Preferred input.
-$vm = isset( $vm ) && ( $vm instanceof Admin_League_Schedule_Page_View_Model ) ? $vm : null;
-
-// BC fallback.
-if ( $vm ) {
-    $competition     = $vm->competition;
-    $season          = $vm->season;
-    $competition_id  = $vm->competition_id;
-    $events          = $vm->events;
-    $schedule_report = $vm->schedule_report;
-}
-
-/** @var object $competition */
-/** @var string $season */
-/** @var int $competition_id */
-/** @var array $events */
-/** @var array $schedule_report */
+/** @var Admin_League_Schedule_Page_View_Model $vm */
+$competition     = $vm->competition;
+$season          = $vm->season;
+$competition_id  = $vm->competition_id;
+$events          = $vm->events;
+$schedule_report = $vm->schedule_report;
 $schedule_report      = isset( $schedule_report ) && is_array( $schedule_report ) ? $schedule_report : array();
 $report_conflicts     = is_array( $schedule_report['conflicts'] ?? null ) ? $schedule_report['conflicts'] : array();
 $report_alerts        = is_array( $schedule_report['alerts'] ?? null ) ? $schedule_report['alerts'] : array();
@@ -165,7 +154,7 @@ $has_schedule_report  = $report_conflicts || $report_alerts || $report_pairings;
             <table class="table table-striped">
                 <thead class="table-dark">
                     <tr>
-                        <th class="check-column"><label for="event-all" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="event-all" onclick="Racketmanager.checkAll(document.getElementById('schedule-filter'));" /></th>
+                        <th class="check-column"><label for="event-all" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="event-all" data-action="check-all" data-target="schedule-filter" /></th>
                         <th class=""><?php esc_html_e( 'Event', 'racketmanager' ); ?></th>
                         <th class=""></th>
                     </tr>
@@ -181,7 +170,7 @@ $has_schedule_report  = $report_conflicts || $report_alerts || $report_pairings;
                             $can_send_fixtures = ! empty( $event->can_send_fixtures );
                             ?>
                             <tr>
-                                <td class="check-column"><label for="event-<?php echo esc_attr( $event_id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $event_id ); ?>" id="event-<?php echo esc_attr( $event_id ); ?>" name="event[<?php echo esc_html( $event_id ); ?>]" onclick="Racketmanager.checkAll(document.getElementById('schedule-filter'));" /></td>
+                                <td class="check-column"><label for="event-<?php echo esc_attr( $event_id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $event_id ); ?>" id="event-<?php echo esc_attr( $event_id ); ?>" name="event[<?php echo esc_html( $event_id ); ?>]" data-action="check-all" data-target="schedule-filter" /></td>
                                 <td><a href="<?php echo esc_html( $event_link ); ?>"><?php echo esc_html( $event_name ); ?></a></td>
                                 <td>
                                     <?php

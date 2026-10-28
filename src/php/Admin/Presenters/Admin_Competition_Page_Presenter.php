@@ -158,12 +158,13 @@ final readonly class Admin_Competition_Page_Presenter {
             }
         }
 
+        $clubs = $this->club_service->get_clubs();
         return new Season_Modify_Page_View_Model(
             competition: $competition,
             season: $season,
             current_season: $current_season,
             seasons: $this->season_service->get_all_seasons(),
-            clubs: $this->club_service->get_clubs(),
+            clubs: is_array( $clubs ) ? $clubs : array(),
             edit_mode: $edit_mode,
             errors: $this->errors( $flash_data ),
         );

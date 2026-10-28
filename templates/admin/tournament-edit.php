@@ -333,7 +333,7 @@ if ( $vm ) {
                         }
                         $date_start = $_POST['dateStart'] ?? $tournament->get_start_date() ?? null;
                         ?>
-                        <input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateStart" id="dateStart" value="<?php echo esc_html( $date_start ); ?>" onchange="Racketmanager.setTournamentOpenDate()" />
+                        <input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateStart" id="dateStart" value="<?php echo esc_html( $date_start ); ?>" data-action="set-tournament-open-date" />
                         <label for="dateStart" class="form-label"><?php esc_html_e( 'Start Date', 'racketmanager' ); ?></label>
                         <?php
                         if ( $is_invalid ) {

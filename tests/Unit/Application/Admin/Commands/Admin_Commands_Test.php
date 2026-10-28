@@ -149,7 +149,7 @@ final class Admin_Commands_Test extends TestCase {
         $service->expects( self::never() )->method( 'update_seasons' );
         $guard = $this->createMock( Action_Guard_Interface::class );
         $guard->expects( self::once() )->method( 'assert_allowed' )
-            ->with( 'racketmanager_nonce', 'racketmanager_add_championship-matches', 'edit_matches' )
+            ->with( 'racketmanager_nonce', 'racketmanager_add_championship-fixtures', 'edit_matches' )
             ->willThrowException( new Invalid_Status_Exception( 'Denied' ) );
         $dispatcher = new League_Setup_Action_Dispatcher( $service, $guard, $this->createStub( Event_Repository_Interface::class ) );
         $result = $dispatcher->handle( [ 'competition_id' => [] ], [ 'action' => 'dates', 'rounds' => new \stdClass() ] );

@@ -168,57 +168,60 @@ Suggested unit-test minimum:
 - Controller returns `view_model` for preview POST.
 - Controller returns `redirect` for send/send-active POST.
 
-### 7) `Admin_Tournament` PSR / cleanup checklist
+### 7) `Admin_Tournament` PSR / cleanup checklist (Completed 2026-10-28, P2-9)
+
+All items below have been implemented and generalized across all admin screen bridges (`Admin_Tournament`, `Admin_League`, `Admin_Cup`, `Admin_Club`, `Admin_Finances`, `Admin_Player`, `Admin_Competition`) via `Completes_Admin_Requests` and per-view `*_Admin_Controller` classes.
 
 #### Responsibility and structure
-- [ ] Keep `Admin_Tournament` as a thin admin bridge/router only.
-- [ ] Ensure each view method only pops flash, delegates to a controller, redirects when needed, and renders a template.
-- [ ] Remove mixed legacy business logic from bridge methods after parity is confirmed.
+- [x] Keep `Admin_Tournament` as a thin admin bridge/router only.
+- [x] Ensure each view method only pops flash, delegates to a controller, redirects when needed, and renders a template.
+- [x] Remove mixed legacy business logic from bridge methods after parity is confirmed.
 
 #### Request handling
-- [ ] Localize direct request-array access to bridge/controller entrypoints only.
-- [ ] Pass normalized arrays or DTOs deeper into controllers/services.
-- [ ] Prefer one request DTO per migrated view where multiple POST intents exist.
+- [x] Localize direct request-array access to bridge/controller entrypoints only.
+- [x] Pass normalized arrays or DTOs deeper into controllers/services.
+- [x] Prefer one request DTO per migrated view where multiple POST intents exist.
 
 #### PRG consistency
-- [ ] Ensure every mutating POST flow uses PRG consistently.
-- [ ] Allow non-mutating preview-style POSTs to render without redirect only where intentional.
-- [ ] Audit remaining tournament admin views for POST flows that still render after mutation.
+- [x] Ensure every mutating POST flow uses PRG consistently.
+- [x] Allow non-mutating preview-style POSTs to render without redirect only where intentional.
+- [x] Audit remaining tournament admin views for POST flows that still render after mutation.
 
 #### Redirect handling
-- [ ] Centralize redirect URL construction for all migrated tournament views.
-- [ ] Ensure redirects explicitly set `page`, `view`, and required context parameters.
-- [ ] Avoid inheriting stale or unrelated query parameters in redirects.
+- [x] Centralize redirect URL construction for all migrated tournament views (`Admin_Redirect_Url_Builder`).
+- [x] Ensure redirects explicitly set `page`, `view`, and required context parameters.
+- [x] Avoid inheriting stale or unrelated query parameters in redirects.
 
 #### Flash/message handling
-- [ ] Standardize controller result handling to one message flow.
-- [ ] Store flash only on redirect responses.
-- [ ] Show inline messages only for non-redirect render responses.
+- [x] Standardize controller result handling to one message flow (`Admin_Action_Adapter` + user-meta flash).
+- [x] Store flash only on redirect responses.
+- [x] Show inline messages only for non-redirect render responses.
 
 #### Template contracts
-- [ ] Standardize migrated templates on a single `$vm` variable.
-- [ ] Remove legacy local-variable unpacking once a template is view-model based.
-- [ ] Use `Error_Bag` for field-level template errors instead of validator-shaped objects.
+- [x] Standardize migrated templates on a single `$vm` variable.
+- [x] Remove legacy local-variable unpacking once a template is view-model based.
+- [x] Use `Error_Bag` for field-level template errors instead of validator-shaped objects.
 
 #### Security boundaries
-- [ ] Route all nonce and capability checks through `Action_Guard_Interface`.
-- [ ] Keep controllers/templates free of direct nonce/capability checks.
-- [ ] Keep application services free of security, output, and redirect concerns.
+- [x] Route all nonce and capability checks through `Action_Guard_Interface`.
+- [x] Keep controllers/templates free of direct nonce/capability checks.
+- [x] Keep application services free of security, output, and redirect concerns.
 
 #### Legacy removal
-- [ ] Delete old in-method implementations once staging parity is confirmed.
-- [ ] Ensure no migrated view keeps both legacy and controller-based implementations.
-- [ ] Reduce `Admin_Tournament` size over time by extracting remaining view-specific logic.
+- [x] Delete old in-method implementations (removed during P2-9; staging parity has not yet been confirmed).
+- [ ] Verify behavior parity on staging after deployment and smoke testing.
+- [x] Ensure no migrated view keeps both legacy and controller-based implementations.
+- [x] Reduce `Admin_Tournament` size over time by extracting remaining view-specific logic.
 
 #### Testability
-- [ ] Add controller tests for GET / preview POST / mutation POST behavior per migrated view.
-- [ ] Add dispatcher tests for known intents and unknown-payload no-op behavior.
-- [ ] Verify redirect URL correctness with PHPUnit where possible.
+- [x] Add controller tests for GET / preview POST / mutation POST behavior per migrated view.
+- [x] Add dispatcher tests for known intents and unknown-payload no-op behavior.
+- [x] Verify redirect URL correctness with PHPUnit where possible.
 
 #### Consistency / style
-- [ ] Keep new controller and DTO code style consistent across tournament views.
-- [ ] Prefer typed view models / DTOs over loose arrays where practical.
-- [ ] Normalize message, redirect, and render result shapes across migrated controllers.
+- [x] Keep new controller and DTO code style consistent across tournament views.
+- [x] Prefer typed view models / DTOs over loose arrays where practical.
+- [x] Normalize message, redirect, and render result shapes across migrated controllers.
 
 ## Notes / conventions
 

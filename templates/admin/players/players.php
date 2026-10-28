@@ -7,18 +7,16 @@
 
 namespace Racketmanager;
 
-/** @var array $players */
-if ( isset( $vm ) && $vm instanceof \Racketmanager\Admin\View_Models\Players_Page_View_Model ) {
-    $players        = $vm->players;
-    $player         = $vm->player ?? ( $player ?? null );
-    $errors         = $vm->errors;
-    $form_valid     = $vm->form_valid;
-    $error_fields   = array();
-    $error_messages = array();
-    foreach ( $errors->all() as $err_fld => $err_msg ) {
-        $error_fields[]   = (string) $err_fld;
-        $error_messages[] = (string) $err_msg;
-    }
+/** @var \Racketmanager\Admin\View_Models\Players_Page_View_Model $vm */
+$players        = $vm->players;
+$player         = $vm->player;
+$errors         = $vm->errors;
+$form_valid     = $vm->form_valid;
+$error_fields   = array();
+$error_messages = array();
+foreach ( $errors->all() as $err_fld => $err_msg ) {
+    $error_fields[]   = (string) $err_fld;
+    $error_messages[] = (string) $err_msg;
 }
 ?>
 <!-- Add Player -->
@@ -62,7 +60,7 @@ if ( isset( $vm ) && $vm instanceof \Racketmanager\Admin\View_Models\Players_Pag
         <div class="container">
             <div id="notifyMessage"></div>
             <div class="row table-header">
-                <div class="col-2 col-md-1 check-column"><label for="checkAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" name="checkAll" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('player-action'));" /></div>
+                <div class="col-2 col-md-1 check-column"><label for="checkAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" name="checkAll" id="checkAll" data-action="check-all" data-target="player-action" /></div>
                 <div class="col-2 col-md-1 column-num">ID</div>
                 <div class="col-4 col-md-2"><?php esc_html_e( 'Name', 'racketmanager' ); ?></div>
                 <div class="col-2 col-md-1"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></div>

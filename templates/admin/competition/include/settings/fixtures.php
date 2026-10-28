@@ -125,7 +125,7 @@ $tab_name = 'fixtures';
                     }
                     $current_value = $vm->config->home_away_diff ?? null;
                     ?>
-                    <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="home_away_diff" id="home_away_diff" value="<?php echo isset( $current_value ) ? esc_html( $current_value ) : null; ?>" onchange="Racketmanager.setEndDate()"/>
+                    <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="home_away_diff" id="home_away_diff" value="<?php echo isset( $current_value ) ? esc_html( $current_value ) : null; ?>" data-action="set-end-date" />
                     <label for="home_away_diff" class="form-label"><?php esc_html_e( 'Fixture gap (weeks)', 'racketmanager' ); ?></label>
                     <?php
                     if ( $is_invalid ) {
@@ -155,7 +155,7 @@ $tab_name = 'fixtures';
                     }
                     $current_value = $vm->config->filler_weeks ?? null;
                     ?>
-                    <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="filler_weeks" id="filler_weeks" value="<?php echo isset( $current_value ) ? esc_html( $current_value ) : null; ?>" onchange="Racketmanager.setEndDate()" />
+                    <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="filler_weeks" id="filler_weeks" value="<?php echo isset( $current_value ) ? esc_html( $current_value ) : null; ?>" data-action="set-end-date" />
                     <label for="filler_weeks" class="form-label"><?php esc_html_e( 'Filler weeks', 'racketmanager' ); ?></label>
                     <?php
                     if ( $is_invalid ) {

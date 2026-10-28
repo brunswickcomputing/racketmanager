@@ -8,11 +8,14 @@
 
 namespace Racketmanager;
 
-/** @var string $form_title */
-/** @var object $club */
-/** @var int    $club_id */
-/** @var bool   $edit */
-/** @var string $form_action */
+use Racketmanager\Admin\View_Models\Club_Page_View_Model;
+
+/** @var Club_Page_View_Model $vm */
+$club        = $vm->club;
+$edit        = $vm->edit;
+$form_title  = $vm->form_title;
+$form_action = $vm->form_action;
+$club_id     = $vm->club_id;
 ?>
 <div class="container league-block">
 	<div class="row justify-content-end">
@@ -43,7 +46,7 @@ namespace Racketmanager;
                             $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                         }
                         ?>
-                        <input type="text" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" id="club" name="club" value="<?php echo isset( $club->name ) ? esc_html( $club->name ) : null; ?>" placeholder="<?php esc_html_e( 'Add Club', 'racketmanager' ); ?>" onchange="Racketmanager.setShortcode();" />
+                        <input type="text" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" id="club" name="club" value="<?php echo isset( $club->name ) ? esc_html( $club->name ) : null; ?>" placeholder="<?php esc_html_e( 'Add Club', 'racketmanager' ); ?>" data-action="set-shortcode" />
                         <label for="club"><?php esc_html_e( 'Club', 'racketmanager' ); ?></label>
                         <?php
                         if ( $is_invalid ) {

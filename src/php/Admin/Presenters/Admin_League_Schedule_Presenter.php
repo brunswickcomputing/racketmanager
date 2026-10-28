@@ -99,6 +99,14 @@ final readonly class Admin_League_Schedule_Presenter {
      * @return array{retry:int,scheduled:int,conflicts:array<int,array<string,mixed>>,alerts:array<int,array<string,mixed>>,resource_pairings:array<string,array<int,array<string,mixed>>>}|array{}
      */
     private function normalise_schedule_report( ?array $report ): array {
+        if ( empty( $report ) ) {
+            return array();
+        }
+
+        if ( isset( $report['schedule_report'] ) && is_array( $report['schedule_report'] ) ) {
+            $report = $report['schedule_report'];
+        }
+
         if ( empty( $report ) || ! array_key_exists( 'retry', $report ) ) {
             return array();
         }

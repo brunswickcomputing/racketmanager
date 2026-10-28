@@ -89,7 +89,7 @@ class Cup_Setup_Action_Dispatcher {
      */
     private function handle_competition_setup( array $query, array $post ): Action_Result_DTO {
         try {
-            $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_add_championship-matches', 'edit_matches' );
+            $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_add_championship-fixtures', 'edit_matches' );
         } catch ( Invalid_Status_Exception $e ) {
             return new Action_Result_DTO( $e->getMessage(), Admin_Message_Type::ERROR );
         }
@@ -167,7 +167,7 @@ class Cup_Setup_Action_Dispatcher {
      */
     private function handle_league_setup( array $query, array $post, int $league_id ): Action_Result_DTO {
         try {
-            $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_add_championship-matches', 'edit_matches' );
+            $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_add_championship-fixtures', 'edit_matches' );
         } catch ( Invalid_Status_Exception $e ) {
             return new Action_Result_DTO( $e->getMessage(), Admin_Message_Type::ERROR );
         }

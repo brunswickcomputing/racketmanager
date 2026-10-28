@@ -25,7 +25,7 @@ final class League_Setup_Action_Dispatcher_Test extends TestCase {
         $guard = $this->createMock( Action_Guard_Interface::class );
         $guard->expects( self::once() )
             ->method( 'assert_allowed' )
-            ->with( 'racketmanager_nonce', 'racketmanager_add_championship-matches', 'edit_matches' )
+            ->with( 'racketmanager_nonce', 'racketmanager_add_championship-fixtures', 'edit_matches' )
             ->willThrowException( new Invalid_Status_Exception( 'Security token invalid' ) );
 
         $result = ( new League_Setup_Action_Dispatcher( $competition_service, $guard, $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) ) )->handle(

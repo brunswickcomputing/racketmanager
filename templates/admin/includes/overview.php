@@ -11,7 +11,14 @@ namespace Racketmanager;
 /** @var string $season */
 /** @var object $current_season */
 /** @var object $competition_overview */
-$current_season = empty( $cup_season ) ? $current_season : $cup_season;
+$current_season       = empty( $cup_season ) ? $current_season : $cup_season;
+$competition_overview = $competition_overview ?? (object) array(
+    'num_events'       => 0,
+    'num_clubs'        => 0,
+    'num_teams'        => 0,
+    'competition_code' => '',
+    'grade'            => null,
+);
 ?>
     <div class="row mb-3">
         <div class="col-12 col-md-6">

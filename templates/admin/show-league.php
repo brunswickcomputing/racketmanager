@@ -7,6 +7,26 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\League_Standings_Page_View_Model;
+
+/** @var League_Standings_Page_View_Model $vm */
+$tab              = $vm->tab;
+$league           = $vm->league;
+$season           = $vm->season;
+$seasons          = $vm->seasons;
+$group            = $vm->group;
+$league_mode      = $vm->league_mode;
+$teams            = $vm->teams;
+$cup              = $vm->cup;
+$finals           = $vm->finals;
+$matches          = $vm->matches;
+$crosstable_teams = $vm->crosstable_teams;
+$crosstable_cells = $vm->crosstable_cells;
+$match_day        = $vm->match_day;
+$team_id          = $vm->team_id;
+$options          = $vm->options;
+$menu             = $vm->menu;
+
 /** @var string $tab */
 /** @var object $league */
 /** @var string $season */
@@ -32,7 +52,7 @@ $competition_type = $league->event->competition->type instanceof \BackedEnum ? $
         <div class="row justify-content-between">
             <div class="col-auto">
                 <?php
-                foreach ( $this->get_menu() as $key => $menu_item ) {
+                foreach ( $menu as $key => $menu_item ) {
                     if ( isset( $menu_item['show'] ) && $menu_item['show'] ) {
                         ?>
                         <a class="btn btn-secondary" href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition_type ); ?>s&amp;view=<?php echo esc_html( $key ); ?>&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;season=<?php echo esc_html( $season ); ?>&amp;group=<?php echo esc_html( $group ); ?>"><?php echo esc_html( $menu_item['title'] ); ?></a>

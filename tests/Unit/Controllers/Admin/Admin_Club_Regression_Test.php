@@ -16,6 +16,8 @@ use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Registration_Service;
+use Racketmanager\Services\Admin\Security\Wp_Action_Guard;
+use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
@@ -68,13 +70,15 @@ final class Admin_Club_Regression_Test extends TestCase {
 				'tournament_service'   => $this->tournament_service,
 				'registration_service' => $this->registration_service,
 				'league_query_service' => $this->league_query_service,
-			)
+			),
+			guard: new Wp_Action_Guard(),
+			renderer: new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' )
 		);
 
 		$this->plugin             = $this->createStub( RacketManager::class );
 		$this->plugin->container  = $this->container;
 		$GLOBALS['racketmanager'] = $this->plugin;
-		$this->screen             = new Admin_Club( $this->plugin );
+		$this->screen             = $this->container->get( 'admin_club_screen' );
 		$this->warnings           = array();
 
 		set_error_handler(
@@ -103,7 +107,7 @@ final class Admin_Club_Regression_Test extends TestCase {
 		}
 
 		$this->assertSame( array(), $this->warnings );
-		$this->assertStringContainsString( 'Team not specified', $output . $this->screen->message );
+		$this->assertStringContainsString( 'Team not specified', $output );
 	}
 
 	public function test_display_team_page_with_missing_team_handles_exception_cleanly(): void {
@@ -121,7 +125,7 @@ final class Admin_Club_Regression_Test extends TestCase {
 		}
 
 		$this->assertSame( array(), $this->warnings );
-		$this->assertStringContainsString( 'Team not found', $output . $this->screen->message );
+		$this->assertStringContainsString( 'Team not found', $output );
 	}
 
 	public function test_display_team_page_with_missing_league_shows_league_not_found(): void {
@@ -139,7 +143,7 @@ final class Admin_Club_Regression_Test extends TestCase {
 		}
 
 		$this->assertSame( array(), $this->warnings );
-		$this->assertStringContainsString( 'League not found', $output . $this->screen->message );
+		$this->assertStringContainsString( 'League not found', $output );
 	}
 
 	public function test_display_team_page_renders_club_team_form_using_injected_services(): void {
@@ -169,6 +173,7 @@ final class Admin_Club_Regression_Test extends TestCase {
 		$this->assertStringContainsString( 'Edit Team', $output );
 		$this->assertStringContainsString( 'Men 1st', $output );
 		$this->assertStringContainsString( 'Leigh LTC', $output );
+		$this->assertStringContainsString( 'name="club_id" value="1"', $output );
 	}
 
 	public function test_display_team_page_with_league_id_uses_league_service_and_league_query_service(): void {
@@ -223,6 +228,7 @@ final class Admin_Club_Regression_Test extends TestCase {
 		$this->assertStringContainsString( 'Division 1', $output );
 		$this->assertStringContainsString( 'Division 1 Team A', $output );
 		$this->assertStringContainsString( 'John Doe', $output );
+		$this->assertStringNotContainsString( 'name="club_id"', $output );
 		$this->assertStringContainsString( '18:30', $output );
 	}
 
@@ -305,6 +311,6 @@ final class Admin_Club_Regression_Test extends TestCase {
 		}
 
 		$this->assertSame( array(), $this->warnings );
-		$this->assertStringContainsString( 'sufficient permissions', $output . $this->screen->message );
+		$this->assertStringContainsString( 'You do not have permission to perform this task', $output );
 	}
 }

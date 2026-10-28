@@ -9,7 +9,6 @@ use Racketmanager\Application\Finance\Commands\Action_Invoice_Handler;
 use Racketmanager\Application\Finance\Commands\Generate_Charge_Invoices_Handler;
 use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Competition_Config_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Contact_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Draw_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Event_Config_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Fixtures_Admin_Controller;
@@ -21,7 +20,6 @@ use Racketmanager\Admin\Presenters\Admin_League_Schedule_Presenter;
 use Racketmanager\Admin\Presenters\Admin_Plan_Presenter;
 use Racketmanager\Admin\Controllers\Tournament_Setup_Event_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Team_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Teams_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Tournaments_Admin_Controller;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Admin\Presenters\Admin_Championship_Finals_Presenter;
@@ -480,6 +478,7 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
         ) );
 
         // Admin Controllers
+
         $container->set( 'tournament_admin_controller', fn( Simple_Container $c ) => new Tournament_Admin_Controller(
             $c->get( 'tournament_service' ),
             $c->get( 'club_service' ),
@@ -495,7 +494,7 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'fixture_relation_loader' ),
         ) );
 
-        $container->set( 'admin_league_schedule_presenter', fn( Simple_Container $c ) => new Admin_League_Schedule_Presenter() );
+        $container->set( 'admin_league_schedule_presenter', fn() => new Admin_League_Schedule_Presenter() );
 
         $container->set( 'tournament_plan_admin_controller', fn( Simple_Container $c ) => new Tournament_Plan_Admin_Controller(
             $c->get( 'tournament_service' ),
@@ -555,11 +554,7 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'league_query_service' )
         ) );
 
-        $container->set( 'tournament_contact_admin_controller', fn( Simple_Container $c ) => new Tournament_Contact_Admin_Controller(
-            $c->get( 'tournament_service' ),
-            $c->get( 'tournament_contact_action_dispatcher' ),
-            $c->get( 'action_guard' )
-        ) );
+        $container->set( 'tournament_contact_admin_controller', fn( Simple_Container $c ) => $c->get( 'contact_admin_controller' ) );
 
         $container->set( 'tournament_information_admin_controller', fn( Simple_Container $c ) => new Tournament_Information_Admin_Controller(
             $c->get( 'tournament_service' ),
@@ -577,13 +572,6 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'tournament_service' ),
             $c->get( 'league_service' ),
             $c->get( 'draw_action_dispatcher' ),
-            $c->get( 'action_guard' )
-        ) );
-
-        $container->set( 'tournament_teams_admin_controller', fn( Simple_Container $c ) => new Tournament_Teams_Admin_Controller(
-            $c->get( 'tournament_service' ),
-            $c->get( 'league_service' ),
-            $c->get( 'team_service' ),
             $c->get( 'action_guard' )
         ) );
 

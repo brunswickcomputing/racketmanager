@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Services\Container;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\RacketManager;
+use Racketmanager\Admin\Admin_Screens_Service_Provider;
 use Racketmanager\Application\League\Queries\Get_League_Last_5_Handler;
 use Racketmanager\Domain\Ports\Clock_Interface;
 use Racketmanager\Infrastructure\Time\Wordpress_Clock;
@@ -52,6 +53,7 @@ class Modular_Service_Providers_Test extends TestCase {
             new Fixture_Service_Provider( $this->app ),
             new Competition_Service_Provider( $this->app ),
             new Admin_Service_Provider( $this->app ),
+            new Admin_Screens_Service_Provider( $this->app ),
         ];
 
         foreach ( $providers as $provider ) {
@@ -159,6 +161,28 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has( \Racketmanager\Admin::class ) );
     }
 
+    public function test_admin_screens_service_provider_registers_expected_keys(): void {
+        $container = new Simple_Container();
+        $provider  = new Admin_Screens_Service_Provider( $this->app );
+        $provider->register( $container );
+
+        $this->assertTrue( $container->has( 'competition_config_admin_controller' ) );
+        $this->assertTrue( $container->has( 'competition_season_modify_admin_controller' ) );
+        $this->assertTrue( $container->has( 'clubs_admin_controller' ) );
+        $this->assertTrue( $container->has( 'club_admin_controller' ) );
+        $this->assertTrue( $container->has( 'club_players_admin_controller' ) );
+        $this->assertTrue( $container->has( 'club_teams_admin_controller' ) );
+        $this->assertTrue( $container->has( 'club_team_admin_controller' ) );
+        $this->assertTrue( $container->has( 'club_roles_admin_controller' ) );
+        $this->assertTrue( $container->has( 'admin_competition_screen' ) );
+        $this->assertTrue( $container->has( 'admin_club_screen' ) );
+        $this->assertTrue( $container->has( 'admin_player_screen' ) );
+        $this->assertTrue( $container->has( 'admin_finances_screen' ) );
+        $this->assertTrue( $container->has( 'admin_league_screen' ) );
+        $this->assertTrue( $container->has( 'admin_cup_screen' ) );
+        $this->assertTrue( $container->has( 'admin_tournament_screen' ) );
+    }
+
     public function test_container_bootstrap_boots_all_providers(): void {
         $container = Container_Bootstrap::boot( $this->app );
 
@@ -168,6 +192,8 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has( 'fixture_repository' ) );
         $this->assertTrue( $container->has( 'league_repository' ) );
         $this->assertTrue( $container->has( 'tournament_admin_controller' ) );
+        $this->assertTrue( $container->has( 'admin_club_screen' ) );
+        $this->assertTrue( $container->has( 'admin_competition_screen' ) );
         $this->assertInstanceOf(
             \Racketmanager\Services\Competition\Promotion_Relegation_Service::class,
             $container->get( 'promotion_relegation_service' )

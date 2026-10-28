@@ -92,3 +92,5 @@ foreach ( $aliases as $target => $alias ) {
         class_alias( $target, $alias );
     }
 }
+
+require_once __DIR__ . '/Admin/View_Models/Legacy_View_Model_Aliases.php';

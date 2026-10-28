@@ -8,21 +8,12 @@
 
 namespace Racketmanager;
 
-/** @var array $clubs */
-/** @var int $club_id */
-/** @var string $status */
-/** @var array $player_requests */
-if ( isset( $vm ) && $vm instanceof \Racketmanager\Admin\View_Models\Player_Requests_Page_View_Model ) {
-    $player_requests = $vm->player_requests;
-    $clubs           = $vm->clubs;
-    $club_id         = $vm->club_id;
-    $status          = $vm->status;
-    $errors          = $vm->errors;
-}
-$player_requests = $player_requests ?? array();
-$clubs           = $clubs ?? array();
-$club_id         = $club_id ?? null;
-$status          = $status ?? 'outstanding';
+/** @var \Racketmanager\Admin\View_Models\Player_Requests_Page_View_Model $vm */
+$player_requests = $vm->player_requests;
+$clubs           = $vm->clubs;
+$club_id         = $vm->club_id;
+$status          = $vm->status;
+$errors          = $vm->errors;
 $tooltip_left = 'data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="';
 ?>
 <!-- Club Player Request Filter -->
@@ -67,7 +58,7 @@ $tooltip_left = 'data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title
     <table class="table table-striped">
         <thead class="table-dark">
             <tr>
-                <th class="check-column"><label for="checkALL" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" name="checkAll" id="checkALL" onclick="Racketmanager.checkAll(document.getElementById('club-player-request-filter'));" /></th>
+                <th class="check-column"><label for="checkALL" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" name="checkAll" id="checkALL" data-action="check-all" data-target="club-player-request-filter" /></th>
                 <th><?php esc_html_e( 'ID', 'racketmanager' ); ?></th>
                 <th><?php esc_html_e( 'Club', 'racketmanager' ); ?></th>
                 <th><?php esc_html_e( 'Name', 'racketmanager' ); ?></th>

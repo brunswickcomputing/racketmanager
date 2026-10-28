@@ -7,6 +7,26 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\League_Constitution_Page_View_Model;
+
+/** @var League_Constitution_Page_View_Model $vm */
+$event               = $vm->event;
+$season              = $vm->season;
+$seasons             = $vm->seasons;
+$leagues             = $vm->leagues;
+$event_seasons       = $vm->event_seasons;
+$num_teams           = $vm->num_teams;
+$league_active_teams = $vm->league_active_teams;
+$teams               = $vm->teams;
+$constitution_action = $vm->constitution_action;
+$constitution_exists = $vm->constitution_exists;
+$updates_allowed     = $vm->updates_allowed;
+$latest_season       = $vm->latest_season;
+$latest_event_season = $vm->latest_event_season;
+$standing_status     = $vm->standing_status;
+$has_content         = $vm->has_content;
+$event_id            = $vm->event_id;
+
 /** @var object $event */
 /** @var string $season */
 /** @var array  $seasons */
@@ -14,8 +34,6 @@ namespace Racketmanager;
 /** @var int    $num_teams */
 /** @var array  $league_active_teams */
 $competition_type    = $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
-$leagues             = $leagues ?? array();
-$num_teams           = $num_teams ?? 0;
 $league_active_teams = $league_active_teams ?? array();
 ?>
 <div class="container">
@@ -30,11 +48,6 @@ $league_active_teams = $league_active_teams ?? array();
         </div>
     </div>
 
-    <?php
-    if ( method_exists( $this, 'show_message' ) ) {
-        $this->show_message();
-    }
-    ?>
     <div id="">
         <?php
         if ( $num_teams ) {

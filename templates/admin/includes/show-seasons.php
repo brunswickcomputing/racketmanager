@@ -7,8 +7,15 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Competition_Seasons_Page_View_Model;
+
 /** @var object $competition */
 /** @var int $competition_id */
+/** @var Competition_Seasons_Page_View_Model $vm */
+if ( isset( $vm ) && $vm instanceof Competition_Seasons_Page_View_Model ) {
+    $competition    = $vm->competition;
+    $competition_id = $vm->competition_id;
+}
 ?>
 <div class="container">
     <div class="alert_rm" id="alert-season" style="display:none;">
@@ -61,7 +68,7 @@ namespace Racketmanager;
         <table class="table table-striped">
             <thead class="table-dark">
                 <tr>
-                    <th class="check-column"><label for="checkAllSeasons" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAllSeasons" onclick="Racketmanager.checkAll(document.getElementById('seasons-filter'));" /></th>
+                    <th class="check-column"><label for="checkAllSeasons" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAllSeasons" data-action="check-all" data-target="seasons-filter" /></th>
                     <th><?php esc_html_e( 'Season', 'racketmanager' ); ?></th>
                     <th><?php esc_html_e( 'Start', 'racketmanager' ); ?></th>
                     <th><?php esc_html_e( 'End', 'racketmanager' ); ?></th>

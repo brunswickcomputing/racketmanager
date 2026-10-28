@@ -7,13 +7,9 @@
 
 namespace Racketmanager;
 
-/** @var string $racketmanager_tab */
-/** @var string $tab_title */
-if ( isset( $vm ) && isset( $vm->racketmanager_tab ) ) {
-    $racketmanager_tab = $vm->racketmanager_tab;
-}
-$racketmanager_tab = $racketmanager_tab ?? 'errors';
-$tab_title         = ( isset( $vm ) && isset( $vm->tab_title ) && '' !== $vm->tab_title ) ? $vm->tab_title : ( $tab_title ?? '' );
+/** @var \Racketmanager\Admin\View_Models\Player_Errors_Page_View_Model|\Racketmanager\Admin\View_Models\Player_Requests_Page_View_Model|\Racketmanager\Admin\View_Models\Players_Page_View_Model $vm */
+$racketmanager_tab = $vm->racketmanager_tab ?? 'errors';
+$tab_title         = $vm->tab_title ?? '';
 ?>
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">

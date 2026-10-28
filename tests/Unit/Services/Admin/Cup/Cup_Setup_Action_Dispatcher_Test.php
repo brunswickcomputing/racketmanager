@@ -138,7 +138,7 @@ final class Cup_Setup_Action_Dispatcher_Test extends TestCase {
     public function test_competition_setup_invalid_missing_date(): void {
         $this->action_guard->expects( self::once() )
             ->method( 'assert_allowed' )
-            ->with( 'racketmanager_nonce', 'racketmanager_add_championship-matches', 'edit_matches' );
+            ->with( 'racketmanager_nonce', 'racketmanager_add_championship-fixtures', 'edit_matches' );
 
         $competition = $this->createMock( Competition::class );
         $competition->expects( self::once() )
@@ -245,7 +245,7 @@ final class Cup_Setup_Action_Dispatcher_Test extends TestCase {
     public function test_league_setup_delegates_to_championship_service(): void {
         $this->action_guard->expects( self::once() )
             ->method( 'assert_allowed' )
-            ->with( 'racketmanager_nonce', 'racketmanager_add_championship-matches', 'edit_matches' );
+            ->with( 'racketmanager_nonce', 'racketmanager_add_championship-fixtures', 'edit_matches' );
 
         $this->championship_admin_service->expects( self::once() )
             ->method( 'set_championship_fixtures' )
@@ -275,7 +275,7 @@ final class Cup_Setup_Action_Dispatcher_Test extends TestCase {
 
     public function test_league_setup_uses_injected_bracket_handler_after_guard(): void {
         $this->action_guard->expects( self::once() )->method( 'assert_allowed' )
-            ->with( 'racketmanager_nonce', 'racketmanager_add_championship-matches', 'edit_matches' );
+            ->with( 'racketmanager_nonce', 'racketmanager_add_championship-fixtures', 'edit_matches' );
         $this->championship_admin_service->expects( self::never() )->method( 'set_championship_fixtures' );
         $bracket_service = $this->createMock( Draw_Action_Handler_Interface::class );
         $bracket_service->expects( self::once() )->method( 'set_championship_fixtures' )

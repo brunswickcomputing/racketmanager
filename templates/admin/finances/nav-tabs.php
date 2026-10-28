@@ -7,13 +7,12 @@
 
 namespace Racketmanager;
 
-/** @var string $racketmanager_tab */
-/** @var string $tab_title */
-if ( isset( $vm ) && ( $vm instanceof \Racketmanager\Admin\View_Models\Finances_Charges_Page_View_Model || $vm instanceof \Racketmanager\Admin\View_Models\Finances_Invoices_Page_View_Model ) ) {
-    $racketmanager_tab = $vm->racketmanager_tab;
-}
-$racketmanager_tab = $racketmanager_tab ?? 'charges';
-$tab_title         = ( isset( $vm ) && isset( $vm->tab_title ) && '' !== $vm->tab_title ) ? $vm->tab_title : ( $tab_title ?? '' );
+use Racketmanager\Admin\View_Models\Finances_Charges_Page_View_Model;
+use Racketmanager\Admin\View_Models\Finances_Invoices_Page_View_Model;
+
+/** @var Finances_Charges_Page_View_Model|Finances_Invoices_Page_View_Model $vm */
+$racketmanager_tab = $vm->racketmanager_tab;
+$tab_title         = $vm->tab_title;
 ?>
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">

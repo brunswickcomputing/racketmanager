@@ -135,7 +135,7 @@ $competition_type = $league->event->competition->type instanceof \BackedEnum ? $
         <thead>
             <tr>
                 <th scope="col" class="check-column">
-                    <label for="check-all-matches"></label><input type="checkbox" id="check-all-matches" onclick="Racketmanager.checkAll(document.getElementById('matches-action'));" />
+                    <label for="check-all-matches"></label><input type="checkbox" id="check-all-matches" data-action="check-all" data-target="matches-action" />
                 </th>
                 <th scope="col"><?php esc_html_e( 'ID', 'racketmanager' ); ?></th>
                 <th scope="col"><?php esc_html_e( 'Date', 'racketmanager' ); ?></th>

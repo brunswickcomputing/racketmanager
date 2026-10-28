@@ -136,10 +136,10 @@ add_filter( 'user_has_cap', static function ( array $caps ): array {
     $caps['edit_matches'] = true;
     return $caps;
 } );
-$screen = new \Racketmanager\Admin\Admin_League( $GLOBALS['racketmanager'] );
+$screen = $GLOBALS['racketmanager']->container->get( 'admin_league_screen' );
 ob_start();
 try {
-    $screen->display_match_page();
+    $screen->handle_display( 'match' );
     $html = (string) ob_get_contents();
 } finally {
     ob_end_clean();

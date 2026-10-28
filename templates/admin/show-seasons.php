@@ -36,7 +36,7 @@ $seasons = $vm->seasons;
             <table class="table table-striped">
                 <thead class="table-dark">
                     <tr>
-                        <th class="check-column"><label for="checkAllSeasons" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAllSeasons" onclick="Racketmanager.checkAll(document.getElementById('seasons-filter'));" /></th>
+                        <th class="check-column"><label for="checkAllSeasons" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAllSeasons" data-action="check-all" data-target="seasons-filter" /></th>
                         <th class="column-num">ID</th>
                         <th class=""><?php esc_html_e( 'Name', 'racketmanager' ); ?></th>
                     </tr>

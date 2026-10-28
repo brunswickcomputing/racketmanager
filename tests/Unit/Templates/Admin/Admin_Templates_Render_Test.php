@@ -16,6 +16,8 @@ use Racketmanager\Admin\View_Models\Player_Page_View_Model;
 use Racketmanager\Admin\View_Models\Player_Requests_Page_View_Model;
 use Racketmanager\Admin\View_Models\Players_Page_View_Model;
 use Racketmanager\Admin\View_Models\Season_Modify_Page_View_Model;
+use Racketmanager\Admin\View_Models\Setup_Page_View_Model;
+use Racketmanager\Admin\View_Models\Teams_List_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
@@ -858,9 +860,7 @@ final class Admin_Templates_Render_Test extends TestCase {
         $html     = $this->render_and_capture_warnings(
             fn() => $this->renderer->render_to_string(
                 'admin/show-clubs',
-                array(
-                    'clubs' => $clubs,
-                )
+                new \Racketmanager\Admin\View_Models\Clubs_Page_View_Model( $clubs )
             ),
             $warnings
         );
@@ -965,21 +965,21 @@ final class Admin_Templates_Render_Test extends TestCase {
         $html     = $this->render_and_capture_warnings(
             fn() => $this->renderer->render_to_string(
                 'admin/league/show-constitution',
-                array(
-                    'event'               => $event,
-                    'season'              => '2026',
-                    'seasons'             => array( '2026' ),
-                    'leagues'             => array( $league ),
-                    'num_teams'           => 1,
-                    'league_active_teams' => array( 101 => 6 ),
-                    'event_seasons'       => array( array( 'name' => '2026' ) ),
-                    'latest_season'       => '2026',
-                    'latest_event_season' => '2026',
-                    'teams'               => array( $team ),
-                    'constitution_action' => 'update',
-                    'constitution_exists' => true,
-                    'updates_allowed'     => true,
-                    'standing_status'     => array( 'champion' => 'Champion' ),
+                new \Racketmanager\Admin\View_Models\League_Constitution_Page_View_Model(
+                    event: $event,
+                    season: '2026',
+                    seasons: array( '2026' ),
+                    leagues: array( $league ),
+                    event_seasons: array( array( 'name' => '2026' ) ),
+                    num_teams: 1,
+                    league_active_teams: array( 101 => 6 ),
+                    teams: array( $team ),
+                    constitution_action: 'update',
+                    constitution_exists: true,
+                    updates_allowed: true,
+                    latest_season: '2026',
+                    latest_event_season: '2026',
+                    standing_status: array( 'champion' => 'Champion' ),
                 )
             ),
             $warnings
@@ -1036,5 +1036,164 @@ final class Admin_Templates_Render_Test extends TestCase {
         self::assertEmpty( $warnings );
         self::assertStringContainsString( 'Division 1', $html );
         self::assertStringContainsString( 'value="101"', $html );
+    }
+
+    public function test_render_teams_list_template_with_view_model(): void {
+        $competition = new class() extends Competition {
+            public function __construct() {
+                $this->id   = 1;
+                $this->name = 'Premier League';
+                $this->type = Competition_Type::LEAGUE;
+            }
+            public function get_type(): string {
+                return 'league';
+            }
+        };
+
+        $event = (object) array(
+            'id'          => 10,
+            'name'        => 'Men Singles',
+            'competition' => $competition,
+        );
+
+        $league = (object) array(
+            'id'       => 101,
+            'title'    => 'Division 1',
+            'event_id' => 10,
+            'event'    => $event,
+        );
+
+        $team = (object) array(
+            'id'      => 501,
+            'title'   => 'Leigh 1',
+            'stadium' => 'Court 1',
+            'club'    => (object) array( 'shortcode' => 'LTC' ),
+        );
+
+        $vm = new Teams_List_Page_View_Model(
+            league: $league,
+            league_id: 101,
+            season: '2026',
+            tournament_id: null,
+            tournament: null,
+            teams: array( $team ),
+            type: null,
+        );
+
+        $warnings = array();
+        $html     = $this->render_and_capture_warnings(
+            fn() => $this->renderer->render_to_string( 'admin/includes/teams-list', $vm ),
+            $warnings
+        );
+
+        self::assertEmpty( $warnings );
+        self::assertStringContainsString( 'Division 1 - Add Teams to League', $html );
+        self::assertStringContainsString( 'Leigh 1', $html );
+        self::assertStringContainsString( 'LTC', $html );
+        self::assertStringContainsString( 'Court 1', $html );
+        self::assertStringContainsString( 'name="team[501]"', $html );
+    }
+
+    public function test_render_setup_template_with_view_model(): void {
+        $competition = new class() extends Competition {
+            public function __construct() {
+                $this->id   = 1;
+                $this->name = 'Premier League';
+                $this->type = Competition_Type::LEAGUE;
+            }
+            public function get_type(): string {
+                return 'league';
+            }
+        };
+
+        $vm = new Setup_Page_View_Model(
+            competition: $competition,
+            season: '2026',
+            current_season: array(
+                'match_dates'    => array( '2026-05-01', '2026-05-08' ),
+                'home_away'      => false,
+                'num_match_days' => 2,
+            ),
+            event: null,
+            league: null,
+            match_count: 0,
+        );
+
+        $warnings = array();
+        $html     = $this->render_and_capture_warnings(
+            fn() => $this->renderer->render_to_string( 'admin/includes/setup', $vm ),
+            $warnings
+        );
+
+        self::assertEmpty( $warnings );
+        self::assertStringContainsString( 'Setup - Premier League - 2026', $html );
+        self::assertStringContainsString( 'Set round dates', $html );
+        self::assertStringContainsString( 'value="2026-05-01"', $html );
+        self::assertStringContainsString( 'value="2026-05-08"', $html );
+        self::assertStringContainsString( 'name="competition_id" value="1"', $html );
+    }
+
+    public function test_render_event_setup_template_sets_round_dates_without_fixture_action(): void {
+        $competition = new class() extends Competition {
+            public function __construct() {
+                $this->id   = 1;
+                $this->name = 'Premier League';
+                $this->type = Competition_Type::LEAGUE;
+            }
+            public function get_type(): string {
+                return 'league';
+            }
+        };
+        $event = (object) array( 'id' => 12, 'name' => 'Men Singles', 'competition' => $competition );
+        $vm    = new Setup_Page_View_Model(
+            competition: $competition,
+            season: '2026',
+            current_season: array(
+                'match_dates'    => array( '2026-05-01' ),
+                'home_away'      => false,
+                'num_match_days' => 1,
+            ),
+            event: $event,
+            league: null,
+            match_count: 0,
+        );
+
+        $warnings = array();
+        $html     = $this->render_and_capture_warnings(
+            fn() => $this->renderer->render_to_string( 'admin/includes/setup', $vm ),
+            $warnings
+        );
+
+        self::assertEmpty( $warnings );
+        self::assertStringContainsString( 'Set round dates', $html );
+        self::assertStringContainsString( 'name="event_id" value="12"', $html );
+        self::assertStringContainsString( 'name="action" value=""', $html );
+        self::assertStringNotContainsString( 'Add fixtures', $html );
+        self::assertStringNotContainsString( 'Generate ratings', $html );
+        self::assertStringNotContainsString( 'name="rank"', $html );
+    }
+
+    public function test_no_inline_event_handlers_in_admin_templates(): void {
+        $admin_templates_dir = dirname( __DIR__, 4 ) . '/templates/admin';
+        $directory_iterator  = new \RecursiveDirectoryIterator( $admin_templates_dir, \FilesystemIterator::SKIP_DOTS );
+        $iterator            = new \RecursiveIteratorIterator( $directory_iterator );
+        $regex               = '/\son(click|dblclick|change|input|submit|reset|load|unload|beforeunload|blur|focus|focusin|focusout|keyup|keydown|keypress|mouseover|mouseout|mousedown|mouseup|mousemove|mouseenter|mouseleave|select|scroll|resize|error|abort|toggle|dragstart|dragend|dragover|dragenter|dragleave|drag|drop|touchstart|touchend|touchmove|touchcancel|paste|copy|cut|wheel|contextmenu|invalid|search|hashchange|popstate)\s*=/i';
+
+        $violations = array();
+        /** @var \SplFileInfo $file */
+        foreach ( $iterator as $file ) {
+            if ( 'php' !== $file->getExtension() ) {
+                continue;
+            }
+            $content = (string) file_get_contents( $file->getPathname() );
+            if ( preg_match_all( $regex, $content, $matches, PREG_OFFSET_CAPTURE ) ) {
+                $relative_path = str_replace( dirname( __DIR__, 4 ) . '/', '', $file->getPathname() );
+                foreach ( $matches[0] as $match ) {
+                    $violations[] = sprintf( '%s: %s', $relative_path, trim( $match[0] ) );
+                }
+            }
+        }
+
+        self::assertSame( array(), $violations, 'Admin templates must not contain inline event handlers.' );
     }
 }

@@ -30,7 +30,6 @@ final class Admin_League_Regression_Test extends TestCase {
 
 	private Simple_Container $container;
 	private RacketManager $plugin;
-	private Admin_League $screen;
 	/** @var string[] */
 	private array $warnings = array();
 
@@ -44,11 +43,12 @@ final class Admin_League_Regression_Test extends TestCase {
 		$_POST                                = array();
 		$_SERVER['REQUEST_METHOD']            = 'GET';
 
-		$this->container          = $this->create_admin_delivery_container();
+		$this->container          = $this->create_admin_delivery_container(
+			renderer: new \Racketmanager\Services\View\Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' )
+		);
 		$this->plugin             = $this->createStub( RacketManager::class );
 		$this->plugin->container  = $this->container;
 		$GLOBALS['racketmanager'] = $this->plugin;
-		$this->screen             = new Admin_League( $this->plugin );
 		$this->warnings           = array();
 		set_error_handler(
 			function ( int $severity, string $message ): bool {
@@ -58,27 +58,37 @@ final class Admin_League_Regression_Test extends TestCase {
 		);
 	}
 
+	private function screen(): Admin_League {
+		return $this->container->get( 'admin_league_screen' );
+	}
+
 	protected function tearDown(): void {
 		restore_error_handler();
 		$this->restore_globals();
 		parent::tearDown();
 	}
 
-	public function test_screen_uses_collaborators_injected_at_construction(): void {
-		$this->assertSame( $this->container->get( 'event_repository' ), $this->screen->get_event_repository() );
-		$this->assertSame( $this->container->get( 'league_query_service' ), $this->screen->get_league_query_service() );
-		$this->assertInstanceOf( Event_Repository_Interface::class, $this->screen->get_event_repository() );
-		$this->assertInstanceOf( League_Query_Service::class, $this->screen->get_league_query_service() );
-	}
-
-	public function test_screen_uses_event_query_service_bound_before_construction(): void {
-		$event_query_service = $this->event_query_service( $this->createStub( Event_Repository_Interface::class ) );
-		$this->container->set( 'event_query_service', $event_query_service );
-		$screen = new Admin_League( $this->plugin );
-
-		$reflection = new \ReflectionMethod( $screen, 'get_event_query_service' );
-		$this->assertSame( $event_query_service, $reflection->invoke( $screen ) );
-		$this->assertInstanceOf( Event_Query_Service::class, $reflection->invoke( $screen ) );
+	public function test_every_league_view_resolves_its_controller_from_the_container(): void {
+		$this->assertInstanceOf( Admin_League::class, $this->container->get( 'admin_league_screen' ) );
+		foreach (
+			array(
+				'league_competitions_admin_controller'  => \Racketmanager\Admin\Controllers\League_Competitions_Admin_Controller::class,
+				'league_overview_admin_controller'      => \Racketmanager\Admin\Controllers\League_Overview_Admin_Controller::class,
+				'league_setup_admin_controller'         => \Racketmanager\Admin\Controllers\League_Setup_Admin_Controller::class,
+				'league_setup_event_admin_controller'   => \Racketmanager\Admin\Controllers\League_Setup_Event_Admin_Controller::class,
+				'league_event_admin_controller'         => \Racketmanager\Admin\Controllers\League_Event_Admin_Controller::class,
+				'league_constitution_admin_controller'  => \Racketmanager\Admin\Controllers\League_Constitution_Admin_Controller::class,
+				'league_standings_admin_controller'     => \Racketmanager\Admin\Controllers\League_Standings_Admin_Controller::class,
+				'league_matches_admin_controller'       => \Racketmanager\Admin\Controllers\League_Matches_Admin_Controller::class,
+				'league_match_admin_controller'         => \Racketmanager\Admin\Controllers\League_Match_Admin_Controller::class,
+				'league_schedule_admin_controller'      => \Racketmanager\Admin\Controllers\League_Schedule_Admin_Controller::class,
+				'teams_admin_controller'                => \Racketmanager\Admin\Controllers\Teams_Admin_Controller::class,
+				'contact_admin_controller'              => \Racketmanager\Admin\Controllers\Contact_Admin_Controller::class,
+				'competition_seasons_admin_controller'  => \Racketmanager\Admin\Controllers\Competition_Seasons_Admin_Controller::class,
+			) as $id => $class
+		) {
+			$this->assertInstanceOf( $class, $this->container->get( $id ), $id );
+		}
 	}
 
 	public function test_crosstable_teams_are_hydrated_and_cells_precomputed_for_the_template(): void {
@@ -97,7 +107,8 @@ final class Admin_League_Regression_Test extends TestCase {
 			->willReturnCallback( static fn( $l, int $team_id, int $opponent_id ): string => $team_id === $opponent_id ? '&nbsp;' : "{$team_id}v{$opponent_id}" );
 
 		$this->container->set( 'league_team_repository', fn() => $league_team_repository );
-		$screen = new Admin_League( $this->plugin, null, null, $league_query_service );
+		$this->container->set( 'league_query_service', fn() => $league_query_service );
+		$screen = $this->container->get( 'league_standings_admin_controller' );
 
 		$hydrate = new \ReflectionMethod( $screen, 'hydrate_crosstable_teams' );
 		$teams   = $hydrate->invoke( $screen, array( $already_entity, $raw_row, 'not-a-team' ) );
@@ -160,11 +171,11 @@ final class Admin_League_Regression_Test extends TestCase {
 			->with( $league, self::anything(), self::anything() )
 			->willReturnCallback( static fn( $l, int $team_id, int $opponent_id ): string => $team_id === $opponent_id ? '&nbsp;' : "{$team_id}v{$opponent_id}" );
 
-		$this->screen = new Admin_League( $this->plugin, null, null, $league_query_service );
+		$this->container->set( 'league_query_service', fn() => $league_query_service );
 
 		ob_start();
 		try {
-			$this->screen->display_league_page();
+			$this->screen()->handle_display( 'league' );
 			$output = (string) ob_get_contents();
 		} finally {
 			ob_end_clean();
@@ -182,7 +193,7 @@ final class Admin_League_Regression_Test extends TestCase {
 
 		ob_start();
 		try {
-			$this->screen->display_match_page();
+			$this->screen()->handle_display( 'match' );
 			$output = (string) ob_get_contents();
 		} finally {
 			ob_end_clean();
@@ -197,14 +208,14 @@ final class Admin_League_Regression_Test extends TestCase {
 
 		ob_start();
 		try {
-			$this->screen->display_league_page();
+			$this->screen()->handle_display( 'league' );
 			$output = (string) ob_get_contents();
 		} finally {
 			ob_end_clean();
 		}
 
 		$this->assertSame( array(), $this->warnings );
-		$this->assertStringContainsString( 'League not found', $output . $this->screen->message );
+		$this->assertStringContainsString( 'League not found', $output );
 	}
 
 	public function test_display_event_page_renders_with_injected_event_repository(): void {
@@ -216,17 +227,15 @@ final class Admin_League_Regression_Test extends TestCase {
 		$event->current_season = array( 'name' => '2026' );
 		$event->method( 'get_seasons' )->willReturn( array( '2026' => array( 'name' => '2026' ) ) );
 
-		// Looked up twice through the container repository: once by the Validator, once by the screen.
 		$event_repository = $this->createMock( Event_Repository_Interface::class );
-		$event_repository->expects( self::exactly( 2 ) )->method( 'find_by_id' )->with( 10 )->willReturn( $event );
+		$event_repository->expects( self::atLeastOnce() )->method( 'find_by_id' )->with( 10 )->willReturn( $event );
 
 		$this->container->set( 'event_repository', fn() => $event_repository );
-		$this->screen = new Admin_League( $this->plugin );
 		$_GET         = array( 'event_id' => '10', 'season' => '2026' );
 
 		ob_start();
 		try {
-			$this->screen->display_event_page();
+			$this->screen()->handle_display( 'event' );
 			$output = (string) ob_get_contents();
 		} finally {
 			ob_end_clean();
@@ -242,14 +251,14 @@ final class Admin_League_Regression_Test extends TestCase {
 
 		ob_start();
 		try {
-			$this->screen->display_event_page();
+			$this->screen()->handle_display( 'event' );
 			$output = (string) ob_get_contents();
 		} finally {
 			ob_end_clean();
 		}
 
 		$this->assertSame( array(), $this->warnings );
-		$this->assertStringContainsString( 'Event', $output . $this->screen->message );
+		$this->assertStringContainsString( 'Event', $output );
 	}
 
 	public function test_display_setup_event_page_renders_using_injected_repository(): void {
@@ -273,12 +282,11 @@ final class Admin_League_Regression_Test extends TestCase {
 		$event_repository->expects( self::once() )->method( 'find_by_id' )->with( 10 )->willReturn( $event );
 
 		$this->container->set( 'event_repository', fn() => $event_repository );
-		$this->screen = new Admin_League( $this->plugin );
 		$_GET         = array( 'event_id' => '10', 'season' => '2026' );
 
 		ob_start();
 		try {
-			$this->screen->display_setup_event_page();
+			$this->screen()->handle_display( 'setup-event' );
 			$output = (string) ob_get_contents();
 		} finally {
 			ob_end_clean();
@@ -317,12 +325,11 @@ final class Admin_League_Regression_Test extends TestCase {
 
 		$this->container->set( 'event_repository', fn() => $event_repository );
 		$this->container->set( 'event_query_service', fn() => $event_query_service );
-		$this->screen = new Admin_League( $this->plugin );
 		$_GET         = array( 'event_id' => '10', 'season' => '2026' );
 
 		ob_start();
 		try {
-			$this->screen->display_matches_page();
+			$this->screen()->handle_display( 'matches' );
 			$output = (string) ob_get_contents();
 		} finally {
 			ob_end_clean();

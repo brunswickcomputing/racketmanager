@@ -7,22 +7,17 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Season_Modify_Page_View_Model;
 use Racketmanager\Util\Util_Lookup;
 
-/** @var object $competition */
-/** @var string $season */
-/** @var array  $clubs */
-/** @var object $current_season */
-/** @var array $seasons */
-if ( isset( $vm ) && $vm instanceof \Racketmanager\Admin\View_Models\Season_Modify_Page_View_Model ) {
-    $competition    = $vm->competition;
-    $season         = $vm->season ? strval( $vm->season ) : null;
-    $current_season = $vm->current_season;
-    $seasons        = $vm->seasons;
-    $clubs          = $vm->clubs;
-    $edit_mode      = $vm->edit_mode;
-    $errors         = $vm->errors;
-}
+/** @var Season_Modify_Page_View_Model $vm */
+$competition    = $vm->competition;
+$season         = $vm->season ? strval( $vm->season ) : null;
+$current_season = $vm->current_season;
+$seasons        = $vm->seasons;
+$clubs          = $vm->clubs;
+$edit_mode      = $vm->edit_mode;
+$errors         = $vm->errors;
 if ( ! isset( $validator ) ) {
     $validator           = new \stdClass();
     $validator->err_flds = array();
@@ -228,7 +223,7 @@ $msg         = null;
                                 $msg        = $validator->err_msgs[$msg_id] ?? null;
                             }
                             ?>
-                            <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="max_teams" id="max_teams" placeholder="<?php esc_html_e( 'Max teams', 'racketmanager' ); ?>" onchange="Racketmanager.setNumMatchDays()" value="<?php echo isset( $max_teams ) ? esc_html( $max_teams ) : null; ?>" />
+                            <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="max_teams" id="max_teams" placeholder="<?php esc_html_e( 'Max teams', 'racketmanager' ); ?>" data-action="set-num-match-days" value="<?php echo isset( $max_teams ) ? esc_html( $max_teams ) : null; ?>" />
                             <label for="max_teams" class="form-label"><?php esc_html_e( 'Max teams per league', 'racketmanager' ); ?></label>
                             <?php
                             if ( $is_invalid ) {
@@ -366,11 +361,11 @@ $msg         = null;
                     ?>
                     <legend class="form-check-label <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>"><?php esc_html_e( 'Fixtures', 'racketmanager' ); ?></legend>
                     <div class="form-check form-check-inline">
-                        <input type="radio" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="homeAway" id="homeAwayTrue" onclick="Racketmanager.setNumMatchDays()" value="true" <?php checked( 1, empty( $home_away ) ? null : 1 ); ?> />
+                        <input type="radio" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="homeAway" id="homeAwayTrue" data-action="set-num-match-days" value="true" <?php checked( 1, empty( $home_away ) ? null : 1 ); ?> />
                         <label class="form-check-label" for="homeAwayTrue"><?php echo esc_html( $home_away_desc_true ); ?></label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input type="radio" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="homeAway" id="homeAwayFalse" onclick="Racketmanager.setNumMatchDays()" value="false"<?php checked( 1, empty( $home_away ) ? 1 : null ); ?> />
+                        <input type="radio" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="homeAway" id="homeAwayFalse" data-action="set-num-match-days" value="false"<?php checked( 1, empty( $home_away ) ? 1 : null ); ?> />
                         <label class="form-check-label" for="homeAwayFalse"><?php echo esc_html( $home_away_desc_false ); ?></label>
                     </div>
                     <?php
@@ -418,7 +413,7 @@ $msg         = null;
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
                         ?>
-                        <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="round_length" id="round_length" value="<?php echo isset( $round_length ) ? esc_html( $round_length ) : null; ?>" onchange="Racketmanager.setEndDate()" />
+                        <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="round_length" id="round_length" value="<?php echo isset( $round_length ) ? esc_html( $round_length ) : null; ?>" data-action="set-end-date" />
                         <label for="round_length" class="form-label"><?php esc_html_e( 'Round length (days)', 'racketmanager' ); ?></label>
                         <?php
                         if ( $is_invalid ) {
@@ -444,7 +439,7 @@ $msg         = null;
                                 $msg        = $validator->err_msgs[$msg_id] ?? null;
                             }
                             ?>
-                            <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="home_away_diff" id="home_away_diff" value="<?php echo isset( $home_away_diff ) ? esc_html( $home_away_diff ) : null; ?>" onchange="Racketmanager.setEndDate()"/>
+                            <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="home_away_diff" id="home_away_diff" value="<?php echo isset( $home_away_diff ) ? esc_html( $home_away_diff ) : null; ?>" data-action="set-end-date" />
                             <label for="home_away_diff" class="form-label"><?php esc_html_e( 'Fixture gap (weeks)', 'racketmanager' ); ?></label>
                             <?php
                             if ( $is_invalid ) {
@@ -467,7 +462,7 @@ $msg         = null;
                                 $msg        = $validator->err_msgs[$msg_id] ?? null;
                             }
                             ?>
-                            <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="filler_weeks" id="filler_weeks" value="<?php echo isset( $filler_weeks ) ? esc_html( $filler_weeks ) : null; ?>" onchange="Racketmanager.setEndDate()" />
+                            <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="filler_weeks" id="filler_weeks" value="<?php echo isset( $filler_weeks ) ? esc_html( $filler_weeks ) : null; ?>" data-action="set-end-date" />
                             <label for="filler_weeks" class="form-label"><?php esc_html_e( 'Filler weeks', 'racketmanager' ); ?></label>
                             <?php
                             if ( $is_invalid ) {
@@ -615,7 +610,7 @@ $msg         = null;
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
                         ?>
-                        <input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateStart" id="dateStart" value="<?php echo isset( $current_season->date_start ) ? esc_html( $current_season->date_start ) : null; ?>" onchange="Racketmanager.setEndDate()" />
+                        <input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateStart" id="dateStart" value="<?php echo isset( $current_season->date_start ) ? esc_html( $current_season->date_start ) : null; ?>" data-action="set-end-date" />
                         <label for="dateStart" class="form-label"><?php esc_html_e( 'Start Date', 'racketmanager' ); ?></label>
                         <?php
                         if ( $is_invalid ) {

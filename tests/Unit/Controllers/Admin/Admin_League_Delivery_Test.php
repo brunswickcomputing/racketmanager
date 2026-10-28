@@ -14,6 +14,7 @@ use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Admin_Delivery_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class Admin_League_Delivery_Test extends TestCase {
     use Creates_Admin_Delivery_Container;
     use \Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
@@ -28,8 +29,12 @@ final class Admin_League_Delivery_Test extends TestCase {
         parent::setUp();
         $this->backup_globals();
         $GLOBALS['wp_stubs_current_user_can'] = true;
+        $GLOBALS['wp_stubs_current_user_id']  = 1;
 
-        $this->container           = $this->create_admin_delivery_container();
+        $this->container           = $this->create_admin_delivery_container(
+            renderer: new \Racketmanager\Services\View\Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ),
+            flash_store: new \Racketmanager\Admin\Flash\Admin_Flash_Message_Store()
+        );
         $this->competition_service = $this->createStub( Competition_Service::class );
         $this->season_service      = $this->createStub( \Racketmanager\Services\Season_Service::class );
         $this->season_service->method( 'get_all_seasons' )->willReturn( array( '2026' ) );
@@ -40,13 +45,11 @@ final class Admin_League_Delivery_Test extends TestCase {
         $plugin->container        = $this->container;
         $GLOBALS['racketmanager'] = $plugin;
 
-        $this->screen = new Admin_League( $plugin );
+        $this->screen = $this->container->get( 'admin_league_screen' );
     }
 
     private function rebuild_screen(): void {
-        $plugin            = $this->createStub( RacketManager::class );
-        $plugin->container = $this->container;
-        $this->screen      = new Admin_League( $plugin );
+        $this->screen = $this->container->get( 'admin_league_screen' );
     }
 
     protected function tearDown(): void {
@@ -129,14 +132,8 @@ final class Admin_League_Delivery_Test extends TestCase {
 
         $competition_service = $this->createMock( Competition_Service::class );
         $this->container->set( 'competition_service', $competition_service );
-        $plugin            = $this->createStub( RacketManager::class );
-        $plugin->container = $this->container;
-        $screen            = new Admin_League( $plugin );
+        $screen = $this->container->get( 'admin_league_screen' );
 
-        $competition_service->expects( self::once() )
-            ->method( 'get_by_id' )
-            ->with( 1 )
-            ->willReturn( $competition );
         $competition_service->expects( self::once() )
             ->method( 'get_competition' )
             ->with( 1 )
@@ -334,5 +331,222 @@ final class Admin_League_Delivery_Test extends TestCase {
         $this->assertStringContainsString( 'Division 1', $output );
         $this->assertStringContainsString( 'Leigh 1', $output );
         $this->assertMatchesRegularExpression( '#<div[^>]*class="[^"]*col-4[^"]*text-end[^"]*"[^>]*>\s*6\s*</div>#', $output );
+    }
+
+    public function test_display_schedule_page_passes_popped_flash_data_to_controller(): void {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_GET                      = array( 'page' => 'racketmanager-leagues', 'view' => 'plan', 'competition_id' => '1', 'season' => '2026' );
+
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            name: 'Mixed League',
+            type: Competition_Type::LEAGUE,
+            seasons: Competition_Test_Factory::season_map( '2026' ),
+            current_season: array( 'name' => '2026' )
+        );
+
+        $competition_service = $this->createMock( \Racketmanager\Services\Competition_Service::class );
+        $competition_service->method( 'get_competition' )->willReturn( $competition );
+        $competition_service->method( 'get_events_for_competition' )->willReturn( array() );
+
+        $report_data = array(
+            'retry'             => 1,
+            'scheduled'         => 12,
+            'conflicts'         => array(
+                array(
+                    'week'     => 'Week 1',
+                    'division' => 'Division 1',
+                    'home'     => 'Team A',
+                    'with'     => 'Team B',
+                    'court'    => 'Court 1',
+                ),
+            ),
+            'alerts'            => array(),
+            'resource_pairings' => array(),
+        );
+
+        $flash_store = $this->createMock( \Racketmanager\Admin\Flash\Admin_Flash_Message_Store::class );
+        $flash_store->expects( self::once() )
+            ->method( 'pop' )
+            ->willReturn( array(
+                'message'      => 'Schedule generated',
+                'message_type' => false,
+                'flash_data'   => array( 'schedule_report' => $report_data ),
+            ) );
+
+        $container = $this->create_admin_delivery_container(
+            services: array(
+                'competition_service' => $competition_service,
+                'season_service'      => $this->season_service,
+            ),
+            renderer: new \Racketmanager\Services\View\Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ),
+            flash_store: $flash_store
+        );
+
+        $screen = $container->get( 'admin_league_screen' );
+
+        ob_start();
+        $screen->display_schedule_page();
+        $output = (string) ob_get_clean();
+
+        $this->assertStringContainsString( 'Schedule generated', $output );
+        $this->assertStringContainsString( 'Scheduling report - 1 attempts, 12 fixtures created', $output );
+        $this->assertStringContainsString( 'Court conflicts', $output );
+        $this->assertStringContainsString( 'Court 1', $output );
+    }
+
+    public function test_handle_display_routes_teams_page(): void {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_GET                      = array( 'page' => 'racketmanager-leagues', 'view' => 'teams', 'league_id' => '42', 'season' => '2026' );
+
+        $competition = Competition_Test_Factory::create( id: 1, name: 'Mixed League', type: Competition_Type::LEAGUE );
+        $event       = \Racketmanager\Domain\Competition\Event::from_object(
+            (object) array( 'id' => 10, 'name' => 'Mixed Doubles', 'seasons' => array( '2026' => array( 'name' => '2026' ) ) ),
+            $competition
+        );
+        $league      = \Racketmanager\Domain\Competition\League::from_object(
+            (object) array( 'id' => 42, 'title' => 'Division 1' ),
+            $event
+        );
+        $GLOBALS['wp_stubs_leagues'][42] = $league;
+
+        $team_service = $this->createMock( \Racketmanager\Services\Team_Service::class );
+        $team_service->method( 'get_club_teams' )->willReturn( array() );
+        $this->container->set( 'team_service', $team_service );
+
+        $this->rebuild_screen();
+
+        ob_start();
+        $this->screen->handle_display( 'teams' );
+        $output = (string) ob_get_clean();
+
+        $this->assertStringContainsString( 'Add Teams', $output );
+    }
+
+    public function test_handle_display_routes_contact_page(): void {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_GET                      = array( 'page' => 'racketmanager-leagues', 'view' => 'contact', 'league_id' => '42', 'season' => '2026' );
+
+        $competition = Competition_Test_Factory::create( id: 1, name: 'Mixed League', type: Competition_Type::LEAGUE );
+        $event       = \Racketmanager\Domain\Competition\Event::from_object(
+            (object) array( 'id' => 10, 'name' => 'Mixed Doubles', 'seasons' => array( '2026' => array( 'name' => '2026' ) ) ),
+            $competition
+        );
+        $league      = \Racketmanager\Domain\Competition\League::from_object(
+            (object) array( 'id' => 42, 'title' => 'Division 1' ),
+            $event
+        );
+        $GLOBALS['wp_stubs_leagues'][42] = $league;
+
+        $this->rebuild_screen();
+
+        ob_start();
+        $this->screen->handle_display( 'contact' );
+        $output = (string) ob_get_clean();
+
+        $this->assertStringContainsString( '<form class="g-3 mt-3 form-control"', $output );
+        $this->assertStringContainsString( 'name="contactTeamPreview"', $output );
+    }
+
+    public function test_handle_display_routes_seasons_page(): void {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_GET                      = array( 'page' => 'racketmanager-leagues', 'view' => 'seasons', 'competition_id' => '1' );
+
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            name: 'Mixed League',
+            type: Competition_Type::LEAGUE,
+            seasons: Competition_Test_Factory::season_map( '2026' )
+        );
+
+        $competition_service = $this->createStub( Competition_Service::class );
+        $competition_service->method( 'get_by_id' )->willReturn( $competition );
+        $this->container->set( 'competition_service', $competition_service );
+
+        $this->rebuild_screen();
+
+        ob_start();
+        $this->screen->handle_display( 'seasons' );
+        $output = (string) ob_get_clean();
+
+        $this->assertStringContainsString( 'Seasons', $output );
+    }
+
+    public function test_handle_display_delegates_modify_and_config_to_competition_screen(): void {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_GET                      = array( 'competition_id' => '1', 'season' => '2026' );
+
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            name: 'Mixed League',
+            type: Competition_Type::LEAGUE,
+            seasons: Competition_Test_Factory::season_map( '2026' )
+        );
+
+        $competition_service = $this->createStub( Competition_Service::class );
+        $competition_service->method( 'get_by_id' )->willReturn( $competition );
+        $this->container->set( 'competition_service', $competition_service );
+
+        $this->rebuild_screen();
+
+        ob_start();
+        $this->screen->handle_display( 'modify' );
+        $modify_output = (string) ob_get_clean();
+
+        $this->assertStringContainsString( 'Modify season', $modify_output );
+
+        ob_start();
+        $this->screen->handle_display( 'config' );
+        $config_output = (string) ob_get_clean();
+
+        $this->assertStringContainsString( 'Mixed League', $config_output );
+        $this->assertStringContainsString( 'data-action="racketmanager_manage-competition-config"', $config_output );
+    }
+
+    public function test_handle_display_delegates_team_to_club_screen(): void {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_GET                      = array( 'edit' => '10' );
+
+        $team = $this->createStub( \Racketmanager\Domain\Team::class );
+        $team_service = $this->createStub( \Racketmanager\Services\Team_Service::class );
+        $team_service->method( 'get_team_by_id' )->willReturn( $team );
+        $this->container->set( 'team_service', $team_service );
+
+        $club_service = $this->createStub( \Racketmanager\Services\Club_Service::class );
+        $club_service->method( 'get_clubs' )->willReturn( array() );
+        $this->container->set( 'club_service', $club_service );
+
+        $this->rebuild_screen();
+
+        ob_start();
+        $this->screen->handle_display( 'team' );
+        $output = (string) ob_get_clean();
+
+        $this->assertStringContainsString( 'name="team_edit"', $output );
+        $this->assertStringContainsString( 'name="updateLeague" value="team"', $output );
+    }
+
+    public function test_handle_display_delegates_event_config_to_event_screen(): void {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_GET                      = array( 'competition_id' => '1', 'event_id' => '93' );
+
+        $competition = Competition_Test_Factory::create( id: 1, name: 'Mixed League', type: Competition_Type::LEAGUE );
+        $event       = \Racketmanager\Domain\Competition\Event::from_object(
+            (object) array( 'id' => 93, 'name' => 'Mixed Doubles', 'settings' => array() ),
+            $competition
+        );
+
+        $competition_service = $this->createStub( Competition_Service::class );
+        $competition_service->method( 'get_by_id' )->willReturn( $competition );
+        $competition_service->method( 'get_event_by_id' )->willReturn( $event );
+        $this->container->set( 'competition_service', $competition_service );
+
+        $this->rebuild_screen();
+
+        ob_start();
+        $this->screen->handle_display( 'event-config' );
+        $output = (string) ob_get_clean();
+
+        $this->assertStringContainsString( 'Mixed Doubles - config', $output );
     }
 }

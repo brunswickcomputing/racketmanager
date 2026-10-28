@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Infrastructure\Admin;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Admin\Controllers\Admin_Page_Context;
 use Racketmanager\Admin\Controllers\Admin_Redirect_Url_Builder;
 
 final class Admin_Redirect_Url_Builder_Test extends TestCase {
@@ -317,5 +318,65 @@ final class Admin_Redirect_Url_Builder_Test extends TestCase {
 
         self::assertStringContainsString( 'page=racketmanager-settings', $url );
         self::assertStringContainsString( 'tab=championship', $url );
+    }
+
+    public function test_teams_view_routes_each_context(): void {
+        $tournament = Admin_Redirect_Url_Builder::teams_view( array(), array(), Admin_Page_Context::tournament(), 3, 9 );
+        self::assertStringContainsString( 'page=racketmanager-tournaments', $tournament );
+        self::assertStringContainsString( 'view=draw', $tournament );
+        self::assertStringContainsString( 'tournament=9', $tournament );
+        self::assertStringContainsString( 'league=3', $tournament );
+        self::assertStringContainsString( 'tab=preliminary', $tournament );
+
+        $league = Admin_Redirect_Url_Builder::teams_view( array(), array(), Admin_Page_Context::league(), 3, null, null, '2024' );
+        self::assertStringContainsString( 'view=league', $league );
+        self::assertStringContainsString( 'league_id=3', $league );
+        self::assertStringContainsString( 'season=2024', $league );
+
+        $constitution = Admin_Redirect_Url_Builder::teams_view( array(), array(), Admin_Page_Context::league(), 3, null, 8, '2024', 'constitution' );
+        self::assertStringContainsString( 'view=constitution', $constitution );
+        self::assertStringContainsString( 'event_id=8', $constitution );
+
+        $cup = Admin_Redirect_Url_Builder::teams_view( array(), array(), Admin_Page_Context::cup(), 3, null, null, '2024', null, 5 );
+        self::assertStringContainsString( 'page=racketmanager-cups', $cup );
+        self::assertStringContainsString( 'view=draw', $cup );
+        self::assertStringContainsString( 'competition_id=5', $cup );
+        self::assertStringContainsString( 'league=3', $cup );
+        self::assertStringContainsString( 'tab=teams', $cup );
+    }
+
+    public function test_contact_view_routes_each_context(): void {
+        $tournament = Admin_Redirect_Url_Builder::contact_view( array(), array(), Admin_Page_Context::tournament(), 15, 'tournament_id', '2026' );
+        self::assertStringContainsString( 'page=racketmanager-tournaments', $tournament );
+        self::assertStringContainsString( 'view=contact', $tournament );
+        self::assertStringContainsString( 'tournament=15', $tournament );
+        self::assertStringContainsString( 'season=2026', $tournament );
+
+        $league = Admin_Redirect_Url_Builder::contact_view( array(), array(), Admin_Page_Context::league(), 5, 'league_id', '2025' );
+        self::assertStringContainsString( 'page=racketmanager-leagues', $league );
+        self::assertStringContainsString( 'view=contact', $league );
+        self::assertStringContainsString( 'league_id=5', $league );
+        self::assertStringContainsString( 'season=2025', $league );
+
+        $competition = Admin_Redirect_Url_Builder::contact_view( array(), array(), Admin_Page_Context::league(), 12, 'competition_id', '2025' );
+        self::assertStringContainsString( 'page=racketmanager-leagues', $competition );
+        self::assertStringContainsString( 'view=contact', $competition );
+        self::assertStringContainsString( 'competition_id=12', $competition );
+        self::assertStringContainsString( 'season=2025', $competition );
+
+        $with_params = Admin_Redirect_Url_Builder::contact_view(
+            array( 'mode' => 'edit', 'leg' => '2' ),
+            array(),
+            Admin_Page_Context::cup(),
+            20,
+            'league_id',
+            '2024'
+        );
+        self::assertStringContainsString( 'page=racketmanager-cups', $with_params );
+        self::assertStringContainsString( 'view=contact', $with_params );
+        self::assertStringContainsString( 'league_id=20', $with_params );
+        self::assertStringContainsString( 'season=2024', $with_params );
+        self::assertStringContainsString( 'mode=edit', $with_params );
+        self::assertStringContainsString( 'leg=2', $with_params );
     }
 }

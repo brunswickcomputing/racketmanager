@@ -7,7 +7,12 @@
 
 namespace Racketmanager;
 
-/** @var string $page_title */
+use Racketmanager\Admin\View_Models\Competitions_Page_View_Model;
+
+if ( isset( $vm ) && $vm instanceof Competitions_Page_View_Model ) {
+    $page_title = $vm->page_title;
+    $tournament = $vm->tournament;
+}
 ?>
 <div class="container mb-3">
     <h1><?php echo esc_html( $page_title ); ?></h1>

@@ -7,6 +7,17 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Setup_Page_View_Model;
+
+/** @var Setup_Page_View_Model $vm */
+$competition    = $vm->competition;
+$season         = (string) $vm->season;
+$current_season = $vm->current_season;
+$event          = $vm->event;
+$league         = $vm->league;
+$match_count    = $vm->match_count;
+$match_dates    = $vm->match_dates;
+
 /** @var array  $match_dates */
 /** @var int    $match_count */
 /** @var object $competition */
@@ -61,7 +72,7 @@ if ( empty( $league ) ) {
     }
     ?>
     <form method="post" class="form-control mb-3">
-        <?php wp_nonce_field( 'racketmanager_add_championship-matches', 'racketmanager_nonce' ); ?>
+        <?php wp_nonce_field( 'racketmanager_add_championship-fixtures', 'racketmanager_nonce' ); ?>
         <?php
         if ( empty( $league ) ) {
             ?>

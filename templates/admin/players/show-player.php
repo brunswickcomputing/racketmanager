@@ -7,23 +7,19 @@
 
 namespace Racketmanager;
 
-/** @var object $club */
-/** @var object $player */
-/** @var string $page_referrer */
-if ( isset( $vm ) && $vm instanceof \Racketmanager\Admin\View_Models\Player_Page_View_Model ) {
-    $player         = $vm->player;
-    $player_id      = $vm->player_id;
-    $club           = $vm->club;
-    $club_id        = $vm->club_id;
-    $page_referrer  = $vm->page_referrer;
-    $errors         = $vm->errors;
-    $form_valid     = $vm->form_valid;
-    $error_fields   = array();
-    $error_messages = array();
-    foreach ( $errors->all() as $err_fld => $err_msg ) {
-        $error_fields[]   = (string) $err_fld;
-        $error_messages[] = (string) $err_msg;
-    }
+/** @var \Racketmanager\Admin\View_Models\Player_Page_View_Model $vm */
+$player         = $vm->player;
+$player_id      = $vm->player_id;
+$club           = $vm->club;
+$club_id        = $vm->club_id;
+$page_referrer  = $vm->page_referrer;
+$errors         = $vm->errors;
+$form_valid     = $vm->form_valid;
+$error_fields   = array();
+$error_messages = array();
+foreach ( $errors->all() as $err_fld => $err_msg ) {
+    $error_fields[]   = (string) $err_fld;
+    $error_messages[] = (string) $err_msg;
 }
 ?>
 <div class="container">

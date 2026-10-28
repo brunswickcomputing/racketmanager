@@ -29,10 +29,6 @@ final class Testable_League_Admin_Display extends Admin_Display {
         $this->error                 = false;
     }
 
-    public function expose_deliver( Action_Result_DTO $result, array $query ): bool {
-        return $this->deliver_league_action_result( $result, $query );
-    }
-
     public function expose_flash(): array {
         return $this->apply_flash_message();
     }
@@ -89,82 +85,7 @@ final class League_Admin_Delivery_Test extends TestCase {
         parent::tearDown();
     }
 
-    private function create_display( Admin_Flash_Message_Store $store, Admin_Redirector_Interface $redirector ): Testable_League_Admin_Display {
-        $messages = new Admin_Message_Service( $store );
-        return new Testable_League_Admin_Display(
-            new Admin_Action_Adapter( $messages, $redirector ),
-            $messages
-        );
-    }
-
-    /**
-     * @return array{0: Testable_League_Admin_Display, 1: In_Memory_Admin_Redirector, 2: Admin_Action_Adapter, 3: Admin_Message_Service}
-     */
-    private function create_roundtrip_environment(): array {
-        $store           = new In_Memory_Admin_Flash_Message_Store();
-        $redirector      = new In_Memory_Admin_Redirector();
-        $message_service = new Admin_Message_Service( $store );
-        $adapter         = new Admin_Action_Adapter( $message_service, $redirector );
-        $display         = new Testable_League_Admin_Display( $adapter, $message_service );
-
-        return array( $display, $redirector, $adapter, $message_service );
-    }
-
-    public function test_success_redirects_with_flash_and_preserves_event_id(): void {
-        $store      = $this->createMock( Admin_Flash_Message_Store::class );
-        $redirector = $this->createMock( Admin_Redirector_Interface::class );
-        $store->expects( self::once() )->method( 'set' )->with( 'Match dates updated', false );
-        $redirector->expects( self::once() )->method( 'redirect' )->with(
-            self::callback(
-                static function ( string $url ): bool {
-                    return str_contains( $url, 'page=racketmanager-leagues' )
-                        && str_contains( $url, 'view=setup-event' )
-                        && str_contains( $url, 'event_id=7' )
-                        && str_contains( $url, 'season=2026' );
-                }
-            )
-        );
-
-        $display = $this->create_display( $store, $redirector );
-
-        $result = new Action_Result_DTO(
-            message: 'Match dates updated',
-            message_type: Admin_Message_Type::SUCCESS,
-        );
-
-        self::assertTrue(
-            $display->expose_deliver(
-                $result,
-                array(
-                    'page'     => 'racketmanager-leagues',
-                    'view'     => 'setup-event',
-                    'event_id' => '7',
-                    'season'   => '2026',
-                )
-            )
-        );
-    }
-
-    public function test_validation_error_still_redirects_with_error_flash(): void {
-        $store      = $this->createMock( Admin_Flash_Message_Store::class );
-        $redirector = $this->createMock( Admin_Redirector_Interface::class );
-        $store->expects( self::once() )->method( 'set' )->with( 'Match date missing for round 1', true );
-        $redirector->expects( self::once() )->method( 'redirect' );
-
-        $display = $this->create_display( $store, $redirector );
-
-        self::assertTrue(
-            $display->expose_deliver(
-                new Action_Result_DTO(
-                    message: 'Match date missing for round 1',
-                    message_type: Admin_Message_Type::ERROR,
-                ),
-                array( 'page' => 'racketmanager-leagues', 'view' => 'setup', 'competition_id' => '3' )
-            )
-        );
-    }
-
-    public function test_get_request_does_not_redirect_and_flash_is_applied(): void {
+    public function test_flash_message_is_applied_on_get(): void {
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $store                     = $this->createMock( Admin_Flash_Message_Store::class );
         $store->expects( self::once() )->method( 'pop' )->willReturn(
@@ -173,24 +94,56 @@ final class League_Admin_Delivery_Test extends TestCase {
                 'message_type' => false,
             )
         );
-        $redirector = $this->createMock( Admin_Redirector_Interface::class );
-        $redirector->expects( self::never() )->method( 'redirect' );
 
-        $display = $this->create_display( $store, $redirector );
-
-        self::assertFalse(
-            $display->expose_deliver(
-                new Action_Result_DTO( message: 'Season(s) deleted', message_type: Admin_Message_Type::SUCCESS ),
-                array( 'page' => 'racketmanager-leagues', 'view' => 'seasons', 'competition_id' => '3' )
-            )
+        $message_service = new Admin_Message_Service( $store );
+        $display         = new Testable_League_Admin_Display(
+            new Admin_Action_Adapter( $message_service, $this->createStub( Admin_Redirector_Interface::class ) ),
+            $message_service
         );
 
         $display->expose_flash();
-        self::assertSame( 'Season(s) deleted', $display->message );
-        self::assertFalse( $display->error );
+        self::assertSame( 'Season(s) deleted', $display->get_exposed_message() );
+        self::assertFalse( $display->get_exposed_error() );
     }
 
-    public function test_season_delete_dispatcher_success_feeds_prg_redirect(): void {
+    public function test_flash_data_is_applied_and_pops_once(): void {
+        $store           = new In_Memory_Admin_Flash_Message_Store();
+        $redirector      = new In_Memory_Admin_Redirector();
+        $message_service = new Admin_Message_Service( $store );
+        $adapter         = new Admin_Action_Adapter( $message_service, $redirector );
+
+        $report = array(
+            'retry'             => 12,
+            'scheduled'         => 0,
+            'conflicts'         => array( array( 'week' => 1, 'division' => 'Div 1', 'court' => '5_Mon 18:00_C0', 'home' => 'A', 'with' => 'B' ) ),
+            'alerts'            => array(),
+            'resource_pairings' => array( '5_Mon 18:00_C0' => array( array( 'id' => 1, 'name' => 'A', 'division' => 'Div 1' ) ) ),
+        );
+
+        self::assertTrue(
+            $adapter->deliver_redirect(
+                array(
+                    'redirect'     => 'https://example.test/wp-admin/admin.php?page=racketmanager-leagues&view=plan',
+                    'message'      => 'Scheduling failed after 12 attempts',
+                    'message_type' => true,
+                    'flash_data'   => $report,
+                )
+            )
+        );
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $display                   = new Testable_League_Admin_Display( $adapter, $message_service );
+        $flash                     = $display->expose_flash();
+
+        self::assertSame( 'Scheduling failed after 12 attempts', $display->get_exposed_message() );
+        self::assertSame( 'error', $display->get_exposed_error() );
+        self::assertSame( $report, $flash['flash_data'] ?? null );
+
+        $second_display = new Testable_League_Admin_Display( $adapter, $message_service );
+        self::assertSame( array(), $second_display->expose_flash() );
+    }
+
+    public function test_season_delete_dispatcher_success_returns_dto(): void {
         $competition_service = $this->createMock( Competition_Service::class );
         $competition_service->expects( self::once() )->method( 'delete_seasons' )->with( 3, array( 2026 ) );
 
@@ -203,22 +156,12 @@ final class League_Admin_Delivery_Test extends TestCase {
             array( 'doActionSeason' => '1', 'competition_id' => '3', 'action' => 'delete', 'del_season' => array( 2026 ) )
         );
 
-        $store      = $this->createMock( Admin_Flash_Message_Store::class );
-        $redirector = $this->createMock( Admin_Redirector_Interface::class );
-        $store->expects( self::once() )->method( 'set' )->with( 'Season(s) deleted', false );
-        $redirector->expects( self::once() )->method( 'redirect' );
-
-        $display = $this->create_display( $store, $redirector );
-
-        self::assertTrue(
-            $display->expose_deliver(
-                $result,
-                array( 'page' => 'racketmanager-leagues', 'view' => 'seasons', 'competition_id' => '3' )
-            )
-        );
+        self::assertInstanceOf( Action_Result_DTO::class, $result );
+        self::assertSame( 'Season(s) deleted', $result->message );
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
     }
 
-    public function test_league_setup_nonce_failure_feeds_error_flash_redirect(): void {
+    public function test_league_setup_nonce_failure_returns_error_dto(): void {
         $competition_service = $this->createMock( Competition_Service::class );
         $competition_service->expects( self::never() )->method( 'get_competition' );
 
@@ -230,221 +173,12 @@ final class League_Admin_Delivery_Test extends TestCase {
             array( 'action' => 'update', 'season' => '2026', 'rounds' => array( array( 'round' => '1', 'match_date' => '2026-04-01' ) ) )
         );
 
-        $store      = $this->createMock( Admin_Flash_Message_Store::class );
-        $redirector = $this->createMock( Admin_Redirector_Interface::class );
-        $store->expects( self::once() )->method( 'set' )->with( 'Security token invalid', true );
-        $redirector->expects( self::once() )->method( 'redirect' );
-
-        $display = $this->create_display( $store, $redirector );
-
-        self::assertTrue(
-            $display->expose_deliver( $result, array( 'page' => 'racketmanager-leagues', 'view' => 'setup', 'competition_id' => '3' ) )
-        );
+        self::assertInstanceOf( Action_Result_DTO::class, $result );
+        self::assertSame( 'Security token invalid', $result->message );
+        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
     }
 
     public function test_event_setup_dispatcher_is_wired_for_delivery(): void {
         self::assertTrue( class_exists( Event_Setup_Action_Dispatcher::class ) );
-    }
-
-    public function test_league_match_delete_redirects_with_tab_override_matches(): void {
-        $store      = $this->createMock( Admin_Flash_Message_Store::class );
-        $redirector = $this->createMock( Admin_Redirector_Interface::class );
-        $store->expects( self::once() )->method( 'set' )->with( 'Match id 101 deleted', false );
-        $redirector->expects( self::once() )->method( 'redirect' )->with(
-            self::callback(
-                static function ( string $url ): bool {
-                    return str_contains( $url, 'page=racketmanager-leagues' )
-                        && str_contains( $url, 'view=league' )
-                        && str_contains( $url, 'league_id=5' )
-                        && str_contains( $url, 'tab=matches' );
-                }
-            )
-        );
-
-        $display = $this->create_display( $store, $redirector );
-
-        $result = new Action_Result_DTO(
-            message: 'Match id 101 deleted',
-            message_type: Admin_Message_Type::SUCCESS,
-            tab_override: 'matches',
-        );
-
-        self::assertTrue(
-            $display->expose_deliver(
-                $result,
-                array(
-                    'page'      => 'racketmanager-leagues',
-                    'view'      => 'league',
-                    'league_id' => '5',
-                    'season'    => '2026',
-                )
-            )
-        );
-    }
-
-    public function test_post_delivery_and_get_flash_roundtrip(): void {
-        list( $display, $redirector, $adapter, $message_service ) = $this->create_roundtrip_environment();
-
-        // 1. POST delivery
-        $result = new Action_Result_DTO(
-            message: 'Standings Table updated',
-            message_type: Admin_Message_Type::SUCCESS,
-            tab_override: 'standings',
-        );
-
-        $redirected = $display->expose_deliver(
-            $result,
-            array(
-                'page'      => 'racketmanager-leagues',
-                'view'      => 'league',
-                'league_id' => '10',
-                'season'    => '2026',
-                'group'     => 'Premier',
-            )
-        );
-
-        self::assertTrue( $redirected );
-        self::assertStringContainsString( 'league_id=10', $redirector->redirect_url );
-        self::assertStringContainsString( 'group=Premier', $redirector->redirect_url );
-        self::assertStringContainsString( 'tab=standings', $redirector->redirect_url );
-
-        // 2. Next GET request
-        $_SERVER['REQUEST_METHOD'] = 'GET';
-        $get_display = new Testable_League_Admin_Display( $adapter, $message_service );
-        $get_display->expose_flash();
-
-        self::assertSame( 'Standings Table updated', $get_display->get_exposed_message() );
-        self::assertFalse( $get_display->get_exposed_error() );
-    }
-
-    public function test_constitution_delivery_and_get_flash_roundtrip(): void {
-        list( $display, $redirector, $adapter, $message_service ) = $this->create_roundtrip_environment();
-
-        $result = new Action_Result_DTO(
-            message: 'Matches generated',
-            message_type: Admin_Message_Type::SUCCESS,
-        );
-
-        $redirected = $display->expose_deliver(
-            $result,
-            array(
-                'page'     => 'racketmanager-leagues',
-                'view'     => 'constitution',
-                'event_id' => '12',
-                'season'   => '2026',
-            )
-        );
-
-        self::assertTrue( $redirected );
-        self::assertStringContainsString( 'view=constitution', $redirector->redirect_url );
-        self::assertStringContainsString( 'event_id=12', $redirector->redirect_url );
-
-        $_SERVER['REQUEST_METHOD'] = 'GET';
-        $get_display = new Testable_League_Admin_Display( $adapter, $message_service );
-        $get_display->expose_flash();
-
-        self::assertSame( 'Matches generated', $get_display->get_exposed_message() );
-        self::assertFalse( $get_display->get_exposed_error() );
-    }
-
-    public function test_event_delivery_and_get_flash_roundtrip(): void {
-        list( $display, $redirector, $adapter, $message_service ) = $this->create_roundtrip_environment();
-
-        $result = new Action_Result_DTO(
-            message: 'League added',
-            message_type: Admin_Message_Type::SUCCESS,
-        );
-
-        $redirected = $display->expose_deliver(
-            $result,
-            array(
-                'page'     => 'racketmanager-leagues',
-                'view'     => 'event',
-                'event_id' => '5',
-                'season'   => '2026',
-            )
-        );
-
-        self::assertTrue( $redirected );
-        self::assertStringContainsString( 'view=event', $redirector->redirect_url );
-        self::assertStringContainsString( 'event_id=5', $redirector->redirect_url );
-
-        $_SERVER['REQUEST_METHOD'] = 'GET';
-        $get_display = new Testable_League_Admin_Display( $adapter, $message_service );
-        $get_display->expose_flash();
-
-        self::assertSame( 'League added', $get_display->get_exposed_message() );
-        self::assertFalse( $get_display->get_exposed_error() );
-    }
-
-    public function test_schedule_delivery_and_get_flash_roundtrip(): void {
-        list( $display, $redirector, $adapter, $message_service ) = $this->create_roundtrip_environment();
-
-        $result = new Action_Result_DTO(
-            message: 'Matches scheduled',
-            message_type: Admin_Message_Type::SUCCESS,
-        );
-
-        $redirected = $display->expose_deliver(
-            $result,
-            array(
-                'page'           => 'racketmanager-leagues',
-                'view'           => 'plan',
-                'competition_id' => '3',
-                'season'         => '2026',
-            )
-        );
-
-        self::assertTrue( $redirected );
-        self::assertStringContainsString( 'view=plan', $redirector->redirect_url );
-        self::assertStringContainsString( 'competition_id=3', $redirector->redirect_url );
-
-        $_SERVER['REQUEST_METHOD'] = 'GET';
-        $get_display = new Testable_League_Admin_Display( $adapter, $message_service );
-        $get_display->expose_flash();
-
-        self::assertSame( 'Matches scheduled', $get_display->get_exposed_message() );
-        self::assertFalse( $get_display->get_exposed_error() );
-    }
-
-    public function test_schedule_delivery_carries_flash_report_through_prg_and_pops_once(): void {
-        list( $display, $redirector, $adapter, $message_service ) = $this->create_roundtrip_environment();
-
-        $report = array(
-            'retry'             => 12,
-            'scheduled'         => 0,
-            'conflicts'         => array( array( 'week' => 1, 'division' => 'Div 1', 'court' => '5_Mon 18:00_C0', 'home' => 'A', 'with' => 'B' ) ),
-            'alerts'            => array(),
-            'resource_pairings' => array( '5_Mon 18:00_C0' => array( array( 'id' => 1, 'name' => 'A', 'division' => 'Div 1' ) ) ),
-        );
-
-        $redirected = $display->expose_deliver(
-            new Action_Result_DTO(
-                message: 'Scheduling failed after 12 attempts',
-                message_type: Admin_Message_Type::ERROR,
-                flash_data: $report,
-            ),
-            array(
-                'page'           => 'racketmanager-leagues',
-                'view'           => 'plan',
-                'competition_id' => '3',
-                'season'         => '2025',
-            )
-        );
-
-        self::assertTrue( $redirected );
-        self::assertStringContainsString( 'season=2025', $redirector->redirect_url );
-
-        $_SERVER['REQUEST_METHOD'] = 'GET';
-        $get_display = new Testable_League_Admin_Display( $adapter, $message_service );
-        $flash       = $get_display->expose_flash();
-
-        self::assertSame( 'Scheduling failed after 12 attempts', $get_display->get_exposed_message() );
-        self::assertNotFalse( $get_display->get_exposed_error() );
-        self::assertSame( $report, $flash['flash_data'] ?? null );
-
-        // A second page load must not see a stale report.
-        $second_display = new Testable_League_Admin_Display( $adapter, $message_service );
-        self::assertSame( array(), $second_display->expose_flash() );
     }
 }

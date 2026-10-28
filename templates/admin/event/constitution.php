@@ -106,7 +106,7 @@ if ( empty( $event->is_box ) && empty( $seasons ) ) {
         <table class="table table-striped" title="RacketManager" aria-label="constitution table">
             <thead class="table-dark">
                 <tr>
-                    <th scope="col" class="check-column"><label for="check-all-teams" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="check-all-teams" onclick="Racketmanager.checkAll(document.getElementById('teams-filter'));" /></th>
+                    <th scope="col" class="check-column"><label for="check-all-teams" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="check-all-teams" data-action="check-all" data-target="teams-filter" /></th>
                     <th scope="col"><?php esc_html_e( 'Previous League', 'racketmanager' ); ?></th>
                     <th scope="col"><?php esc_html_e( 'New League', 'racketmanager' ); ?></th>
                     <th scope="col"><?php esc_html_e( 'Team', 'racketmanager' ); ?></th>

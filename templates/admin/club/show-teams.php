@@ -7,11 +7,13 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Club_Teams_Page_View_Model;
 use Racketmanager\Util\Util_Lookup;
 
-/** @var object $club */
-/** @var int    $club_id */
-/** @var array  $teams */
+/** @var Club_Teams_Page_View_Model $vm */
+$club    = $vm->club;
+$teams   = $vm->teams;
+$club_id = $vm->club_id;
 ?>
 <div class="container">
     <div class="row justify-content-end">
@@ -42,7 +44,7 @@ use Racketmanager\Util\Util_Lookup;
             <table class="table table-striped">
                 <thead class="table-dark">
                     <tr>
-                        <th class="col-1 check-column"><label for="selectAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" name="selectAll" id="selectAll" onclick="Racketmanager.checkAll(document.getElementById('teams-filter'));" /></th>
+                        <th class="col-1 check-column"><label for="selectAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" name="selectAll" id="selectAll" data-action="check-all" data-target="teams-filter" /></th>
                         <th class="col-1 column-num">ID</th>
                         <th class="col-3"><?php esc_html_e( 'Title', 'racketmanager' ); ?></th>
                         <th class="col-3"><?php esc_html_e( 'Stadium', 'racketmanager' ); ?></th>

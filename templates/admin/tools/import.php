@@ -35,7 +35,7 @@ $competitions = $competitions ?? array();
 		</div>
 		<p><?php esc_html_e( 'For tab delimited files use TAB as delimiter', 'racketmanager' ); ?></p>
 		<div class="form-floating mb-3">
-			<select class="form-select" size="1" name="mode" id="mode" onChange='Racketmanager.getImportOption(this.value)'>
+			<select class="form-select" size="1" name="mode" id="mode" data-action="get-import-option">
 				<option><?php esc_html_e( 'Select', 'racketmanager' ); ?></option>
 				<option value="table"><?php esc_html_e( 'Table', 'racketmanager' ); ?></option>
 				<option value="fixtures"><?php esc_html_e( 'Fixtures', 'racketmanager' ); ?></option>
@@ -48,7 +48,7 @@ $competitions = $competitions ?? array();
 			<?php
 			if ( $competitions ) {
 				?>
-				<select class="form-select" size="1" name="competition_id" id="competition_id" onChange='Racketmanager.getEventDropdown(this.value)'>
+				<select class="form-select" size="1" name="competition_id" id="competition_id" data-action="get-event-dropdown">
 					<option><?php esc_html_e( 'Select Competition', 'racketmanager' ); ?></option>
 					<?php
                     foreach ( $competitions as $competition ) {

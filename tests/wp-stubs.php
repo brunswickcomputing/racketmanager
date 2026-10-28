@@ -2401,6 +2401,9 @@ namespace {
     if ( ! defined( 'RACKETMANAGER_VERSION' ) ) {
         define( 'RACKETMANAGER_VERSION', '1.0.0' );
     }
+    if ( ! defined( 'RACKETMANAGER_DBVERSION' ) ) {
+        define( 'RACKETMANAGER_DBVERSION', '10.0.18' );
+    }
     if ( ! defined( 'WP_CONTENT_DIR' ) ) {
         define( 'WP_CONTENT_DIR', sys_get_temp_dir() . '/wp-content' );
     }

@@ -3,7 +3,9 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Helpers;
 
+use Racketmanager\Admin\Admin_Screens_Service_Provider;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
+use Racketmanager\Admin\Presenters\Admin_Competition_Page_Presenter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
@@ -118,6 +120,7 @@ trait Creates_Admin_Delivery_Container {
         $action_adapter       = $services['admin_action_adapter'] ?? new Admin_Action_Adapter( $message_service, $redirector_instance );
         $screen_presenter     = $services['admin_screen_presenter'] ?? new Admin_Screen_Presenter( $renderer_instance, $message_service );
 
+        $container->set( 'view_renderer', fn() => $renderer_instance );
         $container->set( 'club_service', fn() => $club_service );
         $container->set( 'player_service', fn() => $player_service );
         $container->set( 'registration_service', fn() => $registration_service );
@@ -134,6 +137,14 @@ trait Creates_Admin_Delivery_Container {
         $container->set( 'fixture_repository', fn() => $fixture_repository );
         $container->set( 'event_repository', fn() => $event_repo );
         $container->set( 'admin_league_schedule_presenter', fn() => $services['admin_league_schedule_presenter'] ?? new \Racketmanager\Admin\Presenters\Admin_League_Schedule_Presenter() );
+        $container->set( 'admin_date_presenter', fn() => $services['admin_date_presenter'] ?? new \Racketmanager\Admin\Presenters\Admin_Date_Presenter() );
+        $container->set( 'admin_league_matches_presenter', fn( Simple_Container $c ) => $services['admin_league_matches_presenter'] ?? new \Racketmanager\Admin\Presenters\Admin_League_Matches_Presenter( $c->get( 'admin_date_presenter' ) ) );
+        $container->set( 'admin_championship_finals_presenter', fn( Simple_Container $c ) => $services['admin_championship_finals_presenter'] ?? new \Racketmanager\Admin\Presenters\Admin_Championship_Finals_Presenter( $c->get( 'admin_date_presenter' ) ) );
+        $container->set( 'admin_plan_presenter', fn( Simple_Container $c ) => $services['admin_plan_presenter'] ?? new \Racketmanager\Admin\Presenters\Admin_Plan_Presenter(
+            $c->get( 'fixture_detail_service' ),
+            $services['player_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class ),
+            $services['fixture_relation_loader'] ?? new \Racketmanager\Services\Fixture\Fixture_Relation_Loader( $c->get( 'league_repository' ) ),
+        ) );
         $container->set( 'admin_entry_link_presenter', fn() => $services['admin_entry_link_presenter'] ?? new \Racketmanager\Admin\Presenters\Admin_Entry_Link_Presenter() );
         $container->set( 'league_team_repository', fn() => $league_team_repo );
         $container->set( 'league_repository', fn() => $league_repo );
@@ -163,6 +174,8 @@ trait Creates_Admin_Delivery_Container {
         $container->set( 'admin_message_service', fn() => $message_service );
         $container->set( 'admin_action_adapter', fn() => $action_adapter );
         $container->set( 'admin_screen_presenter', fn() => $screen_presenter );
+        $container->set( 'action_guard', fn() => $guard_instance );
+        $container->set( 'admin_competition_page_presenter', fn() => $services['admin_competition_page_presenter'] ?? new Admin_Competition_Page_Presenter( $competition_service, $club_service, $season_service, $finance_service ) );
         if ( ! array_key_exists( 'admin_results_match_presenter', $services ) || false !== $services['admin_results_match_presenter'] ) {
             $container->set( 'admin_results_match_presenter', fn() => $services['admin_results_match_presenter'] ?? new \Racketmanager\Admin\Presenters\Admin_Results_Match_Presenter( new \Racketmanager\Admin\Presenters\Admin_Date_Presenter(), $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class ) ) );
         }
@@ -203,9 +216,14 @@ trait Creates_Admin_Delivery_Container {
         $container->set( 'player_error_action_dispatcher', fn() => $services['player_error_action_dispatcher'] ?? new Player_Error_Action_Dispatcher( $player_service, $guard_instance ) );
         $container->set( 'player_request_action_dispatcher', fn() => $services['player_request_action_dispatcher'] ?? new Player_Request_Action_Dispatcher( $registration_service, $guard_instance ) );
 
-        $container->set( 'cup_setup_action_dispatcher', fn() => $services['cup_setup_action_dispatcher'] ?? new Cup_Setup_Action_Dispatcher( $competition_service, $guard_instance ) );
+        $container->set( 'cup_setup_action_dispatcher', fn() => $services['cup_setup_action_dispatcher'] ?? new Cup_Setup_Action_Dispatcher( $competition_service, $services['draw_action_handler'] ?? $this->createStub( \Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface::class ), $guard_instance ) );
         $container->set( 'cup_plan_action_dispatcher', fn() => $services['cup_plan_action_dispatcher'] ?? new Cup_Plan_Action_Dispatcher( $competition_service, $guard_instance ) );
-        $container->set( 'draw_action_dispatcher', fn() => $services['draw_action_dispatcher'] ?? new Draw_Action_Dispatcher( $this->createStub( \Racketmanager\Services\Admin\Championship\Draw_Action_Resolver::class ), $this->createStub( \Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface::class ), $guard_instance ) );
+        $container->set( 'draw_action_dispatcher', fn() => $services['draw_action_dispatcher'] ?? new Draw_Action_Dispatcher( $services['draw_action_handler'] ?? $this->createStub( \Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface::class ), $guard_instance ) );
+
+        $container->set( 'tournament_contact_action_dispatcher', fn( Simple_Container $c ) => $services['tournament_contact_action_dispatcher'] ?? new \Racketmanager\Services\Admin\Tournament\Tournament_Contact_Action_Dispatcher(
+            $tournament_service,
+            $guard_instance
+        ) );
 
         $container->set( 'import_action_dispatcher', fn( Simple_Container $c ) => $services['import_action_dispatcher'] ?? new Import_Action_Dispatcher(
             $guard_instance,
@@ -221,12 +239,21 @@ trait Creates_Admin_Delivery_Container {
         $container->set( 'index_action_dispatcher', fn() => $services['index_action_dispatcher'] ?? new Index_Action_Dispatcher( $competition_service, $guard_instance ) );
         $container->set( 'options_action_dispatcher', fn() => $services['options_action_dispatcher'] ?? new Options_Action_Dispatcher( $this->createStub( \Racketmanager\Services\Options_Service::class ), $guard_instance ) );
         $container->set( 'results_checker_action_dispatcher', fn() => $services['results_checker_action_dispatcher'] ?? new Results_Checker_Action_Dispatcher( $this->createStub( \Racketmanager\Repositories\Results_Checker_Repository::class ), $this->createStub( \Racketmanager\Services\Results_Checker_Service::class ), $guard_instance ) );
+        $app = $services['app'] ?? null;
+        if ( null === $app ) {
+            $app            = $this->createStub( \Racketmanager\RacketManager::class );
+            $app->container = $container;
+        }
+        ( new Admin_Screens_Service_Provider( $app ) )->register( $container );
+        if ( isset( $services['admin_player_screen'] ) ) {
+            $container->set( 'admin_player_screen', fn() => $services['admin_player_screen'] );
+        }
         if ( ! array_key_exists( 'results_checker_presenter', $services ) || false !== $services['results_checker_presenter'] ) {
             $container->set( 'results_checker_presenter', fn() => $services['results_checker_presenter'] ?? $this->createStub( \Racketmanager\Presentation\Presenters\Results_Checker_Presenter::class ) );
         }
 
         foreach ( $services as $id => $service ) {
-            if ( is_string( $id ) && is_object( $service ) && ! $container->has( $id ) ) {
+            if ( is_string( $id ) && is_object( $service ) ) {
                 $container->set( $id, fn() => $service );
             }
         }

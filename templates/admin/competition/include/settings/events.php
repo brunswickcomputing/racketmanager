@@ -40,7 +40,7 @@ $competition_type = $vm->competition->type instanceof \BackedEnum ? $vm->competi
         <table class="table table-striped table-borderless">
             <thead class="table-dark">
                 <tr>
-                    <th class="check-column"><input type="checkbox" id="event-select-all" onclick="Racketmanager.checkAll(document.getElementById('events-action'));" /><label for="event-select-all" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label></th>
+                    <th class="check-column"><input type="checkbox" id="event-select-all" data-action="check-all" data-target="events-action" /><label for="event-select-all" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label></th>
                     <th class=""><?php esc_html_e( 'Name', 'racketmanager' ); ?></th>
                     <th class=""><?php esc_html_e( 'Status', 'racketmanager' ); ?></th>
                     <th class=""><?php esc_html_e( 'Age', 'racketmanager' ); ?></th>

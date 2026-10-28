@@ -95,7 +95,7 @@ if ( $vm ) {
             <table class="table table-striped">
                 <thead class="table-dark">
                     <tr>
-                        <th class="check-column"><label for="checkAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('tournaments-filter'));" /></th>
+                        <th class="check-column"><label for="checkAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAll" data-action="check-all" data-target="tournaments-filter" /></th>
                         <th><?php esc_html_e( 'Name', 'racketmanager' ); ?></th>
                         <th class="d-none d-md-table-cell"><?php esc_html_e( 'Season', 'racketmanager' ); ?></th>
                         <th><?php esc_html_e( 'Venue', 'racketmanager' ); ?></th>

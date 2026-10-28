@@ -760,10 +760,6 @@ class Admin_Plan_Templates_Test extends TestCase {
             ->method( 'get_events_for_competition' )
             ->with( 55 )
             ->willReturn( [ $event1, $event2 ] );
-        $comp_service->expects( $this->atLeastOnce() )
-            ->method( 'get_by_id' )
-            ->with( 55 )
-            ->willReturn( $competition );
 
         $event_repo = $this->createStub( Event_Repository_Interface::class );
         $event_repo->method( 'count_by_event_season' )->willReturnCallback(
@@ -866,10 +862,6 @@ class Admin_Plan_Templates_Test extends TestCase {
             ->method( 'get_events_for_competition' )
             ->with( 55 )
             ->willReturn( [] );
-        $comp_service->expects( $this->atLeastOnce() )
-            ->method( 'get_by_id' )
-            ->with( 55 )
-            ->willReturn( $competition );
 
         $event_repo = $this->createStub( Event_Repository_Interface::class );
 
@@ -891,6 +883,7 @@ class Admin_Plan_Templates_Test extends TestCase {
                 'competition_service' => $comp_service,
                 'event_repository'    => $event_repo,
             ],
+            renderer: new \Racketmanager\Services\View\Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ),
             flash_store: $flash_store,
         );
 
@@ -898,7 +891,7 @@ class Admin_Plan_Templates_Test extends TestCase {
         $racketmanager->container = $container;
         $GLOBALS['racketmanager'] = $racketmanager;
 
-        $admin_league = new Admin_League( $racketmanager );
+        $admin_league = $container->get( 'admin_league_screen' );
 
         $GLOBALS['wp_stubs_current_user_can'] = true;
         $_GET['competition_id']               = $competition_id;

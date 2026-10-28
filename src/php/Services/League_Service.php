@@ -853,4 +853,25 @@ class League_Service {
         }
         return $this->league_query_service;
     }
+
+    public function get_contact_preview( League $league, string $season, string $email_title, string $email_intro, array $email_body, string $email_close ): string {
+        $email_subject = $this->racketmanager->site_name . ' - ' . $league->title . ' ' . $season . ' - ' . __( 'Important Message', 'racketmanager' );
+
+        return strval(
+            $this->racketmanager->shortcodes->load_template(
+                'contact-teams',
+                array(
+                    'league'        => $league,
+                    'organisation'  => $this->racketmanager->site_name,
+                    'season'        => $season,
+                    'title_text'    => $email_title,
+                    'intro'         => $email_intro,
+                    'body'          => $email_body,
+                    'closing_text'  => $email_close,
+                    'email_subject' => $email_subject,
+                ),
+                'email'
+            )
+        );
+    }
 }

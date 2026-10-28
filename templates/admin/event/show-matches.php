@@ -7,7 +7,13 @@
 
 namespace Racketmanager;
 
-$tab = 'matches';
+use Racketmanager\Admin\View_Models\League_Matches_Page_View_Model;
+
+/** @var League_Matches_Page_View_Model $vm */
+$event   = $vm->event;
+$season  = $vm->season;
+$matches = $vm->matches;
+$tab     = $vm->tab;
 ?>
 <div class="container">
     <?php require_once 'nav-tabs.php'; ?>

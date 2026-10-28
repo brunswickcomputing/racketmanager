@@ -7,25 +7,18 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Finances_Charge_Page_View_Model;
 use Racketmanager\Domain\Season\Season;
 
-/** @var object $charge */
-/** @var string $form_title */
-/** @var string $edit */
-/** @var string $form_action */
-/** @var array  $club_charges */
-/** @var array  $competitions */
-/** @var Season[] $racketmanager_seasons */
-if ( isset( $vm ) && $vm instanceof \Racketmanager\Admin\View_Models\Finances_Charge_Page_View_Model ) {
-    $charge                = $vm->charge;
-    $form_title            = $vm->form_title;
-    $edit                  = $vm->edit;
-    $form_action           = $vm->form_action;
-    $club_charges          = $vm->club_charges;
-    $competitions          = $vm->competitions;
-    $racketmanager_seasons = $vm->seasons;
-    $errors                = $vm->errors;
-}
+/** @var Finances_Charge_Page_View_Model $vm */
+$charge                = $vm->charge;
+$form_title            = $vm->form_title;
+$edit                  = $vm->edit;
+$form_action           = $vm->form_action;
+$club_charges          = $vm->club_charges;
+$competitions          = $vm->competitions;
+$racketmanager_seasons = $vm->seasons;
+$errors                = $vm->errors;
 if ( ! isset( $validator ) ) {
     $validator           = new \stdClass();
     $validator->err_flds = array();

@@ -7,7 +7,10 @@
 
 namespace Racketmanager;
 
-/** @var array $clubs */
+use Racketmanager\Admin\View_Models\Clubs_Page_View_Model;
+
+/** @var Clubs_Page_View_Model $vm */
+$clubs = $vm->clubs;
 ?>
 <div class="container">
     <h1><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></h1>
@@ -33,7 +36,7 @@ namespace Racketmanager;
             <table class="table table-striped">
                 <thead class="table-dark">
                     <tr>
-                        <th class="check-column"><label for="checkAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('clubs-filter'));" /></th>
+                        <th class="check-column"><label for="checkAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAll" data-action="check-all" data-target="clubs-filter" /></th>
                         <th class="d-none d-md-table-cell column-num">ID</th>
                         <th class=""><?php esc_html_e( 'Name', 'racketmanager' ); ?></th>
                         <th class="d-none d-md-table-cell"><?php esc_html_e( 'Match Secretary', 'racketmanager' ); ?></th>

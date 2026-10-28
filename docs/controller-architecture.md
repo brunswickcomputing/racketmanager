@@ -141,3 +141,104 @@ $c->set('club_public_controller', function($c) {
 - **Centralized Logic**: The "Bridge" classes become thin wrappers, while the Controller contains the actual orchestration logic.
 - **Dependency Management**: Controllers receive their dependencies (Services, Repositories) via the constructor, managed by the container.
 - **Decoupled Testing**: You can test the `Club_Public_Controller` in isolation by mocking the `Club_Service`, without needing to boot WordPress or trigger a real shortcode.
+
+#### 7. Modern Admin Controller Architecture (Implemented in P2-9)
+
+The admin interface uses a unified, decoupled architecture across all seven screen bridges (`Admin_Tournament`, `Admin_League`, `Admin_Cup`, `Admin_Club`, `Admin_Finances`, `Admin_Player`, `Admin_Competition`).
+
+##### Core Components & Pattern
+
+1. **Thin Readonly Bridges (`src/php/Admin/Admin_<Screen>.php`)**:
+   - Declared `final readonly`.
+   - Do **not** extend `Admin_Display`.
+   - Consume the `Completes_Admin_Requests` trait (`$actions`, `$screens`, `complete_request()`).
+   - Define a `$view_map` mapping view queries to internal display methods.
+   - Resolve controllers lazily from `Simple_Container` (`$container->get(...)`).
+   - Catch domain exceptions (`Invalid_Status_Exception`, `*_Not_Found_Exception`) and surface them via `Admin_Message_Service`.
+
+2. **The Request Completion Trait (`src/php/Admin/Completes_Admin_Requests.php`)**:
+   - Encapsulates interaction with `Admin_Action_Adapter` (for PRG redirects) and `Admin_Screen_Presenter` (for template rendering).
+   - If the controller result contains a `'redirect'` key: executes PRG redirect with user-meta flash data and exits.
+   - If the controller result contains `'view_model'`: renders the strict `$vm` template via `Admin_Screen_Presenter::present()`.
+
+3. **Context-Aware Shared Views (`src/php/Admin/Controllers/Admin_Page_Context.php`)**:
+   - Encapsulates originating menu page (`racketmanager-tournaments`, `racketmanager-leagues`, `racketmanager-cups`) and target entity context (`tournament`, `league`, `cup`).
+   - Powers shared `Teams_Admin_Controller` and `Contact_Admin_Controller`, ensuring redirect URLs return to the originating screen; `Competition_Seasons_Admin_Controller` uses the competition query context directly.
+
+4. **Per-View Controllers (`src/php/Admin/Controllers/`)**:
+   - `final readonly class <Context>_<View>_Admin_Controller`.
+   - Page entry points generally take `( array $query, array $post )`; shared teams/contact pages also take `Admin_Page_Context`, and schedule/plan/invoices pages may take flash data or a tab. Existing tournament `handle()` controllers are retained.
+   - Input security: capability assertions via `Action_Guard_Interface`.
+   - Mutations: delegate to domain Action Dispatchers (`Services/Admin/**/*_Action_Dispatcher`).
+   - Redirect URL construction: centralized in `Admin_Redirect_Url_Builder`.
+   - Pure Unit testing: fully testable without WordPress bootstrap using stubs and `Action_Guard_Interface`.
+
+##### Complete Controller & View Mapping Table
+
+| Screen Bridge | View (`view=`) | Controller | View Model | Template |
+|---|---|---|---|---|
+| **League** | default (leagues) | `League_Competitions_Admin_Controller` | `Competitions_Page_View_Model` | `admin/show-competitions` |
+| | `overview` | `League_Overview_Admin_Controller` | `League_Overview_Page_View_Model` | `admin/league/show-season` |
+| | `setup` | `League_Setup_Admin_Controller` | `Setup_Page_View_Model` | `admin/includes/setup` |
+| | `setup-event` | `League_Setup_Event_Admin_Controller` | `Setup_Page_View_Model` | `admin/includes/setup` |
+| | `event` | `League_Event_Admin_Controller` | `League_Event_Page_View_Model` | `admin/event/show-leagues` |
+| | `constitution` | `League_Constitution_Admin_Controller` | `League_Constitution_Page_View_Model` | `admin/league/show-constitution` |
+| | `league` (standings) | `League_Standings_Admin_Controller` | `League_Standings_Page_View_Model` | `admin/show-league` |
+| | `matches` | `League_Matches_Admin_Controller` | `League_Matches_Page_View_Model` | `admin/event/show-matches` |
+| | `match` | `League_Match_Admin_Controller` | `Tournament_Fixtures_Page_View_Model` | `admin/includes/match` |
+| | `plan` (schedule) | `League_Schedule_Admin_Controller` | `Admin_League_Schedule_Page_View_Model` | `admin/league/show-schedule` |
+| | `teams` | `Teams_Admin_Controller` (shared) | `Teams_List_Page_View_Model` | `admin/includes/teams-list` |
+| | `contact` | `Contact_Admin_Controller` (shared) | `Contact_Page_View_Model` | `admin/includes/contact` |
+| | `seasons` | `Competition_Seasons_Admin_Controller` (shared) | `Competition_Seasons_Page_View_Model` | `admin/includes/show-seasons` |
+| | `team` | via `Admin_Club` → `Club_Team_Admin_Controller` | `Tournament_Team_Page_View_Model` | `admin/includes/teams/team` or `admin/includes/teams/player-team` (dynamic via `$vm->file`) |
+| | `config` | via `Admin_Competition` → `Competition_Config_Admin_Controller` | `Tournament_Competition_Config_Page_View_Model` | `admin/includes/competition-config` |
+| | `modify` | via `Admin_Competition` → `Competition_Season_Modify_Admin_Controller` | `Season_Modify_Page_View_Model` | `admin/includes/season-edit` |
+| | `event-config` | via `Admin_Event::display_config_page()` | `Tournament_Event_Config_Page_View_Model` | `admin/includes/event-config` |
+| **Cup** | default (cups) | `Cup_Competitions_Admin_Controller` | `Competitions_Page_View_Model` | `admin/show-competitions` |
+| | `overview` | `Cup_Overview_Admin_Controller` | `Cup_Overview_Page_View_Model` | `admin/cup/show-season` |
+| | `setup` | `Cup_Setup_Admin_Controller` | `Setup_Page_View_Model` | `admin/cup/setup` |
+| | `setup-event` | `Cup_Setup_Event_Admin_Controller` | `Setup_Page_View_Model` | `admin/cup/setup` |
+| | `draw` | `Cup_Draw_Admin_Controller` | `Cup_Draw_Page_View_Model` | `admin/cup/draw` |
+| | `matches` | `Cup_Matches_Admin_Controller` | `Tournament_Fixtures_Page_View_Model` | `admin/includes/match` |
+| | `match` | `Cup_Match_Admin_Controller` | `Tournament_Fixtures_Page_View_Model` | `admin/includes/match` |
+| | `plan` | `Cup_Plan_Admin_Controller` | `Cup_Plan_Page_View_Model` | `admin/cup/plan` |
+| | `teams` | `Teams_Admin_Controller` (shared) | `Teams_List_Page_View_Model` | `admin/includes/teams-list` |
+| | `contact` | `Contact_Admin_Controller` (shared) | `Contact_Page_View_Model` | `admin/includes/contact` |
+| | `seasons` | `Competition_Seasons_Admin_Controller` (shared) | `Competition_Seasons_Page_View_Model` | `admin/includes/show-seasons` |
+| | `config` | via `Admin_Competition` → `Competition_Config_Admin_Controller` | `Tournament_Competition_Config_Page_View_Model` | `admin/includes/competition-config` |
+| | `modify` | via `Admin_Competition` → `Competition_Season_Modify_Admin_Controller` | `Season_Modify_Page_View_Model` | `admin/includes/season-edit` |
+| | `team` | via `Admin_Club` → `Club_Team_Admin_Controller` | `Tournament_Team_Page_View_Model` | `admin/includes/teams/team` or `admin/includes/teams/player-team` (dynamic via `$vm->file`) |
+| | `event` / `event-config` | via `Admin_Event::display_config_page()` | `Tournament_Event_Config_Page_View_Model` | `admin/includes/event-config` |
+| **Club** | default (clubs) | `Clubs_Admin_Controller` | `Clubs_Page_View_Model` | `admin/show-clubs` |
+| | `club` | `Club_Admin_Controller` | `Club_Page_View_Model` | `admin/includes/club` |
+| | `players` | `Club_Players_Admin_Controller` | `Club_Players_Page_View_Model` | `admin/club/show-club-players` |
+| | `teams` | `Club_Teams_Admin_Controller` | `Club_Teams_Page_View_Model` | `admin/club/show-teams` |
+| | `team` | `Club_Team_Admin_Controller` | `Tournament_Team_Page_View_Model` | `admin/includes/teams/team` or `admin/includes/teams/player-team` (dynamic via `$vm->file`) |
+| | `roles` | `Club_Roles_Admin_Controller` | `Club_Roles_Page_View_Model` | `admin/club/show-roles` |
+| | `player` | via `Admin_Player` → `Player_Admin_Controller` | `Player_Page_View_Model` | `admin/players/show-player` |
+| **Finances** | default (home) | `Finances_Home_Admin_Controller` | `Finances_Charges_Page_View_Model` | `admin/finances/show-charges` |
+| | `charges` | `Finances_Charges_Admin_Controller` | `Finances_Charges_Page_View_Model` | `admin/finances/show-charges` |
+| | `club-invoices` | `Finances_Invoices_Admin_Controller` | `Finances_Invoices_Page_View_Model` | `admin/finances/show-invoices` |
+| | `player-invoices` | `Finances_Invoices_Admin_Controller` | `Finances_Invoices_Page_View_Model` | `admin/finances/show-invoices` |
+| | `charge` | `Finances_Charge_Admin_Controller` | `Finances_Charge_Page_View_Model` | `admin/finances/charge` |
+| | `invoice` | `Finances_Invoice_Admin_Controller` | `Finances_Invoice_Page_View_Model` | `admin/finances/invoice` |
+| **Player** | default / `errors` | `Player_Errors_Admin_Controller` | `Player_Errors_Page_View_Model` | `admin/players/show-errors` |
+| | `players` | `Players_Admin_Controller` | `Players_Page_View_Model` | `admin/players/show-players` |
+| | `player` | `Player_Admin_Controller` | `Player_Page_View_Model` | `admin/players/show-player` |
+| | `requests` | `Player_Requests_Admin_Controller` | `Player_Requests_Page_View_Model` | `admin/players/show-requests` |
+| **Competition** | `config` | `Competition_Config_Admin_Controller` | `Tournament_Competition_Config_Page_View_Model` | `admin/includes/competition-config` |
+| | `modify` | `Competition_Season_Modify_Admin_Controller` | `Season_Modify_Page_View_Model` | `admin/includes/season-edit` |
+| **Tournament** | `tournaments` (default) | `Tournament_Tournaments_Admin_Controller` | `Tournament_Tournaments_Page_View_Model` | `admin/show-tournaments` |
+| | `tournament` | `Tournament_Overview_Admin_Controller` | `Tournament_Overview_Page_View_Model` | `admin/tournament/show-tournament` |
+| | `modify` | `Tournament_Admin_Controller` | `Tournament_Modify_Page_View_Model` | `admin/tournament-edit` |
+| | `plan` | `Tournament_Plan_Admin_Controller` | `Tournament_Plan_Page_View_Model` | `admin/tournament/plan` |
+| | `draw` | `Tournament_Draw_Admin_Controller` | `Tournament_Draw_Page_View_Model` | `admin/tournament/draw` |
+| | `setup` | `Tournament_Setup_Admin_Controller` | `Tournament_Setup_Page_View_Model` | `admin/tournament/setup` |
+| | `setup-event` | `Tournament_Setup_Event_Admin_Controller` | `Tournament_Setup_Page_View_Model` | `admin/tournament/setup-event` |
+| | `fixtures` / `fixture` | `Tournament_Fixtures_Admin_Controller` | `Tournament_Fixtures_Page_View_Model` | `admin/includes/match` |
+| | `teams` | `Teams_Admin_Controller` (shared) | `Teams_List_Page_View_Model` | `admin/includes/teams-list` |
+| | `contact` | `Contact_Admin_Controller` (shared) | `Contact_Page_View_Model` | `admin/includes/contact` |
+| | `information` | `Tournament_Information_Admin_Controller` | `Tournament_Information_Page_View_Model` | `admin/tournament/information` |
+| | `config` | `Tournament_Competition_Config_Admin_Controller` | `Tournament_Competition_Config_Page_View_Model` | `admin/includes/competition-config` |
+| | `event-config` | `Tournament_Event_Config_Admin_Controller` | `Tournament_Event_Config_Page_View_Model` | `admin/includes/event-config` |
+| | `team` | `Tournament_Team_Admin_Controller` | `Tournament_Team_Page_View_Model` | `admin/includes/teams/team` or `admin/includes/teams/player-team` (dynamic via `$vm->file`) |

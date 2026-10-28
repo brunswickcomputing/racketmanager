@@ -7,12 +7,14 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Club_Roles_Page_View_Model;
 use Racketmanager\Util\Util_Lookup;
 
-/** @var object $club */
-/** @var int    $club_id */
-/** @var array  $roles */
-/** @var array  $club_players */
+/** @var Club_Roles_Page_View_Model $vm */
+$club         = $vm->club;
+$roles        = $vm->roles;
+$club_players = $vm->club_players;
+$club_id      = $vm->club_id;
 ?>
 <div class="container">
     <div class="row justify-content-end">
@@ -43,7 +45,7 @@ use Racketmanager\Util\Util_Lookup;
             <table class="table table-striped">
                 <thead class="table-dark">
                     <tr>
-                        <th class="col-1 check-column"><label for="selectAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" name="selectAll" id="selectAll" onclick="Racketmanager.checkAll(document.getElementById('roles-filter'));" /></th>
+                        <th class="col-1 check-column"><label for="selectAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" name="selectAll" id="selectAll" data-action="check-all" data-target="roles-filter" /></th>
                         <th class="col-1 column-num">ID</th>
                         <th class="col-3"><?php esc_html_e( 'Role', 'racketmanager' ); ?></th>
                         <th class="col-3"><?php esc_html_e( 'User', 'racketmanager' ); ?></th>

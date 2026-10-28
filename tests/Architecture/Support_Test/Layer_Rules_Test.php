@@ -120,6 +120,7 @@ final class Layer_Rules_Test extends TestCase {
         yield 'all.no_legacy_helper_calls ignores root \\seo_url and methods' => [ 'all.no_legacy_helper_calls', 'src/php/Services/X.php', "<?php\nnamespace Racketmanager\\Services;\nclass X { function f( \$o ) { return [ \\seo_url( 'x' ), \$o->get_league(), self::get_team() ]; } static function get_team() {} }" ];
         yield 'all.no_legacy_helper_calls does not apply to functions.php' => [ 'all.no_legacy_helper_calls', 'functions.php', "<?php\nnamespace Racketmanager;\nfunction get_league_team( \$id ) { return get_league( \$id ); }" ];
         yield 'all.no_get_instance_outside_bootstrap excludes the bootstrap' => [ 'all.no_get_instance_outside_bootstrap', 'src/php/Infrastructure/Wordpress/Bootstrap/Plugin_Bootstrap.php', "<?php\nnamespace Racketmanager\\Infrastructure\\Wordpress\\Bootstrap;\nuse Racketmanager\\RacketManager;\nclass Plugin_Bootstrap { static function launch() { return RacketManager::get_instance(); } }" ];
+        yield 'services.no_presentation_imports excludes Container_Bootstrap' => [ 'services.no_presentation_imports', 'src/php/Services/Container/Container_Bootstrap.php', "<?php\nnamespace Racketmanager\\Services\\Container;\nuse Racketmanager\\Admin\\Admin_Screens_Service_Provider;\nclass Container_Bootstrap {}" ];
         yield 'all.no_alias_class_references allows the PSR-4 targets' => [ 'all.no_alias_class_references', 'src/php/Services/X.php', "<?php\nnamespace Racketmanager\\Services;\nuse Racketmanager\\Domain\\Club\\Club;\nuse Racketmanager\\Domain\\Player\\User;\nclass X { function f() { return [ new Club(), User::class ]; } }" ];
         yield 'domain.no_untyped_constructor excludes Domain/DTO' => [ 'domain.no_untyped_constructor', 'src/php/Domain/DTO/Club/Club_Hydration_DTO.php', "<?php\nnamespace Racketmanager\\Domain\\DTO\\Club;\nclass Club_Hydration_DTO { public function __construct( ?object \$raw = null ) {} }" ];
         yield 'admin.no_template_require ignores non-template includes' => [ 'admin.no_template_require', 'src/php/Admin/Admin_League.php', "<?php\nnamespace Racketmanager\\Admin;\nclass Admin_League { function f() { require_once RACKETMANAGER_PATH . 'functions.php'; } }" ];
@@ -196,5 +197,11 @@ final class Layer_Rules_Test extends TestCase {
             ],
             $strict
         );
+    }
+
+    public function test_services_no_presentation_imports_excludes_container_bootstrap(): void {
+        $rule = Layer_Rules::get( 'services.no_presentation_imports' );
+        self::assertFalse( $rule->applies_to( 'src/php/Services/Container/Container_Bootstrap.php' ) );
+        self::assertTrue( $rule->applies_to( 'src/php/Services/Team_Service.php' ) );
     }
 }

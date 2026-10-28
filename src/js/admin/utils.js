@@ -1,3 +1,5 @@
+import { registerAdminActions } from './admin-actions.js';
+
 (function(){
   // Ensure global namespace exists (match templates: Racketmanager)
   window.Racketmanager = window.Racketmanager || {};
@@ -44,4 +46,24 @@
       cb.checked = desiredState;
     });
   };
+
+  /**
+   * Sync club name into shortcode if shortcode input is currently empty.
+   */
+  window.Racketmanager.setShortcode = window.Racketmanager.setShortcode || function() {
+    var clubInput = document.getElementById('club');
+    var shortcodeInput = document.getElementById('shortcode');
+    if (clubInput && shortcodeInput && !shortcodeInput.value) {
+      shortcodeInput.value = clubInput.value;
+    }
+  };
+
+  window.Racketmanager.registerAdminActions = registerAdminActions;
 })();
+
+// Register delegated listeners immediately: they are bound to the document, so they
+// do not need the DOM to be ready, and this catches iframe 'load' events that can fire
+// before DOMContentLoaded. Registration is idempotent.
+if (typeof document !== 'undefined') {
+  window.Racketmanager.registerAdminActions(document);
+}

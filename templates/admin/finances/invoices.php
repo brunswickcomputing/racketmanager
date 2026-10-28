@@ -109,7 +109,7 @@ $billable_type     = $vm->billable_type;
                     <thead class="table-dark">
                         <tr>
                             <th class="check-column">
-                                <label for="checkAllInvoices" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAllInvoices" onclick="Racketmanager.checkAll(document.getElementById('invoices-action'));" />
+                                <label for="checkAllInvoices" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAllInvoices" data-action="check-all" data-target="invoices-action" />
                             </th>
                             <th class="d-none d-lg-table-cell text-center"><?php esc_html_e( 'Invoice', 'racketmanager' ); ?></th>
                             <th class="d-table-cell d-lg-none text-center"><?php esc_html_e( 'Inv', 'racketmanager' ); ?></th>

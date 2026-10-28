@@ -7,14 +7,18 @@
 
 namespace Racketmanager;
 
-/** @var object $league */
-/** @var object $tournament */
-/** @var string $form_title */
-/** @var int    $league_id */
-/** @var string $season */
-/** @var object $team */
-/** @var array  $clubs */
-/** @var string $form_action */
+use Racketmanager\Admin\View_Models\Tournament_Team_Page_View_Model;
+
+/** @var Tournament_Team_Page_View_Model $vm */
+$team        = $vm->team;
+$league      = $vm->league;
+$tournament  = $vm->tournament;
+$clubs       = $vm->clubs;
+$form_title  = $vm->form_title;
+$form_action = $vm->form_action;
+$season      = $vm->season;
+$match_days  = $vm->match_days;
+$league_id   = isset( $vm->league->id ) ? $vm->league->id : '';
 $competition_type = $league && isset( $league->event->competition->type ) ? ( $league->event->competition->type instanceof \BackedEnum ? $league->event->competition->type->value : (string) $league->event->competition->type ) : '';
 $action_url = '/wp-admin/admin.php?page=racketmanager-' . $competition_type .'s&amp;view=draw&amp;tournament=' . ( $tournament->id ?? '' ) . '&amp;league=' . ( $league_id ?? '' ) . '&amp;season=' . ( $season ?? '' ) . '/';
 $league_type = isset( $league->type ) ? ( $league->type instanceof \BackedEnum ? $league->type->value : (string) $league->type ) : '';

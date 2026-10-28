@@ -7,18 +7,21 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Tournament_Team_Page_View_Model;
 use Racketmanager\Util\Util_Lookup;
 
-/** @var object $league */
-/** @var string $form_title */
-/** @var int    $league_id */
-/** @var int    $club_id */
-/** @var string $season */
-/** @var object $team */
-/** @var array  $clubs */
-/** @var string $form_action */
-/** @var string $edit */
-/** @var array  $match_days */
+/** @var Tournament_Team_Page_View_Model $vm */
+$team        = $vm->team;
+$league      = $vm->league;
+$tournament  = $vm->tournament;
+$clubs       = $vm->clubs;
+$form_title  = $vm->form_title;
+$form_action = $vm->form_action;
+$season      = $vm->season;
+$match_days  = $vm->match_days;
+$edit        = true;
+$club_id     = $vm->club_id;
+$league_id   = isset( $vm->league->id ) ? $vm->league->id : '';
 $competition_type = $league && isset( $league->event->competition->type ) ? ( $league->event->competition->type instanceof \BackedEnum ? $league->event->competition->type->value : (string) $league->event->competition->type ) : '';
 ?>
 <div class="container league-block">

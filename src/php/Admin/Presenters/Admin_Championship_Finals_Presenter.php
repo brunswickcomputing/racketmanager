@@ -11,6 +11,9 @@ declare( strict_types=1 );
 namespace Racketmanager\Admin\Presenters;
 
 use Racketmanager\Admin\View_Models\Admin_Championship_Final_Fixture_View_Model;
+use Racketmanager\Exceptions\Fixture_Not_Found_Exception;
+use Racketmanager\Services\Competition\League_Query_Service;
+use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 
 /**
  * Maps championship finals to preformatted fixture view models.
@@ -49,6 +52,55 @@ final class Admin_Championship_Finals_Presenter {
         }
 
         return $presented;
+    }
+
+    /**
+     * Build presented finals for a cup or league championship.
+     *
+     * Loads the matches of every round that has fixtures, hydrates them with fixture details and maps
+     * them to fixture view models. Rounds without fixtures are omitted.
+     *
+     * @param object                $league         League entity with a championship.
+     * @param string                $season         Season name.
+     * @param League_Query_Service  $league_queries Query service used to load round matches.
+     * @param Fixture_Detail_Service $details       Service hydrating a match with its details.
+     *
+     * @return array Presented finals, indexed as a list (latest round first).
+     */
+    public function present_league_finals( object $league, string $season, League_Query_Service $league_queries, Fixture_Detail_Service $details ): array {
+        if ( empty( $league->championship ) || ! method_exists( $league->championship, 'get_finals' ) ) {
+            return array();
+        }
+        $active_finals = array();
+        foreach ( array_reverse( (array) $league->championship->get_finals() ) as $final ) {
+            $matches = $league_queries->get_matches(
+                $league,
+                array(
+                    'season'           => $season,
+                    'final'            => $final['key'],
+                    'orderby'          => array( 'id' => 'ASC' ),
+                    'reset_query_args' => true,
+                )
+            );
+            if ( empty( $matches ) || ! is_array( $matches ) ) {
+                continue;
+            }
+            $fixtures = array();
+            foreach ( $matches as $match ) {
+                try {
+                    $fixture_details = $details->get_fixture_with_details( $match );
+                } catch ( Fixture_Not_Found_Exception ) {
+                    continue;
+                }
+                if ( $fixture_details ) {
+                    $fixtures[] = $fixture_details;
+                }
+            }
+            $final['fixtures'] = $fixtures;
+            $active_finals[]   = (object) $final;
+        }
+
+        return $this->present_finals( $active_finals, null, $league, $season );
     }
 
     public function present_fixture_details( object $fixture_details, ?object $tournament, object $league, string $season ): Admin_Championship_Final_Fixture_View_Model {

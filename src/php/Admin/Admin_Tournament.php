@@ -10,8 +10,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Admin;
 
-use Closure;
-use Racketmanager\Admin\View_Models\Tournament_Contact_Page_View_Model;
+use Racketmanager\Admin\Controllers\Admin_Page_Context;
+use Racketmanager\Admin\View_Models\Contact_Page_View_Model;
 use Racketmanager\Services\Admin\Admin_Message_Service;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Information_Page_View_Model;
@@ -23,7 +23,7 @@ use Racketmanager\Admin\View_Models\Tournament_Setup_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Team_Page_View_Model;
-use Racketmanager\Admin\View_Models\Tournament_Teams_List_Page_View_Model;
+use Racketmanager\Admin\View_Models\Teams_List_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Tournaments_Page_View_Model;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
@@ -42,16 +42,7 @@ use Racketmanager\Services\View\View_Renderer_Interface;
  * @subpackage RacketManagerAdmin
  */
 final readonly class Admin_Tournament {
-
-    /**
-     * POST delivery (guarded mutation result -> flash + PRG redirect).
-     */
-    private Admin_Action_Adapter $actions;
-
-    /**
-     * GET delivery (flash/notice + view model rendering).
-     */
-    private Admin_Screen_Presenter $screens;
+    use Completes_Admin_Requests;
 
     public function __construct(
         private RacketManager $racketmanager,
@@ -62,33 +53,6 @@ final readonly class Admin_Tournament {
     ) {
         $this->actions = $actions ?? new Admin_Action_Adapter( $message_service, new Wp_Admin_Redirector() );
         $this->screens = $screens ?? new Admin_Screen_Presenter( $renderer, $message_service );
-    }
-
-    /**
-     * Complete a screen request: PRG redirect for mutations, otherwise render the view model.
-     *
-     * A delivered redirect ends processing so a POST can never also render the screen.
-     *
-     * @param array                         $result           Controller result.
-     * @param class-string                  $view_model_class Expected view model type.
-     * @param string|Closure(object):string $template         Template path or resolver.
-     * @param bool                          $redirect         Whether the screen supports PRG redirects.
-     * @param bool                          $post_only        Only honour redirects for POST requests.
-     * @param bool                          $strict           Throw on an invalid view model.
-     */
-    private function complete_request(
-        array $result,
-        string $view_model_class,
-        string|Closure $template,
-        bool $redirect = true,
-        bool $post_only = false,
-        bool $strict = true
-    ): void {
-        if ( $redirect && $this->actions->deliver_redirect( $result, $post_only ) ) {
-            return;
-        }
-
-        $this->screens->present( $result, $view_model_class, $template, $strict );
     }
 
     /**
@@ -132,11 +96,11 @@ final readonly class Admin_Tournament {
     public function display_teams_list(): void {
         $this->screens->apply_flash();
 
-        $controller = $this->racketmanager->container->get( 'tournament_teams_admin_controller' );
+        $controller = $this->racketmanager->container->get( 'teams_admin_controller' );
 
         $this->complete_request(
-            $controller->teams_page( $_GET, $_POST ),
-            Tournament_Teams_List_Page_View_Model::class,
+            $controller->teams_page( $_GET, $_POST, Admin_Page_Context::tournament() ),
+            Teams_List_Page_View_Model::class,
             'admin/includes/teams-list'
         );
     }
@@ -190,7 +154,7 @@ final readonly class Admin_Tournament {
         $this->complete_request(
             $controller->handle(),
             Tournament_Team_Page_View_Model::class,
-            static fn( object $vm ): string => 'admin/includes/teams/' . $vm->file,
+            static fn( object $vm ): string => 'admin/includes/teams/' . preg_replace( '/\.php$/', '', $vm->file ),
             strict: false
         );
     }
@@ -324,11 +288,11 @@ final readonly class Admin_Tournament {
     public function display_contact_page(): void {
         $this->screens->apply_flash();
 
-        $controller = $this->racketmanager->container->get( 'tournament_contact_admin_controller' );
+        $controller = $this->racketmanager->container->get( 'contact_admin_controller' );
 
         $this->complete_request(
-            $controller->contact_page( $_GET, $_POST ),
-            Tournament_Contact_Page_View_Model::class,
+            $controller->contact_page( $_GET, $_POST, Admin_Page_Context::tournament() ),
+            Contact_Page_View_Model::class,
             'admin/includes/contact'
         );
     }

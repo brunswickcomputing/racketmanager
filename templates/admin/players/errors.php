@@ -8,15 +8,10 @@
 
 namespace Racketmanager;
 
-/** @var string $status */
-/** @var array $player_errors */
-if ( isset( $vm ) && $vm instanceof \Racketmanager\Admin\View_Models\Player_Errors_Page_View_Model ) {
-    $player_errors = $vm->player_errors;
-    $status        = $vm->status;
-    $errors        = $vm->errors;
-}
-$player_errors = $player_errors ?? array();
-$status        = $status ?? null;
+/** @var \Racketmanager\Admin\View_Models\Player_Errors_Page_View_Model $vm */
+$player_errors = $vm->player_errors;
+$status        = $vm->status;
+$errors        = $vm->errors;
 ?>
 <!-- Club Player Request Filter -->
 <form method="get" action="" class="form-control mb-3">
@@ -51,7 +46,7 @@ $status        = $status ?? null;
         <table class="table table-striped">
             <thead class="table-dark">
             <tr>
-                <th><label for="checkAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" name="checkAll" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('player-error-filter'));" /></th>
+                <th><label for="checkAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" name="checkAll" id="checkAll" data-action="check-all" data-target="player-error-filter" /></th>
                 <th><?php esc_html_e( 'Name', 'racketmanager' ); ?></th>
                 <th><?php esc_html_e( 'LTA Tennis number', 'racketmanager' ); ?></th>
                 <th><?php esc_html_e( 'Message', 'racketmanager' ); ?></th>

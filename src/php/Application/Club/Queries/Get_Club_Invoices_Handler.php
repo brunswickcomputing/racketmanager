@@ -5,7 +5,7 @@ namespace Racketmanager\Application\Club\Queries;
 
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Invoice_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
@@ -22,63 +22,54 @@ use function trim;
  * Handles the [club-invoices] query: invoice list or single invoice, with club ownership
  * and management permissions resolved here rather than in the template.
  */
-class Get_Club_Invoices_Handler {
+readonly class Get_Club_Invoices_Handler {
     public function __construct(
-        private readonly Club_Service $club_service,
-        private readonly Finance_Service $finance_service,
-        private readonly Invoice_Presenter $invoice_presenter,
-        private readonly Club_Presenter $club_presenter,
-        private readonly ?Settings_Service $settings_service = null,
-        private readonly ?Option_Gateway_Interface $option_gateway = null
+        private Club_Service $club_service,
+        private Finance_Service $finance_service,
+        private Invoice_Presenter $invoice_presenter,
+        private Club_Presenter $club_presenter,
+        private ?Settings_Service $settings_service = null,
+        private ?Option_Gateway_Interface $option_gateway = null
     ) {}
 
     public function handle( Get_Club_Invoices_Query $query ): Shortcode_View_Model {
         try {
             $club = $this->club_service->get_club_by_shortcode( $query->club_name );
-        } catch ( Club_Not_Found_Exception $e ) {
-            return Shortcode_View_Model::error( $e->getMessage() );
-        }
 
-        $user_can_manage       = new stdClass();
-        $user_can_manage->club = $query->is_admin
-            || ( null !== $query->user_id && $this->club_service->is_user_match_secretary( $query->user_id, (int) $club->id ) );
+            $user_can_manage       = new stdClass();
+            $user_can_manage->club = $query->is_admin
+                                     || ( null !== $query->user_id && $this->club_service->is_user_match_secretary( $query->user_id, (int) $club->id ) );
 
-        $invoices_vm  = null;
-        $invoice_vm   = null;
-        $template_ref = 'invoices';
+            $invoices_vm  = null;
+            $invoice_vm   = null;
+            $template_ref = 'invoices';
 
-        $billing       = $this->settings_service ? ( $this->settings_service->get_category( 'billing', [] ) ?: [] ) : [];
-        $currency_code = isset( $billing['billingCurrency'] ) && '' !== trim( (string) $billing['billingCurrency'] )
-            ? (string) $billing['billingCurrency']
-            : $this->finance_service->get_currency()->value;
-        $billing['billingCurrency'] = $currency_code;
-        $date_format   = $this->option_gateway ? (string) $this->option_gateway->get_option( 'date_format', 'd-m-Y' ) : 'd-m-Y';
-
-        if ( ! empty( $query->invoice_ref ) ) {
-            try {
+            if ( ! empty( $query->invoice_ref ) ) {
                 $invoice = $this->finance_service->get_invoice( (int) $query->invoice_ref );
-            } catch ( Invoice_Not_Found_Exception $e ) {
-                return Shortcode_View_Model::error( $e->getMessage() );
+                if ( $invoice->billable_id !== $club->id ) {
+                    return Shortcode_View_Model::error( __( 'Invoice not for this club', 'racketmanager' ) );
+                }
+                $return_url   = $this->club_presenter->get_link( $club, 'invoices' );
+                $details      = function_exists( '\Racketmanager\show_invoice' ) ? show_invoice( $invoice->id ) : '';
+                $invoice_vm   = $this->invoice_presenter->present_club_invoice_detail(
+                    invoice: $invoice,
+                    club: $club,
+                    return_url: $return_url,
+                    details: $details
+                );
+                $template_ref = 'invoice';
+            } else {
+                $currency_code = $this->resolve_currency_code();
+                $date_format   = $this->option_gateway ? (string) $this->option_gateway->get_option( 'date_format', 'd-m-Y' ) : 'd-m-Y';
+                $invoices_data = $this->finance_service->get_invoices_by_criteria( [ 'billable' => $club->id ] );
+                $invoices_vm   = $this->invoice_presenter->present_club_invoices_list(
+                    invoices: $invoices_data,
+                    currency_code: $currency_code,
+                    date_format: $date_format
+                );
             }
-            if ( $invoice->billable_id !== $club->id ) {
-                return Shortcode_View_Model::error( __( 'Invoice not for this club', 'racketmanager' ) );
-            }
-            $return_url = $this->club_presenter->get_link( $club, 'invoices' );
-            $details    = function_exists( '\Racketmanager\show_invoice' ) ? show_invoice( $invoice->id ) : '';
-            $invoice_vm = $this->invoice_presenter->present_club_invoice_detail(
-                invoice: $invoice,
-                club: $club,
-                return_url: $return_url,
-                details: $details
-            );
-            $template_ref = 'invoice';
-        } else {
-            $invoices_data = $this->finance_service->get_invoices_by_criteria( [ 'billable' => $club->id ] );
-            $invoices_vm   = $this->invoice_presenter->present_club_invoices_list(
-                invoices: $invoices_data,
-                currency_code: $currency_code,
-                date_format: $date_format
-            );
+        } catch ( Club_Not_Found_Exception|Invoice_Not_Found_Exception $e ) {
+            return Shortcode_View_Model::error( $e->getMessage() );
         }
 
         return new Shortcode_View_Model(
@@ -92,4 +83,24 @@ class Get_Club_Invoices_Handler {
             template_type: 'club'
         );
     }
+
+    /**
+     * Currency configured in the 'billing' settings category, falling back to the
+     * finance service default when settings are unavailable or the value is blank.
+     */
+    private function resolve_currency_code(): string {
+        if ( null !== $this->settings_service ) {
+            $billing             = $this->settings_service->get_category( 'billing' ) ?: [];
+            $configured_currency = trim( (string) ( $billing['billingCurrency'] ?? '' ) );
+
+            if ( '' !== $configured_currency ) {
+                return $configured_currency;
+            }
+        }
+
+        // Only consulted when no usable configured currency exists (keeps the original
+        // short-circuit behaviour; test stubs of Finance_Service rely on this).
+        return $this->finance_service->get_currency()->value;
+    }
+
 }

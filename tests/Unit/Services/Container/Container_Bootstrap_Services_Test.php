@@ -4,8 +4,10 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Services\Container;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Gateways\Mail\Mailer_Interface;
-use Racketmanager\Gateways\Payment\Payment_Gateway_Interface;
+use Racketmanager\Application\Account\Ports\User_Favourites_Gateway_Interface;
+use Racketmanager\Application\Mail\Mailer_Interface;
+use Racketmanager\Application\Payment\Ports\Payment_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Interfaces\Result_Repository_Interface;
@@ -134,9 +136,23 @@ class Container_Bootstrap_Services_Test extends TestCase {
     public function test_container_resolves_gateways_and_services_without_cycle(): void {
         $this->assertTrue( $this->container->has( 'mailer' ) );
         $this->assertInstanceOf( Mailer_Interface::class, $this->container->get( 'mailer' ) );
+        $this->assertTrue( $this->container->has( Mailer_Interface::class ) );
+        $this->assertSame( $this->container->get( 'mailer' ), $this->container->get( Mailer_Interface::class ) );
 
         $this->assertTrue( $this->container->has( 'payment_gateway' ) );
         $this->assertInstanceOf( Payment_Gateway_Interface::class, $this->container->get( 'payment_gateway' ) );
+        $this->assertTrue( $this->container->has( Payment_Gateway_Interface::class ) );
+        $this->assertSame( $this->container->get( 'payment_gateway' ), $this->container->get( Payment_Gateway_Interface::class ) );
+
+        $this->assertTrue( $this->container->has( 'option_gateway' ) );
+        $this->assertInstanceOf( Option_Gateway_Interface::class, $this->container->get( 'option_gateway' ) );
+        $this->assertTrue( $this->container->has( Option_Gateway_Interface::class ) );
+        $this->assertSame( $this->container->get( 'option_gateway' ), $this->container->get( Option_Gateway_Interface::class ) );
+
+        $this->assertTrue( $this->container->has( 'user_favourites_gateway' ) );
+        $this->assertInstanceOf( User_Favourites_Gateway_Interface::class, $this->container->get( 'user_favourites_gateway' ) );
+        $this->assertTrue( $this->container->has( User_Favourites_Gateway_Interface::class ) );
+        $this->assertSame( $this->container->get( 'user_favourites_gateway' ), $this->container->get( User_Favourites_Gateway_Interface::class ) );
 
         $this->assertTrue( $this->container->has( 'finance_service' ) );
         $this->assertInstanceOf( Finance_Service::class, $this->container->get( 'finance_service' ) );
@@ -176,12 +192,17 @@ class Container_Bootstrap_Services_Test extends TestCase {
         $this->assertTrue( $this->container->has( 'rating_gateway' ) );
         $this->assertInstanceOf( \Racketmanager\Domain\Ports\Rating_Gateway_Interface::class, $this->container->get( 'rating_gateway' ) );
         $this->assertInstanceOf( \Racketmanager\Infrastructure\Gateways\Rating\Lta_Wtn_Gateway_Adapter::class, $this->container->get( 'rating_gateway' ) );
+        $this->assertTrue( $this->container->has( \Racketmanager\Domain\Ports\Rating_Gateway_Interface::class ) );
+        $this->assertSame( $this->container->get( 'rating_gateway' ), $this->container->get( \Racketmanager\Domain\Ports\Rating_Gateway_Interface::class ) );
 
         $this->assertTrue( $this->container->has( 'wtn_api_client' ) );
         $this->assertInstanceOf( \Racketmanager\Domain\Ports\Rating_Gateway_Interface::class, $this->container->get( 'wtn_api_client' ) );
 
         $this->assertTrue( $this->container->has( 'exporter' ) );
+        $this->assertInstanceOf( \Racketmanager\Application\Export\Ports\Data_Exporter_Interface::class, $this->container->get( 'exporter' ) );
         $this->assertInstanceOf( \Racketmanager\Services\Contracts\Data_Exporter_Interface::class, $this->container->get( 'exporter' ) );
+        $this->assertTrue( $this->container->has( \Racketmanager\Application\Export\Ports\Data_Exporter_Interface::class ) );
+        $this->assertSame( $this->container->get( 'exporter' ), $this->container->get( \Racketmanager\Application\Export\Ports\Data_Exporter_Interface::class ) );
 
         $this->assertTrue( $this->container->has( 'export_delivery_adapter' ) );
         $this->assertInstanceOf( \Racketmanager\Infrastructure\Wordpress\Export\Export_Delivery_Adapter::class, $this->container->get( 'export_delivery_adapter' ) );

@@ -19,7 +19,7 @@ use Racketmanager\Domain\DTO\Finance\Charge_Details_DTO;
 use Racketmanager\Domain\DTO\Finance\Invoice_Full_Details_DTO;
 use Racketmanager\Domain\Finance\Invoice;
 use Racketmanager\Domain\Player\Player;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Invoice_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;

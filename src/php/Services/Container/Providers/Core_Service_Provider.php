@@ -16,12 +16,14 @@ use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Handler;
 use Racketmanager\Application\Message\Queries\Get_Message_Handler;
 use Racketmanager\Application\Message\Queries\Get_Messages_Handler;
 use Racketmanager\Presentation\Presenters\Message_Presenter;
+use Racketmanager\Application\Export\Ports\Data_Exporter_Interface;
+use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface;
 use Racketmanager\Domain\Ports\Clock_Interface;
 use Racketmanager\Domain\Ports\Rating_Gateway_Interface;
-use Racketmanager\Gateways\Mail\Mailer_Interface;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
-use Racketmanager\Gateways\Payment\Payment_Gateway_Interface;
+use Racketmanager\Application\Account\Ports\User_Favourites_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
+use Racketmanager\Application\Payment\Ports\Payment_Gateway_Interface;
 use Racketmanager\Infrastructure\Events\Simple_Domain_Event_Dispatcher;
 use Racketmanager\Infrastructure\Legacy\Legacy_User_Factory;
 use Racketmanager\Infrastructure\Gateways\Account\Wp_User_Favourites_Gateway;
@@ -63,7 +65,6 @@ use Racketmanager\Repositories\Invoice_Repository;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Repositories\Season_Repository;
 use Racketmanager\Services\Container\Simple_Container;
-use Racketmanager\Services\Contracts\Data_Exporter_Interface;
 use Racketmanager\Services\Export\Export_Service;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Mail\Mail_Filter_Service;
@@ -92,11 +93,14 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->set( 'domain_event_dispatcher', fn(): Domain_Event_Dispatcher_Interface => new Simple_Domain_Event_Dispatcher() );
         $container->set( Domain_Event_Dispatcher_Interface::class, fn( Simple_Container $c ): Domain_Event_Dispatcher_Interface => $c->get( 'domain_event_dispatcher' ) );
         $container->set( 'rating_gateway', fn(): Rating_Gateway_Interface => new Lta_Wtn_Gateway_Adapter() );
+        $container->set( Rating_Gateway_Interface::class, fn( Simple_Container $c ): Rating_Gateway_Interface => $c->get( 'rating_gateway' ) );
         $container->set( 'wtn_api_client', fn( Simple_Container $c ): Rating_Gateway_Interface => $c->get( 'rating_gateway' ) );
         $container->set( 'mailer', fn(): Mailer_Interface => new Wp_Mailer() );
+        $container->set( Mailer_Interface::class, fn( Simple_Container $c ): Mailer_Interface => $c->get( 'mailer' ) );
         $container->set( 'clock', fn(): Clock_Interface => new Wordpress_Clock() );
         $container->set( Clock_Interface::class, fn( Simple_Container $c ): Clock_Interface => $c->get( 'clock' ) );
         $container->set( 'option_gateway', fn(): Option_Gateway_Interface => new Wp_Option_Gateway() );
+        $container->set( Option_Gateway_Interface::class, fn( Simple_Container $c ): Option_Gateway_Interface => $c->get( 'option_gateway' ) );
         $container->set( 'option_service', fn( Simple_Container $c ): Option_Service => $app?->option_service ?? new Option_Service( $c->get( 'option_gateway' ) ) );
         $container->set( Option_Service::class, fn( Simple_Container $c ): Option_Service => $c->get( 'option_service' ) );
         $container->set( 'asset_manager', fn(): Asset_Manager => $app?->asset_manager ?? new Asset_Manager() );
@@ -108,6 +112,7 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->set( 'shortcode_registrar', fn( Simple_Container $c ): Shortcode_Registrar => new Shortcode_Registrar( $c ) );
         $container->set( Shortcode_Registrar::class, fn( Simple_Container $c ): Shortcode_Registrar => $c->get( 'shortcode_registrar' ) );
         $container->set( 'payment_gateway', fn( Simple_Container $c ): Payment_Gateway_Interface => new Stripe_Payment_Gateway( $c->get( 'option_service' )->get_options( 'billing' ) ?? [] ) );
+        $container->set( Payment_Gateway_Interface::class, fn( Simple_Container $c ): Payment_Gateway_Interface => $c->get( 'payment_gateway' ) );
 
         // Core App & Settings
         $container->set( 'racketmanager_app', fn() => $app );
@@ -213,6 +218,7 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             $c->get( 'fixture_detail_service' ),
             $c->get( 'club_repository' )
         ) );
+        $container->set( Data_Exporter_Interface::class, fn( Simple_Container $c ): Data_Exporter_Interface => $c->get( 'exporter' ) );
         $container->set( 'rest_controller_adapter', fn( Simple_Container $c ) => new Rest_Controller_Adapter( $c->get( 'league_repository' ) ) );
         $container->set( 'export_delivery_adapter', fn( Simple_Container $c ) => new Export_Delivery_Adapter(
             $c->get( 'racketmanager_app' )
@@ -243,7 +249,8 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->set( 'finance_ajax_controller', fn( Simple_Container $c ) => new Finance_Ajax_Controller( $app, $c->get( 'finance_ajax_adapter' ) ) );
 
         // Core Presentation & View Handlers
-        $container->set( 'user_favourites_gateway', fn( Simple_Container $c ) => new Wp_User_Favourites_Gateway( $c->get( 'security_service' ) ) );
+        $container->set( 'user_favourites_gateway', fn( Simple_Container $c ): User_Favourites_Gateway_Interface => new Wp_User_Favourites_Gateway( $c->get( 'security_service' ) ) );
+        $container->set( User_Favourites_Gateway_Interface::class, fn( Simple_Container $c ): User_Favourites_Gateway_Interface => $c->get( 'user_favourites_gateway' ) );
         $container->set( 'favourite_presenter', fn( Simple_Container $c ) => new Favourite_Presenter( $c->get( 'user_favourites_gateway' ) ) );
         $container->set( 'shortcode_template_renderer', fn( Simple_Container $c ) => new Shortcode_Template_Renderer(
             $c->get( 'view_renderer' ),

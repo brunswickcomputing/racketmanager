@@ -6,7 +6,7 @@ namespace Racketmanager\Presentation\Presenters;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Player\Player_Ranking;
 use Racketmanager\Domain\Shared\Seo_Slug;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\View_Models\Club_Link_View_Model;
 use Racketmanager\Presentation\View_Models\Club_Membership_View_Model;
 use Racketmanager\Presentation\View_Models\Competition_List_Item_View_Model;

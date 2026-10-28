@@ -6,13 +6,12 @@ namespace Racketmanager\Infrastructure\Gateways\Rating;
 use Racketmanager\Domain\Ports\Rating_Gateway_Interface;
 use Racketmanager\Exceptions\LTA_System_Not_Available_Exception;
 use Racketmanager\Exceptions\WTN_Error_Exception;
-use Racketmanager\Services\Contracts\Wtn_Api_Client_Interface;
 use Racketmanager\Util\Util_Lookup;
 
 /**
  * Concrete secondary adapter for the LTA World Tennis Number (WTN) external rating gateway.
  */
-class Lta_Wtn_Gateway_Adapter implements Rating_Gateway_Interface, Wtn_Api_Client_Interface {
+class Lta_Wtn_Gateway_Adapter implements Rating_Gateway_Interface {
     protected array $args = array();
 
     /**
@@ -66,104 +65,172 @@ class Lta_Wtn_Gateway_Adapter implements Rating_Gateway_Interface, Wtn_Api_Clien
      * @return array<string, string>
      */
     protected function get_player_wtn( string $btm ): array {
-        $wtn           = array();
-        $url           = 'https://competitions.lta.org.uk/find/player/DoSearch?Query=' . rawurlencode( $btm );
-        $player_lookup = wp_remote_get( $url, $this->args );
-        if ( is_wp_error( $player_lookup ) ) {
-            throw new WTN_Error_Exception( 'ERROR: - ' . __( 'search error', 'racketmanager' ) );
-        }
-        $code = wp_remote_retrieve_response_code( $player_lookup );
-        if ( 200 !== $code ) {
-            throw new WTN_Error_Exception( __( 'LTA number not found', 'racketmanager' ) );
-        }
-        $body              = wp_remote_retrieve_body( $player_lookup );
-        $player_link_start = strpos( $body, '<h5 class="media__title">' );
-        if ( false === $player_link_start ) {
-            throw new WTN_Error_Exception( __( 'Player not found', 'racketmanager' ) );
-        }
-        $player_link_end = strpos( $body, '</a>', $player_link_start );
-        if ( false === $player_link_end || $player_link_end <= $player_link_start ) {
-            throw new WTN_Error_Exception( __( 'Player link not found', 'racketmanager' ) );
-        }
-        $player_link      = substr( $body, $player_link_start, $player_link_end - $player_link_start );
-        $player_url_start = strpos( $player_link, '<a href="' );
-        if ( false === $player_url_start ) {
-            throw new WTN_Error_Exception( __( 'Player link not found', 'racketmanager' ) );
-        }
-        $player_url_start += 9;
-        $player_url_end    = strpos( $player_link, '"', $player_url_start );
-        if ( false === $player_url_end || $player_url_end <= $player_url_start ) {
-            throw new WTN_Error_Exception( __( 'Player link not found', 'racketmanager' ) );
-        }
-        $player_url_len    = $player_url_end - $player_url_start;
-        $player_url        = substr( $player_link, $player_url_start, $player_url_len );
-        $player_url        = 'https://competitions.lta.org.uk' . $player_url;
-        $player_detail     = wp_remote_get( $player_url, $this->args );
-        if ( is_wp_error( $player_detail ) ) {
-            throw new WTN_Error_Exception( __( 'View error', 'racketmanager' ) );
-        }
-        $code = wp_remote_retrieve_response_code( $player_detail );
-        if ( 200 !== $code ) {
-            throw new WTN_Error_Exception( __( 'Unable to retrieve player page', 'racketmanager' ) );
-        }
-        $body           = wp_remote_retrieve_body( $player_detail );
-        $wtn_text_found = strpos( $body, 'World Tennis Number' );
-        if ( false === $wtn_text_found ) {
-            throw new WTN_Error_Exception( __( 'WTN not found', 'racketmanager' ) );
-        }
-        $wtn_block_start = strpos( $body, '<ul class="list--inline list">' );
-        if ( false === $wtn_block_start ) {
-            throw new WTN_Error_Exception( __( 'No WTN list found', 'racketmanager' ) );
-        }
-        $wtn_block_end = strpos( $body, '</ul>', $wtn_block_start );
-        if ( false === $wtn_block_end || $wtn_block_end <= $wtn_block_start ) {
-            throw new WTN_Error_Exception( __( 'No WTN list found', 'racketmanager' ) );
-        }
-        $wtn_block_len   = $wtn_block_end - $wtn_block_start + 5;
-        $wtn_block       = substr( $body, $wtn_block_start, $wtn_block_len );
-        $num_wtns        = substr_count( $wtn_block, '<li class="list__item">' );
-        if ( ! $num_wtns ) {
-            throw new WTN_Error_Exception( __( 'No WTN entries found', 'racketmanager' ) );
-        }
-        $start = 0;
-        for ( $i = 1; $i <= $num_wtns; $i++ ) {
-            $type_start = strpos( $wtn_block, 'tag-duo__title', $start );
-            if ( false === $type_start ) {
-                break;
-            }
-            $type_end = strpos( $wtn_block, '</span>', $type_start );
-            if ( false === $type_end ) {
-                break;
-            }
-            $type_start += 16;
-            if ( $type_end <= $type_start ) {
-                break;
-            }
-            $type_len  = $type_end - $type_start;
-            $type      = substr( $wtn_block, $type_start, $type_len );
-            $wtn_key   = Util_Lookup::get_match_type_key( $type );
-            $wtn_start = strpos( $wtn_block, '</svg>', $type_start );
-            if ( false === $wtn_start ) {
-                break;
-            }
-            $wtn_end = strpos( $wtn_block, '</span>', $wtn_start );
-            if ( false === $wtn_end ) {
-                break;
-            }
-            $wtn_start += 6;
-            if ( $wtn_end <= $wtn_start ) {
-                break;
-            }
-            $wtn_len   = $wtn_end - $wtn_start;
-            $wtn_value = substr( $wtn_block, $wtn_start, $wtn_len );
-            $start     = $type_end;
-            if ( $wtn_key ) {
-                $wtn[ $wtn_key ] = trim( $wtn_value );
-            }
-        }
+        $search_body  = $this->fetch_search_page( $btm );
+        $player_url   = $this->extract_player_url( $search_body );
+        $profile_body = $this->fetch_player_page( $player_url );
+        $wtn_block    = $this->extract_wtn_block( $profile_body );
+        $wtn          = $this->parse_wtn_entries( $wtn_block );
         if ( empty( $wtn ) ) {
             throw new WTN_Error_Exception( __( 'WTN values not set', 'racketmanager' ) );
         }
         return $wtn;
+    }
+
+    /**
+     * Perform a GET request and return the response body.
+     *
+     * @param string $url        URL to fetch.
+     * @param string $error_msg  Message to throw when the request fails.
+     * @param string $status_msg Message to throw when the response is not 200.
+     * @return string
+     * @throws WTN_Error_Exception When the request fails or returns a non-200 status.
+     */
+    private function fetch_page( string $url, string $error_msg, string $status_msg ): string {
+        $response = wp_remote_get( $url, $this->args );
+        if ( is_wp_error( $response ) ) {
+            throw new WTN_Error_Exception( $error_msg );
+        }
+        $code = wp_remote_retrieve_response_code( $response );
+        if ( 200 !== $code ) {
+            throw new WTN_Error_Exception( $status_msg );
+        }
+        return wp_remote_retrieve_body( $response );
+    }
+
+    /**
+     * Fetch the LTA player search page for a tennis number.
+     *
+     * @param string $btm LTA tennis number.
+     * @return string
+     * @throws WTN_Error_Exception When the search fails.
+     */
+    private function fetch_search_page( string $btm ): string {
+        $url = 'https://competitions.lta.org.uk/find/player/DoSearch?Query=' . rawurlencode( $btm );
+        return $this->fetch_page(
+            $url,
+            'ERROR: - ' . __( 'search error', 'racketmanager' ),
+            __( 'LTA number not found', 'racketmanager' )
+        );
+    }
+
+    /**
+     * Fetch the LTA player profile page.
+     *
+     * @param string $player_url Absolute player profile URL.
+     * @return string
+     * @throws WTN_Error_Exception When the profile page cannot be retrieved.
+     */
+    private function fetch_player_page( string $player_url ): string {
+        return $this->fetch_page(
+            $player_url,
+            __( 'View error', 'racketmanager' ),
+            __( 'Unable to retrieve player page', 'racketmanager' )
+        );
+    }
+
+    /**
+     * Return the text strictly between two markers, searching from an offset.
+     *
+     * @param string $haystack     Text to search.
+     * @param string $start_marker Marker preceding the wanted text.
+     * @param string $end_marker   Marker following the wanted text.
+     * @param int    $offset       Position to start searching from.
+     * @return string|null Null when either marker is missing or the end precedes the start.
+     */
+    private function extract_between( string $haystack, string $start_marker, string $end_marker, int $offset = 0 ): ?string {
+        $start = strpos( $haystack, $start_marker, $offset );
+        if ( false === $start ) {
+            return null;
+        }
+        $start += strlen( $start_marker );
+        $end    = strpos( $haystack, $end_marker, $start );
+        if ( false === $end || $end <= $start ) {
+            return null;
+        }
+        return substr( $haystack, $start, $end - $start );
+    }
+
+    /**
+     * Extract the absolute player profile URL from the search page body.
+     *
+     * @param string $body Search page HTML.
+     * @return string
+     * @throws WTN_Error_Exception When the player or the player link cannot be found.
+     */
+    private function extract_player_url( string $body ): string {
+        $player_link_start = strpos( $body, '<h5 class="media__title">' );
+        if ( false === $player_link_start ) {
+            throw new WTN_Error_Exception( __( 'Player not found', 'racketmanager' ) );
+        }
+        $player_link = $this->extract_between( $body, '<h5 class="media__title">', '</a>', $player_link_start );
+        $player_url  = null === $player_link ? null : $this->extract_between( $player_link, '<a href="', '"' );
+        if ( null === $player_url ) {
+            throw new WTN_Error_Exception( __( 'Player link not found', 'racketmanager' ) );
+        }
+        return 'https://competitions.lta.org.uk' . $player_url;
+    }
+
+    /**
+     * Extract the WTN list block from the player profile page body.
+     *
+     * @param string $body Profile page HTML.
+     * @return string The <ul>...</ul> block containing the WTN entries.
+     * @throws WTN_Error_Exception When the WTN text, list or entries cannot be found.
+     */
+    private function extract_wtn_block( string $body ): string {
+        if ( ! str_contains( $body, 'World Tennis Number' ) ) {
+            throw new WTN_Error_Exception( __( 'WTN not found', 'racketmanager' ) );
+        }
+        $wtn_block_start = strpos( $body, '<ul class="list--inline list">' );
+        $wtn_block_end   = false === $wtn_block_start ? false : strpos( $body, '</ul>', $wtn_block_start );
+        if ( false === $wtn_block_end || $wtn_block_end <= $wtn_block_start ) {
+            throw new WTN_Error_Exception( __( 'No WTN list found', 'racketmanager' ) );
+        }
+        $wtn_block = substr( $body, $wtn_block_start, $wtn_block_end - $wtn_block_start + 5 );
+        if ( ! substr_count( $wtn_block, '<li class="list__item">' ) ) {
+            throw new WTN_Error_Exception( __( 'No WTN entries found', 'racketmanager' ) );
+        }
+        return $wtn_block;
+    }
+
+    /**
+     * Parse all WTN entries from the list block.
+     *
+     * @param string $wtn_block The <ul>...</ul> block containing the WTN entries.
+     * @return array<string, string>
+     */
+    private function parse_wtn_entries( string $wtn_block ): array {
+        $wtn    = array();
+        $offset = 0;
+        $entry  = $this->parse_wtn_entry( $wtn_block, $offset );
+        while ( null !== $entry ) {
+            if ( $entry['key'] ) {
+                $wtn[ $entry['key'] ] = $entry['value'];
+            }
+            $offset = $entry['next'];
+            $entry  = $this->parse_wtn_entry( $wtn_block, $offset );
+        }
+        return $wtn;
+    }
+
+    /**
+     * Parse a single WTN entry starting from an offset.
+     *
+     * @param string $wtn_block The <ul>...</ul> block containing the WTN entries.
+     * @param int    $offset    Position to start searching from.
+     * @return array{key: mixed, value: string, next: int}|null Null when no further well-formed entry exists.
+     */
+    private function parse_wtn_entry( string $wtn_block, int $offset ): ?array {
+        $type_start = strpos( $wtn_block, 'tag-duo__title', $offset );
+        $type       = false === $type_start ? null : $this->extract_between( $wtn_block, '">', '</span>', $type_start );
+        $wtn_value  = null === $type ? null : $this->extract_between( $wtn_block, '</svg>', '</span>', $type_start );
+        if ( null === $wtn_value ) {
+            return null;
+        }
+        return array(
+            'key'   => Util_Lookup::get_match_type_key( $type ),
+            'value' => trim( $wtn_value ),
+            'next'  => (int) strpos( $wtn_block, '</span>', $type_start ),
+        );
     }
 }

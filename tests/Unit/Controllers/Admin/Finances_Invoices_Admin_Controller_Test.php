@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Controllers\Finances_Invoices_Admin_Controller;
 use Racketmanager\Admin\View_Models\Finances_Invoices_Page_View_Model;
 use Racketmanager\Application\Finance\Commands\Action_Invoice_Handler;
-use Racketmanager\Domain\Value_Objects\Currency;
+use Racketmanager\Domain\Tournament\Currency;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Presentation\Presenters\Invoice_Presenter;
 use Racketmanager\Services\Admin\Finance\Finance_Invoice_Action_Dispatcher;

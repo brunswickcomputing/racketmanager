@@ -116,7 +116,7 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
         $data->date = '2026-05-15 18:30:00';
         $fixture    = Fixture_Factory::from_object( $data );
 
-        $option_gateway = $this->createStub( \Racketmanager\Gateways\Option\Option_Gateway_Interface::class );
+        $option_gateway = $this->createStub( \Racketmanager\Application\Ports\Option_Gateway_Interface::class );
         $option_gateway->method( 'get_option' )->willReturnCallback(
             fn( string $key, mixed $default = null ) => 'date_format' === $key ? 'd/m/Y' : $default
         );

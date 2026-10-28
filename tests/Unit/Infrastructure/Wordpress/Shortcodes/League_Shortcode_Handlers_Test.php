@@ -47,7 +47,7 @@ use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Player_Query_Service;

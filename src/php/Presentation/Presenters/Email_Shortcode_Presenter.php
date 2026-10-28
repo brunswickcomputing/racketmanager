@@ -6,7 +6,7 @@ namespace Racketmanager\Presentation\Presenters;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\Formatters\Email_Date_Formatter;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Competition_Service;

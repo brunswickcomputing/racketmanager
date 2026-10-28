@@ -11,7 +11,7 @@ use Racketmanager\Application\Finance\Commands\Action_Invoice_Handler;
 use Racketmanager\Domain\DTO\Finance\Charge_Details_DTO;
 use Racketmanager\Domain\DTO\Finance\Invoice_Full_Details_DTO;
 use Racketmanager\Domain\Finance\Invoice;
-use Racketmanager\Domain\Value_Objects\Currency;
+use Racketmanager\Domain\Tournament\Currency;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Presentation\Presenters\Invoice_Presenter;

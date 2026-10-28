@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services;
 
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 
 /**
  * Service for managing plugin settings and options.

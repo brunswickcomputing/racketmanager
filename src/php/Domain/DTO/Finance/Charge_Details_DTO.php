@@ -11,12 +11,12 @@ declare( strict_types=1 );
 namespace Racketmanager\Domain\DTO\Finance;
 
 use Racketmanager\Domain\Enums\Charge_Status;
-use Racketmanager\Domain\Value_Objects\Currency;
+use Racketmanager\Domain\Tournament\Currency;
 use Racketmanager\Domain\Value_Objects\Money;
 use stdClass;
 
 /**
- * Class to implement the Charges Details Data Transfer Object
+ * Class to implement the Charge Details Data Transfer Object
  */
 class Charge_Details_DTO {
     public int $id;

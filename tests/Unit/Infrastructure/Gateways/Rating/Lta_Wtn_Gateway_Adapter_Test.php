@@ -273,4 +273,24 @@ final class Lta_Wtn_Gateway_Adapter_Test extends TestCase {
         $this->assertFalse( $result['status'] );
         $this->assertStringContainsString( 'WTN values not set', $result['message'] );
     }
+
+    public function test_fetch_player_wtn_returns_error_when_wtn_list_unterminated(): void {
+        $this->mock_lta_http( null, 'World Tennis Number <ul class="list--inline list"><li class="list__item">' );
+        $result = $this->fetch_player_wtn( '12345678' );
+
+        $this->assertFalse( $result['status'] );
+        $this->assertStringContainsString( 'No WTN list found', $result['message'] );
+    }
+
+    public function test_fetch_player_wtn_skips_unknown_type_and_parses_following_entry(): void {
+        $profile_body = 'World Tennis Number <ul class="list--inline list">'
+            . '<li class="list__item"><span class="tag-duo__title">Unknown</span><svg></svg> 11.1 </span></li>'
+            . '<li class="list__item"><span class="tag-duo__title">Doubles</span><svg></svg> 19.8 </span></li>'
+            . '</ul>';
+        $this->mock_lta_http( null, $profile_body );
+        $result = $this->fetch_player_wtn( '12345678' );
+
+        $this->assertTrue( $result['status'] );
+        $this->assertSame( [ 'D' => '19.8' ], $result['value'] );
+    }
 }

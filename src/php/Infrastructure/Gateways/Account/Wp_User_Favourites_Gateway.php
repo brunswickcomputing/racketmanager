@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Infrastructure\Gateways\Account;
 
-use Racketmanager\Gateways\Account\User_Favourites_Gateway_Interface;
+use Racketmanager\Application\Account\Ports\User_Favourites_Gateway_Interface;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 
 final readonly class Wp_User_Favourites_Gateway implements User_Favourites_Gateway_Interface {

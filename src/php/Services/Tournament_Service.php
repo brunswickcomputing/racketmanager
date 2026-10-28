@@ -38,7 +38,7 @@ use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Entry_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Updated_Exception;
-use Racketmanager\Gateways\Mail\Mailer_Interface;
+use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\RacketManager;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;

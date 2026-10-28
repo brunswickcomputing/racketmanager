@@ -11,14 +11,14 @@ namespace Racketmanager\Services\Result;
 use Racketmanager\Domain\Enums\Fixture_Status;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Scoring\Set_Score;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Repositories\Repository_Provider;
 use stdClass;
 
 /**
  * Class Result_Reporting_Service
  */
-class Result_Reporting_Service {
+readonly class Result_Reporting_Service {
 
     /**
      * Result_Reporting_Service constructor.
@@ -322,9 +322,9 @@ class Result_Reporting_Service {
      * @param object $rubber Rubber object.
      * @param Fixture $fixture Fixture object.
      *
-     * @return int|null
+     * @return int|string|null
      */
-    private function calculate_rubber_winner( object $rubber, Fixture $fixture ): ?int {
+    private function calculate_rubber_winner( object $rubber, Fixture $fixture ): int|string|null {
         $score_home = 0;
         $score_away = 0;
         foreach ( $rubber->get_custom()['sets'] ?? [] as $set ) {
@@ -348,12 +348,12 @@ class Result_Reporting_Service {
     /**
      * Identify winning and losing teams and players
      *
-     * @param int $winner_id Winner ID.
+     * @param int|string $winner_id Winner ID.
      * @param Fixture $fixture Fixture object.
      *
      * @return array
      */
-    private function identify_winning_and_losing_sides( int $winner_id, Fixture $fixture ): array {
+    private function identify_winning_and_losing_sides( int|string $winner_id, Fixture $fixture ): array {
         if ( (string) $winner_id === (string) $fixture->get_home_team() ) {
             return [
                 'winning_team'   => 'home',

@@ -1,8 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace Racketmanager\Gateways\Mail;
+namespace Racketmanager\Application\Mail;
 
+/**
+ * Mailer port for application notification and dispatch.
+ */
 interface Mailer_Interface {
     public function send(
         string|array|null $to,

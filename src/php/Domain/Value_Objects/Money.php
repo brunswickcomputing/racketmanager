@@ -5,6 +5,7 @@ namespace Racketmanager\Domain\Value_Objects;
 
 use InvalidArgumentException;
 use JsonSerializable;
+use Racketmanager\Domain\Tournament\Currency;
 use Stringable;
 
 /**
@@ -51,75 +52,89 @@ final readonly class Money implements Stringable, JsonSerializable {
             throw new InvalidArgumentException( 'Monetary amount string cannot be empty.' );
         }
 
-        $is_negative = false;
-        $has_sign    = false;
-        if ( str_starts_with( $clean, '-' ) ) {
-            $is_negative = true;
-            $has_sign    = true;
-            $clean       = trim( substr( $clean, 1 ) );
-        } elseif ( str_starts_with( $clean, '+' ) ) {
-            $has_sign = true;
-            $clean    = trim( substr( $clean, 1 ) );
+        [ $clean, $leading_sign ]      = self::strip_sign( $clean );
+        [ $clean, $detected_currency ] = self::strip_currency_marker( $clean );
+        [ $clean, $trailing_sign ]     = self::strip_sign( $clean );
+
+        if ( null !== $leading_sign && null !== $trailing_sign ) {
+            throw new InvalidArgumentException( sprintf( 'Invalid monetary amount string: "%s"', $amount ) );
         }
 
-        $detected_currency = null;
-        if ( str_starts_with( $clean, '£' ) || str_starts_with( $clean, '€' ) || str_starts_with( $clean, '$' ) ) {
-            $symbol            = mb_substr( $clean, 0, 1 );
-            $detected_currency = Currency::from_symbol_or_code( $symbol );
-            $clean             = trim( mb_substr( $clean, 1 ) );
-        } elseif ( preg_match( '/^(GBP|EUR|USD)\s*/i', $clean, $matches ) ) {
-            $detected_currency = Currency::from_symbol_or_code( $matches[1] );
-            $clean             = trim( substr( $clean, strlen( $matches[0] ) ) );
-        }
-
-        if ( str_starts_with( $clean, '-' ) || str_starts_with( $clean, '+' ) ) {
-            if ( $has_sign ) {
-                throw new InvalidArgumentException( sprintf( 'Invalid monetary amount string: "%s"', $amount ) );
-            }
-            if ( str_starts_with( $clean, '-' ) ) {
-                $is_negative = true;
-            }
-            $clean = trim( substr( $clean, 1 ) );
-        }
-
-        if ( str_contains( $clean, ',' ) && ! str_contains( $clean, '.' ) ) {
-            if ( preg_match( '/^\d+,\d{1,2}$/', $clean ) ) {
-                $clean = str_replace( ',', '.', $clean );
-            } else {
-                $clean = str_replace( ',', '', $clean );
-            }
-        } else {
-            $clean = str_replace( ',', '', $clean );
-        }
-
+        $clean = self::normalise_separators( $clean );
         if ( ! preg_match( '/^\d+(\.\d+)?$/', $clean ) ) {
             throw new InvalidArgumentException( sprintf( 'Invalid monetary amount string: "%s"', $amount ) );
         }
 
-        $explicit_currency = match ( true ) {
+        $currency_enum = self::resolve_currency( $detected_currency, self::to_explicit_currency( $currency ) );
+        $cents         = self::parse_decimal_cents( $clean, $currency_enum->decimals() );
+        $is_negative   = '-' === ( $leading_sign ?? $trailing_sign );
+
+        return new self( $is_negative ? -$cents : $cents, $currency_enum );
+    }
+
+    /**
+     * Strip a leading sign character, returning the remaining string and the sign found (if any).
+     *
+     * @return array{0: string, 1: ?string}
+     */
+    private static function strip_sign( string $clean ): array {
+        if ( str_starts_with( $clean, '-' ) || str_starts_with( $clean, '+' ) ) {
+            return [ trim( substr( $clean, 1 ) ), $clean[0] ];
+        }
+        return [ $clean, null ];
+    }
+
+    /**
+     * Strip a leading currency symbol or ISO code, returning the remaining string and the detected currency.
+     *
+     * @return array{0: string, 1: ?Currency}
+     */
+    private static function strip_currency_marker( string $clean ): array {
+        if ( str_starts_with( $clean, '£' ) || str_starts_with( $clean, '€' ) || str_starts_with( $clean, '$' ) ) {
+            $symbol = mb_substr( $clean, 0, 1 );
+            return [ trim( mb_substr( $clean, 1 ) ), Currency::from_symbol_or_code( $symbol ) ];
+        }
+        if ( preg_match( '/^(GBP|EUR|USD)\s*/i', $clean, $matches ) ) {
+            return [ trim( substr( $clean, strlen( $matches[0] ) ) ), Currency::from_symbol_or_code( $matches[1] ) ];
+        }
+        return [ $clean, null ];
+    }
+
+    /**
+     * Normalise separators: a lone comma followed by 1-2 digits is a decimal separator, otherwise commas are separators of thousands.
+     */
+    private static function normalise_separators( string $clean ): string {
+        if ( ! str_contains( $clean, '.' ) && preg_match( '/^\d+,\d{1,2}$/', $clean ) ) {
+            return str_replace( ',', '.', $clean );
+        }
+        return str_replace( ',', '', $clean );
+    }
+
+    /**
+     * Convert an explicitly supplied currency (enum or non-blank string) to a Currency, or null if none given.
+     */
+    private static function to_explicit_currency( Currency|string|null $currency ): ?Currency {
+        return match ( true ) {
             $currency instanceof Currency => $currency,
             is_string( $currency ) && '' !== trim( $currency ) => Currency::from_symbol_or_code( $currency ),
             default => null,
         };
+    }
 
-        if ( $detected_currency !== null && $explicit_currency !== null && $detected_currency !== $explicit_currency ) {
+    /**
+     * Resolve the detected and explicit currencies, defaulting to GBP, and reject conflicting values.
+     */
+    private static function resolve_currency( ?Currency $detected, ?Currency $explicit ): Currency {
+        if ( null !== $detected && null !== $explicit && $detected !== $explicit ) {
             throw new InvalidArgumentException(
                 sprintf(
                     'Currency mismatch: amount uses %s but %s was specified.',
-                    $detected_currency->value,
-                    $explicit_currency->value
+                    $detected->value,
+                    $explicit->value
                 )
             );
         }
-
-        $currency_enum = $detected_currency ?? $explicit_currency ?? Currency::GBP;
-
-        $cents = self::parse_decimal_cents( $clean, $currency_enum->decimals() );
-        if ( $is_negative ) {
-            $cents = -$cents;
-        }
-
-        return new self( $cents, $currency_enum );
+        return $detected ?? $explicit ?? Currency::GBP;
     }
 
     /**
@@ -136,25 +151,18 @@ final readonly class Money implements Stringable, JsonSerializable {
         if ( $multiplier > 0 && $whole > intdiv( PHP_INT_MAX, $multiplier ) ) {
             throw new InvalidArgumentException( 'Monetary amount is too large.' );
         }
-        if ( 1 === count( $parts ) ) {
-            return $whole * $multiplier;
-        }
 
-        $frac = $parts[1];
-        if ( 0 === strlen( $frac ) ) {
-            return $whole * $multiplier;
-        }
-
+        $frac = $parts[1] ?? '';
         if ( strlen( $frac ) <= $decimals ) {
-            $frac_padded = str_pad( $frac, $decimals, '0', STR_PAD_RIGHT );
-            return ( $whole * $multiplier ) + (int) $frac_padded;
+            // Covers "12", "12." and "12.5": right-pad to $decimals digits (" pads to "00" → 0).
+            $frac_cents = (int) str_pad( $frac, $decimals, '0' );
+        } else {
+            $base_frac  = (int) substr( $frac, 0, $decimals );
+            $rest_frac  = (float) ( '0.' . substr( $frac, $decimals ) );
+            $frac_cents = $base_frac + (int) round( $rest_frac );
         }
 
-        $base_frac  = (int) substr( $frac, 0, $decimals );
-        $rest_frac  = (float) ( '0.' . substr( $frac, $decimals ) );
-        $extra_unit = (int) round( $rest_frac );
-
-        return ( $whole * $multiplier ) + $base_frac + $extra_unit;
+        return ( $whole * $multiplier ) + $frac_cents;
     }
 
     /**
@@ -180,17 +188,17 @@ final readonly class Money implements Stringable, JsonSerializable {
     }
 
     /**
-     * Get formatted amount number string without currency symbol (e.g. "12.50").
+     * Get a formatted amount number string without a currency symbol (e.g. "12.50").
      */
     public function get_amount_string(): string {
         return number_format( $this->get_amount(), $this->currency->decimals(), '.', '' );
     }
 
     /**
-     * Format money string with or without symbol (e.g. "£12.50", "-£5.00").
+     * Format the money string with or without a symbol (e.g. "£12.50", "-£5.00").
      */
     public function format( bool $include_symbol = true ): string {
-        $formatted_number = number_format( abs( $this->get_amount() ), $this->currency->decimals(), '.', ',' );
+        $formatted_number = number_format( abs( $this->get_amount() ), $this->currency->decimals() );
         $sign             = $this->is_negative() ? '-' : '';
         if ( $include_symbol ) {
             return $sign . $this->currency->symbol() . $formatted_number;

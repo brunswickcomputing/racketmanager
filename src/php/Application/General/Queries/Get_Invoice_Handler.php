@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\General\Queries;
 
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\Presenters\Invoice_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Finance_Service;
@@ -16,12 +16,12 @@ use function method_exists;
 use function trim;
 use function wp_specialchars_decode;
 
-class Get_Invoice_Handler {
+readonly class Get_Invoice_Handler {
     public function __construct(
-        private readonly Finance_Service $finance_service,
-        private readonly Settings_Service $settings_service,
-        private readonly Option_Gateway_Interface $option_gateway,
-        private readonly Invoice_Presenter $invoice_presenter
+        private Finance_Service $finance_service,
+        private Settings_Service $settings_service,
+        private Option_Gateway_Interface $option_gateway,
+        private Invoice_Presenter $invoice_presenter
     ) {}
 
     public function handle( Get_Invoice_Query $query ): Shortcode_View_Model {
@@ -35,7 +35,7 @@ class Get_Invoice_Handler {
             return Shortcode_View_Model::for_error( $e->getMessage() );
         }
 
-        $billing           = $this->settings_service->get_category( 'billing', [] ) ?: [];
+        $billing           = $this->settings_service->get_category( 'billing' ) ?: [];
         $currency_code     = isset( $billing['billingCurrency'] ) && '' !== trim( (string) $billing['billingCurrency'] )
             ? (string) $billing['billingCurrency']
             : $this->finance_service->get_currency()->value;
@@ -47,7 +47,7 @@ class Get_Invoice_Handler {
 
         $invoice_number = '';
         if ( is_object( $invoice ) ) {
-            if ( isset( $invoice->invoice ) && is_object( $invoice->invoice ) && method_exists( $invoice->invoice, 'get_invoice_number' ) ) {
+            if ( isset( $invoice->invoice ) && method_exists( $invoice->invoice, 'get_invoice_number' ) ) {
                 $invoice_number = $invoice->invoice->get_invoice_number();
             } elseif ( isset( $invoice->invoice_number ) ) {
                 $invoice_number = (string) $invoice->invoice_number;
@@ -56,7 +56,7 @@ class Get_Invoice_Handler {
 
         $site_url          = (string) ( $this->option_gateway->get_option( 'siteurl', '' ) ?: $this->option_gateway->get_option( 'home', '' ) );
         $date_format       = (string) $this->option_gateway->get_option( 'date_format', 'd-m-Y' );
-        $is_user_logged_in = function_exists( 'is_user_logged_in' ) ? is_user_logged_in() : false;
+        $is_user_logged_in = function_exists( 'is_user_logged_in' ) && is_user_logged_in();
         $login_url         = function_exists( 'wp_login_url' ) ? wp_login_url() : '/wp-login.php';
 
         $invoice_vm = $this->invoice_presenter->present_invoice(

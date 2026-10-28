@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Presentation\Formatters;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\Formatters\Email_Date_Formatter;
 
 final class Email_Date_Formatter_Test extends TestCase {

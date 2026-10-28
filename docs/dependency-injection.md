@@ -50,8 +50,13 @@ Repositories
 - `player_error_repository`
 - `team_repository`
 
-External clients
-- `wtn_api_client`
+External clients & gateways
+- `rating_gateway` (and `Rating_Gateway_Interface::class`, aliased from legacy `wtn_api_client`)
+- `mailer` (and `Mailer_Interface::class`)
+- `option_gateway` (and `Option_Gateway_Interface::class`)
+- `payment_gateway` (and `Payment_Gateway_Interface::class`)
+- `user_favourites_gateway` (and `User_Favourites_Gateway_Interface::class`)
+- `exporter` (and `Data_Exporter_Interface::class`)
 
 Services
 - `player_service`
@@ -74,14 +79,14 @@ if ($this->container->has('club_service')) {
 }
 ```
 
-Registering a new service in `Container_Bootstrap`:
+Registering a new service in `Container_Bootstrap` / service providers:
 
 ```php
 $c->set('my_service', function (Simple_Container $c) use ($app) {
     return new My_Service(
         $app,
         $c->get('player_repository'),
-        $c->get('wtn_api_client')
+        $c->get(\Racketmanager\Domain\Ports\Rating_Gateway_Interface::class)
     );
 });
 ```
@@ -112,8 +117,8 @@ if (isset($this->racketmanager->container)) {
     // Legacy fallback
     $player_repository       = new Player_Repository();
     $player_error_repository = new Player_Error_Repository();
-    $wtn_api_client          = new Wtn_Api_Client();
-    $this->player_service    = new Player_Service($this->racketmanager, $player_repository, $player_error_repository, $wtn_api_client);
+    $rating_gateway          = new \Racketmanager\Infrastructure\Gateways\Rating\Lta_Wtn_Gateway_Adapter();
+    $this->player_service    = new Player_Service($this->racketmanager, $player_repository, $player_error_repository, $rating_gateway);
 }
 ```
 
@@ -121,8 +126,8 @@ if (isset($this->racketmanager->container)) {
 
 #### Extending the Container
 
-- Keep `Container_Bootstrap` as the single place where registrations happen to avoid duplication and surprises.
-- Prefer registering interfaces → implementations if/when interfaces are introduced (e.g., `Wtn_Api_Client_Interface`).
+- Keep `Container_Bootstrap` (and its providers like `Core_Service_Provider`) as the single place where registrations happen to avoid duplication and surprises.
+- Prefer registering canonical interfaces `::class` → implementations (e.g., `Rating_Gateway_Interface::class`, `Mailer_Interface::class`, `Option_Gateway_Interface::class`, `Payment_Gateway_Interface::class`, `User_Favourites_Gateway_Interface::class`, `Data_Exporter_Interface::class`).
 - Keep factories small and side‑effect free; only resolve dependencies via `$c->get()`.
 
 ---

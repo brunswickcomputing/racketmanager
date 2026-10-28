@@ -31,7 +31,7 @@ namespace Racketmanager\Tests\Integration\Public {
     use Racketmanager\Domain\Competition\Event;
     use Racketmanager\Domain\Competition\League;
     use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
-    use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+    use Racketmanager\Application\Ports\Option_Gateway_Interface;
     use Racketmanager\Domain\Fixture\Fixture;
     use Racketmanager\Domain\Fixture\Fixture_Factory;
     use Racketmanager\Infrastructure\Wordpress\Shortcodes\Matches_Shortcode_Adapter;

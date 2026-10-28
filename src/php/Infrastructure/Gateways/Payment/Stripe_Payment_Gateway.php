@@ -3,9 +3,9 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Infrastructure\Gateways\Payment;
 
+use Racketmanager\Application\Payment\Ports\Payment_Gateway_Interface;
+use Racketmanager\Application\Payment\Ports\Payment_Intent_Result;
 use Racketmanager\Exceptions\Stripe_API_Exception;
-use Racketmanager\Gateways\Payment\Payment_Gateway_Interface;
-use Racketmanager\Gateways\Payment\Payment_Intent_Result;
 use Stripe\Exception\ExceptionInterface;
 use Stripe\StripeClient;
 

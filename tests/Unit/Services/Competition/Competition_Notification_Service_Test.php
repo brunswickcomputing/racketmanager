@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
-use Racketmanager\Gateways\Mail\Mailer_Interface;
+use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Services\Competition\Competition_Notification_Service;
 use Racketmanager\Services\Competition\League_Query_Service;
 

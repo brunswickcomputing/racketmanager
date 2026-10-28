@@ -9,7 +9,7 @@ use Racketmanager\Admin\Controllers\Finances_Charges_Admin_Controller;
 use Racketmanager\Admin\Controllers\Finances_Home_Admin_Controller;
 use Racketmanager\Admin\View_Models\Finances_Charges_Page_View_Model;
 use Racketmanager\Application\Finance\Commands\Generate_Charge_Invoices_Handler;
-use Racketmanager\Domain\Value_Objects\Currency;
+use Racketmanager\Domain\Tournament\Currency;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Presentation\Presenters\Invoice_Presenter;
 use Racketmanager\Services\Admin\Finance\Finance_Charge_Action_Dispatcher;

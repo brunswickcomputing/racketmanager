@@ -85,10 +85,19 @@ $aliases = [
     \Racketmanager\Infrastructure\Wordpress\Request\Competition\League_Entry_Request_DTO::class => 'Racketmanager\Domain\DTO\Competition\League_Entry_Request_DTO',
     \Racketmanager\Infrastructure\Wordpress\Request\Player\Search_Players_Command::class => 'Racketmanager\Domain\DTO\Player\Search_Players_Command',
 
+    // Ports & Gateways (@deprecated 10.1.0, sunset in v11.0.0)
+    \Racketmanager\Application\Mail\Mailer_Interface::class                   => 'Racketmanager\Gateways\Mail\Mailer_Interface',
+    \Racketmanager\Domain\Ports\Rating_Gateway_Interface::class             => 'Racketmanager\Services\Contracts\Wtn_Api_Client_Interface',
+    \Racketmanager\Application\Ports\Option_Gateway_Interface::class        => 'Racketmanager\Gateways\Option\Option_Gateway_Interface',
+    \Racketmanager\Application\Account\Ports\User_Favourites_Gateway_Interface::class => 'Racketmanager\Gateways\Account\User_Favourites_Gateway_Interface',
+    \Racketmanager\Application\Payment\Ports\Payment_Gateway_Interface::class => 'Racketmanager\Gateways\Payment\Payment_Gateway_Interface',
+    \Racketmanager\Application\Payment\Ports\Payment_Intent_Result::class   => 'Racketmanager\Gateways\Payment\Payment_Intent_Result',
+    \Racketmanager\Application\Export\Ports\Data_Exporter_Interface::class  => 'Racketmanager\Services\Contracts\Data_Exporter_Interface',
+
 ];
 
 foreach ( $aliases as $target => $alias ) {
-    if ( ! class_exists( $alias, false ) && class_exists( $target ) ) {
+    if ( ! class_exists( $alias, false ) && ! interface_exists( $alias, false ) && ( class_exists( $target ) || interface_exists( $target ) ) ) {
         class_alias( $target, $alias );
     }
 }

@@ -32,7 +32,7 @@ final class Invoice_Factory_Test extends TestCase {
         $this->assertInstanceOf( Invoice::class, $invoice );
         $this->assertSame( 5, $invoice->get_id() );
         $this->assertSame( 1001, $invoice->get_invoice_number() );
-        $this->assertSame( 2, $invoice->get_charge_id() );
+        $this->assertSame( 2, $invoice->charge_id );
         $this->assertSame( 42, $invoice->get_billable_id() );
         $this->assertSame( 'club', $invoice->get_billable_type() );
         $this->assertSame( Invoice_Status::FINAL, $invoice->get_status_enum() );

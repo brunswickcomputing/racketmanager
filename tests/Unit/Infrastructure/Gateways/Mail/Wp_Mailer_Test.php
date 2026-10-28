@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Infrastructure\Gateways\Mail;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Gateways\Mail\Mailer_Interface;
+use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 
 class Wp_Mailer_Test extends TestCase {

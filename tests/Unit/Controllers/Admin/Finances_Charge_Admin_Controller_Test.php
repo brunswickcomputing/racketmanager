@@ -9,7 +9,7 @@ use Racketmanager\Admin\Controllers\Finances_Charge_Admin_Controller;
 use Racketmanager\Admin\View_Models\Finances_Charge_Page_View_Model;
 use Racketmanager\Application\Finance\Commands\Generate_Charge_Invoices_Handler;
 use Racketmanager\Domain\DTO\Finance\Charge_Details_DTO;
-use Racketmanager\Domain\Value_Objects\Currency;
+use Racketmanager\Domain\Tournament\Currency;
 use Racketmanager\Exceptions\Charge_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Presentation\Presenters\Invoice_Presenter;

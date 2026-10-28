@@ -6,7 +6,7 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Team\Team_Hydration_DTO;
 use Racketmanager\Domain\Team\Team;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
 use Racketmanager\Services\Settings_Service;
 

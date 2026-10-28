@@ -5,11 +5,11 @@ namespace Racketmanager\Domain\Finance;
 
 use Racketmanager\Domain\DTO\Finance\Charge_Hydration_DTO;
 use Racketmanager\Domain\Enums\Charge_Status;
-use Racketmanager\Domain\Value_Objects\Currency;
+use Racketmanager\Domain\Tournament\Currency;
 use Racketmanager\Domain\Value_Objects\Money;
 
 /**
- * Class to implement the charges object
+ * Class to implement the charge object
  */
 class Charge {
     /**
@@ -87,7 +87,7 @@ class Charge {
     }
 
     /**
-     * Create from a generic object (e.g., database row) without factory validation.
+     * Create from a generic object (e.g. database row) without factory validation.
      *
      * @param object $row charge row.
      *
@@ -194,7 +194,7 @@ class Charge {
     }
 
     public function get_competition_fee_money( ?Currency $currency = null ): ?Money {
-        if ( ! isset( $this->fee_competition ) || null === $this->fee_competition ) {
+        if ( ! isset( $this->fee_competition ) ) {
             return null;
         }
         return Money::from_float( $this->fee_competition, $currency );
@@ -222,7 +222,7 @@ class Charge {
     }
 
     public function get_event_fee_money( ?Currency $currency = null ): ?Money {
-        if ( ! isset( $this->fee_event ) || null === $this->fee_event ) {
+        if ( ! isset( $this->fee_event ) ) {
             return null;
         }
         return Money::from_float( $this->fee_event, $currency );

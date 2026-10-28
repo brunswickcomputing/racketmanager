@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Support;
 
+use DateInvalidTimeZoneException;
+use DateMalformedStringException;
 use DateTimeImmutable;
 use DateTimeZone;
 use Racketmanager\Domain\Ports\Clock_Interface;
@@ -13,6 +15,10 @@ use Racketmanager\Domain\Ports\Clock_Interface;
 final class Fixed_Clock implements Clock_Interface {
     private DateTimeImmutable $now;
 
+    /**
+     * @throws DateMalformedStringException
+     * @throws DateInvalidTimeZoneException
+     */
     public function __construct( string $now = '2026-03-01 12:34:56', string $timezone = 'Europe/London' ) {
         $this->now = new DateTimeImmutable( $now, new DateTimeZone( $timezone ) );
     }

@@ -629,7 +629,7 @@ class Entry_And_Match_Templates_Test extends TestCase {
     }
 
     public function test_email_competition_entry_open_renders_with_correct_punctuation_and_dates(): void {
-        $option_gateway = new class implements \Racketmanager\Gateways\Option\Option_Gateway_Interface {
+        $option_gateway = new class implements \Racketmanager\Application\Ports\Option_Gateway_Interface {
             public function get_option( string $option, mixed $default = false ): mixed {
                 return 'date_format' === $option ? 'd/m/Y' : $default;
             }
@@ -739,7 +739,7 @@ class Entry_And_Match_Templates_Test extends TestCase {
     }
 
     public function test_player_clubs_template_renders_with_presenter_formatted_dates_and_zero_warnings(): void {
-        $option_gateway = new class implements \Racketmanager\Gateways\Option\Option_Gateway_Interface {
+        $option_gateway = new class implements \Racketmanager\Application\Ports\Option_Gateway_Interface {
             public function get_option( string $option, mixed $default = false ): mixed {
                 return 'd/m/Y';
             }
@@ -804,7 +804,7 @@ class Entry_And_Match_Templates_Test extends TestCase {
     }
 
     public function test_player_clubs_template_renders_with_missing_dates_and_zero_warnings(): void {
-        $option_gateway = new class implements \Racketmanager\Gateways\Option\Option_Gateway_Interface {
+        $option_gateway = new class implements \Racketmanager\Application\Ports\Option_Gateway_Interface {
             public function get_option( string $option, mixed $default = false ): mixed {
                 return 'd/m/Y';
             }
@@ -846,7 +846,7 @@ class Entry_And_Match_Templates_Test extends TestCase {
         $player_service = $this->createStub( Player_Service::class );
         $player_service->method( 'get_player' )->willReturn( $player );
 
-        $option_gateway = new class implements \Racketmanager\Gateways\Option\Option_Gateway_Interface {
+        $option_gateway = new class implements \Racketmanager\Application\Ports\Option_Gateway_Interface {
             public function get_option( string $option, mixed $default = false ): mixed {
                 return 'd/m/Y';
             }
@@ -905,7 +905,7 @@ class Entry_And_Match_Templates_Test extends TestCase {
     }
 
     public function test_player_clubs_template_renders_with_real_club_player_dto_datetimes(): void {
-        $option_gateway = new class implements \Racketmanager\Gateways\Option\Option_Gateway_Interface {
+        $option_gateway = new class implements \Racketmanager\Application\Ports\Option_Gateway_Interface {
             public function get_option( string $option, mixed $default = false ): mixed {
                 return 'd/m/Y';
             }

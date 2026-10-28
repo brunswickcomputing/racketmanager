@@ -14,7 +14,7 @@ use Racketmanager\Domain\DTO\Team\Team_Hydration_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Team\Team;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\Formatters\Email_Date_Formatter;
 use Racketmanager\Presentation\Presenters\Notification_Presenter;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;

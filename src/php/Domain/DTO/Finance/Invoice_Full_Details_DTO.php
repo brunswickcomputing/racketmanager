@@ -13,7 +13,7 @@ namespace Racketmanager\Domain\DTO\Finance;
 use Racketmanager\Domain\Enums\Invoice_Status;
 use Racketmanager\Domain\Finance\Invoice;
 use Racketmanager\Domain\Player\Player;
-use Racketmanager\Domain\Value_Objects\Currency;
+use Racketmanager\Domain\Tournament\Currency;
 use Racketmanager\Domain\Value_Objects\Money;
 use stdClass;
 
@@ -63,7 +63,7 @@ class Invoice_Full_Details_DTO {
         $this->billable_address  = $billable_address;
         $this->invoice_number    = $invoice->invoice_number;
         $this->status            = $invoice->status;
-        $this->amount            = isset( $invoice->amount ) ? (string) $invoice->amount : null;
+        $this->amount            = $invoice->amount ?? null;
         $this->date              = $invoice->date;
         $this->date_due          = $invoice->date_due;
         $this->payment_reference = $invoice->payment_reference;

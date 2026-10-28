@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Infrastructure\Gateways\Option;
 
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 
 class Wp_Option_Gateway implements Option_Gateway_Interface {
     public function get_option( string $option, mixed $default_value = false ): mixed {

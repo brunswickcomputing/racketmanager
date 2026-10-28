@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager\Gateways\Option;
+namespace Racketmanager\Application\Ports;
 
 interface Option_Gateway_Interface {
     public function get_option( string $option, mixed $default_value = false ): mixed;

@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Presentation\Presenters;
 
-use Racketmanager\Gateways\Account\User_Favourites_Gateway_Interface;
+use Racketmanager\Application\Account\Ports\User_Favourites_Gateway_Interface;
 use Racketmanager\Presentation\View_Models\Favourite_Controls_View_Model;
 use Racketmanager\Presentation\View_Models\Favourite_List_Item_View_Model;
 use Racketmanager\Presentation\View_Models\Favourite_State_View_Model;

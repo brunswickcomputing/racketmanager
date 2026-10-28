@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Player\Player_Hydration_DTO;
 use Racketmanager\Domain\Player\Player_Factory;
 use Racketmanager\Domain\Ports\Rating_Gateway_Interface;
-use Racketmanager\Gateways\Mail\Mailer_Interface;
+use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;

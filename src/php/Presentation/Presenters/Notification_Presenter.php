@@ -8,7 +8,7 @@ use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Shared\Seo_Slug;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\Formatters\Email_Date_Formatter;
 use Racketmanager\Presentation\View_Models\Send_Fixtures_Match_Row_View_Model;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;

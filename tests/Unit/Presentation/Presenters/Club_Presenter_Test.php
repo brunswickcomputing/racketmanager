@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Club\Club_Player;
+use Racketmanager\Domain\DTO\Club\Club_Details_DTO;
 use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
@@ -152,6 +153,84 @@ class Club_Presenter_Test extends TestCase {
         $this->assertEquals( 'Jane Smith', $vars['match_secretary_name'] );
     }
 
+    public function test_present_with_club_details_dto(): void {
+        $club = Club_Test_Factory::create(
+            id: 21,
+            name: 'Thorpe Bay LTC',
+            shortcode: 'Thorpe Bay',
+            website: 'https://thorpebay.local',
+            contactno: '01702000000',
+            founded: 1920,
+            facilities: '6 courts',
+            address: 'Thorpe Hall Avenue'
+        );
+        $secretary               = new Player();
+        $secretary->id           = 77;
+        $secretary->display_name = 'John Doe';
+        $secretary->email        = 'john@example.com';
+        $secretary->contactno    = '07000000000';
+        $roles                   = array( 'chair' => 'Sam' );
+        $dto                     = new Club_Details_DTO( $club, $roles, $secretary );
+
+        $vm = $this->presenter->present( $dto );
+
+        $this->assertSame( 21, $vm->id );
+        $this->assertSame( 'Thorpe Bay LTC', $vm->name );
+        $this->assertSame( 'Thorpe Bay', $vm->shortcode );
+        $this->assertSame( '/clubs/thorpe-bay/', $vm->link );
+        $this->assertSame( 'TB', $vm->initials );
+        $this->assertSame( 'Thorpe Hall Avenue', $vm->address );
+        $this->assertSame( '01702000000', $vm->contact_no );
+        $this->assertSame( 'https://thorpebay.local', $vm->website );
+        $this->assertSame( '1920', $vm->founded );
+        $this->assertSame( '6 courts', $vm->facilities );
+        $this->assertSame( $roles, $vm->roles );
+        $this->assertSame( array(), $vm->teams );
+        $this->assertSame( 'John Doe', $vm->match_secretary_name );
+        $this->assertSame( 77, $vm->match_secretary_id );
+        $this->assertSame( 'john@example.com', $vm->match_secretary_email );
+        $this->assertSame( '07000000000', $vm->match_secretary_contact_no );
+        $this->assertSame( 'h1', $vm->heading_tag );
+        $this->assertNull( $vm->map_url );
+    }
+
+    public function test_present_with_domain_club_uses_getters(): void {
+        $club = Club_Test_Factory::create(
+            id: 3,
+            name: 'Hadleigh TC',
+            shortcode: 'hadleigh',
+            contactno: '01702111111',
+            founded: 1975
+        );
+
+        $vm = $this->presenter->present( $club, standalone: false );
+
+        $this->assertSame( 3, $vm->id );
+        $this->assertSame( 'Hadleigh TC', $vm->name );
+        $this->assertSame( '01702111111', $vm->contact_no, 'contact_no falls back to get_contact_no()' );
+        $this->assertSame( '1975', $vm->founded, 'founded int is cast to string' );
+        $this->assertNull( $vm->website );
+        $this->assertNull( $vm->facilities );
+        $this->assertNull( $vm->address );
+        $this->assertSame( array(), $vm->roles );
+        $this->assertSame( 'h2', $vm->heading_tag );
+    }
+
+    public function test_present_without_match_secretary_yields_null_contact_fields(): void {
+        $club = (object) array(
+            'id'        => 1,
+            'name'      => 'No Secretary TC',
+            'shortcode' => 'nosec',
+        );
+
+        $vm = $this->presenter->present( $club );
+
+        $this->assertNull( $vm->match_secretary_name );
+        $this->assertNull( $vm->match_secretary_id );
+        $this->assertNull( $vm->match_secretary_email );
+        $this->assertNull( $vm->match_secretary_contact_no );
+    }
+
     public function test_format_rating_display(): void {
         $this->assertSame( '[S:9.2] - [D:8.5]', $this->presenter->format_rating_display( [ 'S' => '9.2', 'D' => '8.5' ] ) );
         $this->assertSame( '[S:-] - [D:-]', $this->presenter->format_rating_display( [] ) );
@@ -221,5 +300,31 @@ class Club_Presenter_Test extends TestCase {
 
         $event_link = $this->presenter->get_club_event_link( $event, $club );
         $this->assertSame( '/clubs/westcliff-hard/event/mens-division-1/', $event_link );
+    }
+
+    public function test_read_resolves_all_branches(): void {
+        $reflection = new \ReflectionMethod( Club_Presenter::class, 'read' );
+
+        // 1. Null source returns null.
+        $this->assertNull( $reflection->invoke( $this->presenter, null, 'title', 'get_title' ) );
+
+        // 2. Direct property match returns property value.
+        $source_with_property = (object) array( 'title' => 'Direct Title' );
+        $this->assertSame( 'Direct Title', $reflection->invoke( $this->presenter, $source_with_property, 'title', 'get_title' ) );
+
+        // 3. Getter fallback returns getter result when property is missing.
+        $source_with_getter = new class() {
+            public function get_title(): string {
+                return 'Getter Title';
+            }
+        };
+        $this->assertSame( 'Getter Title', $reflection->invoke( $this->presenter, $source_with_getter, 'title', 'get_title' ) );
+
+        // 4. Missing property and non-existent getter returns null.
+        $source_without_getter = (object) array( 'other' => 'value' );
+        $this->assertNull( $reflection->invoke( $this->presenter, $source_without_getter, 'title', 'non_existent_method' ) );
+
+        // 5. Null getter parameter returns null when property is missing.
+        $this->assertNull( $reflection->invoke( $this->presenter, $source_without_getter, 'title', null ) );
     }
 }

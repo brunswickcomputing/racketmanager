@@ -5,7 +5,7 @@ namespace Racketmanager\Presentation\Formatters;
 
 use InvalidArgumentException;
 use Racketmanager\Domain\Fixture\Fixture_Time_Parser;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use function get_option;
 use function mysql2date;
 
@@ -104,10 +104,18 @@ final readonly class Email_Date_Formatter {
     }
 
     private function option( string $option, string $default ): string {
-        $value = $this->option_gateway
-            ? $this->option_gateway->get_option( $option, $default )
-            : ( function_exists( 'get_option' ) ? get_option( $option, $default ) : $default );
+        if ( $this->option_gateway ) {
+            $value = $this->option_gateway->get_option( $option, $default );
+        } elseif ( function_exists( 'get_option' ) ) {
+            $value = get_option( $option, $default );
+        } else {
+            $value = $default;
+        }
 
-        return is_string( $value ) && '' !== $value ? $value : $default;
+        if ( is_string( $value ) && '' !== $value ) {
+            return $value;
+        }
+
+        return $default;
     }
 }

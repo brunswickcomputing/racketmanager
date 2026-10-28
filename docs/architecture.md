@@ -36,10 +36,14 @@ wp-content/plugins/racketmanager/
     - Ajax/                       (AJAX controllers for wp‑ajax)
     - Rest/                       (REST controllers, if used)
     - Domain/                     (Entities/Models)
+      - Ports/                    (Domain ports; e.g., Rating_Gateway_Interface, Clock_Interface)
+    - Application/                (Use-case handlers and application ports)
+      - Ports/                    (Application ports; e.g., Option_Gateway_Interface)
+      - Mail/                     (Application mail port; e.g., Mailer_Interface)
+    - Infrastructure/             (Concrete adapters and external integrations)
+      - Gateways/                 (Gateway adapters; e.g., Lta_Wtn_Gateway_Adapter, Wp_Mailer)
     - Repositories/               (Data access abstraction)
-    - Services/                   (Business logic, helpers)
-      - Contracts/                (Service interfaces for external integrations; e.g., Wtn_Api_Client_Interface)
-      - External/                 (Concrete clients for external APIs; e.g., Wtn_Api_Client)
+    - Services/                   (Legacy business logic, helpers pending migration)
     - Util/                       (Utility classes)
   - js/
     - index.js                    (Single JS entry point)
@@ -106,20 +110,26 @@ Suggested responsibilities
 - Admin\Assets: Handles admin CSS/JS.
 - Ajax\*: Each action (e.g. racketmanager_match_status) has a controller method that validates nonce/capabilities and returns wp_send_json_* responses.
 - Rest\*: For REST endpoints if/when needed.
-- Services\*: Reusable business logic.
-- Player and club responsibilities:
-  - Player_Management_Service owns calculate_player_ratings(int $club_id = null). RacketManager delegates to it.
-  - Player_Management_Service uses Club_Player_Management_Service::get_registered_players_list() to obtain active registered players (optionally scoped by club) before invoking the WTN update in core.
-- Repositories\*: Data access (WP_Query, custom tables, etc.).
+- Application\*: Use-case handlers (commands, queries), domain-facing orchestration, and application ports (`Application/Ports/`, `Application/<Context>/Ports/`).
+- Services\*: Legacy application services, actions, and calculators pending migration into Application/Domain.
+- Infrastructure\*: External secondary adapters (WordPress database/options, payment gateways, mailers, remote API clients).
+- Repositories\*: Data access abstraction (`Repositories/Interfaces/` ports and concrete implementations).
 - Util\*: Pure helpers.
+
+Services vs Application Layering Rules
+- **Application (`src/php/Application/`)**: Owns use cases, CQRS commands/queries and their handlers, and driven use-case ports (e.g., `Application/Ports/Option_Gateway_Interface`, `Application/Mail/Mailer_Interface`, `Application/Payment/Ports/Payment_Gateway_Interface`, `Application/Export/Ports/Data_Exporter_Interface`, `Application/Account/Ports/User_Favourites_Gateway_Interface`, `Application/Matches/Ports/Fixture_Listing_Finder_Interface`). Application code interacts with the outside world strictly through ports (`Domain/Ports/`, `Application/Ports/`, `Repositories/Interfaces/`).
+- **Services (`src/php/Services/`)**: Legacy application service and workflow orchestrators pending incremental refactoring into `Application/` handlers or `Domain/` model methods. New contracts must never be introduced in `Services/Contracts/` (legacy contracts have been relocated to canonical ports); new business logic must target `Application/` use cases.
+- **Domain (`src/php/Domain/`)**: Pure domain models and core ports (`Domain/Ports/Clock_Interface`, `Domain/Ports/Rating_Gateway_Interface`). Strictly isolated from external infrastructure, WordPress globals, and outer layer imports.
+- **Infrastructure (`src/php/Infrastructure/`)**: Concrete adapters implementing ports defined by `Domain/Ports/`, `Application/Ports/`, and `Repositories/Interfaces/` (e.g., `Wp_Mailer`, `Wp_Option_Gateway`, `Stripe_Payment_Gateway`, `Lta_Wtn_Gateway_Adapter`).
 
 External API clients
 - Location and contracts
-  - Interfaces live under Services/Contracts (e.g., Services/Contracts/Wtn_Api_Client_Interface.php)
-  - Concrete implementations live under Services/External (e.g., Services/External/Wtn_Api_Client.php)
+  - Hexagonal ports live under `Domain/Ports/` (for domain-facing gateways such as `Rating_Gateway_Interface`) or `Application/Ports/`, `Application/<Context>/Ports/`, and dedicated application namespaces like `Application/Mail/Mailer_Interface` (e.g., `Data_Exporter_Interface`, `Option_Gateway_Interface`, `Payment_Gateway_Interface`, `User_Favourites_Gateway_Interface`).
+  - Concrete gateway adapters live under `Infrastructure/Gateways/` (e.g., `Infrastructure/Gateways/Rating/Lta_Wtn_Gateway_Adapter`, `Infrastructure/Gateways/Mail/Wp_Mailer`, `Infrastructure/Gateways/Payment/Stripe_Payment_Gateway`).
+  - Legacy `Services/Contracts/` interfaces (`Wtn_Api_Client_Interface`, `Data_Exporter_Interface`) and legacy `Gateways/` interfaces are deprecated and aliased via `src/php/aliases.php`. New contracts must never be introduced in `Services/Contracts/` or `Gateways/`.
 - Usage
-  - Domain services (e.g., Player_Management_Service) should type‑hint interfaces and receive clients via dependency injection.
-  - Default Wtn_Api_Client delegates to existing core helpers (set_wtn_env, get_player_wtn) to preserve behavior while isolating HTTP details.
+  - Domain models and application services should type‑hint canonical port interfaces and receive clients via dependency injection.
+  - Concrete adapters encapsulate HTTP and vendor communication details (e.g., `Lta_Wtn_Gateway_Adapter` isolates WTN HTTP transport and HTML parsing).
   - This separation makes external calls mockable and keeps transport concerns out of domain logic.
 
 ---
@@ -136,12 +146,12 @@ General guidance
 Recommended components and where they fit
 - symfony/http-client
   - Purpose: Robust HTTP client for external API calls (timeouts, retries, middleware).
-  - Placement: Used inside Services/External clients (e.g., Wtn_Api_Client implementation) to replace wp_remote_* if desired.
-  - Mapping: Implement Wtn_Api_Client_Interface and use HttpClient under the hood. Keep the interface stable so the rest of the plugin is unaffected.
+  - Placement: Used inside Infrastructure/Gateways/ adapters (e.g., Lta_Wtn_Gateway_Adapter) to replace wp_remote_* if desired.
+  - Mapping: Implement canonical gateway ports (e.g. Rating_Gateway_Interface) and use HttpClient under the hood. Keep the port interface stable so the rest of the plugin is unaffected.
 - symfony/cache
   - Purpose: Cache API responses or expensive computations (FilesystemAdapter, RedisAdapter, ArrayAdapter).
-  - Placement: Services/External (for API response caching) or Services/* where computation caching helps.
-  - Mapping: Optionally create a Cache interface in Services/Contracts and an adapter that uses Symfony Cache. Alternatively, back with WordPress object cache/transients where available.
+  - Placement: Infrastructure/Gateways/ or Services/ where computation caching helps.
+  - Mapping: Optionally create a Cache port interface in Application/Ports/ or Domain/Ports/ and an adapter in Infrastructure/ that uses Symfony Cache. Alternatively, back with WordPress object cache/transients where available.
 - symfony/serializer
   - Purpose: Serialize/deserialize DTOs and arrays (e.g., Club_Player_DTO) when exchanging structured data.
   - Placement: Services or Repositories that map between arrays and domain objects.
@@ -175,10 +185,10 @@ composer require symfony/http-client:^7.0 symfony/cache:^7.0 symfony/rate-limite
 composer require symfony/serializer:^7.0 symfony/validator:^7.0 symfony/filesystem:^7.0 symfony/finder:^7.0 symfony/options-resolver:^7.0
 ```
 
-Example: Using HttpClient inside an alternate WTN client
-- Create Services/External/Wtn_Http_Api_Client.php implementing Wtn_Api_Client_Interface.
+Example: Using HttpClient inside an alternate WTN gateway adapter
+- Create Infrastructure/Gateways/Rating/Wtn_Http_Gateway_Adapter.php implementing Rating_Gateway_Interface.
 - Inject Symfony HttpClientInterface.
-- Implement prepare_env() and fetch_player_wtn() using HttpClient. Register this implementation when constructing Player_Management_Service if you want to switch from the default.
+- Implement fetch_player_rating() using HttpClient. Register this implementation when binding Rating_Gateway_Interface in Core_Service_Provider.
 
 Operational notes
 - Error handling: Convert component exceptions to WP_Error or domain exceptions to preserve existing error flows.
@@ -187,7 +197,7 @@ Operational notes
 - Security: Follow WordPress nonces/cap checks for admin actions; Symfony components do not replace WP’s security model.
 
 Decision summary
-- Yes, Symfony can be used in this plugin selectively. Use individual components where they provide clear benefits (HTTP, caching, rate limiting, validation, filesystem). Keep them behind our Services/Contracts interfaces to avoid framework lock‑in and to preserve compatibility with WordPress conventions.
+- Yes, Symfony can be used in this plugin selectively. Use individual components where they provide clear benefits (HTTP, caching, rate limiting, validation, filesystem). Keep them behind our Domain/Ports or Application/Ports interfaces to avoid framework lock‑in and to preserve compatibility with WordPress conventions.
 
 ---
 
@@ -450,7 +460,7 @@ Notable differences or open items
 Recent confirmations (2025‑11‑28)
 - Single‑instance bootstrap is implemented: Admin is the only instance in dashboard; RacketManager otherwise. This resolved duplicate hooks (e.g., racketmanager_mail) caused by double instantiation. ✓
 - calculate_player_ratings flow moved to Player_Management_Service with RacketManager delegating; it uses Club_Player_Management_Service::get_registered_players_list() to determine the player set. ✓
-- External API client architecture established: Wtn_Api_Client_Interface (Contracts) and Wtn_Api_Client (External) added; services can inject these clients. ✓
+- External API client architecture established: Rating_Gateway_Interface (Domain/Ports) and Lta_Wtn_Gateway_Adapter (Infrastructure/Gateways/Rating); services inject canonical ports. ✓
 
 Verification pointers
 - Composer autoload works end‑to‑end: vendor/autoload.php is loaded by racketmanager.php; classes resolve via PSR‑4; Stripe SDK is required via composer.json and used via \Stripe\StripeClient in Ajax_Tournament. ✓
@@ -513,11 +523,11 @@ wp-content/plugins/racketmanager/
     - Public/                     (Frontend hooks, shortcodes/blocks)
     - Ajax/                       (AJAX controllers for wp‑ajax)
     - Rest/                       (REST controllers, if used)
-    - Domain/                     (Entities/Models)
+    - Domain/                     (Entities/Models, Ports/ for Domain_Ports)
+    - Application/                (Use-case handlers, Ports/ for Application_Ports)
+    - Infrastructure/             (Concrete adapters and external integrations in Gateways/)
     - Repositories/               (Data access abstraction)
-    - Services/                   (Business logic, helpers)
-      - Contracts/                (Service interfaces for external integrations; e.g., Wtn_Api_Client_Interface)
-      - External/                 (Concrete clients for external APIs; e.g., Wtn_Api_Client)
+    - Services/                   (Legacy business logic, helpers pending migration)
     - Util/                       (Utility classes)
   - js/
     - index.js                    (Single JS entry point)

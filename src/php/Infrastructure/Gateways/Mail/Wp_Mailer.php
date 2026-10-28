@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Infrastructure\Gateways\Mail;
 
-use Racketmanager\Gateways\Mail\Mailer_Interface;
+use Racketmanager\Application\Mail\Mailer_Interface;
 
 class Wp_Mailer implements Mailer_Interface {
     public function send(

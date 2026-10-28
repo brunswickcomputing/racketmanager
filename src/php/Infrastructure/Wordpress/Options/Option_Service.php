@@ -10,7 +10,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Infrastructure\Wordpress\Options;
 
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
 
 /**
@@ -86,7 +86,7 @@ class Option_Service {
     }
 
     /**
-     * Set top-level options section and persist to storage.
+     * Set the top-level options section and persist to storage.
      *
      * @param string $type Section key.
      * @param array  $options Values array.
@@ -105,7 +105,7 @@ class Option_Service {
     public function update_plugin_options( array $options ): bool {
         $this->options = $options;
 
-        return (bool) $this->option_gateway->update_option( 'racketmanager', $this->options );
+        return $this->option_gateway->update_option( 'racketmanager', $this->options );
     }
 
     public function get_date_format(): string {
@@ -129,7 +129,7 @@ class Option_Service {
     }
 
     /**
-     * Determine if LTA / BTM number is required based on roster configuration options.
+     * Determine if the LTA number is required based on roster configuration options.
      *
      * @return bool
      */

@@ -5,7 +5,7 @@ namespace Racketmanager\Presentation\Presenters;
 
 use BackedEnum;
 use Racketmanager\Domain\Value_Objects\Date_Range;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\View_Models\League_Archive_View_Model;
 use Racketmanager\Util\Util;
 use function __;

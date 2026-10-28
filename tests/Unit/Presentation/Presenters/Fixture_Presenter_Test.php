@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Date_Update_Read_Model;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Result_Read_Model;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Switch_Teams_Read_Model;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Date_Update_Request;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;

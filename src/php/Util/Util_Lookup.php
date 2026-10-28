@@ -308,9 +308,9 @@ class Util_Lookup {
      * Get the match type key from the name function
      *
      * @param string $match_type match type name.
-     * @return string $key match type key.
+     * @return false|string $key match type key, or false when not found.
      */
-    public static function get_match_type_key( string $match_type ): string {
+    public static function get_match_type_key( string $match_type ): false|string {
         $match_types = self::get_match_types();
         return array_search( $match_type, $match_types, true );
     }

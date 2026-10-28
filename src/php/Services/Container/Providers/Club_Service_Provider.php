@@ -75,7 +75,7 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
         ) );
 
         // Presenters
-        $container->set( 'club_presenter', fn( Simple_Container $c ) => new Club_Presenter( $c->get( 'option_gateway' ) ) );
+        $container->set( 'club_presenter', fn() => new Club_Presenter() );
         $container->set( 'club_shortcode_presenter', fn( Simple_Container $c ) => new Club_Shortcode_Presenter(
             $c->get( 'view_renderer' ),
             $c->get( 'club_presenter' ),

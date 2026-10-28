@@ -912,7 +912,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $this->fixture_detail_service = $this->createMock( Fixture_Detail_Service::class );
         $this->view_renderer          = $this->createMock( View_Renderer_Interface::class );
         $link_service                 = $this->createStub( Fixture_Link_Service::class );
-        $option_gateway               = $this->createStub( \Racketmanager\Gateways\Option\Option_Gateway_Interface::class );
+        $option_gateway               = $this->createStub( \Racketmanager\Application\Ports\Option_Gateway_Interface::class );
         $presenter                    = new Fixture_Presenter( $link_service, $option_gateway, team_match_row_presenter: $this->create_team_match_row_presenter() );
         $fixture_details_handler      = $this->createStub( Get_Fixture_Details_Handler::class );
         $this->adapter                = new Fixture_Ajax_Adapter( $this->container, $this->security_service, $response_factory, $this->fixture_detail_service, $this->view_renderer, $presenter, $fixture_details_handler );
@@ -960,7 +960,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $response_factory = $this->createStub( Json_Response_Factory_Interface::class );
         $presenter        = new Fixture_Presenter(
             $this->createStub( Fixture_Link_Service::class ),
-            $this->createStub( \Racketmanager\Gateways\Option\Option_Gateway_Interface::class )
+            $this->createStub( \Racketmanager\Application\Ports\Option_Gateway_Interface::class )
         );
         $adapter = new Fixture_Ajax_Adapter(
             $c,
@@ -983,7 +983,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $response_factory = $this->createStub( Json_Response_Factory_Interface::class );
         $presenter        = new Fixture_Presenter(
             $this->createStub( Fixture_Link_Service::class ),
-            $this->createStub( \Racketmanager\Gateways\Option\Option_Gateway_Interface::class )
+            $this->createStub( \Racketmanager\Application\Ports\Option_Gateway_Interface::class )
         );
         $adapter = new Fixture_Ajax_Adapter(
             $c,

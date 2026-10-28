@@ -234,7 +234,7 @@ class Player_Presenter_Test extends TestCase {
     }
 
     public function test_format_date_with_option_gateway(): void {
-        $option_gateway = new class implements \Racketmanager\Gateways\Option\Option_Gateway_Interface {
+        $option_gateway = new class implements \Racketmanager\Application\Ports\Option_Gateway_Interface {
             public function get_option( string $option, mixed $default = false ): mixed {
                 return 'Y-m-d';
             }
@@ -254,7 +254,7 @@ class Player_Presenter_Test extends TestCase {
     }
 
     public function test_present_club_membership_formats_dates(): void {
-        $option_gateway = new class implements \Racketmanager\Gateways\Option\Option_Gateway_Interface {
+        $option_gateway = new class implements \Racketmanager\Application\Ports\Option_Gateway_Interface {
             public function get_option( string $option, mixed $default = false ): mixed {
                 return 'd/m/Y';
             }
@@ -287,7 +287,7 @@ class Player_Presenter_Test extends TestCase {
     }
 
     public function test_present_club_membership_with_club_player_dto_and_datetime_formatting(): void {
-        $option_gateway = new class implements \Racketmanager\Gateways\Option\Option_Gateway_Interface {
+        $option_gateway = new class implements \Racketmanager\Application\Ports\Option_Gateway_Interface {
             public function get_option( string $option, mixed $default = false ): mixed {
                 return 'd/m/Y';
             }

@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Ports\Rating_Gateway_Interface;
 use Racketmanager\Exceptions\LTA_Tennis_Number_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
-use Racketmanager\Gateways\Mail\Mailer_Interface;
+use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;

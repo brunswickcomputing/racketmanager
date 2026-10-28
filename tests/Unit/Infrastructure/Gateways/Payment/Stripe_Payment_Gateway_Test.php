@@ -4,9 +4,9 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Infrastructure\Gateways\Payment;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Payment\Ports\Payment_Gateway_Interface;
+use Racketmanager\Application\Payment\Ports\Payment_Intent_Result;
 use Racketmanager\Exceptions\Stripe_API_Exception;
-use Racketmanager\Gateways\Payment\Payment_Gateway_Interface;
-use Racketmanager\Gateways\Payment\Payment_Intent_Result;
 use Racketmanager\Infrastructure\Gateways\Payment\Stripe_Payment_Gateway;
 use RuntimeException;
 use stdClass;

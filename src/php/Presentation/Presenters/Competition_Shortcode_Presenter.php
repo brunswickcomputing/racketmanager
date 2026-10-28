@@ -5,7 +5,7 @@ namespace Racketmanager\Presentation\Presenters;
 
 use BackedEnum;
 use Racketmanager\Domain\Value_Objects\Date_Range;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Exceptions\Template_Not_Found_Exception;
 use Racketmanager\Presentation\View_Models\Competition_Header_View_Model;
 use Racketmanager\Presentation\View_Models\Competition_List_Item_View_Model;

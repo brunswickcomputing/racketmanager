@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Infrastructure\Gateways\Option;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
 
 class Wp_Option_Gateway_Test extends TestCase {

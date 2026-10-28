@@ -9,7 +9,7 @@ use Racketmanager\Domain\Club\Club_Role;
 use Racketmanager\Domain\Enums\Club_Role as Club_Role_Enum;
 use Racketmanager\Domain\Ports\Rating_Gateway_Interface;
 use Racketmanager\Exceptions\Charge_Not_Found_Exception;
-use Racketmanager\Gateways\Mail\Mailer_Interface;
+use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Interfaces\Charge_Repository_Interface;

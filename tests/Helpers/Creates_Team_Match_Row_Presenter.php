@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Helpers;
 
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\Presenters\Team_Match_Row_Presenter;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;

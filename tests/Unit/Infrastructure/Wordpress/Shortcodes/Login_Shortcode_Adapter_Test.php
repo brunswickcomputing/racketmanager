@@ -129,7 +129,7 @@ class Login_Shortcode_Adapter_Test extends TestCase {
     public function test_render_login_form_renders_real_registration_tab_when_action_override_is_empty_string(): void {
         $_GET['action'] = 'register';
 
-        $option_gateway = $this->createStub( \Racketmanager\Gateways\Option\Option_Gateway_Interface::class );
+        $option_gateway = $this->createStub( \Racketmanager\Application\Ports\Option_Gateway_Interface::class );
         $option_gateway->method( 'get_option' )->willReturnCallback(
             static fn( string $name, mixed $default = false ) => match ( $name ) {
                 'users_can_register' => true,

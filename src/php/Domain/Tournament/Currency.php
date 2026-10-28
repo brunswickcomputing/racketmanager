@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager\Domain\Value_Objects;
+namespace Racketmanager\Domain\Tournament;
 
 /**
  * Currency Backed Enum representing ISO 4217 currencies supported in RacketManager.
@@ -23,7 +23,7 @@ enum Currency: string {
     }
 
     /**
-     * Get default number of decimal places.
+     * Get the default number of decimal places.
      */
     public function decimals(): int {
         return 2;

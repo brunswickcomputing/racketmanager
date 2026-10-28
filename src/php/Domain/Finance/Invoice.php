@@ -13,7 +13,7 @@ namespace Racketmanager\Domain\Finance;
 use Racketmanager\Domain\DTO\Finance\Invoice_Hydration_DTO;
 use Racketmanager\Domain\Enums\Invoice_Status;
 use Racketmanager\Domain\Shared\Typed_Property_Hydrator;
-use Racketmanager\Domain\Value_Objects\Currency;
+use Racketmanager\Domain\Tournament\Currency;
 use Racketmanager\Domain\Value_Objects\Money;
 
 /**
@@ -63,7 +63,14 @@ class Invoice {
      *
      * @var int
      */
-    public int $charge_id;
+    public int $charge_id {
+        get {
+            return $this->charge_id;
+        }
+        set( ?int $value ) {
+            $this->charge_id = $value;
+        }
+    }
     /**
      * Status
      *
@@ -122,7 +129,7 @@ class Invoice {
     }
 
     /**
-     * Create from a generic object (e.g., database row) without factory validation.
+     * Create from a generic object (e.g. database row) without factory validation.
      *
      * @param object $row invoice row.
      *
@@ -145,10 +152,6 @@ class Invoice {
 
     public function set_id( int $insert_id ): void {
         $this->id = $insert_id;
-    }
-
-    public function set_charge_id( ?int $charge_id ): void {
-        $this->charge_id = $charge_id;
     }
 
     public function set_billable_id( int $billable_id ): void {
@@ -197,7 +200,7 @@ class Invoice {
         $this->status = $enum ? $enum->value : $status;
     }
     /**
-     * Set payment reference status
+     * Set the payment reference status
      *
      * @param string $reference reference value.
      */
@@ -223,10 +226,6 @@ class Invoice {
 
     public function get_id(): ?int {
         return $this->id;
-    }
-
-    public function get_charge_id(): int {
-        return $this->charge_id;
     }
 
     public function get_billable_id(): ?int {
@@ -258,10 +257,10 @@ class Invoice {
     }
 
     public function get_money( ?Currency $currency = null ): ?Money {
-        if ( ! isset( $this->amount ) || '' === (string) $this->amount ) {
+        if ( ! isset( $this->amount ) || '' === $this->amount ) {
             return null;
         }
-        return Money::from_string( (string) $this->amount, $currency );
+        return Money::from_string( $this->amount, $currency );
     }
 
     public function set_money( Money $money ): void {

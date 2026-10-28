@@ -8,7 +8,7 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Team\Team;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\Presenters\Order_Of_Play_Presenter;
 use Racketmanager\Presentation\View_Models\Order_Of_Play_View_Model;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;

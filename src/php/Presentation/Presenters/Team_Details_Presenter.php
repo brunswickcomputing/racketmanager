@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Presentation\Presenters;
 
 use BackedEnum;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\View_Models\Team_Details_View_Model;
 use Racketmanager\Presentation\View_Models\Team_Row_View_Model;
 use Racketmanager\Services\Settings_Service;

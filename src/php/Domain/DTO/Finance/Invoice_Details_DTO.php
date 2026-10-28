@@ -11,7 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Domain\DTO\Finance;
 
 use Racketmanager\Domain\Enums\Invoice_Status;
-use Racketmanager\Domain\Value_Objects\Currency;
+use Racketmanager\Domain\Tournament\Currency;
 use Racketmanager\Domain\Value_Objects\Money;
 
 /**

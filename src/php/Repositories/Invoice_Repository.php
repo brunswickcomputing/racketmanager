@@ -181,7 +181,7 @@ class Invoice_Repository implements Invoice_Repository_Interface {
     public function save( object $entity ): int|bool {
         /** @var Invoice $entity */
         $data        = array(
-            'charge_id'         => $entity->get_charge_id(),
+            'charge_id'         => $entity->charge_id,
             'billable_id'       => $entity->get_billable_id(),
             'billable_type'     => $entity->get_billable_type(),
             'invoice_number'    => $entity->get_invoice_number(),

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Racketmanager\Gateways\Payment;
+namespace Racketmanager\Application\Payment\Ports;
 
 final class Payment_Intent_Result {
     public function __construct(

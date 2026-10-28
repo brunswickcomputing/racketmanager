@@ -5,7 +5,7 @@ namespace Racketmanager\Application\Club\Queries;
 
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
@@ -18,14 +18,14 @@ use function is_array;
 /**
  * Handles the [club-players] query: the club's active roster, or a single club player.
  */
-class Get_Club_Players_Handler {
+readonly class Get_Club_Players_Handler {
     public function __construct(
-        private readonly Club_Service $club_service,
-        private readonly Player_Service $player_service,
-        private readonly Registration_Service $registration_service,
-        private readonly Club_Presenter $club_presenter,
-        private readonly Option_Gateway_Interface $option_gateway,
-        private readonly Player_Presenter $player_presenter
+        private Club_Service $club_service,
+        private Player_Service $player_service,
+        private Registration_Service $registration_service,
+        private Club_Presenter $club_presenter,
+        private Option_Gateway_Interface $option_gateway,
+        private Player_Presenter $player_presenter
     ) {}
 
     public function handle( Get_Club_Players_Query $query ): Shortcode_View_Model {
@@ -53,8 +53,7 @@ class Get_Club_Players_Handler {
                 }
                 $player_vm = $this->player_presenter->present_player(
                     player: $club_player,
-                    clubs: [ $club_player ],
-                    is_page_header: false
+                    clubs: [ $club_player ]
                 );
             } else {
                 $raw_players = $this->registration_service->get_registered_players_list( 'active', null, (int) $club->id );

@@ -7,7 +7,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin;
 use Racketmanager\Admin\Admin_Display;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Admin_Ajax_Controller;
 use Racketmanager\Infrastructure\Wordpress\Assets\Asset_Manager;
 use Racketmanager\Infrastructure\Wordpress\Bootstrap\Plugin_Bootstrap;

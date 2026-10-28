@@ -5,12 +5,12 @@ namespace Racketmanager\Tests\Unit\Domain\Value_Objects;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Value_Objects\Currency;
+use Racketmanager\Domain\Tournament\Currency;
 use Racketmanager\Domain\Value_Objects\Money;
 
 /**
  * @covers \Racketmanager\Domain\Value_Objects\Money
- * @covers \Racketmanager\Domain\Value_Objects\Currency
+ * @covers \Racketmanager\Domain\Tournament\Currency
  */
 final class Money_Test extends TestCase {
 
@@ -183,5 +183,26 @@ final class Money_Test extends TestCase {
         }
         self::assertSame( -500, Money::from_string( '-£5' )->get_cents() );
         self::assertSame( -500, Money::from_string( '£-5' )->get_cents() );
+    }
+
+    public function test_from_string_accepts_iso_code_prefix_and_explicit_currency(): void {
+        $gbp_code = Money::from_string( 'GBP 5.00' );
+        self::assertSame( 500, $gbp_code->get_cents() );
+        self::assertSame( Currency::GBP, $gbp_code->get_currency() );
+
+        $eur_code = Money::from_string( 'eur5' );
+        self::assertSame( 500, $eur_code->get_cents() );
+        self::assertSame( Currency::EUR, $eur_code->get_currency() );
+
+        $positive = Money::from_string( '+5.00' );
+        self::assertSame( 500, $positive->get_cents() );
+
+        $usd_explicit = Money::from_string( '7.25', 'usd' );
+        self::assertSame( 725, $usd_explicit->get_cents() );
+        self::assertSame( Currency::USD, $usd_explicit->get_currency() );
+
+        $blank_explicit = Money::from_string( '3.00', '' );
+        self::assertSame( 300, $blank_explicit->get_cents() );
+        self::assertSame( Currency::GBP, $blank_explicit->get_currency() );
     }
 }

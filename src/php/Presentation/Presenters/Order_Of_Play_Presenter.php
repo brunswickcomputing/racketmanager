@@ -12,7 +12,7 @@ namespace Racketmanager\Presentation\Presenters;
 
 use DateTimeImmutable;
 use Exception;
-use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\View_Models\Order_Of_Play_Match_View_Model;
 use Racketmanager\Presentation\View_Models\Order_Of_Play_View_Model;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;

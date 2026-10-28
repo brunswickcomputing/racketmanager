@@ -10,7 +10,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services;
 
-use Racketmanager\Gateways\Mail\Mailer_Interface;
+use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\RacketManager;
 

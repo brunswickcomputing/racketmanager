@@ -3,9 +3,9 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Rest;
 
+use Racketmanager\Application\Export\Ports\Data_Exporter_Interface;
 use Racketmanager\Infrastructure\Wordpress\Rest\Rest_Controller_Adapter;
 use Racketmanager\RacketManager;
-use Racketmanager\Services\Contracts\Data_Exporter_Interface;
 use Racketmanager\Services\Export\DTO\Export_Criteria;
 use Racketmanager\Services\Export\Formatters\Export_Formatter_Interface;
 use WP_Error;
@@ -119,16 +119,17 @@ class Export_Controller extends WP_REST_Controller {
      * @return bool|WP_Error
      */
     public function get_item_permissions_check( $request ): bool|WP_Error {
-        return $this->adapter->check_export_permissions( $request, 'public' );
+        return $this->adapter->check_export_permissions( $request );
     }
 
     /**
      * Check if a given request has access to sensitive report results export data.
      *
      * @param WP_REST_Request $request Full data about the request.
+     *
      * @return bool|WP_Error
      */
-    public function get_report_results_permissions_check( $request ): bool|WP_Error {
+    public function get_report_results_permissions_check( WP_REST_Request $request ): bool|WP_Error {
         return $this->adapter->check_export_permissions( $request, 'report_results' );
     }
 

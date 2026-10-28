@@ -5,7 +5,7 @@ namespace Racketmanager\Services;
 
 use Racketmanager\Domain\Result\Result;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Gateways\Mail\Mailer_Interface;
+use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;

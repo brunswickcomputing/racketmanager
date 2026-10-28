@@ -1,12 +1,12 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager\Services\Contracts;
+namespace Racketmanager\Application\Export\Ports;
 
 use Racketmanager\Services\Export\DTO\Export_Criteria;
 
 /**
- * Service Contract for data export delivery (calendar, fixtures, results, and tournament reports).
+ * Port contract for data export delivery (calendar, fixtures, results, and tournament reports).
  */
 interface Data_Exporter_Interface {
     /**

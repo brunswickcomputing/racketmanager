@@ -19,7 +19,6 @@ use Racketmanager\Domain\DTO\Tournament\Tournament_Entry_Response_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Invoice_Details_DTO;
 use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Partner_Request_DTO;
 use Racketmanager\Domain\Enums\Team_Profile;
-use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Competition\League_Team_Factory;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Shared\Seo_Slug;
@@ -44,9 +43,6 @@ use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Club_Repository;
-use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
-use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
-use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Team_Repository;
@@ -58,6 +54,7 @@ use Racketmanager\Services\Validator\Validator_Entry_Form;
 use Racketmanager\Util\Util_Lookup;
 use Racketmanager\Util\Util_Messages;
 use stdClass;
+use Throwable;
 use WP_Error;
 
 /**
@@ -1219,7 +1216,7 @@ class Competition_Entry_Service {
                             $allowed_event_ids[] = (int) $t_event->get_id();
                         }
                     }
-                } catch ( \Throwable ) {
+                } catch ( Throwable ) {
                 }
             }
 
@@ -1237,7 +1234,6 @@ class Competition_Entry_Service {
                     $validator->set_errors( 'event', __( 'No league configured for event', 'racketmanager' ) );
                     continue;
                 }
-                $league_id        = $league_id;
                 $entry->league_id = $league_id;
                 $player_team      = $this->league_team_repository->player_already_entered_league( $player_id, $league_id, (int) $season );
                 if ( substr( $event->type, 1, 1 ) === 'D' ) {
@@ -1245,24 +1241,26 @@ class Competition_Entry_Service {
                     $err_field         = 'partner-' . $event_id;
                     if ( empty( $entry->partner_id ) ) {
                         $validator->set_errors( $err_field, __( 'Partner not selected', 'racketmanager' ) );
-                    } else try {
-                        $partner      = $this->player_service->get_player( $entry->partner_id );
-                        $partner_team = $this->league_team_repository->player_already_entered_league( $partner->get_id(), $league_id, (int) $season );
-                        if ( ! empty( $partner_team ) && ( empty( $player_team->team_id ) || $player_team->team_id !== $partner_team->team_id ) ) {
-                            $validator->set_errors( $err_field, __( 'Partner is in another team in this event', 'racketmanager' ) );
-                        } else {
-                            $validator = $validator->partner_eligibility( $partner, $event, $tournament_end_year, $err_field );
-                            $entry->partner = $partner;
-                            if ( empty( $partner_team ) ) {
-                                if ( $player_team ) {
-                                    $entry->new_partner = true;
-                                }
+                    } else {
+                        try {
+                            $partner      = $this->player_service->get_player( $entry->partner_id );
+                            $partner_team = $this->league_team_repository->player_already_entered_league( $partner->get_id(), $league_id, (int) $season );
+                            if ( ! empty( $partner_team ) && ( empty( $player_team->team_id ) || $player_team->team_id !== $partner_team->team_id ) ) {
+                                $validator->set_errors( $err_field, __( 'Partner is in another team in this event', 'racketmanager' ) );
                             } else {
-                                $entry->new_partner = false;
+                                $validator      = $validator->partner_eligibility( $partner, $event, $tournament_end_year, $err_field );
+                                $entry->partner = $partner;
+                                if ( empty( $partner_team ) ) {
+                                    if ( $player_team ) {
+                                        $entry->new_partner = true;
+                                    }
+                                } else {
+                                    $entry->new_partner = false;
+                                }
                             }
+                        } catch ( Player_Not_Found_Exception $e ) {
+                            $validator->set_errors( $err_field, $e->getMessage(), 404 );
                         }
-                    } catch ( Player_Not_Found_Exception $e ) {
-                        $validator->set_errors( $err_field, $e->getMessage(), 404 );
                     }
                 } else {
                     $entry->is_doubles = false;

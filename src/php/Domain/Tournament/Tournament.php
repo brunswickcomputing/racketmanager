@@ -279,23 +279,23 @@ class Tournament {
     }
 
     /**
-     * Create from a generic object (e.g. database row) without factory validation.
+     * Create from a generic object (e.g. database row) via Tournament_Factory.
      *
      * @param object $row
-     * @return static
+     * @return self
      */
-    public static function from_object( object $row ): static {
-        return new static( Tournament_Hydration_DTO::from_object( $row ) );
+    public static function from_object( object $row ): self {
+        return Tournament_Factory::from_object( $row );
     }
 
     /**
-     * Create from an array without factory validation.
+     * Create from an array via Tournament_Factory.
      *
      * @param array $data
-     * @return static
+     * @return self
      */
-    public static function from_array( array $data ): static {
-        return static::from_object( (object) $data );
+    public static function from_array( array $data ): self {
+        return Tournament_Factory::from_array( $data );
     }
 
     public function set_tournament_info(): void {

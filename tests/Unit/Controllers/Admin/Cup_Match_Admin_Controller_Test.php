@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Controllers\Admin;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\View_Models\Tournament_Fixtures_Page_View_Model;
@@ -60,7 +61,7 @@ final class Cup_Match_Admin_Controller_Test extends TestCase {
 
     public function test_missing_edit_param_throws(): void {
         $competition = Competition_Test_Factory::create( id: 1, name: 'Cup Comp', type: Competition_Type::CUP );
-        $league      = League::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup Draw' ) );
+        $league      = League_Test_Factory::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup Draw' ) );
 
         $competition_service = $this->createMock( Competition_Service::class );
         $competition_service->expects( self::once() )->method( 'get_competition' )->with( 1 )->willReturn( $competition );
@@ -79,7 +80,7 @@ final class Cup_Match_Admin_Controller_Test extends TestCase {
 
     public function test_get_builds_single_cup_match_view_model(): void {
         $competition = Competition_Test_Factory::create( id: 1, name: 'Senior Cup', type: Competition_Type::CUP );
-        $league      = League::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup Draw' ) );
+        $league      = League_Test_Factory::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup Draw' ) );
 
         $champ_ref = new \ReflectionClass( Championship::class );
         $champ_obj = $champ_ref->newInstanceWithoutConstructor();

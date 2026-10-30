@@ -22,7 +22,7 @@ final class League_Event_Admin_Controller_Test extends TestCase {
 
     private function repository_with_event( array $seasons = array( '2026' => array( 'name' => '2026' ) ) ): Event_Repository_Interface {
         $competition = Competition_Test_Factory::create( id: 1, type: Competition_Type::LEAGUE );
-        $event       = Event::from_object( (object) array( 'id' => 10, 'name' => 'Mixed Doubles', 'seasons' => $seasons ), $competition );
+        $event       = Event::from_object( (object) array( 'id' => 10, 'name' => 'Mixed Doubles', 'type' => 'doubles', 'seasons' => $seasons ), $competition );
         $repository  = $this->createMock( Event_Repository_Interface::class );
         $repository->method( 'find_by_id' )->willReturnCallback( static fn( $id ) => 10 === (int) $id ? $event : null );
 

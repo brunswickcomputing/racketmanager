@@ -44,6 +44,13 @@ final class Layer_Rules_Test extends TestCase {
         yield 'domain.no_util_static' => [ 'domain.no_util_static', 'src/php/Domain/Club/Club.php', $ns . 'use Racketmanager\Util\Util;' . "\n" . 'class Club { function f() { return Util::seo_url( "x" ); } }', 'Racketmanager\Util\Util::seo_url()' ];
         yield 'domain.no_untyped_constructor' => [ 'domain.no_untyped_constructor', 'src/php/Domain/Club/Club.php', $ns . 'class Club { public function __construct( ?object $club = null ) {} }', '__construct($club: ?object)' ];
         yield 'domain.no_untyped_constructor (union)' => [ 'domain.no_untyped_constructor', 'src/php/Domain/Club/Club.php', $ns . 'class Club { public function __construct( Club_DTO|\stdClass|null $club = null ) {} }', 'stdClass' ];
+        yield 'domain.no_lenient_from_object (from_object)' => [ 'domain.no_lenient_from_object', 'src/php/Services/Team_Service.php', "<?php\nnamespace Racketmanager\\Services;\nuse Racketmanager\\Domain\\Club\\Club;\nclass Team_Service { function f( \$row ) { return Club::from_object( \$row ); } }", 'Racketmanager\Domain\Club\Club::from_object()' ];
+        yield 'domain.no_lenient_from_object (from_array)' => [ 'domain.no_lenient_from_object', 'src/php/Services/Team_Service.php', "<?php\nnamespace Racketmanager\\Services;\nuse Racketmanager\\Domain\\Club\\Club;\nclass Team_Service { function f( array \$data ) { return Club::from_array( \$data ); } }", 'Racketmanager\Domain\Club\Club::from_array()' ];
+        yield 'domain.no_lenient_from_object (from_database)' => [ 'domain.no_lenient_from_object', 'src/php/Services/Competition_Service.php', "<?php\nnamespace Racketmanager\\Services;\nuse Racketmanager\\Domain\\Competition\\Competition;\nclass Competition_Service { function f( \$row ) { return Competition::from_database( \$row ); } }", 'Racketmanager\Domain\Competition\Competition::from_database()' ];
+        yield 'domain.no_lenient_from_object (Legacy_User inherited wrapper)' => [ 'domain.no_lenient_from_object', 'src/php/Services/Player_Service.php', "<?php\nnamespace Racketmanager\\Services;\nuse Racketmanager\\Infrastructure\\Legacy\\Legacy_User;\nclass Player_Service { function f( \$row ) { return Legacy_User::from_object( \$row ); } }", 'Racketmanager\Infrastructure\Legacy\Legacy_User::from_object()' ];
+        yield 'domain.no_lenient_from_object (non-entity domain file)' => [ 'domain.no_lenient_from_object', 'src/php/Domain/Competition/Scheduling/Schedule_Engine.php', "<?php\nnamespace Racketmanager\\Domain\\Competition\\Scheduling;\nuse Racketmanager\\Domain\\Team\\Team;\nclass Schedule_Engine { function f( \$row ) { return Team::from_object( \$row ); } }", 'Racketmanager\Domain\Team\Team::from_object()' ];
+        yield 'domain.no_lenient_from_object (functions.php)' => [ 'domain.no_lenient_from_object', 'functions.php', "<?php\nnamespace Racketmanager;\nuse Racketmanager\\Domain\\Club\\Club;\nfunction f( \$row ) { return Club::from_object( \$row ); }", 'Racketmanager\Domain\Club\Club::from_object()' ];
+        yield 'domain.no_lenient_from_object (template-tags.php)' => [ 'domain.no_lenient_from_object', 'template-tags.php', "<?php\nnamespace Racketmanager;\nuse Racketmanager\\Domain\\Club\\Club;\nfunction f( \$row ) { return Club::from_object( \$row ); }", 'Racketmanager\Domain\Club\Club::from_object()' ];
 
         $app = "<?php\nnamespace Racketmanager\\Application\\Club\\Handlers;\n";
         yield 'application.no_wpdb' => [ 'application.no_wpdb', 'src/php/Application/Club/Handlers/H.php', $app . 'class H { function f() { global $wpdb; } }', '$wpdb' ];
@@ -109,10 +116,12 @@ final class Layer_Rules_Test extends TestCase {
         $clean_entity = $ns . 'use Racketmanager\Domain\Club\Club_Hydration_DTO;' . "\n"
             . '/** $wpdb in a comment */ class Club { public function __construct( Club_Hydration_DTO $dto ) { $s = \'$_POST $wpdb\'; $this->extract(); } private function extract(): void {} }';
 
-        foreach ( [ 'domain.no_wpdb', 'domain.no_outer_layer_imports', 'domain.no_superglobals', 'domain.no_wordpress_functions', 'domain.no_util_static', 'domain.no_untyped_constructor', 'application.no_global_racketmanager', 'all.no_alias_class_references', 'all.no_extract', 'all.strict_types', 'all.no_legacy_helper_calls', 'all.no_deprecated_helper_calls' ] as $id ) {
+        foreach ( [ 'domain.no_wpdb', 'domain.no_outer_layer_imports', 'domain.no_superglobals', 'domain.no_wordpress_functions', 'domain.no_util_static', 'domain.no_untyped_constructor', 'domain.no_lenient_from_object', 'application.no_global_racketmanager', 'all.no_alias_class_references', 'all.no_extract', 'all.strict_types', 'all.no_legacy_helper_calls', 'all.no_deprecated_helper_calls' ] as $id ) {
             yield "$id ignores clean entity" => [ $id, 'src/php/Domain/Club/Club.php', $clean_entity ];
         }
 
+        yield 'domain.no_lenient_from_object allows factory calls in services' => [ 'domain.no_lenient_from_object', 'src/php/Services/Team_Service.php', "<?php\nnamespace Racketmanager\\Services;\nuse Racketmanager\\Domain\\Club\\Club_Factory;\nclass Team_Service { function f( \$row ) { return Club_Factory::from_object( \$row ); } }" ];
+        yield 'domain.no_lenient_from_object excludes entity delegation wrapper' => [ 'domain.no_lenient_from_object', 'src/php/Domain/Club/Club.php', $ns . 'use Racketmanager\Domain\Club\Club_Factory;' . "\n" . 'class Club { public static function from_object( object $row ) { return Club_Factory::from_object( $row ); } }' ];
         yield 'domain.no_wordpress_functions ignores PHP built-ins and domain methods' => [ 'domain.no_wordpress_functions', 'src/php/Domain/Club/Club.php', $ns . 'class Club { function f( array $a ) { return [ get_class( $this ), array_map( "trim", $a ), is_array( $a ), current( $a ), date( "Y" ), $this->translate(), self::sanitize_name( "x" ) ]; } function translate() {} static function sanitize_name( $n ) {} }' ];
         yield 'application.no_presentation_imports allows Application and Domain' => [ 'application.no_presentation_imports', 'src/php/Application/Club/Handlers/H.php', "<?php\nnamespace Racketmanager\\Application\\Club\\Handlers;\nuse Racketmanager\\Application\\Club\\Queries\\Get_Club_Query;\nuse Racketmanager\\Domain\\Club\\Club;\nclass H { function f( Get_Club_Query \$q ): Club { return new Club(); } }" ];
         yield 'domain.no_outer_layer_imports allows Domain and Exceptions' => [ 'domain.no_outer_layer_imports', 'src/php/Domain/Club/Club.php', $ns . 'use Racketmanager\Domain\Team\Team; use Racketmanager\Exceptions\Not_Found_Exception; use Racketmanager\Domain\Ports\Clock_Interface;' . "\n" . 'class Club {}' ];
@@ -184,6 +193,7 @@ final class Layer_Rules_Test extends TestCase {
                 'domain.no_superglobals',
                 'domain.no_wordpress_functions',
                 'domain.no_untyped_constructor',
+                'domain.no_lenient_from_object',
                 'application.no_wpdb',
                 'application.no_global_racketmanager',
                 'application.no_concrete_repositories',
@@ -205,5 +215,42 @@ final class Layer_Rules_Test extends TestCase {
         $rule = Layer_Rules::get( 'services.no_presentation_imports' );
         self::assertFalse( $rule->applies_to( 'src/php/Services/Container/Container_Bootstrap.php' ) );
         self::assertTrue( $rule->applies_to( 'src/php/Services/Team_Service.php' ) );
+    }
+
+    public function test_domain_no_lenient_from_object_excludes_entity_files(): void {
+        $rule = Layer_Rules::get( 'domain.no_lenient_from_object' );
+        self::assertFalse( $rule->applies_to( 'src/php/Domain/Club/Club.php' ) );
+        self::assertFalse( $rule->applies_to( 'src/php/Domain/Competition/League.php' ) );
+        self::assertTrue( $rule->applies_to( 'src/php/Domain/Competition/Scheduling/Schedule_Engine.php' ) );
+        self::assertTrue( $rule->applies_to( 'src/php/Services/Club_Service.php' ) );
+        self::assertTrue( $rule->applies_to( 'src/php/Admin/Controllers/Admin_League_Controller.php' ) );
+        self::assertTrue( $rule->applies_to( 'functions.php' ) );
+        self::assertTrue( $rule->applies_to( 'template-tags.php' ) );
+        self::assertFalse( $rule->applies_to( 'templates/league.php' ) );
+    }
+
+    public function test_domain_no_lenient_from_object_catches_all_entities(): void {
+        $rule      = Layer_Rules::get( 'domain.no_lenient_from_object' );
+        $evaluator = new Rule_Evaluator();
+        $path      = 'src/php/Services/Dummy_Service.php';
+
+        self::assertCount( 22, Layer_Rules::DOMAIN_ENTITIES );
+        self::assertCount( 21, Layer_Rules::DOMAIN_ENTITY_FILES );
+
+        foreach ( Layer_Rules::DOMAIN_ENTITIES as $entity_class ) {
+            $from_obj_code = "<?php\nnamespace Racketmanager\\Services;\nclass Dummy_Service { function f( \$row ) { return \\{$entity_class}::from_object( \$row ); } }";
+            $file_obj      = Source_Scanner::scan_source( $from_obj_code, $path );
+            $violations    = $evaluator->evaluate( $rule, [ $path => $file_obj ] );
+
+            self::assertCount( 1, $violations, "Failed to catch from_object for entity {$entity_class}" );
+            self::assertStringContainsString( "{$entity_class}::from_object()", $violations[0]->detail );
+
+            $from_arr_code = "<?php\nnamespace Racketmanager\\Services;\nclass Dummy_Service { function f( array \$data ) { return \\{$entity_class}::from_array( \$data ); } }";
+            $file_arr      = Source_Scanner::scan_source( $from_arr_code, $path );
+            $violations    = $evaluator->evaluate( $rule, [ $path => $file_arr ] );
+
+            self::assertCount( 1, $violations, "Failed to catch from_array for entity {$entity_class}" );
+            self::assertStringContainsString( "{$entity_class}::from_array()", $violations[0]->detail );
+        }
     }
 }

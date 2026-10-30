@@ -25,7 +25,7 @@ class Validator_Tournament_Test extends TestCase {
     }
 
     public function test_partner_rejects_partner_already_in_another_event_team_using_query_service(): void {
-        $event = Event::from_object( (object) [ 'id' => 8, 'settings' => [ 'age_limit' => 'open' ] ] );
+        $event = Event::from_object( (object) [ 'id' => 8, 'name' => 'Doubles', 'type' => 'doubles', 'competition_id' => 1, 'settings' => [ 'age_limit' => 'open' ] ] );
         $query_service = $this->createMock( Event_Query_Service::class );
         $query_service->expects( $this->once() )
             ->method( 'get_teams' )

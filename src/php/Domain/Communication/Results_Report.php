@@ -65,24 +65,24 @@ class Results_Report {
     }
 
     /**
-     * Create from a generic object (e.g., database row) without factory validation.
+     * Create from a generic object (e.g., database row) via Results_Report_Factory.
      *
      * @param object $row results report row.
      *
-     * @return static
+     * @return self
      */
-    public static function from_object( object $row ): static {
-        return new static( Results_Report_Hydration_DTO::from_object( $row ) );
+    public static function from_object( object $row ): self {
+        return Results_Report_Factory::from_object( $row );
     }
 
     /**
-     * Create from an array without factory validation.
+     * Create from an array via Results_Report_Factory.
      *
      * @param array $data results report data.
      *
-     * @return static
+     * @return self
      */
-    public static function from_array( array $data ): static {
-        return static::from_object( (object) $data );
+    public static function from_array( array $data ): self {
+        return Results_Report_Factory::from_array( $data );
     }
 }

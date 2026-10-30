@@ -43,7 +43,7 @@ class Event_Repository_Cache_Test extends TestCase {
     }
 
     public function test_update_name_clears_id_and_name_cache(): void {
-        $event = Event::from_object( (object) array( 'id' => 30, 'name' => 'Old Event Name' ) );
+        $event = Event::from_object( (object) array( 'id' => 30, 'name' => 'Old Event Name', 'type' => 'singles', 'competition_id' => 1 ) );
         wp_cache_set( 30, $event, 'events' );
 
         $this->wpdb->expects( $this->once() )
@@ -87,7 +87,7 @@ class Event_Repository_Cache_Test extends TestCase {
     }
 
     public function test_delete_clears_id_and_name_cache(): void {
-        $event = Event::from_object( (object) array( 'id' => 45, 'name' => 'Event To Delete' ) );
+        $event = Event::from_object( (object) array( 'id' => 45, 'name' => 'Event To Delete', 'type' => 'singles', 'competition_id' => 1 ) );
         wp_cache_set( 45, $event, 'events' );
 
         $this->wpdb->expects( $this->once() )

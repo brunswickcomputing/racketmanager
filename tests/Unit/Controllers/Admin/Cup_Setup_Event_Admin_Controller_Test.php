@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Controllers\Admin;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\View_Models\Setup_Page_View_Model;
@@ -54,8 +55,8 @@ final class Cup_Setup_Event_Admin_Controller_Test extends TestCase {
 
     public function test_missing_season_throws(): void {
         $competition = Competition_Test_Factory::create( id: 1, type: Competition_Type::CUP );
-        $league      = League::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup' ) );
-        $event       = Event::from_object( (object) array( 'id' => 20, 'name' => 'Men Singles' ), $competition );
+        $league      = League_Test_Factory::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup' ) );
+        $event       = Event::from_object( (object) array( 'id' => 20, 'name' => 'Men Singles', 'type' => 'singles' ), $competition );
         $league->event = $event;
 
         $league_repo = $this->createMock( League_Repository_Interface::class );
@@ -79,8 +80,8 @@ final class Cup_Setup_Event_Admin_Controller_Test extends TestCase {
             type: Competition_Type::CUP,
             seasons: Competition_Test_Factory::season_map( '2025' )
         );
-        $league      = League::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup' ) );
-        $event       = Event::from_object( (object) array( 'id' => 20, 'name' => 'Men Singles' ), $competition );
+        $league      = League_Test_Factory::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup' ) );
+        $event       = Event::from_object( (object) array( 'id' => 20, 'name' => 'Men Singles', 'type' => 'singles' ), $competition );
         $league->event = $event;
 
         $league_repo = $this->createMock( League_Repository_Interface::class );
@@ -104,8 +105,8 @@ final class Cup_Setup_Event_Admin_Controller_Test extends TestCase {
             type: Competition_Type::CUP,
             seasons: Competition_Test_Factory::season_map( '2026', array( 'match_dates' => array( '2026-06-01' ) ) )
         );
-        $league      = League::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup' ) );
-        $event       = Event::from_object( (object) array( 'id' => 20, 'name' => 'Men Singles' ), $competition );
+        $league      = League_Test_Factory::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup' ) );
+        $event       = Event::from_object( (object) array( 'id' => 20, 'name' => 'Men Singles', 'type' => 'singles' ), $competition );
         $league->event = $event;
 
         $league_repo = $this->createMock( League_Repository_Interface::class );
@@ -137,8 +138,8 @@ final class Cup_Setup_Event_Admin_Controller_Test extends TestCase {
                 'match_dates' => array( '2026-05-01', '2026-05-15', '2026-06-01' ),
             ) )
         );
-        $league        = League::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup' ) );
-        $event         = Event::from_object( (object) array( 'id' => 20, 'name' => 'Men Singles' ), $competition );
+        $league        = League_Test_Factory::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup' ) );
+        $event         = Event::from_object( (object) array( 'id' => 20, 'name' => 'Men Singles', 'type' => 'singles' ), $competition );
         $event->offset = 1;
         $league->event = $event;
 
@@ -167,8 +168,8 @@ final class Cup_Setup_Event_Admin_Controller_Test extends TestCase {
                 'match_dates' => array( '2026-05-01' ),
             ) )
         );
-        $league        = League::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup' ) );
-        $event         = Event::from_object( (object) array( 'id' => 20, 'name' => 'Men Singles' ), $competition );
+        $league        = League_Test_Factory::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup' ) );
+        $event         = Event::from_object( (object) array( 'id' => 20, 'name' => 'Men Singles', 'type' => 'singles' ), $competition );
         $event->set_seasons( array(
             '2026' => array(
                 'match_dates' => array( '2026-07-01', '2026-07-15' ),
@@ -199,7 +200,7 @@ final class Cup_Setup_Event_Admin_Controller_Test extends TestCase {
             type: Competition_Type::CUP,
             seasons: Competition_Test_Factory::season_map( '2026' )
         );
-        $league          = League::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup' ) );
+        $league          = League_Test_Factory::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup' ) );
         $league->seasons = array(
             '2026' => array(
                 'rounds' => array(
@@ -209,7 +210,7 @@ final class Cup_Setup_Event_Admin_Controller_Test extends TestCase {
                 ),
             ),
         );
-        $event           = Event::from_object( (object) array( 'id' => 20, 'name' => 'Men Singles' ), $competition );
+        $event           = Event::from_object( (object) array( 'id' => 20, 'name' => 'Men Singles', 'type' => 'singles' ), $competition );
         $league->event   = $event;
 
         $league_repo = $this->createMock( League_Repository_Interface::class );

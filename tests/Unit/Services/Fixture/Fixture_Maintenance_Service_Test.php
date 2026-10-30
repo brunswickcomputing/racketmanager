@@ -162,6 +162,8 @@ class Fixture_Maintenance_Service_Test extends TestCase {
     public function test_check_result_timeout_saves_to_checker_on_timeout(): void {
         $fixture = $this->createStub( Fixture::class );
         $fixture->method( 'get_league_id' )->willReturn( 1 );
+        $fixture->method( 'get_id' )->willReturn( 55 );
+        $fixture->method( 'get_home_team' )->willReturn( '7' );
         $fixture->method( 'get_date' )->willReturn( '2023-01-01 10:00:00' );
         $fixture->method( 'get_date_result_entered' )->willReturn( '2023-01-02 11:00:00' ); // 25 hours later
 
@@ -178,7 +180,13 @@ class Fixture_Maintenance_Service_Test extends TestCase {
 
         $this->results_checker_repository->expects( $this->once() )
             ->method( 'save' )
-            ->with( $this->isInstanceOf( Results_Checker::class ) );
+            ->with( $this->callback( static fn( $checker ): bool =>
+                $checker instanceof Results_Checker &&
+                1 === $checker->league_id &&
+                55 === $checker->match_id &&
+                7 === $checker->team_id &&
+                str_contains( (string) $checker->description, '25' )
+            ) );
 
         $this->service->check_result_timeout( $fixture );
     }

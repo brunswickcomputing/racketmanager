@@ -61,7 +61,7 @@ $league_row = static fn( string $mode ): object => (object) array(
 	'settings' => array( 'num_advance' => 2 ),
 	'seasons'  => $seasons,
 	'event'    => Event::from_object(
-		(object) array( 'id' => 93, 'name' => 'Event', 'seasons' => $seasons ),
+		(object) array( 'id' => 93, 'name' => 'Event', 'type' => 'singles', 'seasons' => $seasons ),
 		Competition_Test_Factory::create( settings: array( 'mode' => $mode ) )
 	),
 );

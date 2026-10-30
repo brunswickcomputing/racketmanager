@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Domain\Competition;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Team;
@@ -71,7 +72,7 @@ final class League_Team_Details_Test extends TestCase {
             'points_2_minus' => 0,
         ] );
 
-        $league = League::from_object( (object) [
+        $league = League_Test_Factory::from_object( (object) [
             'id'       => 2397,
             'title'    => 'Division 1',
             'event_id' => 10,

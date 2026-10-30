@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Controllers\Admin;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Admin_League;
 use Racketmanager\Domain\Competition\Competition_Type;
@@ -66,6 +67,7 @@ final class Admin_League_Delivery_Test extends TestCase {
         $event = \Racketmanager\Domain\Competition\Event::from_object( (object) array(
             'id' => 93,
             'name' => 'Event',
+            'type' => 'singles',
             'seasons' => array( '2026' => array( 'name' => '2026' ) ),
         ), $competition );
         $league = \Racketmanager\Domain\Competition\League::from_object( (object) array( 'id' => 42, 'title' => 'Finals' ), $event );
@@ -188,12 +190,12 @@ final class Admin_League_Delivery_Test extends TestCase {
         $prop->setAccessible( true );
         $prop->setValue( $champ_obj, 16 );
 
-        $league_champ                  = \Racketmanager\Domain\Competition\League::from_object( (object) array( 'id' => 101, 'title' => 'Division Cup' ) );
+        $league_champ                  = League_Test_Factory::from_object( (object) array( 'id' => 101, 'title' => 'Division Cup' ) );
         $league_champ->is_championship = true;
         $league_champ->num_teams_total = 8;
         $league_champ->championship    = $champ_obj;
 
-        $league_std                  = \Racketmanager\Domain\Competition\League::from_object( (object) array( 'id' => 102, 'title' => 'Division 1' ) );
+        $league_std                  = League_Test_Factory::from_object( (object) array( 'id' => 102, 'title' => 'Division 1' ) );
         $league_std->is_championship = false;
         $league_std->num_teams_total = 6;
 
@@ -401,7 +403,7 @@ final class Admin_League_Delivery_Test extends TestCase {
 
         $competition = Competition_Test_Factory::create( id: 1, name: 'Mixed League', type: Competition_Type::LEAGUE );
         $event       = \Racketmanager\Domain\Competition\Event::from_object(
-            (object) array( 'id' => 10, 'name' => 'Mixed Doubles', 'seasons' => array( '2026' => array( 'name' => '2026' ) ) ),
+            (object) array( 'id' => 10, 'name' => 'Mixed Doubles', 'type' => 'doubles', 'seasons' => array( '2026' => array( 'name' => '2026' ) ) ),
             $competition
         );
         $league      = \Racketmanager\Domain\Competition\League::from_object(
@@ -429,7 +431,7 @@ final class Admin_League_Delivery_Test extends TestCase {
 
         $competition = Competition_Test_Factory::create( id: 1, name: 'Mixed League', type: Competition_Type::LEAGUE );
         $event       = \Racketmanager\Domain\Competition\Event::from_object(
-            (object) array( 'id' => 10, 'name' => 'Mixed Doubles', 'seasons' => array( '2026' => array( 'name' => '2026' ) ) ),
+            (object) array( 'id' => 10, 'name' => 'Mixed Doubles', 'type' => 'doubles', 'seasons' => array( '2026' => array( 'name' => '2026' ) ) ),
             $competition
         );
         $league      = \Racketmanager\Domain\Competition\League::from_object(
@@ -532,7 +534,7 @@ final class Admin_League_Delivery_Test extends TestCase {
 
         $competition = Competition_Test_Factory::create( id: 1, name: 'Mixed League', type: Competition_Type::LEAGUE );
         $event       = \Racketmanager\Domain\Competition\Event::from_object(
-            (object) array( 'id' => 93, 'name' => 'Mixed Doubles', 'settings' => array() ),
+            (object) array( 'id' => 93, 'name' => 'Mixed Doubles', 'type' => 'doubles', 'settings' => array() ),
             $competition
         );
 

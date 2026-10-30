@@ -69,6 +69,7 @@ final class League_Standings_Admin_Controller_Test extends TestCase {
             (object) array(
                 'id'             => 93,
                 'name'           => 'Mixed Doubles',
+                'type'           => 'doubles',
                 'seasons'        => $seasons,
                 'current_season' => empty( $seasons ) ? null : array( 'name' => '2026' ),
             ),

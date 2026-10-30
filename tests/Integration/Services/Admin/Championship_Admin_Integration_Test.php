@@ -86,6 +86,49 @@ class Championship_Admin_Integration_Test extends TestCase {
         );
     }
 
+    public function test_build_fixtures_for_round_creates_fixtures_via_factory_with_slot_teams_and_defaults(): void {
+        $league                = new stdClass();
+        $league->id            = 5;
+        $league->num_rubbers   = 3;
+        $league->championship  = new stdClass();
+        $teams                 = [
+            '1_' => (object) [ 'id' => 11 ],
+            '4_' => (object) [ 'id' => 14 ],
+        ];
+        $round                 = [
+            'key'          => 'quarter',
+            'round'        => 1,
+            'fixture_date' => '2026-05-01',
+            'num_fixtures' => 2,
+        ];
+        $team_array            = [];
+        $admin_service         = $this->create_admin_service();
+
+        $method = new \ReflectionMethod( $admin_service, 'build_fixtures_for_round' );
+        $args   = [ $league, 2026, $round, $teams, 4, &$team_array ];
+        $result = $method->invokeArgs( $admin_service, $args );
+
+        self::assertCount( 2, $result['fixtures'] );
+        [ $first, $second ] = $result['fixtures'];
+
+        self::assertInstanceOf( Fixture::class, $first );
+        self::assertSame( '2026-05-01 00:00:00', $first->get_date() );
+        self::assertNull( $first->get_match_day() );
+        self::assertNull( $first->get_location() );
+        self::assertSame( 5, $first->get_league_id() );
+        self::assertSame( '2026', $first->get_season() );
+        self::assertSame( 'quarter', $first->final );
+        self::assertSame( 'home', $first->get_host() );
+        self::assertSame( [ 'num_rubbers' => 3 ], $first->get_custom() );
+        self::assertSame( '11', $first->get_home_team() );
+        self::assertSame( '14', $first->get_away_team() );
+
+        self::assertInstanceOf( Fixture::class, $second );
+        self::assertNull( $second->get_home_team() );
+        self::assertNull( $second->get_away_team() );
+        self::assertSame( [ 1, 3 ], $team_array );
+    }
+
     public function test_championship_admin_service_handles_team_has_matches_exception(): void {
         $league_id      = 123;
         $season         = 2024;

@@ -106,7 +106,7 @@ class Event_Settings_Test extends TestCase {
 
         $this->event_repository->expects( $this->once() )
             ->method( 'update_settings_and_rules' )
-            ->with( 10, [ 'reverse_rubbers' => '1' ], 4, null, 'doubles' )
+            ->with( 10, [ 'reverse_rubbers' => '1' ], 4, 3, 'doubles' )
             ->willReturn( true );
 
         $this->event->current_season = [ 'name' => '2026' ];

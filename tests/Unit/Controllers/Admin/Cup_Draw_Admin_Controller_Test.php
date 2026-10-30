@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Controllers\Admin;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Presenters\Admin_Championship_Finals_Presenter;
@@ -56,7 +57,7 @@ final class Cup_Draw_Admin_Controller_Test extends TestCase {
 
     public function test_get_builds_cup_draw_view_model(): void {
         $competition = Competition_Test_Factory::create( id: 1, name: 'Senior Cup', type: Competition_Type::CUP );
-        $league      = League::from_object( (object) array( 'id' => 10, 'title' => 'Men Draw' ) );
+        $league      = League_Test_Factory::from_object( (object) array( 'id' => 10, 'title' => 'Men Draw' ) );
 
         $competition_service = $this->createMock( Competition_Service::class );
         $competition_service->expects( self::once() )
@@ -131,7 +132,7 @@ final class Cup_Draw_Admin_Controller_Test extends TestCase {
         $_SERVER['REQUEST_METHOD'] = 'POST';
 
         $competition = Competition_Test_Factory::create( id: 1, name: 'Senior Cup', type: Competition_Type::CUP );
-        $league      = League::from_object( (object) array( 'id' => 10, 'title' => 'Men Draw' ) );
+        $league      = League_Test_Factory::from_object( (object) array( 'id' => 10, 'title' => 'Men Draw' ) );
 
         $competition_service = $this->createMock( Competition_Service::class );
         $competition_service->method( 'get_by_id' )->willReturn( $competition );

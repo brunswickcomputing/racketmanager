@@ -19,6 +19,7 @@ namespace Racketmanager\Services\Fixture {
 
 namespace Racketmanager\Tests\Unit\Services\Fixture {
 
+    use Racketmanager\Tests\Helpers\League_Test_Factory;
     use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
     use PHPUnit\Framework\MockObject\MockObject;
     use PHPUnit\Framework\TestCase;
@@ -157,7 +158,7 @@ namespace Racketmanager\Tests\Unit\Services\Fixture {
             $fixture->method( 'get_home_team' )->willReturn( '100' );
             $fixture->method( 'get_away_team' )->willReturn( '200' );
 
-            $league = \Racketmanager\Domain\Competition\League::from_object( (object) [
+            $league = League_Test_Factory::from_object( (object) [
                 'id'       => 10,
                 'event_id' => 20,
                 'name'     => 'Premier League',

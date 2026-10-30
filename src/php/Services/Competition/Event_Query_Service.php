@@ -8,6 +8,7 @@ use LogicException;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Rubber;
+use Racketmanager\Domain\Fixture\Rubber_Factory;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Infrastructure\Wordpress\Request\Competition_Request;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
@@ -682,7 +683,7 @@ class Event_Query_Service {
 							$rubber_data->rubber_number = $ix;
 							$rubber_data->date          = $fixture->get_date();
 							$rubber_data->match_id      = $fixture->get_id();
-							$rubber_entity              = Rubber::from_object( $rubber_data );
+							$rubber_entity              = Rubber_Factory::from_object( $rubber_data );
 							$rubber_repo->save( $rubber_entity );
 						}
 					}

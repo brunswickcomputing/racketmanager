@@ -122,7 +122,7 @@ final class Competition_Repository_Resolver_Hydration_Test extends TestCase {
 	public function test_find_events_maps_rows_through_event_repository_resolver(): void {
 		$this->install_wpdb( [ (object) [ 'id' => 10 ], (object) [ 'id' => 0 ] ] );
 
-		$event = Event::from_object( (object) [ 'id' => 10, 'name' => 'Mens Singles' ] );
+		$event = Event::from_object( (object) [ 'id' => 10, 'name' => 'Mens Singles', 'type' => 'singles', 'competition_id' => 5 ] );
 
 		$event_repository = $this->createMock( Event_Repository_Interface::class );
 		$event_repository->expects( $this->once() )

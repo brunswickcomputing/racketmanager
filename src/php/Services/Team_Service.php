@@ -15,6 +15,7 @@ use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\DTO\Team\Team_Fixture_Settings_DTO;
 use Racketmanager\Domain\Fixture\Fixture_Team_Resolver_Interface;
 use Racketmanager\Domain\Team\Team;
+use Racketmanager\Domain\Team\Team_Factory;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
@@ -336,8 +337,7 @@ class Team_Service implements Fixture_Team_Resolver_Interface {
             /* translators: %1$s: type (Winner/Loser), %2$s: round name, %3$s: match number */
             $team_name = sprintf( __( '%1$s %2$s %3$s', 'racketmanager' ), $type, $round_name, $match_num );
         }
-        $new_team = new Team();
-        $new_team->set_name( $team_name );
+        $new_team = Team_Factory::from_array( array( 'title' => $team_name ) );
         return new Team_Details_DTO( $new_team, null, null );
 
     }

@@ -515,52 +515,27 @@ class Event {
     }
 
     /**
-     * Lenient hydration from a raw row (no factory invariants).
-     *
-     * A `Competition` attached to the row (`$row->competition`) is honoured when no explicit
-     * competition is supplied, mirroring the legacy constructor.
+     * Hydrate from a raw row through the validating factory.
      *
      * @param object           $row         Raw row (e.g. `$wpdb` result or stdClass fixture).
      * @param Competition|null $competition Optional parent competition.
      *
-     * @return static
+     * @return self
      */
-    public static function from_object( object $row, ?Competition $competition = null ): static {
-        if ( null === $competition && isset( $row->competition ) && $row->competition instanceof Competition ) {
-            $competition = $row->competition;
-        }
-
-        $row_data    = get_object_vars( $row );
-        $dto         = Event_Hydration_DTO::from_object( $row );
-        $num_sets    = array_key_exists( 'num_sets', $row_data ) && '' === $row_data['num_sets'] ? 0 : $dto->num_sets;
-        $num_rubbers = array_key_exists( 'num_rubbers', $row_data ) && '' === $row_data['num_rubbers'] ? 0 : $dto->num_rubbers;
-
-        if ( $num_sets !== $dto->num_sets || $num_rubbers !== $dto->num_rubbers ) {
-            $dto = new Event_Hydration_DTO(
-                id: $dto->id,
-                name: $dto->name,
-                type: $dto->type,
-                num_sets: $num_sets,
-                num_rubbers: $num_rubbers,
-                competition_id: $dto->competition_id,
-                settings: $dto->settings,
-                seasons: $dto->seasons
-            );
-        }
-
-        return new static( $dto, $competition );
+    public static function from_object( object $row, ?Competition $competition = null ): self {
+        return Event_Factory::from_object( $row, $competition );
     }
 
     /**
-     * Lenient hydration from an associative array (no factory invariants).
+     * Hydrate from an associative array through the validating factory.
      *
      * @param array            $data        Row data.
      * @param Competition|null $competition Optional parent competition.
      *
-     * @return static
+     * @return self
      */
-    public static function from_array( array $data, ?Competition $competition = null ): static {
-        return static::from_object( (object) $data, $competition );
+    public static function from_array( array $data, ?Competition $competition = null ): self {
+        return Event_Factory::from_array( $data, $competition );
     }
 
     /** Decode only legacy PHP-serialized arrays; leave JSON and malformed values unchanged. */

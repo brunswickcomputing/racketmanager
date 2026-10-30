@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Services\Admin\Event;
 
 use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\Competition\Event_Factory;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
@@ -117,7 +118,7 @@ readonly final class Event_Action_Dispatcher {
         $event_data->num_sets       = $config->num_sets;
         $event_data->num_rubbers    = $config->num_rubbers;
         $event_data->type           = $config->type;
-        $event                      = Event::from_object( $event_data, $competition );
+        $event                      = Event_Factory::from_object( $event_data, $competition );
         $event_id                   = $this->event_repository->insert_event( $event );
         if ( ! $event_id ) {
             return new Action_Result_DTO(

@@ -179,10 +179,11 @@ class Event_Mutation_Test extends TestCase {
 
 	public function test_set_season_explicit_unknown_season_falls_back_to_latest(): void {
 		$event = Event::from_object( (object) [
-			'id'      => 10,
-			'name'    => 'Men Singles',
-			'type'    => 'singles',
-			'seasons' => json_encode( [
+			'id'             => 10,
+			'name'           => 'Men Singles',
+			'type'           => 'singles',
+			'competition_id' => 1,
+			'seasons'        => json_encode( [
 				'2025' => [ 'name' => '2025' ],
 				'2026' => [ 'name' => '2026' ],
 			] ),
@@ -196,10 +197,11 @@ class Event_Mutation_Test extends TestCase {
 
 	public function test_set_season_default_arguments_unknown_season_falls_back_to_latest_and_sets_match_days(): void {
 		$event = Event::from_object( (object) [
-			'id'      => 10,
-			'name'    => 'Men Singles',
-			'type'    => 'singles',
-			'seasons' => json_encode( [
+			'id'             => 10,
+			'name'           => 'Men Singles',
+			'type'           => 'singles',
+			'competition_id' => 1,
+			'seasons'        => json_encode( [
 				'2025' => [ 'name' => '2025', 'match_days' => [ '2025-05-01' ] ],
 				'2026' => [ 'name' => '2026', 'match_days' => [ '2026-05-01', '2026-05-08' ] ],
 			] ),
@@ -213,10 +215,11 @@ class Event_Mutation_Test extends TestCase {
 
 	public function test_set_season_strict_mode_evaluates_to_false_for_unknown_season(): void {
 		$event = Event::from_object( (object) [
-			'id'      => 10,
-			'name'    => 'Men Singles',
-			'type'    => 'singles',
-			'seasons' => json_encode( [
+			'id'             => 10,
+			'name'           => 'Men Singles',
+			'type'           => 'singles',
+			'competition_id' => 1,
+			'seasons'        => json_encode( [
 				'2025' => [ 'name' => '2025' ],
 				'2026' => [ 'name' => '2026' ],
 			] ),
@@ -229,10 +232,11 @@ class Event_Mutation_Test extends TestCase {
 
 	public function test_set_season_force_overwrite_updates_current_season(): void {
 		$event = Event::from_object( (object) [
-			'id'      => 10,
-			'name'    => 'Men Singles',
-			'type'    => 'singles',
-			'seasons' => json_encode( [
+			'id'             => 10,
+			'name'           => 'Men Singles',
+			'type'           => 'singles',
+			'competition_id' => 1,
+			'seasons'        => json_encode( [
 				'2025' => [ 'name' => '2025' ],
 				'2026' => [ 'name' => '2026' ],
 			] ),

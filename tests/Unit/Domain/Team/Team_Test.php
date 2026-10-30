@@ -87,6 +87,11 @@ final class Team_Test extends TestCase {
         $team_from_arr = Team_Factory::from_array( [ 'id' => 3, 'title' => 'Arr Team' ] );
         $this->assertSame( 3, $team_from_arr->get_id() );
         $this->assertSame( 'Arr Team', $team_from_arr->get_name() );
+
+        $data = [ 'id' => 42, 'title' => 'Westcliff Men 1', 'club_id' => 10 ];
+        $this->assertEquals( Team_Factory::from_object( (object) $data ), Team::from_object( (object) $data ) );
+        $this->assertEquals( Team_Factory::from_array( $data ), Team::from_array( $data ) );
+        $this->assertEquals( Team::from_object( (object) $data ), Team::from_array( $data ) );
     }
 
     public function test_team_entity_title_expansion_and_has_player(): void {
@@ -519,5 +524,20 @@ final class Team_Test extends TestCase {
             Team::class,
             new Team( $row )
         );
+    }
+
+    public function test_inherited_from_object_and_from_array_return_base_team_instance(): void {
+        $subclass = new class extends Team {};
+        $row      = (object) [ 'id' => 12, 'title' => 'Subclass Team' ];
+
+        $from_object = $subclass::from_object( $row );
+        $this->assertInstanceOf( Team::class, $from_object );
+        $this->assertNotInstanceOf( get_class( $subclass ), $from_object );
+        $this->assertSame( 12, $from_object->id );
+
+        $from_array = $subclass::from_array( [ 'id' => 12, 'title' => 'Subclass Team' ] );
+        $this->assertInstanceOf( Team::class, $from_array );
+        $this->assertNotInstanceOf( get_class( $subclass ), $from_array );
+        $this->assertSame( 12, $from_array->id );
     }
 }

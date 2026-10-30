@@ -108,23 +108,23 @@ class Club_Player {
     }
 
     /**
-     * Create a Club_Player from a raw row without factory validation.
+     * Create a Club_Player from a raw row via Club_Player_Factory.
      *
      * @param object $row club player row.
-     * @return static
+     * @return self
      */
-    public static function from_object( object $row ): static {
-        return new static( Club_Player_Hydration_DTO::from_object( $row ) );
+    public static function from_object( object $row ): self {
+        return Club_Player_Factory::from_object( $row );
     }
 
     /**
-     * Create a Club_Player from an associative array without factory validation.
+     * Create a Club_Player from an associative array via Club_Player_Factory.
      *
      * @param array $data club player data.
-     * @return static
+     * @return self
      */
-    public static function from_array( array $data ): static {
-        return static::from_object( (object) $data );
+    public static function from_array( array $data ): self {
+        return Club_Player_Factory::from_array( $data );
     }
 
     /**

@@ -95,6 +95,7 @@ final class Production_Hydration_Regression_Test extends TestCase {
             (object) array(
                 'id'             => '12',
                 'name'           => 'Summer League Event',
+                'type'           => 'singles',
                 'competition_id' => '1',
                 'settings'       => serialize(
                     array(
@@ -118,7 +119,7 @@ final class Production_Hydration_Regression_Test extends TestCase {
         $competition           = $this->createStub( Competition::class );
         $competition->settings = new Competition_Settings( array( 'mode' => 'league' ) );
         $competition->type     = Competition_Type::LEAGUE;
-        $event                 = Event::from_object( (object) array( 'id' => 12, 'name' => 'Summer', 'competition_id' => 1 ), $competition );
+        $event                 = Event::from_object( (object) array( 'id' => 12, 'name' => 'Summer', 'type' => 'singles', 'competition_id' => 1 ), $competition );
 
         $league_raw = (object) array(
             'id'       => '34',
@@ -156,7 +157,7 @@ final class Production_Hydration_Regression_Test extends TestCase {
         $competition           = $this->createStub( Competition::class );
         $competition->settings = new Competition_Settings( array( 'mode' => 'league' ) );
         $competition->type     = Competition_Type::LEAGUE;
-        $event                 = Event::from_object( (object) array( 'id' => 12, 'name' => 'Summer', 'competition_id' => 1 ), $competition );
+        $event                 = Event::from_object( (object) array( 'id' => 12, 'name' => 'Summer', 'type' => 'singles', 'competition_id' => 1 ), $competition );
 
         $league = League::from_object(
             (object) array(
@@ -314,6 +315,7 @@ final class Production_Hydration_Regression_Test extends TestCase {
         $event_raw = (object) array(
             'id'             => 5,
             'name'           => 'Knockout Event',
+            'type'           => 'singles',
             'competition_id' => 1,
             'seasons'        => array( array( 'name' => '2026' ) ),
         );

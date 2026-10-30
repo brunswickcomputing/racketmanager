@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Ajax;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
@@ -204,7 +205,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
         $league_team->status = 'active';
         $league_team->set_entered_state(\Racketmanager\Domain\Enums\Team_Profile::from_value(1));
         $GLOBALS['wp_stubs_league_teams'] = [ 5 => $league_team ];
-        $league = \Racketmanager\Domain\Competition\League::from_object( (object) [ 'title' => 'Division 1' ] );
+        $league = League_Test_Factory::from_object( (object) [ 'title' => 'Division 1' ] );
         $league->id = 1;
         $GLOBALS['wp_stubs_leagues'][1] = $league;
         $this->standings_service->expects( $this->once() )->method( 'set_teams_rank' )->with( $league, '2026' );

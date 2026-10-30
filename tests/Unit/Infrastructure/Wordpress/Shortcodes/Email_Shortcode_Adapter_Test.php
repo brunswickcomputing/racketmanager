@@ -336,7 +336,16 @@ class Email_Shortcode_Adapter_Test extends TestCase {
         );
         $this->template_renderer->expects( $this->once() )->method( 'render' )->willReturn( 'ok' );
 
-        $this->assertSame( 'ok', $this->adapter->show_event_constitution( [ 'id' => (object) [ 'id' => 30, 'name' => 'Raw Event' ] ] ) );
+        $competition     = $this->createStub( Competition::class );
+        $competition->id = 42;
+        $raw_event       = (object) [
+            'id'          => 30,
+            'name'        => 'Raw Event',
+            'type'        => 'league',
+            'competition' => $competition,
+        ];
+
+        $this->assertSame( 'ok', $this->adapter->show_event_constitution( [ 'id' => $raw_event ] ) );
         $this->assertInstanceOf( Event::class, $captured );
         $this->assertSame( 30, (int) $captured->id );
     }
@@ -400,6 +409,7 @@ class Email_Shortcode_Adapter_Test extends TestCase {
         $raw_event = (object) [
             'id'             => 10,
             'name'           => 'Raw Championship Event',
+            'type'           => 'league',
             'competition_id' => (string) $competition_id,
             'seasons'        => [
                 '2025' => [ 'name' => '2025' ],

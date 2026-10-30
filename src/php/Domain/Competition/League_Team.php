@@ -498,25 +498,23 @@ class League_Team {
     }
 
     /**
-     * Lenient hydration from a raw row (no factory invariants).
+     * Create from a generic object (e.g. database row) via League_Team_Factory.
      *
-     * @param object $row Raw row (e.g. `$wpdb` result or stdClass fixture).
-     *
-     * @return static
+     * @param object $row
+     * @return self
      */
-    public static function from_object( object $row ): static {
-        return new static( League_Team_Hydration_DTO::from_object( $row ) );
+    public static function from_object( object $row ): self {
+        return League_Team_Factory::from_object( $row );
     }
 
     /**
-     * Lenient hydration from an associative array (no factory invariants).
+     * Create from an array via League_Team_Factory.
      *
-     * @param array $data Row data.
-     *
-     * @return static
+     * @param array $data
+     * @return self
      */
-    public static function from_array( array $data ): static {
-        return static::from_object( (object) $data );
+    public static function from_array( array $data ): self {
+        return League_Team_Factory::from_array( $data );
     }
 
     /**

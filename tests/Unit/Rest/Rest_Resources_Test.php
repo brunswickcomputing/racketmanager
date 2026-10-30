@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Rest;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\Competition;
@@ -234,7 +235,7 @@ class Rest_Resources_Test extends TestCase {
         $request->set_param( 'league', 'division-1' );
         $request->set_param( 'days', '10' );
 
-        $league = League::from_object( (object) array( 'id' => 3, 'title' => 'Division 1' ) );
+        $league = League_Test_Factory::from_object( (object) array( 'id' => 3, 'title' => 'Division 1' ) );
         $match = new Fixture();
         $match->id = 31;
         $match->league_id = 3;
@@ -320,7 +321,7 @@ class Rest_Resources_Test extends TestCase {
             fn( int $id ) => 5 === $id ? $home_team : ( 6 === $id ? $away_team : null )
         );
 
-        $league = League::from_object( (object) array( 'id' => 3, 'title' => 'Premier "Division"' ) );
+        $league = League_Test_Factory::from_object( (object) array( 'id' => 3, 'title' => 'Premier "Division"' ) );
         $league->seasons = [ '2026' ];
         $league_repo = $this->createStub( League_Repository_Interface::class );
         $league_repo->method( 'find_by_id' )->willReturn( $league );
@@ -400,7 +401,7 @@ class Rest_Resources_Test extends TestCase {
             return null;
         } );
 
-        $league = League::from_object( (object) array( 'id' => 3, 'title' => 'Division 1' ) );
+        $league = League_Test_Factory::from_object( (object) array( 'id' => 3, 'title' => 'Division 1' ) );
         $league_repo = $this->createStub( League_Repository_Interface::class );
         $league_repo->method( 'find_by_id' )->willReturn( $league );
         $this->competition_service->method( 'get_league_repository' )->willReturn( $league_repo );
@@ -479,7 +480,7 @@ class Rest_Resources_Test extends TestCase {
         } );
 
         $league_lookup_count = 0;
-        $league = League::from_object( (object) array( 'id' => 100, 'title' => 'Memoized League' ) );
+        $league = League_Test_Factory::from_object( (object) array( 'id' => 100, 'title' => 'Memoized League' ) );
         $league->seasons = [ '2026' ];
         $league_repo = $this->createStub( League_Repository_Interface::class );
         $league_repo->method( 'find_by_id' )->willReturnCallback( function( int $id ) use ( $league, &$league_lookup_count ) {
@@ -567,7 +568,7 @@ class Rest_Resources_Test extends TestCase {
         $event = $this->createStub( Event::class );
         $event->id = 50;
 
-        $league = League::from_object( (object) [ 'id' => 10, 'title' => 'Premier League', 'seasons' => [ '2026' => [ 'name' => '2026' ] ] ] );
+        $league = League_Test_Factory::from_object( (object) [ 'id' => 10, 'title' => 'Premier League', 'seasons' => [ '2026' => [ 'name' => '2026' ] ] ] );
         $league->current_season = [ 'name' => '2026' ];
         $league->event = $event;
 
@@ -618,7 +619,7 @@ class Rest_Resources_Test extends TestCase {
     }
 
     public function test_league_and_event_repositories_are_resolved_from_container_and_used(): void {
-        $league = League::from_object( (object) array( 'id' => 7, 'title' => 'Container League' ) );
+        $league = League_Test_Factory::from_object( (object) array( 'id' => 7, 'title' => 'Container League' ) );
         $event  = $this->createStub( Event::class );
         $event->method( 'get_seasons' )->willReturn( array( '2026' => array( 'name' => '2026' ) ) );
 
@@ -653,7 +654,7 @@ class Rest_Resources_Test extends TestCase {
     }
 
     public function test_constructor_repository_overrides_take_precedence_over_container(): void {
-        $league = League::from_object( (object) array( 'id' => 8, 'title' => 'Injected League' ) );
+        $league = League_Test_Factory::from_object( (object) array( 'id' => 8, 'title' => 'Injected League' ) );
 
         $container_repository = $this->createMock( League_Repository_Interface::class );
         $container_repository->expects( self::never() )->method( 'find_by_name' );

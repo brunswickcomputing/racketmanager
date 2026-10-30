@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Services;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Result_Update_Request;
@@ -92,6 +93,33 @@ class League_Service_Test extends TestCase {
         self::assertSame( $existing_league_team, $result );
     }
 
+    public function test_add_team_to_league_creates_active_league_team_via_factory(): void {
+        $team_id   = 11;
+        $league_id = 22;
+        $season    = 2025;
+
+        $this->team_repository->method( 'find_by_id' )->willReturn( $this->createMock( Team::class ) );
+        $this->league_repository->method( 'find_by_id' )->willReturn( $this->createMock( League::class ) );
+        $this->league_team_repository->method( 'find_by_team_league_and_season' )->willReturn( null );
+
+        $this->league_team_repository->expects( self::once() )
+            ->method( 'save' )
+            ->with(
+                self::callback(
+                    static fn( League_Team $league_team ): bool =>
+                        11 === $league_team->get_team_id() &&
+                        22 === $league_team->get_league_id() &&
+                        '2025' === $league_team->get_season() &&
+                        Team_Profile::ACTIVE === $league_team->get_profile_enum()
+                )
+            );
+
+        $result = $this->service->add_team_to_league( $team_id, $league_id, $season );
+
+        self::assertInstanceOf( League_Team::class, $result );
+        self::assertSame( '2025', $result->get_season() );
+    }
+
     public function test_remove_team_from_league_throws_exception_if_matches_exist(): void {
         $team_id   = 1;
         $league_id = 2;
@@ -109,7 +137,7 @@ class League_Service_Test extends TestCase {
             )
             ->willReturn( [ (object) ['id' => 101] ] );
 
-        $league = League::from_object( (object) [ 'title' => 'Division 1' ] );
+        $league = League_Test_Factory::from_object( (object) [ 'title' => 'Division 1' ] );
         $league->id = $league_id;
         $league->seasons = [ '2024' => [ 'name' => '2024' ] ];
         $this->league_repository->method( 'find_by_id' )->willReturn( $league );
@@ -169,7 +197,7 @@ class League_Service_Test extends TestCase {
                 [789, $league_id, $season, $league_team2]
             ]);
 
-        $league = League::from_object( (object) [ 'title' => 'Division 1' ] );
+        $league = League_Test_Factory::from_object( (object) [ 'title' => 'Division 1' ] );
         $league->id = $league_id;
         $league->seasons = [ (string) $season => [ 'name' => (string) $season ] ];
         $this->league_repository->method('find_by_id')->willReturn($league);

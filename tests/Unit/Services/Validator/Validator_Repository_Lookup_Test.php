@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Services\Validator;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\Event;
@@ -212,7 +213,7 @@ final class Validator_Repository_Lookup_Test extends TestCase {
         $event_repository->expects( $this->once() )
             ->method( 'find_by_name' )
             ->with( 'Mens Singles' )
-            ->willReturn( Event::from_object( (object) [ 'id' => 10, 'name' => 'Mens Singles' ] ) );
+            ->willReturn( Event::from_object( (object) [ 'id' => 10, 'name' => 'Mens Singles', 'type' => 'singles', 'competition_id' => 1 ] ) );
         $event_repository->expects( $this->never() )->method( 'find_by_id' );
 
         $validator = $this->make_validator( event_repository: $event_repository );
@@ -277,7 +278,7 @@ final class Validator_Repository_Lookup_Test extends TestCase {
         $league_repository->expects( $this->once() )
             ->method( 'find_by_id' )
             ->with( 9 )
-            ->willReturn( League::from_object( (object) [ 'id' => 9, 'title' => 'Division 1' ] ) );
+            ->willReturn( League_Test_Factory::from_object( (object) [ 'id' => 9, 'title' => 'Division 1' ] ) );
 
         $validator = $this->make_validator( league_repository: $league_repository );
         $validator->league( 9 );

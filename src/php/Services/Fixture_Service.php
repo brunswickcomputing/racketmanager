@@ -14,6 +14,7 @@ use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Fixture\Rubber;
+use Racketmanager\Domain\Fixture\Rubber_Factory;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\Repository_Provider;
@@ -105,7 +106,7 @@ class Fixture_Service {
             $rubber_data->rubber_number = $ix;
             $rubber_data->date          = $fixture->get_date();
             $rubber_data->match_id      = $fixture->get_id();
-            $rubber                     = Rubber::from_object( $rubber_data );
+            $rubber                     = Rubber_Factory::from_object( $rubber_data );
             $this->rubber_repository->save( $rubber );
         }
     }

@@ -141,6 +141,7 @@ final class Admin_League_Regression_Test extends TestCase {
 			(object) array(
 				'id'      => 93,
 				'name'    => 'Mixed Doubles',
+				'type'    => 'doubles',
 				'seasons' => array( '2026' => array( 'name' => '2026' ) ),
 			),
 			$competition

@@ -23,7 +23,9 @@ use Racketmanager\Domain\DTO\Tournament\Tournament_Invoice_Details_DTO;
 use Racketmanager\Domain\Enums\Charge_Status;
 use Racketmanager\Domain\Enums\Invoice_Status;
 use Racketmanager\Domain\Finance\Charge;
+use Racketmanager\Domain\Finance\Charge_Factory;
 use Racketmanager\Domain\Finance\Invoice;
+use Racketmanager\Domain\Finance\Invoice_Factory;
 use Racketmanager\Domain\Tournament\Currency;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Domain\Value_Objects\Money;
@@ -130,7 +132,7 @@ class Finance_Service {
         if ( is_wp_error( $validator ) ) {
             return $validator;
         }
-        $charge  = Charge::from_object( $new_charge );
+        $charge  = Charge_Factory::from_object( $new_charge );
         $updates = $this->charge_repository->save( $charge );
         if ( $updates ) {
             return $charge;
@@ -305,20 +307,20 @@ class Finance_Service {
                 $date_due = null;
             }
         }
-        $invoice            = new Invoice();
-        $invoice->charge_id = $charge_id;
-        $invoice->set_billable_id( $entry->id );
-        $invoice->set_billable_type( $type );
-        $invoice->set_date( $invoice_date );
+        $invoice = Invoice_Factory::from_array(
+            array(
+                'charge_id'      => $charge_id,
+                'billable_id'    => $entry->id,
+                'billable_type'  => $type,
+                'date'           => $invoice_date,
+                'status'         => $status instanceof Invoice_Status ? $status->value : $status,
+                'details'        => $entry,
+                'date_due'       => $date_due ? $date_due->format( 'Y-m-d' ) : $invoice_date,
+                'invoice_number' => $billing['invoiceNumber'],
+            )
+        );
+        // Amount may be a Money value object, which only the entity setter can split into amount and currency.
         $invoice->set_amount( $entry->total );
-        $invoice->set_status( $status );
-        $invoice->set_details( $entry );
-        if ( $date_due ) {
-            $invoice->set_date_due( $date_due->format( 'Y-m-d' ) );
-        } else {
-            $invoice->set_date_due( $invoice_date );
-        }
-        $invoice->set_invoice_number( $billing['invoiceNumber'] );
         $updates = $this->invoice_repository->save( $invoice );
         if ( $updates ) {
             $billing['invoiceNumber'] += 1;

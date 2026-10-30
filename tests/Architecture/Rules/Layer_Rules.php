@@ -196,6 +196,57 @@ final class Layer_Rules {
         'Racketmanager\get_*_query_service',
     ];
 
+    /** Domain entity classes whose from_object() and from_array() hydration helpers are forbidden in production. */
+    public const array DOMAIN_ENTITIES = [
+        'Racketmanager\Domain\Club\Club',
+        'Racketmanager\Domain\Club\Club_Player',
+        'Racketmanager\Domain\Club\Club_Role',
+        'Racketmanager\Domain\Communication\Message',
+        'Racketmanager\Domain\Communication\Results_Report',
+        'Racketmanager\Domain\Competition\Competition',
+        'Racketmanager\Domain\Competition\Event',
+        'Racketmanager\Domain\Competition\League',
+        'Racketmanager\Domain\Competition\League_Team',
+        'Racketmanager\Domain\Finance\Charge',
+        'Racketmanager\Domain\Finance\Invoice',
+        'Racketmanager\Domain\Fixture\Fixture',
+        'Racketmanager\Domain\Fixture\Rubber',
+        'Racketmanager\Domain\Player\Player',
+        'Racketmanager\Domain\Player\Player_Error',
+        'Racketmanager\Domain\Player\User',
+        'Racketmanager\Domain\Result\Results_Checker',
+        'Racketmanager\Domain\Season\Season',
+        'Racketmanager\Domain\Team\Team',
+        'Racketmanager\Domain\Tournament\Tournament',
+        'Racketmanager\Domain\Tournament\Tournament_Entry',
+        'Racketmanager\Infrastructure\Legacy\Legacy_User',
+    ];
+
+    /** Domain entity files that define the backwards-compatible delegation wrappers and are exempt from domain.no_lenient_from_object. */
+    public const array DOMAIN_ENTITY_FILES = [
+        self::DOMAIN . 'Club/Club.php',
+        self::DOMAIN . 'Club/Club_Player.php',
+        self::DOMAIN . 'Club/Club_Role.php',
+        self::DOMAIN . 'Communication/Message.php',
+        self::DOMAIN . 'Communication/Results_Report.php',
+        self::DOMAIN . 'Competition/Competition.php',
+        self::DOMAIN . 'Competition/Event.php',
+        self::DOMAIN . 'Competition/League.php',
+        self::DOMAIN . 'Competition/League_Team.php',
+        self::DOMAIN . 'Finance/Charge.php',
+        self::DOMAIN . 'Finance/Invoice.php',
+        self::DOMAIN . 'Fixture/Fixture.php',
+        self::DOMAIN . 'Fixture/Rubber.php',
+        self::DOMAIN . 'Player/Player.php',
+        self::DOMAIN . 'Player/Player_Error.php',
+        self::DOMAIN . 'Player/User.php',
+        self::DOMAIN . 'Result/Results_Checker.php',
+        self::DOMAIN . 'Season/Season.php',
+        self::DOMAIN . 'Team/Team.php',
+        self::DOMAIN . 'Tournament/Tournament.php',
+        self::DOMAIN . 'Tournament/Tournament_Entry.php',
+    ];
+
     /**
      * Helpers that functions.php already flags as deprecated (they trigger E_USER_DEPRECATED): no caller
      * may remain. Both the namespaced and the global spelling are listed because no root function of
@@ -341,6 +392,19 @@ final class Layer_Rules {
                 [ 'object', 'stdClass' ],
                 Rule_Mode::STRICT,
                 [ self::DOMAIN . 'DTO/' ]
+            ),
+            new Layer_Rule(
+                'domain.no_lenient_from_object',
+                'Production code must hydrate Domain entities via validating factories, not Entity::from_object() or from_array()',
+                'Call the validating factory (e.g. Club_Factory::from_object() / Club_Factory::from_array()) instead of the legacy entity forwarders (audit L1, P2-8/8a done).',
+                [ self::SRC, 'functions.php', self::TEMPLATE_TAGS ],
+                Rule_Kind::FORBIDDEN_STATIC_CALL,
+                [
+                    'classes' => self::DOMAIN_ENTITIES,
+                    'methods' => [ 'from_object', 'from_array', 'from_database' ],
+                ],
+                Rule_Mode::STRICT,
+                self::DOMAIN_ENTITY_FILES
             ),
         ];
     }

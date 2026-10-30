@@ -44,6 +44,7 @@ class Event_Query_Service_Test extends TestCase {
             'id' => 93,
             'name' => 'Mens Doubles',
             'type' => 'MD',
+            'competition_id' => 1,
             'seasons' => '{"2026":{"name":"2026"}}',
         ] );
         $event->current_season = [ 'name' => '2026' ];
@@ -393,10 +394,11 @@ class Event_Query_Service_Test extends TestCase {
         $service          = $this->service( $event_repository );
 
         $event = Event::from_object( (object) [
-            'id'      => 93,
-            'name'    => 'Mens Doubles',
-            'type'    => 'MD',
-            'seasons' => json_encode( [
+            'id'             => 93,
+            'name'           => 'Mens Doubles',
+            'type'           => 'MD',
+            'competition_id' => 1,
+            'seasons'        => json_encode( [
                 '2025' => [ 'name' => '2025' ],
                 '2026' => [ 'name' => '2026' ],
             ] ),
@@ -419,10 +421,11 @@ class Event_Query_Service_Test extends TestCase {
         $service          = $this->service( $event_repository );
 
         $event = Event::from_object( (object) [
-            'id'      => 93,
-            'name'    => 'Mens Doubles',
-            'type'    => 'MD',
-            'seasons' => json_encode( [
+            'id'             => 93,
+            'name'           => 'Mens Doubles',
+            'type'           => 'MD',
+            'competition_id' => 1,
+            'seasons'        => json_encode( [
                 '2025' => [ 'name' => '2025' ],
                 '2026' => [ 'name' => '2026' ],
             ] ),

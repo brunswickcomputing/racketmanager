@@ -39,8 +39,8 @@ class Tournament_Service_Test extends TestCase {
         $service->expects( self::exactly( 2 ) )
                 ->method( 'remove_tournament' )
                 ->willReturnMap( [
-                    [ 123, 1 ],
-                    [ 456, 1 ],
+                    [ 123, true ],
+                    [ 456, true ],
                 ] );
 
         $result = $service->bulk_remove_tournaments( [ 123, 456 ] );
@@ -79,7 +79,7 @@ class Tournament_Service_Test extends TestCase {
                 ->method( 'remove_tournament' )
                 ->willReturnCallback( function ( $id ) {
                     if ( $id === 123 ) {
-                        return 1;
+                        return true;
                     }
                     throw new Tournament_Not_Found_Exception( "Not found $id" );
                 } );

@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Controllers\Admin;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Admin_Cup;
@@ -506,6 +507,7 @@ final class Admin_Cup_Delivery_Test extends TestCase {
             (object) array(
                 'id'      => 3,
                 'name'    => 'Cup Event',
+                'type'    => 'singles',
                 'seasons' => array( '2024' => array( 'name' => '2024', 'match_dates' => array( '2024-05-01' ) ) ),
             ),
             $competition
@@ -678,12 +680,12 @@ final class Admin_Cup_Delivery_Test extends TestCase {
         $prop->setAccessible( true );
         $prop->setValue( $champ_obj, 8 );
 
-        $champ_league                  = League::from_object( (object) array( 'id' => 12, 'title' => 'Men Championship Draw' ) );
+        $champ_league                  = League_Test_Factory::from_object( (object) array( 'id' => 12, 'title' => 'Men Championship Draw' ) );
         $champ_league->num_teams_total = 16;
         $champ_league->is_championship = true;
         $champ_league->championship    = $champ_obj;
 
-        $non_champ_league                  = League::from_object( (object) array( 'id' => 13, 'title' => 'Ladies Plate Draw' ) );
+        $non_champ_league                  = League_Test_Factory::from_object( (object) array( 'id' => 13, 'title' => 'Ladies Plate Draw' ) );
         $non_champ_league->num_teams_total = 10;
         $non_champ_league->is_championship = false;
 
@@ -1006,7 +1008,7 @@ final class Admin_Cup_Delivery_Test extends TestCase {
 
         $competition = $this->create_test_competition( 5, '2024' );
         $event       = \Racketmanager\Domain\Competition\Event::from_object(
-            (object) array( 'id' => 3, 'name' => 'Cup Event', 'settings' => array() ),
+            (object) array( 'id' => 3, 'name' => 'Cup Event', 'type' => 'singles', 'settings' => array() ),
             $competition
         );
 

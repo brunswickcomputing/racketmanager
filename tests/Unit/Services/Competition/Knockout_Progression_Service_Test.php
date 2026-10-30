@@ -120,7 +120,7 @@ final class Knockout_Progression_Service_Test extends TestCase {
 		$fixture->set_loser_id( 33 );
 		$fixture->set_home_team( '33' );
 
-		$event = Event::from_object( (object) [ 'id' => 88, 'name' => 'Cup', 'seasons' => '{"2026":{"name":"2026"}}' ] );
+		$event = Event::from_object( (object) [ 'id' => 88, 'name' => 'Cup', 'type' => 'singles', 'competition_id' => 1, 'seasons' => '{"2026":{"name":"2026"}}' ] );
 		$event_repo->expects( $this->exactly( 2 ) )
 			->method( 'query_leagues' )
 			->with( 88, $this->callback( static fn( array $args ): bool => true === $args['consolation'] ) )

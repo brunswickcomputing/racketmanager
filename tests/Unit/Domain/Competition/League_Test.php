@@ -15,7 +15,7 @@ class League_Test extends TestCase {
         $competition->settings = new Competition_Settings( [ 'mode' => 'league', 'point_rule' => 'three', 'sport' => 'tennis' ] );
         $competition->standings = [];
         $competition->is_player_entry = false;
-        $event = Event::from_object( (object) [ 'id' => 10, 'name' => 'League', 'seasons' => [] ], $competition );
+        $event = Event::from_object( (object) [ 'id' => 10, 'name' => 'League', 'type' => 'singles', 'competition_id' => 1, 'seasons' => [] ], $competition );
         $league = League::from_object( (object) [
             'id' => 1,
             'title' => 'Division 1',

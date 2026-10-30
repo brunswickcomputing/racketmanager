@@ -12,9 +12,11 @@ use Racketmanager\Domain\Result\Result;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
 use Racketmanager\Domain\Result\Results_Checker;
+use Racketmanager\Domain\Result\Results_Checker_Factory;
 
 use Racketmanager\Repositories\Interfaces\Results_Report_Repository_Interface;
 use Racketmanager\Domain\Communication\Results_Report;
+use Racketmanager\Domain\Communication\Results_Report_Factory;
 
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 
@@ -170,11 +172,12 @@ class Fixture_Maintenance_Service {
                     /* translators: %d: number of hours */
                     $reason = sprintf( __( 'Result entered %d hours after match', 'racketmanager' ), $time_diff_hours );
 
-                    $checker              = new Results_Checker();
-                    $checker->league_id   = (int) $fixture->get_league_id();
-                    $checker->match_id    = (int) $fixture->get_id();
-                    $checker->team_id     = (int) $fixture->get_home_team();
-                    $checker->description = $reason;
+                    $checker = Results_Checker_Factory::from_array( array(
+                        'league_id'   => (int) $fixture->get_league_id(),
+                        'match_id'    => (int) $fixture->get_id(),
+                        'team_id'     => (int) $fixture->get_home_team(),
+                        'description' => $reason,
+                    ) );
 
                     $this->results_checker_repository->save( $checker );
                 }
@@ -207,11 +210,11 @@ class Fixture_Maintenance_Service {
      * @param object $data
      */
     public function save_result_report( int $fixture_id, object $data ): void {
-        $report = new Results_Report();
-        $report->match_id = $fixture_id;
-        $report->data = $data;
-        $report->result_object = wp_json_encode( $data );
-        
+        $report = Results_Report_Factory::from_array( array(
+            'match_id' => $fixture_id,
+            'data'     => $data,
+        ) );
+
         $this->results_report_repository->save( $report );
     }
 

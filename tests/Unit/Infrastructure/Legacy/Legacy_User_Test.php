@@ -150,4 +150,20 @@ final class Legacy_User_Test extends TestCase {
 		$this->assertSame( 0, $exit_code, implode( "\n", $output ) );
 		$this->assertSame( 'ok', implode( "\n", $output ) );
 	}
+
+	public function test_inherited_from_object_and_from_array_return_base_user_instance(): void {
+		$row = (object) [ 'ID' => 42, 'user_email' => 'legacy@example.test', 'display_name' => 'Legacy Name' ];
+
+		$from_object = Legacy_User::from_object( $row );
+		$this->assertInstanceOf( User::class, $from_object );
+		$this->assertNotInstanceOf( Legacy_User::class, $from_object );
+		$this->assertSame( 42, $from_object->id );
+		$this->assertSame( 'legacy@example.test', $from_object->email );
+
+		$from_array = Legacy_User::from_array( [ 'ID' => 42, 'user_email' => 'legacy@example.test', 'display_name' => 'Legacy Name' ] );
+		$this->assertInstanceOf( User::class, $from_array );
+		$this->assertNotInstanceOf( Legacy_User::class, $from_array );
+		$this->assertSame( 42, $from_array->id );
+		$this->assertSame( 'legacy@example.test', $from_array->email );
+	}
 }

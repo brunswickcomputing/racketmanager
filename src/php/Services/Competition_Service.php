@@ -12,6 +12,7 @@ namespace Racketmanager\Services;
 
 use Closure;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Competition_Factory;
 use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Championship_Rounds_Request_DTO;
 use Racketmanager\Domain\DTO\Competition\Competition_Overview_DTO;
 use Racketmanager\Domain\Competition\Event;
@@ -167,7 +168,7 @@ class Competition_Service {
             if ( ! isset( $competition_id->sport ) ) {
                 $competition_id->sport = 'tennis';
             }
-            return Competition::from_object( $competition_id );
+            return Competition_Factory::from_object( $competition_id );
         }
 
         if ( is_string( $competition_id ) && '' !== $competition_id && ! is_numeric( $competition_id ) ) {

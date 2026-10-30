@@ -12,6 +12,7 @@ namespace Racketmanager\Services;
 
 use LogicException;
 use Racketmanager\Domain\Finance\Charge;
+use Racketmanager\Domain\Finance\Charge_Factory;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\DTO\Admin\Tournament\Tournament_Draw_Data_DTO;
 use Racketmanager\Domain\Shared\Seo_Slug;
@@ -369,10 +370,11 @@ class Tournament_Service {
         $key            = $competition_id . '_' . $season;
         $charge         = $this->charge_repository->find_by_id( $key );
         if ( ! $charge ) {
-            $charge = new Charge();
-            $charge->set_competition_id( $competition_id );
-            $charge->set_season( $season );
-            $charge->set_status( 'draft' );
+            $charge = Charge_Factory::from_array( array(
+                'competition_id' => $competition_id,
+                'season'         => (string) $season,
+                'status'         => 'draft',
+            ) );
         }
         $charge->set_fee_competition( $tournament_request->fees->competition );
         $charge->set_fee_event( $tournament_request->fees->event );
@@ -511,9 +513,9 @@ class Tournament_Service {
      *
      * @param int|null $tournament_id
      *
-     * @return int
+     * @return bool
      */
-    public function remove_tournament( ?int $tournament_id ): int {
+    public function remove_tournament( ?int $tournament_id ): bool {
         $tournament = $this->tournament_repository->find_by_id( $tournament_id );
         if ( ! $tournament ) {
             throw new Tournament_Not_Found_Exception( Util_Messages::tournament_not_found( $tournament_id ) );
@@ -688,7 +690,7 @@ class Tournament_Service {
                 if ( ! empty( $entry->player_data ) ) {
                     foreach ( explode( ',', $entry->player_data ) as $team_player ) {
                         list( $id, $name ) = explode( ':', $team_player, 2 );
-                        $players[] = new Tournament_Player_DTO( $id, $name );
+                        $players[] = new Tournament_Player_DTO( (int) $id, $name );
                     }
                 }
 
@@ -1185,7 +1187,7 @@ class Tournament_Service {
             throw new Tournament_Not_Found_Exception( $e->getMessage() );
         }
         try {
-            return $this->competition_service->set_championship_round_dates_for_competition_season( $tournament->get_competition_id(), $tournament->get_season(), $request );
+            return $this->competition_service->set_championship_round_dates_for_competition_season( $tournament->get_competition_id(), (string)$tournament->get_season(), $request );
         } catch ( Competition_Not_Found_Exception $e ) {
             throw new Competition_Not_Found_Exception( $e->getMessage() );
         }

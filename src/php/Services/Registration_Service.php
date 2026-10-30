@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Services;
 
 use Racketmanager\Domain\Club\Club_Player;
+use Racketmanager\Domain\Club\Club_Player_Factory;
 use Racketmanager\Domain\Club\Events\Club_Player_Registered_Event;
 use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
 use Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface;
@@ -117,7 +118,7 @@ class Registration_Service {
         $club_player->requested_date = gmdate( 'Y-m-d' );
         $club_player->requested_user = $registered_by_userId;
         $club_player->status         = 'pending';
-        $registration                = Club_Player::from_object( $club_player );
+        $registration                = Club_Player_Factory::from_object( $club_player );
         $this->club_player_repository->save( $registration );
 
         $options = $this->racketmanager->get_options( 'rosters' );

@@ -7,6 +7,7 @@ use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Result\Results_Checker_Data;
 use Racketmanager\Domain\Result\Results_Checker;
+use Racketmanager\Domain\Result\Results_Checker_Factory;
 use Racketmanager\Domain\DTO\Player\Validation_Context_DTO;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
@@ -295,7 +296,7 @@ class Player_Validation_Service {
             rubber_id: $rubber_id,
             description: $error
         );
-        $check = new Results_Checker( $data );
+        $check = Results_Checker_Factory::create_from_dto( $data );
 
         $this->results_checker_repository->save( $check );
     }
@@ -532,7 +533,7 @@ class Player_Validation_Service {
             team_id: $team_id,
             description: $error
         );
-        $check = new Results_Checker( $data );
+        $check = Results_Checker_Factory::create_from_dto( $data );
 
         $this->results_checker_repository->save( $check );
     }

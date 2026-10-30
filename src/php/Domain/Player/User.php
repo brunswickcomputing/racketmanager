@@ -246,23 +246,23 @@ class User {
     }
 
     /**
-     * Create a User from a WordPress user, a row or a plugin-shaped object without factory validation.
+     * Create a User from a WordPress user, a row or a plugin-shaped object via User_Factory.
      *
      * @param object $row user object.
-     * @return static
+     * @return self
      */
-    public static function from_object( object $row ): static {
-        return new static( User_Hydration_DTO::from_object( $row ) );
+    public static function from_object( object $row ): self {
+        return User_Factory::from_object( $row );
     }
 
     /**
-     * Create a User from an associative array without factory validation.
+     * Create a User from an associative array via User_Factory.
      *
      * @param array $data user data.
-     * @return static
+     * @return self
      */
-    public static function from_array( array $data ): static {
-        return static::from_object( (object) $data );
+    public static function from_array( array $data ): self {
+        return User_Factory::from_array( $data );
     }
 
     /**

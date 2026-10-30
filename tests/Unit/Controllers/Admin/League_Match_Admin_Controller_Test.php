@@ -46,6 +46,7 @@ final class League_Match_Admin_Controller_Test extends TestCase {
             (object) array(
                 'id'             => 93,
                 'name'           => 'Event',
+                'type'           => 'singles',
                 'seasons'        => array( '2026' => array( 'name' => '2026' ) ),
                 'current_season' => array( 'name' => '2026' ),
             ),

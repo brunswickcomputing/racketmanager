@@ -168,35 +168,72 @@ final class Event_Factory_Test extends TestCase {
 		$this->assertFalse( method_exists( $dto, 'to_std_class' ) );
 	}
 
-	public function test_lenient_from_object_skips_invariants_and_matches_factory_hydration(): void {
-		$lenient = Event::from_object( (object) array( 'id' => 1 ) );
-		$this->assertInstanceOf( Event::class, $lenient );
-		$this->assertSame( '', $lenient->name );
-		$this->assertNull( $lenient->num_sets );
-
+	public function test_entity_wrappers_match_validating_factory_hydration(): void {
 		$row = (object) array(
 			'id'             => '7',
 			'name'           => 'Mixed Doubles',
 			'type'           => 'XD',
 			'competition_id' => '3',
 			'num_sets'       => '3',
-			'settings'       => serialize( array( 'num_rubbers' => '4', 'age_limit' => 'open' ) ),
+			'settings'       => serialize( array( 'num_rubbers' => '4', 'age_limit' => 'open', 'sport' => 'badminton' ) ),
 			'seasons'        => '[]',
 			'unknown_column' => 'dropped',
 		);
-		$this->assertEquals( Event_Factory::from_object( $row ), Event::from_object( $row ) );
-		$this->assertFalse( property_exists( Event::from_object( $row ), 'unknown_column' ) );
+		$from_object = Event::from_object( $row );
+		$this->assertEquals( Event_Factory::from_object( $row ), $from_object );
+		$this->assertEquals( Event_Factory::from_array( (array) $row ), Event::from_array( (array) $row ) );
+		$this->assertSame( 'badminton', $from_object->sport );
+		$this->assertFalse( property_exists( $from_object, 'unknown_column' ) );
 	}
 
-	public function test_lenient_from_object_uses_competition_attached_to_row(): void {
+	public function test_entity_wrappers_reject_missing_name_and_competition(): void {
+		try {
+			Event::from_object( (object) array( 'id' => 1 ) );
+			$this->fail( 'Missing event name should be rejected.' );
+		} catch ( InvalidArgumentException $e ) {
+			$this->assertSame( 'Event name is required.', $e->getMessage() );
+		}
+
+		$this->expectException( InvalidArgumentException::class );
+		$this->expectExceptionMessageIsOrContains( 'Event competition_id is required.' );
+		Event::from_array( array( 'name' => 'Open', 'type' => 'MS' ) );
+	}
+
+	public function test_entity_from_object_uses_competition_attached_to_row(): void {
 		$competition      = $this->sample_competition( 4 );
-		$row              = (object) array( 'id' => 2, 'name' => 'Open' );
+		$row              = (object) array( 'id' => 2, 'name' => 'Open', 'type' => 'MS' );
 		$row->competition = $competition;
 
 		$event = Event::from_object( $row );
 
 		$this->assertSame( $competition, $event->competition );
 		$this->assertSame( 4, $event->competition_id );
+		$this->assertEquals( $event, Event_Factory::from_object( $row ) );
+		$this->assertEquals( $event, Event::from_array( (array) $row ) );
+	}
+
+	public function test_attached_competition_cannot_hide_mismatched_competition_id(): void {
+		$row = (object) array(
+			'name'           => 'Open',
+			'type'           => 'MS',
+			'competition_id' => 3,
+			'competition'    => $this->sample_competition( 4 ),
+		);
+
+		$this->expectException( InvalidArgumentException::class );
+		$this->expectExceptionMessageIsOrContains( 'Event competition_id 3 does not match Competition id 4.' );
+		Event::from_object( $row );
+	}
+
+	public function test_inherited_entity_wrappers_return_factory_event(): void {
+		$subclass = new class extends Event {};
+		$data = array( 'name' => 'Open', 'type' => 'MS', 'competition_id' => 4 );
+
+		foreach ( array( $subclass::from_object( (object) $data ), $subclass::from_array( $data ) ) as $event ) {
+			$this->assertInstanceOf( Event::class, $event );
+			$this->assertNotInstanceOf( $subclass::class, $event );
+			$this->assertSame( 'Open', $event->name );
+		}
 	}
 
 	public function test_empty_constructor_yields_empty_event(): void {
@@ -208,8 +245,7 @@ final class Event_Factory_Test extends TestCase {
 
 	/**
 	 * Regression: `events.num_sets` / `events.num_rubbers` are `int DEFAULT NULL`. The validating path must
-	 * keep the legacy 3 / 0 defaults for NULL rows (callers rely on `get_num_sets(): int`), while the
-	 * lenient `Event::from_object()` mirrors the raw constructor and leaves them null.
+	 * keep the legacy 3 / 0 defaults for NULL rows (callers rely on `get_num_sets(): int`).
 	 */
 	public function test_factory_restores_legacy_num_sets_and_num_rubbers_defaults_for_null_row_columns(): void {
 		$row = (object) array(
@@ -229,9 +265,9 @@ final class Event_Factory_Test extends TestCase {
 		$this->assertSame( 3, $validated->get_num_sets() );
 		$this->assertSame( 0, $validated->get_num_rubbers() );
 
-		$lenient = Event::from_object( $row );
-		$this->assertNull( $lenient->num_sets );
-		$this->assertNull( $lenient->num_rubbers );
+		$wrapped = Event::from_object( $row );
+		$this->assertSame( 3, $wrapped->num_sets );
+		$this->assertSame( 0, $wrapped->num_rubbers );
 
 		// Missing columns behave like NULL columns on the factory path.
 		$missing = Event_Factory::from_object( (object) array( 'id' => 6, 'name' => 'Ev', 'type' => 'MS', 'competition_id' => 2 ) );
@@ -257,7 +293,7 @@ final class Event_Factory_Test extends TestCase {
 		$this->assertSame( 0, Event_Factory::create_from_dto( $dto )->num_rubbers );
 	}
 
-	public function test_lenient_empty_numeric_columns_keep_legacy_zero_coercion(): void {
+	public function test_empty_numeric_columns_use_factory_defaults(): void {
 		$base = array(
 			'id'             => 5,
 			'name'           => 'Ev',
@@ -269,11 +305,11 @@ final class Event_Factory_Test extends TestCase {
 			$base,
 			array( 'num_sets' => '', 'num_rubbers' => '' )
 		);
-		$lenient = Event::from_object( $empty_row );
-		$this->assertSame( 0, $lenient->num_sets );
-		$this->assertSame( 0, $lenient->num_rubbers );
+		$wrapped = Event::from_object( $empty_row );
+		$this->assertSame( 3, $wrapped->num_sets );
+		$this->assertSame( 0, $wrapped->num_rubbers );
 
-		// The validating path still treats empty values as missing database defaults.
+		// Empty values are treated as missing database defaults.
 		$validated = Event_Factory::from_object( $empty_row );
 		$this->assertSame( 3, $validated->num_sets );
 		$this->assertSame( 0, $validated->num_rubbers );
@@ -291,11 +327,11 @@ final class Event_Factory_Test extends TestCase {
 			array( 'num_sets' => null, 'num_rubbers' => null )
 		);
 		$null_values = Event::from_object( $null_row );
-		$this->assertNull( $null_values->num_sets );
-		$this->assertNull( $null_values->num_rubbers );
+		$this->assertSame( 3, $null_values->num_sets );
+		$this->assertSame( 0, $null_values->num_rubbers );
 
 		$missing_values = Event::from_object( (object) $base );
-		$this->assertNull( $missing_values->num_sets );
-		$this->assertNull( $missing_values->num_rubbers );
+		$this->assertSame( 3, $missing_values->num_sets );
+		$this->assertSame( 0, $missing_values->num_rubbers );
 	}
 }

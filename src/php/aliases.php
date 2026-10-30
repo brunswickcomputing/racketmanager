@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager;
 
 /**
- * Backward-compatibility class aliases for reorganized domain models and commands.
+ * Backward-compatibility class aliases for reorganised domain models and commands.
  *
  * @deprecated 10.0.0 Class aliases are provided for temporary backward compatibility and will be sunset in v11.0.0. Reference PSR-4 classes directly.
  */

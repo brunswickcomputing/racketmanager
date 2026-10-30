@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Services\Standings;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Team;
@@ -42,7 +43,7 @@ class Standings_Rubbers_Test extends TestCase {
         $rubber->away_points = 0;
         $rubber->sets = [ 1 => [ 'player1' => 6, 'player2' => 2 ], 2 => [ 'player1' => 6, 'player2' => 3 ] ];
 
-        $league = League::from_object( (object) [ 'title' => 'Division 1' ] );
+        $league = League_Test_Factory::from_object( (object) [ 'title' => 'Division 1' ] );
         $league->id = 12;
         $league->seasons = [ '2026' => [ 'name' => '2026' ] ];
         $league->current_season = [ 'name' => '2026' ];

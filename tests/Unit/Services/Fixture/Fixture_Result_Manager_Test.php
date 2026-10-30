@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Services\Fixture;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use LogicException;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -356,7 +357,7 @@ class Fixture_Result_Manager_Test extends TestCase {
         $provider = $this->createStub( Repository_Provider::class );
         $provider->method( 'get_fixture_repository' )->willReturn( $repository );
         $standings = $this->createMock( Standings_Service::class );
-        $league = League::from_object( (object) [ 'title' => 'Division 1' ] );
+        $league = League_Test_Factory::from_object( (object) [ 'title' => 'Division 1' ] );
         $standings->expects( $final ? $this->never() : $this->once() )->method( 'update_standings' )->with( $league, '2026' );
         $manager = $this->getMockBuilder( Fixture_Result_Manager::class )
             ->setConstructorArgs( [ $this->create_stub_service_provider(), $provider, $standings ] )
@@ -379,7 +380,7 @@ class Fixture_Result_Manager_Test extends TestCase {
     public function test_empty_batch_does_not_require_standings_or_query_repository(): void {
         $repository = $this->createMock( Fixture_Repository_Interface::class );
         $repository->expects( $this->never() )->method( 'find_by_id' );
-        $league = League::from_object( (object) [ 'title' => 'Division 1' ] );
+        $league = League_Test_Factory::from_object( (object) [ 'title' => 'Division 1' ] );
 
         $this->assertSame( 0, $this->manager->update_match_results( $league, [], [], [], [], '2026', fixture_repository: $repository ) );
     }
@@ -388,7 +389,7 @@ class Fixture_Result_Manager_Test extends TestCase {
         $repository = $this->createMock( Fixture_Repository_Interface::class );
         $repository->expects( $this->never() )->method( 'find_by_id' );
         $this->result_service->expects( $this->never() )->method( 'apply_to_fixture' );
-        $league = League::from_object( (object) [ 'title' => 'Division 1' ] );
+        $league = League_Test_Factory::from_object( (object) [ 'title' => 'Division 1' ] );
 
         $this->expectException( LogicException::class );
         $this->expectExceptionMessage( 'Standings_Service has not been configured.' );
@@ -400,7 +401,7 @@ class Fixture_Result_Manager_Test extends TestCase {
         $fixture->method( 'get_league_id' )->willReturn( 12 );
         $fixture->expects( $this->never() )->method( 'reset_result' );
         $this->result_service->expects( $this->never() )->method( 'apply_to_fixture' );
-        $this->league_service->method( 'get_league' )->willReturn( League::from_object( (object) [ 'title' => 'Division 1' ] ) );
+        $this->league_service->method( 'get_league' )->willReturn( League_Test_Factory::from_object( (object) [ 'title' => 'Division 1' ] ) );
 
         $this->expectException( LogicException::class );
         $this->expectExceptionMessage( 'Standings_Service has not been configured.' );

@@ -65,6 +65,9 @@ final class League_Factory {
 		object $row,
 		?Event $event = null
 	): ?League {
+		if ( null === $event && isset( $row->event ) && $row->event instanceof Event ) {
+			$event = $row->event;
+		}
 		$dto = League_Hydration_DTO::from_object( $row );
 		return self::create_from_dto(
 			$dto,
@@ -84,10 +87,6 @@ final class League_Factory {
 		array $data,
 		?Event $event = null
 	): ?League {
-		$dto = League_Hydration_DTO::from_array( $data );
-		return self::create_from_dto(
-			$dto,
-			$event
-		);
+		return self::from_object( (object) $data, $event );
 	}
 }

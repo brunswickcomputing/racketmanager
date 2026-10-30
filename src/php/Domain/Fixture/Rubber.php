@@ -312,23 +312,23 @@ class Rubber {
     }
 
     /**
-     * Create a Rubber from a raw row without factory validation.
+     * Create a Rubber from a generic object (e.g. database row) via Rubber_Factory.
      *
      * @param object $row rubber row.
-     * @return static
+     * @return self
      */
-    public static function from_object( object $row ): static {
-        return new static( Rubber_Hydration_DTO::from_object( $row ) );
+    public static function from_object( object $row ): self {
+        return Rubber_Factory::from_object( $row );
     }
 
     /**
-     * Create a Rubber from an associative array without factory validation.
+     * Create a Rubber from an associative array via Rubber_Factory.
      *
      * @param array $data rubber data.
-     * @return static
+     * @return self
      */
-    public static function from_array( array $data ): static {
-        return static::from_object( (object) $data );
+    public static function from_array( array $data ): self {
+        return Rubber_Factory::from_array( $data );
     }
 
     /**

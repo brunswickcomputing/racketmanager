@@ -19,7 +19,7 @@ use Racketmanager\Domain\DTO\Admin\Overview\Tournament_Overview_Action_Request_D
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Fixture\Fixture_Time_Parser;
-use Racketmanager\Domain\Team\Team;
+use Racketmanager\Domain\Team\Team_Factory;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
@@ -193,9 +193,14 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
                 if ( ! is_numeric( $team_id ) ) {
                     $team = $this->team_repository->find_by_id( $team_id );
                     if ( ! $team ) {
-                        $team = new Team();
+                        $team = Team_Factory::from_array(
+                            array(
+                                'title' => $team_id,
+                                'type'  => 'S',
+                            )
+                        );
+                        // Placeholder titles such as "1_round_match_5" are persisted verbatim; the entity constructor rewrites them for display.
                         $team->set_name( $team_id );
-                        $team->set_type( 'S' );
                         $team_id = $this->team_repository->save( $team );
                     } else {
                         $team_id = $team->get_id();
@@ -694,22 +699,28 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         }
 
         for ( $i = 0; $i < $num_fixtures; ++ $i ) {
-            $fixture = new Fixture();
-            $fixture->set_date( $round_date . ' 00:00:00' );
-            $fixture->set_match_day( null );
+            $fixture_data = array(
+                'date'      => $round_date . ' 00:00:00',
+                'match_day' => null,
+                'location'  => null,
+                'league_id' => $league->id,
+                'season'    => (string) $season,
+                'final'     => $round_key,
+                'custom'    => array( 'num_rubbers' => $league->num_rubbers ),
+            );
 
             $host = $this->get_round_host_for_fixture( $round_key, $round_number );
             if ( null !== $host ) {
-                $fixture->set_host( $host );
+                $fixture_data['host'] = $host;
             }
 
             [ $home_team_name, $away_team_name ] = $this->get_final_team_slot_names( $first_round, $team_array, $i, $num_first_round, $prev_round_name, $home_team, $away_team );
 
             if ( isset( $teams[ $home_team_name ] ) ) {
-                $fixture->set_home_team( $teams[ $home_team_name ]->id );
+                $fixture_data['home_team'] = (string) $teams[ $home_team_name ]->id;
             }
             if ( isset( $teams[ $away_team_name ] ) ) {
-                $fixture->set_away_team( $teams[ $away_team_name ]->id );
+                $fixture_data['away_team'] = (string) $teams[ $away_team_name ]->id;
             }
 
             if ( $first_round ) {
@@ -720,13 +731,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
                 $away_team += 2;
             }
 
-            $fixture->set_location( null );
-            $fixture->set_league_id( $league->id );
-            $fixture->set_season( (string) $season );
-            $fixture->set_final( $round_key );
-            $fixture->set_custom( array( 'num_rubbers' => $league->num_rubbers ) );
-
-            $fixtures[] = $fixture;
+            $fixtures[] = Fixture_Factory::from_array( $fixture_data );
         }
 
         return array( 'fixtures' => $fixtures );

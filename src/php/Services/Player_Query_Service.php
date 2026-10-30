@@ -15,6 +15,7 @@ use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\Competition\Event_Factory;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Factory;
 use Racketmanager\Domain\Player\Player;
@@ -84,7 +85,7 @@ class Player_Query_Service {
 		}
 		$event = null;
 		if ( isset( $grouping->event ) && is_object( $grouping->event ) ) {
-			$event = $grouping->event instanceof Event ? $grouping->event : Event::from_object( $grouping->event );
+			$event = $grouping->event instanceof Event ? $grouping->event : Event_Factory::from_object( $grouping->event );
 		} elseif ( ! empty( $grouping->event_id ) && $this->event_repository ) {
 			$event = $this->event_repository->find_by_id( (int) $grouping->event_id );
 		}
@@ -107,7 +108,7 @@ class Player_Query_Service {
 		if ( ! empty( $grouping->competition_id ) && $this->competition_repository ) {
 			$competition = $this->competition_repository->find_by_id( (int) $grouping->competition_id );
 		}
-		return Event::from_object( $grouping, $competition instanceof Competition ? $competition : null );
+		return Event_Factory::from_object( $grouping, $competition instanceof Competition ? $competition : null );
 	}
 
 	private function get_statistics_repository(): Player_Statistics_Repository_Interface {

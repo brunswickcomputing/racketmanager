@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Domain\Competition;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\League;
 use ReflectionClass;
@@ -17,7 +18,7 @@ final class League_Standings_Purity_Test extends TestCase {
     }
 
     public function test_standings_configuration_survives_serialization_without_services(): void {
-        $league = League::from_object( (object) [ 'title' => 'Division 1', 'standings' => [ 'points' => 1 ] ] );
+        $league = League_Test_Factory::from_object( (object) [ 'title' => 'Division 1', 'standings' => [ 'points' => 1 ] ] );
         $restored = unserialize( serialize( $league ) );
 
         $this->assertSame( $league->standings, $restored->standings );

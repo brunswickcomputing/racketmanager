@@ -12,6 +12,7 @@ namespace Racketmanager\Public;
 
 use LogicException;
 use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\Competition\Event_Factory;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Factory;
 use Racketmanager\Domain\Fixture\Fixture;
@@ -177,7 +178,7 @@ class Shortcodes {
         if ( is_object( $league ) ) {
             $event = null;
             if ( isset( $league->event ) && is_object( $league->event ) ) {
-                $event = $league->event instanceof Event ? $league->event : Event::from_object( $league->event );
+                $event = $league->event instanceof Event ? $league->event : Event_Factory::from_object( $league->event );
             } elseif ( ! empty( $league->event_id ) ) {
                 $event = $this->event_repository?->find_by_id( (int) $league->event_id );
             }

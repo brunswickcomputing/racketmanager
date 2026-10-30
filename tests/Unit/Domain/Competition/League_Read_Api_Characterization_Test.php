@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Domain\Competition;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Club\Club;
@@ -45,7 +46,7 @@ final class League_Read_Api_Characterization_Test extends TestCase {
 	}
 
 	private function league( array $overrides = array() ): League {
-		$league                 = League::from_object( (object) array_merge( array(
+		$league                 = League_Test_Factory::from_object( (object) array_merge( array(
 			'id'      => 42,
 			'title'   => 'Division 1',
 			'sport'   => 'tennis',

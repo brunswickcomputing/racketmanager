@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Repositories;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\League;
@@ -86,7 +87,7 @@ class League_Repository_Cache_Test extends TestCase {
     }
 
     public function test_update_title_and_sequence_clears_id_and_title_cache(): void {
-        $existing_league = League::from_object( (object) array( 'id' => 12, 'title' => 'Old Division 1' ) );
+        $existing_league = League_Test_Factory::from_object( (object) array( 'id' => 12, 'title' => 'Old Division 1' ) );
         wp_cache_set( 12, $existing_league, 'leagues' );
 
         $this->wpdb->expects( $this->once() )
@@ -103,7 +104,7 @@ class League_Repository_Cache_Test extends TestCase {
     }
 
     public function test_update_seasons_clears_league_cache(): void {
-        $existing_league = League::from_object( (object) array( 'id' => 15, 'title' => 'Division 2' ) );
+        $existing_league = League_Test_Factory::from_object( (object) array( 'id' => 15, 'title' => 'Division 2' ) );
         wp_cache_set( 15, $existing_league, 'leagues' );
 
         $this->wpdb->expects( $this->once() )
@@ -119,7 +120,7 @@ class League_Repository_Cache_Test extends TestCase {
     }
 
     public function test_delete_clears_league_and_match_day_caches(): void {
-        $existing_league = League::from_object( (object) array(
+        $existing_league = League_Test_Factory::from_object( (object) array(
             'id'      => 20,
             'title'   => 'Premier Division',
             'seasons' => array( '2025' => array(), '2026' => array() ),
@@ -220,7 +221,7 @@ class League_Repository_Cache_Test extends TestCase {
     }
 
     public function test_update_seasons_clears_match_days_for_both_old_and_new_seasons(): void {
-        $existing_league = League::from_object( (object) array(
+        $existing_league = League_Test_Factory::from_object( (object) array(
             'id'      => 33,
             'title'   => 'Division 3',
             'seasons' => array( '2024' => array() ),

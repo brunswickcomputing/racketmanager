@@ -79,9 +79,11 @@ final class Event_Season_Persistence_Test extends TestCase {
 		$seasons  = array( '2026' => array( 'name' => '2026', 'rounds' => array( 1, 2 ) ) );
 		$settings = array( 'mode' => 'knockout' );
 		$event    = Event::from_object( (object) array(
-			'name'     => 'Open',
-			'settings' => serialize( $settings ),
-			'seasons'  => serialize( $seasons ),
+			'name'           => 'Open',
+			'type'           => 'singles',
+			'competition_id' => 10,
+			'settings'       => serialize( $settings ),
+			'seasons'        => serialize( $seasons ),
 		) );
 
 		$this->assertSame( $settings, $event->get_settings() );
@@ -93,7 +95,7 @@ final class Event_Season_Persistence_Test extends TestCase {
 	}
 
 	public function test_invalid_serialized_settings_are_empty_and_invalid_seasons_remain_unmodified(): void {
-		$event = Event::from_object( (object) array( 'name' => 'Open', 'settings' => 'a:2:{bad', 'seasons' => 'not-json' ) );
+		$event = Event::from_object( (object) array( 'name' => 'Open', 'type' => 'singles', 'competition_id' => 10, 'settings' => 'a:2:{bad', 'seasons' => 'not-json' ) );
 		$this->assertSame( array(), $event->get_settings() );
 		$this->assertSame( 'not-json', $event->get_seasons_json() );
 		$this->assertSame( array(), $event->get_seasons() );
@@ -101,7 +103,7 @@ final class Event_Season_Persistence_Test extends TestCase {
 
 	public function test_native_json_encoding_keeps_wordpress_default_shape_and_sanitizes_invalid_utf8(): void {
 		$invalid_name = "Broken\xB1";
-		$event = Event::from_object( (object) array( 'name' => 'Open', 'seasons' => array( '2026' => array( 'name' => $invalid_name ) ) ) );
+		$event = Event::from_object( (object) array( 'name' => 'Open', 'type' => 'singles', 'competition_id' => 10, 'seasons' => array( '2026' => array( 'name' => $invalid_name ) ) ) );
 		$expected = function_exists( 'mb_convert_encoding' ) ? 'Broken?' : 'Broken�';
 		$this->assertSame( json_encode( array( '2026' => array( 'name' => $expected ) ) ), $event->get_seasons_json() );
 		$this->assertSame( $expected, $event->get_seasons()['2026']['name'] );

@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Repositories;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\League;
@@ -88,7 +89,7 @@ class Fixture_Repository_Delete_Cache_Test extends TestCase {
             'away_team' => '2',
         ];
 
-        $league = League::from_object( (object) [ 'id' => 10 ] );
+        $league = League_Test_Factory::from_object( (object) [ 'id' => 10 ] );
         $league_repo = $this->createMock( League_Repository_Interface::class );
         $league_repo->expects( $this->once() )
             ->method( 'find_by_id' )
@@ -117,7 +118,7 @@ class Fixture_Repository_Delete_Cache_Test extends TestCase {
             'away_team' => '3',
         ];
 
-        $league = League::from_object( (object) [ 'id' => 24, 'title' => 'Summer Mixed 1' ] );
+        $league = League_Test_Factory::from_object( (object) [ 'id' => 24, 'title' => 'Summer Mixed 1' ] );
         $league_repo = $this->createMock( League_Repository_Interface::class );
         $league_repo->expects( $this->once() )
             ->method( 'find_by_name' )
@@ -142,7 +143,7 @@ class Fixture_Repository_Delete_Cache_Test extends TestCase {
         $row1 = (object) [ 'id' => 101, 'season' => '2017', 'away_team' => '3' ];
         $row2 = (object) [ 'id' => 102, 'season' => '2017', 'away_team' => '3' ];
 
-        $league = League::from_object( (object) [ 'id' => 24 ] );
+        $league = League_Test_Factory::from_object( (object) [ 'id' => 24 ] );
         $league_repo = $this->createMock( League_Repository_Interface::class );
         $league_repo->expects( $this->once() )->method( 'find_by_id' )->with( 24 )->willReturn( $league );
         $league_repo->expects( $this->once() )
@@ -160,7 +161,7 @@ class Fixture_Repository_Delete_Cache_Test extends TestCase {
     }
 
     public function test_find_one_by_slug_criteria_returns_null_when_team_slug_not_found(): void {
-        $league = League::from_object( (object) [ 'id' => 10 ] );
+        $league = League_Test_Factory::from_object( (object) [ 'id' => 10 ] );
         $league_repo = $this->createMock( League_Repository_Interface::class );
         $league_repo->expects( $this->once() )->method( 'find_by_id' )->with( 10 )->willReturn( $league );
 

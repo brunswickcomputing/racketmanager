@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Services\Admin\League;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -307,7 +308,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
                 'max_teams'        => 4,
                 'lowest_promotion' => 1,
             ) );
-        $event = Event::from_object( (object) array( 'id' => 93, 'name' => 'Mixed U10 Summer', 'type' => 'XD' ), $competition );
+        $event = Event::from_object( (object) array( 'id' => 93, 'name' => 'Mixed U10 Summer', 'type' => 'XD', 'competition_id' => 1 ), $competition );
 
         $league                  = $this->createStub( League::class );
         $league->id              = 50;
@@ -385,7 +386,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             'max_teams'        => 4,
             'lowest_promotion' => 1,
         ) );
-        $event = Event::from_object( (object) array( 'id' => 93, 'name' => 'Mixed U10 Summer', 'type' => 'XD' ), $competition );
+        $event = Event::from_object( (object) array( 'id' => 93, 'name' => 'Mixed U10 Summer', 'type' => 'XD', 'competition_id' => 1 ), $competition );
 
         $league     = $this->createStub( League::class );
         $league->id = 50;
@@ -622,7 +623,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             ->with( 200, 10, '2026', '1', 'A', 0 )
             ->willReturn( 1 );
 
-        $league     = League::from_object( (object) array( 'id' => 200, 'title' => 'Div 1' ) );
+        $league     = League_Test_Factory::from_object( (object) array( 'id' => 200, 'title' => 'Div 1' ) );
         $league_repository->expects( self::atLeastOnce() )->method( 'find_by_id' )->with( 200 )->willReturn( $league );
 
         $dispatcher = new League_Constitution_Action_Dispatcher(
@@ -663,7 +664,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             ->with( 200, 10, '2026', '1', 'A', 0 )
             ->willReturn( false );
 
-        $league     = League::from_object( (object) array( 'id' => 200, 'title' => 'Div 1' ) );
+        $league     = League_Test_Factory::from_object( (object) array( 'id' => 200, 'title' => 'Div 1' ) );
         $league_repository->expects( self::atLeastOnce() )->method( 'find_by_id' )->with( 200 )->willReturn( $league );
 
         $dispatcher = new League_Constitution_Action_Dispatcher(
@@ -704,7 +705,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             ->with( 200, 10, '2026', '99', 'NT', 1 )
             ->willReturn( 1 );
 
-        $league     = League::from_object( (object) array( 'id' => 200, 'title' => 'Div 1' ) );
+        $league     = League_Test_Factory::from_object( (object) array( 'id' => 200, 'title' => 'Div 1' ) );
         $league_repository->expects( self::atLeastOnce() )->method( 'find_by_id' )->with( 200 )->willReturn( $league );
         $this->team_repository->method( 'find_by_id' )->willReturnCallback( static fn( int $id ) => 10 === $id ? Team::from_object( (object) array( 'id' => 10, 'title' => 'Team Ten' ) ) : null );
 
@@ -772,7 +773,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             ->with( 200, 10, '2026', '99', 'NT', 1 )
             ->willReturn( false );
 
-        $league     = League::from_object( (object) array( 'id' => 200, 'title' => 'Div 1' ) );
+        $league     = League_Test_Factory::from_object( (object) array( 'id' => 200, 'title' => 'Div 1' ) );
         $league_repository->expects( self::atLeastOnce() )->method( 'find_by_id' )->with( 200 )->willReturn( $league );
 
         $dispatcher = new League_Constitution_Action_Dispatcher(

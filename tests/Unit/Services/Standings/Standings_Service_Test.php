@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Services\Standings;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Competition;
@@ -38,7 +39,7 @@ final class Standings_Service_Test extends TestCase {
         $competition->settings = new Competition_Settings( [ 'team_ranking' => $ranking ] );
         $competition->standings = [];
         $competition->is_player_entry = false;
-        return Event::from_object( (object) [ 'name' => 'League', 'seasons' => [] ], $competition );
+        return Event::from_object( (object) [ 'name' => 'League', 'type' => 'singles', 'competition_id' => 1, 'seasons' => [] ], $competition );
     }
 
     public static function display_modes(): array {
@@ -47,7 +48,7 @@ final class Standings_Service_Test extends TestCase {
 
     #[DataProvider( 'display_modes' )]
     public function test_read_standings_filters_and_ranks_without_entity_standings_methods( string $mode, string $team_filter ): void {
-        $league = League::from_object( (object) [ 'title' => 'Division 1' ] );
+        $league = League_Test_Factory::from_object( (object) [ 'title' => 'Division 1' ] );
         $league->id = 12;
         $league->seasons = [ '2026' => [ 'name' => '2026' ] ];
         $league->current_season = [ 'name' => '2026' ];
@@ -185,7 +186,7 @@ final class Standings_Service_Test extends TestCase {
     }
 
     public function test_save_standings_does_not_overwrite_manual_points(): void {
-        $league = League::from_object( (object) [ 'title' => 'Division 1' ] );
+        $league = League_Test_Factory::from_object( (object) [ 'title' => 'Division 1' ] );
         $league->point_rule = 'manual';
         $repository = $this->createMock( League_Repository_Interface::class );
         $repository->expects( $this->never() )->method( 'update_team_standings' );

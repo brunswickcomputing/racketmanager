@@ -81,23 +81,23 @@ class Club_Role {
     }
 
     /**
-     * Create a Club_Role from a raw row without factory validation.
+     * Create a Club_Role from a raw row via Club_Role_Factory.
      *
      * @param object $row club role row.
-     * @return static
+     * @return self
      */
-    public static function from_object( object $row ): static {
-        return new static( Club_Role_Hydration_DTO::from_object( $row ) );
+    public static function from_object( object $row ): self {
+        return Club_Role_Factory::from_object( $row );
     }
 
     /**
-     * Create a Club_Role from an associative array without factory validation.
+     * Create a Club_Role from an associative array via Club_Role_Factory.
      *
      * @param array $data club role data.
-     * @return static
+     * @return self
      */
-    public static function from_array( array $data ): static {
-        return static::from_object( (object) $data );
+    public static function from_array( array $data ): self {
+        return Club_Role_Factory::from_array( $data );
     }
 
     /**

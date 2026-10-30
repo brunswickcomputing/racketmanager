@@ -57,6 +57,13 @@ final class Tournament_Test extends TestCase {
         $this->assertCount(6, $tournament->finals);
     }
 
+    public function test_from_array_and_lenient_entity_helpers_match_factory(): void {
+        $data = [ 'id' => 10, 'name' => 'Championship', 'season' => '2026' ];
+        $this->assertEquals( Tournament_Factory::from_object( (object) $data ), Tournament::from_object( (object) $data ) );
+        $this->assertEquals( Tournament_Factory::from_array( $data ), Tournament::from_array( $data ) );
+        $this->assertEquals( Tournament::from_object( (object) $data ), Tournament::from_array( $data ) );
+    }
+
     public function test_update_from_request(): void {
         $data = new stdClass();
         $data->id = 1;

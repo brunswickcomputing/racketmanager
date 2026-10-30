@@ -12,9 +12,12 @@ namespace Racketmanager\Services;
 
 use Exception;
 use Racketmanager\Domain\Club\Club;
+use Racketmanager\Domain\Club\Club_Factory;
 use Racketmanager\Domain\Club\Club_Role;
+use Racketmanager\Domain\Club\Club_Role_Factory;
 use Racketmanager\Domain\DTO\Club\Club_Details_DTO;
 use Racketmanager\Domain\Team\Team;
+use Racketmanager\Domain\Team\Team_Factory;
 use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Registration_Repository_Interface;
 use Racketmanager\Exceptions\Club_Has_Teams_Exception;
@@ -62,7 +65,7 @@ class Club_Service {
      * @return Club
      */
     public function add_club( object $club ): Club {
-        $club = Club::from_object( $club );
+        $club = Club_Factory::from_object( $club );
         $this->club_repository->save( $club );
 
         return $club;
@@ -290,7 +293,7 @@ class Club_Service {
         $club_role->role_id = $role_id;
         $club_role->user_id = $user_id;
         // Create the new entity locally
-        $new_role = Club_Role::from_object( $club_role );
+        $new_role = Club_Role_Factory::from_object( $club_role );
         // Persist it via repository
         $this->club_role_repository->save( $new_role );
 
@@ -505,7 +508,7 @@ class Club_Service {
         $team->stadium = $club->get_shortcode();
         $team->club_id = $club->get_id();
         $team->type    = $type;
-        $team          = Team::from_object( $team );
+        $team          = Team_Factory::from_object( $team );
         // We assume a save method exists in TeamRepository from a previous step
         $this->team_repository->save( $team );
 

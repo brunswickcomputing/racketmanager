@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Ajax;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Event\Queries\Get_Team_Order_Players_Handler;
 use Racketmanager\Application\Event\Queries\Get_Team_Order_Players_Query;
@@ -200,7 +201,8 @@ class Ajax_Adapter_Test extends TestCase {
 
         $adapter = $this->create_frontend_adapter( $event_repository );
 
-        $league = \Racketmanager\Domain\Competition\League::from_object( (object) [ 'id' => 50, 'title' => 'Division 1', 'event_id' => 30 ] );
+        $league = League_Test_Factory::from_object( (object) [ 'id' => 50, 'title' => 'Division 1', 'event_id' => 30 ] );
+        $league->event = null;
         $this->assertNull( $league->event );
         $GLOBALS['wp_stubs_leagues'][50] = $league;
 
@@ -240,7 +242,7 @@ class Ajax_Adapter_Test extends TestCase {
         $event->seasons = json_encode( [ '2026' => [ 'name' => '2026' ] ] );
         $event->method( 'get_seasons' )->willReturn( [ '2026' => [ 'name' => '2026' ] ] );
 
-        $league = \Racketmanager\Domain\Competition\League::from_object( (object) [ 'id' => 50, 'title' => 'Division 1' ] );
+        $league = League_Test_Factory::from_object( (object) [ 'id' => 50, 'title' => 'Division 1' ] );
         $league->event = $event;
         $GLOBALS['wp_stubs_leagues'][50] = $league;
 

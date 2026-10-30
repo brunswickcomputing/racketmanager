@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Controllers\Admin;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\View_Models\Cup_Overview_Page_View_Model;
@@ -76,10 +77,10 @@ final class Cup_Overview_Admin_Controller_Test extends TestCase {
         $prop->setAccessible( true );
         $prop->setValue( $champ_obj, 8 );
 
-        $league                  = League::from_object( (object) array( 'id' => 10, 'title' => 'Men Draw' ) );
+        $league                  = League_Test_Factory::from_object( (object) array( 'id' => 10, 'title' => 'Men Draw' ) );
         $league->is_championship = true;
         $league->championship    = $champ_obj;
-        $event                   = Event::from_object( (object) array( 'id' => 20, 'name' => 'Men Singles' ), $competition );
+        $event                   = Event::from_object( (object) array( 'id' => 20, 'name' => 'Men Singles', 'type' => 'singles' ), $competition );
 
         $event_query_service = $this->createMock( Event_Query_Service::class );
         $event_query_service->expects( self::once() )

@@ -520,6 +520,52 @@ class Finance_Service_Test extends TestCase {
         self::assertSame( 12.5, $result );
     }
 
+    public function test_add_invoice_builds_invoice_via_factory_and_persists_it(): void {
+        $this->app->method( 'get_options' )->willReturn( [
+            'invoiceNumber' => 42,
+            'paymentTerms'  => '14',
+        ] );
+
+        $invoice_repo = $this->createMock( Invoice_Repository_Interface::class );
+        $saved        = null;
+        $invoice_repo->expects( self::once() )
+            ->method( 'save' )
+            ->willReturnCallback( static function ( Invoice $invoice ) use ( &$saved ): bool {
+                $saved = $invoice;
+                return true;
+            } );
+
+        $service = new Finance_Service(
+            $this->app,
+            $this->charge_repo,
+            $invoice_repo,
+            $this->club_repo,
+            $this->tournament_repo,
+            $this->competition_service,
+            $this->player_service,
+            $this->createStub( Payment_Gateway_Interface::class ),
+            $this->createStub( Mailer_Interface::class )
+        );
+
+        $entry        = new \stdClass();
+        $entry->id    = 9;
+        $entry->total = '12.50';
+
+        $result = $service->add_invoice( 'club', 7, '2026-01-01', $entry, Invoice_Status::FINAL );
+
+        self::assertSame( $saved, $result );
+        self::assertInstanceOf( Invoice::class, $saved );
+        self::assertSame( 7, $saved->charge_id );
+        self::assertSame( 9, $saved->get_billable_id() );
+        self::assertSame( 'club', $saved->get_billable_type() );
+        self::assertSame( Invoice_Status::FINAL, $saved->get_status_enum() );
+        self::assertSame( '2026-01-01', $saved->date );
+        self::assertSame( '2026-01-15', $saved->date_due );
+        self::assertSame( 42, $saved->invoice_number );
+        self::assertSame( '12.50', $saved->amount );
+        self::assertSame( $entry, $saved->details );
+    }
+
     public function test_get_tournament_paid_total_for_player_returns_zero_when_ids_missing(): void {
         $invoice_repo = $this->createMock( Invoice_Repository_Interface::class );
         $invoice_repo->expects( self::never() )->method( 'find_tournament_paid_total_by_player' );

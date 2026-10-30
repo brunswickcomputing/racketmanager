@@ -6,7 +6,9 @@ namespace Racketmanager\Services;
 use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Result_Update_Request;
 use Racketmanager\Domain\Enums\Team_Profile;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\Competition\League_Factory;
 use Racketmanager\Domain\Competition\League_Team;
+use Racketmanager\Domain\Competition\League_Team_Factory;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
@@ -105,7 +107,7 @@ class League_Service {
             $league->title = $name;
         }
         $league->event_id = $event->get_id();
-        $league           = League::from_object( $league, $event );
+        $league           = League_Factory::from_object( $league, $event );
         $this->league_repository->save( $league );
 
         return $league;
@@ -126,11 +128,12 @@ class League_Service {
             return $existing_league_team;
         }
 
-        $league_team = new League_Team();
-        $league_team->set_league_id( $league_id );
-        $league_team->set_team_id( $team_id );
-        $league_team->set_season( $season );
-        $league_team->set_entered_state( Team_Profile::ACTIVE );
+        $league_team = League_Team_Factory::from_array( array(
+            'league_id' => $league_id,
+            'team_id'   => $team_id,
+            'season'    => (string) $season,
+            'profile'   => Team_Profile::ACTIVE->value,
+        ) );
         $this->league_team_repository->save( $league_team );
         return $league_team;
     }

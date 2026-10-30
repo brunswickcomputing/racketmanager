@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Domain\Competition;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Event;
@@ -253,7 +254,7 @@ final class League_Purity_Test extends TestCase {
 	}
 
 	public function test_add_team_domain_method_has_no_repository_parameter_and_rejects_persistence(): void {
-		$league = League::from_object( (object) array( 'id' => 10 ) );
+		$league = League_Test_Factory::from_object( (object) array( 'id' => 10 ) );
 
 		$this->assertSame( 5, ( new \ReflectionMethod( League::class, 'add_team' ) )->getNumberOfParameters() );
 		$this->expectException( \LogicException::class );
@@ -262,7 +263,7 @@ final class League_Purity_Test extends TestCase {
 	}
 
 	public function test_get_rank_domain_method_rejects_reading_from_repository(): void {
-		$league = League::from_object( (object) array( 'id' => 10 ) );
+		$league = League_Test_Factory::from_object( (object) array( 'id' => 10 ) );
 		$this->assertSame( 2, ( new \ReflectionMethod( League::class, 'get_rank' ) )->getNumberOfParameters() );
 		$this->expectException( \LogicException::class );
 		$this->expectExceptionMessage( 'League_Query_Service::get_rank()' );
@@ -270,7 +271,7 @@ final class League_Purity_Test extends TestCase {
 	}
 
 	public function test_get_status_domain_method_rejects_reading_from_repository(): void {
-		$league = League::from_object( (object) array( 'id' => 10 ) );
+		$league = League_Test_Factory::from_object( (object) array( 'id' => 10 ) );
 		$this->assertSame( 2, ( new \ReflectionMethod( League::class, 'get_status' ) )->getNumberOfParameters() );
 		$this->expectException( \LogicException::class );
 		$this->expectExceptionMessage( 'League_Query_Service::get_status()' );
@@ -278,7 +279,7 @@ final class League_Purity_Test extends TestCase {
 	}
 
 	public function test_get_num_teams_domain_method_rejects_reading_from_repository(): void {
-		$league = League::from_object( (object) array( 'id' => 10 ) );
+		$league = League_Test_Factory::from_object( (object) array( 'id' => 10 ) );
 		$this->assertSame( 2, ( new \ReflectionMethod( League::class, 'get_num_teams' ) )->getNumberOfParameters() );
 		$this->expectException( \LogicException::class );
 		$this->expectExceptionMessage( 'League_Query_Service::get_num_teams()' );
@@ -286,7 +287,7 @@ final class League_Purity_Test extends TestCase {
 	}
 
 	public function test_set_num_teams_is_a_pure_in_memory_mutator_without_repository_parameter(): void {
-		$league = League::from_object( (object) array( 'id' => 10 ) );
+		$league = League_Test_Factory::from_object( (object) array( 'id' => 10 ) );
 		$league->num_teams_total = 8;
 		$this->assertSame( 1, ( new \ReflectionMethod( League::class, 'set_num_teams' ) )->getNumberOfParameters() );
 
@@ -299,7 +300,7 @@ final class League_Purity_Test extends TestCase {
 	}
 
 	public function test_update_is_a_pure_in_memory_mutator_without_repository_parameter(): void {
-		$league = League::from_object( (object) array( 'id' => 10, 'title' => 'Original' ) );
+		$league = League_Test_Factory::from_object( (object) array( 'id' => 10, 'title' => 'Original' ) );
 		$this->assertSame( 2, ( new \ReflectionMethod( League::class, 'update' ) )->getNumberOfParameters() );
 
 		$league->update( 'Changed', '02' );
@@ -309,7 +310,7 @@ final class League_Purity_Test extends TestCase {
 	}
 
 	public function test_set_season_mutates_state_in_memory_without_repository(): void {
-		$league = League::from_object(
+		$league = League_Test_Factory::from_object(
 			(object) array(
 				'id'      => 10,
 				'seasons' => array(
@@ -328,7 +329,7 @@ final class League_Purity_Test extends TestCase {
 	}
 
 	public function test_set_match_day_is_a_pure_in_memory_mutator(): void {
-		$league = League::from_object( (object) array( 'id' => 10 ) );
+		$league = League_Test_Factory::from_object( (object) array( 'id' => 10 ) );
 		$this->assertSame( 1, ( new \ReflectionMethod( League::class, 'set_match_day' ) )->getNumberOfParameters() );
 
 		$league->set_match_day( 4 );
@@ -337,7 +338,7 @@ final class League_Purity_Test extends TestCase {
 	}
 
 	public function test_set_rounds_mutates_seasons_in_memory_without_repository(): void {
-		$league = League::from_object( (object) array( 'id' => 10, 'seasons' => array() ) );
+		$league = League_Test_Factory::from_object( (object) array( 'id' => 10, 'seasons' => array() ) );
 		$this->assertSame( 2, ( new \ReflectionMethod( League::class, 'set_rounds' ) )->getNumberOfParameters() );
 
 		$league->set_rounds( '2026', array( 'Final' ) );
@@ -351,7 +352,7 @@ final class League_Purity_Test extends TestCase {
 	}
 
 	public function test_get_league_teams_rolls_back_team_query_args_on_exception(): void {
-		$league = League::from_object( (object) array( 'id' => 10 ) );
+		$league = League_Test_Factory::from_object( (object) array( 'id' => 10 ) );
 		$ref_prop = new \ReflectionProperty( League::class, 'team_query_args' );
 		$initial_args = $ref_prop->getValue( $league );
 
@@ -369,7 +370,7 @@ final class League_Purity_Test extends TestCase {
 	}
 
 	public function test_get_matches_rolls_back_match_query_args_on_exception(): void {
-		$league = League::from_object( (object) array( 'id' => 10 ) );
+		$league = League_Test_Factory::from_object( (object) array( 'id' => 10 ) );
 		$ref_prop = new \ReflectionProperty( League::class, 'match_query_args' );
 		$initial_args = $ref_prop->getValue( $league );
 
@@ -405,7 +406,7 @@ final class League_Purity_Test extends TestCase {
 		$event_repo->expects( $this->once() )
 			->method( 'find_by_id' )
 			->with( 20 )
-			->willReturn( Event::from_object( (object) array( 'id' => 20, 'name' => 'Test Event' ) ) );
+			->willReturn( Event::from_object( (object) array( 'id' => 20, 'name' => 'Test Event', 'type' => 'singles', 'competition_id' => 1 ) ) );
 
 		$fallback_repo = new League_Repository( db: $db, event_repository: $event_repo );
 		$league = $fallback_repo->find_by_id( 10 );

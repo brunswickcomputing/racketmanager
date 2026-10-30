@@ -81,6 +81,7 @@ final class League_Repository_Championship_Factory_Test extends TestCase {
 			(object) array(
 				'id'             => 30,
 				'name'           => 'Mens Singles',
+				'type'           => 'singles',
 				'settings'       => array( 'primary_league' => 1 ),
 				'seasons'        => wp_json_encode( array( '2026' => array( 'name' => '2026', 'num_match_days' => 3 ) ) ),
 			),

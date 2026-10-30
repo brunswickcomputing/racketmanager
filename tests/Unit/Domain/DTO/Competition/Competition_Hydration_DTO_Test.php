@@ -74,8 +74,8 @@ class Competition_Hydration_DTO_Test extends TestCase {
 	}
 
 	/**
-	 * The DTO deliberately keeps `num_sets`/`num_rubbers` nullable so the lenient `Event::from_object()`
-	 * path mirrors the raw constructor; the legacy 3/0 defaults live on the validating factory path.
+	 * The DTO deliberately keeps `num_sets`/`num_rubbers` nullable; the legacy 3/0 defaults
+	 * are applied by the validating factory, including through the entity wrappers.
 	 */
 	public function test_event_dto_missing_fields_are_nullable_and_factory_restores_legacy_defaults(): void {
 		$dto = Event_Hydration_DTO::from_array( array() );
@@ -85,9 +85,9 @@ class Competition_Hydration_DTO_Test extends TestCase {
 		$this->assertNull( $dto->num_rubbers );
 		$this->assertSame( array(), $dto->settings );
 
-		$lenient = Event::from_array( array( 'id' => 1, 'name' => 'Ev', 'type' => 'MS', 'competition_id' => 2 ) );
-		$this->assertNull( $lenient->num_sets );
-		$this->assertNull( $lenient->num_rubbers );
+		$wrapped = Event::from_array( array( 'id' => 1, 'name' => 'Ev', 'type' => 'MS', 'competition_id' => 2 ) );
+		$this->assertSame( Event_Factory::DEFAULT_NUM_SETS, $wrapped->num_sets );
+		$this->assertSame( Event_Factory::DEFAULT_NUM_RUBBERS, $wrapped->num_rubbers );
 
 		$validated = Event_Factory::from_array( array( 'id' => 1, 'name' => 'Ev', 'type' => 'MS', 'competition_id' => 2 ) );
 		$this->assertSame( Event_Factory::DEFAULT_NUM_SETS, $validated->num_sets );

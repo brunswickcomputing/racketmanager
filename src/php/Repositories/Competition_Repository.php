@@ -13,6 +13,7 @@ namespace Racketmanager\Repositories;
 use Closure;
 use LogicException;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Competition_Factory;
 use Racketmanager\Domain\DTO\Competition\Competition_Overview_DTO;
 use Racketmanager\Domain\DTO\Competition\Competition_Summary_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
@@ -176,7 +177,7 @@ class Competition_Repository implements Competition_Repository_Interface {
             if ( ! $row ) {
                 return null;
             }
-            $competition = Competition::from_database( $row );
+            $competition = Competition_Factory::from_object( $row );
             $competition = $this->hydrate_competition( $competition );
             wp_cache_set( $competition->get_id(), $competition, 'competitions' );
         } else {
@@ -197,7 +198,7 @@ class Competition_Repository implements Competition_Repository_Interface {
             $rows         = $this->wpdb->get_results( "SELECT * FROM $this->table_name ORDER BY `name`" );
             $competitions = array_map(
                 function( $row ) {
-                    $comp = Competition::from_database( $row );
+                    $comp = Competition_Factory::from_object( $row );
                     return $this->hydrate_competition( $comp );
                 },
                 $rows
@@ -235,7 +236,7 @@ class Competition_Repository implements Competition_Repository_Interface {
         $rows = $this->wpdb->get_results( $sql );
         return array_map(
             function( $row ) {
-                $comp = Competition::from_database( $row );
+                $comp = Competition_Factory::from_object( $row );
                 return $this->hydrate_competition( $comp );
             },
             $rows
@@ -405,7 +406,7 @@ class Competition_Repository implements Competition_Repository_Interface {
 			return null;
 		}
 
-		$competition = Competition::from_object( $row );
+		$competition = Competition_Factory::from_object( $row );
 		return $this->hydrate_competition( $competition );
 	}
 

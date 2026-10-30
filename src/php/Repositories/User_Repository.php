@@ -5,6 +5,7 @@ namespace Racketmanager\Repositories;
 
 use Closure;
 use Racketmanager\Domain\Player\User;
+use Racketmanager\Domain\Player\User_Factory;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
@@ -354,7 +355,7 @@ class User_Repository implements User_Repository_Interface {
 
     private function hydrate_user( object $wp_user ): User {
         // User_Hydration_DTO reads the WP_User `data` columns and resolves the ID/email/display_name aliases.
-        $user = User::from_object( $wp_user );
+        $user = User_Factory::from_object( $wp_user );
         $id   = $user->ID;
 
         $user->firstname     = (string) get_user_meta( $id, 'first_name', true );

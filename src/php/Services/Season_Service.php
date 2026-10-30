@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Services;
 
 use Racketmanager\Domain\Season\Season;
+use Racketmanager\Domain\Season\Season_Factory;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Season_Repository;
 use Racketmanager\Services\Validator\Validator;
@@ -47,8 +48,7 @@ class Season_Service {
             }
             return $validator->err;
         }
-        $season = new Season();
-        $season->set_name( $season_name );
+        $season = Season_Factory::from_array( array( 'name' => $season_name ) );
         return $this->season_repository->save( $season );
     }
 

@@ -53,9 +53,8 @@ final class Event_Factory {
 	/**
 	 * Restore the legacy column defaults (`num_sets` 3, `num_rubbers` 0) for NULL/absent row values.
 	 *
-	 * The DTO itself keeps these nullable so the lenient `Event::from_object()` path mirrors the raw
-	 * constructor; defaults are applied here as column fallbacks, so `settings` still take precedence
-	 * inside the Event constructor.
+	 * The DTO itself keeps these nullable; defaults are applied here as column fallbacks, so
+	 * `settings` still take precedence inside the Event constructor.
 	 *
 	 * @param Event_Hydration_DTO $dto
 	 * @return Event_Hydration_DTO
@@ -89,6 +88,9 @@ final class Event_Factory {
 		object $row,
 		?Competition $competition = null
 	): Event {
+		if ( null === $competition && isset( $row->competition ) && $row->competition instanceof Competition ) {
+			$competition = $row->competition;
+		}
 		$dto = Event_Hydration_DTO::from_object( $row );
 		return self::create_from_dto(
 			$dto,
@@ -108,10 +110,6 @@ final class Event_Factory {
 		array $data,
 		?Competition $competition = null
 	): Event {
-		$dto = Event_Hydration_DTO::from_array( $data );
-		return self::create_from_dto(
-			$dto,
-			$competition
-		);
+		return self::from_object( (object) $data, $competition );
 	}
 }

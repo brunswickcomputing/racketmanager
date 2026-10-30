@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Repositories;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\League;
@@ -73,7 +74,7 @@ class Fixture_Repository_Slug_Criteria_Test extends TestCase {
 	}
 
 	public function test_find_one_by_slug_criteria_returns_null_when_home_team_slug_not_found(): void {
-		$league = League::from_object( (object) array( 'id' => 10 ) );
+		$league = League_Test_Factory::from_object( (object) array( 'id' => 10 ) );
 		$this->league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 10 )->willReturn( $league );
 
 		$this->wpdb->method( 'get_var' )->willReturn( null );
@@ -89,7 +90,7 @@ class Fixture_Repository_Slug_Criteria_Test extends TestCase {
 	}
 
 	public function test_find_one_by_slug_criteria_returns_null_when_away_team_slug_not_found(): void {
-		$league = League::from_object( (object) array( 'id' => 10 ) );
+		$league = League_Test_Factory::from_object( (object) array( 'id' => 10 ) );
 		$this->league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 10 )->willReturn( $league );
 
 		$this->wpdb->method( 'get_var' )->willReturn( null );
@@ -105,7 +106,7 @@ class Fixture_Repository_Slug_Criteria_Test extends TestCase {
 	}
 
 	public function test_find_one_by_slug_criteria_returns_null_on_ambiguous_or_empty_matches(): void {
-		$league = League::from_object( (object) array( 'id' => 24 ) );
+		$league = League_Test_Factory::from_object( (object) array( 'id' => 24 ) );
 		$this->league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 24 )->willReturn( $league );
 
 		$this->league_repository->expects( $this->once() )
@@ -128,7 +129,7 @@ class Fixture_Repository_Slug_Criteria_Test extends TestCase {
 	}
 
 	public function test_find_one_by_slug_criteria_forwards_filters_and_hydrates_fixture(): void {
-		$league                 = League::from_object(
+		$league                 = League_Test_Factory::from_object(
 			(object) array(
 				'id'              => 24,
 				'title'           => 'Summer Mixed 1',
@@ -188,7 +189,7 @@ class Fixture_Repository_Slug_Criteria_Test extends TestCase {
 	}
 
 	public function test_find_one_by_slug_criteria_resolves_teams_via_injected_team_repository(): void {
-		$league                 = League::from_object(
+		$league                 = League_Test_Factory::from_object(
 			(object) array(
 				'id'              => 24,
 				'title'           => 'Summer Mixed 1',
@@ -262,7 +263,7 @@ class Fixture_Repository_Slug_Criteria_Test extends TestCase {
 	}
 
 	public function test_find_one_by_slug_criteria_returns_null_when_injected_team_repository_does_not_find_team_without_redundant_query(): void {
-		$league                 = League::from_object(
+		$league                 = League_Test_Factory::from_object(
 			(object) array(
 				'id'              => 24,
 				'title'           => 'Summer Mixed 1',
@@ -307,7 +308,7 @@ class Fixture_Repository_Slug_Criteria_Test extends TestCase {
 	}
 
 	public function test_find_one_by_slug_criteria_falls_back_to_wpdb_when_team_repository_is_not_injected(): void {
-		$league                 = League::from_object(
+		$league                 = League_Test_Factory::from_object(
 			(object) array(
 				'id'              => 24,
 				'title'           => 'Summer Mixed 1',

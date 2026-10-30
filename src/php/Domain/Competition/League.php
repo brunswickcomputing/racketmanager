@@ -703,27 +703,31 @@ class League {
 
 
     /**
-     * Lenient hydration from a raw row (no factory invariants, no sport subclass resolution).
+     * Create a League entity from a generic object (e.g. database row).
+     *
+     * Delegates to {@see League_Factory::from_object()} for validating hydration.
      *
      * @param object     $row   Raw row (e.g. `$wpdb` result or stdClass fixture).
      * @param Event|null $event Optional parent event.
      *
-     * @return static
+     * @return self|null
      */
-    public static function from_object( object $row, ?Event $event = null ): static {
-        return new static( League_Hydration_DTO::from_object( $row ), $event );
+    public static function from_object( object $row, ?Event $event = null ): ?self {
+        return League_Factory::from_object( $row, $event );
     }
 
     /**
-     * Lenient hydration from an associative array (no factory invariants).
+     * Create a League entity from an associative array.
+     *
+     * Delegates to {@see League_Factory::from_array()} for validating hydration.
      *
      * @param array      $data  Row data.
      * @param Event|null $event Optional parent event.
      *
-     * @return static
+     * @return self|null
      */
-    public static function from_array( array $data, ?Event $event = null ): static {
-        return static::from_object( (object) $data, $event );
+    public static function from_array( array $data, ?Event $event = null ): ?self {
+        return League_Factory::from_array( $data, $event );
     }
 
 	public function __serialize(): array {

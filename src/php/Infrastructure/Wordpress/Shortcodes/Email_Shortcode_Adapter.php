@@ -3,10 +3,13 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Infrastructure\Wordpress\Shortcodes;
 
+use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\Competition\Event_Factory;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Factory;
 use Racketmanager\Domain\Team\Team;
+use Racketmanager\Domain\Team\Team_Factory;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Presentation\Presenters\Email_Shortcode_Presenter;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
@@ -383,7 +386,7 @@ class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $team;
         }
         if ( is_object( $team ) ) {
-            return Team::from_object( $team );
+            return Team_Factory::from_object( $team );
         }
         return $this->team_repository->find_by_id( is_numeric( $team ) ? (int) $team : (string) $team );
     }
@@ -399,7 +402,7 @@ class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         if ( is_object( $league ) ) {
             $event = null;
             if ( isset( $league->event ) && is_object( $league->event ) ) {
-                $event = $league->event instanceof Event ? $league->event : Event::from_object( $league->event );
+                $event = $league->event instanceof Event ? $league->event : Event_Factory::from_object( $league->event );
             } elseif ( ! empty( $league->event_id ) ) {
                 $event = $this->event_repository->find_by_id( (int) $league->event_id );
             }
@@ -422,10 +425,12 @@ class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         }
         if ( is_object( $event ) ) {
             $competition = null;
-            if ( ! empty( $event->competition_id ) ) {
+            if ( isset( $event->competition ) && $event->competition instanceof Competition ) {
+                $competition = $event->competition;
+            } elseif ( ! empty( $event->competition_id ) ) {
                 $competition = $this->competition_repository->find_by_id( (int) $event->competition_id );
             }
-            return Event::from_object( $event, $competition );
+            return Event_Factory::from_object( $event, $competition );
         }
         return $this->event_repository->find_by_id( is_numeric( $event ) ? (int) $event : $event );
     }

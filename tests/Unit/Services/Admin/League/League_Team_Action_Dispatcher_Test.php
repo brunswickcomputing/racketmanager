@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Services\Admin\League;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\League;
@@ -373,7 +374,7 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
         $league_service = $this->createMock( League_Service::class );
         $guard          = $this->createStub( Action_Guard_Interface::class );
 
-        $league = League::from_object( (object) [ 'title' => 'Division 1' ] );
+        $league = League_Test_Factory::from_object( (object) [ 'title' => 'Division 1' ] );
         $league->id = 5;
         $this->standings_service->expects( self::once() )->method( 'save_standings_manually' )->with(
             $league,

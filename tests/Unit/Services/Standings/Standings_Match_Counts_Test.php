@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Services\Standings;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\League;
@@ -27,7 +28,7 @@ class Standings_Match_Counts_Test extends TestCase {
     }
 
     private function league(): League {
-        $league = League::from_object( (object) [ 'id' => 100, 'sport' => 'tennis', 'seasons' => [ '2026' => [ 'name' => '2026' ] ] ] );
+        $league = League_Test_Factory::from_object( (object) [ 'id' => 100, 'sport' => 'tennis', 'seasons' => [ '2026' => [ 'name' => '2026' ] ] ] );
         $league->current_season = [ 'name' => '2026' ];
 
         return $league;

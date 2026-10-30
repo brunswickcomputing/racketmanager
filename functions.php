@@ -9,23 +9,33 @@
 namespace Racketmanager;
 
 use Racketmanager\Domain\Club\Club;
+use Racketmanager\Domain\Club\Club_Factory;
 use Racketmanager\Domain\Club\Club_Role;
+use Racketmanager\Domain\Club\Club_Role_Factory;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Competition_Factory;
 use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\Competition\Event_Factory;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Factory;
 use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Communication\Message;
+use Racketmanager\Domain\Communication\Message_Factory;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Rubber;
+use Racketmanager\Domain\Fixture\Rubber_Factory;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Player\Player_Factory;
 use Racketmanager\Domain\Player\User;
+use Racketmanager\Domain\Player\User_Factory;
 use Racketmanager\Domain\Result\Results_Checker;
-use Racketmanager\Domain\Fixture\Rubber;
+use Racketmanager\Domain\Result\Results_Checker_Factory;
 use Racketmanager\Domain\Season\Season;
 use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Domain\Team\Team;
+use Racketmanager\Domain\Team\Team_Factory;
 use Racketmanager\Domain\Tournament\Tournament_Entry;
+use Racketmanager\Domain\Tournament\Tournament_Entry_Factory;
 use Racketmanager\Infrastructure\Legacy\Legacy_User;
 use Racketmanager\Infrastructure\Legacy\Legacy_User_Factory;
 use Racketmanager\Repositories\Club_Repository;
@@ -186,7 +196,7 @@ function get_club( object|int|string|null $club = null, string $search_term = 'i
     if ( $club instanceof Club ) {
         $_club = $club;
     } elseif ( is_object( $club ) ) {
-        $_club = Club::from_object( $club );
+        $_club = Club_Factory::from_object( $club );
     } else {
         global $racketmanager;
         if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'club_repository' ) ) {
@@ -243,7 +253,7 @@ function get_competition( Competition|int|string|null $competition = null, ?stri
                 if ( ! isset( $global_comp->sport ) ) {
                     $global_comp->sport = '';
                 }
-                return Competition::from_object( $global_comp );
+                return Competition_Factory::from_object( $global_comp );
             }
             if ( is_string( $global_comp ) && '' !== $global_comp ) {
                 // When WordPress register_globals populates %competition% query var, it is a slug/name string
@@ -273,7 +283,7 @@ function get_competition( Competition|int|string|null $competition = null, ?stri
         if ( ! isset( $competition->sport ) ) {
             $competition->sport = '';
         }
-        return Competition::from_object( $competition );
+        return Competition_Factory::from_object( $competition );
     }
 
     if ( is_string( $competition ) && ! is_numeric( $competition ) && 'id' === $search_term ) {
@@ -335,7 +345,7 @@ function get_event( object|int|string|null $event = null, string $search_term = 
             $competition_repo = get_competition_repository_for_helpers();
             $_competition     = $competition_repo->find_by_id( (int) $event->competition_id );
         }
-        $_event = Event::from_object( $event, $_competition instanceof Competition ? $_competition : null );
+        $_event = Event_Factory::from_object( $event, $_competition instanceof Competition ? $_competition : null );
     } else {
         $event_repo = get_event_repository_for_helpers();
         $_event     = 'name' === $search_term ? $event_repo->find_by_name( (string) $event ) : $event_repo->find_by_id( $event );
@@ -536,7 +546,7 @@ function get_league( object|int|string|null $league = null ): ?League {
         if ( is_object( $league ) ) {
             $event = null;
             if ( isset( $league->event ) && ( $league->event instanceof Event || is_object( $league->event ) ) ) {
-                $event = $league->event instanceof Event ? $league->event : Event::from_object( $league->event );
+                $event = $league->event instanceof Event ? $league->event : Event_Factory::from_object( $league->event );
             } elseif ( ! empty( $league->event_id ) ) {
                 $event_repo = get_event_repository_for_helpers();
                 $event      = $event_repo ? $event_repo->find_by_id( (int) $league->event_id ) : null;
@@ -625,7 +635,7 @@ function get_rubber( object|int|null $rubber = null ): Rubber|null {
     if ( $rubber instanceof Rubber ) {
         $_rubber = $rubber;
     } elseif ( is_object( $rubber ) ) {
-        $_rubber = Rubber::from_object( $rubber );
+        $_rubber = Rubber_Factory::from_object( $rubber );
     } elseif ( $rubber ) {
         global $racketmanager;
         if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'rubber_repository' ) ) {
@@ -668,7 +678,7 @@ function get_tournament_entry( object|int|string|null $tournament_entry = null, 
     if ( $tournament_entry instanceof Tournament_Entry ) {
         $_tournament_entry = $tournament_entry;
     } elseif ( is_object( $tournament_entry ) ) {
-        $_tournament_entry = Tournament_Entry::from_object( $tournament_entry );
+        $_tournament_entry = Tournament_Entry_Factory::from_object( $tournament_entry );
     } elseif ( $tournament_entry ) {
         global $racketmanager;
         if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'tournament_entry_repository' ) ) {
@@ -708,7 +718,7 @@ function get_team( object|int|string|null $team = null ): ?object {
     if ( $team instanceof Team ) {
         $_team = $team;
     } elseif ( is_object( $team ) ) {
-        $_team = Team::from_object( $team );
+        $_team = Team_Factory::from_object( $team );
     } else {
         $team_repo = get_team_repository_for_helpers();
         $_team     = $team_repo->find_by_id( $team );
@@ -783,9 +793,9 @@ function get_user( object|int|string|null $user = null ): ?object {
             } else {
                 $user_repo = new \Racketmanager\Repositories\User_Repository();
             }
-            $_user = $user_repo->find( $id ) ?? User::from_object( $user );
+            $_user = $user_repo->find( $id ) ?? User_Factory::from_object( $user );
         } else {
-            $_user = User::from_object( $user );
+            $_user = User_Factory::from_object( $user );
         }
     } elseif ( $user ) {
         global $racketmanager;
@@ -877,7 +887,7 @@ function get_result_check( object|int|null $results_check = null ): ?object {
     if ( $results_check instanceof Results_Checker ) {
         $_results_check = $results_check;
     } elseif ( is_object( $results_check ) ) {
-        $_results_check = Results_Checker::from_object( $results_check );
+        $_results_check = Results_Checker_Factory::from_object( $results_check );
     } elseif ( $results_check ) {
         global $racketmanager;
         $repository     = $racketmanager->container->get( 'results_checker_repository' );
@@ -911,7 +921,7 @@ function get_message( object|int|string|null $message = null ): Message|null {
     if ( $message instanceof Message ) {
         $_message = $message;
     } elseif ( is_object( $message ) ) {
-        $_message = Message::from_object( $message );
+        $_message = Message_Factory::from_object( $message );
     } elseif ( $message ) {
         global $racketmanager;
         if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'message_repository' ) ) {
@@ -988,7 +998,7 @@ function get_club_role( object|int|null $club_role = null ): ?Club_Role {
                 return $global_role;
             }
             if ( is_object( $global_role ) ) {
-                return Club_Role::from_object( $global_role );
+                return Club_Role_Factory::from_object( $global_role );
             }
             if ( is_numeric( $global_role ) && (int) $global_role > 0 ) {
                 return get_club_role_repository_for_helpers()->find( (int) $global_role );
@@ -1002,7 +1012,7 @@ function get_club_role( object|int|null $club_role = null ): ?Club_Role {
     }
 
     if ( is_object( $club_role ) ) {
-        return Club_Role::from_object( $club_role );
+        return Club_Role_Factory::from_object( $club_role );
     }
 
     if ( ! empty( $club_role ) ) {

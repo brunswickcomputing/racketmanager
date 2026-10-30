@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Domain\Competition;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
@@ -73,7 +74,7 @@ class League_Season_Matches_Deletion_Test extends TestCase {
 			),
 		);
 
-		$league                       = $with_event ? League::from_object( $league_raw, $this->make_event() ) : League::from_object( $league_raw );
+		$league                       = $with_event ? League::from_object( $league_raw, $this->make_event() ) : League_Test_Factory::from_object( $league_raw );
 		$league->num_matches_per_page = 30;
 
 		return $league;

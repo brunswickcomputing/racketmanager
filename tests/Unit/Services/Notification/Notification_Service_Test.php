@@ -987,7 +987,7 @@ class Notification_Service_Test extends TestCase {
         ];
         $this->club_repository->method('find_by_id')->willReturn($club);
 
-        $event = \Racketmanager\Domain\Competition\Event::from_object( (object) [ 'id' => 93, 'name' => 'Summer League', 'seasons' => '{"2026":{"name":"2026"}}' ] );
+        $event = \Racketmanager\Domain\Competition\Event::from_object( (object) [ 'id' => 93, 'name' => 'Summer League', 'type' => 'singles', 'competition_id' => 1, 'seasons' => '{"2026":{"name":"2026"}}' ] );
         $event->competition = (object) ['type' => Competition_Type::LEAGUE];
         $this->event_repository->expects($this->once())->method('query_leagues')->with(93, $this->anything())
             ->willReturn([(object) ['id' => 456]]);

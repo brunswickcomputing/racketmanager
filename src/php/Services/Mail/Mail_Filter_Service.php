@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Services\Mail;
 
 use Racketmanager\Domain\Communication\Message;
+use Racketmanager\Domain\Communication\Message_Factory;
 use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;
 use stdClass;
 
@@ -112,7 +113,7 @@ class Mail_Filter_Service implements Mail_Filter_Service_Interface {
 						$message_object->message_object = $message;
 						$message_object->sender         = $from;
 						$message_object->status         = 1;
-						$message_entity                 = Message::from_object( $message_object );
+						$message_entity                 = Message_Factory::from_object( $message_object );
 						$this->message_repository->save( $message_entity );
 					}
 				}

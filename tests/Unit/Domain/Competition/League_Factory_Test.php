@@ -209,20 +209,17 @@ class League_Factory_Test extends TestCase {
 		$this->assertFalse( method_exists( $dto, 'to_std_class' ) );
 	}
 
-	public function test_lenient_from_object_without_event_returns_league_while_factory_returns_null(): void {
-		$row = (object) array( 'id' => 10, 'title' => 'Orphan', 'unknown_column' => 'dropped' );
+	public function test_from_object_and_from_array_without_event_return_null(): void {
+		$row  = (object) array( 'id' => 10, 'title' => 'Orphan' );
+		$data = array( 'id' => 10, 'title' => 'Orphan' );
 
 		$this->assertNull( League_Factory::from_object( $row, null ) );
-
-		$league = League::from_object( $row );
-		$this->assertInstanceOf( League::class, $league );
-		$this->assertSame( 10, $league->id );
-		$this->assertSame( 'Orphan', $league->title );
-		$this->assertNull( $league->event );
-		$this->assertFalse( property_exists( $league, 'unknown_column' ) );
+		$this->assertNull( League::from_object( $row ) );
+		$this->assertNull( League_Factory::from_array( $data, null ) );
+		$this->assertNull( League::from_array( $data ) );
 	}
 
-	public function test_lenient_from_object_matches_factory_hydration_for_valid_rows(): void {
+	public function test_from_object_matches_factory_hydration_for_valid_rows(): void {
 		$event_raw                 = new stdClass();
 		$event_raw->id             = 5;
 		$event_raw->name           = 'Event';
@@ -237,8 +234,54 @@ class League_Factory_Test extends TestCase {
 			'settings' => serialize( array( 'num_matches_per_page' => '20' ) ),
 			'seasons'  => serialize( array( '2026' => array( 'name' => '2026' ) ) ),
 		);
+		$data = (array) $row;
 
 		$this->assertEquals( League_Factory::from_object( $row, $event ), League::from_object( $row, $event ) );
+		$this->assertEquals( League_Factory::from_array( $data, $event ), League::from_array( $data, $event ) );
+	}
+
+	public function test_from_object_and_from_array_use_attached_event(): void {
+		$event_raw                 = new stdClass();
+		$event_raw->id             = 5;
+		$event_raw->name           = 'Event';
+		$event_raw->type           = 'singles';
+		$event_raw->competition_id = 1;
+		$event                     = Event::from_object( $event_raw );
+
+		$row        = (object) array( 'id' => 8, 'title' => 'Division 1', 'event_id' => 5 );
+		$row->event = $event;
+
+		$league_from_obj = League::from_object( $row );
+		$this->assertInstanceOf( League::class, $league_from_obj );
+		$this->assertSame( 5, $league_from_obj->event_id );
+		$this->assertSame( $event, $league_from_obj->event );
+
+		$data          = (array) $row;
+		$data['event'] = $event;
+
+		$league_from_arr = League::from_array( $data );
+		$this->assertInstanceOf( League::class, $league_from_arr );
+		$this->assertSame( 5, $league_from_arr->event_id );
+		$this->assertSame( $event, $league_from_arr->event );
+	}
+
+	public function test_subclass_wrapper_returns_league_instance_without_type_error(): void {
+		$event_raw                 = new stdClass();
+		$event_raw->id             = 5;
+		$event_raw->name           = 'Event';
+		$event_raw->type           = 'singles';
+		$event_raw->competition_id = 1;
+		$event                     = Event::from_object( $event_raw );
+
+		$subclass = new class() extends League {};
+
+		$result_obj = $subclass::from_object( (object) array( 'id' => 9, 'title' => 'Div' ), $event );
+		$this->assertInstanceOf( League::class, $result_obj );
+		$this->assertNotInstanceOf( get_class( $subclass ), $result_obj );
+
+		$result_arr = $subclass::from_array( array( 'id' => 9, 'title' => 'Div' ), $event );
+		$this->assertInstanceOf( League::class, $result_arr );
+		$this->assertNotInstanceOf( get_class( $subclass ), $result_arr );
 	}
 
 	public function test_empty_constructor_yields_empty_league(): void {

@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Controllers\Admin;
 
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\View_Models\Tournament_Fixtures_Page_View_Model;
@@ -56,7 +57,7 @@ final class Cup_Matches_Admin_Controller_Test extends TestCase {
 
     public function test_get_builds_fixtures_view_model_with_final_round(): void {
         $competition = Competition_Test_Factory::create( id: 1, name: 'Senior Cup', type: Competition_Type::CUP );
-        $league      = League::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup Draw' ) );
+        $league      = League_Test_Factory::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup Draw' ) );
 
         $champ_ref = new \ReflectionClass( Championship::class );
         $champ_obj = $champ_ref->newInstanceWithoutConstructor();

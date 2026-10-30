@@ -17,6 +17,7 @@ use Racketmanager\Infrastructure\Wordpress\Templates\Template_Loader;
 use Racketmanager\Services\Container\Container_Bootstrap;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Player_Service;
+use RuntimeException;
 
 /**
  * Main class to implement RacketManager
@@ -162,11 +163,11 @@ class RacketManager {
      * @template T of object
      * @param string $service_id Container service ID.
      * @return T
-     * @throws \RuntimeException If the container is not initialized or the service is not found.
+     * @throws RuntimeException If the container is not initialized or the service is not found.
      */
     public function resolve_service( string $service_id ): object {
         if ( ! isset( $this->container ) || ! $this->container->has( $service_id ) ) {
-            throw new \RuntimeException( sprintf( 'Service "%s" is not available in the container.', $service_id ) );
+            throw new RuntimeException( sprintf( 'Service "%s" is not available in the container.', $service_id ) );
         }
 
         return $this->container->get( $service_id );
@@ -399,13 +400,13 @@ class RacketManager {
      * @param string $type
      * @param array $options.
      */
-    public function set_options( $type, array $options ): void {
+    public function set_options( string $type, array $options ): void {
         $this->option_service->set_options( $type, $options );
         $this->options = $this->option_service->get_options();
     }
 
     /**
-     * Update and persist the plugin options array in a single, centralized place.
+     * Update and persist the plugin options array in a single, centralised place.
      * Use this instead of calling update_option('racketmanager', ...) directly.
      *
      * Usage:
@@ -452,7 +453,7 @@ class RacketManager {
         $this->currency_code = isset( $locale_info['int_curr_symbol'] ) ? trim( $locale_info['int_curr_symbol'] ) : 'GBP';
     }
     /**
-     * Add html content type to the mail header
+     * Add HTML content type to the mail header
      *
      * @param array $args arguments for mail message.
      *

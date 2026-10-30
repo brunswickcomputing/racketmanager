@@ -16,6 +16,7 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\League_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Favourite_Presenter;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
@@ -125,9 +126,11 @@ class Team_List_Render_Regression_Test extends TestCase {
             $league_service,
             $team_service,
             $stats_service,
-            new Tournament_Presenter( team_match_row_presenter: $this->create_team_match_row_presenter() ),
-            $this->team_details_presenter,
             $league_query
+        );
+        $adapter = new League_Shortcode_Adapter(
+            team_details_presenter: $this->team_details_presenter,
+            template_renderer: $this->template_renderer
         );
 
         $league = new class extends League {
@@ -155,7 +158,7 @@ class Team_List_Render_Regression_Test extends TestCase {
 
         $league_service->method( 'get_league' )->willReturn( $league );
 
-        $vm = $handler->handle( new Get_League_Teams_Query( league_id: 10 ) );
+        $vm = $adapter->present_teams( $handler->handle( new Get_League_Teams_Query( league_id: 10 ) ) );
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'teams-list', $vm->template );
         $this->assertArrayNotHasKey( 'teams', $vm->vars );
@@ -200,7 +203,7 @@ class Team_List_Render_Regression_Test extends TestCase {
 
         $league->event->competition->is_team_entry   = false;
         $league->event->competition->is_player_entry = true;
-        $player_entry_vm = $handler->handle( new Get_League_Teams_Query( league_id: 10 ) );
+        $player_entry_vm = $adapter->present_teams( $handler->handle( new Get_League_Teams_Query( league_id: 10 ) ) );
         $this->assertFalse( $player_entry_vm->is_error() );
         $this->assertSame( 'teams-list', $player_entry_vm->template );
 
@@ -249,13 +252,16 @@ class Team_List_Render_Regression_Test extends TestCase {
             ]
         );
 
+        $adapter = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
+            competition_shortcode_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
+            tournament_presenter: new Tournament_Presenter( team_match_row_presenter: $this->create_team_match_row_presenter() ),
+            team_details_presenter: $this->team_details_presenter
+        );
+
         $handler = new Get_Event_Teams_Handler(
             $comp_service,
             $stats_service,
-            new Tournament_Presenter( team_match_row_presenter: $this->create_team_match_row_presenter() ),
             $team_service,
-            $this->team_details_presenter,
-            new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
             $this->event_query_service( $event_repository )
         );
 
@@ -284,7 +290,8 @@ class Team_List_Render_Regression_Test extends TestCase {
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $vm = $handler->handle( new Get_Event_Teams_Query( event_id: 40, season: '2026' ) );
+        $result = $handler->handle( new Get_Event_Teams_Query( event_id: 40, season: '2026' ) );
+        $vm     = $adapter->present_teams( $result );
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'teams-list', $vm->template );
         $this->assertSame( 'event', $vm->template_type );
@@ -319,13 +326,16 @@ class Team_List_Render_Regression_Test extends TestCase {
         $hadleigh_club_repository = $this->createStub( \Racketmanager\Repositories\Interfaces\Club_Repository_Interface::class );
         $hadleigh_club_repository->method( 'find_by_id' )->willReturn( $hadleigh_club );
 
+        $adapter = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
+            competition_shortcode_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
+            tournament_presenter: new Tournament_Presenter( team_match_row_presenter: $this->create_team_match_row_presenter() ),
+            team_details_presenter: $this->team_details_presenter
+        );
+
         $handler = new Get_Event_Teams_Handler(
             $comp_service,
             $stats_service,
-            new Tournament_Presenter( team_match_row_presenter: $this->create_team_match_row_presenter() ),
             $team_service,
-            $this->team_details_presenter,
-            new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
             $this->event_query_service(
                 $this->event_repository_with_results(
                     [
@@ -376,7 +386,8 @@ class Team_List_Render_Regression_Test extends TestCase {
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $vm = $handler->handle( new Get_Event_Teams_Query( event_id: 50, season: '2026' ) );
+        $result = $handler->handle( new Get_Event_Teams_Query( event_id: 50, season: '2026' ) );
+        $vm     = $adapter->present_teams( $result );
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'teams', $vm->template );
         $this->assertSame( 'event', $vm->template_type );
@@ -407,8 +418,6 @@ class Team_List_Render_Regression_Test extends TestCase {
             $club_service,
             $comp_service,
             $comp_repo,
-            $this->team_details_presenter,
-            new Club_Presenter(),
             $this->event_query_service()
         );
 
@@ -460,10 +469,33 @@ class Team_List_Render_Regression_Test extends TestCase {
             ->with( 31 )
             ->willReturn( [ $event1 ] );
 
-        $vm = $handler->handle( new Get_Club_Competitions_Query( club_name: 'Westcliff' ) );
-        $this->assertFalse( $vm->is_error() );
-        $this->assertSame( 'competitions', $vm->template );
-        $this->assertSame( 'club', $vm->template_type );
+        $result = $handler->handle( new Get_Club_Competitions_Query( club_name: 'Westcliff' ) );
+        $this->assertFalse( $result->is_error() );
+        $club_presenter = new Club_Presenter();
+        $competitions = [];
+        foreach ( $result->competitions_data as $comp_data ) {
+            $competition = $comp_data['competition'];
+            $event_models = [];
+            foreach ( $comp_data['events'] as $e_data ) {
+                $event = $e_data['event'];
+                $teams = $e_data['teams'];
+                $team_rows = $this->team_details_presenter->present_team_rows( $teams, $event, null );
+                $event_models[] = $club_presenter->present_club_event( $event, $result->club, $team_rows );
+            }
+            $comp_vm = $event_models ? $club_presenter->present_club_competition( $competition, $result->club, $event_models ) : null;
+            if ( $comp_vm ) {
+                $competitions[] = $comp_vm;
+            }
+        }
+        $vm = new \Racketmanager\Presentation\View_Models\Shortcode_View_Model(
+            template: '' !== $result->template ? 'competitions-' . $result->template : 'competitions',
+            vars: [
+                'club'            => $result->club,
+                'competitions'    => $competitions,
+                'user_can_update' => $result->user_can_update,
+            ],
+            template_type: 'club'
+        );
 
         $warnings = [];
         $output   = $this->render_and_capture_warnings(

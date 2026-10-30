@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Presentation\Presenters;
 
 use BackedEnum;
+use Racketmanager\Application\League\DTOs\League_Standings_Result;
 use Racketmanager\Exceptions\Template_Not_Found_Exception;
 use Racketmanager\Presentation\View_Models\League_Standings_View_Model;
 use Racketmanager\Services\View\View_Renderer_Interface;
@@ -30,8 +31,26 @@ class League_Standings_Presenter {
         private readonly ?Player_Presenter $player_presenter = null
     ) {}
 
-    public function render( ?League_Standings_View_Model $vm ): string {
-        if ( null === $vm || null === $vm->league ) {
+    public function render( League_Standings_View_Model|League_Standings_Result|null $vm ): string {
+        if ( null === $vm ) {
+            return '';
+        }
+
+        if ( $vm instanceof League_Standings_Result ) {
+            if ( $vm->is_error() || null === $vm->league ) {
+                return '';
+            }
+            $vm = new League_Standings_View_Model(
+                template: $vm->template,
+                league: $vm->league,
+                teams: $vm->teams,
+                widget: $vm->widget,
+                season: $vm->season,
+                group: $vm->group
+            );
+        }
+
+        if ( null === $vm->league ) {
             return '';
         }
 

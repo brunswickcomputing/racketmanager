@@ -65,10 +65,12 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
     use Creates_Test_Container;
 
     private Tournament_Service $tournament_service;
+    private Tournament_Shortcode_Adapter $adapter;
 
     protected function setUp(): void {
         parent::setUp();
         $this->tournament_service = $this->createStub( Tournament_Service::class );
+        $this->adapter            = new Tournament_Shortcode_Adapter();
     }
 
     // -------------------------------------------------------------------------
@@ -82,9 +84,10 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
         $this->tournament_service->method( 'get_active_tournament' )->willReturn( $active_tournament );
 
         $latest_handler = new Get_Latest_Tournament_Handler( $this->tournament_service );
-        $handler        = new Get_Tournament_Handler( $this->tournament_service, new Tournament_Presenter(), $latest_handler );
+        $handler        = new Get_Tournament_Handler( $this->tournament_service, $latest_handler );
 
-        $vm = $handler->handle( new Get_Tournament_Query() );
+        $result = $handler->handle( new Get_Tournament_Query() );
+        $vm     = $this->adapter->present_tournament( $result );
         $this->assertTrue( $vm->is_raw_html() );
         $this->assertStringContainsString( 'location.href = "/tournament/summer-open/"', $vm->raw_html );
     }
@@ -93,9 +96,10 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
         $this->tournament_service->method( 'get_active_tournament' )->willReturn( null );
 
         $latest_handler = new Get_Latest_Tournament_Handler( $this->tournament_service );
-        $handler        = new Get_Tournament_Handler( $this->tournament_service, new Tournament_Presenter(), $latest_handler );
+        $handler        = new Get_Tournament_Handler( $this->tournament_service, $latest_handler );
 
-        $vm = $handler->handle( new Get_Tournament_Query() );
+        $result = $handler->handle( new Get_Tournament_Query() );
+        $vm     = $this->adapter->present_tournament( $result );
         $this->assertTrue( $vm->is_raw_html() );
         $this->assertStringContainsString( 'location.href = "/tournaments/"', $vm->raw_html );
     }
@@ -118,8 +122,9 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
         $this->tournament_service->method( 'get_tournaments' )
             ->willReturn( [ $details ] );
 
-        $handler = new Get_Tournament_Handler( $this->tournament_service, new Tournament_Presenter() );
-        $vm      = $handler->handle( new Get_Tournament_Query( tournament: 'Summer Open', template: 'custom' ) );
+        $handler = new Get_Tournament_Handler( $this->tournament_service );
+        $result  = $handler->handle( new Get_Tournament_Query( tournament: 'Summer Open', template: 'custom' ) );
+        $vm      = $this->adapter->present_tournament( $result );
 
         $this->assertSame( 'tournament-custom', $vm->template );
         $this->assertSame( $details, $vm->vars['tournament_details'] );
@@ -154,8 +159,9 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
                 $service = $this->createStub( Tournament_Service::class );
                 $service->method( 'get_tournament_with_details' )->willReturn( $details );
                 $service->method( 'get_tournaments' )->willReturn( [ $tournament ] );
-                $handler = new Get_Tournament_Handler( $service, new Tournament_Presenter() );
-                $view_model = $handler->handle( new Get_Tournament_Query( tournament: 'Summer Open' ) );
+                $handler    = new Get_Tournament_Handler( $service );
+                $result     = $handler->handle( new Get_Tournament_Query( tournament: 'Summer Open' ) );
+                $view_model = $this->adapter->present_tournament( $result );
 
                 return [ $view_model, $view_presenter->render( $view_model ) ];
             };
@@ -187,8 +193,9 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
         $this->tournament_service->method( 'get_tournament_with_details' )
             ->willThrowException( new Tournament_Not_Found_Exception( 'Tournament not found' ) );
 
-        $handler = new Get_Tournament_Handler( $this->tournament_service, new Tournament_Presenter() );
-        $vm      = $handler->handle( new Get_Tournament_Query( tournament: 'Missing Tourn' ) );
+        $handler = new Get_Tournament_Handler( $this->tournament_service );
+        $result  = $handler->handle( new Get_Tournament_Query( tournament: 'Missing Tourn' ) );
+        $vm      = $this->adapter->present_tournament( $result );
 
         $this->assertTrue( $vm->is_error() );
         $this->assertSame( 'Tournament not found', $vm->error_message );
@@ -213,8 +220,9 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
     // -------------------------------------------------------------------------
 
     public function test_overview_handler_missing_id_returns_error(): void {
-        $handler = new Get_Tournament_Overview_Handler( $this->tournament_service, new Tournament_Presenter() );
-        $vm      = $handler->handle( new Get_Tournament_Overview_Query() );
+        $handler = new Get_Tournament_Overview_Handler( $this->tournament_service );
+        $result  = $handler->handle( new Get_Tournament_Overview_Query() );
+        $vm      = $this->adapter->present_overview( $result );
 
         $this->assertTrue( $vm->is_error() );
     }
@@ -232,8 +240,9 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
         $this->tournament_service->method( 'get_tournament_overview' )
             ->willReturn( $overview );
 
-        $handler = new Get_Tournament_Overview_Handler( $this->tournament_service, new Tournament_Presenter() );
-        $vm      = $handler->handle( new Get_Tournament_Overview_Query( tournament_id: 10 ) );
+        $handler = new Get_Tournament_Overview_Handler( $this->tournament_service );
+        $result  = $handler->handle( new Get_Tournament_Overview_Query( tournament_id: 10 ) );
+        $vm      = $this->adapter->present_overview( $result );
 
         $this->assertSame( 'overview', $vm->template );
         $this->assertSame( 'tournament', $vm->template_type );
@@ -246,8 +255,9 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
         $this->tournament_service->method( 'get_tournament_overview' )
             ->willThrowException( new Tournament_Not_Found_Exception( 'Overview not found' ) );
 
-        $handler = new Get_Tournament_Overview_Handler( $this->tournament_service, new Tournament_Presenter() );
-        $vm      = $handler->handle( new Get_Tournament_Overview_Query( tournament_id: 99 ) );
+        $handler = new Get_Tournament_Overview_Handler( $this->tournament_service );
+        $result  = $handler->handle( new Get_Tournament_Overview_Query( tournament_id: 99 ) );
+        $vm      = $this->adapter->present_overview( $result );
 
         $this->assertTrue( $vm->is_error() );
         $this->assertSame( 'Overview not found', $vm->error_message );
@@ -258,8 +268,9 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
     // -------------------------------------------------------------------------
 
     public function test_events_handler_missing_id_returns_error(): void {
-        $handler = new Get_Tournament_Events_Handler( $this->tournament_service, new Tournament_Presenter() );
-        $vm      = $handler->handle( new Get_Tournament_Events_Query() );
+        $handler = new Get_Tournament_Events_Handler( $this->tournament_service );
+        $result  = $handler->handle( new Get_Tournament_Events_Query() );
+        $vm      = $this->adapter->present_events( $result );
 
         $this->assertTrue( $vm->is_error() );
     }
@@ -271,23 +282,35 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
         $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
         $this->tournament_service->method( 'get_events_with_details_for_tournament' )->willReturn( [] );
 
-        $handler = new Get_Tournament_Events_Handler( $this->tournament_service, new Tournament_Presenter() );
-        $vm      = $handler->handle( new Get_Tournament_Events_Query( tournament_id: 5 ) );
+        $handler = new Get_Tournament_Events_Handler( $this->tournament_service );
+        $result  = $handler->handle( new Get_Tournament_Events_Query( tournament_id: 5 ) );
+        $vm      = $this->adapter->present_events( $result );
 
         $this->assertSame( 'events', $vm->template );
         $this->assertSame( 'tournament', $vm->template_type );
     }
 
     public function test_events_handler_single_event(): void {
+        $competition = $this->createStub( Competition::class );
+        $competition_service = $this->createStub( Competition_Service::class );
+        $event_domain = $this->createStub( Event::class );
+
         $tournament = $this->createStub( Tournament::class );
         $tournament->method( 'get_id' )->willReturn( 5 );
+        $tournament->method( 'get_competition_object' )->willReturn( $competition );
+        $tournament->method( 'is_event_allowed' )->willReturn( true );
+
         $event = new Tournament_Event_DTO( id: 2, name: 'Mens Singles', entries: [], num_seeds: null );
+
+        $competition_service->method( 'resolve_competition_event' )->willReturn( $event_domain );
 
         $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
         $this->tournament_service->method( 'get_event_details_for_tournament' )->willReturn( $event );
 
-        $handler = new Get_Tournament_Events_Handler( $this->tournament_service, new Tournament_Presenter() );
-        $vm      = $handler->handle( new Get_Tournament_Events_Query( tournament_id: 5, event_id: 'Mens Singles' ) );
+        $adapter = new Tournament_Shortcode_Adapter( competition_service: $competition_service );
+        $handler = new Get_Tournament_Events_Handler( $this->tournament_service );
+        $result  = $handler->handle( new Get_Tournament_Events_Query( tournament_id: 5, event_id: 'Mens Singles' ) );
+        $vm      = $adapter->present_events( $result );
 
         $this->assertSame( 'event', $vm->template );
         $this->assertSame( $event, $vm->vars['event'] );
@@ -301,8 +324,9 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
         $this->tournament_service->method( 'get_event_details_for_tournament' )
             ->willThrowException( new Event_Not_Found_Exception( 'Event missing' ) );
 
-        $handler = new Get_Tournament_Events_Handler( $this->tournament_service, new Tournament_Presenter() );
-        $vm      = $handler->handle( new Get_Tournament_Events_Query( tournament_id: 5, event_id: 'Bad' ) );
+        $handler = new Get_Tournament_Events_Handler( $this->tournament_service );
+        $result  = $handler->handle( new Get_Tournament_Events_Query( tournament_id: 5, event_id: 'Bad' ) );
+        $vm      = $this->adapter->present_events( $result );
 
         $this->assertTrue( $vm->is_error() );
         $this->assertSame( 'Event missing', $vm->error_message );
@@ -313,8 +337,9 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
     // -------------------------------------------------------------------------
 
     public function test_draws_handler_missing_id_returns_error(): void {
-        $handler = new Get_Tournament_Draws_Handler( $this->tournament_service, new Tournament_Presenter( 'd/m/Y' ) );
-        $vm      = $handler->handle( new Get_Tournament_Draws_Query() );
+        $handler = new Get_Tournament_Draws_Handler( $this->tournament_service );
+        $result  = $handler->handle( new Get_Tournament_Draws_Query() );
+        $vm      = $this->adapter->present_draws( $result );
 
         $this->assertTrue( $vm->is_error() );
     }
@@ -326,22 +351,48 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
         $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
         $this->tournament_service->method( 'get_events_with_details_for_tournament' )->willReturn( [] );
 
-        $handler = new Get_Tournament_Draws_Handler( $this->tournament_service, new Tournament_Presenter( 'd/m/Y' ) );
-        $vm      = $handler->handle( new Get_Tournament_Draws_Query( tournament_id: 7 ) );
+        $handler = new Get_Tournament_Draws_Handler( $this->tournament_service );
+        $result  = $handler->handle( new Get_Tournament_Draws_Query( tournament_id: 7 ) );
+        $vm      = $this->adapter->present_draws( $result );
 
         $this->assertSame( 'draws', $vm->template );
+    }
+
+    public function test_draws_handler_does_not_require_competition_or_venue_details(): void {
+        $tournament = $this->createStub( Tournament::class );
+        $service    = $this->createMock( Tournament_Service::class );
+        $service->expects( $this->once() )
+            ->method( 'get_tournament' )
+            ->with( 7 )
+            ->willReturn( $tournament );
+        $service->expects( $this->never() )->method( 'get_tournament_with_details' );
+        $service->expects( $this->once() )
+            ->method( 'get_events_with_details_for_tournament' )
+            ->with( 7 )
+            ->willReturn( [] );
+
+        $handler = new Get_Tournament_Draws_Handler( $service );
+        $result  = $handler->handle( new Get_Tournament_Draws_Query( tournament_id: 7 ) );
+        $vm      = $this->adapter->present_draws( $result );
+
+        $this->assertFalse( $vm->is_error() );
+        $this->assertSame( 'draws', $vm->template );
+        $this->assertArrayNotHasKey( 'menu_options', $vm->vars );
+        $this->assertArrayNotHasKey( 'tournament_seo_name', $vm->vars );
     }
 
     public function test_draws_handler_single_draw(): void {
         $tournament = $this->createStub( Tournament::class );
         $tournament->method( 'get_id' )->willReturn( 7 );
+        $tournament->method( 'is_event_allowed' )->willReturn( true );
         $draw = $this->createStub( Event::class );
 
         $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
         $this->tournament_service->method( 'get_draw_details_for_tournament' )->willReturn( $draw );
 
-        $handler = new Get_Tournament_Draws_Handler( $this->tournament_service, new Tournament_Presenter( 'd/m/Y' ) );
-        $vm      = $handler->handle( new Get_Tournament_Draws_Query( tournament_id: 7, draw_id: 'Draw 1' ) );
+        $handler = new Get_Tournament_Draws_Handler( $this->tournament_service );
+        $result  = $handler->handle( new Get_Tournament_Draws_Query( tournament_id: 7, draw_id: 'Draw 1' ) );
+        $vm      = $this->adapter->present_draws( $result );
 
         $this->assertSame( 'draw', $vm->template );
         $this->assertEquals( $draw, $vm->vars['draw'] );
@@ -373,8 +424,9 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_players_handler_missing_id_returns_error(): void {
-        $handler = new Get_Tournament_Players_Handler( $this->tournament_service, new Tournament_Presenter( 'd/m/Y' ), new Player_Presenter() );
-        $vm      = $handler->handle( new Get_Tournament_Players_Query() );
+        $handler = new Get_Tournament_Players_Handler( $this->tournament_service );
+        $result  = $handler->handle( new Get_Tournament_Players_Query() );
+        $vm      = $this->adapter->present_players( $result );
 
         $this->assertTrue( $vm->is_error() );
     }
@@ -386,8 +438,9 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
         $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
         $this->tournament_service->method( 'get_players_for_tournament' )->willReturn( [] );
 
-        $handler = new Get_Tournament_Players_Handler( $this->tournament_service, new Tournament_Presenter( 'd/m/Y' ), new Player_Presenter() );
-        $vm      = $handler->handle( new Get_Tournament_Players_Query( tournament_id: 3 ) );
+        $handler = new Get_Tournament_Players_Handler( $this->tournament_service );
+        $result  = $handler->handle( new Get_Tournament_Players_Query( tournament_id: 3 ) );
+        $vm      = $this->adapter->present_players( $result );
 
         $this->assertSame( 'players', $vm->template );
         $this->assertSame( 'tournament', $vm->template_type );
@@ -402,8 +455,9 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
         $this->tournament_service->method( 'get_player_details_for_tournament' )
             ->willReturn( $player );
 
-        $handler = new Get_Tournament_Players_Handler( $this->tournament_service, new Tournament_Presenter( 'd/m/Y' ), new Player_Presenter() );
-        $vm      = $handler->handle( new Get_Tournament_Players_Query( tournament_id: 3, player_id: 'john smith' ) );
+        $handler = new Get_Tournament_Players_Handler( $this->tournament_service );
+        $result  = $handler->handle( new Get_Tournament_Players_Query( tournament_id: 3, player_id: 'john smith' ) );
+        $vm      = $this->adapter->present_players( $result );
 
         $this->assertSame( 'player', $vm->template );
         $this->assertSame( $player, $vm->vars['tournament_player'] );
@@ -417,8 +471,9 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
         $this->tournament_service->method( 'get_player_details_for_tournament' )
             ->willThrowException( new Player_Not_Found_Exception( 'Player missing' ) );
 
-        $handler = new Get_Tournament_Players_Handler( $this->tournament_service, new Tournament_Presenter( 'd/m/Y' ), new Player_Presenter() );
-        $vm      = $handler->handle( new Get_Tournament_Players_Query( tournament_id: 3, player_id: 99 ) );
+        $handler = new Get_Tournament_Players_Handler( $this->tournament_service );
+        $result  = $handler->handle( new Get_Tournament_Players_Query( tournament_id: 3, player_id: 99 ) );
+        $vm      = $this->adapter->present_players( $result );
 
         $this->assertTrue( $vm->is_error() );
         $this->assertSame( 'Player missing', $vm->error_message );
@@ -430,7 +485,8 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
 
     public function test_winners_handler_missing_id_returns_error(): void {
         $handler = new Get_Tournament_Winners_Handler( $this->tournament_service );
-        $vm      = $handler->handle( new Get_Tournament_Winners_Query() );
+        $result  = $handler->handle( new Get_Tournament_Winners_Query() );
+        $vm      = $this->adapter->present_winners( $result );
 
         $this->assertTrue( $vm->is_error() );
     }
@@ -443,7 +499,8 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
         $this->tournament_service->method( 'get_winners_for_tournament' )->willReturn( [] );
 
         $handler = new Get_Tournament_Winners_Handler( $this->tournament_service );
-        $vm      = $handler->handle( new Get_Tournament_Winners_Query( tournament_id: '8' ) );
+        $result  = $handler->handle( new Get_Tournament_Winners_Query( tournament_id: '8' ) );
+        $vm      = $this->adapter->present_winners( $result );
 
         $this->assertSame( 'winners', $vm->template );
     }
@@ -453,8 +510,9 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
     // -------------------------------------------------------------------------
 
     public function test_matches_handler_missing_id_returns_error(): void {
-        $handler = new Get_Tournament_Matches_Handler( $this->tournament_service, new Tournament_Presenter() );
-        $vm      = $handler->handle( new Get_Tournament_Matches_Query() );
+        $handler = new Get_Tournament_Matches_Handler( $this->tournament_service );
+        $result  = $handler->handle( new Get_Tournament_Matches_Query() );
+        $vm      = $this->adapter->present_matches( $result );
 
         $this->assertTrue( $vm->is_error() );
     }
@@ -466,8 +524,9 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
         $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
         $this->tournament_service->method( 'get_fixtures_by_date_for_tournament' )->willReturn( [] );
 
-        $handler = new Get_Tournament_Matches_Handler( $this->tournament_service, new Tournament_Presenter() );
-        $vm      = $handler->handle( new Get_Tournament_Matches_Query( tournament_id: 9 ) );
+        $handler = new Get_Tournament_Matches_Handler( $this->tournament_service );
+        $result  = $handler->handle( new Get_Tournament_Matches_Query( tournament_id: 9 ) );
+        $vm      = $this->adapter->present_matches( $result );
 
         $this->assertSame( 'matches', $vm->template );
     }
@@ -478,8 +537,9 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
 
     public function test_match_handler_missing_id_returns_error(): void {
         $fixture_service = $this->createStub( Fixture_Service::class );
-        $handler         = new Get_Tournament_Match_Handler( $this->tournament_service, $fixture_service, $this->createStub( \Racketmanager\Presentation\Presenters\Tournament_Presenter::class ) );
-        $vm              = $handler->handle( new Get_Tournament_Match_Query() );
+        $handler         = new Get_Tournament_Match_Handler( $this->tournament_service, $fixture_service );
+        $result          = $handler->handle( new Get_Tournament_Match_Query() );
+        $vm              = $this->adapter->present_match( $result );
 
         $this->assertTrue( $vm->is_error() );
     }
@@ -508,8 +568,9 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
         $fixture_service->method( 'get_tournament_fixture_with_details' )->willReturn( $fixture_details );
         $this->tournament_service->method( 'get_tournament_with_details_by_name' )->willReturn( $details );
 
-        $handler = new Get_Tournament_Match_Handler( $this->tournament_service, $fixture_service, new \Racketmanager\Presentation\Presenters\Tournament_Presenter() );
-        $vm      = $handler->handle( new Get_Tournament_Match_Query( tournament: 'summer open', fixture_id: 100 ) );
+        $handler = new Get_Tournament_Match_Handler( $this->tournament_service, $fixture_service );
+        $result  = $handler->handle( new Get_Tournament_Match_Query( tournament: 'summer open', fixture_id: 100 ) );
+        $vm      = $this->adapter->present_match( $result );
 
         $this->assertSame( 'match-tournament', $vm->template );
         $this->assertSame( $fixture_details, $vm->vars['fixture_details'] );
@@ -521,24 +582,13 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
 
     public function test_order_of_play_handler_missing_args_returns_error(): void {
         $comp_repo   = $this->createStub( Competition_Repository::class );
-        $fix_repo    = $this->createStub( Fixture_Repository::class );
-        $comp_svc    = $this->createStub( Competition_Service::class );
-        $team_svc    = $this->createStub( Team_Service::class );
-
-        $presenter = new Order_Of_Play_Presenter(
-            $fix_repo,
-            $comp_svc,
-            $team_svc,
-            $this->createStub( Option_Gateway_Interface::class )
-        );
-        $handler = new Get_Order_Of_Play_Handler(
+        $handler     = new Get_Order_Of_Play_Handler(
             $this->tournament_service,
-            $comp_repo,
-            $presenter
+            $comp_repo
         );
 
-        $vm = $handler->handle( new Get_Order_Of_Play_Query() );
-        $this->assertTrue( $vm->is_error() );
+        $result = $handler->handle( new Get_Order_Of_Play_Query() );
+        $this->assertTrue( $result->is_error() );
     }
 
     // -------------------------------------------------------------------------
@@ -553,7 +603,8 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
             ->willReturn( $tournament );
 
         $handler = new Get_Latest_Tournament_Handler( $this->tournament_service );
-        $vm      = $handler->handle( new Get_Latest_Tournament_Query( age_group: 'seniors' ) );
+        $result  = $handler->handle( new Get_Latest_Tournament_Query( age_group: 'seniors' ) );
+        $vm      = $this->adapter->present_latest_tournament( $result );
 
         $this->assertTrue( $vm->is_raw_html() );
         $html = $vm->raw_html;
@@ -565,7 +616,8 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
         $this->tournament_service->method( 'get_active_tournament' )->willReturn( null );
 
         $handler = new Get_Latest_Tournament_Handler( $this->tournament_service );
-        $vm      = $handler->handle( new Get_Latest_Tournament_Query( age_group: 'juniors' ) );
+        $result  = $handler->handle( new Get_Latest_Tournament_Query( age_group: 'juniors' ) );
+        $vm      = $this->adapter->present_latest_tournament( $result );
 
         $this->assertTrue( $vm->is_raw_html() );
         $this->assertStringContainsString( 'location.href = "/tournaments/juniors/"', $vm->raw_html );
@@ -577,7 +629,8 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
 
     public function test_withdrawal_handler_missing_id_returns_error(): void {
         $handler = new Get_Tournament_Withdrawal_Handler( $this->tournament_service );
-        $vm      = $handler->handle( new Get_Tournament_Withdrawal_Query() );
+        $result  = $handler->handle( new Get_Tournament_Withdrawal_Query() );
+        $vm      = $this->adapter->present_withdrawal( $result );
 
         $this->assertTrue( $vm->is_error() );
         $this->assertSame( 'modal', $vm->error_variant );
@@ -590,11 +643,12 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
             ->willReturn( [] );
 
         $handler = new Get_Tournament_Withdrawal_Handler( $this->tournament_service );
-        $vm      = $handler->handle( new Get_Tournament_Withdrawal_Query(
+        $result  = $handler->handle( new Get_Tournament_Withdrawal_Query(
             tournament_id: '44',
             player_id: '77',
             modal: 'true'
         ) );
+        $vm = $this->adapter->present_withdrawal( $result );
 
         $this->assertSame( 'withdrawal-modal', $vm->template );
         $this->assertSame( 'tournament', $vm->template_type );

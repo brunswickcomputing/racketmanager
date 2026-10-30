@@ -4,6 +4,10 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Shortcodes;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Login\DTOs\Login_Form_Result;
+use Racketmanager\Application\Login\DTOs\Member_Account_Form_Result;
+use Racketmanager\Application\Login\DTOs\Password_Lost_Form_Result;
+use Racketmanager\Application\Login\DTOs\Password_Reset_Form_Result;
 use Racketmanager\Application\Login\Queries\Get_Login_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Login_Form_Query;
 use Racketmanager\Application\Login\Queries\Get_Member_Account_Form_Handler;
@@ -58,7 +62,7 @@ class Login_Shortcode_Adapter_Test extends TestCase {
 
     public function test_login_form_returns_string(): void {
         $this->login_form_handler->method( 'handle' )
-            ->willReturn( Shortcode_View_Model::for_html( '<form class="login-form" action="/login">Sign in</form>' ) );
+            ->willReturn( Login_Form_Result::html( '<form class="login-form" action="/login">Sign in</form>' ) );
 
         $output = $this->adapter->login_form( [] );
         $this->assertStringContainsString( 'login-form', $output );
@@ -67,7 +71,7 @@ class Login_Shortcode_Adapter_Test extends TestCase {
 
     public function test_render_login_form_returns_logged_out_markup(): void {
         $this->login_form_handler->method( 'handle' )
-            ->willReturn( Shortcode_View_Model::for_html( '<form class="custom-login-form">Email</form>' ) );
+            ->willReturn( Login_Form_Result::html( '<form class="custom-login-form">Email</form>' ) );
 
         $output = $this->adapter->render_login_form( [] );
         $this->assertStringContainsString( 'custom-login-form', $output );
@@ -75,7 +79,7 @@ class Login_Shortcode_Adapter_Test extends TestCase {
 
     public function test_render_password_lost_form_returns_string(): void {
         $this->password_lost_form_handler->method( 'handle' )
-            ->willReturn( Shortcode_View_Model::for_html( '<form class="lost-password-form">Reset</form>' ) );
+            ->willReturn( Password_Lost_Form_Result::html( '<form class="lost-password-form">Reset</form>' ) );
 
         $output = $this->adapter->render_password_lost_form( [] );
         $this->assertStringContainsString( 'lost-password-form', $output );
@@ -83,7 +87,7 @@ class Login_Shortcode_Adapter_Test extends TestCase {
 
     public function test_render_password_reset_form_returns_string(): void {
         $this->password_reset_form_handler->method( 'handle' )
-            ->willReturn( Shortcode_View_Model::for_html( '<form class="reset-form">Update</form>' ) );
+            ->willReturn( Password_Reset_Form_Result::html( '<form class="reset-form">Update</form>' ) );
 
         $output = $this->adapter->render_password_reset_form( [] );
         $this->assertStringContainsString( 'reset-form', $output );
@@ -91,7 +95,7 @@ class Login_Shortcode_Adapter_Test extends TestCase {
 
     public function test_generate_member_account_form_returns_string(): void {
         $this->member_account_form_handler->method( 'handle' )
-            ->willReturn( Shortcode_View_Model::for_html( '<form class="member-account-form">Account</form>' ) );
+            ->willReturn( Member_Account_Form_Result::html( '<form class="member-account-form">Account</form>' ) );
 
         $output = $this->adapter->generate_member_account_form( [] );
         $this->assertStringContainsString( 'member-account-form', $output );
@@ -106,7 +110,7 @@ class Login_Shortcode_Adapter_Test extends TestCase {
             ->with( $this->callback( static function ( Get_Login_Form_Query $query ): bool {
                 return 'register' === $query->action;
             } ) )
-            ->willReturn( Shortcode_View_Model::for_html( '<div data-tabid="registration"></div>' ) );
+            ->willReturn( Login_Form_Result::html( '<div data-tabid="registration"></div>' ) );
 
         $view_presenter = $this->createStub( Shortcode_View_Presenter::class );
         $view_presenter->method( 'render' )->willReturnCallback( static fn( Shortcode_View_Model $vm ) => $vm->raw_html );

@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Shortcodes;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Event\DTOs\Event_Partner_Result;
 use Racketmanager\Application\Event\Queries\Event_Allowlist_Guard;
 use Racketmanager\Application\Event\Queries\Get_Event_Clubs_Handler;
 use Racketmanager\Application\Event\Queries\Get_Event_Clubs_Query;
@@ -35,13 +36,11 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\DTO\Competition\Competition_Hydration_DTO;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Team\Team;
-use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
-use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
-use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Presentation\View_Models\Event_Header_View_Model;
+use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
@@ -102,6 +101,20 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         return new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) );
     }
 
+    private function present_partner_error( Event_Partner_Result $result ): Shortcode_View_Model {
+        $handler = $this->createStub( Get_Event_Partner_Handler::class );
+        $handler->method( 'handle' )->willReturn( $result );
+        $vm = null;
+        $presenter = $this->createStub( Shortcode_View_Presenter::class );
+        $presenter->method( 'render' )->willReturnCallback( function ( Shortcode_View_Model $value ) use ( &$vm ): string {
+            $vm = $value;
+            return '';
+        } );
+        ( new Event_Shortcode_Adapter( view_presenter: $presenter, partner_handler: $handler ) )->show_event_partner();
+
+        return $vm;
+    }
+
     #[\PHPUnit\Framework\Attributes\DataProvider( 'season_request_handlers' )]
     public function test_event_handlers_resolve_url_season_before_shortcode_attribute( string $name, string $source ): void {
         $_GET = $_POST = [];
@@ -115,19 +128,18 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $competition_service = $this->createStub( Competition_Service::class );
         $competition_service->method( 'get_event_by_id' )->willReturn( $event );
         $service = $this->event_query_service();
-        $presenter = $this->competition_presenter();
         $stats = $this->createStub( Player_Stats_Service::class );
         $club_service = $this->createStub( Club_Service::class );
         $club_service->method( 'get_club' )->willReturn( \Racketmanager\Domain\Club\Club::from_object( (object) [ 'id' => 1 ] ) );
         [ $handler, $query ] = match ( $name ) {
-            'event' => [ new Get_Event_Handler( $competition_service, $presenter, $service ), new Get_Event_Query( event_id: 93, season: '2026' ) ],
+            'event' => [ new Get_Event_Handler( $competition_service, $service ), new Get_Event_Query( event_id: 93, season: '2026' ) ],
             'partner' => [ new Get_Event_Partner_Handler( $competition_service, $this->createStub( Player_Service::class ), $service ), new Get_Event_Partner_Query( event_id: 93, season: '2026' ) ],
-            'standings' => [ new Get_Event_Standings_Handler( $competition_service, $presenter, $service ), new Get_Event_Standings_Query( event_id: 93, season: '2026' ) ],
-            'draw' => [ new Get_Event_Draw_Handler( $competition_service, null, $presenter, $this->createStub( Fixture_Detail_Service::class ), $service, $this->league_query_service() ), new Get_Event_Draw_Query( event_id: 93, season: '2026' ) ],
-            'matches' => [ new Get_Event_Matches_Handler( $competition_service, new Tournament_Presenter(), null, $service, $this->league_query_service() ), new Get_Event_Matches_Query( event_id: 93, season: '2026' ) ],
-            'clubs' => [ new Get_Event_Clubs_Handler( $competition_service, $club_service, $stats, new Tournament_Presenter(), $presenter, $service ), new Get_Event_Clubs_Query( event_id: 93, season: '2026' ) ],
-            'teams' => [ new Get_Event_Teams_Handler( $competition_service, $stats, new Tournament_Presenter(), null, new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() ), $presenter, $service ), new Get_Event_Teams_Query( event_id: 93, season: '2026' ) ],
-            'players' => [ new Get_Event_Players_Handler( $competition_service, $this->createStub( Player_Service::class ), $this->createStub( Player_Query_Service::class ), $stats, new Player_Presenter(), $presenter, $service ), new Get_Event_Players_Query( event_id: 93, season: '2026' ) ],
+            'standings' => [ new Get_Event_Standings_Handler( $competition_service, $service ), new Get_Event_Standings_Query( event_id: 93, season: '2026' ) ],
+            'draw' => [ new Get_Event_Draw_Handler( $competition_service, null, $this->createStub( Fixture_Detail_Service::class ), $service, $this->league_query_service() ), new Get_Event_Draw_Query( event_id: 93, season: '2026' ) ],
+            'matches' => [ new Get_Event_Matches_Handler( $competition_service, null, $service, $this->league_query_service() ), new Get_Event_Matches_Query( event_id: 93, season: '2026' ) ],
+            'clubs' => [ new Get_Event_Clubs_Handler( $competition_service, $club_service, $stats, $service ), new Get_Event_Clubs_Query( event_id: 93, season: '2026' ) ],
+            'teams' => [ new Get_Event_Teams_Handler( $competition_service, $stats, null, $service ), new Get_Event_Teams_Query( event_id: 93, season: '2026' ) ],
+            'players' => [ new Get_Event_Players_Handler( $competition_service, $this->createStub( Player_Service::class ), $this->createStub( Player_Query_Service::class ), $stats, $service ), new Get_Event_Players_Query( event_id: 93, season: '2026' ) ],
             'team_matches' => [ new Get_Event_Team_Matches_Handler( $competition_service, $service ), new Get_Event_Team_Matches_Query( event_id: 93, team_id: 1, season: '2026' ) ],
             'team_order_players' => [ new Get_Team_Order_Players_Handler( $competition_service, $club_service, $this->createStub( \Racketmanager\Services\Registration_Service::class ), $this->createStub( Settings_Service::class ), $service ), new Get_Team_Order_Players_Query( event_id: 93, club_id: 1, season: '2026' ) ],
             'dropdown' => [ new Get_Event_Dropdown_Handler( $competition_service, $service ), new Get_Event_Dropdown_Query( event_id: 93, season: '2026' ) ],
@@ -152,7 +164,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $event->seasons = json_encode( [ '2025' => [ 'name' => '2025' ], '2026' => [ 'name' => '2026' ] ] );
         $competition_service = $this->createStub( Competition_Service::class );
         $competition_service->method( 'get_event_by_id' )->willReturn( $event );
-        $handler = new Get_Event_Handler( $competition_service, $this->competition_presenter(), $this->event_query_service() );
+        $handler = new Get_Event_Handler( $competition_service, $this->event_query_service() );
         $query   = new Get_Event_Query( event_id: 93 );
 
         $result = $handler->handle( $query );
@@ -169,20 +181,19 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $repository = $this->createMock( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class );
         $repository->expects( $this->once() )->method( $repository_method )->with( 93 )->willReturn( [] );
         $service = $this->event_query_service( $repository );
-        $presenter = $this->competition_presenter();
         $stats = $this->createStub( Player_Stats_Service::class );
         $club_service = $this->createStub( Club_Service::class );
         $club = new Club();
         $club->set_id( 50 );
         $club_service->method( 'get_club' )->willReturn( $club );
         [ $handler, $query ] = match ( $handler_name ) {
-            'standings' => [ new Get_Event_Standings_Handler( $competition_service, $presenter, $service ), new Get_Event_Standings_Query( event_id: 93 ) ],
-            'draw' => [ new Get_Event_Draw_Handler( $competition_service, null, $presenter, $this->createStub( Fixture_Detail_Service::class ), $service, $this->league_query_service() ), new Get_Event_Draw_Query( event_id: 93 ) ],
-            'matches' => [ new Get_Event_Matches_Handler( $competition_service, new Tournament_Presenter(), null, $service, $this->league_query_service() ), new Get_Event_Matches_Query( event_id: 93 ) ],
+            'standings' => [ new Get_Event_Standings_Handler( $competition_service, $service ), new Get_Event_Standings_Query( event_id: 93 ) ],
+            'draw' => [ new Get_Event_Draw_Handler( $competition_service, null, $this->createStub( Fixture_Detail_Service::class ), $service, $this->league_query_service() ), new Get_Event_Draw_Query( event_id: 93 ) ],
+            'matches' => [ new Get_Event_Matches_Handler( $competition_service, null, $service, $this->league_query_service() ), new Get_Event_Matches_Query( event_id: 93 ) ],
             'dropdown' => [ new Get_Event_Dropdown_Handler( $competition_service, $service ), new Get_Event_Dropdown_Query( event_id: 93 ) ],
-            'clubs' => [ new Get_Event_Clubs_Handler( $competition_service, $club_service, $stats, new Tournament_Presenter(), $presenter, $service ), new Get_Event_Clubs_Query( event_id: 93 ) ],
-            'teams' => [ new Get_Event_Teams_Handler( $competition_service, $stats, new Tournament_Presenter(), null, new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() ), $presenter, $service ), new Get_Event_Teams_Query( event_id: 93 ) ],
-            'players' => [ new Get_Event_Players_Handler( $competition_service, $this->createStub( Player_Service::class ), $this->createStub( Player_Query_Service::class ), $stats, new Player_Presenter(), $presenter, $service ), new Get_Event_Players_Query( event_id: 93 ) ],
+            'clubs' => [ new Get_Event_Clubs_Handler( $competition_service, $club_service, $stats, $service ), new Get_Event_Clubs_Query( event_id: 93 ) ],
+            'teams' => [ new Get_Event_Teams_Handler( $competition_service, $stats, null, $service ), new Get_Event_Teams_Query( event_id: 93 ) ],
+            'players' => [ new Get_Event_Players_Handler( $competition_service, $this->createStub( Player_Service::class ), $this->createStub( Player_Query_Service::class ), $stats, $service ), new Get_Event_Players_Query( event_id: 93 ) ],
             'team_matches' => [ new Get_Event_Team_Matches_Handler( $competition_service, $service ), new Get_Event_Team_Matches_Query( event_id: 93, team_id: 5 ) ],
             'order' => [ new Get_Team_Order_Players_Handler( $competition_service, $club_service, $this->createStub( Registration_Service::class ), $this->createStub( Settings_Service::class ), $service ), new Get_Team_Order_Players_Query( event_id: 93, club_id: 50 ) ],
         };
@@ -257,7 +268,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
     public function test_event_handler_success_and_error(): void {
         $comp_service = $this->createStub( Competition_Service::class );
-        $handler      = new Get_Event_Handler( $comp_service, $this->competition_presenter(), $this->event_query_service() );
+        $handler      = new Get_Event_Handler( $comp_service, $this->event_query_service() );
 
         // 1. Missing event id / name
         $vm_missing = $handler->handle( new Get_Event_Query() );
@@ -281,7 +292,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->attach_test_competition( $event_stub );
 
         $comp_service_success->method( 'get_event_by_id' )->willReturn( $event_stub );
-        $handler_success = new Get_Event_Handler( $comp_service_success, $this->competition_presenter(), $this->event_query_service() );
+        $handler_success = new Get_Event_Handler( $comp_service_success, $this->event_query_service() );
 
         $vm_no_season = $handler_success->handle( new Get_Event_Query( event_id: 10, season: '2026' ) );
         $this->assertTrue( $vm_no_season->is_error() );
@@ -289,7 +300,8 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         // 4. Success path
         $event_stub->current_season = [ 'name' => '2025' ];
-        $vm_success = $handler_success->handle( new Get_Event_Query( event_name: 'Mens Singles', tab: 'draw' ) );
+        $result = $handler_success->handle( new Get_Event_Query( event_name: 'Mens Singles', tab: 'draw' ) );
+        $vm_success = ( new Event_Shortcode_Adapter( competition_shortcode_presenter: $this->competition_presenter() ) )->present_event( $result );
         $this->assertFalse( $vm_success->is_error() );
         $this->assertSame( 'event', $vm_success->template );
         $this->assertFalse( $vm_success->template_type );
@@ -300,7 +312,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
     public function test_event_standings_handler_success_and_error(): void {
         $comp_service = $this->createStub( Competition_Service::class );
         $event_repository = $this->event_repository_with_results( [ 'query_leagues' => [ (object) [ 'id' => 1 ] ] ] );
-        $handler          = new Get_Event_Standings_Handler( $comp_service, $this->competition_presenter(), $this->event_query_service( $event_repository ) );
+        $handler          = new Get_Event_Standings_Handler( $comp_service, $this->event_query_service( $event_repository ) );
 
         $vm_err = $handler->handle( new Get_Event_Standings_Query() );
         $this->assertTrue( $vm_err->is_error() );
@@ -312,7 +324,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
-        $vm_ok = $handler->handle( new Get_Event_Standings_Query( event_id: 5 ) );
+        $vm_ok = ( new Event_Shortcode_Adapter( competition_shortcode_presenter: $this->competition_presenter() ) )->present_standings( $handler->handle( new Get_Event_Standings_Query( event_id: 5 ) ) );
         $this->assertFalse( $vm_ok->is_error() );
         $this->assertSame( 'standings', $vm_ok->template );
         $this->assertSame( 'event', $vm_ok->template_type );
@@ -322,7 +334,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
     public function test_event_draw_handler_success_and_error(): void {
         $comp_service   = $this->createStub( Competition_Service::class );
         $league_service = $this->createStub( League_Service::class );
-        $handler        = new Get_Event_Draw_Handler( $comp_service, $league_service, new Competition_Shortcode_Presenter(), $this->createStub( Fixture_Detail_Service::class ), $this->event_query_service(), $this->league_query_service() );
+        $handler        = new Get_Event_Draw_Handler( $comp_service, $league_service, $this->createStub( Fixture_Detail_Service::class ), $this->event_query_service(), $this->league_query_service() );
 
         $vm_err = $handler->handle( new Get_Event_Draw_Query() );
         $this->assertTrue( $vm_err->is_error() );
@@ -334,7 +346,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
-        $vm_ok = $handler->handle( new Get_Event_Draw_Query( event_id: 7 ) );
+        $vm_ok = ( new Event_Shortcode_Adapter( competition_shortcode_presenter: $this->competition_presenter() ) )->present_draw( $handler->handle( new Get_Event_Draw_Query( event_id: 7 ) ) );
         $this->assertFalse( $vm_ok->is_error() );
         $this->assertSame( 'draw', $vm_ok->template );
         $this->assertSame( 'event', $vm_ok->template_type );
@@ -347,7 +359,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
     public function test_event_matches_handler_success_and_error(): void {
         $comp_service   = $this->createStub( Competition_Service::class );
         $league_service = $this->createStub( League_Service::class );
-        $handler        = new Get_Event_Matches_Handler( $comp_service, new Tournament_Presenter(), $league_service, $this->event_query_service(), $this->league_query_service() );
+        $handler        = new Get_Event_Matches_Handler( $comp_service, $league_service, $this->event_query_service(), $this->league_query_service() );
 
         $vm_err = $handler->handle( new Get_Event_Matches_Query() );
         $this->assertTrue( $vm_err->is_error() );
@@ -359,7 +371,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
-        $vm_ok = $handler->handle( new Get_Event_Matches_Query( event_id: 8, template: 'custom' ) );
+        $vm_ok = ( new Event_Shortcode_Adapter( tournament_presenter: new Tournament_Presenter() ) )->present_matches( $handler->handle( new Get_Event_Matches_Query( event_id: 8, template: 'custom' ) ) );
         $this->assertFalse( $vm_ok->is_error() );
         $this->assertSame( 'matches-custom', $vm_ok->template );
         $this->assertSame( 'event', $vm_ok->template_type );
@@ -385,8 +397,8 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $player_repository = $this->createStub( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class );
         $player_repository->method( 'find' )->willReturnMap( [ [ 31, $low ], [ 32, $high ] ] );
 
-        $handler = new Get_Event_Clubs_Handler( $comp_service, $club_service, $stats, new Tournament_Presenter(), $this->competition_presenter(), $this->event_query_service( $event_repository, player_repository: $player_repository ) );
-        $vm      = $handler->handle( new Get_Event_Clubs_Query( event_id: 12, club_id: 101 ) );
+        $handler = new Get_Event_Clubs_Handler( $comp_service, $club_service, $stats, $this->event_query_service( $event_repository, player_repository: $player_repository ) );
+        $vm      = ( new Event_Shortcode_Adapter( competition_shortcode_presenter: $this->competition_presenter() ) )->present_clubs( $handler->handle( new Get_Event_Clubs_Query( event_id: 12, club_id: 101 ) ) );
 
         $this->assertFalse( $vm->is_error() );
         $this->assert_decorated_and_sorted( $low, $high, $vm->vars['event_club']->players );
@@ -428,7 +440,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
     public function test_event_clubs_handler_success_and_error(): void {
         $comp_service = $this->createStub( Competition_Service::class );
         $club_service = $this->createStub( Club_Service::class );
-        $handler      = new Get_Event_Clubs_Handler( $comp_service, $club_service, $this->createStub( Player_Stats_Service::class ), new Tournament_Presenter(), $this->competition_presenter(), $this->event_query_service() );
+        $handler      = new Get_Event_Clubs_Handler( $comp_service, $club_service, $this->createStub( Player_Stats_Service::class ), $this->event_query_service() );
 
         $vm_err = $handler->handle( new Get_Event_Clubs_Query() );
         $this->assertTrue( $vm_err->is_error() );
@@ -441,7 +453,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
         // All clubs
-        $vm_all = $handler->handle( new Get_Event_Clubs_Query( event_id: 12 ) );
+        $vm_all = ( new Event_Shortcode_Adapter( competition_shortcode_presenter: $this->competition_presenter() ) )->present_clubs( $handler->handle( new Get_Event_Clubs_Query( event_id: 12 ) ) );
         $this->assertFalse( $vm_all->is_error() );
         $this->assertSame( 'clubs', $vm_all->template );
         $this->assertSame( 'event', $vm_all->template_type );
@@ -453,7 +465,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         $club_service->method( 'get_club_by_shortcode' )->willReturn( $club_stub );
 
-        $vm_club = $handler->handle( new Get_Event_Clubs_Query( event_id: 12, club_id: 'ltc' ) );
+        $vm_club = ( new Event_Shortcode_Adapter( competition_shortcode_presenter: $this->competition_presenter() ) )->present_clubs( $handler->handle( new Get_Event_Clubs_Query( event_id: 12, club_id: 'ltc' ) ) );
         $this->assertFalse( $vm_club->is_error() );
         $this->assertSame( $club_stub, $vm_club->vars['event_club'] );
         $this->assertSame( [], $club_stub->players );
@@ -461,7 +473,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         // Specific club not found
         $club_service_err = $this->createStub( Club_Service::class );
         $club_service_err->method( 'get_club' )->willThrowException( new Club_Not_Found_Exception( 'Club not found' ) );
-        $handler_club_err = new Get_Event_Clubs_Handler( $comp_service, $club_service_err, $this->createStub( Player_Stats_Service::class ), new Tournament_Presenter(), $this->competition_presenter(), $this->event_query_service() );
+        $handler_club_err = new Get_Event_Clubs_Handler( $comp_service, $club_service_err, $this->createStub( Player_Stats_Service::class ), $this->event_query_service() );
         $vm_club_err = $handler_club_err->handle( new Get_Event_Clubs_Query( event_id: 12, club_id: 999 ) );
         $this->assertTrue( $vm_club_err->is_error() );
         $this->assertSame( 'Club not found', $vm_club_err->error_message );
@@ -470,8 +482,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
     public function test_event_teams_handler_success_and_error(): void {
         $comp_service = $this->createStub( Competition_Service::class );
         $team_service = $this->createStub( Team_Service::class );
-        $team_details_presenter = new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() );
-        $handler      = new Get_Event_Teams_Handler( $comp_service, $this->createStub( Player_Stats_Service::class ), new Tournament_Presenter(), $team_service, $team_details_presenter, $this->competition_presenter(), $this->event_query_service() );
+        $handler      = new Get_Event_Teams_Handler( $comp_service, $this->createStub( Player_Stats_Service::class ), $team_service, $this->event_query_service() );
 
         $vm_err = $handler->handle( new Get_Event_Teams_Query() );
         $this->assertTrue( $vm_err->is_error() );
@@ -485,7 +496,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
         // All teams
-        $vm_all = $handler->handle( new Get_Event_Teams_Query( event_id: 15 ) );
+        $vm_all = ( new Event_Shortcode_Adapter( competition_shortcode_presenter: $this->competition_presenter() ) )->present_teams( $handler->handle( new Get_Event_Teams_Query( event_id: 15 ) ) );
         $this->assertFalse( $vm_all->is_error() );
         $this->assertSame( 'teams', $vm_all->template );
 
@@ -502,7 +513,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         // Championship fallback to 'list'
         $event_stub->competition->is_championship = true;
-        $vm_champ = $handler->handle( new Get_Event_Teams_Query( event_id: 15, team: null ) );
+        $vm_champ = ( new Event_Shortcode_Adapter( competition_shortcode_presenter: $this->competition_presenter() ) )->present_teams( $handler->handle( new Get_Event_Teams_Query( event_id: 15, team: null ) ) );
         $this->assertSame( 'teams-list', $vm_champ->template );
     }
 
@@ -527,7 +538,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $player_repository = $this->createStub( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class );
         $player_repository->method( 'find' )->willReturnMap( [ [ 31, $low ], [ 32, $high ] ] );
 
-        $handler = new Get_Event_Teams_Handler( $comp_service, $stats, new Tournament_Presenter(), $team_service, new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() ), $this->competition_presenter(), $this->event_query_service( $event_repository, player_repository: $player_repository ) );
+        $handler = new Get_Event_Teams_Handler( $comp_service, $stats, $team_service, $this->event_query_service( $event_repository, player_repository: $player_repository ) );
         $vm      = $handler->handle( new Get_Event_Teams_Query( event_id: 15, team: '20' ) );
 
         $this->assertFalse( $vm->is_error() );
@@ -541,7 +552,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $query_service->method( 'get_matches' )->willReturn( [] );
         $stats_service = $this->createStub( Player_Stats_Service::class );
         $stats_service->method( 'get_stats' )->willReturn( [] );
-        $handler = new Get_Event_Players_Handler( $comp_service, $player_service, $query_service, $stats_service, new Player_Presenter(), $this->competition_presenter(), $this->event_query_service() );
+        $handler = new Get_Event_Players_Handler( $comp_service, $player_service, $query_service, $stats_service, $this->event_query_service() );
 
         $vm_err = $handler->handle( new Get_Event_Players_Query() );
         $this->assertTrue( $vm_err->is_error() );
@@ -554,7 +565,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
         // 1. All players
-        $vm_all = $handler->handle( new Get_Event_Players_Query( event_id: 16 ) );
+        $vm_all = ( new Event_Shortcode_Adapter( competition_shortcode_presenter: $this->competition_presenter() ) )->present_players( $handler->handle( new Get_Event_Players_Query( event_id: 16 ) ) );
         $this->assertFalse( $vm_all->is_error() );
         $this->assertSame( 'players', $vm_all->template );
 
@@ -608,14 +619,14 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $vm_no_event = $handler->handle( new Get_Event_Partner_Query() );
         $this->assertTrue( $vm_no_event->is_error() );
         $this->assertSame( 'Event not found', $vm_no_event->error_message );
-        $this->assertSame( 'modal', $vm_no_event->error_variant );
+        $this->assertSame( 'modal', $this->present_partner_error( $vm_no_event )->error_variant );
 
         // 2. Event not found -> modal error
         $comp_service->method( 'get_event_by_id' )->willThrowException( new Competition_Not_Found_Exception( 'Not found' ) );
         $vm_event_404 = $handler->handle( new Get_Event_Partner_Query( event_id: 999 ) );
         $this->assertTrue( $vm_event_404->is_error() );
         $this->assertSame( 'Event not found', $vm_event_404->error_message );
-        $this->assertSame( 'modal', $vm_event_404->error_variant );
+        $this->assertSame( 'modal', $this->present_partner_error( $vm_event_404 )->error_variant );
 
         // 3. Success path with gender rule (male event -> partner male)
         $comp_service_ok = $this->createStub( Competition_Service::class );
@@ -634,7 +645,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         $handler_ok = new Get_Event_Partner_Handler( $comp_service_ok, $player_service, $this->event_query_service() );
 
-        $vm_ok = $handler_ok->handle( new Get_Event_Partner_Query( event_id: 22, partner_id: 300, gender: 'M' ) );
+        $vm_ok = ( new Event_Shortcode_Adapter() )->present_partner( $handler_ok->handle( new Get_Event_Partner_Query( event_id: 22, partner_id: 300, gender: 'M' ) ) );
         $this->assertFalse( $vm_ok->is_error() );
         $this->assertSame( 'partner-modal', $vm_ok->template );
         $this->assertSame( 'event', $vm_ok->template_type );
@@ -671,7 +682,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'No team id supplied', $vm_no_team->error_message );
 
         // 3. Success path
-        $vm_ok = $handler->handle( new Get_Event_Team_Matches_Query( event_id: 33, team_id: 5, template: 'custom' ) );
+        $vm_ok = ( new Event_Shortcode_Adapter() )->present_team_matches( $handler->handle( new Get_Event_Team_Matches_Query( event_id: 33, team_id: 5, template: 'custom' ) ) );
         $this->assertFalse( $vm_ok->is_error() );
         $this->assertSame( 'team-matches-custom', $vm_ok->template );
         $this->assertSame( 'event', $vm_ok->template_type );
@@ -726,7 +737,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $reg_service->method( 'get_registered_players_list' )->willReturn( [ (object) [ 'id' => 1 ] ] );
 
         $handler_ok = new Get_Team_Order_Players_Handler( $comp_service, $club_service_ok, $reg_service, $settings_service, $this->event_query_service() );
-        $vm_ok = $handler_ok->handle( new Get_Team_Order_Players_Query( event_id: 44, club_id: 200 ) );
+        $vm_ok = ( new Event_Shortcode_Adapter() )->present_team_order_players( $handler_ok->handle( new Get_Team_Order_Players_Query( event_id: 44, club_id: 200 ) ) );
 
         $this->assertFalse( $vm_ok->is_error() );
         $this->assertSame( 'team-players-list', $vm_ok->template );
@@ -812,7 +823,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $vm      = $handler->handle( $query );
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'partner-modal', $vm->template );
-        $this->assertSame( 123, $vm->vars['partner_id'] );
+        $this->assertSame( 123, ( new Event_Shortcode_Adapter() )->present_partner( $vm )->vars['partner_id'] );
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider( 'age_limit_provider' )]
@@ -872,7 +883,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
-        $vm_ok = $handler->handle( new Get_Event_Dropdown_Query( event_id: 50 ) );
+        $vm_ok = ( new Event_Shortcode_Adapter() )->present_dropdown( $handler->handle( new Get_Event_Dropdown_Query( event_id: 50 ) ) );
         $this->assertFalse( $vm_ok->is_error() );
         $this->assertSame( 'dropdown', $vm_ok->template );
         $this->assertSame( 'event', $vm_ok->template_type );
@@ -942,42 +953,42 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $comp_service->method( 'get_event_by_id' )->willReturnCallback(
             fn( $id ) => 101 === (int) $id ? $allowed_event : $blocked_event
         );
-        $event_handler = new Get_Event_Handler( $comp_service, $this->competition_presenter(), $this->event_query_service() );
+        $event_handler = new Get_Event_Handler( $comp_service, $this->event_query_service() );
         $this->assertFalse( $event_handler->handle( new Get_Event_Query( event_id: 101 ) )->is_error() );
         $err = $event_handler->handle( new Get_Event_Query( event_id: 103 ) );
         $this->assertTrue( $err->is_error() );
         $this->assertSame( 'Event not found for competition', $err->error_message );
 
         // 2. Get_Event_Standings_Handler
-        $standings_handler = new Get_Event_Standings_Handler( $comp_service, $this->competition_presenter(), $this->event_query_service() );
+        $standings_handler = new Get_Event_Standings_Handler( $comp_service, $this->event_query_service() );
         $this->assertFalse( $standings_handler->handle( new Get_Event_Standings_Query( event_id: 101 ) )->is_error() );
         $err = $standings_handler->handle( new Get_Event_Standings_Query( event_id: 103 ) );
         $this->assertTrue( $err->is_error() );
         $this->assertSame( 'Event not found for competition', $err->error_message );
 
         // 3. Get_Event_Draw_Handler
-        $draw_handler = new Get_Event_Draw_Handler( $comp_service, $league_service, new Competition_Shortcode_Presenter(), $this->createStub( Fixture_Detail_Service::class ), $this->event_query_service(), $this->league_query_service() );
+        $draw_handler = new Get_Event_Draw_Handler( $comp_service, $league_service, $this->createStub( Fixture_Detail_Service::class ), $this->event_query_service(), $this->league_query_service() );
         $this->assertFalse( $draw_handler->handle( new Get_Event_Draw_Query( event_id: 101 ) )->is_error() );
         $err = $draw_handler->handle( new Get_Event_Draw_Query( event_id: 103 ) );
         $this->assertTrue( $err->is_error() );
         $this->assertSame( 'Event not found for competition', $err->error_message );
 
         // 4. Get_Event_Matches_Handler
-        $matches_handler = new Get_Event_Matches_Handler( $comp_service, new Tournament_Presenter(), $league_service, $this->event_query_service(), $this->league_query_service() );
+        $matches_handler = new Get_Event_Matches_Handler( $comp_service, $league_service, $this->event_query_service(), $this->league_query_service() );
         $this->assertFalse( $matches_handler->handle( new Get_Event_Matches_Query( event_id: 101 ) )->is_error() );
         $err = $matches_handler->handle( new Get_Event_Matches_Query( event_id: 103 ) );
         $this->assertTrue( $err->is_error() );
         $this->assertSame( 'Event not found for competition', $err->error_message );
 
         // 5. Get_Event_Clubs_Handler
-        $clubs_handler = new Get_Event_Clubs_Handler( $comp_service, $club_service, $this->createStub( Player_Stats_Service::class ), new Tournament_Presenter(), $this->competition_presenter(), $this->event_query_service() );
+        $clubs_handler = new Get_Event_Clubs_Handler( $comp_service, $club_service, $this->createStub( Player_Stats_Service::class ), $this->event_query_service() );
         $this->assertFalse( $clubs_handler->handle( new Get_Event_Clubs_Query( event_id: 101 ) )->is_error() );
         $err = $clubs_handler->handle( new Get_Event_Clubs_Query( event_id: 103 ) );
         $this->assertTrue( $err->is_error() );
         $this->assertSame( 'Event not found for competition', $err->error_message );
 
         // 6. Get_Event_Teams_Handler
-        $teams_handler = new Get_Event_Teams_Handler( $comp_service, $this->createStub( Player_Stats_Service::class ), new Tournament_Presenter(), null, new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() ), $this->competition_presenter(), $this->event_query_service() );
+        $teams_handler = new Get_Event_Teams_Handler( $comp_service, $this->createStub( Player_Stats_Service::class ), null, $this->event_query_service() );
         $this->assertFalse( $teams_handler->handle( new Get_Event_Teams_Query( event_id: 101 ) )->is_error() );
         $err = $teams_handler->handle( new Get_Event_Teams_Query( event_id: 103 ) );
         $this->assertTrue( $err->is_error() );
@@ -989,8 +1000,6 @@ class Event_Shortcode_Handlers_Test extends TestCase {
             $player_service,
             $this->createStub( Player_Query_Service::class ),
             $this->createStub( Player_Stats_Service::class ),
-            new Player_Presenter(),
-            $this->competition_presenter(),
             $this->event_query_service()
         );
         $this->assertFalse( $players_handler->handle( new Get_Event_Players_Query( event_id: 101 ) )->is_error() );
@@ -1038,7 +1047,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_event_by_id' )->willReturn( $foreign_event );
 
-        $handler = new Get_Event_Handler( $comp_service, $this->competition_presenter(), $this->event_query_service() );
+        $handler = new Get_Event_Handler( $comp_service, $this->event_query_service() );
         $err     = $handler->handle( new Get_Event_Query( event_id: 101 ) );
         $this->assertTrue( $err->is_error() );
         $this->assertSame( 'Event not found for competition', $err->error_message );
@@ -1049,7 +1058,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $comp_service_missing->method( 'get_event_by_id' )->willReturn( $missing_comp_event );
         $comp_service_missing->method( 'get_by_id' )->willThrowException( new Competition_Not_Found_Exception( 'Competition not found' ) );
 
-        $handler_missing = new Get_Event_Handler( $comp_service_missing, $this->competition_presenter(), $this->event_query_service() );
+        $handler_missing = new Get_Event_Handler( $comp_service_missing, $this->event_query_service() );
         $err_missing     = $handler_missing->handle( new Get_Event_Query( event_id: 101 ) );
         $this->assertTrue( $err_missing->is_error() );
         $this->assertSame( 'Event not found for competition', $err_missing->error_message );
@@ -1064,7 +1073,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $handler = new Get_Event_Handler( $comp_service, $this->competition_presenter(), $this->event_query_service() );
+        $handler = new Get_Event_Handler( $comp_service, $this->event_query_service() );
         $result  = $handler->handle( new Get_Event_Query( event_id: 101, season: '2026' ) );
 
         $this->assertFalse( $result->is_error() );
@@ -1119,7 +1128,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
             $competition_service = $this->createStub( Competition_Service::class );
             $competition_service->method( 'get_event_by_id' )->willReturn( $event );
-            $handler = new Get_Event_Handler( $competition_service, $this->competition_presenter(), $this->event_query_service() );
+            $handler = new Get_Event_Handler( $competition_service, $this->event_query_service() );
             $query   = Get_Event_Query::from_atts(
                 [ 'id' => 101, 'season' => '2026', 'post_id' => 77 ],
                 [ 'pagename' => 'tournament/summer-open/event/mens-singles' ]
@@ -1127,14 +1136,15 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
             $result = $handler->handle( $query );
             $this->assertFalse( $result->is_error() );
-            $this->assertInstanceOf( Event_Header_View_Model::class, $result->vars['event_header'] );
-            $this->assertSame( 77, $result->vars['event_header']->post_id );
-            $this->assertSame( $case['pagename'], $result->vars['event_header']->pagename );
-            $this->assertSame( 'https://example.test/page/77', $result->vars['event_header']->form_action );
+            $vm = ( new Event_Shortcode_Adapter( competition_shortcode_presenter: $this->competition_presenter() ) )->present_event( $result );
+            $this->assertInstanceOf( Event_Header_View_Model::class, $vm->vars['event_header'] );
+            $this->assertSame( 77, $vm->vars['event_header']->post_id );
+            $this->assertSame( $case['pagename'], $vm->vars['event_header']->pagename );
+            $this->assertSame( 'https://example.test/page/77', $vm->vars['event_header']->form_action );
 
             if ( Competition_Type::TOURNAMENT === $case['type'] ) {
                 $renderer = new Shortcode_View_Presenter( $this->create_renderer() );
-                $html     = $renderer->render( $result );
+                $html     = $renderer->render( $vm );
                 $this->assertStringContainsString( 'name="page_id" value="77"', $html );
                 $this->assertStringContainsString( 'id="pagename" value="tournament/summer-open/event/mens-singles"', $html );
                 $this->assertStringContainsString( 'action="https://example.test/page/77"', $html );

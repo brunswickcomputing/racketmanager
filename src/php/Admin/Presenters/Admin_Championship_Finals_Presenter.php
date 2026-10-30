@@ -18,7 +18,7 @@ use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 /**
  * Maps championship finals to preformatted fixture view models.
  */
-final class Admin_Championship_Finals_Presenter {
+final class Admin_Championship_Finals_Presenter implements Championship_Finals_Presenter_Interface {
 
     public function __construct(
         private Admin_Date_Presenter $date_presenter,

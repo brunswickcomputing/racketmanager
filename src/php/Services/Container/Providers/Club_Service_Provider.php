@@ -13,8 +13,6 @@ use Racketmanager\Application\General\Queries\Get_Team_Order_Handler;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Club_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Club_Ajax_Controller;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Club_Shortcode_Adapter;
-use Racketmanager\Presentation\Presenters\Club_Presenter;
-use Racketmanager\Presentation\Presenters\Club_Shortcode_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
@@ -74,20 +72,10 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
             $c->get( 'event_query_service' )
         ) );
 
-        // Presenters
-        $container->set( 'club_presenter', fn() => new Club_Presenter() );
-        $container->set( 'club_shortcode_presenter', fn( Simple_Container $c ) => new Club_Shortcode_Presenter(
-            $c->get( 'view_renderer' ),
-            $c->get( 'club_presenter' ),
-            $c->get( 'player_presenter' ),
-            $c->get( 'favourite_presenter' )
-        ) );
-
         // Query Handlers
         $container->set( 'get_club_handler', fn( Simple_Container $c ) => new Get_Club_Handler(
             $c->get( 'club_service' ),
             $c->get( 'settings_service' ),
-            $c->get( 'club_presenter' ),
             $c->get( 'security_service' )
         ) );
 
@@ -95,9 +83,7 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
             $c->get( 'club_service' ),
             $c->get( 'player_service' ),
             $c->get( 'registration_service' ),
-            $c->get( 'club_presenter' ),
-            $c->get( 'option_gateway' ),
-            $c->get( 'player_presenter' )
+            $c->get( 'option_gateway' )
         ) );
 
         $container->set( 'get_club_roles_handler', fn( Simple_Container $c ) => new Get_Club_Roles_Handler(
@@ -112,16 +98,12 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
             $c->get( 'club_service' ),
             $c->get( 'competition_service' ),
             $c->get( 'competition_repository' ),
-            $c->get( 'team_details_presenter' ),
-            $c->get( 'club_presenter' ),
             $c->get( 'event_query_service' )
         ) );
 
         $container->set( 'get_club_invoices_handler', fn( Simple_Container $c ) => new Get_Club_Invoices_Handler(
             $c->get( 'club_service' ),
             $c->get( 'finance_service' ),
-            $c->get( 'invoice_presenter' ),
-            $c->get( 'club_presenter' ),
             $c->get( 'settings_service' ),
             $c->get( 'option_gateway' )
         ) );
@@ -145,7 +127,11 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
             competition_shortcode_presenter: $c->get( 'competition_shortcode_presenter' ),
             event_query_service: $c->get( 'event_query_service' ),
             event_repository: $c->get( 'event_repository' ),
-            team_repository: $c->get( 'team_repository' )
+            team_repository: $c->get( 'team_repository' ),
+            club_presenter: $c->get( 'club_presenter' ),
+            player_presenter: $c->get( 'player_presenter' ),
+            invoice_presenter: $c->get( 'invoice_presenter' ),
+            team_details_presenter: $c->get( 'team_details_presenter' )
         ) );
 
         // AJAX Adapter & Controller

@@ -3,10 +3,10 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Rest;
 
+use Racketmanager\Application\Export\DTO\Export_Criteria;
 use Racketmanager\Application\Export\Ports\Data_Exporter_Interface;
 use Racketmanager\Infrastructure\Wordpress\Rest\Rest_Controller_Adapter;
 use Racketmanager\RacketManager;
-use Racketmanager\Services\Export\DTO\Export_Criteria;
 use Racketmanager\Services\Export\Formatters\Export_Formatter_Interface;
 use WP_Error;
 use WP_REST_Controller;

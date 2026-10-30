@@ -9,8 +9,6 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Admin;
 
-use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
-
 use function Racketmanager\show_alert;
 
 /**
@@ -24,7 +22,7 @@ final class Admin_Message_Service {
     private ?array $current_message = null;
 
     public function __construct(
-        private readonly Admin_Flash_Message_Store $flash_store
+        private readonly Flash_Message_Store_Interface $flash_store
     ) {
     }
 

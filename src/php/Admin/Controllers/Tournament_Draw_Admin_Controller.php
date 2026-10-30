@@ -10,6 +10,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Admin\Controllers;
 
 use Racketmanager\Admin\Presenters\Admin_Message_Mapper;
+use Racketmanager\Admin\Presenters\Championship_Finals_Presenter_Interface;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Domain\Competition\League;
@@ -33,6 +34,7 @@ readonly final class Tournament_Draw_Admin_Controller {
         private League_Service $league_service,
         private Draw_Action_Dispatcher $draw_action_dispatcher,
         private Action_Guard_Interface $action_guard,
+        private Championship_Finals_Presenter_Interface $finals_presenter,
     ) {
     }
 
@@ -68,7 +70,19 @@ readonly final class Tournament_Draw_Admin_Controller {
 
         $response = $this->dispatch_action( $tournament_id, $league_id, $post );
 
-        $vm = $this->tournament_service->get_draw_view_model( $tournament, $league, $query, $post, $response->tab_override );
+        $data = $this->tournament_service->get_draw_data( $tournament, $league, $query, $post, $response->tab_override );
+
+        $finals = $this->finals_presenter->present_finals( $data->finals, $tournament, $league, $data->season );
+
+        $vm = new Tournament_Draw_Page_View_Model(
+            tournament: $tournament,
+            league: $league,
+            tab: $data->tab,
+            season: $data->season,
+            matches: $data->matches,
+            teams: $data->teams,
+            finals: $finals,
+        );
 
         $result = array(
             'view_model'   => $vm,

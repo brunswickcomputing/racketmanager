@@ -1683,11 +1683,11 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->assertSame( 2, $sent );
         $this->assertCount( 2, $captured_templates );
         $this->assertSame( 'tournament-entry-open', $captured_templates[0]['tpl'] );
-        $this->assertInstanceOf( \Racketmanager\Presentation\View_Models\Tournament_Date_View_Model::class, $captured_templates[0]['args']['tournament_dates'] );
+        $this->assertInstanceOf( \Racketmanager\Domain\DTO\Tournament\Tournament_Date_DTO::class, $captured_templates[0]['args']['tournament_dates'] );
         $this->assertStringContainsString( '30/08/2026', $captured_templates[0]['args']['tournament_dates']->date_display );
         $this->assertStringContainsString( 'https://tennis.example.com/entry-form/', $captured_templates[0]['args']['action_url'] );
         $this->assertSame( 'tournament-entry-open', $captured_templates[1]['tpl'] );
-        $this->assertInstanceOf( \Racketmanager\Presentation\View_Models\Tournament_Date_View_Model::class, $captured_templates[1]['args']['tournament_dates'] );
+        $this->assertInstanceOf( \Racketmanager\Domain\DTO\Tournament\Tournament_Date_DTO::class, $captured_templates[1]['args']['tournament_dates'] );
         $this->assertStringContainsString( '30/08/2026', $captured_templates[1]['args']['tournament_dates']->date_display );
         $this->assertStringContainsString( 'https://tennis.example.com/entry-form/', $captured_templates[1]['args']['action_url'] );
     }
@@ -1725,9 +1725,37 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->assertSame( 0, $refund );
         $this->assertNotNull( $captured_template );
         $this->assertSame( 'tournament-withdrawal', $captured_template['tpl'] );
-        $this->assertInstanceOf( \Racketmanager\Presentation\View_Models\Tournament_Date_View_Model::class, $captured_template['args']['tournament_dates'] );
+        $this->assertInstanceOf( \Racketmanager\Domain\DTO\Tournament\Tournament_Date_DTO::class, $captured_template['args']['tournament_dates'] );
         $this->assertStringContainsString( '30/08/2026', $captured_template['args']['tournament_dates']->date_display );
         $this->assertStringContainsString( 'https://tennis.example.com/entry-form/', $captured_template['args']['action_url'] );
+    }
+
+    public function test_format_tournament_date_matches_legacy_presenter_semantics(): void {
+        $method = new \ReflectionMethod( $this->service, 'format_tournament_date' );
+
+        // Default plugin format is Y-m-d (as Tournament_Presenter fallback in HEAD).
+        $this->assertSame( '2026-08-30', $method->invoke( $this->service, '2026-08-30', 'TBC' ) );
+
+        $this->plugin->date_format = 'd/m/Y';
+        $this->assertSame( '30/08/2026', $method->invoke( $this->service, '2026-08-30', 'TBC' ) );
+
+        // Empty and the exact zero date use the fallback.
+        $this->assertSame( 'TBC', $method->invoke( $this->service, null, 'TBC' ) );
+        $this->assertSame( 'TBC', $method->invoke( $this->service, '', 'TBC' ) );
+        $this->assertSame( 'N/A', $method->invoke( $this->service, '0000-00-00', 'N/A' ) );
+
+        // A failed mysql2date() (unparseable) uses the fallback.
+        $this->assertSame( 'N/A', $method->invoke( $this->service, 'not-a-date', 'N/A' ) );
+    }
+
+    public function test_format_date_matches_legacy_email_date_formatter_semantics(): void {
+        $method = new \ReflectionMethod( $this->service, 'format_date' );
+
+        $this->assertSame( '', $method->invoke( $this->service, null ) );
+        $this->assertSame( '', $method->invoke( $this->service, '' ) );
+        $this->assertSame( '', $method->invoke( $this->service, '0000-00-00' ) );
+        $this->assertSame( '', $method->invoke( $this->service, '0000-00-00 00:00:00' ) );
+        $this->assertSame( '', $method->invoke( $this->service, 'not-a-date' ) );
     }
 
     public function test_tournament_entry_singles_creates_new_team_when_no_existing_team(): void {
@@ -3333,6 +3361,119 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->assertStringContainsString( 'Test Tennis League', $body );
         $this->assertStringContainsString( 'https://example.com/entry-form/summer-league/2026/leigh/', $body );
         $this->assertStringNotContainsString( 'Finals day will held at', $body );
+    }
+
+    public function test_notify_team_entry_open_falls_back_to_default_date_format_when_option_is_empty(): void {
+        $option_gateway = new class implements Option_Gateway_Interface {
+            public function get_option( string $option, mixed $default = false ): mixed {
+                return 'date_format' === $option ? '' : $default;
+            }
+            public function update_option( string $option, mixed $value, mixed $autoload = null ): bool { return true; }
+            public function delete_option( string $option ): bool { return true; }
+        };
+
+        $captured_mails = [];
+        $fake_mailer = new class( $captured_mails ) implements Mailer_Interface {
+            public function __construct( private array &$captured_mails ) {}
+            public function send( string|array|null $to, ?string $subject, ?string $message, string|array|null $headers = '', ?array $attachments = [] ): bool {
+                $this->captured_mails[] = [
+                    'to'      => $to,
+                    'subject' => $subject,
+                    'message' => $message,
+                    'headers' => $headers,
+                ];
+                return true;
+            }
+        };
+
+        $this->event_query_service = $this->createMock( Event_Query_Service::class );
+        $service = new Competition_Entry_Service(
+            plugin_instance: $this->plugin,
+            club_repository: $this->club_repository,
+            league_repository: $this->createStub( League_Repository::class ),
+            league_team_repository: $this->league_team_repository,
+            team_repository: $this->team_repository,
+            tournament_repository: $this->tournament_repository,
+            tournament_entry_repository: $this->tournament_entry_repository,
+            club_service: $this->club_service,
+            competition_service: $this->competition_service,
+            finance_service: $this->finance_service,
+            player_service: $this->player_service,
+            tournament_service: $this->tournament_service,
+            notify_service: $this->notify_service,
+            event_query_service: $this->event_query_service,
+            mailer: $fake_mailer,
+            option_gateway: $option_gateway
+        );
+
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            name: 'Summer League',
+            type: Competition_Type::LEAGUE,
+            seasons: Competition_Test_Factory::season_map( '2026', [
+                'date_closing' => '2026-04-15 00:00:00',
+                'date_start'   => '2026-05-01 00:00:00',
+                'date_end'     => '2026-08-31 00:00:00',
+                'venue'        => null,
+            ] )
+        );
+        $this->competition_to_return = $competition;
+
+        $this->competition_service->method( 'is_season_valid_for_competition' )
+            ->willReturn( [
+                'name'         => '2026',
+                'date_closing' => '2026-04-15 00:00:00',
+                'date_start'   => '2026-05-01 00:00:00',
+                'date_end'     => '2026-08-31 00:00:00',
+                'venue'        => null,
+            ] );
+
+        $event = $this->create_event( 10, 'MD' );
+        $event->seasons = wp_json_encode( [ '2025' => [ 'name' => '2025' ], '2026' => [ 'name' => '2026' ] ] );
+        $this->event_query_service->expects( $this->once() )->method( 'get_constitution' )
+            ->with( $event, [ 'season' => 2026, 'count' => true ] )
+            ->willReturn( 1 );
+        $this->competition_service->method( 'get_events_for_competition' )
+            ->willReturn( [ $event ] );
+        $this->competition_service->method( 'get_leagues_for_event' )
+            ->willReturn( [ (object) [ 'id' => 101 ] ] );
+
+        $club = new Club();
+        $club->set_id( 1 );
+        $club->set_name( 'Leigh Tennis Club' );
+        $club->set_shortcode( 'Leigh' );
+
+        $this->plugin->method( 'get_clubs' )->willReturn( [ $club ] );
+        $this->plugin->method( 'get_confirmation_email' )->willReturn( 'league@test.local' );
+        $this->plugin->site_name = 'Test Tennis League';
+        $this->plugin->site_url  = 'https://example.com';
+
+        $secretary               = new Player();
+        $secretary->set_id( 99 );
+        $secretary->display_name = 'Alice Secretary';
+        $secretary->email        = 'alice@test.local';
+
+        $this->player_service->method( 'get_match_secretary_details' )
+            ->willReturn( $secretary );
+
+        $view_renderer      = $this->create_view_renderer();
+        $shortcode_renderer = new Shortcode_Template_Renderer( $view_renderer );
+        $shortcodes         = $this->createStub( \Racketmanager\Public\Shortcodes::class );
+        $shortcodes->method( 'load_template' )->willReturnCallback(
+            function( string $template, array $args, string $subdir = '' ) use ( $shortcode_renderer ): string {
+                return $shortcode_renderer->render( $template, $args, $subdir );
+            }
+        );
+        $this->plugin->shortcodes = $shortcodes;
+
+        $result = $service->notify_team_entry_open( 1, 2026 );
+
+        $this->assertFalse( property_exists( $result, 'error' ) && $result->error );
+        $this->assertCount( 1, $captured_mails );
+
+        $body = $captured_mails[0]['message'];
+        $this->assertStringContainsString( 'The closing date for entries is 15/04/2026.', $body );
+        $this->assertStringContainsString( 'The competition will run from 01/05/2026 until 31/08/2026.', $body );
     }
 
     public function test_notify_team_entry_open_sends_email_with_venue_for_cup_competition(): void {

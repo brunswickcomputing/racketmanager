@@ -9,7 +9,9 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Admin\Flash;
 
-class Admin_Flash_Message_Store {
+use Racketmanager\Services\Admin\Flash_Message_Store_Interface;
+
+class Admin_Flash_Message_Store implements Flash_Message_Store_Interface {
     private const string META_KEY = 'racketmanager_admin_flash_message';
 
     /**

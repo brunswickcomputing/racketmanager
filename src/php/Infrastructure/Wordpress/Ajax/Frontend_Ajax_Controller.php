@@ -131,6 +131,12 @@ class Frontend_Ajax_Controller {
             ? $c->get( 'get_player_details_handler' )
             : new Get_Player_Details_Handler( $c->get( 'player_repository' ) );
 
+        $view_presenter = $c->has( 'shortcode_view_presenter' )
+            ? $c->get( 'shortcode_view_presenter' )
+            : ( $c->has( 'shortcode_template_renderer' )
+                ? new Shortcode_View_Presenter( $c->get( 'shortcode_template_renderer' ) )
+                : null );
+
         return new Frontend_Ajax_Adapter(
             $c->has( 'security_service' ) ? $c->get( 'security_service' ) : new Security_Service(),
             $c->has( 'json_response_factory' ) ? $c->get( 'json_response_factory' ) : new Json_Response_Factory(),
@@ -149,7 +155,8 @@ class Frontend_Ajax_Controller {
             submit_league_entry_handler: $c->has( 'submit_league_entry_handler' ) ? $c->get( 'submit_league_entry_handler' ) : null,
             update_player_handler: $c->has( 'update_player_handler' ) ? $c->get( 'update_player_handler' ) : null,
             league_repository: $c->has( 'league_repository' ) ? $c->get( 'league_repository' ) : null,
-            event_repository: $c->has( 'event_repository' ) ? $c->get( 'event_repository' ) : null
+            event_repository: $c->has( 'event_repository' ) ? $c->get( 'event_repository' ) : null,
+            view_presenter: $view_presenter
         );
     }
 
@@ -164,11 +171,8 @@ class Frontend_Ajax_Controller {
         $alert_handler  = $c->has( 'get_alert_handler' )
             ? $c->get( 'get_alert_handler' )
             : new Get_Alert_Handler();
-        $view_presenter = $c->has( 'shortcode_view_presenter' )
-            ? $c->get( 'shortcode_view_presenter' )
-            : new Shortcode_View_Presenter( $c->get( 'shortcode_template_renderer' ) );
 
-        return new Search_Players_Handler( $search_handler, $alert_handler, $view_presenter );
+        return new Search_Players_Handler( $search_handler, $alert_handler );
     }
 
     #[NoReturn]

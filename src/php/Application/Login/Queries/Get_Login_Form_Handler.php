@@ -3,8 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Login\Queries;
 
+use Racketmanager\Application\Login\DTOs\Login_Form_Result;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
-use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Util\Util;
 use function esc_url;
@@ -23,7 +23,7 @@ readonly class Get_Login_Form_Handler {
         private Settings_Service $settings_service
     ) {}
 
-    public function handle( Get_Login_Form_Query $query ): Shortcode_View_Model {
+    public function handle( Get_Login_Form_Query $query ): Login_Form_Result {
         if ( $query->is_logged_in ) {
             return $this->logged_in_redirect_view( $query );
         }
@@ -37,8 +37,8 @@ readonly class Get_Login_Form_Handler {
         return $this->login_view( $query, $vars );
     }
 
-    private function logged_in_redirect_view( Get_Login_Form_Query $query ): Shortcode_View_Model {
-        return Shortcode_View_Model::for_html(
+    private function logged_in_redirect_view( Get_Login_Form_Query $query ): Login_Form_Result {
+        return Login_Form_Result::html(
             '<script>location.href = "' . esc_url( $this->resolve_logged_in_redirect( $query ) ) . '"</script>'
         );
     }
@@ -87,18 +87,18 @@ readonly class Get_Login_Form_Handler {
         return [ $errors, $error_codes ];
     }
 
-    private function registration_view( Get_Login_Form_Query $query, array $vars ): Shortcode_View_Model {
+    private function registration_view( Get_Login_Form_Query $query, array $vars ): Login_Form_Result {
         [ $vars['errors'], $vars['error_codes'] ] = $this->parse_error_codes( $query->register_errors );
 
         if ( ! $vars['users_can_register'] ) {
-            return Shortcode_View_Model::for_html(
+            return Login_Form_Result::html(
                 __( 'Registering new users is currently not allowed', 'racketmanager' )
             );
         }
-        return Shortcode_View_Model::for_template( 'form-login', $vars, 'form' );
+        return Login_Form_Result::template( 'form-login', $vars, 'form' );
     }
 
-    private function login_view( Get_Login_Form_Query $query, array $vars ): Shortcode_View_Model {
+    private function login_view( Get_Login_Form_Query $query, array $vars ): Login_Form_Result {
         [ $vars['errors'], $vars['error_codes'] ] = $this->parse_error_codes( $query->login_errors );
 
         $vars['registered']         = $query->registered;
@@ -107,7 +107,7 @@ readonly class Get_Login_Form_Handler {
         $vars['password_updated']   = $query->password_updated;
         $vars['logged_out']         = $query->logged_out;
 
-        return Shortcode_View_Model::for_template( 'form-login', $vars, 'form' );
+        return Login_Form_Result::template( 'form-login', $vars, 'form' );
     }
 
     private function resolve_login_redirect( Get_Login_Form_Query $query, string $site_url ): string {

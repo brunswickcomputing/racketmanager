@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager\Services\Export\DTO;
+namespace Racketmanager\Application\Export\DTO;
 
 class Export_Criteria {
     public ?int $league_id;

@@ -19,6 +19,7 @@ use Racketmanager\Domain\Fixture\Fixture_Team_Resolver_Interface;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\League_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Fixture_Presentation_Adapter;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
@@ -594,12 +595,14 @@ class Matches_Team_List_Template_Test extends TestCase {
             league_service: $league_service,
             team_service: $team_service,
             player_stats_service: $player_stats_service,
-            tournament_presenter: $tournament_presenter,
-            team_details_presenter: $team_details_presenter,
             league_query_service: $league_query
         );
+        $adapter = new League_Shortcode_Adapter(
+            tournament_presenter: $tournament_presenter,
+            team_details_presenter: $team_details_presenter
+        );
 
-        $result = $handler->handle( new Get_League_Teams_Query( league_id: 1, team_id: '12' ) );
+        $result = $adapter->present_teams( $handler->handle( new Get_League_Teams_Query( league_id: 1, team_id: '12' ) ) );
         $this->assertEquals( 'team-details', $result->template );
         $this->assertTrue( $result->vars['vm']->show_wtn );
         $this->assertEquals( 'D', $result->vars['vm']->format );
@@ -725,12 +728,14 @@ class Matches_Team_List_Template_Test extends TestCase {
             league_service: $league_service,
             team_service: $team_service,
             player_stats_service: $player_stats_service,
-            tournament_presenter: $tournament_presenter,
-            team_details_presenter: $team_details_presenter,
             league_query_service: $league_query
         );
+        $adapter = new League_Shortcode_Adapter(
+            tournament_presenter: $tournament_presenter,
+            team_details_presenter: $team_details_presenter
+        );
 
-        $result = $handler->handle( new Get_League_Teams_Query( league_id: 1, team_id: '12' ) );
+        $result = $adapter->present_teams( $handler->handle( new Get_League_Teams_Query( league_id: 1, team_id: '12' ) ) );
         $this->assertEquals( 'team-details', $result->template );
         $this->assertFalse( $result->vars['vm']->show_wtn );
         $this->assertNull( $result->vars['vm']->format );

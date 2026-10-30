@@ -3,10 +3,9 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\General\Queries;
 
+use Racketmanager\Application\General\DTOs\Invoice_Result;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
-use Racketmanager\Presentation\Presenters\Invoice_Presenter;
-use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Settings_Service;
 use function __;
@@ -20,19 +19,18 @@ readonly class Get_Invoice_Handler {
     public function __construct(
         private Finance_Service $finance_service,
         private Settings_Service $settings_service,
-        private Option_Gateway_Interface $option_gateway,
-        private Invoice_Presenter $invoice_presenter
+        private Option_Gateway_Interface $option_gateway
     ) {}
 
-    public function handle( Get_Invoice_Query $query ): Shortcode_View_Model {
+    public function handle( Get_Invoice_Query $query ): Invoice_Result {
         if ( empty( $query->id ) ) {
-            return Shortcode_View_Model::for_error( __( 'Invoice not found', 'racketmanager' ) );
+            return Invoice_Result::error( __( 'Invoice not found', 'racketmanager' ) );
         }
 
         try {
             $invoice = $this->finance_service->get_full_invoice_details( $query->id );
         } catch ( Invoice_Not_Found_Exception $e ) {
-            return Shortcode_View_Model::for_error( $e->getMessage() );
+            return Invoice_Result::error( $e->getMessage() );
         }
 
         $billing           = $this->settings_service->get_category( 'billing' ) ?: [];
@@ -48,7 +46,7 @@ readonly class Get_Invoice_Handler {
         $invoice_number = '';
         if ( is_object( $invoice ) ) {
             if ( isset( $invoice->invoice ) && method_exists( $invoice->invoice, 'get_invoice_number' ) ) {
-                $invoice_number = $invoice->invoice->get_invoice_number();
+                $invoice_number = (string) $invoice->invoice->get_invoice_number();
             } elseif ( isset( $invoice->invoice_number ) ) {
                 $invoice_number = (string) $invoice->invoice_number;
             }
@@ -59,23 +57,16 @@ readonly class Get_Invoice_Handler {
         $is_user_logged_in = function_exists( 'is_user_logged_in' ) && is_user_logged_in();
         $login_url         = function_exists( 'wp_login_url' ) ? wp_login_url() : '/wp-login.php';
 
-        $invoice_vm = $this->invoice_presenter->present_invoice(
+        return new Invoice_Result(
             invoice: $invoice,
             billing: $billing,
             organisation_name: $organisation_name,
+            invoice_number: $invoice_number,
             site_url: $site_url,
             date_format: $date_format,
             is_user_logged_in: $is_user_logged_in,
-            login_url: $login_url
+            login_url: $login_url,
+            template: $query->template
         );
-
-        $filename = ! empty( $query->template ) ? 'invoice-' . $query->template : 'invoice';
-
-        return Shortcode_View_Model::for_template( $filename, [
-            'organisation_name' => $organisation_name,
-            'invoice'           => $invoice_vm,
-            'billing'           => $billing,
-            'invoice_number'    => $invoice_number,
-        ] );
     }
 }

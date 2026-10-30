@@ -13,6 +13,7 @@ use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Validator\Validator_Finance;
 use stdClass;
@@ -57,7 +58,15 @@ class Finance_Ajax_Adapter {
         }
 
         $query  = Get_Purchase_Order_Query::from_request( $request );
-        $vm     = $this->get_purchase_order_handler->handle( $query );
+        $result = $this->get_purchase_order_handler->handle( $query );
+        if ( $result->is_error() ) {
+            $vm = Shortcode_View_Model::for_error( $result->error_message ?? '', 'modal' );
+        } else {
+            $vm = Shortcode_View_Model::for_template( $result->template ? 'purchase-order-modal-' . $result->template : 'purchase-order-modal', [
+                'invoice' => $result->invoice,
+                'modal'   => $result->modal,
+            ], 'club' );
+        }
         $output = $this->view_presenter->render( $vm );
 
         return $this->response_factory->create_raw_response( $output );

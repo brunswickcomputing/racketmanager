@@ -1,18 +1,27 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager\Services\View;
+namespace Racketmanager\Presentation\View;
 
 use Racketmanager\Exceptions\Template_Not_Found_Exception;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Favourite_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
+use Racketmanager\Services\View\View_Renderer_Interface;
 use Throwable;
 use function __;
+use function array_key_exists;
+use function array_merge;
 use function file_exists;
 use function function_exists;
 use function get_stylesheet_directory;
 use function get_template_directory;
+use function is_object;
+use function ob_end_clean;
+use function ob_get_clean;
+use function ob_get_level;
+use function ob_start;
+use function rtrim;
 use function sprintf;
 
 /**

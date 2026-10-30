@@ -3,14 +3,14 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Login\Queries;
 
-use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
+use Racketmanager\Application\Login\DTOs\Password_Reset_Form_Result;
 use Racketmanager\Util\Util;
 use function __;
 
 class Get_Password_Reset_Form_Handler {
-    public function handle( Get_Password_Reset_Form_Query $query ): Shortcode_View_Model {
+    public function handle( Get_Password_Reset_Form_Query $query ): Password_Reset_Form_Result {
         if ( empty( $query->login ) || empty( $query->key ) ) {
-            return Shortcode_View_Model::for_html(
+            return Password_Reset_Form_Result::html(
                 __( 'Invalid password reset link.', 'racketmanager' )
             );
         }
@@ -32,6 +32,6 @@ class Get_Password_Reset_Form_Handler {
             'error_codes' => $error_codes,
         ];
 
-        return Shortcode_View_Model::for_template( 'form-password-reset', $vars, 'form' );
+        return Password_Reset_Form_Result::template( 'form-password-reset', $vars, 'form' );
     }
 }

@@ -3,8 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Presentation\Presenters;
 
+use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
-use Racketmanager\Services\View\Shortcode_Template_Renderer;
 
 /**
  * Renders a Shortcode_View_Model (template + variables, or an error alert) to HTML.

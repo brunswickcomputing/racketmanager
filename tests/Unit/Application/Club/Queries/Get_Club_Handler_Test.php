@@ -4,12 +4,12 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Application\Club\Queries;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Club\DTOs\Club_Overview_Result;
 use Racketmanager\Application\Club\Queries\Get_Club_Handler;
 use Racketmanager\Application\Club\Queries\Get_Club_Query;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\DTO\Club\Club_Details_DTO;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
-use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
@@ -27,7 +27,6 @@ class Get_Club_Handler_Test extends TestCase {
         return new Get_Club_Handler(
             $club_service,
             new Settings_Service( [ 'keys' => [ 'googleMapsKey' => 'MAP_KEY' ] ] ),
-            new Club_Presenter(),
             $security
         );
     }
@@ -48,6 +47,7 @@ class Get_Club_Handler_Test extends TestCase {
         $vm = $this->handler( $this->club_service_for( $this->club() ), $security )
             ->handle( new Get_Club_Query( club_name: 'Leigh LTC' ) );
 
+        $this->assertInstanceOf( Club_Overview_Result::class, $vm );
         $this->assertFalse( $vm->user_can_update_club );
         $this->assertSame( 'MAP_KEY', $vm->google_maps_key );
         $this->assertNull( $vm->error_message );

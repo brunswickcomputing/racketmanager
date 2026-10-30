@@ -11,6 +11,7 @@ use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\League_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\League_Archive_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Services\Competition_Service;
@@ -141,8 +142,6 @@ class League_Archive_Template_Test extends TestCase {
         $handler = new Get_League_Archive_Handler(
             league_service: $league_service,
             competition_service: $comp_service,
-            template_renderer: $this->template_renderer,
-            archive_presenter: $presenter,
             event_query_service: $this->event_query_service()
         );
 
@@ -152,7 +151,7 @@ class League_Archive_Template_Test extends TestCase {
             post_id: 123
         );
 
-        $vm = $handler->handle( $query );
+        $vm = ( new League_Shortcode_Adapter( archive_presenter: $presenter ) )->present_archive( $handler->handle( $query ) );
 
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'archive', $vm->template );
@@ -215,8 +214,6 @@ class League_Archive_Template_Test extends TestCase {
         $handler = new Get_League_Archive_Handler(
             league_service: $league_service,
             competition_service: $comp_service,
-            template_renderer: $this->template_renderer,
-            archive_presenter: $presenter,
             event_query_service: $this->event_query_service()
         );
 
@@ -227,7 +224,7 @@ class League_Archive_Template_Test extends TestCase {
             post_id: 74
         );
 
-        $vm = $handler->handle( $query );
+        $vm = ( new League_Shortcode_Adapter( archive_presenter: $presenter ) )->present_archive( $handler->handle( $query ) );
 
         $this->assertSame( 'results', $league->templates['matches'] );
 
@@ -288,8 +285,6 @@ class League_Archive_Template_Test extends TestCase {
         $handler = new Get_League_Archive_Handler(
             league_service: $league_service,
             competition_service: $comp_service,
-            template_renderer: $this->template_renderer,
-            archive_presenter: $presenter,
             event_query_service: $this->event_query_service()
         );
 
@@ -298,7 +293,7 @@ class League_Archive_Template_Test extends TestCase {
             tab: 'matches'
         );
 
-        $vm = $handler->handle( $query );
+        $vm = ( new League_Shortcode_Adapter( archive_presenter: $presenter ) )->present_archive( $handler->handle( $query ) );
 
         $warnings = [];
         $output   = $this->render_and_capture_warnings(
@@ -344,8 +339,6 @@ class League_Archive_Template_Test extends TestCase {
         $handler   = new Get_League_Archive_Handler(
             league_service: $league_service,
             competition_service: $comp_service,
-            template_renderer: $this->template_renderer,
-            archive_presenter: $presenter,
             event_query_service: $this->event_query_service()
         );
 
@@ -353,7 +346,7 @@ class League_Archive_Template_Test extends TestCase {
             league_name: 'Finals League'
         );
 
-        $vm = $handler->handle( $query );
+        $vm = ( new League_Shortcode_Adapter( archive_presenter: $presenter ) )->present_archive( $handler->handle( $query ) );
 
         $warnings = [];
         $output   = $this->render_and_capture_warnings(

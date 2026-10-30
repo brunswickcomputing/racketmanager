@@ -53,15 +53,8 @@ final class Tournament_Service_Draw_View_Model_Test extends TestCase {
         parent::tearDown();
     }
 
-    public function test_get_draw_view_model_presents_championship_finals_with_enum_competition_data(): void {
-        $container = new Simple_Container();
-        $container->set(
-            'admin_championship_finals_presenter',
-            fn () => new Admin_Championship_Finals_Presenter( new Admin_Date_Presenter() )
-        );
-
+    public function test_get_draw_data_presents_championship_finals_with_enum_competition_data(): void {
         $plugin            = $this->createStub( RacketManager::class );
-        $plugin->container = $container;
 
         $tournament_repo     = $this->createMock( Tournament_Repository_Interface::class );
         $league_service      = $this->createMock( League_Service::class );
@@ -165,7 +158,18 @@ final class Tournament_Service_Draw_View_Model_Test extends TestCase {
             ->with( 55, '2026' )
             ->willReturn( array() );
 
-        $vm = $service->get_draw_view_model( $tournament, $league_entity, array( 'tab' => 'fixtures' ), array() );
+        $data = $service->get_draw_data( $tournament, $league_entity, array( 'tab' => 'fixtures' ), array() );
+
+        $presenter = new Admin_Championship_Finals_Presenter( new Admin_Date_Presenter() );
+        $vm        = new Tournament_Draw_Page_View_Model(
+            tournament: $data->tournament,
+            league: $data->league,
+            tab: $data->tab,
+            season: $data->season,
+            matches: $data->matches,
+            teams: $data->teams,
+            finals: $presenter->present_finals( $data->finals, $tournament, $league_entity, $data->season )
+        );
 
         $this->assertInstanceOf( Tournament_Draw_Page_View_Model::class, $vm );
         $this->assertSame( 'fixtures', $vm->tab );

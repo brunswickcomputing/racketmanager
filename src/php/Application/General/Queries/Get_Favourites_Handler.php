@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\General\Queries;
 
-use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
+use Racketmanager\Application\General\DTOs\Favourites_Result;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
 use function __;
@@ -15,9 +15,9 @@ class Get_Favourites_Handler {
         private readonly Club_Repository_Interface $club_repository
     ) {}
 
-    public function handle( Get_Favourites_Query $query ): Shortcode_View_Model {
+    public function handle( Get_Favourites_Query $query ): Favourites_Result {
         if ( ! $query->is_logged_in || ! $query->user_id ) {
-            return Shortcode_View_Model::for_error( __( 'You must be logged in to view favourites', 'racketmanager' ) );
+            return Favourites_Result::error( __( 'You must be logged in to view favourites', 'racketmanager' ) );
         }
 
         $user = $this->user_repository->find( $query->user_id );
@@ -57,8 +57,9 @@ class Get_Favourites_Handler {
             ];
         }
 
-        $filename = ! empty( $query->template ) ? 'form-favourites-' . $query->template : 'form-favourites';
-
-        return Shortcode_View_Model::for_template( $filename, [ 'favourite_types' => $prepared_favourites ], 'form' );
+        return new Favourites_Result(
+            favourite_types: $prepared_favourites,
+            template: $query->template
+        );
     }
 }

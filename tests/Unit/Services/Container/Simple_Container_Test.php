@@ -71,6 +71,20 @@ final class Simple_Container_Test extends TestCase {
         $container->get( 'unknown_service' );
     }
 
+    public function test_remove_unregisters_definition_and_cached_instance(): void {
+        $container = new Simple_Container();
+        $container->set( 'ephemeral', fn(): stdClass => (object) [ 'ok' => true ] );
+
+        $this->assertTrue( $container->has( 'ephemeral' ) );
+        $this->assertTrue( $container->get( 'ephemeral' )->ok );
+
+        $container->remove( 'ephemeral' );
+
+        $this->assertFalse( $container->has( 'ephemeral' ) );
+        $this->expectException( InvalidArgumentException::class );
+        $container->get( 'ephemeral' );
+    }
+
     public function test_factory_receives_container_parameter(): void {
         $container = new Simple_Container();
         $container->set( 'dep', fn(): stdClass => (object) [ 'val' => 42 ] );

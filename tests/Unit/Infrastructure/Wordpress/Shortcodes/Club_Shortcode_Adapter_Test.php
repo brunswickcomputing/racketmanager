@@ -1214,18 +1214,22 @@ class Club_Shortcode_Adapter_Test extends TestCase {
 
         return new Club_Shortcode_Adapter(
             $club_service,
-            new Get_Club_Handler( $club_service, $settings, $club_presenter, $security ),
+            new Get_Club_Handler( $club_service, $settings, $security ),
             new Club_Shortcode_Presenter( $renderer, new Club_Presenter(), new Player_Presenter() ),
-            new Get_Club_Players_Handler( $club_service, $players, $registration, $club_presenter, $option_gateway, new Player_Presenter() ),
+            new Get_Club_Players_Handler( $club_service, $players, $registration, $option_gateway ),
             new Get_Club_Roles_Handler( $club_service ),
             new Get_Club_Role_Modal_Handler( $club_service ),
-            new Get_Club_Competitions_Handler( $club_service, $competitions, $repository, new Team_Details_Presenter( new Wp_Option_Gateway(), $settings ), $club_presenter, $event_query_service ),
-            new Get_Club_Invoices_Handler( $club_service, $finance, new Invoice_Presenter(), $club_presenter, $settings ),
+            new Get_Club_Competitions_Handler( $club_service, $competitions, $repository, $event_query_service ),
+            new Get_Club_Invoices_Handler( $club_service, $finance, $settings ),
             new Shortcode_View_Presenter( $template_renderer ),
             $overrides['competition_presenter'] ?? new Competition_Shortcode_Presenter( $renderer ),
             $event_query_service,
             $lookup_event_repository,
-            $team_repository
+            $team_repository,
+            club_presenter: $club_presenter,
+            player_presenter: new Player_Presenter(),
+            invoice_presenter: new Invoice_Presenter(),
+            team_details_presenter: new Team_Details_Presenter( new Wp_Option_Gateway(), $settings )
         );
     }
 }

@@ -569,11 +569,17 @@ class Php_View_Renderer_Test extends TestCase {
             is_logged_in: false
         );
 
-        $vm = $handler->handle( $query );
+        $result = $handler->handle( $query );
 
         $php_renderer      = new Php_View_Renderer( $this->template_base_path );
         $template_renderer = new Shortcode_Template_Renderer( $php_renderer );
         $presenter         = new Shortcode_View_Presenter( $template_renderer );
+
+        $vm = \Racketmanager\Presentation\View_Models\Shortcode_View_Model::for_template(
+            $result->template ?? 'form-login',
+            $result->vars,
+            $result->template_type ?? 'form'
+        );
 
         $output = $this->render_trapping_warnings(
             static fn() => $presenter->render( $vm )
@@ -599,11 +605,17 @@ class Php_View_Renderer_Test extends TestCase {
             is_logged_in: false
         );
 
-        $vm = $handler->handle( $query );
+        $result = $handler->handle( $query );
 
         $php_renderer      = new Php_View_Renderer( $this->template_base_path );
         $template_renderer = new Shortcode_Template_Renderer( $php_renderer );
         $presenter         = new Shortcode_View_Presenter( $template_renderer );
+
+        $vm = \Racketmanager\Presentation\View_Models\Shortcode_View_Model::for_template(
+            $result->template ?? 'form-login',
+            $result->vars,
+            $result->template_type ?? 'form'
+        );
 
         $output = $this->render_trapping_warnings(
             static fn() => $presenter->render( $vm )
@@ -625,11 +637,17 @@ class Php_View_Renderer_Test extends TestCase {
             errors: 'empty_username'
         );
 
-        $vm = $handler->handle( $query );
+        $result = $handler->handle( $query );
 
         $php_renderer      = new Php_View_Renderer( $this->template_base_path );
         $template_renderer = new Shortcode_Template_Renderer( $php_renderer );
         $presenter         = new Shortcode_View_Presenter( $template_renderer );
+
+        $vm = \Racketmanager\Presentation\View_Models\Shortcode_View_Model::for_template(
+            $result->template ?? 'form-password-lost',
+            $result->vars,
+            $result->template_type ?? 'form'
+        );
 
         $output = $this->render_trapping_warnings(
             static fn() => $presenter->render( $vm )
@@ -651,11 +669,17 @@ class Php_View_Renderer_Test extends TestCase {
             error: 'password_reset_empty'
         );
 
-        $vm = $handler->handle( $query );
+        $result = $handler->handle( $query );
 
         $php_renderer      = new Php_View_Renderer( $this->template_base_path );
         $template_renderer = new Shortcode_Template_Renderer( $php_renderer );
         $presenter         = new Shortcode_View_Presenter( $template_renderer );
+
+        $vm = \Racketmanager\Presentation\View_Models\Shortcode_View_Model::for_template(
+            $result->template ?? 'form-password-reset',
+            $result->vars,
+            $result->template_type ?? 'form'
+        );
 
         $output = $this->render_trapping_warnings(
             static fn() => $presenter->render( $vm )

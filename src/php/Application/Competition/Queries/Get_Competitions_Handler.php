@@ -3,10 +3,9 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Competition\Queries;
 
+use Racketmanager\Application\Competition\DTOs\Competitions_List_Result;
 use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
-use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
-use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Player_Query_Service;
@@ -18,13 +17,12 @@ class Get_Competitions_Handler {
         private readonly Competition_Service $competition_service,
         private readonly Tournament_Service $tournament_service,
         private readonly Player_Service $player_service,
-        private readonly Player_Query_Service $player_query_service,
-        private readonly Competition_Shortcode_Presenter $presenter
+        private readonly Player_Query_Service $player_query_service
     ) {}
 
-    public function handle( Get_Competitions_Query $query ): Shortcode_View_Model {
+    public function handle( Get_Competitions_Query $query ): Competitions_List_Result {
         if ( ! $query->type ) {
-            return Shortcode_View_Model::error( __( 'Competition type not set', 'racketmanager' ) );
+            return Competitions_List_Result::error( __( 'Competition type not set', 'racketmanager' ) );
         }
 
         $type  = Seo_Slug::decode( $query->type );
@@ -63,16 +61,12 @@ class Get_Competitions_Handler {
             default      => __( 'Competitions', 'racketmanager' ),
         };
 
-        $user_competition_items = $this->presenter->present_competition_list( $user_competitions, $type, null );
-        $competition_items      = $this->presenter->present_competition_list( $competitions, $type, null );
-
-        return new Shortcode_View_Model( template: 'competitions', vars: [
-            'competitions'           => $competitions,
-            'competition_items'      => $competition_items,
-            'type'                   => $competition_type,
-            'competition_type'       => $type,
-            'user_competitions'      => $user_competitions,
-            'user_competition_items' => $user_competition_items,
-        ] );
+        return new Competitions_List_Result(
+            competitions: $competitions,
+            user_competitions: $user_competitions,
+            type: $competition_type,
+            competition_type: $type,
+            template: 'competitions'
+        );
     }
 }

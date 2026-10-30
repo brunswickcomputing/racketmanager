@@ -19,6 +19,8 @@
     <option name="transferred" value="true" />
   </component>
   <component name="PHPCodeSnifferOptionsConfiguration">
+    <option name="codingStandard" value="Custom" />
+    <option name="customRuleset" value="$PROJECT_DIR$/phpcs.xml" />
     <option name="highlightLevel" value="WARNING" />
     <option name="transferred" value="true" />
   </component>
@@ -29,6 +31,7 @@
   </component>
   <component name="PhpCodeSniffer">
     <phpcs_settings>
+      <PhpCSConfiguration beautifier_path="$PROJECT_DIR$/vendor/bin/phpcbf" tool_path="$PROJECT_DIR$/vendor/bin/phpcs" />
       <phpcs_by_interpreter asDefaultInterpreter="true" interpreter_id="cf1d31f5-f2c5-4143-b8ab-e18777d65a41" timeout="30000" />
     </phpcs_settings>
   </component>
@@ -63,6 +66,11 @@
       <path value="$PROJECT_DIR$/vendor/staabm/side-effects-detector" />
       <path value="$PROJECT_DIR$/vendor/sebastian/file-filter" />
       <path value="$PROJECT_DIR$/vendor/sebastian/git-state" />
+      <path value="$PROJECT_DIR$/vendor/wp-coding-standards/wpcs" />
+      <path value="$PROJECT_DIR$/vendor/squizlabs/php_codesniffer" />
+      <path value="$PROJECT_DIR$/vendor/dealerdirect/phpcodesniffer-composer-installer" />
+      <path value="$PROJECT_DIR$/vendor/phpcsstandards/phpcsextra" />
+      <path value="$PROJECT_DIR$/vendor/phpcsstandards/phpcsutils" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.4">
@@ -78,7 +86,7 @@
   </component>
   <component name="PhpUnit">
     <phpunit_settings>
-      <PhpUnitSettings configuration_file_path="$PROJECT_DIR$/phpunit.xml.dist" custom_loader_path="$PROJECT_DIR$/vendor/autoload.php" use_configuration_file="true" />
+      <PhpUnitSettings configuration_file_path="$PROJECT_DIR$/phpunit.xml.dist" custom_loader_path="$PROJECT_DIR$/vendor/autoload.php" phpunit_phar_path="" use_configuration_file="true" />
     </phpunit_settings>
   </component>
   <component name="Psalm">

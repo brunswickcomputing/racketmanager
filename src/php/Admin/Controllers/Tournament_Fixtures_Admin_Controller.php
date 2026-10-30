@@ -82,7 +82,28 @@ readonly class Tournament_Fixtures_Admin_Controller {
         }
 
         // GET: render page
-        $vm = $this->fixtures_admin_service->prepare_fixtures_view_model( $tournament_id, $league_id, $final_key, $fixture_id, $view );
+        $data = $this->fixtures_admin_service->prepare_fixtures_data( $tournament_id, $league_id, $final_key, $fixture_id, $view );
+
+        $vm = new Tournament_Fixtures_Page_View_Model(
+            league: $data->league,
+            tournament: $data->tournament,
+            competition: $data->competition,
+            season: $data->season,
+            form_title: $data->form_title,
+            submit_title: $data->submit_title,
+            fixtures: $data->fixtures,
+            edit: $data->edit,
+            bulk: $data->bulk,
+            is_finals: $data->is_finals,
+            mode: $data->mode,
+            teams: $data->teams,
+            single_cup_game: $data->single_cup_game,
+            max_fixtures: $data->max_fixtures,
+            final_key: $data->final_key,
+            home_title: $data->home_title,
+            away_title: $data->away_title,
+            match_day: $data->match_day,
+        );
 
         return array(
             'view_model' => $vm,

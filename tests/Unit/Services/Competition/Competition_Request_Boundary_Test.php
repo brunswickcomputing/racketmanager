@@ -280,7 +280,7 @@ final class Competition_Request_Boundary_Test extends TestCase {
         );
         $service = $this->createStub( League_Service::class );
         $service->method( 'get_league' )->willReturn( $league );
-        $handler = new Get_League_Matches_Handler( $service, $this->createStub( Shortcode_Template_Renderer::class ), new Tournament_Presenter(), $this->league_query_service( $repository ) );
+        $handler = new Get_League_Matches_Handler( $service, $this->league_query_service( $repository ) );
         $result = $handler->handle( new Get_League_Matches_Query( league_id: 42, template: '', limit: '5' ) );
         self::assertFalse( $result->is_error() );
         self::assertSame( 3, $league->current_page_matches );

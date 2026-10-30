@@ -9,7 +9,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Admin\Tournament;
 
-use Racketmanager\Admin\View_Models\Tournament_Fixtures_Page_View_Model;
+use Racketmanager\Domain\DTO\Admin\Tournament\Tournament_Fixtures_Data_DTO;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Competition\League_Query_Service;
@@ -41,7 +41,7 @@ class Tournament_Fixtures_Admin_Service {
     }
 
     /**
-     * Prepares the view model for the tournament fixtures page.
+     * Prepares data for the tournament fixtures page.
      *
      * @param int|null             $tournament_id
      * @param int|null             $league_id
@@ -49,11 +49,11 @@ class Tournament_Fixtures_Admin_Service {
      * @param int|null             $fixture_id
      * @param string               $view
      *
-     * @return Tournament_Fixtures_Page_View_Model
+     * @return Tournament_Fixtures_Data_DTO
      * @throws Tournament_Not_Found_Exception
      * @throws Invalid_Status_Exception
      */
-    public function prepare_fixtures_view_model( ?int $tournament_id, ?int $league_id, ?string $final_key, ?int $fixture_id, string $view ): Tournament_Fixtures_Page_View_Model {
+    public function prepare_fixtures_data( ?int $tournament_id, ?int $league_id, ?string $final_key, ?int $fixture_id, string $view ): Tournament_Fixtures_Data_DTO {
         $tournament = $this->tournament_service->get_tournament( $tournament_id );
         $season     = $tournament->get_season();
 
@@ -80,7 +80,7 @@ class Tournament_Fixtures_Admin_Service {
             $data = $this->prepare_finals_view_data( $league, $final_key );
         }
 
-        return new Tournament_Fixtures_Page_View_Model(
+        return new Tournament_Fixtures_Data_DTO(
             league: $league,
             tournament: $tournament,
             competition: $league->event->competition,
@@ -101,6 +101,7 @@ class Tournament_Fixtures_Admin_Service {
             match_day: $data['match_day'],
         );
     }
+
 
     /**
      * Prepares data for a single fixture view.

@@ -8,6 +8,7 @@ This document describes the recommended, future‑proof structure for the Racket
 - Parts of the layout below pre-date the 2026 refactors and are superseded by the audit: there is no `src/php/Ajax/` directory any more (AJAX lives in `src/php/Infrastructure/Wordpress/Ajax/` as `*_Ajax_Controller` + `*_Ajax_Adapter` behind `Ajax_Registry`); `Admin` does not extend `RacketManager` (both are wired through the container by `Plugin_Bootstrap` → `Container_Bootstrap`); `Racketmanager_Match` has been removed in favour of `Domain\Fixture\Fixture`; the `Application/` layer (commands, queries, handlers) and `Presentation/` (presenters, view models) now sit alongside `Services/`. The "RacketManager Plugin Architecture" / "Top‑Level Layout" sections also appear twice in this file (a historical paste); the first occurrence is canonical.
 - **Public API status (10.1.0, audit P1-2/3):** every legacy accessor in `functions.php` (`get_league()`, `get_club()`, `seo_url()`, `get_*_repository_for_helpers()`, …) is annotated `@deprecated 10.1.0` with an `@see` replacement (repository interface via the container, or `Util::seo_url()`); only the five already-deprecated helpers emit a runtime `E_USER_DEPRECATED`. `Application\Fixture\Services\Fixture_Detail_Service` is now `Fixture_Details_Assembler` (container key `fixture_details_assembler`) and `Domain\DTOs\Results_Checker_Data` is `Domain\DTO\Result\Results_Checker_Data`; both old names resolve through `src/php/aliases.php` until v11.0.
 - **Domain purity (10.1.0, audit P1-4):** `src/php/Domain/` calls no WordPress function and the `domain.no_wordpress_functions` guardrail is strict. HTTP request/command DTOs live in `src/php/Infrastructure/Wordpress/Request/<Context>/` (old `Domain\DTO\…` names aliased); entities decode serialised columns with `Domain\Shared\Serialized_Column`, slugs with `Domain\Shared\Slug::normalise()` (a `sanitize_title()` port), and read the time through the `Domain\Ports\Clock_Interface` port — implemented by `Infrastructure\Time\Wordpress_Clock` and available from the container as `clock` (or `Clock_Interface::class`); inject it rather than calling `current_time()` in services.
+- **Application & Services layer purity (10.1.0, audit P2-11):** `Application/` and `Services/` are completely decoupled from `Presentation/` and `Admin/` classes. Both `application.no_presentation_imports` and `services.no_presentation_imports` architecture guardrails are strict at 0. Query handlers return typed pure Application DTOs/results; driving shortcode adapters (`Club_Shortcode_Adapter`, `Competition_Shortcode_Adapter`, etc.) and controllers coordinate with presenters to generate view models and render output. `Export_Criteria` lives in `Application\Export\DTO\Export_Criteria` (with BC alias in `src/php/aliases.php`), freeing repositories from service imports. Presentation and admin screen registrations are isolated in dedicated `Presentation_Service_Provider` and `Admin_Screens_Service_Provider`.
 - **strict_types (10.1.0, audit P1-5):** every file under `src/php/` declares `strict_types=1` and the `all.strict_types` guardrail is strict — new files must carry the declaration directly after `<?php`, and int/string boundaries (request DTOs, `$wpdb` rows, `season` values) are coerced with explicit casts at the call site rather than by loosening declared types. With this the audit's P1 backlog is closed.
 - Earlier DDD notes (`ddd-audit-report.md`, `ddd-architecture-report.md`, `ddd-analysis-2026.md`, `ddd-migration-summary.md`) are kept for history; use the dated audit for current figures.
 
@@ -853,10 +854,18 @@ The project has undergone several key refactorings to improve maintainability, r
 
 ### Summary of the Flow
 
-1.  **Repository** fetches database row → Maps to **DTO** → Instantiates **Domain Entity**.
-2.  **Controller** gets **Domain Entity** from Repository.
-3.  **Controller** passes **Domain Entity** to **Presenter**.
-4.  **Presenter** hydrates related data via other Repositories → Formats everything into a **View Model**.
-5.  **Template** receives the **View Model** and simply echoes its properties.
+#### 1. Command / Write Flow
+1. **Controller / Shortcode Adapter** receives HTTP request / input.
+2. **Controller / Adapter** maps input into a typed Command DTO and invokes the **Command Handler** in `Application/`.
+3. **Command Handler** loads Domain Entities via **Repository Interfaces**, invokes Domain business logic / policies, and persists changes through Repository Interfaces.
+4. **Command Handler** returns an Application Result / status DTO.
 
-This structure ensures that your **Domain Entity** stays pure, your **Repository** handles persistence, your **Presenter** handles formatting, and your **View Model** ensures the UI is decoupled from the underlying domain logic.
+#### 2. Query / Read & Presentation Flow
+1. **Driving Adapter** (e.g., Shortcode Adapter, REST Controller, Admin Controller) dispatches a Query to the matching **Query Handler** in `Application/`.
+2. **Query Handler** interacts with Repository Interfaces and Domain Services to fetch entities or project read data.
+3. **Query Handler** returns a pure, typed Application Result DTO (e.g. `Club_Competitions_Result`, `League_Standings_Result`, `Tournament_Overview_Result`), completely free of `Presentation\` view models or presenters.
+4. **Driving Adapter** passes the Application Result DTO to a **Presenter** in `Presentation/Presenters/` (e.g. `Club_Presenter`, `Match_Shortcode_Presenter`).
+5. **Presenter** hydrates related display data (URLs, dates, translations) and formats into an immutable **View Model** (e.g. `Shortcode_View_Model`, `Tournament_Draw_Page_View_Model`).
+6. **Adapter** passes the View Model to the **Renderer** (`Shortcode_Template_Renderer`) or template, which simply echoes its properties.
+
+This structure ensures that your **Domain Entity** and **Application Handler** stay pure, your **Repository** handles persistence, your **Presenter** handles formatting, and your **View Model** ensures the UI is decoupled from the underlying domain and application logic.

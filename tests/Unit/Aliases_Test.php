@@ -184,6 +184,10 @@ final class Aliases_Test extends TestCase {
         $this->assertInstanceOf( 'Racketmanager\Services\Contracts\Data_Exporter_Interface', $exporter );
         $this->assertInstanceOf( \Racketmanager\Application\Export\Ports\Data_Exporter_Interface::class, $exporter );
 
+        $criteria = new \Racketmanager\Application\Export\DTO\Export_Criteria( [ 'league_id' => 10 ] );
+        $this->assertInstanceOf( 'Racketmanager\Services\Export\DTO\Export_Criteria', $criteria );
+        $this->assertInstanceOf( \Racketmanager\Application\Export\DTO\Export_Criteria::class, $criteria );
+
         // Verify absence of physical legacy declaration files
         $legacy_mailer_file     = dirname( __DIR__, 2 ) . '/src/php/Gateways/Mail/Mailer_Interface.php';
         $legacy_wtn_file        = dirname( __DIR__, 2 ) . '/src/php/Services/Contracts/Wtn_Api_Client_Interface.php';
@@ -192,6 +196,7 @@ final class Aliases_Test extends TestCase {
         $legacy_payment_file    = dirname( __DIR__, 2 ) . '/src/php/Gateways/Payment/Payment_Gateway_Interface.php';
         $legacy_intent_file     = dirname( __DIR__, 2 ) . '/src/php/Gateways/Payment/Payment_Intent_Result.php';
         $legacy_exporter_file   = dirname( __DIR__, 2 ) . '/src/php/Services/Contracts/Data_Exporter_Interface.php';
+        $legacy_criteria_file   = dirname( __DIR__, 2 ) . '/src/php/Services/Export/DTO/Export_Criteria.php';
         $this->assertFileDoesNotExist( $legacy_mailer_file );
         $this->assertFileDoesNotExist( $legacy_wtn_file );
         $this->assertFileDoesNotExist( $legacy_option_file );
@@ -199,5 +204,6 @@ final class Aliases_Test extends TestCase {
         $this->assertFileDoesNotExist( $legacy_payment_file );
         $this->assertFileDoesNotExist( $legacy_intent_file );
         $this->assertFileDoesNotExist( $legacy_exporter_file );
+        $this->assertFileDoesNotExist( $legacy_criteria_file );
     }
 }

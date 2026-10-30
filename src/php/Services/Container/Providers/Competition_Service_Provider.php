@@ -61,12 +61,6 @@ use Racketmanager\Infrastructure\Wordpress\Shortcodes\Competition_Shortcode_Adap
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\League_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
-use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
-use Racketmanager\Presentation\Presenters\League_Archive_Presenter;
-use Racketmanager\Presentation\Presenters\Tournament_Presenter;
-use Racketmanager\Presentation\Presenters\League_Standings_Presenter;
-use Racketmanager\Presentation\Presenters\Order_Of_Play_Presenter;
-use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Competition_Repository;
 use Racketmanager\Repositories\Event_Repository;
@@ -91,7 +85,6 @@ use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Standings\Standings_Service;
 use Racketmanager\Services\Tournament_Service;
-use Racketmanager\Services\View\Shortcode_Template_Renderer;
 
 /**
  * Service provider for Competition, Event, League, and Tournament bounded context.
@@ -271,19 +264,6 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'option_gateway' )
         ) );
 
-        // Presenters
-        $container->set( 'competition_shortcode_presenter', fn( Simple_Container $c ) => new Competition_Shortcode_Presenter(
-            $c->get( 'view_renderer' ),
-            $c->get( 'club_presenter' ),
-            option_gateway: $c->get( 'option_gateway' )
-        ) );
-
-        $container->set( 'league_standings_presenter', fn( Simple_Container $c ) => new League_Standings_Presenter(
-            $c->get( 'view_renderer' ),
-            $c->get( 'club_presenter' ),
-            $c->get( 'player_presenter' )
-        ) );
-
         // Competition Queries
         $container->set( 'get_competition_handler', fn( Simple_Container $c ) => new Get_Competition_Handler(
             $c->get( 'competition_service' ),
@@ -296,19 +276,16 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
 
         $container->set( 'get_competition_overview_handler', fn( Simple_Container $c ) => new Get_Competition_Overview_Handler(
             $c->get( 'competition_service' ),
-            $c->get( 'competition_shortcode_presenter' ),
             $c->get( 'competition_season_service' )
         ) );
 
         $container->set( 'get_competition_events_handler', fn( Simple_Container $c ) => new Get_Competition_Events_Handler(
             $c->get( 'competition_service' ),
-            $c->get( 'competition_shortcode_presenter' ),
             $c->get( 'competition_season_service' )
         ) );
 
         $container->set( 'get_competition_teams_handler', fn( Simple_Container $c ) => new Get_Competition_Teams_Handler(
             $c->get( 'competition_service' ),
-            $c->get( 'competition_shortcode_presenter' ),
             $c->get( 'competition_season_service' )
         ) );
 
@@ -316,8 +293,6 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'competition_service' ),
             $c->get( 'club_service' ),
             $c->get( 'player_stats_service' ),
-            $c->get( 'tournament_presenter' ),
-            $c->get( 'competition_shortcode_presenter' ),
             $c->get( 'competition_season_service' )
         ) );
 
@@ -326,15 +301,12 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'player_service' ),
             $c->get( 'player_query_service' ),
             $c->get( 'player_stats_service' ),
-            $c->get( 'player_presenter' ),
-            $c->get( 'competition_shortcode_presenter' ),
             $c->get( 'competition_season_service' )
         ) );
 
         $container->set( 'get_competition_winners_handler', fn( Simple_Container $c ) => new Get_Competition_Winners_Handler(
             $c->get( 'competition_service' ),
-            $c->get( 'competition_season_service' ),
-            $c->get( 'competition_shortcode_presenter' )
+            $c->get( 'competition_season_service' )
         ) );
 
         $container->set( 'get_competition_dropdown_handler', fn( Simple_Container $c ) => new Get_Competition_Dropdown_Handler(
@@ -345,16 +317,14 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'competition_service' ),
             $c->get( 'tournament_service' ),
             $c->get( 'player_service' ),
-            $c->get( 'player_query_service' ),
-            $c->get( 'competition_shortcode_presenter' )
+            $c->get( 'player_query_service' )
         ) );
 
         $container->set( 'get_competition_payment_handler', fn( Simple_Container $c ) => new Get_Competition_Payment_Handler(
             $c->get( 'tournament_service' ),
             $c->get( 'player_service' ),
             $c->get( 'finance_service' ),
-            $c->get( 'competition_entry_service' ),
-            $c->get( 'tournament_presenter' )
+            $c->get( 'competition_entry_service' )
         ) );
 
         $container->set( 'club_entry_selection_service', fn( Simple_Container $c ) => new Club_Entry_Selection_Service(
@@ -372,8 +342,6 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             registration_service: $c->get( 'registration_service' ),
             competition_entry_service: $c->get( 'competition_entry_service' ),
             finance_service: $c->get( 'finance_service' ),
-            competition_presenter: $c->get( 'competition_shortcode_presenter' ),
-            tournament_presenter: $c->get( 'tournament_presenter' ),
             event_query_service: $c->get( 'event_query_service' )
         ) );
 
@@ -387,53 +355,33 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
         $container->set( 'get_league_championship_handler', fn( Simple_Container $c ) => new Get_League_Championship_Handler(
             $c->get( 'league_service' ),
             $c->get( 'fixture_repository' ),
-            $c->get( 'competition_service' ),
-            $c->get( 'team_service' ),
-            $c->get( 'fixture_link_service' ),
-            $c->get( 'fixture_permission_service' ),
-            $c->get( 'shortcode_template_renderer' ),
             $c->get( 'rubber_repository' ),
-            $c->get( 'tournament_presenter' ),
             $c->get( 'league_query_service' )
         ) );
 
-        $container->set( 'league_archive_presenter', fn( Simple_Container $c ) => new League_Archive_Presenter(
-            $c->get( 'option_gateway' )
-        ) );
 
         $container->set( 'get_league_archive_handler', fn( Simple_Container $c ) => new Get_League_Archive_Handler(
             $c->get( 'league_service' ),
             $c->get( 'competition_service' ),
-            $c->get( 'shortcode_template_renderer' ),
-            $c->get( 'league_archive_presenter' ),
             $c->get( 'event_query_service' ),
             $c->get( 'league_query_service' )
         ) );
 
         $container->set( 'get_league_crosstable_handler', fn( Simple_Container $c ) => new Get_League_Crosstable_Handler(
             $c->get( 'league_service' ),
-            $c->get( 'shortcode_template_renderer' ),
             $c->get( 'league_query_service' )
         ) );
 
         $container->set( 'get_league_matches_handler', fn( Simple_Container $c ) => new Get_League_Matches_Handler(
             $c->get( 'league_service' ),
-            $c->get( 'shortcode_template_renderer' ),
-            $c->get( 'tournament_presenter' ),
             $c->get( 'league_query_service' )
         ) );
 
-        $container->set( 'team_details_presenter', fn( Simple_Container $c ) => new Team_Details_Presenter(
-            $c->get( 'option_gateway' ),
-            $c->get( 'settings_service' )
-        ) );
 
         $container->set( 'get_league_teams_handler', fn( Simple_Container $c ) => new Get_League_Teams_Handler(
             $c->get( 'league_service' ),
             $c->get( 'team_service' ),
             $c->get( 'player_stats_service' ),
-            $c->get( 'tournament_presenter' ),
-            $c->get( 'team_details_presenter' ),
             $c->get( 'league_query_service' )
         ) );
 
@@ -441,48 +389,39 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'league_service' ),
             $c->get( 'league_repository' ),
             $c->get( 'player_service' ),
-            $c->get( 'shortcode_template_renderer' ),
             $c->get( 'player_query_service' ),
             $c->get( 'player_stats_service' ),
-            $c->get( 'player_presenter' ),
             $c->get( 'league_query_service' )
         ) );
 
         $container->set( 'get_league_season_dropdown_handler', fn( Simple_Container $c ) => new Get_League_Season_Dropdown_Handler(
-            $c->get( 'league_service' ),
-            $c->get( 'shortcode_template_renderer' )
+            $c->get( 'league_service' )
         ) );
 
         $container->set( 'get_league_match_dropdown_handler', fn( Simple_Container $c ) => new Get_League_Match_Dropdown_Handler(
             $c->get( 'league_service' ),
-            $c->get( 'shortcode_template_renderer' ),
             $c->get( 'league_query_service' )
         ) );
 
         $container->set( 'get_league_last_5_handler', fn( Simple_Container $c ) => new Get_League_Last_5_Handler(
             $c->get( 'league_service' ),
-            $c->get( 'shortcode_template_renderer' ),
-            $c->get( 'fixture_presenter' ),
             $c->get( 'league_query_service' )
         ) );
 
         // Event Queries
         $container->set( 'get_event_handler', fn( Simple_Container $c ) => new Get_Event_Handler(
             $c->get( 'competition_service' ),
-            $c->get( 'competition_shortcode_presenter' ),
             $c->get( 'event_query_service' )
         ) );
 
         $container->set( 'get_event_standings_handler', fn( Simple_Container $c ) => new Get_Event_Standings_Handler(
             $c->get( 'competition_service' ),
-            $c->get( 'competition_shortcode_presenter' ),
             $c->get( 'event_query_service' )
         ) );
 
         $container->set( 'get_event_draw_handler', fn( Simple_Container $c ) => new Get_Event_Draw_Handler(
             $c->get( 'competition_service' ),
             $c->get( 'league_service' ),
-            $c->get( 'competition_shortcode_presenter' ),
             $c->get( 'fixture_detail_service' ),
             $c->get( 'event_query_service' ),
             $c->get( 'league_query_service' )
@@ -490,7 +429,6 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
 
         $container->set( 'get_event_matches_handler', fn( Simple_Container $c ) => new Get_Event_Matches_Handler(
             $c->get( 'competition_service' ),
-            $c->get( 'tournament_presenter' ),
             $c->get( 'league_service' ),
             $c->get( 'event_query_service' ),
             $c->get( 'league_query_service' )
@@ -500,18 +438,13 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'competition_service' ),
             $c->get( 'club_service' ),
             $c->get( 'player_stats_service' ),
-            $c->get( 'tournament_presenter' ),
-            $c->get( 'competition_shortcode_presenter' ),
             $c->get( 'event_query_service' )
         ) );
 
         $container->set( 'get_event_teams_handler', fn( Simple_Container $c ) => new Get_Event_Teams_Handler(
             $c->get( 'competition_service' ),
             $c->get( 'player_stats_service' ),
-            $c->get( 'tournament_presenter' ),
             $c->get( 'team_service' ),
-            $c->get( 'team_details_presenter' ),
-            $c->get( 'competition_shortcode_presenter' ),
             $c->get( 'event_query_service' )
         ) );
 
@@ -520,8 +453,6 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'player_service' ),
             $c->get( 'player_query_service' ),
             $c->get( 'player_stats_service' ),
-            $c->get( 'player_presenter' ),
-            $c->get( 'competition_shortcode_presenter' ),
             $c->get( 'event_query_service' )
         ) );
 
@@ -561,35 +492,24 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
         // Tournament Queries
         $container->set( 'get_tournament_handler', fn( Simple_Container $c ) => new Get_Tournament_Handler(
             $c->get( 'tournament_service' ),
-            $c->get( 'tournament_presenter' ),
             $c->get( 'get_latest_tournament_handler' )
         ) );
 
         $container->set( 'get_tournament_overview_handler', fn( Simple_Container $c ) => new Get_Tournament_Overview_Handler(
-            $c->get( 'tournament_service' ),
-            $c->get( 'tournament_presenter' )
+            $c->get( 'tournament_service' )
         ) );
 
         $container->set( 'get_tournament_events_handler', fn( Simple_Container $c ) => new Get_Tournament_Events_Handler(
-            $c->get( 'tournament_service' ),
-            $c->get( 'tournament_presenter' )
+            $c->get( 'tournament_service' )
         ) );
 
-        $container->set( 'tournament_presenter', fn( Simple_Container $c ) => new Tournament_Presenter(
-            date_format: (string) $c->get( 'option_gateway' )->get_option( 'date_format', 'Y-m-d' ),
-            fixture_detail_service: $c->get( 'fixture_detail_service' ),
-            team_match_row_presenter: $c->get( 'team_match_row_presenter' )
-        ) );
 
         $container->set( 'get_tournament_draws_handler', fn( Simple_Container $c ) => new Get_Tournament_Draws_Handler(
-            $c->get( 'tournament_service' ),
-            $c->get( 'tournament_presenter' )
+            $c->get( 'tournament_service' )
         ) );
 
         $container->set( 'get_tournament_players_handler', fn( Simple_Container $c ) => new Get_Tournament_Players_Handler(
-            $c->get( 'tournament_service' ),
-            $c->get( 'tournament_presenter' ),
-            $c->get( 'player_presenter' )
+            $c->get( 'tournament_service' )
         ) );
 
         $container->set( 'get_tournament_winners_handler', fn( Simple_Container $c ) => new Get_Tournament_Winners_Handler(
@@ -597,27 +517,17 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
         ) );
 
         $container->set( 'get_tournament_matches_handler', fn( Simple_Container $c ) => new Get_Tournament_Matches_Handler(
-            $c->get( 'tournament_service' ),
-            $c->get( 'tournament_presenter' )
+            $c->get( 'tournament_service' )
         ) );
 
         $container->set( 'get_tournament_match_handler', fn( Simple_Container $c ) => new Get_Tournament_Match_Handler(
             $c->get( 'tournament_service' ),
-            $c->get( 'fixture_service' ),
-            $c->get( 'tournament_presenter' )
-        ) );
-
-        $container->set( 'order_of_play_presenter', fn( Simple_Container $c ) => new Order_Of_Play_Presenter(
-            fixture_repository: $c->get( 'fixture_repository' ),
-            competition_service: $c->get( 'competition_service' ),
-            team_service: $c->get( 'team_service' ),
-            option_gateway: $c->get( 'option_gateway' )
+            $c->get( 'fixture_service' )
         ) );
 
         $container->set( 'get_order_of_play_handler', fn( Simple_Container $c ) => new Get_Order_Of_Play_Handler(
             tournament_service: $c->get( 'tournament_service' ),
-            competition_repository: $c->get( 'competition_repository' ),
-            order_of_play_presenter: $c->get( 'order_of_play_presenter' )
+            competition_repository: $c->get( 'competition_repository' )
         ) );
 
         $container->set( 'get_latest_tournament_handler', fn( Simple_Container $c ) => new Get_Latest_Tournament_Handler(
@@ -661,12 +571,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             finance_service: $c->get( 'finance_service' ),
             registration_service: $c->get( 'registration_service' ),
             competition_entry_service: $c->get( 'competition_entry_service' ),
-            template_renderer: new Shortcode_Template_Renderer(
-                $c->get( 'view_renderer' ),
-                $c->get( 'club_presenter' ),
-                $c->get( 'player_presenter' ),
-                $c->get( 'favourite_presenter' )
-            ),
+            template_renderer: $c->get( 'shortcode_template_renderer' ),
             get_competition_handler: $c->get( 'get_competition_handler' ),
             competition_shortcode_presenter: $c->get( 'competition_shortcode_presenter' ),
             overview_handler: $c->get( 'get_competition_overview_handler' ),
@@ -683,7 +588,8 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             tournament_presenter: $c->get( 'tournament_presenter' ),
             view_presenter: $c->get( 'shortcode_view_presenter' ),
             racketmanager: $app,
-            event_query_service: $c->get( 'event_query_service' )
+            event_query_service: $c->get( 'event_query_service' ),
+            player_presenter: $c->get( 'player_presenter' )
         ) );
 
         $container->set( 'league_shortcode_adapter', fn( Simple_Container $c ) => new League_Shortcode_Adapter(
@@ -700,7 +606,16 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             season_dropdown_handler: $c->get( 'get_league_season_dropdown_handler' ),
             match_dropdown_handler: $c->get( 'get_league_match_dropdown_handler' ),
             last_5_handler: $c->get( 'get_league_last_5_handler' ),
-            template_renderer: $c->get( 'shortcode_template_renderer' )
+            template_renderer: $c->get( 'shortcode_template_renderer' ),
+            archive_presenter: $c->get( 'league_archive_presenter' ),
+            tournament_presenter: $c->get( 'tournament_presenter' ),
+            team_details_presenter: $c->get( 'team_details_presenter' ),
+            player_presenter: $c->get( 'player_presenter' ),
+            fixture_presenter: $c->get( 'fixture_presenter' ),
+            competition_service: $c->get( 'competition_service' ),
+            team_service: $c->get( 'team_service' ),
+            fixture_link_service: $c->get( 'fixture_link_service' ),
+            fixture_permission_service: $c->get( 'fixture_permission_service' )
         ) );
 
         $container->set( 'event_shortcode_adapter', fn( Simple_Container $c ) => new Event_Shortcode_Adapter(
@@ -717,7 +632,11 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             team_matches_handler: $c->get( 'get_event_team_matches_handler' ),
             team_order_players_handler: $c->get( 'get_team_order_players_handler' ),
             dropdown_handler: $c->get( 'get_event_dropdown_handler' ),
-            template_renderer: $c->get( 'shortcode_template_renderer' )
+            template_renderer: $c->get( 'shortcode_template_renderer' ),
+            competition_shortcode_presenter: $c->get( 'competition_shortcode_presenter' ),
+            tournament_presenter: $c->get( 'tournament_presenter' ),
+            player_presenter: $c->get( 'player_presenter' ),
+            team_details_presenter: $c->get( 'team_details_presenter' )
         ) );
 
         $container->set( 'tournament_shortcode_adapter', fn( Simple_Container $c ) => new Tournament_Shortcode_Adapter(
@@ -735,7 +654,10 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             latest_tournament_handler: $c->get( 'get_latest_tournament_handler' ),
             withdrawal_handler: $c->get( 'get_tournament_withdrawal_handler' ),
             template_renderer: $c->get( 'shortcode_template_renderer' ),
-            competition_service: $c->get( 'competition_service' )
+            competition_service: $c->get( 'competition_service' ),
+            tournament_presenter: $c->get( 'tournament_presenter' ),
+            player_presenter: $c->get( 'player_presenter' ),
+            order_of_play_presenter: $c->get( 'order_of_play_presenter' )
         ) );
 
         // AJAX

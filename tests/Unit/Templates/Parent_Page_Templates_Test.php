@@ -10,6 +10,7 @@ use Racketmanager\Application\Event\Queries\Get_Event_Handler;
 use Racketmanager\Application\Event\Queries\Get_Event_Query;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Query;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
@@ -287,7 +288,7 @@ class Parent_Page_Templates_Test extends TestCase {
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $handler = new Get_Event_Handler( $comp_service, $this->competition_presenter, $this->event_query_service() );
+        $handler = new Get_Event_Handler( $comp_service, $this->event_query_service() );
         $query   = new Get_Event_Query(
             event_id: 50,
             season: '2026',
@@ -296,7 +297,11 @@ class Parent_Page_Templates_Test extends TestCase {
             pagename: 'mens-division-1'
         );
 
-        $vm = $handler->handle( $query );
+        $adapter = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
+            competition_shortcode_presenter: $this->competition_presenter
+        );
+        $result = $handler->handle( $query );
+        $vm     = $adapter->present_event( $result );
 
         $this->assertSame( 'standings', $vm->vars['tab'] );
         $this->assertSame( 'league', $vm->vars['competition_type'] );
@@ -334,14 +339,18 @@ class Parent_Page_Templates_Test extends TestCase {
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $handler = new Get_Event_Handler( $comp_service, $this->competition_presenter, $this->event_query_service() );
+        $handler = new Get_Event_Handler( $comp_service, $this->event_query_service() );
         $query   = new Get_Event_Query(
             event_id: 60,
             season: '2026',
             tab: 'draw'
         );
 
-        $vm = $handler->handle( $query );
+        $adapter = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
+            competition_shortcode_presenter: $this->competition_presenter
+        );
+        $result = $handler->handle( $query );
+        $vm     = $adapter->present_event( $result );
 
         $this->assertSame( 'draw', $vm->vars['tab'] );
         $this->assertSame( 'tournament', $vm->vars['competition_type'] );
@@ -378,14 +387,18 @@ class Parent_Page_Templates_Test extends TestCase {
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $handler = new Get_Event_Handler( $comp_service, $this->competition_presenter, $this->event_query_service() );
+        $handler = new Get_Event_Handler( $comp_service, $this->event_query_service() );
         $query   = new Get_Event_Query(
             event_id: 70,
             season: '2026',
             tab: 'standings'
         );
 
-        $vm = $handler->handle( $query );
+        $adapter = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
+            competition_shortcode_presenter: $this->competition_presenter
+        );
+        $result = $handler->handle( $query );
+        $vm     = $adapter->present_event( $result );
 
         $this->assertArrayHasKey( 'standings', $vm->vars['menu_options'] );
         $this->assertArrayHasKey( 'teams', $vm->vars['menu_options'] );
@@ -427,13 +440,14 @@ class Parent_Page_Templates_Test extends TestCase {
         $tournament_service->method( 'get_tournament_with_details' )->willReturn( $details );
         $tournament_service->method( 'get_tournaments' )->willReturn( [ $details ] );
 
-        $handler = new Get_Tournament_Handler( $tournament_service, $this->tournament_presenter );
+        $handler = new Get_Tournament_Handler( $tournament_service );
         $query   = new Get_Tournament_Query(
             tournament: 'County Open 2026',
             tab: 'draws'
         );
 
-        $vm = $handler->handle( $query );
+        $adapter = new Tournament_Shortcode_Adapter( tournament_presenter: $this->tournament_presenter );
+        $vm      = $adapter->present_tournament( $handler->handle( $query ) );
 
         $this->assertSame( 'draws', $vm->vars['tab'] );
         $this->assertSame( 'county-open-2026', $vm->vars['tournament_seo_name'] );
@@ -483,37 +497,38 @@ class Parent_Page_Templates_Test extends TestCase {
         $tournament_service->method( 'get_tournament_with_details' )->willReturn( $details );
         $tournament_service->method( 'get_tournaments' )->willReturn( [ $details ] );
 
-        $handler = new Get_Tournament_Handler( $tournament_service, $this->tournament_presenter );
+        $handler = new Get_Tournament_Handler( $tournament_service );
+        $adapter = new Tournament_Shortcode_Adapter( tournament_presenter: $this->tournament_presenter );
 
         // 1. With match_day -> tab forced to matches
         $query1 = new Get_Tournament_Query( tournament: 88, match_day: '2026-09-02' );
-        $vm1 = $handler->handle( $query1 );
+        $vm1 = $adapter->present_tournament( $handler->handle( $query1 ) );
         $this->assertSame( 'matches', $vm1->vars['tab'] );
         $this->assertTrue( $vm1->vars['menu_options']['order_of_play']['available'] );
 
         // 2. With team_id -> tab forced to matches
         $query2 = new Get_Tournament_Query( tournament: 88, team_id: 123 );
-        $vm2 = $handler->handle( $query2 );
+        $vm2 = $adapter->present_tournament( $handler->handle( $query2 ) );
         $this->assertSame( 'matches', $vm2->vars['tab'] );
 
         // 3. With event -> tab forced to events
         $query3 = new Get_Tournament_Query( tournament: 88, event: 'mens-singles' );
-        $vm3 = $handler->handle( $query3 );
+        $vm3 = $adapter->present_tournament( $handler->handle( $query3 ) );
         $this->assertSame( 'events', $vm3->vars['tab'] );
 
         // 4. Default tab is overview; post_id passes through
-        $vm4 = $handler->handle( new Get_Tournament_Query( tournament: 88, post_id: 55 ) );
+        $vm4 = $adapter->present_tournament( $handler->handle( new Get_Tournament_Query( tournament: 88, post_id: 55 ) ) );
         $this->assertSame( 'overview', $vm4->vars['tab'] );
         $this->assertSame( 55, $vm4->vars['post_id'] );
 
         // 5. Empty end date hides order of play (HEAD behaviour)
         $tournament->date_end = '';
-        $vm5 = $handler->handle( new Get_Tournament_Query( tournament: 88 ) );
+        $vm5 = $adapter->present_tournament( $handler->handle( new Get_Tournament_Query( tournament: 88 ) ) );
         $this->assertFalse( $vm5->vars['menu_options']['order_of_play']['available'] );
 
         // 6. Elapsed end date hides order of play
         $tournament->date_end = gmdate( 'Y-m-d', strtotime( '-2 days' ) );
-        $vm6 = $handler->handle( new Get_Tournament_Query( tournament: 88 ) );
+        $vm6 = $adapter->present_tournament( $handler->handle( new Get_Tournament_Query( tournament: 88 ) ) );
         $this->assertFalse( $vm6->vars['menu_options']['order_of_play']['available'] );
     }
 

@@ -344,6 +344,42 @@ class Container_Bootstrap_Services_Test extends TestCase {
         $this->assertInstanceOf( \Racketmanager\Infrastructure\Wordpress\Shortcodes\Message_Shortcode_Adapter::class, $this->container->get( 'message_shortcode_adapter' ) );
     }
 
+    public function test_frontend_ajax_provider_wires_presenter_for_player_search(): void {
+        $search_handler = $this->createMock( \Racketmanager\Application\Player\Queries\Search_Players_Handler::class );
+        $search_handler->expects( $this->once() )
+            ->method( 'handle' )
+            ->with( $this->callback( fn( $query ) => 'Nadal' === $query->search_string ) )
+            ->willReturn( new \Racketmanager\Application\General\DTOs\Player_Search_Result(
+                players: [ 'Nadal' ],
+                template: 'custom'
+            ) );
+
+        $security_service = $this->createStub( \Racketmanager\Infrastructure\Security\Security_Service_Interface::class );
+        $security_service->method( 'verify_nonce' )->willReturn( true );
+        $view_presenter = $this->createMock( \Racketmanager\Presentation\Presenters\Shortcode_View_Presenter::class );
+        $view_presenter->expects( $this->once() )
+            ->method( 'render' )
+            ->with( $this->callback( function( \Racketmanager\Presentation\View_Models\Shortcode_View_Model $vm ) {
+                return $vm->template === 'players-list-custom'
+                    && $vm->vars === [ 'players' => [ 'Nadal' ] ]
+                    && false === $vm->template_type;
+            } ) )
+            ->willReturn( '<ul class="players"><li>Nadal</li></ul>' );
+
+        $this->container->set( 'search_players_handler', $search_handler );
+        $this->container->set( 'security_service', $security_service );
+        $this->container->set( 'shortcode_view_presenter', $view_presenter );
+
+        $adapter  = $this->container->get( 'frontend_ajax_adapter' );
+        $response = $adapter->search_players( [
+            'security'      => 'valid',
+            'search_string' => 'Nadal',
+        ] );
+
+        $this->assertSame( 200, $response->get_status_code() );
+        $this->assertSame( '<ul class="players"><li>Nadal</li></ul>', $response->get_content() );
+    }
+
     public function test_container_resolves_general_shortcode_components(): void {
         $handlers = [
             'get_players_handler',

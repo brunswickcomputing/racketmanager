@@ -3,8 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Cli;
 
+use Racketmanager\Application\Export\DTO\Export_Criteria;
 use Racketmanager\RacketManager;
-use Racketmanager\Services\Export\DTO\Export_Criteria;
 use Racketmanager\Services\Export\Export_Service;
 use WP_CLI;
 

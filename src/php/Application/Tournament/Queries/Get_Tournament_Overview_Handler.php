@@ -3,40 +3,30 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Tournament\Queries;
 
+use Racketmanager\Application\Tournament\DTOs\Tournament_Overview_Result;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Presentation\Presenters\Tournament_Presenter;
-use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Tournament_Service;
 use function __;
 
 class Get_Tournament_Overview_Handler {
     public function __construct(
-        private readonly Tournament_Service $tournament_service,
-        private readonly Tournament_Presenter $tournament_presenter
+        private readonly Tournament_Service $tournament_service
     ) {}
 
-    public function handle( Get_Tournament_Overview_Query $query ): Shortcode_View_Model {
+    public function handle( Get_Tournament_Overview_Query $query ): Tournament_Overview_Result {
         if ( ! $query->tournament_id ) {
-            return Shortcode_View_Model::for_error( __( 'Tournament not found', 'racketmanager' ) );
+            return Tournament_Overview_Result::error( __( 'Tournament not found', 'racketmanager' ) );
         }
 
         try {
             $tournament = $this->tournament_service->get_tournament_overview( $query->tournament_id );
         } catch ( Tournament_Not_Found_Exception $e ) {
-            return Shortcode_View_Model::for_error( $e->getMessage() );
+            return Tournament_Overview_Result::error( $e->getMessage() );
         }
 
-        $dates_vm = $this->tournament_presenter->present_dates( $tournament );
-
-        $filename = ( '' !== $query->template ) ? 'overview-' . $query->template : 'overview';
-
-        return Shortcode_View_Model::for_template(
-            $filename,
-            [
-                'tournament'       => $tournament,
-                'tournament_dates' => $dates_vm,
-            ],
-            'tournament'
+        return new Tournament_Overview_Result(
+            tournament: $tournament,
+            template: $query->template
         );
     }
 }

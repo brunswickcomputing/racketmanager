@@ -8,6 +8,8 @@ use Racketmanager\Application\Competition\Commands\Submit_Cup_Entry_Command;
 use Racketmanager\Application\Competition\Commands\Submit_Cup_Entry_Handler;
 use Racketmanager\Application\Competition\Commands\Submit_League_Entry_Command;
 use Racketmanager\Application\Competition\Commands\Submit_League_Entry_Handler;
+use Racketmanager\Application\General\DTOs\Alert_Result;
+use Racketmanager\Application\General\DTOs\Player_Search_Result;
 use Racketmanager\Application\Player\Commands\Update_Player_Command;
 use Racketmanager\Application\Player\Commands\Update_Player_Handler;
 use Racketmanager\Application\Player\Queries\Get_Player_Details_Handler;
@@ -27,6 +29,8 @@ use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\Infrastructure\Security\Target_Season_Validator;
+use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
@@ -74,7 +78,8 @@ class Frontend_Ajax_Adapter {
         private ?Submit_League_Entry_Handler $submit_league_entry_handler = null,
         private ?Update_Player_Handler $update_player_handler = null,
         private ?League_Repository_Interface $league_repository = null,
-        private ?Event_Repository_Interface $event_repository = null
+        private ?Event_Repository_Interface $event_repository = null,
+        private ?Shortcode_View_Presenter $view_presenter = null
     ) {
         $this->submit_cup_entry_handler    = $this->submit_cup_entry_handler ?? new Submit_Cup_Entry_Handler( $this->competition_entry_service );
         $this->submit_league_entry_handler = $this->submit_league_entry_handler ?? new Submit_League_Entry_Handler( $this->competition_entry_service );
@@ -313,9 +318,25 @@ class Frontend_Ajax_Adapter {
         }
 
         $query  = Search_Players_Query::from_request( $request );
-        $output = $this->search_players_handler->handle( $query );
+        $result = $this->search_players_handler->handle( $query );
 
-        return $this->response_factory->create_raw_response( (string) $output );
+        if ( $result instanceof Player_Search_Result ) {
+            $filename = ! empty( $result->template ) ? 'players-list-' . $result->template : 'players-list';
+            $vm       = Shortcode_View_Model::for_template( $filename, [ 'players' => $result->players ] );
+        } else {
+            // Must be Alert_Result
+            $filename = ! empty( $result->template ) ? 'alert-' . $result->template : 'alert';
+            $vm       = Shortcode_View_Model::for_template( $filename, [
+                'msg'   => $result->msg,
+                'class' => $result->type,
+            ] );
+        }
+
+        if ( ! $this->view_presenter ) {
+            throw new \RuntimeException( 'Search presenter is required for Frontend_Ajax_Adapter::search_players' );
+        }
+
+        return $this->response_factory->create_raw_response( (string) $this->view_presenter->render( $vm ) );
     }
 
     public function tab_data( array $request = [] ): Response {

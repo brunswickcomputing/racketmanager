@@ -10,8 +10,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Repositories\Interfaces;
 
+use Racketmanager\Application\Export\DTO\Export_Criteria;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Services\Export\DTO\Export_Criteria;
 
 /**
  * Interface to implement the Fixture repository

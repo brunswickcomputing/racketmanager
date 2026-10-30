@@ -8,10 +8,10 @@ namespace {
 	}
 }
 
-namespace Racketmanager\Tests\Unit\Services\Export\DTO {
+namespace Racketmanager\Tests\Unit\Application\Export\DTO {
 
 	use PHPUnit\Framework\TestCase;
-	use Racketmanager\Services\Export\DTO\Export_Criteria;
+	use Racketmanager\Application\Export\DTO\Export_Criteria;
 
 	class Export_Criteria_Test extends TestCase {
 	public function test_constructor_populates_properties() {

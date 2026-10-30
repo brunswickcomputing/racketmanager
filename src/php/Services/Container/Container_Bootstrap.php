@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Services\Container;
 
 use Racketmanager\Admin\Admin_Screens_Service_Provider;
+use Racketmanager\Presentation\Presentation_Service_Provider;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Container\Providers\Admin_Service_Provider;
 use Racketmanager\Services\Container\Providers\Club_Service_Provider;
@@ -36,6 +37,7 @@ final class Container_Bootstrap {
             new Player_Service_Provider( $app ),
             new Fixture_Service_Provider( $app ),
             new Competition_Service_Provider( $app ),
+            new Presentation_Service_Provider( $app ),
             new Admin_Service_Provider( $app ),
             new Admin_Screens_Service_Provider( $app ),
         ];

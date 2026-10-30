@@ -8,9 +8,11 @@ use Racketmanager\Application\Message\Queries\Get_Message_Query;
 use Racketmanager\Application\Message\Queries\Get_Messages_Handler;
 use Racketmanager\Application\Message\Queries\Get_Messages_Query;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
+use Racketmanager\Presentation\Presenters\Message_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
+use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\RacketManager;
-use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use function is_array;
 use function is_object;
 
@@ -24,7 +26,8 @@ class Message_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly Get_Messages_Handler $messages_handler,
         private readonly Get_Message_Handler $message_handler,
         private readonly ?Shortcode_Template_Renderer $template_renderer = null,
-        private readonly ?Security_Service_Interface $security_service = null
+        private readonly ?Security_Service_Interface $security_service = null,
+        private readonly ?Message_Presenter $message_presenter = null
     ) {}
 
     public function show_messages( array|string $atts = [] ): string {
@@ -39,7 +42,19 @@ class Message_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             $user_id
         );
 
-        return $this->view_presenter->render( $this->messages_handler->handle( $query ) );
+        $result = $this->messages_handler->handle( $query );
+
+        if ( $result->is_error() ) {
+            return $this->view_presenter->render( Shortcode_View_Model::for_error( $result->error_message ?? '' ) );
+        }
+
+        $presenter   = $this->message_presenter ?? new Message_Presenter();
+        $messages_vm = $presenter->present_messages( $result->messages );
+        $filename    = ! empty( $result->template ) ? 'messages-' . $result->template : 'messages';
+
+        return $this->view_presenter->render( Shortcode_View_Model::for_template( $filename, [
+            'messages' => $messages_vm,
+        ], 'account' ) );
     }
 
     public function show_message( array|string $atts = [] ): string {
@@ -54,7 +69,19 @@ class Message_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             $user_id
         );
 
-        return $this->view_presenter->render( $this->message_handler->handle( $query ) );
+        $result = $this->message_handler->handle( $query );
+
+        if ( $result->is_error() ) {
+            return $this->view_presenter->render( Shortcode_View_Model::for_error( $result->error_message ?? '' ) );
+        }
+
+        $presenter  = $this->message_presenter ?? new Message_Presenter();
+        $vm_message = $result->message ? $presenter->present_message( $result->message ) : null;
+        $filename   = ! empty( $result->template ) ? 'message-' . $result->template : 'message';
+
+        return $this->view_presenter->render( Shortcode_View_Model::for_template( $filename, [
+            'message_dtl' => $vm_message,
+        ], 'account' ) );
     }
 
     private function extract_query_vars(): array {

@@ -113,6 +113,8 @@ trait Creates_Admin_Delivery_Container {
         $league_repo          = $services['league_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );
         $team_repo            = $services['team_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Team_Repository_Interface::class );
         $club_repo            = $services['club_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Club_Repository_Interface::class );
+        $player_repo          = $services['player_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class );
+        $fixture_relation_ldr = $services['fixture_relation_loader'] ?? new \Racketmanager\Services\Fixture\Fixture_Relation_Loader( $league_repo );
         $score_validation     = $services['score_validation_service'] ?? $this->createStub( Score_Validation_Service::class );
         $fixture_result_mgr   = $services['fixture_result_manager'] ?? $this->createStub( \Racketmanager\Services\Fixture\Fixture_Result_Manager::class );
 
@@ -140,10 +142,12 @@ trait Creates_Admin_Delivery_Container {
         $container->set( 'admin_date_presenter', fn() => $services['admin_date_presenter'] ?? new \Racketmanager\Admin\Presenters\Admin_Date_Presenter() );
         $container->set( 'admin_league_matches_presenter', fn( Simple_Container $c ) => $services['admin_league_matches_presenter'] ?? new \Racketmanager\Admin\Presenters\Admin_League_Matches_Presenter( $c->get( 'admin_date_presenter' ) ) );
         $container->set( 'admin_championship_finals_presenter', fn( Simple_Container $c ) => $services['admin_championship_finals_presenter'] ?? new \Racketmanager\Admin\Presenters\Admin_Championship_Finals_Presenter( $c->get( 'admin_date_presenter' ) ) );
+        $container->set( 'player_repository', fn() => $player_repo );
+        $container->set( 'fixture_relation_loader', fn() => $fixture_relation_ldr );
         $container->set( 'admin_plan_presenter', fn( Simple_Container $c ) => $services['admin_plan_presenter'] ?? new \Racketmanager\Admin\Presenters\Admin_Plan_Presenter(
             $c->get( 'fixture_detail_service' ),
-            $services['player_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class ),
-            $services['fixture_relation_loader'] ?? new \Racketmanager\Services\Fixture\Fixture_Relation_Loader( $c->get( 'league_repository' ) ),
+            $c->get( 'player_repository' ),
+            $c->get( 'fixture_relation_loader' ),
         ) );
         $container->set( 'admin_entry_link_presenter', fn() => $services['admin_entry_link_presenter'] ?? new \Racketmanager\Admin\Presenters\Admin_Entry_Link_Presenter() );
         $container->set( 'league_team_repository', fn() => $league_team_repo );
@@ -245,6 +249,9 @@ trait Creates_Admin_Delivery_Container {
             $app->container = $container;
         }
         ( new Admin_Screens_Service_Provider( $app ) )->register( $container );
+        if ( array_key_exists( 'admin_results_match_presenter', $services ) && false === $services['admin_results_match_presenter'] ) {
+            $container->remove( 'admin_results_match_presenter' );
+        }
         if ( isset( $services['admin_player_screen'] ) ) {
             $container->set( 'admin_player_screen', fn() => $services['admin_player_screen'] );
         }

@@ -5,11 +5,11 @@ namespace Racketmanager\Tests\Unit\Application\Finance\Queries;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\General\DTOs\Purchase_Order_Result;
 use Racketmanager\Application\General\Queries\Get_Purchase_Order_Handler;
 use Racketmanager\Application\General\Queries\Get_Purchase_Order_Query;
 use Racketmanager\Domain\Finance\Invoice;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
-use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Finance_Service;
 
 require_once dirname( __DIR__, 4 ) . '/wp-stubs.php';
@@ -76,13 +76,12 @@ final class Finance_Queries_Test extends TestCase {
 		$handler = new Get_Purchase_Order_Handler( $service );
 		$query   = new Get_Purchase_Order_Query( id: 42, modal: 'poModal', template: null );
 
-		$vm = $handler->handle( $query );
+		$result = $handler->handle( $query );
 
-		$this->assertInstanceOf( Shortcode_View_Model::class, $vm );
-		$this->assertSame( 'purchase-order-modal', $vm->template );
-		$this->assertSame( 'club', $vm->template_type );
-		$this->assertSame( $invoice, $vm->vars['invoice'] );
-		$this->assertSame( 'poModal', $vm->vars['modal'] );
+		$this->assertInstanceOf( Purchase_Order_Result::class, $result );
+		$this->assertFalse( $result->is_error() );
+		$this->assertSame( $invoice, $result->invoice );
+		$this->assertSame( 'poModal', $result->modal );
 	}
 
 	public function test_handler_custom_template_suffix(): void {
@@ -96,10 +95,10 @@ final class Finance_Queries_Test extends TestCase {
 		$handler = new Get_Purchase_Order_Handler( $service );
 		$query   = new Get_Purchase_Order_Query( id: 42, modal: 'poModal', template: 'table' );
 
-		$vm = $handler->handle( $query );
+		$result = $handler->handle( $query );
 
-		$this->assertSame( 'purchase-order-modal-table', $vm->template );
-		$this->assertSame( 'club', $vm->template_type );
+		$this->assertInstanceOf( Purchase_Order_Result::class, $result );
+		$this->assertSame( 'table', $result->template );
 	}
 
 	public function test_handler_missing_id_returns_error_view_model(): void {
@@ -109,12 +108,11 @@ final class Finance_Queries_Test extends TestCase {
 		$handler = new Get_Purchase_Order_Handler( $service );
 		$query   = new Get_Purchase_Order_Query( id: 0 );
 
-		$vm = $handler->handle( $query );
+		$result = $handler->handle( $query );
 
-		$this->assertInstanceOf( Shortcode_View_Model::class, $vm );
-		$this->assertTrue( $vm->is_error() );
-		$this->assertSame( 'Invoice not found', $vm->error_message );
-		$this->assertSame( 'modal', $vm->error_variant );
+		$this->assertInstanceOf( Purchase_Order_Result::class, $result );
+		$this->assertTrue( $result->is_error() );
+		$this->assertSame( 'Invoice not found', $result->error_message );
 	}
 
 	public function test_handler_invoice_not_found_exception_returns_error_view_model(): void {
@@ -127,11 +125,10 @@ final class Finance_Queries_Test extends TestCase {
 		$handler = new Get_Purchase_Order_Handler( $service );
 		$query   = new Get_Purchase_Order_Query( id: 999 );
 
-		$vm = $handler->handle( $query );
+		$result = $handler->handle( $query );
 
-		$this->assertInstanceOf( Shortcode_View_Model::class, $vm );
-		$this->assertTrue( $vm->is_error() );
-		$this->assertSame( 'Invoice #999 does not exist', $vm->error_message );
-		$this->assertSame( 'modal', $vm->error_variant );
+		$this->assertInstanceOf( Purchase_Order_Result::class, $result );
+		$this->assertTrue( $result->is_error() );
+		$this->assertSame( 'Invoice #999 does not exist', $result->error_message );
 	}
 }

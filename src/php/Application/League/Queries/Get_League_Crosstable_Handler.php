@@ -3,12 +3,14 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\League\Queries;
 
+use Racketmanager\Application\League\DTOs\League_Crosstable_Result;
 use Racketmanager\Domain\Competition\League;
-use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
-use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use function __;
+use function array_slice;
+use function array_values;
+use function count;
 use function is_array;
 
 /**
@@ -17,17 +19,16 @@ use function is_array;
 class Get_League_Crosstable_Handler {
     public function __construct(
         private readonly League_Service $league_service,
-        private readonly Shortcode_Template_Renderer $template_renderer,
         private readonly League_Query_Service $league_query_service
     ) {}
 
-    public function handle( Get_League_Crosstable_Query $query ): Shortcode_View_Model {
+    public function handle( Get_League_Crosstable_Query $query ): League_Crosstable_Result {
         $league = null;
         if ( ! empty( $query->league_id ) ) {
             $league = $this->league_service->get_league( $query->league_id );
         }
         if ( ! $league ) {
-            return Shortcode_View_Model::for_error( __( 'League not found', 'racketmanager' ) );
+            return League_Crosstable_Result::error( __( 'League not found', 'racketmanager' ) );
         }
 
         $league->set_template( 'crosstable', $query->template );
@@ -37,25 +38,17 @@ class Get_League_Crosstable_Handler {
         $teams = $this->league_query_service->get_league_teams( $league, [ 'orderby' => [ 'rank' => 'ASC' ] ] );
         $teams = is_array( $teams ) ? $teams : [];
 
-        if ( empty( $query->template ) && ! empty( $league->sport ) && $this->template_renderer->template_exists( 'crosstable-' . $league->sport, 'league' ) ) {
-            $filename = 'crosstable-' . $league->sport;
-        } else {
-            $filename = ( ! empty( $query->template ) ) ? 'crosstable-' . $query->template : 'crosstable';
-        }
-
         $columns = $this->crosstable_columns( $league, $teams );
+        $cells   = $this->build_crosstable_cells( $league, $teams, $columns );
 
-        return Shortcode_View_Model::for_template(
-            $filename,
-            [
-                'league'             => $league,
-                'teams'              => $teams,
-                'crosstable_columns' => $columns,
-                'crosstable_cells'   => $this->build_crosstable_cells( $league, $teams, $columns ),
-                'mode'               => $query->mode,
-                'season'             => $query->season,
-            ],
-            'league'
+        return new League_Crosstable_Result(
+            league: $league,
+            teams: $teams,
+            columns: $columns,
+            cells: $cells,
+            mode: $query->mode,
+            season: $query->season,
+            template: $query->template
         );
     }
 

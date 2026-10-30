@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Shortcodes;
 
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Tests\Helpers\Creates_Test_Container;
 use Racketmanager\Application\General\Queries\Get_Alert_Handler;
@@ -15,12 +16,22 @@ use Racketmanager\Application\General\Queries\Get_Players_Handler;
 use Racketmanager\Application\General\Queries\Get_Purchase_Order_Handler;
 use Racketmanager\Application\General\Queries\Get_Team_Order_Handler;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\General_Shortcode_Adapter;
+use Racketmanager\Application\General\DTOs\Alert_Result;
+use Racketmanager\Application\General\DTOs\Favourites_Result;
+use Racketmanager\Application\General\DTOs\Invoice_Result;
+use Racketmanager\Application\General\DTOs\Memberships_Result;
+use Racketmanager\Application\General\DTOs\Player_Result;
+use Racketmanager\Application\General\DTOs\Player_Search_Result;
+use Racketmanager\Application\General\DTOs\Players_Result;
+use Racketmanager\Application\General\DTOs\Purchase_Order_Result;
+use Racketmanager\Application\General\DTOs\Team_Order_Result;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Public\Shortcodes;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 
+#[AllowMockObjectsWithoutExpectations]
 class General_Shortcode_Adapter_Test extends TestCase {
     use Creates_Test_Container;
 
@@ -51,8 +62,8 @@ class General_Shortcode_Adapter_Test extends TestCase {
         $this->player_search_handler  = $this->createStub( Get_Player_Search_Handler::class );
         $this->team_order_handler     = $this->createStub( Get_Team_Order_Handler::class );
         $this->alert_handler          = $this->createStub( Get_Alert_Handler::class );
-        $this->view_presenter         = $this->createStub( Shortcode_View_Presenter::class );
-        $this->template_renderer      = $this->createStub( Shortcode_Template_Renderer::class );
+        $this->view_presenter         = $this->createMock( Shortcode_View_Presenter::class );
+        $this->template_renderer      = $this->createMock( Shortcode_Template_Renderer::class );
         $this->legacy_handler         = $this->createStub( Shortcodes::class );
 
         $this->adapter = new General_Shortcode_Adapter(
@@ -72,21 +83,53 @@ class General_Shortcode_Adapter_Test extends TestCase {
     }
 
     public function test_show_players_renders_via_handler(): void {
-        $this->players_handler
-            ->method( 'handle' )
-            ->willReturn( Shortcode_View_Model::for_template( 'players' ) );
-        $this->view_presenter
+        $result = new Players_Result( players: [ 'p1' ], search_string: 'test', template: 'custom' );
+        $this->players_handler->method( 'handle' )->willReturn( $result );
+
+        $this->template_renderer
+            ->expects( $this->once() )
             ->method( 'render' )
+            ->with( 'players-list', [ 'players' => [ 'p1' ] ] )
+            ->willReturn( 'RENDERED_LIST' );
+
+        $this->view_presenter
+            ->expects( $this->once() )
+            ->method( 'render' )
+            ->with( $this->callback( function( Shortcode_View_Model $vm ) {
+                return $vm->template === 'players-custom' &&
+                       isset( $vm->vars['search_results'] ) &&
+                       $vm->vars['search_results'] === 'RENDERED_LIST';
+            } ) )
             ->willReturn( '<div class="players-list"></div>' );
 
         $output = $this->adapter->show_players( [ 'template' => 'custom' ] );
         $this->assertSame( '<div class="players-list"></div>', $output );
     }
 
+    public function test_show_players_renders_empty_search_results(): void {
+        $this->players_handler->method( 'handle' )->willReturn( new Players_Result( search_string: 'No Match' ) );
+        $this->template_renderer
+            ->expects( $this->once() )
+            ->method( 'render' )
+            ->with( 'players-list', [ 'players' => [] ] )
+            ->willReturn( '<p>No players found</p>' );
+
+        $this->view_presenter
+            ->expects( $this->once() )
+            ->method( 'render' )
+            ->with( $this->callback( function( Shortcode_View_Model $vm ) {
+                return $vm->template === 'players'
+                    && ( $vm->vars['search_results'] ?? null ) === '<p>No players found</p>';
+            } ) )
+            ->willReturn( '<div class="players">No players found</div>' );
+
+        $this->assertSame( '<div class="players">No players found</div>', $this->adapter->show_players() );
+    }
+
     public function test_show_player_renders_via_handler(): void {
         $this->player_handler
             ->method( 'handle' )
-            ->willReturn( Shortcode_View_Model::for_template( 'player' ) );
+            ->willReturn( new Player_Result() );
         $this->view_presenter
             ->method( 'render' )
             ->willReturn( '<div class="player-profile">John Doe</div>' );
@@ -98,7 +141,7 @@ class General_Shortcode_Adapter_Test extends TestCase {
     public function test_show_favourites_renders_via_handler(): void {
         $this->favourites_handler
             ->method( 'handle' )
-            ->willReturn( Shortcode_View_Model::for_template( 'form-favourites' ) );
+            ->willReturn( new Favourites_Result() );
         $this->view_presenter
             ->method( 'render' )
             ->willReturn( '<div class="favourites">Favs</div>' );
@@ -110,7 +153,7 @@ class General_Shortcode_Adapter_Test extends TestCase {
     public function test_show_invoice_renders_via_handler(): void {
         $this->invoice_handler
             ->method( 'handle' )
-            ->willReturn( Shortcode_View_Model::for_template( 'invoice' ) );
+            ->willReturn( new Invoice_Result() );
         $this->view_presenter
             ->method( 'render' )
             ->willReturn( '<div class="invoice">INV-100</div>' );
@@ -122,7 +165,7 @@ class General_Shortcode_Adapter_Test extends TestCase {
     public function test_show_purchase_order_renders_via_handler(): void {
         $this->purchase_order_handler
             ->method( 'handle' )
-            ->willReturn( Shortcode_View_Model::for_template( 'purchase-order-modal' ) );
+            ->willReturn( new Purchase_Order_Result() );
         $this->view_presenter
             ->method( 'render' )
             ->willReturn( '<div class="po-modal">PO</div>' );
@@ -131,12 +174,36 @@ class General_Shortcode_Adapter_Test extends TestCase {
         $this->assertSame( '<div class="po-modal">PO</div>', $output );
     }
 
+    public function test_show_purchase_order_renders_modal_error(): void {
+        $this->purchase_order_handler->method( 'handle' )->willReturn( Purchase_Order_Result::error( 'Invoice not found' ) );
+        $this->view_presenter
+            ->expects( $this->once() )
+            ->method( 'render' )
+            ->with( $this->callback( function( Shortcode_View_Model $vm ) {
+                return $vm->is_error()
+                    && $vm->error_message === 'Invoice not found'
+                    && $vm->error_variant === 'modal';
+            } ) )
+            ->willReturn( '<div class="alert-modal">Invoice not found</div>' );
+
+        $this->assertSame(
+            '<div class="alert-modal">Invoice not found</div>',
+            $this->adapter->show_purchase_order( [ 'id' => 100, 'modal' => 'true' ] )
+        );
+    }
+
     public function test_show_memberships_renders_via_handler(): void {
         $this->memberships_handler
             ->method( 'handle' )
-            ->willReturn( Shortcode_View_Model::for_template( 'player-clubs' ) );
+            ->willReturn( new Memberships_Result( template: 'custom' ) );
         $this->view_presenter
+            ->expects( $this->once() )
             ->method( 'render' )
+            ->with( $this->callback( function( Shortcode_View_Model $vm ) {
+                return $vm->template === 'player-clubs-custom'
+                    && $vm->vars === [ 'clubs' => [], 'clubs_archive' => [] ]
+                    && $vm->template_type === 'account';
+            } ) )
             ->willReturn( '<div class="memberships">Clubs</div>' );
 
         $output = $this->adapter->show_memberships( [] );
@@ -146,7 +213,7 @@ class General_Shortcode_Adapter_Test extends TestCase {
     public function test_show_player_search_renders_via_handler(): void {
         $this->player_search_handler
             ->method( 'handle' )
-            ->willReturn( Shortcode_View_Model::for_template( 'players-list' ) );
+            ->willReturn( new Player_Search_Result() );
         $this->view_presenter
             ->method( 'render' )
             ->willReturn( '<div class="player-search">Results</div>' );
@@ -158,7 +225,7 @@ class General_Shortcode_Adapter_Test extends TestCase {
     public function test_show_team_order_renders_via_handler(): void {
         $this->team_order_handler
             ->method( 'handle' )
-            ->willReturn( Shortcode_View_Model::for_template( 'team-order' ) );
+            ->willReturn( new Team_Order_Result() );
         $this->view_presenter
             ->method( 'render' )
             ->willReturn( '<div class="team-order">Order</div>' );
@@ -170,7 +237,7 @@ class General_Shortcode_Adapter_Test extends TestCase {
     public function test_show_alert_renders_via_handler(): void {
         $this->alert_handler
             ->method( 'handle' )
-            ->willReturn( Shortcode_View_Model::for_template( 'alert' ) );
+            ->willReturn( new Alert_Result() );
         $this->view_presenter
             ->method( 'render' )
             ->willReturn( '<div class="alert alert-info">Test message</div>' );
@@ -195,7 +262,7 @@ class General_Shortcode_Adapter_Test extends TestCase {
 
         $this->players_handler
             ->method( 'handle' )
-            ->willReturn( Shortcode_View_Model::for_template( 'players' ) );
+            ->willReturn( new Players_Result() );
         $this->view_presenter
             ->method( 'render' )
             ->willReturn( '<div class="players">Players List</div>' );

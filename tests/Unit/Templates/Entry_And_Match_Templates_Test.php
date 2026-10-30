@@ -7,6 +7,9 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Competition\Queries\Club_Entry_Selection_Service;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Entry_Handler;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Entry_Query;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\Competition_Shortcode_Adapter;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\League_Shortcode_Adapter;
+use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Application\League\Queries\Get_League_Teams_Handler;
 use Racketmanager\Application\League\Queries\Get_League_Teams_Query;
 use Racketmanager\Domain\Club\Club;
@@ -93,6 +96,19 @@ class Entry_And_Match_Templates_Test extends TestCase {
         }
     }
 
+    private function present_entry( Get_Competition_Entry_Handler $handler, Get_Competition_Entry_Query $query, ?Tournament_Presenter $tournament_presenter = null ): Shortcode_View_Model {
+        $result = $handler->handle( $query );
+        if ( $result->is_error() ) {
+            return Shortcode_View_Model::error( $result->error_message ?? '' );
+        }
+        $adapter = new Competition_Shortcode_Adapter(
+            competition_shortcode_presenter: new Competition_Shortcode_Presenter( $this->view_renderer ),
+            tournament_presenter: $tournament_presenter ?? new Tournament_Presenter()
+        );
+
+        return $adapter->present_entry( $result );
+    }
+
     public function test_entry_league_template_renders_with_real_handler_output_and_zero_warnings(): void {
         unset( $GLOBALS['racketmanager'] );
 
@@ -117,8 +133,6 @@ class Entry_And_Match_Templates_Test extends TestCase {
             registration_service: $registration_service,
             competition_entry_service: $comp_entry_service,
             finance_service: $finance_service,
-            competition_presenter: new Competition_Shortcode_Presenter( $this->view_renderer ),
-            tournament_presenter: new Tournament_Presenter(),
             event_query_service: $this->event_query_service()
         );
 
@@ -184,7 +198,7 @@ class Entry_And_Match_Templates_Test extends TestCase {
             entry_level: 'captain'
         );
 
-        $vm = $handler->handle( $query );
+        $vm = $this->present_entry( $handler, $query );
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'entry-league', $vm->template );
         $this->assertSame( 'Monday', $vm->vars['match_days']['0'] );
@@ -210,7 +224,7 @@ class Entry_And_Match_Templates_Test extends TestCase {
             is_admin: true,
             entry_level: 'captain'
         );
-        $current_season_vm = $handler->handle( $current_season_query );
+        $current_season_vm = $this->present_entry( $handler, $current_season_query );
         $current_warnings  = [];
         $current_output    = $this->render_and_capture_warnings(
             fn() => $this->template_renderer->render( $current_season_vm->template, $current_season_vm->vars, $current_season_vm->template_type ),
@@ -246,8 +260,6 @@ class Entry_And_Match_Templates_Test extends TestCase {
             registration_service: $registration_service,
             competition_entry_service: $comp_entry_service,
             finance_service: $finance_service,
-            competition_presenter: new Competition_Shortcode_Presenter( $this->view_renderer ),
-            tournament_presenter: new Tournament_Presenter(),
             event_query_service: $this->event_query_service()
         );
 
@@ -310,7 +322,7 @@ class Entry_And_Match_Templates_Test extends TestCase {
             entry_level: 'captain'
         );
 
-        $vm = $handler->handle( $query );
+        $vm = $this->present_entry( $handler, $query );
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'entry-cup', $vm->template );
 
@@ -328,7 +340,7 @@ class Entry_And_Match_Templates_Test extends TestCase {
 
         $competition->seasons        = new Season_Collection( [ '2026' => [ 'name' => '2026' ] ] );
         $competition->current_season = [ 'name' => '2026' ];
-        $missing_date_vm             = $handler->handle( $query );
+        $missing_date_vm             = $this->present_entry( $handler, $query );
         $missing_date_warnings       = [];
         $missing_date_output         = $this->render_and_capture_warnings(
             fn() => $this->template_renderer->render( $missing_date_vm->template, $missing_date_vm->vars, $missing_date_vm->template_type ),
@@ -366,8 +378,6 @@ class Entry_And_Match_Templates_Test extends TestCase {
             registration_service: $registration_service,
             competition_entry_service: $comp_entry_service,
             finance_service: $finance_service,
-            competition_presenter: new Competition_Shortcode_Presenter( $this->view_renderer ),
-            tournament_presenter: new Tournament_Presenter( 'd/m/Y' ),
             event_query_service: $this->event_query_service()
         );
 
@@ -469,7 +479,7 @@ class Entry_And_Match_Templates_Test extends TestCase {
             user_id: 42
         );
 
-        $vm = $handler->handle( $query );
+        $vm = $this->present_entry( $handler, $query, new Tournament_Presenter( 'd/m/Y' ) );
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'entry-tournament', $vm->template );
 
@@ -487,7 +497,7 @@ class Entry_And_Match_Templates_Test extends TestCase {
         $this->assertStringContainsString( "Men's Singles", $output );
 
         $tournament->date_closing = null;
-        $missing_date_vm          = $handler->handle( $query );
+        $missing_date_vm          = $this->present_entry( $handler, $query, new Tournament_Presenter( 'd/m/Y' ) );
         $missing_date_warnings   = [];
         $missing_date_output     = $this->render_and_capture_warnings(
             fn() => $this->template_renderer->render( $missing_date_vm->template, $missing_date_vm->vars, $missing_date_vm->template_type ),
@@ -527,9 +537,11 @@ class Entry_And_Match_Templates_Test extends TestCase {
             $league_service,
             $team_service,
             $stats_service,
-            new Tournament_Presenter( team_match_row_presenter: $this->create_team_match_row_presenter() ),
-            new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() ),
             $league_query
+        );
+        $adapter = new League_Shortcode_Adapter(
+            team_details_presenter: new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() ),
+            template_renderer: $this->template_renderer
         );
 
         $league = new class extends League {
@@ -557,7 +569,7 @@ class Entry_And_Match_Templates_Test extends TestCase {
 
         $league_service->method( 'get_league' )->willReturn( $league );
 
-        $vm = $handler->handle( new Get_League_Teams_Query( league_id: 10 ) );
+        $vm = $adapter->present_teams( $handler->handle( new Get_League_Teams_Query( league_id: 10 ) ) );
         $this->assertFalse( $vm->is_error() );
 
         $warnings = [];
@@ -882,15 +894,18 @@ class Entry_And_Match_Templates_Test extends TestCase {
             ];
         } );
 
-        $handler = new Get_Memberships_Handler( $player_service, $reg_service, $player_presenter );
-        $vm      = $handler->handle( new Get_Memberships_Query( is_logged_in: true, user_id: 42 ) );
+        $handler = new Get_Memberships_Handler( $player_service, $reg_service );
+        $result  = $handler->handle( new Get_Memberships_Query( is_logged_in: true, user_id: 42 ) );
 
-        $this->assertFalse( $vm->is_error() );
-        $this->assertSame( 'player-clubs', $vm->template );
+        $this->assertFalse( $result->is_error() );
+
+        $template_args['clubs']         = array_map( fn( $c ) => $player_presenter->present_club_membership( $c ), $result->clubs );
+        $template_args['clubs_archive'] = array_map( fn( $c ) => $player_presenter->present_club_membership( $c ), $result->clubs_archive );
+        $filename                       = ! empty( $result->template ) ? 'player-clubs-' . $result->template : 'player-clubs';
 
         $warnings = [];
         $output   = $this->render_and_capture_warnings(
-            fn() => $this->template_renderer->render( $vm->template, $vm->vars, $vm->template_type ),
+            fn() => $this->template_renderer->render( $filename, $template_args, 'account' ),
             $warnings
         );
 

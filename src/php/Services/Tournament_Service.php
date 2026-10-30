@@ -11,11 +11,10 @@ declare( strict_types=1 );
 namespace Racketmanager\Services;
 
 use LogicException;
-use Racketmanager\Admin\Presenters\Admin_Championship_Finals_Presenter;
-use Racketmanager\Admin\Presenters\Admin_Date_Presenter;
-use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
 use Racketmanager\Domain\Finance\Charge;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\DTO\Admin\Tournament\Tournament_Draw_Data_DTO;
+use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Championship_Rounds_Request_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Details_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Event_DTO;
@@ -41,7 +40,6 @@ use Racketmanager\Exceptions\Tournament_Not_Updated_Exception;
 use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\RacketManager;
-use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Repositories\Interfaces\Charge_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
@@ -637,7 +635,7 @@ class Tournament_Service {
         }
         sort( $times );
         $headers    = array();
-        $action_url = $this->racketmanager->site_url . ( new Tournament_Presenter() )->get_link( $tournament ) . 'order_of_play/';
+        $action_url = $this->racketmanager->site_url . '/tournament/' . Seo_Slug::encode( $tournament->name ) . '/order_of_play/';
         $from_email = $this->racketmanager->get_confirmation_email( 'tournament' );
         if ( ! $from_email ) {
             throw new Invalid_Argument_Exception( Util_Messages::secretary_email_not_found( 'tournament' ) );
@@ -1207,15 +1205,15 @@ class Tournament_Service {
     }
 
     /**
-     * @param object $tournament
+     * @param Tournament $tournament
      * @param object $league
      * @param array $query
      * @param array $post
      * @param string|null $tab_override
      *
-     * @return Tournament_Draw_Page_View_Model
+     * @return Tournament_Draw_Data_DTO
      */
-    public function get_draw_view_model( Tournament $tournament, object $league, array $query, array $post, ?string $tab_override = null ): Tournament_Draw_Page_View_Model {
+    public function get_draw_data( Tournament $tournament, object $league, array $query, array $post, ?string $tab_override = null ): Tournament_Draw_Data_DTO {
         $tab     = $tab_override ?? ( $query['tab'] ?? 'draw' );
         $season  = (string) ( $post['season'] ?? ( $query['season'] ?? ( $league->season ?? '' ) ) );
         $event   = $this->get_draw_details_for_tournament( $tournament, $league->get_event_id() );
@@ -1232,10 +1230,7 @@ class Tournament_Service {
             }
         }
 
-        $finals_presenter = $this->resolve_championship_finals_presenter();
-        $finals           = $finals_presenter->present_finals( $finals, $tournament, $league, $season );
-
-        return new Tournament_Draw_Page_View_Model(
+        return new Tournament_Draw_Data_DTO(
             tournament: $tournament,
             league: $league,
             tab: $tab,
@@ -1244,14 +1239,5 @@ class Tournament_Service {
             teams: $teams,
             finals: $finals,
         );
-    }
-
-    private function resolve_championship_finals_presenter(): Admin_Championship_Finals_Presenter {
-        $container = $this->racketmanager->container ?? null;
-        if ( $container instanceof \Racketmanager\Services\Container\Simple_Container && $container->has( 'admin_championship_finals_presenter' ) ) {
-            return $container->get( 'admin_championship_finals_presenter' );
-        }
-
-        return new Admin_Championship_Finals_Presenter( new Admin_Date_Presenter() );
     }
 }

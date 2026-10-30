@@ -3,8 +3,8 @@
 namespace Racketmanager\Tests\Unit\Repositories {
 
 	use PHPUnit\Framework\TestCase;
+	use Racketmanager\Application\Export\DTO\Export_Criteria;
 	use Racketmanager\Repositories\Fixture_Repository;
-	use Racketmanager\Services\Export\DTO\Export_Criteria;
 	use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 	use wpdb;
 

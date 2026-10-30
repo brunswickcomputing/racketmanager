@@ -3,8 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\General\Queries;
 
-use Racketmanager\Presentation\Presenters\Player_Presenter;
-use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
+use Racketmanager\Application\General\DTOs\Player_Result;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Player_Stats_Service;
@@ -16,7 +15,6 @@ use function method_exists;
 
 class Get_Player_Handler {
     public function __construct(
-        private readonly Player_Presenter $player_presenter,
         private readonly Player_Query_Service $player_query_service,
         private readonly Player_Stats_Service $player_stats_service,
         private readonly Player_Service $player_service,
@@ -24,7 +22,7 @@ class Get_Player_Handler {
         private readonly ?Tournament_Service $tournament_service = null
     ) {}
 
-    public function handle( Get_Player_Query $query ): Shortcode_View_Model {
+    public function handle( Get_Player_Query $query ): Player_Result {
         $player = null;
         if ( ! empty( $query->btm ) ) {
             $player = $this->player_service->find_player_by_btm( $query->btm );
@@ -33,7 +31,7 @@ class Get_Player_Handler {
         }
 
         if ( ! is_object( $player ) ) {
-            return Shortcode_View_Model::for_error( __( 'Player not found', 'racketmanager' ) );
+            return Player_Result::error( __( 'Player not found', 'racketmanager' ) );
         }
 
         $player_id = method_exists( $player, 'get_id' ) ? (int) $player->get_id() : (int) ( $player->ID ?? 0 );
@@ -56,17 +54,12 @@ class Get_Player_Handler {
             }
         }
 
-        $filename  = ! empty( $query->template ) ? 'player-' . $query->template : 'player';
-
-        $player_vm = $this->player_presenter->present_player(
+        return new Player_Result(
             player: $player,
             clubs: $player_clubs,
             titles: $titles,
             player_competitions: $player_competitions,
-            is_page_header: true,
-            template: $filename
+            template: $query->template
         );
-
-        return Shortcode_View_Model::for_template( $filename, $player_vm->template_vars() );
     }
 }

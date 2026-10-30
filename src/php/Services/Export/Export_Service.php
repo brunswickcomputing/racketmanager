@@ -10,10 +10,10 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Export;
 
+use Racketmanager\Application\Export\DTO\Export_Criteria;
 use Racketmanager\Application\Export\Ports\Data_Exporter_Interface;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
-use Racketmanager\Services\Export\DTO\Export_Criteria;
 use Racketmanager\Services\Export\Formatters\Csv_Formatter;
 use Racketmanager\Services\Export\Formatters\Ics_Formatter;
 use Racketmanager\Services\Export\Formatters\Json_Formatter;

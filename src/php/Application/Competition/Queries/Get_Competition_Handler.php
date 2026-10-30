@@ -3,10 +3,10 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Competition\Queries;
 
+use Racketmanager\Application\Competition\DTOs\Competition_Page_Result;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
-use Racketmanager\Presentation\View_Models\Competition_View_Model;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
@@ -29,11 +29,11 @@ class Get_Competition_Handler {
         private readonly Competition_Season_Service $competition_season_service
     ) {}
 
-    public function handle( Get_Competition_Query $query ): Competition_View_Model {
+    public function handle( Get_Competition_Query $query ): Competition_Page_Result {
         $comp_id = $query->competition_id ?? $query->competition_name;
         if ( null === $comp_id || '' === $comp_id ) {
-            return new Competition_View_Model(
-                error_message: __( 'Competition not found', 'racketmanager' )
+            return Competition_Page_Result::error(
+                __( 'Competition not found', 'racketmanager' )
             );
         }
 
@@ -44,28 +44,28 @@ class Get_Competition_Handler {
         try {
             $competition = $this->competition_service->get_by_id( $comp_id );
         } catch ( Competition_Not_Found_Exception $e ) {
-            return new Competition_View_Model(
-                error_message: $e->getMessage()
+            return Competition_Page_Result::error(
+                $e->getMessage()
             );
         }
 
         if ( ! $competition ) {
-            return new Competition_View_Model(
-                error_message: __( 'Competition not found', 'racketmanager' )
+            return Competition_Page_Result::error(
+                __( 'Competition not found', 'racketmanager' )
             );
         }
 
         $seasons = $competition->get_seasons();
         if ( empty( $seasons ) ) {
-            return new Competition_View_Model(
-                error_message: __( 'No seasons found for competition', 'racketmanager' )
+            return Competition_Page_Result::error(
+                __( 'No seasons found for competition', 'racketmanager' )
             );
         }
 
         $competition_season = $this->competition_season_service->resolve_current_season( $competition, $query->season ?? '' );
         if ( empty( array_diff_key( $competition_season, [ 'venue_name' => true ] ) ) ) {
-            return new Competition_View_Model(
-                error_message: __( 'Season not found for competition', 'racketmanager' )
+            return Competition_Page_Result::error(
+                __( 'Season not found for competition', 'racketmanager' )
             );
         }
 
@@ -146,8 +146,7 @@ class Get_Competition_Handler {
 
         $template = ! empty( $query->template ) ? 'competition-' . $query->template : 'competition';
 
-        return new Competition_View_Model(
-            template: $template,
+        return new Competition_Page_Result(
             competition: $competition,
             competition_season: $competition_season,
             tab: $tab,
@@ -156,7 +155,8 @@ class Get_Competition_Handler {
             is_singular: $is_singular,
             post_id: $post_id,
             pagename: $pagename,
-            competition_seo_name: $competition_seo_name
+            competition_seo_name: $competition_seo_name,
+            template: $template
         );
     }
 

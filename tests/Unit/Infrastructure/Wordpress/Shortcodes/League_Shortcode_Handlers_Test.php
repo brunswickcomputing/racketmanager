@@ -101,19 +101,17 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $handler = new Get_League_Championship_Handler(
             $league_service,
             $fixture_repo,
-            $comp_service,
-            $team_service,
-            $link_service,
-            $perm_service,
-            $renderer,
             $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class ),
-            new Tournament_Presenter( 'd/m/Y' ),
             $this->league_query_service()
+        );
+        $adapter = new League_Shortcode_Adapter(
+            template_renderer: $renderer,
+            tournament_presenter: new Tournament_Presenter( 'd/m/Y' )
         );
 
         // Error path: league not found
         $query_error = new Get_League_Championship_Query( league_id: 999 );
-        $vm_error    = $handler->handle( $query_error );
+        $vm_error    = $adapter->present_championship( $handler->handle( $query_error ) );
         $this->assertTrue( $vm_error->is_error() );
         $this->assertSame( 'League not found', $vm_error->error_message );
 
@@ -130,7 +128,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $league_service->method( 'get_league' )->willReturn( $league_obj );
 
         $query = new Get_League_Championship_Query( league_id: 1, template: 'custom' );
-        $vm    = $handler->handle( $query );
+        $vm    = $adapter->present_championship( $handler->handle( $query ) );
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'championship-custom', $vm->template );
         $this->assertFalse( $vm->template_type );
@@ -181,14 +179,21 @@ class League_Shortcode_Handlers_Test extends TestCase {
         } );
 
         $handler = new Get_League_Championship_Handler(
-            $leagues, $fixtures, $competition, $teams,
-            $this->createStub( Fixture_Link_Service::class ), $this->createStub( Fixture_Permission_Service::class ),
-            $this->create_renderer(), $rubbers,
-            new Tournament_Presenter( 'd/m/Y', team_match_row_presenter: $this->create_team_match_row_presenter() ),
+            $leagues,
+            $fixtures,
+            $rubbers,
             $this->league_query_service( $query_league_repository, null, $query_fixtures )
         );
+        $adapter = new League_Shortcode_Adapter(
+            competition_service: $competition,
+            team_service: $teams,
+            fixture_link_service: $this->createStub( Fixture_Link_Service::class ),
+            fixture_permission_service: $this->createStub( Fixture_Permission_Service::class ),
+            template_renderer: $this->create_renderer(),
+            tournament_presenter: new Tournament_Presenter( 'd/m/Y', team_match_row_presenter: $this->create_team_match_row_presenter() )
+        );
 
-        $view = $handler->handle( new Get_League_Championship_Query( league_id: 4, template: 'custom' ) );
+        $view = $adapter->present_championship( $handler->handle( new Get_League_Championship_Query( league_id: 4, template: 'custom' ) ) );
         $row = $view->vars['finals'][0]->matches[1];
         $this->assertInstanceOf( \Racketmanager\Presentation\View_Models\Team_Match_Row_View_Model::class, $row );
         $this->assertFalse( $row->show_header );
@@ -207,11 +212,15 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $comp_service   = $this->createStub( Competition_Service::class );
         $renderer       = $this->create_renderer();
 
-        $handler = new Get_League_Archive_Handler( $league_service, $comp_service, $renderer, new League_Archive_Presenter(), $this->event_query_service() );
+        $handler = new Get_League_Archive_Handler( $league_service, $comp_service, $this->event_query_service(), $this->league_query_service() );
+        $adapter = new League_Shortcode_Adapter(
+            archive_presenter: new League_Archive_Presenter(),
+            template_renderer: $renderer
+        );
 
         // Error path: league not found
         $query_error = new Get_League_Archive_Query( league_name: 'Nonexistent League' );
-        $vm_error    = $handler->handle( $query_error );
+        $vm_error    = $adapter->present_archive( $handler->handle( $query_error ) );
         $this->assertTrue( $vm_error->is_error() );
         $this->assertSame( 'League not found', $vm_error->error_message );
 
@@ -237,7 +246,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_obj );
 
         $query = new Get_League_Archive_Query( league_name: 'Premier Division' );
-        $vm    = $handler->handle( $query );
+        $vm    = $adapter->present_archive( $handler->handle( $query ) );
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'archive', $vm->template );
         $this->assertFalse( $vm->template_type );
@@ -304,14 +313,17 @@ class League_Shortcode_Handlers_Test extends TestCase {
             $league_service,
             $team_service,
             $this->createStub( Player_Stats_Service::class ),
-            new Tournament_Presenter( team_match_row_presenter: $this->create_team_match_row_presenter() ),
-            $team_presenter,
             $this->league_query_service( $query_league_repository, null, $query_fixtures )
+        );
+        $adapter = new League_Shortcode_Adapter(
+            tournament_presenter: new Tournament_Presenter( team_match_row_presenter: $this->create_team_match_row_presenter() ),
+            team_details_presenter: $team_presenter,
+            template_renderer: $this->create_renderer()
         );
 
         // Error: league not found
         $query_error = new Get_League_Teams_Query( league_id: 999 );
-        $vm_error    = $handler->handle( $query_error );
+        $vm_error    = $adapter->present_teams( $handler->handle( $query_error ) );
         $this->assertTrue( $vm_error->is_error() );
         $this->assertSame( 'League not found', $vm_error->error_message );
 
@@ -337,7 +349,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
 
         // Teams list
         $query_list = new Get_League_Teams_Query( league_id: 1 );
-        $vm_list    = $handler->handle( $query_list );
+        $vm_list    = $adapter->present_teams( $handler->handle( $query_list ) );
         $this->assertFalse( $vm_list->is_error() );
         $this->assertSame( 'teams-list', $vm_list->template );
         $this->assertFalse( $vm_list->template_type );
@@ -358,7 +370,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
         );
 
         $query_detail = new Get_League_Teams_Query( league_id: 1, team_id: '7' );
-        $vm_detail    = $handler->handle( $query_detail );
+        $vm_detail    = $adapter->present_teams( $handler->handle( $query_detail ) );
         $this->assertFalse( $vm_detail->is_error() );
         $this->assertSame( 'team-details', $vm_detail->template );
         $this->assertFalse( $vm_detail->template_type );
@@ -375,7 +387,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
 
         // Team rank guard error (empty rank in league standings)
         $query_unranked = new Get_League_Teams_Query( league_id: 1, team_id: '8' );
-        $vm_unranked    = $handler->handle( $query_unranked );
+        $vm_unranked    = $adapter->present_teams( $handler->handle( $query_unranked ) );
         $this->assertTrue( $vm_unranked->is_error() );
         $this->assertSame( 'Team not found in league', $vm_unranked->error_message );
     }
@@ -406,8 +418,12 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $league_query->method( 'get_players' )->willReturn( [ $low, $high ] );
         $league_query->method( 'get_team_dtls' )->willReturn( (object) [ 'name' => 'T' ] );
         $league_query->method( 'get_league_team' )->willReturn( (object) [ 'rank' => 1 ] );
-        $handler = new Get_League_Teams_Handler( $league_service, $team_service, $stats, new Tournament_Presenter(), $team_presenter, $league_query );
-        $vm      = $handler->handle( new Get_League_Teams_Query( league_id: 1, team_id: '7' ) );
+        $handler = new Get_League_Teams_Handler( $league_service, $team_service, $stats, $league_query );
+        $adapter = new League_Shortcode_Adapter(
+            tournament_presenter: new Tournament_Presenter(),
+            team_details_presenter: $team_presenter
+        );
+        $vm      = $adapter->present_teams( $handler->handle( new Get_League_Teams_Query( league_id: 1, team_id: '7' ) ) );
 
         $this->assertFalse( $vm->is_error() );
         $this->assert_decorated_and_sorted( $low, $high, $team_obj->players );
@@ -445,8 +461,12 @@ class League_Shortcode_Handlers_Test extends TestCase {
 
         $league_query = $this->createMock( League_Query_Service::class );
         $league_query->expects( $this->once() )->method( 'get_players' )->with( $league_obj )->willReturn( [ $low, $high ] );
-        $handler = new Get_League_Players_Handler( $league_service, $repo, $player_service, $renderer, $this->createStub( Player_Query_Service::class ), $stats, new Player_Presenter(), $league_query );
-        $vm      = $handler->handle( new Get_League_Players_Query( league_id: 1 ) );
+        $handler = new Get_League_Players_Handler( $league_service, $repo, $player_service, $this->createStub( Player_Query_Service::class ), $stats, $league_query );
+        $adapter = new League_Shortcode_Adapter(
+            player_presenter: new Player_Presenter(),
+            template_renderer: $renderer
+        );
+        $vm      = $adapter->present_players( $handler->handle( new Get_League_Players_Query( league_id: 1 ) ) );
 
         $this->assertFalse( $vm->is_error() );
         $this->assert_decorated_and_sorted( $low, $high, $league_obj->players );
@@ -498,7 +518,11 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $stats_service = $this->createStub( Player_Stats_Service::class );
         $stats_service->method( 'get_stats' )->willReturn( [] );
         $league_repo   = $this->createStub( League_Repository_Interface::class );
-        $handler       = new Get_League_Players_Handler( $league_service, $league_repo, $player_service, $renderer, $query_service, $stats_service, new Player_Presenter(), $this->league_query_service( $league_repo ) );
+        $handler       = new Get_League_Players_Handler( $league_service, $league_repo, $player_service, $query_service, $stats_service, $this->league_query_service( $league_repo ) );
+        $adapter       = new League_Shortcode_Adapter(
+            player_presenter: new Player_Presenter(),
+            template_renderer: $renderer
+        );
 
         $league_obj = new class extends League {
             public function __construct() {
@@ -526,13 +550,13 @@ class League_Shortcode_Handlers_Test extends TestCase {
 
         // Player not found error
         $query_error = new Get_League_Players_Query( league_id: 1, player_id: '999' );
-        $vm_error    = $handler->handle( $query_error );
+        $vm_error    = $adapter->present_players( $handler->handle( $query_error ) );
         $this->assertTrue( $vm_error->is_error() );
         $this->assertSame( 'Player not found', $vm_error->error_message );
 
         // Player by numeric id
         $query_num = new Get_League_Players_Query( league_id: 1, player_id: '12' );
-        $vm_num    = $handler->handle( $query_num );
+        $vm_num    = $adapter->present_players( $handler->handle( $query_num ) );
         $this->assertFalse( $vm_num->is_error() );
         $this->assertSame( 'players-tennis', $vm_num->template );
         $this->assertSame( 'league', $vm_num->template_type );
@@ -541,13 +565,13 @@ class League_Shortcode_Handlers_Test extends TestCase {
 
         // Player by name
         $query_name = new Get_League_Players_Query( league_id: 1, player_id: 'John Doe' );
-        $vm_name    = $handler->handle( $query_name );
+        $vm_name    = $adapter->present_players( $handler->handle( $query_name ) );
         $this->assertFalse( $vm_name->is_error() );
         $this->assertSame( 'players-tennis', $vm_name->template );
 
         // All players list
         $query_all = new Get_League_Players_Query( league_id: 1 );
-        $vm_all    = $handler->handle( $query_all );
+        $vm_all    = $adapter->present_players( $handler->handle( $query_all ) );
         $this->assertFalse( $vm_all->is_error() );
         $this->assertSame( 'players-tennis', $vm_all->template );
         $this->assertArrayHasKey( 'player_links', $vm_all->vars );
@@ -562,7 +586,11 @@ class League_Shortcode_Handlers_Test extends TestCase {
             ->method( 'get_match_day' )
             ->with( 1, '', 'current' )
             ->willReturn( 2 );
-        $handler = new Get_League_Matches_Handler( $league_service, $renderer, new Tournament_Presenter(), $this->league_query_service( $league_repository ) );
+        $handler = new Get_League_Matches_Handler( $league_service, $this->league_query_service( $league_repository ) );
+        $adapter = new League_Shortcode_Adapter(
+            tournament_presenter: new Tournament_Presenter(),
+            template_renderer: $renderer
+        );
 
         $league_obj = new class extends League {
             public int $set_match_day_calls = 0;
@@ -586,7 +614,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
 
         // Default template (daily matches)
         $query_default = new Get_League_Matches_Query( league_id: 1, template: 'daily' );
-        $vm_default    = $handler->handle( $query_default );
+        $vm_default    = $adapter->present_matches( $handler->handle( $query_default ) );
         $this->assertFalse( $vm_default->is_error() );
         $this->assertSame( 'matches-daily', $vm_default->template );
         $this->assertFalse( $vm_default->template_type );
@@ -594,19 +622,19 @@ class League_Shortcode_Handlers_Test extends TestCase {
 
         // By matchday template (sets match day to -1)
         $query_by_md = new Get_League_Matches_Query( league_id: 1, template: 'by_matchday' );
-        $vm_by_md    = $handler->handle( $query_by_md );
+        $vm_by_md    = $adapter->present_matches( $handler->handle( $query_by_md ) );
         $this->assertFalse( $vm_by_md->is_error() );
         $this->assertSame( -1, $league_obj->last_match_day );
 
         // Empty template (preserves matches-sport or matches)
         $query_empty = new Get_League_Matches_Query( league_id: 1, template: '' );
-        $vm_empty    = $handler->handle( $query_empty );
+        $vm_empty    = $adapter->present_matches( $handler->handle( $query_empty ) );
         $this->assertFalse( $vm_empty->is_error() );
         $this->assertSame( 'matches', $vm_empty->template );
 
         // Numeric match day
         $query_md = new Get_League_Matches_Query( league_id: 1, matches: '3', template: 'table' );
-        $vm_md    = $handler->handle( $query_md );
+        $vm_md    = $adapter->present_matches( $handler->handle( $query_md ) );
         $this->assertFalse( $vm_md->is_error() );
         $this->assertSame( 3, $league_obj->last_match_day );
     }
@@ -627,31 +655,35 @@ class League_Shortcode_Handlers_Test extends TestCase {
             public function get_matches( array $query_args = [], ?\Racketmanager\Repositories\Interfaces\League_Repository_Interface $league_repository = null, ?\Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface $fixture_repository = null, ?\Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface $rubber_repository = null ): array|int|object { return []; }
         };
         $league_service->method( 'get_league' )->willReturn( $league_obj );
+        $adapter = new League_Shortcode_Adapter(
+            fixture_presenter: $this->createStub( Fixture_Presenter::class ),
+            template_renderer: $renderer
+        );
 
         // Crosstable
-        $crosstable_handler = new Get_League_Crosstable_Handler( $league_service, $renderer, $this->league_query_service() );
-        $vm_ct             = $crosstable_handler->handle( new Get_League_Crosstable_Query( league_id: 1 ) );
+        $crosstable_handler = new Get_League_Crosstable_Handler( $league_service, $this->league_query_service(), $this->createStub( Team_Service::class ) );
+        $vm_ct             = $adapter->present_crosstable( $crosstable_handler->handle( new Get_League_Crosstable_Query( league_id: 1 ) ) );
         $this->assertFalse( $vm_ct->is_error() );
         $this->assertSame( 'crosstable', $vm_ct->template );
         $this->assertSame( 'league', $vm_ct->template_type );
 
         // Season dropdown
-        $season_handler = new Get_League_Season_Dropdown_Handler( $league_service, $renderer );
-        $vm_sd         = $season_handler->handle( new Get_League_Season_Dropdown_Query( league_id: 1, season: '2026' ) );
+        $season_handler = new Get_League_Season_Dropdown_Handler( $league_service );
+        $vm_sd         = $adapter->present_season_dropdown( $season_handler->handle( new Get_League_Season_Dropdown_Query( league_id: 1, season: '2026' ) ) );
         $this->assertFalse( $vm_sd->is_error() );
         $this->assertSame( 'season-dropdown', $vm_sd->template );
         $this->assertSame( 'league', $vm_sd->template_type );
 
         // Match dropdown
-        $match_handler = new Get_League_Match_Dropdown_Handler( $league_service, $renderer, $this->league_query_service() );
-        $vm_md        = $match_handler->handle( new Get_League_Match_Dropdown_Query( league_id: 1, season: '2026' ) );
+        $match_handler = new Get_League_Match_Dropdown_Handler( $league_service, $this->league_query_service() );
+        $vm_md        = $adapter->present_match_dropdown( $match_handler->handle( new Get_League_Match_Dropdown_Query( league_id: 1, season: '2026' ) ) );
         $this->assertFalse( $vm_md->is_error() );
         $this->assertSame( 'match-dropdown', $vm_md->template );
         $this->assertSame( 'league', $vm_md->template_type );
 
         // Last 5
-        $last5_handler = new Get_League_Last_5_Handler( $league_service, $renderer, $this->createStub( Fixture_Presenter::class ), $this->league_query_service() );
-        $vm_l5        = $last5_handler->handle( new Get_League_Last_5_Query( league_id: 1, team_id: 5 ) );
+        $last5_handler = new Get_League_Last_5_Handler( $league_service, $this->league_query_service() );
+        $vm_l5        = $adapter->present_last_5( $last5_handler->handle( new Get_League_Last_5_Query( league_id: 1, team_id: 5 ) ) );
         $this->assertFalse( $vm_l5->is_error() );
         $this->assertSame( 'last-5', $vm_l5->template );
         $this->assertSame( 'league', $vm_l5->template_type );
@@ -719,7 +751,11 @@ class League_Shortcode_Handlers_Test extends TestCase {
             return null;
         } );
         $league_repo->method( 'query_matches' )->willReturnCallback( static fn(): array => array_map( static fn( $fixture ) => (object) [ 'id' => $fixture->id ], $league->fixtures() ) );
-        $handler = new Get_League_Last_5_Handler( $league_service, $this->create_renderer(), $fixture_presenter, $this->league_query_service( $league_repo, $league_team_repo, $query_fixtures ) );
+        $handler = new Get_League_Last_5_Handler( $league_service, $this->league_query_service( $league_repo, $league_team_repo, $query_fixtures ) );
+        $adapter = new League_Shortcode_Adapter(
+            fixture_presenter: $fixture_presenter,
+            template_renderer: $this->create_renderer()
+        );
 
         $warnings = [];
         set_error_handler( static function ( int $code, string $message ) use ( &$warnings ): bool {
@@ -727,7 +763,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
             return true;
         } );
         try {
-            $vm = $handler->handle( new Get_League_Last_5_Query( league_id: 1, team_id: 10 ) );
+            $vm = $adapter->present_last_5( $handler->handle( new Get_League_Last_5_Query( league_id: 1, team_id: 10 ) ) );
             $html = ( new Shortcode_View_Presenter( $this->create_renderer() ) )->render( $vm );
         } finally {
             restore_error_handler();
@@ -817,7 +853,11 @@ class League_Shortcode_Handlers_Test extends TestCase {
             return null;
         } );
         $league_repo->method( 'query_matches' )->willReturnCallback( static fn(): array => array_map( static fn( $fixture ) => (object) [ 'id' => $fixture->id ], $league->fixtures() ) );
-        $handler = new Get_League_Last_5_Handler( $league_service, $this->create_renderer(), $fixture_presenter, $this->league_query_service( $league_repo, $league_team_repo, $query_fixtures ) );
+        $handler = new Get_League_Last_5_Handler( $league_service, $this->league_query_service( $league_repo, $league_team_repo, $query_fixtures ) );
+        $adapter = new League_Shortcode_Adapter(
+            fixture_presenter: $fixture_presenter,
+            template_renderer: $this->create_renderer()
+        );
 
         $warnings = [];
         set_error_handler( static function ( int $code, string $message ) use ( &$warnings ): bool {
@@ -827,16 +867,16 @@ class League_Shortcode_Handlers_Test extends TestCase {
 
         try {
             // First call for Team 10 in 2026 season -> 1 call from the handler's team lookup
-            $vm1 = $handler->handle( new Get_League_Last_5_Query( league_id: 1, team_id: 10 ) );
+            $vm1 = $adapter->present_last_5( $handler->handle( new Get_League_Last_5_Query( league_id: 1, team_id: 10 ) ) );
             $this->assertSame( 1, $teams_call_count );
 
             // Second call for Team 20 in same 2026 season -> +0 calls; the handler's own team lookup is served from cache
-            $vm2 = $handler->handle( new Get_League_Last_5_Query( league_id: 1, team_id: 20 ) );
+            $vm2 = $adapter->present_last_5( $handler->handle( new Get_League_Last_5_Query( league_id: 1, team_id: 20 ) ) );
             $this->assertSame( 1, $teams_call_count );
 
             // Change season on league to 2027 -> +1 call: a handler lookup, since the cache is refreshed for the new season
             $league->season = '2027';
-            $vm3 = $handler->handle( new Get_League_Last_5_Query( league_id: 1, team_id: 10 ) );
+            $vm3 = $adapter->present_last_5( $handler->handle( new Get_League_Last_5_Query( league_id: 1, team_id: 10 ) ) );
             $this->assertSame( 2, $teams_call_count );
         } finally {
             restore_error_handler();

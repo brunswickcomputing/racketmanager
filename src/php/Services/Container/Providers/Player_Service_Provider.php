@@ -10,8 +10,6 @@ use Racketmanager\Application\Player\Commands\Create_Player_Handler;
 use Racketmanager\Application\Player\Commands\Update_Player_Handler;
 use Racketmanager\Application\Player\Queries\Get_Player_Details_Handler;
 use Racketmanager\Application\Player\Queries\Search_Players_Handler;
-use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
-use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Player_Error_Repository_Interface;
 use Racketmanager\Repositories\Player_Error_Repository;
@@ -83,22 +81,13 @@ final readonly class Player_Service_Provider implements Service_Provider_Interfa
             $c->get( 'player_details_validator' )
         ) );
 
-        // Presenters
-        $container->set( 'player_presenter', fn( Simple_Container $c ) => new Player_Presenter(
-            $c->get( 'competition_shortcode_presenter' ),
-            $c->get( 'option_gateway' )
-        ) );
-
         // Query Handlers
         $container->set( 'get_players_handler', fn( Simple_Container $c ) => new Get_Players_Handler(
             $c->get( 'player_repository' ),
-            $c->get( 'user_repository' ),
-            $c->get( 'shortcode_template_renderer' ),
-            $c->get( 'player_presenter' )
+            $c->get( 'user_repository' )
         ) );
 
         $container->set( 'get_player_handler', fn( Simple_Container $c ) => new Get_Player_Handler(
-            $c->get( 'player_presenter' ),
             $c->get( 'player_query_service' ),
             $c->get( 'player_stats_service' ),
             $c->get( 'player_service' ),
@@ -118,8 +107,7 @@ final readonly class Player_Service_Provider implements Service_Provider_Interfa
         ) );
         $container->set( 'search_players_handler', fn( Simple_Container $c ) => new Search_Players_Handler(
             player_search_handler: $c->get( 'get_player_search_handler' ),
-            alert_handler: $c->get( 'get_alert_handler' ),
-            view_presenter: $c->get( 'shortcode_view_presenter' )
+            alert_handler: $c->get( 'get_alert_handler' )
         ) );
     }
 }

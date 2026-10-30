@@ -3,11 +3,10 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Competition\Queries;
 
+use Racketmanager\Application\Competition\DTOs\Competition_Teams_Result;
 use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
-use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
-use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
 use function is_numeric;
@@ -19,14 +18,13 @@ use function __;
 class Get_Competition_Teams_Handler {
     public function __construct(
         private readonly Competition_Service $competition_service,
-        private readonly Competition_Shortcode_Presenter $competition_presenter,
         private readonly Competition_Season_Service $competition_season_service
     ) {}
 
-    public function handle( Get_Competition_Teams_Query $query ): Shortcode_View_Model {
+    public function handle( Get_Competition_Teams_Query $query ): Competition_Teams_Result {
         $comp_id = $query->competition_id ?? $query->competition_name;
         if ( null === $comp_id || '' === $comp_id ) {
-            return Shortcode_View_Model::error( __( 'Competition not found', 'racketmanager' ) );
+            return Competition_Teams_Result::error( __( 'Competition not found', 'racketmanager' ) );
         }
 
         if ( is_string( $comp_id ) ) {
@@ -36,11 +34,11 @@ class Get_Competition_Teams_Handler {
         try {
             $competition = $this->competition_service->get_by_id( $comp_id );
         } catch ( Competition_Not_Found_Exception $e ) {
-            return Shortcode_View_Model::error( $e->getMessage() );
+            return Competition_Teams_Result::error( $e->getMessage() );
         }
 
         if ( ! $competition ) {
-            return Shortcode_View_Model::error( __( 'Competition not found', 'racketmanager' ) );
+            return Competition_Teams_Result::error( __( 'Competition not found', 'racketmanager' ) );
         }
 
         $this->competition_season_service->resolve_current_season( $competition, (string) ( $query->season ?? '' ) );
@@ -51,7 +49,7 @@ class Get_Competition_Teams_Handler {
         try {
             $teams = $this->competition_service->get_teams_for_competition( (int) $competition->get_id(), $season_int );
         } catch ( Season_Not_Found_Exception $e ) {
-            return Shortcode_View_Model::error( $e->getMessage() );
+            return Competition_Teams_Result::error( $e->getMessage() );
         }
 
         $competition->teams = $this->competition_service->get_teams_by_query(
@@ -63,18 +61,12 @@ class Get_Competition_Teams_Handler {
             ]
         );
 
-        $template   = '' !== $query->template ? 'teams-' . $query->template : 'teams';
-        $team_links = $this->competition_presenter->present_competition_teams_links( $competition, $teams ?? [] );
+        $template = '' !== $query->template ? 'teams-' . $query->template : 'teams';
 
-        return new Shortcode_View_Model(
-            template: $template,
-            vars: [
-                'competition' => $competition,
-                'teams'       => $teams,
-                'team_links'  => $team_links,
-                'tab'         => 'teams',
-            ],
-            template_type: 'competition'
+        return new Competition_Teams_Result(
+            competition: $competition,
+            teams: $teams ?? [],
+            template: $template
         );
     }
 }

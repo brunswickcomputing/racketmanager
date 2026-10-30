@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Services\Container;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\RacketManager;
 use Racketmanager\Admin\Admin_Screens_Service_Provider;
+use Racketmanager\Presentation\Presentation_Service_Provider;
 use Racketmanager\Application\League\Queries\Get_League_Last_5_Handler;
 use Racketmanager\Domain\Ports\Clock_Interface;
 use Racketmanager\Infrastructure\Time\Wordpress_Clock;
@@ -52,6 +53,7 @@ class Modular_Service_Providers_Test extends TestCase {
             new Player_Service_Provider( $this->app ),
             new Fixture_Service_Provider( $this->app ),
             new Competition_Service_Provider( $this->app ),
+            new Presentation_Service_Provider( $this->app ),
             new Admin_Service_Provider( $this->app ),
             new Admin_Screens_Service_Provider( $this->app ),
         ];
@@ -93,7 +95,7 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has( 'club_service' ) );
         $this->assertTrue( $container->has( 'registration_service' ) );
         $this->assertTrue( $container->has( 'team_service' ) );
-        $this->assertTrue( $container->has( 'club_presenter' ) );
+        $this->assertFalse( $container->has( 'club_presenter' ) );
     }
 
     public function test_player_service_provider_registers_expected_keys(): void {
@@ -107,7 +109,7 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has( 'player_stats_service' ) );
         $this->assertTrue( $container->has( 'player_service' ) );
         $this->assertTrue( $container->has( 'player_validation_service' ) );
-        $this->assertTrue( $container->has( 'player_presenter' ) );
+        $this->assertFalse( $container->has( 'player_presenter' ) );
     }
 
     public function test_fixture_service_provider_registers_expected_keys(): void {
@@ -122,7 +124,7 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has( 'fixture_result_manager' ) );
         $this->assertTrue( $container->has( 'fixture_permission_service' ) );
         $this->assertTrue( $container->has( 'fixture_detail_service' ) );
-        $this->assertTrue( $container->has( 'fixture_presenter' ) );
+        $this->assertFalse( $container->has( 'fixture_presenter' ) );
     }
 
     public function test_competition_service_provider_registers_expected_keys(): void {
@@ -149,16 +151,16 @@ class Modular_Service_Providers_Test extends TestCase {
         $provider  = new Admin_Service_Provider( $this->app );
         $provider->register( $container );
 
-        $this->assertTrue( $container->has( 'admin_flash_message_store' ) );
         $this->assertTrue( $container->has( 'admin_message_service' ) );
         $this->assertTrue( $container->has( 'action_guard' ) );
         $this->assertTrue( $container->has( 'championship_admin_service' ) );
         $this->assertTrue( $container->has( 'draw_action_dispatcher' ) );
-        $this->assertTrue( $container->has( 'tournament_admin_controller' ) );
-        $this->assertTrue( $container->has( 'admin_display' ) );
-        $this->assertTrue( $container->has( \Racketmanager\Admin\Admin_Display::class ) );
-        $this->assertTrue( $container->has( 'admin' ) );
-        $this->assertTrue( $container->has( \Racketmanager\Admin::class ) );
+        $this->assertFalse( $container->has( 'admin_flash_message_store' ) );
+        $this->assertFalse( $container->has( 'tournament_admin_controller' ) );
+        $this->assertFalse( $container->has( 'admin_display' ) );
+        $this->assertFalse( $container->has( \Racketmanager\Admin\Admin_Display::class ) );
+        $this->assertFalse( $container->has( 'admin' ) );
+        $this->assertFalse( $container->has( \Racketmanager\Admin::class ) );
     }
 
     public function test_admin_screens_service_provider_registers_expected_keys(): void {
@@ -181,6 +183,42 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has( 'admin_league_screen' ) );
         $this->assertTrue( $container->has( 'admin_cup_screen' ) );
         $this->assertTrue( $container->has( 'admin_tournament_screen' ) );
+        $this->assertTrue( $container->has( 'admin_flash_message_store' ) );
+        $this->assertTrue( $container->has( 'admin_plan_presenter' ) );
+        $this->assertTrue( $container->has( 'admin_results_match_presenter' ) );
+        $this->assertTrue( $container->has( 'tournament_admin_controller' ) );
+        $this->assertTrue( $container->has( 'admin_display' ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Admin_Display::class ) );
+        $this->assertTrue( $container->has( 'admin' ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin::class ) );
+    }
+
+    public function test_presentation_service_provider_registers_expected_keys(): void {
+        $container = new Simple_Container();
+        $provider  = new Presentation_Service_Provider( $this->app );
+        $provider->register( $container );
+
+        $this->assertTrue( $container->has( 'club_presenter' ) );
+        $this->assertTrue( $container->has( 'player_presenter' ) );
+        $this->assertTrue( $container->has( 'favourite_presenter' ) );
+        $this->assertTrue( $container->has( 'invoice_presenter' ) );
+        $this->assertTrue( $container->has( 'message_presenter' ) );
+        $this->assertTrue( $container->has( 'notification_presenter' ) );
+        $this->assertTrue( $container->has( 'competition_shortcode_presenter' ) );
+        $this->assertTrue( $container->has( 'tournament_presenter' ) );
+        $this->assertTrue( $container->has( 'league_archive_presenter' ) );
+        $this->assertTrue( $container->has( 'league_standings_presenter' ) );
+        $this->assertTrue( $container->has( 'order_of_play_presenter' ) );
+        $this->assertTrue( $container->has( 'team_details_presenter' ) );
+        $this->assertTrue( $container->has( 'club_shortcode_presenter' ) );
+        $this->assertTrue( $container->has( 'team_match_row_presenter' ) );
+        $this->assertTrue( $container->has( 'fixture_presenter' ) );
+        $this->assertTrue( $container->has( 'results_checker_presenter' ) );
+        $this->assertTrue( $container->has( 'matches_list_presenter' ) );
+        $this->assertTrue( $container->has( 'match_shortcode_presenter' ) );
+        $this->assertTrue( $container->has( 'shortcode_template_renderer' ) );
+        $this->assertTrue( $container->has( 'shortcode_view_presenter' ) );
+        $this->assertTrue( $container->has( 'email_shortcode_presenter' ) );
     }
 
     public function test_container_bootstrap_boots_all_providers(): void {
@@ -192,12 +230,70 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has( 'fixture_repository' ) );
         $this->assertTrue( $container->has( 'league_repository' ) );
         $this->assertTrue( $container->has( 'tournament_admin_controller' ) );
+        $this->assertTrue( $container->has( 'club_presenter' ) );
+        $this->assertTrue( $container->has( 'player_presenter' ) );
+        $this->assertTrue( $container->has( 'fixture_presenter' ) );
+        $this->assertTrue( $container->has( 'shortcode_template_renderer' ) );
+        $this->assertTrue( $container->has( 'admin_flash_message_store' ) );
         $this->assertTrue( $container->has( 'admin_club_screen' ) );
         $this->assertTrue( $container->has( 'admin_competition_screen' ) );
         $this->assertInstanceOf(
             \Racketmanager\Services\Competition\Promotion_Relegation_Service::class,
             $container->get( 'promotion_relegation_service' )
         );
+    }
+
+    public function test_booted_container_resolves_moved_presentation_and_admin_keys(): void {
+        $container = Container_Bootstrap::boot( $this->app );
+
+        $presentation_keys = [
+            'club_presenter'                  => \Racketmanager\Presentation\Presenters\Club_Presenter::class,
+            'player_presenter'                => \Racketmanager\Presentation\Presenters\Player_Presenter::class,
+            'favourite_presenter'             => \Racketmanager\Presentation\Presenters\Favourite_Presenter::class,
+            'invoice_presenter'               => \Racketmanager\Presentation\Presenters\Invoice_Presenter::class,
+            'message_presenter'               => \Racketmanager\Presentation\Presenters\Message_Presenter::class,
+            'notification_presenter'          => \Racketmanager\Presentation\Presenters\Notification_Presenter::class,
+            'competition_shortcode_presenter' => \Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter::class,
+            'tournament_presenter'            => \Racketmanager\Presentation\Presenters\Tournament_Presenter::class,
+            'league_archive_presenter'        => \Racketmanager\Presentation\Presenters\League_Archive_Presenter::class,
+            'league_standings_presenter'      => \Racketmanager\Presentation\Presenters\League_Standings_Presenter::class,
+            'order_of_play_presenter'         => \Racketmanager\Presentation\Presenters\Order_Of_Play_Presenter::class,
+            'team_details_presenter'          => \Racketmanager\Presentation\Presenters\Team_Details_Presenter::class,
+            'club_shortcode_presenter'        => \Racketmanager\Presentation\Presenters\Club_Shortcode_Presenter::class,
+            'team_match_row_presenter'        => \Racketmanager\Presentation\Presenters\Team_Match_Row_Presenter::class,
+            'fixture_presenter'               => \Racketmanager\Presentation\Presenters\Fixture_Presenter::class,
+            'results_checker_presenter'       => \Racketmanager\Presentation\Presenters\Results_Checker_Presenter::class,
+            'matches_list_presenter'          => \Racketmanager\Presentation\Presenters\Matches_List_Presenter::class,
+            'match_shortcode_presenter'       => \Racketmanager\Presentation\Presenters\Match_Shortcode_Presenter::class,
+            'shortcode_template_renderer'     => \Racketmanager\Services\View\Shortcode_Template_Renderer::class,
+            'shortcode_view_presenter'        => \Racketmanager\Presentation\Presenters\Shortcode_View_Presenter::class,
+            'email_shortcode_presenter'       => \Racketmanager\Presentation\Presenters\Email_Shortcode_Presenter::class,
+        ];
+
+        foreach ( $presentation_keys as $key => $class ) {
+            $this->assertTrue( $container->has( $key ), $key );
+            $this->assertInstanceOf( $class, $container->get( $key ), $key );
+        }
+
+        $admin_keys = [
+            'admin_flash_message_store'         => \Racketmanager\Admin\Flash\Admin_Flash_Message_Store::class,
+            'admin_date_presenter'              => \Racketmanager\Admin\Presenters\Admin_Date_Presenter::class,
+            'admin_entry_link_presenter'        => \Racketmanager\Admin\Presenters\Admin_Entry_Link_Presenter::class,
+            'admin_league_matches_presenter'    => \Racketmanager\Admin\Presenters\Admin_League_Matches_Presenter::class,
+            'admin_championship_finals_presenter' => \Racketmanager\Admin\Presenters\Admin_Championship_Finals_Presenter::class,
+            'admin_results_match_presenter'     => \Racketmanager\Admin\Presenters\Admin_Results_Match_Presenter::class,
+            'admin_competition_page_presenter'  => \Racketmanager\Admin\Presenters\Admin_Competition_Page_Presenter::class,
+            'admin_plan_presenter'              => \Racketmanager\Admin\Presenters\Admin_Plan_Presenter::class,
+            'admin_league_schedule_presenter'   => \Racketmanager\Admin\Presenters\Admin_League_Schedule_Presenter::class,
+            'tournament_admin_controller'       => \Racketmanager\Admin\Controllers\Tournament_Admin_Controller::class,
+            'admin_display'                     => \Racketmanager\Admin\Admin_Display::class,
+            'admin'                             => \Racketmanager\Admin::class,
+        ];
+
+        foreach ( $admin_keys as $key => $class ) {
+            $this->assertTrue( $container->has( $key ), $key );
+            $this->assertInstanceOf( $class, $container->get( $key ), $key );
+        }
     }
 
     public function test_competition_and_tournament_commands_are_wired_into_production_adapters(): void {
@@ -268,12 +364,12 @@ class Modular_Service_Providers_Test extends TestCase {
 
     public function test_last_5_handler_is_wired_with_fixture_presenter(): void {
         $container = Container_Bootstrap::boot( $this->app );
-        $handler = $container->get( 'get_league_last_5_handler' );
+        $adapter = $container->get( 'league_shortcode_adapter' );
 
-        $this->assertInstanceOf( Get_League_Last_5_Handler::class, $handler );
+        $this->assertInstanceOf( \Racketmanager\Infrastructure\Wordpress\Shortcodes\League_Shortcode_Adapter::class, $adapter );
         $this->assertSame(
             $container->get( 'fixture_presenter' ),
-            ( new \ReflectionProperty( Get_League_Last_5_Handler::class, 'fixture_presenter' ) )->getValue( $handler )
+            ( new \ReflectionProperty( \Racketmanager\Infrastructure\Wordpress\Shortcodes\League_Shortcode_Adapter::class, 'fixture_presenter' ) )->getValue( $adapter )
         );
     }
 

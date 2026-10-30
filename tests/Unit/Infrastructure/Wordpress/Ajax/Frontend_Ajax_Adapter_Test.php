@@ -8,6 +8,8 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\General\DTOs\Alert_Result;
+use Racketmanager\Application\General\DTOs\Player_Search_Result;
 use Racketmanager\Application\General\Queries\Get_Alert_Handler;
 use Racketmanager\Application\General\Queries\Get_Alert_Query;
 use Racketmanager\Application\General\Queries\Get_Player_Search_Handler;
@@ -124,7 +126,12 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         $GLOBALS['racketmanager'] = $plugin;
     }
 
-    private function make_adapter( ?Get_Player_Details_Handler $get_player_details_handler = null ): Frontend_Ajax_Adapter {
+    private function make_adapter(
+        ?Get_Player_Details_Handler $get_player_details_handler = null,
+        ?Shortcode_View_Presenter $view_presenter = null,
+        ?Search_Players_Handler $search_players_handler = null,
+        bool $include_view_presenter = true
+    ): Frontend_Ajax_Adapter {
         $get_player_details_handler ??= new Get_Player_Details_Handler(
             $this->createStub( Player_Repository_Interface::class )
         );
@@ -139,25 +146,26 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
             static fn( $content, $status = null ) => new Response( $content, $status ?? 200 )
         );
 
-        $player_search_handler = $this->createStub( Get_Player_Search_Handler::class );
-        $alert_handler         = $this->createStub( Get_Alert_Handler::class );
-        $view_presenter        = $this->createStub( Shortcode_View_Presenter::class );
-        $view_presenter->method( 'render' )->willReturnCallback( function ( Shortcode_View_Model $vm ) {
-            if ( isset( $vm->vars['msg'] ) ) {
-                return '<div class="alert alert-' . ( $vm->vars['class'] ?? 'danger' ) . '">' . $vm->vars['msg'] . '</div>';
-            }
-            return '<div>Player search for: ' . ( $vm->vars['players'] ?? '' ) . '</div>';
-        } );
-        $player_search_handler->method( 'handle' )->willReturnCallback( function ( Get_Player_Search_Query $q ) {
-            return Shortcode_View_Model::for_template( 'players-list', [ 'players' => $q->search ] );
-        } );
-        $alert_handler->method( 'handle' )->willReturnCallback( function ( Get_Alert_Query $q ) {
-            return Shortcode_View_Model::for_template( 'alert', [ 'msg' => $q->msg, 'class' => $q->type ] );
-        } );
-        $search_players_handler = new Search_Players_Handler(
+        if ( null === $view_presenter ) {
+            $player_search_handler = $this->createStub( Get_Player_Search_Handler::class );
+            $alert_handler         = $this->createStub( Get_Alert_Handler::class );
+            $view_presenter        = $this->createStub( Shortcode_View_Presenter::class );
+            $view_presenter->method( 'render' )->willReturnCallback( function ( Shortcode_View_Model $vm ) {
+                if ( isset( $vm->vars['msg'] ) ) {
+                    return '<div class="alert alert-' . ( $vm->vars['class'] ?? 'danger' ) . '">' . $vm->vars['msg'] . '</div>';
+                }
+                return '<div>Player search for: ' . ( is_array( $vm->vars['players'] ?? null ) ? implode( ', ', $vm->vars['players'] ) : ( $vm->vars['players'] ?? '' ) ) . '</div>';
+            } );
+            $player_search_handler->method( 'handle' )->willReturnCallback( function ( Get_Player_Search_Query $q ) {
+                return new Player_Search_Result( players: [ $q->search ], search: $q->search );
+            } );
+            $alert_handler->method( 'handle' )->willReturnCallback( function ( Get_Alert_Query $q ) {
+                return new Alert_Result( msg: $q->msg, type: $q->type );
+            } );
+        }
+        $search_players_handler ??= new Search_Players_Handler(
             player_search_handler: $player_search_handler,
-            alert_handler: $alert_handler,
-            view_presenter: $view_presenter
+            alert_handler: $alert_handler
         );
 
         return new Frontend_Ajax_Adapter(
@@ -173,7 +181,8 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
             $this->fixture_repository,
             $this->rubber_repository,
             search_players_handler: $search_players_handler,
-            get_player_details_handler: $get_player_details_handler
+            get_player_details_handler: $get_player_details_handler,
+            view_presenter: $include_view_presenter ? $view_presenter : null
         );
     }
 
@@ -944,12 +953,22 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         $search_handler->expects( $this->once() )
             ->method( 'handle' )
             ->with( $this->callback( fn( Search_Players_Query $q ) => 'Federer' === $q->search_string ) )
-            ->willReturn( '<div class="players">Federer Results</div>' );
+            ->willReturn( new Player_Search_Result( players: [ 'Federer' ], search: 'Federer' ) );
 
         $response_factory = $this->createMock( Json_Response_Factory_Interface::class );
         $response_factory->method( 'create_raw_response' )->willReturnCallback(
             static fn( $content, $status = null ) => new Response( $content, $status ?? 200 )
         );
+
+        $view_presenter = $this->createMock( Shortcode_View_Presenter::class );
+        $view_presenter->expects( $this->once() )
+            ->method( 'render' )
+            ->with( $this->callback( function ( Shortcode_View_Model $vm ) {
+                return $vm->template === 'players-list'
+                    && $vm->vars === [ 'players' => [ 'Federer' ] ]
+                    && false === $vm->template_type;
+            } ) )
+            ->willReturn( '<div class="players">Federer Results</div>' );
 
         $adapter = new Frontend_Ajax_Adapter(
             security_service: $this->security_service,
@@ -964,12 +983,47 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
             fixture_repository: $this->fixture_repository,
             rubber_repository: $this->rubber_repository,
             search_players_handler: $search_handler,
-            get_player_details_handler: $this->createStub( Get_Player_Details_Handler::class )
+            get_player_details_handler: $this->createStub( Get_Player_Details_Handler::class ),
+            view_presenter: $view_presenter
         );
 
         $response = $adapter->search_players( $request );
         $this->assertSame( 200, $response->get_status_code() );
         $this->assertSame( '<div class="players">Federer Results</div>', $response->get_content() );
+    }
+
+    public function test_search_players_maps_alert_result_to_view_model(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+        $search_handler = $this->createMock( Search_Players_Handler::class );
+        $search_handler->expects( $this->once() )
+            ->method( 'handle' )
+            ->willReturn( new Alert_Result( msg: 'No players found', type: 'warning', template: 'custom' ) );
+        $view_presenter = $this->createMock( Shortcode_View_Presenter::class );
+        $view_presenter->expects( $this->once() )
+            ->method( 'render' )
+            ->with( $this->callback( function ( Shortcode_View_Model $vm ) {
+                return $vm->template === 'alert-custom'
+                    && $vm->vars === [ 'msg' => 'No players found', 'class' => 'warning' ]
+                    && false === $vm->template_type;
+            } ) )
+            ->willReturn( '<div class="alert alert-warning">No players found</div>' );
+
+        $adapter  = $this->make_adapter( view_presenter: $view_presenter, search_players_handler: $search_handler );
+        $response = $adapter->search_players( [ 'security' => 'valid', 'search_string' => 'unknown' ] );
+
+        $this->assertSame( 200, $response->get_status_code() );
+        $this->assertSame( '<div class="alert alert-warning">No players found</div>', $response->get_content() );
+    }
+
+    public function test_search_players_fails_visibly_without_presenter(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+        $search_handler = $this->createStub( Search_Players_Handler::class );
+        $search_handler->method( 'handle' )->willReturn( new Player_Search_Result( players: [ 'Federer' ] ) );
+        $adapter = $this->make_adapter( search_players_handler: $search_handler, include_view_presenter: false );
+
+        $this->expectException( \RuntimeException::class );
+        $this->expectExceptionMessage( 'Search presenter is required' );
+        $adapter->search_players( [ 'security' => 'valid', 'search_string' => 'Federer' ] );
     }
 
     public function test_get_player_details_uses_injected_handler(): void {

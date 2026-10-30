@@ -10,6 +10,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Repositories;
 
+use Racketmanager\Application\Export\DTO\Export_Criteria;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Fixture\Fixture_Time_Parser;
@@ -18,7 +19,6 @@ use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Fixture\Fixture_Relation_Loader;
-use Racketmanager\Services\Export\DTO\Export_Criteria;
 use Racketmanager\Util\Util;
 use RuntimeException;
 use wpdb;

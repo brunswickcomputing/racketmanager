@@ -59,9 +59,9 @@ class Message_Shortcode_Handlers_Test extends TestCase {
             user_id: null
         );
 
-        $vm = $handler->handle( $query );
-        $this->assertTrue( $vm->is_error() );
-        $this->assertStringContainsString( 'You must be logged in to view a message', $vm->error_message );
+        $result = $handler->handle( $query );
+        $this->assertTrue( $result->is_error() );
+        $this->assertStringContainsString( 'You must be logged in to view a message', $result->error_message );
     }
 
     public function test_messages_handler_when_logged_in(): void {
@@ -93,13 +93,12 @@ class Message_Shortcode_Handlers_Test extends TestCase {
             user_id: 101
         );
 
-        $vm = $handler->handle( $query );
-        $this->assertFalse( $vm->is_error() );
-        $this->assertSame( 'messages-custom', $vm->template );
-        $this->assertSame( 'account', $vm->template_type );
-        $this->assertInstanceOf( \Racketmanager\Presentation\View_Models\Messages_List_View_Model::class, $vm->vars['messages'] );
-        $this->assertSame( 3, $vm->vars['messages']->total );
-        $this->assertSame( 2, $vm->vars['messages']->unread );
+        $result = $handler->handle( $query );
+        $this->assertFalse( $result->is_error() );
+        $this->assertSame( 'custom', $result->template );
+        $this->assertSame( 3, $result->messages['total'] );
+        $this->assertSame( 2, $result->messages['unread'] );
+        $this->assertSame( $details, $result->messages['detail'] );
         $this->assertSame( [
             [ 'count' => true ],
             [],
@@ -116,9 +115,9 @@ class Message_Shortcode_Handlers_Test extends TestCase {
             user_id: null
         );
 
-        $vm = $handler->handle( $query );
-        $this->assertTrue( $vm->is_error() );
-        $this->assertStringContainsString( 'You must be logged in to view a message', $vm->error_message );
+        $result = $handler->handle( $query );
+        $this->assertTrue( $result->is_error() );
+        $this->assertStringContainsString( 'You must be logged in to view a message', $result->error_message );
     }
 
     public function test_message_handler_missing_id(): void {
@@ -130,9 +129,9 @@ class Message_Shortcode_Handlers_Test extends TestCase {
             user_id: 101
         );
 
-        $vm = $handler->handle( $query );
-        $this->assertTrue( $vm->is_error() );
-        $this->assertStringContainsString( 'Message not found', $vm->error_message );
+        $result = $handler->handle( $query );
+        $this->assertTrue( $result->is_error() );
+        $this->assertStringContainsString( 'Message not found', $result->error_message );
     }
 
     public function test_message_handler_not_found(): void {
@@ -149,9 +148,9 @@ class Message_Shortcode_Handlers_Test extends TestCase {
             user_id: 101
         );
 
-        $vm = $handler->handle( $query );
-        $this->assertTrue( $vm->is_error() );
-        $this->assertStringContainsString( 'Message not found', $vm->error_message );
+        $result = $handler->handle( $query );
+        $this->assertTrue( $result->is_error() );
+        $this->assertStringContainsString( 'Message not found', $result->error_message );
     }
 
     public function test_message_handler_unauthorized(): void {
@@ -176,9 +175,9 @@ class Message_Shortcode_Handlers_Test extends TestCase {
             user_id: 101
         );
 
-        $vm = $handler->handle( $query );
-        $this->assertTrue( $vm->is_error() );
-        $this->assertStringContainsString( 'You are not authorised to view this message', $vm->error_message );
+        $result = $handler->handle( $query );
+        $this->assertTrue( $result->is_error() );
+        $this->assertStringContainsString( 'You are not authorised to view this message', $result->error_message );
     }
 
     public function test_message_handler_success(): void {
@@ -210,12 +209,10 @@ class Message_Shortcode_Handlers_Test extends TestCase {
             user_id: 101
         );
 
-        $vm = $handler->handle( $query );
-        $this->assertFalse( $vm->is_error() );
-        $this->assertSame( 'message-custom', $vm->template );
-        $this->assertSame( 'account', $vm->template_type );
-        $this->assertInstanceOf( \Racketmanager\Presentation\View_Models\Message_View_Model::class, $vm->vars['message_dtl'] );
-        $this->assertSame( 42, $vm->vars['message_dtl']->id );
+        $result = $handler->handle( $query );
+        $this->assertFalse( $result->is_error() );
+        $this->assertSame( 'custom', $result->template );
+        $this->assertSame( $message, $result->message );
     }
 
     public function test_message_handler_renders_real_template_with_message_details(): void {
@@ -232,20 +229,25 @@ class Message_Shortcode_Handlers_Test extends TestCase {
         $message_repository = $this->createStub( Message_Repository_Interface::class );
         $message_repository->method( 'find' )->willReturn( $message );
 
-        $vm = ( new Get_Message_Handler( $message_repository ) )->handle(
-            new Get_Message_Query(
-                message_id: 42,
-                is_logged_in: true,
-                user_id: 101
-            )
-        );
-        $presenter = new Shortcode_View_Presenter(
-            new Shortcode_Template_Renderer(
-                new Php_View_Renderer( dirname( __DIR__, 5 ) . '/templates/' )
-            )
+        $handler = new Get_Message_Handler( $message_repository );
+        $adapter = new Message_Shortcode_Adapter(
+            $this->racketmanager,
+            new Shortcode_View_Presenter(
+                new Shortcode_Template_Renderer(
+                    new Php_View_Renderer( dirname( __DIR__, 5 ) . '/templates/' )
+                )
+            ),
+            $this->createStub( Get_Messages_Handler::class ),
+            $handler,
+            security_service: new class implements \Racketmanager\Infrastructure\Security\Security_Service_Interface {
+                public function is_user_logged_in(): bool { return true; }
+                public function get_current_user_id(): int { return 101; }
+                public function verify_nonce( string $nonce, string $nonce_action ): bool { return true; }
+                public function current_user_can( string $capability ): bool { return true; }
+            }
         );
 
-        $output = $presenter->render( $vm );
+        $output = $adapter->show_message( [ 'id' => 42 ] );
 
         $this->assertStringContainsString( 'Court booking update', $output );
         $this->assertStringContainsString( 'data-msg-id="42"', $output );
@@ -277,11 +279,22 @@ class Message_Shortcode_Handlers_Test extends TestCase {
                 ];
             }
         );
-        $vm        = ( new Get_Messages_Handler( $user_repository, $message_repository ) )->handle( new Get_Messages_Query( is_logged_in: true, user_id: 101 ) );
-        $presenter = new Shortcode_View_Presenter(
-            new Shortcode_Template_Renderer( new Php_View_Renderer( dirname( __DIR__, 5 ) . '/templates/' ) )
+        $handler = new Get_Messages_Handler( $user_repository, $message_repository );
+        $adapter = new Message_Shortcode_Adapter(
+            $this->racketmanager,
+            new Shortcode_View_Presenter(
+                new Shortcode_Template_Renderer( new Php_View_Renderer( dirname( __DIR__, 5 ) . '/templates/' ) )
+            ),
+            $handler,
+            $this->createStub( Get_Message_Handler::class ),
+            security_service: new class implements \Racketmanager\Infrastructure\Security\Security_Service_Interface {
+                public function is_user_logged_in(): bool { return true; }
+                public function get_current_user_id(): int { return 101; }
+                public function verify_nonce( string $nonce, string $nonce_action ): bool { return true; }
+                public function current_user_can( string $capability ): bool { return true; }
+            }
         );
-        $output = $presenter->render( $vm );
+        $output = $adapter->show_messages( [] );
 
         $this->assertMatchesRegularExpression( '/id="message-summary-1" class="message-summary unread"/', $output );
         $this->assertMatchesRegularExpression( '/id="message-summary-2" class="message-summary read"/', $output );
@@ -301,15 +314,25 @@ class Message_Shortcode_Handlers_Test extends TestCase {
         $message_repository = $this->createStub( Message_Repository_Interface::class );
         $message_repository->method( 'find_by_user' )->willReturn( 0 );
 
-        $vm = ( new Get_Messages_Handler( $user_repository, $message_repository ) )->handle( new Get_Messages_Query( is_logged_in: true, user_id: 101 ) );
-        $this->assertInstanceOf( \Racketmanager\Presentation\View_Models\Messages_List_View_Model::class, $vm->vars['messages'] );
-        $this->assertSame( 0, $vm->vars['messages']->total );
-        $this->assertSame( [], $vm->vars['messages']->detail );
+        $handler = new Get_Messages_Handler( $user_repository, $message_repository );
+        $result  = $handler->handle( new Get_Messages_Query( is_logged_in: true, user_id: 101 ) );
+        $this->assertSame( [], $result->messages );
 
-        $presenter = new Shortcode_View_Presenter(
-            new Shortcode_Template_Renderer( new Php_View_Renderer( dirname( __DIR__, 5 ) . '/templates/' ) )
+        $adapter = new Message_Shortcode_Adapter(
+            $this->racketmanager,
+            new Shortcode_View_Presenter(
+                new Shortcode_Template_Renderer( new Php_View_Renderer( dirname( __DIR__, 5 ) . '/templates/' ) )
+            ),
+            $handler,
+            $this->createStub( Get_Message_Handler::class ),
+            security_service: new class implements \Racketmanager\Infrastructure\Security\Security_Service_Interface {
+                public function is_user_logged_in(): bool { return true; }
+                public function get_current_user_id(): int { return 101; }
+                public function verify_nonce( string $nonce, string $nonce_action ): bool { return true; }
+                public function current_user_can( string $capability ): bool { return true; }
+            }
         );
-        $output = $presenter->render( $vm );
+        $output = $adapter->show_messages( [] );
         $this->assertStringContainsString( 'My messages', $output );
         $this->assertStringNotContainsString( 'message-summary', $output );
     }

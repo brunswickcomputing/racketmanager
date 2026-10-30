@@ -3,42 +3,33 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Tournament\Queries;
 
+use Racketmanager\Application\Tournament\DTOs\Tournament_Winners_Result;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Presentation\Presenters\Tournament_Presenter;
-use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Tournament_Service;
 use function __;
 
 class Get_Tournament_Winners_Handler {
     public function __construct(
-        private readonly Tournament_Service $tournament_service,
-        private readonly ?Tournament_Presenter $tournament_presenter = null
+        private readonly Tournament_Service $tournament_service
     ) {}
 
-    public function handle( Get_Tournament_Winners_Query $query ): Shortcode_View_Model {
+    public function handle( Get_Tournament_Winners_Query $query ): Tournament_Winners_Result {
         if ( ! $query->tournament_id ) {
-            return Shortcode_View_Model::for_error( __( 'Tournament not found', 'racketmanager' ) );
+            return Tournament_Winners_Result::error( __( 'Tournament not found', 'racketmanager' ) );
         }
 
         try {
             $tournament = $this->tournament_service->get_tournament( $query->tournament_id );
             $winners    = $this->tournament_service->get_winners_for_tournament( $tournament );
         } catch ( Tournament_Not_Found_Exception $e ) {
-            return Shortcode_View_Model::for_error( $e->getMessage() );
+            return Tournament_Winners_Result::error( $e->getMessage() );
         }
 
-        $presenter = $this->tournament_presenter ?? new Tournament_Presenter();
-        $winners   = $presenter->present_tournament_winners( $winners, $tournament );
-
-        $filename = ( '' !== $query->template ) ? 'winners-' . $query->template : 'winners';
-
-        return Shortcode_View_Model::for_template(
-            $filename,
-            [
-                'tournament' => $tournament,
-                'winners'    => $winners,
-            ],
-            'tournament'
+        return new Tournament_Winners_Result(
+            tournament: $tournament,
+            winners: $winners,
+            tab: 'winners',
+            template: $query->template
         );
     }
 }

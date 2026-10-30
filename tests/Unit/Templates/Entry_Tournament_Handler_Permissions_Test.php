@@ -18,8 +18,10 @@ use Racketmanager\Domain\Competition\Season_Collection;
 use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Domain\Tournament\Tournament_Entry;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\Competition_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
+use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
@@ -84,6 +86,19 @@ final class Entry_Tournament_Handler_Permissions_Test extends TestCase {
         ];
     }
 
+    private function present_entry( Get_Competition_Entry_Handler $handler, Get_Competition_Entry_Query $query ): Shortcode_View_Model {
+        $result = $handler->handle( $query );
+        if ( $result->is_error() ) {
+            return Shortcode_View_Model::error( $result->error_message ?? '' );
+        }
+        $adapter = new Competition_Shortcode_Adapter(
+            competition_shortcode_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
+            tournament_presenter: new Tournament_Presenter( 'd/m/Y' )
+        );
+
+        return $adapter->present_entry( $result );
+    }
+
     #[DataProvider( 'role_and_phase_provider' )]
     public function test_handler_supplies_permissions_and_template_renders_them(
         int $user_id,
@@ -95,7 +110,7 @@ final class Entry_Tournament_Handler_Permissions_Test extends TestCase {
         ?string $expected_alert
     ): void {
         $handler = $this->create_handler( $open );
-        $vm      = $handler->handle( new Get_Competition_Entry_Query( tournament_name: 'Summer Open', user_id: $user_id, is_admin: $is_admin ) );
+        $vm      = $this->present_entry( $handler, new Get_Competition_Entry_Query( tournament_name: 'Summer Open', user_id: $user_id, is_admin: $is_admin ) );
 
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( $expected_changes, $vm->vars['changes_allowed'] );
@@ -124,7 +139,7 @@ final class Entry_Tournament_Handler_Permissions_Test extends TestCase {
 
     public function test_template_defaults_to_read_only_when_producer_supplies_no_permissions(): void {
         $handler = $this->create_handler( true );
-        $vm      = $handler->handle( new Get_Competition_Entry_Query( tournament_name: 'Summer Open', user_id: self::PLAYER_ID ) );
+        $vm      = $this->present_entry( $handler, new Get_Competition_Entry_Query( tournament_name: 'Summer Open', user_id: self::PLAYER_ID ) );
         $vars    = $vm->vars;
         unset( $vars['changes_allowed'], $vars['withdrawal_allowed'], $vars['can_manage'], $vars['has_permission'], $vars['is_own_player'] );
 
@@ -228,8 +243,6 @@ final class Entry_Tournament_Handler_Permissions_Test extends TestCase {
             registration_service: $registration_service,
             competition_entry_service: $comp_entry_service,
             finance_service: $this->createStub( Finance_Service::class ),
-            competition_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
-            tournament_presenter: new Tournament_Presenter( 'd/m/Y' ),
             event_query_service: $this->event_query_service()
         );
     }

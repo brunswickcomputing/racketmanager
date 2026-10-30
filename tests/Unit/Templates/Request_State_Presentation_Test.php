@@ -9,10 +9,12 @@ use Racketmanager\Application\League\Queries\Get_League_Matches_Handler;
 use Racketmanager\Application\League\Queries\Get_League_Matches_Query;
 use Racketmanager\Application\League\Queries\Get_League_Teams_Handler;
 use Racketmanager\Application\League\Queries\Get_League_Teams_Query;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\League_Shortcode_Adapter;
 use Racketmanager\Application\Login\Queries\Get_Login_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Login_Form_Query;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Query;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
@@ -101,8 +103,9 @@ class Request_State_Presentation_Test extends TestCase {
         $service = $this->createStub( Tournament_Service::class );
         $service->method( 'get_tournament_with_details' )->willReturn( new Tournament_Details_DTO( $tournament, $competition, $this->createStub( Club::class ) ) );
         $service->method( 'get_tournaments' )->willReturn( [ $tournament ] );
-        $handler = new Get_Tournament_Handler( $service, new Tournament_Presenter() );
-        $result = $handler->handle( new Get_Tournament_Query( tournament: 'Summer Open', post_id: 73 ) );
+        $handler = new Get_Tournament_Handler( $service );
+        $adapter = new Tournament_Shortcode_Adapter( tournament_presenter: new Tournament_Presenter() );
+        $result = $adapter->present_tournament( $handler->handle( new Get_Tournament_Query( tournament: 'Summer Open', post_id: 73 ) ) );
 
         self::assertSame( 'https://example.test/page/73', $result->vars['form_action'] );
         // A theme can replace the prepared target without the partial rebuilding it.
@@ -123,9 +126,13 @@ class Request_State_Presentation_Test extends TestCase {
         $league_query->method( 'get_league_teams' )->willReturn( [] );
         $service = $this->createStub( League_Service::class );
         $service->method( 'get_league' )->willReturn( $league );
-        $handler = new Get_League_Matches_Handler( $service, $this->renderer, new Tournament_Presenter(), $league_query );
+        $handler = new Get_League_Matches_Handler( $service, $league_query );
+        $adapter = new League_Shortcode_Adapter(
+            tournament_presenter: new Tournament_Presenter(),
+            template_renderer: $this->renderer
+        );
         $query = Get_League_Matches_Query::from_atts( [ 'league_id' => 1, 'template' => '', 'season' => '2026', 'post_id' => 74 ] );
-        $result = $handler->handle( $query );
+        $result = $adapter->present_matches( $handler->handle( $query ) );
 
         self::assertSame( 74, $result->vars['post_id'] );
         self::assertSame( 'https://example.test/page/74', $result->vars['form_action'] );
@@ -167,11 +174,15 @@ class Request_State_Presentation_Test extends TestCase {
         $matches = $this->createStub( Tournament_Presenter::class );
         $matches->method( 'present_match_list' )->willReturn( [ new Team_Match_Row_View_Model( home_name: 'Westcliff 1', away_name: 'Leigh 1' ) ] );
         $handler = new Get_League_Teams_Handler(
-            $leagues, $teams, $stats, $matches,
-            new Team_Details_Presenter( $this->createStub( Option_Gateway_Interface::class ), new Settings_Service( [] ) ),
-            $league_query
+            $leagues, $teams, $stats, $league_query
         );
-        $result = $handler->handle( new Get_League_Teams_Query( league_id: 1, team_id: '12' ) );
+        $team_presenter = new Team_Details_Presenter( $this->createStub( Option_Gateway_Interface::class ), new Settings_Service( [] ) );
+        $adapter = new League_Shortcode_Adapter(
+            tournament_presenter: $matches,
+            team_details_presenter: $team_presenter,
+            template_renderer: $this->renderer
+        );
+        $result = $adapter->present_teams( $handler->handle( new Get_League_Teams_Query( league_id: 1, team_id: '12' ) ) );
         $vm = $result->vars['vm'];
         self::assertSame( $can_edit, $vm->user_can_edit_team );
         self::assertSame( 'https://example.test/wp-json/racketmanager/v1/export/calendar?league_id=1&team_id=12&season=2026', $vm->calendar_url );

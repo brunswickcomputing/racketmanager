@@ -94,6 +94,12 @@ $aliases = [
     \Racketmanager\Application\Payment\Ports\Payment_Intent_Result::class   => 'Racketmanager\Gateways\Payment\Payment_Intent_Result',
     \Racketmanager\Application\Export\Ports\Data_Exporter_Interface::class  => 'Racketmanager\Services\Contracts\Data_Exporter_Interface',
 
+    // Export DTOs (@deprecated 10.1.0, sunset in v11.0.0)
+    \Racketmanager\Application\Export\DTO\Export_Criteria::class            => 'Racketmanager\Services\Export\DTO\Export_Criteria',
+
+    // Presentation View Models & Renderers (@deprecated 10.1.0, sunset in v11.0.0)
+    \Racketmanager\Presentation\View\Shortcode_Template_Renderer::class    => 'Racketmanager\Services\View\Shortcode_Template_Renderer',
+
 ];
 
 foreach ( $aliases as $target => $alias ) {

@@ -34,6 +34,7 @@ use Racketmanager\Domain\Scoring\Set_Score;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\League_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Fixture_Presentation_Adapter;
@@ -292,8 +293,12 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $league_service->method( 'get_league' )->willReturn( $league );
         $presenter = new Tournament_Presenter( 'd/m/Y', $this->detail_service_expecting( $fixture, $detail, true ), team_match_row_presenter: $this->create_team_match_row_presenter() );
 
-        $handler = new Get_League_Matches_Handler( $league_service, $this->renderer(), $presenter, $this->league_query_service_with_matches( [ $fixture ] ) );
-        $vm      = $handler->handle( new Get_League_Matches_Query( league_id: 3, template: '' ) );
+        $handler = new Get_League_Matches_Handler( $league_service, $this->league_query_service_with_matches( [ $fixture ] ) );
+        $adapter = new League_Shortcode_Adapter(
+            tournament_presenter: $presenter,
+            template_renderer: $this->renderer()
+        );
+        $vm      = $adapter->present_matches( $handler->handle( new Get_League_Matches_Query( league_id: 3, template: '' ) ) );
 
         $this->assertSame( 'matches', $vm->template );
         $this->assertContainsOnlyInstancesOf( Tournament_Match_Card_View_Model::class, $vm->vars['matches'] );
@@ -314,9 +319,14 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
 
         $league_service = $this->createStub( League_Service::class );
         $league_service->method( 'get_league' )->willReturn( $league );
-        $handler = new Get_League_Matches_Handler( $league_service, $this->renderer(), new Tournament_Presenter( 'd/m/Y', $service, team_match_row_presenter: $this->create_team_match_row_presenter() ), $this->league_query_service_with_matches( [ $fixture ] ) );
+        $presenter = new Tournament_Presenter( 'd/m/Y', $service, team_match_row_presenter: $this->create_team_match_row_presenter() );
+        $handler   = new Get_League_Matches_Handler( $league_service, $this->league_query_service_with_matches( [ $fixture ] ) );
+        $adapter   = new League_Shortcode_Adapter(
+            tournament_presenter: $presenter,
+            template_renderer: $this->renderer()
+        );
 
-        $html = ( new Shortcode_View_Presenter( $this->renderer() ) )->render( $handler->handle( new Get_League_Matches_Query( league_id: 3, template: '' ) ) );
+        $html = ( new Shortcode_View_Presenter( $this->renderer() ) )->render( $adapter->present_matches( $handler->handle( new Get_League_Matches_Query( league_id: 3, template: '' ) ) ) );
 
         $this->assertStringContainsString( 'Match details unavailable', $html );
         $this->assertStringNotContainsString( 'player-row', $html );
@@ -345,8 +355,13 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
 
         $team_presenter = new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() );
         $presenter = new Tournament_Presenter( 'd/m/Y', $this->detail_service_expecting( $fixture, $detail, true ), team_match_row_presenter: $this->create_team_match_row_presenter() );
-        $handler   = new Get_League_Teams_Handler( $league_service, $team_service, $stats, $presenter, $team_presenter, $this->league_query_service_with_matches( [ $fixture ] ) );
-        $vm        = $handler->handle( new Get_League_Teams_Query( league_id: 3, team_id: '10' ) );
+        $handler   = new Get_League_Teams_Handler( $league_service, $team_service, $stats, $this->league_query_service_with_matches( [ $fixture ] ) );
+        $adapter   = new League_Shortcode_Adapter(
+            tournament_presenter: $presenter,
+            team_details_presenter: $team_presenter,
+            template_renderer: $this->renderer()
+        );
+        $vm        = $adapter->present_teams( $handler->handle( new Get_League_Teams_Query( league_id: 3, team_id: '10' ) ) );
 
         $this->assertSame( 'team-details', $vm->template );
         $this->assertContainsOnlyInstancesOf( Tournament_Match_Card_View_Model::class, $league->team->matches );
@@ -365,8 +380,12 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $league_service->method( 'get_league' )->willReturn( $league );
         $presenter = new Tournament_Presenter( 'd/m/Y', $this->detail_service_expecting( $fixture, $detail, true ), team_match_row_presenter: $this->create_team_match_row_presenter() );
 
-        $handler = new Get_League_Matches_Handler( $league_service, $this->renderer(), $presenter, $this->league_query_service_with_matches( [ $fixture ] ) );
-        $vm      = $handler->handle( new Get_League_Matches_Query( league_id: 3, template: '' ) );
+        $handler = new Get_League_Matches_Handler( $league_service, $this->league_query_service_with_matches( [ $fixture ] ) );
+        $adapter = new League_Shortcode_Adapter(
+            tournament_presenter: $presenter,
+            template_renderer: $this->renderer()
+        );
+        $vm      = $adapter->present_matches( $handler->handle( new Get_League_Matches_Query( league_id: 3, template: '' ) ) );
 
         $html = ( new Shortcode_View_Presenter( $this->renderer() ) )->render( $vm );
         $this->assertStringContainsString( 'Roger Federer', $html );
@@ -400,8 +419,14 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $service->expects( $this->never() )->method( 'get_fixture_with_details' );
 
         $team_presenter = new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() );
-        $handler = new Get_League_Teams_Handler( $league_service, $team_service, $stats, new Tournament_Presenter( 'd/m/Y', $service, team_match_row_presenter: $this->create_team_match_row_presenter() ), $team_presenter, $this->league_query_service_with_matches( [ $fixture ] ) );
-        $handler->handle( new Get_League_Teams_Query( league_id: 3, team_id: '10' ) );
+        $presenter = new Tournament_Presenter( 'd/m/Y', $service, team_match_row_presenter: $this->create_team_match_row_presenter() );
+        $handler   = new Get_League_Teams_Handler( $league_service, $team_service, $stats, $this->league_query_service_with_matches( [ $fixture ] ) );
+        $adapter   = new League_Shortcode_Adapter(
+            tournament_presenter: $presenter,
+            team_details_presenter: $team_presenter,
+            template_renderer: $this->renderer()
+        );
+        $adapter->present_teams( $handler->handle( new Get_League_Teams_Query( league_id: 3, team_id: '10' ) ) );
 
         $this->assertCount( 1, $league->team->matches );
         $this->assertInstanceOf( Team_Match_Row_View_Model::class, $league->team->matches[0] );
@@ -505,17 +530,19 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $handler = new Get_League_Championship_Handler(
             $league_service,
             $fixture_repo,
-            $comp_service,
-            $team_service,
-            $link_service,
-            $perm_service,
-            $this->renderer(),
             $rubber_repo,
-            $presenter,
             $this->league_query_service_with_matches( [ $fixture ] )
         );
+        $adapter = new League_Shortcode_Adapter(
+            competition_service: $comp_service,
+            team_service: $team_service,
+            fixture_link_service: $link_service,
+            fixture_permission_service: $perm_service,
+            template_renderer: $this->renderer(),
+            tournament_presenter: $presenter
+        );
 
-        $vm = $handler->handle( new Get_League_Championship_Query( league_id: 3, template: 'matches' ) );
+        $vm = $adapter->present_championship( $handler->handle( new Get_League_Championship_Query( league_id: 3, template: 'matches' ) ) );
 
         $this->assertSame( 'championship-matches', $vm->template );
         $this->assertNotEmpty( $vm->vars['finals'] );
@@ -563,9 +590,14 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $stats->method( 'populate_players_stats' )->willReturn( [] );
 
         $presenter = new Tournament_Presenter( 'd/m/Y', $this->detail_service_expecting( $fixture, $detail, true ), team_match_row_presenter: $this->create_team_match_row_presenter() );
-        $handler   = new Get_Event_Teams_Handler( $comp_service, $stats, $presenter, $team_service, new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() ), $this->competition_presenter(), $this->event_query_service_with_fixtures( [ $fixture ] ) );
+        $handler   = new Get_Event_Teams_Handler( $comp_service, $stats, $team_service, $this->event_query_service_with_fixtures( [ $fixture ] ) );
+        $adapter   = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
+            competition_shortcode_presenter: $this->competition_presenter(),
+            tournament_presenter: $presenter,
+            team_details_presenter: new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() )
+        );
 
-        $vm = $handler->handle( new Get_Event_Teams_Query( event_id: 12, team: '10' ) );
+        $vm = $adapter->present_teams( $handler->handle( new Get_Event_Teams_Query( event_id: 12, team: '10' ) ) );
 
         $this->assertSame( 'teams', $vm->template );
         $this->assertContainsOnlyInstancesOf( Tournament_Match_Card_View_Model::class, $event_stub->team->matches );
@@ -620,9 +652,14 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $team_service->method( 'get_team_by_id' )->willReturn( $team );
         $stats     = $this->createStub( Player_Stats_Service::class );
         $presenter = new Tournament_Presenter( 'd/m/Y', team_match_row_presenter: $this->create_team_match_row_presenter() );
-        $handler   = new Get_Event_Teams_Handler( $competition_service, $stats, $presenter, $team_service, new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() ), $this->competition_presenter(), $this->event_query_service_with_fixtures( [ $fixture ] ) );
+        $handler   = new Get_Event_Teams_Handler( $competition_service, $stats, $team_service, $this->event_query_service_with_fixtures( [ $fixture ] ) );
+        $adapter   = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
+            competition_shortcode_presenter: $this->competition_presenter(),
+            tournament_presenter: $presenter,
+            team_details_presenter: new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() )
+        );
 
-        $vm = $handler->handle( new Get_Event_Teams_Query( event_id: 12, team: '10' ) );
+        $vm  = $adapter->present_teams( $handler->handle( new Get_Event_Teams_Query( event_id: 12, team: '10' ) ) );
         $row = $event->team->matches[0];
 
         $this->assertFalse( $vm->is_error(), (string) $vm->error_message );
@@ -669,13 +706,15 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $competition_service->method( 'get_event_by_id' )->willReturn( $event );
         $handler = new Get_Event_Matches_Handler(
             $competition_service,
-            new Tournament_Presenter( 'd/m/Y', team_match_row_presenter: $this->create_team_match_row_presenter() ),
             null,
             $this->event_query_service_with_fixtures( [], [ $league ] ),
             $this->league_query_service_with_matches( [ $fixture ] )
         );
+        $adapter = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
+            tournament_presenter: new Tournament_Presenter( 'd/m/Y', team_match_row_presenter: $this->create_team_match_row_presenter() )
+        );
 
-        $vm    = $handler->handle( new Get_Event_Matches_Query( event_id: 12 ) );
+        $vm    = $adapter->present_matches( $handler->handle( new Get_Event_Matches_Query( event_id: 12 ) ) );
         $final = $vm->vars['event']->leagues[0]->finals[0];
         $row   = $final->matches[0];
 
@@ -764,8 +803,11 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
 
         $presenter = new Tournament_Presenter( 'd/m/Y', $this->detail_service_expecting( $fixture, $detail, true ), team_match_row_presenter: $this->create_team_match_row_presenter() );
-        $handler   = new Get_Event_Matches_Handler( $comp_service, $presenter, null, $this->event_query_service_with_fixtures( [], [ $league ] ), $this->league_query_service_with_matches( [ $fixture ] ) );
-        $vm        = $handler->handle( new Get_Event_Matches_Query( event_id: 12 ) );
+        $handler   = new Get_Event_Matches_Handler( $comp_service, null, $this->event_query_service_with_fixtures( [], [ $league ] ), $this->league_query_service_with_matches( [ $fixture ] ) );
+        $adapter   = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
+            tournament_presenter: $presenter
+        );
+        $vm = $adapter->present_matches( $handler->handle( new Get_Event_Matches_Query( event_id: 12 ) ) );
 
         $this->assertSame( 'matches', $vm->template, (string) $vm->error_message );
         $this->assertContainsOnlyInstancesOf( Tournament_Match_Card_View_Model::class, $vm->vars['event']->leagues[0]->finals[0]->matches );
@@ -787,8 +829,11 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $handler = new Get_Event_Draw_Handler( $comp_service, null, new Competition_Shortcode_Presenter(), $this->createStub( Fixture_Detail_Service::class ), $this->event_query_service_with_fixtures( [], [ $league ] ), $this->league_query_service_with_matches( [ $fixture ] ) );
-        $vm      = $handler->handle( new Get_Event_Draw_Query( event_id: 12 ) );
+        $handler = new Get_Event_Draw_Handler( $comp_service, null, $this->createStub( Fixture_Detail_Service::class ), $this->event_query_service_with_fixtures( [], [ $league ] ), $this->league_query_service_with_matches( [ $fixture ] ) );
+        $adapter = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
+            competition_shortcode_presenter: new Competition_Shortcode_Presenter()
+        );
+        $vm      = $adapter->present_draw( $handler->handle( new Get_Event_Draw_Query( event_id: 12 ) ) );
 
         $this->assertSame( 'draw', $vm->template, (string) $vm->error_message );
         $this->assertSame( [ $fixture ], $vm->vars['event']->leagues[0]->finals[0]->matches );
@@ -826,8 +871,12 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
             ->willReturn( $detail );
 
         $presenter = new Tournament_Presenter( 'd/m/Y', $detail_service, team_match_row_presenter: $this->create_team_match_row_presenter() );
-        $handler   = new Get_Event_Clubs_Handler( $comp_service, $club_service, $stats, $presenter, $this->competition_presenter(), $this->event_query_service_with_fixtures( [ $fixture ] ) );
-        $vm        = $handler->handle( new Get_Event_Clubs_Query( event_id: 12, club_id: '5' ) );
+        $handler   = new Get_Event_Clubs_Handler( $comp_service, $club_service, $stats, $this->event_query_service_with_fixtures( [ $fixture ] ) );
+        $adapter   = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
+            competition_shortcode_presenter: $this->competition_presenter(),
+            tournament_presenter: $presenter
+        );
+        $vm = $adapter->present_clubs( $handler->handle( new Get_Event_Clubs_Query( event_id: 12, club_id: '5' ) ) );
 
         $this->assertSame( 'clubs', $vm->template, (string) $vm->error_message );
         $this->assertContainsOnlyInstancesOf( Tournament_Match_Card_View_Model::class, $vm->vars['event_club']->matches['2026-06-01']->matches );
@@ -874,8 +923,11 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
             ->willReturn( $detail );
 
         $presenter = new Tournament_Presenter( 'd/m/Y', $detail_service, team_match_row_presenter: $this->create_team_match_row_presenter() );
-        $handler   = new Get_Competition_Clubs_Handler( $comp_service, $club_service, $stats, $presenter, $this->competition_presenter(), $this->competition_season_service() );
-        $vm        = $handler->handle( new Get_Competition_Clubs_Query( competition_id: 1, club_identifier: '5', template: '' ) );
+        $handler   = new Get_Competition_Clubs_Handler( $comp_service, $club_service, $stats, $this->competition_season_service() );
+        $vm        = ( new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Competition_Shortcode_Adapter(
+            competition_shortcode_presenter: $this->competition_presenter(),
+            tournament_presenter: $presenter
+        ) )->present_clubs( $handler->handle( new Get_Competition_Clubs_Query( competition_id: 1, club_identifier: '5', template: '' ) ) );
 
         $this->assertSame( 'clubs', $vm->template, (string) $vm->error_message );
         $this->assertContainsOnlyInstancesOf( Tournament_Match_Card_View_Model::class, $vm->vars['competition_club']->matches['2026-06-01']->matches );

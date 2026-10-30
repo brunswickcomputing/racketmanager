@@ -15,7 +15,6 @@ use Racketmanager\Application\Login\Queries\Get_Password_Lost_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Handler;
 use Racketmanager\Application\Message\Queries\Get_Message_Handler;
 use Racketmanager\Application\Message\Queries\Get_Messages_Handler;
-use Racketmanager\Presentation\Presenters\Message_Presenter;
 use Racketmanager\Application\Export\Ports\Data_Exporter_Interface;
 use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface;
@@ -54,11 +53,6 @@ use Racketmanager\Infrastructure\Wordpress\Shortcodes\Login_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Message_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Shortcode_Registrar;
 use Racketmanager\Infrastructure\Wordpress\Templates\Template_Loader;
-use Racketmanager\Presentation\Presenters\Email_Shortcode_Presenter;
-use Racketmanager\Presentation\Presenters\Favourite_Presenter;
-use Racketmanager\Presentation\Presenters\Invoice_Presenter;
-use Racketmanager\Presentation\Presenters\Notification_Presenter;
-use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Charge_Repository;
 use Racketmanager\Repositories\Invoice_Repository;
@@ -76,7 +70,6 @@ use Racketmanager\Services\Seo\Page_Title_Service;
 use Racketmanager\Services\Seo\Page_Title_Service_Interface;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
-use Racketmanager\Services\View\Shortcode_Template_Renderer;
 
 /**
  * Service provider for core infrastructure, gateways, shared repositories, and general handlers.
@@ -184,21 +177,6 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
 
         $container->set( 'notify_service', fn( Simple_Container $c ) => new Notify_Service( $app, $c->get( 'mailer' ) ) );
 
-        $container->set( 'notification_presenter', fn( Simple_Container $c ) => new Notification_Presenter(
-            $c->get( 'team_repository' ),
-            $c->get( 'club_repository' ),
-            $c->get( 'tournament_repository' ),
-            $c->get( 'fixture_repository' ),
-            $c->get( 'fixture_link_service' ),
-            $c->get( 'team_service' ),
-            $c->get( 'competition_service' ),
-            $c->get( 'fixture_permission_service' ),
-            $app?->site_url ?? '',
-            $app?->site_name ?? '',
-            $c->get( 'league_query_service' ),
-            $c->get( 'rubber_repository' ),
-            $c->get( 'option_gateway' )
-        ) );
 
         $container->set( 'notification_service', fn( Simple_Container $c ) => new Notification_Service(
             $c->get( 'repository_provider' ),
@@ -248,38 +226,14 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         ) );
         $container->set( 'finance_ajax_controller', fn( Simple_Container $c ) => new Finance_Ajax_Controller( $app, $c->get( 'finance_ajax_adapter' ) ) );
 
-        // Core Presentation & View Handlers
+        // Core Gateways & Adapters
         $container->set( 'user_favourites_gateway', fn( Simple_Container $c ): User_Favourites_Gateway_Interface => new Wp_User_Favourites_Gateway( $c->get( 'security_service' ) ) );
         $container->set( User_Favourites_Gateway_Interface::class, fn( Simple_Container $c ): User_Favourites_Gateway_Interface => $c->get( 'user_favourites_gateway' ) );
-        $container->set( 'favourite_presenter', fn( Simple_Container $c ) => new Favourite_Presenter( $c->get( 'user_favourites_gateway' ) ) );
-        $container->set( 'shortcode_template_renderer', fn( Simple_Container $c ) => new Shortcode_Template_Renderer(
-            $c->get( 'view_renderer' ),
-            $c->get( 'club_presenter' ),
-            $c->get( 'player_presenter' ),
-            $c->get( 'favourite_presenter' )
-        ) );
-        $container->set( 'shortcode_view_presenter', fn( Simple_Container $c ) => new Shortcode_View_Presenter( $c->get( 'shortcode_template_renderer' ) ) );
 
-        $container->set( 'email_shortcode_presenter', fn( Simple_Container $c ) => new Email_Shortcode_Presenter(
-            tournament_service: $c->get( 'tournament_service' ),
-            competition_service: $c->get( 'competition_service' ),
-            team_service: $c->get( 'team_service' ),
-            fixture_link_service: $c->get( 'fixture_link_service' ),
-            permission_service: $c->get( 'fixture_permission_service' ),
-            site_url: $app?->site_url ?? '',
-            site_name: $app?->site_name ?? '',
-            rubber_repository: $c->get( 'rubber_repository' ),
-            option_gateway: $c->get( 'option_gateway' )
-        ) );
         $container->set( 'email_shortcode_adapter', fn( Simple_Container $c ) => new Email_Shortcode_Adapter(
             fixture_repository: $c->get( 'fixture_repository' ),
             presenter: $c->get( 'email_shortcode_presenter' ),
-            template_renderer: new Shortcode_Template_Renderer(
-                $c->get( 'view_renderer' ),
-                $c->get( 'club_presenter' ),
-                $c->get( 'player_presenter' ),
-                $c->get( 'favourite_presenter' )
-            ),
+            template_renderer: $c->get( 'shortcode_template_renderer' ),
             event_query_service: $c->get( 'event_query_service' ),
             league_query_service: $c->get( 'league_query_service' ),
             team_repository: $c->get( 'team_repository' ),
@@ -305,9 +259,8 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             security_service: $c->get( 'security_service' )
         ) );
 
-        $container->set( 'message_presenter', fn() => new Message_Presenter() );
-        $container->set( 'get_messages_handler', fn( Simple_Container $c ) => new Get_Messages_Handler( $c->get( 'user_repository' ), $c->get( 'message_repository' ), $c->get( 'message_presenter' ) ) );
-        $container->set( 'get_message_handler', fn( Simple_Container $c ) => new Get_Message_Handler( $c->get( 'message_repository' ), $c->get( 'message_presenter' ) ) );
+        $container->set( 'get_messages_handler', fn( Simple_Container $c ) => new Get_Messages_Handler( $c->get( 'user_repository' ), $c->get( 'message_repository' ) ) );
+        $container->set( 'get_message_handler', fn( Simple_Container $c ) => new Get_Message_Handler( $c->get( 'message_repository' ) ) );
 
         $container->set( 'message_shortcode_adapter', fn( Simple_Container $c ) => new Message_Shortcode_Adapter(
             $app,
@@ -315,27 +268,25 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             messages_handler: $c->get( 'get_messages_handler' ),
             message_handler: $c->get( 'get_message_handler' ),
             template_renderer: $c->get( 'shortcode_template_renderer' ),
-            security_service: $c->get( 'security_service' )
+            security_service: $c->get( 'security_service' ),
+            message_presenter: $c->get( 'message_presenter' )
         ) );
 
         $container->set( 'get_favourites_handler', fn( Simple_Container $c ) => new Get_Favourites_Handler(
             $c->get( 'user_repository' ),
             $c->get( 'club_repository' )
         ) );
-        $container->set( 'invoice_presenter', fn() => new Invoice_Presenter() );
         $container->set( 'get_invoice_handler', fn( Simple_Container $c ) => new Get_Invoice_Handler(
             $c->get( 'finance_service' ),
             $c->get( 'settings_service' ),
-            $c->get( 'option_gateway' ),
-            $c->get( 'invoice_presenter' )
+            $c->get( 'option_gateway' )
         ) );
         $container->set( 'get_purchase_order_handler', fn( Simple_Container $c ) => new Get_Purchase_Order_Handler(
             $c->get( 'finance_service' )
         ) );
         $container->set( 'get_memberships_handler', fn( Simple_Container $c ) => new Get_Memberships_Handler(
             $c->get( 'player_service' ),
-            $c->get( 'registration_service' ),
-            $c->get( 'player_presenter' )
+            $c->get( 'registration_service' )
         ) );
         $container->set( 'get_alert_handler', fn() => new Get_Alert_Handler() );
 
@@ -352,7 +303,9 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             team_order_handler: $c->get( 'get_team_order_handler' ),
             alert_handler: $c->get( 'get_alert_handler' ),
             template_renderer: $c->get( 'shortcode_template_renderer' ),
-            security_service: $c->get( 'security_service' )
+            security_service: $c->get( 'security_service' ),
+            player_presenter: $c->get( 'player_presenter' ),
+            invoice_presenter: $c->get( 'invoice_presenter' )
         ) );
     }
 }

@@ -4,6 +4,8 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Shortcodes;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Message\DTOs\Message_Detail_Result;
+use Racketmanager\Application\Message\DTOs\Messages_List_Result;
 use Racketmanager\Application\Message\Queries\Get_Message_Handler;
 use Racketmanager\Application\Message\Queries\Get_Message_Query;
 use Racketmanager\Application\Message\Queries\Get_Messages_Handler;
@@ -48,17 +50,18 @@ class Message_Shortcode_Adapter_Test extends TestCase {
 
     public function test_show_messages_returns_string(): void {
         $this->messages_handler->method( 'handle' )
-            ->willReturn( Shortcode_View_Model::for_html( '<div class="messages-list">Messages</div>' ) );
+            ->willReturn( new Messages_List_Result( messages: [ 'total' => 1 ] ) );
 
         $output = $this->adapter->show_messages( [] );
-        $this->assertStringContainsString( 'messages-list', $output );
+        $this->assertStringContainsString( 'rendered', $output );
     }
 
     public function test_show_message_returns_string(): void {
+        $message = (object) [ 'id' => 99999, 'subject' => 'Test' ];
         $this->message_handler->method( 'handle' )
-            ->willReturn( Shortcode_View_Model::for_html( '<div class="message-detail">Message Detail</div>' ) );
+            ->willReturn( new Message_Detail_Result( message: $message ) );
 
         $output = $this->adapter->show_message( [ 'id' => 99999 ] );
-        $this->assertStringContainsString( 'message-detail', $output );
+        $this->assertStringContainsString( 'rendered', $output );
     }
 }

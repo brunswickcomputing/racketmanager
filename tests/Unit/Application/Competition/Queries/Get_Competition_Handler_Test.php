@@ -4,12 +4,12 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Application\Competition\Queries;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Competition\DTOs\Competition_Page_Result;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Handler;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Query;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
-use Racketmanager\Presentation\View_Models\Competition_View_Model;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
@@ -53,9 +53,11 @@ class Get_Competition_Handler_Test extends TestCase {
         );
 
         $query = new Get_Competition_Query( competition_id: 1, season: '2026' );
-        $vm    = $handler->handle( $query );
+        $result = $handler->handle( $query );
 
-        $this->assertInstanceOf( Competition_View_Model::class, $vm );
+        $this->assertInstanceOf( Competition_Page_Result::class, $result );
+        $this->assertFalse( $result->is_error() );
+        $this->assertSame( $competition, $result->competition );
         $this->assertStringContainsString( '/entry-form/summer-league/2026/wtc/', $competition->entry_link );
     }
 
@@ -99,9 +101,11 @@ class Get_Competition_Handler_Test extends TestCase {
         );
 
         $query = new Get_Competition_Query( competition_id: 2, season: '2026' );
-        $vm    = $handler->handle( $query );
+        $result = $handler->handle( $query );
 
-        $this->assertInstanceOf( Competition_View_Model::class, $vm );
+        $this->assertInstanceOf( Competition_Page_Result::class, $result );
+        $this->assertFalse( $result->is_error() );
+        $this->assertSame( $competition, $result->competition );
         $this->assertStringContainsString( '/entry-form/autumn-league/2026/ltc/', $competition->entry_link );
     }
 }

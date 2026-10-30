@@ -9,7 +9,6 @@ use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
-use Racketmanager\Presentation\Presenters\Notification_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
@@ -79,9 +78,9 @@ class Notification_Service {
     /**
      * Notification Presenter.
      *
-     * @var Notification_Presenter
+     * @var Notification_Presenter_Interface
      */
-    private Notification_Presenter $presenter;
+    private Notification_Presenter_Interface $presenter;
 
     /**
      * View Renderer.
@@ -102,13 +101,13 @@ class Notification_Service {
      *
      * @param Repository_Provider $repository_provider
      * @param Settings_Service $settings_service
-     * @param Notification_Presenter $presenter
+     * @param Notification_Presenter_Interface $presenter
      * @param View_Renderer_Interface $view_renderer
      * @param RacketManager $app
      * @param Mailer_Interface|null $mailer
      */
     public function __construct(
-        private Repository_Provider $repository_provider, Settings_Service $settings_service, Notification_Presenter $presenter, View_Renderer_Interface $view_renderer, RacketManager $app, ?Mailer_Interface $mailer = null, private ?Event_Query_Service $event_query_service = null, private League_Query_Service|\Closure|null $league_query_service = null
+        private Repository_Provider $repository_provider, Settings_Service $settings_service, Notification_Presenter_Interface $presenter, View_Renderer_Interface $view_renderer, RacketManager $app, ?Mailer_Interface $mailer = null, private ?Event_Query_Service $event_query_service = null, private League_Query_Service|\Closure|null $league_query_service = null
     ) {
         $this->league_repository      = $repository_provider->get_league_repository();
         $this->league_team_repository = $repository_provider->get_league_team_repository();

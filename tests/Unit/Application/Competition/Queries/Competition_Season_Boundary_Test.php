@@ -95,15 +95,13 @@ class Competition_Season_Boundary_Test extends TestCase {
 
         $handler = new Get_Competition_Overview_Handler(
             $comp_service,
-            new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
             $this->competition_season_service( [ 12 => 'Hadleigh', 130 => 'Thorpe Bay' ] )
         );
 
-        $vm = $handler->handle( new Get_Competition_Overview_Query( competition_id: 7 ) );
+        $result = $handler->handle( new Get_Competition_Overview_Query( competition_id: 7 ) );
 
-        $this->assertFalse( $vm->is_error() );
-        $this->assertSame( 'Thorpe Bay', $vm->vars['competition_season']['venue_name'] );
-        $this->assertSame( 'Thorpe Bay', $vm->vars['overview_vm']->venue_name );
+        $this->assertFalse( $result->is_error() );
+        $this->assertSame( 'Thorpe Bay', $result->competition_season['venue_name'] );
     }
 
     public function test_overview_handler_honours_request_season(): void {
@@ -118,14 +116,13 @@ class Competition_Season_Boundary_Test extends TestCase {
 
         $handler = new Get_Competition_Overview_Handler(
             $comp_service,
-            new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
             $this->competition_season_service( [ 12 => 'Hadleigh', 130 => 'Thorpe Bay' ] )
         );
 
-        $vm = $handler->handle( new Get_Competition_Overview_Query( competition_id: 7 ) );
+        $result = $handler->handle( new Get_Competition_Overview_Query( competition_id: 7 ) );
 
-        $this->assertSame( '2016', $vm->vars['competition_season']['name'] );
-        $this->assertSame( 'Hadleigh', $vm->vars['overview_vm']->venue_name );
+        $this->assertSame( '2016', $result->competition_season['name'] );
+        $this->assertSame( 'Hadleigh', $result->competition_season['venue_name'] );
     }
 
     private function competition(): Competition {
@@ -176,7 +173,6 @@ class Competition_Season_Boundary_Test extends TestCase {
         );
         $handler = new Get_Competition_Events_Handler(
             $comp_service,
-            new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
             $this->competition_season_service( [ 12 => 'Hadleigh', 130 => 'Thorpe Bay' ] )
         );
         $handler->handle( $query );

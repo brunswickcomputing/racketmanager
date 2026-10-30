@@ -10,10 +10,10 @@ namespace Racketmanager\Tests\Unit\Rest {
     use PHPUnit\Framework\MockObject\MockObject;
     use PHPUnit\Framework\TestCase;
     use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+    use Racketmanager\Application\Export\DTO\Export_Criteria;
     use Racketmanager\RacketManager;
     use Racketmanager\Rest\Export_Controller;
     use Racketmanager\Services\Export\Export_Service;
-    use Racketmanager\Services\Export\DTO\Export_Criteria;
     use Racketmanager\Services\Container\Simple_Container;
     use Racketmanager\Services\Export\Formatters\Export_Formatter_Interface;
     use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;

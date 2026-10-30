@@ -3,15 +3,15 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\League\Queries;
 
+use Racketmanager\Application\League\DTOs\League_Standings_Result;
 use Racketmanager\Domain\Competition\League;
-use Racketmanager\Presentation\View_Models\League_Standings_View_Model;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use function is_array;
 
 /**
- * Query handler for resolving [standings] shortcode data into a view model.
+ * Query handler for resolving [standings] shortcode data.
  */
 class Get_League_Standings_Handler {
     public function __construct(
@@ -20,7 +20,7 @@ class Get_League_Standings_Handler {
         private readonly League_Query_Service $league_query_service
     ) {}
 
-    public function handle( Get_League_Standings_Query $query ): ?League_Standings_View_Model {
+    public function handle( Get_League_Standings_Query $query ): ?League_Standings_Result {
         $league = null;
         if ( ! empty( $query->league_id ) ) {
             if ( $this->league_service ) {
@@ -47,10 +47,10 @@ class Get_League_Standings_Handler {
         $teams_array = is_array( $teams ) ? $teams : [];
         $league->teams = $teams_array;
 
-        return new League_Standings_View_Model(
-            template: $query->template,
+        return new League_Standings_Result(
             league: $league,
             teams: $teams_array,
+            template: $query->template,
             widget: $query->widget,
             season: $query->season,
             group: $query->group

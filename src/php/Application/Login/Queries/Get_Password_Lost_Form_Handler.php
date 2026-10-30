@@ -3,14 +3,14 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Login\Queries;
 
-use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
+use Racketmanager\Application\Login\DTOs\Password_Lost_Form_Result;
 use Racketmanager\Util\Util;
 use function __;
 
 class Get_Password_Lost_Form_Handler {
-    public function handle( Get_Password_Lost_Form_Query $query ): Shortcode_View_Model {
+    public function handle( Get_Password_Lost_Form_Query $query ): Password_Lost_Form_Result {
         if ( $query->is_logged_in ) {
-            return Shortcode_View_Model::for_html(
+            return Password_Lost_Form_Result::html(
                 __( 'You are already signed in', 'racketmanager' )
             );
         }
@@ -31,6 +31,6 @@ class Get_Password_Lost_Form_Handler {
             'lost_password_sent' => 'confirm' === $query->checkemail,
         ];
 
-        return Shortcode_View_Model::for_template( 'form-password-lost', $vars, 'form' );
+        return Password_Lost_Form_Result::template( 'form-password-lost', $vars, 'form' );
     }
 }

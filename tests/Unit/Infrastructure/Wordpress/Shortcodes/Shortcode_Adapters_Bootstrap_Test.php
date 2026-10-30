@@ -4,6 +4,12 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Shortcodes;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Club\DTOs\Club_Competitions_Result;
+use Racketmanager\Application\Club\DTOs\Club_Invoices_Result;
+use Racketmanager\Application\Club\DTOs\Club_Overview_Result;
+use Racketmanager\Application\Club\DTOs\Club_Players_Result;
+use Racketmanager\Application\Club\DTOs\Club_Role_Modal_Result;
+use Racketmanager\Application\Club\DTOs\Club_Roles_Result;
 use Racketmanager\Application\Club\Queries\Get_Club_Competitions_Handler;
 use Racketmanager\Application\Club\Queries\Get_Club_Invoices_Handler;
 use Racketmanager\Application\Club\Queries\Get_Club_Players_Handler;
@@ -22,6 +28,17 @@ use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Application\Club\Queries\Get_Club_Handler;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Handler;
+use Racketmanager\Application\Event\DTOs\Event_Clubs_Result;
+use Racketmanager\Application\Event\DTOs\Event_Draw_Result;
+use Racketmanager\Application\Event\DTOs\Event_Dropdown_Result;
+use Racketmanager\Application\Event\DTOs\Event_Matches_Result;
+use Racketmanager\Application\Event\DTOs\Event_Page_Result;
+use Racketmanager\Application\Event\DTOs\Event_Partner_Result;
+use Racketmanager\Application\Event\DTOs\Event_Players_Result;
+use Racketmanager\Application\Event\DTOs\Event_Standings_Result;
+use Racketmanager\Application\Event\DTOs\Event_Team_Matches_Result;
+use Racketmanager\Application\Event\DTOs\Event_Teams_Result;
+use Racketmanager\Application\Event\DTOs\Team_Order_Players_Result;
 use Racketmanager\Application\Event\Queries\Get_Event_Clubs_Handler;
 use Racketmanager\Application\Event\Queries\Get_Event_Draw_Handler;
 use Racketmanager\Application\Event\Queries\Get_Event_Dropdown_Handler;
@@ -33,6 +50,15 @@ use Racketmanager\Application\Event\Queries\Get_Event_Standings_Handler;
 use Racketmanager\Application\Event\Queries\Get_Event_Team_Matches_Handler;
 use Racketmanager\Application\Event\Queries\Get_Event_Teams_Handler;
 use Racketmanager\Application\Event\Queries\Get_Team_Order_Players_Handler;
+use Racketmanager\Application\General\DTOs\Alert_Result;
+use Racketmanager\Application\General\DTOs\Favourites_Result;
+use Racketmanager\Application\General\DTOs\Invoice_Result;
+use Racketmanager\Application\General\DTOs\Memberships_Result;
+use Racketmanager\Application\General\DTOs\Player_Result;
+use Racketmanager\Application\General\DTOs\Player_Search_Result;
+use Racketmanager\Application\General\DTOs\Players_Result;
+use Racketmanager\Application\General\DTOs\Purchase_Order_Result;
+use Racketmanager\Application\General\DTOs\Team_Order_Result;
 use Racketmanager\Application\General\Queries\Get_Alert_Handler;
 use Racketmanager\Application\General\Queries\Get_Favourites_Handler;
 use Racketmanager\Application\General\Queries\Get_Invoice_Handler;
@@ -52,11 +78,17 @@ use Racketmanager\Application\League\Queries\Get_League_Players_Handler;
 use Racketmanager\Application\League\Queries\Get_League_Season_Dropdown_Handler;
 use Racketmanager\Application\League\Queries\Get_League_Standings_Handler;
 use Racketmanager\Application\League\Queries\Get_League_Teams_Handler;
+use Racketmanager\Application\Login\DTOs\Login_Form_Result;
+use Racketmanager\Application\Login\DTOs\Member_Account_Form_Result;
+use Racketmanager\Application\Login\DTOs\Password_Lost_Form_Result;
+use Racketmanager\Application\Login\DTOs\Password_Reset_Form_Result;
 use Racketmanager\Application\Login\Queries\Get_Login_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Member_Account_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Lost_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Handler;
 use Racketmanager\Application\Message\Queries\Get_Message_Handler;
+use Racketmanager\Application\Message\DTOs\Message_Detail_Result;
+use Racketmanager\Application\Message\DTOs\Messages_List_Result;
 use Racketmanager\Application\Message\Queries\Get_Messages_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Latest_Tournament_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Order_Of_Play_Handler;
@@ -467,8 +499,14 @@ class Shortcode_Adapters_Bootstrap_Test extends TestCase {
             'generate_member_account_form'    => Get_Member_Account_Form_Handler::class,
             default => throw new \InvalidArgumentException( "Unknown login method: {$method_name}" ),
         };
+        $result = match ( $class ) {
+            Get_Login_Form_Handler::class          => new Login_Form_Result(),
+            Get_Password_Lost_Form_Handler::class  => new Password_Lost_Form_Result(),
+            Get_Password_Reset_Form_Handler::class => new Password_Reset_Form_Result(),
+            Get_Member_Account_Form_Handler::class => new Member_Account_Form_Result(),
+        };
         $handler = $this->createMock( $class );
-        $handler->expects( $this->once() )->method( 'handle' )->willReturn( new Shortcode_View_Model( 'x' ) );
+        $handler->expects( $this->once() )->method( 'handle' )->willReturn( $result );
         $view_presenter = $this->createMock( Shortcode_View_Presenter::class );
         $view_presenter->expects( $this->once() )->method( 'render' )->willReturn( $dummy_output );
 
@@ -481,8 +519,12 @@ class Shortcode_Adapters_Bootstrap_Test extends TestCase {
             'show_message'  => Get_Message_Handler::class,
             default => throw new \InvalidArgumentException( "Unknown message method: {$method_name}" ),
         };
+        $result = match ( $class ) {
+            Get_Messages_Handler::class => new Messages_List_Result(),
+            Get_Message_Handler::class  => new Message_Detail_Result(),
+        };
         $handler = $this->createMock( $class );
-        $handler->expects( $this->once() )->method( 'handle' )->willReturn( new Shortcode_View_Model( 'x' ) );
+        $handler->expects( $this->once() )->method( 'handle' )->willReturn( $result );
         $view_presenter = $this->createMock( Shortcode_View_Presenter::class );
         $view_presenter->expects( $this->once() )->method( 'render' )->willReturn( $dummy_output );
 
@@ -523,8 +565,19 @@ class Shortcode_Adapters_Bootstrap_Test extends TestCase {
             'show_alert'          => Get_Alert_Handler::class,
             default => throw new \InvalidArgumentException( "Unknown general method: {$method_name}" ),
         };
+        $result = match ( $class ) {
+            Get_Players_Handler::class        => new Players_Result(),
+            Get_Player_Handler::class         => new Player_Result(),
+            Get_Favourites_Handler::class     => new Favourites_Result(),
+            Get_Invoice_Handler::class        => new Invoice_Result(),
+            Get_Purchase_Order_Handler::class => new Purchase_Order_Result(),
+            Get_Memberships_Handler::class    => new Memberships_Result(),
+            Get_Player_Search_Handler::class  => new Player_Search_Result(),
+            Get_Team_Order_Handler::class     => new Team_Order_Result(),
+            Get_Alert_Handler::class          => new Alert_Result(),
+        };
         $handler = $this->createMock( $class );
-        $handler->expects( $this->once() )->method( 'handle' )->willReturn( new Shortcode_View_Model( 'x' ) );
+        $handler->expects( $this->once() )->method( 'handle' )->willReturn( $result );
         $view_presenter = $this->createMock( Shortcode_View_Presenter::class );
         $view_presenter->expects( $this->once() )->method( 'render' )->willReturn( $dummy_output );
 
@@ -552,7 +605,7 @@ class Shortcode_Adapters_Bootstrap_Test extends TestCase {
     private function club_adapter_forwarding( string $method_name, string $dummy_output ): Club_Shortcode_Adapter {
         if ( 'show_club' === $method_name ) {
             $handler = $this->createMock( Get_Club_Handler::class );
-            $handler->expects( $this->once() )->method( 'handle' )->willReturn( new Club_View_Model( 'club' ) );
+            $handler->expects( $this->once() )->method( 'handle' )->willReturn( new Club_Overview_Result( club_details: (object) [ 'id' => 1 ] ) );
             $presenter = $this->createMock( Club_Shortcode_Presenter::class );
             $presenter->expects( $this->once() )->method( 'render' )->willReturn( $dummy_output );
 
@@ -564,16 +617,16 @@ class Shortcode_Adapters_Bootstrap_Test extends TestCase {
         $overrides = [ 'view_presenter' => $view_presenter ];
 
         $handlers = [
-            'show_club_players'      => [ 'players', Get_Club_Players_Handler::class ],
-            'show_club_roles'        => [ 'roles', Get_Club_Roles_Handler::class ],
-            'show_club_role_modal'   => [ 'role_modal', Get_Club_Role_Modal_Handler::class ],
-            'show_club_competitions' => [ 'competitions', Get_Club_Competitions_Handler::class ],
-            'show_club_invoices'     => [ 'invoices', Get_Club_Invoices_Handler::class ],
+            'show_club_players'      => [ 'players', Get_Club_Players_Handler::class, new Club_Players_Result() ],
+            'show_club_roles'        => [ 'roles', Get_Club_Roles_Handler::class, new Club_Roles_Result() ],
+            'show_club_role_modal'   => [ 'role_modal', Get_Club_Role_Modal_Handler::class, new Club_Role_Modal_Result() ],
+            'show_club_competitions' => [ 'competitions', Get_Club_Competitions_Handler::class, new Club_Competitions_Result() ],
+            'show_club_invoices'     => [ 'invoices', Get_Club_Invoices_Handler::class, new Club_Invoices_Result() ],
         ];
         if ( isset( $handlers[ $method_name ] ) ) {
-            [ $key, $class ] = $handlers[ $method_name ];
-            $handler         = $this->createMock( $class );
-            $handler->expects( $this->once() )->method( 'handle' )->willReturn( new Shortcode_View_Model( 'x' ) );
+            [ $key, $class, $result ] = $handlers[ $method_name ];
+            $handler                  = $this->createMock( $class );
+            $handler->expects( $this->once() )->method( 'handle' )->willReturn( $result );
             $overrides[ $key ] = $handler;
         } else {
             $club_service = $this->createMock( Club_Service::class );
@@ -603,17 +656,16 @@ class Shortcode_Adapters_Bootstrap_Test extends TestCase {
             template_renderer: $renderer,
             get_competition_handler: $overrides['get_competition_handler'] ?? $this->createStub( Get_Competition_Handler::class ),
             competition_shortcode_presenter: $overrides['competition_shortcode_presenter'] ?? $this->createStub( Competition_Shortcode_Presenter::class ),
-            overview_handler: $overrides['overview_handler'] ?? new \Racketmanager\Application\Competition\Queries\Get_Competition_Overview_Handler( $comp_service, $overrides['competition_shortcode_presenter'] ?? $this->createStub( Competition_Shortcode_Presenter::class ), $this->createStub( \Racketmanager\Services\Competition\Competition_Season_Service::class ) ),
-            events_handler: $overrides['events_handler'] ?? new \Racketmanager\Application\Competition\Queries\Get_Competition_Events_Handler( $comp_service, $overrides['competition_shortcode_presenter'] ?? $this->createStub( Competition_Shortcode_Presenter::class ), $this->competition_season_service() ),
-            teams_handler: $overrides['teams_handler'] ?? new \Racketmanager\Application\Competition\Queries\Get_Competition_Teams_Handler( $comp_service, $overrides['competition_shortcode_presenter'] ?? $this->createStub( Competition_Shortcode_Presenter::class ), $this->competition_season_service() ),
-            clubs_handler: $overrides['clubs_handler'] ?? new \Racketmanager\Application\Competition\Queries\Get_Competition_Clubs_Handler( $comp_service, $club_service, $this->createStub( Player_Stats_Service::class ), new \Racketmanager\Presentation\Presenters\Tournament_Presenter( 'd/m/Y' ), $overrides['competition_shortcode_presenter'] ?? $this->createStub( Competition_Shortcode_Presenter::class ), $this->competition_season_service() ),
+            overview_handler: $overrides['overview_handler'] ?? new \Racketmanager\Application\Competition\Queries\Get_Competition_Overview_Handler( $comp_service, $this->createStub( \Racketmanager\Services\Competition\Competition_Season_Service::class ) ),
+            events_handler: $overrides['events_handler'] ?? new \Racketmanager\Application\Competition\Queries\Get_Competition_Events_Handler( $comp_service, $this->competition_season_service() ),
+            teams_handler: $overrides['teams_handler'] ?? new \Racketmanager\Application\Competition\Queries\Get_Competition_Teams_Handler( $comp_service, $this->competition_season_service() ),
+            clubs_handler: $overrides['clubs_handler'] ?? new \Racketmanager\Application\Competition\Queries\Get_Competition_Clubs_Handler( $comp_service, $club_service, $this->createStub( Player_Stats_Service::class ), $this->competition_season_service() ),
             players_handler: $overrides['players_handler'] ?? new \Racketmanager\Application\Competition\Queries\Get_Competition_Players_Handler(
                 $comp_service,
                 $player_service,
                 $this->createStub( Player_Query_Service::class ),
                 $this->createStub( Player_Stats_Service::class ),
-                new Player_Presenter(),
-                $overrides['competition_shortcode_presenter'] ?? $this->createStub( Competition_Shortcode_Presenter::class ), $this->competition_season_service() ),
+                $this->competition_season_service() ),
             winners_handler: $overrides['winners_handler'] ?? new \Racketmanager\Application\Competition\Queries\Get_Competition_Winners_Handler( $comp_service, $this->competition_season_service() ),
             view_presenter: $view_presenter,
             racketmanager: $overrides['racketmanager'] ?? $this->racketmanager
@@ -623,7 +675,7 @@ class Shortcode_Adapters_Bootstrap_Test extends TestCase {
     private function competition_adapter_forwarding( string $method_name, string $dummy_output ): Competition_Shortcode_Adapter {
         if ( 'show_competition' === $method_name ) {
             $handler = $this->createMock( Get_Competition_Handler::class );
-            $handler->expects( $this->once() )->method( 'handle' )->willReturn( new Competition_View_Model( 'competition' ) );
+            $handler->expects( $this->once() )->method( 'handle' )->willReturn( new \Racketmanager\Application\Competition\DTOs\Competition_Page_Result( template: 'competition' ) );
             $presenter = $this->createMock( Competition_Shortcode_Presenter::class );
             $presenter->expects( $this->once() )->method( 'render' )->willReturn( $dummy_output );
 
@@ -713,7 +765,7 @@ class Shortcode_Adapters_Bootstrap_Test extends TestCase {
     private function league_adapter_forwarding( string $method_name, string $dummy_output ): League_Shortcode_Adapter {
         if ( 'show_standings' === $method_name ) {
             $handler = $this->createMock( Get_League_Standings_Handler::class );
-            $handler->expects( $this->once() )->method( 'handle' )->willReturn( new League_Standings_View_Model( 'standings' ) );
+            $handler->expects( $this->once() )->method( 'handle' )->willReturn( new \Racketmanager\Application\League\DTOs\League_Standings_Result() );
             $presenter = $this->createMock( League_Standings_Presenter::class );
             $presenter->expects( $this->once() )->method( 'render' )->willReturn( $dummy_output );
 
@@ -724,21 +776,21 @@ class Shortcode_Adapters_Bootstrap_Test extends TestCase {
         }
 
         $map = [
-            'show_championship'      => [ 'championship_handler', Get_League_Championship_Handler::class ],
-            'show_archive'           => [ 'archive_handler', Get_League_Archive_Handler::class ],
-            'show_crosstable'        => [ 'crosstable_handler', Get_League_Crosstable_Handler::class ],
-            'show_matches'           => [ 'matches_handler', Get_League_Matches_Handler::class ],
-            'show_teams'             => [ 'teams_handler', Get_League_Teams_Handler::class ],
-            'show_league_players'    => [ 'players_handler', Get_League_Players_Handler::class ],
-            'show_season_dropdown'   => [ 'season_dropdown_handler', Get_League_Season_Dropdown_Handler::class ],
-            'show_match_dropdown'    => [ 'match_dropdown_handler', Get_League_Match_Dropdown_Handler::class ],
-            'show_last_5'            => [ 'last_5_handler', Get_League_Last_5_Handler::class ],
+            'show_championship'      => [ 'championship_handler', Get_League_Championship_Handler::class, new \Racketmanager\Application\League\DTOs\League_Championship_Result() ],
+            'show_archive'           => [ 'archive_handler', Get_League_Archive_Handler::class, new \Racketmanager\Application\League\DTOs\League_Archive_Result( league: (object) [ 'sport' => 'tennis' ], event: (object) [ 'id' => 1 ] ) ],
+            'show_crosstable'        => [ 'crosstable_handler', Get_League_Crosstable_Handler::class, new \Racketmanager\Application\League\DTOs\League_Crosstable_Result() ],
+            'show_matches'           => [ 'matches_handler', Get_League_Matches_Handler::class, new \Racketmanager\Application\League\DTOs\League_Matches_Result() ],
+            'show_teams'             => [ 'teams_handler', Get_League_Teams_Handler::class, new \Racketmanager\Application\League\DTOs\League_Teams_Result() ],
+            'show_league_players'    => [ 'players_handler', Get_League_Players_Handler::class, new \Racketmanager\Application\League\DTOs\League_Players_Result() ],
+            'show_season_dropdown'   => [ 'season_dropdown_handler', Get_League_Season_Dropdown_Handler::class, new \Racketmanager\Application\League\DTOs\League_Season_Dropdown_Result() ],
+            'show_match_dropdown'    => [ 'match_dropdown_handler', Get_League_Match_Dropdown_Handler::class, new \Racketmanager\Application\League\DTOs\League_Match_Dropdown_Result() ],
+            'show_last_5'            => [ 'last_5_handler', Get_League_Last_5_Handler::class, new \Racketmanager\Application\League\DTOs\League_Last_5_Result() ],
         ];
 
-        [ $key, $handler_class ] = $map[ $method_name ];
+        [ $key, $handler_class, $result ] = $map[ $method_name ];
 
         $handler = $this->createMock( $handler_class );
-        $handler->expects( $this->once() )->method( 'handle' )->willReturn( Shortcode_View_Model::for_template( 'test' ) );
+        $handler->expects( $this->once() )->method( 'handle' )->willReturn( $result );
         $presenter = $this->createMock( Shortcode_View_Presenter::class );
         $presenter->expects( $this->once() )->method( 'render' )->willReturn( $dummy_output );
 
@@ -797,23 +849,23 @@ class Shortcode_Adapters_Bootstrap_Test extends TestCase {
 
     private function event_adapter_forwarding( string $method_name, string $dummy_output ): Event_Shortcode_Adapter {
         $map = [
-            'show_event'              => [ 'event_handler', Get_Event_Handler::class ],
-            'show_event_standings'    => [ 'standings_handler', Get_Event_Standings_Handler::class ],
-            'show_event_draw'         => [ 'draw_handler', Get_Event_Draw_Handler::class ],
-            'show_event_matches'      => [ 'matches_handler', Get_Event_Matches_Handler::class ],
-            'show_event_clubs'        => [ 'clubs_handler', Get_Event_Clubs_Handler::class ],
-            'show_event_teams'        => [ 'teams_handler', Get_Event_Teams_Handler::class ],
-            'show_event_players'      => [ 'players_handler', Get_Event_Players_Handler::class ],
-            'show_event_partner'      => [ 'partner_handler', Get_Event_Partner_Handler::class ],
-            'show_event_team_matches' => [ 'team_matches_handler', Get_Event_Team_Matches_Handler::class ],
-            'show_team_order_players' => [ 'team_order_players_handler', Get_Team_Order_Players_Handler::class ],
-            'show_dropdown'           => [ 'dropdown_handler', Get_Event_Dropdown_Handler::class ],
+            'show_event'              => [ 'event_handler', Get_Event_Handler::class, new Event_Page_Result() ],
+            'show_event_standings'    => [ 'standings_handler', Get_Event_Standings_Handler::class, new Event_Standings_Result() ],
+            'show_event_draw'         => [ 'draw_handler', Get_Event_Draw_Handler::class, new Event_Draw_Result() ],
+            'show_event_matches'      => [ 'matches_handler', Get_Event_Matches_Handler::class, new Event_Matches_Result() ],
+            'show_event_clubs'        => [ 'clubs_handler', Get_Event_Clubs_Handler::class, new Event_Clubs_Result() ],
+            'show_event_teams'        => [ 'teams_handler', Get_Event_Teams_Handler::class, new Event_Teams_Result() ],
+            'show_event_players'      => [ 'players_handler', Get_Event_Players_Handler::class, new Event_Players_Result() ],
+            'show_event_partner'      => [ 'partner_handler', Get_Event_Partner_Handler::class, new Event_Partner_Result() ],
+            'show_event_team_matches' => [ 'team_matches_handler', Get_Event_Team_Matches_Handler::class, new Event_Team_Matches_Result() ],
+            'show_team_order_players' => [ 'team_order_players_handler', Get_Team_Order_Players_Handler::class, new Team_Order_Players_Result() ],
+            'show_dropdown'           => [ 'dropdown_handler', Get_Event_Dropdown_Handler::class, new Event_Dropdown_Result() ],
         ];
 
-        [ $key, $handler_class ] = $map[ $method_name ];
+        [ $key, $handler_class, $result ] = $map[ $method_name ];
 
         $handler = $this->createMock( $handler_class );
-        $handler->expects( $this->once() )->method( 'handle' )->willReturn( Shortcode_View_Model::for_template( 'test' ) );
+        $handler->expects( $this->once() )->method( 'handle' )->willReturn( $result );
         $presenter = $this->createMock( Shortcode_View_Presenter::class );
         $presenter->expects( $this->once() )->method( 'render' )->willReturn( $dummy_output );
 
@@ -838,35 +890,49 @@ class Shortcode_Adapters_Bootstrap_Test extends TestCase {
             $overrides['order_of_play_handler'] ?? $this->createStub( Get_Order_Of_Play_Handler::class ),
             $overrides['latest_tournament_handler'] ?? $this->createStub( Get_Latest_Tournament_Handler::class ),
             $overrides['withdrawal_handler'] ?? $this->createStub( Get_Tournament_Withdrawal_Handler::class ),
-            $overrides['template_renderer'] ?? $this->createStub( Shortcode_Template_Renderer::class )
+            $overrides['template_renderer'] ?? $this->createStub( Shortcode_Template_Renderer::class ),
+            competition_service: $overrides['competition_service'] ?? null,
+            tournament_presenter: $overrides['tournament_presenter'] ?? null,
+            player_presenter: $overrides['player_presenter'] ?? null,
+            order_of_play_presenter: $overrides['order_of_play_presenter'] ?? null
         );
     }
 
     private function tournament_adapter_forwarding( string $method_name, string $dummy_output ): Tournament_Shortcode_Adapter {
+        $tournament = $this->createStub( \Racketmanager\Domain\Tournament\Tournament::class );
+        $tournament->id = 123;
         $map = [
-            'show_tournament'                  => [ 'tournament_handler', Get_Tournament_Handler::class ],
-            'show_tournament_overview'         => [ 'overview_handler', Get_Tournament_Overview_Handler::class ],
-            'show_tournament_events'           => [ 'events_handler', Get_Tournament_Events_Handler::class ],
-            'show_draws'                       => [ 'draws_handler', Get_Tournament_Draws_Handler::class ],
-            'show_tournament_players'          => [ 'players_handler', Get_Tournament_Players_Handler::class ],
-            'show_tournament_winners'          => [ 'winners_handler', Get_Tournament_Winners_Handler::class ],
-            'show_tournament_matches'          => [ 'matches_handler', Get_Tournament_Matches_Handler::class ],
-            'show_tournament_match'            => [ 'match_handler', Get_Tournament_Match_Handler::class ],
-            'show_order_of_play'               => [ 'order_of_play_handler', Get_Order_Of_Play_Handler::class ],
-            'show_latest_tournament'           => [ 'latest_tournament_handler', Get_Latest_Tournament_Handler::class ],
-            'show_tournament_withdrawal_modal' => [ 'withdrawal_handler', Get_Tournament_Withdrawal_Handler::class ],
+            'show_tournament'                  => [ 'tournament_handler', Get_Tournament_Handler::class, new \Racketmanager\Application\Tournament\DTOs\Tournament_Result( tournament: $tournament, template: '' ) ],
+            'show_tournament_overview'         => [ 'overview_handler', Get_Tournament_Overview_Handler::class, new \Racketmanager\Application\Tournament\DTOs\Tournament_Overview_Result( tournament: $tournament, template: '' ) ],
+            'show_tournament_events'           => [ 'events_handler', Get_Tournament_Events_Handler::class, new \Racketmanager\Application\Tournament\DTOs\Tournament_Events_Result( tournament: $tournament, events: [] ) ],
+            'show_draws'                       => [ 'draws_handler', Get_Tournament_Draws_Handler::class, new \Racketmanager\Application\Tournament\DTOs\Tournament_Draws_Result( tournament: $tournament, draws: [] ) ],
+            'show_tournament_players'          => [ 'players_handler', Get_Tournament_Players_Handler::class, new \Racketmanager\Application\Tournament\DTOs\Tournament_Players_Result( tournament: $tournament, players: [] ) ],
+            'show_tournament_winners'          => [ 'winners_handler', Get_Tournament_Winners_Handler::class, new \Racketmanager\Application\Tournament\DTOs\Tournament_Winners_Result( tournament: $tournament, winners: [] ) ],
+            'show_tournament_matches'          => [ 'matches_handler', Get_Tournament_Matches_Handler::class, new \Racketmanager\Application\Tournament\DTOs\Tournament_Matches_Result( tournament: $tournament, tournament_fixtures: [] ) ],
+            'show_tournament_match'            => [ 'match_handler', Get_Tournament_Match_Handler::class, new \Racketmanager\Application\Tournament\DTOs\Tournament_Match_Result( tournament: $tournament ) ],
+            'show_order_of_play'               => [ 'order_of_play_handler', Get_Order_Of_Play_Handler::class, new \Racketmanager\Application\Tournament\DTOs\Order_Of_Play_Result( finals_order: [] ) ],
+            'show_latest_tournament'           => [ 'latest_tournament_handler', Get_Latest_Tournament_Handler::class, new \Racketmanager\Application\Tournament\DTOs\Latest_Tournament_Result( redirect_url: '/tournaments/' ) ],
+            'show_tournament_withdrawal_modal' => [ 'withdrawal_handler', Get_Tournament_Withdrawal_Handler::class, new \Racketmanager\Application\Tournament\DTOs\Tournament_Withdrawal_Result( tournament_id: 123 ) ],
         ];
 
-        [ $key, $handler_class ] = $map[ $method_name ];
+        [ $key, $handler_class, $result ] = $map[ $method_name ];
 
         $handler = $this->createMock( $handler_class );
-        $handler->expects( $this->once() )->method( 'handle' )->willReturn( Shortcode_View_Model::for_template( 'test' ) );
+        $handler->expects( $this->once() )->method( 'handle' )->willReturn( $result );
         $presenter = $this->createMock( Shortcode_View_Presenter::class );
         $presenter->expects( $this->once() )->method( 'render' )->willReturn( $dummy_output );
 
+        $order_of_play_presenter = new \Racketmanager\Presentation\Presenters\Order_Of_Play_Presenter(
+            $this->createStub( \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class ),
+            $this->createStub( \Racketmanager\Services\Competition_Service::class ),
+            $this->createStub( \Racketmanager\Services\Team_Service::class ),
+            $this->createStub( \Racketmanager\Application\Ports\Option_Gateway_Interface::class )
+        );
+
         return $this->tournament_adapter( [
-            $key             => $handler,
-            'view_presenter' => $presenter,
+            $key                      => $handler,
+            'view_presenter'          => $presenter,
+            'order_of_play_presenter' => $order_of_play_presenter,
         ] );
     }
 }

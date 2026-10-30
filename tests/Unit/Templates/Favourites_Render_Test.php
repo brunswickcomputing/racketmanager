@@ -12,6 +12,7 @@ use Racketmanager\Domain\Team\Team_Factory;
 use Racketmanager\Domain\Player\User;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
+use Racketmanager\Presentation\Presentation_Service_Provider;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
@@ -39,6 +40,7 @@ class Favourites_Render_Test extends TestCase {
 
         $this->container = new Simple_Container();
         ( new Core_Service_Provider() )->register( $this->container );
+        ( new Presentation_Service_Provider() )->register( $this->container );
         $this->container->set( 'club_repository', fn() => $this->createStub( Club_Repository_Interface::class ) );
         $this->container->set( 'club_presenter', fn() => new Club_Presenter() );
         $this->container->set( 'player_presenter', fn() => new Player_Presenter() );
@@ -145,8 +147,8 @@ class Favourites_Render_Test extends TestCase {
         $club_repo->expects( self::once() )->method( 'find_by_id' )->with( 99 )->willReturn( Club_Test_Factory::create( id: 99, shortcode: 'Westcliff TC' ) );
         $this->container->set( 'club_repository', $club_repo );
 
-        $vm = $this->container->get( 'get_favourites_handler' )->handle( new Get_Favourites_Query( is_logged_in: true, user_id: 41 ) );
-        $html = $this->render( $vm->template, $vm->vars, $vm->template_type );
+        $res = $this->container->get( 'get_favourites_handler' )->handle( new Get_Favourites_Query( is_logged_in: true, user_id: 41 ) );
+        $html = $this->render( 'form-favourites', [ 'favourite_types' => $res->favourite_types ], 'form' );
         foreach ( [
             '/tournaments/summer-open/mixed-doubles/',
             '/league/premier-division/',
@@ -203,8 +205,8 @@ class Favourites_Render_Test extends TestCase {
         $club_repo->expects( self::once() )->method( 'find_by_id' )->with( 999 )->willReturn( null );
         $this->container->set( 'club_repository', $club_repo );
 
-        $vm = $this->container->get( 'get_favourites_handler' )->handle( new Get_Favourites_Query( is_logged_in: true, user_id: 41 ) );
-        $html = $this->render( $vm->template, $vm->vars, $vm->template_type );
+        $res = $this->container->get( 'get_favourites_handler' )->handle( new Get_Favourites_Query( is_logged_in: true, user_id: 41 ) );
+        $html = $this->render( 'form-favourites', [ 'favourite_types' => $res->favourite_types ], 'form' );
 
         // Plain text is rendered when URLs cannot be generated
         self::assertStringContainsString( '<span class="nav-link__value">Orphan Team</span>', $html );
@@ -217,8 +219,9 @@ class Favourites_Render_Test extends TestCase {
         $repository = $this->createMock( User_Repository_Interface::class );
         $repository->expects( self::never() )->method( 'find' );
         $this->container->set( 'user_repository', $repository );
-        $vm = $this->container->get( 'get_favourites_handler' )->handle( new Get_Favourites_Query( is_logged_in: false, user_id: 41 ) );
-        $html = $this->container->get( 'shortcode_view_presenter' )->render( $vm );
+        $res = $this->container->get( 'get_favourites_handler' )->handle( new Get_Favourites_Query( is_logged_in: false, user_id: 41 ) );
+        self::assertTrue( $res->is_error() );
+        $html = $this->container->get( 'shortcode_view_presenter' )->render( \Racketmanager\Presentation\View_Models\Shortcode_View_Model::for_error( $res->error_message ?? '' ) );
         self::assertStringContainsString( 'You must be logged in to view favourites', $html );
         self::assertStringNotContainsString( 'data-js="add-favourite"', $html );
     }
@@ -236,12 +239,21 @@ class Favourites_Render_Test extends TestCase {
             new Players_List_DTO( [ 'ID' => 12, 'firstname' => 'Jane', 'surname' => 'Smith', 'display_name' => 'Jane Smith' ] ),
             new Players_List_DTO( [ 'ID' => 13, 'firstname' => 'John', 'surname' => 'Smith', 'display_name' => 'John Smith' ] ),
         ] );
-        $handler = new Get_Players_Handler( $players, $users, $this->renderer, new Player_Presenter() );
-        $vm = $handler->handle( new Get_Players_Query( search_string: 'Smith', is_logged_in: true, user_id: 41 ) );
-        self::assertSame( $favourites, $vm->vars['favourites'] );
+        $handler = new Get_Players_Handler( $players, $users );
+        $res = $handler->handle( new Get_Players_Query( search_string: 'Smith', is_logged_in: true, user_id: 41 ) );
+        self::assertSame( $favourites, $res->favourites );
+
+        $presenter = new Player_Presenter();
+        $player_vm = $presenter->present_players_directory(
+            search_string: $res->search_string ?? '',
+            search_results: $this->renderer->render( 'players-list', [ 'players' => $res->players ] ),
+            favourites: $res->favourites,
+            template: 'players'
+        );
+        $vars = $player_vm->template_vars();
 
         foreach ( [ 1, 2 ] as $render_number ) {
-            $html = $this->render( $vm->template, $vm->vars, $vm->template_type );
+            $html = $this->render( 'players', $vars );
             self::assertSame( 2, substr_count( $html, 'title="Remove favourite"' ), 'Search and directory, render ' . $render_number );
             self::assertSame( 1, substr_count( $html, 'title="Add favourite"' ) );
             self::assertStringContainsString( 'href="/player/jane-smith/"', $html );

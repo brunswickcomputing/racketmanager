@@ -205,9 +205,18 @@ class Finance_Templates_Test extends TestCase {
             }
         );
         $GLOBALS['wp_stubs_is_user_logged_in'] = true;
-        $handler = new Get_Invoice_Handler( $finance_service, $settings_service, $option_gateway, $this->presenter );
-        $view    = $handler->handle( new Get_Invoice_Query( id: 123 ) );
-        $invoice_vm = $view->vars['invoice'];
+        $handler = new Get_Invoice_Handler( $finance_service, $settings_service, $option_gateway );
+        $result  = $handler->handle( new Get_Invoice_Query( id: 123 ) );
+
+        $invoice_vm = $this->presenter->present_invoice(
+            invoice: $result->invoice,
+            billing: $result->billing,
+            organisation_name: $result->organisation_name,
+            site_url: $result->site_url,
+            date_format: $result->date_format,
+            is_user_logged_in: $result->is_user_logged_in,
+            login_url: $result->login_url
+        );
 
         $this->assertSame( 123, $invoice_vm->id );
         $this->assertSame( '2026123', $invoice_vm->invoice_number );
@@ -217,7 +226,14 @@ class Finance_Templates_Test extends TestCase {
         $this->assertTrue( $invoice_vm->is_user_logged_in );
         $this->assertSame( 'https://example.com/wp-login.php', $invoice_vm->login_url );
 
-        $html = $this->renderer->render_to_string( $view->template, [], $view->vars );
+        $filename = ! empty( $result->template ) ? 'invoice-' . $result->template : 'invoice';
+        $vars = [
+            'organisation_name' => $result->organisation_name,
+            'invoice'           => $invoice_vm,
+            'billing'           => $result->billing,
+            'invoice_number'    => $result->invoice_number,
+        ];
+        $html = $this->renderer->render_to_string( $filename, [], $vars );
 
         $this->assertStringContainsString( '<h2>Invoice&nbsp;2026123</h2>', $html );
         $this->assertStringContainsString( 'Leigh & Westcliff Tennis', $html );
@@ -271,12 +287,25 @@ class Finance_Templates_Test extends TestCase {
         $handler = new Get_Club_Invoices_Handler(
             $club_service,
             $finance_service,
-            $this->presenter,
-            new Club_Presenter(),
             $settings_service,
             $option_gateway
         );
-        $view = $handler->handle( new Get_Club_Invoices_Query( club_name: 'Leigh', is_admin: true ) );
+        $result = $handler->handle( new Get_Club_Invoices_Query( club_name: 'Leigh', is_admin: true ) );
+        $invoices_vm = $this->presenter->present_club_invoices_list(
+            invoices: $result->invoices_data,
+            currency_code: $result->currency_code,
+            date_format: $result->date_format
+        );
+        $view = new \Racketmanager\Presentation\View_Models\Shortcode_View_Model(
+            template: 'invoices',
+            vars: [
+                'club'            => $result->club,
+                'user_can_manage' => $result->user_can_manage,
+                'invoices'        => $invoices_vm,
+                'invoice'         => null,
+            ],
+            template_type: 'club'
+        );
         $renderer = new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $this->renderer ) );
         $html = $renderer->render( $view );
 
@@ -306,13 +335,30 @@ class Finance_Templates_Test extends TestCase {
         $handler = new Get_Club_Invoices_Handler(
             $club_service,
             $finance_service,
-            $this->presenter,
-            new Club_Presenter(),
             $settings_service,
             $this->createStub( Option_Gateway_Interface::class )
         );
 
-        $view = $handler->handle( new Get_Club_Invoices_Query( club_name: 'Leigh', invoice_ref: '22', is_admin: true ) );
+        $result = $handler->handle( new Get_Club_Invoices_Query( club_name: 'Leigh', invoice_ref: '22', is_admin: true ) );
+        $club_presenter = new Club_Presenter();
+        $return_url = $result->club ? $club_presenter->get_link( $result->club, 'invoices' ) : '';
+        $details = function_exists( '\Racketmanager\show_invoice' ) ? \Racketmanager\show_invoice( $result->invoice->id ) : '';
+        $invoice_vm = $this->presenter->present_club_invoice_detail(
+            invoice: $result->invoice,
+            club: $result->club,
+            return_url: $return_url,
+            details: $details
+        );
+        $view = new \Racketmanager\Presentation\View_Models\Shortcode_View_Model(
+            template: $result->template_ref,
+            vars: [
+                'club'            => $result->club,
+                'user_can_manage' => $result->user_can_manage,
+                'invoices'        => null,
+                'invoice'         => $invoice_vm,
+            ],
+            template_type: 'club'
+        );
 
         $this->assertSame( 'invoice', $view->template );
         $this->assertSame( 22, $view->vars['invoice']->id );

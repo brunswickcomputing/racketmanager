@@ -22,6 +22,8 @@ use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Email_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\League_Standings_Presenter;
 use Racketmanager\Presentation\Presenters\Notification_Presenter;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\League_Shortcode_Adapter;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\League_Standings_View_Model;
@@ -409,8 +411,6 @@ final class Public_Links_Modernization_Test extends TestCase {
             registration_service: $this->createStub( Registration_Service::class ),
             competition_entry_service: $this->createStub( Competition_Entry_Service::class ),
             finance_service: $this->createStub( Finance_Service::class ),
-            competition_presenter: $competition_presenter,
-            tournament_presenter: $tournament_presenter,
             event_query_service: $this->event_query_service()
         );
 
@@ -422,7 +422,10 @@ final class Public_Links_Modernization_Test extends TestCase {
             is_admin: true
         );
 
-        $vm = $handler->handle( $query );
+        $vm = ( new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Competition_Shortcode_Adapter(
+            competition_shortcode_presenter: $competition_presenter,
+            tournament_presenter: $tournament_presenter
+        ) )->present_entry( $handler->handle( $query ) );
         $this->assertSame( 'entry-form-clubs-list', $vm->template );
         $this->assertArrayHasKey( 'club_urls', $vm->vars );
         $this->assertSame( 'whc/', $vm->vars['club_urls'][10] );
@@ -835,13 +838,12 @@ final class Public_Links_Modernization_Test extends TestCase {
             $league_service,
             $league_repo,
             $player_service,
-            $this->template_renderer,
             $query_service,
             $stats_service,
-            $player_presenter,
             $league_query
         );
-        $vm = $handler->handle( new Get_League_Players_Query( league_id: 50 ) );
+        $adapter = new League_Shortcode_Adapter( player_presenter: $player_presenter, template_renderer: $this->template_renderer );
+        $vm      = $adapter->present_players( $handler->handle( new Get_League_Players_Query( league_id: 50 ) ) );
 
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'players-tennis', $vm->template );
@@ -905,13 +907,12 @@ final class Public_Links_Modernization_Test extends TestCase {
             $league_service,
             $league_repo,
             $player_service,
-            $this->template_renderer,
             $query_service,
             $stats_service,
-            $player_presenter,
             $this->league_query_service( $league_repo )
         );
-        $vm      = $handler->handle( new Get_League_Players_Query( league_id: 50, player_id: '101' ) );
+        $adapter = new League_Shortcode_Adapter( player_presenter: $player_presenter, template_renderer: $this->template_renderer );
+        $vm      = $adapter->present_players( $handler->handle( new Get_League_Players_Query( league_id: 50, player_id: '101' ) ) );
 
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'players-tennis', $vm->template );
@@ -945,8 +946,9 @@ final class Public_Links_Modernization_Test extends TestCase {
         $tournament_service->method( 'get_tournament_overview' )->willReturn( $overview );
 
         $presenter = new Tournament_Presenter( 'j M Y' );
-        $handler   = new Get_Tournament_Overview_Handler( $tournament_service, $presenter );
-        $vm        = $handler->handle( new Get_Tournament_Overview_Query( tournament_id: 25 ) );
+        $handler   = new Get_Tournament_Overview_Handler( $tournament_service );
+        $adapter   = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter );
+        $vm        = $adapter->present_overview( $handler->handle( new Get_Tournament_Overview_Query( tournament_id: 25 ) ) );
 
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'overview', $vm->template );
@@ -985,8 +987,9 @@ final class Public_Links_Modernization_Test extends TestCase {
         $tournament_service->method( 'get_tournament_overview' )->willReturn( $overview );
 
         $presenter = new Tournament_Presenter( 'j M Y' );
-        $handler   = new Get_Tournament_Overview_Handler( $tournament_service, $presenter );
-        $vm        = $handler->handle( new Get_Tournament_Overview_Query( tournament_id: 26 ) );
+        $handler   = new Get_Tournament_Overview_Handler( $tournament_service );
+        $adapter   = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter );
+        $vm        = $adapter->present_overview( $handler->handle( new Get_Tournament_Overview_Query( tournament_id: 26 ) ) );
 
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'N/A', $vm->vars['tournament_dates']->date_closing_display );

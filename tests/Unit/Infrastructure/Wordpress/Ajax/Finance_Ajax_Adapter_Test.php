@@ -8,6 +8,7 @@ use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Finance\Commands\Set_Purchase_Order_Command;
 use Racketmanager\Application\Finance\Commands\Set_Purchase_Order_Handler;
+use Racketmanager\Application\General\DTOs\Purchase_Order_Result;
 use Racketmanager\Application\General\Queries\Get_Purchase_Order_Handler;
 use Racketmanager\Application\General\Queries\Get_Purchase_Order_Query;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
@@ -236,7 +237,7 @@ class Finance_Ajax_Adapter_Test extends TestCase {
             }
         );
 
-        $view_model = Shortcode_View_Model::for_template( 'purchase-order-modal', [], 'club' );
+        $view_model = Shortcode_View_Model::for_template( 'purchase-order-modal', [ 'invoice' => null, 'modal' => 'poModal' ], 'club' );
 
         $query_handler = $this->createMock( Get_Purchase_Order_Handler::class );
         $query_handler->expects( $this->once() )
@@ -244,7 +245,7 @@ class Finance_Ajax_Adapter_Test extends TestCase {
             ->with( $this->callback( function ( Get_Purchase_Order_Query $query ): bool {
                 return 42 === $query->id && 'poModal' === $query->modal;
             } ) )
-            ->willReturn( $view_model );
+            ->willReturn( new Purchase_Order_Result( modal: 'poModal' ) );
 
         $presenter = $this->createMock( Shortcode_View_Presenter::class );
         $presenter->expects( $this->once() )

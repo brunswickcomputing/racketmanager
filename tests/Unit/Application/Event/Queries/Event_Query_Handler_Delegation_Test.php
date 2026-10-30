@@ -62,13 +62,8 @@ class Event_Query_Handler_Delegation_Test extends TestCase {
 			)
 			->willReturn( [ (object) [ 'id' => 88 ] ] );
 
-		$tournament = $this->createStub( Tournament_Presenter::class );
-		$tournament->method( 'present_match_list' )->willReturn( [] );
-		$tournament->method( 'is_tournament_competition' )->willReturn( false );
-
 		$handler = new Get_Event_Matches_Handler(
 			$this->createStub( Competition_Service::class ),
-			$tournament,
 			$league_service,
 			$event_query,
 			$league_query
@@ -109,7 +104,6 @@ class Event_Query_Handler_Delegation_Test extends TestCase {
 		$handler = new Get_Event_Draw_Handler(
 			$this->createStub( Competition_Service::class ),
 			$league_service,
-			$this->createStub( Competition_Shortcode_Presenter::class ),
 			$this->createStub( Fixture_Detail_Service::class ),
 			$event_query,
 			$league_query

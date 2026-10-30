@@ -3,30 +3,27 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Tournament\Queries;
 
+use Racketmanager\Application\Tournament\DTOs\Tournament_Result;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Presentation\Presenters\Tournament_Presenter;
-use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use function __;
-use function esc_url;
-use function get_permalink;
 
 class Get_Tournament_Handler {
     public function __construct(
         private readonly Tournament_Service $tournament_service,
-        private readonly Tournament_Presenter $tournament_presenter,
         private readonly ?Get_Latest_Tournament_Handler $latest_tournament_handler = null
     ) {}
 
-    public function handle( Get_Tournament_Query $query ): Shortcode_View_Model {
+    public function handle( Get_Tournament_Query $query ): Tournament_Result {
         global $wp;
 
         $tournament = $query->tournament;
         if ( ! $tournament ) {
             if ( $this->latest_tournament_handler !== null ) {
-                return $this->latest_tournament_handler->handle( new Get_Latest_Tournament_Query() );
+                $latest_result = $this->latest_tournament_handler->handle( new Get_Latest_Tournament_Query() );
+                return Tournament_Result::redirect( $latest_result->redirect_url );
             }
             $active_tournament = $this->tournament_service->get_active_tournament();
             if ( $active_tournament ) {
@@ -34,17 +31,17 @@ class Get_Tournament_Handler {
             } else {
                 $new_url = '/tournaments/';
             }
-            return Shortcode_View_Model::for_html( '<script>location.href = "' . esc_url( $new_url ) . '"</script>' );
+            return Tournament_Result::redirect( $new_url );
         }
 
         try {
             $tournament_details = $this->tournament_service->get_tournament_with_details( $tournament );
         } catch ( Tournament_Not_Found_Exception $e ) {
-            return Shortcode_View_Model::for_error( $e->getMessage() );
+            return Tournament_Result::error( $e->getMessage() );
         }
 
         if ( ! $tournament_details ) {
-            return Shortcode_View_Model::for_error( __( 'Tournament not found', 'racketmanager' ) );
+            return Tournament_Result::error( __( 'Tournament not found', 'racketmanager' ) );
         }
 
         $tournament_args = [
@@ -123,27 +120,17 @@ class Get_Tournament_Handler {
             ],
         ];
 
-        $post_id             = $query->post_id ?: ( function_exists( 'get_the_ID' ) && false !== get_the_ID() ? (int) get_the_ID() : '' );
-        $tournament_seo_name = Util::seo_url( (string) $tournament_details->tournament->name );
-        $filename            = ( '' !== $query->template ) ? 'tournament-' . $query->template : 'tournament';
+        $post_id = $query->post_id ?: ( function_exists( 'get_the_ID' ) && false !== get_the_ID() ? (int) get_the_ID() : '' );
 
-        $vars = [
-            'tournament_details'  => $tournament_details,
-            'tournaments'         => $tournaments,
-            'tab'                 => $tab,
-            'menu_options'        => $menu_options,
-            'post_id'             => $post_id,
-            'form_action'         => $post_id ? (string) get_permalink( (int) $post_id ) : '',
-            'tournament_seo_name'  => $tournament_seo_name,
-            'season'              => $tournament_details->tournament->season,
-            'entry_option'        => true,
-            'tournament_header'   => $this->tournament_presenter->present_header( $tournament_details->tournament, true ),
-        ];
-
-        return Shortcode_View_Model::for_template(
-            $filename,
-            $vars,
-            false
+        return new Tournament_Result(
+            tournament: $tournament_details->tournament,
+            competition: $tournament_details->competition,
+            tab: $tab,
+            seasons: $tournaments,
+            menu_options: $menu_options,
+            tournament_details: $tournament_details,
+            template: $query->template,
+            post_id: $post_id
         );
     }
 }

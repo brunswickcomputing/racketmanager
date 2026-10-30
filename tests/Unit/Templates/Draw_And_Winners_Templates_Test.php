@@ -23,6 +23,7 @@ use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Tournament\Tournament;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Draw_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
@@ -144,14 +145,19 @@ class Draw_And_Winners_Templates_Test extends TestCase {
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
         $comp_service->method( 'get_winners_for_competition' )->willReturn( [ 'LADIES' => [ $winner_item ] ] );
 
-        $handler = new Get_Competition_Winners_Handler( $comp_service, $this->competition_season_service(), new Competition_Shortcode_Presenter() );
-        $vm      = $handler->handle( new Get_Competition_Winners_Query( competition_id: 10, season: 2026 ) );
+        $presenter = new Competition_Shortcode_Presenter();
+        $handler   = new Get_Competition_Winners_Handler( $comp_service, $this->competition_season_service() );
+        $result    = $handler->handle( new Get_Competition_Winners_Query( competition_id: 10, season: 2026 ) );
 
-        $this->assertFalse( $vm->is_error() );
+        $this->assertFalse( $result->is_error() );
+        $winners_vm = $presenter->present_competition_winners( $result->raw_winners );
 
         $warnings = [];
         $output   = $this->render_and_capture_warnings(
-            fn() => $this->template_renderer->render( $vm->template, $vm->vars, $vm->template_type ),
+            fn() => $this->template_renderer->render( $result->template, [
+                'competition' => $result->competition,
+                'winners'     => $winners_vm,
+            ], 'competition' ),
             $warnings
         );
 
@@ -185,8 +191,10 @@ class Draw_And_Winners_Templates_Test extends TestCase {
         $tourn_service->method( 'get_tournament' )->willReturn( $tournament );
         $tourn_service->method( 'get_winners_for_tournament' )->willReturn( [ 'MAIN' => [ $winner_item ] ] );
 
-        $handler = new Get_Tournament_Winners_Handler( $tourn_service, new Tournament_Presenter() );
-        $vm      = $handler->handle( new Get_Tournament_Winners_Query( tournament_id: 55 ) );
+        $handler = new Get_Tournament_Winners_Handler( $tourn_service );
+        $result  = $handler->handle( new Get_Tournament_Winners_Query( tournament_id: 55 ) );
+        $adapter = new Tournament_Shortcode_Adapter( tournament_presenter: new Tournament_Presenter() );
+        $vm      = $adapter->present_winners( $result );
 
         $this->assertFalse( $vm->is_error() );
 
@@ -335,9 +343,13 @@ class Draw_And_Winners_Templates_Test extends TestCase {
                 }
             );
 
-        $handler = new Get_Event_Draw_Handler( $comp_service, $league_service, new Competition_Shortcode_Presenter(), $detail_service, $this->event_query_service( $this->event_repository_with_results( [ 'query_leagues' => [ $league ] ] ) ), $this->stub_league_query );
-        $vm      = $handler->handle( new Get_Event_Draw_Query( event_id: 8, season: '2025' ) );
-        $this->assertFalse( $vm->is_error() );
+        $adapter = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
+            competition_shortcode_presenter: new Competition_Shortcode_Presenter()
+        );
+        $handler = new Get_Event_Draw_Handler( $comp_service, $league_service, $detail_service, $this->event_query_service( $this->event_repository_with_results( [ 'query_leagues' => [ $league ] ] ) ), $this->stub_league_query );
+        $result  = $handler->handle( new Get_Event_Draw_Query( event_id: 8, season: '2025' ) );
+        $this->assertFalse( $result->is_error() );
+        $vm = $adapter->present_draw( $result );
         // Assert detail service is only called for visible leg 2 and non-leg fixtures (703 leg 1 was skipped).
         $this->assertSame( [ 701, 702, 704 ], $resolved_fixture_ids );
 
@@ -428,6 +440,7 @@ class Draw_And_Winners_Templates_Test extends TestCase {
         $tournament->name = 'Summer 2026';
         $tournament->method( 'get_id' )->willReturn( 20 );
         $tournament->method( 'get_name' )->willReturn( 'Summer 2026' );
+        $tournament->method( 'is_event_allowed' )->willReturn( true );
 
         $competition = $this->createStub( Competition::class );
         $competition->is_player_entry = true;
@@ -521,9 +534,11 @@ class Draw_And_Winners_Templates_Test extends TestCase {
         $tournament_service->method( 'get_draw_details_for_tournament' )->willReturn( $event );
 
         $presenter = new Tournament_Presenter();
-        $handler   = new Get_Tournament_Draws_Handler( $tournament_service, $presenter );
+        $handler   = new Get_Tournament_Draws_Handler( $tournament_service );
 
-        $vm = $handler->handle( new Get_Tournament_Draws_Query( tournament_id: 20, draw_id: 'mens-doubles' ) );
+        $result  = $handler->handle( new Get_Tournament_Draws_Query( tournament_id: 20, draw_id: 'mens-doubles' ) );
+        $adapter = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter );
+        $vm      = $adapter->present_draws( $result );
 
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'draw', $vm->template );

@@ -15,8 +15,8 @@ use Racketmanager\Application\General\Queries\Get_Purchase_Order_Handler;
 use Racketmanager\Infrastructure\Security\Security_Service;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\RacketManager;
-use Racketmanager\Services\View\Shortcode_Template_Renderer;
 
 /**
  * WordPress entry point for finance AJAX actions.

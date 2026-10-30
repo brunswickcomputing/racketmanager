@@ -4,6 +4,15 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Shortcodes;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\League\DTOs\League_Archive_Result;
+use Racketmanager\Application\League\DTOs\League_Championship_Result;
+use Racketmanager\Application\League\DTOs\League_Crosstable_Result;
+use Racketmanager\Application\League\DTOs\League_Last_5_Result;
+use Racketmanager\Application\League\DTOs\League_Match_Dropdown_Result;
+use Racketmanager\Application\League\DTOs\League_Matches_Result;
+use Racketmanager\Application\League\DTOs\League_Players_Result;
+use Racketmanager\Application\League\DTOs\League_Season_Dropdown_Result;
+use Racketmanager\Application\League\DTOs\League_Teams_Result;
 use Racketmanager\Application\League\Queries\Get_League_Archive_Handler;
 use Racketmanager\Application\League\Queries\Get_League_Championship_Handler;
 use Racketmanager\Application\League\Queries\Get_League_Crosstable_Handler;
@@ -183,15 +192,15 @@ class League_Shortcode_Adapter_Test extends TestCase {
         $match_dropdown_handler  = $this->createStub( Get_League_Match_Dropdown_Handler::class );
         $last_5_handler          = $this->createStub( Get_League_Last_5_Handler::class );
 
-        $championship_handler->method( 'handle' )->willReturn( Shortcode_View_Model::for_template( 'championship' ) );
-        $archive_handler->method( 'handle' )->willReturn( Shortcode_View_Model::for_template( 'archive' ) );
-        $crosstable_handler->method( 'handle' )->willReturn( Shortcode_View_Model::for_template( 'crosstable' ) );
-        $matches_handler->method( 'handle' )->willReturn( Shortcode_View_Model::for_template( 'matches' ) );
-        $teams_handler->method( 'handle' )->willReturn( Shortcode_View_Model::for_template( 'teams-list' ) );
-        $players_handler->method( 'handle' )->willReturn( Shortcode_View_Model::for_template( 'players' ) );
-        $season_dropdown_handler->method( 'handle' )->willReturn( Shortcode_View_Model::for_template( 'season-dropdown' ) );
-        $match_dropdown_handler->method( 'handle' )->willReturn( Shortcode_View_Model::for_template( 'match-dropdown' ) );
-        $last_5_handler->method( 'handle' )->willReturn( Shortcode_View_Model::for_template( 'last-5' ) );
+        $championship_handler->method( 'handle' )->willReturn( new League_Championship_Result() );
+        $archive_handler->method( 'handle' )->willReturn( new League_Archive_Result( league: (object) [ 'sport' => 'tennis' ], event: (object) [ 'id' => 1 ] ) );
+        $crosstable_handler->method( 'handle' )->willReturn( new League_Crosstable_Result() );
+        $matches_handler->method( 'handle' )->willReturn( new League_Matches_Result() );
+        $teams_handler->method( 'handle' )->willReturn( new League_Teams_Result() );
+        $players_handler->method( 'handle' )->willReturn( new League_Players_Result() );
+        $season_dropdown_handler->method( 'handle' )->willReturn( new League_Season_Dropdown_Result() );
+        $match_dropdown_handler->method( 'handle' )->willReturn( new League_Match_Dropdown_Result() );
+        $last_5_handler->method( 'handle' )->willReturn( new League_Last_5_Result() );
 
         $adapter = $this->create_adapter( [
             'view_presenter'          => $view_presenter,
@@ -238,7 +247,7 @@ class League_Shortcode_Adapter_Test extends TestCase {
         $archive_handler->expects( self::once() )
             ->method( 'handle' )
             ->with( self::callback( fn( $query ) => '-1' === $query->match_day ) )
-            ->willReturn( Shortcode_View_Model::for_template( 'archive' ) );
+            ->willReturn( new League_Archive_Result( league: (object) [ 'sport' => 'tennis' ], event: (object) [ 'id' => 1 ] ) );
 
         $adapter = $this->create_adapter( [
             'view_presenter'  => $view_presenter,

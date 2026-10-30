@@ -24,9 +24,7 @@ use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Tournament\Tournament;
-use Racketmanager\Presentation\Formatters\Email_Date_Formatter;
-use Racketmanager\Presentation\Presenters\Tournament_Presenter;
-use Racketmanager\Presentation\View_Models\Tournament_Date_View_Model;
+use Racketmanager\Domain\DTO\Tournament\Tournament_Date_DTO;
 use Racketmanager\Domain\Tournament\Tournament_Entry;
 use Racketmanager\Exceptions\Charge_Not_Found_Exception;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
@@ -78,7 +76,7 @@ class Competition_Entry_Service {
     private Notify_Service $notify_service;
     private Tournament_Service $tournament_service;
     private Mailer_Interface $mailer;
-    private Email_Date_Formatter $date_formatter;
+    private ?Option_Gateway_Interface $option_gateway;
     private Event_Query_Service $event_query_service;
 
     /**
@@ -118,7 +116,50 @@ class Competition_Entry_Service {
         $this->notify_service              = $notify_service;
         $this->event_query_service         = $event_query_service;
         $this->mailer                      = $mailer ?? new Wp_Mailer();
-        $this->date_formatter              = new Email_Date_Formatter( $option_gateway );
+        $this->option_gateway              = $option_gateway;
+    }
+
+    /**
+     * Format a date string using the site date format (entry-open email semantics).
+     *
+     * Empty and any '0000-00-00' prefixed dates, or a failed mysql2date(), yield ''.
+     */
+    private function format_date( ?string $date ): string {
+        if ( empty( $date ) || str_starts_with( $date, '0000-00-00' ) ) {
+            return '';
+        }
+
+        $format = $this->option_gateway
+            ? $this->option_gateway->get_option( 'date_format', 'd/m/Y' )
+            : ( function_exists( 'get_option' ) ? get_option( 'date_format', 'd/m/Y' ) : 'd/m/Y' );
+
+        if ( ! is_string( $format ) || '' === $format ) {
+            $format = 'd/m/Y';
+        }
+
+        $formatted = mysql2date( $format, $date );
+
+        return is_string( $formatted ) ? $formatted : '';
+    }
+
+    /**
+     * Format a tournament date for display (tournament email semantics).
+     *
+     * Uses the plugin date format (default 'Y-m-d'); only an empty value or the exact '0000-00-00'
+     * is treated as unset, and an empty/failed mysql2date() result yields the fallback.
+     */
+    private function format_tournament_date( ?string $date, string $fallback ): string {
+        if ( empty( $date ) || '0000-00-00' === $date ) {
+            return $fallback;
+        }
+
+        $format    = (string) ( $this->racketmanager->date_format ?? 'Y-m-d' );
+        $formatted = mysql2date( $format, $date );
+        if ( false === $formatted || '' === $formatted ) {
+            return $fallback;
+        }
+
+        return (string) $formatted;
     }
 
     /**
@@ -129,9 +170,9 @@ class Competition_Entry_Service {
      * @return string[] closing, start and end date display strings.
      */
     private function present_entry_open_dates( object $season_dtls ): array {
-        $season_dtls->date_closing_display = $this->date_formatter->date( isset( $season_dtls->date_closing ) ? (string) $season_dtls->date_closing : null );
-        $season_dtls->date_start_display   = $this->date_formatter->date( isset( $season_dtls->date_start ) ? (string) $season_dtls->date_start : null );
-        $season_dtls->date_end_display     = $this->date_formatter->date( isset( $season_dtls->date_end ) ? (string) $season_dtls->date_end : null );
+        $season_dtls->date_closing_display = $this->format_date( isset( $season_dtls->date_closing ) ? (string) $season_dtls->date_closing : null );
+        $season_dtls->date_start_display   = $this->format_date( isset( $season_dtls->date_start ) ? (string) $season_dtls->date_start : null );
+        $season_dtls->date_end_display     = $this->format_date( isset( $season_dtls->date_end ) ? (string) $season_dtls->date_end : null );
 
         return [ $season_dtls->date_closing_display, $season_dtls->date_start_display, $season_dtls->date_end_display ];
     }
@@ -1029,7 +1070,7 @@ class Competition_Entry_Service {
         if ( ! $from_email ) {
             throw new Invalid_Argument_Exception( Util_Messages::secretary_email_not_found( 'tournament' ) );
         }
-        $url              = ( new Tournament_Presenter() )->get_entry_link( $tournament, (string) $this->racketmanager->site_url );
+        $url              = rtrim( (string) $this->racketmanager->site_url, '/' ) . '/entry-form/' . Seo_Slug::encode( $tournament->name ) . '-tournament/';
         $competition_name = $tournament->name . ' ' . __( 'Tournament', 'racketmanager' );
 
         switch ( $type ) {
@@ -1423,8 +1464,8 @@ class Competition_Entry_Service {
             $email_to                            = $player->display_name . ' <' . $player->email . '>';
             $email_from                          = $this->racketmanager->get_confirmation_email( 'tournament' );
             $email_subject                       = $this->racketmanager->site_name . ' - ' . $tournament_name . ' ' . __( 'Tournament Entry', 'racketmanager' );
-            $action_url                          = ( new Tournament_Presenter() )->get_entry_link( $tournament, (string) $this->racketmanager->site_url );
-            $tournament_link                     = '<a href="' . $this->racketmanager->site_url . ( new Tournament_Presenter() )->get_link( $tournament ) . '">' . $tournament_name . '</a>';
+            $action_url                          = rtrim( (string) $this->racketmanager->site_url, '/' ) . '/entry-form/' . Seo_Slug::encode( $tournament->name ) . '-tournament/';
+            $tournament_link                     = '<a href="' . $this->racketmanager->site_url . '/tournament/' . Seo_Slug::encode( $tournament->name ) . '/">' . $tournament_name . '</a>';
             $headers                             = array();
             $secretary_email                     = __( 'Tournament Secretary', 'racketmanager' ) . ' <' . $email_from . '>';
             $headers[]                           = RACKETMANAGER_FROM_EMAIL . $secretary_email;
@@ -1609,8 +1650,8 @@ class Competition_Entry_Service {
         $email_to                         = $player->display_name . ' <' . $player->email . '>';
         $email_from                       = $this->racketmanager->get_confirmation_email( 'tournament' );
         $email_subject                    = $this->racketmanager->site_name . ' - ' . $tournament->name . ' ' . __( 'Tournament Withdrawal', 'racketmanager' );
-        $action_url                       = ( new Tournament_Presenter() )->get_entry_link( $tournament, (string) $this->racketmanager->site_url );
-        $t_link                           = ( new Tournament_Presenter() )->get_link( $tournament );
+        $action_url                       = rtrim( (string) $this->racketmanager->site_url, '/' ) . '/entry-form/' . Seo_Slug::encode( $tournament->name ) . '-tournament/';
+        $t_link                           = '/tournament/' . Seo_Slug::encode( $tournament->name ) . '/';
         $tournament_link                  = '<a href="' . $this->racketmanager->site_url . $t_link . '">' . $tournament->name . '</a>';
         $headers                          = array();
         $secretary_email                  = __( 'Tournament Secretary', 'racketmanager' ) . ' <' . $email_from . '>';
@@ -1636,10 +1677,27 @@ class Competition_Entry_Service {
 
     }
 
-    private function present_tournament_dates( Tournament $tournament ): Tournament_Date_View_Model {
-        $date_format = (string) ( $this->racketmanager->date_format ?? 'Y-m-d' );
+    private function present_tournament_dates( Tournament $tournament ): Tournament_Date_DTO {
+        $tournament_window = $tournament->get_tournament_window();
+        $entry_window      = $tournament->get_entry_window();
+        $withdrawal_window = $tournament->get_withdrawal_window();
 
-        return ( new Tournament_Presenter( $date_format ) )->present_dates( $tournament );
+        $end_date        = method_exists( $tournament, 'get_end_date' ) ? $tournament->get_end_date() : ( $tournament->date_end ?? ( $tournament->date ?? null ) );
+        $closing_date    = method_exists( $tournament, 'get_closing_date' ) ? $tournament->get_closing_date() : ( $tournament->date_closing ?? null );
+        $withdrawal_date = method_exists( $tournament, 'get_withdrawal_date' ) ? $tournament->get_withdrawal_date() : ( $tournament->date_withdrawal ?? null );
+        $open_date       = method_exists( $tournament, 'get_open_date' ) ? $tournament->get_open_date() : ( $tournament->date_open ?? null );
+        $start_date      = method_exists( $tournament, 'get_start_date' ) ? $tournament->get_start_date() : ( $tournament->date_start ?? null );
+
+        $end_display = $tournament_window ? $this->format_tournament_date( $tournament_window->get_end_string(), 'TBC' ) : $this->format_tournament_date( $end_date, 'TBC' );
+
+        return new Tournament_Date_DTO(
+            date_display: $end_display,
+            date_closing_display: $entry_window ? $this->format_tournament_date( $entry_window->get_end_string(), 'N/A' ) : $this->format_tournament_date( $closing_date, 'N/A' ),
+            date_withdrawal_display: $withdrawal_window ? $this->format_tournament_date( $withdrawal_window->get_end_string(), 'N/A' ) : $this->format_tournament_date( $withdrawal_date, 'N/A' ),
+            date_open_display: $entry_window ? $this->format_tournament_date( $entry_window->get_start_string(), 'N/A' ) : $this->format_tournament_date( $open_date, 'N/A' ),
+            date_start_display: $tournament_window ? $this->format_tournament_date( $tournament_window->get_start_string(), 'N/A' ) : $this->format_tournament_date( $start_date, 'N/A' ),
+            date_end_display: $end_display
+        );
     }
 
 }

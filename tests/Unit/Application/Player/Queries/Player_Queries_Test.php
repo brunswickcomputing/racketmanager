@@ -44,55 +44,41 @@ final class Player_Queries_Test extends TestCase {
 	public function test_search_players_handler_returns_search_markup(): void {
 		$search_handler = $this->createMock( Get_Player_Search_Handler::class );
 		$alert_handler  = $this->createMock( Get_Alert_Handler::class );
-		$view_presenter = $this->createMock( Shortcode_View_Presenter::class );
 
-		$vm = Shortcode_View_Model::for_template( 'players-list', [] );
+		$result = new \Racketmanager\Application\General\DTOs\Player_Search_Result( players: [ 'Nadal' ], search: 'Nadal' );
 		$search_handler->expects( $this->once() )
 			->method( 'handle' )
 			->with( $this->callback( fn( Get_Player_Search_Query $q ) => 'Nadal' === $q->search ) )
-			->willReturn( $vm );
-
-		$view_presenter->expects( $this->once() )
-			->method( 'render' )
-			->with( $vm )
-			->willReturn( '<div>Player search for: Nadal</div>' );
+			->willReturn( $result );
 
 		$handler = new Search_Players_Handler(
 			player_search_handler: $search_handler,
-			alert_handler: $alert_handler,
-			view_presenter: $view_presenter
+			alert_handler: $alert_handler
 		);
 		$query   = new Search_Players_Query( search_string: 'Nadal' );
 
 		$output = $handler->handle( $query );
-		$this->assertSame( '<div>Player search for: Nadal</div>', $output );
+		$this->assertSame( $result, $output );
 	}
 
 	public function test_search_players_handler_missing_string_returns_alert(): void {
 		$search_handler = $this->createMock( Get_Player_Search_Handler::class );
 		$alert_handler  = $this->createMock( Get_Alert_Handler::class );
-		$view_presenter = $this->createMock( Shortcode_View_Presenter::class );
 
-		$vm = Shortcode_View_Model::for_template( 'alert', [] );
+		$result = new \Racketmanager\Application\General\DTOs\Alert_Result( msg: 'Search string not supplied', type: 'danger' );
 		$alert_handler->expects( $this->once() )
 			->method( 'handle' )
 			->with( $this->callback( fn( Get_Alert_Query $q ) => 'danger' === $q->type ) )
-			->willReturn( $vm );
-
-		$view_presenter->expects( $this->once() )
-			->method( 'render' )
-			->with( $vm )
-			->willReturn( '<div class="alert alert-danger">Search string not supplied</div>' );
+			->willReturn( $result );
 
 		$handler = new Search_Players_Handler(
 			player_search_handler: $search_handler,
-			alert_handler: $alert_handler,
-			view_presenter: $view_presenter
+			alert_handler: $alert_handler
 		);
 		$query   = new Search_Players_Query( search_string: null );
 
 		$output = $handler->handle( $query );
-		$this->assertSame( '<div class="alert alert-danger">Search string not supplied</div>', $output );
+		$this->assertSame( $result, $output );
 	}
 
 	public function test_get_player_details_query_from_request(): void {

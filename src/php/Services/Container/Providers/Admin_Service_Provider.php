@@ -3,31 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Container\Providers;
 
-use Racketmanager\Admin;
-use Racketmanager\Admin\Admin_Display;
 use Racketmanager\Application\Finance\Commands\Action_Invoice_Handler;
 use Racketmanager\Application\Finance\Commands\Generate_Charge_Invoices_Handler;
-use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Competition_Config_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Draw_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Event_Config_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Fixtures_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Information_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Overview_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Plan_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Setup_Admin_Controller;
-use Racketmanager\Admin\Presenters\Admin_League_Schedule_Presenter;
-use Racketmanager\Admin\Presenters\Admin_Plan_Presenter;
-use Racketmanager\Admin\Controllers\Tournament_Setup_Event_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Team_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Tournaments_Admin_Controller;
-use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
-use Racketmanager\Admin\Presenters\Admin_Championship_Finals_Presenter;
-use Racketmanager\Admin\Presenters\Admin_Competition_Page_Presenter;
-use Racketmanager\Admin\Presenters\Admin_Date_Presenter;
-use Racketmanager\Admin\Presenters\Admin_Entry_Link_Presenter;
-use Racketmanager\Admin\Presenters\Admin_League_Matches_Presenter;
-use Racketmanager\Admin\Presenters\Admin_Results_Match_Presenter;
 use Racketmanager\Exceptions\Interface_Exception;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
@@ -90,9 +67,7 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
     public function register( Simple_Container $container ): void {
         $app = $this->app;
 
-        // Flash & Message infrastructure
-        $container->set( 'admin_flash_message_store', fn() => new Admin_Flash_Message_Store() );
-
+        // Message & Redirector infrastructure
         $container->set( 'admin_message_service', fn( Simple_Container $c ) => new Admin_Message_Service(
             $c->get( 'admin_flash_message_store' )
         ) );
@@ -108,31 +83,6 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'view_renderer' ),
             $c->get( 'admin_message_service' )
         ) );
-
-        // Presenters
-        $container->set( 'admin_date_presenter', fn() => new Admin_Date_Presenter() );
-        $container->set( 'admin_entry_link_presenter', fn() => new Admin_Entry_Link_Presenter() );
-
-        $container->set( 'admin_league_matches_presenter', fn( Simple_Container $c ) => new Admin_League_Matches_Presenter(
-            $c->get( 'admin_date_presenter' )
-        ) );
-
-        $container->set( 'admin_championship_finals_presenter', fn( Simple_Container $c ) => new Admin_Championship_Finals_Presenter(
-            $c->get( 'admin_date_presenter' )
-        ) );
-
-        $container->set( 'admin_results_match_presenter', fn( Simple_Container $c ) => new Admin_Results_Match_Presenter(
-            $c->get( 'admin_date_presenter' ),
-            $c->get( 'league_repository' )
-        ) );
-
-        $container->set( 'admin_competition_page_presenter', fn( Simple_Container $c ) => new Admin_Competition_Page_Presenter(
-            $c->get( 'competition_service' ),
-            $c->get( 'club_service' ),
-            $c->get( 'season_service' ),
-            $c->get( 'finance_service' )
-        ) );
-        $container->set( Admin_Competition_Page_Presenter::class, fn( Simple_Container $c ) => $c->get( 'admin_competition_page_presenter' ) );
 
         // Guards & Handlers
         $container->set( 'wp_action_guard', fn() => new Wp_Action_Guard() );
@@ -477,103 +427,6 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'action_guard' )
         ) );
 
-        // Admin Controllers
-
-        $container->set( 'tournament_admin_controller', fn( Simple_Container $c ) => new Tournament_Admin_Controller(
-            $c->get( 'tournament_service' ),
-            $c->get( 'club_service' ),
-            $c->get( 'competition_service' ),
-            $c->get( 'season_service' ),
-            $c->get( 'tournament_action_dispatcher' ),
-            $c->get( 'action_guard' )
-        ) );
-
-        $container->set( 'admin_plan_presenter', fn( Simple_Container $c ) => new Admin_Plan_Presenter(
-            $c->get( 'fixture_detail_service' ),
-            $c->get( 'player_repository' ),
-            $c->get( 'fixture_relation_loader' ),
-        ) );
-
-        $container->set( 'admin_league_schedule_presenter', fn() => new Admin_League_Schedule_Presenter() );
-
-        $container->set( 'tournament_plan_admin_controller', fn( Simple_Container $c ) => new Tournament_Plan_Admin_Controller(
-            $c->get( 'tournament_service' ),
-            $c->get( 'action_guard' ),
-            $c->get( 'admin_plan_presenter' ),
-        ) );
-
-        $container->set( 'tournament_tournaments_admin_controller', fn( Simple_Container $c ) => new Tournament_Tournaments_Admin_Controller(
-            $c->get( 'tournament_service' ),
-            $c->get( 'competition_service' ),
-            $c->get( 'season_service' ),
-            $c->get( 'action_guard' )
-        ) );
-
-        $container->set( 'tournament_overview_admin_controller', fn( Simple_Container $c ) => new Tournament_Overview_Admin_Controller(
-            $c->get( 'tournament_service' ),
-            $c->get( 'tournament_overview_action_dispatcher' ),
-            $c->get( 'action_guard' ),
-            $c->get( 'admin_entry_link_presenter' )
-        ) );
-
-        $container->set( 'tournament_setup_admin_controller', fn( Simple_Container $c ) => new Tournament_Setup_Admin_Controller(
-            $c->get( 'tournament_service' ),
-            $c->get( 'action_guard' )
-        ) );
-
-        $container->set( 'tournament_competition_config_admin_controller', fn( Simple_Container $c ) => new Tournament_Competition_Config_Admin_Controller(
-            $c->get( 'tournament_service' ),
-            $c->get( 'competition_service' ),
-            $c->get( 'club_service' ),
-            $c->get( 'action_guard' )
-        ) );
-
-        $container->set( 'tournament_event_config_admin_controller', fn( Simple_Container $c ) => new Tournament_Event_Config_Admin_Controller(
-            $c->get( 'tournament_service' ),
-            $c->get( 'competition_service' ),
-            $c->get( 'competition_season_service' ),
-            $c->get( 'action_guard' ),
-            $c->get( 'event_repository' ),
-            $c->get( 'league_service' )
-        ) );
-
-        $container->set( 'tournament_team_admin_controller', fn( Simple_Container $c ) => new Tournament_Team_Admin_Controller(
-            $c->get( 'tournament_service' ),
-            $c->get( 'league_service' ),
-            $c->get( 'team_service' ),
-            $c->get( 'club_service' ),
-            $c->get( 'action_guard' ),
-            $c->get( 'league_query_service' )
-        ) );
-
-        $container->set( 'tournament_setup_event_admin_controller', fn( Simple_Container $c ) => new Tournament_Setup_Event_Admin_Controller(
-            $c->get( 'tournament_service' ),
-            $c->get( 'league_service' ),
-            $c->get( 'draw_action_dispatcher' ),
-            $c->get( 'action_guard' ),
-            $c->get( 'league_query_service' )
-        ) );
-
-        $container->set( 'tournament_contact_admin_controller', fn( Simple_Container $c ) => $c->get( 'contact_admin_controller' ) );
-
-        $container->set( 'tournament_information_admin_controller', fn( Simple_Container $c ) => new Tournament_Information_Admin_Controller(
-            $c->get( 'tournament_service' ),
-            $c->get( 'tournament_information_action_dispatcher' ),
-            $c->get( 'action_guard' )
-        ) );
-
-        $container->set( 'tournament_fixtures_admin_controller', fn( Simple_Container $c ) => new Tournament_Fixtures_Admin_Controller(
-            $c->get( 'tournament_matches_admin_service' ),
-            $c->get( 'draw_action_dispatcher' ),
-            $c->get( 'action_guard' )
-        ) );
-
-        $container->set( 'tournament_draw_admin_controller', fn( Simple_Container $c ) => new Tournament_Draw_Admin_Controller(
-            $c->get( 'tournament_service' ),
-            $c->get( 'league_service' ),
-            $c->get( 'draw_action_dispatcher' ),
-            $c->get( 'action_guard' )
-        ) );
 
         // Admin & Delivery AJAX
         $container->set( 'admin_ajax_adapter', fn( Simple_Container $c ) => new Admin_Ajax_Adapter(
@@ -612,33 +465,9 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             search_players_handler: $c->get( 'search_players_handler' ),
             get_player_details_handler: $c->get( 'get_player_details_handler' ),
             league_repository: $c->get( 'league_repository' ),
-            event_repository: $c->get( 'event_repository' )
+            event_repository: $c->get( 'event_repository' ),
+            view_presenter: $c->get( 'shortcode_view_presenter' )
         ) );
         $container->set( 'frontend_ajax_controller', fn( Simple_Container $c ) => new Frontend_Ajax_Controller( $app, $c->get( 'frontend_ajax_adapter' ) ) );
-
-        $container->set( 'admin_display', function( Simple_Container $c ) use ( $app ) {
-            if ( null === $app ) {
-                throw new \LogicException( 'admin_display service requires a valid RacketManager application instance.' );
-            }
-            return new Admin_Display( $app, $c );
-        } );
-        $container->set( Admin_Display::class, fn( Simple_Container $c ) => $c->get( 'admin_display' ) );
-
-        $container->set( 'admin', function( Simple_Container $c ) use ( $app ) {
-            if ( null !== Admin::get_current_instance() ) {
-                return Admin::get_current_instance();
-            }
-            if ( null === $app ) {
-                throw new \LogicException( 'Admin service requires a valid RacketManager application instance.' );
-            }
-            return new Admin(
-                $c,
-                $app,
-                $c->get( 'admin_display' ),
-                $c->has( 'asset_manager' ) ? $c->get( 'asset_manager' ) : null,
-                $c->has( 'admin_ajax_controller' ) ? $c->get( 'admin_ajax_controller' ) : null
-            );
-        } );
-        $container->set( Admin::class, fn( Simple_Container $c ) => $c->get( 'admin' ) );
     }
 }

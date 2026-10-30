@@ -7,6 +7,7 @@ use BackedEnum;
 use Racketmanager\Domain\Value_Objects\Date_Range;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Exceptions\Template_Not_Found_Exception;
+use Racketmanager\Application\Competition\DTOs\Competition_Page_Result;
 use Racketmanager\Presentation\View_Models\Competition_Header_View_Model;
 use Racketmanager\Presentation\View_Models\Competition_List_Item_View_Model;
 use Racketmanager\Presentation\View_Models\Competition_Overview_View_Model;
@@ -35,7 +36,23 @@ class Competition_Shortcode_Presenter {
         private readonly ?Option_Gateway_Interface $option_gateway = null
     ) {}
 
-    public function render( Competition_View_Model $vm ): string {
+    public function render( Competition_View_Model|Competition_Page_Result $vm ): string {
+        if ( $vm instanceof Competition_Page_Result ) {
+            $vm = new Competition_View_Model(
+                template: $vm->template,
+                competition: $vm->competition,
+                competition_season: $vm->competition_season,
+                tab: $vm->tab,
+                seasons: $vm->seasons,
+                error_message: $vm->error_message,
+                menu_options: $vm->menu_options,
+                is_singular: $vm->is_singular,
+                post_id: $vm->post_id ?? '',
+                pagename: $vm->pagename,
+                competition_seo_name: $vm->competition_seo_name
+            );
+        }
+
         $default_vars = [
             'club_presenter'   => $this->club_presenter ?? new Club_Presenter(),
             'player_presenter' => $this->player_presenter ?? new Player_Presenter( $this ),

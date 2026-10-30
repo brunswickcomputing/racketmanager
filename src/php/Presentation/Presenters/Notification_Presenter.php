@@ -16,9 +16,10 @@ use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Tournament_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
+use Racketmanager\Application\Export\DTO\Export_Criteria;
+use Racketmanager\Services\Notification\Notification_Presenter_Interface;
 use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\Export\DTO\Export_Criteria;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Team_Service;
@@ -27,7 +28,7 @@ use stdClass;
 use function __;
 use function sanitize_title;
 
-readonly class Notification_Presenter {
+readonly class Notification_Presenter implements Notification_Presenter_Interface {
 
     public function __construct(
         private Team_Repository_Interface $team_repository,

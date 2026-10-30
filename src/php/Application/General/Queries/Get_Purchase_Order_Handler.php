@@ -3,8 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\General\Queries;
 
+use Racketmanager\Application\General\DTOs\Purchase_Order_Result;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
-use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Finance_Service;
 use function __;
 
@@ -13,22 +13,21 @@ class Get_Purchase_Order_Handler {
         private readonly ?Finance_Service $finance_service = null
     ) {}
 
-    public function handle( Get_Purchase_Order_Query $query ): Shortcode_View_Model {
+    public function handle( Get_Purchase_Order_Query $query ): Purchase_Order_Result {
         if ( ! $query->id || ! $this->finance_service ) {
-            return Shortcode_View_Model::for_error( __( 'Invoice not found', 'racketmanager' ), 'modal' );
+            return Purchase_Order_Result::error( __( 'Invoice not found', 'racketmanager' ) );
         }
 
         try {
             $invoice = $this->finance_service->get_invoice( $query->id );
         } catch ( Invoice_Not_Found_Exception $e ) {
-            return Shortcode_View_Model::for_error( $e->getMessage(), 'modal' );
+            return Purchase_Order_Result::error( $e->getMessage() );
         }
 
-        $filename = ! empty( $query->template ) ? 'purchase-order-modal-' . $query->template : 'purchase-order-modal';
-
-        return Shortcode_View_Model::for_template( $filename, [
-            'invoice' => $invoice,
-            'modal'   => $query->modal,
-        ], 'club' );
+        return new Purchase_Order_Result(
+            invoice: $invoice,
+            modal: $query->modal,
+            template: $query->template
+        );
     }
 }

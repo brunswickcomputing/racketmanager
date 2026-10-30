@@ -9,6 +9,7 @@ use Racketmanager\Admin\Controllers\Tournament_Fixtures_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Fixtures_Page_View_Model;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Response_DTO;
+use Racketmanager\Domain\DTO\Admin\Tournament\Tournament_Fixtures_Data_DTO;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
@@ -70,8 +71,8 @@ class Tournament_Fixtures_Admin_Controller_Test extends TestCase {
         $dispatcher = $this->createMock( Draw_Action_Dispatcher::class );
 
         $fixtures_admin_service = $this->createMock( Tournament_Fixtures_Admin_Service::class );
-        $fixtures_admin_service->method( 'prepare_fixtures_view_model' )->willReturn(
-            new Tournament_Fixtures_Page_View_Model(
+        $fixtures_admin_service->method( 'prepare_fixtures_data' )->willReturn(
+            new Tournament_Fixtures_Data_DTO(
                 league: $league,
                 tournament: $tournament,
                 competition: $league->event->competition,
@@ -152,8 +153,8 @@ class Tournament_Fixtures_Admin_Controller_Test extends TestCase {
         $dispatcher = $this->createMock( Draw_Action_Dispatcher::class );
 
         $fixtures_admin_service = $this->createMock( Tournament_Fixtures_Admin_Service::class );
-        $fixtures_admin_service->method( 'prepare_fixtures_view_model' )->willReturn(
-            new Tournament_Fixtures_Page_View_Model(
+        $fixtures_admin_service->method( 'prepare_fixtures_data' )->willReturn(
+            new \Racketmanager\Domain\DTO\Admin\Tournament\Tournament_Fixtures_Data_DTO(
                 league: $league,
                 tournament: $tournament,
                 competition: $league->event->competition,

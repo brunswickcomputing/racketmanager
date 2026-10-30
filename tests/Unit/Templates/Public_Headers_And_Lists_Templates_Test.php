@@ -13,6 +13,7 @@ use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\DTO\Competition\Competition_Overview_DTO;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Tournament\Tournament;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\Competition_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
@@ -285,12 +286,11 @@ class Public_Headers_And_Lists_Templates_Test extends TestCase {
             competition_service: $comp_service,
             tournament_service: $tourn_service,
             player_service: $player_service,
-            player_query_service: $player_query_service,
-            presenter: $competition_presenter
+            player_query_service: $player_query_service
         );
 
         $query = new Get_Competitions_Query( type: 'league', user_id: 42 );
-        $vm    = $handler->handle( $query );
+        $vm    = ( new Competition_Shortcode_Adapter( competition_shortcode_presenter: $competition_presenter ) )->present_competitions( $handler->handle( $query ) );
 
         $this->assertEquals( 'competitions', $vm->template );
         $this->assertArrayHasKey( 'competition_items', $vm->vars );
@@ -362,9 +362,9 @@ class Public_Headers_And_Lists_Templates_Test extends TestCase {
         $comp_service->method( 'get_competition_overview' )->willReturn( $overview );
 
         $competition_presenter = new Competition_Shortcode_Presenter( new Php_View_Renderer( $this->templates_dir ) );
-        $handler = new Get_Competition_Overview_Handler( $comp_service, $competition_presenter, $this->competition_season_service( [ 130 => 'Thorpe Bay Lawn Tennis Club' ] ) );
+        $handler = new Get_Competition_Overview_Handler( $comp_service, $this->competition_season_service( [ 130 => 'Thorpe Bay Lawn Tennis Club' ] ) );
         $query   = new Get_Competition_Overview_Query( competition_id: 10, season: 2026 );
-        $vm      = $handler->handle( $query );
+        $vm      = ( new Competition_Shortcode_Adapter( competition_shortcode_presenter: $competition_presenter ) )->present_overview( $handler->handle( $query ) );
 
         $this->assertEquals( 'overview', $vm->template );
         $this->assertArrayHasKey( 'overview_vm', $vm->vars );

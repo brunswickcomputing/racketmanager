@@ -3,12 +3,10 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Competition\Queries;
 
+use Racketmanager\Application\Competition\DTOs\Competition_Players_Result;
 use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
-use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
-use Racketmanager\Presentation\Presenters\Player_Presenter;
-use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
@@ -28,15 +26,13 @@ class Get_Competition_Players_Handler {
         private readonly Player_Service $player_service,
         private readonly Player_Query_Service $player_query_service,
         private readonly Player_Stats_Service $player_stats_service,
-        private readonly Player_Presenter $player_presenter,
-        private readonly Competition_Shortcode_Presenter $competition_presenter,
         private readonly Competition_Season_Service $competition_season_service
     ) {}
 
-    public function handle( Get_Competition_Players_Query $query ): Shortcode_View_Model {
+    public function handle( Get_Competition_Players_Query $query ): Competition_Players_Result {
         $comp_id = $query->competition_id ?? $query->competition_name;
         if ( null === $comp_id || '' === $comp_id ) {
-            return Shortcode_View_Model::error( __( 'Competition not found', 'racketmanager' ) );
+            return Competition_Players_Result::error( __( 'Competition not found', 'racketmanager' ) );
         }
 
         if ( is_string( $comp_id ) ) {
@@ -46,21 +42,18 @@ class Get_Competition_Players_Handler {
         try {
             $competition = $this->competition_service->get_by_id( $comp_id );
         } catch ( Competition_Not_Found_Exception $e ) {
-            return Shortcode_View_Model::error( $e->getMessage() );
+            return Competition_Players_Result::error( $e->getMessage() );
         }
 
         if ( ! $competition ) {
-            return Shortcode_View_Model::error( __( 'Competition not found', 'racketmanager' ) );
+            return Competition_Players_Result::error( __( 'Competition not found', 'racketmanager' ) );
         }
 
         $this->competition_season_service->resolve_current_season( $competition, (string) ( $query->season ?? '' ) );
 
         $season_str           = isset( $competition->current_season['name'] ) ? (string) $competition->current_season['name'] : null;
         $competition->players = [];
-        $player_vm            = null;
-        $match_group_links    = [];
-        $player_links         = [];
-        $player_link          = null;
+        $player               = null;
 
         if ( ! empty( $query->player_identifier ) ) {
             $player_identifier = Seo_Slug::decode( $query->player_identifier );
@@ -79,30 +72,22 @@ class Get_Competition_Players_Handler {
                 asort( $player->matches );
                 $player->stats       = $this->player_stats_service->get_stats( $player );
                 $competition->player = $player;
-                $player_vm           = $this->player_presenter->present_player( $player );
-                $match_group_links   = $this->competition_presenter->present_player_match_group_links( $player->matches ?? [] );
             } else {
-                return Shortcode_View_Model::error( __( 'Player not found', 'racketmanager' ) );
+                return Competition_Players_Result::error( __( 'Player not found', 'racketmanager' ) );
             }
         } else {
             $players              = $this->player_service->get_players_for_competition( (int) $competition->get_id(), $season_str );
             $competition->players = Util::get_players_list( $players );
-            $player_links         = $this->competition_presenter->present_competition_players_links( $competition, $competition->players ?? [] );
-            $player_link          = $this->competition_presenter->get_competition_player_base_url( $competition );
         }
 
         $template = '' !== $query->template ? 'players-' . $query->template : 'players';
 
-        return new Shortcode_View_Model(
-            template: $template,
-            vars: [
-                'competition'        => $competition,
-                'player_vm'          => $player_vm,
-                'match_group_links'  => $match_group_links,
-                'player_links'       => $player_links,
-                'player_link'        => $player_link,
-            ],
-            template_type: 'competition'
+        return new Competition_Players_Result(
+            competition: $competition,
+            player: $player,
+            players: $competition->players ?? [],
+            raw_matches: $player->matches ?? [],
+            template: $template
         );
     }
 }

@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Controllers\Admin;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Admin\Controllers\Tournament_Draw_Admin_Controller;
+use Racketmanager\Admin\Presenters\Championship_Finals_Presenter_Interface;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
 use Racketmanager\Domain\Tournament\Championship_Settings;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
@@ -13,6 +14,7 @@ use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Response_DTO;
 use Racketmanager\Domain\Tournament\Championship;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\DTO\Admin\Tournament\Tournament_Draw_Data_DTO;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
@@ -30,6 +32,61 @@ require_once __DIR__ . '/../../../wp-stubs.php';
 #[AllowMockObjectsWithoutExpectations]
 final
 class Tournament_Draw_Admin_Controller_Test extends TestCase {
+
+    private function passthrough_presenter(): Championship_Finals_Presenter_Interface {
+        return new class() implements Championship_Finals_Presenter_Interface {
+            public function present_finals( array $finals, ?object $tournament, object $league, string $season ): array {
+                return $finals;
+            }
+        };
+    }
+
+    public function test_draw_page_passes_presented_finals_to_view_model(): void {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+
+        $tournament = $this->create_tournament_instance( 1, 'Test Tournament', 2024 );
+        $league     = $this->create_mock_league();
+        $raw_finals = array( (object) array( 'key' => 'final', 'fixtures' => array( 'raw' ) ) );
+
+        $tournament_service = $this->createMock( Tournament_Service::class );
+        $tournament_service->method( 'get_tournament' )->willReturn( $tournament );
+        $tournament_service->method( 'get_draw_data' )->willReturn( new Tournament_Draw_Data_DTO(
+            tournament: $tournament,
+            league: $league,
+            tab: 'finals',
+            season: '2024',
+            matches: array(),
+            teams: array(),
+            finals: $raw_finals,
+        ) );
+
+        $league_service = $this->createMock( League_Service::class );
+        $league_service->method( 'get_league' )->willReturn( $league );
+
+        $guard      = $this->createMock( Action_Guard_Interface::class );
+        $dispatcher = new Draw_Action_Dispatcher( $this->createMock( Draw_Action_Handler_Interface::class ), $guard );
+
+        $presenter = new class() implements Championship_Finals_Presenter_Interface {
+            public array $calls = array();
+
+            public function present_finals( array $finals, ?object $tournament, object $league, string $season ): array {
+                $this->calls[] = array( $finals, $tournament, $league, $season );
+
+                return array( 'presented-final' );
+            }
+        };
+
+        $controller = new Tournament_Draw_Admin_Controller( $tournament_service, $league_service, $dispatcher, $guard, $presenter );
+        $result     = $controller->draw_page( array( 'tournament' => 1, 'league' => 10 ), array() );
+
+        self::assertSame( array( 'presented-final' ), $result['view_model']->finals );
+        self::assertCount( 1, $presenter->calls );
+        self::assertSame( $raw_finals, $presenter->calls[0][0] );
+        self::assertSame( $tournament, $presenter->calls[0][1] );
+        self::assertSame( $league, $presenter->calls[0][2] );
+        self::assertSame( '2024', $presenter->calls[0][3] );
+        self::assertSame( 'finals', $result['redirect_tab'] );
+    }
 
     private function create_mock_league( int $id = 10, int $event_id = 100 ): League {
         $league            = $this->createMock( League::class );
@@ -56,8 +113,8 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
                            ->willReturn( $tournament );
 
         $tournament_service->expects( self::once() )
-                           ->method( 'get_draw_view_model' )
-                           ->willReturn( new Tournament_Draw_Page_View_Model(
+                           ->method( 'get_draw_data' )
+                           ->willReturn( new Tournament_Draw_Data_DTO(
                                tournament: $tournament,
                                league: $league,
                                tab: 'fixtures',
@@ -87,7 +144,8 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
             $tournament_service,
             $league_service,
             $dispatcher,
-            $guard
+            $guard,
+            $this->passthrough_presenter()
         );
 
         $query = array(
@@ -168,8 +226,8 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
 
         $tournament_service = $this->createMock( Tournament_Service::class );
         $tournament_service->method( 'get_tournament' )->willReturn( $tournament );
-        $tournament_service->method( 'get_draw_view_model' )
-                           ->willReturn( new Tournament_Draw_Page_View_Model(
+        $tournament_service->method( 'get_draw_data' )
+                           ->willReturn( new Tournament_Draw_Data_DTO(
                                tournament: $tournament,
                                league: $league,
                                tab: 'finalResults',
@@ -194,7 +252,8 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
             $tournament_service,
             $league_service,
             $dispatcher,
-            $guard
+            $guard,
+            $this->passthrough_presenter()
         );
 
         $query = array(
@@ -257,8 +316,8 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
         $mock_matches = array( 'final1' => array( (object) array( 'id' => 101 ) ) );
 
         $tournament_service->expects( self::once() )
-                           ->method( 'get_draw_view_model' )
-                           ->willReturn( new Tournament_Draw_Page_View_Model(
+                           ->method( 'get_draw_data' )
+                           ->willReturn( new Tournament_Draw_Data_DTO(
                                tournament: $tournament,
                                league: $league,
                                tab: 'finalResults',
@@ -276,7 +335,8 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
             $tournament_service,
             $league_service,
             $dispatcher,
-            $guard
+            $guard,
+            $this->passthrough_presenter()
         );
 
         $query = array(
@@ -307,7 +367,8 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
             $tournament_service,
             $league_service,
             $dispatcher,
-            $guard
+            $guard,
+            $this->passthrough_presenter()
         );
 
         $this->expectException( Tournament_Not_Found_Exception::class );
@@ -333,7 +394,8 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
             $tournament_service,
             $league_service,
             $dispatcher,
-            $guard
+            $guard,
+            $this->passthrough_presenter()
         );
 
         $this->expectException( Invalid_Status_Exception::class );
@@ -353,8 +415,8 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
 
         $tournament_service = $this->createMock( Tournament_Service::class );
         $tournament_service->method( 'get_tournament' )->willReturn( $tournament );
-        $tournament_service->method( 'get_draw_view_model' )
-                           ->willReturn( new Tournament_Draw_Page_View_Model(
+        $tournament_service->method( 'get_draw_data' )
+                           ->willReturn( new Tournament_Draw_Data_DTO(
                                tournament: $tournament,
                                league: $league,
                                tab: 'draw',
@@ -370,7 +432,7 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
             $guard
         );
 
-        $controller = new Tournament_Draw_Admin_Controller( $tournament_service, $league_service, $dispatcher, $guard );
+        $controller = new Tournament_Draw_Admin_Controller( $tournament_service, $league_service, $dispatcher, $guard, $this->passthrough_presenter() );
 
         $result = $controller->draw_page( array( 'tournament' => 1, 'league' => 10 ), array() );
 
@@ -399,14 +461,14 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
         $dispatcher = $this->createMock( Draw_Action_Dispatcher::class );
         $dispatcher->method( 'handle' )->willReturn( new Draw_Action_Response_DTO( tab_override: 'overrideTab' ) );
 
-        $tournament_service->method( 'get_draw_view_model' )->willReturn( new Tournament_Draw_Page_View_Model(
+        $tournament_service->method( 'get_draw_data' )->willReturn( new Tournament_Draw_Data_DTO(
             tournament: $tournament,
             league: $league,
             tab: 'overrideTab',
             season: '2024'
         ) );
 
-        $controller = new Tournament_Draw_Admin_Controller( $tournament_service, $league_service, $dispatcher, $guard );
+        $controller = new Tournament_Draw_Admin_Controller( $tournament_service, $league_service, $dispatcher, $guard, $this->passthrough_presenter() );
 
         $result = $controller->draw_page( array( 'tournament' => 1, 'league' => 10, 'tab' => 'queryTab' ), array() );
         self::assertSame( 'overrideTab', $result['view_model']->tab );
@@ -417,14 +479,14 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
 
         $tournament_service2 = $this->createMock( Tournament_Service::class );
         $tournament_service2->method( 'get_tournament' )->willReturn( $tournament );
-        $tournament_service2->method( 'get_draw_view_model' )->willReturn( new Tournament_Draw_Page_View_Model(
+        $tournament_service2->method( 'get_draw_data' )->willReturn( new Tournament_Draw_Data_DTO(
             tournament: $tournament,
             league: $league,
             tab: 'queryTab',
             season: '2024'
         ) );
 
-        $controller2 = new Tournament_Draw_Admin_Controller( $tournament_service2, $league_service, $dispatcher2, $guard );
+        $controller2 = new Tournament_Draw_Admin_Controller( $tournament_service2, $league_service, $dispatcher2, $guard, $this->passthrough_presenter() );
 
         $result2 = $controller2->draw_page( array( 'tournament' => 1, 'league' => 10, 'tab' => 'queryTab' ), array() );
         self::assertSame( 'queryTab', $result2['view_model']->tab );
@@ -432,13 +494,13 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
         // 3. Test default
         $tournament_service3 = $this->createMock( Tournament_Service::class );
         $tournament_service3->method( 'get_tournament' )->willReturn( $tournament );
-        $tournament_service3->method( 'get_draw_view_model' )->willReturn( new Tournament_Draw_Page_View_Model(
+        $tournament_service3->method( 'get_draw_data' )->willReturn( new Tournament_Draw_Data_DTO(
             tournament: $tournament,
             league: $league,
             tab: 'finalResults',
             season: '2024'
         ) );
-        $controller3 = new Tournament_Draw_Admin_Controller( $tournament_service3, $league_service, $dispatcher2, $guard );
+        $controller3 = new Tournament_Draw_Admin_Controller( $tournament_service3, $league_service, $dispatcher2, $guard, $this->passthrough_presenter() );
 
         $result3 = $controller3->draw_page( array( 'tournament' => 1, 'league' => 10 ), array() );
         self::assertSame( 'finalResults', $result3['view_model']->tab );
@@ -465,10 +527,10 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
             $guard
         );
 
-        $controller = new Tournament_Draw_Admin_Controller( $tournament_service, $league_service, $dispatcher, $guard );
+        $controller = new Tournament_Draw_Admin_Controller( $tournament_service, $league_service, $dispatcher, $guard, $this->passthrough_presenter() );
 
         // 1. POST season
-        $tournament_service->method( 'get_draw_view_model' )->willReturn( new Tournament_Draw_Page_View_Model(
+        $tournament_service->method( 'get_draw_data' )->willReturn( new Tournament_Draw_Data_DTO(
             tournament: $tournament,
             league: $league,
             tab: 'draw',
@@ -480,26 +542,26 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
         // 2. Query season
         $tournament_service_q = $this->createMock( Tournament_Service::class );
         $tournament_service_q->method( 'get_tournament' )->willReturn( $tournament );
-        $tournament_service_q->method( 'get_draw_view_model' )->willReturn( new Tournament_Draw_Page_View_Model(
+        $tournament_service_q->method( 'get_draw_data' )->willReturn( new Tournament_Draw_Data_DTO(
             tournament: $tournament,
             league: $league,
             tab: 'draw',
             season: '2025'
         ) );
-        $controller_q = new Tournament_Draw_Admin_Controller( $tournament_service_q, $league_service, $dispatcher, $guard );
+        $controller_q = new Tournament_Draw_Admin_Controller( $tournament_service_q, $league_service, $dispatcher, $guard, $this->passthrough_presenter() );
         $result2      = $controller_q->draw_page( array( 'tournament' => 1, 'league' => 10, 'season' => '2025' ), array() );
         self::assertSame( '2025', (string) $result2['view_model']->season );
 
         // 3. Fallback to tournament season
         $tournament_service_f = $this->createMock( Tournament_Service::class );
         $tournament_service_f->method( 'get_tournament' )->willReturn( $tournament );
-        $tournament_service_f->method( 'get_draw_view_model' )->willReturn( new Tournament_Draw_Page_View_Model(
+        $tournament_service_f->method( 'get_draw_data' )->willReturn( new Tournament_Draw_Data_DTO(
             tournament: $tournament,
             league: $league,
             tab: 'draw',
             season: '2024'
         ) );
-        $controller_f = new Tournament_Draw_Admin_Controller( $tournament_service_f, $league_service, $dispatcher, $guard );
+        $controller_f = new Tournament_Draw_Admin_Controller( $tournament_service_f, $league_service, $dispatcher, $guard, $this->passthrough_presenter() );
         $result3      = $controller_f->draw_page( array( 'tournament' => 1, 'league' => 10 ), array() );
         self::assertSame( '2024', (string) $result3['view_model']->season );
     }

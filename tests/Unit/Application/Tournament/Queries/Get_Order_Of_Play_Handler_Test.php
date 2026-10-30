@@ -11,6 +11,7 @@ use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Order_Of_Play_Presenter;
 use Racketmanager\Presentation\View_Models\Order_Of_Play_View_Model;
 use Racketmanager\Repositories\Competition_Repository;
@@ -53,8 +54,7 @@ class Get_Order_Of_Play_Handler_Test extends TestCase
 
         $this->handler = new Get_Order_Of_Play_Handler(
             $this->tournament_service,
-            $this->competition_repository,
-            $this->order_of_play_presenter
+            $this->competition_repository
         );
     }
 
@@ -133,8 +133,10 @@ class Get_Order_Of_Play_Handler_Test extends TestCase
         $result = $this->handler->handle($query);
         
         $this->assertFalse($result->is_error());
-        $this->assertArrayHasKey('order_of_play', $result->vars);
-        $order_of_play = $result->vars['order_of_play'];
+        $adapter = new Tournament_Shortcode_Adapter( order_of_play_presenter: $this->order_of_play_presenter );
+        $vm = $adapter->present_order_of_play($result);
+        $this->assertArrayHasKey('order_of_play', $vm->vars);
+        $order_of_play = $vm->vars['order_of_play'];
         $this->assertInstanceOf(Order_Of_Play_View_Model::class, $order_of_play);
         $this->assertContains('10:00', $order_of_play->times);
         $this->assertSame('10:00', $order_of_play->match_time['10:00']['1']->time);
@@ -193,7 +195,9 @@ class Get_Order_Of_Play_Handler_Test extends TestCase
         $result = $this->handler->handle($query);
 
         $this->assertFalse($result->is_error());
-        $order_of_play = $result->vars['order_of_play'];
+        $adapter = new Tournament_Shortcode_Adapter( order_of_play_presenter: $this->order_of_play_presenter );
+        $vm = $adapter->present_order_of_play($result);
+        $order_of_play = $vm->vars['order_of_play'];
         $this->assertInstanceOf(Order_Of_Play_View_Model::class, $order_of_play);
 
         $output = $this->render_order_of_play($order_of_play);
@@ -216,7 +220,9 @@ class Get_Order_Of_Play_Handler_Test extends TestCase
         $result = $this->handler->handle($query);
 
         $this->assertFalse($result->is_error());
-        $order_of_play = $result->vars['order_of_play'];
+        $adapter = new Tournament_Shortcode_Adapter( order_of_play_presenter: $this->order_of_play_presenter );
+        $vm = $adapter->present_order_of_play($result);
+        $order_of_play = $vm->vars['order_of_play'];
         $this->assertInstanceOf(Order_Of_Play_View_Model::class, $order_of_play);
         $this->assertEmpty($order_of_play->courts);
 

@@ -52,6 +52,8 @@ use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Domain\Tournament\Tournament_Entry;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\Competition_Shortcode_Adapter;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
@@ -188,8 +190,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             tournament_service: $tournament_service,
             player_service: $player_service,
             finance_service: $finance_service,
-            entry_service: $comp_entry_service,
-            tournament_presenter: $presenter
+            entry_service: $comp_entry_service
         );
 
         $tournament = new Tournament();
@@ -217,7 +218,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             player_id: 42
         );
 
-        $vm = $handler->handle( $query );
+        $vm = $this->adapter( $presenter )->present_payment( $handler->handle( $query ) );
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'tournament-payment', $vm->template );
         $this->assertStringContainsString( 'entry-form/autumn-closed-tournament/payment-complete/', $vm->vars['payment_complete_url'] );
@@ -240,14 +241,25 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $tournament_service = $this->createStub( Tournament_Service::class );
         $presenter          = new Tournament_Presenter();
 
+        $competition         = $this->createStub( Competition::class );
+        $competition_service = $this->createStub( Competition_Service::class );
+        $event_domain        = $this->createStub( Event::class );
+        $competition_service->method( 'resolve_competition_event' )->willReturn( $event_domain );
+
         $handler = new Get_Tournament_Events_Handler(
-            tournament_service: $tournament_service,
+            tournament_service: $tournament_service
+        );
+        $adapter = new Tournament_Shortcode_Adapter(
+            competition_service: $competition_service,
             tournament_presenter: $presenter
         );
 
-        $tournament       = new Tournament();
+        $tournament       = $this->createStub( Tournament::class );
         $tournament->id   = 10;
         $tournament->name = 'Spring Open';
+        $tournament->method( 'get_id' )->willReturn( 10 );
+        $tournament->method( 'get_competition_object' )->willReturn( $competition );
+        $tournament->method( 'is_event_allowed' )->willReturn( true );
 
         $event1            = new stdClass();
         $event1->id        = 101;
@@ -263,8 +275,9 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $tournament_service->method( 'get_events_with_details_for_tournament' )->willReturn( [ $event1, $event2 ] );
 
         // 1. Test events list
-        $list_query = new Get_Tournament_Events_Query( tournament_id: 10 );
-        $list_vm    = $handler->handle( $list_query );
+        $list_query  = new Get_Tournament_Events_Query( tournament_id: 10 );
+        $list_result = $handler->handle( $list_query );
+        $list_vm     = $adapter->present_events( $list_result );
 
         $this->assertSame( 'events', $list_vm->template );
         $this->assertSame( '/tournament/spring-open/event/mens-singles/', $list_vm->vars['events'][0]->url_link );
@@ -298,8 +311,9 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
 
         $tournament_service->method( 'get_event_details_for_tournament' )->willReturn( $single_event );
 
-        $single_query = new Get_Tournament_Events_Query( tournament_id: 10, event_id: 101 );
-        $single_vm    = $handler->handle( $single_query );
+        $single_query  = new Get_Tournament_Events_Query( tournament_id: 10, event_id: 101 );
+        $single_result = $handler->handle( $single_query );
+        $single_vm     = $adapter->present_events( $single_result );
 
         $this->assertSame( 'event', $single_vm->template );
         $this->assertSame( $single_event, $single_vm->vars['event'] );
@@ -324,13 +338,15 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $presenter          = new Tournament_Presenter();
 
         $handler = new Get_Tournament_Draws_Handler(
-            tournament_service: $tournament_service,
-            tournament_presenter: $presenter
+            tournament_service: $tournament_service
         );
+        $adapter = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter );
 
-        $tournament       = new Tournament();
+        $tournament       = $this->createStub( Tournament::class );
         $tournament->id   = 12;
         $tournament->name = 'Winter Cup';
+        $tournament->method( 'get_id' )->willReturn( 12 );
+        $tournament->method( 'is_event_allowed' )->willReturn( true );
 
         $event1       = new stdClass();
         $event1->id   = 201;
@@ -339,8 +355,9 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $tournament_service->method( 'get_tournament' )->willReturn( $tournament );
         $tournament_service->method( 'get_events_with_details_for_tournament' )->willReturn( [ $event1 ] );
 
-        $query = new Get_Tournament_Draws_Query( tournament_id: 12 );
-        $vm    = $handler->handle( $query );
+        $query  = new Get_Tournament_Draws_Query( tournament_id: 12 );
+        $result = $handler->handle( $query );
+        $vm     = $adapter->present_draws( $result );
 
         $this->assertSame( 'draws', $vm->template );
         $this->assertSame( '/tournament/winter-cup/draw/men-singles-draw/', $vm->vars['draws'][0]->draw_link );
@@ -363,7 +380,9 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $player_presenter   = new Player_Presenter();
 
         $handler = new Get_Tournament_Players_Handler(
-            tournament_service: $tournament_service,
+            tournament_service: $tournament_service
+        );
+        $adapter = new Tournament_Shortcode_Adapter(
             tournament_presenter: $presenter,
             player_presenter: $player_presenter
         );
@@ -385,8 +404,9 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             'N' => [ $player_item ],
         ] );
 
-        $list_query = new Get_Tournament_Players_Query( tournament_id: 15 );
-        $list_vm    = $handler->handle( $list_query );
+        $list_query  = new Get_Tournament_Players_Query( tournament_id: 15 );
+        $list_result = $handler->handle( $list_query );
+        $list_vm     = $adapter->present_players( $list_result );
 
         $this->assertSame( 'players', $list_vm->template );
         $this->assertSame( '/tournament/championship-open/player/', $list_vm->vars['player_link'] );
@@ -423,8 +443,9 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
 
         $GLOBALS['wp_stubs_is_user_logged_in'] = true;
 
-        $single_query = new Get_Tournament_Players_Query( tournament_id: 15, player_id: 101 );
-        $single_vm    = $handler->handle( $single_query );
+        $single_query  = new Get_Tournament_Players_Query( tournament_id: 15, player_id: 101 );
+        $single_result = $handler->handle( $single_query );
+        $single_vm     = $adapter->present_players( $single_result );
 
         $this->assertSame( 'player', $single_vm->template );
         $this->assertFalse( isset( $single_vm->vars['tournament_player']->teams[0]->event_link ) );
@@ -468,8 +489,6 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             registration_service: $reg_service,
             competition_entry_service: $comp_entry_service,
             finance_service: $finance_service,
-            competition_presenter: $comp_presenter,
-            tournament_presenter: $tourn_presenter,
             event_query_service: $this->event_query_service()
         );
 
@@ -523,7 +542,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             club_name: 'LTC'
         );
 
-        $vm = $handler->handle( $query );
+        $vm = $this->adapter( $tourn_presenter, $comp_presenter )->present_entry( $handler->handle( $query ) );
         $this->assertSame( 'entry-cup', $vm->template );
         $this->assertSame( '/clubs/ltc/', $vm->vars['back_url'] );
 
@@ -544,7 +563,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             club_name: 'LTC'
         );
 
-        $league_vm = $handler->handle( $league_query );
+        $league_vm = $this->adapter( $tourn_presenter, $comp_presenter )->present_entry( $handler->handle( $league_query ) );
         $this->assertSame( 'entry-league', $league_vm->template );
         $this->assertSame( '/clubs/ltc/', $league_vm->vars['back_url'] );
         $this->assertSame( '/rules/premier-league-rules/', $league_vm->vars['rules_url'] );
@@ -573,8 +592,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             tournament_service: $tournament_service,
             player_service: $player_service,
             finance_service: $finance_service,
-            entry_service: $comp_entry_service,
-            tournament_presenter: $presenter
+            entry_service: $comp_entry_service
         );
 
         $tournament                  = new Tournament();
@@ -599,7 +617,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             complete: true
         );
 
-        $vm = $handler->handle( $query );
+        $vm = $this->adapter( $presenter )->present_payment( $handler->handle( $query ) );
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'tournament-payment-complete', $vm->template );
         $this->assertNull( $vm->vars['total_due'] );
@@ -643,8 +661,6 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             registration_service: $registration_service,
             competition_entry_service: $comp_entry_service,
             finance_service: $finance_service,
-            competition_presenter: new Competition_Shortcode_Presenter( renderer: $this->view_renderer ),
-            tournament_presenter: new Tournament_Presenter( 'd/m/Y' ),
             event_query_service: $this->event_query_service()
         );
 
@@ -705,7 +721,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             user_id: 42
         );
 
-        $vm = $handler->handle( $query );
+        $vm = $this->adapter( new Tournament_Presenter( 'd/m/Y' ), new Competition_Shortcode_Presenter( renderer: $this->view_renderer ) )->present_entry( $handler->handle( $query ) );
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'entry-tournament', $vm->template );
         $this->assertSame( '/tournament/summer-open/', $vm->vars['back_url'] );
@@ -718,6 +734,23 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
 
         $this->assertSame( [], $warnings, 'Rendering tournament entry must produce zero warnings' );
         $this->assertStringContainsString( 'href="/tournament/summer-open/"', $output );
+    }
+
+    private function adapter( ?Tournament_Presenter $tournament_presenter = null, ?Competition_Shortcode_Presenter $competition_presenter = null, ?Player_Presenter $player_presenter = null ): Competition_Shortcode_Adapter {
+        return new Competition_Shortcode_Adapter(
+            competition_shortcode_presenter: $competition_presenter,
+            tournament_presenter: $tournament_presenter,
+            player_presenter: $player_presenter
+        );
+    }
+
+    private function event_adapter( ?Competition_Shortcode_Presenter $competition_presenter = null, ?Tournament_Presenter $tournament_presenter = null, ?Player_Presenter $player_presenter = null, ?Team_Details_Presenter $team_details_presenter = null ): \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter {
+        return new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
+            competition_shortcode_presenter: $competition_presenter,
+            tournament_presenter: $tournament_presenter,
+            player_presenter: $player_presenter,
+            team_details_presenter: $team_details_presenter
+        );
     }
 
     private function render_view_model( Shortcode_View_Model $vm, array &$warnings ): string {
@@ -794,8 +827,8 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             ]
         );
 
-        $handler = new Get_Competition_Events_Handler( $service, new Competition_Shortcode_Presenter(), $this->competition_season_service() );
-        $vm      = $handler->handle( new Get_Competition_Events_Query( competition_id: 5 ) );
+        $handler = new Get_Competition_Events_Handler( $service, $this->competition_season_service() );
+        $vm      = $this->adapter()->present_events( $handler->handle( new Get_Competition_Events_Query( competition_id: 5 ) ) );
 
         $this->assertSame( 'events', $vm->template );
         $this->assertSame(
@@ -825,8 +858,8 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             ]
         );
 
-        $handler = new Get_Competition_Teams_Handler( $service, new Competition_Shortcode_Presenter(), $this->competition_season_service() );
-        $vm      = $handler->handle( new Get_Competition_Teams_Query( competition_id: 5 ) );
+        $handler = new Get_Competition_Teams_Handler( $service, $this->competition_season_service() );
+        $vm      = $this->adapter()->present_teams( $handler->handle( new Get_Competition_Teams_Query( competition_id: 5 ) ) );
 
         $this->assertSame( 'teams', $vm->template );
         $this->assertSame( [ 11, 12 ], array_keys( $vm->vars['team_links'] ) );
@@ -867,10 +900,10 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $stats = $this->createStub( Player_Stats_Service::class );
         $stats->method( 'populate_players_stats' )->willReturnArgument( 0 );
 
-        $handler = new Get_Competition_Clubs_Handler( $service, $club_service, $stats, new Tournament_Presenter(), new Competition_Shortcode_Presenter(), $this->competition_season_service() );
+        $handler = new Get_Competition_Clubs_Handler( $service, $club_service, $stats, $this->competition_season_service() );
 
         // List.
-        $list_vm = $handler->handle( new Get_Competition_Clubs_Query( competition_id: 5 ) );
+        $list_vm = $this->adapter()->present_clubs( $handler->handle( new Get_Competition_Clubs_Query( competition_id: 5 ) ) );
         $this->assertSame( 'clubs', $list_vm->template );
         $this->assertSame(
             [ 3 => '/summer-league/2026/club/westcliff-tc/', 4 => '/summer-league/2026/club/leigh-ltc/' ],
@@ -883,7 +916,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $this->assertStringContainsString( 'href="/summer-league/2026/club/leigh-ltc/"', $output );
 
         // Detail.
-        $detail_vm = $handler->handle( new Get_Competition_Clubs_Query( competition_id: 5, club_identifier: 'westcliff-tc' ) );
+        $detail_vm = $this->adapter()->present_clubs( $handler->handle( new Get_Competition_Clubs_Query( competition_id: 5, club_identifier: 'westcliff-tc' ) ) );
         $this->assertFalse( $detail_vm->is_error() );
         $this->assertSame( '/clubs/westcliff-tc/', $detail_vm->vars['club_url'] );
         $this->assertSame( [ 11 ], array_keys( $detail_vm->vars['team_links'] ) );
@@ -917,9 +950,8 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             $player_service,
             $this->createStub( Player_Query_Service::class ),
             $this->createStub( Player_Stats_Service::class ),
-            new Player_Presenter(),
-            new Competition_Shortcode_Presenter(), $this->competition_season_service() );
-        $vm      = $handler->handle( new Get_Competition_Players_Query( competition_id: 5 ) );
+            $this->competition_season_service() );
+        $vm      = $this->adapter()->present_players( $handler->handle( new Get_Competition_Players_Query( competition_id: 5 ) ) );
 
         $this->assertSame( 'players', $vm->template );
         $this->assertSame(
@@ -946,8 +978,9 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $service->method( 'get_event_by_id' )->willReturn( $event );
 
         $query_service = $this->event_query_service( $this->event_repository_with_results( [ 'query_leagues' => [ $league_one, $league_two ] ] ) );
-        $handler       = new Get_Event_Standings_Handler( $service, new Competition_Shortcode_Presenter(), $query_service );
-        $vm      = $handler->handle( new Get_Event_Standings_Query( event_id: 77 ) );
+        $handler       = new Get_Event_Standings_Handler( $service, $query_service );
+        $vm            = $this->event_adapter( competition_presenter: new Competition_Shortcode_Presenter() )
+            ->present_standings( $handler->handle( new Get_Event_Standings_Query( event_id: 77 ) ) );
 
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'standings', $vm->template );
@@ -1036,10 +1069,14 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $stats = $this->createStub( Player_Stats_Service::class );
         $stats->method( 'populate_players_stats' )->willReturnArgument( 0 );
 
-        $handler = new Get_Event_Clubs_Handler( $service, $club_service, $stats, new Tournament_Presenter(), new Competition_Shortcode_Presenter(), $query_service );
+        $handler = new Get_Event_Clubs_Handler( $service, $club_service, $stats, $query_service );
+        $event_adapter = $this->event_adapter(
+            competition_presenter: new Competition_Shortcode_Presenter(),
+            tournament_presenter: new Tournament_Presenter()
+        );
 
         // List.
-        $list_vm = $handler->handle( new Get_Event_Clubs_Query( event_id: 77 ) );
+        $list_vm = $event_adapter->present_clubs( $handler->handle( new Get_Event_Clubs_Query( event_id: 77 ) ) );
         $this->assertFalse( $list_vm->is_error() );
         $this->assertSame(
             [ 3 => '/leagues/mens-doubles/2026/club/westcliff-tc/', 4 => '/leagues/mens-doubles/2026/club/leigh-ltc/' ],
@@ -1054,7 +1091,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $this->assertStringContainsString( 'Leigh Lawn', $output );
 
         // Detail.
-        $detail_vm = $handler->handle( new Get_Event_Clubs_Query( event_id: 77, club_id: 'westcliff-tc' ) );
+        $detail_vm = $event_adapter->present_clubs( $handler->handle( new Get_Event_Clubs_Query( event_id: 77, club_id: 'westcliff-tc' ) ) );
         $this->assertFalse( $detail_vm->is_error() );
         $this->assertSame( '/clubs/westcliff-tc/', $detail_vm->vars['club_url'] );
         $this->assertSame(
@@ -1107,13 +1144,15 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $handler = new Get_Event_Teams_Handler(
             $service,
             $this->createStub( Player_Stats_Service::class ),
-            new Tournament_Presenter(),
             null,
-            new Team_Details_Presenter( $this->createStub( Option_Gateway_Interface::class ), $this->createStub( Settings_Service::class ) ),
-            new Competition_Shortcode_Presenter(),
             $query_service
         );
-        $vm      = $handler->handle( new Get_Event_Teams_Query( event_id: 77, template: 'x' ) );
+        $event_adapter = $this->event_adapter(
+            competition_presenter: new Competition_Shortcode_Presenter(),
+            tournament_presenter: new Tournament_Presenter(),
+            team_details_presenter: new Team_Details_Presenter( $this->createStub( Option_Gateway_Interface::class ), $this->createStub( Settings_Service::class ) )
+        );
+        $vm = $event_adapter->present_teams( $handler->handle( new Get_Event_Teams_Query( event_id: 77, template: 'x' ) ) );
 
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'teams-x', $vm->template );
@@ -1173,11 +1212,12 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             $this->createStub( Player_Service::class ),
             $this->createStub( Player_Query_Service::class ),
             $this->createStub( Player_Stats_Service::class ),
-            new Player_Presenter(),
-            new Competition_Shortcode_Presenter(),
             $query_service
         );
-        $vm      = $handler->handle( new Get_Event_Players_Query( event_id: 77 ) );
+        $vm = $this->event_adapter(
+            competition_presenter: new Competition_Shortcode_Presenter(),
+            player_presenter: new Player_Presenter()
+        )->present_players( $handler->handle( new Get_Event_Players_Query( event_id: 77 ) ) );
 
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'players', $vm->template );
@@ -1225,21 +1265,21 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             $player_service,
             $player_query_service,
             $player_stats_service,
-            new Player_Presenter(),
-            new Competition_Shortcode_Presenter(), $this->competition_season_service() );
+            $this->competition_season_service() );
         $event_handler       = new Get_Event_Players_Handler(
             $service,
             $player_service,
             $player_query_service,
             $player_stats_service,
-            new Player_Presenter(),
-            new Competition_Shortcode_Presenter(),
             $this->event_query_service()
         );
 
         $vms = [
-            'competition' => $competition_handler->handle( new Get_Competition_Players_Query( competition_id: 5, player_identifier: '51' ) ),
-            'event'       => $event_handler->handle( new Get_Event_Players_Query( event_id: 77, player_id: 51 ) ),
+            'competition' => $this->adapter()->present_players( $competition_handler->handle( new Get_Competition_Players_Query( competition_id: 5, player_identifier: '51' ) ) ),
+            'event'       => $this->event_adapter(
+                competition_presenter: new Competition_Shortcode_Presenter(),
+                player_presenter: new Player_Presenter()
+            )->present_players( $event_handler->handle( new Get_Event_Players_Query( event_id: 77, player_id: 51 ) ) ),
         ];
 
         foreach ( $vms as $context => $vm ) {
@@ -1291,8 +1331,8 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $stats = $this->createStub( Player_Stats_Service::class );
         $stats->method( 'populate_players_stats' )->willReturnArgument( 0 );
 
-        $handler = new Get_Competition_Clubs_Handler( $service, $club_service, $stats, new Tournament_Presenter(), new Competition_Shortcode_Presenter(), $this->competition_season_service() );
-        $vm      = $handler->handle( new Get_Competition_Clubs_Query( competition_id: 9, club_identifier: 'westcliff-tc' ) );
+        $handler = new Get_Competition_Clubs_Handler( $service, $club_service, $stats, $this->competition_season_service() );
+        $vm      = $this->adapter()->present_clubs( $handler->handle( new Get_Competition_Clubs_Query( competition_id: 9, club_identifier: 'westcliff-tc' ) ) );
 
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( '/clubs/westcliff-tc/', $vm->vars['club_url'] );
@@ -1356,13 +1396,14 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $teams_handler = new Get_Event_Teams_Handler(
             $service,
             $this->createStub( Player_Stats_Service::class ),
-            new Tournament_Presenter(),
             null,
-            new Team_Details_Presenter( $this->createStub( Option_Gateway_Interface::class ), $this->createStub( Settings_Service::class ) ),
-            $presenter,
             $query_service
         );
-        $teams_vm = $teams_handler->handle( new Get_Event_Teams_Query( event_id: 77, template: 'x' ) );
+        $teams_vm = $this->event_adapter(
+            competition_presenter: $presenter,
+            tournament_presenter: new Tournament_Presenter(),
+            team_details_presenter: new Team_Details_Presenter( $this->createStub( Option_Gateway_Interface::class ), $this->createStub( Settings_Service::class ) )
+        )->present_teams( $teams_handler->handle( new Get_Event_Teams_Query( event_id: 77, template: 'x' ) ) );
 
         $this->assertFalse( $teams_vm->is_error() );
         $this->assertSame(
@@ -1386,8 +1427,9 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $this->assertStringContainsString( 'href="/league/box-one/2026/team/westcliff-1/"', $output );
 
         // 2. Box event standings links
-        $standings_handler = new Get_Event_Standings_Handler( $service, $presenter, $query_service );
-        $standings_vm      = $standings_handler->handle( new Get_Event_Standings_Query( event_id: 77 ) );
+        $standings_handler = new Get_Event_Standings_Handler( $service, $query_service );
+        $standings_vm      = $this->event_adapter( competition_presenter: $presenter )
+            ->present_standings( $standings_handler->handle( new Get_Event_Standings_Query( event_id: 77 ) ) );
 
         $this->assertFalse( $standings_vm->is_error() );
         $this->assertSame(
@@ -1443,11 +1485,10 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             $player_service,
             $query_service,
             $stats_service,
-            new Player_Presenter(),
-            new Competition_Shortcode_Presenter(), $this->competition_season_service() );
+            $this->competition_season_service() );
 
         // 1. List with integer season
-        $list_vm = $handler->handle( new Get_Competition_Players_Query( competition_id: 5 ) );
+        $list_vm = $this->adapter()->present_players( $handler->handle( new Get_Competition_Players_Query( competition_id: 5 ) ) );
         $this->assertFalse( $list_vm->is_error() );
         $this->assertSame( 'players', $list_vm->template );
         $this->assertSame(
@@ -1460,7 +1501,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $this->assertStringContainsString( 'href="/summer-league/2024/player/roger-federer/"', $output );
 
         // 2. Single player detail with integer season
-        $detail_vm = $handler->handle( new Get_Competition_Players_Query( competition_id: 5, player_identifier: 'roger-federer' ) );
+        $detail_vm = $this->adapter()->present_players( $handler->handle( new Get_Competition_Players_Query( competition_id: 5, player_identifier: 'roger-federer' ) ) );
         $this->assertFalse( $detail_vm->is_error() );
         $this->assertSame( 'players', $detail_vm->template );
         $this->assertNotNull( $detail_vm->vars['player_vm'] );
@@ -1518,12 +1559,13 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             $player_service,
             $query_service,
             $stats_service,
-            new Player_Presenter(),
-            new Competition_Shortcode_Presenter(),
             $this->event_query_service()
         );
 
-        $vm = $handler->handle( new Get_Event_Players_Query( event_id: 77, player_id: 51 ) );
+        $vm = $this->event_adapter(
+            competition_presenter: new Competition_Shortcode_Presenter(),
+            player_presenter: new Player_Presenter()
+        )->present_players( $handler->handle( new Get_Event_Players_Query( event_id: 77, player_id: 51 ) ) );
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'players', $vm->template );
         $this->assertSame(
@@ -1554,8 +1596,10 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $service = $this->createStub( Competition_Service::class );
         $service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $handler = new Get_Event_Handler( $service, new Competition_Shortcode_Presenter(), $this->event_query_service() );
-        $vm      = $handler->handle( new Get_Event_Query( event_id: 77 ) );
+        $handler = new Get_Event_Handler( $service, $this->event_query_service() );
+        $vm      = $this->event_adapter(
+            competition_presenter: new Competition_Shortcode_Presenter()
+        )->present_event( $handler->handle( new Get_Event_Query( event_id: 77 ) ) );
 
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'event', $vm->template );
@@ -1582,8 +1626,8 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $stats = $this->createStub( Player_Stats_Service::class );
         $stats->method( 'populate_players_stats' )->willReturnArgument( 0 );
 
-        $handler = new Get_Competition_Clubs_Handler( $service, $club_service, $stats, new Tournament_Presenter(), new Competition_Shortcode_Presenter(), $this->competition_season_service() );
-        $vm      = $handler->handle( new Get_Competition_Clubs_Query( competition_id: 5, club_identifier: 'westcliff-tc' ) );
+        $handler = new Get_Competition_Clubs_Handler( $service, $club_service, $stats, $this->competition_season_service() );
+        $vm      = $this->adapter()->present_clubs( $handler->handle( new Get_Competition_Clubs_Query( competition_id: 5, club_identifier: 'westcliff-tc' ) ) );
 
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( '/clubs/westcliff-tc/', $vm->vars['club_url'] );

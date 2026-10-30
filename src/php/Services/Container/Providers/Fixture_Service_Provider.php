@@ -20,11 +20,6 @@ use Racketmanager\Infrastructure\Wordpress\Response\Logging_Json_Response_Factor
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Fixture_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Fixture_Shortcode_Controller;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Matches_Shortcode_Adapter;
-use Racketmanager\Presentation\Presenters\Fixture_Presenter;
-use Racketmanager\Presentation\Presenters\Match_Shortcode_Presenter;
-use Racketmanager\Presentation\Presenters\Matches_List_Presenter;
-use Racketmanager\Presentation\Presenters\Results_Checker_Presenter;
-use Racketmanager\Presentation\Presenters\Team_Match_Row_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Interfaces\Result_Repository_Interface;
@@ -234,48 +229,6 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
 
             return $manager;
         } );
-
-        // Presenters
-        $container->set( 'team_match_row_presenter', fn( Simple_Container $c ) => new Team_Match_Row_Presenter(
-            $c->get( 'option_gateway' ),
-            $c->get( 'fixture_relation_loader' ),
-            $c->get( 'fixture_permission_service' ),
-            $c->get( 'fixture_link_service' ),
-            $c->get( 'club_repository' ),
-            $c->get( 'league_repository' )
-        ) );
-
-        $container->set( 'fixture_presenter', fn( Simple_Container $c ) => new Fixture_Presenter(
-            $c->get( 'fixture_link_service' ),
-            $c->get( 'option_gateway' ),
-            $c->get( 'team_match_row_presenter' )
-        ) );
-
-        $container->set( 'results_checker_presenter', fn( Simple_Container $c ) => new Results_Checker_Presenter(
-            $c->get( 'fixture_repository' ),
-            $c->get( 'player_repository' ),
-            $c->get( 'team_repository' ),
-            $c->get( 'league_repository' ),
-            $c->get( 'fixture_detail_service' )
-        ) );
-
-        $container->set( 'matches_list_presenter', fn( Simple_Container $c ) => new Matches_List_Presenter(
-            $c->get( 'competition_service' ),
-            $c->get( 'team_service' ),
-            $c->get( 'view_renderer' ),
-            $c->get( 'tournament_presenter' ),
-            $c->get( 'fixture_link_service' ),
-            $c->get( 'fixture_permission_service' ),
-            $c->get( 'club_presenter' ),
-            $c->get( 'player_presenter' ),
-            $c->get( 'rubber_repository' )
-        ) );
-
-        $container->set( 'match_shortcode_presenter', fn( Simple_Container $c ) => new Match_Shortcode_Presenter(
-            $c->get( 'shortcode_view_presenter' ),
-            $c->get( 'fixture_presenter' ),
-            $c->get( 'player_service' )
-        ) );
 
         // Finder
         $container->set( 'fixture_listing_finder', fn() => new Legacy_Fixture_Listing_Finder( $app ) );

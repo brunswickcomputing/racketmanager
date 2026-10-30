@@ -23,6 +23,7 @@ use Racketmanager\Domain\Scoring\Set_Score;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Option_Request;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use ReflectionClass;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
@@ -199,10 +200,12 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 			->willReturn( (object) [ 'user_can_update' => true, 'user_type' => 'admin' ] );
 
 		$presenter = new Tournament_Presenter( 'Y-m-d' );
-		$handler   = new Get_Tournament_Match_Handler( $tournament_service, $fixture_service, $presenter );
+		$handler   = new Get_Tournament_Match_Handler( $tournament_service, $fixture_service );
 
 		$query      = new Get_Tournament_Match_Query( 'summer-championship-2026', 555 );
-		$view_model = $handler->handle( $query );
+		$result     = $handler->handle( $query );
+		$adapter    = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter );
+		$view_model = $adapter->present_match( $result );
 
 		$this->assertSame( 'match-tournament', $view_model->template );
 		$this->assertSame( 'summer-championship-2026', $view_model->vars['tournament_seo_name'] );
@@ -295,9 +298,12 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$fixture_service->method( 'is_update_allowed' )
 			->willReturn( (object) [ 'user_can_update' => true, 'user_type' => 'admin' ] );
 
-		$handler = new Get_Tournament_Match_Handler( $tournament_service, $fixture_service, new Tournament_Presenter( 'Y-m-d' ) );
+		$presenter = new Tournament_Presenter( 'Y-m-d' );
+		$handler   = new Get_Tournament_Match_Handler( $tournament_service, $fixture_service );
+		$result    = $handler->handle( new Get_Tournament_Match_Query( 'summer-championship-2026', 555, $referrer ) );
+		$adapter   = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter );
 
-		return $handler->handle( new Get_Tournament_Match_Query( 'summer-championship-2026', 555, $referrer ) );
+		return $adapter->present_match( $result );
 	}
 
 	/**
@@ -394,9 +400,11 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 			->willReturn( (object) [ 'user_can_update' => false ] );
 
 		$presenter = new Tournament_Presenter( 'Y-m-d' );
-		$handler   = new Get_Tournament_Match_Handler( $tournament_service, $fixture_service, $presenter );
+		$handler   = new Get_Tournament_Match_Handler( $tournament_service, $fixture_service );
 
-		$view_model = $handler->handle( new Get_Tournament_Match_Query( 'autumn-box-league', 777 ) );
+		$result     = $handler->handle( new Get_Tournament_Match_Query( 'autumn-box-league', 777 ) );
+		$adapter    = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter );
+		$view_model = $adapter->present_match( $result );
 
 		$this->assertSame( 'League', $view_model->vars['svg_link_text'] );
 		$this->assertSame( 'Box Division 1', $view_model->vars['svg_link'] );
@@ -725,8 +733,11 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$fixture_service->method( 'is_update_allowed' )
 			->willReturn( (object) [ 'user_can_update' => true, 'user_type' => 'admin' ] );
 
-		$handler    = new Get_Tournament_Match_Handler( $tournament_service, $fixture_service, new Tournament_Presenter( 'Y-m-d' ) );
-		$view_model = $handler->handle( new Get_Tournament_Match_Query( 'played-finals', 999 ) );
+		$presenter  = new Tournament_Presenter( 'Y-m-d' );
+		$handler    = new Get_Tournament_Match_Handler( $tournament_service, $fixture_service );
+		$result     = $handler->handle( new Get_Tournament_Match_Query( 'played-finals', 999 ) );
+		$adapter    = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter );
+		$view_model = $adapter->present_match( $result );
 
 		$this->assertTrue( $view_model->vars['user_can_update'] );
 		$this->assertSame( 'is-editable', $view_model->vars['match_editable'] );

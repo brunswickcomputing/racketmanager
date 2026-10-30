@@ -255,14 +255,14 @@ class Competition_Entry_Flow_Test extends TestCase {
                 TestCase::assertInstanceOf( Tournament_Header_View_Model::class, $vars['tournament_header'] );
                 TestCase::assertFalse( $vars['tournament_header']->show_entry_button );
                 if ( 'tournament-payment' === $template ) {
-                    TestCase::assertSame( 35, $vars['total_due'] );
+                    TestCase::assertEquals( 35, $vars['total_due'] );
                     TestCase::assertSame( 3, $vars['invoice_id'] );
                 } else {
                     TestCase::assertSame( 'tournament-payment-complete', $template );
                 }
                 return '<div class="payment">' . $template . '</div>';
             } );
-        $handler = new Get_Competition_Payment_Handler( $tournament_service, $player_service, $finance, $entry_service, new Tournament_Presenter() );
+        $handler = new Get_Competition_Payment_Handler( $tournament_service, $player_service, $finance, $entry_service );
         $adapter = new Competition_Shortcode_Adapter(
             payment_handler: $handler, view_presenter: new Shortcode_View_Presenter( $renderer )
         );
@@ -366,8 +366,6 @@ class Competition_Entry_Flow_Test extends TestCase {
             registration_service: $this->createStub( Registration_Service::class ),
             competition_entry_service: $this->createStub( Competition_Entry_Service::class ),
             finance_service: $this->createStub( Finance_Service::class ),
-            competition_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
-            tournament_presenter: new Tournament_Presenter(),
             event_query_service: $this->event_query_service()
         );
         $vm = $handler->handle( new \Racketmanager\Application\Competition\Queries\Get_Competition_Entry_Query() );
@@ -388,8 +386,6 @@ class Competition_Entry_Flow_Test extends TestCase {
             registration_service: $this->createStub( Registration_Service::class ),
             competition_entry_service: $this->createStub( Competition_Entry_Service::class ),
             finance_service: $this->createStub( Finance_Service::class ),
-            competition_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
-            tournament_presenter: new Tournament_Presenter(),
             event_query_service: $this->event_query_service()
         );
         $vm = $handler->handle( new \Racketmanager\Application\Competition\Queries\Get_Competition_Entry_Query( tournament_name: 'Unknown' ) );

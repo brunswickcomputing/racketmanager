@@ -13,8 +13,9 @@ use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Query;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
+use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\RacketManager;
-use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use function is_array;
 use function is_object;
 
@@ -47,7 +48,12 @@ class Login_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             $is_logged_in
         );
 
-        return $this->view_presenter->render( $this->login_form_handler->handle( $query ) );
+        $result = $this->login_form_handler->handle( $query );
+        if ( null !== $result->raw_html ) {
+            return $this->view_presenter->render( Shortcode_View_Model::for_html( $result->raw_html ) );
+        }
+
+        return $this->view_presenter->render( Shortcode_View_Model::for_template( $result->template ?? 'form-login', $result->vars, $result->template_type ?? 'form' ) );
     }
 
     public function login_form( array|string $vars = [] ): string {
@@ -65,7 +71,12 @@ class Login_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             $is_logged_in
         );
 
-        return $this->view_presenter->render( $this->password_lost_form_handler->handle( $query ) );
+        $result = $this->password_lost_form_handler->handle( $query );
+        if ( null !== $result->raw_html ) {
+            return $this->view_presenter->render( Shortcode_View_Model::for_html( $result->raw_html ) );
+        }
+
+        return $this->view_presenter->render( Shortcode_View_Model::for_template( $result->template ?? 'form-password-lost', $result->vars, $result->template_type ?? 'form' ) );
     }
 
     public function render_password_reset_form( array|string $vars = [] ): string {
@@ -76,7 +87,12 @@ class Login_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             $this->extract_request_params()
         );
 
-        return $this->view_presenter->render( $this->password_reset_form_handler->handle( $query ) );
+        $result = $this->password_reset_form_handler->handle( $query );
+        if ( null !== $result->raw_html ) {
+            return $this->view_presenter->render( Shortcode_View_Model::for_html( $result->raw_html ) );
+        }
+
+        return $this->view_presenter->render( Shortcode_View_Model::for_template( $result->template ?? 'form-password-reset', $result->vars, $result->template_type ?? 'form' ) );
     }
 
     public function generate_member_account_form( array|string $vars = [] ): string {
@@ -89,7 +105,12 @@ class Login_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             $user_id
         );
 
-        return $this->view_presenter->render( $this->member_account_form_handler->handle( $query ) );
+        $result = $this->member_account_form_handler->handle( $query );
+        if ( null !== $result->raw_html ) {
+            return $this->view_presenter->render( Shortcode_View_Model::for_html( $result->raw_html ) );
+        }
+
+        return $this->view_presenter->render( Shortcode_View_Model::for_template( $result->template ?? 'form-member-account', $result->vars, $result->template_type ?? 'form' ) );
     }
 
     public function load_translations(): void {

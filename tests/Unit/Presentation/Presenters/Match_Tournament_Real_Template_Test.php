@@ -22,6 +22,7 @@ use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Scoring\Set_Score;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Tournament\Tournament;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Presentation\Presenters\Match_Shortcode_Presenter;
@@ -161,9 +162,10 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         $service->method( 'get_tournament' )->willReturn( $tournament );
         $service->method( 'get_fixture_dates_for_tournament' )->willReturn( $dates );
         $service->method( 'get_fixtures_by_date_for_tournament' )->willReturn( $groups );
-        $handler = new Get_Tournament_Matches_Handler( $service, new Tournament_Presenter() );
+        $handler = new Get_Tournament_Matches_Handler( $service );
+        $adapter = new Tournament_Shortcode_Adapter( tournament_presenter: new Tournament_Presenter() );
 
-        return $this->view_presenter()->render( $handler->handle( new Get_Tournament_Matches_Query( 9, $selected ) ) );
+        return $this->view_presenter()->render( $adapter->present_matches( $handler->handle( new Get_Tournament_Matches_Query( 9, $selected ) ) ) );
     }
 
     public function test_tournament_empty_dates_and_matches_render_no_matches(): void {
@@ -625,15 +627,18 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         $tournament = $this->createStub( Tournament::class );
         $tournament->id = 5;
         $tournament->name = 'Summer Championships';
+        $tournament->method( 'is_event_allowed' )->willReturn( true );
 
         $tournament_service = $this->createStub( Tournament_Service::class );
         $tournament_service->method( 'get_tournament' )->willReturn( $tournament );
         $tournament_service->method( 'get_draw_details_for_tournament' )->willReturn( $event );
 
         $presenter = new Tournament_Presenter( 'd/m/Y' );
-        $handler = new Get_Tournament_Draws_Handler( $tournament_service, $presenter );
+        $handler   = new Get_Tournament_Draws_Handler( $tournament_service );
+        $adapter   = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter );
 
-        $vm = $handler->handle( new Get_Tournament_Draws_Query( 5, 12 ) );
+        $result = $handler->handle( new Get_Tournament_Draws_Query( 5, 12 ) );
+        $vm     = $adapter->present_draws( $result );
         $this->assertContainsOnlyInstancesOf( Tournament_Match_Card_View_Model::class, $event->get_meta( 'fixtures' ) );
         $html = $this->view_presenter()->render( $vm );
 
@@ -691,11 +696,17 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         $tournament_service->method( 'get_tournament' )->willReturn( $tournament );
         $tournament_service->method( 'get_player_details_for_tournament' )->willReturn( $tournament_player );
 
-        $presenter = new Tournament_Presenter( 'd/m/Y' );
-        $handler = new Get_Tournament_Players_Handler( $tournament_service, $presenter, new Player_Presenter() );
+        $presenter        = new Tournament_Presenter( 'd/m/Y' );
+        $player_presenter = new Player_Presenter();
+        $handler          = new Get_Tournament_Players_Handler( $tournament_service );
+        $adapter          = new Tournament_Shortcode_Adapter(
+            tournament_presenter: $presenter,
+            player_presenter: $player_presenter
+        );
 
-        $vm = $handler->handle( new Get_Tournament_Players_Query( 5, 101 ) );
-        $html = $this->view_presenter()->render( $vm );
+        $result = $handler->handle( new Get_Tournament_Players_Query( 5, 101 ) );
+        $vm     = $adapter->present_players( $result );
+        $html   = $this->view_presenter()->render( $vm );
 
         $this->assertStringContainsString( 'Roger Federer', $html );
         $this->assertStringContainsString( 'Rafael Nadal', $html );

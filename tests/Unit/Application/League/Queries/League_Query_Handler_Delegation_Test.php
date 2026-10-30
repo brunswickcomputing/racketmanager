@@ -97,17 +97,15 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 			$this->league_service( $league ),
 			$this->createStub( Team_Service::class ),
 			$this->createStub( Player_Stats_Service::class ),
-			$this->createStub( Tournament_Presenter::class ),
-			$this->team_details_presenter(),
 			$league_query
 		);
 
-		$vm = $handler->handle( new Get_League_Teams_Query( league_id: 7 ) );
+		$result = $handler->handle( new Get_League_Teams_Query( league_id: 7 ) );
 
-		$this->assertFalse( $vm->is_error() );
-		$this->assertSame( 'teams-list', $vm->template );
-		$this->assertSame( $league, $vm->vars['league'] );
-		$this->assertCount( 1, $vm->vars['team_rows'] );
+		$this->assertFalse( $result->is_error() );
+		$this->assertFalse( $result->is_team_details );
+		$this->assertSame( $league, $result->league );
+		$this->assertCount( 1, $result->league_teams );
 	}
 
 	public function test_teams_handler_skips_info_assignment_when_team_details_missing(): void {
@@ -135,16 +133,14 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 			$this->league_service( $league ),
 			$this->createStub( Team_Service::class ),
 			$this->createStub( Player_Stats_Service::class ),
-			$this->createStub( Tournament_Presenter::class ),
-			$this->team_details_presenter(),
 			$league_query
 		);
 
-		$vm = $handler->handle( new Get_League_Teams_Query( league_id: 7 ) );
+		$result = $handler->handle( new Get_League_Teams_Query( league_id: 7 ) );
 
-		$this->assertFalse( $vm->is_error() );
+		$this->assertFalse( $result->is_error() );
 		$this->assertNull( $team->info );
-		$this->assertCount( 1, $vm->vars['team_rows'] );
+		$this->assertCount( 1, $result->league_teams );
 	}
 
 	public function test_teams_handler_details_delegates_to_league_query_service(): void {
@@ -186,22 +182,19 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 		$stats = $this->createStub( Player_Stats_Service::class );
 		$stats->method( 'populate_players_stats' )->willReturn( [] );
 
-		$tournament = $this->createStub( Tournament_Presenter::class );
-		$tournament->method( 'present_match_list' )->willReturn( [] );
-
 		$handler = new Get_League_Teams_Handler(
 			$this->league_service( $league ),
 			$team_service,
 			$stats,
-			$tournament,
-			$this->team_details_presenter(),
 			$league_query
 		);
 
-		$vm = $handler->handle( new Get_League_Teams_Query( league_id: 7, team_id: '12' ) );
+		$result = $handler->handle( new Get_League_Teams_Query( league_id: 7, team_id: '12' ) );
 
-		$this->assertFalse( $vm->is_error() );
-		$this->assertSame( 'team-details', $vm->template );
+		$this->assertFalse( $result->is_error() );
+		$this->assertTrue( $result->is_team_details );
+		$this->assertSame( 12, $result->team_id );
+		$this->assertSame( $team, $result->team );
 	}
 
 	public function test_standings_handler_delegates_to_league_query_service(): void {
@@ -248,17 +241,16 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 
 		$handler = new Get_League_Crosstable_Handler(
 			$this->league_service( $league ),
-			$this->template_renderer(),
 			$league_query
 		);
 
-		$vm = $handler->handle( new Get_League_Crosstable_Query( league_id: 7 ) );
+		$result = $handler->handle( new Get_League_Crosstable_Query( league_id: 7 ) );
 
-		$this->assertFalse( $vm->is_error() );
-		$this->assertSame( 'crosstable', $vm->template );
-		$this->assertSame( $teams, $vm->vars['teams'] );
-		$this->assertSame( [], $vm->vars['crosstable_columns'] );
-		$this->assertSame( [], $vm->vars['crosstable_cells'] );
+		$this->assertFalse( $result->is_error() );
+		$this->assertSame( '', $result->template );
+		$this->assertSame( $teams, $result->teams );
+		$this->assertSame( [], $result->columns );
+		$this->assertSame( [], $result->cells );
 	}
 
 	public function test_crosstable_handler_precomputes_cells_for_every_row_and_column(): void {
@@ -281,20 +273,19 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 
 		$handler = new Get_League_Crosstable_Handler(
 			$this->league_service( $league ),
-			$this->template_renderer(),
 			$league_query
 		);
 
-		$vm = $handler->handle( new Get_League_Crosstable_Query( league_id: 7 ) );
+		$result = $handler->handle( new Get_League_Crosstable_Query( league_id: 7 ) );
 
 		// Columns follow the league order, capped to the number of ranked rows the template renders.
-		$this->assertSame( [ $teams[1], $teams[0] ], $vm->vars['crosstable_columns'] );
+		$this->assertSame( [ $teams[1], $teams[0] ], $result->columns );
 		$this->assertSame(
 			[
 				101 => [ 202 => '101v202', 101 => '&nbsp;' ],
 				202 => [ 202 => '&nbsp;', 101 => '202v101' ],
 			],
-			$vm->vars['crosstable_cells']
+			$result->cells
 		);
 	}
 
@@ -321,17 +312,15 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 
 		$handler = new Get_League_Last_5_Handler(
 			$this->league_service( $league ),
-			$this->template_renderer(),
-			$this->createStub( Fixture_Presenter::class ),
 			$league_query
 		);
 
-		$vm = $handler->handle( new Get_League_Last_5_Query( league_id: 7, team_id: 12 ) );
+		$result = $handler->handle( new Get_League_Last_5_Query( league_id: 7, team_id: 12 ) );
 
-		$this->assertFalse( $vm->is_error() );
-		$this->assertSame( 'last-5', $vm->template );
-		$this->assertSame( [], $vm->vars['matches'] );
-		$this->assertSame( 12, $vm->vars['team_id'] );
+		$this->assertFalse( $result->is_error() );
+		$this->assertSame( '', $result->template );
+		$this->assertSame( [], $result->matches );
+		$this->assertSame( 12, $result->team_id );
 	}
 
 	public function test_match_dropdown_handler_delegates_to_league_query_service(): void {
@@ -353,16 +342,15 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 
 		$handler = new Get_League_Match_Dropdown_Handler(
 			$this->league_service( $league ),
-			$this->template_renderer(),
 			$league_query
 		);
 
-		$vm = $handler->handle( new Get_League_Match_Dropdown_Query( league_id: 7, season: '2026', match_id: 44 ) );
+		$result = $handler->handle( new Get_League_Match_Dropdown_Query( league_id: 7, season: '2026', match_id: 44 ) );
 
-		$this->assertFalse( $vm->is_error() );
-		$this->assertSame( 'match-dropdown', $vm->template );
-		$this->assertSame( $matches, $vm->vars['matches'] );
-		$this->assertSame( 44, $vm->vars['match_id'] );
+		$this->assertFalse( $result->is_error() );
+		$this->assertSame( '', $result->template );
+		$this->assertSame( $matches, $result->matches );
+		$this->assertSame( 44, $result->match_id );
 	}
 
 	public function test_matches_handler_delegates_to_league_query_service(): void {
@@ -402,22 +390,17 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 			)
 			->willReturn( $teams );
 
-		$tournament = $this->createStub( Tournament_Presenter::class );
-		$tournament->method( 'present_match_list' )->willReturn( [] );
-
 		$handler = new Get_League_Matches_Handler(
 			$this->league_service( $league ),
-			$this->template_renderer(),
-			$tournament,
 			$league_query
 		);
 
-		$vm = $handler->handle( new Get_League_Matches_Query( league_id: 7 ) );
+		$result = $handler->handle( new Get_League_Matches_Query( league_id: 7 ) );
 
-		$this->assertFalse( $vm->is_error() );
-		$this->assertSame( 'matches-daily', $vm->template );
-		$this->assertSame( $teams, $vm->vars['teams'] );
-		$this->assertSame( '2026', $vm->vars['season'] );
+		$this->assertFalse( $result->is_error() );
+		$this->assertSame( 'daily', $result->template );
+		$this->assertSame( $teams, $result->teams );
+		$this->assertSame( '2026', $result->season );
 	}
 
 	public function test_championship_handler_delegates_get_matches_for_finals(): void {
@@ -450,20 +433,14 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 		$handler = new Get_League_Championship_Handler(
 			$this->league_service( $league ),
 			$this->createStub( Fixture_Repository_Interface::class ),
-			$this->createStub( Competition_Service::class ),
-			$this->createStub( Team_Service::class ),
-			$this->createStub( Fixture_Link_Service::class ),
-			$this->createStub( Fixture_Permission_Service::class ),
-			$this->template_renderer(),
 			$this->createStub( Rubber_Repository_Interface::class ),
-			$this->createStub( Tournament_Presenter::class ),
 			$league_query
 		);
 
-		$vm = $handler->handle( new Get_League_Championship_Query( league_id: 7, season: '2026' ) );
+		$result = $handler->handle( new Get_League_Championship_Query( league_id: 7, season: '2026' ) );
 
-		$this->assertFalse( $vm->is_error() );
-		$this->assertSame( 'championship', $vm->template );
-		$this->assertSame( $league, $vm->vars['league'] );
+		$this->assertFalse( $result->is_error() );
+		$this->assertSame( '', $result->template );
+		$this->assertSame( $league, $result->league );
 	}
 }

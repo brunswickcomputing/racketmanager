@@ -67,4 +67,11 @@ class Simple_Container {
     public function has(string $id): bool {
         return isset($this->definitions[$id]) || isset($this->instances[$id]);
     }
+
+    /**
+     * Remove a service definition and any cached instance.
+     */
+    public function remove( string $id ): void {
+        unset( $this->definitions[ $id ], $this->instances[ $id ] );
+    }
 }

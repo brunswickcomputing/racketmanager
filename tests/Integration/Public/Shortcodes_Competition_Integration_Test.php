@@ -99,17 +99,16 @@ class Shortcodes_Competition_Integration_Test extends TestCase {
         $presenter         = new Competition_Shortcode_Presenter( $renderer, new Club_Presenter(), new Player_Presenter() );
         $view_presenter    = new Shortcode_View_Presenter( $template_renderer );
 
-        $overview_handler = new Get_Competition_Overview_Handler( $comp_service, $presenter, $this->competition_season_service() );
-        $events_handler   = new Get_Competition_Events_Handler( $comp_service, $presenter, $this->competition_season_service() );
-        $teams_handler    = new Get_Competition_Teams_Handler( $comp_service, $presenter, $this->competition_season_service() );
-        $clubs_handler    = new Get_Competition_Clubs_Handler( $comp_service, $club_service, new \Racketmanager\Services\Player_Stats_Service(), new Tournament_Presenter(), $presenter, $this->competition_season_service() );
+        $overview_handler = new Get_Competition_Overview_Handler( $comp_service, $this->competition_season_service() );
+        $events_handler   = new Get_Competition_Events_Handler( $comp_service, $this->competition_season_service() );
+        $teams_handler    = new Get_Competition_Teams_Handler( $comp_service, $this->competition_season_service() );
+        $clubs_handler    = new Get_Competition_Clubs_Handler( $comp_service, $club_service, new \Racketmanager\Services\Player_Stats_Service(), $this->competition_season_service() );
         $players_handler  = new Get_Competition_Players_Handler(
             $comp_service,
             $player_service,
             new \Racketmanager\Services\Player_Query_Service( new \Racketmanager\Repositories\Player_Statistics_Repository() ),
             new \Racketmanager\Services\Player_Stats_Service(),
-            new Player_Presenter(),
-            $presenter, $this->competition_season_service() );
+            $this->competition_season_service() );
         $winners_handler  = new Get_Competition_Winners_Handler( $comp_service, $this->competition_season_service() );
 
         $this->adapter = new Competition_Shortcode_Adapter(
@@ -135,8 +134,7 @@ class Shortcodes_Competition_Integration_Test extends TestCase {
                 $comp_service,
                 $tournament_svc,
                 $player_service,
-                new \Racketmanager\Services\Player_Query_Service( new \Racketmanager\Repositories\Player_Statistics_Repository() ),
-                $presenter
+                new \Racketmanager\Services\Player_Query_Service( new \Racketmanager\Repositories\Player_Statistics_Repository() )
             ),
             view_presenter: $view_presenter,
             racketmanager: $this->plugin

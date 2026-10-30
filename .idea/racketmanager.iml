@@ -45,6 +45,11 @@
       <excludeFolder url="file://$MODULE_DIR$/../../updraft" />
       <excludeFolder url="file://$MODULE_DIR$/../../upgrade" />
       <excludeFolder url="file://$MODULE_DIR$/../../uploads" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/dealerdirect/phpcodesniffer-composer-installer" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/phpcsstandards/phpcsextra" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/phpcsstandards/phpcsutils" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/squizlabs/php_codesniffer" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/wp-coding-standards/wpcs" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

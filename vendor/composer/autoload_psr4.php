@@ -10,5 +10,6 @@ return array(
     'Racketmanager\\Tests\\' => array($baseDir . '/tests'),
     'Racketmanager\\' => array($baseDir . '/src/php'),
     'PhpParser\\' => array($vendorDir . '/nikic/php-parser/lib/PhpParser'),
+    'PHPCSStandards\\Composer\\Plugin\\Installers\\PHPCodeSniffer\\' => array($vendorDir . '/dealerdirect/phpcodesniffer-composer-installer/src'),
     'DeepCopy\\' => array($vendorDir . '/myclabs/deep-copy/src/DeepCopy'),
 );

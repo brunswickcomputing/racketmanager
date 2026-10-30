@@ -22,6 +22,8 @@
     <option name="codingStandard" value="Custom" />
     <option name="customRuleset" value="$PROJECT_DIR$/phpcs.xml" />
     <option name="highlightLevel" value="WARNING" />
+    <option name="installedPaths" value="$PROJECT_DIR$/vendor/phpcsstandards" />
+    <option name="useInstalledPaths" value="true" />
     <option name="transferred" value="true" />
   </component>
   <component name="PhpCSFixer">
@@ -32,7 +34,7 @@
   <component name="PhpCodeSniffer">
     <phpcs_settings>
       <PhpCSConfiguration beautifier_path="$PROJECT_DIR$/vendor/bin/phpcbf" tool_path="$PROJECT_DIR$/vendor/bin/phpcs" />
-      <phpcs_by_interpreter asDefaultInterpreter="true" interpreter_id="cf1d31f5-f2c5-4143-b8ab-e18777d65a41" timeout="30000" />
+      <phpcs_by_interpreter asDefaultInterpreter="true" interpreter_id="cf1d31f5-f2c5-4143-b8ab-e18777d65a41" tool_path="/Users/paulmoffat/Sites/leighandwestclifftennis.local/wp-content/plugins/racketmanager/vendor/squizlabs/php_codesniffer/bin/phpcs" timeout="30000" />
     </phpcs_settings>
   </component>
   <component name="PhpIncludePathManager">

@@ -160,13 +160,14 @@ final class Admin_League_Regression_Test extends TestCase {
 		$this->container->set( 'league_team_repository', fn() => $league_team_repository );
 
 		$league_query_service = $this->createMock( League_Query_Service::class );
-		$league_query_service->method( 'get_league_teams' )->willReturnCallback(
+        $league_query_service->method( 'get_league_teams' )->willReturnCallback(
 			static function ( object $l ) use ( $westcliff, $raw_leigh ): array {
 				$l->teams = array( $westcliff, $raw_leigh );
 				return $l->teams;
 			}
-		);
-		$league_query_service->method( 'get_matches' )->willReturn( array() );
+        );
+        $league_query_service->method( 'get_matches' )->willReturn( array() );
+        $league_query_service->method( 'set_num_matches' )->willReturn( new \Racketmanager\Application\League\DTOs\League_View_State() );
 		$league_query_service->expects( self::exactly( 4 ) )
 			->method( 'get_crosstable_field' )
 			->with( $league, self::anything(), self::anything() )
@@ -187,6 +188,59 @@ final class Admin_League_Regression_Test extends TestCase {
 		$this->assertStringContainsString( 'aria-describedby="Crosstable Division 1"', $output );
 		$this->assertMatchesRegularExpression( '/<th scope="row">1<\/th>\s*<td>Westcliff 1<\/td>\s*<td class="fixture">&nbsp;<\/td>\s*<td class="fixture">11v22<\/td>/', $output );
 		$this->assertMatchesRegularExpression( '/<th scope="row">2<\/th>\s*<td>Leigh 2<\/td>\s*<td class="fixture">22v11<\/td>\s*<td class="fixture">&nbsp;<\/td>/', $output );
+	}
+
+	/**
+	 * Controller-to-template contract: the pagination links computed by League_Query_Service::set_num_matches()
+	 * reach templates/admin/league/matches.php through show-league.php.
+	 *
+	 * Runs in its own process because show-league.php includes its tab partials with require_once.
+	 */
+	#[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
+	#[\PHPUnit\Framework\Attributes\PreserveGlobalState( false )]
+	public function test_display_league_page_renders_match_pagination_links_from_view_state(): void {
+		$_GET        = array( 'league_id' => '43', 'season' => '2026', 'tab' => 'matches' );
+		$competition = Competition_Test_Factory::create( id: 1, name: 'Premier League', type: Competition_Type::LEAGUE );
+		$event       = \Racketmanager\Domain\Competition\Event::from_object(
+			(object) array(
+				'id'      => 94,
+				'name'    => 'Mixed Doubles',
+				'type'    => 'doubles',
+				'seasons' => array( '2026' => array( 'name' => '2026' ) ),
+			),
+			$competition
+		);
+		$league      = \Racketmanager\Domain\Competition\League::from_object( (object) array( 'id' => 43, 'title' => 'Division 2' ), $event );
+		$league->set_season( '2026' );
+		$league->num_teams = 2;
+		$GLOBALS['wp_stubs_leagues'][43] = $league;
+
+		$league_team_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface::class );
+		$this->container->set( 'league_team_repository', fn() => $league_team_repository );
+
+		$pagination = '<nav class="pagination-links"><a class="page-numbers" href="?match_paged=2">2</a></nav>';
+		$view_state = new \Racketmanager\Application\League\DTOs\League_View_State(
+			tab: 'matches',
+			num_pages_matches: 2,
+			pagination_matches: $pagination,
+		);
+
+		$league_query_service = $this->createMock( League_Query_Service::class );
+		$league_query_service->method( 'get_league_teams' )->willReturn( array() );
+		$league_query_service->method( 'get_matches' )->willReturn( array() );
+		$league_query_service->method( 'set_num_matches' )->willReturn( $view_state );
+		$this->container->set( 'league_query_service', fn() => $league_query_service );
+
+		ob_start();
+		try {
+			$this->screen()->handle_display( 'league' );
+			$output = (string) ob_get_contents();
+		} finally {
+			ob_end_clean();
+		}
+
+		$this->assertSame( array(), $this->warnings );
+		$this->assertStringContainsString( 'href="?match_paged=2"', $output );
 	}
 
 	public function test_display_match_page_with_missing_league_shows_not_found_message(): void {

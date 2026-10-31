@@ -29,6 +29,7 @@ final readonly class League_Standings_Page_View_Model {
      * @param array        $menu
      * @param string       $league_mode
      * @param object|null  $tournament
+     * @param string|null  $pagination_matches
      */
     public function __construct(
         public object $league,
@@ -48,6 +49,7 @@ final readonly class League_Standings_Page_View_Model {
         public array $menu = array(),
         public string $league_mode = '',
         public ?object $tournament = null,
+        public ?string $pagination_matches = null,
     ) {
     }
 }

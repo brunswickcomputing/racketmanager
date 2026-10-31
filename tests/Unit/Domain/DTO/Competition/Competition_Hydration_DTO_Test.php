@@ -47,13 +47,14 @@ class Competition_Hydration_DTO_Test extends TestCase {
 			id: 1,
 			title: 'Div 1',
 			event_id: 2,
-			settings: array( 'num_teams_per_page' => 14 )
+			settings: array( 'num_advance' => 14, 'num_teams_per_page' => 14 )
 		);
 		$league = new League( $dto );
 		$this->assertSame( 'Div 1', $league->title );
 		$this->assertSame( 'Div 1', $league->name );
 		$this->assertSame( 2, $league->event_id );
-		$this->assertSame( 14, $league->num_teams_per_page );
+		$this->assertSame( 14, $league->num_advance );
+		$this->assertFalse( property_exists( $league, 'num_teams_per_page' ) );
 		$this->assertFalse( method_exists( $dto, 'to_std_class' ) );
 	}
 

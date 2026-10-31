@@ -12,6 +12,7 @@ final readonly class League_Archive_Result {
      * @param object|null $event
      * @param array<int|string, mixed> $seasons
      * @param array<int, object> $leagues
+     * @param League_View_State|null $view_state
      */
     public function __construct(
         public ?object $league = null,
@@ -26,6 +27,7 @@ final readonly class League_Archive_Result {
         public string $teams = '',
         public string $matches_template_type = '',
         public int|string|null $post_id = null,
+        public ?League_View_State $view_state = null,
         public ?string $error_message = null
     ) {}
 

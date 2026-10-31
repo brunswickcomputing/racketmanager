@@ -114,10 +114,6 @@ final readonly class Cup_Draw_Admin_Controller {
             throw new League_Not_Found_Exception( __( 'League not found', 'racketmanager' ) );
         }
 
-        if ( ! empty( $league->championship?->groups ) && count( $league->championship->groups ) > 0 ) {
-            $league->set_group( $league->championship->groups[0] );
-        }
-
         $finals = $this->finals_presenter->present_league_finals(
             $league,
             (string) $season,

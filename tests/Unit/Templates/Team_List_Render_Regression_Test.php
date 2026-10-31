@@ -94,6 +94,7 @@ class Team_List_Render_Regression_Test extends TestCase {
         $team2 = (object) [ 'id' => 102, 'title' => 'Leigh TC 2' ];
         $league_query = $this->createStub( League_Query_Service::class );
         $league_query->method( 'get_league_teams' )->willReturn( [ $team1, $team2 ] );
+        $league_query->method( 'set_num_teams' )->willReturn( new \Racketmanager\Application\League\DTOs\League_View_State() );
         $league_query->method( 'get_team_dtls' )->willReturnCallback(
             static function ( object $league, int $team_id ): object {
                 if ( 101 === $team_id ) {

@@ -119,11 +119,11 @@ class Request_State_Presentation_Test extends TestCase {
 
     public function test_league_matches_handler_supplies_selection_form_target(): void {
         $league = $this->league();
-        $league->show_match_day_selection = true;
         $league->num_match_days = 3;
         $league_query = $this->createStub( League_Query_Service::class );
         $league_query->method( 'get_matches' )->willReturn( [] );
         $league_query->method( 'get_league_teams' )->willReturn( [] );
+        $league_query->method( 'set_num_matches' )->willReturn( new \Racketmanager\Application\League\DTOs\League_View_State() );
         $service = $this->createStub( League_Service::class );
         $service->method( 'get_league' )->willReturn( $league );
         $handler = new Get_League_Matches_Handler( $service, $league_query );

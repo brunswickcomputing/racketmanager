@@ -155,7 +155,7 @@ class League_Archive_Template_Test extends TestCase {
 
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'archive', $vm->template );
-        $this->assertSame( 'last5', $league->templates['standings'] );
+        $this->assertSame( 'last5', $vm->vars['view_state']->get_template( 'standings' ) );
 
         $warnings = [];
         $output   = $this->render_and_capture_warnings(
@@ -226,7 +226,7 @@ class League_Archive_Template_Test extends TestCase {
 
         $vm = ( new League_Shortcode_Adapter( archive_presenter: $presenter ) )->present_archive( $handler->handle( $query ) );
 
-        $this->assertSame( 'results', $league->templates['matches'] );
+        $this->assertSame( 'results', $vm->vars['view_state']->get_template( 'matches' ) );
 
         $warnings = [];
         $output   = $this->render_and_capture_warnings(

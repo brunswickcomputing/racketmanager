@@ -8,6 +8,7 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Application\League\DTOs\League_View_State;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\Presenters\League_Archive_Presenter;
 use Racketmanager\Presentation\View_Models\League_Archive_View_Model;
@@ -297,10 +298,6 @@ class League_Archive_Presenter_Test extends TestCase {
                 $this->id        = 10;
                 $this->title     = 'Division 1';
                 $this->event     = $event;
-                $this->templates = [
-                    'standings' => 'standings-custom.php',
-                    'matches'   => 'matches-grid.php',
-                ];
             }
         };
 
@@ -309,7 +306,13 @@ class League_Archive_Presenter_Test extends TestCase {
             event: $event,
             seasons: [],
             leagues: [ $league ],
-            tab: 'standings'
+            tab: 'standings',
+            view_state: new League_View_State(
+                templates: [
+                    'standings' => 'standings-custom.php',
+                    'matches'   => 'matches-grid.php',
+                ]
+            )
         );
 
         $this->assertSame( [

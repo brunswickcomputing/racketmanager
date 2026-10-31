@@ -142,6 +142,7 @@ final readonly class League_Standings_Admin_Controller {
         $group         = isset( $query['group'] ) ? sanitize_text_field( wp_unslash( strval( $query['group'] ) ) ) : '';
         $team_id       = isset( $query['team_id'] ) ? intval( $query['team_id'] ) : false;
         $match_day     = false;
+        $pagination_matches = null;
 
         if ( $is_post && isset( $post['updateLeague'] ) && 'team' === $post['updateLeague'] && $league->is_championship ) {
             $tab = 'preliminary';
@@ -151,9 +152,9 @@ final readonly class League_Standings_Admin_Controller {
             $match_day = intval( $query['match_day'] );
             $this->league_query_service->set_match_day( $league, $match_day );
             $tab = 'matches';
-        } elseif ( 'current_match_day' === ( $league->match_display ?? '' ) ) {
+        } elseif ( 'current_match_day' === ( $league->settings['match_display'] ?? 'current_match_day' ) ) {
             $this->league_query_service->set_match_day( $league, 'current' );
-        } elseif ( 'all' === ( $league->match_display ?? '' ) ) {
+        } elseif ( 'all' === ( $league->settings['match_display'] ?? '' ) ) {
             $this->league_query_service->set_match_day( $league, -1 );
         }
 
@@ -176,8 +177,9 @@ final readonly class League_Standings_Admin_Controller {
         if ( $team_id ) {
             $match_args['team_id'] = $team_id;
         }
-        if ( ( $league->num_matches_per_page ?? 0 ) > 0 ) {
-            $match_args['limit'] = $league->num_matches_per_page;
+        $match_limit = $league->get_match_query_args()['limit'] ?? 30;
+        if ( is_numeric( $match_limit ) && (int) $match_limit > 0 ) {
+            $match_args['limit'] = (int) $match_limit;
         }
 
         $teams = $this->league_query_service->get_league_teams(
@@ -193,7 +195,9 @@ final readonly class League_Standings_Admin_Controller {
         if ( 'championship' === $league_mode ) {
             $finals = $this->finals_presenter->present_league_finals( $league, (string) $season, $this->league_query_service, $this->fixture_detail_service );
         } else {
-            $matches = $this->prepare_league_matches( $league, $match_args, (string) $season, $group );
+            $match_result = $this->prepare_league_matches( $league, $match_args, (string) $season, $group );
+            $matches = $match_result['matches'];
+            $pagination_matches = $match_result['pagination_matches'];
         }
 
         if ( isset( $query['match_paged'] ) ) {
@@ -244,6 +248,7 @@ final readonly class League_Standings_Admin_Controller {
             seasons: is_array( $seasons ) ? $seasons : array(),
             menu: $menu,
             league_mode: $league_mode,
+            pagination_matches: $pagination_matches,
         );
 
         return array_merge(
@@ -289,9 +294,12 @@ final readonly class League_Standings_Admin_Controller {
     private function prepare_league_matches( League $league, array $match_args, string $season, string $group ): array {
         $match_args['reset_query_args'] = true;
         $matches                        = $this->league_query_service->get_matches( $league, $match_args );
-        $this->league_query_service->set_num_matches( $league );
+        $view_state                     = $this->league_query_service->set_num_matches( $league );
 
-        return $this->matches_presenter->present_collection( is_array( $matches ) ? $matches : array(), $league, $season, $group );
+        return array(
+            'matches'           => $this->matches_presenter->present_collection( is_array( $matches ) ? $matches : array(), $league, $season, $group ),
+            'pagination_matches' => $view_state->pagination_matches,
+        );
     }
 
     private function get_menu( League $league, string $season ): array {

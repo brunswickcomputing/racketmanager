@@ -16,6 +16,7 @@ use function is_array;
 use function is_iterable;
 use function is_numeric;
 use function iterator_to_array;
+use function property_exists;
 use function wp_verify_nonce;
 
 /**
@@ -40,8 +41,6 @@ class Get_League_Matches_Handler {
             return League_Matches_Result::error( __( 'League not found', 'racketmanager' ) );
         }
 
-        $league->set_template( 'matches', $query->template );
-
         // Always disable match day in template to show matches by matchday.
         if ( 'by_matchday' === $query->template || ! empty( $query->time ) || empty( $query->matches ) ) {
             $match_day = -1;
@@ -51,8 +50,6 @@ class Get_League_Matches_Handler {
 
         $this->league_query_service->set_season( $league, $query->season ?? false );
         $this->league_query_service->set_match_day( $league, $match_day );
-        $league->matches_template_type = $query->template_type;
-
         $match_args = [ 'final' => '' ];
         if ( 'false' === $query->limit ) {
             $match_args['limit'] = false;
@@ -62,8 +59,13 @@ class Get_League_Matches_Handler {
         $match_args['time']      = $query->time;
         $match_args['home_only'] = false;
 
+        $original_match_args = $league->get_match_query_args();
+        if ( array_key_exists( 'limit', $match_args ) ) {
+            $league->set_match_query_arg( 'limit', $match_args['limit'] );
+        }
         $matches = $this->league_query_service->get_matches( $league, $match_args );
-        $this->league_query_service->set_num_matches( $league );
+        $matches_state = $this->league_query_service->set_num_matches( $league );
+        $league->restore_match_query_args( $original_match_args );
 
         $competition   = $league->event?->competition ?? null;
         $is_team_entry = $competition?->is_team_entry ?? true;
@@ -88,6 +90,22 @@ class Get_League_Matches_Handler {
 
         $post_id = $query->post_id ?: ( function_exists( 'get_the_ID' ) ? (int) get_the_ID() : 0 );
 
+        $settings = is_array( $league->settings ?? null ) ? $league->settings : [];
+        $show_match_day_selection = '' === $query->show_match_day_selection
+            ? true
+            : 'false' !== strtolower( $query->show_match_day_selection );
+        $view_state = $matches_state->with(
+            [
+                'tab'                        => 'matches',
+                'templates'                  => [ 'matches' => $query->template ],
+                'matches_template_type'      => $query->template_type,
+                'is_archive'                 => false,
+                'current_match_day'          => is_numeric( $league->match_day ?? null ) ? (int) $league->match_day : ( is_numeric( $match_day ) ? (int) $match_day : 1 ),
+                'show_match_day_selection'   => $show_match_day_selection,
+                'match_display'              => (string) ( $settings['match_display'] ?? 'current_match_day' ),
+            ]
+        );
+
         return new League_Matches_Result(
             league: $league,
             raw_matches: $raw_matches,
@@ -98,7 +116,8 @@ class Get_League_Matches_Handler {
             season: $league->current_season['name'] ?? $query->season,
             post_id: $post_id,
             form_action: $post_id > 0 ? (string) get_permalink( $post_id ) : '',
-            template: $query->template
+            template: $query->template,
+            view_state: $view_state
         );
     }
 }

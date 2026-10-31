@@ -128,7 +128,7 @@ class League_Shortcode_Adapter_Mapping_Test extends TestCase {
         $this->assertSame( 12, $vm->vars['post_id'] );
         $this->assertSame( '2026', $vm->vars['season'] );
         $this->assertSame( 'https://example.test/page/', $vm->vars['form_action'] );
-        $this->assertSame( [ 'league', 'matches', 'teams', 'season', 'post_id', 'form_action' ], array_keys( $vm->vars ) );
+        $this->assertSame( [ 'league', 'matches', 'teams', 'season', 'post_id', 'form_action', 'view_state' ], array_keys( $vm->vars ) );
     }
 
     public function test_matches_grouped_wraps_match_days_in_group_view_models(): void {

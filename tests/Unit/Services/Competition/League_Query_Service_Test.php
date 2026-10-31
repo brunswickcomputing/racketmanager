@@ -515,15 +515,11 @@ class League_Query_Service_Test extends TestCase {
 		$this->assertSame( array( $bob, $amy ), $league->players );
 	}
 
-	public function test_add_team_persists_through_repository_without_calling_entity_method(): void {
+	public function test_add_team_persists_through_repository(): void {
 		$league_row         = new stdClass();
 		$league_row->id     = 42;
 		$league_row->title  = 'Premier Division';
-		$league             = $this->getMockBuilder( League::class )
-			->setConstructorArgs( array( League_Hydration_DTO::from_object( $league_row ) ) )
-			->onlyMethods( array( 'add_team' ) )
-			->getMock();
-		$league->expects( $this->never() )->method( 'add_team' );
+		$league             = League_Test_Factory::from_object( $league_row );
 
 		$this->league_repository->expects( $this->once() )
 			->method( 'add_team_to_league' )
@@ -763,11 +759,11 @@ class League_Query_Service_Test extends TestCase {
 		$league->num_teams_total = 6;
 		$this->league_repository->expects( $this->never() )->method( 'query_league_teams' );
 
-		$this->service->set_num_teams( $league );
+		$view_state = $this->service->set_num_teams( $league );
 
 		$this->assertSame( 6, $league->num_teams );
-		$this->assertSame( 1, $league->current_page_teams );
-		$this->assertIsString( $league->pagination_teams );
+		$this->assertSame( 1, $view_state->current_page_teams );
+		$this->assertIsString( $view_state->pagination_teams );
 	}
 
 	public function test_set_num_matches_per_page_counts_with_limit_zero(): void {
@@ -790,10 +786,10 @@ class League_Query_Service_Test extends TestCase {
 			}), true )
 			->willReturn( 12 );
 
-		$this->service->set_num_matches( $league, false );
+		$view_state = $this->service->set_num_matches( $league, false );
 		$this->assertSame( 12, $league->num_matches );
-		$this->assertSame( 1, $league->current_page_matches );
-		$this->assertIsString( $league->pagination_matches );
+		$this->assertSame( 1, $view_state->current_page_matches );
+		$this->assertIsString( $view_state->pagination_matches );
 	}
 
 	public function test_set_num_matches_total_counts_without_overriding_entity_limit(): void {

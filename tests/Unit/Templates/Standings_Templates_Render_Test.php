@@ -339,14 +339,7 @@ final class Standings_Templates_Render_Test extends TestCase {
         self::assertStringContainsString( "template='custom-standings.php'", $html );
     }
 
-    public function test_archive_template_falls_back_to_global_template_when_vm_template_is_empty(): void {
-        $league = new class extends League {
-            public function __construct() {
-                $this->id = 10;
-                $this->templates = ['standings' => 'global-tpl'];
-            }
-        };
-        $GLOBALS['league'] = $league;
+    public function test_archive_template_does_not_resolve_overrides_from_global_league(): void {
 
         $vm = new \Racketmanager\Presentation\View_Models\League_Archive_View_Model(
             league_id: 10,
@@ -376,6 +369,6 @@ final class Standings_Templates_Render_Test extends TestCase {
             'vm' => $vm,
         ] );
 
-        self::assertStringContainsString( "template='global-tpl'", $html );
+        self::assertStringNotContainsString( "template='global-tpl'", $html );
     }
 }

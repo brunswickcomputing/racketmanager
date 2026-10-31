@@ -20,6 +20,7 @@ $teams            = $vm->teams;
 $cup              = $vm->cup;
 $finals           = $vm->finals;
 $matches          = $vm->matches;
+$pagination_matches = $vm->pagination_matches;
 $crosstable_teams = $vm->crosstable_teams;
 $crosstable_cells = $vm->crosstable_cells;
 $match_day        = $vm->match_day;

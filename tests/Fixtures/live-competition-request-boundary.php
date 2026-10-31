@@ -113,12 +113,12 @@ foreach ( [ 1, 2, 3 ] as $page ) {
     $league = \Racketmanager\get_league( 1 );
     $query_service->set_season( $league, '2026' );
     $matches = $query_service->get_matches( $league, [ 'limit' => 5, 'match_day' => -1, 'final' => '', 'orderby' => [ 'id' => 'ASC' ] ] );
-    $query_service->set_num_matches( $league );
+    $view_state = $query_service->set_num_matches( $league );
     $ids = array_map( static fn( $fixture ) => $fixture->id, $matches );
     print 'Page ' . $page . ': ' . implode( ',', $ids ) . PHP_EOL;
     request_boundary_check( array_slice( $all_ids, ( $page - 1 ) * 5, 5 ) === $ids, 'requested page returns correct fixture slice' );
-    $page_links = $league->get_page_links();
-    request_boundary_check( $page === $league->current_page_matches, 'pagination links retain requested page' );
+    $page_links = $view_state->pagination_matches ?? '';
+    request_boundary_check( $page === $view_state->current_page_matches, 'pagination links retain requested page' );
     request_boundary_check( 1 === preg_match( '/class="page-numbers current">' . $page . '<\/span>/', $page_links ), 'generated pagination highlights requested page' );
     $html = request_boundary_render( '[matches league_id=1 template="" limit=5 matches=-1]', [ 'match_paged' => (string) $page ] );
     preg_match_all( '/class="team-match__wrapper" href="([^"]+)"/', $html, $page_links );

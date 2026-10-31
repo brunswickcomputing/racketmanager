@@ -10,6 +10,7 @@ final readonly class League_Standings_Result {
     /**
      * @param object|null $league
      * @param array<int, object> $teams
+     * @param League_View_State|null $view_state
      */
     public function __construct(
         public ?object $league = null,
@@ -18,6 +19,7 @@ final readonly class League_Standings_Result {
         public bool $widget = false,
         public ?string $season = null,
         public ?string $group = null,
+        public ?League_View_State $view_state = null,
         public ?string $error_message = null
     ) {}
 

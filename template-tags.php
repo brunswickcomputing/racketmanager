@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Application\League\DTOs\League_View_State;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\Presentation\Formatters\Currency_Formatter;
 use Racketmanager\Presentation\Formatters\Date_Time_Formatter;
@@ -16,14 +17,15 @@ use Racketmanager\Util\Util_Lookup;
 /**
  * Get specific template
  *
- * @param string $template template.
+ * @param string                 $template   template.
+ * @param League_View_State|null $view_state Optional view state.
  *
  * @return string
  * @category template-tags
  */
-function get_league_template( string $template = '' ): string {
+function get_league_template( string $template = '', ?League_View_State $view_state = null ): string {
     global $league;
-    return League_Standings_Presenter::get_league_template( $league ?? null, $template );
+    return League_Standings_Presenter::get_league_template( $league ?? null, $template, $view_state );
 }
 
 /**

@@ -116,7 +116,7 @@ readonly class Notification_Presenter implements Notification_Presenter_Interfac
 
         $dto = is_numeric( $team_id ) ? $this->team_service->get_team_details( (int) $team_id ) : $this->team_service->derive_team_details( (string) $team_id );
 
-        if ( $dto && is_numeric( $team_id ) && method_exists( $league, 'get_status' ) ) {
+        if ( $dto && is_numeric( $team_id ) ) {
             $status            = $this->league_query_service->get_status( $league, (int) $team_id, $season );
             $dto->is_withdrawn = ( 'W' === $status );
         }

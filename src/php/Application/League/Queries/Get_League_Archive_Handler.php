@@ -4,11 +4,13 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\League\Queries;
 
 use Racketmanager\Application\League\DTOs\League_Archive_Result;
+use Racketmanager\Application\League\DTOs\League_View_State;
 use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\League_Service;
 use function __;
+use function is_numeric;
 use function is_object;
 use function method_exists;
 
@@ -45,15 +47,23 @@ class Get_League_Archive_Handler {
         $leagues = $event instanceof \Racketmanager\Domain\Competition\Event ? $this->event_query_service->get_leagues( $event ) : [];
         $tab     = $query->tab ?? 'standings';
 
-        $league_query_service->set_tab( $league, true );
-        $league->set_templates( [
+        $tab_state = $league_query_service->set_tab( $league, true );
+        $templates   = [
             'standings'  => $query->standings,
             'crosstable' => $query->crosstable,
             'matches'    => $query->matches,
             'teams'      => $query->teams,
-        ] );
-        $league->set_template( 'archive', $query->template );
-        $league->matches_template_type = $query->matches_template_type;
+            'archive'    => $query->template,
+        ];
+
+        $view_state = $tab_state->with(
+            [
+                'tab'                   => $tab,
+                'templates'             => $templates,
+                'matches_template_type' => $query->matches_template_type,
+                'current_match_day'     => is_numeric( $league->match_day ?? null ) ? (int) $league->match_day : 1,
+            ]
+        );
 
         return new League_Archive_Result(
             league: $league,
@@ -67,7 +77,8 @@ class Get_League_Archive_Handler {
             matches: $query->matches,
             teams: $query->teams,
             matches_template_type: $query->matches_template_type,
-            post_id: $query->post_id
+            post_id: $query->post_id,
+            view_state: $view_state
         );
     }
 }

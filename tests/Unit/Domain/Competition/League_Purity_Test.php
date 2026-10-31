@@ -84,6 +84,19 @@ final class League_Purity_Test extends TestCase {
 			'get_team_dtls',
 			'get_league_teams',
 			'get_matches',
+			'import_matches',
+			'import_teams',
+			'set_tab',
+			'set_template',
+			'set_templates',
+			'set_num_pages',
+			'get_current_page',
+			'set_group',
+			'get_group',
+			'add_team',
+			'get_num_teams',
+			'get_rank',
+			'get_status',
 		) as $method ) {
 			$this->assertFalse( $reflection->hasMethod( $method ), "League::$method must not exist (entity purity)." );
 		}
@@ -253,37 +266,12 @@ final class League_Purity_Test extends TestCase {
 		$this->assertSame( 4, $league->championship->num_rounds );
 	}
 
-	public function test_add_team_domain_method_has_no_repository_parameter_and_rejects_persistence(): void {
-		$league = League_Test_Factory::from_object( (object) array( 'id' => 10 ) );
-
-		$this->assertSame( 5, ( new \ReflectionMethod( League::class, 'add_team' ) )->getNumberOfParameters() );
-		$this->expectException( \LogicException::class );
-		$this->expectExceptionMessage( 'League_Query_Service::add_team()' );
-		$league->add_team( 5, '2026' );
-	}
-
-	public function test_get_rank_domain_method_rejects_reading_from_repository(): void {
-		$league = League_Test_Factory::from_object( (object) array( 'id' => 10 ) );
-		$this->assertSame( 2, ( new \ReflectionMethod( League::class, 'get_rank' ) )->getNumberOfParameters() );
-		$this->expectException( \LogicException::class );
-		$this->expectExceptionMessage( 'League_Query_Service::get_rank()' );
-		$league->get_rank( 5, '2026' );
-	}
-
-	public function test_get_status_domain_method_rejects_reading_from_repository(): void {
-		$league = League_Test_Factory::from_object( (object) array( 'id' => 10 ) );
-		$this->assertSame( 2, ( new \ReflectionMethod( League::class, 'get_status' ) )->getNumberOfParameters() );
-		$this->expectException( \LogicException::class );
-		$this->expectExceptionMessage( 'League_Query_Service::get_status()' );
-		$league->get_status( 5, '2026' );
-	}
-
-	public function test_get_num_teams_domain_method_rejects_reading_from_repository(): void {
-		$league = League_Test_Factory::from_object( (object) array( 'id' => 10 ) );
-		$this->assertSame( 2, ( new \ReflectionMethod( League::class, 'get_num_teams' ) )->getNumberOfParameters() );
-		$this->expectException( \LogicException::class );
-		$this->expectExceptionMessage( 'League_Query_Service::get_num_teams()' );
-		$league->get_num_teams();
+	public function test_dead_stub_methods_are_removed(): void {
+		$reflection = new ReflectionClass( League::class );
+		$this->assertFalse( $reflection->hasMethod( 'add_team' ), 'League::add_team must not exist.' );
+		$this->assertFalse( $reflection->hasMethod( 'get_rank' ), 'League::get_rank must not exist.' );
+		$this->assertFalse( $reflection->hasMethod( 'get_status' ), 'League::get_status must not exist.' );
+		$this->assertFalse( $reflection->hasMethod( 'get_num_teams' ), 'League::get_num_teams must not exist.' );
 	}
 
 	public function test_set_num_teams_is_a_pure_in_memory_mutator_without_repository_parameter(): void {
@@ -425,5 +413,62 @@ final class League_Purity_Test extends TestCase {
 
 		$teams_res = apply_filters( 'racketmanager_import_teams_tennis', array( 'custom_data' ), array(), 0 );
 		$this->assertSame( array( 'custom_data' ), $teams_res );
+	}
+
+	public function test_import_properties_and_methods_are_removed(): void {
+		$reflection = new ReflectionClass( League::class );
+		$this->assertFalse( $reflection->hasMethod( 'import_matches' ), 'League::import_matches must not exist.' );
+		$this->assertFalse( $reflection->hasMethod( 'import_teams' ), 'League::import_teams must not exist.' );
+		$this->assertFalse( $reflection->hasProperty( 'fields_match' ), 'League::$fields_match must not exist.' );
+		$this->assertFalse( $reflection->hasProperty( 'fields_team' ), 'League::$fields_team must not exist.' );
+	}
+
+	public function test_ui_and_pagination_properties_are_removed(): void {
+		$reflection = new ReflectionClass( League::class );
+		$properties = array(
+			// UI properties.
+			'templates',
+			'archive_tab',
+			'is_archive',
+			'matches_template_type',
+			'show_match_day_selection',
+			'current_match',
+			'is_selected_match',
+			'current_team',
+			'is_selected_team',
+			'current_group',
+			'slideshow',
+			'match_display',
+			// Pagination properties.
+			'num_matches_per_page',
+			'num_pages_matches',
+			'current_page_matches',
+			'pagination_matches',
+			'num_teams_per_page',
+			'num_pages_teams',
+			'current_page_teams',
+			'pagination_teams',
+		);
+		foreach ( $properties as $property ) {
+			$this->assertFalse( $reflection->hasProperty( $property ), "League::\$$property must not exist." );
+		}
+	}
+
+	public function test_league_does_not_permit_dynamic_properties_from_legacy_settings(): void {
+		$league = League_Test_Factory::from_object( (object) array(
+			'id'       => 10,
+			'settings' => array(
+				'templates'            => array( 'standings' => 'foo.php' ),
+				'archive_tab'          => 'matches',
+				'is_archive'           => true,
+				'num_matches_per_page' => 50,
+				'fields_match'         => array(),
+			),
+		) );
+		$this->assertFalse( property_exists( $league, 'templates' ) );
+		$this->assertFalse( property_exists( $league, 'archive_tab' ) );
+		$this->assertFalse( property_exists( $league, 'is_archive' ) );
+		$this->assertFalse( property_exists( $league, 'num_matches_per_page' ) );
+		$this->assertFalse( property_exists( $league, 'fields_match' ) );
 	}
 }

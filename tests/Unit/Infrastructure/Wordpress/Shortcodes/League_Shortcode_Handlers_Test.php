@@ -246,7 +246,8 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_obj );
 
         $query = new Get_League_Archive_Query( league_name: 'Premier Division' );
-        $vm    = $adapter->present_archive( $handler->handle( $query ) );
+        $res   = $handler->handle( $query );
+        $vm    = $adapter->present_archive( $res );
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'archive', $vm->template );
         $this->assertFalse( $vm->template_type );
@@ -255,9 +256,13 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $this->assertInstanceOf( \Racketmanager\Presentation\View_Models\League_Archive_View_Model::class, $vm->vars['archive_vm'] );
         $this->assertSame( 'Premier Division', $vm->vars['archive_vm']->league_title );
         $this->assertSame( 'premier-division', $vm->vars['archive_vm']->league_seo_name );
-        $this->assertSame( 'last5', $league_obj->templates['standings'] );
-        $this->assertSame( 'list', $league_obj->templates['teams'] );
-        $this->assertTrue( $league_obj->is_archive );
+        $this->assertSame( 'last5', $vm->vars['view_state']->get_template( 'standings' ) );
+        $this->assertSame( 'list', $vm->vars['view_state']->get_template( 'teams' ) );
+        $this->assertTrue( $vm->vars['view_state']->is_archive );
+        $this->assertInstanceOf( \Racketmanager\Application\League\DTOs\League_View_State::class, $res->view_state );
+        $this->assertSame( 'last5', $res->view_state->get_template( 'standings' ) );
+        $this->assertSame( 'list', $res->view_state->get_template( 'teams' ) );
+        $this->assertTrue( $res->view_state->is_archive );
     }
 
     public function test_archive_query_from_atts_query_var_resolution(): void {

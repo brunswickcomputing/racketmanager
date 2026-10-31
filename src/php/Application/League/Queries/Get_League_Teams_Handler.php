@@ -5,6 +5,7 @@ namespace Racketmanager\Application\League\Queries;
 
 use BackedEnum;
 use Racketmanager\Application\League\DTOs\League_Teams_Result;
+use Racketmanager\Application\League\DTOs\League_View_State;
 use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Player_Stats_Service;
@@ -40,11 +41,9 @@ class Get_League_Teams_Handler {
 			return League_Teams_Result::error( __( 'League not found', 'racketmanager' ) );
 		}
 
-		$league->set_template( 'teams', $query->template );
-		if ( false !== $this->league_query_service->resolve_requested_season( $league ) ) {
-			$this->league_query_service->set_season( $league );
-		}
-		$league->set_group( $query->group ?? '' );
+        if ( false !== $this->league_query_service->resolve_requested_season( $league ) ) {
+            $this->league_query_service->set_season( $league );
+        }
 
 		if ( $query->team_id ) {
 			$team_details = null;
@@ -100,18 +99,24 @@ class Get_League_Teams_Handler {
 				team: $team,
 				team_details: $team_details,
 				raw_matches: $raw_matches,
-				user_can_edit_team: $user_can_edit_team,
-				team_id: (int) $team->id,
-				template: $query->template
-			);
+                user_can_edit_team: $user_can_edit_team,
+                team_id: (int) $team->id,
+                template: $query->template,
+                view_state: new League_View_State(
+                    tab: 'teams',
+                    templates: [ 'teams' => $query->template ],
+                    extra: [ 'group' => $query->group ?? '' ]
+                )
+            );
 		}
 
-		$team_args = [ 'orderby' => [ 'title' => 'ASC' ] ];
-		if ( $query->group ) {
-			$team_args['group'] = $query->group;
-		}
+        $team_args = [ 'orderby' => [ 'title' => 'ASC' ] ];
+        if ( $query->group ) {
+            $team_args['group'] = $query->group;
+        }
 
-		$teams        = $this->league_query_service->get_league_teams( $league, $team_args );
+        $teams        = $this->league_query_service->get_league_teams( $league, $team_args );
+        $teams_state  = $this->league_query_service->set_num_teams( $league );
 		$league_teams = [];
 		if ( is_iterable( $teams ) ) {
 			foreach ( $teams as $team ) {
@@ -132,9 +137,16 @@ class Get_League_Teams_Handler {
 		return new League_Teams_Result(
 			league: $league,
 			is_team_details: false,
-			league_teams: $league_teams,
-			item_link: $item_link,
-			template: $query->template
-		);
+            league_teams: $league_teams,
+            item_link: $item_link,
+            template: $query->template,
+            view_state: $teams_state->with(
+                [
+                    'tab'       => 'teams',
+                    'templates' => [ 'teams' => $query->template ],
+                    'extra'     => [ 'group' => $query->group ?? '' ],
+                ]
+            )
+        );
 	}
 }

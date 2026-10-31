@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\League\Queries;
 
 use Racketmanager\Application\League\DTOs\League_Standings_Result;
+use Racketmanager\Application\League\DTOs\League_View_State;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Competition\League_Query_Service;
@@ -34,9 +35,7 @@ class Get_League_Standings_Handler {
             return null;
         }
 
-        $league->set_template( 'standings', $query->template );
         $this->league_query_service->set_season( $league, $query->season ?? false );
-        $league->set_group( $query->group ?? '' );
 
         $team_args           = [ 'orderby' => [ 'rank' => 'ASC' ], 'active' => true ];
         if ( ! empty( $query->group ) ) {
@@ -47,13 +46,24 @@ class Get_League_Standings_Handler {
         $teams_array = is_array( $teams ) ? $teams : [];
         $league->teams = $teams_array;
 
+        $view_state = new League_View_State(
+            tab: 'standings',
+            templates: [ 'standings' => $query->template ],
+            is_archive: false,
+            extra: [
+                'widget' => $query->widget,
+                'group'  => $query->group ?? '',
+            ],
+        );
+
         return new League_Standings_Result(
             league: $league,
             teams: $teams_array,
             template: $query->template,
             widget: $query->widget,
             season: $query->season,
-            group: $query->group
+            group: $query->group,
+            view_state: $view_state
         );
     }
 }

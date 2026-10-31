@@ -5,6 +5,7 @@ namespace Racketmanager\Presentation\Presenters;
 
 use BackedEnum;
 use Racketmanager\Application\League\DTOs\League_Standings_Result;
+use Racketmanager\Application\League\DTOs\League_View_State;
 use Racketmanager\Exceptions\Template_Not_Found_Exception;
 use Racketmanager\Presentation\View_Models\League_Standings_View_Model;
 use Racketmanager\Services\View\View_Renderer_Interface;
@@ -46,7 +47,8 @@ class League_Standings_Presenter {
                 teams: $vm->teams,
                 widget: $vm->widget,
                 season: $vm->season,
-                group: $vm->group
+                group: $vm->group,
+                view_state: $vm->view_state
             );
         }
 
@@ -163,16 +165,12 @@ class League_Standings_Presenter {
      * @param string      $template Template key.
      * @return string
      */
-    public static function get_league_template( ?object $league, string $template = '' ): string {
-        if ( null === $league || empty( $template ) ) {
+    public static function get_league_template( ?object $league, string $template = '', ?League_View_State $view_state = null ): string {
+        if ( empty( $template ) ) {
             return '';
         }
 
-        if ( isset( $league->templates ) && is_array( $league->templates ) && isset( $league->templates[ $template ] ) ) {
-            return (string) $league->templates[ $template ];
-        }
-
-        return '';
+        return $view_state?->get_template( $template ) ?? '';
     }
 
     /**
@@ -185,7 +183,7 @@ class League_Standings_Presenter {
      */
     public static function render_custom_standings_columns( object $league, object $team, string $rule ): string {
         $output      = '';
-        $fields_team = $league->fields_team ?? array();
+        $fields_team = $league->event->fields_team ?? array();
         if ( ! empty( $fields_team ) && is_array( $fields_team ) ) {
             $point_2_format = $league->point_2_format ?? ( isset( $league->event->competition->settings['point_2_format'] ) ? $league->event->competition->settings['point_2_format'] : '%d-%d' );
             foreach ( $fields_team as $key => $data ) {

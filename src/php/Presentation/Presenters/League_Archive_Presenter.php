@@ -5,6 +5,7 @@ namespace Racketmanager\Presentation\Presenters;
 
 use BackedEnum;
 use Racketmanager\Domain\Value_Objects\Date_Range;
+use Racketmanager\Application\League\DTOs\League_View_State;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\View_Models\League_Archive_View_Model;
 use Racketmanager\Util\Util;
@@ -32,7 +33,8 @@ class League_Archive_Presenter {
         array $seasons,
         array $leagues,
         string $tab,
-        int|string|null $post_id = null
+        int|string|null $post_id = null,
+        ?League_View_State $view_state = null
     ): League_Archive_View_Model {
         $competition_type = ( isset( $event->competition->type ) && $event->competition->type instanceof BackedEnum )
             ? $event->competition->type->value
@@ -187,7 +189,8 @@ class League_Archive_Presenter {
             championship_season: $championship_season,
             menu_options: $menu_options,
             tab: $tab,
-            templates: is_object( $league ) && isset( $league->templates ) && is_array( $league->templates ) ? $league->templates : [],
+            templates: $view_state?->templates ?? [],
+            view_state: $view_state,
         );
     }
 

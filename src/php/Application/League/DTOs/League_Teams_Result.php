@@ -13,6 +13,7 @@ final readonly class League_Teams_Result {
      * @param object|null $team_details
      * @param array<int|string, mixed> $raw_matches
      * @param array<int, object> $league_teams
+     * @param League_View_State|null $view_state
      */
     public function __construct(
         public ?object $league = null,
@@ -25,7 +26,8 @@ final readonly class League_Teams_Result {
         public string $item_link = '',
         public ?int $team_id = null,
         public string $template = '',
-        public ?string $error_message = null
+        public ?string $error_message = null,
+        public ?League_View_State $view_state = null
     ) {}
 
     public static function error( string $message ): self {

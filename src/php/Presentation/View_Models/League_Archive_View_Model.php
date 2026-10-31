@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Presentation\View_Models;
 
+use Racketmanager\Application\League\DTOs\League_View_State;
+
 /**
  * Immutable view model for rendering league archive page.
  */
@@ -69,6 +71,7 @@ final readonly class League_Archive_View_Model {
         public array $menu_options = [],
         public string $tab = 'standings',
         public array $templates = [],
+        public ?League_View_State $view_state = null,
     ) {}
 
     /**
@@ -78,6 +81,10 @@ final readonly class League_Archive_View_Model {
      * @return string
      */
     public function get_template_filename( string $template = '' ): string {
+        if ( ! empty( $template ) && $this->view_state?->has_template( $template ) ) {
+            return $this->view_state->get_template( $template );
+        }
+
         if ( ! empty( $template ) && isset( $this->templates[ $template ] ) ) {
             return (string) $this->templates[ $template ];
         }

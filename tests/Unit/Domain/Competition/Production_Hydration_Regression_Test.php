@@ -144,13 +144,11 @@ final class Production_Hydration_Regression_Test extends TestCase {
 
         $this->assertSame( 34, $league->id );
         $this->assertSame( 'Division 1', $league->title );
-        foreach ( array( 'num_teams_per_page', 'num_matches_per_page', 'archive_tab', 'num_advance' ) as $int_property ) {
-            $this->assertSame( 0, $league->$int_property, "League::\$$int_property should coerce '' to int 0." );
+        $this->assertSame( 0, $league->num_advance, "League::\$num_advance should coerce '' to int 0." );
+        foreach ( array( 'num_teams_per_page', 'num_matches_per_page', 'archive_tab', 'is_archive', 'show_match_day_selection', 'slideshow', 'templates' ) as $removed_property ) {
+            $this->assertFalse( property_exists( $league, $removed_property ), "League must not expose removed presentation property \$$removed_property." );
+            $this->assertArrayHasKey( $removed_property, $league->settings, "Removed key $removed_property stays in settings." );
         }
-        $this->assertFalse( $league->is_archive );
-        $this->assertFalse( $league->show_match_day_selection, "'' must override the true default as false." );
-        $this->assertSame( array(), $league->slideshow );
-        $this->assertSame( array(), $league->templates );
     }
 
     public function test_league_hydrates_numeric_string_serialized_settings_to_declared_types(): void {
@@ -165,6 +163,7 @@ final class Production_Hydration_Regression_Test extends TestCase {
                 'title'    => 'Division 1',
                 'settings' => serialize(
                     array(
+                        'num_advance'        => '20',
                         'num_teams_per_page' => '20',
                         'archive_tab'        => '2',
                         'is_archive'         => '1',
@@ -174,9 +173,32 @@ final class Production_Hydration_Regression_Test extends TestCase {
             $event
         );
 
-        $this->assertSame( 20, $league->num_teams_per_page );
-        $this->assertSame( 2, $league->archive_tab );
-        $this->assertTrue( $league->is_archive );
+        $this->assertSame( 20, $league->num_advance );
+        $this->assertFalse( property_exists( $league, 'num_teams_per_page' ) );
+        $this->assertFalse( property_exists( $league, 'archive_tab' ) );
+        $this->assertFalse( property_exists( $league, 'is_archive' ) );
+    }
+
+    public function test_league_unserialize_ignores_obsolete_presentation_keys(): void {
+        $competition           = $this->createStub( Competition::class );
+        $competition->settings = new Competition_Settings( array( 'mode' => 'league' ) );
+        $competition->type     = Competition_Type::LEAGUE;
+        $event                 = Event::from_object( (object) array( 'id' => 12, 'name' => 'Summer', 'type' => 'singles', 'competition_id' => 1 ), $competition );
+        $league                = League::from_object( (object) array( 'id' => '34', 'title' => 'Division 1' ), $event );
+
+        $data                       = $league->__serialize();
+        $data['templates']          = array( 'standings' => 'x' );
+        $data['num_matches_per_page'] = 99;
+        $data['pagination_matches'] = '<a>1</a>';
+        $data['title']              = 'Renamed';
+
+        $restored = ( new \ReflectionClass( League::class ) )->newInstanceWithoutConstructor();
+        $restored->__unserialize( $data );
+
+        $this->assertSame( 'Renamed', $restored->title );
+        foreach ( array( 'templates', 'num_matches_per_page', 'pagination_matches' ) as $removed_property ) {
+            $this->assertFalse( property_exists( $restored, $removed_property ), "Unserialize must ignore $removed_property." );
+        }
     }
 
     private function make_league_with_event_type( string $event_type ): League {

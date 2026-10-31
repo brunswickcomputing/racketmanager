@@ -31,11 +31,12 @@ class Get_League_Crosstable_Handler {
             return League_Crosstable_Result::error( __( 'League not found', 'racketmanager' ) );
         }
 
-        $league->set_template( 'crosstable', $query->template );
         $this->league_query_service->set_season( $league, $query->season ?? false );
-        $league->set_group( $query->group ?? '' );
-
-        $teams = $this->league_query_service->get_league_teams( $league, [ 'orderby' => [ 'rank' => 'ASC' ] ] );
+        $team_args = [ 'orderby' => [ 'rank' => 'ASC' ] ];
+        if ( ! empty( $query->group ) ) {
+            $team_args['group'] = $query->group;
+        }
+        $teams = $this->league_query_service->get_league_teams( $league, $team_args );
         $teams = is_array( $teams ) ? $teams : [];
 
         $columns = $this->crosstable_columns( $league, $teams );

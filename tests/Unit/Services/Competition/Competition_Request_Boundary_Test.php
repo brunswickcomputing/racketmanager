@@ -184,10 +184,13 @@ final class Competition_Request_Boundary_Test extends TestCase {
 
     #[DataProvider( 'page_types' )]
     public function test_page_sources_and_pagination_state( string $which, string $key ): void {
-        $service = $this->league_query_service();
+        $repository = $this->createStub( League_Repository_Interface::class );
+        $repository->method( 'query_matches' )->willReturn( 100 );
+        $service = $this->league_query_service( $repository );
         $league = $this->league();
-        $league->num_matches = $league->num_teams_total = 100;
-        $league->num_matches_per_page = $league->num_teams_per_page = 5;
+        $league->num_teams_total = 100;
+        $league->set_match_query_arg( 'limit', 5 );
+        $league->set_team_query_arg( 'limit', 5 );
         $_GET = [ $key => '2', $key . '_42' => '4' ];
         $GLOBALS['wp']->query_vars = [ $key => '3', $key . '_42' => '5' ];
         self::assertSame( 2, $service->resolve_requested_page( $league, $which ) );
@@ -197,13 +200,10 @@ final class Competition_Request_Boundary_Test extends TestCase {
         self::assertSame( 4, $service->resolve_requested_page( $league, $which ) );
         unset( $_GET[ $key . '_42' ] );
         self::assertSame( 5, $service->resolve_requested_page( $league, $which ) );
-        if ( 'teams' === $which ) {
-            $service->set_num_teams( $league );
-        } else {
-            $service->get_page_links( $league );
-        }
-        $service->get_page_links( $league, $which );
-        self::assertSame( 5, $league->{'current_page_' . $which} );
+        $view_state = 'teams' === $which ? $service->set_num_teams( $league ) : $service->set_num_matches( $league );
+        self::assertSame( 5, $view_state->{'current_page_' . $which} );
+        self::assertSame( 5, $view_state->{'num_' . $which . '_per_page'} );
+        self::assertSame( 20, $view_state->{'num_pages_' . $which} );
         $GLOBALS['wp']->query_vars = [];
         self::assertSame( 1, $service->resolve_requested_page( $league, $which ) );
     }
@@ -284,9 +284,7 @@ final class Competition_Request_Boundary_Test extends TestCase {
         $handler = new Get_League_Matches_Handler( $service, $this->league_query_service( $repository ) );
         $result = $handler->handle( new Get_League_Matches_Query( league_id: 42, template: '', limit: '5' ) );
         self::assertFalse( $result->is_error() );
-        self::assertSame( 3, $league->current_page_matches );
-        $this->league_query_service( $repository )->get_page_links( $league );
-        self::assertSame( 3, $league->current_page_matches );
+        self::assertSame( 3, $result->view_state->current_page_matches );
     }
 
     public function test_requested_final_is_passed_to_championship_factory(): void {
@@ -317,18 +315,16 @@ final class Competition_Request_Boundary_Test extends TestCase {
             $service->get_matches( $league, [ 'limit' => 5 ] );
         }
         self::assertSame( [ 5, 10, 0 ], $offsets );
-        self::assertSame( 1, $league->current_page_matches );
     }
 
     public function test_query_service_preserves_default_limit_for_boolean_true(): void {
         $league = $this->league();
-        $league->num_matches_per_page = 5;
         $repository = $this->createMock( League_Repository_Interface::class );
         $repository->expects( self::once() )->method( 'query_matches' )
-            ->with( 42, self::callback( static fn( array $args ): bool => 5 === $args['limit'] ), false )
+            ->with( 42, self::callback( static fn( array $args ): bool => 30 === $args['limit'] ), false )
             ->willReturn( [] );
         $this->league_query_service( $repository )->get_matches( $league, [ 'limit' => true ] );
-        self::assertSame( 5, $league->num_matches_per_page );
+        self::assertSame( 30, $league->get_match_query_args()['limit'] );
     }
 
     public function test_archive_tab_resolution_does_not_require_domain_request_access(): void {
@@ -339,8 +335,93 @@ final class Competition_Request_Boundary_Test extends TestCase {
         self::assertSame( 3, $service->resolve_requested_tab( $league ) );
         $_GET['match_paged_42'] = '2';
         self::assertSame( 2, $service->resolve_requested_tab( $league ) );
-        $service->set_tab( $league, true );
-        self::assertSame( 2, $league->archive_tab );
+        $view_state = $service->set_tab( $league, true );
+        self::assertSame( 2, $view_state->archive_tab );
+        self::assertTrue( $view_state->is_archive );
+        self::assertSame( 1, $service->set_tab( $league, false, 1 )->archive_tab );
+    }
+
+    public function test_set_num_matches_clamps_requested_page_to_last_page(): void {
+        $_GET = [ 'match_paged_42' => '99' ];
+        $league = $this->league();
+        $league->set_match_query_arg( 'limit', 5 );
+        $repository = $this->createStub( League_Repository_Interface::class );
+        $repository->method( 'query_matches' )->willReturn( 12 );
+
+        $view_state = $this->league_query_service( $repository )->set_num_matches( $league );
+
+        self::assertSame( 3, $view_state->num_pages_matches );
+        self::assertSame( 3, $view_state->current_page_matches );
+        self::assertSame( 5, $view_state->num_matches_per_page );
+        self::assertSame( 12, $league->num_matches );
+        self::assertNotNull( $view_state->pagination_matches );
+    }
+
+    public function test_set_num_matches_total_returns_state_without_links_and_keeps_total(): void {
+        $league = $this->league();
+        $repository = $this->createStub( League_Repository_Interface::class );
+        $repository->method( 'query_matches' )->willReturn( 61 );
+
+        $view_state = $this->league_query_service( $repository )->set_num_matches( $league, true );
+
+        self::assertSame( 61, $league->num_matches_total );
+        self::assertSame( 30, $view_state->num_matches_per_page );
+        self::assertSame( 3, $view_state->num_pages_matches );
+        self::assertNull( $view_state->pagination_matches );
+    }
+
+    public static function unusable_limits(): array {
+        return [ 'zero' => [ 0 ], 'false' => [ false ] ];
+    }
+
+    #[DataProvider( 'unusable_limits' )]
+    public function test_page_size_falls_back_to_30_matches_and_10_teams_for_unusable_limit( mixed $limit ): void {
+        $league = $this->league();
+        $league->num_teams_total = 25;
+        $league->set_match_query_arg( 'limit', $limit );
+        $league->set_team_query_arg( 'limit', $limit );
+        $repository = $this->createStub( League_Repository_Interface::class );
+        $repository->method( 'query_matches' )->willReturn( 65 );
+        $service = $this->league_query_service( $repository );
+
+        $matches = $service->set_num_matches( $league );
+        $teams   = $service->set_num_teams( $league );
+
+        self::assertSame( 30, $matches->num_matches_per_page );
+        self::assertSame( 3, $matches->num_pages_matches );
+        self::assertSame( 10, $teams->num_teams_per_page );
+        self::assertSame( 3, $teams->num_pages_teams );
+    }
+
+    public function test_set_num_teams_uses_custom_limit_clamps_page_and_counts_teams(): void {
+        $_GET = [ 'team_paged_42' => '50' ];
+        $league = $this->league();
+        $league->num_teams_total = 7;
+        $league->num_matches     = 1000;
+        $league->set_team_query_arg( 'limit', 3 );
+
+        $view_state = $this->league_query_service()->set_num_teams( $league );
+
+        self::assertSame( 3, $view_state->num_teams_per_page );
+        self::assertSame( 3, $view_state->num_pages_teams );
+        self::assertSame( 3, $view_state->current_page_teams );
+        self::assertSame( 7, $league->num_teams );
+        $args = $GLOBALS['paginate_links_last_args'] ?? [];
+        self::assertSame( 3, $args['total'] ?? null );
+        self::assertSame( 3, $args['current'] ?? null );
+    }
+
+    public function test_set_num_teams_total_queries_repository_and_returns_state_without_links(): void {
+        $league = $this->league();
+        $repository = $this->createMock( League_Repository_Interface::class );
+        $repository->expects( self::once() )->method( 'query_league_teams' )->willReturn( 23 );
+
+        $view_state = $this->league_query_service( $repository )->set_num_teams( $league, true );
+
+        self::assertSame( 23, $league->num_teams_total );
+        self::assertSame( 10, $view_state->num_teams_per_page );
+        self::assertSame( 3, $view_state->num_pages_teams );
+        self::assertNull( $view_state->pagination_teams );
     }
 
     public function test_pagination_links_keep_the_winning_match_day(): void {
@@ -349,7 +430,7 @@ final class Competition_Request_Boundary_Test extends TestCase {
         $league = $this->league();
         $league->id = 42;
         $league->num_matches = 100;
-        $league->num_matches_per_page = 5;
+        $league->set_match_query_arg( 'limit', 5 );
         $links = $this->league_query_service()->get_page_links( $league );
         $args = $GLOBALS['paginate_links_last_args'] ?? [];
         self::assertArrayHasKey( 'add_args', $args );

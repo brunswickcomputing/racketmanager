@@ -196,13 +196,8 @@ namespace Racketmanager {
     }
 
     if ( ! function_exists( 'Racketmanager\get_league_template' ) ) {
-        function get_league_template( string $template = '' ): string {
-            global $league;
-
-            if ( ! empty( $template ) && isset( $league->templates[ $template ] ) ) {
-                return $league->templates[ $template ];
-            }
-            return '';
+        function get_league_template( string $template = '', ?\Racketmanager\Application\League\DTOs\League_View_State $view_state = null ): string {
+            return $view_state?->get_template( $template ) ?? '';
         }
     }
 

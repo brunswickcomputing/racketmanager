@@ -229,7 +229,8 @@ class League_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             seasons: $result->seasons,
             leagues: $result->leagues,
             tab: $result->tab,
-            post_id: $result->post_id
+            post_id: $result->post_id,
+            view_state: $result->view_state
         );
 
         if ( empty( $result->template ) && ! empty( $league->sport ) && $this->template_exists( 'archive-' . $league->sport ) ) {
@@ -247,6 +248,7 @@ class League_Shortcode_Adapter implements Shortcode_Adapter_Interface {
                 'seasons'             => $result->seasons,
                 'leagues'             => $result->leagues,
                 'tab'                 => $result->tab,
+                'view_state'          => $result->view_state,
                 'post_id'             => $archive_vm->post_id,
                 'pagename'            => $archive_vm->pagename,
                 'form_action'         => $archive_vm->form_action,
@@ -305,7 +307,8 @@ class League_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             teams: $result->teams,
             widget: $result->widget,
             season: $result->season,
-            group: $result->group
+            group: $result->group,
+            view_state: $result->view_state
         );
     }
 
@@ -403,6 +406,7 @@ class League_Shortcode_Adapter implements Shortcode_Adapter_Interface {
                 'season'      => $result->season,
                 'post_id'     => $result->post_id,
                 'form_action' => $result->form_action,
+                'view_state'  => $result->view_state,
             ]
         );
     }
@@ -476,6 +480,7 @@ class League_Shortcode_Adapter implements Shortcode_Adapter_Interface {
                 'team_rows'    => $presented_teams,
                 'object'       => $league,
                 'team_details' => [],
+                'view_state'  => $result->view_state,
             ],
             false
         );

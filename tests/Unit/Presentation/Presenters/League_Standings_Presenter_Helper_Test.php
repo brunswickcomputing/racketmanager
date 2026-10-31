@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Presentation\Presenters;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\League\DTOs\League_View_State;
 use Racketmanager\Presentation\Presenters\League_Standings_Presenter;
 use Racketmanager\Presentation\View_Models\League_Archive_View_Model;
 use Racketmanager\Presentation\View_Models\League_Standings_View_Model;
@@ -28,24 +29,49 @@ final class League_Standings_Presenter_Helper_Test extends TestCase {
         parent::tearDown();
     }
 
-    public function test_render_custom_standings_columns_returns_empty_when_fields_team_empty_or_missing(): void {
+    public function test_render_custom_standings_columns_returns_empty_when_event_fields_team_empty_or_missing(): void {
         $league = (object) [];
         $team = (object) [ 'id' => 1 ];
         self::assertSame( '', League_Standings_Presenter::render_custom_standings_columns( $league, $team, 'manual' ) );
 
-        $league->fields_team = [];
+        $league->event = (object) [ 'fields_team' => [] ];
         self::assertSame( '', League_Standings_Presenter::render_custom_standings_columns( $league, $team, 'manual' ) );
+    }
+
+    public function test_render_custom_standings_columns_uses_event_fields_team(): void {
+        $event = (object) [
+            'fields_team' => [
+                'bonus' => [ 'label' => 'Bonus', 'type' => 'output' ],
+            ],
+            'competition' => (object) [
+                'settings' => [ 'point_2_format' => '%d-%d' ],
+            ],
+        ];
+        $league = (object) [
+            'event'     => $event,
+            'standings' => [ 'bonus' => 1 ],
+        ];
+        $team = (object) [
+            'id'    => 1,
+            'bonus' => '5',
+        ];
+
+        $output   = League_Standings_Presenter::render_custom_standings_columns( $league, $team, 'manual' );
+        $expected = '<td class="num column-bonus d-none d-md-table-cell d-none d-md-table-cell" data-colname="Bonus">5</td>';
+        self::assertSame( $expected, $output );
     }
 
     public function test_render_custom_standings_columns_admin_manual_with_single_and_keyed_inputs_and_outputs(): void {
         $GLOBALS['wp_stubs_is_admin'] = true;
 
         $league = (object) [
-            'fields_team' => [
-                'custom_single' => [ 'label' => 'Single Input', 'type' => 'input' ],
-                'custom_keyed'  => [ 'label' => 'Keyed Input', 'type' => 'input', 'keys' => [ 'k1', 'k2' ] ],
-                'custom_uninit' => [ 'label' => 'Uninit Keyed', 'type' => 'input', 'keys' => [ 'a', 'b' ] ],
-                'custom_out'    => [ 'label' => 'Output Col', 'type' => 'output' ],
+            'event'          => (object) [
+                'fields_team' => [
+                    'custom_single' => [ 'label' => 'Single Input', 'type' => 'input' ],
+                    'custom_keyed'  => [ 'label' => 'Keyed Input', 'type' => 'input', 'keys' => [ 'k1', 'k2' ] ],
+                    'custom_uninit' => [ 'label' => 'Uninit Keyed', 'type' => 'input', 'keys' => [ 'a', 'b' ] ],
+                    'custom_out'    => [ 'label' => 'Output Col', 'type' => 'output' ],
+                ],
             ],
             'point_2_format' => '%d:%d',
             'standings'      => [ 'custom_out' => 1 ],
@@ -71,10 +97,12 @@ final class League_Standings_Presenter_Helper_Test extends TestCase {
         $GLOBALS['wp_stubs_is_admin'] = false;
 
         $league = (object) [
-            'fields_team' => [
-                'custom_1' => [ 'label' => 'Col 1', 'type' => 'input' ],
-                'custom_2' => [ 'label' => 'Col 2', 'type' => 'output' ],
-                'custom_3' => [ 'label' => 'Col 3', 'type' => 'output' ],
+            'event' => (object) [
+                'fields_team' => [
+                    'custom_1' => [ 'label' => 'Col 1', 'type' => 'input' ],
+                    'custom_2' => [ 'label' => 'Col 2', 'type' => 'output' ],
+                    'custom_3' => [ 'label' => 'Col 3', 'type' => 'output' ],
+                ],
             ],
             'point_2_format' => '%d-%d',
             'standings'      => [
@@ -102,9 +130,11 @@ final class League_Standings_Presenter_Helper_Test extends TestCase {
         $GLOBALS['wp_stubs_is_admin'] = true;
 
         $league = (object) [
-            'fields_team' => [
-                'custom_input' => [ 'label' => 'Points Input', 'type' => 'input' ],
-                'custom_out'   => [ 'label' => 'Points Output', 'type' => 'output' ],
+            'event' => (object) [
+                'fields_team' => [
+                    'custom_input' => [ 'label' => 'Points Input', 'type' => 'input' ],
+                    'custom_out'   => [ 'label' => 'Points Output', 'type' => 'output' ],
+                ],
             ],
             'point_2_format' => '%d-%d',
             'standings'      => [
@@ -128,8 +158,10 @@ final class League_Standings_Presenter_Helper_Test extends TestCase {
         $GLOBALS['wp_stubs_is_admin'] = true;
 
         $league = (object) [
-            'fields_team' => [
-                'bad<key>' => [ 'label' => 'Bad <script>label</script>', 'type' => 'input' ],
+            'event' => (object) [
+                'fields_team' => [
+                    'bad<key>' => [ 'label' => 'Bad <script>label</script>', 'type' => 'input' ],
+                ],
             ],
             'standings'   => [ 'bad<key>' => 1 ],
         ];
@@ -170,16 +202,30 @@ final class League_Standings_Presenter_Helper_Test extends TestCase {
         self::assertSame( '', League_Standings_Presenter::get_league_template( null, 'standings' ) );
         self::assertSame( '', League_Standings_Presenter::get_league_template( (object) [], '' ) );
 
-        $league = (object) [
-            'templates' => [
+        $view_state = new League_View_State(
+            templates: [
                 'standings' => 'standings-custom.php',
                 'crosstable' => 'crosstable-box.php',
-            ],
-        ];
+            ]
+        );
 
-        self::assertSame( 'standings-custom.php', League_Standings_Presenter::get_league_template( $league, 'standings' ) );
-        self::assertSame( 'crosstable-box.php', League_Standings_Presenter::get_league_template( $league, 'crosstable' ) );
-        self::assertSame( '', League_Standings_Presenter::get_league_template( $league, 'unknown' ) );
+        self::assertSame( 'standings-custom.php', League_Standings_Presenter::get_league_template( null, 'standings', $view_state ) );
+        self::assertSame( 'crosstable-box.php', League_Standings_Presenter::get_league_template( null, 'crosstable', $view_state ) );
+        self::assertSame( '', League_Standings_Presenter::get_league_template( null, 'unknown', $view_state ) );
+    }
+
+    public function test_global_get_league_template_resolves_view_state(): void {
+        $view_state = new League_View_State(
+            templates: [
+                'standings' => 'standings-custom.php',
+            ]
+        );
+
+        // Explicit view state argument.
+        self::assertSame( 'standings-custom.php', \Racketmanager\get_league_template( 'standings', $view_state ) );
+
+        // Empty without view state.
+        self::assertSame( '', \Racketmanager\get_league_template( 'standings' ) );
     }
 
     public function test_standings_view_model_delegates_to_presenter_helpers(): void {
@@ -188,14 +234,12 @@ final class League_Standings_Presenter_Helper_Test extends TestCase {
                 'sets'  => 1,
                 'games' => 0,
             ],
-            'templates' => [
-                'custom' => 'custom-tpl.php',
-            ],
         ];
 
         $vm = new League_Standings_View_Model(
             template: 'standings',
-            league: $league
+            league: $league,
+            view_state: new League_View_State( templates: [ 'custom' => 'custom-tpl.php' ] )
         );
 
         self::assertTrue( $vm->show_column( 'sets' ) );

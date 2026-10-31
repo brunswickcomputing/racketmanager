@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Presentation\View_Models;
 
+use Racketmanager\Application\League\DTOs\League_View_State;
 use Racketmanager\Presentation\Presenters\League_Standings_Presenter;
 
 /**
@@ -25,7 +26,8 @@ final readonly class League_Standings_View_Model {
         public bool $widget = false,
         public ?string $season = null,
         public ?string $group = null,
-        public array $team_links = []
+        public array $team_links = [],
+        public ?League_View_State $view_state = null
     ) {}
 
     /**
@@ -40,6 +42,7 @@ final readonly class League_Standings_View_Model {
             'widget'     => $this->widget,
             'season'     => $this->season,
             'team_links' => $this->team_links,
+            'view_state' => $this->view_state,
         ];
     }
 
@@ -60,6 +63,6 @@ final readonly class League_Standings_View_Model {
      * @return string
      */
     public function get_template_filename( string $template = '' ): string {
-        return League_Standings_Presenter::get_league_template( $this->league, $template );
+        return League_Standings_Presenter::get_league_template( $this->league, $template, $this->view_state );
     }
 }

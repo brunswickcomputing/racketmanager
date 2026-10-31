@@ -195,7 +195,7 @@ class League_Factory_Test extends TestCase {
 			id: 6,
 			title: 'Division 2',
 			sequence: '2',
-			settings: array( 'title' => 'Settings Title', 'num_teams_per_page' => '12', 'standings' => array( 'pld' => 1 ) )
+			settings: array( 'title' => 'Settings Title', 'num_advance' => '12', 'num_teams_per_page' => '12', 'standings' => array( 'pld' => 1 ) )
 		);
 
 		$league = new League( $dto, $event );
@@ -203,7 +203,9 @@ class League_Factory_Test extends TestCase {
 		$this->assertSame( 'Settings Title', $league->title, 'settings keys take precedence over table columns' );
 		$this->assertSame( 'Division 2', $league->name, 'name mirrors the title column' );
 		$this->assertSame( '2', $league->sequence );
-		$this->assertSame( 12, $league->num_teams_per_page );
+		$this->assertSame( 12, $league->num_advance, 'retained declared settings are still coerced' );
+		$this->assertFalse( property_exists( $league, 'num_teams_per_page' ), 'removed presentation settings must not create dynamic properties' );
+		$this->assertSame( '12', $league->settings['num_teams_per_page'], 'removed presentation settings stay available in settings' );
 		$this->assertSame( 21, $league->event_id, 'event_id is derived from the Event when the DTO value is null' );
 		$this->assertSame( $event, $league->event );
 		$this->assertFalse( method_exists( $dto, 'to_std_class' ) );

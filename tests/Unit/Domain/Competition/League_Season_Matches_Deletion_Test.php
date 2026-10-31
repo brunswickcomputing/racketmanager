@@ -75,7 +75,6 @@ class League_Season_Matches_Deletion_Test extends TestCase {
 		);
 
 		$league                       = $with_event ? League::from_object( $league_raw, $this->make_event() ) : League_Test_Factory::from_object( $league_raw );
-		$league->num_matches_per_page = 30;
 
 		return $league;
 	}

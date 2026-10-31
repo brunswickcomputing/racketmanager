@@ -145,6 +145,7 @@ final class League_Standings_Admin_Controller_Test extends TestCase {
         $league_query_service = $this->createMock( League_Query_Service::class );
         $league_query_service->method( 'get_league_teams' )->willReturn( array( $team1, $team2 ) );
         $league_query_service->method( 'get_matches' )->willReturn( array() );
+        $league_query_service->method( 'set_num_matches' )->willReturn( new \Racketmanager\Application\League\DTOs\League_View_State() );
         $league_query_service->expects( self::exactly( 4 ) )
             ->method( 'get_crosstable_field' )
             ->with( $league, self::anything(), self::anything() )
@@ -229,6 +230,7 @@ final class League_Standings_Admin_Controller_Test extends TestCase {
             ->with( $league, -1 );
         $league_query_service->method( 'get_league_teams' )->willReturn( array() );
         $league_query_service->method( 'get_matches' )->willReturn( array() );
+        $league_query_service->method( 'set_num_matches' )->willReturn( new \Racketmanager\Application\League\DTOs\League_View_State() );
 
         $controller = $this->resolve_controller( 'league_standings_admin_controller', array(
             'league_query_service' => $league_query_service,
@@ -240,6 +242,24 @@ final class League_Standings_Admin_Controller_Test extends TestCase {
         $vm = $result['view_model'];
         self::assertSame( 'matches', $vm->tab );
         self::assertSame( -1, $vm->match_day );
+    }
+
+    public function test_get_without_match_display_setting_defaults_to_current_match_day(): void {
+        $league = $this->create_league( 42, false );
+
+        $league_query_service = $this->createMock( League_Query_Service::class );
+        $league_query_service->expects( self::once() )
+            ->method( 'set_match_day' )
+            ->with( $league, 'current' );
+        $league_query_service->method( 'get_league_teams' )->willReturn( array() );
+        $league_query_service->method( 'get_matches' )->willReturn( array() );
+        $league_query_service->method( 'set_num_matches' )->willReturn( new \Racketmanager\Application\League\DTOs\League_View_State() );
+
+        $controller = $this->resolve_controller( 'league_standings_admin_controller', array(
+            'league_query_service' => $league_query_service,
+        ) );
+
+        $controller->league_page( array( 'league_id' => '42', 'season' => '2026' ), array() );
     }
 
     public function test_get_with_standingstable_calls_standings_service(): void {

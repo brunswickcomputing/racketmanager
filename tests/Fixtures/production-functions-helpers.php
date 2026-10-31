@@ -696,4 +696,23 @@ if ( ! \Racketmanager\is_lta_number_required() ) {
 	exit( 1 );
 }
 
+// 15. Test get_league_template production helper
+$template_reflection = new \ReflectionFunction( '\\Racketmanager\\get_league_template' );
+if ( ! str_ends_with( (string) $template_reflection->getFileName(), '/template-tags.php' ) ) {
+	fwrite( STDERR, "Racketmanager\\get_league_template is not loaded from template-tags.php.\n" );
+	exit( 1 );
+}
+
+$test_view_state = new \Racketmanager\Application\League\DTOs\League_View_State(
+	templates: [ 'standings' => 'standings-custom.php' ]
+);
+if ( 'standings-custom.php' !== \Racketmanager\get_league_template( 'standings', $test_view_state ) ) {
+	fwrite( STDERR, "get_league_template() failed to resolve from explicit League_View_State.\n" );
+	exit( 1 );
+}
+if ( '' !== \Racketmanager\get_league_template( 'standings', null ) ) {
+	fwrite( STDERR, "get_league_template() must return empty string without view_state.\n" );
+	exit( 1 );
+}
+
 echo 'ok';

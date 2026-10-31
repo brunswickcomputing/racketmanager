@@ -88,10 +88,6 @@ class Admin_Championship extends Admin_Display {
             }
             $this->show_message();
         }
-        if ( count( $league->championship->groups ) > 0 ) {
-            $league->set_group( $league->championship->groups[0] );
-        }
-
         return $tab; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
     }
 }

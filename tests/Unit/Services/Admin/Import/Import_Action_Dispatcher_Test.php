@@ -256,7 +256,6 @@ final class Import_Action_Dispatcher_Test extends TestCase {
     public function test_import_table_updates_league_team_records(): void {
         $mock_league = $this->createMock( League::class );
         $mock_league->id = 10;
-        $mock_league->expects( self::never() )->method( 'add_team' );
         $this->standings_service->expects( self::once() )
             ->method( 'set_teams_rank' )
             ->with( $mock_league, '2026' );

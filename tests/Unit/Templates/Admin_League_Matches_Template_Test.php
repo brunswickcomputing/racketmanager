@@ -60,6 +60,7 @@ final class Admin_League_Matches_Template_Test extends TestCase {
         $teams   = array();
         $team_id = 0;
         $group   = '';
+        $pagination_matches = '<span class="displaying-num">10 Matches</span><a class="page-numbers" href="?match_paged=2">2</a>';
 
         $presenter = new \Racketmanager\Admin\Presenters\Admin_League_Matches_Presenter( new Admin_Date_Presenter() );
         $matches   = $presenter->present_collection( array( $match ), $league, $season, $group );

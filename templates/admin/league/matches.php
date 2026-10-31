@@ -14,6 +14,7 @@ namespace Racketmanager;
 /** @var string $group */
 /** @var string $match_day */
 /** @var array  $matches */
+$pagination_matches = $pagination_matches ?? '';
 $competition_type = $league->event->competition->type instanceof \BackedEnum ? $league->event->competition->type->value : (string) ( $league->event->competition->type ?? '' );
 ?>
 <div class="row gx-3 justify-content-between mb-3">
@@ -244,9 +245,9 @@ $competition_type = $league->event->competition->type instanceof \BackedEnum ? $
 
     <div class="">
         <?php
-        if ( ! $league->event->competition->is_championship && ! empty( $league->pagination_matches ) ) {
+        if ( ! $league->event->competition->is_championship && ! empty( $pagination_matches ) ) {
             ?>
-            <div class=""><?php echo wp_kses_post( $league->pagination_matches ); ?></div>
+            <div class=""><?php echo wp_kses_post( $pagination_matches ); ?></div>
             <?php
         }
         ?>

@@ -25,6 +25,7 @@ use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Tournament\Championship;
 use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
+use Racketmanager\Application\League\DTOs\League_View_State;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
@@ -92,6 +93,7 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 			->method( 'get_team_dtls' )
 			->with( $league, 101 )
 			->willReturn( $info );
+		$league_query->method( 'set_num_teams' )->willReturn( new League_View_State() );
 
 		$handler = new Get_League_Teams_Handler(
 			$this->league_service( $league ),
@@ -106,6 +108,41 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 		$this->assertFalse( $result->is_team_details );
 		$this->assertSame( $league, $result->league );
 		$this->assertCount( 1, $result->league_teams );
+	}
+
+	public function test_teams_handler_returns_team_pagination_state_from_query_service(): void {
+		$league       = $this->league();
+		$team         = (object) [ 'id' => 101, 'title' => 'Westcliff 1' ];
+		$pagination   = '<nav class="pagination-links"><a class="page-numbers" href="?team_paged=2">2</a></nav>';
+		$view_state   = new League_View_State(
+			tab: 'teams',
+			num_teams_per_page: 10,
+			current_page_teams: 1,
+			num_pages_teams: 2,
+			pagination_teams: $pagination,
+		);
+		$league_query = $this->createMock( League_Query_Service::class );
+		$league_query->method( 'get_league_teams' )->willReturn( [ $team ] );
+		$league_query->method( 'get_team_dtls' )->willReturn( false );
+		$league_query->expects( $this->once() )
+			->method( 'set_num_teams' )
+			->with( $league )
+			->willReturn( $view_state );
+
+		$handler = new Get_League_Teams_Handler(
+			$this->league_service( $league ),
+			$this->createStub( Team_Service::class ),
+			$this->createStub( Player_Stats_Service::class ),
+			$league_query
+		);
+
+		$result = $handler->handle( new Get_League_Teams_Query( league_id: 7 ) );
+
+		$this->assertFalse( $result->is_error() );
+		$this->assertSame( 'teams', $result->view_state->tab );
+		$this->assertSame( 10, $result->view_state->num_teams_per_page );
+		$this->assertSame( 2, $result->view_state->num_pages_teams );
+		$this->assertSame( $pagination, $result->view_state->pagination_teams );
 	}
 
 	public function test_teams_handler_skips_info_assignment_when_team_details_missing(): void {
@@ -128,6 +165,7 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 		$league_query = $this->createStub( League_Query_Service::class );
 		$league_query->method( 'get_league_teams' )->willReturn( [ $team ] );
 		$league_query->method( 'get_team_dtls' )->willReturn( false );
+		$league_query->method( 'set_num_teams' )->willReturn( new League_View_State() );
 
 		$handler = new Get_League_Teams_Handler(
 			$this->league_service( $league ),
@@ -223,6 +261,9 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 		$this->assertNotNull( $vm );
 		$this->assertSame( $league, $vm->league );
 		$this->assertSame( $teams, $vm->teams );
+		$this->assertInstanceOf( League_View_State::class, $vm->view_state );
+		$this->assertSame( 'standings', $vm->view_state->tab );
+		$this->assertSame( '', $vm->view_state->get_template( 'standings' ) );
 	}
 
 	public function test_crosstable_handler_delegates_to_league_query_service(): void {
@@ -355,6 +396,8 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 
 	public function test_matches_handler_delegates_to_league_query_service(): void {
 		$league       = $this->league();
+		$league->settings = [ 'match_display' => 'all' ];
+		$league->match_day = 4;
 		$teams        = [ (object) [ 'id' => 101, 'title' => 'Westcliff 1' ] ];
 		$league_query = $this->createMock( League_Query_Service::class );
 		$league_query->expects( $this->once() )
@@ -378,7 +421,18 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 			->willReturn( [] );
 		$league_query->expects( $this->once() )
 			->method( 'set_num_matches' )
-			->with( $league );
+			->with( $league )
+			->willReturn(
+				new League_View_State(
+					num_matches_per_page: 15,
+					current_page_matches: 2,
+					num_pages_matches: 3,
+					pagination_matches: '<span class="page-numbers current">2</span>',
+					current_match_day: 4,
+					show_match_day_selection: false,
+					match_display: 'all'
+				)
+			);
 		$league_query->expects( $this->once() )
 			->method( 'get_league_teams' )
 			->with(
@@ -395,12 +449,120 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 			$league_query
 		);
 
-		$result = $handler->handle( new Get_League_Matches_Query( league_id: 7 ) );
+		$result = $handler->handle( new Get_League_Matches_Query( league_id: 7, show_match_day_selection: 'false' ) );
 
 		$this->assertFalse( $result->is_error() );
 		$this->assertSame( 'daily', $result->template );
 		$this->assertSame( $teams, $result->teams );
 		$this->assertSame( '2026', $result->season );
+		$this->assertInstanceOf( League_View_State::class, $result->view_state );
+		$this->assertSame( 'matches', $result->view_state->tab );
+		$this->assertSame( 'daily', $result->view_state->get_template( 'matches' ) );
+		$this->assertSame( 15, $result->view_state->num_matches_per_page );
+		$this->assertSame( 2, $result->view_state->current_page_matches );
+		$this->assertSame( 3, $result->view_state->num_pages_matches );
+		$this->assertSame( '<span class="page-numbers current">2</span>', $result->view_state->pagination_matches );
+		$this->assertSame( 4, $result->view_state->current_match_day );
+		$this->assertFalse( $result->view_state->show_match_day_selection );
+		$this->assertSame( 'all', $result->view_state->match_display );
+	}
+
+	public function test_archive_handler_populates_view_state(): void {
+		$league = $this->league();
+		$event  = $this->createStub( Event::class );
+		$event->method( 'get_seasons' )->willReturn( [ '2026' ] );
+
+		$league_service = $this->league_service( $league );
+		$comp_service   = $this->createStub( Competition_Service::class );
+		$comp_service->method( 'get_event_by_id' )->willReturn( $event );
+
+		$event_query = $this->createStub( \Racketmanager\Services\Competition\Event_Query_Service::class );
+		$event_query->method( 'get_leagues' )->willReturn( [ $league ] );
+
+		$league_query = $this->createStub( League_Query_Service::class );
+		$league_query->method( 'resolve_requested_season' )->willReturn( false );
+		$league_query->method( 'resolve_requested_tab' )->willReturn( 1 );
+		$league_query->method( 'set_tab' )->willReturn( new League_View_State( archive_tab: 1, is_archive: true ) );
+
+		$handler = new \Racketmanager\Application\League\Queries\Get_League_Archive_Handler(
+			$league_service,
+			$comp_service,
+			$event_query,
+			$league_query
+		);
+
+		$result = $handler->handle( new \Racketmanager\Application\League\Queries\Get_League_Archive_Query(
+			league_name: 'Premier Division',
+			tab: 'crosstable',
+			template: 'compact',
+			standings: 'last5',
+			crosstable: 'grid',
+			matches: 'by_matchday',
+			teams: 'list',
+			matches_template_type: 'expanded'
+		) );
+
+		$this->assertFalse( $result->is_error() );
+		$this->assertInstanceOf( League_View_State::class, $result->view_state );
+		$this->assertSame( 'crosstable', $result->view_state->tab );
+		$this->assertSame( 1, $result->view_state->archive_tab );
+		$this->assertTrue( $result->view_state->is_archive );
+		$this->assertSame( 'last5', $result->view_state->get_template( 'standings' ) );
+		$this->assertSame( 'grid', $result->view_state->get_template( 'crosstable' ) );
+		$this->assertSame( 'by_matchday', $result->view_state->get_template( 'matches' ) );
+		$this->assertSame( 'list', $result->view_state->get_template( 'teams' ) );
+		$this->assertSame( 'compact', $result->view_state->get_template( 'archive' ) );
+		$this->assertSame( 'expanded', $result->view_state->matches_template_type );
+		$this->assertSame( 20, $result->view_state->num_matches_per_page );
+		$this->assertSame( 1, $result->view_state->current_page_matches );
+		$this->assertSame( 1, $result->view_state->num_pages_matches );
+		$this->assertNull( $result->view_state->pagination_matches );
+		$this->assertSame( 20, $result->view_state->num_teams_per_page );
+		$this->assertSame( 1, $result->view_state->current_page_teams );
+		$this->assertSame( 1, $result->view_state->num_pages_teams );
+		$this->assertNull( $result->view_state->pagination_teams );
+		$this->assertTrue( $result->view_state->show_match_day_selection );
+		$this->assertSame( 'current_match_day', $result->view_state->match_display );
+	}
+
+	public function test_archive_handler_with_zero_seasons(): void {
+		$league = $this->league();
+		$event  = $this->createStub( Event::class );
+		$event->method( 'get_seasons' )->willReturn( [] );
+
+		$league_service = $this->league_service( $league );
+		$comp_service   = $this->createStub( Competition_Service::class );
+		$comp_service->method( 'get_event_by_id' )->willReturn( $event );
+
+		$event_query = $this->createStub( \Racketmanager\Services\Competition\Event_Query_Service::class );
+		$event_query->method( 'get_leagues' )->willReturn( [ $league ] );
+
+		$league_query = $this->createStub( League_Query_Service::class );
+		$league_query->method( 'resolve_requested_season' )->willReturn( false );
+		$league_query->method( 'resolve_requested_tab' )->willReturn( 0 );
+		$league_query->method( 'set_tab' )->willReturn( new League_View_State( is_archive: true ) );
+
+		$handler = new \Racketmanager\Application\League\Queries\Get_League_Archive_Handler(
+			$league_service,
+			$comp_service,
+			$event_query,
+			$league_query
+		);
+
+		$result = $handler->handle( new \Racketmanager\Application\League\Queries\Get_League_Archive_Query(
+			league_name: 'Premier Division'
+		) );
+
+		$this->assertFalse( $result->is_error() );
+		$this->assertSame( [], $result->seasons );
+		$this->assertInstanceOf( League_View_State::class, $result->view_state );
+		$this->assertSame( 'standings', $result->view_state->tab );
+		$this->assertSame( 0, $result->view_state->archive_tab );
+		$this->assertTrue( $result->view_state->is_archive );
+		$this->assertSame( 20, $result->view_state->num_matches_per_page );
+		$this->assertSame( 1, $result->view_state->current_page_matches );
+		$this->assertSame( 1, $result->view_state->num_pages_matches );
+		$this->assertNull( $result->view_state->pagination_matches );
 	}
 
 	public function test_championship_handler_delegates_get_matches_for_finals(): void {

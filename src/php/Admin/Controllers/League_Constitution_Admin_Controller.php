@@ -106,9 +106,7 @@ final readonly class League_Constitution_Admin_Controller {
                 : 0;
 
             foreach ( $leagues as $l ) {
-                if ( method_exists( $l, 'get_num_teams' ) ) {
-                    $league_active_teams[ $l->id ] = $this->league_query_service->get_num_teams( $l, 'active', true );
-                }
+                $league_active_teams[ $l->id ] = $this->league_query_service->get_num_teams( $l, 'active', true );
             }
 
             $today               = gmdate( 'Y-m-d' );

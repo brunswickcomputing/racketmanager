@@ -39,7 +39,6 @@ class Get_League_Championship_Handler {
             return League_Championship_Result::error( __( 'League not found', 'racketmanager' ) );
         }
 
-        $league->set_template( 'championship', $query->template );
         $this->league_query_service->set_season( $league, $query->season ?? $league->get_season() );
         $season = $league->get_season();
         $league->season = $season;

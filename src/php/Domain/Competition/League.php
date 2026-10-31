@@ -103,78 +103,6 @@ class League {
      * @var array
      */
     public array $standings;
-    /**
-     * Number of teams per page in list
-     *
-     * @var int
-     */
-    public int $num_teams_per_page = 10;
-
-    /**
-     * Number of pages for teams
-     *
-     * @var int
-     */
-    public int $num_pages_teams = 0;
-
-    /**
-     * Current page for teams
-     *
-     * @var int
-     */
-    public int $current_page_teams = 1;
-
-    /**
-     * Teams pagination
-     *
-     * @var string|null
-     */
-    public ?string $pagination_teams = '';
-
-    /**
-     * Number of matches per page
-     *
-     * @var int
-     */
-    public int $num_matches_per_page = 30;
-
-    /**
-     * Default display filter for matches
-     *
-     * @var string
-     */
-    public string $match_display = 'current_match_day';
-
-    /**
-     * Number of pages for matches
-     *
-     * @var int
-     */
-    public int $num_pages_matches = 0;
-
-    /**
-     * Current page for matches
-     *
-     * @var int
-     */
-    public int $current_page_matches = 1;
-
-    /**
-     * Matches pagination
-     *
-     * @var string|null
-     */
-    public ?string $pagination_matches = '';
-
-    /**
-     * Slideshow options
-     *
-     * @var array
-     */
-    public array $slideshow = array(
-        'season'      => 'latest',
-        'num_matches' => 0,
-    );
 
     /**
      * Team groups
@@ -189,13 +117,6 @@ class League {
      * @var int|null
      */
     public ?int $num_advance = null;
-
-    /**
-     * Current team group
-     *
-     * @var string
-     */
-    public string $current_group = '';
 
     /**
      * Teams
@@ -408,61 +329,8 @@ class League {
      * @var array
      */
     public array $team_index = array();
-    /**
-     * Current team
-     *
-     * @var int
-     */
-    public int $current_team = -1;
 
     /**
-     * Team is selected?
-     *
-     * @var boolean
-     */
-    public bool $is_selected_team = false;
-    /**
-     * Current match
-     *
-     * @var int
-     */
-    public int $current_match = -1;
-
-    /**
-     * Match is selected
-     *
-     * @var boolean
-     */
-    public bool $is_selected_match = false;
-
-    /**
-     * Toggle match day selection menu display
-     *
-     * @var boolean
-     */
-    public bool $show_match_day_selection = true;
-    /**
-     * Is this an archive
-     *
-     * @var boolean
-     */
-    public bool $is_archive = false;
-
-    /**
-     * Set archive tab
-     *
-     * @var int
-     */
-    public int $archive_tab = 0;
-
-    /**
-     * Save templates for whole league or archive display
-     *
-     * @var array
-     */
-    public array $templates = array();
-    /**
-     *
      * Championship flag
      *
      * @var boolean
@@ -542,19 +410,6 @@ class League {
     public ?string $scoring = '';
 
     /**
-     * Custom team input field keys and translated labels
-     *
-     * @var array
-     */
-    public array $fields_team = array();
-
-    /**
-     * Custom match input field keys and translated labels
-     *
-     * @var array
-     */
-    protected array $fields_match = array();
-    /**
      * Is final flag
      *
      * @var boolean
@@ -566,12 +421,6 @@ class League {
      * @var string
      */
     public string $entry_type;
-    /**
-     * Match template type
-     *
-     * @var string
-     */
-    public string $matches_template_type;
     /**
      * Season
      *
@@ -637,7 +486,7 @@ class League {
             }
             if ( 'standings' === $key ) {
                 $this->$key = array_merge( $this->$key ?? array(), (array) $value );
-            } else {
+            } elseif ( property_exists( $this, $key ) ) {
                 Typed_Property_Hydrator::assign( $this, $key, $value );
             }
         }
@@ -683,18 +532,6 @@ class League {
         $this->standings      = $this->event->standings ?? [];
         $this->point_format   = $this->event && isset( $this->event->competition->settings['point_format'] ) ? $this->event->competition->settings['point_format'] : '%d-%d';
         $this->point_2_format = $this->event && isset( $this->event->competition->settings['point_2_format'] ) ? $this->event->competition->settings['point_2_format'] : '%d-%d';
-        // set default standings display options for additional team fields.
-        if ( isset( $this->fields_team ) && is_countable( $this->fields_team ) && count( $this->fields_team ) > 0 ) {
-            foreach ( $this->fields_team as $key => $data ) {
-                if ( ! isset( $this->standings[ $key ] ) ) {
-                    $this->standings[ $key ] = 1;
-                }
-            }
-        }
-        $this->current_team     = 0;
-        $this->is_selected_team = false;
-        $this->current_match    = 0;
-        $this->is_selected_match = false;
         // Championship.
         if ( 'championship' === ($this->mode ?? '') ) {
             $this->is_championship = true;
@@ -736,7 +573,9 @@ class League {
 
 	public function __unserialize( array $data ): void {
 		foreach ( $data as $key => $value ) {
-			$this->$key = $value;
+			if ( property_exists( $this, $key ) ) {
+				$this->$key = $value;
+			}
 		}
 	}
 
@@ -827,7 +666,7 @@ class League {
         $this->set_match_query_arg( 'match_day', 'current' );
 
         // set number of matches per page.
-        $this->set_match_query_arg( 'limit', $this->num_matches_per_page );
+        $this->set_match_query_arg( 'limit', 30 );
     }
 
     /**
@@ -839,7 +678,7 @@ class League {
      */
     public function set_match_query_arg( string $key, mixed $value, bool $replace = true ): void {
         if ( 'limit' === $key && ( true === $value || 'true' === $value ) ) {
-            $value = $this->num_matches_per_page;
+            $value = 30;
         }
         // sanitize query arg types.
         $v = $value;
@@ -914,7 +753,7 @@ class League {
      */
     public function set_team_query_arg( string $key, mixed $value, bool $replace = true ): void {
         if ( 'limit' === $key && ( true === $value || 'true' === $value ) ) {
-            $value = $this->num_teams_per_page;
+            $value = 10;
         }
         // sanitize query arg types.
         if ( isset( $this->team_query_args_types[ $key ] ) ) {
@@ -1006,21 +845,6 @@ class League {
     public function get_season(): string {
         return stripslashes( $this->current_season['name'] );
     }
-    /**
-     * Set group
-     *
-     * @param string $group group.
-     * @param boolean $force_overwrite force overwrite.
-     */
-    public function set_group( string $group = '', bool $force_overwrite = false ): void {
-    }
-
-    /**
-     * Get current group
-     */
-    public function get_group(): string {
-        return $this->current_group;
-    }
 
     /**
      * Get groups
@@ -1044,67 +868,6 @@ class League {
     public function set_match_day( int $match_day = 1 ): void {
         $this->match_day                     = $match_day;
         $this->match_query_args['match_day'] = $match_day;
-    }
-
-    /**
-     * Set number of pages for matches
-     *
-     * @param string $which type of pagination.
-     */
-    public function set_num_pages( string $which = 'matches' ): void {
-        if ( 'matches' === $which ) {
-            $this->num_pages_matches = ( 0 === $this->num_matches_per_page ) ? 1 : (int) ceil( $this->num_matches / $this->num_matches_per_page );
-        }
-        if ( 'teams' === $which ) {
-            $this->num_pages_teams = ( 0 === $this->num_teams_per_page ) ? 1 : (int) ceil( $this->num_teams / $this->num_teams_per_page );
-        }
-    }
-
-    /**
-     * Retrieve current page
-     *
-     * @param string $which type of pagination.
-     * @param int|null $current_page
-     * @return int
-     */
-    public function get_current_page( string $which = 'matches', ?int $current_page = null ): int {
-        $this->set_num_pages( $which );
-
-        $current_page = $current_page ?? ( 'teams' === $which ? $this->current_page_teams : $this->current_page_matches );
-
-        if ( 'matches' === $which && $current_page > $this->num_pages_matches ) {
-            $current_page = $this->num_pages_matches;
-        }
-        if ( 'teams' === $which && $current_page > $this->num_pages_teams ) {
-            $current_page = $this->num_pages_teams;
-        }
-        // Prevent negative offsets.
-        if ( $current_page <= 0 ) {
-            $current_page = 1;
-        }
-        if ( 'matches' === $which ) {
-            $this->current_page_matches = $current_page;
-        }
-        if ( 'teams' === $which ) {
-            $this->current_page_teams = $current_page;
-        }
-        return $current_page;
-    }
-
-    /**
-     * Add team to league
-     *
-     * @deprecated Use League_Query_Service::add_team(). Persistence belongs to the application service.
-     *
-     * @param int|string $team_id team identifier.
-     * @param string $season season.
-     * @param string|null $rank rank.
-     * @param string|null $status status.
-     * @param int|string $profile profile.
-     * @return int|boolean $table_id
-     */
-    public function add_team( int|string $team_id, string $season, ?string $rank = null, ?string $status = null, int|string $profile = 1 ): bool|int {
-        throw new \LogicException( 'League::add_team() no longer persists; use League_Query_Service::add_team().' );
     }
 
     /**
@@ -1252,52 +1015,6 @@ class League {
     }
 
     /**
-     * Get number of teams for specific league
-     *
-     * @param string|null $status status.
-     * @param boolean $latest latest indicator.
-     *
-     * @return int
-     */
-    public function get_num_teams( ?string $status = null, bool $latest = false ): int {
-        throw new \LogicException( 'League::get_num_teams() no longer reads from repository; use League_Query_Service::get_num_teams().' );
-    }
-
-    /**
-     * Set tab in league/archive shortcodes
-     *
-     * @param boolean $is_archive is this an archive.
-     * @param int|null $tab
-     */
-    public function set_tab( bool $is_archive = false, ?int $tab = null ): void {
-        if ( null !== $tab ) {
-            $this->archive_tab = $tab;
-        }
-        $this->is_archive = $is_archive;
-    }
-
-    /**
-     * Set template in league/archive shortcodes
-     *
-     * @param string $key key.
-     * @param string $template template.
-     */
-    public function set_template( string $key, string $template ): void {
-        $this->templates[ $key ] = $template;
-    }
-
-    /**
-     * Set all templates in league/archive shortcodes
-     *
-     * @param array $templates An associative array of template key => template associations.
-     */
-    public function set_templates( array $templates ): void {
-        foreach ( $templates as $key => $template ) {
-            $this->set_template( $key, $template );
-        }
-    }
-
-    /**
      * Check if season exists
      *
      * @param string $season season.
@@ -1329,108 +1046,6 @@ class League {
             }
         }
         return false;
-    }
-
-    /**
-     * Get team rank function
-     *
-     * @param int $team_id team id.
-     * @param string $season season.
-     *
-     * @return int|null team ranking.
-     */
-    public function get_rank( int $team_id, string $season ): ?int {
-        throw new \LogicException( 'League::get_rank() no longer reads from repository; use League_Query_Service::get_rank().' );
-    }
-
-    /**
-     * Get team league table function
-     *
-     * @param int $team_id team id.
-     * @param string $season season.
-     *
-     * @return string|null team status.
-     */
-    public function get_status( int $team_id, string $season ): ?string {
-        throw new \LogicException( 'League::get_status() no longer reads from repository; use League_Query_Service::get_status().' );
-    }
-	/**
-	 * =======================
-	 * Administration section
-	 * =======================
-	 */
-
-    /**
-     * Import matches
-     *
-     * @param array $custom custom.
-     * @param array $line line.
-     * @param int $match_id match id.
-     * @param int $col the starting column index.
-     *
-     * @return array
-     */
-    public function import_matches( array $custom, array $line, int $match_id, int $col ): array {
-        if ( count( $this->fields_match ) > 0 ) {
-            foreach ( $this->fields_match as $key => $data ) {
-                if ( isset( $data['keys'] ) && is_array( $data['keys'][ array_keys( $data['keys'] )[0] ] ) ) {
-                    foreach ( $data['keys'] as $k => $v ) {
-                        $p          = ! empty( $line[ $col ] ) ? explode( '-', $line[ $col ] ) : array( '', '' );
-                        $x          = array();
-                        $x[ $v[0] ] = $p[0];
-                        $x[ $v[1] ] = $p[1];
-
-                        $custom[ $match_id ][ $key ][ $k ] = $x;
-
-                        ++$col;
-                    }
-                } else {
-                    if ( isset( $data['keys'] ) ) {
-                        $p                     = ! empty( $line[ $col ] ) ? explode( '-', $line[ $col ] ) : array( '', '' );
-                        $x                     = array();
-                        $x[ $data['keys'][0] ] = $p[0];
-                        $x[ $data['keys'][1] ] = $p[1];
-                    } else {
-                        $x = ! empty( $line[ $col ] ) ? $line[ $col ] : '';
-                    }
-
-                    $custom[ $match_id ][ $key ] = $x;
-
-                    ++$col;
-                }
-            }
-        }
-
-        return $custom;
-    }
-
-    /**
-     * Import teams
-     *
-     * @param array $custom custom.
-     * @param array $line line.
-     * @param int $col the starting column index.
-     *
-     * @return array
-     */
-    public function import_teams( array $custom, array $line, int $col ): array {
-        if ( count( $this->fields_team ) > 0 ) {
-            foreach ( $this->fields_team as $key => $data ) {
-                if ( isset( $data['keys'] ) ) {
-                    $p                     = ! empty( $line[ $col ] ) ? explode( '-', $line[ $col ] ) : array( '', '' );
-                    $x                     = array();
-                    $x[ $data['keys'][0] ] = $p[0];
-                    $x[ $data['keys'][1] ] = $p[1];
-                    $custom[ $key ]        = $x;
-                } else {
-                    $custom[ $key ] = $line[$col] ?? 0;
-                }
-
-                ++$col;
-            }
-        }
-
-        return $custom;
     }
 
     /**

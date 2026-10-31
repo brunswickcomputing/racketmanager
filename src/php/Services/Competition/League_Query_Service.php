@@ -9,6 +9,7 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Tournament\Championship_Settings;
 use Racketmanager\Infrastructure\Wordpress\Request\Competition_Request;
+use Racketmanager\Application\League\DTOs\League_View_State;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
@@ -204,7 +205,7 @@ class League_Query_Service {
 				$league->teams      = $teams;
 				$league->team_index = $team_index;
 
-				$this->set_num_teams( $league, false );
+				$league->num_teams = $league->num_teams_total;
 
 				$get_details = $query_args['get_details'] ?? ( $team_query_args['get_details'] ?? false );
 				if ( $get_details ) {
@@ -409,23 +410,14 @@ class League_Query_Service {
 	}
 
 	public function get_rank( object $league, int $team_id, string $season ): ?int {
-		if ( ! $league instanceof League ) {
-			return $league->get_rank( $team_id, $season );
-		}
 		return $this->league_repository->get_rank( (int) $league->id, $season, $team_id );
 	}
 
 	public function get_status( object $league, int $team_id, string $season ): ?string {
-		if ( ! $league instanceof League ) {
-			return $league->get_status( $team_id, $season );
-		}
 		return $this->league_repository->get_status( (int) $league->id, $season, $team_id );
 	}
 
 	public function get_num_teams( object $league, ?string $status = null, bool $latest = false ): int {
-		if ( ! $league instanceof League ) {
-			return $league->get_num_teams( $status, $latest );
-		}
 		$args = array(
 			'count'            => true,
 			'season'           => $league->current_season['name'] ?? '',
@@ -441,12 +433,38 @@ class League_Query_Service {
 		return (int) $this->league_repository->query_league_teams( (int) $league->id, $args, true );
 	}
 
-	public function set_num_teams( object $league, bool $total = false ): void {
+	/**
+	 * Resolve the effective page size for matches or teams.
+	 *
+	 * @param object $league League entity.
+	 * @param string $which 'matches' or 'teams'.
+	 * @return int
+	 */
+	private function get_per_page( object $league, string $which ): int {
+		$default = 'teams' === $which ? 10 : 30;
 		if ( ! $league instanceof League ) {
-			$league->set_num_teams( $total );
-			return;
+			return $default;
 		}
-		$league->current_page_teams = $this->resolve_requested_page( $league, 'teams' );
+		$args  = 'teams' === $which ? $league->get_team_query_args() : $league->get_match_query_args();
+		$limit = $args['limit'] ?? $default;
+
+		return ( is_numeric( $limit ) && (int) $limit > 0 ) ? (int) $limit : $default;
+	}
+
+	/**
+	 * Count teams and return the team pagination state.
+	 *
+	 * When $total is true only the total count is stored on the league and the state carries no links.
+	 * Handlers that need team pagination links must use the returned state.
+	 *
+	 * @param object $league League entity.
+	 * @param bool   $total Whether to only count the total teams.
+	 * @return League_View_State
+	 */
+	public function set_num_teams( object $league, bool $total = false ): League_View_State {
+		$requested_page = $this->resolve_requested_page( $league, 'teams' );
+		$state          = new League_View_State( num_teams_per_page: $this->get_per_page( $league, 'teams' ) );
+
 		if ( true === $total ) {
 			$league->num_teams_total = (int) $this->league_repository->query_league_teams(
 				(int) $league->id,
@@ -458,34 +476,51 @@ class League_Query_Service {
 				),
 				true
 			);
-		} else {
-			$league->num_teams        = $league->num_teams_total;
-			$league->pagination_teams = $this->get_page_links( $league, 'teams' );
+
+			return $state->with_teams_pagination( $league->num_teams_total, $requested_page );
 		}
+
+		$league->num_teams = $league->num_teams_total;
+
+		return $state->with_teams_pagination(
+			$league->num_teams,
+			$requested_page,
+			$this->get_page_links( $league, 'teams', $requested_page )
+		);
 	}
 
-	public function set_num_matches( object $league, bool $total = false ): void {
-		if ( ! $league instanceof League ) {
-			if ( method_exists( $league, 'set_num_matches' ) ) {
-				$league->set_num_matches( $total );
-			}
-			return;
-		}
-		$league->current_page_matches = $this->resolve_requested_page( $league );
-		$match_args                   = array();
-		$match_args['count']          = true;
-		$match_args['season']         = null;
+	/**
+	 * Count matches and return the match pagination state.
+	 *
+	 * @param object $league League entity.
+	 * @param bool   $total Whether to count all matches without a limit restriction.
+	 * @return League_View_State
+	 */
+	public function set_num_matches( object $league, bool $total = false ): League_View_State {
+		$requested_page                 = $this->resolve_requested_page( $league );
+		$match_args                     = array();
+		$match_args['count']            = true;
+		$match_args['season']           = null;
 		$match_args['reset_query_args'] = true;
 		if ( true !== $total ) {
 			$match_args['limit'] = 0;
 		}
 		$num_matches = (int) $this->get_matches( $league, $match_args );
+		$state       = new League_View_State( num_matches_per_page: $this->get_per_page( $league, 'matches' ) );
+
 		if ( $total ) {
 			$league->num_matches_total = $num_matches;
-		} else {
-			$league->num_matches        = $num_matches;
-			$league->pagination_matches = $this->get_page_links( $league );
+
+			return $state->with_matches_pagination( $num_matches, $requested_page );
 		}
+
+		$league->num_matches = $num_matches;
+
+		return $state->with_matches_pagination(
+			$num_matches,
+			$requested_page,
+			$this->get_page_links( $league, 'matches', $requested_page )
+		);
 	}
 
 	public function get_crosstable_field( League $league, int $team_id, int $opponent_id ): string {
@@ -612,15 +647,11 @@ class League_Query_Service {
 		return null;
 	}
 
-	public function set_tab( object $league, bool $is_archive = false, ?int $tab = null ): void {
-		if ( null === $tab ) {
-			$tab = $this->resolve_requested_tab( $league );
-		}
-		if ( ! $league instanceof League ) {
-			$league->set_tab( $is_archive );
-			return;
-		}
-		$league->set_tab( $is_archive, $tab );
+	public function set_tab( object $league, bool $is_archive = false, ?int $tab = null ): League_View_State {
+		return new League_View_State(
+			archive_tab: $tab ?? $this->resolve_requested_tab( $league ) ?? 0,
+			is_archive: $is_archive,
+		);
 	}
 
 	public function get_page_links( object $league, string $which = 'matches', ?int $current_page = null, ?array $query_args = null ): string {
@@ -643,21 +674,19 @@ class League_Query_Service {
 				$query_args['match_day'] = $match_day;
 			}
 		}
-		if ( $league instanceof League ) {
-			$league->get_current_page( $which, $current_page );
-		}
 
 		if ( 'matches' === $which ) {
-			$num_pages    = $league->num_pages_matches ?? 1;
-			$current_page = $league->current_page_matches ?? 1;
-			$num_items    = $league->num_matches ?? 0;
+			$num_items = (int) ( $league->num_matches ?? 0 );
+			$per_page  = $this->get_per_page( $league, 'matches' );
 		} elseif ( 'teams' === $which ) {
-			$num_pages    = $league->num_pages_teams ?? 1;
-			$current_page = $league->current_page_teams ?? 1;
-			$num_items    = $league->num_matches ?? 0;
+			$num_items = (int) ( $league->num_teams ?? ( $league->num_teams_total ?? 0 ) );
+			$per_page  = $this->get_per_page( $league, 'teams' );
 		} else {
 			return '';
 		}
+
+		$num_pages    = League_View_State::calculate_num_pages( $num_items, $per_page );
+		$current_page = League_View_State::normalize_current_page( (int) $current_page, $num_pages );
 
 		$query_args = $query_args ?? ( $league instanceof League ? $league->get_query_args() : array() );
 		$page_links = paginate_links(
@@ -807,16 +836,11 @@ class League_Query_Service {
 				return $matches;
 			}
 
-			if ( is_numeric( $limit ) && (int) $limit > 0 ) {
-				$league->num_matches_per_page = (int) $limit;
-			}
-
-			$league->current_page_matches = $this->resolve_requested_page( $league );
-
+			$current_page                          = $this->resolve_requested_page( $league );
 			$query_args_to_pass                    = $match_query_args;
 			$query_args_to_pass['current_season']  = $league->current_season['name'] ?? '';
-			// The requested page is resolved at the request boundary into current_page_matches.
-			$offset                                = intval( $limit > 0 ) ? ( max( 1, $league->current_page_matches ) - 1 ) * $limit : 0;
+			// The requested page is resolved at the request boundary.
+			$offset                                = ( is_numeric( $limit ) && (int) $limit > 0 ) ? ( max( 1, $current_page ) - 1 ) * (int) $limit : 0;
 			$query_args_to_pass['offset']          = $offset;
 			$query_args_to_pass['is_championship'] = $league->is_championship;
 

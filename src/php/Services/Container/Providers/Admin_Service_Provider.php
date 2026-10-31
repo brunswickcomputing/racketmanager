@@ -406,13 +406,13 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'league_team_repository' ),
             $c->get( 'standings_service' ),
             $c->get( 'league_query_service' ),
-            $c->has( 'racketmanager_app' ) ? $c->get( 'racketmanager_app' ) : null,
+            $c->get( 'team_service' ),
             $c->get( 'league_repository' )
         ) );
 
         $container->set( 'options_action_dispatcher', fn( Simple_Container $c ) => new Options_Action_Dispatcher(
             $c->get( 'action_guard' ),
-            $c->has( 'racketmanager_app' ) ? $c->get( 'racketmanager_app' ) : null
+            $c->get( 'option_service' )
         ) );
 
         $container->set( 'cup_setup_action_dispatcher', fn( Simple_Container $c ) => new Cup_Setup_Action_Dispatcher(
@@ -432,7 +432,6 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
         $container->set( 'admin_ajax_adapter', fn( Simple_Container $c ) => new Admin_Ajax_Adapter(
             $c->get( 'security_service' ),
             $c->get( 'json_response_factory' ),
-            $app,
             $c->get( 'competition_service' ),
             $c->get( 'competition_entry_service' ),
             $c->get( 'notification_service' ),
@@ -466,7 +465,8 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             get_player_details_handler: $c->get( 'get_player_details_handler' ),
             league_repository: $c->get( 'league_repository' ),
             event_repository: $c->get( 'event_repository' ),
-            view_presenter: $c->get( 'shortcode_view_presenter' )
+            view_presenter: $c->get( 'shortcode_view_presenter' ),
+            team_repository: $c->get( 'team_repository' )
         ) );
         $container->set( 'frontend_ajax_controller', fn( Simple_Container $c ) => new Frontend_Ajax_Controller( $app, $c->get( 'frontend_ajax_adapter' ) ) );
     }

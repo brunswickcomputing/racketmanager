@@ -3,10 +3,16 @@
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Ajax;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Domain\Player\User;
+use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Account_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Account_Ajax_Controller;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
+use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class Account_Ajax_Controller_Test extends TestCase {
@@ -103,5 +109,96 @@ class Account_Ajax_Controller_Test extends TestCase {
             '{"msg":"ok"}',
             'reset_password'
         );
+    }
+
+    public function test_get_adapter_fallback_wires_repositories_and_option_service_from_container(): void {
+        $container      = new Simple_Container();
+        $option_service = $this->createStub( Option_Service::class );
+        $message_repo   = $this->createStub( Message_Repository_Interface::class );
+        $user_repo      = $this->createStub( User_Repository_Interface::class );
+
+        $container->set( 'option_service', $option_service );
+        $container->set( 'message_repository', $message_repo );
+        $container->set( 'user_repository', $user_repo );
+
+        $app            = $this->createStub( RacketManager::class );
+        $app->container = $container;
+
+        $controller = new Account_Ajax_Controller( $app );
+
+        $ref = new \ReflectionMethod( $controller, 'get_adapter' );
+        $ref->setAccessible( true );
+        $adapter = $ref->invoke( $controller );
+
+        $this->assertInstanceOf( Account_Ajax_Adapter::class, $adapter );
+
+        $opt_prop = new \ReflectionProperty( Account_Ajax_Adapter::class, 'option_service' );
+        $opt_prop->setAccessible( true );
+        $this->assertSame( $option_service, $opt_prop->getValue( $adapter ) );
+
+        $msg_prop = new \ReflectionProperty( Account_Ajax_Adapter::class, 'message_repository' );
+        $msg_prop->setAccessible( true );
+        $this->assertSame( $message_repo, $msg_prop->getValue( $adapter ) );
+
+        $usr_prop = new \ReflectionProperty( Account_Ajax_Adapter::class, 'user_repository' );
+        $usr_prop->setAccessible( true );
+        $this->assertSame( $user_repo, $usr_prop->getValue( $adapter ) );
+    }
+
+    public function test_fallback_adapter_enforces_btm_requirement_when_option_service_configured(): void {
+        $GLOBALS['wp_stubs_current_user_id'] = 5;
+
+        $security = $this->createStub( Security_Service_Interface::class );
+        $security->method( 'verify_nonce' )->willReturn( true );
+
+        $option_service = $this->createStub( Option_Service::class );
+        $option_service->method( 'get_options' )
+            ->willReturn( array( 'btm' => '1' ) );
+
+        $user      = new User();
+        $user->id  = 5;
+        $user->ID  = 5;
+        $user_repo = $this->createStub( User_Repository_Interface::class );
+        $user_repo->method( 'find' )->willReturn( $user );
+
+        $container = new Simple_Container();
+        $container->set( 'security_service', $security );
+        $container->set( 'option_service', $option_service );
+        $container->set( 'user_repository', $user_repo );
+
+        $app            = $this->createStub( RacketManager::class );
+        $app->container = $container;
+
+        $_POST = array(
+            'racketmanager_nonce' => 'valid_nonce',
+            'username'            => 'player@example.test',
+            'firstname'           => 'John',
+            'lastname'            => 'Smith',
+            'gender'              => 'M',
+            'btm'                 => '',
+        );
+
+        $controller = new Account_Ajax_Controller( $app );
+
+        $ref = new \ReflectionMethod( $controller, 'get_adapter' );
+        $ref->setAccessible( true );
+        $adapter = $ref->invoke( $controller );
+
+        $request = array(
+            'racketmanager_nonce' => 'valid_nonce',
+            'username'            => 'player@example.test',
+            'firstname'           => 'John',
+            'lastname'            => 'Smith',
+            'gender'              => 'M',
+            'btm'                 => '',
+        );
+
+        $response = $adapter->update_account( $request );
+
+        $this->assertSame( 401, $response->get_status_code() );
+        $content = $response->get_content();
+        $data    = is_array( $content ) && isset( $content['data'] ) ? $content['data'] : $content;
+        $this->assertTrue( $data->error );
+        $this->assertContains( 'btm', $data->err_flds );
     }
 }

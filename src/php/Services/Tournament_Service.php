@@ -40,6 +40,7 @@ use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Updated_Exception;
 use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Charge_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
@@ -74,6 +75,7 @@ class Tournament_Service {
     private League_Service $league_service;
     private Mailer_Interface $mailer;
     private ?League_Repository_Interface $league_repository;
+    private Option_Service $option_service;
 
     /**
      * Constructor
@@ -94,7 +96,8 @@ class Tournament_Service {
         Finance_Service $finance_service,
         League_Service $league_service,
         ?Mailer_Interface $mailer = null,
-        ?League_Repository_Interface $league_repository = null
+        ?League_Repository_Interface $league_repository = null,
+        ?Option_Service $option_service = null
     ) {
         $this->racketmanager               = $plugin_instance;
         $this->tournament_repository       = $tournament_repository;
@@ -111,6 +114,7 @@ class Tournament_Service {
         $this->league_service              = $league_service;
         $this->mailer                      = $mailer ?? new Wp_Mailer();
         $this->league_repository           = $league_repository;
+        $this->option_service              = $option_service ?? new Option_Service();
     }
 
     private function league_repository(): League_Repository_Interface {
@@ -337,7 +341,7 @@ class Tournament_Service {
     }
 
     private function validate_tournament( Tournament_Request_DTO $tournament ): bool|WP_Error {
-        $validator = new Validator_Tournament();
+        $validator = new Validator_Tournament( competition_service: $this->competition_service );
         $validator = $validator->name( $tournament->name );
         $validator = $validator->competition( $tournament->competition_id );
         $validator = $validator->season( $tournament->season );
@@ -638,7 +642,7 @@ class Tournament_Service {
         sort( $times );
         $headers    = array();
         $action_url = $this->racketmanager->site_url . '/tournament/' . Seo_Slug::encode( $tournament->name ) . '/order_of_play/';
-        $from_email = $this->racketmanager->get_confirmation_email( 'tournament' );
+        $from_email = $this->option_service->get_confirmation_email( 'tournament' );
         if ( ! $from_email ) {
             throw new Invalid_Argument_Exception( Util_Messages::secretary_email_not_found( 'tournament' ) );
         }
@@ -992,7 +996,7 @@ class Tournament_Service {
         $send          = false;
         $email_message = str_replace( '\"', '"', $message );
         $headers       = array();
-        $email_from    = $this->racketmanager->get_confirmation_email( 'tournament' );
+        $email_from    = $this->option_service->get_confirmation_email( 'tournament' );
         $headers[]     = RACKETMANAGER_FROM_EMAIL . ucfirst( 'tournament' ) . ' Secretary <' . $email_from . '>';
         $headers[]     = RACKETMANAGER_CC_EMAIL . ucfirst( 'tournament' ) . ' Secretary <' . $email_from . '>';
         $email_subject = $this->racketmanager->site_name . ' - ' . $tournament->get_name() . ' - ' . __( 'Important Message', 'racketmanager' );

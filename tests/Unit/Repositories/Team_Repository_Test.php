@@ -74,6 +74,21 @@ final class Team_Repository_Test extends TestCase {
 		$this->assertCount( 2, $this->db->prepared );
 	}
 
+	public function test_find_id_by_name_returns_id_for_found_team(): void {
+		$this->db->get_var_return = '42';
+		$this->assertSame( 42, $this->repository->find_id_by_name( 'Team' ) );
+	}
+
+	public function test_find_id_by_name_returns_null_for_missing_team(): void {
+		$this->db->get_var_return = '0';
+		$this->assertNull( $this->repository->find_id_by_name( 'Missing' ) );
+	}
+
+	public function test_find_id_by_name_returns_null_for_empty_title_without_query(): void {
+		$this->assertNull( $this->repository->find_id_by_name( '' ) );
+		$this->assertEmpty( $this->db->prepared );
+	}
+
 	public function test_save_new_team_invalidates_title_cache(): void {
 		$title_key = 'team_id_' . md5( 'New Team Title' );
 		wp_cache_set( $title_key, 123, 'teams' );

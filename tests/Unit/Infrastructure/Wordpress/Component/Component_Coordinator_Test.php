@@ -28,6 +28,7 @@ final class Component_Coordinator_Test extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->backup_globals();
+        $GLOBALS['wp_action_hooks'] = array();
 
         $this->container     = new Simple_Container();
         $this->ajax_registry = new Ajax_Registry();
@@ -50,7 +51,10 @@ final class Component_Coordinator_Test extends TestCase {
         $fixture_ajax    = $this->createMock( \Racketmanager\Infrastructure\Wordpress\Ajax\Fixture_Ajax_Controller::class );
         $tournament_ajax = $this->createMock( \Racketmanager\Infrastructure\Wordpress\Ajax\Tournament_Ajax_Controller::class );
 
-        $account_ajax->expects( self::once() )->method( 'register_hooks' )->with( $this->ajax_registry );
+        $account_ajax->expects( self::once() )->method( 'register_hooks' )->with( $this->ajax_registry )
+            ->willReturnCallback( static function ( \Racketmanager\Infrastructure\Wordpress\Ajax\Ajax_Registry $registry ) use ( $account_ajax ) {
+                $registry->register( 'account_test_action', [ $account_ajax, 'add_favourite' ] );
+            } );
         $club_ajax->expects( self::once() )->method( 'register_hooks' )->with( $this->ajax_registry );
         $finance_ajax->expects( self::once() )->method( 'register_hooks' )->with( $this->ajax_registry );
         $frontend_ajax->expects( self::once() )->method( 'register_hooks' )->with( $this->ajax_registry );
@@ -73,15 +77,26 @@ final class Component_Coordinator_Test extends TestCase {
         $this->container->set( 'matches_shortcode_adapter', fn() => new stdClass() );
         $this->container->set( 'message_shortcode_adapter', fn() => new stdClass() );
         $this->container->set( 'tournament_shortcode_adapter', fn() => new stdClass() );
+        $login = $this->createMock( \Racketmanager\Services\Login::class );
+        $this->container->set( 'login', fn() => $login );
 
         $this->coordinator->init_components( $this->app );
 
-        self::assertSame( $account_ajax, $this->app->ajax_account );
-        self::assertSame( $club_ajax, $this->app->ajax_club );
-        self::assertSame( $finance_ajax, $this->app->ajax_finance );
-        self::assertSame( $frontend_ajax, $this->app->ajax_frontend );
-        self::assertSame( $fixture_ajax, $this->app->ajax_fixture );
-        self::assertSame( $tournament_ajax, $this->app->ajax_tournament );
+        self::assertArrayHasKey( 'wp_ajax_racketmanager_match_card', $GLOBALS['wp_action_hooks'] );
+        self::assertSame( [ $fixture_ajax, 'print_match_card' ], $GLOBALS['wp_action_hooks']['wp_ajax_racketmanager_match_card'][0] );
+
+        self::assertArrayHasKey( 'wp_ajax_nopriv_racketmanager_match_rubber_status', $GLOBALS['wp_action_hooks'] );
+        self::assertSame( [ $fixture_ajax, 'logged_out_modal' ], $GLOBALS['wp_action_hooks']['wp_ajax_nopriv_racketmanager_match_rubber_status'][0] );
+
+        self::assertArrayHasKey( 'wp_ajax_racketmanager_account_test_action', $GLOBALS['wp_action_hooks'] );
+        self::assertSame( [ $account_ajax, 'add_favourite' ], $GLOBALS['wp_action_hooks']['wp_ajax_racketmanager_account_test_action'][0] );
+
+        self::assertFalse( property_exists( $this->app, 'ajax_account' ) );
+        self::assertFalse( property_exists( $this->app, 'ajax_club' ) );
+        self::assertFalse( property_exists( $this->app, 'ajax_finance' ) );
+        self::assertFalse( property_exists( $this->app, 'ajax_frontend' ) );
+        self::assertFalse( property_exists( $this->app, 'ajax_fixture' ) );
+        self::assertFalse( property_exists( $this->app, 'ajax_tournament' ) );
 
         self::assertInstanceOf( \Racketmanager\Public\Shortcodes::class, $this->app->shortcodes );
         self::assertInstanceOf( stdClass::class, $this->app->shortcodes_general );

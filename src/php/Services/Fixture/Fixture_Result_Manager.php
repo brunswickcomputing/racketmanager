@@ -242,6 +242,16 @@ class Fixture_Result_Manager {
         }
     }
 
+    private function create_validator(): Validator_Fixture {
+        return new Validator_Fixture(
+            fixture_repository: $this->fixture_repository,
+            rubber_repository: $this->rubber_repository,
+            registration_service: $this->registration_service,
+            team_repository: $this->team_repository,
+            league_repository: $this->league_repository
+        );
+    }
+
     /**
      * Handle result update for a single fixture (player/tournament match).
      *
@@ -259,7 +269,7 @@ class Fixture_Result_Manager {
         }
 
         $is_update_allowed = $this->is_update_allowed( $fixture );
-        $validator         = new Validator_Fixture();
+        $validator         = $this->create_validator();
         $validator         = $validator->can_player_enter_result( $is_update_allowed, $request->sets );
         if ( ! empty( $validator->error ) ) {
             throw new Fixture_Validation_Exception(
@@ -363,7 +373,7 @@ class Fixture_Result_Manager {
         $league = $this->get_league_for_fixture( $fixture );
 
         $is_update_allowed = $this->is_update_allowed( $fixture );
-        $validator         = ( new Validator_Fixture() )->can_player_enter_result( $is_update_allowed, $request->players );
+        $validator         = $this->create_validator()->can_player_enter_result( $is_update_allowed, $request->players );
 
         $rubber_info       = $this->process_rubbers( $fixture, $request, $validator );
         if ( ! empty( $validator->error ) ) {
@@ -600,7 +610,7 @@ class Fixture_Result_Manager {
      * @throws League_Not_Found_Exception
      */
     public function handle_team_result_confirmation( Fixture $fixture, Team_Result_Confirmation_Request $request, ?League_Repository_Interface $league_repository = null ): Team_Result_Response {
-        $validator = new Validator_Fixture();
+        $validator = $this->create_validator();
         $validator = $validator->result_confirm( $request->result_confirm, $request->confirm_comments );
         if ( ! empty( $validator->error ) ) {
             return new Team_Result_Response( (array) $validator->get_details() );

@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Application\Payment\Ports\Payment_Gateway_Interface;
 use Racketmanager\Application\Payment\Ports\Payment_Intent_Result;
+use Racketmanager\Domain\DTO\Finance\Invoice_Full_Details_DTO;
 use Racketmanager\Domain\Enums\Invoice_Status;
 use Racketmanager\Domain\Finance\Invoice;
 use Racketmanager\Domain\Player\Player;
@@ -16,6 +17,7 @@ use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Stripe_API_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Charge_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
@@ -405,6 +407,96 @@ class Finance_Service_Test extends TestCase {
         );
 
         self::assertSame( Currency::GBP, $service->get_currency() );
+    }
+
+    public function test_send_invoice_uses_confirmation_email_from_option_service(): void {
+        $option_service = $this->createMock( Option_Service::class );
+        $option_service->expects( self::once() )
+            ->method( 'get_confirmation_email' )
+            ->with( 'league' )
+            ->willReturn( 'league@example.com' );
+
+        $mailer = $this->createMock( Mailer_Interface::class );
+        $mailer->expects( self::once() )
+            ->method( 'send' )
+            ->with(
+                'Jane Doe <jane.doe@example.com>',
+                self::anything(),
+                self::anything(),
+                self::callback( fn( array $headers ) => in_array( 'From: LeagueSecretary <league@example.com>', $headers, true ) )
+            );
+
+        $this->app->method( 'get_options' )->willReturn( [ 'billingEmail' => 'treasurer@example.com' ] );
+        $this->app->site_name  = 'Test Club';
+        $this->app->site_url   = 'https://example.com';
+        $this->app->shortcodes = $this->invoice_email_shortcodes();
+
+        $service = $this->build_invoice_email_service( $mailer, $option_service, $this->build_invoice_details() );
+
+        self::assertTrue( $service->send_invoice( 10 ) );
+    }
+
+    public function test_send_invoice_sends_nothing_when_confirmation_email_is_empty(): void {
+        $option_service = $this->createMock( Option_Service::class );
+        $option_service->expects( self::once() )
+            ->method( 'get_confirmation_email' )
+            ->with( 'league' )
+            ->willReturn( '' );
+
+        $mailer = $this->createMock( Mailer_Interface::class );
+        $mailer->expects( self::never() )->method( 'send' );
+
+        $this->app->shortcodes = $this->invoice_email_shortcodes();
+
+        $service = $this->build_invoice_email_service( $mailer, $option_service, $this->build_invoice_details() );
+
+        self::assertFalse( $service->send_invoice( 10 ) );
+    }
+
+    private function build_invoice_details(): Invoice_Full_Details_DTO {
+        $invoice     = new Invoice();
+        $invoice->id = 10;
+        $contact     = new Player();
+        $contact->display_name = 'Jane Doe';
+        $contact->email        = 'jane.doe@example.com';
+
+        $details                  = $this->createStub( Invoice_Full_Details_DTO::class );
+        $details->invoice         = $invoice;
+        $details->contact         = $contact;
+        $details->competition_type = 'league';
+        $details->charge_name     = 'Summer League';
+        $details->billable_name   = 'Jane Doe';
+
+        return $details;
+    }
+
+    private function build_invoice_email_service( Mailer_Interface $mailer, Option_Service $option_service, Invoice_Full_Details_DTO $details ): Finance_Service {
+        $service = $this->getMockBuilder( Finance_Service::class )
+            ->setConstructorArgs( [
+                $this->app,
+                $this->charge_repo,
+                $this->invoice_repo,
+                $this->club_repo,
+                $this->tournament_repo,
+                $this->competition_service,
+                $this->player_service,
+                $this->createStub( Payment_Gateway_Interface::class ),
+                $mailer,
+                $option_service,
+            ] )
+            ->onlyMethods( [ 'get_full_invoice_details' ] )
+            ->getMock();
+        $service->expects( self::once() )->method( 'get_full_invoice_details' )->willReturn( $details );
+
+        return $service;
+    }
+
+    private function invoice_email_shortcodes(): object {
+        return new class() {
+            public function load_template( string $template, array $args, string $type ): string {
+                return 'invoice email body';
+            }
+        };
     }
 
     public function test_amend_invoice_normalizes_resend_to_sent(): void {

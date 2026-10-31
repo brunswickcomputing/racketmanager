@@ -129,6 +129,19 @@ class Option_Service {
     }
 
     /**
+     * Get result confirmation email for a competition type.
+     *
+     * @param string $type Competition type (e.g. 'league', 'cup', 'tournament').
+     * @return string
+     */
+    public function get_confirmation_email( string $type ): string {
+        $section = $this->get_options( $type );
+        return is_array( $section ) && isset( $section['resultConfirmationEmail'] )
+            ? (string) $section['resultConfirmationEmail']
+            : '';
+    }
+
+    /**
      * Determine if the LTA number is required based on roster configuration options.
      *
      * @return bool

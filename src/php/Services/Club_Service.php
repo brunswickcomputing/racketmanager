@@ -18,6 +18,7 @@ use Racketmanager\Domain\Club\Club_Role_Factory;
 use Racketmanager\Domain\DTO\Club\Club_Details_DTO;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Team\Team_Factory;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Registration_Repository_Interface;
 use Racketmanager\Exceptions\Club_Has_Teams_Exception;
@@ -43,18 +44,28 @@ class Club_Service {
     private Player_Repository $player_repository;
     private Team_Repository $team_repository;
     private Player_Service $player_service;
+    private Option_Service $option_service;
 
     /**
      * Constructor
      *
      */
-    public function __construct( Club_Repository $club_repository, Registration_Repository_Interface $club_player_repository, Club_Role_Repository_Interface $club_role_repository, Player_Repository $player_repository, Team_Repository $team_repository, Player_Service $player_service ) {
+    public function __construct(
+        Club_Repository $club_repository,
+        Registration_Repository_Interface $club_player_repository,
+        Club_Role_Repository_Interface $club_role_repository,
+        Player_Repository $player_repository,
+        Team_Repository $team_repository,
+        Player_Service $player_service,
+        ?Option_Service $option_service = null
+    ) {
         $this->club_repository        = $club_repository;
         $this->club_role_repository   = $club_role_repository;
         $this->club_player_repository = $club_player_repository;
         $this->player_repository      = $player_repository;
         $this->team_repository        = $team_repository;
         $this->player_service         = $player_service;
+        $this->option_service         = $option_service ?? new Option_Service();
     }
 
     /**
@@ -428,7 +439,6 @@ class Club_Service {
      * @return bool
      */
     public function can_user_update_players( int $club_id ): bool {
-        global $racketmanager;
         $user_can_update = false;
         if ( is_user_logged_in() ) {
             if ( current_user_can( 'manage_racketmanager' ) ) {
@@ -439,7 +449,7 @@ class Club_Service {
                 if ( $this->is_user_match_secretary( $club_id, $userid ) ) {
                     $user_can_update = true;
                 } elseif ( $this->is_player_captain( $club_id, $userid ) ) {
-                    $options = $racketmanager->get_options( 'rosters' );
+                    $options = $this->option_service->get_options( 'rosters' );
                     if ( isset( $options['rosterEntry'] ) && 'captain' === $options['rosterEntry'] ) {
                         $user_can_update = true;
                     }

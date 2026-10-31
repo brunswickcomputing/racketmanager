@@ -23,6 +23,7 @@ use Racketmanager\Infrastructure\Wordpress\Rest\Rest_Controller_Adapter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition\Event_Query_Service;
@@ -73,6 +74,7 @@ class Rest_Resources extends WP_REST_Controller {
     private ?Event_Query_Service $event_query_service;
     private ?League_Repository_Interface $league_repository;
     private ?Event_Repository_Interface $event_repository;
+    private ?Fixture_Repository_Interface $fixture_repository;
     private ?Competition_Repository_Interface $competition_repository;
 
     /**
@@ -87,6 +89,7 @@ class Rest_Resources extends WP_REST_Controller {
      * @param Event_Query_Service|null     $event_query_service
      * @param League_Repository_Interface|null $league_repository
      * @param Event_Repository_Interface|null  $event_repository
+     * @param Fixture_Repository_Interface|null $fixture_repository
      * @return void
      */
     public function __construct(
@@ -98,7 +101,8 @@ class Rest_Resources extends WP_REST_Controller {
         ?League_Query_Service $league_query_service = null,
         ?Event_Query_Service $event_query_service = null,
         ?League_Repository_Interface $league_repository = null,
-        ?Event_Repository_Interface $event_repository = null
+        ?Event_Repository_Interface $event_repository = null,
+        ?Fixture_Repository_Interface $fixture_repository = null
     ) {
         $this->racketmanager = $plugin_instance;
         $c                   = $this->racketmanager->container ?? null;
@@ -106,11 +110,16 @@ class Rest_Resources extends WP_REST_Controller {
             $this->competition_service  = $competition_service ?? ( method_exists( $c, 'get' ) ? $c->get( 'competition_service' ) : null );
             $this->club_service         = $club_service ?? ( method_exists( $c, 'get' ) ? $c->get( 'club_service' ) : null );
             $this->season_service       = $season_service ?? ( method_exists( $c, 'get' ) ? $c->get( 'season_service' ) : null );
-            $this->adapter              = $adapter ?? ( ( method_exists( $c, 'has' ) && $c->has( 'rest_controller_adapter' ) ) ? $c->get( 'rest_controller_adapter' ) : new Rest_Controller_Adapter( ( method_exists( $c, 'has' ) && $c->has( 'league_repository' ) ) ? $c->get( 'league_repository' ) : null ) );
+            $this->adapter              = $adapter ?? ( ( method_exists( $c, 'has' ) && $c->has( 'rest_controller_adapter' ) ) ? $c->get( 'rest_controller_adapter' ) : new Rest_Controller_Adapter(
+                ( method_exists( $c, 'has' ) && $c->has( 'league_repository' ) ) ? $c->get( 'league_repository' ) : null,
+                ( method_exists( $c, 'has' ) && $c->has( 'team_repository' ) ) ? $c->get( 'team_repository' ) : null,
+                ( method_exists( $c, 'has' ) && $c->has( 'competition_service' ) ) ? $c->get( 'competition_service' ) : null
+            ) );
             $this->league_query_service = $league_query_service ?? ( ( method_exists( $c, 'has' ) && $c->has( 'league_query_service' ) ) ? $c->get( 'league_query_service' ) : null );
             $this->event_query_service  = $event_query_service ?? ( ( method_exists( $c, 'has' ) && $c->has( 'event_query_service' ) ) ? $c->get( 'event_query_service' ) : null );
             $this->league_repository    = $league_repository ?? ( ( method_exists( $c, 'has' ) && $c->has( 'league_repository' ) ) ? $c->get( 'league_repository' ) : null );
             $this->event_repository     = $event_repository ?? ( ( method_exists( $c, 'has' ) && $c->has( 'event_repository' ) ) ? $c->get( 'event_repository' ) : null );
+            $this->fixture_repository   = $fixture_repository ?? ( ( method_exists( $c, 'has' ) && $c->has( 'fixture_repository' ) ) ? $c->get( 'fixture_repository' ) : null );
             $this->competition_repository = ( method_exists( $c, 'has' ) && $c->has( 'competition_repository' ) ) ? $c->get( 'competition_repository' ) : null;
         } else {
             $this->competition_service  = $competition_service;
@@ -121,6 +130,7 @@ class Rest_Resources extends WP_REST_Controller {
             $this->event_query_service  = $event_query_service;
             $this->league_repository    = $league_repository;
             $this->event_repository     = $event_repository;
+            $this->fixture_repository   = $fixture_repository;
             $this->competition_repository = null;
         }
 
@@ -328,7 +338,12 @@ class Rest_Resources extends WP_REST_Controller {
         $competition_name = $query->competition;
         $event_name       = $query->event;
         $league_name      = $query->league;
-        $validator        = new Validator();
+        $validator        = new Validator(
+            competition_service: $this->competition_service,
+            club_service: $this->club_service,
+            event_repository: $this->event_repository,
+            league_repository: $this->league_repository
+        );
         if ( $competition_name ) {
             $competition_name = Seo_Slug::decode( $competition_name );
             try {
@@ -437,7 +452,12 @@ class Rest_Resources extends WP_REST_Controller {
         $competition_name = $query->competition;
         $event_name       = $query->event;
         $league_name      = $query->league;
-        $validator        = new Validator();
+        $validator        = new Validator(
+            competition_service: $this->competition_service,
+            club_service: $this->club_service,
+            event_repository: $this->event_repository,
+            league_repository: $this->league_repository
+        );
         if ( $competition_name ) {
             $competition_name = Seo_Slug::decode( $competition_name );
             $validator        = $validator->competition( $competition_name );
@@ -447,7 +467,10 @@ class Rest_Resources extends WP_REST_Controller {
                     $validator = $validator->season_set( $season, $competition->get_seasons() );
                     if ( empty( $validator->error ) ) {
                         $match_args['competition_id'] = $competition->id;
-                        $matches                      = $this->racketmanager->get_matches( $match_args );
+                        if ( null === $this->fixture_repository ) {
+                            throw new \LogicException( 'The fixture repository is not registered.' );
+                        }
+                        $matches = $this->fixture_repository->find_all( $match_args );
                     }
                 } else {
                     $validator->error = true;
@@ -706,7 +729,10 @@ class Rest_Resources extends WP_REST_Controller {
      * @return array
      */
     private function get_events(): array {
-        $events = ( $this->racketmanager && method_exists( $this->racketmanager, 'get_events' ) ) ? $this->racketmanager->get_events() : array();
+        if ( null === $this->event_repository ) {
+            throw new \LogicException( 'The event repository is not registered.' );
+        }
+        $events = $this->event_repository->find_all();
         if ( ! is_array( $events ) ) {
             return array();
         }
@@ -721,7 +747,10 @@ class Rest_Resources extends WP_REST_Controller {
      * @return array
      */
     private function get_leagues(): array {
-        $leagues = ( $this->racketmanager && method_exists( $this->racketmanager, 'get_leagues' ) ) ? $this->racketmanager->get_leagues() : array();
+        if ( null === $this->league_repository ) {
+            throw new \LogicException( 'The league repository is not registered.' );
+        }
+        $leagues = $this->league_repository->find_all();
         if ( ! is_array( $leagues ) ) {
             return array();
         }

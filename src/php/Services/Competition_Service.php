@@ -13,6 +13,7 @@ namespace Racketmanager\Services;
 use Closure;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Factory;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Championship_Rounds_Request_DTO;
 use Racketmanager\Domain\DTO\Competition\Competition_Overview_DTO;
 use Racketmanager\Domain\Competition\Event;
@@ -54,12 +55,13 @@ class Competition_Service {
     private ?Fixture_Repository_Interface $fixture_repository = null;
     /** @var (Closure():League_Service)|null */
     private ?Closure $league_service_factory;
+    private ?Option_Service $option_service = null;
 
     /**
      * Constructor
      *
      */
-    public function __construct( RacketManager $plugin_instance, Competition_Repository_Interface $competition_repository, Club_Repository_Interface $club_repository, Event_Repository_Interface $event_repository, League_Repository_Interface $league_repository , League_Team_Repository_Interface $league_team_repository, Season_Repository_Interface $season_repository , Team_Repository_Interface $team_repository, ?Fixture_Repository_Interface $fixture_repository = null, ?callable $league_service_factory = null ) {
+    public function __construct( RacketManager $plugin_instance, Competition_Repository_Interface $competition_repository, Club_Repository_Interface $club_repository, Event_Repository_Interface $event_repository, League_Repository_Interface $league_repository , League_Team_Repository_Interface $league_team_repository, Season_Repository_Interface $season_repository , Team_Repository_Interface $team_repository, ?Fixture_Repository_Interface $fixture_repository = null, ?callable $league_service_factory = null, ?Option_Service $option_service = null ) {
         $this->racketmanager          = $plugin_instance;
         $this->competition_repository = $competition_repository;
         $this->club_repository        = $club_repository;
@@ -70,6 +72,7 @@ class Competition_Service {
         $this->team_repository        = $team_repository;
         $this->fixture_repository     = $fixture_repository ?? ( isset( $this->racketmanager->container ) && $this->racketmanager->container->has( 'fixture_repository' ) ? $this->racketmanager->container->get( 'fixture_repository' ) : null );
         $this->league_service_factory = $league_service_factory === null ? null : Closure::fromCallable( $league_service_factory );
+        $this->option_service         = $option_service;
     }
 
     private function deletion_league_service(): League_Service {
@@ -862,7 +865,7 @@ class Competition_Service {
         } else {
             $season_data                   = new stdClass();
             $season_data->season           = $season->name;
-            $season_data->num_match_days   = Util::get_default_match_days( $competition->get_type() );
+            $season_data->num_match_days   = Util::get_default_match_days( $competition->get_type(), null, $this->option_service, $this->club_repository );
             $season_data->match_dates      = array();
             $season_data->fixed_dates      = $competition->settings['fixed_dates'] ?? null;
             $season_data->home_away        = $competition->settings['home_away'] ?? null;
@@ -875,7 +878,7 @@ class Competition_Service {
         $season_data->date_end         = $season->date_end;
         $season_data->competition_code = $season->competition_code;
         $season_data->venue            = $season->venue;
-        $season_data->num_match_days   = $season->num_match_days ?? Util::get_default_match_days( $competition->get_type() );
+        $season_data->num_match_days   = $season->num_match_days ?? Util::get_default_match_days( $competition->get_type(), null, $this->option_service, $this->club_repository );
         $season_data->match_dates      = $season->match_dates ?? array();
         $seasons[ $season->name ]      = $season_data;
         if ( $new_season ) {

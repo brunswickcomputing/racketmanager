@@ -174,10 +174,13 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'season_repository' ),
             $c->get( 'team_repository' ),
             $c->get( 'fixture_repository' ),
-            fn() => $c->get( 'league_service' )
+            fn() => $c->get( 'league_service' ),
+            $c->get( 'option_service' )
         ) );
 
         $container->set( 'competition_notification_service', fn( Simple_Container $c ) => new Competition_Notification_Service(
+            $c->get( 'option_service' ),
+            $c->get( 'club_repository' ),
             $c->get( 'mailer' ),
             $c->get( 'event_repository' ),
             $c->get( 'league_query_service' ),
@@ -205,6 +208,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'competition_notification_service' ),
             fn() => $c->get( 'league_query_service' )
         ) );
+        $container->set( League_Service::class, fn( Simple_Container $c ): League_Service => $c->get( 'league_service' ) );
 
         $container->set( 'standings_service', fn( Simple_Container $c ) => new Standings_Service(
             $c->get( 'league_repository' ),
@@ -239,7 +243,8 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
                 $c->get( 'finance_service' ),
                 $c->get( 'league_service' ),
                 $c->get( 'mailer' ),
-                $c->get( 'league_repository' )
+                $c->get( 'league_repository' ),
+                $c->get( 'option_service' )
             );
             $c->get( 'fixture_link_service' )->set_tournament_service( $service );
             return $service;
@@ -261,7 +266,10 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'notify_service' ),
             $c->get( 'event_query_service' ),
             $c->get( 'mailer' ),
-            $c->get( 'option_gateway' )
+            $c->get( 'option_gateway' ),
+            $c->get( 'option_service' ),
+            $c->get( 'player_repository' ),
+            $c->get( 'event_repository' )
         ) );
 
         // Competition Queries

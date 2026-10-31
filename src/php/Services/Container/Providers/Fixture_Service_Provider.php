@@ -159,6 +159,7 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             $c->get( 'fixture_permission_service' ),
             $c->get( 'fixture_detail_service' )
         ) );
+        $container->set( Fixture_Service::class, fn( Simple_Container $c ): Fixture_Service => $c->get( 'fixture_service' ) );
 
         $container->set( 'fixture_result_manager', function ( Simple_Container $c ) {
             $service_provider = $c->get( 'fixture_service_provider' );
@@ -212,6 +213,8 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
         $container->set( 'result_service', fn( Simple_Container $c ) => new Result_Service(
             $c->get( 'fixture_repository' ),
             $c->get( 'team_repository' ),
+            $c->get( 'option_service' ),
+            $c->get( 'shortcode_template_renderer' ),
             $c->get( 'mailer' ),
             $c->get( 'league_repository' )
         ) );
@@ -231,7 +234,7 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
         } );
 
         // Finder
-        $container->set( 'fixture_listing_finder', fn() => new Legacy_Fixture_Listing_Finder( $app ) );
+        $container->set( 'fixture_listing_finder', fn( Simple_Container $c ) => new Legacy_Fixture_Listing_Finder( $c->get( 'fixture_repository' ) ) );
 
         // Query Handlers
         $container->set( 'get_fixture_details_handler', fn( Simple_Container $c ) => new Get_Fixture_Details_Handler(

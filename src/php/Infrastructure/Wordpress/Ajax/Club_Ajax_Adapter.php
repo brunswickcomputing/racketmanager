@@ -14,7 +14,9 @@ use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\Repositories\Club_Role_Repository;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
 use Racketmanager\Repositories\User_Repository;
 use Racketmanager\Services\Club_Service;
@@ -38,10 +40,21 @@ class Club_Ajax_Adapter {
         private Club_Service $club_service,
         private Registration_Service $registration_service,
         private ?User_Repository_Interface $user_repository = null,
-        private ?Club_Role_Repository_Interface $club_role_repository = null
+        private ?Club_Role_Repository_Interface $club_role_repository = null,
+        private ?Club_Repository_Interface $club_repository = null,
+        private ?Player_Repository_Interface $player_repository = null
     ) {
         $this->user_repository      = $this->user_repository ?? new User_Repository();
         $this->club_role_repository = $this->club_role_repository ?? new Club_Role_Repository();
+    }
+
+    private function create_validator(): Validator_Club {
+        return new Validator_Club(
+            $this->club_role_repository,
+            $this->player_repository,
+            $this->user_repository,
+            $this->club_repository
+        );
     }
 
     public function logged_out(): Response {
@@ -77,7 +90,7 @@ class Club_Ajax_Adapter {
         }
 
         $command   = Update_Club_Command::from_post( $request );
-        $validator = new Validator_Club( $this->club_role_repository, user_repository: $this->user_repository );
+        $validator = $this->create_validator();
         $validator = $validator->club( $command->club_id !== null ? (string) $command->club_id : null );
         $validator = $validator->address( $command->address );
         $validator = $validator->telephone( $command->match_secretary_contact_no, 'matchSecretaryContactNo', true );
@@ -122,7 +135,7 @@ class Club_Ajax_Adapter {
         }
 
         $command   = Club_Player_Request_Command::from_post( $request, (int) wp_get_current_user()->ID );
-        $validator = new Validator_Club( $this->club_role_repository, user_repository: $this->user_repository );
+        $validator = $this->create_validator();
         try {
             $response = $this->registration_service->register_player_to_club( $command->club_id, $command->user_id, $request );
             if ( is_wp_error( $response ) ) {
@@ -191,7 +204,7 @@ class Club_Ajax_Adapter {
         }
 
         $command   = Set_Club_Role_Command::from_post( $request );
-        $validator = new Validator_Club( $this->club_role_repository, user_repository: $this->user_repository );
+        $validator = $this->create_validator();
         $validator = $validator->club( $command->club_id !== null ? (string) $command->club_id : null );
         $validator = $validator->club_role( $command->club_role_id );
         $validator = $validator->user( $command->user_id );

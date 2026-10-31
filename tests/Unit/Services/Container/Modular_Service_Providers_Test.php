@@ -81,6 +81,8 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has( 'finance_service' ) );
         $this->assertTrue( $container->has( 'security_service' ) );
         $this->assertTrue( $container->has( 'legacy_user_factory' ) );
+        $this->assertTrue( $container->has( 'option_service' ) );
+        $this->assertTrue( $container->has( \Racketmanager\Infrastructure\Wordpress\Options\Option_Service::class ) );
     }
 
     public function test_club_service_provider_registers_expected_keys(): void {
@@ -93,8 +95,10 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has( 'club_role_repository' ) );
         $this->assertTrue( $container->has( 'team_repository' ) );
         $this->assertTrue( $container->has( 'club_service' ) );
+        $this->assertTrue( $container->has( \Racketmanager\Services\Club_Service::class ) );
         $this->assertTrue( $container->has( 'registration_service' ) );
         $this->assertTrue( $container->has( 'team_service' ) );
+        $this->assertTrue( $container->has( \Racketmanager\Services\Team_Service::class ) );
         $this->assertFalse( $container->has( 'club_presenter' ) );
     }
 
@@ -121,6 +125,7 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has( 'rubber_repository' ) );
         $this->assertTrue( $container->has( 'result_repository' ) );
         $this->assertTrue( $container->has( 'fixture_service' ) );
+        $this->assertTrue( $container->has( \Racketmanager\Services\Fixture_Service::class ) );
         $this->assertTrue( $container->has( 'fixture_result_manager' ) );
         $this->assertTrue( $container->has( 'fixture_permission_service' ) );
         $this->assertTrue( $container->has( 'fixture_detail_service' ) );
@@ -139,6 +144,7 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has( 'tournament_repository' ) );
         $this->assertTrue( $container->has( 'competition_service' ) );
         $this->assertTrue( $container->has( 'league_service' ) );
+        $this->assertTrue( $container->has( \Racketmanager\Services\League_Service::class ) );
         $this->assertTrue( $container->has( 'standings_service' ) );
         $this->assertTrue( $container->has( 'knockout_progression_service' ) );
         $this->assertTrue( $container->has( 'promotion_relegation_service' ) );
@@ -455,5 +461,38 @@ class Modular_Service_Providers_Test extends TestCase {
 
         $handler = $container->get( 'get_fixture_details_handler' );
         $this->assertInstanceOf( \Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Handler::class, $handler );
+    }
+
+    public function test_container_boot_wires_rest_account_and_export_adapters(): void {
+        $container = Container_Bootstrap::boot( $this->app );
+
+        $rest_adapter = $container->get( 'rest_controller_adapter' );
+        $this->assertInstanceOf( \Racketmanager\Infrastructure\Wordpress\Rest\Rest_Controller_Adapter::class, $rest_adapter );
+        $this->assertSame(
+            $container->get( 'league_repository' ),
+            ( new \ReflectionProperty( $rest_adapter, 'league_repository' ) )->getValue( $rest_adapter )
+        );
+        $this->assertSame(
+            $container->get( 'team_repository' ),
+            ( new \ReflectionProperty( $rest_adapter, 'team_repository' ) )->getValue( $rest_adapter )
+        );
+        $this->assertSame(
+            $container->get( 'competition_service' ),
+            ( new \ReflectionProperty( $rest_adapter, 'competition_service' ) )->getValue( $rest_adapter )
+        );
+
+        $account_adapter = $container->get( 'account_ajax_adapter' );
+        $this->assertInstanceOf( \Racketmanager\Infrastructure\Wordpress\Ajax\Account_Ajax_Adapter::class, $account_adapter );
+        $this->assertSame(
+            $container->get( 'option_service' ),
+            ( new \ReflectionProperty( $account_adapter, 'option_service' ) )->getValue( $account_adapter )
+        );
+
+        $export_adapter = $container->get( 'export_delivery_adapter' );
+        $this->assertInstanceOf( \Racketmanager\Infrastructure\Wordpress\Export\Export_Delivery_Adapter::class, $export_adapter );
+        $this->assertSame(
+            $this->app,
+            ( new \ReflectionProperty( $export_adapter, 'racketmanager' ) )->getValue( $export_adapter )
+        );
     }
 }

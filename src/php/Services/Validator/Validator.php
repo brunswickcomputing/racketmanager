@@ -102,7 +102,6 @@ class Validator {
         ?League_Repository_Interface $league_repository = null,
         ?User_Repository_Interface $user_repository = null
     ) {
-        global $racketmanager;
         $this->error        = false;
         $this->err_flds     = array();
         $this->err_msgs     = array();
@@ -121,67 +120,6 @@ class Validator {
         $this->event_repository     = $event_repository;
         $this->league_repository    = $league_repository;
         $this->user_repository      = $user_repository;
-
-        $c = $racketmanager->container ?? null;
-        if ( $c && method_exists( $c, 'get' ) ) {
-            $this->team_repository   ??= $this->repository_from_container( $c, 'team_repository', Team_Repository_Interface::class );
-            $this->player_repository ??= $this->repository_from_container( $c, 'player_repository', Player_Repository_Interface::class );
-            $this->club_repository   ??= $this->repository_from_container( $c, 'club_repository', Club_Repository_Interface::class );
-            $this->event_repository  ??= $this->repository_from_container( $c, 'event_repository', Event_Repository_Interface::class );
-            $this->league_repository ??= $this->repository_from_container( $c, 'league_repository', League_Repository_Interface::class );
-            $this->user_repository   ??= $this->repository_from_container( $c, 'user_repository', User_Repository_Interface::class );
-            if ( null === $this->competition_service ) {
-                try {
-                    $comp = $c->get( 'competition_service' );
-                    $this->competition_service = $comp instanceof Competition_Service ? $comp : null;
-                } catch ( \Throwable ) {
-                    $this->competition_service = null;
-                }
-            }
-            if ( null === $this->club_service ) {
-                try {
-                    $club = $c->get( 'club_service' );
-                    $this->club_service = $club instanceof Club_Service ? $club : null;
-                } catch ( \Throwable ) {
-                    $this->club_service = null;
-                }
-            }
-            if ( null === $this->player_service ) {
-                try {
-                    $player = $c->get( 'player_service' );
-                    $this->player_service = $player instanceof Player_Service ? $player : null;
-                } catch ( \Throwable ) {
-                    $this->player_service = null;
-                }
-            }
-            if ( null === $this->registration_service ) {
-                try {
-                    $reg = $c->get( 'registration_service' );
-                    $this->registration_service = $reg instanceof Registration_Service ? $reg : null;
-                } catch ( \Throwable ) {
-                    $this->registration_service = null;
-                }
-            }
-        }
-    }
-
-    /**
-     * Resolve a repository from the container, ignoring missing / wrongly typed entries.
-     *
-     * @template T of object
-     * @param class-string<T> $interface
-     * @return T|null
-     */
-    private function repository_from_container( object $c, string $key, string $interface ): ?object {
-        try {
-            if ( method_exists( $c, 'has' ) && ! $c->has( $key ) ) {
-                return null;
-            }
-            $repository = $c->get( $key );
-            return $repository instanceof $interface ? $repository : null;
-        } catch ( \Throwable ) {
-            return null;
-        }
     }
 
     protected function team_repository(): Team_Repository_Interface {

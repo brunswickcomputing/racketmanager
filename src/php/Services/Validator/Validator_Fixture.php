@@ -13,8 +13,20 @@ namespace Racketmanager\Services\Validator;
 use Racketmanager\Domain\Scoring\Scoring_Context;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Registration_Not_Found_Exception;
+use Racketmanager\Repositories\Fixture_Repository;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
+use Racketmanager\Repositories\Rubber_Repository;
+use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Competition_Service;
+use Racketmanager\Services\Player_Service;
+use Racketmanager\Services\Registration_Service;
 
 /**
  * Class to implement the Match Validator object
@@ -40,50 +52,40 @@ class Validator_Fixture extends Validator {
 
     public function __construct(
         ?Fixture_Repository_Interface $fixture_repository = null,
-        ?Rubber_Repository_Interface $rubber_repository = null
+        ?Rubber_Repository_Interface $rubber_repository = null,
+        ?Competition_Service $competition_service = null,
+        ?Club_Service $club_service = null,
+        ?Player_Service $player_service = null,
+        ?Registration_Service $registration_service = null,
+        ?Team_Repository_Interface $team_repository = null,
+        ?Player_Repository_Interface $player_repository = null,
+        ?Club_Repository_Interface $club_repository = null,
+        ?Event_Repository_Interface $event_repository = null,
+        ?League_Repository_Interface $league_repository = null,
+        ?User_Repository_Interface $user_repository = null
     ) {
-        parent::__construct();
-        global $racketmanager;
-        if ( null === $fixture_repository && isset( $racketmanager->container ) ) {
-            if ( method_exists( $racketmanager->container, 'has' ) ) {
-                if ( $racketmanager->container->has( 'fixture_repository' ) ) {
-                    $repo = $racketmanager->container->get( 'fixture_repository' );
-                    if ( $repo instanceof Fixture_Repository_Interface ) {
-                        $fixture_repository = $repo;
-                    }
-                }
-            } else {
-                try {
-                    $repo = $racketmanager->container->get( 'fixture_repository' );
-                    if ( $repo instanceof Fixture_Repository_Interface ) {
-                        $fixture_repository = $repo;
-                    }
-                } catch ( \Throwable ) {
-                    $fixture_repository = null;
-                }
-            }
-        }
-        if ( null === $rubber_repository && isset( $racketmanager->container ) ) {
-            if ( method_exists( $racketmanager->container, 'has' ) ) {
-                if ( $racketmanager->container->has( 'rubber_repository' ) ) {
-                    $repo = $racketmanager->container->get( 'rubber_repository' );
-                    if ( $repo instanceof Rubber_Repository_Interface ) {
-                        $rubber_repository = $repo;
-                    }
-                }
-            } else {
-                try {
-                    $repo = $racketmanager->container->get( 'rubber_repository' );
-                    if ( $repo instanceof Rubber_Repository_Interface ) {
-                        $rubber_repository = $repo;
-                    }
-                } catch ( \Throwable ) {
-                    $rubber_repository = null;
-                }
-            }
-        }
+        parent::__construct(
+            $competition_service,
+            $club_service,
+            $player_service,
+            $registration_service,
+            $team_repository,
+            $player_repository,
+            $club_repository,
+            $event_repository,
+            $league_repository,
+            $user_repository
+        );
         $this->fixture_repository = $fixture_repository;
         $this->rubber_repository  = $rubber_repository;
+    }
+
+    protected function fixture_repository(): Fixture_Repository_Interface {
+        return $this->fixture_repository ??= new Fixture_Repository();
+    }
+
+    protected function rubber_repository(): Rubber_Repository_Interface {
+        return $this->rubber_repository ??= new Rubber_Repository();
     }
 
     /**
@@ -115,7 +117,7 @@ class Validator_Fixture extends Validator {
             $this->err_flds[] = $error_field;
             $this->err_msgs[] = __( 'Match id not supplied', 'racketmanager' );
         } else {
-            $match = $this->fixture_repository ? $this->fixture_repository->find_by_id( (int) $match_id ) : null;
+            $match = $this->fixture_repository()->find_by_id( (int) $match_id );
             if ( ! $match ) {
                 $this->error      = true;
                 $this->err_flds[] = $error_field;
@@ -206,7 +208,7 @@ class Validator_Fixture extends Validator {
             $this->err_flds[] = $error_field;
             $this->err_msgs[] = __( 'Rubber id not supplied', 'racketmanager' );
         } else {
-            $rubber = $this->rubber_repository ? $this->rubber_repository->find_by_id( (int) $rubber_id ) : null;
+            $rubber = $this->rubber_repository()->find_by_id( (int) $rubber_id );
             if ( ! $rubber ) {
                 $this->error      = true;
                 $this->err_flds[] = $error_field;

@@ -61,6 +61,7 @@ use Racketmanager\Repositories\Season_Repository;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Export\Export_Service;
 use Racketmanager\Services\Finance_Service;
+use Racketmanager\Services\Login;
 use Racketmanager\Services\Mail\Mail_Filter_Service;
 use Racketmanager\Services\Mail\Mail_Filter_Service_Interface;
 use Racketmanager\Services\Notification\Notification_Service;
@@ -117,6 +118,11 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->set( 'page_title_service', fn(): Page_Title_Service => new Page_Title_Service( $app?->site_name ) );
         $container->set( Page_Title_Service::class, fn( Simple_Container $c ): Page_Title_Service => $c->get( 'page_title_service' ) );
         $container->set( Page_Title_Service_Interface::class, fn( Simple_Container $c ): Page_Title_Service => $c->get( 'page_title_service' ) );
+        $container->set( 'login', fn( Simple_Container $c ): Login => new Login(
+            $c->get( 'option_service' ),
+            $c->get( 'shortcode_template_renderer' )
+        ) );
+        $container->set( Login::class, fn( Simple_Container $c ): Login => $c->get( 'login' ) );
         $container->set( 'mail_filter_service', fn( Simple_Container $c ): Mail_Filter_Service => new Mail_Filter_Service( $c->get( 'message_repository' ) ) );
         $container->set( Mail_Filter_Service::class, fn( Simple_Container $c ): Mail_Filter_Service => $c->get( 'mail_filter_service' ) );
         $container->set( Mail_Filter_Service_Interface::class, fn( Simple_Container $c ): Mail_Filter_Service => $c->get( 'mail_filter_service' ) );
@@ -172,7 +178,8 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             $c->get( 'competition_service' ),
             $c->get( 'player_service' ),
             $c->get( 'payment_gateway' ),
-            $c->get( 'mailer' )
+            $c->get( 'mailer' ),
+            $c->get( 'option_service' )
         ) );
 
         $container->set( 'notify_service', fn( Simple_Container $c ) => new Notify_Service( $app, $c->get( 'mailer' ) ) );
@@ -186,7 +193,8 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             $c->get( 'racketmanager_app' ),
             $c->get( 'mailer' ),
             $c->get( 'event_query_service' ),
-            fn() => $c->get( 'league_query_service' )
+            fn() => $c->get( 'league_query_service' ),
+            $c->get( 'option_service' )
         ) );
 
         // Export Services
@@ -197,7 +205,11 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             $c->get( 'club_repository' )
         ) );
         $container->set( Data_Exporter_Interface::class, fn( Simple_Container $c ): Data_Exporter_Interface => $c->get( 'exporter' ) );
-        $container->set( 'rest_controller_adapter', fn( Simple_Container $c ) => new Rest_Controller_Adapter( $c->get( 'league_repository' ) ) );
+        $container->set( 'rest_controller_adapter', fn( Simple_Container $c ) => new Rest_Controller_Adapter(
+            $c->get( 'league_repository' ),
+            $c->get( 'team_repository' ),
+            $c->get( 'competition_service' )
+        ) );
         $container->set( 'export_delivery_adapter', fn( Simple_Container $c ) => new Export_Delivery_Adapter(
             $c->get( 'racketmanager_app' )
         ) );
@@ -208,7 +220,8 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             $c->get( 'security_service' ),
             $c->get( 'json_response_factory' ),
             $c->get( 'message_repository' ),
-            $c->get( 'user_repository' )
+            $c->get( 'user_repository' ),
+            $c->get( 'option_service' )
         ) );
         $container->set( 'account_ajax_controller', fn( Simple_Container $c ) => new Account_Ajax_Controller( $app, $c->get( 'account_ajax_adapter' ) ) );
 

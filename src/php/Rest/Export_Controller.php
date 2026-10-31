@@ -47,7 +47,11 @@ class Export_Controller extends WP_REST_Controller {
         } elseif ( $container && $container->has( 'rest_controller_adapter' ) ) {
             $this->adapter = $container->get( 'rest_controller_adapter' );
         } else {
-            $this->adapter = new Rest_Controller_Adapter( ( $container && $container->has( 'league_repository' ) ) ? $container->get( 'league_repository' ) : null );
+            $this->adapter = new Rest_Controller_Adapter(
+                ( $container && $container->has( 'league_repository' ) ) ? $container->get( 'league_repository' ) : null,
+                ( $container && $container->has( 'team_repository' ) ) ? $container->get( 'team_repository' ) : null,
+                ( $container && $container->has( 'competition_service' ) ) ? $container->get( 'competition_service' ) : null
+            );
         }
         $this->namespace     = 'racketmanager/v1';
         $this->rest_base     = 'export';

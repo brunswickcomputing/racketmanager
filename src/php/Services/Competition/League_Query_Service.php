@@ -279,7 +279,7 @@ class League_Query_Service {
 			return false;
 		}
 		if ( str_contains( (string) ( $team->title ?? '' ), '_' ) ) {
-			$team_name = Util::generate_team_name( $team->title );
+			$team_name = Util::generate_team_name( $team->title, $this->optional_fixture_repository() );
 			if ( ! empty( $team_name ) ) {
 				$team->title = $team_name;
 			}

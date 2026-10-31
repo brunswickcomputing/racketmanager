@@ -12,6 +12,12 @@ namespace Racketmanager\Util;
 
 use NumberFormatter;
 use Racketmanager\Domain\Shared\Seo_Slug;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
+use Racketmanager\Repositories\Club_Repository;
+use Racketmanager\Repositories\Fixture_Repository;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Services\Club_Service;
 use stdClass;
 
 defined( 'ABSPATH' ) || die( 'Access denied !' );
@@ -616,10 +622,11 @@ class Util {
      * Generate team name for winner/loser of previous match
      *
      * @param string $title
+     * @param Fixture_Repository_Interface|null $fixture_repository
      *
      * @return string|null
      */
-    public static function generate_team_name( string $title ): ?string {
+    public static function generate_team_name( string $title, ?Fixture_Repository_Interface $fixture_repository = null ): ?string {
         $name_array = explode( '_', $title );
         if ( '1' === $name_array[0] ) {
             $team_name = __( 'Winner of', 'racketmanager' );
@@ -628,12 +635,9 @@ class Util {
         } else {
             $team_name = null;
         }
-        if ( ! empty( $team_name ) && is_numeric( $name_array[2] ) ) {
-            global $racketmanager;
-            $fixture_repo = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
-                ? $racketmanager->container->get( 'fixture_repository' )
-                : null;
-            $match = $fixture_repo ? $fixture_repo->find_by_id_with_relations( (int) $name_array[2] ) : null;
+        if ( ! empty( $team_name ) && isset( $name_array[2] ) && is_numeric( $name_array[2] ) ) {
+            $fixture_repo = $fixture_repository ?? new Fixture_Repository();
+            $match        = $fixture_repo->find_by_id_with_relations( (int) $name_array[2] );
             if ( $match ) {
                 $home_title = isset( $match->teams['home']->title ) ? (string) $match->teams['home']->title : '';
                 $away_title = isset( $match->teams['away']->title ) ? (string) $match->teams['away']->title : '';
@@ -689,29 +693,39 @@ class Util {
      * Get default number of match days
      *
      * @param string $type competition type.
+     * @param Club_Service|null $club_service
+     * @param Option_Service|null $option_service
+     * @param Club_Repository_Interface|null $club_repository
      *
      * @return int default number of match days.
      */
-    public static function get_default_match_days( string $type ): int {
-        global $racketmanager;
-        $c                      = $racketmanager->container;
-        $club_service           = $c->get( 'club_service' );
-        $options                = $racketmanager->get_options();
-        $rm_options             = $options['championship'];
+    public static function get_default_match_days(
+        string $type,
+        ?Club_Service $club_service = null,
+        ?Option_Service $option_service = null,
+        ?Club_Repository_Interface $club_repository = null
+    ): int {
+        $option_service         ??= new Option_Service();
+        $options                = $option_service->get_options();
+        $rm_options             = $options['championship'] ?? array();
         $default_num_match_days = $rm_options['numRounds'] ?? 1;
         switch ( $type ) {
             case 'cup':
-                $args['count'] = true;
-                $args['type']  = 'affiliated';
-                $num_clubs     = $club_service->get_clubs( $args );
+                $args      = array(
+                    'count' => true,
+                    'type'  => 'affiliated',
+                );
+                $num_clubs = $club_service
+                    ? $club_service->get_clubs( $args )
+                    : ( $club_repository ?? new Club_Repository() )->find_all( $args );
                 if ( $num_clubs ) {
-                    $num_match_days = ceil( log( $num_clubs, 2 ) );
+                    $num_match_days = (int) ceil( log( (float) $num_clubs, 2 ) );
                 } else {
-                    $num_match_days = $default_num_match_days;
+                    $num_match_days = (int) $default_num_match_days;
                 }
                 break;
             case 'tournament':
-                $num_match_days = $default_num_match_days;
+                $num_match_days = (int) $default_num_match_days;
                 break;
             default:
                 $num_match_days = 0;

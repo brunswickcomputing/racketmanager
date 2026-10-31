@@ -112,12 +112,6 @@ class RacketManager {
      * @var NumberFormatter|null
      */
     public ?NumberFormatter $currency_fmt = null;
-    public object $ajax_account;
-    public object $ajax_club;
-    public object $ajax_finance;
-    public object $ajax_frontend;
-    public object $ajax_fixture;
-    public object $ajax_tournament ;
     public object $login;
     public object $shortcodes;
     public object $shortcodes_general;
@@ -562,49 +556,6 @@ class RacketManager {
     }
 
     /**
-     * Get clubs from the database
-     *
-     * @param array $args query arguments.
-     *
-     * @return array|int
-     */
-    public function get_clubs( array $args = array() ): array|int {
-        $args = array_merge( array( 'type' => false ), $args );
-        return $this->resolve_service( 'club_repository' )->find_all( $args );
-    }
-
-    /**
-     * Get events from the database
-     *
-     * @param array $args query arguments.
-     *
-     * @return array
-     */
-    public function get_events( array $args = array() ): array {
-        return $this->resolve_service( 'event_repository' )->find_all( $args );
-    }
-    /**
-     * Get leagues from the database
-     *
-     * @param array $args query arguments.
-     *
-     * @return array
-     */
-    public function get_leagues( array $args = array() ): array {
-        return $this->resolve_service( 'league_repository' )->find_all( $args );
-    }
-    /**
-     * Get Team ID for a given string
-     *
-     * @param string $title title.
-     *
-     * @return int
-     */
-    public function get_team_id( string $title ): int {
-        return (int) ( $this->resolve_service( 'team_repository' )->find_id_by_title( $title ) ?? 0 );
-    }
-
-    /**
      * Check to see if a player is in a club (based on a team)
      *
      * @param array $args query arguments.
@@ -643,43 +594,6 @@ class RacketManager {
         }
 
         return $player->display_name;
-    }
-
-    /**
-     * Get matches without using a league object
-     *
-     * @param array $match_args query arguments.
-     *
-     * @return array|int $matches
-     */
-    public function get_matches( array $match_args ): array|int {
-        return $this->resolve_service( 'fixture_repository' )->find_all( $match_args );
-    }
-
-    /**
-     * Show winners
-     *
-     * @param string $season season.
-     * @param int $competition_id competition id.
-     * @param string $competition_type competition type.
-     * @param boolean $group_by group by type.
-     *
-     * @return array|false of winners|false.
-     */
-    public function get_winners( string $season, int $competition_id, string $competition_type = 'tournament', bool $group_by = false ): false|array {
-        return $this->resolve_service( 'competition_repository' )->get_winners( $season, $competition_id, $competition_type, $group_by );
-    }
-
-    /**
-     * Get confirmation email
-     *
-     * @param string $type type of confirmation email.
-     *
-     * @return string $email
-     */
-    public function get_confirmation_email( string $type ): string {
-        $options = $this->get_options();
-        return $options[$type]['resultConfirmationEmail'] ?? '';
     }
 
     /**

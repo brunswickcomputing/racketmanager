@@ -24,9 +24,16 @@ final class Export_Delivery_Adapter_Test extends TestCase {
         parent::setUp();
         $this->backup_globals();
         $this->racketmanager      = $this->createStub( RacketManager::class );
-        $GLOBALS['racketmanager'] = $this->racketmanager;
         $_GET                     = [];
         wp_stubs_reset_export_rest_globals();
+    }
+
+    public function test_constructor_does_not_fall_back_to_global_racketmanager(): void {
+        $GLOBALS['racketmanager'] = $this->racketmanager;
+        $adapter                  = new Export_Delivery_Adapter();
+
+        $ref = new \ReflectionProperty( Export_Delivery_Adapter::class, 'racketmanager' );
+        $this->assertNull( $ref->getValue( $adapter ) );
     }
 
     protected function tearDown(): void {

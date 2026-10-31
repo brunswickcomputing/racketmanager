@@ -423,10 +423,20 @@ class Fixture_Ajax_Adapter {
     }
 
     /**
+     * Build a fixture validator wired with the container's repositories (when registered).
+     */
+    private function create_validator(): Validator_Fixture {
+        return new Validator_Fixture(
+            fixture_repository: $this->container->has( 'fixture_repository' ) ? $this->container->get( 'fixture_repository' ) : null,
+            rubber_repository: $this->container->has( 'rubber_repository' ) ? $this->container->get( 'rubber_repository' ) : null
+        );
+    }
+
+    /**
      * Update match header
      */
     public function update_fixture_header( array $post = [] ): Response {
-        $validator = new Validator_Fixture();
+        $validator = $this->create_validator();
         $validator = $validator->check_security_token( 'security', 'ajax-nonce', $post );
 
         try {
@@ -466,7 +476,7 @@ class Fixture_Ajax_Adapter {
      * Update match details for team matches only
      */
     public function update_team_match( array $post = [] ): Response {
-        $validator = new Validator_Fixture();
+        $validator = $this->create_validator();
         $validator->check_security_token( 'racketmanager_nonce', 'rubbers-match', $post );
 
         try {

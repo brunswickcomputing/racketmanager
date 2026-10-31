@@ -9,6 +9,7 @@ use Racketmanager\Application\Account\Commands\Login_Command;
 use Racketmanager\Application\Account\Commands\Reset_Password_Command;
 use Racketmanager\Application\Account\Commands\Update_Account_Command;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;
@@ -32,7 +33,8 @@ class Account_Ajax_Adapter {
         private Security_Service_Interface $security_service,
         private Json_Response_Factory_Interface $response_factory,
         private ?Message_Repository_Interface $message_repository = null,
-        private ?User_Repository_Interface $user_repository = null
+        private ?User_Repository_Interface $user_repository = null,
+        private readonly ?Option_Service $option_service = null
     ) {
         $this->message_repository = $this->message_repository ?? new Message_Repository();
         $this->user_repository    = $this->user_repository ?? new User_Repository();
@@ -289,8 +291,7 @@ class Account_Ajax_Adapter {
             $err_msg[] = Util::get_error_message( 'gender_field_empty' );
         }
         if ( empty( $command->btm ) ) {
-            global $racketmanager;
-            $player_options = isset( $racketmanager ) ? $racketmanager->get_options( 'rosters' ) : [];
+            $player_options = $this->option_service ? $this->option_service->get_options( 'rosters' ) : [];
             if ( isset( $player_options['btm'] ) && '1' === $player_options['btm'] ) {
                 $valid     = false;
                 $err_fld[] = 'btm';

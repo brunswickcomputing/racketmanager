@@ -249,4 +249,39 @@ final class Option_Service_Test extends TestCase {
         self::assertSame( [ 'setting' => true ], $option_service->get_options( 'section' ) );
         self::assertSame( [ 'new_key' => 'new_val', 'section' => [ 'setting' => true ] ], $app->options );
     }
+
+    public function test_get_confirmation_email_returns_configured_email(): void {
+        $gateway = $this->createMock( Option_Gateway_Interface::class );
+        $options_data = [
+            'league'     => [ 'resultConfirmationEmail' => 'league-results@example.com' ],
+            'cup'        => [ 'resultConfirmationEmail' => 'cup-results@example.com' ],
+            'tournament' => [ 'resultConfirmationEmail' => 'tourney@example.com' ],
+        ];
+        $gateway->method( 'get_option' )->willReturnCallback(
+            fn( string $key, mixed $default = false ) => 'racketmanager' === $key ? $options_data : $default
+        );
+
+        $service = new Option_Service( $gateway );
+
+        self::assertSame( 'league-results@example.com', $service->get_confirmation_email( 'league' ) );
+        self::assertSame( 'cup-results@example.com', $service->get_confirmation_email( 'cup' ) );
+        self::assertSame( 'tourney@example.com', $service->get_confirmation_email( 'tournament' ) );
+    }
+
+    public function test_get_confirmation_email_returns_empty_string_when_missing(): void {
+        $gateway = $this->createMock( Option_Gateway_Interface::class );
+        $options_data = [
+            'league' => [ 'otherSetting' => 'value' ],
+            'cup'    => 'not_an_array',
+        ];
+        $gateway->method( 'get_option' )->willReturnCallback(
+            fn( string $key, mixed $default = false ) => 'racketmanager' === $key ? $options_data : $default
+        );
+
+        $service = new Option_Service( $gateway );
+
+        self::assertSame( '', $service->get_confirmation_email( 'league' ) );
+        self::assertSame( '', $service->get_confirmation_email( 'cup' ) );
+        self::assertSame( '', $service->get_confirmation_email( 'nonexistent' ) );
+    }
 }

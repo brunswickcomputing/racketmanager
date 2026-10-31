@@ -271,10 +271,6 @@ final class Rest_Controller_Adapter_Test extends TestCase {
     }
 
     public function test_build_match_response_with_real_fixture_entity(): void {
-        global $racketmanager;
-        $plugin = $this->createStub( RacketManager::class );
-        $container = new Simple_Container();
-
         $home_team = $this->createStub( Team::class );
         $home_team->method( 'get_name' )->willReturn( 'Park Tennis Club' );
 
@@ -294,10 +290,10 @@ final class Rest_Controller_Adapter_Test extends TestCase {
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_league_repository' )->willReturn( $league_repo );
 
-        $container->set( 'team_repository', fn() => $team_repo );
-        $container->set( 'competition_service', fn() => $comp_service );
-        $plugin->container = $container;
-        $racketmanager     = $plugin;
+        $adapter = new Rest_Controller_Adapter(
+            team_repository: $team_repo,
+            competition_service: $comp_service
+        );
 
         $fixture              = new Fixture();
         $fixture->id          = 99;
@@ -311,7 +307,7 @@ final class Rest_Controller_Adapter_Test extends TestCase {
         $fixture->date        = '2026-07-01 18:00:00';
         $fixture->start_time  = '18:00';
 
-        $dto = $this->adapter->build_match_response( $fixture );
+        $dto = $adapter->build_match_response( $fixture );
 
         self::assertSame( 'Men\'s Division 2', $dto->league );
         self::assertSame( 'Park Tennis Club', $dto->home_team );
@@ -327,10 +323,6 @@ final class Rest_Controller_Adapter_Test extends TestCase {
     }
 
     public function test_build_match_response_memoizes_and_handles_missing_teams(): void {
-        global $racketmanager;
-        $plugin = $this->createStub( RacketManager::class );
-        $container = new Simple_Container();
-
         $home_team = $this->createStub( Team::class );
         $home_team->method( 'get_name' )->willReturn( 'Park Tennis Club' );
 
@@ -354,11 +346,7 @@ final class Rest_Controller_Adapter_Test extends TestCase {
             throw new Team_Not_Found_Exception( 'Team 888 not found' );
         } );
 
-        $container->set( 'team_repository', fn() => $team_repo );
-        $plugin->container = $container;
-        $racketmanager     = $plugin;
-
-        $adapter = new Rest_Controller_Adapter();
+        $adapter = new Rest_Controller_Adapter( team_repository: $team_repo );
 
         $f1 = new Fixture();
         $f1->home_team = '10';
@@ -389,20 +377,26 @@ final class Rest_Controller_Adapter_Test extends TestCase {
         self::assertSame( 'Winner of Match 4', $dto3->away_team );
     }
 
-    /**
-     * Point the global plugin at a container without `competition_service`, so league titles can only
-     * come from the adapter's injected League_Repository_Interface.
-     */
-    private function use_container_without_competition_service(): void {
-        global $racketmanager;
-        $plugin            = $this->createStub( RacketManager::class );
-        $plugin->container = new Simple_Container();
-        $racketmanager     = $plugin;
+    public function test_build_match_response_resolves_league_title_through_competition_service(): void {
+        $league        = $this->createStub( League::class );
+        $league->title = 'Division 1';
+        $league->method( 'get_name' )->willReturn( '' );
+
+        $league_repo = $this->createMock( League_Repository_Interface::class );
+        $league_repo->expects( $this->once() )->method( 'find_by_id' )->with( 7 )->willReturn( $league );
+
+        $comp_service = $this->createStub( Competition_Service::class );
+        $comp_service->method( 'get_league_repository' )->willReturn( $league_repo );
+
+        $adapter = new Rest_Controller_Adapter( competition_service: $comp_service );
+
+        $f1            = new Fixture();
+        $f1->league_id = 7;
+
+        self::assertSame( 'Division 1', $adapter->build_match_response( $f1 )->league );
     }
 
     public function test_build_match_response_resolves_league_title_through_injected_repository_and_caches_it(): void {
-        $this->use_container_without_competition_service();
-
         $league        = $this->createStub( League::class );
         $league->title = 'Men\'s "Division" 2';
         $league->method( 'get_name' )->willReturn( '' );
@@ -423,8 +417,6 @@ final class Rest_Controller_Adapter_Test extends TestCase {
     }
 
     public function test_build_match_response_returns_empty_league_title_when_repository_finds_nothing(): void {
-        $this->use_container_without_competition_service();
-
         $league_repo = $this->createMock( League_Repository_Interface::class );
         $league_repo->expects( $this->once() )->method( 'find_by_id' )->with( 7 )->willReturn( null );
 
@@ -441,8 +433,6 @@ final class Rest_Controller_Adapter_Test extends TestCase {
     }
 
     public function test_build_match_response_never_queries_repository_for_zero_or_non_numeric_league_id(): void {
-        $this->use_container_without_competition_service();
-
         $league_repo = $this->createMock( League_Repository_Interface::class );
         $league_repo->expects( $this->never() )->method( 'find_by_id' );
 
@@ -460,8 +450,6 @@ final class Rest_Controller_Adapter_Test extends TestCase {
     }
 
     public function test_build_match_response_without_repository_leaves_league_title_empty(): void {
-        $this->use_container_without_competition_service();
-
         $adapter       = new Rest_Controller_Adapter();
         $f1            = new Fixture();
         $f1->league_id = 7;
@@ -470,12 +458,6 @@ final class Rest_Controller_Adapter_Test extends TestCase {
     }
 
     public function test_build_match_response_with_unplayed_fixture_omits_score_and_status(): void {
-        global $racketmanager;
-        $plugin = $this->createStub( RacketManager::class );
-        $container = new Simple_Container();
-        $plugin->container = $container;
-        $racketmanager     = $plugin;
-
         $fixture             = new Fixture();
         $fixture->id         = 100;
         $fixture->league_id  = null;

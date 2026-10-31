@@ -24,6 +24,7 @@ use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Event_Repository;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
@@ -34,7 +35,7 @@ use WP_Error;
  * Class to implement the Team Management Service
  */
 class Team_Service implements Fixture_Team_Resolver_Interface {
-    private Team_Repository $team_repository;
+    private Team_Repository_Interface $team_repository;
     private Club_Repository $club_repository;
     private Event_Repository $event_repository;
     private Event_Query_Service $event_query_service;
@@ -46,7 +47,7 @@ class Team_Service implements Fixture_Team_Resolver_Interface {
      *
      */
     public function __construct(
-        Team_Repository $team_repository,
+        Team_Repository_Interface $team_repository,
         Club_Repository $club_repository,
         Event_Repository $event_repository,
         Player_Service $player_service,
@@ -59,6 +60,17 @@ class Team_Service implements Fixture_Team_Resolver_Interface {
         $this->player_service     = $player_service;
         $this->fixture_repository = $fixture_repository;
         $this->event_query_service = $event_query_service ?? new Event_Query_Service( $event_repository, $fixture_repository );
+    }
+
+    /**
+     * Get Team ID for a given title/name
+     *
+     * @param string $title
+     *
+     * @return int|null
+     */
+    public function get_team_id( string $title ): ?int {
+        return $this->team_repository->find_id_by_name( $title );
     }
 
     /**

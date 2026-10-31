@@ -69,6 +69,13 @@ class Event_Query_Service {
 		return $this->fixture_repository;
 	}
 
+	private function optional_fixture_repository(): ?Fixture_Repository_Interface {
+		if ( $this->fixture_repository instanceof Closure ) {
+			$this->fixture_repository = ( $this->fixture_repository )();
+		}
+		return $this->fixture_repository instanceof Fixture_Repository_Interface ? $this->fixture_repository : null;
+	}
+
 	public function get_rubber_repository(): Rubber_Repository_Interface {
 		if ( $this->rubber_repository instanceof Closure ) {
 			$this->rubber_repository = ( $this->rubber_repository )();
@@ -305,7 +312,7 @@ class Event_Query_Service {
 			$event_team->roster = maybe_unserialize( $event_team->roster );
 			$event_team->club   = $club_repo->find_by_id( (int) $event_team->club_id );
 			if ( str_contains( (string) $event_team->name, '_' ) ) {
-				$team_name = Util::generate_team_name( (string) $event_team->name );
+				$team_name = Util::generate_team_name( (string) $event_team->name, $this->optional_fixture_repository() );
 				if ( ! empty( $team_name ) ) {
 					$event_team->title = $team_name;
 				}

@@ -40,19 +40,12 @@ class Validator_Fixture_Players_Involved_Test extends TestCase
             $this->club_service = $this->createStub(Club_Service::class);
             $this->player_service = $this->createStub(Player_Service::class);
 
-            $racketmanager = new stdClass();
-            $racketmanager->container = new class($this) {
-                private $test;
-                public function __construct($test) {
-                    $this->test = $test;
-                }
-                public function get($service) {
-                    return $this->test->get_mock_service($service);
-                }
-            };
-            $GLOBALS['racketmanager'] = $racketmanager;
-
-            $this->validator = new Validator_Fixture();
+            $this->validator = new Validator_Fixture(
+                registration_service: $this->registration_service,
+                competition_service: $this->competition_service,
+                club_service: $this->club_service,
+                player_service: $this->player_service
+            );
         }
 
         public function get_mock_service($service)

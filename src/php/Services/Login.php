@@ -11,7 +11,10 @@ declare( strict_types=1 );
 namespace Racketmanager\Services;
 
 use JetBrains\PhpStorm\NoReturn;
+use Racketmanager\Application\Ports\Template_Renderer_Interface;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\Util\Util;
+use RuntimeException;
 use WP_Error;
 use WP_User;
 
@@ -26,12 +29,23 @@ class Login {
      */
     private string $register_link = 'member-login?action=register';
 
+    private Option_Service $option_service;
+    private ?Template_Renderer_Interface $template_renderer;
+
     /**
      * Initialize shortcodes
      *
+     * @param Option_Service|null             $option_service Optional options service.
+     * @param Template_Renderer_Interface|null $template_renderer Optional template renderer.
      * @return void
      */
-    public function __construct() {
+    public function __construct(
+        ?Option_Service $option_service = null,
+        ?Template_Renderer_Interface $template_renderer = null
+    ) {
+        $this->option_service    = $option_service ?? new Option_Service();
+        $this->template_renderer = $template_renderer;
+
         add_action( 'wp_enqueue_scripts', array( $this, 'do_enqueue_login_scripts' ) );
         add_action( 'login_form_login', array( $this, 'redirect_to_custom_login' ) );
         add_action( 'wp_logout', array( $this, 'redirect_after_logout' ) );
@@ -98,19 +112,34 @@ class Login {
      * @return array
      */
     public function my_wp_new_user_notification_email( array $wp_new_user_notification_email, WP_User $user, string $blogname ): array {
-        global $racketmanager;
-
         $key                                       = get_password_reset_key( $user );
-        $vars['site_name']                         = $racketmanager->site_name;
-        $vars['site_url']                          = $racketmanager->site_url;
+        $vars['site_name']                         = $this->option_service->get_site_name();
+        $vars['site_url']                          = $this->option_service->get_site_url();
         $vars['user_login']                        = $user->user_login;
         $vars['display_name']                      = $user->display_name;
-        $vars['action_url']                        = $racketmanager->site_url . '/member-password-reset/?key=' . $key . '&login=' . rawurlencode( $user->user_login );
-        $vars['email_link']                        = $racketmanager->admin_email;
-        $wp_new_user_notification_email['message'] = $racketmanager->shortcodes->load_template( 'email-welcome', $vars, 'email' );
+        $vars['action_url']                        = $this->option_service->get_site_url() . '/member-password-reset/?key=' . $key . '&login=' . rawurlencode( $user->user_login );
+        $vars['email_link']                        = $this->option_service->get_admin_email();
+        $wp_new_user_notification_email['message'] = $this->render_template( 'email-welcome', $vars, 'email' );
         $wp_new_user_notification_email['headers'] = 'Content-Type: text/html; charset=UTF-8';
 
         return $wp_new_user_notification_email;
+    }
+
+    /**
+     * Render template using the injected template renderer.
+     *
+     * @param string            $template
+     * @param array<string, mixed> $vars
+     * @param false|string      $template_type
+     *
+     * @return string
+     */
+    private function render_template( string $template, array $vars, false|string $template_type = false ): string {
+        if ( null === $this->template_renderer ) {
+            throw new RuntimeException( 'Template renderer is required to render login templates.' );
+        }
+
+        return $this->template_renderer->render( $template, $vars, $template_type );
     }
 
     /**
@@ -133,15 +162,13 @@ class Login {
      * @return string email details.
      */
     public function racketmanager_retrieve_password_email( string $message, string $key, string $user_login, object $user_data ): string {
-        global $racketmanager;
-
         add_filter( 'wp_mail_content_type', array( $this, 'racketmanager_wp_email_content_type' ) );
-        $vars['site_name']    = $racketmanager->site_name;
-        $vars['site_url']     = $racketmanager->site_url;
+        $vars['site_name']    = $this->option_service->get_site_name();
+        $vars['site_url']     = $this->option_service->get_site_url();
         $vars['user_login']   = $user_login;
         $vars['display_name'] = $user_data->display_name;
-        $vars['action_url']   = $racketmanager->site_url . '/member-password-reset/?key=' . $key . '&login=' . rawurlencode( $user_login );
-        return $racketmanager->shortcodes->load_template( 'email-password-reset', $vars, 'email' );
+        $vars['action_url']   = $this->option_service->get_site_url() . '/member-password-reset/?key=' . $key . '&login=' . rawurlencode( $user_login );
+        return $this->render_template( 'email-password-reset', $vars, 'email' );
     }
     /**
      * Function to set password change email
@@ -153,14 +180,13 @@ class Login {
      * @return array
      */
     public function racketmanager_password_change_email( array $password_change_mail, array $user_data, array $user_data_new ): array {
-        global $racketmanager;
         add_filter( 'wp_mail_content_type', array( $this, 'racketmanager_wp_email_content_type' ) );
-        $vars['site_name']               = $racketmanager->site_name;
-        $vars['site_url']                = $racketmanager->site_url;
+        $vars['site_name']               = $this->option_service->get_site_name();
+        $vars['site_url']                = $this->option_service->get_site_url();
         $vars['user_login']              = $user_data['user_login'];
         $vars['display_name']            = $user_data['display_name'];
-        $vars['email_link']              = $racketmanager->admin_email;
-        $password_change_mail['message'] = $racketmanager->shortcodes->load_template( 'email-password-change', $vars, 'email' );
+        $vars['email_link']              = $this->option_service->get_admin_email();
+        $password_change_mail['message'] = $this->render_template( 'email-password-change', $vars, 'email' );
         return $password_change_mail;
     }
     /**
@@ -173,12 +199,10 @@ class Login {
      * @return string email message.
      */
     public function racketmanager_privacy_personal_data_email( string $message, string $request, string $email_data ): string {
-        global $racketmanager;
-
         add_filter( 'wp_mail_content_type', array( $this, 'racketmanager_wp_email_content_type' ) );
-        $vars['site_name'] = $racketmanager->site_name;
-        $vars['site_url']  = $racketmanager->site_url;
-        return $racketmanager->shortcodes->load_template( 'email-privacy-personal-data', $vars, 'email' );
+        $vars['site_name'] = $this->option_service->get_site_name();
+        $vars['site_url']  = $this->option_service->get_site_url();
+        return $this->render_template( 'email-privacy-personal-data', $vars, 'email' );
     }
     /**
      * Function to set email message for user action
@@ -189,12 +213,10 @@ class Login {
      * @return string email message.
      */
     public function racketmanager_user_request_action_email( string $message, array $email_data ): string {
-        global $racketmanager;
-
         add_filter( 'wp_mail_content_type', array( $this, 'racketmanager_wp_email_content_type' ) );
-        $vars['site_name'] = $racketmanager->site_name;
-        $vars['site_url']  = $racketmanager->site_url;
-        return $racketmanager->shortcodes->load_template( 'email-user-request-action', $vars, 'email' );
+        $vars['site_name'] = $this->option_service->get_site_name();
+        $vars['site_url']  = $this->option_service->get_site_url();
+        return $this->render_template( 'email-user-request-action', $vars, 'email' );
     }
     /**
      * Function to disable dashboard
@@ -418,7 +440,6 @@ class Login {
      * @return bool True if the CAPTCHA is OK, otherwise false.
      */
     private function verify_recaptcha(): bool {
-        global $racketmanager;
         // This field is set by the recaptcha widget if check is successful.
         if ( isset( $_POST['g-recaptcha-response'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
             $captcha_response = sanitize_text_field( wp_unslash( $_POST['g-recaptcha-response'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -426,7 +447,7 @@ class Login {
             return false;
         }
 
-        $keys                 = $racketmanager->get_options( 'keys' );
+        $keys                 = $this->option_service->get_options( 'keys' );
         $recaptcha_secret_key = $keys['recaptchaSecretKey'] ?? '';
         if ( ! $recaptcha_secret_key ) {
             return false;

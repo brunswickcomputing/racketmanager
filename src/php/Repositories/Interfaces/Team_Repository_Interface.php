@@ -19,6 +19,7 @@ use Racketmanager\Domain\DTO\Team\Team_Fixture_Settings_DTO;
 interface Team_Repository_Interface extends Repository_Interface {
     public function find_by_id( int|string|null $id ): ?Team;
     public function find_id_by_title( string $title ): int;
+    public function find_id_by_name( string $name ): ?int;
     public function find_by_club( int $club_id, ?string $type = null ): array;
     public function find_for_players( string $type ): array;
     public function save( object $entity ): bool|int;

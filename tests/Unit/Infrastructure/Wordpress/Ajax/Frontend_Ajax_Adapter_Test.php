@@ -74,7 +74,8 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
     private array $validator_teams = [];
     /** @var array<int, Event> events the Validator can find by id. */
     private array $validator_events = [];
-    private mixed $previous_racketmanager = null;
+    private Team_Repository_Interface $team_repository;
+    private Event_Repository_Interface $event_repository;
 
     protected function setUp(): void {
         parent::setUp();
@@ -101,29 +102,16 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
     protected function tearDown(): void {
         parent::tearDown();
         unset( $GLOBALS['wp_stubs_is_user_logged_in'] );
-        if ( null === $this->previous_racketmanager ) {
-            unset( $GLOBALS['racketmanager'] );
-        } else {
-            $GLOBALS['racketmanager'] = $this->previous_racketmanager;
-        }
     }
 
     /**
-     * Validator resolves its team / event repositories from the plugin container,
-     * so expose stubs there instead of relying on the legacy get_team()/get_event() helpers.
+     * The adapter hands its team / event repositories to the Validator.
      */
     private function install_validator_container(): void {
-        $this->previous_racketmanager = $GLOBALS['racketmanager'] ?? null;
-        $team_repository              = $this->createStub( Team_Repository_Interface::class );
-        $team_repository->method( 'find_by_id' )->willReturnCallback( fn( $id ): ?Team => $this->validator_teams[ (int) $id ] ?? null );
-        $event_repository = $this->createStub( Event_Repository_Interface::class );
-        $event_repository->method( 'find_by_id' )->willReturnCallback( fn( $id ): ?Event => $this->validator_events[ (int) $id ] ?? null );
-        $container = new Simple_Container();
-        $container->set( 'team_repository', $team_repository );
-        $container->set( 'event_repository', $event_repository );
-        $plugin                   = $this->createStub( RacketManager::class );
-        $plugin->container        = $container;
-        $GLOBALS['racketmanager'] = $plugin;
+        $this->team_repository = $this->createStub( Team_Repository_Interface::class );
+        $this->team_repository->method( 'find_by_id' )->willReturnCallback( fn( $id ): ?Team => $this->validator_teams[ (int) $id ] ?? null );
+        $this->event_repository = $this->createStub( Event_Repository_Interface::class );
+        $this->event_repository->method( 'find_by_id' )->willReturnCallback( fn( $id ): ?Event => $this->validator_events[ (int) $id ] ?? null );
     }
 
     private function make_adapter(
@@ -182,7 +170,9 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
             $this->rubber_repository,
             search_players_handler: $search_players_handler,
             get_player_details_handler: $get_player_details_handler,
-            view_presenter: $include_view_presenter ? $view_presenter : null
+            event_repository: $this->event_repository,
+            view_presenter: $include_view_presenter ? $view_presenter : null,
+            team_repository: $this->team_repository
         );
     }
 

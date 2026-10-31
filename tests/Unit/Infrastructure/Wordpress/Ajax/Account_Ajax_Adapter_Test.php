@@ -11,6 +11,7 @@ use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Account_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Account_Ajax_Controller;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Ajax_Registry;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\RacketManager;
@@ -29,11 +30,6 @@ class Account_Ajax_Adapter_Test extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->backup_globals();
-        $GLOBALS['racketmanager'] = new class {
-            public function get_options( string $type = '' ): array {
-                return [];
-            }
-        };
         $this->security_service = $this->createStub( Security_Service_Interface::class );
         $this->adapter          = $this->make_adapter();
         $_POST                  = array();
@@ -47,7 +43,11 @@ class Account_Ajax_Adapter_Test extends TestCase {
         parent::tearDown();
     }
 
-    private function make_adapter( ?Message_Repository_Interface $message_repo = null, ?User_Repository_Interface $user_repo = null ): Account_Ajax_Adapter {
+    private function make_adapter(
+        ?Message_Repository_Interface $message_repo = null,
+        ?User_Repository_Interface $user_repo = null,
+        ?Option_Service $option_service = null
+    ): Account_Ajax_Adapter {
         $response_factory = $this->createStub( Json_Response_Factory_Interface::class );
         $response_factory->method( 'create_success_response' )->willReturnCallback(
             static function ( $data, $status = null ) {
@@ -64,7 +64,8 @@ class Account_Ajax_Adapter_Test extends TestCase {
             $this->security_service,
             $response_factory,
             $message_repo,
-            $user_repo
+            $user_repo,
+            $option_service
         );
     }
 
@@ -558,17 +559,14 @@ class Account_Ajax_Adapter_Test extends TestCase {
             ->with( 'valid', 'member_account' )
             ->willReturn( true );
 
-        $GLOBALS['racketmanager'] = new class {
-            public function get_options( string $type = '' ): array {
-                return array( 'btm' => '1' );
-            }
-        };
+        $option_service = $this->createStub( Option_Service::class );
+        $option_service->method( 'get_options' )->willReturn( array( 'btm' => '1' ) );
 
         $user = new User();
         $user_repo = $this->createStub( User_Repository_Interface::class );
         $user_repo->method( 'find' )->willReturn( $user );
 
-        $this->adapter = $this->make_adapter( null, $user_repo );
+        $this->adapter = $this->make_adapter( null, $user_repo, $option_service );
 
         $request = array(
             'racketmanager_nonce' => 'valid',

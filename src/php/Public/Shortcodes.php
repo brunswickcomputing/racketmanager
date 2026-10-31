@@ -105,7 +105,9 @@ class Shortcodes {
         ?Event_Query_Service $event_query_service = null,
         ?League_Repository_Interface $league_repository = null,
         ?Event_Repository_Interface $event_repository = null,
-        ?Club_Repository_Interface $club_repository = null
+        ?Club_Repository_Interface $club_repository = null,
+        ?Fixture_Service $fixture_service = null,
+        ?Fixture_Repository_Interface $fixture_repository = null
     ) {
         $this->racketmanager = $plugin_instance;
 
@@ -138,10 +140,10 @@ class Shortcodes {
             $this->team_service              = $c->has( 'team_service' ) ? $c->get( 'team_service' ) : null;
             $this->tournament_service        = $c->has( 'tournament_service' ) ? $c->get( 'tournament_service' ) : null;
             $this->competition_entry_service = $c->has( 'competition_entry_service' ) ? $c->get( 'competition_entry_service' ) : null;
-            $this->fixture_service           = $c->has( 'fixture_service' ) ? $c->get( 'fixture_service' ) : null;
+            $this->fixture_service           = $fixture_service ?? ( $c->has( 'fixture_service' ) ? $c->get( 'fixture_service' ) : null );
             $this->fixture_detail_service    = $c->has( 'fixture_detail_service' ) ? $c->get( 'fixture_detail_service' ) : null;
             $this->competition_repository    = $c->has( 'competition_repository' ) ? $c->get( 'competition_repository' ) : null;
-            $this->fixture_repository        = $c->has( 'fixture_repository' ) ? $c->get( 'fixture_repository' ) : null;
+            $this->fixture_repository        = $fixture_repository ?? ( $c->has( 'fixture_repository' ) ? $c->get( 'fixture_repository' ) : null );
             $this->rubber_repository         = $c->has( 'rubber_repository' ) ? $c->get( 'rubber_repository' ) : null;
             $this->fixture_link_service       = $c->has( 'fixture_link_service' ) ? $c->get( 'fixture_link_service' ) : null;
             $this->fixture_permission_service = $c->has( 'fixture_permission_service' ) ? $c->get( 'fixture_permission_service' ) : null;
@@ -158,6 +160,8 @@ class Shortcodes {
             $this->league_repository    = $league_repository;
             $this->event_repository     = $event_repository;
             $this->club_repository      = $club_repository;
+            $this->fixture_service      = $fixture_service;
+            $this->fixture_repository   = $fixture_repository;
         }
     }
 
@@ -227,7 +231,7 @@ class Shortcodes {
      * @deprecated [dailymatches] is served by Matches_Shortcode_Adapter (Get_Daily_Matches_Handler + Matches_List_Presenter).
      */
     public function show_daily_matches( array $atts ): string {
-        global $racketmanager, $wp;
+        global $wp;
         wp_verify_nonce( 'matches-daily' );
         $args             = shortcode_atts( array(
                 'competition_type' => 'league',
@@ -249,10 +253,16 @@ class Shortcodes {
         if ( isset( $wp->query_vars['competition_type'] ) ) {
             $competition_type = Seo_Slug::decode( get_query_var( 'competition_type' ) );
         }
-        $matches      = $racketmanager->get_matches( array(
-                'match_date'       => $match_date,
-                'competition_type' => $competition_type,
-            ) );
+        $match_args   = array(
+            'match_date'       => $match_date,
+            'competition_type' => $competition_type,
+        );
+        $matches      = $this->fixture_service?->get_matches( $match_args )
+            ?? $this->fixture_repository?->find_all( $match_args )
+            ?? array();
+        if ( ! is_array( $matches ) ) {
+            $matches = array();
+        }
         $matches_list = array();
         foreach ( $matches as $match ) {
             if ( ! $match || ! is_object( $match ) ) {
@@ -396,7 +406,7 @@ class Shortcodes {
      * @deprecated [latest_results] is served by Matches_Shortcode_Adapter (Get_Latest_Results_Handler + Matches_List_Presenter).
      */
     public function show_latest_results( array $atts ): string {
-        global $racketmanager, $wp;
+        global $wp;
 
         $args             = shortcode_atts( array(
                 'competition_type' => 'league',
@@ -436,15 +446,21 @@ class Shortcodes {
             $age_group = get_query_var( 'age_group' );
         }
         $time         = 'latest';
-        $matches      = $racketmanager->get_matches( array(
-                'days'             => $days,
-                'competition_type' => $competition_type,
-                'time'             => $time,
-                'history'          => $days,
-                'club'             => $club_id,
-                'competition_id'   => $competition_id,
-                'age_group'        => $age_group,
-            ) );
+        $match_args   = array(
+            'days'             => $days,
+            'competition_type' => $competition_type,
+            'time'             => $time,
+            'history'          => $days,
+            'club'             => $club_id,
+            'competition_id'   => $competition_id,
+            'age_group'        => $age_group,
+        );
+        $matches      = $this->fixture_service?->get_matches( $match_args )
+            ?? $this->fixture_repository?->find_all( $match_args )
+            ?? array();
+        if ( ! is_array( $matches ) ) {
+            $matches = array();
+        }
         $matches_list = array();
         foreach ( $matches as $match ) {
             if ( ! $match || ! is_object( $match ) ) {

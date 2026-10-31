@@ -954,6 +954,11 @@ namespace {
 namespace Racketmanager\Util {
     if ( ! function_exists( 'Racketmanager\Util\get_users' ) ) {
         function get_users( $args = [] ) {
+            if ( isset( $GLOBALS['wp_stubs_get_users'] ) ) {
+                return is_callable( $GLOBALS['wp_stubs_get_users'] )
+                    ? ( $GLOBALS['wp_stubs_get_users'] )( $args )
+                    : (array) $GLOBALS['wp_stubs_get_users'];
+            }
             return [];
         }
     }
@@ -1835,6 +1840,44 @@ namespace {
             public function serve_request( $path = null ) {}
         }
         ');
+    }
+
+    if ( ! class_exists( 'WP_Widget' ) ) {
+        eval('
+        class WP_Widget {
+            public $id_base;
+            public $name;
+            public $widget_options;
+            public $control_options;
+            public $id;
+
+            public function __construct( $id_base = "", $name = "", $widget_options = array(), $control_options = array() ) {
+                $this->id_base         = $id_base;
+                $this->name            = $name;
+                $this->widget_options  = $widget_options;
+                $this->control_options = $control_options;
+                $this->id              = $id_base;
+            }
+
+            public function is_preview(): bool {
+                return false;
+            }
+
+            public function widget( $args, $instance ) {}
+            public function update( $new_instance, $old_instance ) { return $new_instance; }
+            public function form( $instance ) {}
+        }
+        ');
+    }
+
+    if ( ! function_exists( 'register_widget' ) ) {
+        function register_widget( $widget ): void {
+            $GLOBALS['wp_stubs_registered_widgets'][] = $widget;
+        }
+    }
+
+    if ( ! function_exists( 'wp_reset_postdata' ) ) {
+        function wp_reset_postdata(): void {}
     }
 }
 

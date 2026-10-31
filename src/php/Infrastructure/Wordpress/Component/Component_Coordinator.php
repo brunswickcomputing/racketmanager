@@ -28,12 +28,6 @@ final readonly class Component_Coordinator implements Component_Coordinator_Inte
      * @param RacketManager $app
      */
     public function init_components( RacketManager $app ): void {
-        $app->ajax_account           = $this->container->get( 'account_ajax_controller' );
-        $app->ajax_club              = $this->container->get( 'club_ajax_controller' );
-        $app->ajax_finance           = $this->container->get( 'finance_ajax_controller' );
-        $app->ajax_frontend          = $this->container->get( 'frontend_ajax_controller' );
-        $app->ajax_fixture           = $this->container->get( 'fixture_ajax_controller' );
-        $app->ajax_tournament        = $this->container->get( 'tournament_ajax_controller' );
         $app->shortcodes             = new Shortcodes( $app );
         $app->shortcodes_general     = $this->container->get( 'general_shortcode_adapter' );
         $app->shortcodes_club        = $this->container->get( 'club_shortcode_adapter' );
@@ -46,21 +40,19 @@ final readonly class Component_Coordinator implements Component_Coordinator_Inte
         $app->shortcodes_message     = $this->container->get( 'message_shortcode_adapter' );
         $app->shortcodes_tournament  = $this->container->get( 'tournament_shortcode_adapter' );
         $app->rewrites               = new Rewrites();
-        $app->login                  = new Login();
+        $app->login                  = $this->container->get( 'login' );
 
         Rest_Routes::single( $app );
-        $this->register_ajax_actions( $app );
+        $this->register_ajax_actions();
         $this->handle_exports( $app );
     }
 
     /**
      * Register AJAX actions using the centralized registry.
-     *
-     * @param RacketManager $app
      */
-    private function register_ajax_actions( RacketManager $app ): void {
+    private function register_ajax_actions(): void {
         $registry   = $this->ajax_registry;
-        $controller = $app->ajax_fixture;
+        $controller = $this->container->get( 'fixture_ajax_controller' );
 
         $registry->register( 'match_card', [ $controller, 'print_match_card' ], true );
         $registry->register_with_unauthenticated( 'match_rubber_status', [ $controller, 'rubber_status_options' ], [ $controller, 'logged_out_modal' ] );
@@ -75,11 +67,11 @@ final readonly class Component_Coordinator implements Component_Coordinator_Inte
         $registry->register_with_unauthenticated( 'update_match', [ $controller, 'update_fixture_result' ], [ $controller, 'logged_out' ] );
         $registry->register_with_unauthenticated( 'update_rubbers', [ $controller, 'update_team_match' ], [ $controller, 'logged_out' ] );
 
-        $app->ajax_club->register_hooks( $registry );
-        $app->ajax_tournament->register_hooks( $registry );
-        $app->ajax_account->register_hooks( $registry );
-        $app->ajax_finance->register_hooks( $registry );
-        $app->ajax_frontend->register_hooks( $registry );
+        $this->container->get( 'club_ajax_controller' )->register_hooks( $registry );
+        $this->container->get( 'tournament_ajax_controller' )->register_hooks( $registry );
+        $this->container->get( 'account_ajax_controller' )->register_hooks( $registry );
+        $this->container->get( 'finance_ajax_controller' )->register_hooks( $registry );
+        $this->container->get( 'frontend_ajax_controller' )->register_hooks( $registry );
     }
 
     /**

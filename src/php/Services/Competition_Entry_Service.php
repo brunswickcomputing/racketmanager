@@ -41,8 +41,11 @@ use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Club_Repository;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Team_Repository;
@@ -76,7 +79,10 @@ class Competition_Entry_Service {
     private Tournament_Service $tournament_service;
     private Mailer_Interface $mailer;
     private ?Option_Gateway_Interface $option_gateway;
+    private Option_Service $option_service;
     private Event_Query_Service $event_query_service;
+    private ?Player_Repository_Interface $player_repository;
+    private ?Event_Repository_Interface $event_repository;
 
     /**
      * Constructor
@@ -98,7 +104,10 @@ class Competition_Entry_Service {
         Notify_Service $notify_service,
         Event_Query_Service $event_query_service,
         ?Mailer_Interface $mailer = null,
-        ?Option_Gateway_Interface $option_gateway = null
+        ?Option_Gateway_Interface $option_gateway = null,
+        ?Option_Service $option_service = null,
+        ?Player_Repository_Interface $player_repository = null,
+        ?Event_Repository_Interface $event_repository = null
     ) {
         $this->racketmanager               = $plugin_instance;
         $this->club_repository             = $club_repository;
@@ -116,6 +125,41 @@ class Competition_Entry_Service {
         $this->event_query_service         = $event_query_service;
         $this->mailer                      = $mailer ?? new Wp_Mailer();
         $this->option_gateway              = $option_gateway;
+        $this->option_service              = $option_service ?? new Option_Service( $option_gateway );
+        $this->player_repository           = $player_repository;
+        $this->event_repository            = $event_repository;
+    }
+
+    /**
+     * Create a validator wired with this service's collaborators.
+     */
+    private function create_validator(): Validator {
+        return new Validator(
+            competition_service: $this->competition_service,
+            club_service: $this->club_service,
+            player_service: $this->player_service,
+            team_repository: $this->team_repository,
+            player_repository: $this->player_repository,
+            club_repository: $this->club_repository,
+            event_repository: $this->event_repository,
+            league_repository: $this->league_repository
+        );
+    }
+
+    /**
+     * Create an entry-form validator wired with this service's collaborators.
+     */
+    private function create_entry_validator(): Validator_Entry_Form {
+        return new Validator_Entry_Form(
+            competition_service: $this->competition_service,
+            club_service: $this->club_service,
+            player_service: $this->player_service,
+            team_repository: $this->team_repository,
+            player_repository: $this->player_repository,
+            club_repository: $this->club_repository,
+            event_repository: $this->event_repository,
+            league_repository: $this->league_repository
+        );
     }
 
     /**
@@ -221,9 +265,9 @@ class Competition_Entry_Service {
         if ( empty( $return->error ) ) {
             $url              = $this->racketmanager->site_url . '/entry-form/' . Seo_Slug::encode( $competition->name ) . '/' . $season . '/';
             $competition_name = $competition->name . ' ' . $season;
-            $clubs            = $this->racketmanager->get_clubs();
+            $clubs            = $this->club_repository->find_all( array( 'type' => false ) );
             $headers          = array();
-            $from_email       = $this->racketmanager->get_confirmation_email( $competition->get_type() );
+            $from_email       = $this->option_service->get_confirmation_email( $competition->get_type() );
             if ( $from_email ) {
                 $headers[]         = RACKETMANAGER_FROM_EMAIL . ucfirst( $competition->get_type() ) . 'Secretary <' . $from_email . '>';
                 $headers[]         = RACKETMANAGER_CC_EMAIL . ucfirst( $competition->get_type() ) . 'Secretary <' . $from_email . '>';
@@ -313,7 +357,7 @@ class Competition_Entry_Service {
         if ( empty( $clubs ) ) {
             throw new Clubs_Not_Found_Exception( __( 'No clubs with outstanding entries', 'racketmanager' ) );
         }
-        $validator     = new Validator();
+        $validator     = $this->create_validator();
         $messages_sent = 0;
 
         $season_dtls             = (object) $competition->get_season_by_name( (string) ( $season ) );
@@ -328,7 +372,7 @@ class Competition_Entry_Service {
         $url              = $this->racketmanager->site_url . '/entry-form/' . Seo_Slug::encode( $competition->get_name() ) . '/' . $season . '/';
         $competition_name = $competition->get_name() . ' ' . $season;
         $headers          = array();
-        $from_email       = $this->racketmanager->get_confirmation_email( $competition->get_type() );
+        $from_email       = $this->option_service->get_confirmation_email( $competition->get_type() );
         if ( $from_email ) {
             $headers[]         = RACKETMANAGER_FROM_EMAIL . ucfirst( $competition->get_type() ) . 'Secretary <' . $from_email . '>';
             $headers[]         = RACKETMANAGER_CC_EMAIL . ucfirst( $competition->get_type() ) . 'Secretary <' . $from_email . '>';
@@ -401,7 +445,7 @@ class Competition_Entry_Service {
      * @return bool|WP_Error
      */
     public function request_league_entry( $request ): bool|WP_Error {
-        $validator   = new Validator_Entry_Form();
+        $validator   = $this->create_entry_validator();
         $club_entry  = new stdClass();
         $competition = null;
         try {
@@ -814,7 +858,7 @@ class Competition_Entry_Service {
         }
         $this->competition_service->set_court_availability( $club_entry->competition->id, $club_id, $club_entry->num_courts_available );
 
-        $email_from      = $this->racketmanager->get_confirmation_email( 'league' );
+        $email_from      = $this->option_service->get_confirmation_email( 'league' );
         $email_subject   = $this->racketmanager->site_name . ' - ' . ucfirst( $club_entry->competition->name ) . ' ' . $club_entry->season . ' League Entry - ' . $club->get_shortcode();
         $headers         = array();
         $secretary_email = __( 'League Secretary', 'racketmanager' ) . ' <' . $email_from . '>';
@@ -888,7 +932,7 @@ class Competition_Entry_Service {
      * @return bool|WP_Error
      */
     public function request_cup_entry( $request ): bool|WP_Error {
-        $validator   = new Validator_Entry_Form();
+        $validator   = $this->create_entry_validator();
         $club_entry  = new stdClass();
         $competition = null;
         try {
@@ -1044,7 +1088,7 @@ class Competition_Entry_Service {
             $cup_entry['matchtime']    = $team->match_time;
             $cup_entries[]             = $cup_entry;
         }
-        $email_from      = $this->racketmanager->get_confirmation_email( 'cup' );
+        $email_from      = $this->option_service->get_confirmation_email( 'cup' );
         $email_subject   = $this->racketmanager->site_name . ' - ' . ucfirst( $club_entry->competition->name ) . ' ' . $club_entry->season . ' ' . __( 'Entry', 'racketmanager' ) . ' - ' . $club->get_shortcode();
         $headers         = array();
         $secretary_email = __( 'Cup Secretary', 'racketmanager' ) . ' <' . $email_from . '>';
@@ -1065,7 +1109,7 @@ class Competition_Entry_Service {
         if ( ! $tournament ) {
             throw new Tournament_Not_Found_Exception( Util_Messages::tournament_not_found( $tournament_id ) );
         }
-        $from_email = $this->racketmanager->get_confirmation_email( 'tournament' );
+        $from_email = $this->option_service->get_confirmation_email( 'tournament' );
         if ( ! $from_email ) {
             throw new Invalid_Argument_Exception( Util_Messages::secretary_email_not_found( 'tournament' ) );
         }
@@ -1161,7 +1205,7 @@ class Competition_Entry_Service {
     public function request_tournament_entry( Tournament_Entry_Request_DTO $request ): Tournament_Entry_Response_DTO|WP_Error {
         $player_id  = $request->player_id;
         $season     = $request->season;
-        $validator  = new Validator_Entry_Form();
+        $validator  = $this->create_entry_validator();
         $tournament = $this->tournament_repository->find_by_id( $request->tournament_id );
         if ( ! $tournament ) {
             $validator->set_errors( 'event', Util_Messages::tournament_not_found( $request->tournament_id ) );
@@ -1460,7 +1504,7 @@ class Competition_Entry_Service {
             $this->player_service->save_opt_in( (int) $player->id, '1' );
             $tournament_name                     = $tournament->get_name();
             $email_to                            = $player->display_name . ' <' . $player->email . '>';
-            $email_from                          = $this->racketmanager->get_confirmation_email( 'tournament' );
+            $email_from                          = $this->option_service->get_confirmation_email( 'tournament' );
             $email_subject                       = $this->racketmanager->site_name . ' - ' . $tournament_name . ' ' . __( 'Tournament Entry', 'racketmanager' );
             $action_url                          = rtrim( $this->racketmanager->site_url, '/' ) . '/entry-form/' . Seo_Slug::encode( $tournament->name ) . '-tournament/';
             $tournament_link                     = '<a href="' . $this->racketmanager->site_url . '/tournament/' . Seo_Slug::encode( $tournament->name ) . '/">' . $tournament_name . '</a>';
@@ -1572,7 +1616,7 @@ class Competition_Entry_Service {
         $tournament_id = $partner_request->tournament_id;
         $partner_id    = $partner_request->partner_id;
         $player_id     = $partner_request->player_id;
-        $validator     = new Validator_Entry_Form();
+        $validator     = $this->create_entry_validator();
         $err_field     = $is_modal ? 'partner' : 'partner-' . $event_id;
         try {
             $tournament = $this->tournament_service->get_tournament( $tournament_id );
@@ -1647,7 +1691,7 @@ class Competition_Entry_Service {
             $this->finance_service->add_player_invoice_for_tournament( $tournament, $invoice_details );
         }
         $email_to                         = $player->display_name . ' <' . $player->email . '>';
-        $email_from                       = $this->racketmanager->get_confirmation_email( 'tournament' );
+        $email_from                       = $this->option_service->get_confirmation_email( 'tournament' );
         $email_subject                    = $this->racketmanager->site_name . ' - ' . $tournament->name . ' ' . __( 'Tournament Withdrawal', 'racketmanager' );
         $action_url                       = rtrim( $this->racketmanager->site_url, '/' ) . '/entry-form/' . Seo_Slug::encode( $tournament->name ) . '-tournament/';
         $t_link                           = '/tournament/' . Seo_Slug::encode( $tournament->name ) . '/';

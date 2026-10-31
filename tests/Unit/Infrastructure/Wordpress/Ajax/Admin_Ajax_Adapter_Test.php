@@ -108,7 +108,6 @@ class Admin_Ajax_Adapter_Test extends TestCase {
         return new Admin_Ajax_Adapter(
             $this->security_service,
             $response_factory,
-            $this->racketmanager,
             $this->competition_service,
             $this->competition_entry_service,
             $this->notification_service,
@@ -805,7 +804,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
 
     public function test_check_team_exists_returns_boolean(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->racketmanager->method( 'get_team_id' )->willReturn( 42 );
+        $this->team_repository->method( 'find_id_by_name' )->willReturn( 42 );
 
         $response = $this->adapter->check_team_exists( [
             'security' => 'valid',

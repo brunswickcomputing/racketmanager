@@ -40,24 +40,6 @@
         "src/php/Repositories/Rubber_Repository.php|depends on Racketmanager\\Services\\Registration_Service": 1,
         "src/php/Repositories/Tournament_Repository.php|depends on Racketmanager\\Services\\Competition_Service": 1
     },
-    "services.no_global_racketmanager": {
-        "src/php/Infrastructure/Wordpress/Ajax/Account_Ajax_Adapter.php|global $racketmanager": 1,
-        "src/php/Infrastructure/Wordpress/Bootstrap/Plugin_Bootstrap.php|$GLOBALS['racketmanager']": 1,
-        "src/php/Infrastructure/Wordpress/Export/Export_Delivery_Adapter.php|$GLOBALS['racketmanager']": 1,
-        "src/php/Infrastructure/Wordpress/Rest/Rest_Controller_Adapter.php|global $racketmanager": 2,
-        "src/php/Public/Shortcodes.php|global $racketmanager": 2,
-        "src/php/Services/Admin/Import/Import_Action_Dispatcher.php|global $racketmanager": 1,
-        "src/php/Services/Admin/Options/Options_Action_Dispatcher.php|$GLOBALS['racketmanager']": 4,
-        "src/php/Services/Club_Service.php|global $racketmanager": 1,
-        "src/php/Services/Competition/Competition_Notification_Service.php|global $racketmanager": 4,
-        "src/php/Services/Login.php|global $racketmanager": 6,
-        "src/php/Services/Result_Service.php|global $racketmanager": 2,
-        "src/php/Services/Standings/Standings_Service.php|global $racketmanager": 1,
-        "src/php/Services/Validator/Validator.php|global $racketmanager": 1,
-        "src/php/Services/Validator/Validator_Fixture.php|global $racketmanager": 1,
-        "src/php/Services/Widget.php|global $racketmanager": 1,
-        "src/php/Util/Util.php|global $racketmanager": 2
-    },
     "templates.no_global_racketmanager": {
         "templates/forms/match-input.php|$GLOBALS['racketmanager']": 3,
         "templates/match-list.php|global $racketmanager": 1,

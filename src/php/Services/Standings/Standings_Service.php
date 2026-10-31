@@ -47,33 +47,23 @@ class Standings_Service {
 		$this->league_query_service   = $league_query_service;
 	}
 
-	/**
-	 * Resolve an optional collaborator from the plugin container when it was not injected.
-	 */
-	private function from_container( string $key ): mixed {
-		global $racketmanager;
-		return isset( $racketmanager->container ) && $racketmanager->container->has( $key )
-			? $racketmanager->container->get( $key )
-			: null;
-	}
-
 	private function get_fixture_repository(): Fixture_Repository_Interface {
 		if ( null === $this->fixture_repository ) {
-			$this->fixture_repository = $this->from_container( 'fixture_repository' ) ?? new Fixture_Repository();
+			$this->fixture_repository = new Fixture_Repository();
 		}
 		return $this->fixture_repository;
 	}
 
 	private function get_league_repository(): League_Repository_Interface {
 		if ( null === $this->league_repository ) {
-			$this->league_repository = $this->from_container( 'league_repository' ) ?? new League_Repository();
+			$this->league_repository = new League_Repository();
 		}
 		return $this->league_repository;
 	}
 
 	private function get_league_team_repository(): League_Team_Repository_Interface {
 		if ( null === $this->league_team_repository ) {
-			$this->league_team_repository = $this->from_container( 'league_team_repository' ) ?? new League_Team_Repository();
+			$this->league_team_repository = new League_Team_Repository();
 		}
 		return $this->league_team_repository;
 	}
@@ -96,9 +86,6 @@ class Standings_Service {
 	}
 
 	private function get_league_service(): ?League_Service {
-		if ( null === $this->league_service ) {
-			$this->league_service = $this->from_container( 'league_service' );
-		}
 		return $this->league_service;
 	}
 

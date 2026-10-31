@@ -4,9 +4,12 @@ namespace Racketmanager\Tests\Unit\Services;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Result\Result;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
+use Racketmanager\Application\Ports\Template_Renderer_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Result_Service;
@@ -21,31 +24,25 @@ class Result_Service_AutoConfirm_Test extends TestCase {
         $this->fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
         $this->team_repository    = $this->createMock( Team_Repository_Interface::class );
         
-        $this->result_service = new Result_Service(
-            $this->fixture_repository,
-            $this->team_repository
-        );
-
-        // Mock global $racketmanager
-        global $racketmanager;
-        $racketmanager = new class {
-            public $site_name = 'Test';
-            public $site_url = 'https://test.local';
-            public $shortcodes;
-            public function __construct() {
-                $this->shortcodes = new class {
-                    public function load_template() { return 'template'; }
+        $option_gateway = new class implements Option_Gateway_Interface {
+            public function get_option( string $option, mixed $default_value = false ): mixed {
+                return match ( $option ) {
+                    'racketmanager' => [ 'league' => [ 'resultConfirmation' => 'auto', 'resultConfirmationEmail' => 'test@test.com' ] ],
+                    'blogname'      => 'Test',
+                    'siteurl'       => 'https://test.local',
+                    default         => $default_value,
                 };
             }
-            public function get_options() {
-                return [
-                    'league' => [
-                        'resultConfirmation' => 'auto'
-                    ]
-                ];
-            }
-            public function get_confirmation_email() { return 'test@test.com'; }
+            public function update_option( string $option, mixed $value, bool|string|null $autoload = null ): bool { return true; }
+            public function delete_option( string $option ): bool { return true; }
         };
+
+        $this->result_service = new Result_Service(
+            $this->fixture_repository,
+            $this->team_repository,
+            new Option_Service( $option_gateway ),
+            $this->createMock( Template_Renderer_Interface::class )
+        );
     }
 
     /**

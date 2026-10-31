@@ -9,6 +9,8 @@ use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use LogicException;
@@ -22,10 +24,12 @@ class Competition_Notification_Service {
     private Mailer_Interface $mailer;
 
     public function __construct(
+        private Option_Service $option_service,
+        private Club_Repository_Interface $club_repository,
         ?Mailer_Interface $mailer = null,
         private ?Event_Repository_Interface $event_repository = null,
         private ?League_Query_Service $league_query_service = null,
-        private ?League_Repository_Interface $league_repository = null
+        private ?League_Repository_Interface $league_repository = null,
     ) {
         $this->mailer = $mailer ?? new Wp_Mailer();
     }
@@ -55,16 +59,13 @@ class Competition_Notification_Service {
      * @return bool
      */
     public function contact_teams( Competition $competition, string $season, string $email_message ): bool {
-        global $racketmanager;
         $email_message = str_replace( '\"', '"', $email_message );
         $headers       = [];
         $comp_type     = $competition->get_type();
-        $email_from    = method_exists( $racketmanager, 'get_confirmation_email' )
-            ? $racketmanager->get_confirmation_email( $comp_type )
-            : ( is_callable( $racketmanager->get_confirmation_email ?? null ) ? ( $racketmanager->get_confirmation_email )( $comp_type ) : '' );
+        $email_from    = $this->option_service->get_confirmation_email( $comp_type );
         $headers[]     = RACKETMANAGER_FROM_EMAIL . ucfirst( $comp_type ) . ' Secretary <' . $email_from . '>';
         $headers[]     = RACKETMANAGER_CC_EMAIL . ucfirst( $comp_type ) . ' Secretary <' . $email_from . '>';
-        $site_name     = $racketmanager->site_name ?? '';
+        $site_name     = $this->option_service->get_site_name();
         $email_subject = $site_name . ' - ' . $competition->get_name() . ' ' . $season . ' - Important Message';
         $email_to      = [];
 
@@ -112,19 +113,16 @@ class Competition_Notification_Service {
      * @return bool
      */
     public function contact_league_teams( League $league, string $season, string $email_message ): bool {
-        global $racketmanager;
         $message_sent  = false;
         $teams         = $this->league_query()->get_league_teams( $league, [ 'season' => $season ] );
         $email_message = str_replace( '\"', '"', $email_message );
         $headers       = [];
         $raw_type      = $league->event->competition->type ?? 'league';
         $comp_type     = $raw_type instanceof Competition_Type ? $raw_type->value : (string) $raw_type;
-        $email_from    = method_exists( $racketmanager, 'get_confirmation_email' )
-            ? $racketmanager->get_confirmation_email( $comp_type )
-            : ( is_callable( $racketmanager->get_confirmation_email ?? null ) ? ( $racketmanager->get_confirmation_email )( $comp_type ) : '' );
+        $email_from    = $this->option_service->get_confirmation_email( $comp_type );
         $headers[]     = RACKETMANAGER_FROM_EMAIL . ucfirst( $comp_type ) . ' Secretary <' . $email_from . '>';
         $headers[]     = RACKETMANAGER_CC_EMAIL . ucfirst( $comp_type ) . ' Secretary <' . $email_from . '>';
-        $site_name     = $racketmanager->site_name ?? '';
+        $site_name     = $this->option_service->get_site_name();
         $email_subject = $site_name . ' - ' . $league->title . ' ' . $season . ' - Important Message';
         $email_to      = [];
 
@@ -156,21 +154,18 @@ class Competition_Notification_Service {
      * @return bool
      */
     public function notify_withdrawn_team( League $league, int $team_id, string $season ): bool {
-        global $racketmanager;
         $teams         = $this->league_query()->get_league_teams( $league, [ 'season' => $season ] );
         $raw_type      = $league->event->competition->type ?? 'league';
         $comp_type     = $raw_type instanceof Competition_Type ? $raw_type->value : (string) $raw_type;
-        $email_from   = method_exists( $racketmanager, 'get_confirmation_email' )
-            ? $racketmanager->get_confirmation_email( $comp_type )
-            : ( is_callable( $racketmanager->get_confirmation_email ?? null ) ? ( $racketmanager->get_confirmation_email )( $comp_type ) : '' );
-        $headers      = [];
-        $headers[]    = RACKETMANAGER_FROM_EMAIL . ucfirst( $comp_type ) . ' Secretary <' . $email_from . '>';
-        $headers[]    = RACKETMANAGER_CC_EMAIL . ucfirst( $comp_type ) . ' Secretary <' . $email_from . '>';
-        $team_obj     = $this->league_query()->get_team_dtls( $league, $team_id );
-        $team_title   = $team_obj->title ?? '';
+        $email_from    = $this->option_service->get_confirmation_email( $comp_type );
+        $headers       = [];
+        $headers[]     = RACKETMANAGER_FROM_EMAIL . ucfirst( $comp_type ) . ' Secretary <' . $email_from . '>';
+        $headers[]     = RACKETMANAGER_CC_EMAIL . ucfirst( $comp_type ) . ' Secretary <' . $email_from . '>';
+        $team_obj      = $this->league_query()->get_team_dtls( $league, $team_id );
+        $team_title    = $team_obj->title ?? '';
         $email_subject = $league->title . ' ' . $season . ' - ' . __( 'Withdrawn team', 'racketmanager' ) . ' - ' . $team_title;
-        $email_to     = [];
-        $message_send = false;
+        $email_to      = [];
+        $message_send  = false;
 
         foreach ( $teams as $team ) {
             $team_dtls = $this->league_query()->get_team_dtls( $league, $team->id );
@@ -207,13 +202,10 @@ class Competition_Notification_Service {
      * @return void
      */
     public function send_constitution( Event $event, array $season ): void {
-        global $racketmanager;
         $raw_type      = $event->competition->type ?? 'league';
         $comp_type     = $raw_type instanceof Competition_Type ? $raw_type->value : (string) $raw_type;
-        $email_address = method_exists( $racketmanager, 'get_confirmation_email' )
-            ? $racketmanager->get_confirmation_email( $comp_type )
-            : ( is_callable( $racketmanager->get_confirmation_email ?? null ) ? ( $racketmanager->get_confirmation_email )( $comp_type ) : '' );
-        $organisation  = $racketmanager->site_name ?? '';
+        $email_address = $this->option_service->get_confirmation_email( $comp_type );
+        $organisation  = $this->option_service->get_site_name();
         $message_args  = [
             'organisation'  => $organisation,
             'event'         => $event->name,
@@ -224,9 +216,7 @@ class Competition_Notification_Service {
         $headers       = [];
         $headers[]     = RACKETMANAGER_FROM_EMAIL . ucfirst( $comp_type ) . ' Secretary <' . $email_address . '>';
         $headers[]     = RACKETMANAGER_CC_EMAIL . ucfirst( $comp_type ) . ' Secretary <' . $email_address . '>';
-        $clubs         = method_exists( $racketmanager, 'get_clubs' )
-            ? $racketmanager->get_clubs( [ 'type' => 'affiliated' ] )
-            : ( is_callable( $racketmanager->get_clubs ?? null ) ? ( $racketmanager->get_clubs )( [ 'type' => 'affiliated' ] ) : [] );
+        $clubs         = $this->club_repository->find_all( [ 'type' => 'affiliated' ] );
         $clubs         = is_iterable( $clubs ) ? $clubs : [];
         $subject       = $organisation . ' - ' . $event->name . ' ' . $season['name'] . ' - Constitution';
 

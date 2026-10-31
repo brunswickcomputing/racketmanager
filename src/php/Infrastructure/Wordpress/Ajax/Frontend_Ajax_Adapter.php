@@ -34,6 +34,7 @@ use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Entry_Service;
@@ -79,11 +80,36 @@ class Frontend_Ajax_Adapter {
         private ?Update_Player_Handler $update_player_handler = null,
         private ?League_Repository_Interface $league_repository = null,
         private ?Event_Repository_Interface $event_repository = null,
-        private ?Shortcode_View_Presenter $view_presenter = null
+        private ?Shortcode_View_Presenter $view_presenter = null,
+        private ?Team_Repository_Interface $team_repository = null
     ) {
         $this->submit_cup_entry_handler    = $this->submit_cup_entry_handler ?? new Submit_Cup_Entry_Handler( $this->competition_entry_service );
         $this->submit_league_entry_handler = $this->submit_league_entry_handler ?? new Submit_League_Entry_Handler( $this->competition_entry_service );
         $this->update_player_handler       = $this->update_player_handler ?? new Update_Player_Handler( $this->player_service );
+    }
+
+    private function create_validator(): Validator {
+        return new Validator(
+            competition_service: $this->competition_service,
+            club_service: $this->club_service,
+            player_service: $this->player_service,
+            registration_service: $this->registration_service,
+            team_repository: $this->team_repository,
+            event_repository: $this->event_repository,
+            league_repository: $this->league_repository
+        );
+    }
+
+    private function create_entry_validator(): Validator_Entry_Form {
+        return new Validator_Entry_Form(
+            competition_service: $this->competition_service,
+            club_service: $this->club_service,
+            player_service: $this->player_service,
+            registration_service: $this->registration_service,
+            team_repository: $this->team_repository,
+            event_repository: $this->event_repository,
+            league_repository: $this->league_repository
+        );
     }
 
     public function logged_out(): Response {
@@ -118,7 +144,7 @@ class Frontend_Ajax_Adapter {
             return $security_error;
         }
 
-        $validator = new Validator();
+        $validator = $this->create_validator();
         $event_id  = empty( $request['event_id'] ) ? null : (int) $request['event_id'];
         $team_id   = empty( $request['team_id'] ) ? null : (int) $request['team_id'];
         $validator = $validator->event( $event_id );
@@ -178,7 +204,7 @@ class Frontend_Ajax_Adapter {
         }
 
         $return    = new stdClass();
-        $validator = new Validator();
+        $validator = $this->create_validator();
         $command   = Update_Player_Command::from_post( $request );
         try {
             $player = $this->update_player_handler->handle( $command );
@@ -224,7 +250,7 @@ class Frontend_Ajax_Adapter {
 
             return $this->response_factory->create_success_response( $return );
         } catch ( Event_Not_Found_Exception|Team_Not_Found_Exception $e ) {
-            $validator      = new Validator();
+            $validator      = $this->create_validator();
             $validator->msg = $e->getMessage();
             $return         = $validator->get_details();
 
@@ -238,7 +264,7 @@ class Frontend_Ajax_Adapter {
             return $security_error;
         }
 
-        $validator = new Validator_Entry_Form();
+        $validator = $this->create_entry_validator();
         if ( ! is_user_logged_in() ) {
             $validator = $validator->logged_in_entry();
         } else {
@@ -277,7 +303,7 @@ class Frontend_Ajax_Adapter {
             return $security_error;
         }
 
-        $validator = new Validator_Entry_Form();
+        $validator = $this->create_entry_validator();
         if ( ! is_user_logged_in() ) {
             $validator = $validator->logged_in_entry();
         } else {
@@ -445,7 +471,7 @@ class Frontend_Ajax_Adapter {
             return $security_error;
         }
 
-        $validator = new Validator();
+        $validator = $this->create_validator();
         $event_id  = isset( $request['eventId'] ) ? (int) $request['eventId'] : null;
         $team_id   = isset( $request['teamId'] ) ? (int) $request['teamId'] : null;
         $match_id  = isset( $request['matchId'] ) ? (int) $request['matchId'] : null;

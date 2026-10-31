@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Rest;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
@@ -41,6 +42,12 @@ final class Rest_Routes_Test extends TestCase {
         $container->set( 'registration_service', fn() => $this->createStub( Registration_Service::class ) );
         $container->set( 'finance_service', fn() => $this->createStub( Finance_Service::class ) );
         $container->set( 'exporter', fn() => $this->createStub( Export_Service::class ) );
+        $event_repository = $this->createStub( Event_Repository_Interface::class );
+        $event_repository->method( 'find_all' )->willReturn( [] );
+        $container->set( 'event_repository', $event_repository );
+        $league_repository = $this->createStub( League_Repository_Interface::class );
+        $league_repository->method( 'find_all' )->willReturn( [] );
+        $container->set( 'league_repository', $league_repository );
         $container->set( 'league_query_service', new League_Query_Service(
             $this->createStub( League_Repository_Interface::class ),
             $this->createStub( Fixture_Repository_Interface::class ),

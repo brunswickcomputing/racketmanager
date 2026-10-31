@@ -152,6 +152,9 @@ $team_repo = new class implements \Racketmanager\Repositories\Interfaces\Team_Re
 	public function find_id_by_title( string $title ): int {
 		return 99;
 	}
+	public function find_id_by_name( string $name ): ?int {
+		return 99;
+	}
 	public function find_by_club( int $club_id, ?string $type = null ): array { return []; }
 	public function find_for_players( string $type ): array { return []; }
 	public function find_all( array $args = [] ): array|int { return []; }

@@ -90,6 +90,16 @@ class League_Service {
         return $this->standings_service instanceof Standings_Service ? $this->standings_service : null;
     }
 
+    /**
+     * Get leagues from the repository.
+     *
+     * @param array $args Query arguments.
+     * @return array
+     */
+    public function get_leagues( array $args = array() ): array {
+        return $this->league_repository->find_all( $args );
+    }
+
     public function add_league_to_event( int $event_id, ?string $name = null ): League {
         $event = $this->event_repository->find_by_id( $event_id );
         if ( ! $event ) {

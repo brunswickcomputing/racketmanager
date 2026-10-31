@@ -4,41 +4,41 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Services\Competition;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use Racketmanager\Application\Mail\Mailer_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
-use Racketmanager\Application\Mail\Mailer_Interface;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Services\Competition\Competition_Notification_Service;
 use Racketmanager\Services\Competition\League_Query_Service;
 
+#[AllowMockObjectsWithoutExpectations]
 class Competition_Notification_Service_Test extends TestCase {
-
-    public function test_contact_teams_queries_a_real_event_through_the_injected_repository(): void {
-        $competition = \Racketmanager\Tests\Helpers\Competition_Test_Factory::create( id: 10, name: 'Summer League' );
-        $competition->is_player_entry = false;
-        $event = Event::from_object( (object) [ 'id' => 93, 'name' => 'Mens Doubles', 'type' => 'doubles', 'competition_id' => 10, 'seasons' => '{"2026":{"name":"2026"}}' ] );
-        $event->set_season( '2026' );
-        $repository = $this->createMock( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class );
-        $repository->expects( $this->once() )->method( 'find_by_competition_id' )->with( 10 )->willReturn( [ $event ] );
-        $repository->expects( $this->once() )->method( 'query_teams' )
-            ->with( 93, $this->callback( static fn( array $args ): bool => '2026' === $args['season'] ) )
-            ->willReturn( [] );
-        $mailer = $this->createMock( Mailer_Interface::class );
-        $mailer->expects( $this->once() )->method( 'send' )
-            ->with( [], 'Leigh and Westcliff Tennis - Summer League 2026 - Important Message', 'Hello Teams', $this->isArray() )
-            ->willReturn( true );
-
-        $service = new Competition_Notification_Service( $mailer, $repository );
-        $this->assertTrue( $service->contact_teams( $competition, '2026', 'Hello Teams' ) );
-    }
+    private Option_Service $option_service;
+    private Club_Repository_Interface $club_repository;
 
     protected function setUp(): void {
         parent::setUp();
-        $racketmanager = new \stdClass();
-        $racketmanager->site_name = 'Leigh and Westcliff Tennis';
-        $racketmanager->get_confirmation_email = fn( $type ) => 'secretary@example.com';
-        $racketmanager->get_clubs = fn( $args ) => [];
-        $GLOBALS['racketmanager'] = $racketmanager;
+        $option_gateway = new class implements Option_Gateway_Interface {
+            public function get_option( string $option, mixed $default_value = false ): mixed {
+                if ( 'blogname' === $option ) {
+                    return 'Leigh and Westcliff Tennis';
+                }
+                if ( 'racketmanager' === $option ) {
+                    return [
+                        'league' => [ 'resultConfirmationEmail' => 'secretary@example.com' ],
+                    ];
+                }
+                return $default_value;
+            }
+            public function update_option( string $option, mixed $value, bool|string|null $autoload = null ): bool { return true; }
+            public function delete_option( string $option ): bool { return true; }
+        };
+        $this->option_service = new Option_Service( $option_gateway );
+        $this->club_repository = $this->createStub( Club_Repository_Interface::class );
     }
 
     public function test_contact_league_teams_sends_email_to_team_captains(): void {
@@ -70,7 +70,7 @@ class Competition_Notification_Service_Test extends TestCase {
         $league_query->method( 'get_league_teams' )->willReturn( [ (object) [ 'id' => 1 ] ] );
         $league_query->method( 'get_team_dtls' )->willReturn( $team_dtls );
 
-        $service = new Competition_Notification_Service( $mock_mailer, null, $league_query );
+        $service = new Competition_Notification_Service( $this->option_service, $this->club_repository, $mock_mailer, null, $league_query );
 
         $event = new class extends Event {
             public function __construct() {
@@ -121,7 +121,7 @@ class Competition_Notification_Service_Test extends TestCase {
         $league_query->method( 'get_league_teams' )->willReturn( [ (object) [ 'id' => 2 ] ] );
         $league_query->method( 'get_team_dtls' )->willReturn( $team_dtls );
 
-        $service = new Competition_Notification_Service( $mock_mailer, null, $league_query );
+        $service = new Competition_Notification_Service( $this->option_service, $this->club_repository, $mock_mailer, null, $league_query );
 
         $event = new class extends Event {
             public function __construct() {
@@ -145,6 +145,25 @@ class Competition_Notification_Service_Test extends TestCase {
         $this->assertStringContainsString( 'Withdrawn team', $sent_calls[0]['subject'] );
     }
 
+    public function test_contact_teams_queries_a_real_event_through_the_injected_repository(): void {
+        $competition = \Racketmanager\Tests\Helpers\Competition_Test_Factory::create( id: 10, name: 'Summer League' );
+        $competition->is_player_entry = false;
+        $event = Event::from_object( (object) [ 'id' => 93, 'name' => 'Mens Doubles', 'type' => 'doubles', 'competition_id' => 10, 'seasons' => '{"2026":{"name":"2026"}}' ] );
+        $event->set_season( '2026' );
+        $repository = $this->createMock( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class );
+        $repository->expects( $this->once() )->method( 'find_by_competition_id' )->with( 10 )->willReturn( [ $event ] );
+        $repository->expects( $this->once() )->method( 'query_teams' )
+            ->with( 93, $this->callback( static fn( array $args ): bool => '2026' === $args['season'] ) )
+            ->willReturn( [] );
+        $mailer = $this->createMock( Mailer_Interface::class );
+        $mailer->expects( $this->once() )->method( 'send' )
+            ->with( [], 'Leigh and Westcliff Tennis - Summer League 2026 - Important Message', 'Hello Teams', $this->isArray() )
+            ->willReturn( true );
+
+        $service = new Competition_Notification_Service( $this->option_service, $this->club_repository, $mailer, $repository );
+        $this->assertTrue( $service->contact_teams( $competition, '2026', 'Hello Teams' ) );
+    }
+
     public function test_send_constitution_sends_email_to_club_secretaries(): void {
         $sent_calls = [];
         $mock_mailer = $this->createMock( Mailer_Interface::class );
@@ -155,18 +174,20 @@ class Competition_Notification_Service_Test extends TestCase {
                 return true;
             } );
 
-        $GLOBALS['racketmanager']->get_clubs = function ( $args ) {
-            return [
+        $club_repository = $this->createMock( Club_Repository_Interface::class );
+        $club_repository->expects( $this->once() )
+            ->method( 'find_all' )
+            ->with( [ 'type' => 'affiliated' ] )
+            ->willReturn( [
                 (object) [
                     'match_secretary' => (object) [
                         'display_name' => 'Sec Alice',
                         'email'        => 'alice@example.com',
                     ],
                 ],
-            ];
-        };
+            ] );
 
-        $service = new Competition_Notification_Service( $mock_mailer );
+        $service = new Competition_Notification_Service( $this->option_service, $club_repository, $mock_mailer );
 
         $event = new class extends Event {
             public function __construct() {
@@ -204,14 +225,14 @@ class Competition_Notification_Service_Test extends TestCase {
         $mailer = $this->createMock( Mailer_Interface::class );
         $mailer->expects( $this->once() )->method( 'send' )->willReturn( true );
 
-        $service     = new Competition_Notification_Service( $mailer, $event_repository );
+        $service     = new Competition_Notification_Service( $this->option_service, $this->club_repository, $mailer, $event_repository );
         $competition = \Racketmanager\Tests\Helpers\Competition_Test_Factory::create( id: 31 );
 
         $this->assertTrue( $service->contact_teams( $competition, '2026', 'Hello' ) );
     }
 
     public function test_contact_teams_requires_event_repository(): void {
-        $service     = new Competition_Notification_Service( $this->createStub( Mailer_Interface::class ) );
+        $service     = new Competition_Notification_Service( $this->option_service, $this->club_repository, $this->createStub( Mailer_Interface::class ) );
         $competition = \Racketmanager\Tests\Helpers\Competition_Test_Factory::create( id: 31 );
 
         $this->expectException( \LogicException::class );

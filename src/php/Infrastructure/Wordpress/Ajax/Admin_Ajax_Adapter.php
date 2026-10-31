@@ -43,13 +43,12 @@ class Admin_Ajax_Adapter {
     public function __construct(
         private Security_Service_Interface $security_service,
         private Json_Response_Factory_Interface $response_factory,
-        private RacketManager $racketmanager,
         private Competition_Service $competition_service,
         private Competition_Entry_Service $competition_entry_service,
         private Notification_Service $notification_service,
         private Fixture_Repository_Interface $fixture_repository,
         private Settings_Service $settings_service,
-        private ?League_Team_Repository_Interface $league_team_repository,
+        private League_Team_Repository_Interface $league_team_repository,
         private Competition_Notification_Service $competition_notification_service,
         private Standings_Service $standings_service,
         private League_Repository_Interface $league_repository,
@@ -58,11 +57,6 @@ class Admin_Ajax_Adapter {
     ) {}
 
     private function get_league_team_repository(): League_Team_Repository_Interface {
-        if ( null === $this->league_team_repository ) {
-            $this->league_team_repository = isset( $this->racketmanager->container ) && $this->racketmanager->container->has( 'league_team_repository' )
-                ? $this->racketmanager->container->get( 'league_team_repository' )
-                : new League_Team_Repository();
-        }
         return $this->league_team_repository;
     }
 
@@ -173,7 +167,7 @@ class Admin_Ajax_Adapter {
         $found = false;
         if ( isset( $request['name'] ) ) {
             $name = stripslashes( sanitize_text_field( wp_unslash( (string) $request['name'] ) ) );
-            $team = $this->racketmanager->get_team_id( $name );
+            $team = $this->team_repository->find_id_by_name( $name );
             if ( $team ) {
                 $found = true;
             }

@@ -6,10 +6,14 @@ namespace Racketmanager\Tests\Unit\Services;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Domain\Finance\Charge;
+use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Exceptions\Database_Operation_Exception;
+use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Charge_Repository;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
@@ -48,6 +52,99 @@ class Tournament_Service_Test extends TestCase {
         $expected_message = Util_Messages::tournament_deleted( 123 ) . '<br>' . Util_Messages::tournament_deleted( 456 );
         self::assertEquals( $expected_message, $result['message'] );
         self::assertFalse( $result['message_type'] );
+    }
+
+    public function test_notify_finalists_for_tournament_throws_when_confirmation_email_is_empty(): void {
+        $option_service = $this->createMock( Option_Service::class );
+        $option_service->expects( self::once() )
+            ->method( 'get_confirmation_email' )
+            ->with( 'tournament' )
+            ->willReturn( '' );
+
+        $mailer = $this->createMock( Mailer_Interface::class );
+        $mailer->expects( self::never() )->method( 'send' );
+
+        $service = $this->get_finalist_notification_service( $mailer, $option_service, [ $this->make_finalist( 'Jane Doe', 'jane.doe@example.com' ) ] );
+
+        $this->expectException( Invalid_Argument_Exception::class );
+
+        $service->notify_finalists_for_tournament( 1 );
+    }
+
+    public function test_notify_finalists_for_tournament_sends_from_confirmation_email(): void {
+        $option_service = $this->createMock( Option_Service::class );
+        $option_service->expects( self::once() )
+            ->method( 'get_confirmation_email' )
+            ->with( 'tournament' )
+            ->willReturn( 'tournament@example.com' );
+
+        $mailer = $this->createMock( Mailer_Interface::class );
+        $mailer->expects( self::once() )
+            ->method( 'send' )
+            ->with(
+                'Jane Doe <jane.doe@example.com>',
+                self::anything(),
+                self::anything(),
+                self::callback( fn( array $headers ) => str_contains( implode( "\n", $headers ), 'Tournament Secretary <tournament@example.com>' ) )
+            );
+
+        $service = $this->get_finalist_notification_service( $mailer, $option_service, [ $this->make_finalist( 'Jane Doe', 'jane.doe@example.com' ) ] );
+
+        self::assertTrue( $service->notify_finalists_for_tournament( 1 ) );
+    }
+
+    private function make_finalist( string $display_name, string $email ): Player {
+        $player               = new Player();
+        $player->display_name = $display_name;
+        $player->email        = $email;
+
+        return $player;
+    }
+
+    private function get_finalist_notification_service( Mailer_Interface $mailer, Option_Service $option_service, array $finalists ): MockObject|Tournament_Service {
+        $tournament       = $this->createStub( Tournament::class );
+        $tournament->name = 'Spring Open';
+        $tournament->method( 'get_id' )->willReturn( 1 );
+        $tournament->method( 'get_start_time' )->willReturn( '2026-06-01 10:00:00' );
+        $tournament->method( 'get_time_increment' )->willReturn( '00:30:00' );
+        $tournament->method( 'get_order_of_play' )->willReturn( [] );
+
+        $tournament_repository = $this->createMock( Tournament_Repository_Interface::class );
+        $tournament_repository->method( 'find_finalists_for_tournament' )->willReturn( $finalists );
+
+        $racketmanager             = $this->createStub( RacketManager::class );
+        $racketmanager->site_name  = 'Test Club';
+        $racketmanager->site_url   = 'https://example.com';
+        $racketmanager->shortcodes = new class() {
+            public function load_template( string $template, array $args, string $type ): string {
+                return 'finalists email body';
+            }
+        };
+
+        $service = $this->getMockBuilder( Tournament_Service::class )
+            ->setConstructorArgs( [
+                $racketmanager,
+                $tournament_repository,
+                $this->createMock( Charge_Repository::class ),
+                $this->createMock( Event_Repository_Interface::class ),
+                $this->createMock( Fixture_Service::class ),
+                $this->createMock( League_Team_Repository_Interface::class ),
+                $this->createMock( Tournament_Entry_Repository_Interface::class ),
+                $this->createMock( Competition_Service::class ),
+                $this->createMock( Player_Service::class ),
+                $this->createMock( Player_Stats_Service::class ),
+                $this->createMock( Club_Service::class ),
+                $this->createMock( Finance_Service::class ),
+                $this->createMock( League_Service::class ),
+                $mailer,
+                null,
+                $option_service,
+            ] )
+            ->onlyMethods( [ 'get_tournament' ] )
+            ->getMock();
+        $service->expects( self::once() )->method( 'get_tournament' )->willReturn( $tournament );
+
+        return $service;
     }
 
     private function get_mocked_service( $tournament_repository ): MockObject|Tournament_Service {

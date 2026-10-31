@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Presentation\View;
 
+use Racketmanager\Application\Ports\Template_Renderer_Interface;
 use Racketmanager\Exceptions\Template_Not_Found_Exception;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Favourite_Presenter;
@@ -32,7 +33,7 @@ use function sprintf;
  *  2. typed theme/plugin lookup  View_Renderer_Interface (<type>/<template>)
  * A missing template renders the standard danger alert rather than failing.
  */
-class Shortcode_Template_Renderer {
+class Shortcode_Template_Renderer implements Template_Renderer_Interface {
     private const TYPE_DIRECTORIES = [
         'competition' => 'competition/',
         'event'       => 'event/',

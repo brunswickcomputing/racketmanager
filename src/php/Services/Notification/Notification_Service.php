@@ -3,12 +3,15 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Notification;
 
+use Closure;
+use LogicException;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
@@ -96,18 +99,22 @@ class Notification_Service {
      */
     private Mailer_Interface $mailer;
 
+    private Option_Service $option_service;
+
     /**
      * Constructor.
      *
-     * @param Repository_Provider $repository_provider
-     * @param Settings_Service $settings_service
-     * @param Notification_Presenter_Interface $presenter
-     * @param View_Renderer_Interface $view_renderer
-     * @param RacketManager $app
-     * @param Mailer_Interface|null $mailer
      */
     public function __construct(
-        private Repository_Provider $repository_provider, Settings_Service $settings_service, Notification_Presenter_Interface $presenter, View_Renderer_Interface $view_renderer, RacketManager $app, ?Mailer_Interface $mailer = null, private ?Event_Query_Service $event_query_service = null, private League_Query_Service|\Closure|null $league_query_service = null
+        private readonly Repository_Provider $repository_provider,
+        Settings_Service $settings_service,
+        Notification_Presenter_Interface $presenter,
+        View_Renderer_Interface $view_renderer,
+        RacketManager $app,
+        ?Mailer_Interface $mailer = null,
+        private ?Event_Query_Service $event_query_service = null,
+        private League_Query_Service|Closure|null $league_query_service = null,
+        ?Option_Service $option_service = null
     ) {
         $this->league_repository      = $repository_provider->get_league_repository();
         $this->league_team_repository = $repository_provider->get_league_team_repository();
@@ -118,6 +125,7 @@ class Notification_Service {
         $this->presenter              = $presenter;
         $this->view_renderer          = $view_renderer;
         $this->app                    = $app;
+        $this->option_service         = $option_service ?? new Option_Service();
         $this->mailer                 = $mailer ?? new Wp_Mailer();
     }
 
@@ -135,11 +143,11 @@ class Notification_Service {
     }
 
     private function league_query(): League_Query_Service {
-        if ( $this->league_query_service instanceof \Closure ) {
+        if ( $this->league_query_service instanceof Closure ) {
             $this->league_query_service = ( $this->league_query_service )();
         }
         if ( ! $this->league_query_service instanceof League_Query_Service ) {
-            throw new \LogicException( 'League_Query_Service is required by Notification_Service but was not configured.' );
+            throw new LogicException( 'League_Query_Service is required by Notification_Service but was not configured.' );
         }
 
         return $this->league_query_service;
@@ -160,7 +168,7 @@ class Notification_Service {
         }
 
         $comp_type   = $this->get_competition_type_string( $league->event->competition->type ?? 'league' );
-        $admin_email = $this->app->get_confirmation_email( $comp_type );
+        $admin_email = $this->option_service->get_confirmation_email( $comp_type );
         if ( empty( $admin_email ) ) {
             return;
         }
@@ -310,7 +318,7 @@ class Notification_Service {
         }
 
         $comp_type  = $this->get_competition_type_string( $league->event->competition->type ?? 'league' );
-        $email_from = $this->app->get_confirmation_email( $comp_type );
+        $email_from = $this->option_service->get_confirmation_email( $comp_type );
         $headers    = array( 'From: ' . $organisation_name . ' <' . $email_from . '>' );
 
         $subject = sprintf( /* translators: 1: organisation name, 2: fixture title */ __( '[%1$s] Result Error: %2$s', 'racketmanager' ), $organisation_name, $fixture->fixture_title );
@@ -394,7 +402,7 @@ class Notification_Service {
         }
 
         $comp_type   = $this->get_competition_type_string( $league->event->competition->type ?? 'league' );
-        $admin_email = $args['from_email'] ?? $this->app->get_confirmation_email( $comp_type );
+        $admin_email = $args['from_email'] ?? $this->option_service->get_confirmation_email( $comp_type );
         if ( empty( $admin_email ) ) {
             return null;
         }
@@ -525,7 +533,7 @@ class Notification_Service {
         }
 
         $comp_type       = $this->get_competition_type_string( $league->event->competition->type ?? 'league' );
-        $email_from      = $this->app->get_confirmation_email( $comp_type );
+        $email_from      = $this->option_service->get_confirmation_email( $comp_type );
         $secretary_email = ucfirst( $comp_type ) . ' ' . __( 'Secretary', 'racketmanager' ) . ' <' . $email_from . '>';
         $headers         = array(
             RACKETMANAGER_FROM_EMAIL . $secretary_email,
@@ -685,7 +693,7 @@ class Notification_Service {
         }
 
         $comp_type   = $this->get_competition_type_string( $league->event->competition->type ?? 'league' );
-        $admin_email = $this->app->get_confirmation_email( $comp_type );
+        $admin_email = $this->option_service->get_confirmation_email( $comp_type );
         if ( empty( $admin_email ) ) {
             return;
         }
@@ -731,7 +739,7 @@ class Notification_Service {
     public function send_event_fixtures( object $event ): bool {
         $message_sent      = false;
         $comp_type         = $this->get_competition_type_string( $event->competition->type ?? 'league' );
-        $from_email        = $this->app->get_confirmation_email( $comp_type );
+        $from_email        = $this->option_service->get_confirmation_email( $comp_type );
         $organisation_name = $this->app->site_name ?? '';
         $leagues           = $this->event_query()->get_leagues( $event );
 
@@ -795,7 +803,7 @@ class Notification_Service {
     }
 
     /**
-     * Normalize competition type to string value.
+     * Normalise the competition type to string value.
      *
      * @param Competition_Type|string|null $type
      * @return string

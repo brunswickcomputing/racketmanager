@@ -28,6 +28,7 @@ use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Standings\Standings_Service;
+use Racketmanager\Services\Team_Service;
 use Racketmanager\Util\Util;
 use stdClass;
 
@@ -41,8 +42,10 @@ readonly final class Import_Action_Dispatcher implements Import_Action_Dispatche
      * @param Fixture_Service        $fixture_service
      * @param Player_Service         $player_service
      * @param Registration_Service   $registration_service
+     * @param League_Team_Repository_Interface $league_team_repository
+     * @param Standings_Service      $standings_service
      * @param League_Query_Service   $league_query_service
-     * @param object|null            $racketmanager
+     * @param Team_Service           $team_service Resolves team ID by name.
      * @param League_Repository_Interface|null $league_repository Resolves the league an import targets.
      */
     public function __construct(
@@ -53,7 +56,7 @@ readonly final class Import_Action_Dispatcher implements Import_Action_Dispatche
         private League_Team_Repository_Interface $league_team_repository,
         private Standings_Service $standings_service,
         private League_Query_Service $league_query_service,
-        private ?object $racketmanager = null,
+        private Team_Service $team_service,
         private ?League_Repository_Interface $league_repository = null,
     ) {
     }
@@ -453,13 +456,6 @@ readonly final class Import_Action_Dispatcher implements Import_Action_Dispatche
      * Resolve team ID from team name.
      */
     private function get_team_id( string $team ): ?int {
-        if ( $this->racketmanager && method_exists( $this->racketmanager, 'get_team_id' ) ) {
-            return $this->racketmanager->get_team_id( $team );
-        }
-        global $racketmanager;
-        if ( $racketmanager && method_exists( $racketmanager, 'get_team_id' ) ) {
-            return $racketmanager->get_team_id( $team );
-        }
-        return null;
+        return $this->team_service->get_team_id( $team );
     }
 }

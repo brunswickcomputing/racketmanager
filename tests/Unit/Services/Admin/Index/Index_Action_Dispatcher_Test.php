@@ -7,6 +7,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Duplicate_Competition_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Services\Admin\Index\Index_Action_Dispatcher;
@@ -106,6 +107,75 @@ final class Index_Action_Dispatcher_Test extends TestCase {
         self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
         self::assertSame( 'Competition already exists', $result->flash_data['errors']['competition'] );
         self::assertSame( 'Summer Cup', $result->flash_data['competition_name'] );
+    }
+
+    public function test_add_duplicate_competition_flags_validation_error_with_default_validator_factory(): void {
+        $service = $this->createMock( Competition_Service::class );
+        $guard   = $this->createMock( Action_Guard_Interface::class );
+        $guard->expects( self::once() )
+            ->method( 'assert_allowed' )
+            ->with( 'racketmanager_nonce', 'racketmanager_add-competition', 'edit_leagues' );
+
+        $existing = $this->createStub( Competition::class );
+        $service->expects( self::once() )
+            ->method( 'get_competition' )
+            ->with( 'Summer Cup', 'name' )
+            ->willReturn( $existing );
+        $service->expects( self::never() )->method( 'create' );
+
+        $result = new Index_Action_Dispatcher( $service, $guard )->handle(
+            array(),
+            array(
+                'addCompetition'   => 'competition',
+                'competition_name' => 'Summer Cup',
+                'type'             => 'tournament',
+                'age_group'        => 'junior',
+            )
+        );
+
+        self::assertSame( 'Error in competition creation', $result->message );
+        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
+        self::assertSame(
+            array(
+                'errors'           => array(
+                    'competition' => 'Competition already found',
+                ),
+                'competition_name' => 'Summer Cup',
+                'type'             => 'tournament',
+                'age_group'        => 'junior',
+            ),
+            $result->flash_data
+        );
+    }
+
+    public function test_add_new_competition_succeeds_with_default_validator_factory(): void {
+        $service = $this->createMock( Competition_Service::class );
+        $guard   = $this->createMock( Action_Guard_Interface::class );
+        $guard->expects( self::once() )
+            ->method( 'assert_allowed' )
+            ->with( 'racketmanager_nonce', 'racketmanager_add-competition', 'edit_leagues' );
+
+        $service->expects( self::once() )
+            ->method( 'get_competition' )
+            ->with( 'Summer Cup', 'name' )
+            ->willThrowException( new Competition_Not_Found_Exception( 'Competition not found' ) );
+        $service->expects( self::once() )
+            ->method( 'create' )
+            ->with( 'Summer Cup', 'tournament', 'junior' )
+            ->willReturn( $this->createStub( Competition::class ) );
+
+        $result = new Index_Action_Dispatcher( $service, $guard )->handle(
+            array(),
+            array(
+                'addCompetition'   => 'competition',
+                'competition_name' => 'Summer Cup',
+                'type'             => 'tournament',
+                'age_group'        => 'junior',
+            )
+        );
+
+        self::assertSame( 'Competition added', $result->message );
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
     }
 
     public function test_add_success_creates_competition_after_guard_and_validation(): void {

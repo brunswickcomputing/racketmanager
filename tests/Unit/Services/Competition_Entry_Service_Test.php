@@ -38,6 +38,7 @@ use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Repositories\Tournament_Entry_Repository;
 use Racketmanager\Repositories\Tournament_Repository;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
@@ -62,6 +63,7 @@ class Competition_Entry_Service_Test extends TestCase {
     private Competition_Entry_Service $service;
     private Competition_Service $competition_service;
     private Event_Repository_Interface|MockObject $event_repository;
+    private Player_Repository_Interface $player_repository;
     private Event_Query_Service $event_query_service;
     private Team_Repository|MockObject $team_repository;
     private Club_Repository $club_repository;
@@ -75,6 +77,7 @@ class Competition_Entry_Service_Test extends TestCase {
     private Tournament_Service $tournament_service;
     private Club_Service $club_service;
     private Finance_Service|MockObject $finance_service;
+    private Option_Service|MockObject $option_service;
     private RacketManager $plugin;
     private ?Club $club_to_return;
     private ?Competition $competition_to_return;
@@ -88,7 +91,8 @@ class Competition_Entry_Service_Test extends TestCase {
 
         $this->plugin = $this->createStub( RacketManager::class );
         $this->plugin->site_name = 'Test Site';
-        $this->plugin->method( 'get_confirmation_email' )->willReturn( 'league@test.local' );
+        $this->option_service = $this->createMock( Option_Service::class );
+        $this->option_service->method( 'get_confirmation_email' )->willReturn( 'league@test.local' );
 
         $this->competition_service = $this->createMock( Competition_Service::class );
         $this->competition_to_return = null;
@@ -101,7 +105,7 @@ class Competition_Entry_Service_Test extends TestCase {
             $this->createStub( League_Repository::class )
         );
         $this->team_repository = $this->createMock( Team_Repository::class );
-        $this->club_repository = $this->createStub( Club_Repository::class );
+        $this->club_repository = $this->createMock( Club_Repository::class );
         $this->league_team_repository = $this->createMock( League_Team_Repository::class );
         $this->player_service = $this->createMock( Player_Service::class );
         $this->notify_service = $this->createStub( Notify_Service::class );
@@ -116,6 +120,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $container->set( 'player_service', $this->player_service );
         $this->validator_players = [];
         $player_repository       = $this->createStub( Player_Repository_Interface::class );
+        $this->player_repository = $player_repository;
         $player_repository->method( 'find' )->willReturnCallback(
             fn( $value, string $search_term = 'id' ): ?Player => $this->validator_players[ $search_term ][ $value ] ?? null
         );
@@ -151,7 +156,10 @@ class Competition_Entry_Service_Test extends TestCase {
             player_service: $this->player_service,
             tournament_service: $this->tournament_service,
             notify_service: $this->notify_service,
-            event_query_service: $this->event_query_service
+            event_query_service: $this->event_query_service,
+            option_service: $this->option_service,
+            player_repository: $this->player_repository,
+            event_repository: $this->event_repository
         );
     }
 
@@ -1658,7 +1666,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
         $this->plugin->date_format = 'd/m/Y';
         $this->plugin->site_url = 'https://tennis.example.com';
-        $this->plugin->method( 'get_confirmation_email' )->willReturn( 'tournaments@test.local' );
+        $this->option_service->method( 'get_confirmation_email' )->willReturn( 'tournaments@test.local' );
 
         $player = $this->create_tournament_player( 10, 'M', 1990, 'opted@test.local' );
         $this->tournament_repository->method( 'find_previous_tournament_players_with_optin' )->willReturn( [ $player ] );
@@ -3268,7 +3276,8 @@ class Competition_Entry_Service_Test extends TestCase {
             notify_service: $this->notify_service,
             event_query_service: $this->event_query_service,
             mailer: $fake_mailer,
-            option_gateway: $option_gateway
+            option_gateway: $option_gateway,
+            option_service: $this->option_service
         );
 
         $competition = Competition_Test_Factory::create(
@@ -3308,8 +3317,8 @@ class Competition_Entry_Service_Test extends TestCase {
         $club->set_name( 'Leigh Tennis Club' );
         $club->set_shortcode( 'Leigh' );
 
-        $this->plugin->method( 'get_clubs' )->willReturn( [ $club ] );
-        $this->plugin->method( 'get_confirmation_email' )->willReturn( 'league@test.local' );
+        $this->club_repository->expects( $this->once() )->method( 'find_all' )->with( array( 'type' => false ) )->willReturn( [ $club ] );
+        $this->option_service->method( 'get_confirmation_email' )->willReturn( 'league@test.local' );
         $this->plugin->site_name = 'Test Tennis League';
         $this->plugin->site_url  = 'https://example.com';
 
@@ -3403,7 +3412,8 @@ class Competition_Entry_Service_Test extends TestCase {
             notify_service: $this->notify_service,
             event_query_service: $this->event_query_service,
             mailer: $fake_mailer,
-            option_gateway: $option_gateway
+            option_gateway: $option_gateway,
+            option_service: $this->option_service
         );
 
         $competition = Competition_Test_Factory::create(
@@ -3443,8 +3453,8 @@ class Competition_Entry_Service_Test extends TestCase {
         $club->set_name( 'Leigh Tennis Club' );
         $club->set_shortcode( 'Leigh' );
 
-        $this->plugin->method( 'get_clubs' )->willReturn( [ $club ] );
-        $this->plugin->method( 'get_confirmation_email' )->willReturn( 'league@test.local' );
+        $this->club_repository->expects( $this->once() )->method( 'find_all' )->with( array( 'type' => false ) )->willReturn( [ $club ] );
+        $this->option_service->method( 'get_confirmation_email' )->willReturn( 'league@test.local' );
         $this->plugin->site_name = 'Test Tennis League';
         $this->plugin->site_url  = 'https://example.com';
 
@@ -3545,7 +3555,8 @@ class Competition_Entry_Service_Test extends TestCase {
             notify_service: $this->notify_service,
             event_query_service: $this->event_query_service,
             mailer: $fake_mailer,
-            option_gateway: $option_gateway
+            option_gateway: $option_gateway,
+            option_service: $this->option_service
         );
 
         $club = new Club();
@@ -3553,8 +3564,8 @@ class Competition_Entry_Service_Test extends TestCase {
         $club->set_name( 'Leigh Tennis Club' );
         $club->set_shortcode( 'Leigh' );
 
-        $this->plugin->method( 'get_clubs' )->willReturn( [ $club ] );
-        $this->plugin->method( 'get_confirmation_email' )->willReturn( 'cup@test.local' );
+        $this->club_repository->expects( $this->once() )->method( 'find_all' )->with( array( 'type' => false ) )->willReturn( [ $club ] );
+        $this->option_service->method( 'get_confirmation_email' )->willReturn( 'cup@test.local' );
         $this->plugin->site_name = 'Test Tennis League';
         $this->plugin->site_url  = 'https://example.com';
 

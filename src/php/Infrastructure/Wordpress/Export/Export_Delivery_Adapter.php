@@ -25,7 +25,7 @@ class Export_Delivery_Adapter {
      * @param RacketManager|null $racketmanager
      */
     public function __construct( ?RacketManager $racketmanager = null ) {
-        $this->racketmanager = $racketmanager ?? ( $GLOBALS['racketmanager'] ?? null );
+        $this->racketmanager = $racketmanager;
     }
 
     /**

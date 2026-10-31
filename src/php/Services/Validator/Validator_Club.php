@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Services\Validator;
 
 use Racketmanager\Repositories\Club_Role_Repository;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
@@ -31,9 +32,10 @@ final class Validator_Club extends Validator {
     public function __construct(
         ?Club_Role_Repository_Interface $club_role_repository = null,
         ?Player_Repository_Interface $player_repository = null,
-        ?User_Repository_Interface $user_repository = null
+        ?User_Repository_Interface $user_repository = null,
+        ?Club_Repository_Interface $club_repository = null
     ) {
-        parent::__construct( player_repository: $player_repository, user_repository: $user_repository );
+        parent::__construct( player_repository: $player_repository, club_repository: $club_repository, user_repository: $user_repository );
         $this->club_role_repository = $club_role_repository ?? new Club_Role_Repository();
     }
     /**

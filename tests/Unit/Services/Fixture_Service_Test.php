@@ -595,4 +595,36 @@ class Fixture_Service_Test extends TestCase {
         $this->service->update_match( $custom_match );
         $this->assertTrue( $updated );
     }
+
+    public function test_get_matches_delegates_query_args_to_repository_find_all(): void {
+        $args    = array( 'league_id' => 7, 'season' => '2026', 'limit' => 10 );
+        $matches = array( (object) array( 'id' => 1 ), (object) array( 'id' => 2 ) );
+
+        $this->fixture_repository->expects( $this->once() )
+            ->method( 'find_all' )
+            ->with( $args )
+            ->willReturn( $matches );
+
+        $this->assertSame( $matches, $this->service->get_matches( $args ) );
+    }
+
+    public function test_get_matches_without_args_passes_empty_array_to_repository(): void {
+        $this->fixture_repository->expects( $this->once() )
+            ->method( 'find_all' )
+            ->with( array() )
+            ->willReturn( array() );
+
+        $this->assertSame( array(), $this->service->get_matches() );
+    }
+
+    public function test_get_matches_returns_count_when_repository_returns_int(): void {
+        $args = array( 'league_id' => 7, 'count' => true );
+
+        $this->fixture_repository->expects( $this->once() )
+            ->method( 'find_all' )
+            ->with( $args )
+            ->willReturn( 12 );
+
+        $this->assertSame( 12, $this->service->get_matches( $args ) );
+    }
 }

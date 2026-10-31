@@ -7,7 +7,10 @@ use Racketmanager\Domain\Result\Result;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
+use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
+use Racketmanager\Application\Ports\Template_Renderer_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
@@ -34,10 +37,22 @@ class Result_Service {
      */
     private ?League_Repository_Interface $league_repository;
 
-    public function __construct( Fixture_Repository_Interface $fixture_repository, Team_Repository_Interface $team_repository, ?Mailer_Interface $mailer = null, ?League_Repository_Interface $league_repository = null ) {
-        $this->league_repository = $league_repository;
+    /**
+     * @var Option_Service
+     */
+    private Option_Service $option_service;
+
+    /**
+     * @var Template_Renderer_Interface
+     */
+    private Template_Renderer_Interface $template_renderer;
+
+    public function __construct( Fixture_Repository_Interface $fixture_repository, Team_Repository_Interface $team_repository, Option_Service $option_service, Template_Renderer_Interface $template_renderer, ?Mailer_Interface $mailer = null, ?League_Repository_Interface $league_repository = null ) {
+        $this->league_repository  = $league_repository;
         $this->fixture_repository = $fixture_repository;
         $this->team_repository    = $team_repository;
+        $this->option_service     = $option_service;
+        $this->template_renderer  = $template_renderer;
         $this->mailer             = $mailer ?? new Wp_Mailer();
     }
 
@@ -60,11 +75,10 @@ class Result_Service {
      * @param string|null $confirmed Confirmation status ('Y', 'N', 'P').
      */
     public function apply_to_fixture( Fixture $fixture, Result $result, ?string $confirmed = null ): void {
-        global $racketmanager;
-        
         $league = $this->find_league( $fixture );
-        $competition_type = $league?->event?->competition?->type ?? 'league';
-        $rm_options = $racketmanager->get_options();
+        $raw_type = $league?->event?->competition?->type ?? 'league';
+        $competition_type = $raw_type instanceof Competition_Type ? $raw_type->value : (string) $raw_type;
+        $rm_options = $this->option_service->get_options();
         $result_confirmation = $rm_options[ $competition_type ]['resultConfirmation'] ?? 'manual';
 
         // Handle auto-confirmation and admin override
@@ -103,8 +117,6 @@ class Result_Service {
      * @param Fixture $fixture
      */
     public function notify_favourites( Fixture $fixture ): void {
-        global $racketmanager;
-
         $league = $this->find_league( $fixture );
         if ( ! $league ) {
             return;
@@ -156,15 +168,18 @@ class Result_Service {
         }
 
         $headers           = array();
-        $competition_type  = $league->event->competition->type;
-        $from_email        = $racketmanager->get_confirmation_email( $competition_type );
+        $raw_type          = $league->event->competition->type ?? 'league';
+        $competition_type  = $raw_type instanceof Competition_Type ? $raw_type->value : (string) $raw_type;
+        $from_email        = $this->option_service->get_confirmation_email( $competition_type );
         $headers[]         = RACKETMANAGER_FROM_EMAIL . ucfirst( $competition_type ) . ' Secretary <' . $from_email . '>';
-        $organisation_name = $racketmanager->site_name;
-        $email_subject     = $racketmanager->site_name . ' - ' . $league->title . ' Result Notification';
-        $favourite_url     = $racketmanager->site_url . '/member-account/favourites';
-        
+        $site_name         = $this->option_service->get_site_name();
+        $site_url          = $this->option_service->get_site_url();
+        $organisation_name = $site_name;
+        $email_subject     = $site_name . ' - ' . $league->title . ' Result Notification';
+        $favourite_url     = $site_url . '/member-account/favourites';
+
         // We need a link to the fixture, which might not be fully implemented in the new Fixture class yet
-        $match_url = $racketmanager->site_url . '/fixture/' . $fixture->get_id();
+        $match_url = $site_url . '/fixture/' . $fixture->get_id();
 
         foreach ( $favourited_users as $user ) {
             $user_details  = get_userdata( $user );
@@ -172,7 +187,7 @@ class Result_Service {
                 continue;
             }
             $email_to      = $user_details->display_name . ' <' . $user_details->user_email . '>';
-            $email_message = $racketmanager->shortcodes->load_template(
+            $email_message = $this->template_renderer->render(
                 'favourite-notification',
                 array(
                     'email_subject' => $email_subject,

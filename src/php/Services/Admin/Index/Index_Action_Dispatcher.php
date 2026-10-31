@@ -39,7 +39,7 @@ readonly final class Index_Action_Dispatcher implements Index_Action_Dispatcher_
         private Action_Guard_Interface $action_guard,
         ?callable $validator_factory = null,
     ) {
-        $factory                 = $validator_factory ?? static fn (): object => new Validator();
+        $factory                 = $validator_factory ?? static fn (): object => new Validator( competition_service: $competition_service );
         $this->validator_factory = $factory( ... );
     }
 

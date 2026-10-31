@@ -148,6 +148,18 @@ class Team_Repository implements Team_Repository_Interface {
     }
 
     /**
+     * Find a team ID by name (title)
+     *
+     * @param string $name
+     *
+     * @return int|null
+     */
+    public function find_id_by_name( string $name ): ?int {
+        $id = $this->find_id_by_title( $name );
+        return $id > 0 ? $id : null;
+    }
+
+    /**
      * Read the persisted title of a team with a lightweight scalar query (no hydration).
      *
      * @param int $id

@@ -15,8 +15,6 @@ use Racketmanager\Infrastructure\Wordpress\Shortcodes\Shortcode_Registrar;
 use Racketmanager\Infrastructure\Wordpress\Templates\Template_Loader;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
-use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
-use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
@@ -91,75 +89,6 @@ final class RacketManager_Facade_Delegation_Test extends TestCase {
         $this->assertFalse( $this->facade->get_season( [] ) );
     }
 
-    public function test_get_clubs_delegates_to_club_repository(): void {
-        $mock = $this->createMock( Club_Repository_Interface::class );
-        $mock->expects( $this->once() )
-            ->method( 'find_all' )
-            ->with( [ 'type' => false ] )
-            ->willReturn( [ (object) [ 'id' => 5 ] ] );
-
-        $this->container->set( 'club_repository', fn() => $mock );
-
-        $result = $this->facade->get_clubs();
-        $this->assertCount( 1, $result );
-        $this->assertSame( 5, $result[0]->id );
-    }
-
-    public function test_get_clubs_passes_custom_arguments_to_club_repository(): void {
-        $mock = $this->createMock( Club_Repository_Interface::class );
-        $mock->expects( $this->once() )
-            ->method( 'find_all' )
-            ->with( [ 'type' => 'affiliated' ] )
-            ->willReturn( [ (object) [ 'id' => 10 ] ] );
-
-        $this->container->set( 'club_repository', fn() => $mock );
-
-        $result = $this->facade->get_clubs( [ 'type' => 'affiliated' ] );
-        $this->assertCount( 1, $result );
-        $this->assertSame( 10, $result[0]->id );
-    }
-
-    public function test_get_events_delegates_to_event_repository(): void {
-        $mock = $this->createMock( Event_Repository_Interface::class );
-        $mock->expects( $this->once() )
-            ->method( 'find_all' )
-            ->with( [ 'season' => '2026' ] )
-            ->willReturn( [ (object) [ 'id' => 12 ] ] );
-
-        $this->container->set( 'event_repository', fn() => $mock );
-
-        $result = $this->facade->get_events( [ 'season' => '2026' ] );
-        $this->assertCount( 1, $result );
-        $this->assertSame( 12, $result[0]->id );
-    }
-
-    public function test_get_leagues_delegates_to_league_repository(): void {
-        $mock = $this->createMock( League_Repository_Interface::class );
-        $mock->expects( $this->once() )
-            ->method( 'find_all' )
-            ->with( [ 'name' => 'Premier' ] )
-            ->willReturn( [ (object) [ 'id' => 45 ] ] );
-
-        $this->container->set( 'league_repository', fn() => $mock );
-
-        $result = $this->facade->get_leagues( [ 'name' => 'Premier' ] );
-        $this->assertCount( 1, $result );
-        $this->assertSame( 45, $result[0]->id );
-    }
-
-    public function test_get_team_id_delegates_to_team_repository(): void {
-        $mock = $this->createMock( Team_Repository_Interface::class );
-        $mock->expects( $this->once() )
-            ->method( 'find_id_by_title' )
-            ->with( 'Leigh 1' )
-            ->willReturn( 99 );
-
-        $this->container->set( 'team_repository', fn() => $mock );
-
-        $result = $this->facade->get_team_id( 'Leigh 1' );
-        $this->assertSame( 99, $result );
-    }
-
     public function test_is_player_in_club_delegates_to_club_repository(): void {
         $mock = $this->createMock( Club_Repository_Interface::class );
         $mock->expects( $this->once() )
@@ -198,35 +127,6 @@ final class RacketManager_Facade_Delegation_Test extends TestCase {
         $this->container->set( 'player_repository', fn() => $mock );
 
         $this->assertSame( 5, $this->facade->get_all_players( [ 'name' => 'Jo' ] )[0]->id );
-    }
-
-    public function test_get_matches_delegates_to_fixture_repository(): void {
-        $mock = $this->createMock( Fixture_Repository_Interface::class );
-        $mock->expects( $this->once() )
-            ->method( 'find_all' )
-            ->with( [ 'season' => '2026' ] )
-            ->willReturn( [ (object) [ 'id' => 88 ] ] );
-
-        $this->container->set( 'fixture_repository', fn() => $mock );
-
-        $result = $this->facade->get_matches( [ 'season' => '2026' ] );
-        $this->assertCount( 1, $result );
-        $this->assertSame( 88, $result[0]->id );
-    }
-
-    public function test_get_winners_delegates_to_competition_repository(): void {
-        $mock = $this->createMock( Competition_Repository_Interface::class );
-        $mock->expects( $this->once() )
-            ->method( 'get_winners' )
-            ->with( '2026', 15, 'tournament', false )
-            ->willReturn( [ (object) [ 'id' => 10, 'winner' => 'Team A' ] ] );
-
-        $this->container->set( 'competition_repository', fn() => $mock );
-
-        $result = $this->facade->get_winners( '2026', 15, 'tournament', false );
-        $this->assertIsArray( $result );
-        $this->assertCount( 1, $result );
-        $this->assertSame( 'Team A', $result[0]->winner );
     }
 
     public function test_get_result_warnings_delegates_to_results_checker_repository(): void {
@@ -443,22 +343,6 @@ final class RacketManager_Facade_Delegation_Test extends TestCase {
         $this->assertFalse( $this->facade->get_player_name( 999 ) );
     }
 
-    public function test_get_confirmation_email_reads_from_options(): void {
-        $mock_option_service = $this->createStub( Option_Service::class );
-        $mock_option_service->method( 'get_options' )
-            ->willReturn( [
-                'league' => [ 'resultConfirmationEmail' => 'league_sec@example.com' ],
-            ] );
-
-        $this->facade->option_service = $mock_option_service;
-
-        $email = $this->facade->get_confirmation_email( 'league' );
-        $this->assertSame( 'league_sec@example.com', $email );
-
-        $empty_email = $this->facade->get_confirmation_email( 'nonexistent' );
-        $this->assertSame( '', $empty_email );
-    }
-
     public function test_options_delegations_to_option_service(): void {
         $mock_option_service = $this->createMock( Option_Service::class );
         $mock_option_service->expects( $this->exactly( 3 ) )
@@ -622,5 +506,19 @@ final class RacketManager_Facade_Delegation_Test extends TestCase {
         $this->assertTrue( $this->facade->is_user_favourite( 'club', 5 ) );
         $this->assertTrue( $this->facade->is_user_favourite( 'club', 12 ) );
         $this->assertFalse( $this->facade->is_user_favourite( 'club', 99 ) );
+    }
+
+    public function test_facade_query_methods_are_removed(): void {
+        $methods = ['get_confirmation_email', 'get_matches', 'get_clubs', 'get_leagues', 'get_team_id', 'get_events', 'get_winners'];
+        foreach ($methods as $method) {
+            self::assertFalse(method_exists(RacketManager::class, $method), "Method $method should have been removed from RacketManager");
+        }
+    }
+
+    public function test_facade_ajax_properties_are_removed(): void {
+        $props = ['ajax_registry', 'ajax_account', 'ajax_club', 'ajax_fixture', 'ajax_tournament', 'ajax_finance', 'ajax_frontend'];
+        foreach ($props as $prop) {
+            self::assertFalse(property_exists(RacketManager::class, $prop), "Property $prop should have been removed from RacketManager");
+        }
     }
 }

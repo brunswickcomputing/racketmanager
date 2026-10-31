@@ -9,11 +9,12 @@ use Racketmanager\Domain\DTO\Rest\Rest_Standing_Response;
 use Racketmanager\Domain\DTO\Rest\Rest_Standings_Query;
 use Racketmanager\Domain\DTO\Rest\Rest_Stripe_Webhook_Command;
 use Racketmanager\Application\Export\DTO\Export_Criteria;
-use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
+use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Export\Formatters\Export_Formatter_Interface;
 use Racketmanager\Util\Util_Lookup;
 use WP_Error;
@@ -43,8 +44,14 @@ class Rest_Controller_Adapter {
 
     /**
      * @param League_Repository_Interface|null $league_repository Used to resolve league titles from a league id when the match carries none.
+     * @param Team_Repository_Interface|null   $team_repository   Used to resolve team titles from a team id when the match carries none.
+     * @param Competition_Service|null         $competition_service Used to resolve league repository/titles when league repo is not injected.
      */
-    public function __construct( private readonly ?League_Repository_Interface $league_repository = null ) {
+    public function __construct(
+        private readonly ?League_Repository_Interface $league_repository = null,
+        private readonly ?Team_Repository_Interface $team_repository = null,
+        private readonly ?Competition_Service $competition_service = null
+    ) {
     }
 
     /**
@@ -309,11 +316,9 @@ class Rest_Controller_Adapter {
                 return $this->league_title_cache[ $cache_key ];
             }
 
-            global $racketmanager;
-            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'competition_service' ) ) {
+            if ( null !== $this->competition_service ) {
                 try {
-                    $comp_service = $racketmanager->container->get( 'competition_service' );
-                    $league_repo  = method_exists( $comp_service, 'get_league_repository' ) ? $comp_service->get_league_repository() : null;
+                    $league_repo = method_exists( $this->competition_service, 'get_league_repository' ) ? $this->competition_service->get_league_repository() : null;
                     if ( $league_repo ) {
                         $league = $league_repo->find_by_id( (int) $league_id );
                         if ( $league ) {
@@ -409,31 +414,17 @@ class Rest_Controller_Adapter {
             return $this->team_title_cache[ $cache_key ];
         }
 
-        global $racketmanager;
         $title = '';
 
-        if ( isset( $racketmanager->container ) ) {
-            if ( $racketmanager->container->has( 'team_repository' ) ) {
-                try {
-                    $team = $racketmanager->container->get( 'team_repository' )->find_by_id( $team_id );
-                    if ( $team ) {
-                        $name  = method_exists( $team, 'get_name' ) ? $team->get_name() : '';
-                        $title = '' !== $name ? $name : ( $team->title ?? ( $team->name ?? '' ) );
-                    }
-                } catch ( Team_Not_Found_Exception | Invalid_Argument_Exception ) {
-                    $title = '';
+        if ( null !== $this->team_repository ) {
+            try {
+                $team = $this->team_repository->find_by_id( $team_id );
+                if ( $team ) {
+                    $name  = method_exists( $team, 'get_name' ) ? $team->get_name() : '';
+                    $title = '' !== $name ? $name : ( $team->title ?? ( $team->name ?? '' ) );
                 }
-            } elseif ( $racketmanager->container->has( 'team_service' ) ) {
-                try {
-                    $details = $racketmanager->container->get( 'team_service' )->get_team_details( $team_id );
-                    if ( $details && $details->team ) {
-                        $team  = $details->team;
-                        $name  = method_exists( $team, 'get_name' ) ? $team->get_name() : '';
-                        $title = '' !== $name ? $name : ( $team->title ?? ( $team->name ?? '' ) );
-                    }
-                } catch ( Team_Not_Found_Exception | Club_Not_Found_Exception | Invalid_Argument_Exception ) {
-                    $title = '';
-                }
+            } catch ( Team_Not_Found_Exception | Invalid_Argument_Exception ) {
+                $title = '';
             }
         }
 

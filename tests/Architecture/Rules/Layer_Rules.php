@@ -479,11 +479,12 @@ final class Layer_Rules {
             new Layer_Rule(
                 'services.no_global_racketmanager',
                 'Services, Infrastructure, Presentation, Rest, Util and Public code must not use the global $racketmanager service locator',
-                'Backlog P3-12: inject the collaborator through the container provider instead of global $racketmanager / $GLOBALS[\'racketmanager\'] (audit L5).',
+                'Inject the collaborator through the container provider instead of global $racketmanager / $GLOBALS[\'racketmanager\'] (audit L5, P3-12 done).',
                 [ self::SERVICES, self::INFRASTRUCTURE, self::PRESENTATION, self::REST, self::UTIL, self::PUBLIC ],
                 Rule_Kind::FORBIDDEN_GLOBAL,
                 [ 'racketmanager' ],
-                Rule_Mode::RATCHET
+                Rule_Mode::STRICT,
+                [ self::INFRASTRUCTURE . 'Wordpress/Bootstrap/Plugin_Bootstrap.php' ]
             ),
             new Layer_Rule(
                 'services.no_presentation_imports',

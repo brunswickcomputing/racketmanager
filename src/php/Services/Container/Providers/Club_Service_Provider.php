@@ -49,8 +49,10 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
             $c->get( 'club_role_repository' ),
             $c->get( 'player_repository' ),
             $c->get( 'team_repository' ),
-            $c->get( 'player_service' )
+            $c->get( 'player_service' ),
+            $c->get( 'option_service' )
         ) );
+        $container->set( Club_Service::class, fn( Simple_Container $c ): Club_Service => $c->get( 'club_service' ) );
 
         $container->set( 'registration_service', fn( Simple_Container $c ) => new Registration_Service(
             $app,
@@ -71,6 +73,7 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
             $c->get( 'fixture_repository' ),
             $c->get( 'event_query_service' )
         ) );
+        $container->set( Team_Service::class, fn( Simple_Container $c ): Team_Service => $c->get( 'team_service' ) );
 
         // Query Handlers
         $container->set( 'get_club_handler', fn( Simple_Container $c ) => new Get_Club_Handler(
@@ -141,7 +144,9 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
             $c->get( 'club_service' ),
             $c->get( 'registration_service' ),
             $c->get( 'user_repository' ),
-            $c->get( 'club_role_repository' )
+            $c->get( 'club_role_repository' ),
+            $c->get( 'club_repository' ),
+            $c->get( 'player_repository' )
         ) );
         $container->set( 'club_ajax_controller', fn( Simple_Container $c ) => new Club_Ajax_Controller( $app, $c->get( 'club_ajax_adapter' ) ) );
     }

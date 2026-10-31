@@ -7,6 +7,7 @@ use JetBrains\PhpStorm\NoReturn;
 use Racketmanager\Infrastructure\Security\Security_Service;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\League_Team_Repository;
 
 /**
  * WordPress entry point for admin AJAX actions.
@@ -120,13 +121,12 @@ class Admin_Ajax_Controller {
         return new Admin_Ajax_Adapter(
             $c->has( 'security_service' ) ? $c->get( 'security_service' ) : new Security_Service(),
             $c->has( 'json_response_factory' ) ? $c->get( 'json_response_factory' ) : new Json_Response_Factory(),
-            $this->racketmanager,
             $c->get( 'competition_service' ),
             $c->get( 'competition_entry_service' ),
             $c->get( 'notification_service' ),
             $c->get( 'fixture_repository' ),
             $c->has( 'settings_service' ) ? $c->get( 'settings_service' ) : new \Racketmanager\Services\Settings_Service(),
-            null,
+            $c->has( 'league_team_repository' ) ? $c->get( 'league_team_repository' ) : new League_Team_Repository(),
             $c->get( 'competition_notification_service' ),
             $c->get( 'standings_service' ),
             $c->get( 'league_repository' ),

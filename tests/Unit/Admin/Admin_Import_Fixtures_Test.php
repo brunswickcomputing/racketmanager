@@ -8,7 +8,6 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Admin\Import\Import_Action_Dispatcher;
@@ -16,6 +15,7 @@ use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
+use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
@@ -31,6 +31,7 @@ class Admin_Import_Fixtures_Test extends TestCase {
     private Registration_Service $registration_service;
     private Action_Guard_Interface $action_guard;
     private League_Team_Repository_Interface $league_team_repository;
+    private Team_Service $team_service;
 
     protected function setUp(): void {
         parent::setUp();
@@ -45,14 +46,9 @@ class Admin_Import_Fixtures_Test extends TestCase {
         $this->container = new Simple_Container();
         $this->container->set( 'fixture_service', fn() => $this->fixture_service );
 
-        $racketmanager = $this->getMockBuilder( RacketManager::class )
-            ->disableOriginalConstructor()
-            ->onlyMethods( [ 'get_team_id' ] )
-            ->getMock();
-        $racketmanager->container = $this->container;
-        $racketmanager->method( 'get_team_id' )
+        $this->team_service = $this->createMock( Team_Service::class );
+        $this->team_service->method( 'get_team_id' )
             ->willReturn( 10 );
-        $GLOBALS['racketmanager'] = $racketmanager;
     }
 
     protected function tearDown(): void {
@@ -70,7 +66,7 @@ class Admin_Import_Fixtures_Test extends TestCase {
             $this->league_team_repository,
             $this->createStub( \Racketmanager\Services\Standings\Standings_Service::class ),
             $this->createStub( \Racketmanager\Services\Competition\League_Query_Service::class ),
-            $GLOBALS['racketmanager'],
+            $this->team_service,
             $league_repository
         );
 

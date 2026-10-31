@@ -33,6 +33,8 @@ use Racketmanager\Public\Shortcodes;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
@@ -478,18 +480,27 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
         $tournament_presenter = new Tournament_Presenter( team_match_row_presenter: $this->create_team_match_row_presenter( $can_update ) );
         $container->set( 'tournament_presenter', fn() => $tournament_presenter );
 
-        $app = $this->createStub( RacketManager::class );
-        $app->method( 'get_matches' )->willReturnCallback( static function ( array $args ) use ( &$calls, $fixtures ) {
+        $fixture_repository = $this->createStub( Fixture_Repository_Interface::class );
+        $fixture_repository->method( 'find_all' )->willReturnCallback( static function ( array $args ) use ( &$calls, $fixtures ) {
             $calls[] = $args;
             return $fixtures;
         } );
+        $container->set( 'fixture_repository', fn() => $fixture_repository );
+
+        $fixture_service = $this->createStub( Fixture_Service::class );
+        $fixture_service->method( 'get_matches' )->willReturnCallback( static function ( array $args ) use ( $fixture_repository ) {
+            return $fixture_repository->find_all( $args );
+        } );
+        $container->set( 'fixture_service', fn() => $fixture_service );
+
+        $app = $this->createStub( RacketManager::class );
         $app->container   = $container;
         $app->date_format = 'Y-m-d';
 
         global $racketmanager;
         $racketmanager = $app;
 
-        $finder = new Legacy_Fixture_Listing_Finder( $app );
+        $finder = new Legacy_Fixture_Listing_Finder( $fixture_repository );
         if ( null === $clubs ) {
             $clubs = $this->createStub( Club_Repository_Interface::class );
             $clubs->method( 'find_by_id' )->willReturn( null );

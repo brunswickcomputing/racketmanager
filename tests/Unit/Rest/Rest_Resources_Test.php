@@ -55,7 +55,6 @@ class Rest_Resources_Test extends TestCase {
         $this->club_service        = $this->createStub( Club_Service::class );
         $this->season_service      = $this->createStub( Season_Service::class );
         $this->finance_service     = $this->createStub( Finance_Service::class );
-        $this->adapter             = new Rest_Controller_Adapter();
 
         $container = new Simple_Container();
         $container->set( 'competition_service', fn() => $this->competition_service );
@@ -115,6 +114,12 @@ class Rest_Resources_Test extends TestCase {
      * `league_query_service` must rebuild the resource afterwards.
      */
     private function create_rest_resources(): Rest_Resources {
+        $container     = $this->plugin->container;
+        $this->adapter = new Rest_Controller_Adapter(
+            team_repository: $container->has( 'team_repository' ) ? $container->get( 'team_repository' ) : null,
+            competition_service: $this->competition_service
+        );
+
         return new Rest_Resources(
             $this->plugin,
             $this->competition_service,
@@ -211,15 +216,29 @@ class Rest_Resources_Test extends TestCase {
             ->with( 'test competition', 'name' )
             ->willReturn( $competition );
 
+        $fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
+        $fixture_repository->expects( self::once() )
+            ->method( 'find_all' )
+            ->with( array(
+                'season'         => '2024',
+                'competition_id' => 123,
+            ) )
+            ->willReturn( array() );
+
         $this->plugin->container->set( 'competition_service', fn() => $competition_service );
-        $this->plugin->method( 'get_matches' )->willReturn( array() );
+        $this->plugin->container->set( 'fixture_repository', fn() => $fixture_repository );
 
         $rest_resources = new Rest_Resources(
             $this->plugin,
             $competition_service,
             $this->club_service,
             $this->season_service,
-            $this->adapter
+            $this->adapter,
+            null,
+            null,
+            null,
+            null,
+            $fixture_repository
         );
 
         $response = $rest_resources->get_matches( $request );
@@ -869,5 +888,36 @@ class Rest_Resources_Test extends TestCase {
 
         self::assertInstanceOf( WP_REST_Response::class, $response );
         self::assertSame( 400, $response->get_status() );
+    }
+
+    public function test_get_collection_params_populates_event_and_league_enums_from_repositories(): void {
+        $event  = (object) array( 'name' => 'Men\'s Singles' );
+        $league = (object) array( 'title' => 'Division 1' );
+
+        $event_repository = $this->createMock( Event_Repository_Interface::class );
+        $event_repository->expects( self::once() )->method( 'find_all' )->willReturn( array( $event ) );
+
+        $league_repository = $this->createMock( League_Repository_Interface::class );
+        $league_repository->expects( self::once() )->method( 'find_all' )->willReturn( array( $league ) );
+
+        $rest_resources = new Rest_Resources(
+            $this->plugin,
+            $this->competition_service,
+            $this->club_service,
+            $this->season_service,
+            $this->adapter,
+            null,
+            null,
+            $league_repository,
+            $event_repository
+        );
+
+        $params = $rest_resources->get_collection_params();
+
+        $event_arg  = ( new \ReflectionMethod( $rest_resources, 'get_arg' ) )->invoke( $rest_resources, 'event' );
+        $league_arg = ( new \ReflectionMethod( $rest_resources, 'get_arg' ) )->invoke( $rest_resources, 'league' );
+
+        self::assertSame( array( 'mens-singles' ), $event_arg['enum'] );
+        self::assertSame( array( 'division-1' ), $league_arg['enum'] );
     }
 }

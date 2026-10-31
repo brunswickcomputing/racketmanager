@@ -95,7 +95,10 @@ class Account_Ajax_Controller {
 
         return new Account_Ajax_Adapter(
             $c->has( 'security_service' ) ? $c->get( 'security_service' ) : new Security_Service(),
-            $c->has( 'json_response_factory' ) ? $c->get( 'json_response_factory' ) : new Json_Response_Factory()
+            $c->has( 'json_response_factory' ) ? $c->get( 'json_response_factory' ) : new Json_Response_Factory(),
+            $c->has( 'message_repository' ) ? $c->get( 'message_repository' ) : null,
+            $c->has( 'user_repository' ) ? $c->get( 'user_repository' ) : null,
+            $c->has( 'option_service' ) ? $c->get( 'option_service' ) : null
         );
     }
 

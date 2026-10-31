@@ -18,7 +18,6 @@ use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Player_Exists_Exception;
-use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Admin\Import\Import_Action_Dispatcher;
@@ -28,6 +27,7 @@ use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Standings\Standings_Service;
+use Racketmanager\Services\Team_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 use WP_Error;
@@ -46,7 +46,7 @@ final class Import_Action_Dispatcher_Test extends TestCase {
     private Standings_Service $standings_service;
     private League_Query_Service $league_query_service;
     private League_Repository_Interface $league_repository;
-    private object $racketmanager;
+    private Team_Service $team_service;
     private Import_Action_Dispatcher $dispatcher;
 
     protected function setUp(): void {
@@ -62,8 +62,8 @@ final class Import_Action_Dispatcher_Test extends TestCase {
         $this->league_query_service = $this->createMock( League_Query_Service::class );
         $this->league_repository    = $this->createMock( League_Repository_Interface::class );
 
-        $this->racketmanager = $this->createMock( RacketManager::class );
-        $this->racketmanager->method( 'get_team_id' )->willReturn( 10 );
+        $this->team_service = $this->createMock( Team_Service::class );
+        $this->team_service->method( 'get_team_id' )->willReturn( 10 );
 
         $this->dispatcher = new Import_Action_Dispatcher(
             $this->action_guard,
@@ -73,7 +73,7 @@ final class Import_Action_Dispatcher_Test extends TestCase {
             $this->league_team_repository,
             $this->standings_service,
             $this->league_query_service,
-            $this->racketmanager,
+            $this->team_service,
             $this->league_repository,
         );
 

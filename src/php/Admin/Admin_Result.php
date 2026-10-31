@@ -16,6 +16,7 @@ use Racketmanager\Admin\Presenters\Admin_Results_Match_Presenter;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\Presentation\Presenters\Results_Checker_Presenter;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Admin\Result\Results_Checker_Action_Dispatcher_Interface;
 use Racketmanager\Services\Container\Simple_Container;
 
@@ -32,6 +33,7 @@ class Admin_Result extends Admin_Display {
     private ?Results_Checker_Action_Dispatcher_Interface $results_checker_dispatcher = null;
     private Admin_Results_Match_Presenter $results_match_presenter;
     private Results_Checker_Presenter $results_checker_presenter;
+    private ?Fixture_Repository_Interface $fixture_repository = null;
 
     public function __construct(
         $plugin_instance,
@@ -39,6 +41,7 @@ class Admin_Result extends Admin_Display {
         ?Results_Checker_Action_Dispatcher_Interface $results_checker_action_dispatcher = null,
         ?Admin_Results_Match_Presenter $results_match_presenter = null,
         ?Results_Checker_Presenter $results_checker_presenter = null,
+        ?Fixture_Repository_Interface $fixture_repository = null,
     ) {
         parent::__construct( $plugin_instance );
         if ( null !== $admin_action_adapter ) {
@@ -47,6 +50,9 @@ class Admin_Result extends Admin_Display {
         $this->results_checker_dispatcher = $results_checker_action_dispatcher;
         $this->results_match_presenter    = $results_match_presenter ?? $this->resolve_results_match_presenter();
         $this->results_checker_presenter  = $results_checker_presenter ?? $this->resolve_results_checker_presenter();
+
+        $container                = $plugin_instance->container ?? ( isset( $this->racketmanager->container ) ? $this->racketmanager->container : null );
+        $this->fixture_repository = $fixture_repository ?? ( ( $container instanceof Simple_Container && $container->has( 'fixture_repository' ) ) ? $container->get( 'fixture_repository' ) : null );
     }
 
     /**
@@ -200,7 +206,10 @@ class Admin_Result extends Admin_Display {
             unset( $match_args['resultPending'] );
         }
 
-        $matches = $this->racketmanager->get_matches( $match_args );
+        if ( null === $this->fixture_repository ) {
+            throw new LogicException( 'The fixture repository is not registered.' );
+        }
+        $matches = $this->fixture_repository->find_all( $match_args );
         if ( ! is_array( $matches ) ) {
             $matches = array();
         }
@@ -220,14 +229,14 @@ class Admin_Result extends Admin_Display {
         if ( is_object( $match ) && ( isset( $match->link ) || isset( $match->match_title ) || isset( $match->fixture_title ) ) ) {
             return $match;
         }
-        $container = $this->racketmanager->container ?? null;
-        if ( $container instanceof Simple_Container && $container->has( 'fixture_repository' ) ) {
-            $id = is_object( $match ) && isset( $match->id ) ? (int) $match->id : ( is_numeric( $match ) ? (int) $match : 0 );
-            if ( $id > 0 ) {
-                $hydrated = $container->get( 'fixture_repository' )->find_by_id( $id );
-                if ( is_object( $hydrated ) ) {
-                    return $hydrated;
-                }
+        $id = is_object( $match ) && isset( $match->id ) ? (int) $match->id : ( is_numeric( $match ) ? (int) $match : 0 );
+        if ( $id > 0 ) {
+            if ( null === $this->fixture_repository ) {
+                throw new LogicException( 'The fixture repository is not registered.' );
+            }
+            $hydrated = $this->fixture_repository->find_by_id( $id );
+            if ( is_object( $hydrated ) ) {
+                return $hydrated;
             }
         }
 

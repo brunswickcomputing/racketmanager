@@ -41,16 +41,46 @@ final class Generate_Team_Name_Test extends TestCase {
 		$fixture_repository->expects( $this->never() )
 			->method( 'find_by_id' );
 
-		$container = new Simple_Container();
-		$container->set( 'fixture_repository', $fixture_repository );
-
-		$racketmanager            = new stdClass();
-		$racketmanager->container = $container;
-		$GLOBALS['racketmanager'] = $racketmanager;
-
 		$this->assertSame(
 			'Loser of Westcliff Lawn Mixed 1 vs Rayleigh Mixed 1',
-			Util::generate_team_name( '2_last-16_145957' )
+			Util::generate_team_name( '2_last-16_145957', $fixture_repository )
+		);
+	}
+
+	public function test_generate_team_name_winner_placeholder_title(): void {
+		$fixture        = Fixture_Factory::from_object( (object) array( 'id' => 145958 ) );
+		$fixture->teams = array(
+			'home' => (object) array( 'title' => 'Team Alpha' ),
+			'away' => (object) array( 'title' => 'Team Beta' ),
+		);
+
+		$fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
+		$fixture_repository->expects( $this->once() )
+			->method( 'find_by_id_with_relations' )
+			->with( 145958 )
+			->willReturn( $fixture );
+
+		$this->assertSame(
+			'Winner of Team Alpha vs Team Beta',
+			Util::generate_team_name( '1_final_145958', $fixture_repository )
+		);
+	}
+
+	public function test_generate_team_name_returns_null_when_prefix_is_invalid(): void {
+		$this->assertNull( Util::generate_team_name( 'invalid_format' ) );
+		$this->assertNull( Util::generate_team_name( '3_round_145957' ) );
+	}
+
+	public function test_generate_team_name_returns_prefix_only_when_match_not_found(): void {
+		$fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
+		$fixture_repository->expects( $this->once() )
+			->method( 'find_by_id_with_relations' )
+			->with( 999 )
+			->willReturn( null );
+
+		$this->assertSame(
+			'Winner of',
+			Util::generate_team_name( '1_semi_999', $fixture_repository )
 		);
 	}
 }

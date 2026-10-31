@@ -19,6 +19,7 @@ use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Admin\Admin_Message_Service;
 use Racketmanager\Services\Admin\Result\Results_Checker_Action_Dispatcher_Interface;
 use Racketmanager\Services\Competition_Service;
@@ -69,11 +70,19 @@ final class Admin_Result_Delivery_Test extends TestCase {
         $this->competition_service = $this->createStub( Competition_Service::class );
         $this->season_service      = $this->createStub( Season_Service::class );
 
+        $fixture_repo = $this->createStub( Fixture_Repository_Interface::class );
+        $fixture_repo->method( 'find_all' )->willReturnCallback(
+            function ( array $args ): array {
+                return $this->matches_for_args( $args );
+            }
+        );
+
         $container = $this->create_admin_delivery_container(
             services: array(
                 'competition_service' => $this->competition_service,
                 'season_service'      => $this->season_service,
                 'league_repository'   => $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class ),
+                'fixture_repository'  => $fixture_repo,
             ),
             redirector: $this->redirector,
             flash_store: $this->flash_store,
@@ -83,11 +92,6 @@ final class Admin_Result_Delivery_Test extends TestCase {
         $plugin->container = $container;
         $plugin->method( 'get_result_warnings' )->willReturn( array() );
         $plugin->method( 'get_options' )->willReturnCallback( fn() => $this->plugin_options );
-        $plugin->method( 'get_matches' )->willReturnCallback(
-            function ( array $args ): array {
-                return $this->matches_for_args( $args );
-            }
-        );
 
         global $racketmanager;
         $racketmanager = $plugin;
@@ -95,7 +99,10 @@ final class Admin_Result_Delivery_Test extends TestCase {
         $this->admin_result = new Admin_Result(
             $plugin,
             $action_adapter,
-            $this->dispatcher
+            $this->dispatcher,
+            null,
+            null,
+            $fixture_repo
         );
     }
 
@@ -440,11 +447,15 @@ final class Admin_Result_Delivery_Test extends TestCase {
             ->method( 'present_collection' )
             ->willReturn( array( $viewModel ) );
 
+        $fixture_repo = $this->createStub( Fixture_Repository_Interface::class );
+        $fixture_repo->method( 'find_all' )->willReturn( array() );
+
         $container = $this->create_admin_delivery_container(
             services: array(
                 'competition_service' => $this->competition_service,
                 'season_service'      => $this->season_service,
                 'league_repository'   => $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class ),
+                'fixture_repository'  => $fixture_repo,
             ),
             redirector: $this->redirector,
             flash_store: $this->flash_store,
@@ -454,11 +465,11 @@ final class Admin_Result_Delivery_Test extends TestCase {
         $plugin->container = $container;
         $plugin->method( 'get_result_warnings' )->willReturn( array() );
         $plugin->method( 'get_options' )->willReturn( array() );
-        $plugin->method( 'get_matches' )->willReturn( array() );
 
         $admin_result = new Admin_Result(
             plugin_instance: $plugin,
             results_checker_presenter: $presenter,
+            fixture_repository: $fixture_repo,
         );
 
         ob_start();

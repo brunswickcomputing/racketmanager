@@ -6,20 +6,20 @@ namespace Racketmanager\Infrastructure\Persistence;
 use Racketmanager\Application\Matches\Ports\Fixture_Listing_Finder_Interface;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 
 /**
  * Driven adapter implementing the fixture listing port on top of the existing
- * RacketManager::get_matches() query builder (which hydrates via Fixture_Repository).
+ * Fixture_Repository::find_all() query builder.
  *
  * Only already-validated, strictly typed values reach the legacy query builder.
  */
 final readonly class Legacy_Fixture_Listing_Finder implements Fixture_Listing_Finder_Interface {
-    public function __construct( private RacketManager $racketmanager ) {}
+    public function __construct( private Fixture_Repository_Interface $fixture_repository ) {}
 
     public function find_by_match_date( string $match_date, Competition_Type $type ): array {
         return $this->only_fixtures(
-            $this->racketmanager->get_matches(
+            $this->fixture_repository->find_all(
                 [
                     'match_date'       => $match_date,
                     'competition_type' => $type->value,
@@ -30,7 +30,7 @@ final readonly class Legacy_Fixture_Listing_Finder implements Fixture_Listing_Fi
 
     public function find_latest_results( int $days, Competition_Type $type, ?int $club_id = null, ?int $competition_id = null, ?string $age_group = null ): array {
         return $this->only_fixtures(
-            $this->racketmanager->get_matches(
+            $this->fixture_repository->find_all(
                 [
                     'days'             => $days,
                     'competition_type' => $type->value,

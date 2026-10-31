@@ -14,7 +14,7 @@ use Closure;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
-use Racketmanager\RacketManager;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
@@ -51,7 +51,7 @@ readonly final class Options_Action_Dispatcher implements Options_Action_Dispatc
 
     /**
      * @param Action_Guard_Interface $action_guard Security and capability guard.
-     * @param RacketManager|null     $racketmanager Optional main plugin instance.
+     * @param Option_Service|null    $option_service Optional options service.
      * @param callable|null          $options_updater Optional callable to update options.
      * @param callable|null          $options_provider Optional callable to retrieve current options.
      * @param callable|null          $scheduler Optional callable to schedule result chase.
@@ -60,26 +60,19 @@ readonly final class Options_Action_Dispatcher implements Options_Action_Dispatc
      */
     public function __construct(
         private Action_Guard_Interface $action_guard,
-        ?RacketManager $racketmanager = null,
+        ?Option_Service $option_service = null,
         ?callable $options_updater = null,
         ?callable $options_provider = null,
         ?callable $scheduler = null,
         ?callable $competition_types_provider = null,
         ?callable $event_grades_provider = null,
     ) {
-        $app = $racketmanager ?? ( $GLOBALS['racketmanager'] ?? null );
+        $service = $option_service ?? new Option_Service();
 
-        $updater = $options_updater ?? ( $app ? ( $app->update_plugin_options( ... ) ) : static function ( array $opts ): void {
-            update_option( 'racketmanager', $opts );
-            if ( isset( $GLOBALS['racketmanager'] ) && is_object( $GLOBALS['racketmanager'] ) ) {
-                $GLOBALS['racketmanager']->options = $opts;
-            }
-        } );
+        $updater = $options_updater ?? ( $service->update_plugin_options( ... ) );
         $this->options_updater = $updater( ... );
 
-        $provider = $options_provider ?? ( $app ? ( $app->get_options( ... ) ) : static function (): array {
-            return (array) get_option( 'racketmanager', array() );
-        } );
+        $provider = $options_provider ?? ( $service->get_options( ... ) );
         $this->options_provider = $provider( ... );
 
         $schedule        = $scheduler ?? ( Util::schedule_result_chase( ... ) );

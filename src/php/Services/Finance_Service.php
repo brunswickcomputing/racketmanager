@@ -42,6 +42,7 @@ use Racketmanager\Exceptions\Role_Assignment_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\Infrastructure\Gateways\Payment\Stripe_Payment_Gateway;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Charge_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
@@ -66,6 +67,7 @@ class Finance_Service {
     private Tournament_Repository_Interface $tournament_repository;
     private Payment_Gateway_Interface $payment_gateway;
     private Mailer_Interface $mailer;
+    private Option_Service $option_service;
 
     /**
      * Constructor
@@ -80,7 +82,8 @@ class Finance_Service {
         Competition_Service $competition_service,
         Player_Service $player_service,
         ?Payment_Gateway_Interface $payment_gateway = null,
-        ?Mailer_Interface $mailer = null
+        ?Mailer_Interface $mailer = null,
+        ?Option_Service $option_service = null
     ) {
         $this->racketmanager         = $plugin_instance;
         $this->charge_repository     = $charge_repository;
@@ -91,6 +94,7 @@ class Finance_Service {
         $this->player_service        = $player_service;
         $this->payment_gateway       = $payment_gateway ?? new Stripe_Payment_Gateway( $plugin_instance->get_options( 'billing' ) );
         $this->mailer                = $mailer ?? new Wp_Mailer();
+        $this->option_service        = $option_service ?? new Option_Service();
     }
 
     public function get_charge( $charge_id ): Charge {
@@ -142,7 +146,7 @@ class Finance_Service {
     }
 
     private function validate_charge( stdClass $charge, ?int $charge_id = null ): bool|WP_Error {
-        $validator = new Validator_Finance();
+        $validator = new Validator_Finance( competition_service: $this->competition_service );
         if ( $charge_id ) {
             $validator = $validator->compare( $charge->id, $charge_id, 'competition' );
         }
@@ -357,7 +361,7 @@ class Finance_Service {
         $competition_type      = $invoice->competition_type;
         $billing               = $this->racketmanager->get_options( 'billing' );
         $headers               = array();
-        $from_email            = $this->racketmanager->get_confirmation_email( $competition_type );
+        $from_email            = $this->option_service->get_confirmation_email( $competition_type );
         $competition_secretary = ucfirst( $competition_type ) . __( 'Secretary', 'racketmanager' ) . ' <' . $from_email . '>';
         if ( $from_email ) {
             $headers[]         = 'From: ' . $competition_secretary;

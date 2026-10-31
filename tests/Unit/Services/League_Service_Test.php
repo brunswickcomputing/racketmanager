@@ -829,6 +829,27 @@ class League_Service_Test extends TestCase {
         $service->withdraw_team( 8, 70, '2026' );
     }
 
+    public function test_get_leagues_delegates_query_args_to_repository_find_all(): void {
+        $args    = array( 'season' => '2026', 'event_id' => 5 );
+        $leagues = array( $this->createMock( League::class ) );
+
+        $this->league_repository->expects( self::once() )
+            ->method( 'find_all' )
+            ->with( $args )
+            ->willReturn( $leagues );
+
+        self::assertSame( $leagues, $this->service->get_leagues( $args ) );
+    }
+
+    public function test_get_leagues_without_args_passes_empty_array_to_repository(): void {
+        $this->league_repository->expects( self::once() )
+            ->method( 'find_all' )
+            ->with( array() )
+            ->willReturn( array() );
+
+        self::assertSame( array(), $this->service->get_leagues() );
+    }
+
     public function test_add_league_to_event_returns_created_league(): void {
         $event = \Racketmanager\Domain\Competition\Event::from_object( (object) array(
             'id'             => 5,

@@ -237,11 +237,11 @@ trait Creates_Admin_Delivery_Container {
             $league_team_repo,
             $standings_service,
             $c->get( 'league_query_service' ),
-            null,
+            $team_service,
             $league_repo
         ) );
         $container->set( 'index_action_dispatcher', fn() => $services['index_action_dispatcher'] ?? new Index_Action_Dispatcher( $competition_service, $guard_instance ) );
-        $container->set( 'options_action_dispatcher', fn() => $services['options_action_dispatcher'] ?? new Options_Action_Dispatcher( $this->createStub( \Racketmanager\Services\Options_Service::class ), $guard_instance ) );
+        $container->set( 'options_action_dispatcher', fn() => $services['options_action_dispatcher'] ?? new Options_Action_Dispatcher( $guard_instance, $this->createStub( \Racketmanager\Infrastructure\Wordpress\Options\Option_Service::class ) ) );
         $container->set( 'results_checker_action_dispatcher', fn() => $services['results_checker_action_dispatcher'] ?? new Results_Checker_Action_Dispatcher( $this->createStub( \Racketmanager\Repositories\Results_Checker_Repository::class ), $this->createStub( \Racketmanager\Services\Results_Checker_Service::class ), $guard_instance ) );
         $app = $services['app'] ?? null;
         if ( null === $app ) {

@@ -51,6 +51,16 @@ class Fixture_Service {
     }
 
     /**
+     * Get matches from the repository.
+     *
+     * @param array $args Query arguments.
+     * @return array|int Matches collection or count.
+     */
+    public function get_matches( array $args = array() ): array|int {
+        return $this->fixture_repository->find_all( $args );
+    }
+
+    /**
      * Add a match to a league.
      *
      * @param object $match

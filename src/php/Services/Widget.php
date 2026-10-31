@@ -9,6 +9,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services;
 
+use Racketmanager\Repositories\Club_Repository;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use stdClass;
 use WP_Widget;
 
@@ -20,8 +22,14 @@ class Widget extends WP_Widget {
      * Initialize
      *
      * @param boolean $template set to true if widget is display in template.
+     * @param Club_Service|null $club_service
+     * @param Club_Repository_Interface|null $club_repository
      */
-    public function __construct( $template = false ) {
+    public function __construct(
+        $template = false,
+        private ?Club_Service $club_service = null,
+        private ?Club_Repository_Interface $club_repository = null
+    ) {
         if ( ! $template ) {
             $widget_ops = array(
                 'classname'   => 'racketmanager_widget',
@@ -37,10 +45,6 @@ class Widget extends WP_Widget {
      * @param array $instance instance.
      */
     public function widget( $args, $instance ): void {
-        global $racketmanager;
-        $c            = $racketmanager->container;
-        $club_service = $c->get( 'club_service' );
-
         $cache = array();
         if ( ! $this->is_preview() ) {
             $cache = wp_cache_get( 'racketmanager', 'widget' );
@@ -69,10 +73,12 @@ class Widget extends WP_Widget {
         $args['limit']     = empty( $instance['num_items'] ) ? 999999 : intval( $instance['num_items'] );
         $args['club_type'] = $instance['club_type'];
         $args['orderby']   = $instance['orderby'];
-        $clubs             = $club_service->get_clubs( $args );
+        $clubs             = $this->club_service
+            ? $this->club_service->get_clubs( $args )
+            : ( $this->club_repository ??= new Club_Repository() )->find_all( $args );
 
         $data                = new stdClass();
-        $data->clubs         = $clubs;
+        $data->clubs         = is_array( $clubs ) ? $clubs : array();
         $data->club_name     = $club_name;
         $data->club_link     = $club_link;
         $data->title         = $title;

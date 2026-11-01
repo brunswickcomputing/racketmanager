@@ -58,7 +58,7 @@ class League_Repository implements League_Repository_Interface {
             'title'    => $entity->get_name(),
             'settings' => maybe_serialize( $entity->get_settings() ),
             'seasons'  => maybe_serialize( $entity->get_seasons() ),
-            'sequence' => $entity->get_sequence(),
+            'sequence' => $entity->sequence,
             'event_id' => $entity->get_event_id(),
         );
         $data_format = array(

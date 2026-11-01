@@ -10,13 +10,11 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Domain\Competition;
 
-use Racketmanager\Domain\Competition\League_Team;
+use BackedEnum;
 use Racketmanager\Domain\DTO\Competition\League_Hydration_DTO;
 use Racketmanager\Domain\Shared\Serialized_Column;
 use Racketmanager\Domain\Shared\Typed_Property_Hydrator;
-use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Tournament\Championship;
-use stdClass;
 
 /**
  * Class to implement the League object
@@ -54,7 +52,11 @@ class League {
      *
      * @var string|null
      */
-    public ?string $sequence = null;
+    public ?string $sequence = null {
+        get {
+            return $this->sequence;
+        }
+    }
     /**
      * Number of seasons
      *
@@ -493,7 +495,7 @@ class League {
 
         if ( null !== $event ) {
             $this->event    = $event;
-            $this->event_id = (int) ( $event->id ?? 0 );
+            $this->event_id = $event->id ?? 0;
         } elseif ( null !== $dto->event_id ) {
             $this->event_id = (int) $dto->event_id;
         }
@@ -516,12 +518,12 @@ class League {
         $this->set_season();
         $this->groups          = trim( $this->groups ?? '' );
         $this->mode            = $this->event && isset( $this->event->competition->settings['mode'] ) ? $this->event->competition->settings['mode'] : ( $this->mode ?? 'default' );
-        $this->num_sets        = (int) ( $this->event->num_sets ?? 3 );
+        $this->num_sets        = $this->event->num_sets ?? 3;
         $this->num_sets_to_win = (int) floor( $this->num_sets / 2 ) + 1;
-        $this->num_rubbers     = (int) ( $this->event->num_rubbers ?? 0 );
+        $this->num_rubbers     = $this->event->num_rubbers ?? 0;
         $this->type            = $this->event->type ?? '';
         $comp_type             = $this->event && isset( $this->event->competition->type ) ? $this->event->competition->type : '';
-        $this->competition_type = $comp_type instanceof \BackedEnum ? $comp_type->value : (string) $comp_type;
+        $this->competition_type = $comp_type instanceof BackedEnum ? $comp_type->value : (string) $comp_type;
         $this->point_rule      = $this->event && isset( $this->event->competition->settings['point_rule'] ) ? $this->event->competition->settings['point_rule'] : 'three';
         $this->sport           = $this->event && isset( $this->event->competition->settings['sport'] ) ? $this->event->competition->settings['sport'] : 'tennis';
         $this->scoring         = $this->event->scoring ?? null;
@@ -567,17 +569,17 @@ class League {
         return League_Factory::from_array( $data, $event );
     }
 
-	public function __serialize(): array {
-		return get_object_vars( $this );
-	}
+    public function __serialize(): array {
+        return get_object_vars( $this );
+    }
 
-	public function __unserialize( array $data ): void {
-		foreach ( $data as $key => $value ) {
-			if ( property_exists( $this, $key ) ) {
-				$this->$key = $value;
-			}
-		}
-	}
+    public function __unserialize( array $data ): void {
+        foreach ( $data as $key => $value ) {
+            if ( property_exists( $this, $key ) ) {
+                $this->$key = $value;
+            }
+        }
+    }
 
     /**
      * Get the id
@@ -613,15 +615,6 @@ class League {
      */
     public function get_seasons(): array|string {
         return $this->seasons;
-    }
-
-    /**
-     * Get the sequence
-     *
-     * @return string|null
-     */
-    public function get_sequence(): ?string {
-        return $this->sequence;
     }
 
     /**

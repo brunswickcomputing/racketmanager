@@ -20,11 +20,9 @@
   </component>
   <component name="PHPCodeSnifferOptionsConfiguration">
     <option name="codingStandard" value="Custom" />
-    <option name="customRuleset" value="$PROJECT_DIR$/phpcs.xml" />
+    <option name="customRuleset" value="$PROJECT_DIR$/phpcs.xml.dist" />
     <option name="highlightLevel" value="WARNING" />
-    <option name="installedPaths" value="$PROJECT_DIR$/vendor/phpcsstandards" />
     <option name="showSniffs" value="true" />
-    <option name="useInstalledPaths" value="true" />
     <option name="transferred" value="true" />
   </component>
   <component name="PhpCSFixer">

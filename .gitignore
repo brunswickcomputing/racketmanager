@@ -60,3 +60,7 @@ coverage/
 # Keep config and CI files tracked (do NOT ignore .github or dotfiles globally)
 # Ensure this file itself is tracked
 !.gitignore
+
+# PHPCS cache and local overrides
+.phpcs.cache
+phpcs.xml

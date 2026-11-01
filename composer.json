@@ -27,6 +27,10 @@
       "Racketmanager\\Tests\\": "tests/"
     }
   },
+  "scripts": {
+    "phpcs": "phpcs -p",
+    "phpcbf": "phpcbf"
+  },
   "config": {
     "optimize-autoloader": true,
     "sort-packages": true,

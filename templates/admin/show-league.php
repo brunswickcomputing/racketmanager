@@ -102,7 +102,7 @@ $competition_type = $league->event->competition->type instanceof \BackedEnum ? $
 
     <?php
     if ( 'championship' === $league_mode ) {
-        require_once RACKETMANAGER_PATH . 'templates/admin/championship.php';
+        require RACKETMANAGER_PATH . 'templates/admin/championship.php';
     } else {
         ?>
         <div>

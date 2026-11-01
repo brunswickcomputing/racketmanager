@@ -12,7 +12,10 @@ namespace Racketmanager;
 /** @var array $competition_events */
 /** @var array<int|string, string> $draw_sizes */
 
-$draw_sizes_map = $draw_sizes ?? array();
+$competition_events = $competition_events ?? $vars['competition_events'] ?? ( isset( $vm ) ? ( $vm->competition_events ?? array() ) : array() );
+$competition        = $competition ?? $vars['competition'] ?? ( isset( $vm ) ? ( $vm->competition ?? null ) : null );
+$season             = $season ?? $vars['season'] ?? ( isset( $vm ) ? ( $vm->season ?? '' ) : '' );
+$draw_sizes_map     = $draw_sizes ?? $vars['draw_sizes'] ?? ( isset( $vm ) ? ( $vm->draw_sizes ?? array() ) : array() );
 ?>
     <div class="row">
         <div class="col-12 col-md-6">

@@ -468,7 +468,8 @@ readonly class Fixture_Presenter {
     }
 
     private function render( string $template, array $args ): string {
-        extract( $args );
+        $model = $args['model'] ?? null;
+        $vm    = $args['vm'] ?? $model;
         ob_start();
         $template_path = RACKETMANAGER_PATH . 'src/php/Infrastructure/Wordpress/Views/' . $template . '.php';
         if ( ! file_exists( $template_path ) ) {
@@ -478,7 +479,7 @@ readonly class Fixture_Presenter {
         if ( file_exists( $template_path ) ) {
             include $template_path;
         }
-        return ob_get_clean();
+        return ob_get_clean() ?: '';
     }
 
     public function map_to_header_read_model( Application_Fixture_Details_DTO|Fixture_Details_DTO $dto, bool $edit_mode = false, bool $is_shortcode = false ): Fixture_Header_Read_Model {

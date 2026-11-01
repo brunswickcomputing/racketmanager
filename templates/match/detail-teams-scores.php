@@ -13,13 +13,23 @@ use Racketmanager\Domain\Fixture\Fixture;
 /** @var Fixture_Details_DTO $dto */
 /** @var Fixture $match */
 /** @var string $match_type */
+$dto              = $dto ?? $vars['dto'] ?? $vm->dto ?? null;
+$match            = $match ?? $vars['match'] ?? $vm->match ?? $dto?->fixture ?? null;
+if ( ! $match ) {
+    return;
+}
+$match_type       = $match_type ?? $vars['match_type'] ?? $vm->match_type ?? '';
+$competition_team = $competition_team ?? $vars['competition_team'] ?? $vm->competition_team ?? null;
+$team_statistics  = $team_statistics ?? $vars['team_statistics'] ?? $vm->team_statistics ?? null;
 $opponents               = array( 'home', 'away' );
 $opponents_points        = array( 'player1', 'player2' );
-$match_player            = $match_player ?? null;
-$rubber_player_urls      = is_array( $rubber_player_urls ?? null ) ? $rubber_player_urls : array();
-$approval_captain_names  = is_array( $approval_captain_names ?? null ) ? $approval_captain_names : array();
-$final_name              = $final_name ?? '';
-$match_date_formatted    = $match_date_formatted ?? '';
+$match_player            = $match_player ?? $vars['match_player'] ?? $vm->match_player ?? null;
+$rubber_player_urls      = $rubber_player_urls ?? $vars['rubber_player_urls'] ?? $vm->rubber_player_urls ?? null;
+$rubber_player_urls = is_array( $rubber_player_urls ) ? $rubber_player_urls : array();
+$approval_captain_names  = $approval_captain_names ?? $vars['approval_captain_names'] ?? $vm->approval_captain_names ?? null;
+$approval_captain_names = is_array( $approval_captain_names ) ? $approval_captain_names : array();
+$final_name              = $final_name ?? $vars['final_name'] ?? $vm->final_name ?? '';
+$match_date_formatted    = $match_date_formatted ?? $vars['match_date_formatted'] ?? $vm->match_date_formatted ?? '';
 $team        = null;
 $team_status = null;
 $winner      = null;

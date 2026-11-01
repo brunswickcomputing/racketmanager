@@ -11,6 +11,12 @@ namespace Racketmanager;
 /** @var int $player_count */
 /** @var int $error_count */
 /** @var string $paragraph */
+/** @var array $vars */
+/** @var object|null $vm */
+$club          = $vars['club'] ?? $vm->club ?? $club ?? null;
+$player_count  = $vars['player_count'] ?? $vm->player_count ?? $player_count ?? 0;
+$error_count   = $vars['error_count'] ?? $vm->error_count ?? $error_count ?? 0;
+$email_subject = $vars['email_subject'] ?? $vm->email_subject ?? $email_subject ?? __( 'WTN Report', 'racketmanager' );
 require 'email-header.php';
 $paragraph_text = __( 'A WTN update process has completed.', 'racketmanager' );
 require $paragraph;

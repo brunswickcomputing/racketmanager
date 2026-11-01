@@ -23,6 +23,7 @@ final readonly class Tournament_Modify_Page_View_Model {
         public array $competitions,
         public array $seasons,
         public Validator_Tournament $validator,
+        public array $form_values = array(),
     ) {
     }
 
@@ -42,6 +43,7 @@ final readonly class Tournament_Modify_Page_View_Model {
             'competitions' => $this->competitions,
             'seasons'      => $this->seasons,
             'validator'    => $this->validator,
+            'form_values'  => $this->form_values,
         );
     }
 }

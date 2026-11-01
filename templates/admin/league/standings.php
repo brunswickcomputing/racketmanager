@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Competition settings standings administration panel
  *
@@ -9,15 +10,17 @@ namespace Racketmanager;
 
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
 
-// Preferred input (when included from tournament draw): $vm.
-$vm = isset( $vm ) && ( $vm instanceof Tournament_Draw_Page_View_Model ) ? $vm : null;
-
-// BC fallback: if $vm isn't present, rely on locals set by the parent template.
-if ( $vm ) {
+/** @var Tournament_Draw_Page_View_Model|\Racketmanager\Admin\View_Models\League_Standings_Page_View_Model|\stdClass $vm */
+if ( isset( $vm ) && $vm instanceof Tournament_Draw_Page_View_Model ) {
     $league     = $vm->league;
     $tournament = $vm->tournament;
     $season     = $vm->season;
+} else {
+    $league     = $league ?? $vars['league'] ?? $vm->league;
+    $tournament = $tournament ?? $vars['tournament'] ?? $vm->tournament ?? null;
+    $season     = $season ?? $vars['season'] ?? $vm->season;
 }
+$teams = $teams ?? $vars['teams'] ?? $vm->teams;
 
 /** @var object $league */
 /** @var object $tournament */

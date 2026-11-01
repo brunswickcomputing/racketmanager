@@ -8,6 +8,10 @@
 namespace Racketmanager;
 
 /** @var object $event */
+$event = $event ?? $vars['event'] ?? $vm->event ?? null;
+if ( ! $event ) {
+    return;
+}
 ?>
 <div class="module module--card">
     <div class="module__banner">

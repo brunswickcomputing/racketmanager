@@ -18,6 +18,10 @@ namespace Racketmanager;
 /** @var object $player */
 /** @var bool $user_can_update */
 /** @var string $page_referrer */
+$club            = $club ?? $vm->club ?? ( $vars['club'] ?? null );
+$player          = $player ?? $vm->player ?? ( $vars['player'] ?? null );
+$user_can_update = $user_can_update ?? ( $vm->user_can_update ?? ( $vars['user_can_update'] ?? false ) );
+$page_referrer   = $page_referrer ?? ( $vm->page_referrer ?? ( $vars['page_referrer'] ?? '' ) );
 ?>
 <?php require RACKETMANAGER_PATH . 'templates/includes/player-header.php'; ?>
 

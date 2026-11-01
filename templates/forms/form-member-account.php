@@ -8,6 +8,12 @@
 namespace Racketmanager;
 
 /** @var object $user */
+$user           = $vars['user'] ?? $vm->user ?? null;
+$user_data      = $vars['user_data'] ?? $vm->user_data ?? [];
+$opt_in_choices = $vars['opt_in_choices'] ?? $vm->opt_in_choices ?? [];
+if ( ! $user ) {
+    return;
+}
 $msg        = null;
 $is_invalid = false;
 ?>
@@ -182,7 +188,7 @@ $is_invalid = false;
                                     foreach ( $opt_in_choices as $opt_in_choice => $opt_in_desc ) {
                                         ?>
                                         <div class="form-check">
-                                            <input type="checkbox" class="form-check-input" id="opt_in_<?php echo esc_attr( $opt_in_choice ); ?>" name="opt_in[<?php echo esc_attr( $opt_in_choice ); ?>]" value="1" <?php checked( true, in_array( strval( $opt_in_choice ), $user->opt_ins, true ) ); ?> />
+                                            <input type="checkbox" class="form-check-input" id="opt_in_<?php echo esc_attr( $opt_in_choice ); ?>" name="opt_in[<?php echo esc_attr( $opt_in_choice ); ?>]" value="1" <?php checked( true, in_array( strval( $opt_in_choice ), $user->opt_ins ?? [], true ) ); ?> />
                                             <label for="opt_in_<?php echo esc_attr( $opt_in_choice ); ?>" class="form-check-label"><?php echo esc_html( $opt_in_desc ); ?></label>
                                         </div>
                                         <?php

@@ -11,7 +11,13 @@ namespace Racketmanager;
 /** @var object $event */
 /** @var string $draw_link */
 /** @var array  $player_links */
-$player_links = $player_links ?? [];
+$tournament = $tournament ?? $vars['tournament'] ?? $vm->tournament ?? null;
+$event = $event ?? $vars['event'] ?? $vm->event ?? null;
+if ( ! $event ) {
+    return;
+}
+$draw_link = $draw_link ?? $vars['draw_link'] ?? $vm->draw_link ?? '';
+$player_links = $player_links ?? $vars['player_links'] ?? $vm->player_links ?? [];
 ?>
 <div class="container">
     <div class="module module--card">

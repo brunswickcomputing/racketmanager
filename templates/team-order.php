@@ -9,6 +9,8 @@ namespace Racketmanager;
 
 /** @var array $clubs */
 /** @var array $events */
+$clubs  = $vars['clubs'] ?? $vm->clubs ?? [];
+$events = $vars['events'] ?? $vm->events ?? [];
 ?>
 <div class="container">
     <div class="module module--card">

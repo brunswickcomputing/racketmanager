@@ -8,6 +8,7 @@
 namespace Racketmanager;
 
 /** @var string $action_url */
+$action_url = $action_url ?? $vm->action_url ?? '';
 ?><!-- link text -->
             <div style="font-size: 16px; color: #6b6e76; background-color: #fff; padding: 0 20px;">
                 <table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">

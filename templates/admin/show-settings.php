@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Global settings administration panel
  *
@@ -9,12 +10,13 @@ namespace Racketmanager;
 
 use Racketmanager\Admin\View_Models\Options_Page_View_Model;
 
+/** @var Options_Page_View_Model|\stdClass $vm */
 if ( isset( $vm ) && $vm instanceof Options_Page_View_Model ) {
     $tab     = $vm->tab;
     $options = $vm->options;
 } else {
-    $tab     = $tab ?? 'club-players';
-    $options = $options ?? array();
+    $tab     = $tab ?? $vars['tab'] ?? $vm->tab ?? 'club-players';
+    $options = $options ?? $vars['options'] ?? $vm->options ?? array();
 }
 $menu_page_url = admin_url( 'options-general.php?page=racketmanager-settings' );
 ?>

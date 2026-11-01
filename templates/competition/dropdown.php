@@ -8,6 +8,7 @@
 namespace Racketmanager;
 
 /** @var array $events */
+$events = $events ?? $vm->events ?? [];
 ?>
 <select size='1' name='event_id' id='event_id' class="form-select" onChange='Racketmanager.getLeagueDropdown(this.value)'>
     <option value='0'><?php esc_html_e( 'Choose event', 'racketmanager' ); ?></option>

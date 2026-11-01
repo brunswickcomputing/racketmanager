@@ -8,10 +8,15 @@
 namespace Racketmanager;
 
 /** @var object $competition */
+$competition       = $competition ?? $vars['competition'] ?? $vm->competition ?? null;
+$player_link       = $player_link ?? $vars['player_link'] ?? $vm->player_link ?? '';
+$player_links      = $player_links ?? $vars['player_links'] ?? $vm->player_links ?? [];
+$match_group_links = $match_group_links ?? $vars['match_group_links'] ?? $vm->match_group_links ?? [];
+if ( empty( $competition ) ) {
+    return;
+}
 if ( empty( $competition->player ) ) {
     $player_list  = $competition->players;
-    $player_link  = $player_link ?? '';
-    $player_links = $player_links ?? [];
     require RACKETMANAGER_PATH . 'templates/includes/player-list-names.php';
 } else {
     $player = $competition->player;

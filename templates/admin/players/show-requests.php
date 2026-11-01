@@ -7,6 +7,10 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Player_Requests_Page_View_Model;
+
+/** @var Player_Requests_Page_View_Model $vm */
+
 ?>
 <div class="container">
     <?php require 'nav-tabs.php'; ?>

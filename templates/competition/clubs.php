@@ -8,6 +8,16 @@
 namespace Racketmanager;
 
 /** @var object $competition */
+$competition      = $competition ?? $vars['competition'] ?? $vm->competition ?? null;
+$competition_club = $competition_club ?? $vars['competition_club'] ?? $vm->competition_club ?? null;
+$clubs            = $clubs ?? $vars['clubs'] ?? $vm->clubs ?? [];
+$club_links       = $club_links ?? $vars['club_links'] ?? $vm->club_links ?? [];
+$club_url         = $club_url ?? $vars['club_url'] ?? $vm->club_url ?? '';
+$team_links       = $team_links ?? $vars['team_links'] ?? $vm->team_links ?? [];
+$player_links     = $player_links ?? $vars['player_links'] ?? $vm->player_links ?? [];
+if ( empty( $competition ) ) {
+    return;
+}
 if ( empty( $competition_club ) ) {
     ?>
     <div class="module module--card">

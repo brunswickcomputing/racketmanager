@@ -10,14 +10,20 @@ namespace Racketmanager;
 /** @var object $club_role */
 /** @var object $club_roles */
 /** @var string $modal */
+$club_role  = $vars['club_role'] ?? $vm->club_role ?? null;
+$modal      = $vars['modal'] ?? $vm->modal ?? '';
+$club_roles = $vars['club_roles'] ?? $vm->club_roles ?? [];
+if ( ! $club_role ) {
+    return;
+}
 ?>
 <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
         <form id="club-role-update" class="" action="#" method="post">
             <?php wp_nonce_field( 'racketmanager_club-role-update', 'racketmanager_nonce' ); ?>
             <input type="hidden" name="clubRoleId" value="<?php echo esc_attr( $club_role->id ); ?>" />
-            <input type="hidden" name="roleId" value="<?php echo esc_attr( $club_role->role_id ); ?>" />
-            <input type="hidden" name="clubId" id="clubId" value="<?php echo esc_attr( $club_role->club_id ); ?>" />
+            <input type="hidden" name="roleId" value="<?php echo esc_attr( $club_role->role_id ?? '' ); ?>" />
+            <input type="hidden" name="clubId" id="clubId" value="<?php echo esc_attr( $club_role->club_id ?? '' ); ?>" />
             <input type="hidden" name="modal" value="<?php echo esc_attr( $modal ); ?>" />
             <div class="modal-header modal__header">
                 <h4 class="modal-title"><?php esc_html_e( 'Edit club role', 'racketmanager' ) ; ?></h4>

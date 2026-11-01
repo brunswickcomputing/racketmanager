@@ -15,6 +15,8 @@ namespace Racketmanager;
 
 /** @var string $header_level */
 /** @var array  $matches_list */
+$header_level = $header_level ?? $vars['header_level'] ?? $vm->header_level ?? 1;
+$matches_list = $matches_list ?? $vars['matches_list'] ?? $vm->matches_list ?? array();
 ?>
 <div class="module module--card">
     <div class="module__banner">

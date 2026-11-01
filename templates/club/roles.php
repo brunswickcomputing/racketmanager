@@ -14,6 +14,8 @@ namespace Racketmanager;
 
 /** @var object $club */
 /** @var array $roles */
+$club         = $club ?? $vm->club ?? ( $vars['club'] ?? null );
+$roles        = $roles ?? $vm->roles ?? ( $vars['roles'] ?? [] );
 $header_level = 1;
 require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 ?>

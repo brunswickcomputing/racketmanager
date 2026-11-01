@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Results administration panel
  *
@@ -7,8 +8,11 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Options_Page_View_Model;
 use Racketmanager\Util\Util_Lookup;
 
+/** @var Options_Page_View_Model|\stdClass $vm */
+$options           = $options ?? ( $vm->options ?? array() );
 $competition_types = Util_Lookup::get_competition_types();
 ?>
 <div class="container">

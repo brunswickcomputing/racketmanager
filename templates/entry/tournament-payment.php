@@ -15,8 +15,18 @@ namespace Racketmanager;
 /** @var object $player */
 /** @var int    $invoice_id */
 /** @var object $stripe */
-$msgs             = array();
-$payment_required = false;
+$tournament_entry     = $tournament_entry ?? ( $vm->tournament_entry ?? ( $vars['tournament_entry'] ?? null ) );
+$total_due            = $total_due ?? ( $vm->total_due ?? ( $vars['total_due'] ?? 0.0 ) );
+$tournament           = $tournament ?? ( $vm->tournament ?? ( $vars['tournament'] ?? null ) );
+$player               = $player ?? ( $vm->player ?? ( $vars['player'] ?? null ) );
+if ( ! $player || ! $tournament ) {
+    return;
+}
+$invoice_id           = $invoice_id ?? ( $vm->invoice_id ?? ( $vars['invoice_id'] ?? null ) );
+$stripe               = $stripe ?? ( $vm->stripe ?? ( $vars['stripe'] ?? null ) );
+$payment_complete_url = $payment_complete_url ?? ( $vm->payment_complete_url ?? ( $vars['payment_complete_url'] ?? '' ) );
+$msgs                 = array();
+$payment_required     = false;
 if ( $tournament_entry ) {
     $msgs[] = __( 'You have been entered into the tournament.', 'racketmanager' );
     if ( $total_due ) {

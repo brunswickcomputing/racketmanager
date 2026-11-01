@@ -9,7 +9,11 @@ namespace Racketmanager;
 
 /** @var object $event */
 /** @var array<int, string> $league_links */
-$league_links = $league_links ?? [];
+$event        = $event ?? ( $vars['event'] ?? ( $vm->event ?? null ) );
+$league_links = $league_links ?? ( $vars['league_links'] ?? ( $vm->league_links ?? [] ) );
+if ( ! $event ) {
+    return;
+}
 ?>
 <div class="module module--card">
     <div class="module__banner">

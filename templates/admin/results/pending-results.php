@@ -9,8 +9,9 @@ namespace Racketmanager;
 
 use Racketmanager\Admin\View_Models\Admin_Results_Match_View_Model;
 
+/** @var \stdClass|object $vm */
 /** @var Admin_Results_Match_View_Model[] $pending_results_matches */
-$pending_results_matches = $pending_results_matches ?? array();
+$pending_results_matches = $pending_results_matches ?? ( $vm->pending_results_matches ?? array() );
 $prev_league             = 0;
 ?>
 <table class="table table-striped">

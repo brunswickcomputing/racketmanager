@@ -9,6 +9,7 @@ namespace Racketmanager;
 
 use Racketmanager\Admin\View_Models\Competitions_Page_View_Model;
 
+/** @var Competitions_Page_View_Model $vm */
 if ( isset( $vm ) && $vm instanceof Competitions_Page_View_Model ) {
     $page_title = $vm->page_title;
     $tournament = $vm->tournament;

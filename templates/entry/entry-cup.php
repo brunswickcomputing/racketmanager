@@ -20,8 +20,19 @@ use stdClass;
 /** @var array  $mixed_teams */
 /** @var array  $match_days */
 /** @var string $season */
+$club         = $club ?? ( $vm->club ?? ( $vars['club'] ?? null ) );
+$competition  = $competition ?? ( $vm->competition ?? ( $vars['competition'] ?? null ) );
+$events       = $events ?? ( $vm->events ?? ( $vars['events'] ?? [] ) );
+$mens_teams   = $mens_teams ?? ( $vm->mens_teams ?? ( $vars['mens_teams'] ?? [] ) );
+$ladies_teams = $ladies_teams ?? ( $vm->ladies_teams ?? ( $vars['ladies_teams'] ?? [] ) );
+$mixed_teams  = $mixed_teams ?? ( $vm->mixed_teams ?? ( $vars['mixed_teams'] ?? [] ) );
+$match_days   = $match_days ?? ( $vm->match_days ?? ( $vars['match_days'] ?? [] ) );
+$season       = $season ?? ( $vm->season ?? ( $vars['season'] ?? '' ) );
+$back_url             = $back_url ?? ( $vm->back_url ?? ( $vars['back_url'] ?? '' ) );
+$rules_url            = $rules_url ?? ( $vm->rules_url ?? ( $vars['rules_url'] ?? '' ) );
+$date_closing         = $date_closing ?? ( $vm->date_closing ?? ( $vars['date_closing'] ?? null ) );
+$date_closing_display = $date_closing_display ?? ( $vm->date_closing_display ?? ( $vars['date_closing_display'] ?? null ) );
 $no_entry_link = true;
-$match_days    = $match_days ?? [];
 if ( $competition->is_open ) {
     $changes_allowed = true;
 } else {

@@ -157,6 +157,20 @@ readonly final class Tournament_Setup_Admin_Controller {
     private function handle_round_dates_post( array $query, array $post, Validator_Tournament $validator, ?int $tournament_id ): array {
         $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_add_championship-fixtures', 'edit_matches' );
 
+        $rounds = array();
+        if ( isset( $post['rounds'] ) && is_array( $post['rounds'] ) ) {
+            foreach ( $post['rounds'] as $r_idx => $r_data ) {
+                if ( is_array( $r_data ) ) {
+                    $rounds[ $r_idx ] = array(
+                        'key'         => isset( $r_data['key'] ) ? sanitize_text_field( wp_unslash( strval( $r_data['key'] ) ) ) : '',
+                        'num_matches' => isset( $r_data['num_matches'] ) ? intval( $r_data['num_matches'] ) : 0,
+                        'round'       => isset( $r_data['round'] ) ? intval( $r_data['round'] ) : 0,
+                        'match_date'  => isset( $r_data['match_date'] ) ? sanitize_text_field( wp_unslash( strval( $r_data['match_date'] ) ) ) : '',
+                    );
+                }
+            }
+        }
+
         $request = new Championship_Rounds_Request_DTO( $post );
 
         try {
@@ -166,7 +180,7 @@ readonly final class Tournament_Setup_Admin_Controller {
                 $validator->err_flds = $response->get_error_codes();
                 $validator->err_msgs = $response->get_error_messages();
 
-                $vm = $this->build_view_model( $tournament_id, $validator );
+                $vm = $this->build_view_model( $tournament_id, $validator, $rounds );
 
                 return array(
                     'view_model'   => $vm,
@@ -233,7 +247,7 @@ readonly final class Tournament_Setup_Admin_Controller {
      *
      * @throws Tournament_Not_Found_Exception
      */
-    private function build_view_model( ?int $tournament_id, Validator_Tournament $validator ): Tournament_Setup_Page_View_Model {
+    private function build_view_model( ?int $tournament_id, Validator_Tournament $validator, array $rounds = array() ): Tournament_Setup_Page_View_Model {
         try {
             $tournament_details = $this->tournament_service->get_tournament_with_details( $tournament_id );
         } catch ( Tournament_Not_Found_Exception|Competition_Not_Found_Exception $e ) {
@@ -260,7 +274,8 @@ readonly final class Tournament_Setup_Admin_Controller {
             match_count: null,
             league: null,
             errors: $errors,
-            validator: $validator
+            validator: $validator,
+            rounds: $rounds,
         );
     }
 }

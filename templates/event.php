@@ -23,7 +23,18 @@ namespace Racketmanager;
 /** @var string $competition_type */
 /** @var string $event_seo_name */
 
-$is_singular      = $is_singular ?? false;
+$event            = $event ?? $vars['event'] ?? $vm->event ?? null;
+$seasons          = $seasons ?? $vars['seasons'] ?? $vm->seasons ?? [];
+$curr_season      = $curr_season ?? $vars['curr_season'] ?? $vm->curr_season ?? '';
+$tab              = $tab ?? $vars['tab'] ?? $vm->tab ?? '';
+$menu_options     = $menu_options ?? $vars['menu_options'] ?? $vm->menu_options ?? [];
+$is_singular      = $is_singular ?? $vars['is_singular'] ?? $vm->is_singular ?? false;
+$competition_type = $competition_type ?? $vars['competition_type'] ?? $vm->competition_type ?? '';
+$event_seo_name   = $event_seo_name ?? $vars['event_seo_name'] ?? $vm->event_seo_name ?? '';
+
+if ( empty( $event ) ) {
+    return;
+}
 ?>
 <div id="league-tables">
     <?php

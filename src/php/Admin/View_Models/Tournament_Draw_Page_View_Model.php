@@ -19,6 +19,8 @@ readonly final class Tournament_Draw_Page_View_Model {
         public array $matches = array(),
         public array $teams = array(),
         public array $finals = array(),
+        public ?string $page = null,
+        public ?string $view = null,
     ) {
     }
 
@@ -36,6 +38,8 @@ readonly final class Tournament_Draw_Page_View_Model {
             'matches'    => $this->matches,
             'teams'      => $this->teams,
             'finals'     => $this->finals,
+            'page'       => $this->page,
+            'view'       => $this->view,
         );
     }
 }

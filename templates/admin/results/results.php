@@ -9,8 +9,9 @@ namespace Racketmanager;
 
 use Racketmanager\Admin\View_Models\Admin_Results_Match_View_Model;
 
+/** @var \stdClass|object $vm */
 /** @var Admin_Results_Match_View_Model[] $approved_results_matches */
-$approved_results_matches = $approved_results_matches ?? array();
+$approved_results_matches = $approved_results_matches ?? ( $vm->approved_results_matches ?? array() );
 $prev_league              = 0;
 ?>
 <?php wp_nonce_field( 'results-update' ); ?>

@@ -11,6 +11,12 @@ use Racketmanager\Domain\Tournament\Tournament;
 
 /** @var Tournament $tournament */
 /** @var array $tournament_players */
+$tournament = $tournament ?? $vars['tournament'] ?? $vm->tournament ?? null;
+if ( ! $tournament ) {
+    return;
+}
+$tournament_player = $tournament_player ?? $vars['tournament_player'] ?? $vm->tournament_player ?? null;
+$tournament_players = $tournament_players ?? $vars['tournament_players'] ?? $vm->tournament_players ?? array();
 ?>
 <div class="container">
     <?php

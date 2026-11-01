@@ -46,6 +46,7 @@ use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
+use Racketmanager\Services\View\Template_Scope;
 use Racketmanager\Util\Util_Lookup;
 use function Racketmanager\show_alert;
 
@@ -370,7 +371,8 @@ class Shortcodes {
             'player_presenter' => $this->player_presenter,
         );
         $vars = array_merge( $default_vars, $vars );
-        extract( $vars ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+        // Explicit scope: templates get $vm (see Template_Scope::resolve_vm) and $vars; nothing is extracted.
+        $vm = Template_Scope::resolve_vm( $vars );
         ob_start();
 
         if ( file_exists( get_stylesheet_directory() . "/racketmanager/$template.php" ) ) {

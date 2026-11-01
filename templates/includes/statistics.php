@@ -19,6 +19,19 @@ namespace Racketmanager;
 /** @var string $win_pct_sets */
 /** @var string $win_pct_games */
 /** @var string $walkover */
+$is_walkover   = $is_walkover ?? $vars['is_walkover'] ?? $vm->is_walkover ?? false;
+$stat_title    = $stat_title ?? $vars['stat_title'] ?? $vm->stat_title ?? '';
+$played        = $played ?? $vars['played'] ?? $vm->played ?? 0;
+$matches_won   = $matches_won ?? $vars['matches_won'] ?? $vm->matches_won ?? 0;
+$matches_lost  = $matches_lost ?? $vars['matches_lost'] ?? $vm->matches_lost ?? 0;
+$sets_won      = $sets_won ?? $vars['sets_won'] ?? $vm->sets_won ?? 0;
+$sets_lost     = $sets_lost ?? $vars['sets_lost'] ?? $vm->sets_lost ?? 0;
+$games_won     = $games_won ?? $vars['games_won'] ?? $vm->games_won ?? 0;
+$games_lost    = $games_lost ?? $vars['games_lost'] ?? $vm->games_lost ?? 0;
+$win_pct       = $win_pct ?? $vars['win_pct'] ?? $vm->win_pct ?? null;
+$win_pct_sets  = $win_pct_sets ?? $vars['win_pct_sets'] ?? $vm->win_pct_sets ?? 0;
+$win_pct_games = $win_pct_games ?? $vars['win_pct_games'] ?? $vm->win_pct_games ?? 0;
+$walkover      = $walkover ?? $vars['walkover'] ?? $vm->walkover ?? 0;
 ?>
 <div class="col-<?php echo empty( $is_walkover ) ? 4 : 3; ?> stats-title">
     <?php

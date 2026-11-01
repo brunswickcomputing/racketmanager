@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Event matches administration panel
  *
@@ -8,6 +9,8 @@
 namespace Racketmanager;
 
 /** @var array $matches */
+/** @var \Racketmanager\Admin\View_Models\League_Matches_Page_View_Model|\stdClass $vm */
+$matches = $matches ?? $vars['matches'] ?? $vm->matches;
 ?>
 <div class="container">
     <table class="table table-striped">

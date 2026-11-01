@@ -9,6 +9,10 @@ namespace Racketmanager;
 
 /** @var object $competition */
 /** @var array $teams */
+$competition = $competition ?? $vm->competition ?? null;
+$teams       = $teams ?? $vm->teams ?? [];
+$team_links  = $team_links ?? $vm->team_links ?? [];
+$club_links  = $club_links ?? $vm->club_links ?? [];
 ?>
 <div class="module module--card">
     <div class="module__banner">

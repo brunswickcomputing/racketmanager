@@ -10,12 +10,23 @@ namespace Racketmanager;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 
-/** @var object $rubber */
-/** @var Fixture_Details_DTO $dto */
-/** @var Fixture $match */
+/** @var object|null $rubber */
+/** @var Fixture_Details_DTO|null $dto */
+/** @var Fixture|null $match */
 /** @var string $modal */
 /** @var array  $select */
 /** @var string $status */
+
+$dto    = $vars['dto'] ?? $vm->dto ?? null;
+$match  = $vars['match'] ?? $vm->match ?? ( $dto instanceof Fixture_Details_DTO ? $dto->fixture : null );
+$rubber = $vars['rubber'] ?? $vm->rubber ?? null;
+$modal  = $vars['modal'] ?? $vm->modal ?? '';
+$select = $vars['select'] ?? $vm->select ?? [];
+$status = $vars['status'] ?? $vm->status ?? '';
+
+if ( ! $match || ! $rubber ) {
+    return;
+}
 ?>
 <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">

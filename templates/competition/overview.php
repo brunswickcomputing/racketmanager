@@ -14,7 +14,8 @@ use Racketmanager\Presentation\View_Models\Competition_Overview_View_Model;
 /** @var array|null $competition_season */
 /** @var Competition_Overview_View_Model|null $overview_vm */
 
-$vm = $overview_vm ?? null;
+$overview_vm = $overview_vm ?? $vm->overview_vm ?? ( $vars['overview_vm'] ?? ( $vm instanceof Competition_Overview_View_Model ? $vm : null ) );
+$vm          = $overview_vm;
 if ( ! $vm instanceof Competition_Overview_View_Model ) {
     return;
 }

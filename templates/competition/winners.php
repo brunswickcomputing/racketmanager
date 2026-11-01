@@ -9,6 +9,8 @@ namespace Racketmanager;
 
 /** @var object $competition */
 /** @var array $winners */
+$competition = $competition ?? $vm->competition ?? null;
+$winners     = $winners ?? $vm->winners ?? [];
 ?>
 <div class="module module--card">
     <div class="module__banner">

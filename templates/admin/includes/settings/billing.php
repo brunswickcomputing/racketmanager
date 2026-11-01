@@ -1,9 +1,14 @@
 <?php
+declare( strict_types=1 );
 /**
  * Billing settings
  */
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Options_Page_View_Model;
+
+/** @var Options_Page_View_Model|\stdClass $vm */
+$options = $options ?? ( $vm->options ?? array() );
 /** @var array $options */
 ?>
 <div class="form-control">

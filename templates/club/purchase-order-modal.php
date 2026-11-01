@@ -9,6 +9,11 @@ namespace Racketmanager;
 
 /** @var object $invoice */
 /** @var string $modal */
+$invoice = $vars['invoice'] ?? $vm->invoice ?? null;
+$modal   = $vars['modal'] ?? $vm->modal ?? '';
+if ( ! $invoice ) {
+    return;
+}
 ?>
 <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">

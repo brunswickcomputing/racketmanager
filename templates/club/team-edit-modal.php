@@ -12,6 +12,22 @@ namespace Racketmanager;
 /** @var string $modal */
 /** @var array  $match_days */
 /** @var object $event_team */
+$team       = $vars['team'] ?? $vm->team ?? null;
+$event      = $vars['event'] ?? $vm->event ?? null;
+$modal      = $vars['modal'] ?? $vm->modal ?? '';
+$match_days = $vars['match_days'] ?? $vm->match_days ?? [];
+$event_team = $vars['event_team'] ?? $vm->event_team ?? null;
+if ( ! $team || ! $event ) {
+    return;
+}
+$event_team = $event_team ?: (object) [
+    'captain'      => '',
+    'captain_id'   => '',
+    'contactno'    => '',
+    'contactemail' => '',
+    'match_day'    => null,
+    'match_time'   => '',
+];
 ?>
 <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -20,7 +36,7 @@ namespace Racketmanager;
             <input type="hidden" name="team_id" value="<?php echo esc_attr( $team->id ); ?>" />
             <input type="hidden" name="event_id" value="<?php echo esc_attr( $event->id ); ?>" />
             <input type="hidden" name="modal" value="<?php echo esc_attr( $modal ); ?>" />
-            <input type="hidden" name="clubId" id="clubId" value="<?php echo esc_attr( $team->club_id ); ?>" />
+            <input type="hidden" name="clubId" id="clubId" value="<?php echo esc_attr( $team->club_id ?? '' ); ?>" />
             <div class="modal-header modal__header">
                 <h4 class="modal-title"><?php esc_html_e( 'Edit team', 'racketmanager' ) ; ?></h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -70,8 +86,10 @@ namespace Racketmanager;
                                         <option disabled <?php selected( null, empty( $event_team->match_day ) ? null : 1 ); ?>><?php esc_html_e( 'Select match day', 'racketmanager' ); ?></option>
                                         <?php
                                         foreach ( $match_days as $key => $matchday ) {
+                                            $day_label = is_object( $matchday ) ? ( $matchday->day ?? $matchday->name ?? (string) $key ) : (string) $matchday;
+                                            $day_val   = is_object( $matchday ) ? ( $matchday->id ?? $key ) : $matchday;
                                             ?>
-                                            <option value="<?php echo esc_html( $key ); ?>" <?php selected( $matchday, empty( $event_team->match_day ) ? null : $event_team->match_day ); ?>><?php echo esc_html( $matchday ); ?></option>
+                                            <option value="<?php echo esc_html( $key ); ?>" <?php selected( $day_val, empty( $event_team->match_day ) ? null : $event_team->match_day ); ?>><?php echo esc_html( $day_label ); ?></option>
                                             <?php
                                         }
                                         ?>

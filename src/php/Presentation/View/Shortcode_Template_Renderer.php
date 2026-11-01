@@ -8,6 +8,7 @@ use Racketmanager\Exceptions\Template_Not_Found_Exception;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Favourite_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
+use Racketmanager\Services\View\Template_Scope;
 use Racketmanager\Services\View\View_Renderer_Interface;
 use Throwable;
 use function __;
@@ -183,8 +184,8 @@ class Shortcode_Template_Renderer implements Template_Renderer_Interface {
         ob_start();
         try {
             ( static function ( string $__file, array $vars ): void {
-                $vm = ( isset( $vars['vm'] ) && is_object( $vars['vm'] ) ) ? $vars['vm'] : ( $vars['vm'] ?? [] );
-                extract( $vars, EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+                // Explicit scope: $vm (see Template_Scope::resolve_vm) and $vars; nothing is extracted.
+                $vm = Template_Scope::resolve_vm( $vars );
                 require $__file;
             } )( $file, $vars );
 

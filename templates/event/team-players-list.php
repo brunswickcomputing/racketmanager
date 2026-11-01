@@ -19,6 +19,15 @@ namespace Racketmanager;
 /** @var object $event */
 /** @var array $club_players */
 /** @var object $club */
+$can_update         = $vars['can_update'] ?? $vm->can_update ?? false;
+$teams              = $vars['teams'] ?? $vm->teams ?? [];
+$event              = $vars['event'] ?? $vm->event ?? null;
+$club_players       = $vars['club_players'] ?? $vm->club_players ?? [];
+$club               = $vars['club'] ?? $vm->club ?? null;
+$match_message_text = $vars['match_message_text'] ?? $vm->match_message_text ?? '';
+if ( ! $event || ! $club ) {
+    return;
+}
 ?>
 <form id="team-order-validate">
     <?php
@@ -96,7 +105,7 @@ namespace Racketmanager;
                                                 <select class="form-select" name="players[<?php echo esc_attr( $i ); ?>][<?php echo esc_attr( $player_number ); ?>]" id="<?php echo esc_attr( $player_id_link ); ?>">
                                                     <option value="0">&nbsp;</option>
                                                     <?php
-                                                    foreach ( $club_players[ $player['gender'] ] as $player_option ) {
+                                                    foreach ( ( $club_players[ $player['gender'] ] ?? [] ) as $player_option ) {
                                                         if ( ! empty( $player_option->removed_date ) ) {
                                                             $disabled = 'disabled';
                                                         } else {

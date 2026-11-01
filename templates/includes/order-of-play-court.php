@@ -10,6 +10,8 @@ namespace Racketmanager;
 use Racketmanager\Presentation\View_Models\Order_Of_Play_Match_View_Model;
 
 /** @var array $court_times */
+$court_times = $court_times ?? $vars['court_times'] ?? $vm->court_times ?? [];
+$is_expanded = $is_expanded ?? $vars['is_expanded'] ?? $vm->is_expanded ?? false;
 foreach ( $court_times as $matches ) {
     ?>
     <div class="match-group__item-wrapper<?php echo empty( $is_expanded ) ? null : ' is-expanded'; ?>">

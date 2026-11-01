@@ -13,12 +13,15 @@ use Racketmanager\Domain\Player\User;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presentation_Service_Provider;
+use Racketmanager\Presentation\View_Models\Favourite_Controls_View_Model;
+use Racketmanager\Presentation\View_Models\Favourite_State_View_Model;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
 use Racketmanager\Services\Container\Providers\Club_Service_Provider;
 use Racketmanager\Services\Container\Providers\Core_Service_Provider;
 use Racketmanager\Services\Container\Simple_Container;
+use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
@@ -50,6 +53,28 @@ class Favourites_Render_Test extends TestCase {
     protected function tearDown(): void {
         $this->restore_globals();
         parent::tearDown();
+    }
+
+    public function test_competition_events_render_favourite_stars_from_supplemental_vars(): void {
+        $selected   = new Favourite_State_View_Model( 'Remove favourite', 'selected', '', 'fav-icon-svg-selected' );
+        $unselected = new Favourite_State_View_Model( 'Add favourite', 'unselected', '', 'fav-icon-svg-unselected' );
+        $controls   = new Favourite_Controls_View_Model( true, [ 'competition' => [ 12 => $selected ] ], $unselected );
+        $vm         = (object) [
+            'competition' => (object) [],
+            'events'      => [
+                (object) [ 'event_id' => 12, 'event_name' => 'First Event' ],
+                (object) [ 'event_id' => 13, 'event_name' => 'Second Event' ],
+            ],
+        ];
+
+        $renderer = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
+        $output   = $renderer->render_to_string( 'competition/events', $vm, [ 'favourite_controls' => $controls ] );
+
+        self::assertSame( 2, substr_count( $output, 'data-js="add-favourite"' ) );
+        self::assertStringContainsString( 'data-favourite="12"', $output );
+        self::assertStringContainsString( 'title="Remove favourite"', $output );
+        self::assertStringContainsString( 'data-favourite="13"', $output );
+        self::assertStringContainsString( 'title="Add favourite"', $output );
     }
 
     public function test_controls_use_current_users_metadata_without_global_plugin_and_do_not_leak_state(): void {
@@ -289,7 +314,7 @@ class Favourites_Render_Test extends TestCase {
         $vars = [ 'favourite_types' => [ [ 'name' => 'league', 'favourites' => [
             (object) [ 'id' => '12', 'name' => 'Premier Division', 'detail' => (object) [ 'id' => 12, 'title' => 'Premier Division' ] ],
         ] ] ] ];
-        $template = '<?php echo $favourite_types[0]["favourites"][0]->name . "|" . $favourite_rows_by_type["league"][0]->url . "|" . $favourite_controls->selected["league"][12]->title;';
+        $template = '<?php echo $vm->favourite_types[0]["favourites"][0]->name . "|" . $vm->favourite_rows_by_type["league"][0]->url . "|" . $vm->favourite_controls->selected["league"][12]->title;';
         $flat = $theme_dir . '/racketmanager/form-favourites.php';
         $typed = $theme_dir . '/racketmanager/forms/form-favourites.php';
         try {

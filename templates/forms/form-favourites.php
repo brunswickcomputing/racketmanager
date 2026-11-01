@@ -8,6 +8,9 @@
 namespace Racketmanager;
 
 /** @var array $favourite_types */
+$favourite_types        = $favourite_types ?? ( $vars['favourite_types'] ?? ( $vm->favourite_types ?? [] ) );
+$favourite_rows_by_type = $favourite_rows_by_type ?? ( $vars['favourite_rows_by_type'] ?? ( $vm->favourite_rows_by_type ?? [] ) );
+$favourite_controls     = $favourite_controls ?? ( $vars['favourite_controls'] ?? ( $vm->favourite_controls ?? null ) );
 ?>
 <div class="container">
     <div class="module module--card">

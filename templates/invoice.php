@@ -10,6 +10,10 @@ declare( strict_types=1 );
 namespace Racketmanager;
 
 /** @var \Racketmanager\Presentation\View_Models\Invoice_View_Model $invoice */
+$invoice           = $invoice ?? $vars['invoice'] ?? ( isset( $vm ) ? ( $vm->invoice ?? ( $vm instanceof \Racketmanager\Presentation\View_Models\Invoice_View_Model ? $vm : null ) ) : null );
+$organisation_name = $organisation_name ?? $vars['organisation_name'] ?? ( isset( $vm ) ? ( $vm->organisation_name ?? '' ) : '' );
+$billing           = $billing ?? $vars['billing'] ?? ( isset( $vm ) ? ( $vm->billing ?? array() ) : array() );
+$invoice_number    = $invoice_number ?? $vars['invoice_number'] ?? ( isset( $vm ) ? ( $vm->invoice_number ?? '' ) : '' );
 ?>
 <?php
 if ( ! empty( $invoice->is_user_logged_in ) ) {

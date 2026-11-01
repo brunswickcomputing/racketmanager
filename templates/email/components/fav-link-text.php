@@ -8,6 +8,9 @@
 namespace Racketmanager;
 
 /** @var string $favourite_url */
+/** @var array $vars */
+/** @var object|null $vm */
+$favourite_url = ( isset( $favourite_url ) && '' !== $favourite_url ) ? $favourite_url : ( $vm->favourite_url ?? $vars['favourite_url'] ?? '' );
 ?><!-- link text -->
             <div style="font-size: 16px; color: #6b6e76; background-color: #fff; padding: 0 20px;">
                 <table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">

@@ -11,8 +11,10 @@ namespace Racketmanager;
 /** @var array  $teams */
 /** @var array  $crosstable_columns Column teams in league order (pre-computed by Get_League_Crosstable_Handler). */
 /** @var array  $crosstable_cells   Score matrix keyed by [ row team id ][ column team id ] (pre-computed by Get_League_Crosstable_Handler). */
-$crosstable_columns = $crosstable_columns ?? array();
-$crosstable_cells   = $crosstable_cells ?? array();
+$league             = $league ?? $vars['league'] ?? $vm->league ?? null;
+$teams              = $teams ?? $vars['teams'] ?? $vm->teams ?? [];
+$crosstable_columns = $crosstable_columns ?? $vars['crosstable_columns'] ?? $vm->crosstable_columns ?? array();
+$crosstable_cells   = $crosstable_cells ?? $vars['crosstable_cells'] ?? $vm->crosstable_cells ?? array();
 ?>
 <div class="module module--card">
     <div class="module__banner">

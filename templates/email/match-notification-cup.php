@@ -24,6 +24,18 @@ namespace Racketmanager;
 /** @var string|null $match_date */
 /** @var string|null $match_time */
 
+$competition      = $competition ?? $vm->competition ?? null;
+$competition_name = $competition_name ?? $vm->competition_name ?? null;
+$match            = $match ?? $vm->match ?? null;
+$round            = $round ?? $vm->round ?? null;
+$cup_link         = $cup_link ?? $vm->cup_link ?? null;
+$teams            = $teams ?? $vm->teams ?? null;
+$rules_link       = $rules_link ?? $vm->rules_link ?? null;
+$email_from       = $email_from ?? $vm->email_from ?? null;
+$email_subject    = $email_subject ?? $vm->email_subject ?? null;
+$match_date       = $match_date ?? $vm->match_date ?? null;
+$match_time       = $match_time ?? $vm->match_time ?? null;
+
 $competition_name = (string) ( $competition_name ?? ( $competition ?? ( $match->league->title ?? '' ) ) );
 $round_label      = (string) ( $round ?? '' );
 $match_date       = (string) ( $match_date ?? ( $match->match_date ?? '' ) );

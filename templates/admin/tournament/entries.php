@@ -13,16 +13,13 @@ use Racketmanager\Services\View\View_Renderer_Interface;
 // Preferred input: $vm from the overview page.
 $vm = isset( $vm ) && ( $vm instanceof Tournament_Overview_Page_View_Model ) ? $vm : null;
 
-// BC fallback: allow legacy locals if $vm isn't provided.
-if ( $vm ) {
-    $withdrawn_entries = $vm->withdrawn_entries;
-    $unpaid_entries    = $vm->unpaid_entries;
-    $pending_entries   = $vm->pending_entries;
-    $confirmed_entries = $vm->confirmed_entries;
-    $player_entry_urls = $vm->player_entry_urls;
-}
+$withdrawn_entries = $withdrawn_entries ?? $vars['withdrawn_entries'] ?? ( isset( $vm ) ? ( $vm->withdrawn_entries ?? array() ) : array() );
+$unpaid_entries    = $unpaid_entries ?? $vars['unpaid_entries'] ?? ( isset( $vm ) ? ( $vm->unpaid_entries ?? array() ) : array() );
+$pending_entries   = $pending_entries ?? $vars['pending_entries'] ?? ( isset( $vm ) ? ( $vm->pending_entries ?? array() ) : array() );
+$confirmed_entries = $confirmed_entries ?? $vars['confirmed_entries'] ?? ( isset( $vm ) ? ( $vm->confirmed_entries ?? array() ) : array() );
+$player_entry_urls = $player_entry_urls ?? $vars['player_entry_urls'] ?? ( isset( $vm ) ? ( $vm->player_entry_urls ?? array() ) : array() );
+$renderer          = $renderer ?? $vars['renderer'] ?? null;
 $player_list_base  = 'admin/tournament/player-list';
-$player_entry_urls = $player_entry_urls ?? array();
 
 /** @var array $withdrawn_entries */
 /** @var array $unpaid_entries */

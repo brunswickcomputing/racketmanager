@@ -11,8 +11,8 @@ namespace Racketmanager;
 $email_error      = false;
 $email_message    = '';
 $valid            = true;
-$errors_list      = $vars['errors'] ?? ( $errors ?? [] );
-$error_codes_list = $vars['error_codes'] ?? ( $error_codes ?? [] );
+$errors_list      = $errors ?? $vm->errors ?? ( is_array( $vars ?? null ) ? ( $vars['errors'] ?? [] ) : [] );
+$error_codes_list = $error_codes ?? $vm->error_codes ?? ( is_array( $vars ?? null ) ? ( $vars['error_codes'] ?? [] ) : [] );
 if ( ! empty( $errors_list ) && is_array( $errors_list ) ) {
     $valid = false;
     if ( ! empty( $error_codes_list ) && is_array( $error_codes_list ) ) {

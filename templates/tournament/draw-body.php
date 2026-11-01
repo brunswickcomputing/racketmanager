@@ -9,6 +9,11 @@ namespace Racketmanager;
 
 /** @var object $draw */
 /** @var array $fixtures */
+$draw     = $draw ?? ( $vars['draw'] ?? ( $vm->draw ?? null ) );
+$fixtures = $fixtures ?? ( $vars['fixtures'] ?? ( $vm->fixtures ?? [] ) );
+if ( ! $draw ) {
+	return;
+}
 ?>
 <div class="module__content">
             <div class="module-container">
@@ -45,6 +50,9 @@ namespace Racketmanager;
                         <div class="container tournament-matches">
                             <?php
                             foreach ( ( $fixtures ?? [] ) as $card ) {
+                                if ( ! $card instanceof \Racketmanager\Presentation\View_Models\Tournament_Match_Card_View_Model ) {
+                                    continue;
+                                }
                                 ?>
                                 <?php require RACKETMANAGER_PATH . 'templates/tournament/match.php'; ?>
                                 <?php

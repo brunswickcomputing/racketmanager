@@ -7,13 +7,16 @@
 
 namespace Racketmanager;
 
+/** @var object|array $vm */
 /** @var array $vars */
 /** @var string $salutation */
 /** @var string $paragraph */
 /** @var string $closing */
-$organisation  = $vars['site_name'];
-$sitename      = $vars['site_name'];
-$siteurl       = $vars['site_url'];
+$vm            = ( isset( $vm ) && is_object( $vm ) ) ? $vm : (object) ( $vars ?? [] );
+$vars          = is_array( $vars ?? null ) ? $vars : (array) $vm;
+$organisation  = $vm->site_name ?? ( $vars['site_name'] ?? '' );
+$sitename      = $vm->site_name ?? ( $vars['site_name'] ?? '' );
+$siteurl       = $vm->site_url ?? ( $vars['site_url'] ?? '' );
 $email_subject = __( 'Personal Data Export', 'racketmanager' );
 $action_url    = '###LINK###';
 ?>

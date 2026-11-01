@@ -566,6 +566,51 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
         self::assertSame( '2024', (string) $result3['view_model']->season );
     }
 
+    public function test_draw_page_sanitizes_and_passes_page_and_view_to_view_model(): void {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+
+        $tournament = $this->create_tournament_instance( 1, 'Test Tournament', 2024 );
+        $league     = $this->create_mock_league();
+
+        $tournament_service = $this->createMock( Tournament_Service::class );
+        $tournament_service->method( 'get_tournament' )->willReturn( $tournament );
+        $tournament_service->method( 'get_draw_data' )->willReturn( new Tournament_Draw_Data_DTO(
+            tournament: $tournament,
+            league: $league,
+            tab: 'draw',
+            season: '2024'
+        ) );
+
+        $league_service = $this->createMock( League_Service::class );
+        $league_service->method( 'get_league' )->willReturn( $league );
+
+        $guard      = $this->createMock( Action_Guard_Interface::class );
+        $dispatcher = new Draw_Action_Dispatcher(
+            $this->createMock( Draw_Action_Handler_Interface::class ),
+            $guard
+        );
+
+        $controller = new Tournament_Draw_Admin_Controller( $tournament_service, $league_service, $dispatcher, $guard, $this->passthrough_presenter() );
+
+        $result = $controller->draw_page(
+            array(
+                'tournament' => 1,
+                'league'     => 10,
+                'page'       => 'racketmanager-tournaments',
+                'view'       => 'finals',
+            ),
+            array()
+        );
+
+        self::assertSame( 'racketmanager-tournaments', $result['view_model']->page );
+        self::assertSame( 'finals', $result['view_model']->view );
+        $vars = $result['view_model']->to_template_vars();
+        self::assertArrayHasKey( 'page', $vars );
+        self::assertArrayHasKey( 'view', $vars );
+        self::assertSame( 'racketmanager-tournaments', $vars['page'] );
+        self::assertSame( 'finals', $vars['view'] );
+    }
+
     protected function tearDown(): void {
         unset( $_SERVER['REQUEST_METHOD'] );
         parent::tearDown();

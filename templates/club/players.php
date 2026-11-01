@@ -20,7 +20,12 @@ use Racketmanager\Presentation\View_Models\Club_Roster_Player_View_Model;
 /** @var bool   $user_can_update */
 /** @var Club_Roster_Player_View_Model[] $players */
 /** @var string $rating_header */
-$club_id = $vm->id ?? ( $club->id ?? 0 );
+$club            = $club ?? $vm->club ?? ( $vm instanceof Club_View_Model ? $vm->club : null );
+$club_id         = $vm->id ?? ( $club->id ?? 0 );
+$user_can_update = $user_can_update ?? ( $vm->user_can_update ?? false );
+$players         = $players ?? ( $vm->players ?? [] );
+$player          = $player ?? ( $vm->player ?? null );
+$rating_header   = $rating_header ?? ( $vm->rating_header ?? '' );
 if ( empty( $player ) ) {
     $header_level = 1;
     require RACKETMANAGER_PATH . 'templates/includes/club-header.php';

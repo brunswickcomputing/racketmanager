@@ -8,6 +8,12 @@
 namespace Racketmanager;
 
 /** @var object $league */
+$league = $league ?? $vars['league'] ?? $vm->league ?? null;
+$season = $season ?? $vars['season'] ?? $vm->season ?? '';
+
+if ( empty( $league ) ) {
+    return;
+}
 ?>
 <select size='1' name='season' id='season' class="form-select" onChange='Racketmanager.getMatchDropdown(<?php echo esc_html( $league->id ); ?>, this.value)'>
     <option value="0"><?php esc_html_e( 'Choose Season', 'racketmanager' ); ?></option>

@@ -24,6 +24,9 @@ if ( $vm ) {
     $seasons      = $vm->seasons;
     $fees         = $vm->fees;
     $validator    = $vm->validator;
+    $form_values  = $vm->form_values;
+} else {
+    $form_values  = $form_values ?? ( $vars['form_values'] ?? array() );
 }
 
 /** @var string  $form_title */
@@ -68,7 +71,7 @@ if ( $vm ) {
                         $msg_id     = array_search( 'tournamentName', $validator->err_flds, true );
                         $msg        = $validator->err_msgs[$msg_id] ?? null;
                     }
-                    $tournament_name = $_POST['tournamentName'] ?? $tournament->get_name() ?? null;
+                    $tournament_name = $form_values['tournamentName'] ?? $tournament->get_name() ?? null;
                     ?>
                     <input type="text" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" id="tournamentName" name="tournamentName" value="<?php echo esc_html( $tournament_name ); ?>" placeholder="<?php esc_html_e( 'Add tournament', 'racketmanager' ); ?>" />
                     <label class="form-label" for="tournamentName"><?php esc_html_e( 'Name', 'racketmanager' ); ?></label>
@@ -92,7 +95,7 @@ if ( $vm ) {
                             $msg_id     = array_search( 'competition', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
-                        $competition_id = $_POST['competition_id'] ?? $tournament->get_competition_id() ?? null;
+                        $competition_id = $form_values['competition_id'] ?? $tournament->get_competition_id() ?? null;
                         ?>
                         <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="competition_id" id="competition_id" >
                             <option disabled <?php selected( null, $competition_id ); ?>><?php esc_html_e( 'Select competition', 'racketmanager' ); ?></option>
@@ -124,7 +127,7 @@ if ( $vm ) {
                             $msg_id     = array_search( 'season', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
-                        $tournament_season = $_POST['season'] ?? $tournament->get_season() ?? null;
+                        $tournament_season = $form_values['season'] ?? $tournament->get_season() ?? null;
                         ?>
                         <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="season" id="season" >
                             <option disabled <?php selected( null, $tournament_season ); ?>><?php esc_html_e( 'Select season', 'racketmanager' ); ?></option>
@@ -158,7 +161,7 @@ if ( $vm ) {
                             $msg_id     = array_search( 'venue', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
-                        $tournament_venue = $_POST['venue'] ?? $tournament->get_venue() ?? null;
+                        $tournament_venue = $form_values['venue'] ?? $tournament->get_venue() ?? null;
                         ?>
                         <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="venue" id="venue" >
                             <option disabled <?php selected( null, $tournament_venue ); ?>><?php esc_html_e( 'Select venue', 'racketmanager' ); ?></option>
@@ -190,7 +193,7 @@ if ( $vm ) {
                             $msg_id     = array_search( 'competition_code', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
-                        $competition_code = $_POST['competition_code'] ?? $tournament->get_competition_code() ?? null;
+                        $competition_code = $form_values['competition_code'] ?? $tournament->get_competition_code() ?? null;
                         ?>
                         <input type="text" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="competition_code" id="competition_code" value="<?php echo esc_html( $competition_code ); ?>" />
                         <label for="competition_code" class="form-label"><?php esc_html_e( 'Competition code', 'racketmanager' ); ?></label>
@@ -214,7 +217,7 @@ if ( $vm ) {
                             $msg_id     = array_search( 'grade', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
-                        $tournament_grade = $_POST['grade'] ?? $tournament->get_grade() ?? null;
+                        $tournament_grade = $form_values['grade'] ?? $tournament->get_grade() ?? null;
                         ?>
                         <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="grade" id="grade" >
                             <option disabled <?php selected( null, $tournament_grade ); ?>><?php esc_html_e( 'Select grade', 'racketmanager' ); ?></option>
@@ -252,7 +255,7 @@ if ( $vm ) {
                             $msg_id     = array_search( 'feeCompetition', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
-                        $fee_competition = $_POST['feeCompetition'] ?? $fees->competition ?? null;
+                        $fee_competition = $form_values['feeCompetition'] ?? $fees->competition ?? null;
                         ?>
                         <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="feeCompetition" id="feeCompetition" value="<?php echo esc_html( $fee_competition ); ?>" <?php echo ( ! empty( $fees->status ) && 'final' === $fees->status ) ? 'readonly' : null; ?> />
                         <label for="feeCompetition"><?php esc_html_e( 'Tournament Fee', 'racketmanager' ); ?></label>
@@ -275,7 +278,7 @@ if ( $vm ) {
                             $msg_id     = array_search( 'feeEvent', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
-                        $fee_event = $_POST['feeEvent'] ?? $fees->event ?? null;
+                        $fee_event = $form_values['feeEvent'] ?? $fees->event ?? null;
                         ?>
                         <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="feeEvent" id="feeEvent" value="<?php echo esc_html( $fee_event ); ?>" <?php echo ( ! empty( $fees->status ) && 'final' === $fees->status ) ? 'readonly' : null; ?> />
                         <label for="feeEvent"><?php esc_html_e( 'Event Fee', 'racketmanager' ); ?></label>
@@ -298,7 +301,7 @@ if ( $vm ) {
                         <?php
                         $is_invalid = false;
                         $msg        = null;
-                        $tournament_num_entries = $_POST['num_entries'] ?? $tournament->get_num_entries() ?? null;
+                        $tournament_num_entries = $form_values['num_entries'] ?? $tournament->get_num_entries() ?? null;
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'num_entries', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'num_entries', $validator->err_flds, true );
@@ -331,7 +334,7 @@ if ( $vm ) {
                             $msg_id     = array_search( 'date_start', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                         }
-                        $date_start = $_POST['dateStart'] ?? $tournament->get_start_date() ?? null;
+                        $date_start = $form_values['dateStart'] ?? $tournament->get_start_date() ?? null;
                         ?>
                         <input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateStart" id="dateStart" value="<?php echo esc_html( $date_start ); ?>" data-action="set-tournament-open-date" />
                         <label for="dateStart" class="form-label"><?php esc_html_e( 'Start Date', 'racketmanager' ); ?></label>
@@ -354,7 +357,7 @@ if ( $vm ) {
                             $msg_id     = array_search( 'date_end', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
-                        $date_end = $_POST['dateEnd'] ?? $tournament->get_end_date() ?? null;
+                        $date_end = $form_values['dateEnd'] ?? $tournament->get_end_date() ?? null;
                         ?>
                         <input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateEnd" id="dateEnd" value="<?php echo esc_html( $date_end ); ?>" />
                         <label for="dateEnd" class="form-label"><?php esc_html_e( 'End Date', 'racketmanager' ); ?></label>
@@ -379,7 +382,7 @@ if ( $vm ) {
                             $msg_id     = array_search( 'date_open', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
-                        $date_open = $_POST['dateOpen'] ?? $tournament->get_open_date() ?? null;
+                        $date_open = $form_values['dateOpen'] ?? $tournament->get_open_date() ?? null;
                         ?>
                         <input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateOpen" id="dateOpen" value="<?php echo esc_html( $date_open ); ?>" readonly />
                         <label for="dateOpen" class="form-label"><?php esc_html_e( 'Opening Date', 'racketmanager' ); ?></label>
@@ -402,7 +405,7 @@ if ( $vm ) {
                             $msg_id     = array_search( 'date_closing', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
-                        $date_closing = $_POST['dateClose'] ?? $tournament->get_closing_date() ?? null;
+                        $date_closing = $form_values['dateClose'] ?? $tournament->get_closing_date() ?? null;
                         ?>
                         <input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateClose" id="dateClose" value="<?php echo esc_html( $date_closing ); ?>" readonly />
                         <label for="dateClose" class="form-label"><?php esc_html_e( 'Closing Date', 'racketmanager' ); ?></label>
@@ -425,7 +428,7 @@ if ( $vm ) {
                             $msg_id     = array_search( 'date_withdrawal', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
-                        $date_withdrawal = $_POST['dateWithdraw'] ?? $tournament->get_withdrawal_date() ?? null;
+                        $date_withdrawal = $form_values['dateWithdraw'] ?? $tournament->get_withdrawal_date() ?? null;
                         ?>
                         <input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateWithdraw" id="dateWithdraw" value="<?php echo esc_html( $date_withdrawal ); ?>" readonly />
                         <label for="dateWithdraw" class="form-label"><?php esc_html_e( 'Withdrawal Date', 'racketmanager' ); ?></label>

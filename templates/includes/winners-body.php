@@ -8,6 +8,7 @@
 namespace Racketmanager;
 
 /** @var array $winners */
+$winners = $winners ?? $vars['winners'] ?? $vm->winners ?? array();
 if ( ! $winners ) {
     esc_html_e( 'No winners', 'racketmanager' );
 } else {

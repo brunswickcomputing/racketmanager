@@ -10,8 +10,10 @@ namespace Racketmanager;
 /** @var object $event */
 /** @var string|null $site_url */
 /** @var array<int|string, string> $league_urls */
-$email_subject = $event->name ?? '';
-$site_url      = $site_url ?? ( function_exists( 'site_url' ) ? site_url() : '' );
+$event         = $event ?? $vm->event ?? null;
+$site_url      = $site_url ?? $vm->site_url ?? ( function_exists( 'site_url' ) ? site_url() : '' );
+$league_urls   = $league_urls ?? $vm->league_urls ?? [];
+$email_subject = $event?->name ?? '';
 require RACKETMANAGER_PATH . 'templates/email/email-header.php';
 require RACKETMANAGER_PATH . 'templates/email/div-top.php';
 ?>

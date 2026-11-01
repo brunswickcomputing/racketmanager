@@ -7,11 +7,14 @@
 
 namespace Racketmanager;
 
+/** @var object|array $vm */
 /** @var array $vars */
 /** @var string $salutation */
 /** @var string $paragraph */
 /** @var string $closing */
-$organisation  = $vars['site_name'];
+$vm            = ( isset( $vm ) && is_object( $vm ) ) ? $vm : (object) ( $vars ?? [] );
+$vars          = is_array( $vars ?? null ) ? $vars : (array) $vm;
+$organisation  = $vm->site_name ?? ( $vars['site_name'] ?? '' );
 $email_subject = __( 'Request Action Confirmation', 'racketmanager' );
 $action_url    = '###CONFIRM_URL###';
 ?>

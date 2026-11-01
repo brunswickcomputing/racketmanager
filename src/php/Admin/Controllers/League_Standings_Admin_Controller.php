@@ -231,6 +231,9 @@ final readonly class League_Standings_Admin_Controller {
         $options = get_option( 'racketmanager', array() );
         $menu    = $this->get_menu( $league, $season );
 
+        $page = isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-leagues';
+        $view = isset( $query['view'] ) ? sanitize_text_field( wp_unslash( strval( $query['view'] ) ) ) : 'league';
+
         $vm = new League_Standings_Page_View_Model(
             league: $league,
             season: $season,
@@ -249,6 +252,8 @@ final readonly class League_Standings_Admin_Controller {
             menu: $menu,
             league_mode: $league_mode,
             pagination_matches: $pagination_matches,
+            page: $page,
+            view: $view,
         );
 
         return array_merge(

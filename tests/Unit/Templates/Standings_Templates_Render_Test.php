@@ -371,4 +371,67 @@ final class Standings_Templates_Render_Test extends TestCase {
 
         self::assertStringNotContainsString( "template='global-tpl'", $html );
     }
+
+    public function test_standings_constitution_renders_teams_and_status_through_presenter(): void {
+        $league = (object) [
+            'id'    => 55,
+            'title' => 'Division Constitution',
+        ];
+
+        $team = (object) [
+            'id'           => 201,
+            'title'        => 'Hawks',
+            'status_text'  => 'Accepted',
+            'is_withdrawn' => false,
+        ];
+
+        $withdrawn_team = (object) [
+            'id'           => 202,
+            'title'        => 'Eagles',
+            'status_text'  => 'Withdrawn',
+            'is_withdrawn' => true,
+        ];
+
+        $vm = new League_Standings_View_Model(
+            template: 'constitution',
+            league: $league,
+            teams: [ $team, $withdrawn_team ],
+        );
+
+        $presenter = new \Racketmanager\Presentation\Presenters\League_Standings_Presenter( $this->renderer );
+        $html      = $presenter->render( $vm );
+
+        self::assertStringContainsString( 'Hawks', $html );
+        self::assertStringContainsString( 'Accepted', $html );
+        self::assertStringContainsString( 'Eagles', $html );
+        self::assertStringContainsString( 'Withdrawn', $html );
+        self::assertStringContainsString( '<s>', $html );
+        self::assertStringContainsString( 'Division Constitution', $html );
+    }
+
+    public function test_standings_constitution_renders_directly_with_template_vars(): void {
+        $league = (object) [
+            'id'    => 56,
+            'title' => 'Championship Constitution',
+        ];
+
+        $team = (object) [
+            'id'           => 203,
+            'title'        => 'Falcons',
+            'status_text'  => 'Confirmed',
+            'is_withdrawn' => false,
+        ];
+
+        $vm = new League_Standings_View_Model(
+            template: 'constitution',
+            league: $league,
+            teams: [ $team ],
+        );
+
+        $html = $this->renderer->render_to_string( 'standings-constitution', $vm, $vm->template_vars() );
+
+        self::assertStringContainsString( 'Falcons', $html );
+        self::assertStringContainsString( 'Confirmed', $html );
+        self::assertStringContainsString( 'Championship Constitution', $html );
+    }
 }

@@ -7,6 +7,10 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Finances_Invoices_Page_View_Model;
+
+/** @var Finances_Invoices_Page_View_Model $vm */
+
 ?>
 <div class="container">
     <?php require 'nav-tabs.php'; ?>

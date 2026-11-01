@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Results main page administration panel
  *
@@ -8,6 +9,14 @@
 namespace Racketmanager;
 
 /** @var string $tab */
+/** @var \stdClass $vm */
+$tab                           = $tab ?? $vars['tab'] ?? $vm->tab;
+$pending_results_matches       = $pending_results_matches ?? $vars['pending_results_matches'] ?? $vm->pending_results_matches ?? array();
+$awaiting_confirmation_matches = $awaiting_confirmation_matches ?? $vars['awaiting_confirmation_matches'] ?? $vm->awaiting_confirmation_matches ?? array();
+$challenged_results_matches    = $challenged_results_matches ?? $vars['challenged_results_matches'] ?? $vm->challenged_results_matches ?? array();
+$approved_results_matches      = $approved_results_matches ?? $vars['approved_results_matches'] ?? $vm->approved_results_matches ?? array();
+$postponed_matches             = $postponed_matches ?? $vars['postponed_matches'] ?? $vm->postponed_matches ?? array();
+$tournament_results_matches    = $tournament_results_matches ?? $vars['tournament_results_matches'] ?? $vm->tournament_results_matches ?? array();
 ?>
 <script type='text/javascript'>
 jQuery(document).ready(function(){

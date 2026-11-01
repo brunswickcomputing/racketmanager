@@ -19,6 +19,8 @@ final readonly class Cup_Draw_Page_View_Model {
      * @param string $season
      * @param string $tab
      * @param array  $finals
+     * @param string|null $page
+     * @param string|null $view
      */
     public function __construct(
         public object $competition,
@@ -26,6 +28,25 @@ final readonly class Cup_Draw_Page_View_Model {
         public string $season,
         public string $tab,
         public array $finals,
+        public ?string $page = null,
+        public ?string $view = null,
     ) {
+    }
+
+    /**
+     * Convert to template variables array for BC extraction.
+     *
+     * @return array<string, mixed>
+     */
+    public function to_template_vars(): array {
+        return array(
+            'competition' => $this->competition,
+            'league'      => $this->league,
+            'season'      => $this->season,
+            'tab'         => $this->tab,
+            'finals'      => $this->finals,
+            'page'        => $this->page,
+            'view'        => $this->view,
+        );
     }
 }

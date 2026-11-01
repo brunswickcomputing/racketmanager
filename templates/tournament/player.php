@@ -9,7 +9,13 @@ namespace Racketmanager;
 
 /** @var object $tournament_player */
 /** @var object $tournament */
-$player = $tournament_player;
+$tournament_player = $tournament_player ?? ( $vm->tournament_player ?? ( $vars['tournament_player'] ?? null ) );
+$tournament        = $tournament ?? ( $vm->tournament ?? ( $vars['tournament'] ?? null ) );
+$player_vm         = $player_vm ?? ( $vm->player_vm ?? ( $vars['player_vm'] ?? null ) );
+$player_entry_rows = $player_entry_rows ?? ( $vm->player_entry_rows ?? ( $vars['player_entry_rows'] ?? [] ) );
+$tournament_link   = $tournament_link ?? ( $vm->tournament_link ?? ( $vars['tournament_link'] ?? '' ) );
+$tab               = $tab ?? ( $vm->tab ?? ( $vars['tab'] ?? 'players' ) );
+$player            = $tournament_player;
 ?>
 <div class="container">
     <?php require RACKETMANAGER_PATH . 'templates/includes/player-header.php'; ?>

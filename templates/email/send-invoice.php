@@ -8,11 +8,18 @@
 namespace Racketmanager;
 
 /** @var bool   $resend */
-/** @var object $invoice */
+/** @var object|null $invoice */
 /** @var string $salutation */
 /** @var string $contact */
 /** @var string $closing */
 /** @var string $addressee */
+/** @var string $from_email */
+
+$resend     = $vars['resend'] ?? $vm->resend ?? false;
+$invoice    = $vars['invoice'] ?? $vm->invoice ?? null;
+$addressee  = $vars['addressee'] ?? $vm->addressee ?? '';
+$from_email = $vars['from_email'] ?? $vm->from_email ?? '';
+
 require 'email-header.php';
 ?>
             <?php $salutation_link = $addressee; ?>
@@ -39,7 +46,7 @@ require 'email-header.php';
                                                                             echo ' another copy of ';
                                                                         }
                                                                         ?>
-                                                                        your invoice for the <?php echo esc_html( ucfirst( $invoice->charge_name ) ); ?>.
+                                                                        your invoice for the <?php echo esc_html( ucfirst( $invoice->charge_name ?? '' ) ); ?>.
                                                                     </p>
                                                                     <p style="line-height: 1.25; mso-line-height-rule: at-least; margin: 0 0 20px; padding: 0;">
                                                                         Could you please check your details and notify me of errors?

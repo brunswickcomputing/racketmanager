@@ -10,6 +10,7 @@ namespace Racketmanager;
 use Racketmanager\Presentation\View_Models\Team_Row_View_Model;
 
 /** @var Team_Row_View_Model $team */
+$team = $team ?? $vm->team ?? ( is_array( $vars ?? null ) ? ( $vars['team'] ?? null ) : null );
 if ( $team instanceof Team_Row_View_Model ) {
     $row = $team;
 } else {

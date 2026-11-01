@@ -11,8 +11,9 @@ use Racketmanager\Presentation\View_Models\Player_View_Model;
 
 /** @var Player_View_Model|null $vm */
 /** @var string $search_string */
-$search_string  = $vm->search_string ?? ( $search_string ?? '' );
-$search_results = $vm->search_results ?? ( $search_results ?? null );
+$search_string  = $search_string ?? ( $vars['search_string'] ?? ( $vm->search_string ?? '' ) );
+$search_results = $search_results ?? ( $vars['search_results'] ?? ( $vm->search_results ?? null ) );
+$favourite_rows = $favourite_rows ?? ( $vars['favourite_rows'] ?? ( $vm->favourite_rows ?? [] ) );
 ?>
 <div class="container">
     <div id="pageContentTab">

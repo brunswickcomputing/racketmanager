@@ -14,8 +14,6 @@ if ( function_exists( '_deprecated_file' ) ) {
     _deprecated_file( __FILE__, '10.0.0', null, 'Orphan template retained for custom theme backward compatibility; scheduled for removal in 11.0.0.' );
 }
 
-global $racketmanager;
-
 use Racketmanager\Util\Util;
 
 /** @var object $league */
@@ -24,6 +22,15 @@ use Racketmanager\Util\Util;
 /** @var string $away_team */
 /** @var array $matches */
 /** @var string $action */
+$league      = $league ?? ( $vars['league'] ?? ( $vm->league ?? null ) );
+$season      = $season ?? ( $vars['season'] ?? ( $vm->season ?? '' ) );
+$home_team   = $home_team ?? ( $vars['home_team'] ?? ( $vm->home_team ?? null ) );
+$away_team   = $away_team ?? ( $vars['away_team'] ?? ( $vm->away_team ?? null ) );
+$matches     = $matches ?? ( $vars['matches'] ?? ( $vm->matches ?? [] ) );
+$action      = $action ?? ( $vars['action'] ?? ( $vm->action ?? '' ) );
+$round       = $round ?? ( $vars['round'] ?? ( $vm->round ?? null ) );
+$match_day   = $match_day ?? ( $vars['match_day'] ?? ( $vm->match_day ?? null ) );
+$date_format = $vars['date_format'] ?? ( $vm->date_format ?? get_option( 'date_format', 'd/m/Y' ) );
 
 $competition_type = '';
 if ( isset( $league->event->competition->type ) ) {
@@ -36,7 +43,6 @@ $event_slug     = Util::seo_url( (string) $event_name );
 $season_str     = (string) ( $season ?? '' );
 $home_team_name = is_object( $home_team ?? null ) ? ( $home_team->name ?? $home_team->title ?? '' ) : (string) ( $home_team ?? '' );
 $away_team_name = is_object( $away_team ?? null ) ? ( $away_team->name ?? $away_team->title ?? '' ) : (string) ( $away_team ?? '' );
-$date_format    = $racketmanager->date_format ?? get_option( 'date_format', 'd/m/Y' );
 ?>
     <div id="match-header" class="team-match-header module module--dark module--card row">
         <div class="module__content">

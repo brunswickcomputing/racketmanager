@@ -8,6 +8,8 @@
 namespace Racketmanager;
 
 /** @var \Racketmanager\Presentation\View_Models\Favourite_List_Item_View_Model[] $favourite_rows */
+$favourite_rows     = $favourite_rows ?? ( $vars['favourite_rows'] ?? ( $vm->favourite_rows ?? [] ) );
+$favourite_controls = $favourite_controls ?? ( $vars['favourite_controls'] ?? ( $vm->favourite_controls ?? null ) );
 ?>
 <ul class="list list--grid list--bordered">
     <?php

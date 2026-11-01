@@ -12,11 +12,15 @@ use Racketmanager\Util\Util_Lookup;
 
 /** @var object $club */
 /** @var bool   $user_can_update */
-$match_days   = Util_Lookup::get_match_days();
-$header_level = 1;
-require_once RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 /** @var object $team */
 /** @var object $event */
+$club            = $club ?? $vm->club ?? ( $vars['club'] ?? null );
+$team            = $team ?? $vm->team ?? ( $vars['team'] ?? null );
+$event           = $event ?? $vm->event ?? ( $vars['event'] ?? null );
+$user_can_update = $user_can_update ?? ( $vm->user_can_update ?? ( $vars['user_can_update'] ?? false ) );
+$match_days      = Util_Lookup::get_match_days();
+$header_level    = 1;
+require_once RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 ?>
     <div class="module module--card">
         <div class="module__banner">

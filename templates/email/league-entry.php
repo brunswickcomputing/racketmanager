@@ -17,7 +17,15 @@ namespace Racketmanager;
 /** @var string $salutation */
 /** @var string $contact */
 /** @var string $closing */
-$email_subject = __( 'League Entry', 'racketmanager' ) . ' - ' . ucfirst( $competition_name ) . ' - ' . $season;
+/** @var array $vars */
+/** @var object|null $vm */
+$competition_name = $vars['competition_name'] ?? $vm->competition_name ?? $competition_name ?? '';
+$season           = $vars['season'] ?? $vm->season ?? $season ?? '';
+$club             = $vars['club'] ?? $vm->club ?? $club ?? '';
+$event_entries    = $vars['event_entries'] ?? $vm->event_entries ?? $event_entries ?? [ 'num_courts_available' => 0, 'events' => [] ];
+$comments         = $vars['comments'] ?? $vm->comments ?? $comments ?? null;
+$contact_email    = $vars['contact_email'] ?? $vm->contact_email ?? $contact_email ?? '';
+$email_subject    = $vars['email_subject'] ?? $vm->email_subject ?? $email_subject ?? ( __( 'League Entry', 'racketmanager' ) . ' - ' . ucfirst( (string) $competition_name ) . ' - ' . $season );
 require 'email-header.php';
 ?>
             <?php

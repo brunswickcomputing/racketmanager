@@ -10,6 +10,15 @@ namespace Racketmanager;
 use BackedEnum;
 
 /** @var object $event */
+$event        = $event ?? $vars['event'] ?? $vm->event ?? null;
+if ( ! $event ) {
+    return;
+}
+$event_club   = $event_club ?? $vars['event_club'] ?? $vm->event_club ?? null;
+$club_links   = $club_links ?? $vars['club_links'] ?? $vm->club_links ?? array();
+$club_url     = $club_url ?? $vars['club_url'] ?? $vm->club_url ?? '';
+$team_links   = $team_links ?? $vars['team_links'] ?? $vm->team_links ?? array();
+$player_links = $player_links ?? $vars['player_links'] ?? $vm->player_links ?? array();
 $competition_type = $event->competition->type instanceof BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
 if ( empty( $event_club ) ) {
     ?>

@@ -15,12 +15,17 @@ namespace Racketmanager;
 
 /** @var object $object */
 /** @var object $team_details */
-$team = $team_details->team;
-$club = $team_details->club;
+$team_details       = $team_details ?? ( $vars['team_details'] ?? ( $vm->team_details ?? null ) );
+$object             = $object ?? ( $vars['object'] ?? ( $vm->object ?? ( $vars['league'] ?? ( $vm->league ?? null ) ) ) );
+$team               = $team ?? ( $team_details?->team ?? ( $vars['team'] ?? ( $vm->team ?? ( $object->team ?? null ) ) ) );
+$club               = $club ?? ( $team_details?->club ?? ( $vars['club'] ?? ( $vm->club ?? ( $object->club ?? null ) ) ) );
+if ( ! $team || ! $object ) {
+    return;
+}
 $envelope           = RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#envelope-fill';
 $telephone          = RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#telephone-fill';
-$user_can_edit_team = $vm->user_can_edit_team;
-$calendar_url       = $vm->calendar_url;
+$user_can_edit_team = $user_can_edit_team ?? ( $vm->user_can_edit_team ?? ( $vars['user_can_edit_team'] ?? false ) );
+$calendar_url       = $calendar_url ?? ( $vm->calendar_url ?? ( $vars['calendar_url'] ?? '' ) );
 if ( isset( $object->competition ) ) {
     $object_competition = $object->competition;
     $object_event       = $object;
@@ -31,12 +36,12 @@ if ( isset( $object->competition ) ) {
     $object_type        = 'league';
 }
 $competition_type = $object_competition->type instanceof \BackedEnum ? $object_competition->type->value : (string) ( $object_competition->type ?? '' );
-$show_wtn         = $vm->show_wtn;
-$format           = $vm->format;
-$help_text        = $vm->help_text;
-$standings_link   = $vm->standings_link;
-$club_link        = $vm->club_link;
-$match_time_val   = $vm->match_time_formatted ?? '';
+$show_wtn         = $show_wtn ?? ( $vm->show_wtn ?? ( $vars['show_wtn'] ?? false ) );
+$format           = $format ?? ( $vm->format ?? ( $vars['format'] ?? null ) );
+$help_text        = $help_text ?? ( $vm->help_text ?? ( $vars['help_text'] ?? '' ) );
+$standings_link   = $standings_link ?? ( $vm->standings_link ?? ( $vars['standings_link'] ?? '' ) );
+$club_link        = $club_link ?? ( $vm->club_link ?? ( $vars['club_link'] ?? '' ) );
+$match_time_val   = $match_time_val ?? ( $vm->match_time_formatted ?? ( $vars['match_time_formatted'] ?? '' ) );
 ?>
     <div class="page-subhead">
         <div class="media">

@@ -17,6 +17,8 @@ use Racketmanager\Presentation\View_Models\Club_Competition_View_Model;
 
 /** @var object $club */
 /** @var Club_Competition_View_Model[] $competitions */
+$club         = $club ?? $vm->club ?? ( $vars['club'] ?? null );
+$competitions = $competitions ?? $vm->competitions ?? ( $vars['competitions'] ?? [] );
 require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 
 foreach ( $competitions as $competition ) {

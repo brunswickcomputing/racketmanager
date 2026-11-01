@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Result checker administration panel
  *
@@ -17,6 +18,15 @@ use Racketmanager\Domain\Season\Season;
 /** @var array  $competitions */
 /** @var array  $events */
 /** @var Season[]  $seasons */
+/** @var \stdClass $vm */
+$season_select        = $season_select ?? $vars['season_select'] ?? $vm->season_select;
+$competition_select   = $competition_select ?? $vars['competition_select'] ?? $vm->competition_select;
+$event_select         = $event_select ?? $vars['event_select'] ?? $vm->event_select;
+$results_check_filter = $results_check_filter ?? $vars['results_check_filter'] ?? $vm->results_check_filter;
+$results_checkers     = $results_checkers ?? $vars['results_checkers'] ?? $vm->results_checkers;
+$competitions         = $competitions ?? $vars['competitions'] ?? $vm->competitions;
+$events               = $events ?? $vars['events'] ?? $vm->events;
+$seasons              = $seasons ?? $vars['seasons'] ?? $vm->seasons;
 ?>
 <!-- Results Checker -->
 

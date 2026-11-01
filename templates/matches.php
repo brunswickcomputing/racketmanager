@@ -17,6 +17,11 @@ namespace Racketmanager;
 
 /** @var object $league */
 /** @var array  $matches */
+$league  = $league ?? $vars['league'] ?? $vm->league ?? null;
+$matches = $matches ?? $vars['matches'] ?? $vm->matches ?? array();
+if ( ! $league ) {
+    return;
+}
 ?>
 <div class="module module--card">
     <div class="module__banner">

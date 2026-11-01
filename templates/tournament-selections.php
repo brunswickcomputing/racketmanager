@@ -15,12 +15,20 @@ use Racketmanager\Domain\Tournament\Tournament;
 /** @var array $tournaments */
 /** @var Tournament $tournament */
 /** @var Competition $competition */
+$post_id      = $post_id ?? ( $vm->post_id ?? ( $vars['post_id'] ?? 0 ) );
+$form_action  = $form_action ?? ( $vm->form_action ?? ( $vars['form_action'] ?? '' ) );
+$tournaments  = $tournaments ?? ( $vm->tournaments ?? ( $vars['tournaments'] ?? [] ) );
+$tournament   = $tournament ?? ( $vm->tournament ?? ( $vars['tournament'] ?? null ) );
+$competition  = $competition ?? ( $vm->competition ?? ( $vars['competition'] ?? null ) );
+$season       = $season ?? ( $vm->season ?? ( $vars['season'] ?? null ) );
+$selection_id = $selection_id ?? ( $vm->selection_id ?? ( $vars['selection_id'] ?? 'racketmanager_tournament' ) );
+
 if ( empty( $selection_id ) ) {
     $selection_id = 'racketmanager_tournament';
 }
 ?>
 <div id="racketmanager_tournament_selections">
-    <form method="get" action="<?php echo esc_url( $form_action ?? '' ); ?>" id="<?php echo esc_html( $selection_id ); ?>">
+    <form method="get" action="<?php echo esc_url( $form_action ); ?>" id="<?php echo esc_html( $selection_id ); ?>">
         <div class="row g-1 align-items-center">
             <input type="hidden" name="page_id" value="<?php echo esc_html( $post_id ); ?>" />
             <?php
@@ -35,14 +43,14 @@ if ( empty( $selection_id ) ) {
                     <?php
                     foreach ( $tournaments as $t ) {
                         ?>
-                        <option value="<?php echo esc_html( $t->name ); ?>" <?php selected( $t->id, $tournament->id ); ?>>
+                        <option value="<?php echo esc_html( $t->name ); ?>" <?php selected( $t->id, $tournament?->id ); ?>>
                             <?php echo esc_html( $t->name ); ?>
                         </option>
                         <?php
                     }
                     ?>
                 </select>
-                <label for="tournament_id"><?php echo esc_html( ucfirst( $competition->age_group ) ) . ' ' . esc_html__( 'Tournaments', 'racketmanager' ); ?></label>
+                <label for="tournament_id"><?php echo esc_html( ucfirst( (string) ( $competition->age_group ?? '' ) ) ) . ' ' . esc_html__( 'Tournaments', 'racketmanager' ); ?></label>
             </div>
         </div>
     </form>

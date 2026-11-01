@@ -9,6 +9,11 @@ namespace Racketmanager;
 
 /** @var object $league */
 /** @var array $finals */
+$league = $league ?? $vars['league'] ?? $vm->league ?? null;
+$finals = $finals ?? $vars['finals'] ?? $vm->finals ?? array();
+if ( ! $league ) {
+    return;
+}
 ?>
 <!-- Nav tabs -->
 <ul class="nav nav-tabs frontend" id="myTab-<?php echo esc_html( $league->id ); ?>" role="tablist">

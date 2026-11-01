@@ -29,6 +29,7 @@ readonly final class Tournament_Setup_Page_View_Model {
         public ?object $league,
         public Error_Bag $errors,
         public ?Validator_Tournament $validator = null,
+        public array $rounds = array(),
     ) {
     }
 
@@ -46,6 +47,7 @@ readonly final class Tournament_Setup_Page_View_Model {
             'league'      => $this->league,
             'errors'      => $this->errors,
             'validator'   => $this->validator,
+            'rounds'      => $this->rounds,
         );
     }
 }

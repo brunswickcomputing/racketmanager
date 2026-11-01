@@ -367,4 +367,124 @@ final class Template_Tags_Decoupling_Test extends TestCase {
         $this->assertSame( 1, substr_count( $output, 'id="matchComments-home"' ) );
         $this->assertSame( 1, substr_count( $output, 'id="matchComments-away"' ) );
     }
+
+    public function test_orphan_match_templates_resolve_user_ids_to_display_names_without_locator(): void {
+        $templates_dir = dirname( __DIR__, 2 ) . '/templates';
+
+        $GLOBALS['wp_stubs_userdata'][42] = (object) [
+            'ID'           => 42,
+            'display_name' => 'Pat Updater',
+        ];
+        $GLOBALS['wp_stubs_userdata'][10] = (object) [
+            'ID'           => 10,
+            'display_name' => 'Home Captain Name',
+        ];
+        $GLOBALS['wp_stubs_userdata'][20] = (object) [
+            'ID'           => 20,
+            'display_name' => 'Away Approver Name',
+        ];
+
+        $previous_rm = $GLOBALS['racketmanager'] ?? null;
+        $GLOBALS['racketmanager'] = new class {
+            public function get_player_name( int $player_id ): never {
+                throw new \RuntimeException( 'orphan templates must not use the racketmanager locator' );
+            }
+        };
+
+        $league = (object) [
+            'id'              => 50,
+            'title'           => 'Division 1',
+            'is_championship' => false,
+            'num_sets'        => 3,
+            'event'           => (object) [
+                'name'        => 'Men Doubles',
+                'competition' => (object) [ 'type' => 'league' ],
+            ],
+        ];
+        $teams  = [
+            'home' => (object) [ 'title' => 'Home Team' ],
+            'away' => (object) [ 'title' => 'Away Team' ],
+        ];
+
+        $match = (object) [
+            'id'           => 100,
+            'league_id'    => 50,
+            'season'       => '2026',
+            'home_team'    => 'Home Team',
+            'away_team'    => 'Away Team',
+            'type'         => 'league',
+            'round'        => 1,
+            'match_day'    => 2,
+            'date'         => '2026-10-25 10:00:00',
+            'match_title'  => 'Home Team vs Away Team',
+            'confirmed'    => 'P',
+            'comments'     => [ 'result' => 'Good match' ],
+            'updated_user' => 42,
+            'updated'      => '2026-10-26',
+            'league'       => $league,
+            'teams'        => $teams,
+            'sets'         => [],
+        ];
+        $is_update_allowed = (object) [
+            'user_can_update'     => true,
+            'user_type'           => 'admin',
+            'user_team'           => null,
+            'match_approval_mode' => false,
+            'match_update'        => true,
+            'message'             => 'allowed',
+        ];
+
+        try {
+            ob_start();
+            include $templates_dir . '/forms/match-input.php';
+            $input_out = ob_get_clean();
+
+            $this->assertStringContainsString( '<form id="match-view"', $input_out );
+            $this->assertStringContainsString( 'Pat Updater', $input_out );
+            $this->assertDoesNotMatchRegularExpression( '/Updated By:.*?\\b42\\b/s', $input_out );
+
+            $result_match = new class( $league, $teams ) {
+                public int $id = 100;
+                public bool $is_walkover = false;
+                public bool $is_shared = false;
+                public bool $is_retired = false;
+                public ?string $season = '2026';
+                public int $home_captain = 10;
+                public int $away_captain = 20;
+                public array $comments = [ 'result' => '' ];
+                public object $league;
+                public array $teams;
+                public function __construct( object $league, array $teams ) {
+                    $this->league = $league;
+                    $this->teams  = $teams;
+                }
+                public function get_rubbers(): array {
+                    return [];
+                }
+            };
+            $match            = $result_match;
+            $home_club_player = [ 'm' => [], 'f' => [] ];
+            $away_club_player = [ 'm' => [], 'f' => [] ];
+
+            ob_start();
+            include $templates_dir . '/match-teams-result.php';
+            $result_out = ob_get_clean();
+
+            $this->assertStringContainsString( 'Home Captain Name', $result_out );
+            $this->assertStringContainsString( 'Away Approver Name', $result_out );
+            $this->assertStringNotContainsString( '>10<', $result_out );
+            $this->assertStringNotContainsString( '>20<', $result_out );
+        } finally {
+            unset(
+                $GLOBALS['wp_stubs_userdata'][42],
+                $GLOBALS['wp_stubs_userdata'][10],
+                $GLOBALS['wp_stubs_userdata'][20]
+            );
+            if ( null === $previous_rm ) {
+                unset( $GLOBALS['racketmanager'] );
+            } else {
+                $GLOBALS['racketmanager'] = $previous_rm;
+            }
+        }
+    }
 }

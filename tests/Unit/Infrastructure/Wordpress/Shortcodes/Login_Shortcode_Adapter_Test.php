@@ -22,8 +22,11 @@ use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class Login_Shortcode_Adapter_Test extends TestCase {
+    use Manages_Wordpress_Globals;
+
     private Login_Shortcode_Adapter $adapter;
     private Get_Login_Form_Handler $login_form_handler;
     private Get_Password_Lost_Form_Handler $password_lost_form_handler;
@@ -32,6 +35,7 @@ class Login_Shortcode_Adapter_Test extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        $this->backup_globals();
 
         $racketmanager = $this->createStub( RacketManager::class );
         $renderer = new class implements View_Renderer_Interface {
@@ -58,6 +62,11 @@ class Login_Shortcode_Adapter_Test extends TestCase {
             $this->password_reset_form_handler,
             $this->member_account_form_handler
         );
+    }
+
+    protected function tearDown(): void {
+        $this->restore_globals();
+        parent::tearDown();
     }
 
     public function test_login_form_returns_string(): void {
@@ -104,67 +113,161 @@ class Login_Shortcode_Adapter_Test extends TestCase {
     public function test_render_login_form_with_empty_action_override_passes_get_action_to_handler(): void {
         $_GET['action'] = 'register';
 
-        $login_form_handler = $this->createMock( Get_Login_Form_Handler::class );
-        $login_form_handler->expects( $this->once() )
-            ->method( 'handle' )
-            ->with( $this->callback( static function ( Get_Login_Form_Query $query ): bool {
-                return 'register' === $query->action;
-            } ) )
-            ->willReturn( Login_Form_Result::html( '<div data-tabid="registration"></div>' ) );
+        try {
+            $login_form_handler = $this->createMock( Get_Login_Form_Handler::class );
+            $login_form_handler->expects( $this->once() )
+                ->method( 'handle' )
+                ->with( $this->callback( static function ( Get_Login_Form_Query $query ): bool {
+                    return 'register' === $query->action;
+                } ) )
+                ->willReturn( Login_Form_Result::html( '<div data-tabid="registration"></div>' ) );
 
-        $view_presenter = $this->createStub( Shortcode_View_Presenter::class );
-        $view_presenter->method( 'render' )->willReturnCallback( static fn( Shortcode_View_Model $vm ) => $vm->raw_html );
+            $view_presenter = $this->createStub( Shortcode_View_Presenter::class );
+            $view_presenter->method( 'render' )->willReturnCallback( static fn( Shortcode_View_Model $vm ) => $vm->raw_html );
 
-        $adapter = new Login_Shortcode_Adapter(
-            null,
-            $view_presenter,
-            $login_form_handler,
-            $this->password_lost_form_handler,
-            $this->password_reset_form_handler,
-            $this->member_account_form_handler
-        );
+            $adapter = new Login_Shortcode_Adapter(
+                null,
+                $view_presenter,
+                $login_form_handler,
+                $this->password_lost_form_handler,
+                $this->password_reset_form_handler,
+                $this->member_account_form_handler
+            );
 
-        $output = $adapter->render_login_form( [], '' );
-        $this->assertStringContainsString( 'data-tabid="registration"', $output );
-
-        unset( $_GET['action'] );
+            $output = $adapter->render_login_form( [], '' );
+            $this->assertStringContainsString( 'data-tabid="registration"', $output );
+        } finally {
+            unset( $_GET['action'] );
+        }
     }
 
     public function test_render_login_form_renders_real_registration_tab_when_action_override_is_empty_string(): void {
         $_GET['action'] = 'register';
 
-        $option_gateway = $this->createStub( \Racketmanager\Application\Ports\Option_Gateway_Interface::class );
-        $option_gateway->method( 'get_option' )->willReturnCallback(
-            static fn( string $name, mixed $default = false ) => match ( $name ) {
-                'users_can_register' => true,
-                'blogname'           => 'Leigh Tennis',
-                'siteurl'            => 'https://example.test',
-                default              => $default,
-            }
-        );
+        try {
+            $option_gateway = $this->createStub( \Racketmanager\Application\Ports\Option_Gateway_Interface::class );
+            $option_gateway->method( 'get_option' )->willReturnCallback(
+                static fn( string $name, mixed $default = false ) => match ( $name ) {
+                    'users_can_register' => true,
+                    'blogname'           => 'Leigh Tennis',
+                    'siteurl'            => 'https://example.test',
+                    default              => $default,
+                }
+            );
 
-        $real_handler     = new Get_Login_Form_Handler( $option_gateway, new \Racketmanager\Services\Settings_Service( [] ) );
-        $php_renderer     = new \Racketmanager\Services\View\Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
-        $view_presenter   = new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $php_renderer ) );
-        $security_service = $this->createStub( \Racketmanager\Infrastructure\Security\Security_Service_Interface::class );
-        $security_service->method( 'is_user_logged_in' )->willReturn( false );
+            $real_handler     = new Get_Login_Form_Handler( $option_gateway, new \Racketmanager\Services\Settings_Service( [] ) );
+            $php_renderer     = new \Racketmanager\Services\View\Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
+            $view_presenter   = new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $php_renderer ) );
+            $security_service = $this->createStub( \Racketmanager\Infrastructure\Security\Security_Service_Interface::class );
+            $security_service->method( 'is_user_logged_in' )->willReturn( false );
 
-        $adapter = new Login_Shortcode_Adapter(
-            null,
-            $view_presenter,
-            $real_handler,
-            $this->password_lost_form_handler,
-            $this->password_reset_form_handler,
-            $this->member_account_form_handler,
-            null,
-            $security_service
-        );
+            $adapter = new Login_Shortcode_Adapter(
+                null,
+                $view_presenter,
+                $real_handler,
+                $this->password_lost_form_handler,
+                $this->password_reset_form_handler,
+                $this->member_account_form_handler,
+                null,
+                $security_service
+            );
 
-        $output = $adapter->render_login_form( [], '' );
-        $this->assertStringContainsString( 'data-tabid="registration"', $output );
-        $this->assertStringContainsString( 'id="registration-tab"', $output );
-        $this->assertStringContainsString( 'id="registration"', $output );
+            $output = $adapter->render_login_form( [], '' );
+            $this->assertStringContainsString( 'data-tabid="registration"', $output );
+            $this->assertStringContainsString( 'id="registration-tab"', $output );
+            $this->assertStringContainsString( 'id="registration"', $output );
+        } finally {
+            unset( $_GET['action'] );
+        }
+    }
 
-        unset( $_GET['action'] );
+    public function test_render_login_form_renders_real_login_errors_and_redirect_field_from_producer(): void {
+        $_REQUEST['login']       = 'empty_username,incorrect_password';
+        $_REQUEST['redirect_to'] = 'https://example.test/matches';
+
+        try {
+            $option_gateway = $this->createStub( \Racketmanager\Application\Ports\Option_Gateway_Interface::class );
+            $option_gateway->method( 'get_option' )->willReturnCallback(
+                static fn( string $name, mixed $default = false ) => match ( $name ) {
+                    'users_can_register' => true,
+                    'blogname'           => 'Leigh Tennis',
+                    'siteurl'            => 'https://example.test',
+                    default              => $default,
+                }
+            );
+
+            $real_handler     = new Get_Login_Form_Handler( $option_gateway, new \Racketmanager\Services\Settings_Service( [] ) );
+            $php_renderer     = new \Racketmanager\Services\View\Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
+            $view_presenter   = new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $php_renderer ) );
+            $security_service = $this->createStub( \Racketmanager\Infrastructure\Security\Security_Service_Interface::class );
+            $security_service->method( 'is_user_logged_in' )->willReturn( false );
+
+            $adapter = new Login_Shortcode_Adapter(
+                null,
+                $view_presenter,
+                $real_handler,
+                $this->password_lost_form_handler,
+                $this->password_reset_form_handler,
+                $this->member_account_form_handler,
+                null,
+                $security_service
+            );
+
+            $output = $adapter->render_login_form( [], '' );
+
+            $this->assertStringContainsString( 'data-tabid="login"', $output );
+            $this->assertStringContainsString( 'Email address must be entered.', $output );
+            $this->assertStringContainsString( 'Incorrect password.', $output );
+            $this->assertStringContainsString( 'name="redirect_to" value="https://example.test/matches"', $output );
+        } finally {
+            unset( $_REQUEST['login'], $_REQUEST['redirect_to'] );
+        }
+    }
+
+    public function test_render_login_form_renders_real_registration_errors_and_recaptcha_key_from_producer(): void {
+        $_GET['action']               = 'register';
+        $_REQUEST['register-errors']  = 'first_name,last_name';
+
+        try {
+            $option_gateway = $this->createStub( \Racketmanager\Application\Ports\Option_Gateway_Interface::class );
+            $option_gateway->method( 'get_option' )->willReturnCallback(
+                static fn( string $name, mixed $default = false ) => match ( $name ) {
+                    'users_can_register' => true,
+                    'blogname'           => 'Leigh Tennis',
+                    'siteurl'            => 'https://example.test',
+                    default              => $default,
+                }
+            );
+
+            $settings_service = new \Racketmanager\Services\Settings_Service( [
+                'keys' => [ 'recaptchaSiteKey' => 'test-recaptcha-key-xyz' ],
+            ] );
+
+            $real_handler     = new Get_Login_Form_Handler( $option_gateway, $settings_service );
+            $php_renderer     = new \Racketmanager\Services\View\Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
+            $view_presenter   = new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $php_renderer ) );
+            $security_service = $this->createStub( \Racketmanager\Infrastructure\Security\Security_Service_Interface::class );
+            $security_service->method( 'is_user_logged_in' )->willReturn( false );
+
+            $adapter = new Login_Shortcode_Adapter(
+                null,
+                $view_presenter,
+                $real_handler,
+                $this->password_lost_form_handler,
+                $this->password_reset_form_handler,
+                $this->member_account_form_handler,
+                null,
+                $security_service
+            );
+
+            $output = $adapter->render_login_form( [], '' );
+
+            $this->assertStringContainsString( 'data-tabid="registration"', $output );
+            $this->assertStringContainsString( 'First name must be entered', $output );
+            $this->assertStringContainsString( 'Last name must be entered', $output );
+            $this->assertStringContainsString( 'data-sitekey="test-recaptcha-key-xyz"', $output );
+        } finally {
+            unset( $_GET['action'], $_REQUEST['register-errors'] );
+        }
     }
 }

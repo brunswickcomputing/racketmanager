@@ -14,8 +14,9 @@ use Racketmanager\Presentation\View_Models\Player_View_Model;
 /** @var string $player_link */
 /** @var array $player_list */
 /** @var array<int, string> $player_links */
-$player_presenter = $player_presenter ?? new Player_Presenter();
-$player_links     = $player_links ?? [];
+$player_presenter = $player_presenter ?? $vars['player_presenter'] ?? new Player_Presenter();
+$player_links     = $player_links ?? $vars['player_links'] ?? $vm->player_links ?? [];
+$player_link      = $player_link ?? $vars['player_link'] ?? $vm->player_link ?? '';
 $player_list      = $vm->players_list ?? ( $player_list ?? array() );
 $alphabet_key     = array();
 ?>

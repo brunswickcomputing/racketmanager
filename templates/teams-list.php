@@ -15,7 +15,11 @@ namespace Racketmanager;
 
 /** @var string $curr_season */
 /** @var object $object */
-$object = $league ?? ( $event ?? ( $object ?? null ) );
+$object      = $object ?? ( $vars['object'] ?? ( $vars['league'] ?? ( $vars['event'] ?? ( $league ?? ( $event ?? ( $vm->object ?? ( $vm->league ?? ( $vm->event ?? null ) ) ) ) ) ) ) );
+$teams       = $teams ?? ( $vars['teams'] ?? ( $vm->teams ?? ( $object->teams ?? [] ) ) );
+$team_rows   = $team_rows ?? ( $vars['team_rows'] ?? ( $vm->team_rows ?? [] ) );
+$curr_season = $curr_season ?? ( $vars['curr_season'] ?? ( $vm->curr_season ?? ( $object->season ?? '' ) ) );
+$is_admin    = $is_admin ?? ( $vars['is_admin'] ?? ( $vm->is_admin ?? false ) );
 
 if ( empty( $object->team ) ) {
     ?>

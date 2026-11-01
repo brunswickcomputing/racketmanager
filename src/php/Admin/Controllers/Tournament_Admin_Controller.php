@@ -76,7 +76,7 @@ final readonly class Tournament_Admin_Controller {
         }
 
         if ( Admin_Message_Type::ERROR === $action_result->message_type ) {
-            return $this->handle_post_error( $query, $tournament_id, $action_result );
+            return $this->handle_post_error( $query, $post, $tournament_id, $action_result );
         }
 
         return $this->handle_post_redirect( $query, $post, $tournament_id, $action_result );
@@ -84,6 +84,7 @@ final readonly class Tournament_Admin_Controller {
 
     /**
      * @param array $query
+     * @param array $post
      * @param int|null $tournament_id
      * @param Tournament_Action_Result_DTO $action_result
      *
@@ -91,7 +92,7 @@ final readonly class Tournament_Admin_Controller {
      *
      * @throws Tournament_Not_Found_Exception
      */
-    private function handle_post_error( array $query, ?int $tournament_id, Tournament_Action_Result_DTO $action_result ): array {
+    private function handle_post_error( array $query, array $post, ?int $tournament_id, Tournament_Action_Result_DTO $action_result ): array {
         $result = $this->handle_get( $query, $tournament_id );
 
         $result['message']      = strval( $action_result->message );
@@ -100,7 +101,8 @@ final readonly class Tournament_Admin_Controller {
         if ( is_wp_error( $action_result->raw_error ) ) {
             $result['view_model'] = $this->apply_error_to_view_model(
                 $result['view_model'],
-                $action_result->raw_error
+                $action_result->raw_error,
+                $post
             );
         }
 
@@ -240,7 +242,8 @@ final readonly class Tournament_Admin_Controller {
 
     private function apply_error_to_view_model(
         Tournament_Modify_Page_View_Model $vm,
-        WP_Error $error
+        WP_Error $error,
+        array $post = array(),
     ): Tournament_Modify_Page_View_Model {
         $validator = new Validator_Tournament();
         $validator->error = true;
@@ -258,6 +261,84 @@ final readonly class Tournament_Admin_Controller {
             competitions: $vm->competitions,
             seasons: $vm->seasons,
             validator: $validator,
+            form_values: $this->sanitize_form_values( $post ),
         );
+    }
+
+    /**
+     * Whitelist, unslash, and sanitize submitted post values for view-model form retention.
+     *
+     * @param array<string, mixed> $post
+     * @return array<string, mixed>
+     */
+    private function sanitize_form_values( array $post ): array {
+        $allowed_fields = array(
+            'tournamentName',
+            'competition_id',
+            'season',
+            'venue',
+            'competition_code',
+            'grade',
+            'feeCompetition',
+            'feeEvent',
+            'num_entries',
+            'dateStart',
+            'dateEnd',
+            'dateOpen',
+            'dateClose',
+            'dateWithdraw',
+        );
+
+        $sanitized = array();
+
+        foreach ( $allowed_fields as $field ) {
+            if ( ! array_key_exists( $field, $post ) ) {
+                continue;
+            }
+
+            $raw = $post[ $field ];
+            if ( ! is_scalar( $raw ) ) {
+                continue;
+            }
+
+            $unslashed = wp_unslash( (string) $raw );
+
+            switch ( $field ) {
+                case 'competition_id':
+                case 'venue':
+                case 'num_entries':
+                    $sanitized[ $field ] = '' === trim( $unslashed ) ? null : intval( $unslashed );
+                    break;
+
+                case 'season':
+                    $sanitized[ $field ] = is_numeric( $unslashed ) ? intval( $unslashed ) : sanitize_text_field( $unslashed );
+                    break;
+
+                case 'feeCompetition':
+                case 'feeEvent':
+                    if ( '' === trim( $unslashed ) ) {
+                        $sanitized[ $field ] = null;
+                    } elseif ( is_numeric( $unslashed ) ) {
+                        $sanitized[ $field ] = str_contains( $unslashed, '.' ) ? floatval( $unslashed ) : intval( $unslashed );
+                    } else {
+                        $sanitized[ $field ] = sanitize_text_field( $unslashed );
+                    }
+                    break;
+
+                case 'tournamentName':
+                case 'competition_code':
+                case 'grade':
+                case 'dateStart':
+                case 'dateEnd':
+                case 'dateOpen':
+                case 'dateClose':
+                case 'dateWithdraw':
+                default:
+                    $sanitized[ $field ] = sanitize_text_field( $unslashed );
+                    break;
+            }
+        }
+
+        return $sanitized;
     }
 }

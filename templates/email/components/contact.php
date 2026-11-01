@@ -8,6 +8,7 @@
 namespace Racketmanager;
 
 /** @var string $contact_email */
+$contact_email = $contact_email ?? $vm->contact_email ?? ( $from_email ?? ( $vm->from_email ?? '' ) );
 ?>
 <!-- closing -->
             <div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">

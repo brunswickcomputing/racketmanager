@@ -13,8 +13,9 @@ use Racketmanager\Presentation\View_Models\Player_View_Model;
 /** @var Player_View_Model|null $vm */
 /** @var Player_Presenter|null $player_presenter */
 /** @var array $players */
-$player_presenter = $player_presenter ?? new Player_Presenter();
-$players          = $vm->players_list ?? ( $players ?? [] );
+$player_presenter   = $player_presenter ?? ( $vars['player_presenter'] ?? ( $vm->player_presenter ?? new Player_Presenter() ) );
+$players            = $players ?? ( $vars['players'] ?? ( $vm->players_list ?? ( $vm->players ?? [] ) ) );
+$favourite_controls = $favourite_controls ?? ( $vars['favourite_controls'] ?? ( $vm->favourite_controls ?? null ) );
 
 if ( empty( $players ) ) {
     $result_count = 0;

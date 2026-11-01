@@ -10,7 +10,9 @@ namespace Racketmanager;
 /** @var array $matches */
 /** @var int   $team_id */
 /** @var array<int|string, string> $match_tooltips */
-$match_tooltips = $match_tooltips ?? [];
+$matches        = $matches ?? $vars['matches'] ?? $vm->matches ?? [];
+$team_id        = $team_id ?? $vars['team_id'] ?? $vm->team_id ?? 0;
+$match_tooltips = $match_tooltips ?? $vars['match_tooltips'] ?? $vm->match_tooltips ?? [];
 ?>
 <ul class="list--inline list">
     <?php

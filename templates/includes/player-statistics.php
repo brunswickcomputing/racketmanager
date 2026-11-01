@@ -9,7 +9,16 @@ namespace Racketmanager;
 
 /** @var object $player */
 /** @var array  $player_statistics */
-$statistics    = $player->statistics['total'];
+$player            = $vars['player'] ?? $vm->player ?? null;
+$player_statistics = $vars['player_statistics'] ?? $vm->player_statistics ?? ( $player->statistics ?? [] );
+$walkover_allowed  = $vars['walkover_allowed'] ?? $vm->walkover_allowed ?? null;
+if ( ! $player || empty( $player_statistics ) ) {
+    return;
+}
+$statistics    = $player_statistics['total'] ?? ( $player->statistics['total'] ?? null );
+if ( ! $statistics ) {
+    return;
+}
 $stat_title    = __( 'Summary', 'racketmanager' );
 $matches_won   = ! empty( $statistics->matches_won ) ? ( $statistics->matches_won ) : 0;
 $matches_lost  = ! empty( $statistics->matches_lost ) ? ( $statistics->matches_lost ) : 0;

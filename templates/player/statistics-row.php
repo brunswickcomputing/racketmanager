@@ -10,6 +10,9 @@ namespace Racketmanager;
 
 /** @var string $stat_title */
 /** @var string $stats_type */
+$stat_title = $stat_title ?? $vars['stat_title'] ?? $vm->stat_title ?? null;
+$stats_type = $stats_type ?? $vars['stats_type'] ?? $vm->stats_type ?? '';
+$statistics = $statistics ?? $vars['statistics'] ?? $vm->statistics ?? [];
 ?>
 <div class="col-2 stats-title">
     <?php

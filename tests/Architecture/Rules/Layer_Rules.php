@@ -569,7 +569,7 @@ final class Layer_Rules {
                 [ self::SRC ],
                 Rule_Kind::FORBIDDEN_FUNCTION_CALL,
                 [ 'extract' ],
-                Rule_Mode::RATCHET
+                Rule_Mode::STRICT
             ),
             new Layer_Rule(
                 'templates.no_globals_or_db',
@@ -578,7 +578,7 @@ final class Layer_Rules {
                 [ self::TEMPLATES ],
                 Rule_Kind::FORBIDDEN_VARIABLE,
                 [ 'wpdb', ...self::SUPERGLOBALS ],
-                Rule_Mode::RATCHET
+                Rule_Mode::STRICT
             ),
             new Layer_Rule(
                 'templates.no_global_racketmanager',
@@ -587,7 +587,7 @@ final class Layer_Rules {
                 [ self::TEMPLATES ],
                 Rule_Kind::FORBIDDEN_GLOBAL,
                 [ 'racketmanager' ],
-                Rule_Mode::RATCHET
+                Rule_Mode::STRICT
             ),
             new Layer_Rule(
                 'templates.no_legacy_helper_calls',

@@ -486,4 +486,616 @@ final class Email_Templates_Render_Test extends TestCase {
         $this->assertStringNotContainsString( 'The competition will run from', $output );
         $this->assertStringContainsString( 'Test Tennis League', $output );
     }
+
+    public function test_tournament_withdrawal_template_renders_with_zero_warnings(): void {
+        $player = new class {
+            public function get_fullname(): string {
+                return 'Roger Federer';
+            }
+        };
+
+        $vars = [
+            'tournament_name' => 'Championship 2026',
+            'player'          => $player,
+            'tournament_link' => '<a href="https://example.com/tournament/championship-2026">Championship 2026</a>',
+            'tournament'      => (object) [ 'name' => 'Championship 2026', 'is_open' => true ],
+            'tournament_dates'=> (object) [ 'date_closing_display' => '07/06/2026' ],
+            'action_url'      => 'https://example.com/withdraw',
+            'contact_email'   => 'admin@example.com',
+            'site_url'        => 'https://example.com',
+            'organisation'    => 'Test Tennis League',
+        ];
+
+        $warnings = [];
+        $output   = $this->render_and_capture_warnings(
+            fn() => $this->template_renderer->render( 'tournament-withdrawal', $vars, 'email' ),
+            $warnings
+        );
+
+        $this->assertSame( [], $warnings, 'Rendering tournament-withdrawal must produce zero PHP warnings' );
+        $this->assertStringContainsString( 'Roger Federer', $output );
+        $this->assertStringContainsString( 'Championship 2026', $output );
+        $this->assertStringContainsString( '07/06/2026', $output );
+        $this->assertStringContainsString( 'admin@example.com', $output );
+    }
+
+    public function test_cup_entry_template_renders_with_zero_warnings(): void {
+        $vars = [
+            'competition_name' => 'Men\'s Senior Cup',
+            'season'           => '2026',
+            'club'             => 'Leigh LTC',
+            'cup_entries'      => [
+                [
+                    'event'        => 'Open Cup',
+                    'teamName'     => 'Leigh 1',
+                    'matchday'     => 'Saturday',
+                    'matchtime'    => '14:00',
+                    'captain'      => 'John Doe',
+                    'contactno'    => '0123456789',
+                    'contactemail' => 'john@example.com',
+                ],
+            ],
+            'comments'         => 'Looking forward to it',
+            'contact_email'    => 'cup@example.com',
+            'site_url'         => 'https://example.com',
+            'organisation'     => 'Test Tennis League',
+        ];
+
+        $warnings = [];
+        $output   = $this->render_and_capture_warnings(
+            fn() => $this->template_renderer->render( 'cup-entry', $vars, 'email' ),
+            $warnings
+        );
+
+        $this->assertSame( [], $warnings, 'Rendering cup-entry must produce zero PHP warnings' );
+        $this->assertStringContainsString( 'Leigh LTC', $output );
+        $this->assertStringContainsString( 'Open Cup', $output );
+        $this->assertStringContainsString( 'Leigh 1', $output );
+        $this->assertStringContainsString( 'John Doe', $output );
+        $this->assertStringContainsString( 'Looking forward to it', $output );
+    }
+
+    public function test_league_entry_template_renders_with_zero_warnings(): void {
+        $vars = [
+            'competition_name' => 'Main League',
+            'season'           => '2026',
+            'club'             => 'Westcliff LTC',
+            'event_entries'    => [
+                'num_courts_available' => 4,
+                'events'               => [
+                    [
+                        'event' => 'Division 1 Men',
+                        'teams' => [
+                            [
+                                'teamName'     => 'Westcliff 1',
+                                'matchday'     => 'Saturday',
+                                'matchtime'    => '14:00',
+                                'captain'      => 'Bob Smith',
+                                'contactno'    => '0123456789',
+                                'contactemail' => 'bob@example.com',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'comments'         => 'Ready for new season',
+            'contact_email'    => 'league@example.com',
+            'site_url'         => 'https://example.com',
+            'organisation'     => 'Test Tennis League',
+        ];
+
+        $warnings = [];
+        $output   = $this->render_and_capture_warnings(
+            fn() => $this->template_renderer->render( 'league-entry', $vars, 'email' ),
+            $warnings
+        );
+
+        $this->assertSame( [], $warnings, 'Rendering league-entry must produce zero PHP warnings' );
+        $this->assertStringContainsString( 'Westcliff LTC', $output );
+        $this->assertStringContainsString( 'Division 1 Men', $output );
+        $this->assertStringContainsString( 'Westcliff 1', $output );
+        $this->assertStringContainsString( 'Bob Smith', $output );
+        $this->assertStringContainsString( 'Ready for new season', $output );
+    }
+
+    public function test_tournament_entry_template_renders_with_zero_warnings(): void {
+        $player = new class {
+            public string $firstname = 'Novak';
+            public string $surname   = 'Djokovic';
+            public string $contactno = '0123456789';
+            public string $btm       = 'BTM999';
+
+            public function get_fullname(): string {
+                return 'Novak Djokovic';
+            }
+        };
+
+        $vars = [
+            'tournament_name'    => 'Annual Open',
+            'player'             => $player,
+            'tournament_link'    => '<a href="https://example.com/tournament/annual-open">Annual Open</a>',
+            'tournament_entries' => [
+                [
+                    'event_name' => 'Men\'s Singles',
+                    'partner'    => null,
+                ],
+            ],
+            'comments'           => 'Special seeding request',
+            'contact_email'      => 'tournament@example.com',
+            'action_url'         => 'https://example.com/entry/confirm',
+            'site_url'           => 'https://example.com',
+            'organisation'       => 'Test Tennis League',
+        ];
+
+        $warnings = [];
+        $output   = $this->render_and_capture_warnings(
+            fn() => $this->template_renderer->render( 'tournament-entry', $vars, 'email' ),
+            $warnings
+        );
+
+        $this->assertSame( [], $warnings, 'Rendering tournament-entry must produce zero PHP warnings' );
+        $this->assertStringContainsString( 'Novak', $output );
+        $this->assertStringContainsString( 'Djokovic', $output );
+        $this->assertStringContainsString( '0123456789', $output );
+        $this->assertStringContainsString( 'BTM999', $output );
+        $this->assertStringContainsString( 'Men\'s Singles', $output );
+        $this->assertStringContainsString( 'Special seeding request', $output );
+        $this->assertStringContainsString( 'https://example.com/entry/confirm', $output );
+    }
+
+    public function test_tournament_entry_open_template_renders_with_zero_warnings(): void {
+        $vars = [
+            'addressee'        => 'Club Secretary',
+            'type'             => 'club',
+            'tournament'       => (object) [ 'name' => 'Summer Championship' ],
+            'tournament_dates' => null,
+            'account_link'     => 'https://example.com/account',
+            'days_remaining'   => 7,
+            'from_email'       => 'entries@example.com',
+            'action_url'       => 'https://example.com/tournament/enter',
+            'site_url'         => 'https://example.com',
+            'organisation'     => 'Test Tennis League',
+        ];
+
+        $warnings = [];
+        $output   = $this->render_and_capture_warnings(
+            fn() => $this->template_renderer->render( 'tournament-entry-open', $vars, 'email' ),
+            $warnings
+        );
+
+        $this->assertSame( [], $warnings, 'Rendering tournament-entry-open must produce zero PHP warnings' );
+        $this->assertStringContainsString( 'Club Secretary', $output );
+        $this->assertStringContainsString( 'Please pass this information on to your members.', $output );
+        $this->assertStringContainsString( 'https://example.com/tournament/enter', $output );
+    }
+
+    public function test_tournament_finalists_template_renders_with_zero_warnings(): void {
+        $vars = [
+            'addressee'    => 'Finalist Player',
+            'organisation' => 'Test Tennis League',
+            'tournament'   => (object) [
+                'name'        => 'Summer Championship',
+                'information' => (object) [
+                    'referee'      => 'Jane Referee',
+                    'match_format' => null,
+                    'photography'  => null,
+                    'parking'      => null,
+                    'catering'     => null,
+                    'spectatora'   => null,
+                ],
+            ],
+            'rounds'       => [ '10:00', '15:00' ],
+            'from_email'   => 'finals@example.com',
+            'action_url'   => 'https://example.com/finals/order-of-play',
+            'site_url'     => 'https://example.com',
+        ];
+
+        $warnings = [];
+        $output   = $this->render_and_capture_warnings(
+            fn() => $this->template_renderer->render( 'tournament-finalists', $vars, 'email' ),
+            $warnings
+        );
+
+        $this->assertSame( [], $warnings, 'Rendering tournament-finalists must produce zero PHP warnings' );
+        $this->assertStringContainsString( 'Finalist Player', $output );
+        $this->assertStringContainsString( 'Summer Championship', $output );
+        $this->assertStringContainsString( 'Jane Referee', $output );
+        $this->assertStringContainsString( '10:00', $output );
+        $this->assertStringContainsString( '15:00', $output );
+    }
+
+    public function test_favourite_notification_template_renders_with_zero_warnings(): void {
+        $home_team = new class {
+            public function get_name(): string {
+                return 'Leigh LTC A';
+            }
+        };
+        $away_team = new class {
+            public function get_name(): string {
+                return 'Westcliff LTC B';
+            }
+        };
+        $fixture = new class {
+            public function get_home_points(): string {
+                return '4';
+            }
+            public function get_away_points(): string {
+                return '1';
+            }
+        };
+
+        $vars = [
+            'user'          => (object) [ 'first_name' => 'Fan User' ],
+            'match_url'     => 'https://example.com/match/501',
+            'fixture'       => $fixture,
+            'home_team'     => $home_team,
+            'away_team'     => $away_team,
+            'from_email'    => 'notify@example.com',
+            'favourite_url' => 'https://example.com/favourites',
+            'site_url'      => 'https://example.com',
+            'organisation'  => 'Test Tennis League',
+        ];
+
+        $warnings = [];
+        $output   = $this->render_and_capture_warnings(
+            fn() => $this->template_renderer->render( 'favourite-notification', $vars, 'email' ),
+            $warnings
+        );
+
+        $this->assertSame( [], $warnings, 'Rendering favourite-notification must produce zero PHP warnings' );
+        $this->assertStringContainsString( '<title>Match Result - Favourite Notification</title>', $output );
+        $this->assertStringContainsString( 'Fan User', $output );
+        $this->assertStringContainsString( 'Leigh LTC A', $output );
+        $this->assertStringContainsString( 'Westcliff LTC B', $output );
+        $this->assertStringContainsString( '4-1', $output );
+        $this->assertStringContainsString( 'https://example.com/favourites', $output );
+    }
+
+    public function test_wtn_report_template_renders_with_zero_warnings(): void {
+        $club = new class {
+            public function get_shortcode(): string {
+                return 'LTC';
+            }
+        };
+
+        $vars = [
+            'club'         => $club,
+            'player_count' => 125,
+            'error_count'  => 0,
+            'site_url'     => 'https://example.com',
+            'organisation' => 'Test Tennis League',
+        ];
+
+        $warnings = [];
+        $output   = $this->render_and_capture_warnings(
+            fn() => $this->template_renderer->render( 'wtn-report', $vars, 'email' ),
+            $warnings
+        );
+
+        $this->assertSame( [], $warnings, 'Rendering wtn-report must produce zero PHP warnings' );
+        $this->assertStringContainsString( 'A WTN update process has completed.', $output );
+        $this->assertStringContainsString( 'The process was run for LTC.', $output );
+        $this->assertStringContainsString( '125 players were processed.', $output );
+    }
+
+    public function test_match_notification_template_renders_with_zero_warnings(): void {
+        $vars = [
+            'tournament'      => (object) [ 'name' => 'Summer Championship' ],
+            'match'           => (object) [
+                'match_date' => '2026-06-15',
+                'league'     => (object) [ 'title' => 'Championship League' ],
+            ],
+            'round'           => 'Quarter Final',
+            'draw_link'       => 'https://example.com/draw',
+            'teams'           => [
+                'home' => (object) [
+                    'title'  => 'Home Team',
+                    'club'   => 'Leigh LTC',
+                    'player' => [ (object) [ 'display_name' => 'Alice Player', 'contactno' => '0123456789' ] ],
+                ],
+                'away' => (object) [
+                    'title'  => 'Away Team',
+                    'club'   => 'Westcliff LTC',
+                    'player' => [ (object) [ 'display_name' => 'Bob Player', 'contactno' => '0987654321' ] ],
+                ],
+            ],
+            'rules_link'      => 'https://example.com/rules',
+            'tournament_link' => 'https://example.com/tournament',
+            'action_url'      => 'https://example.com/match/100',
+            'email_from'      => 'tournament@example.com',
+            'site_url'        => 'https://example.com',
+            'organisation'    => 'Test Tennis League',
+        ];
+
+        $warnings = [];
+        $output   = $this->render_and_capture_warnings(
+            fn() => $this->template_renderer->render( 'match-notification', $vars, 'email' ),
+            $warnings
+        );
+
+        $this->assertSame( [], $warnings, 'Rendering match-notification must produce zero PHP warnings' );
+        $this->assertStringContainsString( '<title>Next match confirmation - Summer Championship</title>', $output );
+        $this->assertStringContainsString( 'Championship League Quarter Final Match Confirmation', $output );
+        $this->assertStringContainsString( 'Alice Player', $output );
+        $this->assertStringContainsString( 'Bob Player', $output );
+        $this->assertStringContainsString( 'https://example.com/match/100', $output );
+    }
+
+    public function test_match_result_pending_tournament_template_renders_with_zero_warnings(): void {
+        $match = new class {
+            public object $league;
+            public string $match_date = '2026-06-15';
+
+            public function __construct() {
+                $this->league = (object) [ 'title' => 'Division 1' ];
+            }
+
+            public function get_title( string $bye, string $unknown ): string {
+                return 'Leigh LTC vs Westcliff LTC';
+            }
+        };
+
+        $vars = [
+            'organisation' => 'Test Tennis League',
+            'time_period'  => 48,
+            'match'        => $match,
+            'action_url'   => 'https://example.com/match/enter-result',
+            'from_email'   => 'results@example.com',
+            'site_url'     => 'https://example.com',
+        ];
+
+        $warnings = [];
+        $output   = $this->render_and_capture_warnings(
+            fn() => $this->template_renderer->render( 'match-result-pending-tournament', $vars, 'email' ),
+            $warnings
+        );
+
+        $this->assertSame( [], $warnings, 'Rendering match-result-pending-tournament must produce zero PHP warnings' );
+        $this->assertStringContainsString( 'Division 1', $output );
+        $this->assertStringContainsString( 'Leigh LTC vs Westcliff LTC', $output );
+        $this->assertStringContainsString( 'more than 2 days after the match was due to be played', $output );
+        $this->assertStringContainsString( 'https://example.com/match/enter-result', $output );
+    }
+
+    public function test_result_check_match_template_renders_with_zero_warnings(): void {
+        $vars = [
+            'captain'       => 'Captain Bob',
+            'reason'        => 'Scorecard submitted past deadline.',
+            'penalty'       => '1',
+            'contact_email' => 'results@example.com',
+            'site_url'      => 'https://example.com',
+            'organisation'  => 'Test Tennis League',
+        ];
+
+        $warnings = [];
+        $output   = $this->render_and_capture_warnings(
+            fn() => $this->template_renderer->render( 'result-check-match', $vars, 'email' ),
+            $warnings
+        );
+
+        $this->assertSame( [], $warnings, 'Rendering result-check-match must produce zero PHP warnings' );
+        $this->assertStringContainsString( 'Captain Bob', $output );
+        $this->assertStringContainsString( 'Scorecard submitted past deadline.', $output );
+        $this->assertStringContainsString( 'You have been deducted 1 point.', $output );
+    }
+
+    public function test_result_check_player_template_renders_with_zero_warnings(): void {
+        $vars = [
+            'captain'       => 'Captain Alice',
+            'player'        => 'Player Charlie',
+            'reason'        => 'Player was not registered before match',
+            'opponent'      => 'Opponent Dan',
+            'penalty'       => '1',
+            'contact_email' => 'results@example.com',
+            'site_url'      => 'https://example.com',
+            'organisation'  => 'Test Tennis League',
+        ];
+
+        $warnings = [];
+        $output   = $this->render_and_capture_warnings(
+            fn() => $this->template_renderer->render( 'result-check-player', $vars, 'email' ),
+            $warnings
+        );
+
+        $this->assertSame( [], $warnings, 'Rendering result-check-player must produce zero PHP warnings' );
+        $this->assertStringContainsString( 'Captain Alice', $output );
+        $this->assertStringContainsString( 'Player Charlie -  Player was not registered before match.', $output );
+        $this->assertStringContainsString( 'As such, the rubber will be awarded to Opponent Dan.', $output );
+        $this->assertStringContainsString( 'You will also be deducted 1 point', $output );
+    }
+
+    public function test_contact_teams_template_renders_with_zero_warnings(): void {
+        $vars = [
+            'intro'        => 'Welcome to the new season.',
+            'body'         => [ 'Matches commence next week.', 'Please ensure balls are provided.' ],
+            'closing_text' => 'Best regards, Committee',
+            'object_type'  => 'league',
+            'title_text'   => 'Important League Update',
+            'site_url'     => 'https://example.com',
+            'organisation' => 'Test Tennis League',
+        ];
+
+        $warnings = [];
+        $output   = $this->render_and_capture_warnings(
+            fn() => $this->template_renderer->render( 'contact-teams', $vars, 'email' ),
+            $warnings
+        );
+
+        $this->assertSame( [], $warnings, 'Rendering contact-teams must produce zero PHP warnings' );
+        $this->assertStringContainsString( 'Important League Update', $output );
+        $this->assertStringContainsString( 'Welcome to the new season.', $output );
+        $this->assertStringContainsString( 'Matches commence next week.', $output );
+        $this->assertStringContainsString( 'Best regards, Committee', $output );
+    }
+
+    public function test_club_player_notification_template_renders_with_zero_warnings(): void {
+        $vars = [
+            'requestor'     => 'Secretary Dave',
+            'action'        => 'approved',
+            'club'          => 'Leigh LTC',
+            'player'        => 'New Player',
+            'btm'           => 'BTM12345',
+            'action_url'    => 'https://example.com/players/manage',
+            'contact_email' => 'members@example.com',
+            'site_url'      => 'https://example.com',
+            'organisation'  => 'Test Tennis League',
+        ];
+
+        $warnings = [];
+        $output   = $this->render_and_capture_warnings(
+            fn() => $this->template_renderer->render( 'club-player-notification', $vars, 'email' ),
+            $warnings
+        );
+
+        $this->assertSame( [], $warnings, 'Rendering club-player-notification must produce zero PHP warnings' );
+        $this->assertStringContainsString( 'Secretary Dave', $output );
+        $this->assertStringContainsString( 'New Player', $output );
+        $this->assertStringContainsString( 'BTM12345', $output );
+        $this->assertStringContainsString( 'https://example.com/players/manage', $output );
+    }
+
+    public function test_email_templates_render_with_explicit_vm_object_with_zero_warnings(): void {
+        $vm = (object) [
+            'captain'       => 'Captain VM',
+            'reason'        => 'VM check passed.',
+            'penalty'       => '0',
+            'contact_email' => 'admin@example.com',
+            'site_url'      => 'https://example.com',
+            'organisation'  => 'Test Tennis League',
+        ];
+
+        $warnings = [];
+        $output   = $this->render_and_capture_warnings(
+            fn() => $this->template_renderer->render( 'result-check-match', [ 'vm' => $vm ], 'email' ),
+            $warnings
+        );
+
+        $this->assertSame( [], $warnings, 'Rendering result-check-match with object $vm must produce zero PHP warnings' );
+        $this->assertStringContainsString( 'Captain VM', $output );
+        $this->assertStringContainsString( 'VM check passed.', $output );
+    }
+
+    public function test_title_component_preserves_parent_local_titles_when_vars_contain_outer_title_text(): void {
+        $vars = [
+            'competition_name' => 'Open Cup',
+            'season'           => '2026',
+            'club'             => 'Westcliff LTC',
+            'cup_entries'      => [
+                [
+                    'event'    => 'Men\'s Open Cup',
+                    'teamName' => 'Westcliff 1',
+                    'matchday' => 'Sunday',
+                    'matchtime'=> '10:00',
+                    'captain'  => 'Captain Dan',
+                ],
+            ],
+            'comments'         => null,
+            'contact_email'    => 'cup@example.com',
+            'site_url'         => 'https://example.com',
+            'organisation'     => 'Test Tennis League',
+            'title_text'       => 'GLOBAL OUTER TITLE THAT MUST NOT OVERRIDE PER-SECTION TITLES',
+        ];
+
+        $warnings = [];
+        $output   = $this->render_and_capture_warnings(
+            fn() => $this->template_renderer->render( 'cup-entry', $vars, 'email' ),
+            $warnings
+        );
+
+        $this->assertSame( [], $warnings, 'Rendering cup-entry with outer title_text must produce zero PHP warnings' );
+        $this->assertStringContainsString( 'Entry confirmation', $output );
+        $this->assertStringContainsString( 'Entry Details', $output );
+        $this->assertStringContainsString( 'Events', $output );
+        $this->assertStringContainsString( 'Men\'s Open Cup', $output );
+        $this->assertStringNotContainsString( 'GLOBAL OUTER TITLE THAT MUST NOT OVERRIDE PER-SECTION TITLES', $output );
+    }
+
+    public function test_favourite_notification_preserves_fixed_html_title_with_producer_supplied_email_subject(): void {
+        $home_team = new class {
+            public function get_name(): string {
+                return 'Leigh LTC A';
+            }
+        };
+        $away_team = new class {
+            public function get_name(): string {
+                return 'Westcliff LTC B';
+            }
+        };
+        $fixture = new class {
+            public function get_home_points(): string {
+                return '4';
+            }
+            public function get_away_points(): string {
+                return '1';
+            }
+        };
+
+        $producer_subject = 'Test Tennis League - Division 1 Result Notification';
+
+        $vars = [
+            'user'          => (object) [ 'first_name' => 'Fan User' ],
+            'match_url'     => 'https://example.com/match/501',
+            'fixture'       => $fixture,
+            'home_team'     => $home_team,
+            'away_team'     => $away_team,
+            'from_email'    => 'notify@example.com',
+            'favourite_url' => 'https://example.com/favourites',
+            'site_url'      => 'https://example.com',
+            'organisation'  => 'Test Tennis League',
+            'email_subject' => $producer_subject,
+        ];
+
+        $warnings = [];
+        $output   = $this->render_and_capture_warnings(
+            fn() => $this->template_renderer->render( 'favourite-notification', $vars, 'email' ),
+            $warnings
+        );
+
+        $this->assertSame( [], $warnings, 'Rendering favourite-notification with producer subject must produce zero PHP warnings' );
+        $this->assertStringNotContainsString( '<title>' . $producer_subject . '</title>', $output );
+        $this->assertStringContainsString( '<title>Match Result - Favourite Notification</title>', $output );
+    }
+
+    public function test_match_notification_respects_producer_supplied_email_subject(): void {
+        $producer_subject = 'Summer Championship - Round of 16 Match Confirmation';
+
+        $vars = [
+            'tournament'      => (object) [ 'name' => 'Summer Championship' ],
+            'match'           => (object) [
+                'match_date' => '2026-06-15',
+                'league'     => (object) [ 'title' => 'Championship League' ],
+            ],
+            'round'           => 'Quarter Final',
+            'draw_link'       => 'https://example.com/draw',
+            'teams'           => [
+                'home' => (object) [
+                    'title'  => 'Home Team',
+                    'club'   => 'Leigh LTC',
+                    'player' => [ (object) [ 'display_name' => 'Alice Player', 'contactno' => '0123456789' ] ],
+                ],
+                'away' => (object) [
+                    'title'  => 'Away Team',
+                    'club'   => 'Westcliff LTC',
+                    'player' => [ (object) [ 'display_name' => 'Bob Player', 'contactno' => '0987654321' ] ],
+                ],
+            ],
+            'rules_link'      => 'https://example.com/rules',
+            'tournament_link' => 'https://example.com/tournament',
+            'action_url'      => 'https://example.com/match/100',
+            'email_from'      => 'tournament@example.com',
+            'site_url'        => 'https://example.com',
+            'organisation'    => 'Test Tennis League',
+            'email_subject'   => $producer_subject,
+        ];
+
+        $warnings = [];
+        $output   = $this->render_and_capture_warnings(
+            fn() => $this->template_renderer->render( 'match-notification', $vars, 'email' ),
+            $warnings
+        );
+
+        $this->assertSame( [], $warnings, 'Rendering match-notification with producer subject must produce zero PHP warnings' );
+        $this->assertStringContainsString( '<title>' . $producer_subject . '</title>', $output );
+        $this->assertStringNotContainsString( '<title>Next match confirmation - Summer Championship</title>', $output );
+    }
 }

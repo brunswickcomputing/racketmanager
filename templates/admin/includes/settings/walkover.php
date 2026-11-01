@@ -1,3 +1,18 @@
+<?php
+declare( strict_types=1 );
+/**
+ * Walkover administration panel
+ *
+ * @package Racketmanager/Admin/Templates
+ */
+
+namespace Racketmanager;
+
+use Racketmanager\Admin\View_Models\Options_Page_View_Model;
+
+/** @var Options_Page_View_Model|\stdClass $vm */
+$options = $options ?? ( $vm->options ?? array() );
+?>
 <div class="form-control">
     <fieldset class="row gx-3 mb-3">
         <legend><?php esc_html_e( 'Walkover', 'racketmanager' ); ?></legend>

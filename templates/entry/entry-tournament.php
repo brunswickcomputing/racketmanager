@@ -31,9 +31,23 @@ use Racketmanager\Util\Util_Lookup;
 /** @var bool|null $changes_allowed */
 /** @var bool|null $withdrawal_allowed */
 
-// Permissions are decided by the producer; without them the form is read-only.
-$changes_allowed    = (bool) ( $changes_allowed ?? false );
-$withdrawal_allowed = (bool) ( $withdrawal_allowed ?? false );
+$player               = $player ?? ( $vm->player ?? ( $vars['player'] ?? null ) );
+$tournament           = $tournament ?? ( $vm->tournament ?? ( $vars['tournament'] ?? null ) );
+if ( ! $player || ! $tournament ) {
+    return;
+}
+$club_memberships     = $club_memberships ?? ( $vm->club_memberships ?? ( $vars['club_memberships'] ?? [] ) );
+$player_entries       = $player_entries ?? ( $vm->player_entries ?? ( $vars['player_entries'] ?? [] ) );
+$tournament_entry     = $tournament_entry ?? ( $vm->tournament_entry ?? ( $vars['tournament_entry'] ?? null ) );
+$changes_allowed      = (bool) ( $changes_allowed ?? ( $vm->changes_allowed ?? ( $vars['changes_allowed'] ?? false ) ) );
+$withdrawal_allowed   = (bool) ( $withdrawal_allowed ?? ( $vm->withdrawal_allowed ?? ( $vars['withdrawal_allowed'] ?? false ) ) );
+$entry_status_message = $entry_status_message ?? ( $vm->entry_status_message ?? ( $vars['entry_status_message'] ?? null ) );
+$events               = $events ?? ( $vm->events ?? ( $vars['events'] ?? [] ) );
+$back_url             = $back_url ?? ( $vm->back_url ?? ( $vars['back_url'] ?? '' ) );
+$tournament_header    = $tournament_header ?? ( $vm->tournament_header ?? ( $vars['tournament_header'] ?? null ) );
+$date_closing         = $date_closing ?? ( $vm->date_closing ?? ( $vars['date_closing'] ?? null ) );
+$date_closing_display = $date_closing_display ?? ( $vm->date_closing_display ?? ( $vars['date_closing_display'] ?? null ) );
+
 // Consumed by templates/includes/tournament-header.php (hides header "Enter" button).
 $entry_option       = false;
 
@@ -41,7 +55,7 @@ $entered        = ! empty( $player_entries );
 $form_title     = $entered ? __( 'Entry details', 'racketmanager' ) : __( 'Enter online', 'racketmanager' );
 $readonly_attr  = $changes_allowed ? '' : 'readonly';
 $disabled_attr  = ( $changes_allowed || $withdrawal_allowed ) ? '' : 'disabled';
-$player_initial = substr( $player->firstname, 0, 1 ) . substr( $player->surname, 0, 1 );
+$player_initial = substr( (string) ( $player->firstname ?? '' ), 0, 1 ) . substr( (string) ( $player->surname ?? '' ), 0, 1 );
 $has_age        = ! empty( $player->age );
 $player_age     = $has_age ? $player->age : __( 'Unknown', 'racketmanager' );
 $filter_age     = $has_age ? $player->age : 'unknown';

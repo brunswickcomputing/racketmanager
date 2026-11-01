@@ -13,13 +13,14 @@ namespace Racketmanager;
 /** @var array      $league_options */
 /** @var object     $league */
 
-$action_url     = $form_action ?? '';
-$options_to_use = $league_options ?? [];
+$action_url     = $form_action ?? $vm->form_action ?? ( is_array( $vars ?? null ) ? ( $vars['form_action'] ?? '' ) : '' );
+$options_to_use = $league_options ?? $vm->league_options ?? ( is_array( $vars ?? null ) ? ( $vars['league_options'] ?? [] ) : [] );
+$post_id_val    = $post_id ?? $vm->post_id ?? ( is_array( $vars ?? null ) ? ( $vars['post_id'] ?? '' ) : '' );
 ?>
 <div id="racketmanager_archive_selections" class="mt-3">
     <form method="get" action="<?php echo esc_url( $action_url ); ?>" id="racketmanager_archive">
         <div class="row g-1 align-items-center">
-            <input type="hidden" name="page_id" value="<?php echo esc_attr( (string) ( $post_id ?? '' ) ); ?>" />
+            <input type="hidden" name="page_id" value="<?php echo esc_attr( (string) $post_id_val ); ?>" />
             <div class="form-floating col-auto">
                 <select class="form-select" size="1" name="league_id" id="league_id">
                     <?php foreach ( $options_to_use as $opt ) : ?>

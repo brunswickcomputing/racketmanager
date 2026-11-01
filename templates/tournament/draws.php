@@ -9,6 +9,11 @@ namespace Racketmanager;
 
 /** @var object $tournament */
 /** @var array $draws */
+$tournament = $tournament ?? $vars['tournament'] ?? $vm->tournament ?? null;
+if ( ! $tournament ) {
+    return;
+}
+$draws = $draws ?? $vars['draws'] ?? $vm->draws ?? array();
 ?>
 <div class="container">
     <div class="module module--card">

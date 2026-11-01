@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Crosstable administration viewing panel
  *
@@ -11,8 +12,10 @@ namespace Racketmanager;
 /** @var object $league */
 /** @var array  $crosstable_teams Hydrated League_Team rows in display order (pre-computed by Admin_League). */
 /** @var array  $crosstable_cells Score matrix keyed by [ row team id ][ column team id ] (pre-computed by Admin_League). */
-$crosstable_teams = $crosstable_teams ?? $teams;
-$crosstable_cells = $crosstable_cells ?? array();
+/** @var \Racketmanager\Admin\View_Models\League_Standings_Page_View_Model|\stdClass $vm */
+$league          = $league ?? $vars['league'] ?? $vm->league;
+$crosstable_teams = $crosstable_teams ?? $vars['crosstable_teams'] ?? $vm->crosstable_teams ?? $teams ?? $vars['teams'] ?? $vm->teams;
+$crosstable_cells = $crosstable_cells ?? $vars['crosstable_cells'] ?? $vm->crosstable_cells ?? array();
 ?>
 <div class="container">
     <div class="table-responsive">

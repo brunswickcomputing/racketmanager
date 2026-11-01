@@ -15,13 +15,19 @@ namespace Racketmanager;
 /** @var string $league_title */
 /** @var array  $leagues */
 /** @var array  $league_matches_map */
+$event = $event ?? $vars['event'] ?? ( isset( $vm ) ? ( $vm->event ?? null ) : null );
+if ( empty( $event ) ) {
+    return;
+}
+$season             = $season ?? $vars['season'] ?? ( isset( $vm ) ? ( $vm->season ?? '' ) : '' );
 $competition_type   = $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
-$leagues            = $leagues ?? array();
-$league_matches_map = $league_matches_map ?? array();
-$league_title       = $league_title ?? '';
-$league_id          = $league_id ?? null;
-$event_id           = $event_id ?? $event->id ?? null;
-$league_edit        = $league_edit ?? null;
+$leagues            = $leagues ?? $vars['leagues'] ?? ( isset( $vm ) ? ( $vm->leagues ?? array() ) : array() );
+$league_matches_map = $league_matches_map ?? $vars['league_matches_map'] ?? ( isset( $vm ) ? ( $vm->league_matches_map ?? array() ) : array() );
+$league_title       = $league_title ?? $vars['league_title'] ?? ( isset( $vm ) ? ( $vm->league_title ?? '' ) : '' );
+$league_id          = $league_id ?? $vars['league_id'] ?? ( isset( $vm ) ? ( $vm->league_id ?? null ) : null );
+$event_id           = $event_id ?? $vars['event_id'] ?? ( isset( $vm ) ? ( $vm->event_id ?? ( $event->id ?? null ) ) : ( $event->id ?? null ) );
+$league_edit        = $league_edit ?? $vars['league_edit'] ?? ( isset( $vm ) ? ( $vm->league_edit ?? null ) : null );
+$tournament         = $tournament ?? $vars['tournament'] ?? ( isset( $vm ) ? ( $vm->tournament ?? null ) : null );
 ?>
 <div class>
     <div class="row gx-3 align-items-center mb-3">

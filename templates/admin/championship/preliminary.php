@@ -7,16 +7,23 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Cup_Draw_Page_View_Model;
+use Racketmanager\Admin\View_Models\League_Standings_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
 
+/** @var Tournament_Draw_Page_View_Model|Cup_Draw_Page_View_Model|League_Standings_Page_View_Model|\stdClass $vm */
 // Preferred input (when included from tournament draw): $vm.
-$vm = isset( $vm ) && ( $vm instanceof Tournament_Draw_Page_View_Model ) ? $vm : null;
+$draw_vm = isset( $vm ) && ( $vm instanceof Tournament_Draw_Page_View_Model ) ? $vm : null;
 
-// BC fallback: if $vm isn't present, rely on locals set by the parent template.
-if ( $vm ) {
-    $league     = $vm->league;
-    $tournament = $vm->tournament;
-    $season     = $vm->season;
+// BC fallback: if $draw_vm isn't present, rely on locals set by the parent template.
+if ( $draw_vm ) {
+    $league     = $draw_vm->league;
+    $tournament = $draw_vm->tournament;
+    $season     = $draw_vm->season;
+} else {
+    $league     = $league ?? ( $vm->league ?? null );
+    $tournament = $tournament ?? ( $vm->tournament ?? null );
+    $season     = $season ?? ( $vm->season ?? null );
 }
 
 /** @var object $league */
@@ -56,7 +63,7 @@ if ( $vm ) {
         </div>
         <?php
     }
-    $teams = $vm ? $vm->teams : ( isset( $teams ) && is_array( $teams ) ? $teams : array() );
-    require_once RACKETMANAGER_PATH . 'templates/admin/league/standings.php';
+    $teams = $draw_vm ? $draw_vm->teams : ( $vm->teams ?? ( isset( $teams ) && is_array( $teams ) ? $teams : array() ) );
+    require RACKETMANAGER_PATH . 'templates/admin/league/standings.php';
     ?>
 </div>

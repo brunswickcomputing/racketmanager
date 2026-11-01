@@ -10,7 +10,8 @@ namespace Racketmanager;
 /** @var object $competition */
 /** @var string $season */
 /** @var array<string, string> $entry_urls */
-$entry_urls = $entry_urls ?? array();
+$current_season = $current_season ?? $vars['current_season'] ?? ( isset( $vm ) ? ( $vm->current_season ?? null ) : null );
+$entry_urls     = $entry_urls ?? $vars['entry_urls'] ?? ( isset( $vm ) ? ( $vm->entry_urls ?? array() ) : array() );
 ?>
 <div class="row">
     <div class="col-12">

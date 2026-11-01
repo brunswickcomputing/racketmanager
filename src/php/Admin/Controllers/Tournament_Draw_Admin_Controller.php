@@ -74,6 +74,9 @@ readonly final class Tournament_Draw_Admin_Controller {
 
         $finals = $this->finals_presenter->present_finals( $data->finals, $tournament, $league, $data->season );
 
+        $page = isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-tournaments';
+        $view = isset( $query['view'] ) ? sanitize_text_field( wp_unslash( strval( $query['view'] ) ) ) : 'draw';
+
         $vm = new Tournament_Draw_Page_View_Model(
             tournament: $tournament,
             league: $league,
@@ -82,6 +85,8 @@ readonly final class Tournament_Draw_Admin_Controller {
             matches: $data->matches,
             teams: $data->teams,
             finals: $finals,
+            page: $page,
+            view: $view,
         );
 
         $result = array(

@@ -16,6 +16,17 @@ namespace Racketmanager;
 /** @var string $paragraph */
 /** @var string $contact */
 /** @var string $closing */
+/** @var array $vars */
+/** @var object|null $vm */
+$addressee        = $vars['addressee'] ?? $vm->addressee ?? $addressee ?? '';
+$type             = $vars['type'] ?? $vm->type ?? $type ?? '';
+$tournament       = $vars['tournament'] ?? $vm->tournament ?? $tournament ?? null;
+$tournament_dates = $vars['tournament_dates'] ?? $vm->tournament_dates ?? $tournament_dates ?? null;
+$account_link     = $vars['account_link'] ?? $vm->account_link ?? $account_link ?? '';
+$days_remaining   = $vars['days_remaining'] ?? $vm->days_remaining ?? $days_remaining ?? null;
+$from_email       = $vars['from_email'] ?? $vm->from_email ?? $from_email ?? '';
+$action_url       = $vars['action_url'] ?? $vm->action_url ?? $action_url ?? '';
+$email_subject    = $vars['email_subject'] ?? $vm->email_subject ?? $email_subject ?? ( ! empty( $tournament->name ) ? ( ucfirst( (string) $tournament->name ) . ' ' . __( 'Tournament Entry Open', 'racketmanager' ) ) : __( 'Tournament Entry Open', 'racketmanager' ) );
 require 'email-header.php';
 $salutation_link = $addressee;
 require $salutation;

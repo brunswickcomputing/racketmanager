@@ -17,6 +17,12 @@ namespace Racketmanager;
 /** @var object $club */
 /** @var \Racketmanager\Presentation\View_Models\Invoice_View_Model $invoice */
 /** @var object $user_can_manage */
+$club            = $club ?? $vars['club'] ?? ( isset( $vm ) ? ( $vm->club ?? null ) : null );
+$invoice         = $invoice ?? $vars['invoice'] ?? ( isset( $vm ) ? ( $vm->invoice ?? null ) : null );
+$user_can_manage = $user_can_manage ?? $vars['user_can_manage'] ?? ( isset( $vm ) ? ( $vm->user_can_manage ?? null ) : null );
+if ( ! $invoice ) {
+    return;
+}
 $header_level = 1;
 require_once RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 ?>

@@ -9,6 +9,8 @@ namespace Racketmanager;
 
 /** @var string $msg */
 /** @var string $class */
+$msg   = $msg ?? $vm->msg ?? '';
+$class = $class ?? $vm->class ?? '';
 ?>
 <div>
     <div class="alert_rm alert--<?php echo esc_attr( $class ); ?>">

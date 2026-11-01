@@ -14,13 +14,18 @@ namespace Racketmanager;
 /** @var mixed $player_stats */
 /** @var array<string, string> $player_links */
 /** @var object|null $primary_league */
-$player_links     = $player_links ?? [];
-$competition_type = $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
-$playerstats      = $player_stats;
-$rounds           = array();
-$primary_league   = $primary_league ?? ( ( ! empty( $event->is_championship ) && isset( $event->primary_league ) && is_object( $event->primary_league ) ) ? $event->primary_league : null );
-$header_level     = 1;
-$curr_season      = $current_season['name'];
+$club              = $club ?? $vm->club ?? ( $vars['club'] ?? null );
+$event             = $event ?? $vm->event ?? ( $vars['event'] ?? null );
+$current_season    = $current_season ?? $vm->current_season ?? ( $vars['current_season'] ?? [] );
+$player_stats      = $player_stats ?? $vm->player_stats ?? ( $vars['player_stats'] ?? [] );
+$player_links      = $player_links ?? $vm->player_links ?? ( $vars['player_links'] ?? [] );
+$primary_league    = $primary_league ?? $vm->primary_league ?? ( $vars['primary_league'] ?? ( ( ! empty( $event->is_championship ) && isset( $event->primary_league ) && is_object( $event->primary_league ) ) ? $event->primary_league : null ) );
+$event_header      = $event_header ?? $vm->event_header ?? ( $vars['event_header'] ?? null );
+$competition_type  = isset( $event->competition->type ) ? ( $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) $event->competition->type ) : '';
+$playerstats       = $player_stats;
+$rounds            = array();
+$header_level      = 1;
+$curr_season       = $current_season['name'] ?? '';
 require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 $header_level = 2;
 require RACKETMANAGER_PATH . 'templates/includes/event-header.php';

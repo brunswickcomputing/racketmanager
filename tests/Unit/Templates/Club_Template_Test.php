@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Templates;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
+use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
@@ -223,5 +224,28 @@ class Club_Template_Test extends TestCase {
         $this->assertStringContainsString( 'https://westclifflawn.local', $rendered );
         $this->assertStringContainsString( '1920', $rendered );
         $this->assertStringContainsString( '5 courts', $rendered );
+    }
+
+    public function test_clubs_directory_does_not_reuse_the_previous_clubs_details(): void {
+        $clubs = [
+            (object) [ 'id' => 3, 'name' => 'Leigh Tennis Club', 'shortcode' => 'Leigh TC', 'contact_no' => '01111', 'website' => 'https://leigh.example' ],
+            (object) [ 'id' => 4, 'name' => 'Westcliff Tennis Club', 'shortcode' => 'Westcliff TC', 'contact_no' => '02222', 'website' => 'https://westcliff.example' ],
+        ];
+
+        $renderer = new Php_View_Renderer( dirname( __DIR__, 3 ) . '/templates/' );
+        $output   = $renderer->render_to_string( 'clubs', [ 'clubs' => $clubs ] );
+
+        preg_match_all( '/<div class="page-subhead">.*?<\/div>\s*<div class="module module--card">.*?<\/form>/s', $output, $club_sections );
+        $this->assertCount( 2, $club_sections[0] );
+        $this->assertStringContainsString( 'Leigh Tennis Club', $club_sections[0][0] );
+        $this->assertStringContainsString( 'value="3"', $club_sections[0][0] );
+        $this->assertStringContainsString( 'value="01111"', $club_sections[0][0] );
+        $this->assertStringContainsString( 'https://leigh.example', $club_sections[0][0] );
+        $this->assertStringContainsString( 'Westcliff Tennis Club', $club_sections[0][1] );
+        $this->assertStringContainsString( 'value="4"', $club_sections[0][1] );
+        $this->assertStringContainsString( 'value="02222"', $club_sections[0][1] );
+        $this->assertStringContainsString( 'https://westcliff.example', $club_sections[0][1] );
+        $this->assertStringNotContainsString( 'value="01111"', $club_sections[0][1] );
+        $this->assertStringNotContainsString( 'https://leigh.example', $club_sections[0][1] );
     }
 }

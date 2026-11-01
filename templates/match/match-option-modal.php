@@ -19,6 +19,18 @@ use Racketmanager\Domain\Fixture\Fixture;
 /** @var string $button */
 /** @var string|null $date_input_type */
 /** @var string|null $date_input */
+$dto             = $dto ?? $vars['dto'] ?? $vm->dto ?? null;
+$match           = $match ?? $vars['match'] ?? $vm->match ?? $dto?->fixture ?? null;
+$modal           = $modal ?? $vars['modal'] ?? $vm->modal ?? '';
+$title           = $title ?? $vars['title'] ?? $vm->title ?? '';
+$option          = $option ?? $vars['option'] ?? $vm->option ?? '';
+$action          = $action ?? $vars['action'] ?? $vm->action ?? '';
+$button          = $button ?? $vars['button'] ?? $vm->button ?? '';
+$date_input_type = $date_input_type ?? $vars['date_input_type'] ?? $vm->date_input_type ?? null;
+$date_input      = $date_input ?? $vars['date_input'] ?? $vm->date_input ?? null;
+if ( ! $match ) {
+    return;
+}
 ?>
 <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">

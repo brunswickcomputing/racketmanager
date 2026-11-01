@@ -17,12 +17,21 @@ namespace Racketmanager;
 /** @var string $salutation */
 /** @var string $contact */
 /** @var string $closing */
-$email_subject = __( 'Tournament Entry', 'racketmanager' ) . ' - ' . ucfirst( $tournament_name );
+/** @var array $vars */
+/** @var object|null $vm */
+$tournament_name    = $vars['tournament_name'] ?? $vm->tournament_name ?? $tournament_name ?? '';
+$player             = $vars['player'] ?? $vm->player ?? $player ?? null;
+$tournament_link    = $vars['tournament_link'] ?? $vm->tournament_link ?? $tournament_link ?? '';
+$tournament_entries = $vars['tournament_entries'] ?? $vm->tournament_entries ?? $tournament_entries ?? [];
+$comments           = $vars['comments'] ?? $vm->comments ?? $comments ?? null;
+$contact_email      = $vars['contact_email'] ?? $vm->contact_email ?? $contact_email ?? '';
+$action_url         = $vars['action_url'] ?? $vm->action_url ?? $action_url ?? '';
+$email_subject      = $vars['email_subject'] ?? $vm->email_subject ?? $email_subject ?? ( __( 'Tournament Entry', 'racketmanager' ) . ' - ' . ucfirst( (string) $tournament_name ) );
 require 'email-header.php';
 $title_text  = __( 'Entry confirmation', 'racketmanager' );
 $title_level = '1';
 require $title;
-$salutation_link = $player->get_fullname();
+$salutation_link = is_object( $player ) && method_exists( $player, 'get_fullname' ) ? $player->get_fullname() : ( $player->display_name ?? '' );
 require $salutation;
 /* translators: $s: tournament link */
 $paragraph_text  = sprintf( __( 'Thank you for your entry for the %s tournament. You will find confirmation of your entry below.', 'racketmanager' ), $tournament_link );

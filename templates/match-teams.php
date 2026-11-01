@@ -17,7 +17,12 @@ if ( function_exists( '_deprecated_file' ) ) {
 global $wp;
 /** @var object $is_update_allowed */
 /** @var object $match */
-$user_can_update = $is_update_allowed->user_can_update;
+$is_update_allowed = $vars['is_update_allowed'] ?? $vm->is_update_allowed ?? $is_update_allowed ?? null;
+$match             = $vars['match'] ?? $vm->match ?? $match ?? null;
+if ( ! $match ) {
+    return;
+}
+$user_can_update   = ! empty( $is_update_allowed->user_can_update );
 ?>
     <div id="match-header" class="team-match-header module module--dark module--card">
         <?php echo match_header( $match->id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
@@ -47,7 +52,7 @@ $user_can_update = $is_update_allowed->user_can_update;
                             <?php
                         }
                         if ( $user_can_update ) {
-                            $target_url  = home_url( add_query_arg( array(), $wp->request ) );
+                            $target_url  = home_url( add_query_arg( array(), $wp->request ?? '' ) );
                             $target_url .= '/result/';
                             ?>
                             <div class="match-mode" id="editMatchMode">
@@ -178,9 +183,12 @@ $user_can_update = $is_update_allowed->user_can_update;
                                 <?php
                                 $opponents = array( 'home', 'away' );
                                 foreach ( $opponents as $opponent ) {
+                                    if ( empty( $match->teams[ $opponent ] ) ) {
+                                        continue;
+                                    }
                                     ?>
                                     <h5 class="subheading">
-                                        <?php echo esc_html( $match->teams[ $opponent ]->captain ); ?>
+                                        <?php echo esc_html( $match->teams[ $opponent ]->captain ?? '' ); ?>
                                     </h5>
                                     <ul class="list list--naked">
                                         <li class="list__item">
@@ -188,7 +196,7 @@ $user_can_update = $is_update_allowed->user_can_update;
                                                 <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/lta-icons-extra.svg#icon-team' ); ?>"></use>
                                             </svg>
                                             <span class="">
-                                                <?php echo esc_html( $match->teams[ $opponent ]->title ); ?>
+                                                <?php echo esc_html( $match->teams[ $opponent ]->title ?? '' ); ?>
                                             </span>
                                         </li>
                                         <?php

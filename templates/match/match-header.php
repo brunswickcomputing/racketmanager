@@ -8,7 +8,9 @@
 namespace Racketmanager;
 
 use Racketmanager\Application\Fixture\DTOs\Fixture_Header_Read_Model;
-/** @var Fixture_Header_Read_Model $model */
+
+/** @var Fixture_Header_Read_Model|null $model */
+$model  = $model ?? ( $vm->model ?? ( $vars['model'] ?? ( $vm instanceof Fixture_Header_Read_Model ? $vm : null ) ) );
 $header = $model;
 ?>
 <div class="module__content">

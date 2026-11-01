@@ -18,13 +18,14 @@ use Racketmanager\Presentation\View_Models\Club_View_Model;
 
 /** @var Club_View_Model|null $vm */
 /** @var object|null $club */
-$club_presenter = $club_presenter ?? new Club_Presenter();
-$standalone     = $vm->standalone ?? ( ! empty( $standalone ) );
+$club_presenter = $club_presenter ?? $vars['club_presenter'] ?? ( isset( $vm ) ? ( $vm->club_presenter ?? new Club_Presenter() ) : new Club_Presenter() );
+$club           = $vm instanceof Club_View_Model ? $vm->club : ( $club ?? $vars['club'] ?? ( isset( $vm ) ? ( $vm->club ?? null ) : null ) );
+$club_id        = $vm instanceof Club_View_Model ? $vm->id : ( $club_id ?? $vars['club_id'] ?? ( isset( $vm ) ? ( $vm->id ?? ( $club->id ?? 0 ) ) : ( $club->id ?? 0 ) ) );
+$standalone     = $vm instanceof Club_View_Model ? $vm->standalone : ( $standalone ?? $vm->standalone ?? false );
 $heading_type   = $vm->heading_tag ?? $club_presenter->get_heading_tag( $standalone, $header_level ?? null );
 $club_link      = $vm->link ?? ( isset( $club ) ? $club_presenter->get_link( $club ) : '' );
 $club_name      = $vm->name ?? ( isset( $club ) ? $club_presenter->get_display_name( $club ) : '' );
 $initials       = $vm->initials ?? ( isset( $club ) ? $club_presenter->get_initials( $club ) : '' );
-$club_id        = $vm->id ?? ( $club->id ?? 0 );
 ?>
 <div class="page-subhead">
     <div class="media">

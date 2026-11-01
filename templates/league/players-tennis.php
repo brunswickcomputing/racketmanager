@@ -17,7 +17,12 @@ namespace Racketmanager;
 /** @var object $league */
 /** @var array<int|string, array{player_link: string, team_link: string}>|null $player_links */
 
-$player_links = $player_links ?? [];
+$league       = $league ?? $vars['league'] ?? $vm->league ?? null;
+$player_links = $player_links ?? $vars['player_links'] ?? $vm->player_links ?? [];
+
+if ( empty( $league ) ) {
+    return;
+}
 
 if ( ! empty( $league->player ) ) {
     $player = $league->player;

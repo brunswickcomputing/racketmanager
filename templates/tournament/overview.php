@@ -11,6 +11,11 @@ use Racketmanager\Presentation\View_Models\Tournament_Date_View_Model;
 
 /** @var object $tournament */
 /** @var ?Tournament_Date_View_Model $tournament_dates */
+$tournament = $tournament ?? $vars['tournament'] ?? $vm->tournament ?? null;
+if ( ! $tournament ) {
+    return;
+}
+$tournament_dates = $tournament_dates ?? $vars['tournament_dates'] ?? $vm->tournament_dates ?? null;
 
 $dates_vm = $tournament_dates ?? null;
 ?>

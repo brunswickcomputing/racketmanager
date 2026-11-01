@@ -1,12 +1,16 @@
 <?php
+declare( strict_types=1 );
 /**
  * Championship settings
  */
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Options_Page_View_Model;
 use Racketmanager\Util\Util_Lookup;
 
-$grades = Util_Lookup::get_event_grades();
+/** @var Options_Page_View_Model|\stdClass $vm */
+$options = $options ?? ( $vm->options ?? array() );
+$grades  = Util_Lookup::get_event_grades();
 ?>
 <div class="form-control">
     <fieldset class="row gx-3 mb-3">

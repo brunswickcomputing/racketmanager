@@ -8,6 +8,10 @@
 namespace Racketmanager;
 
 /** @var \Racketmanager\Presentation\View_Models\Messages_List_View_Model $messages */
+$messages = $messages ?? ( $vars['messages'] ?? ( $vm->messages ?? ( ( isset( $vm ) && $vm instanceof \Racketmanager\Presentation\View_Models\Messages_List_View_Model ) ? $vm : null ) ) );
+if ( ! $messages ) {
+    return;
+}
 ?>
 <div class="module module--card">
     <div class="module__banner">

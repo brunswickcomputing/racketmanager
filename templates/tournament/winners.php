@@ -7,6 +7,9 @@
 
 namespace Racketmanager;
 
+/** @var array $winners */
+$winners    = $winners ?? $vars['winners'] ?? $vm->winners ?? array();
+$tournament = $tournament ?? $vars['tournament'] ?? $vm->tournament ?? null;
 ?>
 <div class="container">
     <div class="module module--card">

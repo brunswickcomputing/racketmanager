@@ -7,6 +7,10 @@
 
 namespace Racketmanager;
 
+/** @var array $clubs */
+/** @var array $clubs_archive */
+$clubs         = $clubs ?? ( $vm->clubs ?? ( $vars['clubs'] ?? [] ) );
+$clubs_archive = $clubs_archive ?? ( $vm->clubs_archive ?? ( $vars['clubs_archive'] ?? [] ) );
 ?>
 <div class="container">
     <div class="module module--card">

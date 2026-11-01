@@ -7,28 +7,37 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Cup_Draw_Page_View_Model;
+use Racketmanager\Admin\View_Models\League_Standings_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
 
-// Preferred input (when included from tournament draw): $vm.
-$vm = isset( $vm ) && ( $vm instanceof Tournament_Draw_Page_View_Model ) ? $vm : null;
+/** @var Tournament_Draw_Page_View_Model|Cup_Draw_Page_View_Model|League_Standings_Page_View_Model|\stdClass $vm */
+// Read page and view generically from $vm or $vars before narrowing $vm.
+$page = $vm->page ?? ( $page ?? ( $vars['page'] ?? null ) ); //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+$view = $vm->view ?? ( $view ?? ( $vars['view'] ?? null ) );
 
-// BC fallback: if $vm isn't present, rely on locals set by the parent template.
-if ( $vm ) {
-    $league     = $vm->league;
-    $tournament = $vm->tournament;
-    $season     = $vm->season;
+// Preferred input (when included from tournament draw): $vm.
+$draw_vm = isset( $vm ) && ( $vm instanceof Tournament_Draw_Page_View_Model ) ? $vm : null;
+
+// BC fallback: if $draw_vm isn't present, rely on locals set by the parent template or properties on $vm.
+if ( $draw_vm ) {
+    $league     = $draw_vm->league;
+    $tournament = $draw_vm->tournament;
+    $season     = $draw_vm->season;
+} else {
+    $league     = $league ?? ( $vm->league ?? null );
+    $tournament = $tournament ?? ( $vm->tournament ?? null );
+    $season     = $season ?? ( $vm->season ?? null );
 }
 
 // Presented finals: from the draw view model, or supplied as $finals by the cup/league admin screens.
-$finals_list = $vm ? $vm->finals : ( isset( $finals ) && is_array( $finals ) ? $finals : array() );
+$finals_list = $draw_vm ? $draw_vm->finals : ( $vm->finals ?? ( isset( $finals ) && is_array( $finals ) ? $finals : array() ) );
 
 /** @var object $league */
 /** @var object $tournament */
 /** @var string|null $season */
-// phpcs:disable WordPress.Security.NonceVerification.Recommended
-$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : null; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-$view = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] ) ) : null;
-// phpcs:enable WordPress.Security.NonceVerification.Recommended
+/** @var string|null $page */
+/** @var string|null $view */
 ?>
 <div class="championship-block">
     <div class="row justify-content-start gx-3 mb-3">

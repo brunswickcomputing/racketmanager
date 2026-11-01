@@ -35,7 +35,7 @@ final class Php_View_Renderer_Test extends TestCase {
         $this->assertEquals( 'Hello World! Renderer: OK', $output );
     }
 
-    public function test_render_extracts_additional_vars(): void {
+    public function test_render_exposes_additional_vars_via_vars(): void {
         $renderer = new Php_View_Renderer( $this->template_base );
         $vm = new stdClass();
         $vm->name = 'Extra';
@@ -83,7 +83,7 @@ final class Php_View_Renderer_Test extends TestCase {
         $renderer = new Php_View_Renderer( $this->template_base );
         $output   = $renderer->render_to_string( 'test/vars', [ 'a' => 'apple' ], [ 'b' => 'banana' ] );
 
-        $this->assertSame( 'vars_count:2|a:apple|b:banana|extracted_a:apple', $output );
+        $this->assertSame( 'vars_count:2|a:apple|b:banana|extracted_a:none', $output );
     }
 
     public function test_render_exposes_vars_for_object_view_model(): void {
@@ -91,7 +91,7 @@ final class Php_View_Renderer_Test extends TestCase {
         $vm       = new stdClass();
         $output   = $renderer->render_to_string( 'test/vars', $vm, [ 'a' => 'cherry' ] );
 
-        $this->assertSame( 'vars_count:1|a:cherry|b:none|extracted_a:cherry', $output );
+        $this->assertSame( 'vars_count:1|a:cherry|b:none|extracted_a:none', $output );
     }
 
     public function test_render_protects_reserved_locals_from_clobbering_with_array_view_model(): void {
@@ -111,7 +111,7 @@ final class Php_View_Renderer_Test extends TestCase {
 
         $output = $renderer->render_to_string( 'test/reserved', [ 'a' => 'from_vm' ], $malicious_vars );
 
-        $this->assertSame( 'renderer_ok:yes|vm_type:array|vars_type:array|vars_count:10|custom:extracted_custom_value', $output );
+        $this->assertSame( 'renderer_ok:yes|vm_type:stdClass|vars_type:array|vars_count:10|custom:extracted_custom_value', $output );
     }
 
     public function test_render_protects_reserved_locals_from_clobbering_with_object_view_model(): void {
@@ -160,7 +160,7 @@ final class Php_View_Renderer_Test extends TestCase {
             [ 'b' => 'override_b', 'view_model' => 'corrupt' ]
         );
 
-        // $vars should have 4 keys (a, b, additional_vars, view_model), $vars['a'] is 'vm_a', $vars['b'] is 'override_b', $a is extracted as 'vm_a'
-        $this->assertSame( 'vars_count:4|a:vm_a|b:override_b|extracted_a:vm_a', $output );
+        // $vars should have 4 keys (a, b, additional_vars, view_model), $vars['a'] is 'vm_a', $vars['b'] is 'override_b', $a is not extracted
+        $this->assertSame( 'vars_count:4|a:vm_a|b:override_b|extracted_a:none', $output );
     }
 }

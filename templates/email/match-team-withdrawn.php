@@ -13,6 +13,10 @@ namespace Racketmanager;
 /** @var string $contact */
 /** @var string $closing */
 /** @var string $title */
+$event         = $event ?? $vm->event ?? '';
+$round         = $round ?? $vm->round ?? '';
+$is_tournament = $is_tournament ?? $vm->is_tournament ?? null;
+$email_from    = $email_from ?? $vm->email_from ?? null;
 require 'email-header.php';
 $title_text = sprintf(
 /* translators: %1$s: league name %2$s: round name */

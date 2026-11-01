@@ -8,6 +8,15 @@
 namespace Racketmanager;
 
 /** @var string $type */
+/** @var array $user_competitions */
+/** @var array|null $user_competition_items */
+/** @var array $competitions */
+/** @var array|null $competition_items */
+$type                   = $type ?? $vm->type ?? '';
+$user_competitions      = $user_competitions ?? $vm->user_competitions ?? [];
+$user_competition_items = $user_competition_items ?? $vm->user_competition_items ?? null;
+$competitions           = $competitions ?? $vm->competitions ?? [];
+$competition_items      = $competition_items ?? $vm->competition_items ?? null;
 ?>
 <div class="container">
     <div class="module module--card">

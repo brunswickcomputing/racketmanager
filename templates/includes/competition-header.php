@@ -17,7 +17,7 @@ use Racketmanager\Presentation\View_Models\Competition_Header_View_Model;
 /** @var string|null $season */
 /** @var array|null $seasons */
 
-$header_vm = $competition_header ?? null;
+$header_vm = $competition_header ?? $vars['competition_header'] ?? ( $vm->competition_header ?? null );
 if ( ! $header_vm instanceof Competition_Header_View_Model ) {
     return;
 }

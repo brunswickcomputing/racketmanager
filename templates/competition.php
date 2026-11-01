@@ -13,9 +13,12 @@ namespace Racketmanager;
 /** @var string $competition_seo_name */
 /** @var string $pagename */
 
-$competition_seo_name = $competition_seo_name ?? '';
-$is_singular          = $is_singular ?? false;
-$pagename             = $pagename ?? $competition_seo_name;
+$competition          = $competition ?? $vm->competition ?? null;
+$menu_options         = $menu_options ?? $vm->menu_options ?? [];
+$is_singular          = $is_singular ?? $vm->is_singular ?? false;
+$competition_seo_name = $competition_seo_name ?? $vm->competition_seo_name ?? '';
+$pagename             = $pagename ?? $vm->pagename ?? $competition_seo_name;
+$competition_header   = $competition_header ?? $vars['competition_header'] ?? ( $vm->competition_header ?? null );
 ?>
 <div class="container">
     <?php require 'includes/competition-header.php'; ?>

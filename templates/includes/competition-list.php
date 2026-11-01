@@ -14,6 +14,11 @@ use Racketmanager\Presentation\View_Models\Competition_List_Item_View_Model;
 /** @var object|null $player */
 /** @var bool|null $full_width */
 
+$competition_list = $competition_list ?? $vm->competition_list ?? null;
+$competition_type = $competition_type ?? $vm->competition_type ?? null;
+$player           = $player ?? $vm->player ?? null;
+$full_width       = $full_width ?? $vm->full_width ?? null;
+
 if ( empty( $competition_list ) ) {
     return;
 }

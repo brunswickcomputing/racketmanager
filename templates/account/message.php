@@ -8,6 +8,10 @@
 namespace Racketmanager;
 
 /** @var \Racketmanager\Presentation\View_Models\Message_View_Model $message_dtl */
+$message_dtl = $message_dtl ?? ( $vars['message_dtl'] ?? ( $vm->message_dtl ?? ( ( isset( $vm ) && $vm instanceof \Racketmanager\Presentation\View_Models\Message_View_Model ) ? $vm : null ) ) );
+if ( ! $message_dtl ) {
+    return;
+}
 ?>
 <div class="message_header">
     <div class="message_header_wrapper">

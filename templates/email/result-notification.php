@@ -16,8 +16,21 @@ namespace Racketmanager;
 /** @var string $contact */
 /** @var string $closing */
 /** @var string $paragraph */
-$competition_name = $match->league->title;
-$match_date       = $match->match_date;
+$match                 = $match ?? $vm->match ?? null;
+$time_period           = $time_period ?? $vm->time_period ?? null;
+$confirmation_required = $confirmation_required ?? $vm->confirmation_required ?? null;
+$confirmation_timeout  = $confirmation_timeout ?? $vm->confirmation_timeout ?? null;
+$timeout               = $timeout ?? $vm->timeout ?? null;
+$penalty               = $penalty ?? $vm->penalty ?? null;
+$override              = $override ?? $vm->override ?? null;
+$outstanding           = $outstanding ?? $vm->outstanding ?? null;
+$errors                = $errors ?? $vm->errors ?? null;
+$complete              = $complete ?? $vm->complete ?? null;
+$challenge             = $challenge ?? $vm->challenge ?? null;
+$from_email            = $from_email ?? $vm->from_email ?? null;
+
+$competition_name = $match?->league?->title ?? '';
+$match_date       = $match?->match_date ?? '';
 $email_subject    = __( 'Match Result', 'racketmanager' ) . ' - ' . $competition_name;
 require 'email-header.php';
 require 'components/match-heading.php';

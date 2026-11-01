@@ -16,6 +16,15 @@ namespace Racketmanager;
 /** @var string $surname_message */
 /** @var bool   $recaptcha_error */
 /** @var string $recaptcha_message */
+$email_error            = $email_error ?? $vm->email_error ?? ( is_array( $vars ?? null ) ? ( $vars['email_error'] ?? false ) : false );
+$email_message          = $email_message ?? $vm->email_message ?? ( is_array( $vars ?? null ) ? ( $vars['email_message'] ?? '' ) : '' );
+$firstname_error        = $firstname_error ?? $vm->firstname_error ?? ( is_array( $vars ?? null ) ? ( $vars['firstname_error'] ?? false ) : false );
+$firstname_message      = $firstname_message ?? $vm->firstname_message ?? ( is_array( $vars ?? null ) ? ( $vars['firstname_message'] ?? '' ) : '' );
+$surname_error          = $surname_error ?? $vm->surname_error ?? ( is_array( $vars ?? null ) ? ( $vars['surname_error'] ?? false ) : false );
+$surname_message        = $surname_message ?? $vm->surname_message ?? ( is_array( $vars ?? null ) ? ( $vars['surname_message'] ?? '' ) : '' );
+$recaptcha_error        = $recaptcha_error ?? $vm->recaptcha_error ?? ( is_array( $vars ?? null ) ? ( $vars['recaptcha_error'] ?? false ) : false );
+$recaptcha_message      = $recaptcha_message ?? $vm->recaptcha_message ?? ( is_array( $vars ?? null ) ? ( $vars['recaptcha_message'] ?? '' ) : '' );
+$recaptcha_site_key_val = $recaptcha_site_key ?? $vm->recaptcha_site_key ?? ( is_array( $vars ?? null ) ? ( $vars['recaptcha_site_key'] ?? '' ) : '' );
 ?>
 <div>
     <form id="signupForm" method="post" action="<?php echo esc_url( wp_registration_url() ); ?>">
@@ -69,7 +78,6 @@ namespace Racketmanager;
         </div>
         <div class="row">
             <?php
-            $recaptcha_site_key_val = $vars['recaptcha_site_key'] ?? ( $recaptcha_site_key ?? '' );
             if ( ! empty( $recaptcha_site_key_val ) ) {
                 ?>
                 <div class="recaptcha-container col-6">

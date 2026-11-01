@@ -10,11 +10,21 @@ namespace Racketmanager;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 
-/** @var Fixture_Details_DTO $dto */
+/** @var Fixture_Details_DTO|null $dto */
 /** @var Fixture $match */
 /** @var string $modal */
 /** @var array  $select */
 /** @var string $status */
+
+$dto    = $vars['dto'] ?? $vm->dto ?? null;
+$match  = $vars['match'] ?? $vm->match ?? ( $dto instanceof Fixture_Details_DTO ? $dto->fixture : null );
+$modal  = $vars['modal'] ?? $vm->modal ?? '';
+$select = $vars['select'] ?? $vm->select ?? [];
+$status = $vars['status'] ?? $vm->status ?? '';
+
+if ( ! $match ) {
+    return;
+}
 ?>
 <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -62,7 +72,7 @@ use Racketmanager\Domain\Fixture\Fixture;
                                         </dl>
                                     </li>
                                     <?php
-                                    if ( ! $dto->league->num_rubbers ) {
+                                    if ( ! ( $dto?->league?->num_rubbers ?? 0 ) ) {
                                         ?>
                                         <li class="list__item">
                                             <dl>
@@ -86,7 +96,7 @@ use Racketmanager\Domain\Fixture\Fixture;
                                         </dl>
                                     </li>
                                     <?php
-                                    if ( $dto->competition->is_team_entry ) {
+                                    if ( ! empty( $dto?->competition?->is_team_entry ) ) {
                                         ?>
                                         <li class="list__item">
                                             <dl>

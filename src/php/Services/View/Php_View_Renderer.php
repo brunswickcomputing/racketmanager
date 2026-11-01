@@ -28,14 +28,17 @@ final readonly class Php_View_Renderer implements View_Renderer_Interface {
      * @inheritDoc
      */
     public function render( string $template_path, object|array $view_model, array $additional_vars = [] ): void {
-        // Prepare template variables before extraction to avoid clobbering.
-        $vars      = is_array( $view_model ) ? array_merge( $view_model, $additional_vars ) : $additional_vars;
-        $vm        = is_object( $view_model ) ? $view_model : ( ( isset( $vars['vm'] ) && is_object( $vars['vm'] ) ) ? $vars['vm'] : $view_model );
+        // Explicit template scope (no extract()). The template sees exactly:
+        // - $vm       the object view model, passed through untouched (identity preserved) when an object is given;
+        //             for an array view model it is built from the merged array via Template_Scope::resolve_vm().
+        // - $vars     the flat array of additional vars (merged over the array view model, if one was given).
+        //             Supplemental data for a typed object view model is read from $vars, never written onto $vm.
+        // - $renderer this renderer, for nested rendering.
+        $vars = is_array( $view_model ) ? array_merge( $view_model, $additional_vars ) : $additional_vars;
+        $vm   = is_object( $view_model ) ? $view_model : Template_Scope::resolve_vm( $vars );
+
         $renderer  = $this;
         $full_path = $this->get_full_path( $template_path );
-
-        // Extract variables for templates that use them (legacy/BC support), preserving reserved renderer locals.
-        extract( $vars, EXTR_SKIP );
 
         require $full_path;
     }

@@ -13,7 +13,9 @@ use Racketmanager\Presentation\View_Models\League_Standings_View_Model;
 /** @var array $teams */
 /** @var array<int|string, string> $team_links */
 /** @var League_Standings_View_Model|null $vm */
-$team_links        = $team_links ?? [];
+$league            = $league ?? $vars['league'] ?? $vm->league ?? null;
+$teams             = $teams ?? $vars['teams'] ?? $vm->teams ?? [];
+$team_links        = $team_links ?? $vars['team_links'] ?? $vm->team_links ?? [];
 $is_column_visible = fn( string $key ): bool => isset( $vm ) && $vm instanceof League_Standings_View_Model ? $vm->show_column( $key ) : show_standings( $key );
 ?>
 <div class="module module--card">

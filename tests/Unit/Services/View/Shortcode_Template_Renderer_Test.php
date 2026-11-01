@@ -70,7 +70,7 @@ class Shortcode_Template_Renderer_Test extends TestCase {
     }
 
     public function test_flat_theme_override_wins_over_plugin_template(): void {
-        file_put_contents( $this->theme_dir . '/racketmanager/score.php', '<?php echo "theme:" . $answer . ":" . $vars["answer"];' );
+        file_put_contents( $this->theme_dir . '/racketmanager/score.php', '<?php echo "theme:" . $vm->answer . ":" . $vars["answer"];' );
         $GLOBALS['wp_stubs_stylesheet_directory'] = $this->theme_dir;
 
         $renderer = $this->createMock( View_Renderer_Interface::class );
@@ -188,5 +188,77 @@ class Shortcode_Template_Renderer_Test extends TestCase {
 
         $this->assertSame( 'out:alert', $presenter->render_error( 'worse' ) );
         $this->assertSame( 'worse', $calls[2]['vars']['msg'] );
+    }
+
+    public function test_theme_override_binds_vm_and_does_not_extract_locals(): void {
+        file_put_contents(
+            $this->theme_dir . '/racketmanager/scope-check.php',
+            '<?php echo "vm_foo:" . ($vm->foo ?? "none") . "|local_foo:" . ($foo ?? "none");'
+        );
+        $GLOBALS['wp_stubs_stylesheet_directory'] = $this->theme_dir;
+
+        $renderer = $this->createStub( View_Renderer_Interface::class );
+        $output   = ( new Shortcode_Template_Renderer( $renderer ) )->render( 'scope-check', [ 'foo' => 'bar' ] );
+
+        $this->assertSame( 'vm_foo:bar|local_foo:none', $output );
+    }
+
+    public function test_theme_override_flattens_vm_array_without_nesting(): void {
+        file_put_contents(
+            $this->theme_dir . '/racketmanager/vm-array.php',
+            '<?php echo "score:" . $vm->score . "|winner:" . $vm->winner . "|has_nested_vm:" . (isset($vm->vm) ? "yes" : "no");'
+        );
+        $GLOBALS['wp_stubs_stylesheet_directory'] = $this->theme_dir;
+
+        $renderer = $this->createStub( View_Renderer_Interface::class );
+        $output   = ( new Shortcode_Template_Renderer( $renderer ) )->render(
+            'vm-array',
+            [ 'vm' => [ 'score' => 10, 'winner' => 'Alice' ] ]
+        );
+
+        $this->assertSame( 'score:10|winner:Alice|has_nested_vm:no', $output );
+    }
+
+    public function test_theme_override_passes_exact_object_vm_instance(): void {
+        file_put_contents(
+            $this->theme_dir . '/racketmanager/vm-identity.php',
+            '<?php $GLOBALS["rm_shortcode_seen_vm"] = $vm;'
+        );
+        $GLOBALS['wp_stubs_stylesheet_directory'] = $this->theme_dir;
+
+        $custom_vm     = new \stdClass();
+        $custom_vm->id = 888;
+
+        $renderer = $this->createStub( View_Renderer_Interface::class );
+        ( new Shortcode_Template_Renderer( $renderer ) )->render(
+            'vm-identity',
+            [ 'vm' => $custom_vm ]
+        );
+
+        $this->assertSame( $custom_vm, $GLOBALS['rm_shortcode_seen_vm'] );
+        unset( $GLOBALS['rm_shortcode_seen_vm'] );
+    }
+
+    public function test_render_passes_exact_object_vm_instance_to_view_renderer(): void {
+        $captured_vm = null;
+        $renderer    = $this->createStub( View_Renderer_Interface::class );
+        $renderer->method( 'render_to_string' )->willReturnCallback(
+            static function ( string $path, $vm, array $vars ) use ( &$captured_vm ): string {
+                $captured_vm = $vm;
+                return 'rendered';
+            }
+        );
+
+        $custom_vm     = new \stdClass();
+        $custom_vm->id = 999;
+
+        $output = ( new Shortcode_Template_Renderer( $renderer ) )->render(
+            'team-list',
+            [ 'vm' => $custom_vm, 'page' => 1 ],
+            'club'
+        );
+
+        $this->assertSame( 'rendered', $output );
+        $this->assertSame( $custom_vm, $captured_vm );
     }
 }

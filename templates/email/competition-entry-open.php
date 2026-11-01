@@ -21,6 +21,16 @@ namespace Racketmanager;
 /** @var string|null $date_start_display */
 /** @var string|null $date_end_display */
 
+$addressee            = $addressee ?? $vm->addressee ?? null;
+$competition          = $competition ?? $vm->competition ?? null;
+$season_dtls          = $season_dtls ?? $vm->season_dtls ?? null;
+$is_championship      = $is_championship ?? $vm->is_championship ?? null;
+$days_remaining       = $days_remaining ?? $vm->days_remaining ?? null;
+$from_email           = $from_email ?? $vm->from_email ?? null;
+$date_closing_display = $date_closing_display ?? $vm->date_closing_display ?? null;
+$date_start_display   = $date_start_display ?? $vm->date_start_display ?? null;
+$date_end_display     = $date_end_display ?? $vm->date_end_display ?? null;
+
 $closing_date_display = (string) ( $date_closing_display ?? ( $season_dtls->date_closing_display ?? '' ) );
 $start_date_display   = (string) ( $date_start_display ?? ( $season_dtls->date_start_display ?? '' ) );
 $end_date_display     = (string) ( $date_end_display ?? ( $season_dtls->date_end_display ?? '' ) );

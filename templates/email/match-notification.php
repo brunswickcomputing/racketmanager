@@ -19,9 +19,23 @@ namespace Racketmanager;
 /** @var string $closing */
 /** @var string $title */
 /** @var string $hr */
-$tournament_name  = $tournament->name;
-$match_date       = $match->match_date;
-$email_subject    = __( 'Next match confirmation', 'racketmanager' ) . ' - ' . ucfirst( $tournament_name );
+/** @var array $vars */
+/** @var object|null $vm */
+$match           = $vars['match'] ?? $vm->match ?? $match ?? null;
+$tournament      = $vars['tournament'] ?? $vm->tournament ?? $tournament ?? null;
+$round           = $vars['round'] ?? $vm->round ?? $round ?? '';
+$draw_link       = $vars['draw_link'] ?? $vm->draw_link ?? $draw_link ?? '';
+$teams           = $vars['teams'] ?? $vm->teams ?? $teams ?? [];
+$rules_link      = $vars['rules_link'] ?? $vm->rules_link ?? $rules_link ?? '';
+$tournament_link = $vars['tournament_link'] ?? $vm->tournament_link ?? $tournament_link ?? '';
+$action_url      = $vars['action_url'] ?? $vm->action_url ?? $action_url ?? '';
+$email_from      = $vars['email_from'] ?? $vm->email_from ?? $email_from ?? ( $vars['from_email'] ?? $vm->from_email ?? '' );
+$contact_email   = $vars['contact_email'] ?? $vm->contact_email ?? $contact_email ?? $email_from;
+
+$tournament_name       = $vars['tournament_name'] ?? $vm->tournament_name ?? $tournament_name ?? ( $tournament->name ?? '' );
+$match_date            = $vars['match_date'] ?? $vm->match_date ?? $match_date ?? ( $match->match_date ?? '' );
+$default_match_subject = __( 'Next match confirmation', 'racketmanager' ) . ' - ' . ucfirst( (string) $tournament_name );
+$email_subject         = ( ! empty( $vars['email_subject'] ) ) ? $vars['email_subject'] : ( ( ! empty( $vm->email_subject ) ) ? $vm->email_subject : ( ( ! empty( $email_subject ) ) ? $email_subject : $default_match_subject ) );
 require 'email-header.php';
 $title_text = sprintf(
     /* translators: %1$s: league name %2$s: round name */

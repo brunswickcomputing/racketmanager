@@ -15,8 +15,14 @@ namespace Racketmanager;
 /** @var string $contact */
 /** @var string $closing */
 /** @var string $paragraph */
-$competition_name = $match->league->title;
-$match_date       = $match->match_date;
+$match            = $match ?? $vm->match ?? null;
+$time_period      = $time_period ?? $vm->time_period ?? null;
+$timeout          = $timeout ?? $vm->timeout ?? null;
+$penalty          = $penalty ?? $vm->penalty ?? null;
+$from_email       = $from_email ?? $vm->from_email ?? null;
+$organisation     = $organisation ?? $vm->organisation ?? '';
+$competition_name = $match?->league?->title ?? '';
+$match_date       = $match?->match_date ?? '';
 $email_subject    = __( 'Match Result Pending', 'racketmanager' ) . ' - ' . $competition_name . ' - ' . $organisation;
 require 'email-header.php';
 require 'components/match-heading.php';

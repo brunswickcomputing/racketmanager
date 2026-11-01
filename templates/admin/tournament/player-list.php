@@ -12,13 +12,9 @@ use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
 // Preferred input: $vm from the overview page.
 $vm = isset( $vm ) && ( $vm instanceof Tournament_Overview_Page_View_Model ) ? $vm : null;
 
-// BC fallback: allow legacy locals if $vm isn't provided.
-if ( $vm ) {
-    $tournament        = $vm->tournament;
-    $player_entry_urls = $vm->player_entry_urls;
-}
-
-$player_entry_urls = $player_entry_urls ?? array();
+$tournament        = $tournament ?? $vars['tournament'] ?? ( isset( $vm ) ? ( $vm->tournament ?? null ) : null );
+$player_entry_urls = $player_entry_urls ?? $vars['player_entry_urls'] ?? ( isset( $vm ) ? ( $vm->player_entry_urls ?? array() ) : array() );
+$player_list       = $player_list ?? $vars['player_list'] ?? ( isset( $vm ) ? ( $vm->player_list ?? array() ) : array() );
 
 /** @var array  $player_list */
 /** @var object $tournament */

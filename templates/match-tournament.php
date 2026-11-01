@@ -18,30 +18,46 @@ use Racketmanager\Util\Util;
 /** @var object $is_update_allowed */
 /** @var object $match */
 /** @var Fixture_Details_DTO $fixture_details */
+$fixture_details   = $fixture_details ?? $vars['fixture_details'] ?? $vm->fixture_details ?? null;
+if ( ! $fixture_details instanceof Fixture_Details_DTO ) {
+    return;
+}
+$is_update_allowed = $is_update_allowed ?? $vars['is_update_allowed'] ?? $vm->is_update_allowed ?? null;
+$tournament        = $tournament ?? $vars['tournament'] ?? $vm->tournament ?? null;
+$tournament_date_range_display = $tournament_date_range_display ?? $vars['tournament_date_range_display'] ?? $vm->tournament_date_range_display ?? '';
+$svg_link_text = $svg_link_text ?? $vars['svg_link_text'] ?? $vm->svg_link_text ?? '';
+$svg_link_location = $svg_link_location ?? $vars['svg_link_location'] ?? $vm->svg_link_location ?? '';
+$svg_link = $svg_link ?? $vars['svg_link'] ?? $vm->svg_link ?? '';
+$match_date_formatted = $match_date_formatted ?? $vars['match_date_formatted'] ?? $vm->match_date_formatted ?? '';
+$match_time_formatted = $match_time_formatted ?? $vars['match_time_formatted'] ?? $vm->match_time_formatted ?? '';
+$tournament_seo_name = $tournament_seo_name ?? $vars['tournament_seo_name'] ?? $vm->tournament_seo_name ?? '';
+$message = $message ?? $vars['message'] ?? $vm->message ?? '';
+$round_name = $round_name ?? $vars['round_name'] ?? $vm->round_name ?? '';
+$player_urls = $player_urls ?? $vars['player_urls'] ?? $vm->player_urls ?? array();
 $fixture = $fixture_details->fixture;
 $league  = $fixture_details->league;
 $event   = $fixture_details->event;
 $competition = $fixture_details->competition;
 $home_team = $fixture_details->home_team;
 $away_team = $fixture_details->away_team;
-$tournament_link          = $tournament_link ?? null;
+$tournament_link          = $tournament_link ?? $vars['tournament_link'] ?? $vm->tournament_link ?? null;
 // Return link is supplied by the producer (referrer, otherwise the tournament matches page).
-$back_url                 = $back_url ?? ( empty( $tournament ) ? '' : $tournament_link . 'matches/' );
+$back_url                 = $back_url ?? $vars['back_url'] ?? $vm->back_url ?? ( empty( $tournament ) ? '' : $tournament_link . 'matches/' );
 $winner_set               = null;
-$winner                   = $winner ?? null;
-$loser                    = $loser ?? null;
-$is_tie                   = $is_tie ?? false;
-$user_can_update          = $user_can_update ?? false;
-$tournament_head          = $tournament_head ?? '';
-$player_team              = $player_team ?? null;
-$player_team_status       = $player_team_status ?? null;
-$match_editable           = $match_editable ?? false;
-$is_edit_mode             = $is_edit_mode ?? false;
-$allow_schedule_match     = $allow_schedule_match ?? false;
-$allow_reset_match_result = $allow_reset_match_result ?? false;
-$show_menu                = $show_menu ?? false;
-$image                    = $image ?? null;
-$match_status             = $match_status ?? null;
+$winner                   = $winner ?? $vars['winner'] ?? $vm->winner ?? null;
+$loser                    = $loser ?? $vars['loser'] ?? $vm->loser ?? null;
+$is_tie                   = $is_tie ?? $vars['is_tie'] ?? $vm->is_tie ?? false;
+$user_can_update          = $user_can_update ?? $vars['user_can_update'] ?? $vm->user_can_update ?? false;
+$tournament_head          = $tournament_head ?? $vars['tournament_head'] ?? $vm->tournament_head ?? '';
+$player_team              = $player_team ?? $vars['player_team'] ?? $vm->player_team ?? null;
+$player_team_status       = $player_team_status ?? $vars['player_team_status'] ?? $vm->player_team_status ?? null;
+$match_editable           = $match_editable ?? $vars['match_editable'] ?? $vm->match_editable ?? false;
+$is_edit_mode             = $is_edit_mode ?? $vars['is_edit_mode'] ?? $vm->is_edit_mode ?? false;
+$allow_schedule_match     = $allow_schedule_match ?? $vars['allow_schedule_match'] ?? $vm->allow_schedule_match ?? false;
+$allow_reset_match_result = $allow_reset_match_result ?? $vars['allow_reset_match_result'] ?? $vm->allow_reset_match_result ?? false;
+$show_menu                = $show_menu ?? $vars['show_menu'] ?? $vm->show_menu ?? false;
+$image                    = $image ?? $vars['image'] ?? $vm->image ?? null;
+$match_status             = $match_status ?? $vars['match_status'] ?? $vm->match_status ?? null;
 $match                    = $fixture;
 if ( $match ) {
     ?>

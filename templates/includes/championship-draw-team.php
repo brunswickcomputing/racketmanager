@@ -9,6 +9,13 @@ namespace Racketmanager;
 
 /** @var object $team */
 /** @var object $match */
+$team = $team ?? $vars['team'] ?? $vm->team ?? null;
+$match = $match ?? $vars['match'] ?? $vm->match ?? null;
+if ( ! $team || ! $match ) {
+    return;
+}
+$team_urls = $team_urls ?? $vars['team_urls'] ?? $vm->team_urls ?? array();
+$player_urls = $player_urls ?? $vars['player_urls'] ?? $vm->player_urls ?? array();
 $is_player_entry = ! empty( $match->league->event->competition->is_player_entry );
 if ( -1 === ( $team->id ?? 0 ) && $is_player_entry ) {
     echo '&nbsp;<br/>' . esc_html( (string) ( $team->title ?? '' ) );

@@ -8,6 +8,8 @@
 namespace Racketmanager;
 
 /** @var array $matches */
+$matches  = $matches ?? $vars['matches'] ?? $vm->matches ?? [];
+$match_id = $match_id ?? $vars['match_id'] ?? $vm->match_id ?? 0;
 ?>
 <select class="form-select" size="1" name="match_id" id="match_id" class="alignleft">
     <option value="0"><?php esc_html_e( 'Choose Match', 'racketmanager' ); ?></option>

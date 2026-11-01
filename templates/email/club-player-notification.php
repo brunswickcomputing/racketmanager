@@ -14,6 +14,16 @@ namespace Racketmanager;
 /** @var string $btm */
 /** @var string $salutation */
 /** @var string $closing */
+/** @var array $vars */
+/** @var object|null $vm */
+$requestor     = $vars['requestor'] ?? $vm->requestor ?? $requestor ?? '';
+$action        = $vars['action'] ?? $vm->action ?? $action ?? '';
+$club          = $vars['club'] ?? $vm->club ?? $club ?? '';
+$player        = $vars['player'] ?? $vm->player ?? $player ?? '';
+$btm           = $vars['btm'] ?? $vm->btm ?? $btm ?? '';
+$action_url    = $vars['action_url'] ?? $vm->action_url ?? $action_url ?? '';
+$contact_email = $vars['contact_email'] ?? $vm->contact_email ?? $contact_email ?? '';
+$email_subject = $vars['email_subject'] ?? $vm->email_subject ?? $email_subject ?? ( __( 'Player Registration', 'racketmanager' ) . ' - ' . ucfirst( (string) $action ) );
 require 'email-header.php';
 ?>
     <?php $salutation_link = $requestor; ?>

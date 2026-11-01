@@ -17,7 +17,7 @@ use Racketmanager\Presentation\View_Models\Event_Header_View_Model;
 /** @var int|null $header_level */
 /** @var string|null $standings_template */
 
-$header_vm = $event_header ?? null;
+$header_vm = $event_header ?? $vm->event_header ?? ( $vars['event_header'] ?? ( $vm instanceof Event_Header_View_Model ? $vm : null ) );
 if ( ! $header_vm instanceof Event_Header_View_Model ) {
     return;
 }

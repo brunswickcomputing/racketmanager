@@ -19,14 +19,41 @@ use Racketmanager\Util\Util;
 /** @var object $match */
 /** @var string $match_type */
 /** @var object $is_update_allowed */
+$tournament        = $vars['tournament'] ?? $vm->tournament ?? $tournament ?? null;
+$match             = $vars['match'] ?? $vm->match ?? $match ?? null;
+$match_type        = $vars['match_type'] ?? $vm->match_type ?? $match_type ?? '';
+$is_update_allowed = $vars['is_update_allowed'] ?? $vm->is_update_allowed ?? $is_update_allowed ?? (object) [
+    'user_can_update'     => false,
+    'user_type'           => '',
+    'user_team'           => '',
+    'match_approval_mode' => false,
+    'match_update'        => false,
+];
+$home_club_player  = $vars['home_club_player'] ?? $vm->home_club_player ?? $home_club_player ?? [];
+$away_club_player  = $vars['away_club_player'] ?? $vm->away_club_player ?? $away_club_player ?? [];
+$club_players      = $vars['club_players'] ?? $vm->club_players ?? $club_players ?? [];
+$approval_captain_names = $vars['approval_captain_names'] ?? ( isset( $vm ) ? ( $vm->approval_captain_names ?? null ) : null ) ?? $approval_captain_names ?? [];
+if ( ! is_array( $approval_captain_names ) ) {
+    $approval_captain_names = [];
+}
+if ( ! $match ) {
+    return;
+}
+$resolve_user_display_name = static function ( mixed $user_id ): string {
+    if ( empty( $user_id ) || ! function_exists( 'get_userdata' ) ) {
+        return '';
+    }
+    $user = \get_userdata( (int) $user_id );
+    return ( is_object( $user ) && isset( $user->display_name ) ) ? (string) $user->display_name : '';
+};
 $tournament_link = empty( $tournament ) ? null : ( new \Racketmanager\Presentation\Presenters\Tournament_Presenter() )->get_link( $tournament );
 $league_slug     = Util::seo_url( (string) ( $match->league->title ?? '' ) );
 $event_slug      = Util::seo_url( (string) ( $match->league->event->name ?? '' ) );
-$user_can_update     = $is_update_allowed->user_can_update;
-$user_type           = $is_update_allowed->user_type;
-$user_team           = $is_update_allowed->user_team;
-$match_approval_mode = $is_update_allowed->match_approval_mode;
-$match_update        = $is_update_allowed->match_update;
+$user_can_update     = $is_update_allowed->user_can_update ?? false;
+$user_type           = $is_update_allowed->user_type ?? '';
+$user_team           = $is_update_allowed->user_team ?? '';
+$match_approval_mode = $is_update_allowed->match_approval_mode ?? false;
+$match_update        = $is_update_allowed->match_update ?? false;
 $match_editable      = false;
 if ( $user_can_update && ! $match_approval_mode ) {
     $match_editable = 'is-editable';
@@ -210,7 +237,10 @@ if ( $match->is_walkover ) {
                                                                             <?php
                                                                             $approval_captain = $opponent . '_captain';
                                                                             if ( isset( $match->$approval_captain ) ) {
-                                                                                $captain_name = $match->captain_names[ $opponent ] ?? ( isset( $GLOBALS['racketmanager'] ) && method_exists( $GLOBALS['racketmanager'], 'get_player_name' ) ? $GLOBALS['racketmanager']->get_player_name( $match->$approval_captain ) : (string) $match->$approval_captain );
+                                                                                $captain_name = $approval_captain_names[ $opponent ]
+                                                                                    ?? ( isset( $match->captain_names[ $opponent ] ) ? $match->captain_names[ $opponent ] : null )
+                                                                                    ?? ( isset( $match->approver_names[ $opponent ] ) ? $match->approver_names[ $opponent ] : null )
+                                                                                    ?? $resolve_user_display_name( $match->$approval_captain );
                                                                                 ?>
                                                                                 <span class="match__row-title-value-content">
                                                                                     <span class="nav-link__value"><?php echo esc_html( $captain_name ); ?></span>
@@ -243,14 +273,14 @@ if ( $match->is_walkover ) {
                                                                         if ( $match_update && 'admin' !== $user_type ) {
                                                                             ?>
                                                                             <div class="match-comments form-floating">
-                                                                                <textarea class="form-control result-comments" placeholder="Leave a comment here" name="matchComments[<?php echo esc_attr( $opponent ); ?>]" id="matchComments-<?php echo esc_attr( $opponent ); ?>"><?php echo esc_html( $match->comments[ $opponent ] ); ?></textarea>
+                                                                                <textarea class="form-control result-comments" placeholder="Leave a comment here" name="matchComments[<?php echo esc_attr( $opponent ); ?>]" id="matchComments-<?php echo esc_attr( $opponent ); ?>"><?php echo esc_html( $match->comments[ $opponent ] ?? '' ); ?></textarea>
                                                                                 <label for="matchComments-<?php echo esc_attr( $opponent ); ?>"><?php esc_html_e( 'Comments', 'racketmanager' ); ?></label>
                                                                             </div>
                                                                             <?php
                                                                         } elseif ( ! empty( $match->comments ) ) {
                                                                             ?>
                                                                             <div class="match-comments">
-                                                                                <span class="nav-link__value match-comments" title="<?php esc_attr_e( 'Match comments', 'racketmanager' ); ?>"><?php echo esc_html( $match->comments[ $opponent ] ); ?></span>
+                                                                                <span class="nav-link__value match-comments" title="<?php esc_attr_e( 'Match comments', 'racketmanager' ); ?>"><?php echo esc_html( $match->comments[ $opponent ] ?? '' ); ?></span>
                                                                             </div>
                                                                             <?php
                                                                         }

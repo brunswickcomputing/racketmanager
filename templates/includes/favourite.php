@@ -10,6 +10,10 @@ namespace Racketmanager;
 /** @var string $favourite_type */
 /** @var int    $favourite_id */
 /** @var \Racketmanager\Presentation\View_Models\Favourite_Controls_View_Model|null $favourite_controls */
+$favourite_controls = $favourite_controls ?? $vm->favourite_controls ?? ( $vars['favourite_controls'] ?? null );
+$favourite_type     = $favourite_type ?? $vm->favourite_type ?? ( $vars['favourite_type'] ?? '' );
+$favourite_id       = $favourite_id ?? $vm->favourite_id ?? ( $vars['favourite_id'] ?? 0 );
+$hidden             = $hidden ?? $vm->hidden ?? ( $vars['hidden'] ?? false );
 if ( ! empty( $favourite_controls->can_toggle ) ) {
     if ( ! empty( $hidden ) ) {
         $visible = 'hidden-svg';

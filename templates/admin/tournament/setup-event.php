@@ -21,19 +21,10 @@ if ( $vm ) {
     $season      = $vm->season;
     $league      = $vm->league;
     $validator   = $vm->validator;
-}
-
-// Preferred input.
-$vm = isset( $vm ) && ( $vm instanceof Tournament_Setup_Page_View_Model ) ? $vm : null;
-
-// BC fallback.
-if ( $vm ) {
-    $match_dates = $vm->match_dates;
-    $match_count = $vm->match_count;
-    $tournament  = $vm->tournament;
-    $season      = $vm->season;
-    $league      = $vm->league;
     $errors      = $vm->errors;
+    $rounds      = $vm->rounds;
+} else {
+    $rounds      = $rounds ?? ( $vars['rounds'] ?? array() );
 }
 
 // Safety: ensure $errors always exists.
@@ -121,9 +112,9 @@ if ( empty( $league ) ) {
             $object = $league->championship;
         }
         foreach ( $object->finals as $final ) {
-            if ( isset( $_POST['rounds'][ $round ]['match_date'] ) ) {
-                $round_date = $_POST['rounds'][ $round ]['match_date'];
-            } elseif( ! empty( $match_dates[ $match_date_index ] ) ) {
+            if ( isset( $rounds[ $round ]['match_date'] ) ) {
+                $round_date = $rounds[ $round ]['match_date'];
+            } elseif ( ! empty( $match_dates[ $match_date_index ] ) ) {
                 $round_date = $match_dates[ $match_date_index ];
             } else {
                 $round_date = '';

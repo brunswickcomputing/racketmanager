@@ -9,6 +9,9 @@ namespace Racketmanager;
 
 /** @var string $msg */
 /** @var string $class */
+
+$msg   = $vars['msg'] ?? $vm->msg ?? '';
+$class = $vars['class'] ?? $vm->class ?? 'danger';
 ?>
 <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">

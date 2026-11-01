@@ -15,7 +15,8 @@ use Racketmanager\Presentation\View_Models\Tournament_Header_View_Model;
 /** @var Tournament_Header_View_Model|null $tournament_header */
 /** @var bool|null $entry_option */
 
-$header_vm = $tournament_header ?? null;
+$entry_option = $entry_option ?? ( $vm->entry_option ?? ( $vars['entry_option'] ?? null ) );
+$header_vm    = $tournament_header ?? ( $vm->tournament_header ?? ( $vars['tournament_header'] ?? ( $vm instanceof Tournament_Header_View_Model ? $vm : null ) ) );
 if ( ! $header_vm instanceof Tournament_Header_View_Model ) {
     return;
 }

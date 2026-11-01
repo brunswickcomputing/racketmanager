@@ -14,8 +14,9 @@ namespace Racketmanager;
 // Producers pass $site_url and $organisation explicitly. The site_url() fallback is a compatibility
 // shim only for email templates whose producers do not yet pass it (e.g. account/privacy emails
 // rendered from WordPress core filters); it resolves the same `siteurl` option as before.
-$site_url        = $site_url ?? ( function_exists( 'site_url' ) ? site_url() : '' );
-$organisation    = $organisation ?? '';
+$site_url        = $site_url ?? $vm->site_url ?? ( function_exists( 'site_url' ) ? site_url() : '' );
+$organisation    = $organisation ?? $vm->organisation ?? '';
+$email_subject   = $email_subject ?? $vm->email_subject ?? '';
 $paragraph       = 'components/paragraph.php';
 $hr              = 'components/hr.php';
 $title           = 'components/title.php';

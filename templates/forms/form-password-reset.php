@@ -13,8 +13,8 @@ $password_message   = '';
 $error_found        = false;
 /** @var string $login_error_msg */
 /** @var array $vars */
-$errors_list        = $vars['errors'] ?? ( $errors ?? [] );
-$error_codes_list   = $vars['error_codes'] ?? ( $error_codes ?? [] );
+$errors_list        = $errors ?? $vm->errors ?? ( is_array( $vars ?? null ) ? ( $vars['errors'] ?? [] ) : [] );
+$error_codes_list   = $error_codes ?? $vm->error_codes ?? ( is_array( $vars ?? null ) ? ( $vars['error_codes'] ?? [] ) : [] );
 if ( ! empty( $errors_list ) && is_array( $errors_list ) ) {
     $error_found     = true;
     $login_error_msg = __( 'Error in password reset', 'racketmanager' );
@@ -36,8 +36,8 @@ if ( ! empty( $errors_list ) && is_array( $errors_list ) ) {
         }
     }
 }
-$login_val = $vars['login'] ?? ( $login ?? '' );
-$key_val   = $vars['key'] ?? ( $key ?? '' );
+$login_val = $login ?? $vm->login ?? ( is_array( $vars ?? null ) ? ( $vars['login'] ?? '' ) : '' );
+$key_val   = $key ?? $vm->key ?? ( is_array( $vars ?? null ) ? ( $vars['key'] ?? '' ) : '' );
 ?>
 <div class="row justify-content-center">
     <div id="tabs-login" class="col-12">

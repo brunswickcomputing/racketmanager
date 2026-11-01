@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Event tabs administration panel
  *
@@ -10,6 +11,10 @@ namespace Racketmanager;
 /** @var string $tab */
 /** @var object $event */
 /** @var string $season */
+/** @var \Racketmanager\Admin\View_Models\League_Event_Page_View_Model|\Racketmanager\Admin\View_Models\League_Matches_Page_View_Model|\stdClass $vm */
+$tab    = $tab ?? $vars['tab'] ?? $vm->tab;
+$event  = $event ?? $vars['event'] ?? $vm->event;
+$season = $season ?? $vars['season'] ?? $vm->season;
 $competition_type = $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
 ?>
 <div class="row justify-content-end">

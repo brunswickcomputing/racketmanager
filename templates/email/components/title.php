@@ -9,6 +9,11 @@ namespace Racketmanager;
 
 /** @var string $title_text */
 /** @var string $align */
+/** @var array $vars */
+/** @var object|null $vm */
+$title_text  = ( isset( $title_text ) && '' !== $title_text ) ? $title_text : ( $vm->title_text ?? $vars['title_text'] ?? '' );
+$title_align = ( isset( $title_align ) && '' !== $title_align ) ? $title_align : ( $vm->title_align ?? $vars['title_align'] ?? '' );
+$title_level = ( isset( $title_level ) && '' !== $title_level && 0 !== $title_level ) ? $title_level : ( $vm->title_level ?? $vars['title_level'] ?? 1 );
 ?><!-- title -->
             <div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">
                 <table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">

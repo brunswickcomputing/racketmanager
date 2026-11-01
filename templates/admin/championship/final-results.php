@@ -8,20 +8,27 @@
 namespace Racketmanager;
 
 use Racketmanager\Admin\View_Models\Admin_Championship_Final_Fixture_View_Model;
+use Racketmanager\Admin\View_Models\Cup_Draw_Page_View_Model;
+use Racketmanager\Admin\View_Models\League_Standings_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
 
+/** @var Tournament_Draw_Page_View_Model|Cup_Draw_Page_View_Model|League_Standings_Page_View_Model|\stdClass $vm */
 // Preferred input (when included from tournament draw): $vm.
-$vm = isset( $vm ) && ( $vm instanceof Tournament_Draw_Page_View_Model ) ? $vm : null;
+$draw_vm = isset( $vm ) && ( $vm instanceof Tournament_Draw_Page_View_Model ) ? $vm : null;
 
-// BC fallback: if $vm isn't present, rely on locals set by the parent template.
-if ( $vm ) {
-    $league     = $vm->league;
-    $tournament = $vm->tournament;
-    $season     = $vm->season;
+// BC fallback: if $draw_vm isn't present, rely on locals set by the parent template.
+if ( $draw_vm ) {
+    $league     = $draw_vm->league;
+    $tournament = $draw_vm->tournament;
+    $season     = $draw_vm->season;
+} else {
+    $league     = $league ?? ( $vm->league ?? null );
+    $tournament = $tournament ?? ( $vm->tournament ?? null );
+    $season     = $season ?? ( $vm->season ?? null );
 }
 
 // Presented finals: from the draw view model, or supplied as $finals by the cup/league admin screens.
-$finals_list = $vm ? $vm->finals : ( isset( $finals ) && is_array( $finals ) ? $finals : array() );
+$finals_list = $draw_vm ? $draw_vm->finals : ( $vm->finals ?? ( isset( $finals ) && is_array( $finals ) ? $finals : array() ) );
 
 /** @var object $league */
 /** @var object|null $tournament */

@@ -10,7 +10,8 @@ namespace Racketmanager;
 use Racketmanager\Presentation\View_Models\Order_Of_Play_View_Model;
 
 /** @var Order_Of_Play_View_Model $order_of_play */
-$col_width   = $order_of_play instanceof Order_Of_Play_View_Model ? $order_of_play->col_width : 12;
+$order_of_play = $vars['order_of_play'] ?? ( ( isset( $vm ) && $vm instanceof Order_Of_Play_View_Model ) ? $vm : ( $vm->order_of_play ?? null ) ) ?? $order_of_play ?? null;
+$col_width     = $order_of_play instanceof Order_Of_Play_View_Model ? $order_of_play->col_width : 12;
 $is_expanded = $order_of_play instanceof Order_Of_Play_View_Model && $order_of_play->is_expanded;
 $times       = $order_of_play instanceof Order_Of_Play_View_Model ? $order_of_play->times : array();
 $courts      = $order_of_play instanceof Order_Of_Play_View_Model ? $order_of_play->courts : array();

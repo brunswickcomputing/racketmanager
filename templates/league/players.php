@@ -14,6 +14,13 @@ You can check the content of a variable when you insert the tag <?php var_dump($
 namespace Racketmanager;
 
 /** @var object $league */
+$league  = $league ?? $vars['league'] ?? $vm->league ?? null;
+$players = $players ?? $vars['players'] ?? $vm->players ?? [];
+$season  = $season ?? $vars['season'] ?? $vm->season ?? '';
+
+if ( empty( $league ) ) {
+    return;
+}
     if ( $league->players ) {
         ?>
         <table class='racketmanager player stats table' title='<?php echo __( 'Player Stats', 'racketmanager' ) . ' ' . $league->title; ?>'>

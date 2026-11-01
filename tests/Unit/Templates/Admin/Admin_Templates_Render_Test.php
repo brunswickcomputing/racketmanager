@@ -18,14 +18,18 @@ use Racketmanager\Admin\View_Models\Players_Page_View_Model;
 use Racketmanager\Admin\View_Models\Season_Modify_Page_View_Model;
 use Racketmanager\Admin\View_Models\Setup_Page_View_Model;
 use Racketmanager\Admin\View_Models\Teams_List_Page_View_Model;
+use Racketmanager\Services\Validator\Validator_Tournament;
 use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model;
+use Racketmanager\Admin\View_Models\Tournament_Modify_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
+use Racketmanager\Admin\View_Models\Tournament_Setup_Page_View_Model;
 use Racketmanager\Presentation\Presenters\Invoice_Presenter;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Settings;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Tests\Helpers\Creates_View_Renderer;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
@@ -1171,6 +1175,152 @@ final class Admin_Templates_Render_Test extends TestCase {
         self::assertStringNotContainsString( 'Add fixtures', $html );
         self::assertStringNotContainsString( 'Generate ratings', $html );
         self::assertStringNotContainsString( 'name="rank"', $html );
+    }
+
+    public function test_render_tournament_edit_template_prefers_form_values_including_date_withdraw(): void {
+        $tournament                   = new Tournament();
+        $tournament->id               = 10;
+        $tournament->name             = 'Entity Tournament';
+        $tournament->competition_id   = 1;
+        $tournament->season           = '2025';
+        $tournament->venue            = 2;
+        $tournament->competition_code = 'ORIG-CODE';
+        $tournament->grade            = '4';
+        $tournament->num_entries      = 16;
+        $tournament->date_start       = '2025-06-01';
+        $tournament->date_end         = '2025-06-07';
+        $tournament->date_open        = '2025-05-01';
+        $tournament->date_closing     = '2025-05-20';
+        $tournament->date_withdrawal  = '2025-05-25';
+
+        $fees = (object) array(
+            'competition' => 10,
+            'event'       => 5,
+            'status'      => 'draft',
+        );
+
+        $validator = new Validator_Tournament();
+        $clubs = array( (object) array( 'id' => 2, 'name' => 'Club Two', 'shortcode' => 'C2' ), (object) array( 'id' => 7, 'name' => 'Club Seven', 'shortcode' => 'C7' ) );
+        $competitions = array( (object) array( 'id' => 1, 'name' => 'Comp One' ), (object) array( 'id' => 42, 'name' => 'Comp 42' ) );
+        $seasons = array( (object) array( 'name' => '2025' ), (object) array( 'name' => '2026' ) );
+
+        $vm = new Tournament_Modify_Page_View_Model(
+            edit: true,
+            form_title: 'Edit Tournament',
+            form_action: 'admin.php?page=racketmanager-tournaments',
+            tournament: $tournament,
+            fees: $fees,
+            clubs: $clubs,
+            competitions: $competitions,
+            seasons: $seasons,
+            validator: $validator,
+            form_values: array(
+                'tournamentName'   => "O'Brien Championship",
+                'competition_id'   => 42,
+                'season'           => '2026',
+                'venue'            => 7,
+                'competition_code' => 'NEW-CODE',
+                'grade'            => '3',
+                'feeCompetition'   => 25.50,
+                'feeEvent'         => 12,
+                'num_entries'      => 32,
+                'dateStart'        => '2026-07-01',
+                'dateEnd'          => '2026-07-07',
+                'dateOpen'         => '2026-06-01',
+                'dateClose'        => '2026-06-20',
+                'dateWithdraw'     => '2026-06-25',
+            ),
+        );
+
+        $warnings = array();
+        $html     = $this->render_and_capture_warnings(
+            fn() => $this->renderer->render_to_string( 'admin/tournament-edit', $vm ),
+            $warnings
+        );
+
+        self::assertEmpty( $warnings, print_r( $warnings, true ) );
+        self::assertStringContainsString( 'value="O\'Brien Championship"', $html );
+        self::assertStringContainsString( 'value="NEW-CODE"', $html );
+        self::assertStringContainsString( 'value="25.5"', $html );
+        self::assertStringContainsString( 'value="12"', $html );
+        self::assertStringContainsString( 'value="32"', $html );
+        self::assertStringContainsString( 'value="2026-07-01"', $html );
+        self::assertStringContainsString( 'value="2026-07-07"', $html );
+        self::assertStringContainsString( 'value="2026-06-01"', $html );
+        self::assertStringContainsString( 'value="2026-06-20"', $html );
+        self::assertStringContainsString( 'value="2026-06-25"', $html );
+        self::assertStringNotContainsString( 'value="Entity Tournament"', $html );
+        self::assertStringNotContainsString( 'value="ORIG-CODE"', $html );
+        self::assertStringNotContainsString( 'value="2025-05-25"', $html );
+
+        // Postback form_values select state
+        self::assertStringContainsString( '<option value="42"  selected="selected">Comp 42</option>', $html );
+        self::assertStringContainsString( '<option value="2026"  selected="selected">2026</option>', $html );
+        self::assertStringContainsString( '<option value="7"  selected="selected">C7</option>', $html );
+        self::assertStringContainsString( '<option value="3"  selected="selected">Grade 3</option>', $html );
+        self::assertStringContainsString( '<option value="1" >Comp One</option>', $html );
+        self::assertStringContainsString( '<option value="2025" >2025</option>', $html );
+        self::assertStringContainsString( '<option value="2" >C2</option>', $html );
+        self::assertStringContainsString( '<option value="4" >Grade 4</option>', $html );
+        self::assertStringNotContainsString( '<option value="1"  selected="selected">', $html );
+        self::assertStringNotContainsString( '<option value="2025"  selected="selected">', $html );
+        self::assertStringNotContainsString( '<option value="2"  selected="selected">', $html );
+        self::assertStringNotContainsString( '<option value="4"  selected="selected">', $html );
+    }
+
+    public function test_render_tournament_setup_prefers_rounds_match_date_over_default_match_dates(): void {
+        $tournament = (object) array(
+            'id'     => 10,
+            'name'   => 'Setup Tournament',
+            'season' => '2026',
+            'finals' => array(
+                array(
+                    'key'         => 'final',
+                    'name'        => 'Final Round',
+                    'round'       => 1,
+                    'num_matches' => 1,
+                ),
+            ),
+        );
+
+        $vm = new Tournament_Setup_Page_View_Model(
+            match_dates: array( '2026-06-01' ),
+            match_count: 0,
+            tournament: $tournament,
+            season: '2026',
+            league: null,
+            validator: null,
+            errors: new Error_Bag(),
+            rounds: array(
+                0 => array(
+                    'match_date'  => '2026-06-20',
+                    'key'         => 'final',
+                    'round'       => 1,
+                    'num_matches' => 1,
+                ),
+            ),
+        );
+
+        $warnings = array();
+        $html     = $this->render_and_capture_warnings(
+            fn() => $this->renderer->render_to_string( 'admin/tournament/setup', $vm ),
+            $warnings
+        );
+
+        self::assertEmpty( $warnings );
+        self::assertStringContainsString( 'Final Round', $html );
+        self::assertStringContainsString( 'value="2026-06-20"', $html );
+        self::assertStringNotContainsString( 'value="2026-06-01"', $html );
+
+        $html_event = $this->render_and_capture_warnings(
+            fn() => $this->renderer->render_to_string( 'admin/tournament/setup-event', $vm ),
+            $warnings
+        );
+
+        self::assertEmpty( $warnings );
+        self::assertStringContainsString( 'Final Round', $html_event );
+        self::assertStringContainsString( 'value="2026-06-20"', $html_event );
+        self::assertStringNotContainsString( 'value="2026-06-01"', $html_event );
     }
 
     public function test_no_inline_event_handlers_in_admin_templates(): void {

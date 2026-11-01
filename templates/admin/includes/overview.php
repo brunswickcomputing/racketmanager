@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Overview administration panel
  *
@@ -11,8 +12,12 @@ namespace Racketmanager;
 /** @var string $season */
 /** @var object $current_season */
 /** @var object $competition_overview */
-$current_season       = empty( $cup_season ) ? $current_season : $cup_season;
-$competition_overview = $competition_overview ?? (object) array(
+/** @var \Racketmanager\Admin\View_Models\League_Overview_Page_View_Model|\Racketmanager\Admin\View_Models\Cup_Overview_Page_View_Model|\stdClass $vm */
+$competition          = $competition ?? $vars['competition'] ?? $vm->competition;
+$season               = $season ?? $vars['season'] ?? $vm->season;
+$cup_season           = $cup_season ?? $vars['cup_season'] ?? $vm->cup_season ?? null;
+$current_season       = empty( $cup_season ) ? ( $current_season ?? $vars['current_season'] ?? $vm->current_season ) : $cup_season;
+$competition_overview = $competition_overview ?? $vars['competition_overview'] ?? $vm->competition_overview ?? (object) array(
     'num_events'       => 0,
     'num_clubs'        => 0,
     'num_teams'        => 0,

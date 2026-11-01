@@ -12,6 +12,12 @@ namespace Racketmanager;
 /** @var int $player_id */
 /** @var string $msg */
 /** @var int    $events_entered */
+
+$tournament_id  = $vars['tournament_id'] ?? $vm->tournament_id ?? 0;
+$player_id      = $vars['player_id'] ?? $vm->player_id ?? 0;
+$modal          = $vars['modal'] ?? $vm->modal ?? '';
+$msg            = $vars['msg'] ?? $vm->msg ?? '';
+$events_entered = $vars['events_entered'] ?? $vm->events_entered ?? 0;
 ?>
 <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">

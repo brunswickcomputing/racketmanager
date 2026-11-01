@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  *
  * League events administration panel
@@ -13,6 +14,10 @@ use Racketmanager\Util\Util_Lookup;
 /** @var object $competition */
 /** @var string $season */
 /** @var array $competition_events */
+/** @var \Racketmanager\Admin\View_Models\League_Overview_Page_View_Model|\stdClass $vm */
+$competition        = $competition ?? $vars['competition'] ?? $vm->competition;
+$season             = $season ?? $vars['season'] ?? $vm->season;
+$competition_events = $competition_events ?? $vars['competition_events'] ?? $vm->competition_events;
 ?>
     <div class="row">
         <div class="col-12">

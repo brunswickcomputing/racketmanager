@@ -18,6 +18,14 @@ namespace Racketmanager;
 /** @var string|null      $new_date */
 /** @var string|null      $from_email */
 
+$match            = $match ?? $vm->match ?? null;
+$delay            = $delay ?? $vm->delay ?? false;
+$competition_name = $competition_name ?? $vm->competition_name ?? null;
+$match_date       = $match_date ?? $vm->match_date ?? null;
+$original_date    = $original_date ?? $vm->original_date ?? null;
+$new_date         = $new_date ?? $vm->new_date ?? null;
+$from_email       = $from_email ?? $vm->from_email ?? null;
+
 $competition_name = (string) ( $competition_name ?? ( $match->league->title ?? '' ) );
 $match_date       = (string) ( $match_date ?? ( $new_date ?? ( $match->match_date ?? '' ) ) );
 $original_date    = (string) ( $original_date ?? ( $match->original_date ?? '' ) );

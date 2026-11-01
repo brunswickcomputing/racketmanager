@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Matches administration panel
  *
@@ -14,7 +15,15 @@ namespace Racketmanager;
 /** @var string $group */
 /** @var string $match_day */
 /** @var array  $matches */
-$pagination_matches = $pagination_matches ?? '';
+/** @var \Racketmanager\Admin\View_Models\League_Standings_Page_View_Model|\stdClass $vm */
+$league             = $league ?? $vars['league'] ?? $vm->league;
+$season             = $season ?? $vars['season'] ?? $vm->season;
+$teams              = $teams ?? $vars['teams'] ?? $vm->teams;
+$team_id            = $team_id ?? $vars['team_id'] ?? $vm->team_id;
+$group              = $group ?? $vars['group'] ?? $vm->group;
+$match_day          = $match_day ?? $vars['match_day'] ?? $vm->match_day;
+$matches            = $matches ?? $vars['matches'] ?? $vm->matches;
+$pagination_matches = $pagination_matches ?? $vars['pagination_matches'] ?? $vm->pagination_matches ?? '';
 $competition_type = $league->event->competition->type instanceof \BackedEnum ? $league->event->competition->type->value : (string) ( $league->event->competition->type ?? '' );
 ?>
 <div class="row gx-3 justify-content-between mb-3">

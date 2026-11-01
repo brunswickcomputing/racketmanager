@@ -10,8 +10,8 @@ namespace Racketmanager;
 use Racketmanager\Util\Util;
 
 /** @var array $vars */
-$users_can_register = (bool) ( $users_can_register ?? ( is_array( $vars ?? null ) ? ( $vars['users_can_register'] ?? false ) : false ) );
-$tab = $tab ?? 'login';
+$users_can_register = (bool) ( $users_can_register ?? $vm->users_can_register ?? ( is_array( $vars ?? null ) ? ( $vars['users_can_register'] ?? false ) : false ) );
+$tab = $tab ?? $vm->tab ?? 'login';
 ?>
 <div class="row justify-content-center" data-action="activate-tab" data-tabid="<?php echo esc_attr( $tab ); ?>">
     <div id="tabs-login" class="col-12">
@@ -45,8 +45,8 @@ $tab = $tab ?? 'login';
         $surname_message   = '';
         $recaptcha_message = '';
         $error_message     = null;
-        $errors_list       = $vars['errors'] ?? ( $errors ?? [] );
-        $error_codes_list  = $vars['error_codes'] ?? ( $error_codes ?? [] );
+        $errors_list       = $vars['errors'] ?? $vm->errors ?? ( $errors ?? [] );
+        $error_codes_list  = $vars['error_codes'] ?? $vm->error_codes ?? ( $error_codes ?? [] );
         if ( ! empty( $errors_list ) && is_array( $errors_list ) ) {
             ?>
             <?php
@@ -109,7 +109,7 @@ $tab = $tab ?? 'login';
         }
         ?>
         <?php
-        $logged_out_flag = $vars['logged_out'] ?? ( $logged_out ?? false );
+        $logged_out_flag = $vars['logged_out'] ?? $vm->logged_out ?? ( $logged_out ?? false );
         if ( ! empty( $logged_out_flag ) ) {
             ?>
             <p class="login-info">
@@ -119,7 +119,7 @@ $tab = $tab ?? 'login';
         }
         ?>
         <?php
-        $registered_flag = $vars['registered'] ?? ( $registered ?? false );
+        $registered_flag = $vars['registered'] ?? $vm->registered ?? ( $registered ?? false );
         if ( ! empty( $registered_flag ) ) {
             ?>
             <p class="login-info">
@@ -129,7 +129,7 @@ $tab = $tab ?? 'login';
         }
         ?>
         <?php
-        $password_updated_flag = $vars['password_updated'] ?? ( $password_updated ?? false );
+        $password_updated_flag = $vars['password_updated'] ?? $vm->password_updated ?? ( $password_updated ?? false );
         if ( ! empty( $password_updated_flag ) ) {
             ?>
             <p class="login-info">

@@ -21,7 +21,15 @@ namespace Racketmanager;
 /** @var string $season */
 /** @var array  $events */
 /** @var object $club */
-$match_days = $match_days ?? [];
+$competition  = $competition ?? ( $vm->competition ?? ( $vars['competition'] ?? null ) );
+$club         = $club ?? ( $vm->club ?? ( $vars['club'] ?? null ) );
+$events       = $events ?? ( $vm->events ?? ( $vars['events'] ?? [] ) );
+$season       = $season ?? ( $vm->season ?? ( $vars['season'] ?? '' ) );
+$match_days   = $match_days ?? ( $vm->match_days ?? ( $vars['match_days'] ?? [] ) );
+$back_url             = $back_url ?? ( $vm->back_url ?? ( $vars['back_url'] ?? '' ) );
+$rules_url            = $rules_url ?? ( $vm->rules_url ?? ( $vars['rules_url'] ?? '' ) );
+$date_closing         = $date_closing ?? ( $vm->date_closing ?? ( $vars['date_closing'] ?? null ) );
+$date_closing_display = $date_closing_display ?? ( $vm->date_closing_display ?? ( $vars['date_closing_display'] ?? null ) );
 if ( $competition->is_open ) {
     $changes_allowed = true;
 } else {

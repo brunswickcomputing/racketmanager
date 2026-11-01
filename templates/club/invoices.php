@@ -16,6 +16,11 @@ namespace Racketmanager;
 
 /** @var object $club */
 /** @var \Racketmanager\Presentation\View_Models\Club_Invoices_List_View_Model $invoices */
+$club     = $club ?? $vars['club'] ?? ( isset( $vm ) ? ( $vm->club ?? null ) : null );
+$invoices = $invoices ?? $vars['invoices'] ?? ( isset( $vm ) ? ( $vm->invoices ?? null ) : null );
+if ( ! $invoices ) {
+    return;
+}
 $header_level = 1;
 require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 ?>

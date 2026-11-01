@@ -6,9 +6,12 @@ namespace Racketmanager\Tests\Unit\Templates;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Presenters\Admin_Championship_Finals_Presenter;
 use Racketmanager\Admin\Presenters\Admin_Date_Presenter;
+use Racketmanager\Admin\View_Models\Cup_Draw_Page_View_Model;
+use Racketmanager\Admin\View_Models\League_Standings_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Scoring\Set_Score;
+use Racketmanager\Services\View\Php_View_Renderer;
 use stdClass;
 
 require_once dirname( __DIR__, 2 ) . '/wp-stubs.php';
@@ -43,24 +46,39 @@ final class Admin_Championship_Finals_Template_Test extends TestCase {
         bool $is_cup = true,
         int $num_sets = 1
     ): stdClass {
-        $competition                = new stdClass();
-        $competition->id            = 10;
-        $competition->type          = $type;
-        $competition->is_tournament = $is_tournament;
-        $competition->is_cup        = $is_cup;
-        $competition->is_team_entry = true;
+        $competition = new class( $type, $is_tournament, $is_cup ) {
+            public int $id = 10;
+            public string $name = 'Test Competition';
+            public bool $is_team_entry = true;
+            public bool $is_consolation = false;
+            public bool $is_championship = true;
+            public array $settings = array( 'team_ranking' => 'auto' );
+            public function __construct(
+                public Competition_Type $type,
+                public bool $is_tournament,
+                public bool $is_cup
+            ) {}
+            public function get_type(): string {
+                return $this->type->value;
+            }
+        };
 
         $event              = new stdClass();
         $event->id          = 20;
+        $event->name        = 'Test Event';
         $event->competition = $competition;
 
         $league                 = new stdClass();
         $league->id             = 30;
+        $league->title          = 'Division 1';
+        $league->is_championship = true;
         $league->event          = $event;
         $league->num_rubbers    = 0;
         $league->num_sets       = $num_sets;
         $league->current_season = array( 'name' => '2026' );
         $league->championship   = new class() {
+            public int $num_seeds = 2;
+            public bool $is_consolation = false;
             public function get_current_final_key(): string {
                 return 'final';
             }
@@ -136,6 +154,10 @@ final class Admin_Championship_Finals_Template_Test extends TestCase {
     }
 
     private function render_template( string $template_name, array $vars = array() ): string {
+        return $this->render_chain( 'admin/championship/' . $template_name, $vars );
+    }
+
+    private function render_chain( string $template_relative_path, array $vars = array() ): string {
         extract( $vars, EXTR_SKIP );
         $errors = array();
         set_error_handler(
@@ -147,7 +169,7 @@ final class Admin_Championship_Finals_Template_Test extends TestCase {
         $level = ob_get_level();
         ob_start();
         try {
-            include dirname( __DIR__, 3 ) . '/templates/admin/championship/' . $template_name;
+            include dirname( __DIR__, 3 ) . '/templates/' . $template_relative_path;
             $output = (string) ob_get_clean();
         } finally {
             while ( ob_get_level() > $level ) {
@@ -395,5 +417,136 @@ final class Admin_Championship_Finals_Template_Test extends TestCase {
         );
 
         $this->assertStringContainsString( 'championship-block', $output );
+    }
+
+    public function test_finals_template_routing_with_tournament_draw_view_model(): void {
+        $league     = $this->create_league( Competition_Type::TOURNAMENT, true, false );
+        $tournament = (object) array( 'id' => 55 );
+        $vm         = new Tournament_Draw_Page_View_Model(
+            tournament: $tournament,
+            league: $league,
+            tab: 'fixtures',
+            season: '2026',
+            finals: array(),
+            page: 'racketmanager-tournaments',
+            view: 'draw',
+        );
+
+        $output = $this->render_template( 'finals.php', array( 'vm' => $vm ) );
+
+        $this->assertStringContainsString( '<input type="hidden" name="page" value="racketmanager-tournaments" />', $output );
+        $this->assertStringContainsString( '<input type="hidden" name="view" value="draw" />', $output );
+        $this->assertStringContainsString( '<input type="hidden" name="tournament" value="55" />', $output );
+    }
+
+    public function test_finals_template_routing_with_cup_draw_view_model(): void {
+        $league      = $this->create_league( Competition_Type::CUP, false, true );
+        $competition = $league->event->competition;
+        $vm          = new Cup_Draw_Page_View_Model(
+            competition: $competition,
+            league: $league,
+            season: '2026',
+            tab: 'finalResults',
+            finals: array(),
+            page: 'racketmanager-cups',
+            view: 'draw',
+        );
+
+        $output = $this->render_template( 'finals.php', array( 'vm' => $vm ) );
+
+        $this->assertStringContainsString( '<input type="hidden" name="page" value="racketmanager-cups" />', $output );
+        $this->assertStringContainsString( '<input type="hidden" name="view" value="draw" />', $output );
+        $this->assertStringContainsString( '<input type="hidden" name="competition_id" value="10" />', $output );
+        $this->assertStringNotContainsString( 'name="tournament"', $output );
+    }
+
+    public function test_finals_template_routing_with_league_standings_view_model(): void {
+        $league = $this->create_league( Competition_Type::LEAGUE, false, false );
+        $vm     = new League_Standings_Page_View_Model(
+            league: $league,
+            season: '2026',
+            finals: array(),
+            page: 'racketmanager-leagues',
+            view: 'league',
+        );
+
+        $output = $this->render_template( 'finals.php', array( 'vm' => $vm ) );
+
+        $this->assertStringContainsString( '<input type="hidden" name="page" value="racketmanager-leagues" />', $output );
+        $this->assertStringContainsString( '<input type="hidden" name="view" value="league" />', $output );
+        $this->assertStringContainsString( '<input type="hidden" name="competition_id" value="10" />', $output );
+        $this->assertStringNotContainsString( 'value="racketmanager-cups"', $output );
+    }
+
+    public function test_cup_draw_full_include_chain_routes_to_cups(): void {
+        $league      = $this->create_league( Competition_Type::CUP, false, true );
+        $competition = $league->event->competition;
+        $vm          = new Cup_Draw_Page_View_Model(
+            competition: $competition,
+            league: $league,
+            season: '2026',
+            tab: 'fixtures',
+            finals: array(),
+            page: 'racketmanager-cups',
+            view: 'draw',
+        );
+
+        $output = $this->render_chain( 'admin/cup/draw.php', array( 'vm' => $vm ) );
+
+        $this->assertStringContainsString( '<input type="hidden" name="page" value="racketmanager-cups" />', $output );
+        $this->assertStringContainsString( '<input type="hidden" name="view" value="draw" />', $output );
+        $this->assertStringContainsString( '<input type="hidden" name="competition_id" value="10" />', $output );
+        $this->assertStringNotContainsString( 'value="racketmanager-leagues"', $output );
+        $this->assertStringNotContainsString( 'value="league"', $output );
+        $this->assertStringNotContainsString( 'name="tournament"', $output );
+    }
+
+    public function test_league_championship_full_include_chain_routes_to_leagues(): void {
+        $league = $this->create_league( Competition_Type::LEAGUE, false, false );
+        $vm     = new League_Standings_Page_View_Model(
+            league: $league,
+            season: '2026',
+            tab: 'fixtures',
+            finals: array(),
+            league_mode: 'championship',
+            page: 'racketmanager-leagues',
+            view: 'league',
+        );
+
+        $output = $this->render_chain( 'admin/show-league.php', array( 'vm' => $vm ) );
+
+        $this->assertStringContainsString( '<input type="hidden" name="page" value="racketmanager-leagues" />', $output );
+        $this->assertStringContainsString( '<input type="hidden" name="view" value="league" />', $output );
+        $this->assertStringContainsString( '<input type="hidden" name="competition_id" value="10" />', $output );
+        $this->assertStringNotContainsString( 'value="racketmanager-cups"', $output );
+        $this->assertStringNotContainsString( 'value="draw"', $output );
+        $this->assertStringNotContainsString( 'name="tournament"', $output );
+    }
+
+    public function test_tournament_draw_full_include_chain_routes_to_tournaments(): void {
+        $league     = $this->create_league( Competition_Type::TOURNAMENT, true, false );
+        $tournament = (object) array(
+            'id'     => 55,
+            'season' => '2026',
+            'name'   => 'Club Championship',
+        );
+        $vm         = new Tournament_Draw_Page_View_Model(
+            tab: 'fixtures',
+            tournament: $tournament,
+            league: $league,
+            season: '2026',
+            finals: array(),
+            page: 'racketmanager-tournaments',
+            view: 'draw',
+        );
+
+        $renderer = new Php_View_Renderer( dirname( __DIR__, 3 ) . '/templates/' );
+        $output   = $this->render_chain( 'admin/tournament/draw.php', array( 'vm' => $vm, 'renderer' => $renderer ) );
+
+        $this->assertStringContainsString( '<input type="hidden" name="page" value="racketmanager-tournaments" />', $output );
+        $this->assertStringContainsString( '<input type="hidden" name="view" value="draw" />', $output );
+        $this->assertStringContainsString( '<input type="hidden" name="tournament" value="55" />', $output );
+        $this->assertStringNotContainsString( 'value="racketmanager-cups"', $output );
+        $this->assertStringNotContainsString( 'value="racketmanager-leagues"', $output );
     }
 }

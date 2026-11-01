@@ -10,6 +10,7 @@ namespace Racketmanager;
 use Racketmanager\Presentation\View_Models\Tournament_Match_Card_View_Model;
 
 /** @var Tournament_Match_Card_View_Model|null $card */
+$card = $card ?? ( $vars['card'] ?? ( ( isset( $vm ) && $vm instanceof Tournament_Match_Card_View_Model ) ? $vm : ( $vm->card ?? null ) ) );
 if ( ! isset( $card ) || ! ( $card instanceof Tournament_Match_Card_View_Model ) ) {
 	return;
 }

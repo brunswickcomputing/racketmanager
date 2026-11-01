@@ -20,13 +20,15 @@ if ( function_exists( '_deprecated_file' ) ) {
     _deprecated_file( __FILE__, '10.0.0', null, 'Orphan template retained for custom theme backward compatibility; scheduled for removal in 11.0.0.' );
 }
 
-global $racketmanager;
-
 /** @var object $match */
+$match = $match ?? $vars['match'] ?? ( ( isset( $vm ) && $vm instanceof \Racketmanager\Domain\Fixture\Fixture ) ? $vm : ( $vm->match ?? null ) );
+if ( ! $match ) {
+    return;
+}
 ?>
 <?php
 if ( ! empty( $match ) ) {
-    $date_format = $racketmanager->date_format ?? get_option( 'date_format', 'd/m/Y' );
+    $date_format = get_option( 'date_format', 'd/m/Y' );
     $match_date  = ! empty( $match->date ) ? mysql2date( $date_format, $match->date ) : '';
     ?>
     <div class="match" id="match-<?php echo esc_html( $match->id ?? '' ); ?>">

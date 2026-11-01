@@ -121,12 +121,17 @@ final readonly class Cup_Draw_Admin_Controller {
             $this->fixture_detail_service
         );
 
+        $page = isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-cups';
+        $view = isset( $query['view'] ) ? sanitize_text_field( wp_unslash( strval( $query['view'] ) ) ) : 'draw';
+
         $vm = new Cup_Draw_Page_View_Model(
             competition: $competition,
             league: $league,
             season: (string) $season,
             tab: $tab,
             finals: $finals,
+            page: $page,
+            view: $view,
         );
 
         return array(

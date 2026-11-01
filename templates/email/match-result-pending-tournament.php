@@ -12,9 +12,18 @@ namespace Racketmanager;
 /** @var object $match */
 /** @var string $contact */
 /** @var string $closing */
-$competition_name = $match->league->title;
-$match_date       = $match->match_date;
-$email_subject = __( 'Match Result Pending', 'racketmanager' ) . ' - ' . $competition_name . ' - ' . $organisation;
+/** @var array $vars */
+/** @var object|null $vm */
+$organisation     = $vars['organisation'] ?? $vm->organisation ?? $organisation ?? '';
+$time_period      = $vars['time_period'] ?? $vm->time_period ?? $time_period ?? 0;
+$match            = $vars['match'] ?? $vm->match ?? $match ?? null;
+$action_url       = $vars['action_url'] ?? $vm->action_url ?? $action_url ?? '';
+$from_email       = $vars['from_email'] ?? $vm->from_email ?? $from_email ?? '';
+$contact_email    = $vars['contact_email'] ?? $vm->contact_email ?? $contact_email ?? $from_email;
+
+$competition_name = $vars['competition_name'] ?? $vm->competition_name ?? $competition_name ?? ( $match->league->title ?? '' );
+$match_date       = $vars['match_date'] ?? $vm->match_date ?? $match_date ?? ( $match->match_date ?? '' );
+$email_subject    = $vars['email_subject'] ?? $vm->email_subject ?? $email_subject ?? ( __( 'Match Result Pending', 'racketmanager' ) . ' - ' . $competition_name . ' - ' . $organisation );
 if ( $time_period ) {
     $days_period = $time_period / 24;
 } else {

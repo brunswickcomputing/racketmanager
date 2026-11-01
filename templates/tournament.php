@@ -22,12 +22,18 @@ use Racketmanager\Domain\DTO\Tournament\Tournament_Details_DTO;
 /** @var array $menu_options */
 /** @var string|int $post_id */
 /** @var string $tournament_seo_name */
+$tournament_details = $tournament_details ?? $vars['tournament_details'] ?? $vm->tournament_details ?? null;
+if ( ! $tournament_details instanceof Tournament_Details_DTO ) {
+    return;
+}
+$tournaments = $tournaments ?? $vars['tournaments'] ?? $vm->tournaments ?? array();
+$menu_options = $menu_options ?? $vars['menu_options'] ?? $vm->menu_options ?? array();
 
 $tournament          = $tournament_details->tournament;
 $competition         = $tournament_details->competition;
 $entry_option        = true;
-$post_id             = $post_id ?? '';
-$tournament_seo_name = $tournament_seo_name ?? '';
+$post_id             = $post_id ?? $vars['post_id'] ?? $vm->post_id ?? '';
+$tournament_seo_name = $tournament_seo_name ?? $vars['tournament_seo_name'] ?? $vm->tournament_seo_name ?? '';
 ?>
 <div id="tournament-<?php echo esc_html( $tournament->id ); ?>" class="tournament">
     <div id="pageContentTab">

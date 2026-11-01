@@ -9,6 +9,11 @@ namespace Racketmanager;
 
 /** @var object $tournament */
 /** @var object $draw */
+$tournament = $tournament ?? ( $vm->tournament ?? ( $vars['tournament'] ?? null ) );
+$draw       = $draw ?? ( $vm->draw ?? ( $vars['draw'] ?? null ) );
+if ( ! $draw ) {
+    return;
+}
 ?>
     <div class="module module--card">
         <div class="module__banner">
@@ -17,13 +22,13 @@ namespace Racketmanager;
                 <?php
                 $event          = $draw;
                 $favourite_type = 'competition';
-                $favourite_id   = $event->id;
+                $favourite_id   = $event->id ?? null;
                 require RACKETMANAGER_PATH . 'templates/includes/favourite.php';
                 ?>
             </h3>
         </div>
         <?php
-        $fixtures = $draw->get_meta( 'fixtures' ) ?: [];
+        $fixtures = method_exists( $draw, 'get_meta' ) ? ( $draw->get_meta( 'fixtures' ) ?: [] ) : ( $draw->fixtures ?? [] );
         require 'draw-body.php';
         ?>
     </div>

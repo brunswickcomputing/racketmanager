@@ -13,6 +13,13 @@ namespace Racketmanager;
 /** @var string $password_message */
 /** @var boolean $email_error */
 /** @var string $email_message */
+$username_error   = $username_error ?? $vm->username_error ?? ( is_array( $vars ?? null ) ? ( $vars['username_error'] ?? false ) : false );
+$username_message = $username_message ?? $vm->username_message ?? ( is_array( $vars ?? null ) ? ( $vars['username_message'] ?? '' ) : '' );
+$password_error   = $password_error ?? $vm->password_error ?? ( is_array( $vars ?? null ) ? ( $vars['password_error'] ?? false ) : false );
+$password_message = $password_message ?? $vm->password_message ?? ( is_array( $vars ?? null ) ? ( $vars['password_message'] ?? '' ) : '' );
+$email_error      = $email_error ?? $vm->email_error ?? ( is_array( $vars ?? null ) ? ( $vars['email_error'] ?? false ) : false );
+$email_message    = $email_message ?? $vm->email_message ?? ( is_array( $vars ?? null ) ? ( $vars['email_message'] ?? '' ) : '' );
+$redirect_val     = $redirect ?? $vm->redirect ?? ( is_array( $vars ?? null ) ? ( $vars['redirect'] ?? '' ) : '' );
 ?>
 <div class="alert_rm mt-3" id="loginAlert" style="display:none;">
     <div class="alert__body">
@@ -62,7 +69,6 @@ namespace Racketmanager;
                 <?php esc_html_e( 'Login', 'racketmanager' ); ?>
             </button>
             <?php
-            $redirect_val = $vars['redirect'] ?? ( $redirect ?? '' );
             if ( ! empty( $redirect_val ) ) {
                 ?>
                 <input type="hidden" id="redirect_to" name="redirect_to" value="<?php echo esc_url( $redirect_val ); ?>"/>

@@ -16,6 +16,10 @@ namespace Racketmanager;
 /** @var array  $matches_list */
 /** @var int    $post_id */
 /** @var string $form_action */
+$match_date   = $match_date ?? $vars['match_date'] ?? $vm->match_date ?? '';
+$matches_list = $matches_list ?? $vars['matches_list'] ?? $vm->matches_list ?? array();
+$post_id      = $post_id ?? $vars['post_id'] ?? $vm->post_id ?? 0;
+$form_action  = $form_action ?? $vars['form_action'] ?? $vm->form_action ?? '';
 ?>
     <div class="module module--card">
         <div class="module__banner">

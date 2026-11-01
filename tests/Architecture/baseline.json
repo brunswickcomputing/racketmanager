@@ -6,12 +6,6 @@
         "src/php/Admin/Admin_Upgrade.php|require_once templates/admin/show-upgrade.php": 1,
         "src/php/Admin/Admin_Upgrade.php|require_once templates/admin/upgrade/do-upgrade.php": 1
     },
-    "all.no_extract": {
-        "src/php/Presentation/Presenters/Fixture_Presenter.php|extract()": 1,
-        "src/php/Presentation/View/Shortcode_Template_Renderer.php|extract()": 1,
-        "src/php/Public/Shortcodes.php|extract()": 1,
-        "src/php/Services/View/Php_View_Renderer.php|extract()": 1
-    },
     "all.no_get_instance_outside_bootstrap": {
         "src/php/Cli/Export_Command.php|Racketmanager\\RacketManager::get_instance()": 1
     },
@@ -39,19 +33,5 @@
         "src/php/Repositories/League_Repository.php|depends on Racketmanager\\Services\\Championship_Factory": 1,
         "src/php/Repositories/Rubber_Repository.php|depends on Racketmanager\\Services\\Registration_Service": 1,
         "src/php/Repositories/Tournament_Repository.php|depends on Racketmanager\\Services\\Competition_Service": 1
-    },
-    "templates.no_global_racketmanager": {
-        "templates/forms/match-input.php|$GLOBALS['racketmanager']": 3,
-        "templates/match-list.php|global $racketmanager": 1,
-        "templates/match-teams-result.php|$GLOBALS['racketmanager']": 3,
-        "templates/match.php|global $racketmanager": 1
-    },
-    "templates.no_globals_or_db": {
-        "templates/admin/championship.php|$_GET": 4,
-        "templates/admin/championship/finals.php|$_GET": 4,
-        "templates/admin/includes/competitions.php|$_GET": 4,
-        "templates/admin/tournament-edit.php|$_POST": 14,
-        "templates/admin/tournament/setup-event.php|$_POST": 2,
-        "templates/admin/tournament/setup.php|$_POST": 2
     }
 }

@@ -3,4 +3,4 @@ echo 'renderer_ok:' . ( ( isset( $renderer ) && $renderer instanceof \Racketmana
 echo '|vm_type:' . ( isset( $vm ) ? ( is_object( $vm ) ? get_class( $vm ) : gettype( $vm ) ) : 'unset' );
 echo '|vars_type:' . ( isset( $vars ) ? gettype( $vars ) : 'unset' );
 echo '|vars_count:' . ( ( isset( $vars ) && is_array( $vars ) ) ? count( $vars ) : 0 );
-echo '|custom:' . ( $custom ?? 'none' );
+echo '|custom:' . ( $vars['custom'] ?? 'none' );

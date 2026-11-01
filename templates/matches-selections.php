@@ -14,7 +14,10 @@ use Racketmanager\Application\League\DTOs\League_View_State;
 /** @var string $season */
 /** @var int|string $post_id */
 /** @var string $form_action */
-$view_state = $view_state ?? null;
+$view_state  = $view_state ?? $vars['view_state'] ?? $vm->view_state ?? null;
+$season      = $season ?? $vars['season'] ?? $vm->season ?? '';
+$post_id     = $post_id ?? $vars['post_id'] ?? $vm->post_id ?? 0;
+$form_action = $form_action ?? $vars['form_action'] ?? $vm->form_action ?? '';
 ?>
 <?php
 if ( ( $view_state?->show_match_day_selection ?? false ) && ! $league->event->competition->is_championship ) {

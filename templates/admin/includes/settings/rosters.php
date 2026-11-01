@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Club player options administration panel
  *
@@ -6,6 +7,11 @@
  */
 
 namespace Racketmanager;
+
+use Racketmanager\Admin\View_Models\Options_Page_View_Model;
+
+/** @var Options_Page_View_Model|\stdClass $vm */
+$options = $options ?? ( $vm->options ?? array() );
 
 ?>
 <div class="form-control">

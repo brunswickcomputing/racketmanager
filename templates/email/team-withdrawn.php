@@ -12,6 +12,9 @@ namespace Racketmanager;
 /** @var string $paragraph */
 /** @var string $contact */
 /** @var string $closing */
+$team       = $team ?? $vm->team ?? null;
+$league     = $league ?? $vm->league ?? null;
+$email_from = $email_from ?? $vm->email_from ?? null;
 require 'email-header.php';
 $paragraph_text = __( 'Dear Captain', 'racketmanager' );
 require $paragraph;

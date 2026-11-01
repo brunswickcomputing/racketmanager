@@ -17,12 +17,21 @@ namespace Racketmanager;
 /** @var string $contact */
 /** @var string $closing */
 /** @var string $title */
-$email_subject = __( 'Tournament Withdrawal', 'racketmanager' ) . ' - ' . ucfirst( $tournament_name );
+/** @var array $vars */
+/** @var object|null $vm */
+$tournament_name  = $vars['tournament_name'] ?? $vm->tournament_name ?? $tournament_name ?? '';
+$player           = $vars['player'] ?? $vm->player ?? $player ?? null;
+$tournament_link  = $vars['tournament_link'] ?? $vm->tournament_link ?? $tournament_link ?? '';
+$tournament       = $vars['tournament'] ?? $vm->tournament ?? $tournament ?? null;
+$tournament_dates = $vars['tournament_dates'] ?? $vm->tournament_dates ?? $tournament_dates ?? null;
+$action_url       = $vars['action_url'] ?? $vm->action_url ?? $action_url ?? '';
+$contact_email    = $vars['contact_email'] ?? $vm->contact_email ?? $contact_email ?? '';
+$email_subject    = $vars['email_subject'] ?? $vm->email_subject ?? $email_subject ?? ( __( 'Tournament Withdrawal', 'racketmanager' ) . ' - ' . ucfirst( (string) $tournament_name ) );
 require 'email-header.php';
 $title_text  = __( 'Withdrawal confirmation', 'racketmanager' );
 $title_level = '1';
 require $title;
-$salutation_link = $player->get_fullname();
+$salutation_link = is_object( $player ) && method_exists( $player, 'get_fullname' ) ? $player->get_fullname() : ( $player->display_name ?? '' );
 require $salutation;
 /* translators: $s: tournament link */
 $paragraph_text  = sprintf( __( 'You have now been withdrawn from the %s tournament.', 'racketmanager' ), $tournament_link );

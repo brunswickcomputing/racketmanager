@@ -15,6 +15,13 @@ use Racketmanager\Util\Util;
 /** @var Fixture $match */
 /** @var string|null $date_display */
 /** @var object|string $sponsor_html */
+$dto          = $dto ?? $vars['dto'] ?? $vm->dto ?? null;
+$match        = $match ?? $vars['match'] ?? $vm->match ?? $dto?->fixture ?? null;
+$date_display = $date_display ?? $vars['date_display'] ?? $vm->date_display ?? null;
+$sponsor_html = $sponsor_html ?? $vars['sponsor_html'] ?? $vm->sponsor_html ?? '';
+if ( ! $dto || ! $match ) {
+    return;
+}
 ?>
 <div id="matchRubbers" class="rubber-block">
     <div id="matchHeader">

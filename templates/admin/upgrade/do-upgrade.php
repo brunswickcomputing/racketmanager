@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Run Upgrade page administration panel
  *
@@ -9,6 +10,8 @@
 
 namespace Racketmanager;
 
+/** @var \stdClass $vm */
+$upgrade = $upgrade ?? $vars['upgrade'] ?? $vm->upgrade;
 ?>
 <div class="container">
     <h1><?php esc_html_e( 'Upgrade RacketManager', 'racketmanager' ); ?></h1>

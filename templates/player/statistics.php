@@ -12,7 +12,8 @@ use Racketmanager\Presentation\View_Models\Player_View_Model;
 
 /** @var Player_View_Model|null $vm */
 /** @var object|null $player */
-$stats = $vm->stats ?? ( $stats ?? ( $player->stats ?? [] ) );
+$player = $vars['player'] ?? $vm->player ?? null;
+$stats  = $vars['stats'] ?? $vm->stats ?? ( $player->stats ?? [] );
 ?>
 <div class="module module--card">
     <div class="module__content">

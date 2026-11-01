@@ -193,6 +193,9 @@ class Tournament_Setup_Admin_Controller_Test extends TestCase {
             'tournament_id' => (string) $tournament_id,
             'action' => 'save',
             'season' => '2023',
+            'rounds' => [
+                0 => [ 'key' => 'final', 'num_matches' => 1, 'round' => 1, 'match_date' => '2023-12-31' ]
+            ],
             'racketmanager_nonce' => 'valid_nonce'
         ];
 
@@ -210,6 +213,10 @@ class Tournament_Setup_Admin_Controller_Test extends TestCase {
         self::assertSame( 'Error setting tournament round dates', $result['message'] );
         self::assertTrue( $result['message_type'] );
         self::assertTrue( $result['view_model']->validator->error );
+        self::assertSame( '2023-12-31', $result['view_model']->rounds[0]['match_date'] );
+        $vars = $result['view_model']->to_template_vars();
+        self::assertArrayHasKey( 'rounds', $vars );
+        self::assertSame( '2023-12-31', $vars['rounds'][0]['match_date'] );
     }
 
     public function test_setup_page_throws_exception_if_tournament_not_found(): void {

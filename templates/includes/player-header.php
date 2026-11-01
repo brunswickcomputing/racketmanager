@@ -21,7 +21,7 @@ use Racketmanager\Presentation\View_Models\Player_View_Model;
 /** @var Player_Presenter|null  $player_presenter */
 
 // Modern path: consume precomputed Player_View_Model.
-$active_vm = $player_vm ?? ( $vm instanceof Player_View_Model ? $vm : null );
+$active_vm = $player_vm ?? ( $vm instanceof Player_View_Model ? $vm : ( $vm->player_vm ?? ( $vars['player_vm'] ?? null ) ) );
 
 // Theme/direct-include compatibility only: live handlers always supply a Player_View_Model.
 // Raw-player includes retain their historical WTN, stats and club links via this isolated fallback.

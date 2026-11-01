@@ -15,7 +15,13 @@ namespace Racketmanager;
 /** @var string $salutation */
 /** @var string $contact */
 /** @var string $closing */
-$email_subject = __( 'Fixtures', 'racketmanager' );
+$email_subject = $email_subject ?? $vm->email_subject ?? __( 'Fixtures', 'racketmanager' );
+$captain       = $captain ?? $vm->captain ?? '';
+$competition   = $competition ?? $vm->competition ?? '';
+$season        = $season ?? $vm->season ?? '';
+$matches       = $matches ?? $vm->matches ?? [];
+$team          = $team ?? $vm->team ?? null;
+$contact_email = $contact_email ?? $vm->contact_email ?? '';
 require 'email-header.php';
 ?>
     <?php

@@ -9,6 +9,8 @@
 namespace Racketmanager;
 
 /** @var string $stats_type */
+$stats_type   = $stats_type ?? $vars['stats_type'] ?? $vm->stats_type ?? '';
+$player_stats = $player_stats ?? $vars['player_stats'] ?? $vm->player_stats ?? [];
 ?>
 <a href="#" class="stats-link collapsed" data-bs-toggle="collapse" data-bs-target="#player-stats-detail-<?php echo esc_attr( $stats_type ); ?>" aria-expanded="false" aria-controls="player-stats-detail-<?php echo esc_attr( $stats_type ); ?>">
     <div class="row stats-summary">

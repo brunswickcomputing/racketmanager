@@ -19,9 +19,18 @@ use Racketmanager\Util\Util;
 /** @var object $match */
 /** @var string $match_type */
 /** @var object $is_update_allowed */
-$user_can_update = $is_update_allowed->user_can_update;
-$user_message    = $is_update_allowed->message;
-$tab_base        = 0;
+$match             = $vars['match'] ?? $vm->match ?? $match ?? null;
+$match_type        = $vars['match_type'] ?? $vm->match_type ?? $match_type ?? '';
+$is_update_allowed = $vars['is_update_allowed'] ?? $vm->is_update_allowed ?? $is_update_allowed ?? (object) [
+    'user_can_update' => false,
+    'message'         => '',
+];
+if ( ! $match ) {
+    return;
+}
+$user_can_update   = $is_update_allowed->user_can_update ?? false;
+$user_message      = $is_update_allowed->message ?? '';
+$tab_base          = 0;
 ?>
     <div id="matchRubbers">
         <div id="matchHeader">
@@ -114,7 +123,15 @@ $tab_base        = 0;
                         </div>
                         <div class="col-auto">
                             <?php
-                            $updated_by_name = $match->updated_user_name ?? ( isset( $GLOBALS['racketmanager'] ) && method_exists( $GLOBALS['racketmanager'], 'get_player_name' ) ? $GLOBALS['racketmanager']->get_player_name( $match->updated_user ) : (string) $match->updated_user );
+                            $updated_by_name = '';
+                            if ( isset( $match->updated_user_name ) && '' !== (string) $match->updated_user_name ) {
+                                $updated_by_name = (string) $match->updated_user_name;
+                            } elseif ( isset( $match->updated_by ) && '' !== (string) $match->updated_by ) {
+                                $updated_by_name = (string) $match->updated_by;
+                            } elseif ( ! empty( $match->updated_user ) && function_exists( 'get_userdata' ) ) {
+                                $updated_user    = \get_userdata( (int) $match->updated_user );
+                                $updated_by_name = ( is_object( $updated_user ) && isset( $updated_user->display_name ) ) ? (string) $updated_user->display_name : '';
+                            }
                             echo esc_html( $updated_by_name );
                             ?>
                         </div>

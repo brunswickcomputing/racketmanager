@@ -7,19 +7,22 @@
 
 namespace Racketmanager;
 
+/** @var object|array $vm */
 /** @var array $vars */
 /** @var string $salutation */
 /** @var string $paragraph */
 /** @var string $contact */
 /** @var string $closing */
-$organisation  = $vars['site_name'];
-$sitename      = $vars['site_name'];
-$siteurl       = $vars['site_url'];
-$userlogin     = $vars['user_login'];
-$username      = $vars['display_name'];
-$loginurl      = $vars['site_url'] . '/login';
-$actionurl     = $vars['action_url'];
-$contact_email = $vars['email_link'];
+$vm            = ( isset( $vm ) && is_object( $vm ) ) ? $vm : (object) ( $vars ?? [] );
+$vars          = is_array( $vars ?? null ) ? $vars : (array) $vm;
+$organisation  = $vm->site_name ?? ( $vars['site_name'] ?? '' );
+$sitename      = $vm->site_name ?? ( $vars['site_name'] ?? '' );
+$siteurl       = $vm->site_url ?? ( $vars['site_url'] ?? '' );
+$userlogin     = $vm->user_login ?? ( $vars['user_login'] ?? '' );
+$username      = $vm->display_name ?? ( $vars['display_name'] ?? '' );
+$loginurl      = ( $vm->site_url ?? ( $vars['site_url'] ?? '' ) ) . '/login';
+$actionurl     = $vm->action_url ?? ( $vars['action_url'] ?? '' );
+$contact_email = $vm->email_link ?? ( $vars['email_link'] ?? '' );
 $email_subject = __( 'Welcome Email', 'racketmanager' );
 require 'email-header.php';
 ?>

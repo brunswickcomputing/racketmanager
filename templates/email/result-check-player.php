@@ -16,6 +16,15 @@ namespace Racketmanager;
 /** @var string $paragraph */
 /** @var string $contact */
 /** @var string $closing */
+/** @var array $vars */
+/** @var object|null $vm */
+$captain       = $vars['captain'] ?? $vm->captain ?? $captain ?? '';
+$player        = $vars['player'] ?? $vm->player ?? $player ?? '';
+$reason        = $vars['reason'] ?? $vm->reason ?? $reason ?? '';
+$opponent      = $vars['opponent'] ?? $vm->opponent ?? $opponent ?? '';
+$penalty       = $vars['penalty'] ?? $vm->penalty ?? $penalty ?? '';
+$contact_email = $vars['contact_email'] ?? $vm->contact_email ?? $contact_email ?? '';
+$email_subject = $vars['email_subject'] ?? $vm->email_subject ?? $email_subject ?? __( 'Player Eligibility Check', 'racketmanager' );
 require 'email-header.php';
 $salutation_link = $captain;
 require $salutation;

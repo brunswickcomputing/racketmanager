@@ -8,11 +8,15 @@
 namespace Racketmanager;
 
 /** @var object $event */
-$match_group_links = $match_group_links ?? [];
+$event             = $event ?? ( $vars['event'] ?? ( $vm->event ?? null ) );
+$match_group_links = $match_group_links ?? ( $vars['match_group_links'] ?? ( $vm->match_group_links ?? [] ) );
+if ( ! $event ) {
+    return;
+}
 if ( empty( $event->player ) ) {
-    $player_list  = $event->players;
-    $player_link  = $player_link ?? '';
-    $player_links = $player_links ?? [];
+    $player_list  = $event->players ?? ( $vars['player_list'] ?? ( $vm->player_list ?? [] ) );
+    $player_link  = $player_link ?? ( $vars['player_link'] ?? ( $vm->player_link ?? '' ) );
+    $player_links = $player_links ?? ( $vars['player_links'] ?? ( $vm->player_links ?? [] ) );
     require RACKETMANAGER_PATH . 'templates/includes/player-list-names.php';
 } else {
     $player = $event->player;

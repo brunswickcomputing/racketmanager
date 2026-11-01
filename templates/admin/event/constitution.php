@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Constitution administration panel
  *
@@ -21,8 +22,11 @@ use Racketmanager\Util\Util_Lookup;
 /** @var bool   $constitution_exists */
 /** @var bool   $updates_allowed */
 /** @var array  $standing_status */
-$event_seasons = $event_seasons ?? array();
-$event_id      = $event_id ?? ( $event->id ?? 0 );
+/** @var \Racketmanager\Admin\View_Models\League_Constitution_Page_View_Model|\stdClass $vm */
+$event         = $event ?? $vars['event'] ?? $vm->event;
+$seasons       = $seasons ?? $vars['seasons'] ?? $vm->seasons;
+$event_seasons = $event_seasons ?? $vars['event_seasons'] ?? $vm->event_seasons ?? array();
+$event_id      = $event_id ?? $vars['event_id'] ?? $vm->event_id ?? ( $event->id ?? 0 );
 
 if ( empty( $event->is_box ) && empty( $seasons ) ) {
     ?>
@@ -38,14 +42,14 @@ if ( empty( $event->is_box ) && empty( $seasons ) ) {
     <?php
 } else {
     $latest_season_dtls  = $event->current_season ?? array();
-    $latest_season       = $latest_season ?? ( $latest_season_dtls['name'] ?? '' );
-    $updates_allowed     = $updates_allowed ?? false;
-    $latest_event_season = $latest_event_season ?? $latest_season;
-    $teams               = $teams ?? array();
-    $constitution_action = $constitution_action ?? 'update';
-    $constitution_exists = $constitution_exists ?? ! empty( $teams );
-    $leagues             = $leagues ?? array();
-    $standing_status     = $standing_status ?? Util_Lookup::get_standing_statuses();
+    $latest_season       = $latest_season ?? $vars['latest_season'] ?? $vm->latest_season ?? ( $latest_season_dtls['name'] ?? '' );
+    $updates_allowed     = $updates_allowed ?? $vars['updates_allowed'] ?? $vm->updates_allowed ?? false;
+    $latest_event_season = $latest_event_season ?? $vars['latest_event_season'] ?? $vm->latest_event_season ?? $latest_season;
+    $teams               = $teams ?? $vars['teams'] ?? $vm->teams ?? array();
+    $constitution_action = $constitution_action ?? $vars['constitution_action'] ?? $vm->constitution_action ?? 'update';
+    $constitution_exists = $constitution_exists ?? $vars['constitution_exists'] ?? $vm->constitution_exists ?? ! empty( $teams );
+    $leagues             = $leagues ?? $vars['leagues'] ?? $vm->leagues ?? array();
+    $standing_status     = $standing_status ?? $vars['standing_status'] ?? $vm->standing_status ?? Util_Lookup::get_standing_statuses();
     ?>
     <h2 class="header"><?php esc_html_e( 'Constitution', 'racketmanager' ); ?> - <?php echo esc_html( $latest_season ); ?></h2>
     <form id="teams-filter" method="post" action="">

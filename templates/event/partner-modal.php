@@ -17,6 +17,19 @@ namespace Racketmanager;
 /** @var int    $partner_id */
 /** @var string $partner_btm */
 /** @var string $partner_gender */
+$player_id      = $vars['player_id'] ?? $vm->player_id ?? 0;
+$tournament_id  = $vars['tournament_id'] ?? $vm->tournament_id ?? 0;
+$event          = $vars['event'] ?? $vm->event ?? null;
+$modal          = $vars['modal'] ?? $vm->modal ?? '';
+$date_end       = $vars['date_end'] ?? $vm->date_end ?? '';
+$season         = $vars['season'] ?? $vm->season ?? '';
+$partner_name   = $vars['partner_name'] ?? $vm->partner_name ?? '';
+$partner_id     = $vars['partner_id'] ?? $vm->partner_id ?? 0;
+$partner_btm    = $vars['partner_btm'] ?? $vm->partner_btm ?? '';
+$partner_gender = $vars['partner_gender'] ?? $vm->partner_gender ?? '';
+if ( ! $event ) {
+    return;
+}
 ?>
 <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -29,7 +42,7 @@ namespace Racketmanager;
             <input type="hidden" name="season" value="<?php echo esc_attr( $season ); ?>" />
             <input type="hidden" name="modal" value="<?php echo esc_attr( $modal ); ?>" />
             <div class="modal-header modal__header">
-                <h4 class="modal-title"><?php echo esc_html__( 'Doubles partner', 'racketmanager' ) . ': ' . esc_html( $event->name ); ?></h4>
+                <h4 class="modal-title"><?php echo esc_html__( 'Doubles partner', 'racketmanager' ) . ': ' . esc_html( $event->name ?? '' ); ?></h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body ui-front">

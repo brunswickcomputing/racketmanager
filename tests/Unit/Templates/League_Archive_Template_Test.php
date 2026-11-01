@@ -14,6 +14,7 @@ use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\League_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\League_Archive_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
@@ -99,6 +100,7 @@ class League_Archive_Template_Test extends TestCase {
                 $this->name        = $props['name'] ?? 'Men\'s Doubles';
                 $this->is_box      = $props['is_box'] ?? false;
                 $this->competition = $competition;
+                $this->leagues     = $props['leagues'] ?? [];
             }
 
             public function get_seasons(): array {
@@ -357,5 +359,75 @@ class League_Archive_Template_Test extends TestCase {
         $this->assertSame( [], $warnings, 'Rendering championship archive template must produce zero PHP warnings' );
         $this->assertStringContainsString( 'Finals League', $output );
         $this->assertStringNotContainsString( 'id="pageContentTab"', $output );
+    }
+
+    public function test_league_selections_renders_dropdown_options_and_form_action_in_archive(): void {
+        $competition = new Competition(
+            name: 'Summer League 2026',
+            type: Competition_Type::LEAGUE,
+            age_group: 'Open',
+            id: 10
+        );
+        $event       = $this->create_event( $competition, [ 'seasons' => [ [ 'name' => '2026' ] ] ] );
+        $league_a    = $this->create_league( $event, [
+            'id'       => 101,
+            'title'    => 'Division A',
+            'event_id' => 20,
+        ] );
+        $league_b    = $this->create_league( $event, [
+            'id'       => 102,
+            'title'    => 'Division B',
+            'event_id' => 20,
+        ] );
+
+        $event->leagues = [ $league_a, $league_b ];
+
+        $league_service = $this->createStub( League_Service::class );
+        $league_service->method( 'get_league' )->willReturn( $league_a );
+
+        $comp_service = $this->createStub( Competition_Service::class );
+        $comp_service->method( 'get_event_by_id' )->willReturn( $event );
+
+        $event_repo  = $this->event_repository_with_results( [ 'query_leagues' => [ $league_a, $league_b ] ] );
+        $league_repo = $this->createStub( League_Repository_Interface::class );
+        $league_repo->method( 'find_by_id' )->willReturnCallback(
+            fn( int $id ) => 101 === $id ? $league_a : ( 102 === $id ? $league_b : null )
+        );
+
+        $presenter = new League_Archive_Presenter();
+        $handler   = new Get_League_Archive_Handler(
+            league_service: $league_service,
+            competition_service: $comp_service,
+            event_query_service: $this->event_query_service(
+                event_repository: $event_repo,
+                league_repository: $league_repo
+            )
+        );
+
+        $query = new Get_League_Archive_Query(
+            league_name: 'Division A',
+            post_id: 88
+        );
+
+        $vm = ( new League_Shortcode_Adapter( archive_presenter: $presenter ) )->present_archive( $handler->handle( $query ) );
+
+        $warnings = [];
+        $output   = $this->render_and_capture_warnings(
+            fn() => $this->view_presenter->render( $vm ),
+            $warnings
+        );
+
+        $this->assertSame( [], $warnings, 'Rendering league archive must produce zero PHP warnings' );
+        $this->assertStringContainsString( 'id="racketmanager_archive_selections"', $output );
+
+        preg_match( '/<div id="racketmanager_archive_selections".*?<\/div>/s', $output, $matches );
+        $selections_html = $matches[0] ?? '';
+
+        $this->assertStringContainsString( 'action="https://example.test/page/88"', $selections_html );
+        $this->assertStringContainsString( '<input type="hidden" name="page_id" value="88"', $selections_html );
+        $this->assertStringContainsString( '<option value="division-a" selected="selected">', $selections_html );
+        $this->assertStringContainsString( 'Division A', $selections_html );
+        $this->assertStringContainsString( '<option value="division-b">', $selections_html );
+        $this->assertStringContainsString( 'Division B', $selections_html );
     }
 }

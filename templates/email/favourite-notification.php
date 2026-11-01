@@ -16,6 +16,16 @@ namespace Racketmanager;
 /** @var string $contact */
 /** @var string $closing */
 /** @var string $title */
+/** @var array $vars */
+/** @var object|null $vm */
+$user          = $vars['user'] ?? $vm->user ?? $user ?? null;
+$match_url     = $vars['match_url'] ?? $vm->match_url ?? $match_url ?? '';
+$fixture       = $vars['fixture'] ?? $vm->fixture ?? $fixture ?? null;
+$home_team     = $vars['home_team'] ?? $vm->home_team ?? $home_team ?? null;
+$away_team     = $vars['away_team'] ?? $vm->away_team ?? $away_team ?? null;
+$from_email    = $vars['from_email'] ?? $vm->from_email ?? $from_email ?? '';
+$contact_email = $vars['contact_email'] ?? $vm->contact_email ?? $contact_email ?? $from_email;
+$favourite_url = $vars['favourite_url'] ?? $vm->favourite_url ?? $favourite_url ?? '';
 $email_subject = __( 'Match Result - Favourite Notification', 'racketmanager' );
 require 'email-header.php';
 ?>

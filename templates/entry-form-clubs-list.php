@@ -14,7 +14,10 @@ namespace Racketmanager;
 
 /** @var array $clubs */
 /** @var array<int|string, string> $club_urls */
-$club_urls = $club_urls ?? [];
+$clubs              = $clubs ?? ( $vm->clubs ?? ( $vars['clubs'] ?? [] ) );
+$club_urls          = $club_urls ?? ( $vm->club_urls ?? ( $vars['club_urls'] ?? [] ) );
+$competition        = $competition ?? ( $vm->competition ?? ( $vars['competition'] ?? null ) );
+$competition_header = $competition_header ?? ( $vm->competition_header ?? ( $vars['competition_header'] ?? null ) );
 ?>
 <div class="container">
     <?php

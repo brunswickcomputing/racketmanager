@@ -28,13 +28,57 @@
 	<config name="testVersion" value="8.4-"/>
 	<config name="text_domain" value="racketmanager"/>
 
-	<!-- Enforce full WordPress Coding Standards -->
+	<!-- Base ruleset: WordPress Coding Standards -->
 	<rule ref="WordPress">
+		<!-- Core exclusions for existing plugin architecture -->
 		<exclude name="WordPress.WP.DeprecatedFunctions.sanitize_urlFound"/>
 		<exclude name="WordPress.DB.DirectDatabaseQuery.DirectQuery"/>
 		<exclude name="WordPress.PHP.StrictInArray.FoundNonStrictFalse"/>
 		<exclude name="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound"/>
 		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.matchFound"/>
+
+		<!-- 1. Indentation: plugin uses 4 spaces instead of tabs -->
+		<exclude name="Generic.WhiteSpace.DisallowSpaceIndent"/>
+		<exclude name="Universal.WhiteSpace.PrecisionAlignment"/>
+
+		<!-- 2. Array syntax: plugin uses short arrays [] instead of long array() -->
+		<exclude name="Universal.Arrays.DisallowShortArraySyntax"/>
+
+		<!-- 3. File and class naming: PSR-4 conventions (e.g. League.php, not class-league.php) -->
+		<exclude name="WordPress.Files.FileName"/>
+
+		<!-- 4. Modern PHP strict typing: declare(strict_types=1) at top of file -->
+		<exclude name="PSR12.Files.FileHeader.IncorrectOrder"/>
+
+		<!-- 5. PHP 8.4 syntax compatibility (property hooks, etc.) -->
+		<exclude name="Squiz.PHP.NonExecutableCode.Unreachable"/>
+		<exclude name="PSR2.Classes.PropertyDeclaration.Multiple"/>
+		<exclude name="PSR2.Classes.PropertyDeclaration.ScopeMissing"/>
+
+		<!-- 6. Allow short ternary ?: -->
+		<exclude name="Universal.Operators.DisallowShortTernary"/>
+
+		<!-- 7. Namespace case sensitivity (e.g. Racketmanager\Infrastructure\Wordpress) -->
+		<exclude name="WordPress.WP.CapitalPDangit.MisspelledNamespaceName"/>
+	</rule>
+
+	<!-- Configure 4-space indentation across control structures, scopes, and arrays -->
+	<rule ref="Generic.WhiteSpace.ScopeIndent">
+		<properties>
+			<property name="indent" value="4"/>
+			<property name="tabIndent" value="false"/>
+			<property name="exact" value="false"/>
+			<property name="ignoreIndentationTokens" type="array">
+				<element value="T_HEREDOC"/>
+				<element value="T_NOWDOC"/>
+				<element value="T_INLINE_HTML"/>
+			</property>
+		</properties>
+	</rule>
+	<rule ref="WordPress.Arrays.ArrayIndentation">
+		<properties>
+			<property name="tabIndent" value="false"/>
+		</properties>
 	</rule>
 
 	<!-- Whitelist global prefix -->
@@ -67,5 +111,49 @@
 				<element value="edit_matches"/>
 			</property>
 		</properties>
+	</rule>
+	<!-- Test directory exclusions: omit strict docblock requirements, global prefixes, and high-churn array/alignment formatting -->
+	<!-- Explicit sniff list (mirrors the Squiz.Commenting sniffs WordPress enables). A category reference would also pull in LongConditionClosingComment and PostStatementComment. -->
+	<rule ref="Squiz.Commenting.BlockComment">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="Squiz.Commenting.ClassComment">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="Squiz.Commenting.ClosingDeclarationComment">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="Squiz.Commenting.DocCommentAlignment">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="Squiz.Commenting.EmptyCatchComment">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="Squiz.Commenting.FileComment">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="Squiz.Commenting.FunctionComment">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="Squiz.Commenting.FunctionCommentThrowTag">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="Squiz.Commenting.InlineComment">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="Squiz.Commenting.VariableComment">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.Arrays.MultipleStatementAlignment">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="Generic.Formatting.MultipleStatementAlignment">
+		<exclude-pattern>*/tests/*</exclude-pattern>
 	</rule>
 </ruleset>

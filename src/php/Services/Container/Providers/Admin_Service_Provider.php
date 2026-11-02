@@ -7,6 +7,7 @@ use Racketmanager\Application\Finance\Commands\Action_Invoice_Handler;
 use Racketmanager\Application\Finance\Commands\Generate_Charge_Invoices_Handler;
 use Racketmanager\Exceptions\Interface_Exception;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
+use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Wp_Admin_Redirector;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Admin_Ajax_Adapter;
@@ -30,7 +31,9 @@ use Racketmanager\Services\Admin\Event\Event_Action_Dispatcher;
 use Racketmanager\Services\Admin\Finance\Finance_Charge_Action_Dispatcher;
 use Racketmanager\Services\Admin\Finance\Finance_Invoice_Action_Dispatcher;
 use Racketmanager\Services\Admin\Import\Import_Action_Dispatcher;
+use Racketmanager\Services\Admin\Import\Import_Action_Dispatcher_Interface;
 use Racketmanager\Services\Admin\Index\Index_Action_Dispatcher;
+use Racketmanager\Services\Admin\Index\Index_Action_Dispatcher_Interface;
 use Racketmanager\Services\Admin\League\Event_Setup_Action_Dispatcher;
 use Racketmanager\Services\Admin\League\League_Constitution_Action_Dispatcher;
 use Racketmanager\Services\Admin\League\League_Contact_Action_Dispatcher;
@@ -42,11 +45,13 @@ use Racketmanager\Services\Admin\League\League_Setup_Action_Dispatcher;
 use Racketmanager\Services\Admin\League\League_Team_Action_Dispatcher;
 use Racketmanager\Services\Admin\League\Season_Delete_Action_Dispatcher;
 use Racketmanager\Services\Admin\Options\Options_Action_Dispatcher;
+use Racketmanager\Services\Admin\Options\Options_Action_Dispatcher_Interface;
 use Racketmanager\Services\Admin\Overview\Tournament_Overview_Action_Dispatcher;
 use Racketmanager\Services\Admin\Player\Player_Action_Dispatcher;
 use Racketmanager\Services\Admin\Player\Player_Error_Action_Dispatcher;
 use Racketmanager\Services\Admin\Player\Player_Request_Action_Dispatcher;
 use Racketmanager\Services\Admin\Result\Results_Checker_Action_Dispatcher;
+use Racketmanager\Services\Admin\Result\Results_Checker_Action_Dispatcher_Interface;
 use Racketmanager\Services\Admin\Season\Season_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Admin\Security\Wp_Action_Guard;
@@ -71,21 +76,27 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
         $container->set( 'admin_message_service', fn( Simple_Container $c ) => new Admin_Message_Service(
             $c->get( 'admin_flash_message_store' )
         ) );
+        $container->alias( Admin_Message_Service::class, 'admin_message_service' );
 
         $container->set( 'admin_redirector', fn() => new Wp_Admin_Redirector() );
+        $container->alias( Admin_Redirector_Interface::class, 'admin_redirector' );
+        $container->alias( Wp_Admin_Redirector::class, 'admin_redirector' );
 
         $container->set( 'admin_action_adapter', fn( Simple_Container $c ) => new Admin_Action_Adapter(
             $c->get( 'admin_message_service' ),
             $c->get( 'admin_redirector' )
         ) );
+        $container->alias( Admin_Action_Adapter::class, 'admin_action_adapter' );
 
         $container->set( 'admin_screen_presenter', fn( Simple_Container $c ) => new Admin_Screen_Presenter(
             $c->get( 'view_renderer' ),
             $c->get( 'admin_message_service' )
         ) );
+        $container->alias( Admin_Screen_Presenter::class, 'admin_screen_presenter' );
 
         // Guards & Handlers
         $container->set( 'wp_action_guard', fn() => new Wp_Action_Guard() );
+        $container->alias( Wp_Action_Guard::class, 'wp_action_guard' );
 
         $container->set( 'action_guard', function ( Simple_Container $c ) {
             $guard = $c->get( 'wp_action_guard' );
@@ -95,6 +106,7 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
 
             return $guard;
         } );
+        $container->alias( Action_Guard_Interface::class, 'action_guard' );
 
         $container->set( 'championship_admin_service', fn( Simple_Container $c ) => new Championship_Admin_Service(
             $c->get( 'league_service' ),
@@ -107,6 +119,7 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'event_repository' ),
             $c->get( 'league_query_service' )
         ) );
+        $container->alias( Championship_Admin_Service::class, 'championship_admin_service' );
 
         $container->set( 'draw_action_handler', function ( Simple_Container $c ) {
             $handler = $c->get( 'championship_admin_service' );
@@ -116,6 +129,7 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
 
             return $handler;
         } );
+        $container->alias( Draw_Action_Handler_Interface::class, 'draw_action_handler' );
 
         $container->set( 'draw_action_dispatcher', fn( Simple_Container $c ) => new Draw_Action_Dispatcher(
             $c->get( 'draw_action_handler' ),
@@ -131,6 +145,7 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'team_service' ),
             $c->get( 'league_query_service' )
         ) );
+        $container->alias( Tournament_Fixtures_Admin_Service::class, 'tournament_matches_admin_service' );
 
         $container->set( 'league_schedule_service', fn( Simple_Container $c ) => new League_Schedule_Service(
             $c->get( 'fixture_maintenance_service' ),
@@ -141,6 +156,7 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'event_query_service' ),
             $c->get( 'league_query_service' )
         ) );
+        $container->alias( League_Schedule_Service::class, 'league_schedule_service' );
 
         // Action Dispatchers
         $container->set( 'tournament_action_dispatcher', fn( Simple_Container $c ) => new Tournament_Action_Dispatcher(
@@ -307,6 +323,7 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'season_service' ),
             $c->get( 'action_guard' )
         ) );
+        $container->alias( Season_Action_Dispatcher::class, 'season_action_dispatcher' );
 
         $container->set( 'competition_handler', fn( Simple_Container $c ) => new \Racketmanager\Application\Admin\Commands\Competition_Handler(
             $c->get( 'competition_service' ),
@@ -392,11 +409,15 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'action_guard' ),
             commands: $c->get( 'results_checker_handler' )
         ) );
+        $container->alias( Results_Checker_Action_Dispatcher_Interface::class, 'results_checker_action_dispatcher' );
+        $container->alias( Results_Checker_Action_Dispatcher::class, 'results_checker_action_dispatcher' );
 
         $container->set( 'index_action_dispatcher', fn( Simple_Container $c ) => new Index_Action_Dispatcher(
             $c->get( 'competition_service' ),
             $c->get( 'action_guard' )
         ) );
+        $container->alias( Index_Action_Dispatcher_Interface::class, 'index_action_dispatcher' );
+        $container->alias( Index_Action_Dispatcher::class, 'index_action_dispatcher' );
 
         $container->set( 'import_action_dispatcher', fn( Simple_Container $c ) => new Import_Action_Dispatcher(
             $c->get( 'action_guard' ),
@@ -409,11 +430,15 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'team_service' ),
             $c->get( 'league_repository' )
         ) );
+        $container->alias( Import_Action_Dispatcher_Interface::class, 'import_action_dispatcher' );
+        $container->alias( Import_Action_Dispatcher::class, 'import_action_dispatcher' );
 
         $container->set( 'options_action_dispatcher', fn( Simple_Container $c ) => new Options_Action_Dispatcher(
             $c->get( 'action_guard' ),
             $c->get( 'option_service' )
         ) );
+        $container->alias( Options_Action_Dispatcher_Interface::class, 'options_action_dispatcher' );
+        $container->alias( Options_Action_Dispatcher::class, 'options_action_dispatcher' );
 
         $container->set( 'cup_setup_action_dispatcher', fn( Simple_Container $c ) => new Cup_Setup_Action_Dispatcher(
             $c->get( 'competition_service' ),
@@ -444,7 +469,9 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'event_repository' ),
             $c->get( 'team_repository' )
         ) );
+        $container->alias( Admin_Ajax_Adapter::class, 'admin_ajax_adapter' );
         $container->set( 'admin_ajax_controller', fn( Simple_Container $c ) => new Admin_Ajax_Controller( $app, $c->get( 'admin_ajax_adapter' ) ) );
+        $container->alias( Admin_Ajax_Controller::class, 'admin_ajax_controller' );
 
         $container->set( 'frontend_ajax_adapter', fn( Simple_Container $c ) => new Frontend_Ajax_Adapter(
             $c->get( 'security_service' ),
@@ -468,6 +495,8 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             view_presenter: $c->get( 'shortcode_view_presenter' ),
             team_repository: $c->get( 'team_repository' )
         ) );
+        $container->alias( Frontend_Ajax_Adapter::class, 'frontend_ajax_adapter' );
         $container->set( 'frontend_ajax_controller', fn( Simple_Container $c ) => new Frontend_Ajax_Controller( $app, $c->get( 'frontend_ajax_adapter' ) ) );
+        $container->alias( Frontend_Ajax_Controller::class, 'frontend_ajax_controller' );
     }
 }

@@ -30,7 +30,17 @@ use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
 use Racketmanager\Infrastructure\Gateways\Payment\Stripe_Payment_Gateway;
 use Racketmanager\Infrastructure\Gateways\Rating\Lta_Wtn_Gateway_Adapter;
+use Racketmanager\Infrastructure\Security\Security_Service_Interface;
+use Racketmanager\Repositories\Charge_Repository;
+use Racketmanager\Repositories\Interfaces\Charge_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Invoice_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Season_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
+use Racketmanager\Repositories\Invoice_Repository;
 use Racketmanager\Repositories\Message_Repository;
+use Racketmanager\Repositories\Repository_Provider;
+use Racketmanager\Repositories\Season_Repository;
 use Racketmanager\Repositories\User_Repository;
 use Racketmanager\Infrastructure\Security\Security_Service;
 use Racketmanager\Infrastructure\Time\Wordpress_Clock;
@@ -54,10 +64,6 @@ use Racketmanager\Infrastructure\Wordpress\Shortcodes\Message_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Shortcode_Registrar;
 use Racketmanager\Infrastructure\Wordpress\Templates\Template_Loader;
 use Racketmanager\RacketManager;
-use Racketmanager\Repositories\Charge_Repository;
-use Racketmanager\Repositories\Invoice_Repository;
-use Racketmanager\Repositories\Repository_Provider;
-use Racketmanager\Repositories\Season_Repository;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Export\Export_Service;
 use Racketmanager\Services\Finance_Service;
@@ -71,6 +77,7 @@ use Racketmanager\Services\Seo\Page_Title_Service;
 use Racketmanager\Services\Seo\Page_Title_Service_Interface;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
+use Racketmanager\Services\View\View_Renderer_Interface;
 
 /**
  * Service provider for core infrastructure, gateways, shared repositories, and general handlers.
@@ -86,15 +93,20 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         // Gateways & External Clients
         $container->set( 'domain_event_dispatcher', fn(): Domain_Event_Dispatcher_Interface => new Simple_Domain_Event_Dispatcher() );
         $container->set( Domain_Event_Dispatcher_Interface::class, fn( Simple_Container $c ): Domain_Event_Dispatcher_Interface => $c->get( 'domain_event_dispatcher' ) );
+        $container->alias( Simple_Domain_Event_Dispatcher::class, 'domain_event_dispatcher' );
         $container->set( 'rating_gateway', fn(): Rating_Gateway_Interface => new Lta_Wtn_Gateway_Adapter() );
         $container->set( Rating_Gateway_Interface::class, fn( Simple_Container $c ): Rating_Gateway_Interface => $c->get( 'rating_gateway' ) );
+        $container->alias( Lta_Wtn_Gateway_Adapter::class, 'rating_gateway' );
         $container->set( 'wtn_api_client', fn( Simple_Container $c ): Rating_Gateway_Interface => $c->get( 'rating_gateway' ) );
         $container->set( 'mailer', fn(): Mailer_Interface => new Wp_Mailer() );
         $container->set( Mailer_Interface::class, fn( Simple_Container $c ): Mailer_Interface => $c->get( 'mailer' ) );
+        $container->alias( Wp_Mailer::class, 'mailer' );
         $container->set( 'clock', fn(): Clock_Interface => new Wordpress_Clock() );
         $container->set( Clock_Interface::class, fn( Simple_Container $c ): Clock_Interface => $c->get( 'clock' ) );
+        $container->alias( Wordpress_Clock::class, 'clock' );
         $container->set( 'option_gateway', fn(): Option_Gateway_Interface => new Wp_Option_Gateway() );
         $container->set( Option_Gateway_Interface::class, fn( Simple_Container $c ): Option_Gateway_Interface => $c->get( 'option_gateway' ) );
+        $container->alias( Wp_Option_Gateway::class, 'option_gateway' );
         $container->set( 'option_service', fn( Simple_Container $c ): Option_Service => $app?->option_service ?? new Option_Service( $c->get( 'option_gateway' ) ) );
         $container->set( Option_Service::class, fn( Simple_Container $c ): Option_Service => $c->get( 'option_service' ) );
         $container->set( 'asset_manager', fn(): Asset_Manager => $app?->asset_manager ?? new Asset_Manager() );
@@ -107,14 +119,22 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->set( Shortcode_Registrar::class, fn( Simple_Container $c ): Shortcode_Registrar => $c->get( 'shortcode_registrar' ) );
         $container->set( 'payment_gateway', fn( Simple_Container $c ): Payment_Gateway_Interface => new Stripe_Payment_Gateway( $c->get( 'option_service' )->get_options( 'billing' ) ?? [] ) );
         $container->set( Payment_Gateway_Interface::class, fn( Simple_Container $c ): Payment_Gateway_Interface => $c->get( 'payment_gateway' ) );
+        $container->alias( Stripe_Payment_Gateway::class, 'payment_gateway' );
 
         // Core App & Settings
         $container->set( 'racketmanager_app', fn() => $app );
         $container->set( 'settings_service', fn( Simple_Container $c ) => new Settings_Service( $c->get( 'option_service' )->get_options(), $c->get( 'option_gateway' ) ) );
+        $container->alias( Settings_Service::class, 'settings_service' );
         $container->set( 'security_service', fn() => new Security_Service() );
+        $container->alias( Security_Service_Interface::class, 'security_service' );
+        $container->alias( Security_Service::class, 'security_service' );
         $container->set( 'json_response_factory', fn() => new Json_Response_Factory() );
+        $container->alias( Json_Response_Factory::class, 'json_response_factory' );
         $container->set( 'ajax_registry', fn() => new Ajax_Registry() );
+        $container->alias( Ajax_Registry::class, 'ajax_registry' );
         $container->set( 'view_renderer', fn() => new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) );
+        $container->alias( View_Renderer_Interface::class, 'view_renderer' );
+        $container->alias( Php_View_Renderer::class, 'view_renderer' );
         $container->set( 'page_title_service', fn(): Page_Title_Service => new Page_Title_Service( $app?->site_name ) );
         $container->set( Page_Title_Service::class, fn( Simple_Container $c ): Page_Title_Service => $c->get( 'page_title_service' ) );
         $container->set( Page_Title_Service_Interface::class, fn( Simple_Container $c ): Page_Title_Service => $c->get( 'page_title_service' ) );
@@ -135,8 +155,17 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
 
         // Core Repositories
         $container->set( 'season_repository', fn() => new Season_Repository() );
+        $container->alias( Season_Repository_Interface::class, 'season_repository' );
+        $container->alias( Season_Repository::class, 'season_repository' );
+
         $container->set( 'charge_repository', fn() => new Charge_Repository() );
+        $container->alias( Charge_Repository_Interface::class, 'charge_repository' );
+        $container->alias( Charge_Repository::class, 'charge_repository' );
+
         $container->set( 'invoice_repository', fn() => new Invoice_Repository() );
+        $container->alias( Invoice_Repository_Interface::class, 'invoice_repository' );
+        $container->alias( Invoice_Repository::class, 'invoice_repository' );
+
         $container->set( 'user_repository', fn( Simple_Container $c ) => new User_Repository(
             fn() => $c->get( 'league_repository' ),
             fn() => $c->get( 'club_repository' ),
@@ -144,8 +173,15 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             fn() => $c->get( 'player_repository' ),
             fn() => $c->get( 'team_repository' )
         ) );
+        $container->alias( User_Repository_Interface::class, 'user_repository' );
+        $container->alias( User_Repository::class, 'user_repository' );
+
         $container->set( 'message_repository', fn() => new Message_Repository() );
+        $container->alias( Message_Repository_Interface::class, 'message_repository' );
+        $container->alias( Message_Repository::class, 'message_repository' );
+
         $container->set( 'legacy_user_factory', fn( Simple_Container $c ) => new Legacy_User_Factory( $c->get( 'message_repository' ) ) );
+        $container->alias( Legacy_User_Factory::class, 'legacy_user_factory' );
 
         // Repository Provider Aggregate
         $container->set( 'repository_provider', fn( Simple_Container $c ) => new Repository_Provider(
@@ -162,12 +198,14 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             $c->get( 'fixture_repository' ),
             $c->get( 'club_repository' )
         ) );
+        $container->alias( Repository_Provider::class, 'repository_provider' );
 
         // Core Services
         $container->set( 'season_service', fn( Simple_Container $c ) => new Season_Service(
             $app,
             $c->get( 'season_repository' )
         ) );
+        $container->alias( Season_Service::class, 'season_service' );
 
         $container->set( 'finance_service', fn( Simple_Container $c ) => new Finance_Service(
             $app,
@@ -181,9 +219,10 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             $c->get( 'mailer' ),
             $c->get( 'option_service' )
         ) );
+        $container->alias( Finance_Service::class, 'finance_service' );
 
         $container->set( 'notify_service', fn( Simple_Container $c ) => new Notify_Service( $app, $c->get( 'mailer' ) ) );
-
+        $container->alias( Notify_Service::class, 'notify_service' );
 
         $container->set( 'notification_service', fn( Simple_Container $c ) => new Notification_Service(
             $c->get( 'repository_provider' ),
@@ -196,6 +235,7 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             fn() => $c->get( 'league_query_service' ),
             $c->get( 'option_service' )
         ) );
+        $container->alias( Notification_Service::class, 'notification_service' );
 
         // Export Services
         $container->set( 'exporter', fn( Simple_Container $c ): Data_Exporter_Interface => new Export_Service(
@@ -205,14 +245,19 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             $c->get( 'club_repository' )
         ) );
         $container->set( Data_Exporter_Interface::class, fn( Simple_Container $c ): Data_Exporter_Interface => $c->get( 'exporter' ) );
+        $container->alias( Export_Service::class, 'exporter' );
+
         $container->set( 'rest_controller_adapter', fn( Simple_Container $c ) => new Rest_Controller_Adapter(
             $c->get( 'league_repository' ),
             $c->get( 'team_repository' ),
             $c->get( 'competition_service' )
         ) );
+        $container->alias( Rest_Controller_Adapter::class, 'rest_controller_adapter' );
+
         $container->set( 'export_delivery_adapter', fn( Simple_Container $c ) => new Export_Delivery_Adapter(
             $c->get( 'racketmanager_app' )
         ) );
+        $container->alias( Export_Delivery_Adapter::class, 'export_delivery_adapter' );
         $container->set( 'export_admin_controller', fn( Simple_Container $c ) => $c->get( 'export_delivery_adapter' ) );
 
         // Core AJAX Controllers & Adapters
@@ -223,7 +268,9 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             $c->get( 'user_repository' ),
             $c->get( 'option_service' )
         ) );
+        $container->alias( Account_Ajax_Adapter::class, 'account_ajax_adapter' );
         $container->set( 'account_ajax_controller', fn( Simple_Container $c ) => new Account_Ajax_Controller( $app, $c->get( 'account_ajax_adapter' ) ) );
+        $container->alias( Account_Ajax_Controller::class, 'account_ajax_controller' );
 
         $container->set( 'set_purchase_order_handler', fn( Simple_Container $c ) => new Set_Purchase_Order_Handler(
             $c->get( 'finance_service' )
@@ -237,11 +284,14 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             get_purchase_order_handler: $c->get( 'get_purchase_order_handler' ),
             view_presenter: $c->get( 'shortcode_view_presenter' )
         ) );
+        $container->alias( Finance_Ajax_Adapter::class, 'finance_ajax_adapter' );
         $container->set( 'finance_ajax_controller', fn( Simple_Container $c ) => new Finance_Ajax_Controller( $app, $c->get( 'finance_ajax_adapter' ) ) );
+        $container->alias( Finance_Ajax_Controller::class, 'finance_ajax_controller' );
 
         // Core Gateways & Adapters
         $container->set( 'user_favourites_gateway', fn( Simple_Container $c ): User_Favourites_Gateway_Interface => new Wp_User_Favourites_Gateway( $c->get( 'security_service' ) ) );
         $container->set( User_Favourites_Gateway_Interface::class, fn( Simple_Container $c ): User_Favourites_Gateway_Interface => $c->get( 'user_favourites_gateway' ) );
+        $container->alias( Wp_User_Favourites_Gateway::class, 'user_favourites_gateway' );
 
         $container->set( 'email_shortcode_adapter', fn( Simple_Container $c ) => new Email_Shortcode_Adapter(
             fixture_repository: $c->get( 'fixture_repository' ),
@@ -254,6 +304,7 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             event_repository: $c->get( 'event_repository' ),
             competition_repository: $c->get( 'competition_repository' )
         ) );
+        $container->alias( Email_Shortcode_Adapter::class, 'email_shortcode_adapter' );
 
         // General / Auth / Message Queries & Shortcodes
         $container->set( 'get_login_form_handler', fn( Simple_Container $c ) => new Get_Login_Form_Handler( $c->get( 'option_gateway' ), $c->get( 'settings_service' ) ) );
@@ -271,6 +322,7 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             template_renderer: $c->get( 'shortcode_template_renderer' ),
             security_service: $c->get( 'security_service' )
         ) );
+        $container->alias( Login_Shortcode_Adapter::class, 'login_shortcode_adapter' );
 
         $container->set( 'get_messages_handler', fn( Simple_Container $c ) => new Get_Messages_Handler( $c->get( 'user_repository' ), $c->get( 'message_repository' ) ) );
         $container->set( 'get_message_handler', fn( Simple_Container $c ) => new Get_Message_Handler( $c->get( 'message_repository' ) ) );
@@ -284,6 +336,7 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             security_service: $c->get( 'security_service' ),
             message_presenter: $c->get( 'message_presenter' )
         ) );
+        $container->alias( Message_Shortcode_Adapter::class, 'message_shortcode_adapter' );
 
         $container->set( 'get_favourites_handler', fn( Simple_Container $c ) => new Get_Favourites_Handler(
             $c->get( 'user_repository' ),
@@ -320,5 +373,6 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             player_presenter: $c->get( 'player_presenter' ),
             invoice_presenter: $c->get( 'invoice_presenter' )
         ) );
+        $container->alias( General_Shortcode_Adapter::class, 'general_shortcode_adapter' );
     }
 }

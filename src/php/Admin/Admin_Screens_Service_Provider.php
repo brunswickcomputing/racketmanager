@@ -93,24 +93,30 @@ final readonly class Admin_Screens_Service_Provider implements Service_Provider_
         // Flash message store
         $container->set( 'admin_flash_message_store', fn(): Flash_Message_Store_Interface => new Admin_Flash_Message_Store() );
         $container->set( Flash_Message_Store_Interface::class, fn( Simple_Container $c ): Flash_Message_Store_Interface => $c->get( 'admin_flash_message_store' ) );
+        $container->alias( Admin_Flash_Message_Store::class, 'admin_flash_message_store' );
 
         // Admin Presenters
         $container->set( 'admin_date_presenter', fn() => new Admin_Date_Presenter() );
+        $container->alias( Admin_Date_Presenter::class, 'admin_date_presenter' );
         $container->set( 'admin_entry_link_presenter', fn() => new Admin_Entry_Link_Presenter() );
+        $container->alias( Admin_Entry_Link_Presenter::class, 'admin_entry_link_presenter' );
 
         $container->set( 'admin_league_matches_presenter', fn( Simple_Container $c ) => new Admin_League_Matches_Presenter(
             $c->get( 'admin_date_presenter' )
         ) );
+        $container->alias( Admin_League_Matches_Presenter::class, 'admin_league_matches_presenter' );
 
         $container->set( 'admin_championship_finals_presenter', fn( Simple_Container $c ): Championship_Finals_Presenter_Interface => new Admin_Championship_Finals_Presenter(
             $c->get( 'admin_date_presenter' )
         ) );
         $container->set( Championship_Finals_Presenter_Interface::class, fn( Simple_Container $c ) => $c->get( 'admin_championship_finals_presenter' ) );
+        $container->alias( Admin_Championship_Finals_Presenter::class, 'admin_championship_finals_presenter' );
 
         $container->set( 'admin_results_match_presenter', fn( Simple_Container $c ) => new Admin_Results_Match_Presenter(
             $c->get( 'admin_date_presenter' ),
             $c->get( 'league_repository' )
         ) );
+        $container->alias( Admin_Results_Match_Presenter::class, 'admin_results_match_presenter' );
 
         $container->set( 'admin_competition_page_presenter', fn( Simple_Container $c ) => new Admin_Competition_Page_Presenter(
             $c->get( 'competition_service' ),
@@ -125,8 +131,10 @@ final readonly class Admin_Screens_Service_Provider implements Service_Provider_
             $c->get( 'player_repository' ),
             $c->get( 'fixture_relation_loader' ),
         ) );
+        $container->alias( Admin_Plan_Presenter::class, 'admin_plan_presenter' );
 
         $container->set( 'admin_league_schedule_presenter', fn() => new Admin_League_Schedule_Presenter() );
+        $container->alias( Admin_League_Schedule_Presenter::class, 'admin_league_schedule_presenter' );
 
         $container->set( 'competition_config_admin_controller', fn( Simple_Container $c ) => new Competition_Config_Admin_Controller(
             $c->get( 'competition_service' ),

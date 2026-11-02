@@ -12,6 +12,7 @@ namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Services\Championship_Manager;
+use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Validator\Validator;
 
 /**
@@ -23,6 +24,22 @@ use Racketmanager\Services\Validator\Validator;
  * @subpackage Admin/Championship
  */
 class Admin_Championship extends Admin_Display {
+
+    private ?Championship_Manager $championship_manager = null;
+
+    public function __construct(
+        $plugin_instance = null,
+        ?Simple_Container $container = null,
+        ?Championship_Manager $championship_manager = null,
+    ) {
+        parent::__construct( $plugin_instance, $container );
+        $c                          = $container ?? ( $this->racketmanager->container ?? null );
+        $manager_key                = ( $c instanceof Simple_Container )
+            ? ( $c->has_definition( Championship_Manager::class ) ? Championship_Manager::class : ( $c->has( 'championship_manager' ) ? 'championship_manager' : null ) )
+            : null;
+        $this->championship_manager = $championship_manager ?? ( ( $c instanceof Simple_Container && $manager_key ) ? $c->get( $manager_key ) : null );
+    }
+
     /**
      * Handle administration panel
      *
@@ -69,9 +86,7 @@ class Admin_Championship extends Admin_Display {
                     $away_points = $_POST['away_points'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
                     $round       = isset( $_POST['round'] ) ? intval( $_POST['round'] ) : null;
 
-                    $championship_manager = isset( $this->racketmanager->container ) && $this->racketmanager->container->has( 'championship_manager' )
-                        ? $this->racketmanager->container->get( 'championship_manager' )
-                        : null;
+                    $championship_manager = $this->championship_manager;
                     if ( $championship_manager ) {
                         $num_updated = $championship_manager->update_final_results( $league->championship, $matches, $home_points, $away_points, $custom, $round );
                         $this->set_message( sprintf( __( 'Updated Results of %d fixtures', 'racketmanager' ), $num_updated ) );

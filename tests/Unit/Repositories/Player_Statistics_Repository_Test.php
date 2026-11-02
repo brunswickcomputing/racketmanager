@@ -37,7 +37,7 @@ final class Player_Statistics_Repository_Test extends TestCase {
 	}
 
 	private function make_wpdb( mixed $rows ): wpdb {
-		$wpdb                       = new wpdb();
+		$wpdb                       = new wpdb( 'test', 'test', 'test', 'localhost' );
 		$wpdb->get_results_callback = function ( string $query ) use ( $rows ) {
 			$this->queries[] = $query;
 			return $rows;

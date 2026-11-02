@@ -16,7 +16,9 @@ use Racketmanager\Admin\View_Models\Import_Page_View_Model;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
 use Racketmanager\Services\Admin\Import\Import_Action_Dispatcher_Interface;
+use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Validator\Validator;
+use Racketmanager\Services\View\View_Renderer_Interface;
 
 /**
  * RacketManager Import functions
@@ -35,9 +37,12 @@ class Admin_Import extends Admin_Display {
         ?Import_Action_Dispatcher_Interface $dispatcher = null,
     ) {
         parent::__construct( $plugin_instance );
-        $c                             = $this->racketmanager->container ?? null;
-        $this->actions                 = $actions ?? ( ( $c && $c->has( 'admin_action_adapter' ) ) ? $c->get( 'admin_action_adapter' ) : null );
-        $this->screens                 = $screens ?? ( ( $c && $c->has( 'admin_screen_presenter' ) ) ? $c->get( 'admin_screen_presenter' ) : null );
+        $c                              = $this->racketmanager->container;
+        $this->actions                  = $actions ?? $c->get( Admin_Action_Adapter::class );
+        $screens_key                    = $c->has_definition( Admin_Screen_Presenter::class )
+            ? Admin_Screen_Presenter::class
+            : ( $c->has_definition( 'admin_screen_presenter' ) ? 'admin_screen_presenter' : null );
+        $this->screens                  = $screens ?? ( $screens_key ? $c->get( $screens_key ) : null );
         $this->import_action_dispatcher = $dispatcher;
         if ( $this->actions ) {
             $this->admin_action_adapter = $this->actions;
@@ -57,7 +62,14 @@ class Admin_Import extends Admin_Display {
         }
 
         if ( isset( $_POST['import'] ) ) {
-            $dispatcher = $this->import_action_dispatcher ?? ( $this->racketmanager->container && $this->racketmanager->container->has( 'import_action_dispatcher' ) ? $this->racketmanager->container->get( 'import_action_dispatcher' ) : null );
+            $dispatcher = $this->import_action_dispatcher;
+            if ( null === $dispatcher && isset( $this->racketmanager->container ) ) {
+                $c              = $this->racketmanager->container;
+                $dispatcher_key = $c->has_definition( Import_Action_Dispatcher_Interface::class )
+                    ? Import_Action_Dispatcher_Interface::class
+                    : ( $c->has( 'import_action_dispatcher' ) ? 'import_action_dispatcher' : null );
+                $dispatcher     = $dispatcher_key ? $c->get( $dispatcher_key ) : null;
+            }
             if ( $dispatcher ) {
                 $result = $dispatcher->handle( $_GET, $_POST, $_FILES );
                 if ( $this->deliver_import_action_result( $result, $_GET ) ) {
@@ -90,14 +102,11 @@ class Admin_Import extends Admin_Display {
                 'admin/tools/import'
             );
         } else {
-            $renderer = $this->racketmanager->container && $this->racketmanager->container->has( 'view_renderer' )
-                ? $this->racketmanager->container->get( 'view_renderer' )
-                : null;
-            if ( $renderer ) {
-                $renderer->render( 'admin/tools/import', $vm );
-            } else {
-                require_once RACKETMANAGER_PATH . 'templates/admin/tools/import.php';
-            }
+            $renderer_key = $this->racketmanager->container->has( View_Renderer_Interface::class )
+                ? View_Renderer_Interface::class
+                : 'view_renderer';
+            $renderer     = $this->racketmanager->container->get( $renderer_key );
+            $renderer->render( 'admin/tools/import', $vm );
         }
     }
 }

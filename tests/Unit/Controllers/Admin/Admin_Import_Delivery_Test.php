@@ -197,6 +197,96 @@ final class Admin_Import_Delivery_Test extends TestCase {
 
         $this->assertInstanceOf( Admin_Action_Adapter::class, $actions_prop->getValue( $admin_import ) );
         $this->assertInstanceOf( Admin_Screen_Presenter::class, $screens_prop->getValue( $admin_import ) );
+        $this->assertSame( $container->get( 'admin_action_adapter' ), $actions_prop->getValue( $admin_import ) );
+        $this->assertSame( $container->get( 'admin_screen_presenter' ), $screens_prop->getValue( $admin_import ) );
+    }
+
+    public function test_admin_import_leaves_screens_null_and_renders_fallback_when_presenter_is_not_registered(): void {
+        $wpdb_mock         = $this->createStub( \wpdb::class );
+        $wpdb_mock->prefix = 'wp_';
+        $GLOBALS['wpdb']   = $wpdb_mock;
+
+        $racketmanager            = $this->createStub( RacketManager::class );
+        $racketmanager->method( 'get_options' )->willReturn( array() );
+        $racketmanager->options   = array();
+        $racketmanager->site_url  = 'https://example.com';
+        $racketmanager->site_name = 'Test Site';
+        $container                = Container_Bootstrap::boot( $racketmanager );
+        $container->remove( 'admin_screen_presenter' );
+        $container->remove( Admin_Screen_Presenter::class );
+
+        $club_service = $this->createStub( Club_Service::class );
+        $club_service->method( 'get_clubs' )->willReturn( array() );
+        $container->set( 'club_service', fn() => $club_service );
+
+        $competition_service = $this->createStub( Competition_Service::class );
+        $competition_service->method( 'get_all' )->willReturn( array() );
+        $container->set( 'competition_service', fn() => $competition_service );
+
+        $renderer = $this->createMock( View_Renderer_Interface::class );
+        $renderer->expects( self::once() )
+            ->method( 'render' )
+            ->with(
+                'admin/tools/import',
+                self::isInstanceOf( Import_Page_View_Model::class )
+            );
+        $container->set( 'view_renderer', fn() => $renderer );
+        $container->alias( View_Renderer_Interface::class, 'view_renderer' );
+
+        $racketmanager->container = $container;
+        $GLOBALS['racketmanager'] = $racketmanager;
+
+        $admin_import = new Admin_Import( $racketmanager );
+        $screens_prop = ( new \ReflectionProperty( Admin_Import::class, 'screens' ) );
+
+        $this->assertNull( $screens_prop->getValue( $admin_import ) );
+
+        $admin_import->display_import_page();
+    }
+
+    public function test_post_resolves_canonical_import_action_dispatcher_lazily(): void {
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_GET  = array( 'page' => 'racketmanager-import' );
+        $_POST = array( 'import' => '1' );
+
+        $wpdb_mock         = $this->createStub( \wpdb::class );
+        $wpdb_mock->prefix = 'wp_';
+        $GLOBALS['wpdb']   = $wpdb_mock;
+
+        $racketmanager            = $this->createStub( RacketManager::class );
+        $racketmanager->method( 'get_options' )->willReturn( array() );
+        $racketmanager->options   = array();
+        $racketmanager->site_url  = 'https://example.com';
+        $racketmanager->site_name = 'Test Site';
+        $container                = Container_Bootstrap::boot( $racketmanager );
+
+        $redirector = $this->createStub( Admin_Redirector_Interface::class );
+        $container->set(
+            'admin_action_adapter',
+            fn( $c ) => new Admin_Action_Adapter( $c->get( 'admin_message_service' ), $redirector )
+        );
+
+        $dispatcher = $this->createMock( Import_Action_Dispatcher_Interface::class );
+        $dispatcher->expects( self::once() )
+            ->method( 'handle' )
+            ->with( $_GET, $_POST, array() )
+            ->willReturn(
+                new Action_Result_DTO(
+                    message: 'Imported',
+                    message_type: Admin_Message_Type::SUCCESS,
+                )
+            );
+        $container->set( 'import_action_dispatcher', fn() => $dispatcher );
+
+        $racketmanager->container = $container;
+        $GLOBALS['racketmanager'] = $racketmanager;
+
+        $admin_import = new Admin_Import( $racketmanager );
+
+        $this->assertSame( $dispatcher, $container->get( Import_Action_Dispatcher_Interface::class ) );
+        $this->assertSame( $dispatcher, $container->get( 'import_action_dispatcher' ) );
+
+        $admin_import->display_import_page();
     }
 
     private function create_screen(

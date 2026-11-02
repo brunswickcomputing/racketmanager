@@ -48,17 +48,22 @@ final readonly class Presentation_Service_Provider implements Service_Provider_I
 
         // Presentation presenters & helpers
         $container->set( 'club_presenter', fn() => new Club_Presenter() );
+        $container->alias( Club_Presenter::class, 'club_presenter' );
 
         $container->set( 'player_presenter', fn( Simple_Container $c ) => new Player_Presenter(
             $c->get( 'competition_shortcode_presenter' ),
             $c->get( 'option_gateway' )
         ) );
+        $container->alias( Player_Presenter::class, 'player_presenter' );
 
         $container->set( 'favourite_presenter', fn( Simple_Container $c ) => new Favourite_Presenter( $c->get( 'user_favourites_gateway' ) ) );
+        $container->alias( Favourite_Presenter::class, 'favourite_presenter' );
 
         $container->set( 'invoice_presenter', fn() => new Invoice_Presenter() );
+        $container->alias( Invoice_Presenter::class, 'invoice_presenter' );
 
         $container->set( 'message_presenter', fn() => new Message_Presenter() );
+        $container->alias( Message_Presenter::class, 'message_presenter' );
 
         $container->set( 'notification_presenter', fn( Simple_Container $c ): Notification_Presenter_Interface => new Notification_Presenter(
             $c->get( 'team_repository' ),
@@ -75,29 +80,34 @@ final readonly class Presentation_Service_Provider implements Service_Provider_I
             $c->get( 'rubber_repository' ),
             $c->get( 'option_gateway' )
         ) );
-        $container->set( Notification_Presenter_Interface::class, fn( Simple_Container $c ) => $c->get( 'notification_presenter' ) );
+        $container->alias( Notification_Presenter_Interface::class, 'notification_presenter' );
+        $container->alias( Notification_Presenter::class, 'notification_presenter' );
 
         $container->set( 'competition_shortcode_presenter', fn( Simple_Container $c ) => new Competition_Shortcode_Presenter(
             $c->get( 'view_renderer' ),
             $c->get( 'club_presenter' ),
             option_gateway: $c->get( 'option_gateway' )
         ) );
+        $container->alias( Competition_Shortcode_Presenter::class, 'competition_shortcode_presenter' );
 
         $container->set( 'tournament_presenter', fn( Simple_Container $c ) => new Tournament_Presenter(
             date_format: (string) $c->get( 'option_gateway' )->get_option( 'date_format', 'Y-m-d' ),
             fixture_detail_service: $c->get( 'fixture_detail_service' ),
             team_match_row_presenter: $c->get( 'team_match_row_presenter' )
         ) );
+        $container->alias( Tournament_Presenter::class, 'tournament_presenter' );
 
         $container->set( 'league_archive_presenter', fn( Simple_Container $c ) => new League_Archive_Presenter(
             $c->get( 'option_gateway' )
         ) );
+        $container->alias( League_Archive_Presenter::class, 'league_archive_presenter' );
 
         $container->set( 'league_standings_presenter', fn( Simple_Container $c ) => new League_Standings_Presenter(
             $c->get( 'view_renderer' ),
             $c->get( 'club_presenter' ),
             $c->get( 'player_presenter' )
         ) );
+        $container->alias( League_Standings_Presenter::class, 'league_standings_presenter' );
 
         $container->set( 'order_of_play_presenter', fn( Simple_Container $c ) => new Order_Of_Play_Presenter(
             fixture_repository: $c->get( 'fixture_repository' ),
@@ -105,11 +115,13 @@ final readonly class Presentation_Service_Provider implements Service_Provider_I
             team_service: $c->get( 'team_service' ),
             option_gateway: $c->get( 'option_gateway' )
         ) );
+        $container->alias( Order_Of_Play_Presenter::class, 'order_of_play_presenter' );
 
         $container->set( 'team_details_presenter', fn( Simple_Container $c ) => new Team_Details_Presenter(
             $c->get( 'option_gateway' ),
             $c->get( 'settings_service' )
         ) );
+        $container->alias( Team_Details_Presenter::class, 'team_details_presenter' );
 
         $container->set( 'club_shortcode_presenter', fn( Simple_Container $c ) => new Club_Shortcode_Presenter(
             $c->get( 'view_renderer' ),
@@ -117,6 +129,7 @@ final readonly class Presentation_Service_Provider implements Service_Provider_I
             $c->get( 'player_presenter' ),
             $c->get( 'favourite_presenter' )
         ) );
+        $container->alias( Club_Shortcode_Presenter::class, 'club_shortcode_presenter' );
 
         $container->set( 'team_match_row_presenter', fn( Simple_Container $c ) => new Team_Match_Row_Presenter(
             $c->get( 'option_gateway' ),
@@ -126,12 +139,14 @@ final readonly class Presentation_Service_Provider implements Service_Provider_I
             $c->get( 'club_repository' ),
             $c->get( 'league_repository' )
         ) );
+        $container->alias( Team_Match_Row_Presenter::class, 'team_match_row_presenter' );
 
         $container->set( 'fixture_presenter', fn( Simple_Container $c ) => new Fixture_Presenter(
             $c->get( 'fixture_link_service' ),
             $c->get( 'option_gateway' ),
             $c->get( 'team_match_row_presenter' )
         ) );
+        $container->alias( Fixture_Presenter::class, 'fixture_presenter' );
 
         $container->set( 'results_checker_presenter', fn( Simple_Container $c ) => new Results_Checker_Presenter(
             $c->get( 'fixture_repository' ),
@@ -140,6 +155,7 @@ final readonly class Presentation_Service_Provider implements Service_Provider_I
             $c->get( 'league_repository' ),
             $c->get( 'fixture_detail_service' )
         ) );
+        $container->alias( Results_Checker_Presenter::class, 'results_checker_presenter' );
 
         $container->set( 'matches_list_presenter', fn( Simple_Container $c ) => new Matches_List_Presenter(
             $c->get( 'competition_service' ),
@@ -152,12 +168,14 @@ final readonly class Presentation_Service_Provider implements Service_Provider_I
             $c->get( 'player_presenter' ),
             $c->get( 'rubber_repository' )
         ) );
+        $container->alias( Matches_List_Presenter::class, 'matches_list_presenter' );
 
         $container->set( 'match_shortcode_presenter', fn( Simple_Container $c ) => new Match_Shortcode_Presenter(
             $c->get( 'shortcode_view_presenter' ),
             $c->get( 'fixture_presenter' ),
             $c->get( 'player_service' )
         ) );
+        $container->alias( Match_Shortcode_Presenter::class, 'match_shortcode_presenter' );
 
         $container->set( 'shortcode_template_renderer', fn( Simple_Container $c ) => new Shortcode_Template_Renderer(
             $c->get( 'view_renderer' ),
@@ -165,8 +183,10 @@ final readonly class Presentation_Service_Provider implements Service_Provider_I
             $c->get( 'player_presenter' ),
             $c->get( 'favourite_presenter' )
         ) );
+        $container->alias( Shortcode_Template_Renderer::class, 'shortcode_template_renderer' );
 
         $container->set( 'shortcode_view_presenter', fn( Simple_Container $c ) => new Shortcode_View_Presenter( $c->get( 'shortcode_template_renderer' ) ) );
+        $container->alias( Shortcode_View_Presenter::class, 'shortcode_view_presenter' );
 
         $container->set( 'email_shortcode_presenter', fn( Simple_Container $c ) => new Email_Shortcode_Presenter(
             tournament_service: $c->get( 'tournament_service' ),
@@ -179,5 +199,6 @@ final readonly class Presentation_Service_Provider implements Service_Provider_I
             rubber_repository: $c->get( 'rubber_repository' ),
             option_gateway: $c->get( 'option_gateway' )
         ) );
+        $container->alias( Email_Shortcode_Presenter::class, 'email_shortcode_presenter' );
     }
 }

@@ -25,7 +25,7 @@ final class Player_Repository_Test extends TestCase {
     }
 
     public function test_find_by_id_resolves_locked_user_name_from_get_userdata(): void {
-        $wpdb = new class extends wpdb {
+        $wpdb = new class( 'test', 'test', 'test', 'localhost' ) extends wpdb {
             public $prefix = 'wp_';
             public $base_prefix = 'wp_';
         };
@@ -64,7 +64,7 @@ final class Player_Repository_Test extends TestCase {
     }
 
     public function test_find_registered_player_autocomplete_short_term_returns_empty(): void {
-        $wpdb = new class extends wpdb {
+        $wpdb = new class( 'test', 'test', 'test', 'localhost' ) extends wpdb {
             public $prefix = 'wp_';
             public $base_prefix = 'wp_';
         };

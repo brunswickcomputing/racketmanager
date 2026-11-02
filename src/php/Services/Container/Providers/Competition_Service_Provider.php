@@ -64,6 +64,12 @@ use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapt
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Competition_Repository;
 use Racketmanager\Repositories\Event_Repository;
+use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Tournament_Entry_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Tournament_Repository_Interface;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Tournament_Entry_Repository;
@@ -105,18 +111,34 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             static fn() => $c->get( 'player_repository' ),
             static fn() => $c->get( 'event_repository' )
         ) );
+        $container->alias( Competition_Repository_Interface::class, 'competition_repository' );
+        $container->alias( Competition_Repository::class, 'competition_repository' );
+
         $container->set( 'event_repository', fn( Simple_Container $c ) => new Event_Repository( null, $c->get( 'competition_repository' ) ) );
+        $container->alias( Event_Repository_Interface::class, 'event_repository' );
+        $container->alias( Event_Repository::class, 'event_repository' );
+
         $container->set( 'league_team_repository', fn( Simple_Container $c ) => new League_Team_Repository( null, $c->get( 'club_repository' ), $c->get( 'team_repository' ) ) );
+        $container->alias( League_Team_Repository_Interface::class, 'league_team_repository' );
+        $container->alias( League_Team_Repository::class, 'league_team_repository' );
+
         $container->set( 'tournament_repository', fn( Simple_Container $c ) => new Tournament_Repository(
             competition_service: fn() => $c->get( 'competition_service' )
         ) );
+        $container->alias( Tournament_Repository_Interface::class, 'tournament_repository' );
+        $container->alias( Tournament_Repository::class, 'tournament_repository' );
+
         $container->set( 'tournament_entry_repository', fn() => new Tournament_Entry_Repository() );
+        $container->alias( Tournament_Entry_Repository_Interface::class, 'tournament_entry_repository' );
+        $container->alias( Tournament_Entry_Repository::class, 'tournament_entry_repository' );
 
         $container->set( 'league_repository', fn( Simple_Container $c ) => new League_Repository(
-            $c->has( 'wpdb' ) ? $c->get( 'wpdb' ) : null,
+            $c->has_definition( 'wpdb' ) ? $c->get( 'wpdb' ) : null,
             fn() => $c->get( 'event_repository' ),
             fn() => $c->get( 'league_query_service' )
         ) );
+        $container->alias( League_Repository_Interface::class, 'league_repository' );
+        $container->alias( League_Repository::class, 'league_repository' );
 
         $container->set( 'league_query_service', fn( Simple_Container $c ) => new League_Query_Service(
             $c->get( 'league_repository' ),
@@ -127,6 +149,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             fn() => $c->get( 'club_repository' ),
             fn() => $c->get( 'player_repository' )
         ) );
+        $container->alias( League_Query_Service::class, 'league_query_service' );
 
         $container->set( 'event_query_service', fn( Simple_Container $c ) => new Event_Query_Service(
             $c->get( 'event_repository' ),
@@ -137,6 +160,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             fn() => $c->get( 'club_repository' ),
             fn() => $c->get( 'player_repository' )
         ) );
+        $container->alias( Event_Query_Service::class, 'event_query_service' );
 
         $container->set( 'competition_league_schedule_service', fn( Simple_Container $c ) => new Competition_League_Schedule_Service(
             $c->get( 'fixture_service' ),
@@ -145,8 +169,10 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'event_query_service' ),
             fn() => $c->get( 'league_query_service' )
         ) );
+        $container->alias( Competition_League_Schedule_Service::class, 'competition_league_schedule_service' );
 
         $container->set( 'competition_scheduler', fn() => new Competition_Scheduler() );
+        $container->alias( Competition_Scheduler::class, 'competition_scheduler' );
         $container->set( 'competition_schedule_service', fn( Simple_Container $c ) => new Competition_Schedule_Service(
             $c->get( 'event_repository' ),
             $c->get( 'league_repository' ),
@@ -155,6 +181,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'fixture_service' ),
             $c->get( 'competition_scheduler' )
         ) );
+        $container->alias( Competition_Schedule_Service::class, 'competition_schedule_service' );
 
         // Services
         $container->set( 'competition_season_service', fn( Simple_Container $c ) => new Competition_Season_Service(
@@ -164,6 +191,8 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'league_repository' ),
             $c->get( 'domain_event_dispatcher' )
         ) );
+        $container->alias( Competition_Season_Service::class, 'competition_season_service' );
+
         $container->set( 'competition_service', fn( Simple_Container $c ) => new Competition_Service(
             $app,
             $c->get( 'competition_repository' ),
@@ -177,6 +206,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             fn() => $c->get( 'league_service' ),
             $c->get( 'option_service' )
         ) );
+        $container->alias( Competition_Service::class, 'competition_service' );
 
         $container->set( 'competition_notification_service', fn( Simple_Container $c ) => new Competition_Notification_Service(
             $c->get( 'option_service' ),
@@ -186,6 +216,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'league_query_service' ),
             $c->get( 'league_repository' )
         ) );
+        $container->alias( Competition_Notification_Service::class, 'competition_notification_service' );
 
         $container->set( 'promotion_relegation_service', fn( Simple_Container $c ) => new Promotion_Relegation_Service(
             $c->get( 'league_team_repository' ),
@@ -193,7 +224,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'event_repository' ),
             $c->get( 'team_repository' )
         ) );
-        $container->set( Promotion_Relegation_Service::class, fn( Simple_Container $c ) => $c->get( 'promotion_relegation_service' ) );
+        $container->alias( Promotion_Relegation_Service::class, 'promotion_relegation_service' );
 
         $container->set( 'league_service', fn( Simple_Container $c ) => new League_Service(
             $app,
@@ -208,7 +239,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'competition_notification_service' ),
             fn() => $c->get( 'league_query_service' )
         ) );
-        $container->set( League_Service::class, fn( Simple_Container $c ): League_Service => $c->get( 'league_service' ) );
+        $container->alias( League_Service::class, 'league_service' );
 
         $container->set( 'standings_service', fn( Simple_Container $c ) => new Standings_Service(
             $c->get( 'league_repository' ),
@@ -218,6 +249,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'rubber_repository' ),
             fn() => $c->get( 'league_query_service' )
         ) );
+        $container->alias( Standings_Service::class, 'standings_service' );
 
         $container->set( 'knockout_progression_service', fn( Simple_Container $c ) => new Knockout_Progression_Service(
             $c->get( 'fixture_repository' ),
@@ -226,6 +258,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             null,
             fn() => $c->get( 'league_query_service' )
         ) );
+        $container->alias( Knockout_Progression_Service::class, 'knockout_progression_service' );
 
         $container->set( 'tournament_service', function ( Simple_Container $c ) use ( $app ) {
             $service = new Tournament_Service(
@@ -249,6 +282,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'fixture_link_service' )->set_tournament_service( $service );
             return $service;
         } );
+        $container->alias( Tournament_Service::class, 'tournament_service' );
 
         $container->set( 'competition_entry_service', fn( Simple_Container $c ) => new Competition_Entry_Service(
             $app,
@@ -271,6 +305,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'player_repository' ),
             $c->get( 'event_repository' )
         ) );
+        $container->alias( Competition_Entry_Service::class, 'competition_entry_service' );
 
         // Competition Queries
         $container->set( 'get_competition_handler', fn( Simple_Container $c ) => new Get_Competition_Handler(
@@ -491,6 +526,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'league_query_service' ),
             $c->has( 'notification_service' ) ? $c->get( 'notification_service' ) : null
         ) );
+        $container->alias( Championship_Manager::class, 'championship_manager' );
 
         $container->set( 'get_event_dropdown_handler', fn( Simple_Container $c ) => new Get_Event_Dropdown_Handler(
             $c->get( 'competition_service' ),
@@ -599,6 +635,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             event_query_service: $c->get( 'event_query_service' ),
             player_presenter: $c->get( 'player_presenter' )
         ) );
+        $container->alias( Competition_Shortcode_Adapter::class, 'competition_shortcode_adapter' );
 
         $container->set( 'league_shortcode_adapter', fn( Simple_Container $c ) => new League_Shortcode_Adapter(
             $app,
@@ -625,6 +662,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             fixture_link_service: $c->get( 'fixture_link_service' ),
             fixture_permission_service: $c->get( 'fixture_permission_service' )
         ) );
+        $container->alias( League_Shortcode_Adapter::class, 'league_shortcode_adapter' );
 
         $container->set( 'event_shortcode_adapter', fn( Simple_Container $c ) => new Event_Shortcode_Adapter(
             $app,
@@ -646,6 +684,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             player_presenter: $c->get( 'player_presenter' ),
             team_details_presenter: $c->get( 'team_details_presenter' )
         ) );
+        $container->alias( Event_Shortcode_Adapter::class, 'event_shortcode_adapter' );
 
         $container->set( 'tournament_shortcode_adapter', fn( Simple_Container $c ) => new Tournament_Shortcode_Adapter(
             $app,
@@ -667,6 +706,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             player_presenter: $c->get( 'player_presenter' ),
             order_of_play_presenter: $c->get( 'order_of_play_presenter' )
         ) );
+        $container->alias( Tournament_Shortcode_Adapter::class, 'tournament_shortcode_adapter' );
 
         // AJAX
         $container->set( 'tournament_ajax_adapter', fn( Simple_Container $c ) => new Tournament_Ajax_Adapter(
@@ -680,6 +720,8 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             submit_tournament_partner_handler: $c->get( 'submit_tournament_partner_handler' ),
             submit_tournament_entry_handler: $c->get( 'submit_tournament_entry_handler' )
         ) );
+        $container->alias( Tournament_Ajax_Adapter::class, 'tournament_ajax_adapter' );
         $container->set( 'tournament_ajax_controller', fn( Simple_Container $c ) => new Tournament_Ajax_Controller( $app, $c->get( 'tournament_ajax_adapter' ) ) );
+        $container->alias( Tournament_Ajax_Controller::class, 'tournament_ajax_controller' );
     }
 }

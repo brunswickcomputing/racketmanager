@@ -57,7 +57,7 @@ final class Entity_Hydration_Characterization_Test extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->backup_globals();
-        $GLOBALS['wpdb'] = new \wpdb();
+        $GLOBALS['wpdb'] = new \wpdb( 'test', 'test', 'test', 'localhost' );
     }
 
     protected function tearDown(): void {

@@ -105,6 +105,23 @@ class Container_Bootstrap_Services_Test extends TestCase {
 
         $this->assertSame( $league_repository, $this->container->get( 'league_repository' ) );
         $this->assertSame( $fixture_repository, $this->container->get( 'fixture_repository' ) );
+
+        $prop = new \ReflectionProperty( League_Repository::class, 'wpdb' );
+        $this->assertSame( $GLOBALS['wpdb'], $prop->getValue( $league_repository ) );
+    }
+
+    public function test_league_repository_uses_explicitly_registered_wpdb_when_defined(): void {
+        $custom_wpdb = new \wpdb( 'custom_user', 'custom_pass', 'custom_db', 'localhost' );
+        $app_mock    = $this->createStub( RacketManager::class );
+        $app_mock->method( 'get_options' )->willReturn( [] );
+        $c = Container_Bootstrap::boot( $app_mock );
+        $c->set( 'wpdb', fn() => $custom_wpdb );
+
+        $league_repo = $c->get( 'league_repository' );
+        $this->assertInstanceOf( League_Repository::class, $league_repo );
+
+        $prop = new \ReflectionProperty( League_Repository::class, 'wpdb' );
+        $this->assertSame( $custom_wpdb, $prop->getValue( $league_repo ) );
     }
 
     public function test_team_service_and_fixture_repository_resolve_without_cycle(): void {
@@ -402,4 +419,190 @@ class Container_Bootstrap_Services_Test extends TestCase {
         $this->assertTrue( $this->container->has( 'championship_manager' ) );
         $this->assertInstanceOf( \Racketmanager\Services\Championship_Manager::class, $this->container->get( 'championship_manager' ) );
     }
+
+    public function test_container_resolves_all_domain_repository_interfaces_and_classes_to_canonical_instances(): void {
+        $repository_mappings = [
+            'club_repository'              => [
+                \Racketmanager\Repositories\Interfaces\Club_Repository_Interface::class,
+                \Racketmanager\Repositories\Club_Repository::class,
+            ],
+            'registration_repository'      => [
+                \Racketmanager\Repositories\Interfaces\Registration_Repository_Interface::class,
+                \Racketmanager\Repositories\Registration_Repository::class,
+            ],
+            'club_role_repository'         => [
+                \Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface::class,
+                \Racketmanager\Repositories\Club_Role_Repository::class,
+            ],
+            'team_repository'              => [
+                \Racketmanager\Repositories\Interfaces\Team_Repository_Interface::class,
+                \Racketmanager\Repositories\Team_Repository::class,
+            ],
+            'competition_repository'       => [
+                \Racketmanager\Repositories\Interfaces\Competition_Repository_Interface::class,
+                \Racketmanager\Repositories\Competition_Repository::class,
+            ],
+            'event_repository'             => [
+                \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class,
+                \Racketmanager\Repositories\Event_Repository::class,
+            ],
+            'league_team_repository'       => [
+                \Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface::class,
+                \Racketmanager\Repositories\League_Team_Repository::class,
+            ],
+            'tournament_repository'        => [
+                \Racketmanager\Repositories\Interfaces\Tournament_Repository_Interface::class,
+                \Racketmanager\Repositories\Tournament_Repository::class,
+            ],
+            'tournament_entry_repository'  => [
+                \Racketmanager\Repositories\Interfaces\Tournament_Entry_Repository_Interface::class,
+                \Racketmanager\Repositories\Tournament_Entry_Repository::class,
+            ],
+            'league_repository'            => [
+                \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class,
+                \Racketmanager\Repositories\League_Repository::class,
+            ],
+            'fixture_repository'           => [
+                \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class,
+                \Racketmanager\Repositories\Fixture_Repository::class,
+            ],
+            'rubber_repository'            => [
+                \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class,
+                \Racketmanager\Repositories\Rubber_Repository::class,
+            ],
+            'results_checker_repository'   => [
+                \Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface::class,
+                \Racketmanager\Repositories\Results_Checker_Repository::class,
+            ],
+            'results_report_repository'    => [
+                \Racketmanager\Repositories\Interfaces\Results_Report_Repository_Interface::class,
+                \Racketmanager\Repositories\Results_Report_Repository::class,
+            ],
+            'result_repository'            => [
+                \Racketmanager\Repositories\Interfaces\Result_Repository_Interface::class,
+                \Racketmanager\Repositories\Result_Repository::class,
+            ],
+            'player_repository'            => [
+                \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class,
+                \Racketmanager\Repositories\Player_Repository::class,
+            ],
+            'player_error_repository'      => [
+                \Racketmanager\Repositories\Interfaces\Player_Error_Repository_Interface::class,
+                \Racketmanager\Repositories\Player_Error_Repository::class,
+            ],
+            'player_statistics_repository' => [
+                \Racketmanager\Repositories\Interfaces\Player_Statistics_Repository_Interface::class,
+                \Racketmanager\Repositories\Player_Statistics_Repository::class,
+            ],
+            'season_repository'            => [
+                \Racketmanager\Repositories\Interfaces\Season_Repository_Interface::class,
+                \Racketmanager\Repositories\Season_Repository::class,
+            ],
+            'charge_repository'            => [
+                \Racketmanager\Repositories\Interfaces\Charge_Repository_Interface::class,
+                \Racketmanager\Repositories\Charge_Repository::class,
+            ],
+            'invoice_repository'           => [
+                \Racketmanager\Repositories\Interfaces\Invoice_Repository_Interface::class,
+                \Racketmanager\Repositories\Invoice_Repository::class,
+            ],
+            'user_repository'              => [
+                \Racketmanager\Repositories\Interfaces\User_Repository_Interface::class,
+                \Racketmanager\Repositories\User_Repository::class,
+            ],
+            'message_repository'           => [
+                \Racketmanager\Repositories\Interfaces\Message_Repository_Interface::class,
+                \Racketmanager\Repositories\Message_Repository::class,
+            ],
+        ];
+
+        foreach ( $repository_mappings as $string_id => [ $interface_class, $concrete_class ] ) {
+            $this->assertTrue( $this->container->has( $string_id ), "Missing string ID: $string_id" );
+            $this->assertTrue( $this->container->has_definition( $string_id ), "Missing definition for: $string_id" );
+            $this->assertTrue( $this->container->has( $interface_class ), "Missing interface: $interface_class" );
+            $this->assertTrue( $this->container->has_definition( $interface_class ), "Missing interface definition: $interface_class" );
+            $this->assertTrue( $this->container->has( $concrete_class ), "Missing concrete: $concrete_class" );
+            $this->assertTrue( $this->container->has_definition( $concrete_class ), "Missing concrete definition: $concrete_class" );
+
+            $from_string    = $this->container->get( $string_id );
+            $from_interface = $this->container->get( $interface_class );
+            $from_concrete  = $this->container->get( $concrete_class );
+
+            $this->assertInstanceOf( $interface_class, $from_string );
+            $this->assertInstanceOf( $concrete_class, $from_string );
+            $this->assertSame( $from_string, $from_interface, "Instance mismatch for $string_id vs $interface_class" );
+            $this->assertSame( $from_string, $from_concrete, "Instance mismatch for $string_id vs $concrete_class" );
+        }
+    }
+
+    public function test_container_resolves_domain_services_and_ports_to_canonical_instances(): void {
+        $service_mappings = [
+            'club_service'            => \Racketmanager\Services\Club_Service::class,
+            'team_service'            => \Racketmanager\Services\Team_Service::class,
+            'registration_service'    => \Racketmanager\Services\Registration_Service::class,
+            'competition_service'     => \Racketmanager\Services\Competition_Service::class,
+            'league_service'          => \Racketmanager\Services\League_Service::class,
+            'tournament_service'      => \Racketmanager\Services\Tournament_Service::class,
+            'fixture_service'         => \Racketmanager\Services\Fixture_Service::class,
+            'result_service'          => \Racketmanager\Services\Result_Service::class,
+            'player_service'          => \Racketmanager\Services\Player_Service::class,
+            'finance_service'         => \Racketmanager\Services\Finance_Service::class,
+            'season_service'          => \Racketmanager\Services\Season_Service::class,
+            'notification_service'    => \Racketmanager\Services\Notification\Notification_Service::class,
+            'league_query_service'    => \Racketmanager\Services\Competition\League_Query_Service::class,
+            'event_query_service'     => \Racketmanager\Services\Competition\Event_Query_Service::class,
+            'player_query_service'    => \Racketmanager\Services\Player_Query_Service::class,
+            'player_stats_service'    => \Racketmanager\Services\Player_Stats_Service::class,
+            'security_service'        => \Racketmanager\Infrastructure\Security\Security_Service_Interface::class,
+            'view_renderer'           => \Racketmanager\Services\View\View_Renderer_Interface::class,
+            'mailer'                  => \Racketmanager\Application\Mail\Mailer_Interface::class,
+            'clock'                   => \Racketmanager\Domain\Ports\Clock_Interface::class,
+            'rating_gateway'          => \Racketmanager\Domain\Ports\Rating_Gateway_Interface::class,
+            'payment_gateway'         => \Racketmanager\Application\Payment\Ports\Payment_Gateway_Interface::class,
+            'option_gateway'          => \Racketmanager\Application\Ports\Option_Gateway_Interface::class,
+            'user_favourites_gateway' => \Racketmanager\Application\Account\Ports\User_Favourites_Gateway_Interface::class,
+            'exporter'                => \Racketmanager\Application\Export\Ports\Data_Exporter_Interface::class,
+            'admin_redirector'        => \Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface::class,
+            'action_guard'            => \Racketmanager\Services\Admin\Security\Action_Guard_Interface::class,
+            'notification_presenter'  => \Racketmanager\Services\Notification\Notification_Presenter_Interface::class,
+            'club_presenter'          => \Racketmanager\Presentation\Presenters\Club_Presenter::class,
+            'player_presenter'        => \Racketmanager\Presentation\Presenters\Player_Presenter::class,
+            'fixture_presenter'       => \Racketmanager\Presentation\Presenters\Fixture_Presenter::class,
+        ];
+
+        foreach ( $service_mappings as $string_id => $class_or_interface ) {
+            $this->assertTrue( $this->container->has( $string_id ), "Missing string ID: $string_id" );
+            $this->assertTrue( $this->container->has_definition( $string_id ), "Missing definition for: $string_id" );
+            $this->assertTrue( $this->container->has( $class_or_interface ), "Missing class/interface: $class_or_interface" );
+            $this->assertTrue( $this->container->has_definition( $class_or_interface ), "Missing class/interface definition: $class_or_interface" );
+
+            $from_string = $this->container->get( $string_id );
+            $from_class  = $this->container->get( $class_or_interface );
+
+            $this->assertInstanceOf( $class_or_interface, $from_string );
+            $this->assertSame( $from_string, $from_class, "Instance mismatch for $string_id vs $class_or_interface" );
+        }
+    }
+
+    public function test_autowired_class_resolves_repository_interface_dependencies_without_explicit_registration(): void {
+        $consumer = $this->container->get( Bootstrap_Autowire_Test_Consumer::class );
+
+        $this->assertInstanceOf( Bootstrap_Autowire_Test_Consumer::class, $consumer );
+        $this->assertSame( $this->container->get( 'club_repository' ), $consumer->club_repo );
+        $this->assertSame( $this->container->get( 'player_repository' ), $consumer->player_repo );
+        $this->assertSame( $this->container->get( 'fixture_repository' ), $consumer->fixture_repo );
+        $this->assertSame( $this->container->get( 'club_service' ), $consumer->club_service );
+
+        // Shared instance check on repeated resolution
+        $this->assertSame( $consumer, $this->container->get( Bootstrap_Autowire_Test_Consumer::class ) );
+    }
+}
+
+final class Bootstrap_Autowire_Test_Consumer {
+    public function __construct(
+        public \Racketmanager\Repositories\Interfaces\Club_Repository_Interface $club_repo,
+        public \Racketmanager\Repositories\Interfaces\Player_Repository_Interface $player_repo,
+        public \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface $fixture_repo,
+        public \Racketmanager\Services\Club_Service $club_service,
+    ) {}
 }

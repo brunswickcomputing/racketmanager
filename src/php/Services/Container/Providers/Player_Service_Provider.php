@@ -12,8 +12,9 @@ use Racketmanager\Application\Player\Queries\Get_Player_Details_Handler;
 use Racketmanager\Application\Player\Queries\Search_Players_Handler;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Player_Error_Repository_Interface;
-use Racketmanager\Repositories\Player_Error_Repository;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Statistics_Repository_Interface;
+use Racketmanager\Repositories\Player_Error_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Repositories\Player_Statistics_Repository;
 use Racketmanager\Services\Container\Simple_Container;
@@ -36,10 +37,16 @@ final readonly class Player_Service_Provider implements Service_Provider_Interfa
 
         // Repositories
         $container->set( 'player_repository', fn() => new Player_Repository() );
+        $container->alias( Player_Repository_Interface::class, 'player_repository' );
+        $container->alias( Player_Repository::class, 'player_repository' );
 
         $container->set( 'player_error_repository', fn(): Player_Error_Repository_Interface => new Player_Error_Repository() );
+        $container->alias( Player_Error_Repository_Interface::class, 'player_error_repository' );
+        $container->alias( Player_Error_Repository::class, 'player_error_repository' );
 
         $container->set( 'player_statistics_repository', fn(): Player_Statistics_Repository_Interface => new Player_Statistics_Repository() );
+        $container->alias( Player_Statistics_Repository_Interface::class, 'player_statistics_repository' );
+        $container->alias( Player_Statistics_Repository::class, 'player_statistics_repository' );
 
         // Services
         $container->set( 'player_query_service', fn( Simple_Container $c ) => new Player_Query_Service(
@@ -51,14 +58,17 @@ final readonly class Player_Service_Provider implements Service_Provider_Interfa
             fn() => $c->get( 'event_query_service' ),
             fn() => $c->get( 'league_query_service' )
         ) );
+        $container->alias( Player_Query_Service::class, 'player_query_service' );
 
         $container->set( 'player_stats_service', fn( Simple_Container $c ) => new Player_Stats_Service(
             $c->get( 'player_query_service' )
         ) );
+        $container->alias( Player_Stats_Service::class, 'player_stats_service' );
 
         $container->set( 'player_details_validator', fn( Simple_Container $c ) => new Player_Details_Validator(
             $c->get( 'player_repository' )
         ) );
+        $container->alias( Player_Details_Validator::class, 'player_details_validator' );
 
         $container->set( 'player_service', fn( Simple_Container $c ) => new Player_Service(
             $app,
@@ -72,6 +82,7 @@ final readonly class Player_Service_Provider implements Service_Provider_Interfa
             $c->get( 'mailer' ),
             $c->get( 'player_details_validator' )
         ) );
+        $container->alias( Player_Service::class, 'player_service' );
 
         $container->set( 'player_validation_service', fn( Simple_Container $c ) => new Player_Validation_Service(
             $c->get( 'registration_service' ),
@@ -80,6 +91,7 @@ final readonly class Player_Service_Provider implements Service_Provider_Interfa
             $c->get( 'player_repository' ),
             $c->get( 'player_details_validator' )
         ) );
+        $container->alias( Player_Validation_Service::class, 'player_validation_service' );
 
         // Query Handlers
         $container->set( 'get_players_handler', fn( Simple_Container $c ) => new Get_Players_Handler(

@@ -425,6 +425,88 @@ final class Admin_Result_Delivery_Test extends TestCase {
         $this->assertInstanceOf( Admin_Result::class, new Admin_Result( $plugin ) );
     }
 
+    public function test_constructor_resolves_canonical_shared_instances_matching_string_keys(): void {
+        $container = $this->create_admin_delivery_container(
+            services: array(
+                'competition_service' => $this->competition_service,
+                'season_service'      => $this->season_service,
+                'league_repository'   => $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class ),
+                'fixture_repository'  => $this->createStub( Fixture_Repository_Interface::class ),
+            ),
+            redirector: $this->redirector,
+            flash_store: $this->flash_store,
+        );
+
+        $plugin            = $this->createStub( RacketManager::class );
+        $plugin->container = $container;
+
+        $admin_result = new Admin_Result( $plugin );
+
+        $match_prop   = new \ReflectionProperty( Admin_Result::class, 'results_match_presenter' );
+        $checker_prop = new \ReflectionProperty( Admin_Result::class, 'results_checker_presenter' );
+
+        $this->assertSame( $container->get( 'admin_results_match_presenter' ), $match_prop->getValue( $admin_result ) );
+        $this->assertSame( $container->get( 'results_checker_presenter' ), $checker_prop->getValue( $admin_result ) );
+    }
+
+    public function test_constructor_resolves_presenters_when_only_string_keys_are_registered_without_autowiring_duplicates(): void {
+        $container = $this->create_admin_delivery_container(
+            services: array(
+                'competition_service' => $this->competition_service,
+                'season_service'      => $this->season_service,
+                'league_repository'   => $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class ),
+                'fixture_repository'  => $this->createStub( Fixture_Repository_Interface::class ),
+            ),
+            redirector: $this->redirector,
+            flash_store: $this->flash_store,
+        );
+
+        $container->remove( \Racketmanager\Admin\Presenters\Admin_Results_Match_Presenter::class );
+        $container->remove( \Racketmanager\Presentation\Presenters\Results_Checker_Presenter::class );
+
+        $this->assertFalse( $container->has_definition( \Racketmanager\Admin\Presenters\Admin_Results_Match_Presenter::class ) );
+        $this->assertFalse( $container->has_definition( \Racketmanager\Presentation\Presenters\Results_Checker_Presenter::class ) );
+        $this->assertTrue( $container->has( 'admin_results_match_presenter' ) );
+        $this->assertTrue( $container->has( 'results_checker_presenter' ) );
+
+        $plugin            = $this->createStub( RacketManager::class );
+        $plugin->container = $container;
+
+        $admin_result = new Admin_Result( $plugin );
+
+        $match_prop   = new \ReflectionProperty( Admin_Result::class, 'results_match_presenter' );
+        $checker_prop = new \ReflectionProperty( Admin_Result::class, 'results_checker_presenter' );
+
+        $this->assertSame( $container->get( 'admin_results_match_presenter' ), $match_prop->getValue( $admin_result ) );
+        $this->assertSame( $container->get( 'results_checker_presenter' ), $checker_prop->getValue( $admin_result ) );
+    }
+
+    public function test_display_results_page_throws_logic_exception_when_dispatcher_is_not_registered_on_post(): void {
+        $_POST['doResultsChecker'] = '1';
+
+        $container = $this->create_admin_delivery_container(
+            services: array(
+                'competition_service'                => $this->competition_service,
+                'season_service'                     => $this->season_service,
+                'league_repository'                  => $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class ),
+                'fixture_repository'                 => $this->createStub( Fixture_Repository_Interface::class ),
+                'results_checker_action_dispatcher' => false,
+            ),
+            redirector: $this->redirector,
+            flash_store: $this->flash_store,
+        );
+
+        $plugin            = $this->createStub( RacketManager::class );
+        $plugin->container = $container;
+
+        $admin_result = new Admin_Result( $plugin );
+
+        $this->expectException( \LogicException::class );
+        $this->expectExceptionMessage( 'The results checker action dispatcher is not registered.' );
+
+        $admin_result->display_results_page();
+    }
+
     public function test_display_results_page_uses_injected_presenter_and_ignores_global_racketmanager(): void {
         $GLOBALS['racketmanager'] = (object) array( 'deliberately_different' => true );
 

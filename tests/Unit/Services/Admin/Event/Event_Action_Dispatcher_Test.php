@@ -27,7 +27,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->backup_globals();
-        $GLOBALS['wpdb']              = new class() extends \wpdb {
+        $GLOBALS['wpdb']              = new class( 'test', 'test', 'test', 'localhost' ) extends \wpdb {
             public $insert_id = 5;
             public $racketmanager_events = 'events';
             public $racketmanager = 'leagues';

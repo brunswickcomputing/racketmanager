@@ -22,7 +22,11 @@ use Racketmanager\Infrastructure\Wordpress\Shortcodes\Fixture_Shortcode_Controll
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Matches_Shortcode_Adapter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Fixture_Repository;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Result_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Results_Report_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\Result_Repository;
 use Racketmanager\Repositories\Results_Checker_Repository;
 use Racketmanager\Repositories\Results_Report_Repository;
@@ -66,26 +70,43 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             $c->get( 'league_repository' ),
             $c->get( 'fixture_team_resolver' )
         ) );
+        $container->alias( Fixture_Relation_Loader::class, 'fixture_relation_loader' );
+
         $container->set( 'fixture_repository', fn( Simple_Container $c ) => new Fixture_Repository(
             relation_loader: $c->get( 'fixture_relation_loader' ),
             rubber_repository: $c->get( 'rubber_repository' ),
             league_repository: $c->get( 'league_repository' ),
             team_repository: $c->get( 'team_repository' )
         ) );
+        $container->alias( Fixture_Repository_Interface::class, 'fixture_repository' );
+        $container->alias( Fixture_Repository::class, 'fixture_repository' );
 
         $container->set( 'rubber_repository', fn( Simple_Container $c ) => new Rubber_Repository( $c->get( 'registration_service' ) ) );
+        $container->alias( Rubber_Repository_Interface::class, 'rubber_repository' );
+        $container->alias( Rubber_Repository::class, 'rubber_repository' );
+
         $container->set( 'results_checker_repository', fn() => new Results_Checker_Repository() );
+        $container->alias( Results_Checker_Repository_Interface::class, 'results_checker_repository' );
+        $container->alias( Results_Checker_Repository::class, 'results_checker_repository' );
+
         $container->set( 'results_report_repository', fn() => new Results_Report_Repository() );
+        $container->alias( Results_Report_Repository_Interface::class, 'results_report_repository' );
+        $container->alias( Results_Report_Repository::class, 'results_report_repository' );
+
         $container->set( 'result_repository', fn(): Result_Repository_Interface => new Result_Repository() );
+        $container->alias( Result_Repository_Interface::class, 'result_repository' );
+        $container->alias( Result_Repository::class, 'result_repository' );
 
         // Services
         $container->set( 'fixture_link_service', fn() => new Fixture_Link_Service() );
+        $container->alias( Fixture_Link_Service::class, 'fixture_link_service' );
 
         $container->set( 'fixture_permission_service', fn( Simple_Container $c ) => new Fixture_Permission_Service(
             $c->get( 'repository_provider' ),
             $c->get( 'registration_service' ),
             $app?->get_options() ?? []
         ) );
+        $container->alias( Fixture_Permission_Service::class, 'fixture_permission_service' );
 
         $container->set( 'fixture_detail_service', fn( Simple_Container $c ) => new Fixture_Detail_Service(
             $c->get( 'repository_provider' ),
@@ -94,11 +115,13 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             $c->get( 'fixture_permission_service' ),
             $c->get( 'fixture_link_service' )
         ) );
+        $container->alias( Fixture_Detail_Service::class, 'fixture_detail_service' );
 
         $container->set( 'result_reporting_service', fn( Simple_Container $c ) => new Result_Reporting_Service(
             $c->get( 'repository_provider' ),
             $c->get( 'option_gateway' )
         ) );
+        $container->alias( Result_Reporting_Service::class, 'result_reporting_service' );
 
         $container->set( 'schedule_fixture_report_listener', fn( Simple_Container $c ) => new Schedule_Fixture_Report_Listener(
             $c->get( 'result_reporting_service' )
@@ -123,6 +146,7 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             $c->get( 'result_reporting_service' ),
             $c->get( 'domain_event_dispatcher' )
         ) );
+        $container->alias( Fixture_Finalization_Service::class, 'fixture_finalization_service' );
 
         $container->set( 'rubber_result_manager', fn( Simple_Container $c ) => new Rubber_Result_Manager(
             $c->get( 'score_validation_service' ),
@@ -130,6 +154,7 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             $c->get( 'rubber_repository' ),
             $c->get( 'player_validation_service' )
         ) );
+        $container->alias( Rubber_Result_Manager::class, 'rubber_result_manager' );
 
         $container->set( 'fixture_service_provider', function ( Simple_Container $c ) {
             $service_provider = new Internal_Fixture_Service_Provider(
@@ -159,7 +184,7 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             $c->get( 'fixture_permission_service' ),
             $c->get( 'fixture_detail_service' )
         ) );
-        $container->set( Fixture_Service::class, fn( Simple_Container $c ): Fixture_Service => $c->get( 'fixture_service' ) );
+        $container->alias( Fixture_Service::class, 'fixture_service' );
 
         $container->set( 'fixture_result_manager', function ( Simple_Container $c ) {
             $service_provider = $c->get( 'fixture_service_provider' );
@@ -171,26 +196,29 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
 
             return $result_manager;
         } );
+        $container->alias( Fixture_Result_Manager::class, 'fixture_result_manager' );
 
         $container->set( 'fixture_maintenance_service', function ( Simple_Container $c ) {
             $result_manager = $c->get( 'fixture_result_manager' );
 
             return $result_manager->get_fixture_maintenance_service();
         } );
+        $container->alias( Fixture_Maintenance_Service::class, 'fixture_maintenance_service' );
 
         $container->set( 'fixture_lifecycle_service', fn( Simple_Container $c ) => new Fixture_Lifecycle_Service(
             $c->get( 'repository_provider' ),
             $c->get( 'fixture_maintenance_service' ),
             $c->get( 'notification_service' )
         ) );
+        $container->alias( Fixture_Lifecycle_Service::class, 'fixture_lifecycle_service' );
 
         $container->set( 'pending_result_orchestration_service', fn( Simple_Container $c ): Pending_Result_Orchestration_Service => new Pending_Result_Orchestration_Service(
             $c->get( 'option_service' ),
             $c->get( 'fixture_repository' ),
             $c->get( 'fixture_maintenance_service' )
         ) );
-        $container->set( Pending_Result_Orchestration_Service::class, fn( Simple_Container $c ): Pending_Result_Orchestration_Service => $c->get( 'pending_result_orchestration_service' ) );
-        $container->set( Pending_Result_Orchestrator_Interface::class, fn( Simple_Container $c ): Pending_Result_Orchestrator_Interface => $c->get( 'pending_result_orchestration_service' ) );
+        $container->alias( Pending_Result_Orchestration_Service::class, 'pending_result_orchestration_service' );
+        $container->alias( Pending_Result_Orchestrator_Interface::class, 'pending_result_orchestration_service' );
 
         $container->set( 'fixture_details_assembler', fn( Simple_Container $c ) => new Fixture_Details_Assembler(
             $c->get( 'league_repository' ),
@@ -205,7 +233,7 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             $c->get( 'fixture_permission_service' ),
             $c->get( 'club_role_repository' )
         ) );
-        $container->set( Fixture_Details_Assembler::class, fn( Simple_Container $c ) => $c->get( 'fixture_details_assembler' ) );
+        $container->alias( Fixture_Details_Assembler::class, 'fixture_details_assembler' );
         // Deprecated 10.1.0: former keys kept for backward compatibility; removed in v11.0.
         $container->set( 'application_fixture_detail_service', fn( Simple_Container $c ) => $c->get( 'fixture_details_assembler' ) );
         $container->set( 'domain_fixture_detail_service', fn( Simple_Container $c ) => $c->get( 'fixture_details_assembler' ) );
@@ -218,8 +246,10 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             $c->get( 'mailer' ),
             $c->get( 'league_repository' )
         ) );
+        $container->alias( Result_Service::class, 'result_service' );
 
         $container->set( 'score_validation_service', fn() => new Score_Validation_Service() );
+        $container->alias( Score_Validation_Service::class, 'score_validation_service' );
 
         $container->set( 'results_checker_manager', function ( Simple_Container $c ) {
             $manager = new Results_Checker_Manager(
@@ -232,16 +262,18 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
 
             return $manager;
         } );
+        $container->alias( Results_Checker_Manager::class, 'results_checker_manager' );
 
         // Finder
         $container->set( 'fixture_listing_finder', fn( Simple_Container $c ) => new Legacy_Fixture_Listing_Finder( $c->get( 'fixture_repository' ) ) );
+        $container->alias( Legacy_Fixture_Listing_Finder::class, 'fixture_listing_finder' );
 
         // Query Handlers
         $container->set( 'get_fixture_details_handler', fn( Simple_Container $c ) => new Get_Fixture_Details_Handler(
             $c->get( 'fixture_repository' ),
             $c->get( 'fixture_details_assembler' )
         ) );
-        $container->set( Get_Fixture_Details_Handler::class, fn( Simple_Container $c ) => $c->get( 'get_fixture_details_handler' ) );
+        $container->alias( Get_Fixture_Details_Handler::class, 'get_fixture_details_handler' );
 
         $container->set( 'get_daily_matches_handler', fn( Simple_Container $c ) => new Get_Daily_Matches_Handler(
             $c->get( 'fixture_listing_finder' )
@@ -268,11 +300,13 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
 
         // Shortcode Adapters & Controllers
         $container->set( 'fixture_shortcode_controller', fn() => new Fixture_Shortcode_Controller( $app ) );
+        $container->alias( Fixture_Shortcode_Controller::class, 'fixture_shortcode_controller' );
 
         $container->set( 'fixture_shortcode_adapter', fn( Simple_Container $c ) => new Fixture_Shortcode_Adapter(
             $c->get( 'get_fixture_details_handler' ),
             $c->get( 'fixture_presenter' )
         ) );
+        $container->alias( Fixture_Shortcode_Adapter::class, 'fixture_shortcode_adapter' );
 
         $container->set( 'matches_shortcode_adapter', fn( Simple_Container $c ) => new Matches_Shortcode_Adapter(
             daily_matches_handler: $c->get( 'get_daily_matches_handler' ),
@@ -283,6 +317,7 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             detail_handler: $c->get( 'get_match_detail_handler' ),
             match_presenter: $c->get( 'match_shortcode_presenter' )
         ) );
+        $container->alias( Matches_Shortcode_Adapter::class, 'matches_shortcode_adapter' );
 
         // AJAX Adapter & Controller
         $container->set( 'fixture_ajax_adapter', fn( Simple_Container $c ) => new Fixture_Ajax_Adapter(
@@ -294,6 +329,8 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             $c->get( 'fixture_presenter' ),
             $c->get( 'get_fixture_details_handler' )
         ) );
+        $container->alias( Fixture_Ajax_Adapter::class, 'fixture_ajax_adapter' );
         $container->set( 'fixture_ajax_controller', fn( Simple_Container $c ) => new Fixture_Ajax_Controller( $app, $c->get( 'fixture_ajax_adapter' ) ) );
+        $container->alias( Fixture_Ajax_Controller::class, 'fixture_ajax_controller' );
     }
 }

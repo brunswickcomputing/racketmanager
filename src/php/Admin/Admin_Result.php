@@ -51,8 +51,14 @@ class Admin_Result extends Admin_Display {
         $this->results_match_presenter    = $results_match_presenter ?? $this->resolve_results_match_presenter();
         $this->results_checker_presenter  = $results_checker_presenter ?? $this->resolve_results_checker_presenter();
 
-        $container                = $plugin_instance->container ?? ( isset( $this->racketmanager->container ) ? $this->racketmanager->container : null );
-        $this->fixture_repository = $fixture_repository ?? ( ( $container instanceof Simple_Container && $container->has( 'fixture_repository' ) ) ? $container->get( 'fixture_repository' ) : null );
+        $container = $plugin_instance->container ?? ( isset( $this->racketmanager->container ) ? $this->racketmanager->container : null );
+        $repo_key  = null;
+        if ( $container instanceof Simple_Container ) {
+            $repo_key = $container->has( Fixture_Repository_Interface::class )
+                ? Fixture_Repository_Interface::class
+                : ( $container->has( 'fixture_repository' ) ? 'fixture_repository' : null );
+        }
+        $this->fixture_repository = $fixture_repository ?? ( $repo_key ? $container->get( $repo_key ) : null );
     }
 
     /**
@@ -77,7 +83,17 @@ class Admin_Result extends Admin_Display {
         }
 
         if ( isset( $_POST['doResultsChecker'] ) ) {
-            $dispatcher = $this->results_checker_dispatcher ?? $this->racketmanager->container->get( 'results_checker_action_dispatcher' );
+            $dispatcher = $this->results_checker_dispatcher;
+            if ( null === $dispatcher && ( $this->racketmanager->container instanceof Simple_Container ) ) {
+                $c              = $this->racketmanager->container;
+                $dispatcher_key = $c->has_definition( Results_Checker_Action_Dispatcher_Interface::class )
+                    ? Results_Checker_Action_Dispatcher_Interface::class
+                    : ( $c->has( 'results_checker_action_dispatcher' ) ? 'results_checker_action_dispatcher' : null );
+                $dispatcher     = $dispatcher_key ? $c->get( $dispatcher_key ) : null;
+            }
+            if ( null === $dispatcher ) {
+                throw new LogicException( 'The results checker action dispatcher is not registered.' );
+            }
             $result     = $dispatcher->handle( $_POST );
             if ( $this->deliver_results_action_result( $result, $_GET, array( 'tab' => 'resultschecker' ) ) ) {
                 return;
@@ -251,19 +267,35 @@ class Admin_Result extends Admin_Display {
 
     private function resolve_results_match_presenter(): Admin_Results_Match_Presenter {
         $container = $this->racketmanager->container ?? null;
-        if ( ! $container instanceof Simple_Container || ! $container->has( 'admin_results_match_presenter' ) ) {
+        if ( ! $container instanceof Simple_Container ) {
             throw new LogicException( 'The admin results match presenter is not registered.' );
         }
 
-        return $container->get( 'admin_results_match_presenter' );
+        $key = $container->has_definition( Admin_Results_Match_Presenter::class )
+            ? Admin_Results_Match_Presenter::class
+            : ( $container->has( 'admin_results_match_presenter' ) ? 'admin_results_match_presenter' : null );
+
+        if ( null === $key ) {
+            throw new LogicException( 'The admin results match presenter is not registered.' );
+        }
+
+        return $container->get( $key );
     }
 
     private function resolve_results_checker_presenter(): Results_Checker_Presenter {
         $container = $this->racketmanager->container ?? null;
-        if ( ! $container instanceof Simple_Container || ! $container->has( 'results_checker_presenter' ) ) {
+        if ( ! $container instanceof Simple_Container ) {
             throw new LogicException( 'The results checker presenter is not registered.' );
         }
 
-        return $container->get( 'results_checker_presenter' );
+        $key = $container->has_definition( Results_Checker_Presenter::class )
+            ? Results_Checker_Presenter::class
+            : ( $container->has( 'results_checker_presenter' ) ? 'results_checker_presenter' : null );
+
+        if ( null === $key ) {
+            throw new LogicException( 'The results checker presenter is not registered.' );
+        }
+
+        return $container->get( $key );
     }
 }

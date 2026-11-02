@@ -157,16 +157,16 @@ class Modular_Service_Providers_Test extends TestCase {
         $provider  = new Admin_Service_Provider( $this->app );
         $provider->register( $container );
 
-        $this->assertTrue( $container->has( 'admin_message_service' ) );
-        $this->assertTrue( $container->has( 'action_guard' ) );
-        $this->assertTrue( $container->has( 'championship_admin_service' ) );
-        $this->assertTrue( $container->has( 'draw_action_dispatcher' ) );
-        $this->assertFalse( $container->has( 'admin_flash_message_store' ) );
-        $this->assertFalse( $container->has( 'tournament_admin_controller' ) );
-        $this->assertFalse( $container->has( 'admin_display' ) );
-        $this->assertFalse( $container->has( \Racketmanager\Admin\Admin_Display::class ) );
-        $this->assertFalse( $container->has( 'admin' ) );
-        $this->assertFalse( $container->has( \Racketmanager\Admin::class ) );
+        $this->assertTrue( $container->has_definition( 'admin_message_service' ) );
+        $this->assertTrue( $container->has_definition( 'action_guard' ) );
+        $this->assertTrue( $container->has_definition( 'championship_admin_service' ) );
+        $this->assertTrue( $container->has_definition( 'draw_action_dispatcher' ) );
+        $this->assertFalse( $container->has_definition( 'admin_flash_message_store' ) );
+        $this->assertFalse( $container->has_definition( 'tournament_admin_controller' ) );
+        $this->assertFalse( $container->has_definition( 'admin_display' ) );
+        $this->assertFalse( $container->has_definition( \Racketmanager\Admin\Admin_Display::class ) );
+        $this->assertFalse( $container->has_definition( 'admin' ) );
+        $this->assertFalse( $container->has_definition( \Racketmanager\Admin::class ) );
     }
 
     public function test_admin_screens_service_provider_registers_expected_keys(): void {

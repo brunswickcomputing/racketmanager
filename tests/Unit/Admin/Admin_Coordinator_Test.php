@@ -340,7 +340,7 @@ final class Admin_Coordinator_Test extends TestCase {
         $container = new Simple_Container();
         $container->set( 'league_repository', fn() => $league_repository );
 
-        $wpdb                       = new \wpdb();
+        $wpdb                       = new \wpdb( 'test', 'test', 'test', 'localhost' );
         $wpdb->get_results_callback = static fn() => array( (object) array( 'id' => 42, 'title' => 'Division 1' ) );
         $wpdb->get_row_callback     = static fn() => (object) array( 'id' => 77, 'league_id' => '42', 'season' => '2026' );
         $GLOBALS['wpdb']            = $wpdb;
@@ -365,7 +365,7 @@ final class Admin_Coordinator_Test extends TestCase {
     }
 
     public function test_add_meta_box_without_league_repository_renders_without_current_league(): void {
-        $wpdb                       = new \wpdb();
+        $wpdb                       = new \wpdb( 'test', 'test', 'test', 'localhost' );
         $wpdb->get_results_callback = static fn() => array( (object) array( 'id' => 42, 'title' => 'Division 1' ) );
         $wpdb->get_row_callback     = static fn() => null;
         $GLOBALS['wpdb']            = $wpdb;

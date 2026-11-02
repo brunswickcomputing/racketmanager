@@ -278,6 +278,10 @@ class Capturing_Wpdb_For_Parity extends wpdb {
 	public mixed $results   = array();
 	public mixed $var       = 0;
 
+	public function __construct() {
+		parent::__construct( 'test', 'test', 'test', 'localhost' );
+	}
+
 	public function prepare( $query, ...$args ) {
 		if ( isset( $args[0] ) && is_array( $args[0] ) && 1 === count( $args ) ) {
 			$args = $args[0];

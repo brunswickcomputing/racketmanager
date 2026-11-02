@@ -485,6 +485,9 @@ namespace {
             private $data = [];
             private $last_id = 0;
 
+            public function __construct( $dbuser, $dbpassword, $dbname, $dbhost ) {
+            }
+
             public function prepare( $query, ...$args ) {
                 if ( empty($args) ) return $query;
                 if ( is_array($args[0]) && count($args) === 1 ) $args = $args[0];

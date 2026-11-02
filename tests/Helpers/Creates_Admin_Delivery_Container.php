@@ -259,6 +259,40 @@ trait Creates_Admin_Delivery_Container {
             $container->set( 'results_checker_presenter', fn() => $services['results_checker_presenter'] ?? $this->createStub( \Racketmanager\Presentation\Presenters\Results_Checker_Presenter::class ) );
         }
 
+        $container->alias( \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class, 'fixture_repository' );
+        $container->alias( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class, 'league_repository' );
+        $container->alias( \Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface::class, 'league_team_repository' );
+        $container->alias( \Racketmanager\Repositories\Interfaces\Team_Repository_Interface::class, 'team_repository' );
+        $container->alias( \Racketmanager\Repositories\Interfaces\Club_Repository_Interface::class, 'club_repository' );
+        $container->alias( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class, 'event_repository' );
+        $container->alias( \Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter::class, 'admin_action_adapter' );
+        $container->alias( \Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter::class, 'admin_screen_presenter' );
+        $container->alias( \Racketmanager\Services\View\View_Renderer_Interface::class, 'view_renderer' );
+        $container->alias( \Racketmanager\Presentation\Presenters\Results_Checker_Presenter::class, 'results_checker_presenter' );
+        $container->alias( \Racketmanager\Services\Admin\Result\Results_Checker_Action_Dispatcher_Interface::class, 'results_checker_action_dispatcher' );
+        $container->alias( \Racketmanager\Services\Admin\Import\Import_Action_Dispatcher_Interface::class, 'import_action_dispatcher' );
+
+        if ( array_key_exists( 'admin_results_match_presenter', $services ) && false === $services['admin_results_match_presenter'] ) {
+            $container->remove( 'admin_results_match_presenter' );
+            $container->remove( \Racketmanager\Admin\Presenters\Admin_Results_Match_Presenter::class );
+        }
+        if ( array_key_exists( 'results_checker_presenter', $services ) && false === $services['results_checker_presenter'] ) {
+            $container->remove( 'results_checker_presenter' );
+            $container->remove( \Racketmanager\Presentation\Presenters\Results_Checker_Presenter::class );
+        }
+        if ( array_key_exists( 'admin_screen_presenter', $services ) && false === $services['admin_screen_presenter'] ) {
+            $container->remove( 'admin_screen_presenter' );
+            $container->remove( \Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter::class );
+        }
+        if ( array_key_exists( 'results_checker_action_dispatcher', $services ) && false === $services['results_checker_action_dispatcher'] ) {
+            $container->remove( 'results_checker_action_dispatcher' );
+            $container->remove( \Racketmanager\Services\Admin\Result\Results_Checker_Action_Dispatcher_Interface::class );
+        }
+        if ( array_key_exists( 'import_action_dispatcher', $services ) && false === $services['import_action_dispatcher'] ) {
+            $container->remove( 'import_action_dispatcher' );
+            $container->remove( \Racketmanager\Services\Admin\Import\Import_Action_Dispatcher_Interface::class );
+        }
+
         foreach ( $services as $id => $service ) {
             if ( is_string( $id ) && is_object( $service ) ) {
                 $container->set( $id, fn() => $service );

@@ -612,7 +612,7 @@ if ( $match->is_walkover ) {
                                                                                         $val = $set[ $opponent ];
                                                                                     }
                                                                                     ?>
-                                                                                    <label for="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_<?php echo esc_attr( $opponent ); ?>"></label><input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points match-points__cell-input <?php echo esc_html( $winner_class ); ?>" type="number" id="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_<?php echo esc_attr( $opponent ); ?>" name="sets[<?php echo esc_html( $r ); ?>][<?php echo esc_html( $i ); ?>][<?php echo esc_attr( $opponent ); ?>]" value="<?php echo esc_html( $val ); ?>" onblur="SetCalculator(this)" />
+                                                                                    <label for="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_<?php echo esc_attr( $opponent ); ?>"></label><input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points match-points__cell-input <?php echo esc_html( $winner_class ); ?>" type="number" id="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_<?php echo esc_attr( $opponent ); ?>" name="sets[<?php echo esc_html( $r ); ?>][<?php echo esc_html( $i ); ?>][<?php echo esc_attr( $opponent ); ?>]" value="<?php echo esc_html( $val ); ?>" data-action="set-calculator" />
                                                                                     <?php
                                                                                 } else {
                                                                                     $val = '';
@@ -654,7 +654,7 @@ if ( $match->is_walkover ) {
                                                                             ?>
                                                                             >
                                                                             <?php ++$tabindex; ?>
-                                                                            <label><input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points match-points__cell-input" type="number" min="0" id="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_tiebreak" name="sets[<?php echo esc_html( $r ); ?>][<?php echo esc_html( $i ); ?>][tiebreak]" value="<?php echo esc_html( $tb ); ?>" onblur="SetCalculatorTieBreak(this)"/></label>
+                                                                            <label><input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points match-points__cell-input" type="number" min="0" id="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_tiebreak" name="sets[<?php echo esc_html( $r ); ?>][<?php echo esc_html( $i ); ?>][tiebreak]" value="<?php echo esc_html( $tb ); ?>" data-action="set-calculator-tiebreak"/></label>
                                                                         </div>
                                                                         <?php
                                                                     }

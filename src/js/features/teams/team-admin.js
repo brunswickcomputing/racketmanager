@@ -75,6 +75,8 @@ export function teamEditModal(event, teamId, eventId) {
   );
 }
 
+let teamAdminDocListenerRegistered = false;
+
 export function initializeTeamsAdmin() {
   // Change of team select triggers matches dropdown load
   jQuery(document)
@@ -91,6 +93,23 @@ export function initializeTeamsAdmin() {
       const eventId = this.getAttribute('data-event-id');
       return teamEditModal(e, teamId, eventId);
     });
+
+  // Delegated change handler for team matches dropdown to reveal set team button
+  if (!teamAdminDocListenerRegistered && typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+    document.addEventListener('change', function (e) {
+      const target = e.target;
+      const el = target && typeof target.closest === 'function' ? target.closest('[data-action="show-set-team-button"]') : null;
+      if (el) {
+        if (typeof globalThis.Racketmanager?.show_set_team_button === 'function') {
+          globalThis.Racketmanager.show_set_team_button();
+        } else {
+          const btn = document.querySelector(SET_TEAM_BUTTON);
+          if (btn) btn.style.display = '';
+        }
+      }
+    });
+    teamAdminDocListenerRegistered = true;
+  }
 
   // When server indicates set team is possible, show button
   // Provide a simple API if PHP templates call Racketmanager.show_set_team_button()

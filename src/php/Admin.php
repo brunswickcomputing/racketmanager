@@ -589,7 +589,7 @@ class Admin {
                 <div class="row mb-3">
                     <div class="col-auto">
                         <div class="form-floating">
-                            <select name='league_id' class='form-select' id='league_id' onChange="Racketmanager.getSeasonDropdown(this.value, <?php echo esc_html( $season ); ?>)">
+                            <select name='league_id' class='form-select' id='league_id' data-action="get-season-dropdown">
                                 <option value="0"><?php esc_html_e( 'Choose League', 'racketmanager' ); ?></option>
                                 <?php
                                 foreach ( $leagues as $league ) {

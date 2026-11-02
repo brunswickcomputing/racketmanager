@@ -35,7 +35,7 @@ $and_view   = 's&amp;view=contact&';
 ?>
 <script type='text/javascript'>
 jQuery(document).ready(function(){
-    activaTab('<?php echo esc_html( $vm->tab ); ?>');
+    Racketmanager.activaTab('<?php echo esc_html( $vm->tab ); ?>');
 });
 </script>
 <div class="container">

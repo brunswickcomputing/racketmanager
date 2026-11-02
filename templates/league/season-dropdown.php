@@ -15,7 +15,7 @@ if ( empty( $league ) ) {
     return;
 }
 ?>
-<select size='1' name='season' id='season' class="form-select" onChange='Racketmanager.getMatchDropdown(<?php echo esc_html( $league->id ); ?>, this.value)'>
+<select size='1' name='season' id='season' class="form-select" data-action="get-match-dropdown" data-league-id="<?php echo esc_attr( $league->id ); ?>">
     <option value="0"><?php esc_html_e( 'Choose Season', 'racketmanager' ); ?></option>
     <?php
     $event_seasons = $league->event->get_seasons();

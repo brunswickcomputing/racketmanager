@@ -3,7 +3,7 @@
  * Autocomplete feature module index
  */
 
-import { whenAutocompleteReady, logJQueryStatus } from '../../utils/jquery-helpers.js';
+import { whenAutocompleteReady, logJQueryStatus } from './autocomplete-helpers.js';
 import { initializeMatchSecretaryLookup } from './match-secretary-lookup.js';
 import { initializeCaptainLookup } from './captain-lookup.js';
 import { initializeUserLookup } from './user-lookup.js';

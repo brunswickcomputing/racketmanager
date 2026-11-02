@@ -10,7 +10,7 @@ namespace Racketmanager;
 /** @var array $leagues */
 $leagues = $vars['leagues'] ?? $vm->leagues ?? [];
 ?>
-<select size='1' name='league_id' id='league_id' class="form-select" onChange='Racketmanager.getSeasonDropdown(this.value)'>
+<select size='1' name='league_id' id='league_id' class="form-select" data-action="get-season-dropdown">
     <option value='0'><?php esc_html_e( 'Choose league', 'racketmanager' ); ?></option>
     <?php
     foreach ( $leagues as $league ) {

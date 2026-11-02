@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import vm from 'vm';
-import { registerAdminActions } from '../../../src/js/admin/admin-actions.js';
+import { registerAdminActions, setIframeHeight } from '../../../src/js/admin/admin-actions.js';
 
 describe('Admin utils: registerAdminActions', () => {
   let container;
@@ -19,12 +19,10 @@ describe('Admin utils: registerAdminActions', () => {
     window.Racketmanager.setShortcode = jest.fn();
     window.Racketmanager.setTournamentOpenDate = jest.fn();
     window.Racketmanager.getImportOption = jest.fn();
-    window.Racketmanager.getEventDropdown = jest.fn();
     window.Racketmanager.setMatchDate = jest.fn();
     window.Racketmanager.setMatchDayPopUp = jest.fn();
     window.Racketmanager.insertHomeStadium = jest.fn();
     window.Racketmanager.saveAddPoints = jest.fn();
-    window.setIframeHeight = jest.fn();
 
     registerAdminActions(container);
   });
@@ -194,20 +192,6 @@ describe('Admin utils: registerAdminActions', () => {
 
       expect(window.Racketmanager.getImportOption).toHaveBeenCalledWith('fixtures');
     });
-
-    it('invokes getEventDropdown on change with competition id', () => {
-      const select = document.createElement('select');
-      select.setAttribute('data-action', 'get-event-dropdown');
-      const opt = document.createElement('option');
-      opt.value = '10';
-      select.appendChild(opt);
-      select.value = '10';
-      container.appendChild(select);
-
-      select.dispatchEvent(new Event('change', { bubbles: true }));
-
-      expect(window.Racketmanager.getEventDropdown).toHaveBeenCalledWith('10');
-    });
   });
 
   describe('match fixtures actions', () => {
@@ -293,15 +277,26 @@ describe('Admin utils: registerAdminActions', () => {
   });
 
   describe('iframe height action', () => {
-    it('invokes setIframeHeight exactly once on iframe load', () => {
+    it('resizes iframe directly when load event fires for data-action="set-iframe-height"', () => {
       const iframe = document.createElement('iframe');
       iframe.id = 'my-iframe';
       iframe.setAttribute('data-action', 'set-iframe-height');
       // jsdom automatically dispatches 'load' when iframe is appended to document
       container.appendChild(iframe);
 
-      expect(window.setIframeHeight).toHaveBeenCalledTimes(1);
-      expect(window.setIframeHeight).toHaveBeenCalledWith('my-iframe');
+      expect(iframe.style.visibility).toBe('visible');
+      expect(iframe.style.height).toMatch(/^\d+px$/);
+    });
+
+    it('directly resizes iframe element via exported setIframeHeight helper', () => {
+      const iframe = document.createElement('iframe');
+      iframe.id = 'direct-iframe';
+      container.appendChild(iframe);
+
+      setIframeHeight(iframe);
+
+      expect(iframe.style.visibility).toBe('visible');
+      expect(iframe.style.height).toMatch(/^\d+px$/);
     });
   });
 

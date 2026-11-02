@@ -19,7 +19,7 @@ $competition_type = $event->competition->type instanceof \BackedEnum ? $event->c
 ?>
 <script type='text/javascript'>
 jQuery(document).ready(function(){
-    activaTab('<?php echo esc_html( $tab ); ?>');
+    Racketmanager.activaTab('<?php echo esc_html( $tab ); ?>');
 });
 </script>
 <div class="container">

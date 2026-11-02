@@ -22,7 +22,7 @@ $menu_page_url = admin_url( 'options-general.php?page=racketmanager-settings' );
 ?>
 <script type='text/javascript'>
 jQuery(document).ready(function(){
-    activaTab('<?php echo esc_html( $tab ); ?>');
+    Racketmanager.activaTab('<?php echo esc_html( $tab ); ?>');
 });
 </script>
 <div class='container'>

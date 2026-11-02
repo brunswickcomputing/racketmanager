@@ -1,9 +1,6 @@
 {
     "js.jquery_reference": {
-        "src/js/admin/ajax.js|jQuery": 153,
-        "src/js/admin/draggable.js|jQuery": 2,
-        "src/js/admin/functions.js|$(": 78,
-        "src/js/admin/functions.js|jQuery": 13,
+        "src/js/admin/functions.js|jQuery": 1,
         "src/js/features/account/account-update.js|jQuery": 14,
         "src/js/features/ajax/handle-ajax-error.js|jQuery": 4,
         "src/js/features/auth/login.js|jQuery": 11,
@@ -74,24 +71,10 @@
         "src/js/features/withdrawals/tournament-withdrawal.js|jQuery": 29,
         "src/js/index.js|jQuery": 2,
         "src/js/utils/dom-utils.js|jQuery": 2,
-        "src/js/utils/jquery-helpers.js|jQuery": 26,
         "src/js/utils/player-utils.js|jQuery": 17
     },
     "js.window_global_assignment": {
-        "src/js/admin/functions.js|window.activaTab": 1,
-        "src/js/admin/functions.js|window.setIframeHeight": 1,
         "src/js/config/constants.js|window.RACKETMANAGER_DISABLE_LEGACY": 1,
-        "src/js/config/constants.js|window.Racketmanager": 1,
-        "src/js/features/match/set-calculator.js|globalThis.SetCalculator": 1,
-        "src/js/features/match/set-calculator.js|globalThis.SetCalculatorTieBreak": 1,
-        "src/js/features/tabdata/tab-data.js|window.Racketmanager": 1
-    },
-    "templates.inline_event_handler": {
-        "templates/competition/dropdown.php|onchange=": 1,
-        "templates/event/dropdown.php|onchange=": 1,
-        "templates/event/team-matches.php|onchange=": 1,
-        "templates/league/season-dropdown.php|onchange=": 1,
-        "templates/match-teams-result.php|onblur=": 2,
-        "templates/match-tournament.php|onblur=": 2
+        "src/js/config/constants.js|window.Racketmanager": 1
     }
 }

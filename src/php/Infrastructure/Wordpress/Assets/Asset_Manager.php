@@ -208,7 +208,7 @@ class Asset_Manager {
         wp_register_script(
             'racketmanager-admin-ajax',
             $this->get_asset_url( 'dist/js/admin/ajax.js' ),
-            array(),
+            array( 'jquery' ),
             $version,
             false
         );

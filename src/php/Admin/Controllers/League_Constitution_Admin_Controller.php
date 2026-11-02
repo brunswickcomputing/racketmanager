@@ -136,7 +136,7 @@ final readonly class League_Constitution_Admin_Controller {
                     'oldseason' => $latest_event_season,
                 )
             ) : null;
-            $constitution_action = 'update';
+
             $constitution_exists = true;
             if ( ! $teams ) {
                 $teams               = $event instanceof Event ? $this->event_query_service->build_constitution( $event, array( 'season' => $latest_event_season ) ) : array();
@@ -158,7 +158,7 @@ final readonly class League_Constitution_Admin_Controller {
             constitution_exists: $constitution_exists,
             updates_allowed: $updates_allowed,
             latest_season: $latest_season,
-            latest_event_season: $latest_event_season,
+            latest_event_season: (string) $latest_event_season,
             standing_status: $standing_status,
             has_content: $has_content,
             event_id: $event_id,

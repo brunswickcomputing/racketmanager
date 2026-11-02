@@ -8,14 +8,14 @@
  * @returns {Object} AJAX configuration
  */
 export function getAjaxConfig() {
-    if (typeof window.ajax_var === 'undefined') {
-        console.error('ajax_var is not defined. Check wp_add_inline_script in PHP.');
-        return {
-            url: '/wp-admin/admin-ajax.php',
-            ajax_nonce: ''
-        };
+    if (typeof window !== 'undefined' && window.ajax_var) {
+        return window.ajax_var;
     }
-    return window.ajax_var;
+    console.error('ajax_var is not defined. Check wp_add_inline_script in PHP.');
+    return {
+        url: '/wp-admin/admin-ajax.php',
+        ajax_nonce: ''
+    };
 }
 
 /**

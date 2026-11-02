@@ -19,7 +19,7 @@ $group = $vm->group ?? $group ?? ( is_array( $vars ?? null ) ? ( $vars['group'] 
 ?>
 <script type='text/javascript'>
 jQuery(document).ready(function(){
-    activaTab('<?php echo esc_html( $tab ); ?>');
+    Racketmanager.activaTab('<?php echo esc_html( $tab ); ?>');
 });
 </script>
 

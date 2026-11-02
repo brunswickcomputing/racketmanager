@@ -355,9 +355,7 @@ function buildTabUrl(type, season, name, tab, competitionType) {
  * Attach to global Racketmanager object for backward compatibility
  */
 export function attachTabDataToGlobal() {
-    if (!window.Racketmanager) {
-        window.Racketmanager = {};
-    }
+    window.Racketmanager = window.Racketmanager || {};
 
     window.Racketmanager.tabData = tabData;
     window.Racketmanager.tabDataLink = tabDataLink;

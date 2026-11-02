@@ -22,7 +22,7 @@ $schedule_slots = $vm->schedule_slots;
 ?>
 <script type='text/javascript'>
 jQuery(document).ready(function(){
-    activaTab('<?php echo esc_html( $tab ); ?>');
+    Racketmanager.activaTab('<?php echo esc_html( $tab ); ?>');
 });
 </script>
 <div class="container">

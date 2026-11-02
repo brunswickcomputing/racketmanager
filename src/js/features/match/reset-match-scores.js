@@ -2,6 +2,7 @@
  * Reset Match Scores - Modularized
  * Mirrors legacy Racketmanager.resetMatchScores behaviour.
  */
+import { SetCalculator } from './set-calculator.js';
 
 /**
  * Reset all inputs and UI classes for a given container
@@ -24,8 +25,8 @@ export function resetScoresInContainer(container) {
       case 'email':
         jQuery(this).val('');
         // Trigger blur to update calculator if needed
-        if (typeof globalThis.SetCalculator === 'function' && this.id?.includes('_player')) {
-            globalThis.SetCalculator(this);
+        if (typeof SetCalculator === 'function' && this.id?.includes('_player')) {
+            SetCalculator(this);
         }
         break;
       case 'select-one':

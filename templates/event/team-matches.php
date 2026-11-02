@@ -11,7 +11,7 @@ namespace Racketmanager;
 $matches = $vars['matches'] ?? $vm->matches ?? $matches ?? [];
 if ( ! empty( $matches ) ) {
     ?>
-    <select class="form-select" size="1" name="matchId" id="matchId" onChange="Racketmanager.show_set_team_button()">
+    <select class="form-select" size="1" name="matchId" id="matchId" data-action="show-set-team-button">
         <option value="" disabled selected><?php esc_html_e( 'Select match', 'racketmanager' ); ?></option>
         <?php
         foreach ( $matches as $match ) {

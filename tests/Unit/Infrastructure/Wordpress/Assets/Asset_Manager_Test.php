@@ -184,6 +184,14 @@ final class Asset_Manager_Test extends TestCase {
         self::assertArrayHasKey( 'racketmanager-admin-utils', $GLOBALS['wp_stubs_enqueued_scripts'] );
         self::assertArrayHasKey( 'racketmanager-admin-draggable', $GLOBALS['wp_stubs_enqueued_scripts'] );
 
+        // The admin AJAX bundle uses jQuery and must be enqueued after it.
+        self::assertContains( 'jquery', $GLOBALS['wp_stubs_registered_scripts']['racketmanager-admin-ajax']['deps'] );
+        $order = $GLOBALS['wp_stubs_enqueued_scripts_order'];
+        self::assertLessThan(
+            array_search( 'racketmanager-admin-ajax', $order, true ),
+            array_search( 'jquery', $order, true )
+        );
+
         // Dependencies and version on registered admin functions script
         self::assertArrayHasKey( 'racketmanager-admin-functions', $GLOBALS['wp_stubs_registered_scripts'] );
         self::assertContains(
@@ -220,6 +228,12 @@ final class Asset_Manager_Test extends TestCase {
         $output_post = ob_get_clean();
 
         self::assertArrayHasKey( 'racketmanager-admin-ajax', $GLOBALS['wp_stubs_enqueued_scripts'] );
+        self::assertContains( 'jquery', $GLOBALS['wp_stubs_registered_scripts']['racketmanager-admin-ajax']['deps'] );
+        $order = $GLOBALS['wp_stubs_enqueued_scripts_order'];
+        self::assertLessThan(
+            array_search( 'racketmanager-admin-ajax', $order, true ),
+            array_search( 'jquery', $order, true )
+        );
         self::assertArrayNotHasKey( 'racketmanager-bootstrap', $GLOBALS['wp_stubs_enqueued_scripts'] );
         self::assertArrayNotHasKey( 'racketmanager-admin-functions', $GLOBALS['wp_stubs_enqueued_scripts'] );
         self::assertArrayNotHasKey( 'racketmanager-admin-utils', $GLOBALS['wp_stubs_enqueued_scripts'] );

@@ -1,11 +1,8 @@
 // set-calculator.js (moved into main src/js module bundle)
-// Provides set score validation and auto-calculation helpers.
-// Exposes global functions SetCalculator and SetCalculatorTieBreak for inline handlers
-// used in templates (onblur attributes), while keeping the code within the module system.
-
-let globalsAttached = false;
+// Provides set score validation and auto-calculation helpers via delegated focusout listeners.
 
 function SetCalculator(inputdata) {
+	if (!inputdata || !inputdata.id) return;
 	let classes = {
 		inputError: 'input-validation-error',
 		won: 'match-points__cell-input--won'
@@ -31,22 +28,23 @@ function SetCalculator(inputdata) {
 	if (inputdata.value === '') {
         teamScore = null;
 	} else {
-        teamScore = Number.parseInt(inputdata.value);
+        teamScore = Number.parseInt(inputdata.value, 10);
 	}
 	let teamAlt = "#" + setRef + "_player" + teamRefAlt;
 	let teamDataAlt = jQuery(teamAlt)[0];
+	if (!teamDataAlt) return;
 	let teamScoreAlt;
 	if (teamDataAlt.value === '') {
         teamScoreAlt = null;
 	} else {
-        teamScoreAlt = Number.parseInt(teamDataAlt.value);
+        teamScoreAlt = Number.parseInt(teamDataAlt.value, 10);
 	}
 	let tieBreak = "#" + setRef + "_tiebreak";
 	let tieBreakWrapper = tieBreak + '_wrapper';
 	let tieBreakData = jQuery(tieBreak)[0];
 	let tieBreakScore;
-	if (tieBreakData.value !== '') {
-		tieBreakScore = Number.parseInt(tieBreakData.value);
+	if (tieBreakData && tieBreakData.value !== '') {
+		tieBreakScore = Number.parseInt(tieBreakData.value, 10);
 	}
 	let setGroup = '#' + setRef;
 	let maxWin = jQuery(setGroup).data('maxwin');
@@ -146,12 +144,13 @@ function SetValidator(team1, team2, team1Score, team2Score, tieBreak, tieBreakSc
 }
 
 function SetCalculatorTieBreak(inputdata) {
+	if (!inputdata || !inputdata.id) return;
 	let classes = {
 		inputError: 'input-validation-error'
 	}
 	let fieldRef = inputdata.id;
 	let tieBreak = "#" + fieldRef;
-	let tieBreakScore = Number.parseInt(inputdata.value);
+	let tieBreakScore = Number.parseInt(inputdata.value, 10);
 	if (Number.isNaN(tieBreakScore)) {
 		jQuery(tieBreak).addClass(classes.inputError);
 	} else {
@@ -160,16 +159,31 @@ function SetCalculatorTieBreak(inputdata) {
 	}
 }
 
-export function initializeSetCalculator() {
-  if (globalsAttached) return;
-  // Attach globals so inline onblur handlers keep working
+function handleScoreBlur(e) {
+  const target = e.target;
+  const el = target && typeof target.closest === 'function' ? target.closest('[data-action]') : null;
+  if (!el) return;
+  const action = el.getAttribute('data-action') || (el.dataset ? el.dataset.action : null);
+  if (action !== 'set-calculator' && action !== 'set-calculator-tiebreak') return;
+
   try {
-    // eslint-disable-next-line no-undef
-    // eslint-disable-next-line no-undef
-    globalThis.SetCalculator = SetCalculator;
-    globalThis.SetCalculatorTieBreak = SetCalculatorTieBreak;
-    globalsAttached = true;
+    if (action === 'set-calculator') {
+      SetCalculator(el);
+    } else if (action === 'set-calculator-tiebreak') {
+      SetCalculatorTieBreak(el);
+    }
   } catch (_) {
-    // no-op
+    // Graceful handling of unexpected malformed input
   }
 }
+
+let delegationRegistered = false;
+
+export function initializeSetCalculator() {
+  if (!delegationRegistered && typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+    document.addEventListener('focusout', handleScoreBlur);
+    delegationRegistered = true;
+  }
+}
+
+export { SetCalculator, SetCalculatorTieBreak };

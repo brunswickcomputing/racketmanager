@@ -7,7 +7,7 @@
 import { getAjaxUrl, getAjaxNonce } from '../../../config/ajax-config.js';
 import { LOADING_MODAL } from '../../../config/constants.js';
 import { handleAjaxError } from '../../ajax/handle-ajax-error.js';
-import { safeAutocomplete } from '../../../utils/jquery-helpers.js';
+import { safeAutocomplete } from '../../autocomplete/autocomplete-helpers.js';
 import { getPlayerDetails, setPlayerDetails } from '../../../utils/player-utils.js';
 
 const ROLES_ERROR_FIELD = '#rolesResponse';

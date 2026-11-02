@@ -2,7 +2,7 @@
  * User lookup autocomplete functionality
  */
 
-import { safeAutocomplete } from '../../utils/jquery-helpers.js';
+import { safeAutocomplete } from './autocomplete-helpers.js';
 import { getPlayerDetails, setPlayerDetails } from '../../utils/player-utils.js';
 
 /**

@@ -101,12 +101,6 @@ function handleChange(e) {
       }
       break;
     }
-    case 'get-event-dropdown': {
-      if (window.Racketmanager && typeof window.Racketmanager.getEventDropdown === 'function') {
-        window.Racketmanager.getEventDropdown(el.value);
-      }
-      break;
-    }
     case 'set-match-date': {
       var idx = Number(el.getAttribute('data-index') || (el.dataset ? el.dataset.index : 0));
       var maxFixtures = Number(el.getAttribute('data-max-fixtures') || (el.dataset ? el.dataset.maxFixtures : 0));
@@ -156,6 +150,35 @@ function handleFocusOut(e) {
   }
 }
 
+function getDocHeight(doc) {
+  doc = doc || document;
+  var body = doc.body;
+  var html = doc.documentElement;
+  return Math.max(
+    body ? body.scrollHeight : 0,
+    body ? body.offsetHeight : 0,
+    html ? html.clientHeight : 0,
+    html ? html.scrollHeight : 0,
+    html ? html.offsetHeight : 0
+  );
+}
+
+/**
+ * Adjust iframe height to fit its content.
+ *
+ * @param {string|HTMLIFrameElement} id
+ */
+export function setIframeHeight(id) {
+  var ifrm = typeof id === 'string' ? document.getElementById(id) : id;
+  if (!ifrm) return;
+  var doc = ifrm.contentDocument ? ifrm.contentDocument : (ifrm.contentWindow ? ifrm.contentWindow.document : null);
+  if (!doc) return;
+  ifrm.style.visibility = 'hidden';
+  ifrm.style.height = '10px';
+  ifrm.style.height = getDocHeight(doc) + 4 + 'px';
+  ifrm.style.visibility = 'visible';
+}
+
 /**
  * Handle delegated load events (capturing phase).
  *
@@ -167,8 +190,8 @@ function handleLoad(e) {
   if (!el && target && target.getAttribute && target.getAttribute('data-action') === 'set-iframe-height') {
     el = target;
   }
-  if (el && el.id && typeof window.setIframeHeight === 'function') {
-    window.setIframeHeight(el.id);
+  if (el) {
+    setIframeHeight(el);
   }
 }
 

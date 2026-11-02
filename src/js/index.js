@@ -3,7 +3,6 @@
  * Orchestrates all feature modules
  */
 
-import { isjQueryUIAvailable } from './utils/jquery-helpers.js';
 import { initializeTooltips } from './features/ui/tooltips.js';
 import { initializeAcceptanceCheckbox } from './features/forms/acceptance-checkbox.js';
 import { initializePasswordToggle } from './features/forms/password-toggle.js';
@@ -50,11 +49,12 @@ import { initializeClubPlayerRequest } from './features/club/club-player-request
 import { initializeClubPlayerRemove } from './features/club/club-player-remove.js';
 import { initializeWidgetCarousel } from './features/widgets/widget-carousel.js';
 import { initializeSetCalculator } from './features/match/set-calculator.js';
+import { isJQueryUIAvailable } from './features/autocomplete/autocomplete-helpers.js';
 
 // Initialize on document ready
 jQuery(function () {
     // Check jQuery UI availability
-    if (!isjQueryUIAvailable()) {
+    if (!isJQueryUIAvailable()) {
         console.warn('jQuery UI not loaded - some features may not work');
     }
 

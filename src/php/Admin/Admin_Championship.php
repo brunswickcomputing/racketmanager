@@ -47,7 +47,7 @@ class Admin_Championship extends Admin_Display {
      */
     public function handle_championship_admin_page( ?object $league = null ): string {
         $validator = new Validator();
-        $tab    = 'finalResults'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+        $tab       = 'finalResults'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
         if ( ! ( $league instanceof League ) ) {
             $league = $this->racketmanager->container->get( 'league_service' )->get_league( $league->id ?? null );
         }
@@ -77,7 +77,7 @@ class Admin_Championship extends Admin_Display {
             } elseif ( 'updateFinalResults' === $action ) {
                 $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_update-finals' );
                 if ( empty( $validator->error ) ) {
-                    $validator = $validator->capability( 'update_results');
+                    $validator = $validator->capability( 'update_results' );
                 }
                 if ( empty( $validator->error ) ) {
                     $custom      = $_POST['custom'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash

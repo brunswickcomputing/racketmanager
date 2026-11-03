@@ -35,11 +35,11 @@ require 'email-header.php';
                 <table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">
                     <tbody>
                         <tr>
-                            <td role="presentation" cellspacing="0" cellpadding="0" bgcolor="#fff">
+                            <td cellspacing="0" cellpadding="0" bgcolor="#fff">
                                 <table style="width: 100%; border-collapse: collapse;" role="presentation" cellspacing="0" cellpadding="0">
                                     <tbody>
                                         <tr>
-                                            <td style="font-weight: 400; min-width: 5px; width: 600px; height: 0;" role="presentation" cellspacing="0" cellpadding="0" align="left" bgcolor="#fff" valign="top">
+                                            <td style="font-weight: 400; min-width: 5px; width: 600px; height: 0;" cellspacing="0" cellpadding="0" align="left" bgcolor="#fff" valign="top">
                                                 <table width="100%" style="height: 100%; text-align: left; margin-left: 10px;" role="presentation" cellspacing="0" cellpadding="0">
                                                     <tbody>
                                                         <tr style="line-height: 22px;">

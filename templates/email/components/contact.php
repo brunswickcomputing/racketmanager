@@ -15,15 +15,15 @@ $contact_email = $contact_email ?? $vm->contact_email ?? ( $from_email ?? ( $vm-
                 <table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">
                     <tbody>
                         <tr>
-                            <td role="presentation" cellspacing="0" cellpadding="0" bgcolor="#fff">
+                            <td cellspacing="0" cellpadding="0" bgcolor="#fff">
                                 <table style="width: 100%; border-collapse: collapse;" role="presentation" cellspacing="0" cellpadding="0">
                                     <tbody>
                                         <tr>
-                                            <td style="font-weight: 400; min-width: 5px; width: 600px; height: 0;" role="presentation" cellspacing="0" cellpadding="0" align="left" bgcolor="#fff" valign="top">
+                                            <td style="font-weight: 400; min-width: 5px; width: 600px; height: 0;" cellspacing="0" cellpadding="0" align="left" bgcolor="#fff" valign="top">
                                                 <table width="100%" style="height: 100%;" role="presentation" cellspacing="0" cellpadding="0">
                                                     <tbody>
                                                         <tr>
-                                                            <td style="min-width: 5px; font-weight: 400;" role="presentation" cellspacing="0" cellpadding="0" align="left" bgcolor="#fff" valign="top">
+                                                            <td style="min-width: 5px; font-weight: 400;" cellspacing="0" cellpadding="0" align="left" bgcolor="#fff" valign="top">
                                                                 <div style="font-size: 16px; color: #000; background-color: transparent; margin: 10px;">
                                                                     <p style="line-height: 1.25; mso-line-height-rule: at-least; margin: 0 0 20px; padding: 0;">
                                                                         If you have any questions, feel free to <a href="mailto:<?php echo esc_html( $contact_email ); ?>" style="text-decoration: none; color: #006800;">email us</a>.

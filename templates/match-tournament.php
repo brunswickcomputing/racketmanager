@@ -59,585 +59,582 @@ $show_menu                = $show_menu ?? $vars['show_menu'] ?? $vm->show_menu ?
 $image                    = $image ?? $vars['image'] ?? $vm->image ?? null;
 $match_status             = $match_status ?? $vars['match_status'] ?? $vm->match_status ?? null;
 $match                    = $fixture;
-if ( $match ) {
-    ?>
-    <div class="tournament__match">
-        <div class="page-subhead competition">
-            <div class="media tournament-head">
-                <div class="media__wrapper">
-                    <div class="media__img">
-                        <svg width="16" height="16" class="media__img-element--icon">
-                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . $image ); ?>"></use>
-                        </svg>
-                    </div>
-                    <div class="media__content">
-                        <h1 class="media__title"><?php esc_html_e( 'Match details', 'racketmanager' ); ?></h1>
-                        <div class="media__content-subinfo">
-                            <div class="media__subheading">
-                                <ul class="match__header-title">
-                                    <?php
-                                    if ( ! empty( $tournament ) ) {
-                                        ?>
-                                        <li class="match__header-title-item">
-                                            <a href="<?php echo esc_html( $tournament_link ); ?>">
-                                                <span class="nav--link">
-                                                    <span class="nav-link__value">
-                                                        <?php echo esc_html( $tournament->name ) . ' ' . esc_html__( 'Tournament', 'racketmanager' ); ?>
-                                                    </span>
-                                                </span>
-                                            </a>
-                                        </li>
-                                        <li class="match__header-title-item">
+?>
+<div class="tournament__match">
+    <div class="page-subhead competition">
+        <div class="media tournament-head">
+            <div class="media__wrapper">
+                <div class="media__img">
+                    <svg width="16" height="16" class="media__img-element--icon">
+                        <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . $image ); ?>"></use>
+                    </svg>
+                </div>
+                <div class="media__content">
+                    <h1 class="media__title"><?php esc_html_e( 'Match details', 'racketmanager' ); ?></h1>
+                    <div class="media__content-subinfo">
+                        <div class="media__subheading">
+                            <ul class="match__header-title">
+                                <?php
+                                if ( ! empty( $tournament ) ) {
+                                    ?>
+                                    <li class="match__header-title-item">
+                                        <a href="<?php echo esc_html( $tournament_link ); ?>">
                                             <span class="nav--link">
                                                 <span class="nav-link__value">
-                                                    <?php echo esc_html( $tournament->get_meta( 'venue_name' ) ); ?>
+                                                    <?php echo esc_html( $tournament->name ) . ' ' . esc_html__( 'Tournament', 'racketmanager' ); ?>
                                                 </span>
                                             </span>
+                                        </a>
+                                    </li>
+                                    <li class="match__header-title-item">
+                                        <span class="nav--link">
+                                            <span class="nav-link__value">
+                                                <?php echo esc_html( $tournament->get_meta( 'venue_name' ) ); ?>
+                                            </span>
+                                        </span>
+                                    </li>
+                                    <?php
+                                }
+                                ?>
+                            </ul>
+                        </div>
+                        <?php
+                        if ( ! empty( $tournament_date_range_display ) ) {
+                            ?>
+                            <small class="media__subheading">
+                                <span class="nav--link">
+                                    <span class="nav-link__value">
+                                    <svg width="32" height="32" class="icon ">
+                                        <use
+                                            xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar-range-fill' ); ?>"></use>
+                                    </svg>
+                                        <?php echo esc_html( $tournament_date_range_display ); ?>
+                                    </span>
+                                </span>
+                            </small>
+                            <?php
+                        }
+                        ?>
+                    </div>
+                </div>
+                <div class="media__aside">
+                    <?php
+                    if ( is_user_logged_in() && $match_editable && ( $show_menu ) ) {
+                        ?>
+                        <div class="match__change">
+                            <div class="dropdown">
+                                <a class="nav-link" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <svg width="16" height="16" class="icon ">
+                                        <use
+                                            xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
+                                    </svg>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <?php
+                                    if ( $allow_schedule_match ) {
+                                        ?>
+                                        <li>
+                                            <a class="dropdown-item matchOptionLink" href=""
+                                               data-match-id="<?php echo esc_attr( $match->id ); ?>"
+                                               data-match-option="schedule_match">
+                                                <?php esc_html_e( '(Re)schedule match', 'racketmanager' ); ?>
+                                            </a>
+                                        </li>
+                                        <?php
+                                    }
+                                    ?>
+                                    <?php
+                                    if ( $allow_reset_match_result ) {
+                                        ?>
+                                        <li>
+                                            <a class="dropdown-item matchOptionLink" href=""
+                                               data-match-id="<?php echo esc_attr( $match->id ); ?>"
+                                               data-match-option="reset_match_result">
+                                                <?php esc_html_e( 'Reset match result', 'racketmanager' ); ?>
+                                            </a>
                                         </li>
                                         <?php
                                     }
                                     ?>
                                 </ul>
                             </div>
-                            <?php
-                            if ( ! empty( $tournament_date_range_display ) ) {
-                                ?>
-                                <small class="media__subheading">
-                                    <span class="nav--link">
-                                        <span class="nav-link__value">
-                                        <svg width="32" height="32" class="icon ">
-                                            <use
-                                                xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar-range-fill' ); ?>"></use>
-                                        </svg>
-                                            <?php echo esc_html( $tournament_date_range_display ); ?>
-                                        </span>
-                                    </span>
-                                </small>
+                        </div>
+                        <?php
+                    }
+                    ?>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="headerResponse" class="alert_rm alert--danger" style="display: none;">
+        <div class="alert__body">
+            <div class="alert__body-inner">
+                <span id="headerResponseText"></span>
+            </div>
+        </div>
+    </div>
+    <div class="match-info-meta wrapper--padding-medium">
+        <div class="row">
+            <div class="col-6 col-sm-4">
+                <svg width="20" height="20" class="match-info-meta__icon">
+                    <?php
+                    if ( ! empty( $league->is_championship ) ) {
+                        ?>
+                        <use
+                            xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/lta-icons.svg#icon-bracket' ); ?>"></use>
+                        <?php
+                    } else {
+                        ?>
+                        <use
+                            xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#table' ); ?>"></use>
+                        <?php
+                    }
+                    ?>
+                </svg>
+                <div class="match-info-meta__content">
+                    <span>
+                        <strong>
+                            <?php echo esc_html( $svg_link_text ); ?>
+                        </strong>
+                    </span>
+                    <span class="text--muted-small">
+                        <a href="<?php echo esc_attr( $svg_link_location ); ?>">
+                            <?php echo esc_html( $svg_link ); ?>
+                        </a>
+                    </span>
+                </div>
+            </div>
+            <?php
+            if ( ! empty( $match_date_formatted ) ) {
+                ?>
+                <div class="col-6 col-sm-4">
+                    <svg width="20" height="20" class="match-info-meta__icon">
+                        <use
+                            xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar' ); ?>"></use>
+                    </svg>
+                    <div class="match-info-meta__content">
+                        <span>
+                            <strong>
+                                <?php esc_html_e( 'Time', 'racketmanager' ); ?>
+                            </strong>
+                        </span>
+                        <span class="text--muted-small">
+                            <time datetime="<?php echo esc_html( $match->date ); ?>">
+                                <span class="match_date" id="match-tournament-date-header">
+                                    <?php echo esc_html( $match_date_formatted ); ?>
+                                </span>
                                 <?php
+                                if ( ! empty( $match_time_formatted ) ) {
+                                    ?>
+                                    <span class="match_time">
+                                        <?php echo esc_html__( 'at', 'racketmanager' ) . ' ' . esc_html( $match_time_formatted ); ?>
+                                    </span>
+                                    <?php
+                                }
+                                ?>
+                            </time>
+                        </span>
+                    </div>
+                </div>
+                <?php
+            }
+            ?>
+            <?php
+            $location = $match->location;
+            if ( empty( $location ) && isset( $match->host ) ) {
+                if ( 'home' === $match->host ) {
+                    $location = ( ! empty( $home_team->club ) && ! empty( $home_team->club->shortcode ) ) ? $home_team->club->shortcode : null;
+                } elseif ( 'away' === $match->host ) {
+                    $location = ( ! empty( $away_team->club ) && ! empty( $away_team->club->shortcode ) ) ? $away_team->club->shortcode : null;
+                }
+            }
+
+            if ( ! empty( $location ) ) {
+                ?>
+                <div class="d-none d-sm-block col-sm-4">
+                    <svg width="20" height="20" class="match-info-meta__icon">
+                        <use
+                            xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#geo-alt-fill' ); ?>"></use>
+                    </svg>
+                    <div class="match-info-meta__content">
+                        <span>
+                            <strong>
+                                <?php esc_html_e( 'Location', 'racketmanager' ); ?>
+                            </strong>
+                        </span>
+                        <span class="text--muted-small">
+                            <?php echo esc_html( $location ); ?>
+                        </span>
+                    </div>
+                </div>
+                <?php
+            }
+            ?>
+        </div>
+    </div>
+    <div class="wrapper--padding-medium">
+        <?php $form_id = 'form-match-' . $match->id; ?>
+        <form id="<?php echo esc_html( $form_id ); ?>" method="post">
+            <?php wp_nonce_field( 'scores-match', 'racketmanager_nonce' ); ?>
+            <input type="hidden" name="current_league_id" id="current_league_id"
+                   value="<?php echo esc_html( $match->league_id ); ?>"/>
+            <input type="hidden" name="current_match_id" id="current_match_id"
+                   value="<?php echo esc_html( $match->id ); ?>"/>
+            <input type="hidden" name="current_season" id="current_season"
+                   value="<?php echo esc_html( $match->season ); ?>"/>
+            <input type="hidden" name="home_team" value="<?php echo esc_html( $match->home_team ); ?>"/>
+            <input type="hidden" name="away_team" value="<?php echo esc_html( $match->away_team ); ?>"/>
+            <input type="hidden" name="match_type" value="tournament"/>
+            <input type="hidden" name="match_round" value="<?php echo esc_html( $fixture->final ); ?>"/>
+            <input type="hidden" name="updateMatch" id="updateMatch" value="results"/>
+            <input name="match_status" type="hidden" id="match_status"
+                   value="<?php echo esc_attr( $match_status ); ?>"/>
+            <?php
+            if ( ! empty( $tournament_seo_name ) ) {
+                ?>
+                <input type="hidden" id="tournamentName" value="<?php echo esc_attr( $tournament_seo_name ); ?>"/>
+                <?php
+            }
+            ?>
+            <div class="alert_rm <?php echo empty( $message ) ? null : 'alert--success'; ?>"
+                 id="matchAlert" <?php echo empty( $message ) ? 'style="display:none;"' : null; ?>>
+                <div class="alert__body">
+                    <div class="alert__body-inner" id="matchAlertResponse">
+                        <span><?php echo empty( $message ) ? null : esc_html( $message ); ?></span>
+                    </div>
+                </div>
+            </div>
+            <div class="match__buttons mb-3">
+                <a href="<?php echo esc_url( $back_url ); ?>">
+                    <button class="btn btn-plain"
+                            type="button"><?php esc_html_e( 'Return', 'racketmanager' ); ?></button>
+                </a>
+                <?php
+                if ( $user_can_update ) {
+                    ?>
+                    <button class="btn btn-primary" type="button" id="updateMatchResults"
+                            data-action="update-match-results"><?php esc_html_e( 'Save', 'racketmanager' ); ?></button>
+                    <?php
+                }
+                ?>
+            </div>
+            <div class="match tournament-match <?php echo esc_attr( $match_editable ); ?>">
+                <div class="match__header">
+                    <ul class="match__header-title">
+                        <?php
+                        if ( ! empty( $round_name ) ) {
+                            ?>
+                            <li class="match__header-title-item">
+                                <?php echo esc_html( $round_name ); ?>
+                            </li>
+                            <?php
+                        }
+                        ?>
+                        <li class="match__header-title-item">
+                            <?php echo esc_html( $league->title ); ?>
+                        </li>
+                    </ul>
+                    <?php
+                    if ( $user_can_update ) {
+                        ?>
+                        <div class="match__header-aside text-uppercase">
+                            <div class="match__header-aside-block">
+                                <a href="" class="nav__link statusLink"
+                                   data-match-id="<?php echo esc_attr( $match->id ); ?>"
+                                   data-action="open-match-status-modal">
+                                    <svg width="16" height="16" class="icon-plus nav-link__prefix">
+                                        <use
+                                            xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#plus-lg' ); ?>"></use>
+                                    </svg>
+                                    <span
+                                        class="nav-link__value"><?php esc_html_e( 'Match status', 'racketmanager' ); ?></span>
+                                </a>
+                            </div>
+                        </div>
+                        <?php
+                    }
+                    ?>
+                </div>
+                <?php require_once RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
+                <div class="match__body">
+                    <div class="match__row-wrapper">
+                        <?php
+                        $opponents = array(
+                            'home' => $home_team,
+                            'away' => $away_team,
+                        );
+                        foreach ( $opponents as $opponent => $team_details ) {
+                            $team         = $team_details->team;
+                            $is_winner    = false;
+                            $is_loser     = false;
+                            $winner_class = null;
+                            if ( $winner === $opponent ) {
+                                $is_winner    = true;
+                                $winner_class = ' winner';
+                            } elseif ( $loser === $opponent ) {
+                                $is_loser = true;
                             }
                             ?>
-                        </div>
-                    </div>
-                    <div class="media__aside">
-                        <?php
-                        if ( is_user_logged_in() && $match_editable && ( $show_menu ) ) {
-                            ?>
-                            <div class="match__change">
-                                <div class="dropdown">
-                                    <a class="nav-link" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <svg width="16" height="16" class="icon ">
-                                            <use
-                                                xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
-                                        </svg>
-                                    </a>
-                                    <ul class="dropdown-menu dropdown-menu-end">
+                            <div class="match__row <?php echo esc_html( $winner_class ); ?>">
+                                <div class="match__row-title">
+                                    <?php
+                                    if ( empty( $team->players ) ) {
+                                        ?>
+                                        <div class="match__row-title-value">
+                                            <?php echo esc_html( $team->get_name() ); ?>
+                                        </div>
                                         <?php
-                                        if ( $allow_schedule_match ) {
+                                    } else {
+                                        foreach ( $team->players as $team_player ) {
+                                            $player_id   = method_exists( $team_player, 'get_id' ) ? $team_player->get_id() : ( $team_player->id ?? $team_player->ID ?? null );
+                                            $fullname    = method_exists( $team_player, 'get_fullname' ) ? $team_player->get_fullname() : ( $team_player->fullname ?? '' );
+                                            $player_link = $player_urls[ $player_id ] ?? $player_urls[ $fullname ] ?? null;
                                             ?>
-                                            <li>
-                                                <a class="dropdown-item matchOptionLink" href=""
-                                                   data-match-id="<?php echo esc_attr( $match->id ); ?>"
-                                                   data-match-option="schedule_match">
-                                                    <?php esc_html_e( '(Re)schedule match', 'racketmanager' ); ?>
+                                            <div class="match__row-title-value">
+                                                <?php
+                                                if ( ! empty( $player_link ) ) {
+                                                    ?>
+                                                    <a href="<?php echo esc_url( $player_link ); ?>">
+                                                        <?php
+                                                }
+                                                ?>
+                                                        <?php
+                                                        if ( ! empty( $team->is_withdrawn ) ) {
+                                                            $title_text = $team->get_name() . ' ' . __( 'has withdrawn', 'racketmanager' );
+                                                            ?>
+                                                        <s aria-label="<?php echo esc_attr( $title_text ); ?>"
+                                                           data-bs-toggle="tooltip" data-bs-placement="right"
+                                                           title="<?php echo esc_attr( $title_text ); ?>">
+                                                            <?php
+                                                        }
+                                                        ?>
+                                                            <?php echo esc_html( trim( $team_player->get_fullname() ) ); ?>
+                                                            <?php
+                                                            if ( ! empty( $team->is_withdrawn ) ) {
+                                                                ?>
+                                                        </s>
+                                                                <?php
+                                                            }
+                                                            ?>
+                                                    <?php
+                                                    if ( ! empty( $player_link ) ) {
+                                                        ?>
                                                 </a>
-                                            </li>
+                                                        <?php
+                                                    }
+                                                    ?>
+                                            </div>
                                             <?php
                                         }
-                                        ?>
+                                    }
+                                    ?>
+                                </div>
+                                <?php
+                                $match_message_class = null;
+                                $match_message_text  = null;
+                                $match_status_class  = null;
+                                $match_status_text   = null;
+                                if ( $is_winner ) {
+                                    if ( empty( $player_team_status ) || 'winner' === $player_team_status ) {
+                                        $match_status_class = 'winner';
+                                        $match_status_text  = 'W';
+                                    }
+                                } elseif ( $is_loser ) {
+                                    if ( 'loser' === $player_team_status ) {
+                                        $match_status_class = 'loser';
+                                        $match_status_text  = 'L';
+                                    } else {
+                                        $match_status_class = 'blank';
+                                    }
+                                    if ( $match->is_walkover ) {
+                                        $match_message_class = 'match-warning';
+                                        $match_message_text  = __( 'Walkover', 'racketmanager' );
+                                    } elseif ( $match->is_retired ) {
+                                        $match_message_class = 'match-warning';
+                                        $match_message_text  = __( 'Retired', 'racketmanager' );
+                                    }
+                                } elseif ( $is_tie ) {
+                                    $match_status_class  = 'tie';
+                                    $match_message_class = 'match-warning';
+                                    $match_status_text   = 'T';
+                                    $match_message_text  = __( 'Not played', 'racketmanager' );
+                                }
+                                ?>
+                                <span class="match__message <?php echo esc_attr( $match_message_class ); ?>"
+                                      id="match-message-<?php echo esc_attr( $team->id ); ?>">
+                                    <?php echo esc_html( $match_message_text ); ?>
+                                </span>
+                                <span class="match__status <?php echo esc_attr( $match_status_class ); ?>"
+                                      id="match-status-<?php echo esc_attr( $team->id ); ?>">
+                                    <?php echo esc_html( $match_status_text ); ?>
+                                </span>
+                            </div>
+                            <?php
+                        }
+                        ?>
+                    </div>
+                    <div class="match__result">
+                        <?php
+                        $sets = $fixture->custom['sets'] ?? null;
+                        for ( $i = 1; $i <= $league->num_sets; $i++ ) {
+                            $set = ! empty( $sets[ $i ] ) ? $sets[ $i ] : array();
+                            if ( $set instanceof Set_Score ) {
+                                $player1_games = $set->get_home_games();
+                                $player2_games = $set->get_away_games();
+                                if ( $player1_games > $player2_games ) {
+                                    $winner_set = 'player1';
+                                } elseif ( $player1_games < $player2_games ) {
+                                    $winner_set = 'player2';
+                                } else {
+                                    $winner_set = null;
+                                }
+                            } elseif ( isset( $set['player1'] ) && isset( $set['player2'] ) ) {
+                                if ( $set['player1'] > $set['player2'] ) {
+                                    $winner_set = 'player1';
+                                } elseif ( $set['player1'] < $set['player2'] ) {
+                                    $winner_set = 'player2';
+                                } else {
+                                    $winner_set = null;
+                                }
+                            } else {
+                                $winner_set = null;
+                            }
+                            ?>
+                            <?php
+                            if ( $match_editable || ( ! empty( $set ) ) ) {
+                                $set_type = Util::get_set_type( $league->scoring, $fixture->final, $league->num_sets, $i, false, $league->num_rubbers, $match->leg );
+                                $set_info = Util::get_set_info( $set_type );
+                                ?>
+                                <span class="set-group" id="set_<?php echo esc_html( $i ); ?>"
+                                      data-settype="<?php echo esc_attr( $set_type ); ?>"
+                                      data-maxwin="<?php echo esc_attr( $set_info->max_win ); ?>"
+                                      data-maxloss="<?php echo esc_attr( $set_info->max_loss ); ?>"
+                                      data-minwin="<?php echo esc_attr( $set_info->min_win ); ?>"
+                                      data-minloss="<?php echo esc_attr( $set_info->min_loss ); ?>"
+                                      data-tiebreakset="<?php echo esc_attr( $set_info->tiebreak_set ); ?>">
+                                    <ul class="match-points">
                                         <?php
-                                        if ( $allow_reset_match_result ) {
+                                        $opponents = array( 'player1', 'player2' );
+                                        foreach ( $opponents as $opponent ) {
+                                            if ( $winner_set === $opponent ) {
+                                                $winner_class       = ' winner';
+                                                $winner_point_class = ' match-points__cell-input--won';
+                                            } else {
+                                                $winner_class       = '';
+                                                $winner_point_class = '';
+                                            }
                                             ?>
-                                            <li>
-                                                <a class="dropdown-item matchOptionLink" href=""
-                                                   data-match-id="<?php echo esc_attr( $match->id ); ?>"
-                                                   data-match-option="reset_match_result">
-                                                    <?php esc_html_e( 'Reset match result', 'racketmanager' ); ?>
-                                                </a>
+                                            <li class="match-points__cell <?php echo esc_html( $winner_class ); ?>">
+                                                <?php
+                                                $val = '';
+                                                if ( $set instanceof Set_Score ) {
+                                                    $val = 'player1' === $opponent ? $set->get_home_games() : $set->get_away_games();
+                                                } elseif ( isset( $set[ $opponent ] ) ) {
+                                                    $val = $set[ $opponent ];
+                                                }
+                                                if ( $match_editable ) {
+                                                    /* translators: 1: set number, 2: player number */
+                                                    $set_label = sprintf( __( 'Set %1$d player %2$d games', 'racketmanager' ), $i, 'player1' === $opponent ? 1 : 2 );
+                                                    ?>
+                                                    <label for="set_<?php echo esc_html( $i ); ?>_<?php echo esc_html( $opponent ); ?>" class="visually-hidden"><?php echo esc_html( $set_label ); ?></label>
+                                                    <input type="text"
+                                                           class="points match-points__cell-input <?php echo esc_html( $winner_point_class ); ?>"
+                                                           id="set_<?php echo esc_html( $i ); ?>_<?php echo esc_html( $opponent ); ?>"
+                                                           name="sets[<?php echo esc_html( $i ); ?>][<?php echo esc_html( $opponent ); ?>]"
+                                                           value="<?php echo esc_html( $val ); ?>"
+                                                           data-action="set-calculator"/>
+                                                    <?php
+                                                } else {
+                                                    echo esc_html( $val );
+                                                    ?>
+                                                    <?php
+                                                    $tb = null;
+                                                    if ( $set instanceof Set_Score ) {
+                                                        $tb = 'player1' === $opponent ? $set->get_home_tiebreak() : $set->get_away_tiebreak();
+                                                    } elseif ( isset( $set['tiebreak'] ) ) {
+                                                        $tb = $set['tiebreak'];
+                                                    }
+                                                    if ( ! empty( $tb ) && ! empty( $winner_class ) ) {
+                                                        ?>
+                                                        <span
+                                                            class="player-row__tie-break"><?php echo esc_html( $tb ); ?></span>
+                                                        <?php
+                                                    }
+                                                    ?>
+                                                    <?php
+                                                }
+                                                ?>
                                             </li>
                                             <?php
                                         }
                                         ?>
                                     </ul>
-                                </div>
-                            </div>
-                            <?php
-                        }
-                        ?>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div id="headerResponse" class="alert_rm alert--danger" style="display: none;">
-            <div class="alert__body">
-                <div class="alert__body-inner">
-                    <span id="headerResponseText"></span>
-                </div>
-            </div>
-        </div>
-        <div class="match-info-meta wrapper--padding-medium">
-            <div class="row">
-                <div class="col-6 col-sm-4">
-                    <svg width="20" height="20" class="match-info-meta__icon">
-                        <?php
-                        if ( ! empty( $league->is_championship ) ) {
-                            ?>
-                            <use
-                                xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/lta-icons.svg#icon-bracket' ); ?>"></use>
-                            <?php
-                        } else {
-                            ?>
-                            <use
-                                xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#table' ); ?>"></use>
-                            <?php
-                        }
-                        ?>
-                    </svg>
-                    <div class="match-info-meta__content">
-                        <span>
-                            <strong>
-                                <?php echo esc_html( $svg_link_text ); ?>
-                            </strong>
-                        </span>
-                        <span class="text--muted-small">
-                            <a href="<?php echo esc_attr( $svg_link_location ); ?>">
-                                <?php echo esc_html( $svg_link ); ?>
-                            </a>
-                        </span>
-                    </div>
-                </div>
-                <?php
-                if ( ! empty( $match_date_formatted ) ) {
-                    ?>
-                    <div class="col-6 col-sm-4">
-                        <svg width="20" height="20" class="match-info-meta__icon">
-                            <use
-                                xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar' ); ?>"></use>
-                        </svg>
-                        <div class="match-info-meta__content">
-                            <span>
-                                <strong>
-                                    <?php esc_html_e( 'Time', 'racketmanager' ); ?>
-                                </strong>
-                            </span>
-                            <span class="text--muted-small">
-                                <time datetime="<?php echo esc_html( $match->date ); ?>">
-                                    <span class="match_date" id="match-tournament-date-header">
-                                        <?php echo esc_html( $match_date_formatted ); ?>
-                                    </span>
                                     <?php
-                                    if ( ! empty( $match_time_formatted ) ) {
-                                        ?>
-                                        <span class="match_time">
-                                            <?php echo esc_html__( 'at', 'racketmanager' ) . ' ' . esc_html( $match_time_formatted ); ?>
-                                        </span>
-                                        <?php
-                                    }
-                                    ?>
-                                </time>
-                            </span>
-                        </div>
-                    </div>
-                    <?php
-                }
-                ?>
-                <?php
-                $location = $match->location;
-                if ( empty( $location ) && isset( $match->host ) ) {
-                    if ( 'home' === $match->host ) {
-                        $location = ( ! empty( $home_team->club ) && ! empty( $home_team->club->shortcode ) ) ? $home_team->club->shortcode : null;
-                    } elseif ( 'away' === $match->host ) {
-                        $location = ( ! empty( $away_team->club ) && ! empty( $away_team->club->shortcode ) ) ? $away_team->club->shortcode : null;
-                    }
-                }
-
-                if ( ! empty( $location ) ) {
-                    ?>
-                    <div class="d-none d-sm-block col-sm-4">
-                        <svg width="20" height="20" class="match-info-meta__icon">
-                            <use
-                                xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#geo-alt-fill' ); ?>"></use>
-                        </svg>
-                        <div class="match-info-meta__content">
-                            <span>
-                                <strong>
-                                    <?php esc_html_e( 'Location', 'racketmanager' ); ?>
-                                </strong>
-                            </span>
-                            <span class="text--muted-small">
-                                <?php echo esc_html( $location ); ?>
-                            </span>
-                        </div>
-                    </div>
-                    <?php
-                }
-                ?>
-            </div>
-        </div>
-        <div class="wrapper--padding-medium">
-            <?php $form_id = 'form-match-' . $match->id; ?>
-            <form id="<?php echo esc_html( $form_id ); ?>" method="post">
-                <?php wp_nonce_field( 'scores-match', 'racketmanager_nonce' ); ?>
-                <input type="hidden" name="current_league_id" id="current_league_id"
-                       value="<?php echo esc_html( $match->league_id ); ?>"/>
-                <input type="hidden" name="current_match_id" id="current_match_id"
-                       value="<?php echo esc_html( $match->id ); ?>"/>
-                <input type="hidden" name="current_season" id="current_season"
-                       value="<?php echo esc_html( $match->season ); ?>"/>
-                <input type="hidden" name="home_team" value="<?php echo esc_html( $match->home_team ); ?>"/>
-                <input type="hidden" name="away_team" value="<?php echo esc_html( $match->away_team ); ?>"/>
-                <input type="hidden" name="match_type" value="tournament"/>
-                <input type="hidden" name="match_round" value="<?php echo esc_html( $fixture->final ); ?>"/>
-                <input type="hidden" name="updateMatch" id="updateMatch" value="results"/>
-                <input name="match_status" type="hidden" id="match_status"
-                       value="<?php echo esc_attr( $match_status ); ?>"/>
-                <?php
-                if ( ! empty( $tournament_seo_name ) ) {
-                    ?>
-                    <input type="hidden" id="tournamentName" value="<?php echo esc_attr( $tournament_seo_name ); ?>"/>
-                    <?php
-                }
-                ?>
-                <div class="alert_rm <?php echo empty( $message ) ? null : 'alert--success'; ?>"
-                     id="matchAlert" <?php echo empty( $message ) ? 'style="display:none;"' : null; ?>>
-                    <div class="alert__body">
-                        <div class="alert__body-inner" id="matchAlertResponse">
-                            <span><?php echo empty( $message ) ? null : esc_html( $message ); ?></span>
-                        </div>
-                    </div>
-                </div>
-                <div class="match__buttons mb-3">
-                    <a href="<?php echo esc_url( $back_url ); ?>">
-                        <button class="btn btn-plain"
-                                type="button"><?php esc_html_e( 'Return', 'racketmanager' ); ?></button>
-                    </a>
-                    <?php
-                    if ( $user_can_update ) {
-                        ?>
-                        <button class="btn btn-primary" type="button" id="updateMatchResults"
-                                data-action="update-match-results"><?php esc_html_e( 'Save', 'racketmanager' ); ?></button>
-                        <?php
-                    }
-                    ?>
-                </div>
-                <div class="match tournament-match <?php echo esc_attr( $match_editable ); ?>">
-                    <div class="match__header">
-                        <ul class="match__header-title">
-                            <?php
-                            if ( ! empty( $round_name ) ) {
-                                ?>
-                                <li class="match__header-title-item">
-                                    <?php echo esc_html( $round_name ); ?>
-                                </li>
-                                <?php
-                            }
-                            ?>
-                            <li class="match__header-title-item">
-                                <?php echo esc_html( $league->title ); ?>
-                            </li>
-                        </ul>
-                        <?php
-                        if ( $user_can_update ) {
-                            ?>
-                            <div class="match__header-aside text-uppercase">
-                                <div class="match__header-aside-block">
-                                    <a href="" class="nav__link statusLink"
-                                       data-match-id="<?php echo esc_attr( $match->id ); ?>"
-                                       data-action="open-match-status-modal">
-                                        <svg width="16" height="16" class="icon-plus nav-link__prefix">
-                                            <use
-                                                xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#plus-lg' ); ?>"></use>
-                                        </svg>
-                                        <span
-                                            class="nav-link__value"><?php esc_html_e( 'Match status', 'racketmanager' ); ?></span>
-                                    </a>
-                                </div>
-                            </div>
-                            <?php
-                        }
-                        ?>
-                    </div>
-                    <?php require_once RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
-                    <div class="match__body">
-                        <div class="match__row-wrapper">
-                            <?php
-                            $opponents = array( 'home' => $home_team, 'away' => $away_team );
-                            foreach ( $opponents as $opponent => $team_details ) {
-                                $team         = $team_details->team;
-                                $is_winner    = false;
-                                $is_loser     = false;
-                                $winner_class = null;
-                                if ( $winner === $opponent ) {
-                                    $is_winner    = true;
-                                    $winner_class = ' winner';
-                                } elseif ( $loser === $opponent ) {
-                                    $is_loser = true;
-                                }
-                                ?>
-                                <div class="match__row <?php echo esc_html( $winner_class ); ?>">
-                                    <div class="match__row-title">
-                                        <?php
-                                        if ( empty( $team->players ) ) {
-                                            ?>
-                                            <div class="match__row-title-value">
-                                                <?php echo esc_html( $team->get_name() ); ?>
-                                            </div>
-                                            <?php
-                                        } else {
-                                            foreach ( $team->players as $team_player ) {
-                                                $player_id   = method_exists( $team_player, 'get_id' ) ? $team_player->get_id() : ( $team_player->id ?? $team_player->ID ?? null );
-                                                $fullname    = method_exists( $team_player, 'get_fullname' ) ? $team_player->get_fullname() : ( $team_player->fullname ?? '' );
-                                                $player_link = ( isset( $player_urls ) && is_array( $player_urls ) )
-                                                    ? ( ( $player_id && isset( $player_urls[ $player_id ] ) ) ? $player_urls[ $player_id ] : ( $player_urls[ $fullname ] ?? null ) )
-                                                    : ( $team_player->url ?? $team_player->profile_url ?? null );
-                                                ?>
-                                                <div class="match__row-title-value">
-                                                    <?php
-                                                    if ( ! empty( $player_link ) ) {
-                                                        ?>
-                                                        <a href="<?php echo esc_url( $player_link ); ?>">
-                                                            <?php
-                                                            }
-                                                            ?>
-                                                            <?php
-                                                            if ( ! empty( $team->is_withdrawn ) ) {
-                                                            $title_text = $team->get_name() . ' ' . __( 'has withdrawn', 'racketmanager' );
-                                                            ?>
-                                                            <s aria-label="<?php echo esc_attr( $title_text ); ?>"
-                                                               data-bs-toggle="tooltip" data-bs-placement="right"
-                                                               title="<?php echo esc_attr( $title_text ); ?>">
-                                                                <?php
-                                                                }
-                                                                ?>
-                                                                <?php echo esc_html( trim( $team_player->get_fullname() ) ); ?>
-                                                                <?php
-                                                                if ( ! empty( $team->is_withdrawn ) ) {
-                                                                ?>
-                                                            </s>
-                                                        <?php
-                                                    }
-                                                    ?>
-                                                        <?php
-                                                        if ( ! empty( $player_link ) ) {
-                                                        ?>
-                                                    </a>
-                                                <?php
-                                                }
-                                                ?>
-                                                </div>
-                                                <?php
-                                            }
+                                    if ( $match_editable ) {
+                                        $tb = '';
+                                        if ( $set instanceof Set_Score ) {
+                                            $tb = $set->get_home_tiebreak() ?? $set->get_away_tiebreak() ?? '';
+                                        } elseif ( isset( $set['tiebreak'] ) ) {
+                                            $tb = $set['tiebreak'];
                                         }
                                         ?>
-                                    </div>
-                                    <?php
-                                    $match_message_class = null;
-                                    $match_message_text  = null;
-                                    $match_status_class  = null;
-                                    $match_status_text   = null;
-                                    if ( $is_winner ) {
-                                        if ( empty( $player_team_status ) || 'winner' === $player_team_status ) {
-                                            $match_status_class = 'winner';
-                                            $match_status_text  = 'W';
+                                        <ul class="match-points tie-break"
+                                            id="set_<?php echo esc_html( $i ); ?>_tiebreak_wrapper"
+                                        <?php
+                                        if ( empty( $tb ) ) {
+                                            echo 'style="display:none;"';
                                         }
-                                    } elseif ( $is_loser ) {
-                                        if ( 'loser' === $player_team_status ) {
-                                            $match_status_class = 'loser';
-                                            $match_status_text  = 'L';
-                                        } else {
-                                            $match_status_class = 'blank';
-                                        }
-                                        if ( $match->is_walkover ) {
-                                            $match_message_class = 'match-warning';
-                                            $match_message_text  = __( 'Walkover', 'racketmanager' );
-                                        } elseif ( $match->is_retired ) {
-                                            $match_message_class = 'match-warning';
-                                            $match_message_text  = __( 'Retired', 'racketmanager' );
-                                        }
-                                    } elseif ( $is_tie ) {
-                                        $match_status_class  = 'tie';
-                                        $match_message_class = 'match-warning';
-                                        $match_status_text   = 'T';
-                                        $match_message_text  = __( 'Not played', 'racketmanager' );
-                                    }
-                                    ?>
-                                    <span class="match__message <?php echo esc_attr( $match_message_class ); ?>"
-                                          id="match-message-<?php echo esc_attr( $team->id ); ?>">
-                                        <?php echo esc_html( $match_message_text ); ?>
-                                    </span>
-                                    <span class="match__status <?php echo esc_attr( $match_status_class ); ?>"
-                                          id="match-status-<?php echo esc_attr( $team->id ); ?>">
-                                        <?php echo esc_html( $match_status_text ); ?>
-                                    </span>
-                                </div>
-                                <?php
-                            }
-                            ?>
-                        </div>
-                        <div class="match__result">
-                            <?php
-                            $sets = $fixture->custom['sets'] ?? null;
-                            for ( $i = 1; $i <= $league->num_sets; $i ++ ) {
-                                $set = ! empty( $sets[ $i ] ) ? $sets[ $i ] : array();
-                                if ( $set instanceof Set_Score ) {
-                                    $player1_games = $set->get_home_games();
-                                    $player2_games = $set->get_away_games();
-                                    if ( $player1_games > $player2_games ) {
-                                        $winner_set = 'player1';
-                                    } elseif ( $player1_games < $player2_games ) {
-                                        $winner_set = 'player2';
-                                    } else {
-                                        $winner_set = null;
-                                    }
-                                } elseif ( isset( $set['player1'] ) && isset( $set['player2'] ) ) {
-                                    if ( $set['player1'] > $set['player2'] ) {
-                                        $winner_set = 'player1';
-                                    } elseif ( $set['player1'] < $set['player2'] ) {
-                                        $winner_set = 'player2';
-                                    } else {
-                                        $winner_set = null;
-                                    }
-                                } else {
-                                    $winner_set = null;
-                                }
-                                ?>
-                                <?php
-                                if ( $match_editable || ( ! empty( $set ) ) ) {
-                                    $set_type = Util::get_set_type( $league->scoring, $fixture->final, $league->num_sets, $i, false, $league->num_rubbers, $match->leg );
-                                    $set_info = Util::get_set_info( $set_type );
-                                    ?>
-                                    <span class="set-group" id="set_<?php echo esc_html( $i ); ?>"
-                                          data-settype="<?php echo esc_attr( $set_type ); ?>"
-                                          data-maxwin="<?php echo esc_attr( $set_info->max_win ); ?>"
-                                          data-maxloss="<?php echo esc_attr( $set_info->max_loss ); ?>"
-                                          data-minwin="<?php echo esc_attr( $set_info->min_win ); ?>"
-                                          data-minloss="<?php echo esc_attr( $set_info->min_loss ); ?>"
-                                          data-tiebreakset="<?php echo esc_attr( $set_info->tiebreak_set ); ?>">
-                                        <ul class="match-points">
-                                            <?php
-                                            $opponents = array( 'player1', 'player2' );
-                                            foreach ( $opponents as $opponent ) {
-                                                if ( $winner_set === $opponent ) {
-                                                    $winner_class       = ' winner';
-                                                    $winner_point_class = ' match-points__cell-input--won';
-                                                } else {
-                                                    $winner_class       = '';
-                                                    $winner_point_class = '';
+                                        ?>
+                                        >
+                                            <li class="match-points__cell">
+                                                <?php
+                                                $tb = '';
+                                                if ( $set instanceof Set_Score ) {
+                                                    $tb = $set->get_home_tiebreak() ?? $set->get_away_tiebreak() ?? '';
+                                                } elseif ( is_array( $set ) && isset( $set['tiebreak'] ) ) {
+                                                    $tb = $set['tiebreak'];
                                                 }
                                                 ?>
-                                                <li class="match-points__cell <?php echo esc_html( $winner_class ); ?>">
-                                                    <?php
-                                                    $val = '';
-                                                    if ( $set instanceof Set_Score ) {
-                                                        $val = 'player1' === $opponent ? $set->get_home_games() : $set->get_away_games();
-                                                    } elseif ( isset( $set[ $opponent ] ) ) {
-                                                        $val = $set[ $opponent ];
-                                                    }
-                                                    if ( $match_editable ) {
-                                                        ?>
-                                                        <label
-                                                            for="set_<?php echo esc_html( $i ); ?>_<?php echo esc_html( $opponent ); ?>"></label>
-                                                        <input type="text"
-                                                               class="points match-points__cell-input <?php echo esc_html( $winner_point_class ); ?>"
-                                                               id="set_<?php echo esc_html( $i ); ?>_<?php echo esc_html( $opponent ); ?>"
-                                                               name="sets[<?php echo esc_html( $i ); ?>][<?php echo esc_html( $opponent ); ?>]"
-                                                               value="<?php echo esc_html( $val ); ?>"
-                                                               data-action="set-calculator"/>
-                                                        <?php
-                                                    } else {
-                                                        echo esc_html( $val );
-                                                        ?>
-                                                        <?php
-                                                        $tb = null;
-                                                        if ( $set instanceof Set_Score ) {
-                                                            $tb = 'player1' === $opponent ? $set->get_home_tiebreak() : $set->get_away_tiebreak();
-                                                        } elseif ( isset( $set['tiebreak'] ) ) {
-                                                            $tb = $set['tiebreak'];
-                                                        }
-                                                        if ( ! empty( $tb ) && ! empty( $winner_class ) ) {
-                                                            ?>
-                                                            <span
-                                                                class="player-row__tie-break"><?php echo esc_html( $tb ); ?></span>
-                                                            <?php
-                                                        }
-                                                        ?>
-                                                        <?php
-                                                    }
-                                                    ?>
-                                                </li>
-                                                <?php
-                                            }
-                                            ?>
+                                                <label for="set_<?php echo esc_html( $i ); ?>_tiebreak"
+                                                       class="visually-hidden"><?php esc_html_e( 'Tie break', 'racketmanager' ); ?></label><input
+                                                    type="text" class="points match-points__cell-input"
+                                                    id="set_<?php echo esc_html( $i ); ?>_tiebreak"
+                                                    name="sets[<?php echo esc_html( $i ); ?>][tiebreak]"
+                                                    value="<?php echo esc_html( $tb ); ?>"
+                                                    data-action="set-calculator-tiebreak"/>
+                                            </li>
                                         </ul>
                                         <?php
-                                        if ( $match_editable ) {
-                                            $tb = '';
-                                            if ( $set instanceof Set_Score ) {
-                                                $tb = $set->get_home_tiebreak() ?? $set->get_away_tiebreak() ?? '';
-                                            } elseif ( isset( $set['tiebreak'] ) ) {
-                                                $tb = $set['tiebreak'];
-                                            }
-                                            ?>
-                                            <ul class="match-points tie-break"
-                                                id="set_<?php echo esc_html( $i ); ?>_tiebreak_wrapper"
-                                            <?php
-                                            if ( empty( $tb ) ) {
-                                                echo 'style="display:none;"';
-                                            }
-                                            ?>
-                                            >
-                                                <li class="match-points__cell">
-                                                    <?php
-                                                    $tb = '';
-                                                    if ( $set instanceof Set_Score ) {
-                                                        $tb = $set->get_home_tiebreak() ?? $set->get_away_tiebreak() ?? '';
-                                                    } elseif ( is_array( $set ) && isset( $set['tiebreak'] ) ) {
-                                                        $tb = $set['tiebreak'];
-                                                    }
-                                                    ?>
-                                                    <label for="set_<?php echo esc_html( $i ); ?>_tiebreak"
-                                                           class="visually-hidden"><?php esc_html_e( 'Tie break', 'racketmanager' ); ?></label><input
-                                                        type="text" class="points match-points__cell-input"
-                                                        id="set_<?php echo esc_html( $i ); ?>_tiebreak"
-                                                        name="sets[<?php echo esc_html( $i ); ?>][tiebreak]"
-                                                        value="<?php echo esc_html( $tb ); ?>"
-                                                        data-action="set-calculator-tiebreak"/>
-                                                </li>
-                                            </ul>
-                                            <?php
-                                        }
-                                        ?>
-                                    </span>
-                                    <?php
-                                }
-                                ?>
+                                    }
+                                    ?>
+                                </span>
                                 <?php
                             }
                             ?>
-                        </div>
-                    </div>
-                    <div class="match__footer">
-                        <ul class="match__footer-title">
-                        </ul>
-                        <?php
-                        if ( $match_editable ) {
-                            ?>
-                            <div class="match__footer-aside text-uppercase">
-                                <a role="button" data-action="reset-match-scores"
-                                   data-form-id="<?php echo esc_attr( $form_id ); ?>">
-                                    <?php esc_html_e( 'Reset scores', 'racketmanager' ); ?>
-                                </a>
-                            </div>
                             <?php
                         }
                         ?>
                     </div>
                 </div>
-            </form>
-        </div>
+                <div class="match__footer">
+                    <ul class="match__footer-title">
+                    </ul>
+                    <?php
+                    if ( $match_editable ) {
+                        ?>
+                        <div class="match__footer-aside text-uppercase">
+                            <button type="button" class="match__footer-action" data-action="reset-match-scores" data-form-id="<?php echo esc_attr( $form_id ); ?>">
+                                <?php esc_html_e( 'Reset scores', 'racketmanager' ); ?>
+                            </button>
+                        </div>
+                        <?php
+                    }
+                    ?>
+                </div>
+            </div>
+        </form>
     </div>
-    <?php require RACKETMANAGER_PATH . 'templates/includes/modal-loading.php'; ?>
-    <?php require_once RACKETMANAGER_PATH . 'templates/includes/modal-score.php'; ?>
-    <?php require_once RACKETMANAGER_PATH . 'templates/includes/match-modal.php'; ?>
-    <?php
-}
-?>
+</div>
+<?php require RACKETMANAGER_PATH . 'templates/includes/modal-loading.php'; ?>
+<?php require_once RACKETMANAGER_PATH . 'templates/includes/modal-score.php'; ?>
+<?php require_once RACKETMANAGER_PATH . 'templates/includes/match-modal.php'; ?>

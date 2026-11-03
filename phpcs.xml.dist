@@ -60,6 +60,9 @@
 
 		<!-- 7. Namespace case sensitivity (e.g. Racketmanager\Infrastructure\Wordpress) -->
 		<exclude name="WordPress.WP.CapitalPDangit.MisspelledNamespaceName"/>
+
+		<!-- 8. Allow docblocks without a short description -->
+		<exclude name="Generic.Commenting.DocComment.MissingShort"/>
 	</rule>
 
 	<!-- Configure 4-space indentation across control structures, scopes, and arrays -->
@@ -156,4 +159,9 @@
 	<rule ref="Generic.Formatting.MultipleStatementAlignment">
 		<exclude-pattern>*/tests/*</exclude-pattern>
 	</rule>
+    <!-- Allow missing file doc comment everywhere (file headers are optional in this plugin).
+         Declared as a standalone severity override so it is independent of any <rule ref> above. -->
+    <rule ref="Squiz.Commenting.FileComment.Missing">
+        <severity>0</severity>
+    </rule>
 </ruleset>

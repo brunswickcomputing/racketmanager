@@ -11,11 +11,11 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Header_Read_Model;
 ?>
 <?php
 if ( $model->is_shortcode ) {
-?>
-<div id="match-header" class="team-match-header module module--dark module--card">
-    <?php
-    }
     ?>
+    <div id="match-header" class="team-match-header module module--dark module--card">
+    <?php
+}
+?>
     <div class="module__content">
         <div class="module-container">
             <?php
@@ -266,4 +266,4 @@ if ( $model->is_shortcode ) {
         require RACKETMANAGER_PATH . 'templates/includes/match-modal.php';
         require RACKETMANAGER_PATH . 'templates/includes/modal-score.php';
     }
-?>
+    ?>

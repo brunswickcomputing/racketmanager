@@ -14,24 +14,27 @@ if ( function_exists( '_deprecated_file' ) ) {
     _deprecated_file( __FILE__, '10.0.0', null, 'Orphan template retained for custom theme backward compatibility; scheduled for removal in 11.0.0.' );
 }
 
+use Racketmanager\Domain\Scoring\Set_Score;
+use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Util\Util;
+use function get_userdata;
 
 /** @var object $match */
 /** @var string $match_type */
 /** @var object $is_update_allowed */
-$tournament        = $vars['tournament'] ?? $vm->tournament ?? $tournament ?? null;
-$match             = $vars['match'] ?? $vm->match ?? $match ?? null;
-$match_type        = $vars['match_type'] ?? $vm->match_type ?? $match_type ?? '';
-$is_update_allowed = $vars['is_update_allowed'] ?? $vm->is_update_allowed ?? $is_update_allowed ?? (object) [
+$tournament             = $vars['tournament'] ?? $vm->tournament ?? $tournament ?? null;
+$match                  = $vars['match'] ?? $vm->match ?? $match ?? null;
+$match_type             = $vars['match_type'] ?? $vm->match_type ?? $match_type ?? '';
+$is_update_allowed      = $vars['is_update_allowed'] ?? $vm->is_update_allowed ?? $is_update_allowed ?? (object) [
     'user_can_update'     => false,
     'user_type'           => '',
     'user_team'           => '',
     'match_approval_mode' => false,
     'match_update'        => false,
 ];
-$home_club_player  = $vars['home_club_player'] ?? $vm->home_club_player ?? $home_club_player ?? [];
-$away_club_player  = $vars['away_club_player'] ?? $vm->away_club_player ?? $away_club_player ?? [];
-$club_players      = $vars['club_players'] ?? $vm->club_players ?? $club_players ?? [];
+$home_club_player       = $vars['home_club_player'] ?? $vm->home_club_player ?? $home_club_player ?? [];
+$away_club_player       = $vars['away_club_player'] ?? $vm->away_club_player ?? $away_club_player ?? [];
+$club_players           = $vars['club_players'] ?? $vm->club_players ?? $club_players ?? [];
 $approval_captain_names = $vars['approval_captain_names'] ?? ( isset( $vm ) ? ( $vm->approval_captain_names ?? null ) : null ) ?? $approval_captain_names ?? [];
 if ( ! is_array( $approval_captain_names ) ) {
     $approval_captain_names = [];
@@ -43,18 +46,18 @@ $resolve_user_display_name = static function ( mixed $user_id ): string {
     if ( empty( $user_id ) || ! function_exists( 'get_userdata' ) ) {
         return '';
     }
-    $user = \get_userdata( (int) $user_id );
-    return ( is_object( $user ) && isset( $user->display_name ) ) ? (string) $user->display_name : '';
+    $user = get_userdata( (int) $user_id );
+    return ( is_object( $user ) && isset( $user->display_name ) ) ? $user->display_name : '';
 };
-$tournament_link = empty( $tournament ) ? null : ( new \Racketmanager\Presentation\Presenters\Tournament_Presenter() )->get_link( $tournament );
-$league_slug     = Util::seo_url( (string) ( $match->league->title ?? '' ) );
-$event_slug      = Util::seo_url( (string) ( $match->league->event->name ?? '' ) );
-$user_can_update     = $is_update_allowed->user_can_update ?? false;
-$user_type           = $is_update_allowed->user_type ?? '';
-$user_team           = $is_update_allowed->user_team ?? '';
-$match_approval_mode = $is_update_allowed->match_approval_mode ?? false;
-$match_update        = $is_update_allowed->match_update ?? false;
-$match_editable      = false;
+$tournament_link           = empty( $tournament ) ? null : new Tournament_Presenter()->get_link( $tournament );
+$league_slug               = Util::seo_url( (string) ( $match->league->title ?? '' ) );
+$event_slug                = Util::seo_url( (string) ( $match->league->event->name ?? '' ) );
+$user_can_update           = $is_update_allowed->user_can_update ?? false;
+$user_type                 = $is_update_allowed->user_type ?? '';
+$user_team                 = $is_update_allowed->user_team ?? '';
+$match_approval_mode       = $is_update_allowed->match_approval_mode ?? false;
+$match_update              = $is_update_allowed->match_update ?? false;
+$match_editable            = false;
 if ( $user_can_update && ! $match_approval_mode ) {
     $match_editable = 'is-editable';
 }
@@ -186,8 +189,8 @@ if ( $match->is_walkover ) {
                                             <div class="row mb-3">
                                                 <div class="col-12 match__buttons">
                                                     <input type="hidden" name="updateRubber" id="updateRubber" value="<?php echo esc_html( $update_rubber ); ?>" />
-                                                    <a tabindex="999" class="btn btn-plain" type="button" id="cancelResults" href="<?php echo esc_html( $page_referrer ); ?>"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></a>
-                                                    <button tabindex="500" class="btn btn-primary" type="button" id="updateRubberResults" data-action="update-team-result"><?php echo esc_html( $action_text ); ?></button>
+                                                    <a tabindex="-1" class="btn btn-plain" type="button" id="cancelResultsTop" href="<?php echo esc_html( $page_referrer ); ?>"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></a>
+                                                    <button tabindex="-1" class="btn btn-primary" type="button" id="updateRubberResultsTop" data-action="update-team-result"><?php echo esc_html( $action_text ); ?></button>
                                                 </div>
                                             </div>
                                             <?php
@@ -205,12 +208,6 @@ if ( $match->is_walkover ) {
                                             <?php
                                         }
                                         ?>
-                                        <div class="row mt-3 mb-3">
-                                            <div class="form-floating">
-                                                <textarea class="form-control result-comments" tabindex="490" placeholder="Leave a comment here" name="matchComments[result]" id="matchComments"><?php echo isset( $match->comments['result'] ) ? esc_html( $match->comments['result'] ) : null; ?></textarea>
-                                                <label for="matchComments"><?php esc_html_e( 'Match Comments', 'racketmanager' ); ?></label>
-                                            </div>
-                                        </div>
                                         <?php
                                         if ( ! empty( $match->home_captain ) || ! empty( $match->away_captain ) ) {
                                             ?>
@@ -238,8 +235,8 @@ if ( $match->is_walkover ) {
                                                                             $approval_captain = $opponent . '_captain';
                                                                             if ( isset( $match->$approval_captain ) ) {
                                                                                 $captain_name = $approval_captain_names[ $opponent ]
-                                                                                    ?? ( isset( $match->captain_names[ $opponent ] ) ? $match->captain_names[ $opponent ] : null )
-                                                                                    ?? ( isset( $match->approver_names[ $opponent ] ) ? $match->approver_names[ $opponent ] : null )
+                                                                                    ?? ( $match->captain_names[ $opponent ] ?? null )
+                                                                                    ?? ( $match->approver_names[ $opponent ] ?? null )
                                                                                     ?? $resolve_user_display_name( $match->$approval_captain );
                                                                                 ?>
                                                                                 <span class="match__row-title-value-content">
@@ -248,17 +245,26 @@ if ( $match->is_walkover ) {
                                                                                 <?php
                                                                             } else {
                                                                                 if ( 'admin' !== $user_type && ( $opponent === $user_team || 'both' === $user_team ) ) {
+                                                                                    $approval_options = array(
+                                                                                        'resultConfirm'   => array(
+                                                                                            'value' => 'A',
+                                                                                            'label' => __( 'Confirm', 'racketmanager' ),
+                                                                                        ),
+                                                                                        'resultChallenge' => array(
+                                                                                            'value' => 'C',
+                                                                                            'label' => __( 'Challenge', 'racketmanager' ),
+                                                                                        ),
+                                                                                    );
                                                                                     ?>
                                                                                     <div class="approval-check">
-                                                                                        <div class="form-check">
-                                                                                            <input type="hidden" name="result_<?php echo esc_attr( $opponent ); ?>" />
-                                                                                            <label for="resultConfirm"></label><input class="form-check-input" type="radio" name="resultConfirm" id="resultConfirm" value="A" required />
-                                                                                            <label class="form-check-label"><?php esc_html_e( 'Confirm', 'racketmanager' ); ?></label>
-                                                                                        </div>
-                                                                                        <div class="form-check">
-                                                                                            <label for="resultChallenge"></label><input class="form-check-input" type="radio" name="resultConfirm" id="resultChallenge" value="C" required />
-                                                                                            <label class="form-check-label"><?php esc_html_e( 'Challenge', 'racketmanager' ); ?></label>
-                                                                                        </div>
+                                                                                        <input type="hidden" name="result_<?php echo esc_attr( $opponent ); ?>" />
+                                                                                        <?php foreach ( $approval_options as $option_id => $option ) { ?>
+                                                                                            <div class="form-check">
+                                                                                                <input class="form-check-input" type="radio" name="resultConfirm" id="<?php echo esc_attr( $option_id ); ?>" value="<?php echo esc_attr( $option['value'] ); ?>" required />
+                                                                                                <label class="form-check-label" for="<?php echo esc_attr( $option_id ); ?>"><?php echo esc_html( $option['label'] ); ?></label>
+                                                                                                <div id="<?php echo esc_attr( $option_id ); ?>Feedback" class="invalid-feedback"></div>
+                                                                                            </div>
+                                                                                        <?php } ?>
                                                                                     </div>
                                                                                     <?php
                                                                                 }
@@ -336,15 +342,15 @@ if ( $match->is_walkover ) {
                                                     $rubber_players = array( '1' => array() );
                                                     $doubles        = false;
                                                 }
-                                                if ( str_starts_with($rubber->type, 'M') || str_starts_with($rubber->type, 'B')) {
+                                                if ( str_starts_with( $rubber->type, 'M' ) || str_starts_with( $rubber->type, 'B' ) ) {
                                                     foreach ( $rubber_players as $p => $player ) {
                                                         $rubber_players[ $p ]['gender'] = 'm';
                                                     }
-                                                } elseif ( str_starts_with($rubber->type, 'W') || str_starts_with($rubber->type, 'G')) {
+                                                } elseif ( str_starts_with( $rubber->type, 'W' ) || str_starts_with( $rubber->type, 'G' ) ) {
                                                     foreach ( $rubber_players as $p => $player ) {
                                                         $rubber_players[ $p ]['gender'] = 'f';
                                                     }
-                                                } elseif (str_starts_with($rubber->type, 'X')) {
+                                                } elseif ( str_starts_with( $rubber->type, 'X' ) ) {
                                                     $rubber_players['1']['gender'] = 'm';
                                                     $rubber_players['2']['gender'] = 'f';
                                                 }
@@ -402,7 +408,6 @@ if ( $match->is_walkover ) {
                                                                             </div>
                                                                             <?php
                                                                             foreach ( $rubber_players as $player_number => $player ) {
-                                                                                $tabindex   = $tab_base + 1;
                                                                                 $player_ref = $opponent . '_player' . $player_number;
                                                                                 ?>
                                                                                 <div class="match__row-title-value">
@@ -411,8 +416,9 @@ if ( $match->is_walkover ) {
                                                                                             <?php
                                                                                             if ( $match_editable ) {
                                                                                                 $player_id_link = 'players_' . $rubber->rubber_number . '_' . $opponent . '_' . $player_number;
+                                                                                                $player_label   = __( 'Rubber', 'racketmanager' ) . ' ' . $rubber->rubber_number . ' ' . $opponent . ' ' . __( 'Player', 'racketmanager' ) . ' ' . $player_number;
                                                                                                 ?>
-                                                                                                <select class="form-select <?php echo empty( $rubber->players[ $opponent ][ $player_number ]->class ) ? null : 'is-invalid'; ?>" tabindex="<?php echo esc_html( $tabindex ); ?>" name="players[<?php echo esc_attr( $rubber->rubber_number ); ?>][<?php echo esc_attr( $opponent ); ?>][<?php echo esc_attr( $player_number ); ?>]" id="<?php echo esc_attr( $player_id_link ); ?>">
+                                                                                                <select class="form-select <?php echo empty( $rubber->players[ $opponent ][ $player_number ]->class ) ? null : 'is-invalid'; ?>" name="players[<?php echo esc_attr( $rubber->rubber_number ); ?>][<?php echo esc_attr( $opponent ); ?>][<?php echo esc_attr( $player_number ); ?>]" id="<?php echo esc_attr( $player_id_link ); ?>">
                                                                                                     <option value="0">&nbsp;</option>
                                                                                                     <?php
                                                                                                     foreach ( $club_players[ $opponent ][ $player['gender'] ] as $player_option ) {
@@ -426,14 +432,14 @@ if ( $match->is_walkover ) {
                                                                                                             $player_display .= ' - ' . $player_option->btm;
                                                                                                         }
                                                                                                         ?>
-                                                                                                        <option value="<?php echo esc_attr( $player_option->registration_id ); ?>" <?php selected( $player_option->registration_id, $rubber->players[$opponent][$player_number]->registration_id ?? null); ?> <?php echo esc_html( $disabled ); ?>>
+                                                                                                        <option value="<?php echo esc_attr( $player_option->registration_id ); ?>" <?php selected( $player_option->registration_id, $rubber->players[ $opponent ][ $player_number ]->registration_id ?? null ); ?> <?php echo esc_html( $disabled ); ?>>
                                                                                                             <?php echo esc_html( $player_display ); ?>
                                                                                                         </option>
                                                                                                         <?php
                                                                                                     }
                                                                                                     ?>
                                                                                                 </select>
-                                                                                                <label class="visually-hidden" for="<?php echo esc_attr( $player_id_link ); ?>"></label>
+                                                                                                <label class="visually-hidden" for="<?php echo esc_attr( $player_id_link ); ?>"><?php echo esc_html( $player_label ); ?></label>
                                                                                                 <div id="<?php echo esc_attr( $player_id_link ); ?>Feedback" class="invalid-feedback"><?php echo empty( $rubber->players[ $opponent ][ $player_number ]->description ) ? null : esc_html( $rubber->players[ $opponent ][ $player_number ]->description ); ?></div>
                                                                                                 <?php
                                                                                             } elseif ( ! empty( $rubber->players[ $opponent ][ $player_number ] ) ) {
@@ -560,15 +566,16 @@ if ( $match->is_walkover ) {
                                                                         $rubber_status = 'invalid_players';
                                                                     }
                                                                 }
+                                                                $match_status_label = __( 'Rubber status', 'racketmanager' ) . ' ' . $rubber->rubber_number;
                                                                 ?>
-                                                                <label for="match_status_<?php echo esc_attr( $rubber->rubber_number ); ?>"></label><input type="text" class="d-none" id="match_status_<?php echo esc_attr( $rubber->rubber_number ); ?>" name="match_status[<?php echo esc_attr( $rubber->rubber_number ); ?>]" value="<?php echo esc_html( $rubber_status ); ?>" />
+                                                                <label for="match_status_<?php echo esc_attr( $rubber->rubber_number ); ?>" class="visually-hidden"><?php echo esc_html( $match_status_label ); ?></label><input type="text" class="d-none" id="match_status_<?php echo esc_attr( $rubber->rubber_number ); ?>" name="match_status[<?php echo esc_attr( $rubber->rubber_number ); ?>]" value="<?php echo esc_html( $rubber_status ); ?>" />
                                                             </div>
                                                             <div class="match__result">
                                                                 <?php
                                                                 $sets = $rubber->sets ?? array();
                                                                 for ( $i = 1; $i <= $match->league->num_sets; $i++ ) {
                                                                     $set = $rubber->sets[ $i ] ?? array();
-                                                                    if ( $set instanceof \Racketmanager\Domain\Scoring\Set_Score ) {
+                                                                    if ( $set instanceof Set_Score ) {
                                                                         $player1_games = $set->get_home_games();
                                                                         $player2_games = $set->get_away_games();
                                                                         if ( $player1_games > $player2_games ) {
@@ -589,7 +596,6 @@ if ( $match->is_walkover ) {
                                                                     } else {
                                                                         $winner_set = null;
                                                                     }
-                                                                    $tabindex = $tab_base + 10 + ( $i * 10 );
                                                                     $set_type = Util::get_set_type( $match->league->scoring, $match->final_round, $match->league->num_sets, $i, $r, $match->num_rubbers, $match->leg );
                                                                     $set_info = Util::get_set_info( $set_type );
                                                                     ?>
@@ -604,20 +610,20 @@ if ( $match->is_walkover ) {
                                                                             ?>
                                                                             <li class="match-points__cell">
                                                                                 <?php
+                                                                                $val = '';
                                                                                 if ( $match_editable ) {
-                                                                                    $val = '';
-                                                                                    if ( $set instanceof \Racketmanager\Domain\Scoring\Set_Score ) {
+                                                                                    if ( $set instanceof Set_Score ) {
                                                                                         $val = 'player1' === $opponent ? $set->get_home_games() : $set->get_away_games();
                                                                                     } elseif ( is_array( $set ) && isset( $set[ $opponent ] ) ) {
                                                                                         $val = $set[ $opponent ];
                                                                                     }
+                                                                                    $set_score_label = __( 'Rubber', 'racketmanager' ) . ' ' . $r . ' ' . __( 'Set', 'racketmanager' ) . ' ' . $i . ' ' . $opponent;
                                                                                     ?>
-                                                                                    <label for="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_<?php echo esc_attr( $opponent ); ?>"></label><input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points match-points__cell-input <?php echo esc_html( $winner_class ); ?>" type="number" id="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_<?php echo esc_attr( $opponent ); ?>" name="sets[<?php echo esc_html( $r ); ?>][<?php echo esc_html( $i ); ?>][<?php echo esc_attr( $opponent ); ?>]" value="<?php echo esc_html( $val ); ?>" data-action="set-calculator" />
+                                                                                    <label for="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_<?php echo esc_attr( $opponent ); ?>"><?php echo esc_html( $set_score_label ); ?></label> class="points match-points__cell-input <?php echo esc_html( $winner_class ); ?>" type="number" id="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_<?php echo esc_attr( $opponent ); ?>" name="sets[<?php echo esc_html( $r ); ?>][<?php echo esc_html( $i ); ?>][<?php echo esc_attr( $opponent ); ?>]" value="<?php echo esc_html( $val ); ?>" data-action="set-calculator" />
                                                                                     <?php
                                                                                 } else {
-                                                                                    $val = '';
                                                                                     $tb = null;
-                                                                                    if ( $set instanceof \Racketmanager\Domain\Scoring\Set_Score ) {
+                                                                                    if ( $set instanceof Set_Score ) {
                                                                                         $val = 'player1' === $opponent ? $set->get_home_games() : $set->get_away_games();
                                                                                         $tb  = 'player1' === $opponent ? $set->get_home_tiebreak() : $set->get_away_tiebreak();
                                                                                     } elseif ( is_array( $set ) ) {
@@ -640,7 +646,7 @@ if ( $match->is_walkover ) {
                                                                     <?php
                                                                     if ( $match_editable ) {
                                                                         $tb = '';
-                                                                        if ( $set instanceof \Racketmanager\Domain\Scoring\Set_Score ) {
+                                                                        if ( $set instanceof Set_Score ) {
                                                                             $tb = $set->get_home_tiebreak() ?? $set->get_away_tiebreak() ?? '';
                                                                         } elseif ( is_array( $set ) ) {
                                                                             $tb = $set['tiebreak'] ?? '';
@@ -653,8 +659,8 @@ if ( $match->is_walkover ) {
                                                                             }
                                                                             ?>
                                                                             >
-                                                                            <?php ++$tabindex; ?>
-                                                                            <label><input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points match-points__cell-input" type="number" min="0" id="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_tiebreak" name="sets[<?php echo esc_html( $r ); ?>][<?php echo esc_html( $i ); ?>][tiebreak]" value="<?php echo esc_html( $tb ); ?>" data-action="set-calculator-tiebreak"/></label>
+                                                                            <label for="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_tiebreak" class="visually-hidden"><?php esc_html_e( 'Tie break', 'racketmanager' ); ?></label>
+                                                                            <input class="points match-points__cell-input" type="number" min="0" id="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_tiebreak" name="sets[<?php echo esc_html( $r ); ?>][<?php echo esc_html( $i ); ?>][tiebreak]" value="<?php echo esc_html( $tb ); ?>" data-action="set-calculator-tiebreak" />
                                                                         </div>
                                                                         <?php
                                                                     }
@@ -671,9 +677,9 @@ if ( $match->is_walkover ) {
                                                                 <ul class="match__footer-title">
                                                                 </ul>
                                                                 <div class="match__footer-aside text-uppercase">
-                                                                    <a role="button" data-action="reset-match-scores" data-rubber-id="<?php echo esc_attr( $rubber->id ); ?>">
+                                                                    <button type="button" class="match__footer-action" data-action="reset-match-scores" data-rubber-id="<?php echo esc_attr( $rubber->id ); ?>">
                                                                         <?php esc_html_e( 'Reset scores', 'racketmanager' ); ?>
-                                                                    </a>
+                                                                    </button>
                                                                 </div>
                                                             </div>
                                                             <?php
@@ -687,6 +693,24 @@ if ( $match->is_walkover ) {
                                             }
                                             ?>
                                         </ul>
+                                        <div class="row mt-3 mb-3">
+                                            <div class="form-floating">
+                                                <textarea class="form-control result-comments" placeholder="Leave a comment here" name="matchComments[result]" id="matchComments"><?php echo isset( $match->comments['result'] ) ? esc_html( $match->comments['result'] ) : null; ?></textarea>
+                                                <label for="matchComments"><?php esc_html_e( 'Match Comments', 'racketmanager' ); ?></label>
+                                            </div>
+                                        </div>
+                                        <?php
+                                        if ( $match_editable || $match_approval_mode ) {
+                                            ?>
+                                            <div class="row mb-3">
+                                                <div class="col-12 match__buttons">
+                                                    <a class="btn btn-plain" type="button" id="cancelResults" href="<?php echo esc_html( $page_referrer ); ?>"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></a>
+                                                    <button class="btn btn-primary" type="button" id="updateRubberResults" data-action="update-team-result"><?php echo esc_html( $action_text ); ?></button>
+                                                </div>
+                                            </div>
+                                            <?php
+                                        }
+                                        ?>
                                     </form>
                                 </div>
                             </div>

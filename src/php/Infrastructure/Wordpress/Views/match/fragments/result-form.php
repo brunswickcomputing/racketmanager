@@ -86,17 +86,10 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
                                         }
                                         ?>
                                         <input type="hidden" name="updateRubber" id="updateRubber" value="<?php echo esc_attr( $update_action ); ?>"/>
-                                        <a tabindex="999" class="btn btn-plain" href="<?php echo esc_url( $model->edit_url ); ?>"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></a>
-                                        <button tabindex="500" class="btn btn-primary" type="button" id="updateRubberResults" data-action="update-team-result">
+                                        <a tabindex="-1" class="btn btn-plain" id="cancelResultsTop" href="<?php echo esc_url( $model->edit_url ); ?>"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></a>
+                                        <button class="btn btn-primary" type="button" id="updateRubberResultsTop" data-action="update-team-result" tabindex="-1">
                                             <?php echo esc_html( $button_text ); ?>
                                         </button>
-                                    </div>
-                                </div>
-
-                                <div class="row mt-3 mb-3">
-                                    <div class="form-floating">
-                                        <textarea class="form-control result-comments" tabindex="490" placeholder="<?php esc_attr_e( 'Leave a comment here', 'racketmanager' ); ?>" name="matchComments[result]" id="matchComments"><?php echo esc_html( $model->general_comments ); ?></textarea>
-                                        <label for="matchComments"><?php esc_html_e( 'Match Comments', 'racketmanager' ); ?></label>
                                     </div>
                                 </div>
 
@@ -178,14 +171,18 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
                                                                     </div>
                                                                     <?php
                                                                 }
-                                                            } elseif ( 'admin' !== ( $model->permissions['user_type'] ?? '' ) && ( $opponent_key === ( $model->permissions['user_team'] ?? '' ) || 'both' === ( $model->permissions['user_team'] ?? '' ) ) ) {
-                                                                ?>
-                                                                <div class="match-comments form-floating">
-                                                                    <textarea class="form-control result-comments" placeholder="<?php esc_attr_e( 'Leave a comment here', 'racketmanager' ); ?>" name="resultConfirmComments" id="resultConfirmComments-<?php echo esc_attr( $opponent_key ); ?>"></textarea>
-                                                                    <label for="resultConfirmComments-<?php echo esc_attr( $opponent_key ); ?>"><?php esc_html_e( 'Challenge comments', 'racketmanager' ); ?></label>
-                                                                    <div id="resultConfirmCommentsFeedback" class="invalid-feedback"></div>
-                                                                </div>
-                                                                <?php
+                                                            } else {
+                                                                $user_type = $model->permissions['user_type'] ?? '';
+                                                                $user_team = $model->permissions['user_team'] ?? '';
+                                                                if ( 'admin' !== $user_type && ( $user_team === $opponent_key || 'both' === $user_team ) ) {
+                                                                    ?>
+                                                                    <div class="match-comments form-floating">
+                                                                        <textarea class="form-control result-comments" placeholder="<?php esc_attr_e( 'Leave a comment here', 'racketmanager' ); ?>" name="resultConfirmComments" id="resultConfirmComments-<?php echo esc_attr( $opponent_key ); ?>"></textarea>
+                                                                        <label for="resultConfirmComments-<?php echo esc_attr( $opponent_key ); ?>"><?php esc_html_e( 'Challenge comments', 'racketmanager' ); ?></label>
+                                                                        <div id="resultConfirmCommentsFeedback" class="invalid-feedback"></div>
+                                                                    </div>
+                                                                    <?php
+                                                                }
                                                             }
                                                             ?>
                                                         </div>
@@ -222,13 +219,14 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
                                                         ?>
                                                         <div class="match__header-aside text-uppercase">
                                                             <div class="match__header-aside-block">
-                                                                <a class="nav__link" role="button" data-action="open-rubber-status-modal" data-rubber-id="<?php echo esc_attr( $rubber['id'] ); ?>"
-                                                                   data-rubber-number="<?php echo esc_attr( $rubber['number'] ); ?>" tabindex="<?php echo esc_attr( $tab_index++ ); ?>">
+                                                                <button type="button" class="nav__link" data-action="open-rubber-status-modal"
+                                                                        data-rubber-id="<?php echo esc_attr( $rubber['id'] ); ?>"
+                                                                        data-rubber-number="<?php echo esc_attr( $rubber['number'] ); ?>">
                                                                     <svg width="16" height="16" class="icon-plus nav-link__prefix">
                                                                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#plus-lg' ); ?>"></use>
                                                                     </svg>
                                                                     <span class="nav-link__value"><?php esc_html_e( 'Score status', 'racketmanager' ); ?></span>
-                                                                </a>
+                                                                </button>
                                                             </div>
                                                         </div>
                                                         <?php
@@ -250,7 +248,14 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
                                                                     $players_to_render = $opponent['players'];
                                                                     if ( empty( $players_to_render ) ) {
                                                                         $num_players       = ( str_contains( $rubber['title'], 'D' ) || str_contains( $rubber['title'], 'X' ) ) ? 2 : 1;
-                                                                        $players_to_render = array_fill( 0, $num_players, [ 'id' => 0, 'gender' => $opponent['gender'] ] );
+                                                                        $players_to_render = array_fill(
+                                                                            0,
+                                                                            $num_players,
+                                                                            [
+                                                                                'id' => 0,
+                                                                                'gender' => $opponent['gender'],
+                                                                            ]
+                                                                        );
                                                                     }
                                                                     foreach ( $players_to_render as $p_index => $player ) {
                                                                         $p_num          = $p_index + 1;
@@ -261,7 +266,7 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
                                                                         <div class="match__row-title-value">
                                                                             <span class="match__row-title-value-content">
                                                                                 <span class="nav-link__value <?php echo $opponent['is_winner'] ? 'winner' : ''; ?>">
-                                                                                    <select class="form-select" name="<?php echo esc_attr( $select_name ); ?>" id="<?php echo esc_attr( $player_id_link ); ?>" tabindex="<?php echo esc_attr( $tab_index++ ); ?>">
+                                                                                    <select class="form-select" name="<?php echo esc_attr( $select_name ); ?>" id="<?php echo esc_attr( $player_id_link ); ?>">
                                                                                         <option value="0">&nbsp;</option>
                                                                                         <?php
                                                                                         foreach ( $model->club_players[ $opponent_key ][ $gender ] ?? [] as $player_option ) {
@@ -296,7 +301,7 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
                                                             <?php
                                                         }
                                                         ?>
-                                                        <label class="visually-hidden" for="match_status_<?php echo esc_attr( $rubber['number'] ); ?>"><?php esc_html_e( 'Rubber status', 'racketmanager'); ?></label>
+                                                        <label class="visually-hidden" for="match_status_<?php echo esc_attr( $rubber['number'] ); ?>"><?php esc_html_e( 'Rubber status', 'racketmanager' ); ?></label>
                                                         <input type="text" class="d-none" id="match_status_<?php echo esc_attr( $rubber['number'] ); ?>" name="match_status[<?php echo esc_attr( $rubber['number'] ); ?>]" value="<?php echo esc_attr( $rubber['status_key'] ?? '' ); ?>"/>
                                                     </div>
                                                     <div class="match__result">
@@ -320,16 +325,16 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
                                                                 data-tiebreakset="<?php echo esc_attr( $set_info['tiebreak_set'] ?? 6 ); ?>">
                                                                 <li class="match-points__cell">
                                                                     <label class="visually-hidden" for="<?php echo esc_attr( $set_id ); ?>_player1"><?php esc_html_e( 'Home points', 'racketmanager' ); ?></label>
-                                                                    <input class="points match-points__cell-input <?php echo esc_attr( $home_won_class ); ?>" type="number" id="<?php echo esc_attr( $set_id ); ?>_player1" name="sets[<?php echo esc_attr( $rubber['number'] ); ?>][<?php echo esc_attr( $s_num ); ?>][player1]" value="<?php echo esc_attr( $home_val ); ?>" data-action="set-calculator" tabindex="<?php echo esc_attr( $tab_index++ ); ?>"/>
+                                                                    <input class="points match-points__cell-input <?php echo esc_attr( $home_won_class ); ?>" type="number" id="<?php echo esc_attr( $set_id ); ?>_player1" name="sets[<?php echo esc_attr( $rubber['number'] ); ?>][<?php echo esc_attr( $s_num ); ?>][player1]" value="<?php echo esc_attr( $home_val ); ?>" data-action="set-calculator" />
                                                                 </li>
                                                                 <li class="match-points__cell">
                                                                     <label class="visually-hidden" for="<?php echo esc_attr( $set_id ); ?>_player2"><?php esc_html_e( 'Away points', 'racketmanager' ); ?></label>
-                                                                    <input class="points match-points__cell-input <?php echo esc_attr( $away_won_class ); ?>" type="number" id="<?php echo esc_attr( $set_id ); ?>_player2" name="sets[<?php echo esc_attr( $rubber['number'] ); ?>][<?php echo esc_attr( $s_num ); ?>][player2]" value="<?php echo esc_attr( $away_val ); ?>" data-action="set-calculator" tabindex="<?php echo esc_attr( $tab_index++ ); ?>"/>
+                                                                    <input class="points match-points__cell-input <?php echo esc_attr( $away_won_class ); ?>" type="number" id="<?php echo esc_attr( $set_id ); ?>_player2" name="sets[<?php echo esc_attr( $rubber['number'] ); ?>][<?php echo esc_attr( $s_num ); ?>][player2]" value="<?php echo esc_attr( $away_val ); ?>" data-action="set-calculator" />
                                                                 </li>
                                                             </ul>
                                                             <div id="<?php echo esc_attr( $set_id ); ?>_tiebreak_wrapper" class="match-points set-points tie-break" <?php echo empty( $tb_val ) ? 'style="display:none;"' : ''; ?>>
                                                                 <label class="visually-hidden" for="<?php echo esc_attr( $set_id ); ?>_tiebreak"><?php esc_html_e( 'Tie-break points', 'racketmanager' ); ?></label>
-                                                                <input class="points match-points__cell-input" type="number" min="0" id="<?php echo esc_attr( $set_id ); ?>_tiebreak" name="sets[<?php echo esc_attr( $rubber['number'] ); ?>][<?php echo esc_attr( $s_num ); ?>][tiebreak]" value="<?php echo esc_attr( $tb_val ); ?>" data-action="set-calculator-tiebreak" tabindex="<?php echo esc_attr( $tab_index++ ); ?>"/>
+                                                                <input class="points match-points__cell-input" type="number" min="0" id="<?php echo esc_attr( $set_id ); ?>_tiebreak" name="sets[<?php echo esc_attr( $rubber['number'] ); ?>][<?php echo esc_attr( $s_num ); ?>][tiebreak]" value="<?php echo esc_attr( $tb_val ); ?>" data-action="set-calculator-tiebreak" />
                                                             </div>
                                                             <?php
                                                         }
@@ -337,12 +342,13 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
                                                     </div>
                                                 </div>
                                                 <div class="match__footer">
-                                                    <ul class="match__footer-title">
-                                                    </ul>
+                                                    <ul class="match__footer-title"></ul>
                                                     <div class="match__footer-aside text-uppercase">
-                                                        <a role="button" data-action="reset-match-scores" data-rubber-id="<?php echo esc_attr( $rubber['id'] ); ?>" tabindex="<?php echo esc_attr( $tab_index++ ); ?>">
-                                                            <?php esc_html_e( 'Reset scores', 'racketmanager' ); ?>
-                                                        </a>
+                                                        <div class="match__footer-aside-block">
+                                                            <button type="button" class="nav__link" data-action="reset-match-scores" data-rubber-id="<?php echo esc_attr( $rubber['id'] ); ?>">
+                                                                <span class="nav-link__value"><?php esc_html_e( 'Reset scores', 'racketmanager' ); ?></span>
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -351,6 +357,30 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
                                     }
                                     ?>
                                 </ul>
+                                <div class="row mt-3 mb-3">
+                                    <div class="form-floating">
+                                        <textarea class="form-control result-comments" placeholder="<?php esc_attr_e( 'Leave a comment here', 'racketmanager' ); ?>" name="matchComments[result]" id="matchComments"><?php echo esc_html( $model->general_comments ); ?></textarea>
+                                        <label for="matchComments"><?php esc_html_e( 'Match Comments', 'racketmanager' ); ?></label>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-12 match__buttons">
+                                        <?php
+                                        $update_action = 'results';
+                                        $button_text   = __( 'Save Result', 'racketmanager' );
+                                        if ( $model->permissions['match_approval_mode'] ?? false ) {
+                                            $update_action = 'confirm';
+                                            $button_text   = __( 'Confirm Result', 'racketmanager' );
+                                        }
+                                        ?>
+                                        <a tabindex="-1" class="btn btn-plain" id="cancelResults" href="<?php echo esc_url( $model->edit_url ); ?>"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></a>
+                                        <button class="btn btn-primary" type="button" id="updateRubberResults" data-action="update-team-result">
+                                            <?php echo esc_html( $button_text ); ?>
+                                        </button>
+                                    </div>
+                                </div>
+
                             </form>
                         </div>
                     </div>

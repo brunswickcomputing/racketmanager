@@ -11,46 +11,46 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
 ?>
 <?php
 if ( $model->is_standalone ) {
-?>
-<div id="matchRubbers" class="row">
-    <div class="page-content__main <?php echo $model->location || $model->teams ? 'col-12 col-lg-8' : 'col-12'; ?>">
-        <div class="module module--card">
-            <div class="module__banner">
-                <h3 class="module__title">
-                    <?php esc_html_e( 'Match Rubbers', 'racketmanager' ); ?>
-                </h3>
-                <div class="module__aside">
-                    <?php
-                    if ( $model->show_print_button ) {
-                        ?>
-                        <button type="button" class="btn btn--link match-print" id="printMatchCard" data-match-id="<?php echo esc_attr( $model->match_id ); ?>" data-print-match-card="<?php echo esc_attr( $model->match_id ); ?>" data-bs-toggle="tooltip"
-                           data-bs-placement="top" title="<?php esc_html_e( 'Print match card', 'racketmanager' ); ?>">
-                            <svg width="16" height="16" class="icon ">
-                                <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#printer-fill' ); ?>"></use>
-                            </svg>
-                        </button>
+    ?>
+    <div id="matchRubbers" class="row">
+        <div class="page-content__main <?php echo $model->location || $model->teams ? 'col-12 col-lg-8' : 'col-12'; ?>">
+            <div class="module module--card">
+                <div class="module__banner">
+                    <h3 class="module__title">
+                        <?php esc_html_e( 'Match Rubbers', 'racketmanager' ); ?>
+                    </h3>
+                    <div class="module__aside">
                         <?php
-                    }
-                    ?>
-                    <?php
-                    if ( $model->show_edit_button ) {
-                        ?>
-                        <div class="match-mode" id="editMatchMode">
-                            <a class="btn btn--link" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Edit', 'racketmanager' ); ?>" href="<?php echo esc_url( $model->edit_url ); ?>">
+                        if ( $model->show_print_button ) {
+                            ?>
+                            <button type="button" class="btn btn--link match-print" id="printMatchCard" data-match-id="<?php echo esc_attr( $model->match_id ); ?>" data-print-match-card="<?php echo esc_attr( $model->match_id ); ?>" data-bs-toggle="tooltip"
+                               data-bs-placement="top" title="<?php esc_html_e( 'Print match card', 'racketmanager' ); ?>">
                                 <svg width="16" height="16" class="icon ">
-                                    <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
+                                    <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#printer-fill' ); ?>"></use>
                                 </svg>
-                            </a>
-                        </div>
+                            </button>
+                            <?php
+                        }
+                        ?>
                         <?php
-                    }
-                    ?>
+                        if ( $model->show_edit_button ) {
+                            ?>
+                            <div class="match-mode" id="editMatchMode">
+                                <a class="btn btn--link" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Edit', 'racketmanager' ); ?>" href="<?php echo esc_url( $model->edit_url ); ?>">
+                                    <svg width="16" height="16" class="icon ">
+                                        <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
+                                    </svg>
+                                </a>
+                            </div>
+                            <?php
+                        }
+                        ?>
+                    </div>
                 </div>
-            </div>
-            <div class="module__content">
-                <?php
-                }
-                ?>
+                <div class="module__content">
+                    <?php
+}
+?>
                 <div class="module-container">
                     <ul class="match-group">
                         <?php
@@ -88,7 +88,7 @@ if ( $model->is_standalone ) {
                                                                         if ( $player['url'] ) {
                                                                             ?>
                                                                             <a href="<?php echo esc_url( $player['url'] ); ?>">
-                                                                        <?php
+                                                                            <?php
                                                                         }
                                                                         ?>
                                                                         <span class="<?php echo esc_attr( $player['class'] ); ?>"
@@ -105,7 +105,7 @@ if ( $model->is_standalone ) {
 
                                                                         <?php
                                                                         if ( $player['url'] ) {
-                                                                        ?>
+                                                                            ?>
                                                                             </a>
                                                                              <?php
                                                                         }
@@ -271,19 +271,19 @@ if ( $model->is_standalone ) {
 
                 <?php
                 if ( $model->is_standalone ) {
-                ?>
+                    ?>
             </div>
         </div>
     </div>
 
-    <?php
-    if ( $model->location || $model->teams ) {
-        ?>
+                    <?php
+                    if ( $model->location || $model->teams ) {
+                        ?>
         <div class="page-content__sidebar col-12 col-lg-4">
             <div class="row">
-                <?php
-                if ( $model->location ) {
-                    ?>
+                                <?php
+                                if ( $model->location ) {
+                                    ?>
                     <div class="col-12 col-sm-6 col-lg-12">
                         <div class="module module--card">
                             <div class="module__banner">
@@ -382,13 +382,13 @@ if ( $model->is_standalone ) {
                             </div>
                         </div>
                     </div>
-                    <?php
-                }
-                ?>
+                                    <?php
+                                }
+                                ?>
 
-                <?php
-                if ( $model->teams ) {
-                    ?>
+                                <?php
+                                if ( $model->teams ) {
+                                    ?>
                     <div class="col-12 col-sm-6 col-lg-12">
                         <div class="module module--card">
                             <div class="module__banner">
@@ -462,15 +462,15 @@ if ( $model->is_standalone ) {
                             </div>
                         </div>
                     </div>
+                                    <?php
+                                }
+                                ?>
+            </div>
+        </div>
+                        <?php
+                    }
+                    ?>
+</div>
                     <?php
                 }
                 ?>
-            </div>
-        </div>
-        <?php
-    }
-    ?>
-</div>
-<?php
-}
-?>

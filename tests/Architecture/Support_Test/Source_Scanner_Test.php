@@ -28,6 +28,7 @@ final class Source_Scanner_Test extends TestCase {
         self::assertSame(
             [
                 self::FIXTURES . '/clean_service.php',
+                self::FIXTURES . '/container_consumer.php',
                 self::FIXTURES . '/globals_access.php',
                 self::FIXTURES . '/procedural_template.php',
                 self::FIXTURES . '/untyped_entity.php',
@@ -246,6 +247,138 @@ final class Source_Scanner_Test extends TestCase {
         self::assertFalse( $html->has_parse_error() );
         self::assertFalse( $early->has_parse_error() );
         self::assertSame( [ 'vm' ], $early->variable_names() );
+    }
+
+    public function test_fallback_news_record_resolved_class_operator_and_line(): void {
+        $consumer = $this->file( 'container_consumer.php' );
+
+        self::assertSame(
+            [
+                [ 'class' => 'Racketmanager\Services\Team_Service', 'op' => '??=', 'line' => 34 ],
+                [ 'class' => 'Racketmanager\Services\Team_Service', 'op' => '??', 'line' => 39 ],
+                [ 'class' => 'Racketmanager\Services\Team_Service', 'op' => '??', 'line' => 40 ],
+                [ 'class' => 'DateTimeImmutable', 'op' => '??', 'line' => 42 ],
+                [ 'class' => 'Racketmanager\Domain\Money', 'op' => '??', 'line' => 43 ],
+            ],
+            $consumer->fallback_news,
+            'a `??` chain records its innermost `new` once; `?: new` is not a coalesce fallback'
+        );
+        self::assertSame( [], $this->file( 'clean_service.php' )->fallback_news );
+    }
+
+    public function test_fallback_new_is_still_an_ordinary_new_target(): void {
+        $consumer = $this->file( 'container_consumer.php' );
+
+        self::assertContains( [ 'class' => 'Racketmanager\Services\Team_Service', 'line' => 34 ], $consumer->new_targets );
+        self::assertCount( 4, array_filter( $consumer->new_targets, static fn( array $target ): bool => 'Racketmanager\Services\Team_Service' === $target['class'] ) );
+    }
+
+    public function test_public_properties_cover_declared_and_promoted_members_with_modifiers(): void {
+        $consumer = $this->file( 'container_consumer.php' );
+        $class    = 'Racketmanager\Tests\Fixtures\Architecture\Container_Consumer';
+
+        self::assertSame(
+            [
+                [ 'class' => $class, 'name' => 'count', 'readonly' => false, 'static' => false, 'restricted_set' => false, 'promoted' => false, 'line' => 17 ],
+                [ 'class' => $class, 'name' => 'label', 'readonly' => true, 'static' => false, 'restricted_set' => false, 'promoted' => false, 'line' => 18 ],
+                [ 'class' => $class, 'name' => 'cache', 'readonly' => false, 'static' => true, 'restricted_set' => false, 'promoted' => false, 'line' => 19 ],
+                [ 'class' => $class, 'name' => 'legacy', 'readonly' => false, 'static' => false, 'restricted_set' => false, 'promoted' => false, 'line' => 20 ],
+                [ 'class' => $class, 'name' => 'other', 'readonly' => false, 'static' => false, 'restricted_set' => false, 'promoted' => false, 'line' => 20 ],
+                [ 'class' => $class, 'name' => 'injected', 'readonly' => false, 'static' => false, 'restricted_set' => false, 'promoted' => true, 'line' => 25 ],
+                [ 'class' => $class, 'name' => 'id', 'readonly' => true, 'static' => false, 'restricted_set' => false, 'promoted' => true, 'line' => 26 ],
+            ],
+            $consumer->public_properties,
+            'protected/private properties and non-promoted or private promoted params are not public properties'
+        );
+    }
+
+    public function test_public_properties_in_other_fixtures(): void {
+        self::assertSame(
+            [ [ 'class' => 'Racketmanager\Tests\Fixtures\Architecture\Untyped_Entity', 'name' => 'id', 'readonly' => false, 'static' => false, 'restricted_set' => false, 'promoted' => false, 'line' => 16 ] ],
+            $this->file( 'untyped_entity.php' )->public_properties
+        );
+        self::assertSame( [], $this->file( 'clean_service.php' )->public_properties, 'private promoted params are not public properties' );
+        self::assertSame( [], $this->file( 'procedural_template.php' )->public_properties );
+    }
+
+    public function test_readonly_class_asymmetric_visibility_and_anonymous_class_properties(): void {
+        $code = <<<'PHP'
+        <?php
+        namespace Racketmanager\Domain\Sample;
+        final readonly class Frozen {
+            public int $year;
+            public function __construct( public string $name ) {}
+        }
+        final class Guarded {
+            public private(set) int $guarded = 0;
+            public protected(set) int $shared = 0;
+            public function __construct( public private(set) int $promoted_guarded = 0 ) {}
+        }
+        $anon = new class { public int $z = 1; };
+        PHP;
+
+        $file = Source_Scanner::scan_source( $code, 'in-memory/visibility.php' );
+
+        self::assertFalse( $file->has_parse_error(), (string) $file->parse_error );
+        self::assertSame(
+            [
+                [ 'class' => 'Racketmanager\Domain\Sample\Frozen', 'name' => 'year', 'readonly' => true, 'static' => false, 'restricted_set' => false, 'promoted' => false, 'line' => 4 ],
+                [ 'class' => 'Racketmanager\Domain\Sample\Frozen', 'name' => 'name', 'readonly' => true, 'static' => false, 'restricted_set' => false, 'promoted' => true, 'line' => 5 ],
+                [ 'class' => 'Racketmanager\Domain\Sample\Guarded', 'name' => 'guarded', 'readonly' => false, 'static' => false, 'restricted_set' => true, 'promoted' => false, 'line' => 8 ],
+                [ 'class' => 'Racketmanager\Domain\Sample\Guarded', 'name' => 'shared', 'readonly' => false, 'static' => false, 'restricted_set' => true, 'promoted' => false, 'line' => 9 ],
+                [ 'class' => 'Racketmanager\Domain\Sample\Guarded', 'name' => 'promoted_guarded', 'readonly' => false, 'static' => false, 'restricted_set' => true, 'promoted' => true, 'line' => 10 ],
+                [ 'class' => null, 'name' => 'z', 'readonly' => false, 'static' => false, 'restricted_set' => false, 'promoted' => false, 'line' => 12 ],
+            ],
+            $file->public_properties,
+            'a readonly class marks every property readonly; the readonly flag must not leak into the next class'
+        );
+    }
+
+    public function test_literal_key_method_calls_render_nested_receivers(): void {
+        $consumer = $this->file( 'container_consumer.php' );
+
+        self::assertSame(
+            [
+                [ 'receiver' => '$c', 'method' => 'set', 'key' => 'league_service', 'line' => 48 ],
+                [ 'receiver' => '$this->container', 'method' => 'get', 'key' => 'team_service', 'line' => 50 ],
+                [ 'receiver' => '$this->plugin->container', 'method' => 'get', 'key' => 'club_service', 'line' => 51 ],
+                [ 'receiver' => '$request', 'method' => 'get', 'key' => 'id', 'line' => 52 ],
+                [ 'receiver' => '$c', 'method' => 'has', 'key' => 'nullsafe_key', 'line' => 53 ],
+            ],
+            $consumer->literal_key_method_calls,
+            '`$c->get( Team_Service::class )` has no string-literal key and is not recorded'
+        );
+    }
+
+    public function test_literal_key_receivers_cover_static_property_method_and_function_results(): void {
+        $code = <<<'PHP'
+        <?php
+        namespace Racketmanager;
+        self::$container->get( 'a' );
+        Plugin::instance()->get( 'b' );
+        $this->container()->get( 'c' );
+        container()->get( 'd' );
+        $this->plugin?->container->get( 'e' );
+        ( $x ?? $y )->get( 'f' );
+        $c->$method( 'g' );
+        $c->get( $key );
+        $c->get( "interpolated_{$key}" );
+        PHP;
+
+        $file = Source_Scanner::scan_source( $code, 'in-memory/receivers.php' );
+
+        self::assertSame(
+            [
+                [ 'receiver' => 'self::$container', 'method' => 'get', 'key' => 'a', 'line' => 3 ],
+                [ 'receiver' => 'Racketmanager\Plugin::instance()', 'method' => 'get', 'key' => 'b', 'line' => 4 ],
+                [ 'receiver' => '$this->container()', 'method' => 'get', 'key' => 'c', 'line' => 5 ],
+                [ 'receiver' => 'Racketmanager\container()', 'method' => 'get', 'key' => 'd', 'line' => 6 ],
+                [ 'receiver' => '$this->plugin->container', 'method' => 'get', 'key' => 'e', 'line' => 7 ],
+                [ 'receiver' => '{expr}', 'method' => 'get', 'key' => 'f', 'line' => 8 ],
+            ],
+            $file->literal_key_method_calls,
+            'dynamic method names, variable keys and interpolated keys are not literal-key calls'
+        );
     }
 
     public function test_parse_error_is_recorded_instead_of_thrown(): void {

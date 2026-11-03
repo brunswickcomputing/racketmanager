@@ -16,6 +16,9 @@ namespace Racketmanager\Tests\Architecture\Support;
  * @phpstan-type Class_Reference  array{class: string, context: string, line: int}
  * @phpstan-type Constructor_Param array{class: ?string, param: string, type: ?string, types: array<int,string>, line: int}
  * @phpstan-type Include_Target   array{kind: string, target: string, line: int}
+ * @phpstan-type Fallback_New     array{class: string, op: string, line: int}
+ * @phpstan-type Public_Property  array{class: ?string, name: string, readonly: bool, static: bool, restricted_set: bool, promoted: bool, line: int}
+ * @phpstan-type Literal_Key_Call array{receiver: string, method: string, key: string, line: int}
  */
 final readonly class Source_File {
     /**
@@ -36,6 +39,14 @@ final readonly class Source_File {
      * @param array<int,Include_Target>     $includes           include/require expressions with their literal path fragments.
      * @param array<int,string>             $declared_functions Fully qualified names of functions declared in the file.
      * @param array<int,string>             $declared_classes   Fully qualified names of classes/interfaces/traits/enums declared.
+     * @param array<int,Fallback_New>       $fallback_news      `$x ?? new Class` / `$x ??= new Class` where the right-hand operand is a
+     *                                                          `new` with a static class name. `op` is `??` or `??=`.
+     * @param array<int,Public_Property>    $public_properties  Public properties (declared or constructor-promoted) of every class-like
+     *                                                          in the file. `readonly` also covers `readonly class`; `restricted_set`
+     *                                                          marks `private(set)` / `protected(set)` asymmetric visibility.
+     * @param array<int,Literal_Key_Call>   $literal_key_method_calls Instance method calls whose first argument is a string literal,
+     *                                                          e.g. `$c->get('league_service')`. `receiver` is the rendered receiver
+     *                                                          expression (`$c`, `$this->container`, `$this->plugin->container`, …).
      */
     public function __construct(
         public string $path,
@@ -53,6 +64,9 @@ final readonly class Source_File {
         public array $includes = [],
         public array $declared_functions = [],
         public array $declared_classes = [],
+        public array $fallback_news = [],
+        public array $public_properties = [],
+        public array $literal_key_method_calls = [],
     ) {
     }
 

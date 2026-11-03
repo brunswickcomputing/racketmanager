@@ -2,10 +2,11 @@
 
 This document describes the recommended, future‑proof structure for the RacketManager WordPress plugin. It aligns with WordPress best practices and the project’s current move toward modular JavaScript.
 
-### Status & related documents (2026-10)
+### Status & related documents (2026-11)
 
-- **[DDD / Hexagonal Architecture Audit — October 2026](ddd-architecture-audit-2026-10.md)** — the current source of truth for architectural debt. It records measured compliance of each layer (`Domain/` and `Application/` are free of `$wpdb`, globals and concrete-repository imports), inventories the remaining legacy patterns (L1–L12: untyped `?object` hydration, WordPress functions in `Domain/DTO` request DTOs, legacy `get_league()`/`seo_url()` helpers, raw `$wpdb` in `Services/`, `Admin_Display` screens, templates without `$vm`, missing `strict_types`, jQuery residue), lists the deprecation surface (`aliases.php`, `functions.php` helpers, the `sydney-child` theme consumer) and schedules a prioritised P1–P3 backlog. Its Appendix A catalogues the **architecture guardrail suite** — the `tests/Architecture/` PHPUnit ratchet (26 rules in `Rules/Layer_Rules.php`, debt frozen in `baseline.json`, run with `vendor/bin/phpunit --testsuite Architecture`) and the Jest ratchet for JS/template legacy patterns (`tests/js/architecture/legacy-patterns.test.js`, 3 rules in `support/rules.js`, JS detection via `@babel/parser` tokens/AST so comments and strings never count and `globalThis.*` globals are caught alongside `window.*`, debt frozen in `tests/js/architecture/baseline.json`, run with `npm test -- tests/js/architecture`) are both live — see `.junie/guidelines.md` §2 for the workflow.
-- Parts of the layout below pre-date the 2026 refactors and are superseded by the audit: there is no `src/php/Ajax/` directory any more (AJAX lives in `src/php/Infrastructure/Wordpress/Ajax/` as `*_Ajax_Controller` + `*_Ajax_Adapter` behind `Ajax_Registry`); `Admin` does not extend `RacketManager` (both are wired through the container by `Plugin_Bootstrap` → `Container_Bootstrap`); `Racketmanager_Match` has been removed in favour of `Domain\Fixture\Fixture`; the `Application/` layer (commands, queries, handlers) and `Presentation/` (presenters, view models) now sit alongside `Services/`. The "RacketManager Plugin Architecture" / "Top‑Level Layout" sections also appear twice in this file (a historical paste); the first occurrence is canonical.
+- **[DDD / Hexagonal Architecture Audit — November 2026](ddd-architecture-audit-2026-11.md)** — the current source of truth for architectural debt. It verifies that all 17 October backlog items are complete, inventories the second tier of debt (N1–N12: Application → concrete `Services\*` dependencies, `?? new` fallback construction, string container keys, anemic aggregates with public mutable state, WordPress hook/superglobal code inside `Services/`, `global $wp` reads, the 8 remaining `Admin_Display` subclasses, root-file residue, interfaces outside the port locations, templates without `$vm`, Presentation `get_option()`, jQuery) and documentation drift (D1–D4), and schedules a new P1–P3 backlog. Its Appendix A catalogues the **architecture guardrail suite** — the `tests/Architecture/` PHPUnit ratchet (**37 rules** in `Rules/Layer_Rules.php`, 22 strict / 15 ratchet, debt frozen in `baseline.json`, run with `vendor/bin/phpunit --testsuite Architecture`) and the Jest ratchet for JS/template legacy patterns (`tests/js/architecture/legacy-patterns.test.js`, 3 rules in `support/rules.js`, JS detection via `@babel/parser` tokens/AST so comments and strings never count, `window['jQuery']` bracket access and `globalThis.*` globals are caught alongside the dotted spellings, debt frozen in `tests/js/architecture/baseline.json`, run with `npm test -- tests/js/architecture`) — see `.junie/guidelines.md` §2–§3 for the workflow and the rule list.
+- **[DDD / Hexagonal Architecture Audit — October 2026](ddd-architecture-audit-2026-10.md)** — historical record of the L1–L12 legacy patterns and the 17-item backlog (P1-1 … P3-17, all done 2026-11-02); superseded for debt tracking by the November report.
+- Parts of the layout below pre-date the 2026 refactors: there is no `src/php/Ajax/` directory (AJAX lives in `src/php/Infrastructure/Wordpress/Ajax/` as `*_Ajax_Controller` + `*_Ajax_Adapter` pairs registered by `Ajax_Registry`); `Admin` does **not** extend `RacketManager` (see the bootstrap flow below); `Racketmanager_Match` has been removed in favour of `Domain\Fixture\Fixture`; the `Application/` layer (commands, queries, handlers) and `Presentation/` (presenters, view models) sit alongside `Services/`. The "RacketManager Plugin Architecture" / "Top‑Level Layout" sections also appear twice in this file (a historical paste); the first occurrence is canonical.
 - **Public API status (11.0.0, audit P3-17):** In v11.0.0, all 29 deprecated procedural helper functions in `functions.php` (`get_league()`, `get_club()`, `seo_url()`, `get_user()`, `get_*_repository_for_helpers()`, …) and runtime class aliases (`src/php/aliases.php`: 63 class aliases; `Legacy_View_Model_Aliases.php`: 2 view-model aliases) have been removed. `Legacy_User` and `Legacy_User_Factory` have been deleted, and `legacy_user_factory` unbound from the container. Supported external theme and plugin integration is provided exclusively through the strongly-typed facade `Racketmanager\Public_Api` (documented in `docs/public-api.md`), providing methods such as `Public_Api::get_user()`, `Public_Api::seo_url()`, `Public_Api::un_seo_url()`, and `Public_Api::get_unread_message_count()`. The sole external consumer (`themes/sydney-child/functions.php`) has been patched to use `Public_Api`. The 65 retired alias names (63 class aliases and 2 view-model aliases) are statically enforced by the strict `all.no_alias_class_references` guardrail (`tests/Architecture/Support/Alias_Map.php`, `RETIRED_ALIASES` / `RETIRED_VIEW_MODEL_ALIASES`). Only 4 un-deprecated plugin plumbing utilities remain in `functions.php` (`debug_to_console()`, `log_trace()`, `create_new_url_querystring()`, `wp_get_current_url()`).
 - **Domain purity (10.1.0, audit P1-4):** `src/php/Domain/` calls no WordPress function and the `domain.no_wordpress_functions` guardrail is strict. HTTP request/command DTOs live in `src/php/Infrastructure/Wordpress/Request/<Context>/` (old `Domain\DTO\…` names were aliased until v11.0, when the aliases were removed); entities decode serialised columns with `Domain\Shared\Serialized_Column`, slugs with `Domain\Shared\Slug::normalise()` (a `sanitize_title()` port), and read the time through the `Domain\Ports\Clock_Interface` port — implemented by `Infrastructure\Time\Wordpress_Clock` and available from the container as `clock` (or `Clock_Interface::class`); inject it rather than calling `current_time()` in services.
 - **Application & Services layer purity (10.1.0, audit P2-11):** `Application/` and `Services/` are completely decoupled from `Presentation/` and `Admin/` classes. Both `application.no_presentation_imports` and `services.no_presentation_imports` architecture guardrails are strict at 0. Query handlers return typed pure Application DTOs/results; driving shortcode adapters (`Club_Shortcode_Adapter`, `Competition_Shortcode_Adapter`, etc.) and controllers coordinate with presenters to generate view models and render output. `Export_Criteria` lives in `Application\Export\DTO\Export_Criteria` (its former BC alias in `src/php/aliases.php` was retired in v11.0), freeing repositories from service imports. Presentation and admin screen registrations are isolated in dedicated `Presentation_Service_Provider` and `Admin_Screens_Service_Provider`.
@@ -32,20 +33,25 @@ wp-content/plugins/racketmanager/
   - php/                          (If using PSR‑4; otherwise use includes/)
     - Plugin.php                  (Main plugin class / service container — in this project, `RacketManager` boots a small DI container; see docs/dependency-injection.md)
     - Activator.php               (Activation/deactivation hooks handler; PSR‑4 bridge allowed)
-    - Admin/                      (Admin‑only screens, settings pages)
+    - Admin/                      (Admin‑only screens: `final readonly` bridges + Controllers/ + View_Models/)
     - Public/                     (Frontend hooks, shortcodes/blocks)
-    - Ajax/                       (AJAX controllers for wp‑ajax)
     - Rest/                       (REST controllers, if used)
     - Domain/                     (Entities/Models)
       - Ports/                    (Domain ports; e.g., Rating_Gateway_Interface, Clock_Interface)
     - Application/                (Use-case handlers and application ports)
       - Ports/                    (Application ports; e.g., Option_Gateway_Interface)
+      - <Context>/Ports/          (Context ports; e.g., Payment/Ports/Payment_Gateway_Interface)
       - Mail/                     (Application mail port; e.g., Mailer_Interface)
-    - Infrastructure/             (Concrete adapters and external integrations)
+    - Infrastructure/             (Driving and driven adapters, external integrations)
+      - Wordress/Ajax/           (`*_Ajax_Controller` + `*_Ajax_Adapter` behind `Ajax_Registry`)
+      - Wordpress/Shortcodes/     (`*_Shortcode_Adapter`s behind `Shortcode_Registrar`)
+      - Wordpress/Request/        (HTTP request/command DTOs — the only place that parses superglobals)
+      - Wordpress/Bootstrap/      (`Plugin_Bootstrap` composition root)
       - Gateways/                 (Gateway adapters; e.g., Lta_Wtn_Gateway_Adapter, Wp_Mailer)
-    - Repositories/               (Data access abstraction)
-    - Services/                   (Legacy business logic, helpers pending migration)
-    - Util/                       (Utility classes)
+    - Presentation/               (Presenters, view models, formatters)
+    - Repositories/               (Data access abstraction; Interfaces/ holds the ports)
+    - Services/                   (Legacy business logic pending migration; Container/ holds the DI container and providers)
+    - Util/                       (Static helper grab-bag — ratcheted, see audit 2026-11 D4)
   - js/
     - index.js                    (Single JS entry point)
     - config/
@@ -94,22 +100,18 @@ Notes
 
 - Namespace: Racketmanager\ for all PHP classes.
 - Autoloading: Prefer Composer PSR‑4 mapping, e.g. "Racketmanager\\": "src/php/". If not using Composer, require files in racketmanager.php.
-- Bootstrap flow (racketmanager.php):
-  - Define constants: RACKETMANAGER_PATH, RACKETMANAGER_URL, RACKETMANAGER_VER.
-  - Load autoloader (Composer) or requires.
-  - Instantiate exactly one core object to avoid duplicate hooks/actions:
-    - In wp‑admin: instantiate Admin (extends RacketManager)
-    - Otherwise: instantiate RacketManager
-    - Global $racketmanager is set to this single instance for BC
-  - Instantiate a Plugin (service) class that:
-    - Registers hooks for activation/deactivation.
-    - Wires Admin and Public components.
-    - Registers AJAX/REST controllers.
+- Bootstrap flow (racketmanager.php → `Infrastructure\Wordpress\Bootstrap\Plugin_Bootstrap::launch()`):
+  - Define constants: RACKETMANAGER_PATH, RACKETMANAGER_URL, RACKETMANAGER_VER; load the Composer autoloader.
+  - `Plugin_Bootstrap::launch()` instantiates exactly one `RacketManager` (`RacketManager::get_instance()`), which builds the DI container through `Container_Bootstrap` (`Services/Container/`) and its `*_Service_Provider`s, and exposes it as `$GLOBALS['racketmanager']` for BC and to `Public_Api::init()`.
+  - `Plugin_Bootstrap::boot()` loads the procedural libraries and registers the lifecycle / scheduled-task hooks exactly once per instance.
+  - In wp‑admin, `launch()` additionally resolves the **decoupled `Admin` coordinator** (`Admin::get_instance( $container, $app )`). `Admin` does not extend `RacketManager`; its screens are bound by `Admin_Service_Provider` / `Admin_Screens_Service_Provider` and routed through `Admin_Display` to the `final readonly` screen bridges and their `*_Admin_Controller`s.
+  - AJAX actions are `Infrastructure/Wordpress/Ajax/*_Ajax_Controller` + `*_Ajax_Adapter` pairs registered by `Ajax_Registry`; shortcodes are `Infrastructure/Wordpress/Shortcodes/*_Shortcode_Adapter`s registered by `Shortcode_Registrar`; REST routes live in `Rest/`.
+  - `Plugin_Bootstrap` and `Services/Container/` are the only places allowed to call `get_instance()` / read `$GLOBALS['racketmanager']` (`all.no_get_instance_outside_bootstrap`, `services.no_global_racketmanager`).
 
 Suggested responsibilities
 - Public\Assets: Handles enqueueing frontend CSS/JS.
 - Admin\Assets: Handles admin CSS/JS.
-- Ajax\*: Each action (e.g. racketmanager_match_status) has a controller method that validates nonce/capabilities and returns wp_send_json_* responses.
+- Infrastructure\Wordpress\Ajax\*: Each action (e.g. racketmanager_match_status) is a `*_Ajax_Controller` method that validates nonce/capabilities through `Security_Service_Interface`, delegates to a `*_Ajax_Adapter` → Application handler, and responds through `Json_Response_Factory_Interface`; `Ajax_Registry` registers the `wp_ajax_*` hooks.
 - Rest\*: For REST endpoints if/when needed.
 - Application\*: Use-case handlers (commands, queries), domain-facing orchestration, and application ports (`Application/Ports/`, `Application/<Context>/Ports/`).
 - Services\*: Legacy application services, actions, and calculators pending migration into Application/Domain.
@@ -121,7 +123,12 @@ Services vs Application Layering Rules
 - **Application (`src/php/Application/`)**: Owns use cases, CQRS commands/queries and their handlers, and driven use-case ports (e.g., `Application/Ports/Option_Gateway_Interface`, `Application/Mail/Mailer_Interface`, `Application/Payment/Ports/Payment_Gateway_Interface`, `Application/Export/Ports/Data_Exporter_Interface`, `Application/Account/Ports/User_Favourites_Gateway_Interface`, `Application/Matches/Ports/Fixture_Listing_Finder_Interface`). Application code interacts with the outside world strictly through ports (`Domain/Ports/`, `Application/Ports/`, `Repositories/Interfaces/`).
 - **Services (`src/php/Services/`)**: Legacy application service and workflow orchestrators pending incremental refactoring into `Application/` handlers or `Domain/` model methods. New contracts must never be introduced in `Services/Contracts/` (legacy contracts have been relocated to canonical ports); new business logic must target `Application/` use cases.
 - **Domain (`src/php/Domain/`)**: Pure domain models and core ports (`Domain/Ports/Clock_Interface`, `Domain/Ports/Rating_Gateway_Interface`). Strictly isolated from external infrastructure, WordPress globals, and outer layer imports.
-- **Infrastructure (`src/php/Infrastructure/`)**: Concrete adapters implementing ports defined by `Domain/Ports/`, `Application/Ports/`, and `Repositories/Interfaces/` (e.g., `Wp_Mailer`, `Wp_Option_Gateway`, `Stripe_Payment_Gateway`, `Lta_Wtn_Gateway_Adapter`).
+- **Infrastructure (`src/php/Infrastructure/`)**: Concrete adapters implementing ports defined by `Domain/Ports/`, `Application/Ports/`, and `Repositories/Interfaces/` (e.g., `Wp_Mailer`, `Wp_Option_Gateway`, `Stripe_Payment_Gateway`, `Lta_Wtn_Gateway_Adapter`), plus the *driving* adapters (`Wordpress/Ajax/`, `Wordpress/Shortcodes/`, `Wordpress/Request/`, `Wordpress/Bootstrap/`). Hook registration (`add_action`, `add_filter`, `add_shortcode`, `add_rewrite_rule`, `register_rest_route`, …) and superglobal parsing belong here and nowhere else.
+- **Ports**: new interfaces go to `Domain/Ports/`, `Application/Ports/` or `Application/<Context>/Ports/` (guarded by `tests/Architecture/Ports_Location_Test.php`). The interfaces still declared under `Services/` (15), `Infrastructure/` (5) and `Admin/` (1) are legacy (audit 2026-11, N9); do not add to them.
+- **Dependency injection**: collaborators are constructor-injected and resolved by `Simple_Container` (autowiring by `::class`). Do not declare `?X_Service $x = null` parameters with a `?? new X()` fallback, and do not register or resolve services by string key (`$c->get('league_service')`) — both are ratcheted (see below).
+- **Enforced by `tests/Architecture/Rules/Layer_Rules.php`** (37 rules; `vendor/bin/phpunit --testsuite Architecture`):
+  - *Strict (22, must stay at 0):* `domain.no_wpdb`, `domain.no_outer_layer_imports`, `domain.no_superglobals`, `domain.no_wordpress_functions`, `domain.no_untyped_constructor`, `domain.no_lenient_from_object`, `application.no_wpdb`, `application.no_global_racketmanager`, `application.no_concrete_repositories`, `application.no_presentation_imports`, `services.no_wpdb`, `services.no_global_racketmanager`, `services.no_presentation_imports`, `all.no_legacy_helper_calls`, `all.no_deprecated_helper_calls`, `all.no_alias_class_references`, `all.strict_types`, `all.no_extract`, `templates.no_globals_or_db`, `templates.no_global_racketmanager`, `templates.no_legacy_helper_calls`, `scanner.parse_error`.
+  - *Ratchet (15, debt frozen in `tests/Architecture/baseline.json`, may only shrink):* `domain.no_util_static`, `domain.no_public_mutable_properties`, `application.no_superglobals`, `application.no_concrete_services`, `application.no_util_static`, `application.no_global_wp`, `services.no_superglobals`, `services.no_wordpress_hooks`, `repositories.no_service_imports`, `all.no_get_instance_outside_bootstrap`, `all.no_fallback_construction`, `all.no_literal_container_keys`, `templates.require_vm`, `admin.no_template_require`, `admin.no_admin_display_inheritance`.
 
 External API clients
 - Location and contracts
@@ -246,7 +253,7 @@ Current setup (2025-11-04)
 - Run locally:
   - npm install
   - npm run build (dev) or npm run build:prod (prod)
-- CI: .github/workflows/ci-release.yml runs npm run build:prod and verifies dist/js/racketmanager.js and dist/css/*.css exist; artifacts include dist/** and assets/**.
+- CI: .gitHub/workflows/ci-release.yml runs npm run build:prod and verifies dist/js/racketmanager.js and dist/css/*.css exist; artifacts include dist/** and assets/**.
 
 Example enqueue (frontend)
 - In a Public\Assets class:

@@ -59,6 +59,10 @@ final class Rule_Evaluator {
             Rule_Kind::FORBIDDEN_CONSTRUCTOR_PARAM_TYPE => $this->forbidden_constructor_param_types( $rule, $file ),
             Rule_Kind::FORBIDDEN_INCLUDE                => $this->forbidden_includes( $rule, $file ),
             Rule_Kind::NO_PARSE_ERRORS                  => [],
+            Rule_Kind::FORBIDDEN_FALLBACK_NEW           => $this->forbidden_fallback_new( $rule, $file ),
+            Rule_Kind::FORBIDDEN_PUBLIC_MUTABLE_PROPERTY => $this->forbidden_public_mutable_properties( $rule, $file ),
+            Rule_Kind::FORBIDDEN_LITERAL_CONTAINER_KEY  => $this->forbidden_literal_container_keys( $rule, $file ),
+            Rule_Kind::REQUIRE_VARIABLE                 => $this->require_variables( $rule, $file ),
         };
     }
 
@@ -130,7 +134,7 @@ final class Rule_Evaluator {
      * @return array<int, Violation>
      */
     private function forbidden_static_calls( Layer_Rule $rule, Source_File $file ): array {
-        $classes = $this->normalise_patterns( $rule->arguments['classes'] ?? ( array_is_list( $rule->arguments ) ? $rule->arguments : [] ) );
+        $classes = $this->keyed_patterns( $rule, 'classes' );
         $methods = $this->normalise_patterns( $rule->arguments['methods'] ?? [] );
 
         $violations = [];
@@ -166,9 +170,13 @@ final class Rule_Evaluator {
      * @return array<int, Violation>
      */
     private function forbidden_class_references( Layer_Rule $rule, Source_File $file ): array {
-        $patterns   = $this->patterns( $rule );
+        $patterns   = $this->keyed_patterns( $rule, 'classes' );
+        $contexts   = $this->normalise_patterns( $rule->arguments['contexts'] ?? [] );
         $violations = [];
         foreach ( $file->class_references as $reference ) {
+            if ( [] !== $contexts && ! Name_Pattern::matches_any( $contexts, $reference['context'] ) ) {
+                continue;
+            }
             if ( Name_Pattern::matches_any( $patterns, $reference['class'] ) ) {
                 $violations[] = $this->violation( $rule, $file, $reference['line'], $reference['context'] . ' ' . $reference['class'] );
             }
@@ -235,6 +243,80 @@ final class Rule_Evaluator {
         return $violations;
     }
 
+    /**
+     * @return array<int, Violation>
+     */
+    private function forbidden_fallback_new( Layer_Rule $rule, Source_File $file ): array {
+        $patterns   = $this->patterns( $rule );
+        $violations = [];
+        foreach ( $file->fallback_news as $fallback ) {
+            if ( Name_Pattern::matches_any( $patterns, $fallback['class'] ) ) {
+                $violations[] = $this->violation( $rule, $file, $fallback['line'], '?? new ' . $fallback['class'] );
+            }
+        }
+
+        return $violations;
+    }
+
+    /**
+     * @return array<int, Violation>
+     */
+    private function forbidden_public_mutable_properties( Layer_Rule $rule, Source_File $file ): array {
+        $violations = [];
+        foreach ( $file->public_properties as $property ) {
+            if ( $property['readonly'] || $property['static'] || $property['restricted_set'] ) {
+                continue;
+            }
+            $class        = null === $property['class'] ? '{anonymous}' : self::short_name( $property['class'] );
+            $violations[] = $this->violation( $rule, $file, $property['line'], $class . '::$' . $property['name'] );
+        }
+
+        return $violations;
+    }
+
+    /**
+     * @return array<int, Violation>
+     */
+    private function forbidden_literal_container_keys( Layer_Rule $rule, Source_File $file ): array {
+        $receivers = $this->normalise_patterns( $rule->arguments['receivers'] ?? [] );
+        $methods   = $this->normalise_patterns( $rule->arguments['methods'] ?? [] );
+
+        $violations = [];
+        foreach ( $file->literal_key_method_calls as $call ) {
+            if ( [] !== $receivers && ! Name_Pattern::matches_any( $receivers, $call['receiver'] ) ) {
+                continue;
+            }
+            if ( [] !== $methods && ! Name_Pattern::matches_any( $methods, $call['method'] ) ) {
+                continue;
+            }
+            $detail       = sprintf( "%s->%s('%s')", $call['receiver'], $call['method'], $call['key'] );
+            $violations[] = $this->violation( $rule, $file, $call['line'], $detail );
+        }
+
+        return $violations;
+    }
+
+    /**
+     * @return array<int, Violation>
+     */
+    private function require_variables( Layer_Rule $rule, Source_File $file ): array {
+        $present    = $file->variable_names();
+        $violations = [];
+        foreach ( $this->variable_names( $rule ) as $name ) {
+            if ( ! in_array( $name, $present, true ) ) {
+                $violations[] = $this->violation( $rule, $file, 1, 'missing $' . $name );
+            }
+        }
+
+        return $violations;
+    }
+
+    private static function short_name( string $class ): string {
+        $position = strrpos( $class, '\\' );
+
+        return false === $position ? $class : substr( $class, $position + 1 );
+    }
+
     private function violation( Layer_Rule $rule, Source_File $file, int $line, string $detail ): Violation {
         return new Violation( $rule->id, $file->path, $line, $detail );
     }
@@ -244,6 +326,15 @@ final class Rule_Evaluator {
      */
     private function patterns( Layer_Rule $rule ): array {
         return $this->normalise_patterns( $rule->arguments );
+    }
+
+    /**
+     * Patterns for kinds that accept either a plain list or a keyed map (`['classes' => [...], …]`).
+     *
+     * @return array<int,string>
+     */
+    private function keyed_patterns( Layer_Rule $rule, string $key ): array {
+        return $this->normalise_patterns( $rule->arguments[ $key ] ?? ( array_is_list( $rule->arguments ) ? $rule->arguments : [] ) );
     }
 
     /**

@@ -144,6 +144,9 @@ final class Source_Scanner {
             includes: $collector->includes,
             declared_functions: $collector->declared_functions,
             declared_classes: $collector->declared_classes,
+            fallback_news: $collector->fallback_news,
+            public_properties: $collector->public_properties,
+            literal_key_method_calls: $collector->literal_key_method_calls,
         );
     }
 

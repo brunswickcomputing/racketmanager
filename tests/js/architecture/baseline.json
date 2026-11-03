@@ -1,10 +1,16 @@
 {
     "js.jquery_reference": {
-        "src/js/admin/functions.js|jQuery": 1,
+        "src/js/admin/features/ajax/admin-ajax.js|jQuery": 5,
+        "src/js/admin/features/dropdowns/dropdown-cascade.js|jQuery": 4,
+        "src/js/admin/features/forms/team-autocomplete.js|jQuery": 1,
+        "src/js/admin/features/forms/team-validation.js|jQuery": 1,
+        "src/js/admin/features/ui/admin-ui.js|jQuery": 1,
+        "src/js/admin/functions.js|jQuery": 2,
         "src/js/features/account/account-update.js|jQuery": 14,
         "src/js/features/ajax/handle-ajax-error.js|jQuery": 4,
         "src/js/features/auth/login.js|jQuery": 11,
         "src/js/features/auth/reset-password.js|jQuery": 10,
+        "src/js/features/autocomplete/autocomplete-helpers.js|jQuery": 4,
         "src/js/features/autocomplete/captain-lookup.js|jQuery": 6,
         "src/js/features/autocomplete/match-secretary-lookup.js|jQuery": 6,
         "src/js/features/autocomplete/partner-lookup.js|jQuery": 17,

@@ -5,7 +5,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { parseJs, walkAst, isNameToken, lineOf, walk } = require('./support/source-scanner');
-const { RULES, getRule, evaluate, isNamespaceIdiom, globalMember } = require('./support/rules');
+const { RULES, getRule, evaluate, isNamespaceIdiom, globalMember, jqueryBracketAccess } = require('./support/rules');
 const { Baseline, updateRequested, normalise } = require('./support/baseline');
 const { assertRuleHolds, failureMessage } = require('./support/ratchet');
 const { compareCodeUnits } = require('./support/sort');
@@ -132,6 +132,41 @@ describe('js.jquery_reference', () => {
     const violations = jquery.scan('src/js/broken.js', 'const = ; jQuery(x);');
     expect(violations.map((violation) => violation.key())).toEqual(['src/js/broken.js|parse error: Unexpected token']);
     expect(windowGlobal.scan('src/js/broken.js', 'const = ; window.x = 1;')).toHaveLength(1);
+  });
+
+  test("counts window['jQuery'] / globalThis[`jQuery`] bracket access under the shared jQuery key", () => {
+    const source = [
+      "const $ = window['jQuery'];", // 1: string key
+      'globalThis[`jQuery`].ajax({});', // 2: expression-free template key
+      "window[\"jQuery\"](document).ready(fn);", // 3: double-quoted key, called
+      "if (typeof window['jQuery'] === 'undefined') {}", // 4: typeof guard still counts
+      'window.jQuery.fn.x = 1;', // 5: dotted spelling counted once by the token scan, not twice
+    ].join('\n');
+    const violations = jquery.scan('src/js/bracket.js', source);
+    expect(violations.map((violation) => `${violation.line} ${violation.detail}`)).toEqual([
+      '1 jQuery',
+      '2 jQuery',
+      '3 jQuery',
+      '4 jQuery',
+      '5 jQuery',
+    ]);
+    expect([...new Set(keys(violations))]).toEqual(['src/js/bracket.js|jQuery']);
+    expect(jqueryBracketAccess(parseJs(source).ast).map((reference) => reference.line)).toEqual([1, 2, 3, 4]);
+  });
+
+  test('bracket access ignores other keys, dynamic keys, non-global objects and jQuery in plain strings', () => {
+    const source = [
+      "const ui = window['jQueryUI'];",
+      "const x = window['jquery'];",
+      'const y = window[`jQuery${suffix}`];',
+      'const z = window[name];',
+      "const w = plugins['jQuery'];",
+      "const v = foo.window['jQuery'];",
+      "console.warn('jQuery missing');",
+      "const list = ['jQuery', 'lodash'];",
+    ].join('\n');
+    expect(jquery.scan('src/js/bracket-clean.js', source)).toEqual([]);
+    expect(jqueryBracketAccess(parseJs(source).ast)).toEqual([]);
   });
 });
 

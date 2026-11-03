@@ -90,6 +90,33 @@ final class Layer_Rules_Test extends TestCase {
         yield 'templates.no_legacy_helper_calls' => [ 'templates.no_legacy_helper_calls', 'templates/x.php', "<?php\nnamespace Racketmanager;\necho seo_url( 'x' );", 'Racketmanager\seo_url()' ];
         yield 'admin.no_template_require' => [ 'admin.no_template_require', 'src/php/Admin/Admin_League.php', "<?php\nnamespace Racketmanager\\Admin;\n" . 'class Admin_League { function f() { require_once RACKETMANAGER_PATH . "templates/admin/league/show.php"; } }', 'templates/admin/league/show.php' ];
         yield 'scanner.parse_error' => [ 'scanner.parse_error', 'src/php/Services/Broken.php', "<?php\nnamespace Racketmanager\\Services;\nclass Broken { function f( { }", 'parse error' ];
+
+        // November 2026 audit rules (N1–N10).
+        yield 'domain.no_public_mutable_properties (declared)' => [ 'domain.no_public_mutable_properties', 'src/php/Domain/Competition/Competition.php', "<?php\nnamespace Racketmanager\\Domain\\Competition;\n" . 'class Competition { public array $settings = []; }', 'Competition::$settings' ];
+        yield 'domain.no_public_mutable_properties (promoted)' => [ 'domain.no_public_mutable_properties', 'src/php/Domain/Fixture/Fixture.php', "<?php\nnamespace Racketmanager\\Domain\\Fixture;\n" . 'class Fixture { public function __construct( public ?int $id = null ) {} }', 'Fixture::$id' ];
+        yield 'application.no_concrete_services (use)' => [ 'application.no_concrete_services', 'src/php/Application/Club/Handlers/H.php', $app . 'use Racketmanager\Services\Club_Service;' . "\n" . 'class H { public function __construct( private Club_Service $s ) {} }', 'depends on Racketmanager\Services\Club_Service' ];
+        yield 'application.no_concrete_services (fq type, no use)' => [ 'application.no_concrete_services', 'src/php/Application/Club/Handlers/H.php', $app . 'class H { function f( \Racketmanager\Services\Container\Simple_Container $c ) {} }', 'depends on Racketmanager\Services\Container\Simple_Container' ];
+        yield 'application.no_util_static' => [ 'application.no_util_static', 'src/php/Application/Club/Handlers/H.php', $app . 'use Racketmanager\Util\Util;' . "\n" . 'class H { function f() { return Util::seo_url( "x" ); } }', 'Racketmanager\Util\Util::seo_url()' ];
+        yield 'application.no_util_static (Util_Lookup)' => [ 'application.no_util_static', 'src/php/Application/Club/Handlers/H.php', $app . 'class H { function f() { return \Racketmanager\Util\Util_Lookup::get_competition_types(); } }', 'Racketmanager\Util\Util_Lookup::get_competition_types()' ];
+        yield 'application.no_global_wp' => [ 'application.no_global_wp', 'src/php/Application/Tournament/Queries/Get_Tournament_Handler.php', "<?php\nnamespace Racketmanager\\Application\\Tournament\\Queries;\n" . 'class Get_Tournament_Handler { function f() { global $wp; return $wp->query_vars; } }', 'global $wp' ];
+        yield 'application.no_global_wp (services, GLOBALS post)' => [ 'application.no_global_wp', 'src/php/Services/Seo/Page_Title_Service.php', "<?php\nnamespace Racketmanager\\Services\\Seo;\n" . 'class Page_Title_Service { function f() { return $GLOBALS[\'post\']->ID; } }', "\$GLOBALS['post']" ];
+        yield 'application.no_global_wp (presentation)' => [ 'application.no_global_wp', 'src/php/Presentation/Adapters/Competition_Shortcode_Adapter.php', "<?php\nnamespace Racketmanager\\Presentation\\Adapters;\n" . 'class A { function f() { global $wp_query; } }', 'global $wp_query' ];
+        yield 'services.no_superglobals' => [ 'services.no_superglobals', 'src/php/Services/Login.php', $svc . 'class Login { function f() { return $_POST[\'user_login\']; } }', '$_POST' ];
+        yield 'services.no_superglobals (util)' => [ 'services.no_superglobals', 'src/php/Util/Util_Lookup.php', "<?php\nnamespace Racketmanager\\Util;\n" . 'class Util_Lookup { static function f() { return $_SERVER[\'REQUEST_URI\']; } }', '$_SERVER' ];
+        yield 'services.no_wordpress_hooks' => [ 'services.no_wordpress_hooks', 'src/php/Services/Login.php', $svc . 'class Login { function f() { add_action( "init", [ $this, "x" ] ); add_filter( "authenticate", [ $this, "y" ] ); } }', 'add_action()' ];
+        yield 'services.no_wordpress_hooks (rewrite)' => [ 'services.no_wordpress_hooks', 'src/php/Services/Rewrites.php', $svc . 'class Rewrites { function f() { add_rewrite_rule( "^x", "index.php", "top" ); } }', 'add_rewrite_rule()' ];
+        yield 'services.no_wordpress_hooks (application)' => [ 'services.no_wordpress_hooks', 'src/php/Application/Club/Handlers/H.php', $app . 'class H { function f() { register_rest_route( "rm/v1", "/x", [] ); } }', 'register_rest_route()' ];
+        yield 'all.no_fallback_construction (??=)' => [ 'all.no_fallback_construction', 'src/php/Services/Validator.php', $svc . 'use Racketmanager\Repositories\Team_Repository;' . "\n" . 'class Validator { private ?Team_Repository $r = null; function r() { return $this->r ??= new Team_Repository(); } }', '?? new Racketmanager\Repositories\Team_Repository' ];
+        yield 'all.no_fallback_construction (??)' => [ 'all.no_fallback_construction', 'src/php/Presentation/Adapters/Competition_Shortcode_Adapter.php', "<?php\nnamespace Racketmanager\\Presentation\\Adapters;\n" . 'class A { function __construct( ?\Racketmanager\Presentation\Presenters\Club_Presenter $p = null ) { $this->p = $p ?? new \Racketmanager\Presentation\Presenters\Club_Presenter(); } }', '?? new Racketmanager\Presentation\Presenters\Club_Presenter' ];
+        yield 'all.no_fallback_construction (chained ??)' => [ 'all.no_fallback_construction', 'src/php/Infrastructure/Wordpress/Ajax/X.php', "<?php\nnamespace Racketmanager\\Infrastructure\\Wordpress\\Ajax;\n" . 'class X { function f( $a, $b ) { return $a ?? $b ?? new \Racketmanager\Infrastructure\Mail\Wp_Mailer(); } }', '?? new Racketmanager\Infrastructure\Mail\Wp_Mailer' ];
+        yield 'all.no_literal_container_keys ($c->set)' => [ 'all.no_literal_container_keys', 'src/php/Services/Container/Providers/League_Service_Provider.php', "<?php\nnamespace Racketmanager\\Services\\Container\\Providers;\n" . 'class P { function register( $c ) { $c->set( "league_service", static fn() => 1 ); } }', "\$c->set('league_service')" ];
+        yield 'all.no_literal_container_keys ($this->container->get)' => [ 'all.no_literal_container_keys', 'src/php/Public/Shortcodes.php', "<?php\nnamespace Racketmanager\\Public;\n" . 'class Shortcodes { function f() { return $this->container->get( "league_service" ); } }', "\$this->container->get('league_service')" ];
+        yield 'all.no_literal_container_keys (nested receiver)' => [ 'all.no_literal_container_keys', 'src/php/Admin/Admin_League.php', "<?php\nnamespace Racketmanager\\Admin;\n" . 'class Admin_League { function f() { return $this->racketmanager->container->has( "league_service" ); } }', "\$this->racketmanager->container->has('league_service')" ];
+        yield 'all.no_literal_container_keys ($container->alias)' => [ 'all.no_literal_container_keys', 'src/php/Services/Container/Container_Bootstrap.php', "<?php\nnamespace Racketmanager\\Services\\Container;\n" . 'class B { function f( $container ) { $container->alias( "league_service", \Racketmanager\Services\League_Service::class ); } }', "\$container->alias('league_service')" ];
+        yield 'templates.require_vm' => [ 'templates.require_vm', 'templates/email/footer.php', "<?php\nnamespace Racketmanager;\necho esc_html( \$title );", 'missing $vm' ];
+        yield 'templates.require_vm (no variables at all)' => [ 'templates.require_vm', 'templates/includes/divider.php', "<?php\nnamespace Racketmanager;\n?><hr />", 'missing $vm' ];
+        yield 'admin.no_admin_display_inheritance' => [ 'admin.no_admin_display_inheritance', 'src/php/Admin/Admin_Result.php', "<?php\nnamespace Racketmanager\\Admin;\n" . 'class Admin_Result extends Admin_Display {}', 'extends Racketmanager\Admin\Admin_Display' ];
+        yield 'admin.no_admin_display_inheritance (final, fq parent)' => [ 'admin.no_admin_display_inheritance', 'src/php/Admin/Admin_Index.php', "<?php\nnamespace Racketmanager\\Admin;\n" . 'final class Admin_Index extends \Racketmanager\Admin\Admin_Display {}', 'extends Racketmanager\Admin\Admin_Display' ];
     }
 
     #[DataProvider( 'positive_cases' )]
@@ -133,6 +160,26 @@ final class Layer_Rules_Test extends TestCase {
         yield 'domain.no_untyped_constructor excludes Domain/DTO' => [ 'domain.no_untyped_constructor', 'src/php/Domain/DTO/Club/Club_Hydration_DTO.php', "<?php\nnamespace Racketmanager\\Domain\\DTO\\Club;\nclass Club_Hydration_DTO { public function __construct( ?object \$raw = null ) {} }" ];
         yield 'admin.no_template_require ignores non-template includes' => [ 'admin.no_template_require', 'src/php/Admin/Admin_League.php', "<?php\nnamespace Racketmanager\\Admin;\nclass Admin_League { function f() { require_once RACKETMANAGER_PATH . 'functions.php'; } }" ];
         yield 'templates.no_globals_or_db ignores local variables' => [ 'templates.no_globals_or_db', 'templates/x.php', "<?php\nnamespace Racketmanager;\necho \$vm->title, \$post->ID;" ];
+
+        // November 2026 audit rules (N1–N10).
+        yield 'domain.no_public_mutable_properties ignores readonly, private(set), static, const and non-public' => [ 'domain.no_public_mutable_properties', 'src/php/Domain/Competition/Competition.php', "<?php\nnamespace Racketmanager\\Domain\\Competition;\n" . 'class Competition { public const int MAX = 1; public readonly int $id; public private(set) string $name = ""; public static array $cache = []; protected int $a = 0; private int $b = 0; public function __construct( public readonly int $x = 0, public protected(set) int $y = 0, private int $z = 0 ) { $this->id = 1; } }' ];
+        yield 'domain.no_public_mutable_properties does not apply outside entity files' => [ 'domain.no_public_mutable_properties', 'src/php/Domain/DTO/Club/Club_Hydration_DTO.php', "<?php\nnamespace Racketmanager\\Domain\\DTO\\Club;\n" . 'class Club_Hydration_DTO { public int $id = 0; }' ];
+        yield 'application.no_concrete_services allows Services interfaces and Application ports' => [ 'application.no_concrete_services', 'src/php/Application/Club/Handlers/H.php', "<?php\nnamespace Racketmanager\\Application\\Club\\Handlers;\nuse Racketmanager\\Services\\Flash_Message_Store_Interface;\nuse Racketmanager\\Application\\Club\\Ports\\Club_Finder_Interface;\nuse Racketmanager\\Repositories\\Interfaces\\Club_Repository_Interface;\nclass H { public function __construct( private Flash_Message_Store_Interface \$f, private Club_Finder_Interface \$c, private Club_Repository_Interface \$r ) {} }" ];
+        yield 'application.no_concrete_services does not apply to Services' => [ 'application.no_concrete_services', 'src/php/Services/Team_Service.php', "<?php\nnamespace Racketmanager\\Services;\nclass Team_Service { public function __construct( private Club_Service \$c ) {} }" ];
+        yield 'application.no_util_static ignores instance methods and other statics' => [ 'application.no_util_static', 'src/php/Application/Club/Handlers/H.php', "<?php\nnamespace Racketmanager\\Application\\Club\\Handlers;\nuse Racketmanager\\Domain\\Club\\Club_Factory;\nclass H { function f( \$util, \$row ) { return [ \$util->seo_url( 'x' ), Club_Factory::from_object( \$row ), self::seo_url() ]; } static function seo_url() {} }" ];
+        yield 'application.no_global_wp ignores locals named like globals and other globals' => [ 'application.no_global_wp', 'src/php/Application/Club/Handlers/H.php', "<?php\nnamespace Racketmanager\\Application\\Club\\Handlers;\nclass H { function f( \$post ) { global \$wpdb; \$wp = 1; return [ \$post->ID, \$wp, \$GLOBALS['racketmanager'] ]; } }" ];
+        yield 'application.no_global_wp does not apply to Infrastructure' => [ 'application.no_global_wp', 'src/php/Infrastructure/Wordpress/Request/Wp_Query_Vars.php', "<?php\nnamespace Racketmanager\\Infrastructure\\Wordpress\\Request;\nclass Wp_Query_Vars { function f() { global \$wp; return \$wp->query_vars; } }" ];
+        yield 'services.no_superglobals ignores strings, comments and locals' => [ 'services.no_superglobals', 'src/php/Services/Login.php', "<?php\nnamespace Racketmanager\\Services;\n/** \$_POST */ class Login { function f( array \$post, array \$request ) { \$s = '\$_GET'; return [ \$post['x'], \$request['y'], \$s ]; } }" ];
+        yield 'services.no_superglobals does not apply to Infrastructure or Admin' => [ 'services.no_superglobals', 'src/php/Infrastructure/Wordpress/Request/Request_Parser.php', "<?php\nnamespace Racketmanager\\Infrastructure\\Wordpress\\Request;\nclass Request_Parser { function f() { return \$_POST['x'] ?? \$_GET['y']; } }" ];
+        yield 'services.no_wordpress_hooks ignores do_action/apply_filters and methods named add_action' => [ 'services.no_wordpress_hooks', 'src/php/Services/Team_Service.php', "<?php\nnamespace Racketmanager\\Services;\nclass Team_Service { function f( \$o ) { do_action( 'x' ); \$v = apply_filters( 'y', 1 ); \$o->add_action( 'z' ); return \$v; } }" ];
+        yield 'services.no_wordpress_hooks does not apply to Infrastructure' => [ 'services.no_wordpress_hooks', 'src/php/Infrastructure/Wordpress/Hooks/Hook_Registrar.php', "<?php\nnamespace Racketmanager\\Infrastructure\\Wordpress\\Hooks;\nclass Hook_Registrar { function f() { add_action( 'init', fn() => 1 ); add_shortcode( 'x', fn() => '' ); } }" ];
+        yield 'all.no_fallback_construction ignores value objects, PHP/WP classes, ?: and plain new' => [ 'all.no_fallback_construction', 'src/php/Services/Team_Service.php', "<?php\nnamespace Racketmanager\\Services;\nuse DateTimeImmutable;\nuse Racketmanager\\Domain\\Value_Objects\\Money;\nuse Racketmanager\\Repositories\\Team_Repository;\nclass Team_Service { function f( \$a, \$b, \$c ) { return [ \$a ?? new DateTimeImmutable(), \$b ?? new Money( 0 ), \$c ?? new \\stdClass(), \$c ?: new Team_Repository(), new Team_Repository(), \$a ?? \$b ]; } }" ];
+        yield 'all.no_fallback_construction excludes the container and bootstrap' => [ 'all.no_fallback_construction', 'src/php/Services/Container/Providers/League_Service_Provider.php', "<?php\nnamespace Racketmanager\\Services\\Container\\Providers;\nuse Racketmanager\\Repositories\\Team_Repository;\nclass P { function f( \$r ) { return \$r ?? new Team_Repository(); } }" ];
+        yield 'all.no_literal_container_keys ignores ::class keys, non-container receivers and other methods' => [ 'all.no_literal_container_keys', 'src/php/Public/Shortcodes.php', "<?php\nnamespace Racketmanager\\Public;\nuse Racketmanager\\Services\\League_Service;\nclass Shortcodes { function f( \$c, \$request, \$container ) { \$c->get( League_Service::class ); \$container->set( League_Service::class, fn() => 1 ); \$this->container->has( League_Service::class ); \$request->get( 'id' ); \$this->settings->get( 'x' ); \$c->resolve( 'x' ); \$c->get( \$id ); } }" ];
+        yield 'templates.require_vm accepts a template that uses $vm' => [ 'templates.require_vm', 'templates/league.php', "<?php\nnamespace Racketmanager;\n/** @var object \$vm */\necho esc_html( \$vm->title );" ];
+        yield 'templates.require_vm does not apply to src' => [ 'templates.require_vm', 'src/php/Services/Team_Service.php', "<?php\nnamespace Racketmanager\\Services;\nclass Team_Service {}" ];
+        yield 'admin.no_admin_display_inheritance ignores imports, type hints and new' => [ 'admin.no_admin_display_inheritance', 'src/php/Admin/Admin_Screens_Service_Provider.php', "<?php\nnamespace Racketmanager\\Admin;\nuse Racketmanager\\Admin\\Admin_Display;\nclass P { function f( Admin_Display \$d ) { return new Admin_Display(); } }" ];
+        yield 'admin.no_admin_display_inheritance ignores other parents' => [ 'admin.no_admin_display_inheritance', 'src/php/Admin/Admin_Result.php', "<?php\nnamespace Racketmanager\\Admin;\nfinal readonly class Admin_Result extends Admin_Bridge { use Completes_Admin_Requests; }" ];
     }
 
     #[DataProvider( 'negative_cases' )]
@@ -224,6 +271,58 @@ final class Layer_Rules_Test extends TestCase {
         $rule = Layer_Rules::get( 'services.no_presentation_imports' );
         self::assertFalse( $rule->applies_to( 'src/php/Services/Container/Container_Bootstrap.php' ) );
         self::assertTrue( $rule->applies_to( 'src/php/Services/Team_Service.php' ) );
+    }
+
+    public function test_all_no_fallback_construction_excludes_container_and_bootstrap(): void {
+        $rule = Layer_Rules::get( 'all.no_fallback_construction' );
+        self::assertFalse( $rule->applies_to( 'src/php/Services/Container/Simple_Container.php' ) );
+        self::assertFalse( $rule->applies_to( 'src/php/Services/Container/Container_Bootstrap.php' ) );
+        self::assertFalse( $rule->applies_to( 'src/php/Services/Container/Providers/League_Service_Provider.php' ) );
+        self::assertFalse( $rule->applies_to( 'src/php/Infrastructure/Wordpress/Bootstrap/Plugin_Bootstrap.php' ) );
+        self::assertTrue( $rule->applies_to( 'src/php/Services/Validator.php' ) );
+        self::assertTrue( $rule->applies_to( 'src/php/Infrastructure/Wordpress/Ajax/Frontend_Ajax_Controller.php' ) );
+        self::assertTrue( $rule->applies_to( 'src/php/Presentation/Adapters/Competition_Shortcode_Adapter.php' ) );
+        self::assertTrue( $rule->applies_to( 'src/php/Admin/Admin_Screens_Service_Provider.php' ) );
+        self::assertFalse( $rule->applies_to( 'templates/league.php' ) );
+    }
+
+    public function test_all_no_literal_container_keys_includes_providers(): void {
+        $rule = Layer_Rules::get( 'all.no_literal_container_keys' );
+        self::assertTrue( $rule->applies_to( 'src/php/Services/Container/Container_Bootstrap.php' ) );
+        self::assertTrue( $rule->applies_to( 'src/php/Services/Container/Providers/League_Service_Provider.php' ) );
+        self::assertTrue( $rule->applies_to( 'src/php/Admin/Admin_Screens_Service_Provider.php' ) );
+        self::assertTrue( $rule->applies_to( 'src/php/Public/Shortcodes.php' ) );
+        self::assertFalse( $rule->applies_to( 'templates/league.php' ) );
+    }
+
+    public function test_domain_no_public_mutable_properties_is_scoped_to_entity_files(): void {
+        $rule = Layer_Rules::get( 'domain.no_public_mutable_properties' );
+        foreach ( Layer_Rules::DOMAIN_ENTITY_FILES as $path ) {
+            self::assertTrue( $rule->applies_to( $path ), $path );
+        }
+        self::assertFalse( $rule->applies_to( 'src/php/Domain/DTO/Club/Club_Hydration_DTO.php' ) );
+        self::assertFalse( $rule->applies_to( 'src/php/Domain/Competition/Scheduling/Schedule_Engine.php' ) );
+        self::assertFalse( $rule->applies_to( 'src/php/Domain/Value_Objects/Money.php' ) );
+        self::assertFalse( $rule->applies_to( 'src/php/Services/Team_Service.php' ) );
+    }
+
+    public function test_layer_scoped_november_rules_leave_infrastructure_and_admin_alone(): void {
+        $infrastructure = 'src/php/Infrastructure/Wordpress/Request/Request_Parser.php';
+        $admin          = 'src/php/Admin/Admin_League.php';
+
+        foreach ( [ 'application.no_global_wp', 'services.no_superglobals', 'services.no_wordpress_hooks' ] as $id ) {
+            $rule = Layer_Rules::get( $id );
+            self::assertFalse( $rule->applies_to( $infrastructure ), "$id must not apply to Infrastructure" );
+            self::assertFalse( $rule->applies_to( $admin ), "$id must not apply to Admin" );
+            self::assertTrue( $rule->applies_to( 'src/php/Services/Login.php' ), "$id must apply to Services" );
+        }
+
+        self::assertTrue( Layer_Rules::get( 'application.no_global_wp' )->applies_to( 'src/php/Application/Tournament/Queries/Get_Tournament_Handler.php' ) );
+        self::assertTrue( Layer_Rules::get( 'application.no_global_wp' )->applies_to( 'src/php/Util/Util_Lookup.php' ) );
+        self::assertTrue( Layer_Rules::get( 'services.no_superglobals' )->applies_to( 'src/php/Util/Util_Lookup.php' ) );
+        self::assertFalse( Layer_Rules::get( 'services.no_superglobals' )->applies_to( 'src/php/Application/Club/Handlers/H.php' ), 'Application superglobals are tracked by application.no_superglobals' );
+        self::assertTrue( Layer_Rules::get( 'services.no_wordpress_hooks' )->applies_to( 'src/php/Application/Club/Handlers/H.php' ) );
+        self::assertFalse( Layer_Rules::get( 'services.no_wordpress_hooks' )->applies_to( 'src/php/Util/Util.php' ) );
     }
 
     public function test_domain_no_lenient_from_object_excludes_entity_files(): void {

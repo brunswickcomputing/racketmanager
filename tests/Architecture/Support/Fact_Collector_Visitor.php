@@ -48,9 +48,17 @@ final class Fact_Collector_Visitor extends NodeVisitorAbstract {
     public array $declared_functions = [];
     /** @var array<int,string> */
     public array $declared_classes = [];
+    /** @var array<int,array{class: string, op: string, line: int}> */
+    public array $fallback_news = [];
+    /** @var array<int,array{class: ?string, name: string, readonly: bool, static: bool, restricted_set: bool, promoted: bool, line: int}> */
+    public array $public_properties = [];
+    /** @var array<int,array{receiver: string, method: string, key: string, line: int}> */
+    public array $literal_key_method_calls = [];
 
     /** @var array<int,?string> Stack of enclosing class-like names (null for anonymous classes). */
     private array $class_stack = [];
+    /** @var array<int,bool> Stack parallel to $class_stack: whether the enclosing class is declared `readonly`. */
+    private array $readonly_class_stack = [];
 
     public function enterNode( Node $node ): null {
         match ( true ) {
@@ -73,8 +81,8 @@ final class Fact_Collector_Visitor extends NodeVisitorAbstract {
             $node instanceof Expr\StaticPropertyFetch => $this->add_class_reference_if_name( $node->class, 'static' ),
             $node instanceof Expr\Instanceof_   => $this->add_class_reference_if_name( $node->class, 'instanceof' ),
             $node instanceof Expr\Include_      => $this->enter_include( $node ),
-            $node instanceof Param              => $this->add_type_references( $node->type ),
-            $node instanceof Stmt\Property      => $this->add_type_references( $node->type ),
+            $node instanceof Param              => $this->enter_param( $node ),
+            $node instanceof Stmt\Property      => $this->enter_property( $node ),
             $node instanceof Expr\Closure,
             $node instanceof Expr\ArrowFunction => $this->add_type_references( $node->returnType ),
             default                             => null,
@@ -83,12 +91,26 @@ final class Fact_Collector_Visitor extends NodeVisitorAbstract {
         return null;
     }
 
+    /**
+     * Facts that read a child node's class name are collected on leave: NameResolver resolves names
+     * when it enters each node, so a parent's enterNode() still sees the child's unresolved name.
+     */
     public function leaveNode( Node $node ): null {
-        if ( $node instanceof Stmt\ClassLike ) {
-            array_pop( $this->class_stack );
-        }
+        match ( true ) {
+            $node instanceof Stmt\ClassLike         => $this->leave_class_like(),
+            $node instanceof Expr\BinaryOp\Coalesce => $this->leave_coalesce( $node->right, '??', $node ),
+            $node instanceof Expr\AssignOp\Coalesce => $this->leave_coalesce( $node->expr, '??=', $node ),
+            $node instanceof Expr\MethodCall,
+            $node instanceof Expr\NullsafeMethodCall => $this->leave_method_call( $node ),
+            default                                 => null,
+        };
 
         return null;
+    }
+
+    private function leave_class_like(): void {
+        array_pop( $this->class_stack );
+        array_pop( $this->readonly_class_stack );
     }
 
     private function enter_namespace( Stmt\Namespace_ $node ): void {
@@ -150,7 +172,8 @@ final class Fact_Collector_Visitor extends NodeVisitorAbstract {
 
             $this->declared_classes[] = $name;
         }
-        $this->class_stack[] = $name;
+        $this->class_stack[]          = $name;
+        $this->readonly_class_stack[] = $node instanceof Stmt\Class_ && $node->isReadonly();
 
         if ( $node instanceof Stmt\Class_ ) {
             if ( null !== $node->extends ) {
@@ -171,7 +194,7 @@ final class Fact_Collector_Visitor extends NodeVisitorAbstract {
             return;
         }
 
-        $class = [] === $this->class_stack ? null : end( $this->class_stack );
+        $class = $this->current_class();
         foreach ( $node->params as $param ) {
             $param_name = $param->var instanceof Expr\Variable && is_string( $param->var->name ) ? $param->var->name : '?';
 
@@ -181,6 +204,47 @@ final class Fact_Collector_Visitor extends NodeVisitorAbstract {
                 'type'  => null === $param->type ? null : self::type_to_string( $param->type ),
                 'types' => self::leaf_type_names( $param->type ),
                 'line'  => $param->getStartLine(),
+            ];
+        }
+    }
+
+    private function enter_param( Param $node ): void {
+        $this->add_type_references( $node->type );
+
+        if ( ! $node->isPromoted() || ! $node->isPublic() ) {
+            return;
+        }
+        if ( ! $node->var instanceof Expr\Variable || ! is_string( $node->var->name ) ) {
+            return;
+        }
+
+        $this->public_properties[] = [
+            'class'          => $this->current_class(),
+            'name'           => $node->var->name,
+            'readonly'       => $node->isReadonly() || $this->in_readonly_class(),
+            'static'         => false,
+            'restricted_set' => $node->isPrivateSet() || $node->isProtectedSet(),
+            'promoted'       => true,
+            'line'           => $node->getStartLine(),
+        ];
+    }
+
+    private function enter_property( Stmt\Property $node ): void {
+        $this->add_type_references( $node->type );
+
+        if ( ! $node->isPublic() ) {
+            return;
+        }
+
+        foreach ( $node->props as $prop ) {
+            $this->public_properties[] = [
+                'class'          => $this->current_class(),
+                'name'           => $prop->name->toString(),
+                'readonly'       => $node->isReadonly() || $this->in_readonly_class(),
+                'static'         => $node->isStatic(),
+                'restricted_set' => $node->isPrivateSet() || $node->isProtectedSet(),
+                'promoted'       => false,
+                'line'           => $prop->getStartLine(),
             ];
         }
     }
@@ -228,6 +292,33 @@ final class Fact_Collector_Visitor extends NodeVisitorAbstract {
             $this->new_targets[] = [ 'class' => $class, 'line' => $node->getStartLine() ];
             $this->class_references[] = [ 'class' => $class, 'context' => 'new', 'line' => $node->getStartLine() ];
         }
+    }
+
+    /**
+     * `$x ?? new Class` / `$x ??= new Class`. Only the operand directly to the right of the operator is
+     * inspected, so a chain `$a ?? $b ?? new X()` (parsed right-associatively) records X exactly once.
+     */
+    private function leave_coalesce( Expr $right, string $op, Expr $node ): void {
+        if ( $right instanceof Expr\New_ && $right->class instanceof Name ) {
+            $this->fallback_news[] = [ 'class' => $right->class->toString(), 'op' => $op, 'line' => $node->getStartLine() ];
+        }
+    }
+
+    private function leave_method_call( Expr\MethodCall|Expr\NullsafeMethodCall $node ): void {
+        if ( ! $node->name instanceof Identifier ) {
+            return;
+        }
+        $first = $node->args[0] ?? null;
+        if ( ! $first instanceof Node\Arg || ! $first->value instanceof Scalar\String_ ) {
+            return;
+        }
+
+        $this->literal_key_method_calls[] = [
+            'receiver' => self::render_receiver( $node->var ),
+            'method'   => $node->name->toString(),
+            'key'      => $first->value->value,
+            'line'     => $node->getStartLine(),
+        ];
     }
 
     private function enter_static_call( Expr\StaticCall $node ): void {
@@ -291,6 +382,51 @@ final class Fact_Collector_Visitor extends NodeVisitorAbstract {
         }
 
         return [];
+    }
+
+    /**
+     * Source-like rendering of a method-call receiver: `$c`, `$this->container`, `$this->plugin->container`,
+     * `self::$container`, `$this->container()`, `container()`. Anything else renders as `{expr}`.
+     */
+    public static function render_receiver( Expr $expr ): string {
+        if ( $expr instanceof Expr\Variable ) {
+            return is_string( $expr->name ) ? '$' . $expr->name : '${expr}';
+        }
+        if ( $expr instanceof Expr\PropertyFetch || $expr instanceof Expr\NullsafePropertyFetch ) {
+            $name = $expr->name instanceof Identifier ? $expr->name->toString() : '{expr}';
+            return self::render_receiver( $expr->var ) . '->' . $name;
+        }
+        if ( $expr instanceof Expr\StaticPropertyFetch ) {
+            $class = $expr->class instanceof Name ? $expr->class->toString() : '{expr}';
+            $name  = $expr->name instanceof Node\VarLikeIdentifier ? $expr->name->toString() : '{expr}';
+            return $class . '::$' . $name;
+        }
+        if ( $expr instanceof Expr\MethodCall || $expr instanceof Expr\NullsafeMethodCall ) {
+            $name = $expr->name instanceof Identifier ? $expr->name->toString() : '{expr}';
+            return self::render_receiver( $expr->var ) . '->' . $name . '()';
+        }
+        if ( $expr instanceof Expr\StaticCall ) {
+            $class = $expr->class instanceof Name ? $expr->class->toString() : '{expr}';
+            $name  = $expr->name instanceof Identifier ? $expr->name->toString() : '{expr}';
+            return $class . '::' . $name . '()';
+        }
+        if ( $expr instanceof Expr\FuncCall ) {
+            if ( ! $expr->name instanceof Name ) {
+                return '{expr}()';
+            }
+            $namespaced = $expr->name->getAttribute( 'namespacedName' );
+            return ( $namespaced instanceof Name ? $namespaced : $expr->name )->toString() . '()';
+        }
+
+        return '{expr}';
+    }
+
+    private function current_class(): ?string {
+        return [] === $this->class_stack ? null : end( $this->class_stack );
+    }
+
+    private function in_readonly_class(): bool {
+        return [] !== $this->readonly_class_stack && end( $this->readonly_class_stack );
     }
 
     /**

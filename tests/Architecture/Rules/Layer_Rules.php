@@ -10,7 +10,7 @@ use Racketmanager\Tests\Architecture\Support\Rule_Kind;
 use Racketmanager\Tests\Architecture\Support\Rule_Mode;
 
 /**
- * The architecture guardrail catalogue (docs/ddd-architecture-audit-2026-10.md, Appendix A.1).
+ * The architecture guardrail catalogue (docs/ddd-architecture-audit-2026-11.md, Appendix A.1).
  *
  * Rules are data: add a Layer_Rule here and it runs as its own PHPUnit case in the matching
  * `*_Layer_Test` / `Cross_Cutting_Test` data provider. Rule ids are prefixed by the layer they
@@ -42,6 +42,28 @@ final class Layer_Rules {
 
     /** Every class under Presentation\ or Admin\, plus the top-level Racketmanager\Admin god class itself. */
     private const string PRESENTATION_OR_ADMIN = '/^Racketmanager\\\\(Presentation\\\\|Admin(\\\\|$))/i';
+
+    /** Every concrete class under Services\ — interfaces declared there are legacy ports and remain allowed (audit 2026-11, N1/N9). */
+    private const string CONCRETE_SERVICES = '/^Racketmanager\\\\Services\\\\(?!.*_Interface$)/i';
+
+    /**
+     * Plugin collaborators that must be constructor-injected rather than constructed as a `?? new` fallback.
+     * Anchored to the plugin namespace so value objects, DTOs and PHP/WordPress classes
+     * (`DateTimeImmutable`, `stdClass`, `WP_REST_Request`) are not penalised (audit 2026-11, N2).
+     */
+    private const string PLUGIN_COLLABORATORS = '/^Racketmanager\\\\.*(_Service|_Repository|_Presenter|_Handler|_Adapter|_Factory|_Gateway|_Renderer|_Validator|_Dispatcher|_Mailer|_Clock|_Loader|_Manager)$/i';
+
+    /** WordPress globals that smuggle request / loop state into layers that must receive typed input (audit 2026-11, N6). */
+    private const array WORDPRESS_GLOBALS = [ 'wp', 'wp_query', 'post', 'current_user' ];
+
+    /** WordPress registration functions that belong to driving adapters under Infrastructure/Wordpress (audit 2026-11, N5). */
+    private const array WORDPRESS_HOOK_FUNCTIONS = [ 'add_action', 'add_filter', 'add_shortcode', 'register_widget', 'add_rewrite_rule', 'add_rewrite_tag', 'register_rest_route' ];
+
+    /** Method-call receivers that denote the DI container (audit 2026-11, N3). */
+    private const array CONTAINER_RECEIVERS = [ '$c', '$container', '*->container', '*::$container' ];
+
+    /** Simple_Container methods that accept a string service id. */
+    private const array CONTAINER_METHODS = [ 'get', 'set', 'has', 'alias', 'has_definition', 'is_registered', 'remove' ];
 
     /**
      * WordPress runtime functions that make Domain code untestable without the WP runtime
@@ -404,6 +426,15 @@ final class Layer_Rules {
                 Rule_Mode::STRICT,
                 self::DOMAIN_ENTITY_FILES
             ),
+            new Layer_Rule(
+                'domain.no_public_mutable_properties',
+                'Domain entities must not expose public mutable properties (readonly, private(set)/protected(set), static and constants are exempt)',
+                'Backlog 2026-11 P3-14: make the property readonly or private(set) and add an intention-revealing method; hydrate through the entity factory instead of writing public state (audit 2026-11, N4).',
+                self::DOMAIN_ENTITY_FILES,
+                Rule_Kind::FORBIDDEN_PUBLIC_MUTABLE_PROPERTY,
+                [],
+                Rule_Mode::RATCHET
+            ),
         ];
     }
 
@@ -457,6 +488,33 @@ final class Layer_Rules {
                 [ self::PRESENTATION_OR_ADMIN ],
                 Rule_Mode::STRICT
             ),
+            new Layer_Rule(
+                'application.no_concrete_services',
+                'Application code must depend on ports, never on concrete Services\* classes',
+                'Backlog 2026-11 P2-7: declare an Application/<Context>/Ports/*_Interface, bind the service to it in a *_Service_Provider and type-hint the port (audit 2026-11, N1).',
+                [ self::APPLICATION ],
+                Rule_Kind::FORBIDDEN_DEPENDENCY,
+                [ self::CONCRETE_SERVICES ],
+                Rule_Mode::RATCHET
+            ),
+            new Layer_Rule(
+                'application.no_util_static',
+                'Application code must not call Util / Util_Lookup statics',
+                'Backlog 2026-11 P3-16: inject the formatter / lookup port the handler actually needs instead of the Util grab-bag (audit 2026-11, D4).',
+                [ self::APPLICATION ],
+                Rule_Kind::FORBIDDEN_STATIC_CALL,
+                [ 'classes' => [ 'Racketmanager\Util\Util', 'Racketmanager\Util\Util_Lookup' ] ],
+                Rule_Mode::RATCHET
+            ),
+            new Layer_Rule(
+                'application.no_global_wp',
+                'Application, Services, Presentation, Repositories and Util code must not read the WordPress globals $wp, $wp_query, $post or $current_user',
+                'Backlog 2026-11 P1-2: inject Application/Ports/Query_Vars_Interface (Infrastructure/Wordpress/Request/Wp_Query_Vars) or pass the resolved value in from the adapter (audit 2026-11, N6).',
+                [ self::APPLICATION, self::SERVICES, self::PRESENTATION, self::REPOSITORIES, self::UTIL ],
+                Rule_Kind::FORBIDDEN_GLOBAL,
+                self::WORDPRESS_GLOBALS,
+                Rule_Mode::RATCHET
+            ),
         ];
     }
 
@@ -501,6 +559,24 @@ final class Layer_Rules {
                 [ self::REPOSITORIES ],
                 Rule_Kind::FORBIDDEN_DEPENDENCY,
                 [ '/^Racketmanager\\\\Services\\\\/i' ],
+                Rule_Mode::RATCHET
+            ),
+            new Layer_Rule(
+                'services.no_superglobals',
+                'Services, Repositories, Presentation and Util code must not read superglobals',
+                'Backlog 2026-11 P1-1: parse HTTP input in Infrastructure/Wordpress/Request and pass typed values into the service (audit 2026-11, N5).',
+                [ self::SERVICES, self::REPOSITORIES, self::PRESENTATION, self::UTIL ],
+                Rule_Kind::FORBIDDEN_VARIABLE,
+                self::SUPERGLOBALS,
+                Rule_Mode::RATCHET
+            ),
+            new Layer_Rule(
+                'services.no_wordpress_hooks',
+                'Services, Application, Presentation and Repositories code must not register WordPress hooks, shortcodes, widgets, rewrites or REST routes',
+                'Backlog 2026-11 P1-1: move the registration into a driving adapter under Infrastructure/Wordpress/ (Login, Rewrites, Widget) and leave the service with the behaviour only (audit 2026-11, N5).',
+                [ self::SERVICES, self::APPLICATION, self::PRESENTATION, self::REPOSITORIES ],
+                Rule_Kind::FORBIDDEN_FUNCTION_CALL,
+                self::WORDPRESS_HOOK_FUNCTIONS,
                 Rule_Mode::RATCHET
             ),
         ];
@@ -570,6 +646,28 @@ final class Layer_Rules {
                 Rule_Mode::STRICT
             ),
             new Layer_Rule(
+                'all.no_fallback_construction',
+                'Collaborators (services, repositories, presenters, handlers, adapters, factories, gateways, …) must be injected, not constructed as a `?? new` / `??= new` fallback',
+                'Backlog 2026-11 P2-8: make the constructor parameter required and let Simple_Container autowire it; delete the nullable default and the fallback (audit 2026-11, N2).',
+                [ self::SRC ],
+                Rule_Kind::FORBIDDEN_FALLBACK_NEW,
+                [ self::PLUGIN_COLLABORATORS ],
+                Rule_Mode::RATCHET,
+                [ self::SERVICES . 'Container/', self::INFRASTRUCTURE . 'Wordpress/Bootstrap/' ]
+            ),
+            new Layer_Rule(
+                'all.no_literal_container_keys',
+                'Container ids must be ::class constants, not string keys ($c->get(\'league_service\'), $container->set(\'x\', …), $this->container->get(\'y\'))',
+                'Backlog 2026-11 P2-9: register and resolve by Fully_Qualified::class (or an *_Interface::class port) and keep alias() only as a documented BC bridge until the last string consumer moves (audit 2026-11, N3).',
+                [ self::SRC ],
+                Rule_Kind::FORBIDDEN_LITERAL_CONTAINER_KEY,
+                [
+                    'receivers' => self::CONTAINER_RECEIVERS,
+                    'methods'   => self::CONTAINER_METHODS,
+                ],
+                Rule_Mode::RATCHET
+            ),
+            new Layer_Rule(
                 'templates.no_globals_or_db',
                 'Templates must not read $wpdb or superglobals',
                 'Backlog P3-14: compute the value in the controller/query handler and expose it on the $vm view model (audit L10).',
@@ -597,12 +695,33 @@ final class Layer_Rules {
                 Rule_Mode::STRICT
             ),
             new Layer_Rule(
+                'templates.require_vm',
+                'Every template reads its data from the $vm view model',
+                'Backlog 2026-11 P2-11: build a view model in the controller / shortcode adapter and render through Template_Scope so the template only touches $vm (audit 2026-11, N10).',
+                [ self::TEMPLATES ],
+                Rule_Kind::REQUIRE_VARIABLE,
+                [ 'vm' ],
+                Rule_Mode::RATCHET
+            ),
+            new Layer_Rule(
                 'admin.no_template_require',
                 'Admin screens must not require templates/admin/* inline',
                 'Backlog P2-9: migrate the screen to Admin/Controllers/* + PRG and render through Php_View_Renderer with a $vm (audit L9).',
                 [ self::ADMIN ],
                 Rule_Kind::FORBIDDEN_INCLUDE,
                 [ '*templates/admin/*' ],
+                Rule_Mode::RATCHET
+            ),
+            new Layer_Rule(
+                'admin.no_admin_display_inheritance',
+                'Admin screens must not extend the legacy Admin_Display base class',
+                'Backlog 2026-11 P2-10: convert the screen to a final readonly bridge using Completes_Admin_Requests plus a per-view *_Admin_Controller (the P2-9 pattern) (audit 2026-11, N7).',
+                [ self::ADMIN ],
+                Rule_Kind::FORBIDDEN_CLASS_REFERENCE,
+                [
+                    'classes'  => [ 'Racketmanager\Admin\Admin_Display' ],
+                    'contexts' => [ 'extends' ],
+                ],
                 Rule_Mode::RATCHET
             ),
             new Layer_Rule(

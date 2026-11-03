@@ -1,5 +1,5 @@
 // Rule catalogue for the JS / template legacy-pattern guardrails. Rules are data: each entry has an
-// id, a human description, the remediation hint (backlog item in docs/ddd-architecture-audit-2026-10.md),
+// id, a human description, the remediation hint (backlog item in docs/ddd-architecture-audit-2026-11.md),
 // a scope ('js' => src/js/**/*.js, 'templates' => templates/**/*.php) and a `scan(file, source)`
 // function returning violations for one file.
 
@@ -73,6 +73,9 @@ function parseErrorViolation(ruleId, file, parsed) {
  * counted either — it is the `$(...)` wrapper that the backlog item retires. Comments, strings,
  * template text and regex literals are not identifier tokens.
  *
+ * The string-keyed spellings `window['jQuery']` / `` globalThis[`jQuery`] `` are *not* identifier
+ * tokens — see `jqueryBracketAccess()` for the AST pass that counts them.
+ *
  * @param {object[]} tokens
  * @returns {Array<{line: number, detail: 'jQuery'|'$('}>}
  */
@@ -90,6 +93,42 @@ function jqueryReferences(tokens) {
     }
   }
   return references;
+}
+
+/**
+ * jQuery reached through a string key on the global object — `window['jQuery']`,
+ * `` globalThis[`jQuery`] `` — which the token scan cannot see because the key is a string literal,
+ * not an identifier. Reported with the same `jQuery` detail so the baseline key is shared with the
+ * dotted spelling. `window['jQueryUI']`, `window[name]` and `'jQuery'` in any other string do not
+ * count (audit 2026-11, N12).
+ *
+ * @param {object} ast Babel File node
+ * @returns {Array<{line: number, detail: 'jQuery'}>}
+ */
+function jqueryBracketAccess(ast) {
+  const references = [];
+  walkAst(ast.program, (node) => {
+    if (node.type !== 'MemberExpression' || !node.computed) {
+      return;
+    }
+    const member = globalMember(node);
+    if (member && member.name === 'jQuery') {
+      references.push({ line: node.loc.start.line, detail: 'jQuery' });
+    }
+  });
+  return references;
+}
+
+/**
+ * Token-level and bracket-access jQuery references of one parsed file, in source order.
+ *
+ * @param {{tokens: object[], ast: object}} parsed
+ * @returns {Array<{line: number, detail: 'jQuery'|'$('}>}
+ */
+function allJqueryReferences(parsed) {
+  return [...jqueryReferences(parsed.tokens), ...jqueryBracketAccess(parsed.ast)].sort(
+    (a, b) => a.line - b.line
+  );
 }
 
 // Objects an assignment target may hang off to count as declaring a global. `self` is deliberately
@@ -205,16 +244,16 @@ const INLINE_HANDLER_PATTERN =
 const RULES = [
   {
     id: 'js.jquery_reference',
-    description: 'jQuery identifier or $( wrapper in src/js',
+    description: "jQuery identifier, window['jQuery'] access or $( wrapper in src/js",
     remediation:
-      'Backlog item 16: replace jQuery DOM/AJAX calls with the native helpers in src/js/utils/dom-utils.js and fetch-based AJAX; retire utils/jquery-helpers.js. New modules must not reference jQuery.',
+      'Backlog item 16 (audit 2026-11 P3-17): replace jQuery DOM/AJAX calls with the native helpers in src/js/utils/dom-utils.js and fetch-based AJAX; retire utils/jquery-helpers.js. New modules must not reference jQuery, including via window["jQuery"].',
     scope: 'js',
     scan(file, source) {
       const parsed = parseJs(source);
       if (parsed.error !== null) {
         return [parseErrorViolation(this.id, file, parsed)];
       }
-      return jqueryReferences(parsed.tokens).map(
+      return allJqueryReferences(parsed).map(
         ({ line, detail }) => new Violation(this.id, file, line, detail)
       );
     },
@@ -285,6 +324,8 @@ module.exports = {
   GLOBAL_OBJECTS,
   GLOBAL_ASSIGNMENT_EXEMPT,
   jqueryReferences,
+  jqueryBracketAccess,
+  allJqueryReferences,
   globalMember,
   globalAssignments,
   isNamespaceIdiom,

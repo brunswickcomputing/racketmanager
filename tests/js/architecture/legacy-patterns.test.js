@@ -8,8 +8,8 @@
 //     RM_ARCH_UPDATE_BASELINE=1 npm test -- tests/js/architecture
 //
 // Companion of the PHP suite in tests/Architecture (vendor/bin/phpunit --testsuite Architecture);
-// the rule ids are cross-referenced from docs/ddd-architecture-audit-2026-10.md (Appendix A.2,
-// backlog item 16).
+// the rule ids are cross-referenced from docs/ddd-architecture-audit-2026-11.md (Appendix A.2,
+// §7; backlog item 16 of the October report / P3-17 of the November report).
 
 const fs = require('fs');
 const { RULES } = require('./support/rules');

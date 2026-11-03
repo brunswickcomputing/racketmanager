@@ -36,6 +36,9 @@ enum Rule_Kind: string {
     /**
      * Arguments: class patterns matched against every resolved class reference (imports, `new`,
      * static calls, `::class`/constants, `instanceof`, extends/implements, type declarations, catch).
+     * Alternatively `['classes' => [...], 'contexts' => [...]]` restricts the match to the listed
+     * reference contexts (`import`, `new`, `static`, `instanceof`, `extends`, `implements`, `type`,
+     * `catch`, `trait_use`); an omitted `contexts` list matches every context.
      */
     case FORBIDDEN_CLASS_REFERENCE = 'forbidden_class_reference';
 
@@ -58,4 +61,32 @@ enum Rule_Kind: string {
 
     /** No arguments: the file must parse without errors. */
     case NO_PARSE_ERRORS = 'no_parse_errors';
+
+    /**
+     * Arguments: class patterns matched against the `new` target of `$x ?? new Class` and
+     * `$x ??= new Class`. Both spellings are reported with the detail `?? new Class`.
+     */
+    case FORBIDDEN_FALLBACK_NEW = 'forbidden_fallback_new';
+
+    /**
+     * No arguments (the rule scope does the work): every public property that can be written from
+     * outside the class — declared or constructor-promoted — is a violation. `readonly` properties,
+     * properties of a `readonly class`, `private(set)` / `protected(set)` properties and `static`
+     * properties are exempt. Detail: `Class::$property` (short class name).
+     */
+    case FORBIDDEN_PUBLIC_MUTABLE_PROPERTY = 'forbidden_public_mutable_property';
+
+    /**
+     * Arguments: `['receivers' => [...], 'methods' => [...]]`, both pattern lists matched against the
+     * rendered receiver (e.g. `$c`, `$this->container`, `*->container`) and the method name of an
+     * instance method call whose first argument is a string literal. An omitted or empty list matches
+     * anything. Detail: `$c->set('league_service')`.
+     */
+    case FORBIDDEN_LITERAL_CONTAINER_KEY = 'forbidden_literal_container_key';
+
+    /**
+     * Arguments: variable names (without `$`) that every file in scope must use at least once, e.g.
+     * `vm` for templates. One violation per missing variable, reported at line 1 as `missing $vm`.
+     */
+    case REQUIRE_VARIABLE = 'require_variable';
 }

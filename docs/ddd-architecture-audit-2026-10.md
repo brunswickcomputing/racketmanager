@@ -1,5 +1,7 @@
 # DDD / Hexagonal Architecture Audit — RacketManager (October 2026)
 
+> **Superseded (2026-11-03).** This report is the historical record of the October 2026 audit and its 17-item backlog (P1-1 … P3-17), all of which were completed by 2026-11-02 and re-verified at commit `9075ff8`. **For current architectural-debt tracking use [`ddd-architecture-audit-2026-11.md`](ddd-architecture-audit-2026-11.md)**, which inventories the second tier of debt (N1–N12), the documentation drift (D1–D4), the enlarged guardrail catalogue (37 PHP rules / 3 Jest rules) and the next P1–P3 backlog. The L/S/P numbering below is frozen; figures here are as of 2026-11-02 and are not updated further.
+
 **Date:** 2026-10-25 (original audit) · **Last updated:** 2026-11-02 (completion of all 17 backlog items across P1, P2, and P3 / v11 deprecation sunset)
 **Plugin version:** 10.0.0 (`racketmanager.php`)
 **Toolchain:** PHP 8.4.27 · PHPUnit 13.4.2 · nikic/php-parser 5.9.0 (transitive) · Jest ^30.3 · esbuild

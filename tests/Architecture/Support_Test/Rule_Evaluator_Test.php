@@ -250,6 +250,138 @@ final class Rule_Evaluator_Test extends TestCase {
         );
     }
 
+    public function test_forbidden_class_reference_contexts_filter_restricts_to_listed_contexts(): void {
+        $code = "<?php\nnamespace Racketmanager\\Admin;\nuse Racketmanager\\Admin\\Admin_Display;\nfinal class Admin_Result extends Admin_Display {\n    public function f( Admin_Display \$d ): bool { return \$d instanceof Admin_Display; }\n}\n";
+        $file = Source_Scanner::scan_source( $code, 'src/php/Admin/Admin_Result.php' );
+        $files = [ $file->path => $file ];
+
+        $extends_only = $this->rule( Rule_Kind::FORBIDDEN_CLASS_REFERENCE, [ 'classes' => [ 'Racketmanager\Admin\Admin_Display' ], 'contexts' => [ 'extends' ] ], [ 'src/php/Admin/' ] );
+        $keyed_any    = $this->rule( Rule_Kind::FORBIDDEN_CLASS_REFERENCE, [ 'classes' => [ 'Racketmanager\Admin\Admin_Display' ] ], [ 'src/php/Admin/' ] );
+        $plain_list   = $this->rule( Rule_Kind::FORBIDDEN_CLASS_REFERENCE, [ 'Racketmanager\Admin\Admin_Display' ], [ 'src/php/Admin/' ] );
+
+        self::assertSame(
+            [ 'src/php/Admin/Admin_Result.php:4 — extends Racketmanager\Admin\Admin_Display' ],
+            $this->describe( ( new Rule_Evaluator() )->evaluate( $extends_only, $files ) ),
+            'import, type and instanceof references are filtered out'
+        );
+        self::assertCount( 4, ( new Rule_Evaluator() )->evaluate( $keyed_any, $files ), 'keyed form without contexts matches every context' );
+        self::assertCount( 4, ( new Rule_Evaluator() )->evaluate( $plain_list, $files ), 'the plain-list form is unchanged' );
+    }
+
+    public function test_forbidden_fallback_new_matches_collaborator_patterns_only(): void {
+        $pattern = [ '/(_Service|_Repository|_Presenter|_Handler)$/' ];
+        $rule    = $this->rule( Rule_Kind::FORBIDDEN_FALLBACK_NEW, $pattern );
+
+        self::assertSame(
+            [
+                self::FIXTURES . 'container_consumer.php:34 — ?? new Racketmanager\Services\Team_Service',
+                self::FIXTURES . 'container_consumer.php:39 — ?? new Racketmanager\Services\Team_Service',
+                self::FIXTURES . 'container_consumer.php:40 — ?? new Racketmanager\Services\Team_Service',
+            ],
+            $this->describe( ( new Rule_Evaluator() )->evaluate( $rule, self::$files ) ),
+            '`??=` is reported as `?? new`; `?? new DateTimeImmutable()`, `?? new Money()` and `?: new` are not violations'
+        );
+    }
+
+    public function test_forbidden_fallback_new_is_not_triggered_by_plain_new(): void {
+        $rule = $this->rule( Rule_Kind::FORBIDDEN_FALLBACK_NEW, [ 'Racketmanager\Repositories\*' ] );
+
+        self::assertSame( [], ( new Rule_Evaluator() )->evaluate( $rule, self::$files ), 'the plain `new Club_Repository()` sites in the fixtures are not fallbacks' );
+    }
+
+    public function test_forbidden_public_mutable_property_exempts_readonly_static_and_restricted_set(): void {
+        $rule = $this->rule( Rule_Kind::FORBIDDEN_PUBLIC_MUTABLE_PROPERTY, [] );
+
+        self::assertSame(
+            [
+                self::FIXTURES . 'container_consumer.php:17 — Container_Consumer::$count',
+                self::FIXTURES . 'container_consumer.php:20 — Container_Consumer::$legacy',
+                self::FIXTURES . 'container_consumer.php:20 — Container_Consumer::$other',
+                self::FIXTURES . 'container_consumer.php:25 — Container_Consumer::$injected',
+                self::FIXTURES . 'untyped_entity.php:16 — Untyped_Entity::$id',
+            ],
+            $this->describe( ( new Rule_Evaluator() )->evaluate( $rule, self::$files ) ),
+            'public readonly, public static and promoted public readonly are exempt; private promoted params are not public'
+        );
+
+        $code = "<?php\nnamespace Racketmanager\\Domain\\Sample;\nfinal readonly class Frozen { public int \$year; }\nfinal class Guarded { public private(set) int \$guarded = 0; public function __construct( public protected(set) int \$p = 0, public int \$q = 0 ) {} }\n\$anon = new class { public int \$z = 1; };\n";
+        $file = Source_Scanner::scan_source( $code, 'src/php/Domain/Sample/Frozen.php' );
+
+        self::assertSame(
+            [
+                'src/php/Domain/Sample/Frozen.php:4 — Guarded::$q',
+                'src/php/Domain/Sample/Frozen.php:5 — {anonymous}::$z',
+            ],
+            $this->describe( ( new Rule_Evaluator() )->evaluate( $this->rule( Rule_Kind::FORBIDDEN_PUBLIC_MUTABLE_PROPERTY, [], [ 'src/php/Domain/' ] ), [ $file->path => $file ] ) ),
+            'readonly classes and private(set)/protected(set) properties are exempt'
+        );
+    }
+
+    public function test_forbidden_literal_container_key_is_receiver_and_method_scoped(): void {
+        $scoped = $this->rule(
+            Rule_Kind::FORBIDDEN_LITERAL_CONTAINER_KEY,
+            [
+                'receivers' => [ '$c', '$container', '$this->container', '*->container' ],
+                'methods'   => [ 'get', 'set', 'has', 'alias', 'bind' ],
+            ]
+        );
+
+        self::assertSame(
+            [
+                self::FIXTURES . "container_consumer.php:48 — \$c->set('league_service')",
+                self::FIXTURES . "container_consumer.php:50 — \$this->container->get('team_service')",
+                self::FIXTURES . "container_consumer.php:51 — \$this->plugin->container->get('club_service')",
+                self::FIXTURES . "container_consumer.php:53 — \$c->has('nullsafe_key')",
+            ],
+            $this->describe( ( new Rule_Evaluator() )->evaluate( $scoped, self::$files ) ),
+            '$request->get(\'id\') and $c->get( Team_Service::class ) are not container-key lookups'
+        );
+
+        $methods_only = $this->rule( Rule_Kind::FORBIDDEN_LITERAL_CONTAINER_KEY, [ 'methods' => [ 'set' ] ] );
+        self::assertSame(
+            [ self::FIXTURES . "container_consumer.php:48 — \$c->set('league_service')" ],
+            $this->describe( ( new Rule_Evaluator() )->evaluate( $methods_only, self::$files ) ),
+            'an omitted receivers list matches any receiver'
+        );
+
+        $receiver_only = $this->rule( Rule_Kind::FORBIDDEN_LITERAL_CONTAINER_KEY, [ 'receivers' => [ '$request' ] ] );
+        self::assertSame(
+            [ self::FIXTURES . "container_consumer.php:52 — \$request->get('id')" ],
+            $this->describe( ( new Rule_Evaluator() )->evaluate( $receiver_only, self::$files ) ),
+            'an omitted methods list matches any method'
+        );
+    }
+
+    public function test_require_variable_reports_each_missing_variable_once_at_line_one(): void {
+        $with_vm    = Source_Scanner::scan_source( "<?php\nif ( empty( \$vm ) ) {\n    return;\n}\n?>\n<p><?php echo \$vm->title; ?></p>\n", 'templates/with_vm.php' );
+        $without_vm = Source_Scanner::scan_source( "<?php\n\$league = \$GLOBALS['league'];\n?>\n<p><?php echo esc_html( \$league->title ); ?></p>\n", 'templates/without_vm.php' );
+        $html_only  = Source_Scanner::scan_source( "<div class=\"vm\">\$vm in text only</div>\n", 'templates/html_only.php' );
+        $files      = [ $with_vm->path => $with_vm, $without_vm->path => $without_vm, $html_only->path => $html_only ];
+
+        $rule = $this->rule( Rule_Kind::REQUIRE_VARIABLE, [ '$vm' ], [ 'templates/' ] );
+
+        self::assertSame(
+            [
+                'templates/html_only.php:1 — missing $vm',
+                'templates/without_vm.php:1 — missing $vm',
+            ],
+            $this->describe( ( new Rule_Evaluator() )->evaluate( $rule, $files ) ),
+            'a `$vm` mention in inline HTML is not a variable use'
+        );
+
+        $two = $this->rule( Rule_Kind::REQUIRE_VARIABLE, [ 'vm', 'league' ], [ 'templates/' ] );
+        self::assertSame(
+            [
+                'templates/html_only.php:1 — missing $league',
+                'templates/html_only.php:1 — missing $vm',
+                'templates/with_vm.php:1 — missing $league',
+                'templates/without_vm.php:1 — missing $vm',
+            ],
+            $this->describe( ( new Rule_Evaluator() )->evaluate( $two, $files ) ),
+            'one violation per missing variable, sorted by file then detail'
+        );
+    }
+
     public function test_path_prefixes_and_excludes_scope_the_rule(): void {
         $evaluator = new Rule_Evaluator();
         $scoped    = $this->rule( Rule_Kind::REQUIRE_STRICT_TYPES, [], [ self::FIXTURES . 'untyped_' ] );

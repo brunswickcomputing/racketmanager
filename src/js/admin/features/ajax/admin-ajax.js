@@ -41,7 +41,7 @@ export function getImportOption(option) {
 }
 
 /**
- * Auto-populate event name from type and age limit if empty.
+ * Autopopulate event name from type and age limit if empty.
  */
 export function setEventName() {
     const eventNameEl = document.getElementById('event_name');
@@ -49,7 +49,7 @@ export function setEventName() {
         return;
     }
     const typeEl = document.getElementById('type');
-    if (typeEl && typeEl.value) {
+    if (typeEl?.value) {
         const typeText = typeEl.options && typeEl.selectedIndex >= 0
             ? typeEl.options[typeEl.selectedIndex].text
             : '';
@@ -58,12 +58,12 @@ export function setEventName() {
             const ageLimit = ageLimitEl ? ageLimitEl.value : '';
             if (ageLimit) {
                 let eventName = '';
-                const ageNum = parseInt(ageLimit, 10);
+                const ageNum = Number.parseInt(ageLimit, 10);
                 if (ageLimit === 'open') {
                     eventName = '';
-                } else if (!isNaN(ageNum) && ageNum <= 21) {
+                } else if (!Number.isNaN(ageNum) && ageNum <= 21) {
                     eventName = 'U' + ageLimit + ' ';
-                } else if (!isNaN(ageNum) && ageNum >= 30) {
+                } else if (!Number.isNaN(ageNum) && ageNum >= 30) {
                     eventName = 'O' + ageLimit + ' ';
                 }
                 eventName = eventName + typeText;
@@ -94,14 +94,14 @@ export function amendDate(date, adjustment) {
  */
 export function setEndDate() {
     const compTypeEl = document.getElementById('competitionType');
-    if (compTypeEl && compTypeEl.value === 'league') {
+    if (compTypeEl?.value === 'league') {
         const dateStart = document.getElementById('dateStart')?.value;
         const dateEndEl = document.getElementById('dateEnd');
-        const roundLength = parseFloat(document.getElementById('round_length')?.value || '0');
+        const roundLength = Number.parseFloat(document.getElementById('round_length')?.value || '0');
         const roundLengthWeeks = roundLength / 7;
-        const fillerWeeks = parseFloat(document.getElementById('filler_weeks')?.value || '0') || 0;
-        const homeAwayDiff = parseFloat(document.getElementById('home_away_diff')?.value || '0') || 0;
-        const numMatchDays = parseFloat(document.getElementById('num_match_days')?.value || '0');
+        const fillerWeeks = Number.parseFloat(document.getElementById('filler_weeks')?.value || '0') || 0;
+        const homeAwayDiff = Number.parseFloat(document.getElementById('home_away_diff')?.value || '0') || 0;
+        const numMatchDays = Number.parseFloat(document.getElementById('num_match_days')?.value || '0');
 
         if (dateStart && roundLengthWeeks && numMatchDays && dateEndEl) {
             const endDateGapWeeks = (roundLengthWeeks * numMatchDays) + fillerWeeks + homeAwayDiff;
@@ -120,10 +120,10 @@ export function setNumMatchDays() {
     const numMatchDaysEl = document.getElementById('num_match_days');
     if (!maxTeamsEl || !numMatchDaysEl) return;
 
-    let maxTeams = parseInt(maxTeamsEl.value, 10);
+    let maxTeams = Number.parseInt(maxTeamsEl.value, 10);
     const homeAway = homeAwayEl ? Boolean(homeAwayEl.checked) : false;
     let numMatchDays = 0;
-    if (maxTeams && !isNaN(maxTeams)) {
+    if (maxTeams && !Number.isNaN(maxTeams)) {
         if (maxTeams % 2 !== 0) {
             maxTeams++;
         }
@@ -475,7 +475,7 @@ export function insertHomeStadium(team_id, i) {
                 security: getAjaxNonce(),
             },
             success: function (response) {
-                if (locationInput && locationInput.value === '') {
+                if (locationInput?.value === '') {
                     locationInput.value = response.data;
                 }
             },
@@ -495,7 +495,7 @@ export function insertHomeStadium(team_id, i) {
 }
 
 /**
- * Auto-populate match dates across fixture rows in add mode.
+ * Autopopulate match dates across fixture rows in add mode.
  *
  * @param {string} match_date
  * @param {number} i
@@ -514,7 +514,7 @@ export function setMatchDate(match_date, i, max_matches, mode) {
 }
 
 /**
- * Auto-populate match day across fixture rows in add mode.
+ * Autopopulate match day across fixture rows in add mode.
  *
  * @param {string|number} match_day
  * @param {number} i

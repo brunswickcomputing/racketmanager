@@ -156,6 +156,129 @@ describe('Admin feature: admin-ajax functions', () => {
       setEventName();
       expect(container.querySelector('#event_name').value).toBe('Custom Name');
     });
+
+    it('formats event name without prefix when age limit is open', () => {
+      container.innerHTML = `
+        <input type="text" id="event_name" value="">
+        <select id="type">
+          <option value="doubles" selected>Doubles</option>
+        </select>
+        <input type="text" id="age_limit" value="open">
+      `;
+
+      setEventName();
+      expect(container.querySelector('#event_name').value).toBe('Doubles');
+    });
+
+    it('formats junior event names for boundary age limits (<= 21)', () => {
+      container.innerHTML = `
+        <input type="text" id="event_name" value="">
+        <select id="type">
+          <option value="singles" selected>Singles</option>
+        </select>
+        <input type="text" id="age_limit" value="21">
+      `;
+
+      setEventName();
+      expect(container.querySelector('#event_name').value).toBe('U21 Singles');
+    });
+
+    it('formats senior event names for boundary and senior age limits (>= 30)', () => {
+      container.innerHTML = `
+        <input type="text" id="event_name" value="">
+        <select id="type">
+          <option value="singles" selected>Singles</option>
+        </select>
+        <input type="text" id="age_limit" value="30">
+      `;
+
+      setEventName();
+      expect(container.querySelector('#event_name').value).toBe('O30 Singles');
+
+      container.querySelector('#event_name').value = '';
+      container.querySelector('#age_limit').value = '45';
+      setEventName();
+      expect(container.querySelector('#event_name').value).toBe('O45 Singles');
+    });
+
+    it('formats event name without prefix for intermediate age limits between 22 and 29', () => {
+      container.innerHTML = `
+        <input type="text" id="event_name" value="">
+        <select id="type">
+          <option value="singles" selected>Singles</option>
+        </select>
+        <input type="text" id="age_limit" value="25">
+      `;
+
+      setEventName();
+      expect(container.querySelector('#event_name').value).toBe('Singles');
+    });
+
+    it('formats event name without prefix when age limit is non-numeric', () => {
+      container.innerHTML = `
+        <input type="text" id="event_name" value="">
+        <select id="type">
+          <option value="singles" selected>Singles</option>
+        </select>
+        <input type="text" id="age_limit" value="invalid">
+      `;
+
+      setEventName();
+      expect(container.querySelector('#event_name').value).toBe('Singles');
+    });
+
+    it('does not modify event name if type element is missing or has no selected option', () => {
+      container.innerHTML = `
+        <input type="text" id="event_name" value="">
+        <input type="text" id="age_limit" value="18">
+      `;
+
+      setEventName();
+      expect(container.querySelector('#event_name').value).toBe('');
+
+      container.innerHTML = `
+        <input type="text" id="event_name" value="">
+        <select id="type"></select>
+        <input type="text" id="age_limit" value="18">
+      `;
+
+      setEventName();
+      expect(container.querySelector('#event_name').value).toBe('');
+    });
+
+    it('does not modify event name if age limit element is missing or empty', () => {
+      container.innerHTML = `
+        <input type="text" id="event_name" value="">
+        <select id="type">
+          <option value="singles" selected>Singles</option>
+        </select>
+      `;
+
+      setEventName();
+      expect(container.querySelector('#event_name').value).toBe('');
+
+      container.innerHTML = `
+        <input type="text" id="event_name" value="">
+        <select id="type">
+          <option value="singles" selected>Singles</option>
+        </select>
+        <input type="text" id="age_limit" value="">
+      `;
+
+      setEventName();
+      expect(container.querySelector('#event_name').value).toBe('');
+    });
+
+    it('does not throw when event_name element does not exist in DOM', () => {
+      container.innerHTML = `
+        <select id="type">
+          <option value="singles" selected>Singles</option>
+        </select>
+        <input type="text" id="age_limit" value="18">
+      `;
+
+      expect(() => setEventName()).not.toThrow();
+    });
   });
 
   describe('setTournamentOpenDate', () => {

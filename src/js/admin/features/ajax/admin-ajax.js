@@ -41,6 +41,42 @@ export function getImportOption(option) {
 }
 
 /**
+ * Determine the age prefix ('U{age} ', 'O{age} ', or '') for an event name.
+ *
+ * @param {string} ageLimit
+ * @returns {string}
+ */
+function getAgeLimitPrefix(ageLimit) {
+    if (!ageLimit || ageLimit === 'open') {
+        return '';
+    }
+    const ageNum = Number.parseInt(ageLimit, 10);
+    if (Number.isNaN(ageNum)) {
+        return '';
+    }
+    if (ageNum <= 21) {
+        return `U${ageLimit} `;
+    }
+    if (ageNum >= 30) {
+        return `O${ageLimit} `;
+    }
+    return '';
+}
+
+/**
+ * Get selected option text from a select element.
+ *
+ * @param {HTMLSelectElement|null} selectEl
+ * @returns {string}
+ */
+function getSelectedOptionText(selectEl) {
+    if (!selectEl?.value || !selectEl.options || selectEl.selectedIndex < 0) {
+        return '';
+    }
+    return selectEl.options[selectEl.selectedIndex]?.text || '';
+}
+
+/**
  * Autopopulate event name from type and age limit if empty.
  */
 export function setEventName() {
@@ -48,29 +84,21 @@ export function setEventName() {
     if (!eventNameEl || eventNameEl.value) {
         return;
     }
+
     const typeEl = document.getElementById('type');
-    if (typeEl?.value) {
-        const typeText = typeEl.options && typeEl.selectedIndex >= 0
-            ? typeEl.options[typeEl.selectedIndex].text
-            : '';
-        if (typeText) {
-            const ageLimitEl = document.getElementById('age_limit');
-            const ageLimit = ageLimitEl ? ageLimitEl.value : '';
-            if (ageLimit) {
-                let eventName = '';
-                const ageNum = Number.parseInt(ageLimit, 10);
-                if (ageLimit === 'open') {
-                    eventName = '';
-                } else if (!Number.isNaN(ageNum) && ageNum <= 21) {
-                    eventName = 'U' + ageLimit + ' ';
-                } else if (!Number.isNaN(ageNum) && ageNum >= 30) {
-                    eventName = 'O' + ageLimit + ' ';
-                }
-                eventName = eventName + typeText;
-                eventNameEl.value = eventName;
-            }
-        }
+    const typeText = getSelectedOptionText(typeEl);
+    if (!typeText) {
+        return;
     }
+
+    const ageLimitEl = document.getElementById('age_limit');
+    const ageLimit = ageLimitEl?.value;
+    if (!ageLimit) {
+        return;
+    }
+
+    const prefix = getAgeLimitPrefix(ageLimit);
+    eventNameEl.value = `${prefix}${typeText}`;
 }
 
 /**
@@ -136,6 +164,39 @@ export function setNumMatchDays() {
 }
 
 /**
+ * Set an input element's value, falling back to an empty string if nullish.
+ *
+ * @param {HTMLInputElement|null} element
+ * @param {string|number|null|undefined} value
+ */
+function setDateFieldValue(element, value) {
+    if (element) {
+        element.value = value ?? '';
+    }
+}
+
+/**
+ * Fade out or hide a notification element after a specified delay.
+ *
+ * @param {HTMLElement|null} element
+ * @param {number} [delayMs=10000]
+ */
+function fadeOutNotification(element, delayMs = 10000) {
+    if (!element) {
+        return;
+    }
+    const jq = typeof window !== 'undefined' ? window['jQuery'] : null;
+    const $el = typeof jq === 'function' ? jq(element) : null;
+    if (typeof $el?.delay === 'function' && typeof $el?.fadeOut === 'function') {
+        $el.delay(delayMs).fadeOut('slow');
+    } else {
+        setTimeout(() => {
+            element.style.display = 'none';
+        }, delayMs);
+    }
+}
+
+/**
  * Set tournament open, closing, and withdrawal dates via AJAX.
  */
 export function setTournamentOpenDate() {
@@ -167,20 +228,17 @@ export function setTournamentOpenDate() {
                 security: getAjaxNonce(),
             },
             success: function (response) {
-                const message = response?.data?.msg || '';
-                if (notify2) notify2.textContent = message;
-                if (dateOpenEl && response?.data) dateOpenEl.value = response.data.date_open !== undefined && response.data.date_open !== null ? response.data.date_open : '';
-                if (dateCloseEl && response?.data) dateCloseEl.value = response.data.date_closing !== undefined && response.data.date_closing !== null ? response.data.date_closing : '';
-                if (dateWithdrawEl && response?.data) dateWithdrawEl.value = response.data.date_withdraw !== undefined && response.data.date_withdraw !== null ? response.data.date_withdraw : '';
+                if (notify2) {
+                    notify2.textContent = response?.data?.msg || '';
+                }
+                if (response?.data) {
+                    setDateFieldValue(dateOpenEl, response.data.date_open);
+                    setDateFieldValue(dateCloseEl, response.data.date_closing);
+                    setDateFieldValue(dateWithdrawEl, response.data.date_withdraw);
+                }
                 if (notify1) {
                     notify1.classList.add('alert--success');
-                    const jq = typeof window !== 'undefined' ? window['jQuery'] : null;
-                    const $notify1 = jq && typeof jq === 'function' ? jq(notify1) : null;
-                    if ($notify1 && typeof $notify1.delay === 'function' && typeof $notify1.fadeOut === 'function') {
-                        $notify1.delay(10000).fadeOut('slow');
-                    } else {
-                        setTimeout(() => { notify1.style.display = 'none'; }, 10000);
-                    }
+                    fadeOutNotification(notify1);
                 }
             },
             error: function (response) {
@@ -196,7 +254,9 @@ export function setTournamentOpenDate() {
                 }
             },
             complete: function () {
-                if (notify1) notify1.style.display = '';
+                if (notify1) {
+                    notify1.style.display = '';
+                }
             }
         });
     }

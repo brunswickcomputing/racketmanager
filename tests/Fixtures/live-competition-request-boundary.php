@@ -99,18 +99,19 @@ foreach ( [ 1, 2, 3 ] as $day ) {
 }
 request_boundary_check( 3 === count( array_unique( $hashes ) ), 'match-day selector changes rendered fixtures' );
 
-$query_service = \Racketmanager\get_league_query_service();
+$query_service = $GLOBALS['racketmanager']->container->get( 'league_query_service' );
+$league_repo   = $GLOBALS['racketmanager']->container->get( 'league_repository' );
 $rendered_all = request_boundary_render( '[matches league_id=1 template="" limit=false matches=-1]' );
 preg_match_all( '/class="team-match__wrapper" href="([^"]+)"/', $rendered_all, $all_links );
 request_boundary_check( 30 === count( $all_links[1] ), 'unpaginated shortcode contains all 30 fixture links' );
 request_boundary_reset();
-$league = \Racketmanager\get_league( 1 );
+$league = $league_repo->find_by_id( 1 );
 $query_service->set_season( $league, '2026' );
 $all = $query_service->get_matches( $league, [ 'limit' => false, 'match_day' => -1, 'final' => '', 'orderby' => [ 'id' => 'ASC' ] ] );
 $all_ids = array_map( static fn( $fixture ) => $fixture->id, $all );
 foreach ( [ 1, 2, 3 ] as $page ) {
     request_boundary_reset( [ 'match_paged' => (string) $page ] );
-    $league = \Racketmanager\get_league( 1 );
+    $league = $league_repo->find_by_id( 1 );
     $query_service->set_season( $league, '2026' );
     $matches = $query_service->get_matches( $league, [ 'limit' => 5, 'match_day' => -1, 'final' => '', 'orderby' => [ 'id' => 'ASC' ] ] );
     $view_state = $query_service->set_num_matches( $league );
@@ -126,7 +127,7 @@ foreach ( [ 1, 2, 3 ] as $page ) {
 }
 
 request_boundary_reset( [ 'final' => 'semi' ] );
-$league = \Racketmanager\get_league( 42 );
+$league = $league_repo->find_by_id( 42 );
 $query_service->set_season( $league );
 request_boundary_check( 'semi' === $league->championship->get_current_final_key(), 'league 42 requested final matches HEAD selection' );
 

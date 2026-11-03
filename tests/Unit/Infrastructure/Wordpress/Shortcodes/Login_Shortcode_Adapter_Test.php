@@ -21,7 +21,7 @@ use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\View\View_Renderer_Interface;
-use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class Login_Shortcode_Adapter_Test extends TestCase {
@@ -48,7 +48,7 @@ class Login_Shortcode_Adapter_Test extends TestCase {
             }
         };
 
-        $view_presenter = new Shortcode_View_Presenter( new \Racketmanager\Services\View\Shortcode_Template_Renderer( $renderer ) );
+        $view_presenter = new Shortcode_View_Presenter( new \Racketmanager\Presentation\View\Shortcode_Template_Renderer( $renderer ) );
         $this->login_form_handler         = $this->createStub( Get_Login_Form_Handler::class );
         $this->password_lost_form_handler  = $this->createStub( Get_Password_Lost_Form_Handler::class );
         $this->password_reset_form_handler = $this->createStub( Get_Password_Reset_Form_Handler::class );

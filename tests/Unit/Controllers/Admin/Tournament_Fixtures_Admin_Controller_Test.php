@@ -94,12 +94,6 @@ class Tournament_Fixtures_Admin_Controller_Test extends TestCase {
             )
         );
 
-        // Mock global functions
-        if ( ! function_exists( 'Racketmanager\get_league' ) ) {
-            eval( 'namespace Racketmanager; function get_league($id) { return $GLOBALS["test_league"] ?? null; }' );
-        }
-        $GLOBALS['test_league'] = $league;
-
         $controller = new Tournament_Fixtures_Admin_Controller(
             $fixtures_admin_service,
             $dispatcher,
@@ -120,8 +114,6 @@ class Tournament_Fixtures_Admin_Controller_Test extends TestCase {
         self::assertSame( 'Fixtures', $result['view_model']->form_title );
         self::assertSame( 10, $result['view_model']->league->id );
         self::assertFalse( $result['view_model']->single_cup_game );
-        
-        unset($GLOBALS['test_league']);
     }
 
     /**
@@ -176,14 +168,6 @@ class Tournament_Fixtures_Admin_Controller_Test extends TestCase {
             )
         );
 
-        // Mock global functions
-        if ( ! function_exists( 'Racketmanager\get_team' ) ) {
-            eval( 'namespace Racketmanager; function get_team($id) { return $GLOBALS["test_team"] ?? null; }' );
-        }
-        $GLOBALS['test_league']  = $league;
-        $GLOBALS['test_fixture'] = $fixture;
-        $GLOBALS['test_team']    = (object) ['title' => 'Test Team'];
-
         $controller = new Tournament_Fixtures_Admin_Controller(
             $fixtures_admin_service,
             $dispatcher,
@@ -206,9 +190,6 @@ class Tournament_Fixtures_Admin_Controller_Test extends TestCase {
         self::assertTrue( $result['view_model']->single_cup_game );
         self::assertCount( 1, $result['view_model']->fixtures );
         self::assertSame( 100, $result['view_model']->fixtures[0]->id );
-        
-        unset($GLOBALS['test_league']);
-        unset($GLOBALS['test_fixture']);
     }
 
     /**

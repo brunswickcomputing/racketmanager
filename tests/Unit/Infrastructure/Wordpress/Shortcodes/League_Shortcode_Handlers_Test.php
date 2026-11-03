@@ -55,7 +55,7 @@ use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
-use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use Racketmanager\Tests\Helpers\Creates_Event_Query_Service;

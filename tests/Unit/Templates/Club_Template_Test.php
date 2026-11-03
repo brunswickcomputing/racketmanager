@@ -192,7 +192,7 @@ class Club_Template_Test extends TestCase {
     public function test_club_renders_through_production_shortcode_template_renderer(): void {
         $base_path         = dirname( __DIR__, 3 ) . '/templates/';
         $php_renderer      = new \Racketmanager\Services\View\Php_View_Renderer( $base_path );
-        $template_renderer = new \Racketmanager\Services\View\Shortcode_Template_Renderer( $php_renderer );
+        $template_renderer = new \Racketmanager\Presentation\View\Shortcode_Template_Renderer( $php_renderer );
 
         $presenter = new Club_Presenter();
         $club      = (object) array(

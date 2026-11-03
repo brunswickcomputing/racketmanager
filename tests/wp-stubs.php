@@ -58,11 +58,6 @@ namespace Racketmanager {
         }
     }
 
-    if ( ! function_exists( 'Racketmanager\get_league_team' ) ) {
-        function get_league_team( $id ) {
-            return $GLOBALS['wp_stubs_league_teams'][ $id ] ?? null;
-        }
-    }
 
     if ( ! function_exists( 'Racketmanager\player_search' ) ) {
         function player_search( string $search_string, array $args = [] ): string {
@@ -820,7 +815,19 @@ namespace {
 
     if ( ! function_exists( 'wp_get_current_user' ) ) {
         function wp_get_current_user() {
-            return (object) [ 'ID' => $GLOBALS['wp_stubs_get_current_user_id'] ?? 1 ];
+            if ( isset( $GLOBALS['wp_stubs_current_user'] ) ) {
+                return $GLOBALS['wp_stubs_current_user'];
+            }
+            return (object) [
+                'ID'           => $GLOBALS['wp_stubs_get_current_user_id'] ?? 1,
+                'display_name' => $GLOBALS['wp_stubs_current_user_display_name'] ?? 'Test User',
+            ];
+        }
+    }
+
+    if ( ! function_exists( 'wp_logout_url' ) ) {
+        function wp_logout_url( $redirect = '' ): string {
+            return 'http://example.com/wp-login.php?action=logout';
         }
     }
 
@@ -1881,233 +1888,6 @@ namespace {
 
 namespace Racketmanager {
 
-    use Racketmanager\Domain\Competition\Event;
-    use ReflectionClass;
-    use ReflectionException;
-    use stdClass;
-
-    if ( ! function_exists( 'Racketmanager\seo_url' ) ) {
-        function seo_url( string $string_field ): string {
-            $string_field = strtolower( $string_field );
-            $string_field = preg_replace( '/[^a-z0-9_\s-]/', '', $string_field );
-            $string_field = preg_replace( '/\s+/', ' ', $string_field );
-            $string_field = str_replace( '-', '_', $string_field );
-            return preg_replace( '/\s/', '-', $string_field );
-        }
-    }
-
-    if ( ! function_exists( 'Racketmanager\un_seo_url' ) ) {
-        function un_seo_url( string $string_field ): string {
-            $string_field = str_replace( '-', ' ', $string_field );
-            $string_field = str_replace( '_', '-', $string_field );
-            return $string_field;
-        }
-    }
-
-    if ( ! function_exists( 'Racketmanager\get_competition' ) ) {
-        function get_competition( $competition = null ) {
-            if ( $competition instanceof \Racketmanager\Domain\Competition\Competition ) {
-                return $competition;
-            }
-            if ( null === $competition ) {
-                return $GLOBALS['competition'] ?? null;
-            }
-            if ( ( is_int( $competition ) || is_string( $competition ) ) && isset( $GLOBALS['wp_stubs_competitions'][ $competition ] ) ) {
-                return $GLOBALS['wp_stubs_competitions'][ $competition ];
-            }
-            global $racketmanager;
-            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'competition_service' ) ) {
-                try {
-                    return $racketmanager->container->get( 'competition_service' )->get_by_id( (int) $competition );
-                } catch ( \Exception $e ) {
-                    return null;
-                }
-            }
-            return null;
-        }
-    }
-
-    if ( ! function_exists( 'Racketmanager\get_event_repository_for_helpers' ) ) {
-        function get_event_repository_for_helpers(): \Racketmanager\Repositories\Interfaces\Event_Repository_Interface {
-            global $racketmanager;
-            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'event_repository' ) ) {
-                return $racketmanager->container->get( 'event_repository' );
-            }
-            return new \Racketmanager\Repositories\Event_Repository();
-        }
-    }
-
-    if ( ! function_exists( 'Racketmanager\get_league_repository_for_helpers' ) ) {
-        function get_league_repository_for_helpers(): \Racketmanager\Repositories\Interfaces\League_Repository_Interface {
-            global $racketmanager;
-            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'league_repository' ) ) {
-                return $racketmanager->container->get( 'league_repository' );
-            }
-            return new \Racketmanager\Repositories\League_Repository(
-                null,
-                fn() => get_event_repository_for_helpers()
-            );
-        }
-    }
-
-    if ( ! function_exists( 'Racketmanager\get_event_query_service' ) ) {
-        function get_event_query_service(): \Racketmanager\Services\Competition\Event_Query_Service {
-            global $racketmanager;
-            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'event_query_service' ) ) {
-                return $racketmanager->container->get( 'event_query_service' );
-            }
-            return new \Racketmanager\Services\Competition\Event_Query_Service(
-                get_event_repository_for_helpers(),
-                fn() => get_fixture_repository_for_helpers(),
-                fn() => function_exists( 'Racketmanager\get_rubber_repository_for_helpers' ) ? get_rubber_repository_for_helpers() : null,
-                fn() => get_league_repository_for_helpers(),
-                fn() => function_exists( 'Racketmanager\get_team_repository_for_helpers' ) ? get_team_repository_for_helpers() : null,
-                fn() => isset( $racketmanager->container ) && $racketmanager->container->has( 'club_repository' ) ? $racketmanager->container->get( 'club_repository' ) : new \Racketmanager\Repositories\Club_Repository(),
-                fn() => isset( $racketmanager->container ) && $racketmanager->container->has( 'player_repository' ) ? $racketmanager->container->get( 'player_repository' ) : new \Racketmanager\Repositories\Player_Repository()
-            );
-        }
-    }
-
-    if ( ! function_exists( 'Racketmanager\get_league_query_service' ) ) {
-        function get_league_query_service(): \Racketmanager\Services\Competition\League_Query_Service {
-            global $racketmanager;
-            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'league_query_service' ) ) {
-                return $racketmanager->container->get( 'league_query_service' );
-            }
-            return new \Racketmanager\Services\Competition\League_Query_Service(
-                get_league_repository_for_helpers(),
-                fn() => get_fixture_repository_for_helpers(),
-                fn() => function_exists( 'Racketmanager\get_rubber_repository_for_helpers' ) ? get_rubber_repository_for_helpers() : null,
-                fn() => function_exists( 'Racketmanager\get_team_repository_for_helpers' ) ? get_team_repository_for_helpers() : null,
-                fn() => function_exists( 'Racketmanager\get_league_team_repository_for_helpers' ) ? get_league_team_repository_for_helpers() : null,
-                fn() => isset( $racketmanager->container ) && $racketmanager->container->has( 'club_repository' ) ? $racketmanager->container->get( 'club_repository' ) : new \Racketmanager\Repositories\Club_Repository(),
-                fn() => isset( $racketmanager->container ) && $racketmanager->container->has( 'player_repository' ) ? $racketmanager->container->get( 'player_repository' ) : new \Racketmanager\Repositories\Player_Repository()
-            );
-        }
-    }
-
-    if ( ! function_exists( 'Racketmanager\get_fixture_repository_for_helpers' ) ) {
-        function get_fixture_repository_for_helpers(): \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface {
-            global $racketmanager;
-            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' ) ) {
-                return $racketmanager->container->get( 'fixture_repository' );
-            }
-            return new \Racketmanager\Repositories\Fixture_Repository();
-        }
-    }
-
-    if ( ! function_exists( 'Racketmanager\get_competition_repository_for_helpers' ) ) {
-        function get_competition_repository_for_helpers(): \Racketmanager\Repositories\Interfaces\Competition_Repository_Interface {
-            global $racketmanager;
-            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'competition_repository' ) ) {
-                return $racketmanager->container->get( 'competition_repository' );
-            }
-            return new \Racketmanager\Repositories\Competition_Repository();
-        }
-    }
-
-    if ( ! function_exists( 'Racketmanager\get_league_team_repository_for_helpers' ) ) {
-        function get_league_team_repository_for_helpers(): \Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface {
-            global $racketmanager;
-            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'league_team_repository' ) ) {
-                return $racketmanager->container->get( 'league_team_repository' );
-            }
-            return new \Racketmanager\Repositories\League_Team_Repository();
-        }
-    }
-
-    if ( ! function_exists( 'Racketmanager\get_team_repository_for_helpers' ) ) {
-        function get_team_repository_for_helpers(): \Racketmanager\Repositories\Interfaces\Team_Repository_Interface {
-            global $racketmanager;
-            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'team_repository' ) ) {
-                return $racketmanager->container->get( 'team_repository' );
-            }
-            return new \Racketmanager\Repositories\Team_Repository();
-        }
-    }
-
-    if ( ! function_exists( 'Racketmanager\get_rubber_repository_for_helpers' ) ) {
-        function get_rubber_repository_for_helpers(): \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface {
-            global $racketmanager;
-            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'rubber_repository' ) ) {
-                return $racketmanager->container->get( 'rubber_repository' );
-            }
-            return new \Racketmanager\Repositories\Rubber_Repository();
-        }
-    }
-
-    if ( ! function_exists( 'Racketmanager\get_league' ) ) {
-        function get_league( $league = null ) {
-            if ( $league instanceof \Racketmanager\Domain\Competition\League ) {
-                return $league;
-            }
-            if ( null === $league ) {
-                return $GLOBALS['league'] ?? null;
-            }
-            if ( ( is_int( $league ) || is_string( $league ) ) && isset( $GLOBALS['wp_stubs_leagues'][ $league ] ) ) {
-                return $GLOBALS['wp_stubs_leagues'][ $league ];
-            }
-            return null;
-        }
-    }
-
-    if ( ! function_exists( 'Racketmanager\get_team' ) ) {
-        function get_team( $id ) {
-            if ( isset( $GLOBALS['wp_stubs_teams'][ $id ] ) ) {
-                return $GLOBALS['wp_stubs_teams'][ $id ];
-            }
-            return null;
-        }
-    }
-
-    if ( ! function_exists( 'Racketmanager\get_club' ) ) {
-        function get_club( $id ) {
-            if ( isset( $GLOBALS['wp_stubs_clubs'][ $id ] ) ) {
-                return $GLOBALS['wp_stubs_clubs'][ $id ];
-            }
-            if ( isset( $GLOBALS['wp_stubs_clubs'][ (string) $id ] ) ) {
-                return $GLOBALS['wp_stubs_clubs'][ (string) $id ];
-            }
-            return $GLOBALS['wp_stubs_clubs']['default'] ?? null;
-        }
-    }
-
-    if ( ! function_exists( 'Racketmanager\get_player' ) ) {
-        function get_player( $id, $search = 'id' ) {
-            if ( isset( $GLOBALS['wp_stubs_players'][ $search ][ $id ] ) ) {
-                return $GLOBALS['wp_stubs_players'][ $search ][ $id ];
-            }
-            if ( $search === 'email' ) {
-                return null;
-            }
-            if ( isset( $GLOBALS['wp_stubs_players'][ $id ] ) ) {
-                return $GLOBALS['wp_stubs_players'][ $id ];
-            }
-            return $GLOBALS['wp_stubs_players']['default'] ?? null;
-        }
-    }
-
-    if ( ! function_exists( 'Racketmanager\get_user' ) ) {
-        function get_user( $id ) {
-            if ( isset( $GLOBALS['wp_stubs_users'][ $id ] ) ) {
-                return $GLOBALS['wp_stubs_users'][ $id ];
-            }
-            return $GLOBALS['wp_stubs_users']['default'] ?? null;
-        }
-    }
-
-    if ( ! function_exists( 'Racketmanager\get_club_role' ) ) {
-        function get_club_role( $id = null ) {
-            if ( empty( $id ) && isset( $GLOBALS['club_role'] ) ) {
-                return $GLOBALS['club_role'];
-            }
-            if ( isset( $GLOBALS['wp_stubs_club_roles'][ $id ] ) ) {
-                return $GLOBALS['wp_stubs_club_roles'][ $id ];
-            }
-            return $GLOBALS['wp_stubs_club_roles']['default'] ?? null;
-        }
-    }
-
     if ( ! function_exists( 'Racketmanager\show_club_role_modal' ) ) {
         function show_club_role_modal( $club_role_id, array $args = array() ): string {
             return 'club-role-modal:' . (int) $club_role_id . ':' . ( $args['modal'] ?? '' );
@@ -2129,15 +1909,6 @@ namespace Racketmanager {
     if ( ! function_exists( 'Racketmanager\show_message' ) ) {
         function show_message( $message_id ): string {
             return 'message-content:' . (int) $message_id;
-        }
-    }
-
-    if ( ! function_exists( 'Racketmanager\get_message' ) ) {
-        function get_message( $message_id ) {
-            if ( isset( $GLOBALS['wp_stubs_messages'][ $message_id ] ) ) {
-                return $GLOBALS['wp_stubs_messages'][ $message_id ];
-            }
-            return $GLOBALS['wp_stubs_messages']['default'] ?? null;
         }
     }
 
@@ -2171,81 +1942,6 @@ namespace Racketmanager {
     if ( ! function_exists( 'Racketmanager\match_team_withdrawn_notification' ) ) {
         function match_team_withdrawn_notification( $match_id, $args = array() ) {
             return 'Team withdrawn notification for match ' . $match_id;
-        }
-    }
-
-    class Stub_Event extends Event {
-        private const DEFAULT_SEASON = '2024-25';
-
-        /**
-         * @noinspection PhpMissingParentConstructorInspection
-         */
-        public function __construct( int $id = 0 ) {
-            $this->id   = $id;
-            $this->name = 'Test Event';
-            $this->type = 'doubles';
-
-            $default_season = [ 'name' => self::DEFAULT_SEASON ];
-
-            $this->competition = (object) [
-                'settings'        => new \Racketmanager\Domain\Competition\Competition_Settings( [
-                    'point_rule' => 'three',
-                    'mode'       => 'league',
-                    'sport'      => 'tennis',
-                ] ),
-                'type'            => \Racketmanager\Domain\Competition\Competition_Type::LEAGUE,
-                'is_player_entry' => false,
-                'standings'       => [],
-                'current_season'  => $default_season,
-            ];
-
-            $this->seasons     = json_encode( [ $default_season ] );
-            $this->num_sets    = 3;
-            $this->num_rubbers = 6;
-            $this->standings   = [];
-        }
-
-        public function get_num_sets(): int {
-            return $this->num_sets;
-        }
-
-        public function get_num_rubbers(): ?int {
-            return $this->num_rubbers;
-        }
-
-        public function get_season_event( $season = false, bool $index = false ): array|false|string {
-            return self::DEFAULT_SEASON;
-        }
-
-        public function get_seasons(): array {
-            return [ [ 'name' => self::DEFAULT_SEASON ] ];
-        }
-
-        public function set_season( ?string $season = null, bool $force_overwrite = false, bool $strict = false ): void {}
-    }
-
-    if ( ! function_exists( 'Racketmanager\get_event' ) ) {
-        /**
-         * Stub for get_event() in test environments.
-         *
-         * @param int|string|Event|null $event_id
-         * @param string                $search_term
-         * @return Event|null
-         */
-        function get_event( int|string|Event|null $event_id = null, string $search_term = 'id' ): ?Event {
-            if ( $event_id instanceof Event ) {
-                return $event_id;
-            }
-
-            if ( array_key_exists( $event_id, $GLOBALS['wp_stubs_events'] ?? [] ) ) {
-                return $GLOBALS['wp_stubs_events'][ $event_id ];
-            }
-
-            if ( empty( $event_id ) ) {
-                return null;
-            }
-
-            return new Stub_Event( (int) $event_id );
         }
     }
 

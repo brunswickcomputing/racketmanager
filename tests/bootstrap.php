@@ -7,7 +7,6 @@ if ( file_exists( $autoload ) ) {
 }
 
 require_once __DIR__ . '/wp-stubs.php';
-require_once __DIR__ . '/../src/php/Admin/View_Models/Legacy_View_Model_Aliases.php';
 
 // Fallback (and also a supplement) for when:
 // - composer hasn't been run in this plugin folder, OR
@@ -50,10 +49,6 @@ if ( ! class_exists( 'Racketmanager\\Admin\\Controllers\\Admin_Redirect_Url_Buil
 
 if ( ! class_exists( 'Racketmanager\\Domain\\DTO\\Admin\\Tournament_Contact_Action_Result_DTO' ) ) {
     require_once __DIR__ . '/../src/php/Domain/DTO/Admin/Tournament_Contact_Action_Result_DTO.php';
-}
-
-if ( ! class_exists( 'Racketmanager\\Admin\\View_Models\\Tournament_Contact_Page_View_Model' ) ) {
-    require_once __DIR__ . '/../src/php/Admin/View_Models/Tournament_Contact_Page_View_Model.php';
 }
 
 if ( ! class_exists( 'Racketmanager\\Admin\\Presenters\\Admin_Message_Mapper' ) ) {

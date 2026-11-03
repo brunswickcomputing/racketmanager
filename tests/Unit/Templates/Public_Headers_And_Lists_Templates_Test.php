@@ -28,7 +28,7 @@ use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
-use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use stdClass;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;

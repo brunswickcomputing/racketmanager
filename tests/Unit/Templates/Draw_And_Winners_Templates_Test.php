@@ -33,7 +33,7 @@ use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
-use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Util\Util;
 use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;

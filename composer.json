@@ -15,9 +15,6 @@
     "wp-coding-standards/wpcs": "^3.4"
   },
   "autoload": {
-    "files": [
-      "src/php/aliases.php"
-    ],
     "psr-4": {
       "Racketmanager\\": "src/php/"
     }

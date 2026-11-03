@@ -18,7 +18,7 @@ use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Services\Player_Service;
-use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;

@@ -12,6 +12,7 @@ use Racketmanager\Infrastructure\Wordpress\Ajax\Admin_Ajax_Controller;
 use Racketmanager\Infrastructure\Wordpress\Assets\Asset_Manager;
 use Racketmanager\Infrastructure\Wordpress\Bootstrap\Plugin_Bootstrap;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
+use Racketmanager\Public_Api;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Container\Container_Bootstrap;
 use Racketmanager\Services\Container\Simple_Container;
@@ -33,10 +34,12 @@ final class Admin_Coordinator_Test extends TestCase {
         $GLOBALS['wp_stubs_added_actions'] = [];
         $GLOBALS['wp_stubs_added_filters'] = [];
         Admin::reset_instance();
+        Public_Api::reset();
     }
 
     protected function tearDown(): void {
         Admin::reset_instance();
+        Public_Api::reset();
         $this->restore_globals();
         parent::tearDown();
     }

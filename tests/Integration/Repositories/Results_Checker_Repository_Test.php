@@ -1,14 +1,6 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager;
-
-if ( ! function_exists( 'Racketmanager\get_player' ) ) {
-    function get_player( $id ) {
-        return (object) [ 'id' => $id ];
-    }
-}
-
 namespace Racketmanager\Tests\Integration\Repositories;
 
 use PHPUnit\Framework\TestCase;

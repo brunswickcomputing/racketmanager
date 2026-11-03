@@ -7,7 +7,7 @@ require_once __DIR__ . '/../../../wp-stubs.php';
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Services\View\Php_View_Renderer;
-use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Typed_Scope_Vm;
 
 /**

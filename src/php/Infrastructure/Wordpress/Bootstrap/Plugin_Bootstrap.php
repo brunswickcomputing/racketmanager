@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Infrastructure\Wordpress\Bootstrap;
 
 use Racketmanager\Admin;
+use Racketmanager\Public_Api;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Container\Simple_Container;
 
@@ -94,8 +95,12 @@ final class Plugin_Bootstrap {
      * @return object
      */
     public static function launch( ?bool $is_admin = null, ?callable $frontend_factory = null, ?callable $admin_factory = null ): object {
-        $app = $frontend_factory ? $frontend_factory() : RacketManager::get_instance();
+        $app                      = $frontend_factory ? $frontend_factory() : RacketManager::get_instance();
         $GLOBALS['racketmanager'] = $app;
+
+        if ( isset( $app->container ) && $app->container instanceof Simple_Container ) {
+            Public_Api::init( $app->container );
+        }
 
         $is_admin ??= function_exists( 'is_admin' ) && is_admin();
         if ( $is_admin ) {
@@ -119,6 +124,7 @@ final class Plugin_Bootstrap {
         if ( isset( $wpdb ) && method_exists( $wpdb, 'show_errors' ) ) {
             $wpdb->show_errors();
         }
+        Public_Api::init( $this->container );
         $this->load_libraries();
         $this->register_hooks( $app );
     }

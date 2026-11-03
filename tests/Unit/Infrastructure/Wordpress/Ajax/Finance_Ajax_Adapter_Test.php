@@ -61,7 +61,7 @@ class Finance_Ajax_Adapter_Test extends TestCase {
             }
         );
 
-        $template_renderer = $this->createStub( \Racketmanager\Services\View\Shortcode_Template_Renderer::class );
+        $template_renderer = $this->createStub( \Racketmanager\Presentation\View\Shortcode_Template_Renderer::class );
         $template_renderer->method( 'render' )->willReturnCallback(
             static function ( $template, $vars, $type ) {
                 $inv = $vars['invoice'] ?? null;

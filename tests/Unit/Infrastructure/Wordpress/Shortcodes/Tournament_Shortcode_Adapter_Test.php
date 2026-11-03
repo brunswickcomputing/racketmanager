@@ -48,7 +48,7 @@ use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 
 class Tournament_Shortcode_Adapter_Test extends TestCase {
     private function create_adapter( array $overrides = [] ): Tournament_Shortcode_Adapter {

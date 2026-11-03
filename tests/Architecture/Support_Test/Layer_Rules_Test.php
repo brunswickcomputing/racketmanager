@@ -47,7 +47,6 @@ final class Layer_Rules_Test extends TestCase {
         yield 'domain.no_lenient_from_object (from_object)' => [ 'domain.no_lenient_from_object', 'src/php/Services/Team_Service.php', "<?php\nnamespace Racketmanager\\Services;\nuse Racketmanager\\Domain\\Club\\Club;\nclass Team_Service { function f( \$row ) { return Club::from_object( \$row ); } }", 'Racketmanager\Domain\Club\Club::from_object()' ];
         yield 'domain.no_lenient_from_object (from_array)' => [ 'domain.no_lenient_from_object', 'src/php/Services/Team_Service.php', "<?php\nnamespace Racketmanager\\Services;\nuse Racketmanager\\Domain\\Club\\Club;\nclass Team_Service { function f( array \$data ) { return Club::from_array( \$data ); } }", 'Racketmanager\Domain\Club\Club::from_array()' ];
         yield 'domain.no_lenient_from_object (from_database)' => [ 'domain.no_lenient_from_object', 'src/php/Services/Competition_Service.php', "<?php\nnamespace Racketmanager\\Services;\nuse Racketmanager\\Domain\\Competition\\Competition;\nclass Competition_Service { function f( \$row ) { return Competition::from_database( \$row ); } }", 'Racketmanager\Domain\Competition\Competition::from_database()' ];
-        yield 'domain.no_lenient_from_object (Legacy_User inherited wrapper)' => [ 'domain.no_lenient_from_object', 'src/php/Services/Player_Service.php', "<?php\nnamespace Racketmanager\\Services;\nuse Racketmanager\\Infrastructure\\Legacy\\Legacy_User;\nclass Player_Service { function f( \$row ) { return Legacy_User::from_object( \$row ); } }", 'Racketmanager\Infrastructure\Legacy\Legacy_User::from_object()' ];
         yield 'domain.no_lenient_from_object (non-entity domain file)' => [ 'domain.no_lenient_from_object', 'src/php/Domain/Competition/Scheduling/Schedule_Engine.php', "<?php\nnamespace Racketmanager\\Domain\\Competition\\Scheduling;\nuse Racketmanager\\Domain\\Team\\Team;\nclass Schedule_Engine { function f( \$row ) { return Team::from_object( \$row ); } }", 'Racketmanager\Domain\Team\Team::from_object()' ];
         yield 'domain.no_lenient_from_object (functions.php)' => [ 'domain.no_lenient_from_object', 'functions.php', "<?php\nnamespace Racketmanager;\nuse Racketmanager\\Domain\\Club\\Club;\nfunction f( \$row ) { return Club::from_object( \$row ); }", 'Racketmanager\Domain\Club\Club::from_object()' ];
         yield 'domain.no_lenient_from_object (template-tags.php)' => [ 'domain.no_lenient_from_object', 'template-tags.php', "<?php\nnamespace Racketmanager;\nuse Racketmanager\\Domain\\Club\\Club;\nfunction f( \$row ) { return Club::from_object( \$row ); }", 'Racketmanager\Domain\Club\Club::from_object()' ];
@@ -244,7 +243,7 @@ final class Layer_Rules_Test extends TestCase {
         $evaluator = new Rule_Evaluator();
         $path      = 'src/php/Services/Dummy_Service.php';
 
-        self::assertCount( 22, Layer_Rules::DOMAIN_ENTITIES );
+        self::assertCount( 21, Layer_Rules::DOMAIN_ENTITIES );
         self::assertCount( 21, Layer_Rules::DOMAIN_ENTITY_FILES );
 
         foreach ( Layer_Rules::DOMAIN_ENTITIES as $entity_class ) {

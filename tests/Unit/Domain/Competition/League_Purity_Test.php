@@ -375,36 +375,6 @@ final class League_Purity_Test extends TestCase {
 		}
 	}
 
-	public function test_helper_fallback_league_repository_hydrates_league_using_event_repository(): void {
-		unset( $GLOBALS['racketmanager'] );
-		$repo = \Racketmanager\get_league_repository_for_helpers();
-		$this->assertInstanceOf( League_Repository_Interface::class, $repo );
-
-		$db = new \Racketmanager\Tests\Helpers\Recording_Wpdb();
-		$db->prefix = 'wp_';
-		$db->get_row_return = (object) array(
-			'id' => 10,
-			'title' => 'Division 1',
-			'event_id' => 20,
-			'seasons' => serialize( array( '2026' => array( 'name' => '2026' ) ) ),
-			'settings' => serialize( array() ),
-		);
-
-		$event_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class );
-		$event_repo->expects( $this->once() )
-			->method( 'find_by_id' )
-			->with( 20 )
-			->willReturn( Event::from_object( (object) array( 'id' => 20, 'name' => 'Test Event', 'type' => 'singles', 'competition_id' => 1 ) ) );
-
-		$fallback_repo = new League_Repository( db: $db, event_repository: $event_repo );
-		$league = $fallback_repo->find_by_id( 10 );
-		$this->assertNotNull( $league );
-		$this->assertSame( 10, $league->get_id() );
-		$this->assertSame( 'Division 1', $league->get_name() );
-		$this->assertNotNull( $league->event );
-		$this->assertSame( 20, $league->event->get_id() );
-	}
-
 	public function test_sport_tennis_registers_import_filter_hooks(): void {
 		require_once dirname( __DIR__, 4 ) . '/src/php/Sports/tennis.php';
 

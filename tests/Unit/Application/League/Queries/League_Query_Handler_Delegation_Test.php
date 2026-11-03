@@ -39,7 +39,7 @@ use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Team_Service;
-use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 
 class League_Query_Handler_Delegation_Test extends TestCase {
 	private function league(): League {

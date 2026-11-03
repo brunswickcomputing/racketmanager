@@ -18,7 +18,7 @@ use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
 use Racketmanager\Repositories\Message_Repository;
 use Racketmanager\Services\View\Php_View_Renderer;
-use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Services\View\View_Renderer_Interface;
 
 class Message_Shortcode_Handlers_Test extends TestCase {
@@ -45,7 +45,7 @@ class Message_Shortcode_Handlers_Test extends TestCase {
             }
         };
 
-        $this->view_presenter = new Shortcode_View_Presenter( new \Racketmanager\Services\View\Shortcode_Template_Renderer( $this->renderer ) );
+        $this->view_presenter = new Shortcode_View_Presenter( new \Racketmanager\Presentation\View\Shortcode_Template_Renderer( $this->renderer ) );
     }
 
     public function test_messages_handler_when_logged_out(): void {

@@ -22,7 +22,7 @@ use Racketmanager\Services\Container\Providers\Club_Service_Provider;
 use Racketmanager\Services\Container\Providers\Core_Service_Provider;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\View\Php_View_Renderer;
-use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Tests\Helpers\Player_Test_Factory;

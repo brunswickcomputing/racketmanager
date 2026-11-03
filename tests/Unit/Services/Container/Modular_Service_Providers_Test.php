@@ -80,7 +80,6 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has( 'invoice_repository' ) );
         $this->assertTrue( $container->has( 'finance_service' ) );
         $this->assertTrue( $container->has( 'security_service' ) );
-        $this->assertTrue( $container->has( 'legacy_user_factory' ) );
         $this->assertTrue( $container->has( 'option_service' ) );
         $this->assertTrue( $container->has( \Racketmanager\Infrastructure\Wordpress\Options\Option_Service::class ) );
     }
@@ -271,7 +270,7 @@ class Modular_Service_Providers_Test extends TestCase {
             'results_checker_presenter'       => \Racketmanager\Presentation\Presenters\Results_Checker_Presenter::class,
             'matches_list_presenter'          => \Racketmanager\Presentation\Presenters\Matches_List_Presenter::class,
             'match_shortcode_presenter'       => \Racketmanager\Presentation\Presenters\Match_Shortcode_Presenter::class,
-            'shortcode_template_renderer'     => \Racketmanager\Services\View\Shortcode_Template_Renderer::class,
+            'shortcode_template_renderer'     => \Racketmanager\Presentation\View\Shortcode_Template_Renderer::class,
             'shortcode_view_presenter'        => \Racketmanager\Presentation\Presenters\Shortcode_View_Presenter::class,
             'email_shortcode_presenter'       => \Racketmanager\Presentation\Presenters\Email_Shortcode_Presenter::class,
         ];

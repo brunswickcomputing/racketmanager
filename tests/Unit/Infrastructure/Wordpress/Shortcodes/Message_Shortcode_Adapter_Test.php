@@ -15,7 +15,7 @@ use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\View\View_Renderer_Interface;
-use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 
 class Message_Shortcode_Adapter_Test extends TestCase {
     private Message_Shortcode_Adapter $adapter;
@@ -36,7 +36,7 @@ class Message_Shortcode_Adapter_Test extends TestCase {
             }
         };
 
-        $view_presenter = new Shortcode_View_Presenter( new \Racketmanager\Services\View\Shortcode_Template_Renderer( $renderer ) );
+        $view_presenter = new Shortcode_View_Presenter( new \Racketmanager\Presentation\View\Shortcode_Template_Renderer( $renderer ) );
         $this->messages_handler = $this->createStub( Get_Messages_Handler::class );
         $this->message_handler  = $this->createStub( Get_Message_Handler::class );
 

@@ -157,12 +157,4 @@ final class Player_Collaborator_Wiring_Test extends TestCase {
 		$this->assertInstanceOf( Player_Query_Service::class, $container->get( 'player_query_service' ) );
 		$this->assertInstanceOf( Player_Stats_Service::class, $container->get( 'player_stats_service' ) );
 	}
-
-	public function test_production_get_player_object_path_works_with_and_without_container(): void {
-		$script = dirname( __DIR__, 4 ) . '/tests/Fixtures/production-get-player-object-path.php';
-		exec( escapeshellarg( PHP_BINARY ) . ' ' . escapeshellarg( $script ), $output, $exit_code );
-
-		$this->assertSame( 0, $exit_code, implode( "\n", $output ) );
-		$this->assertSame( 'ok', implode( "\n", $output ) );
-	}
 }

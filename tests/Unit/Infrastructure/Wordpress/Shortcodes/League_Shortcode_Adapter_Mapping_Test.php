@@ -38,7 +38,7 @@ use Racketmanager\RacketManager;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Team_Service;
-use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 /**

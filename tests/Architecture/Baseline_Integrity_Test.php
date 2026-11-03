@@ -113,7 +113,10 @@ final class Baseline_Integrity_Test extends TestCase {
         $aliases = Alias_Map::alias_names();
 
         self::assertNotEmpty( $aliases );
+        self::assertCount( 65, $aliases );
         self::assertSame( $aliases, Layer_Rules::get( 'all.no_alias_class_references' )->arguments );
         self::assertContains( 'Racketmanager\Domain\User', $aliases );
+        self::assertContains( 'Racketmanager\Admin\View_Models\Tournament_Contact_Page_View_Model', $aliases );
+        self::assertContains( 'Racketmanager\Admin\View_Models\Tournament_Teams_List_Page_View_Model', $aliases );
     }
 }

@@ -49,7 +49,7 @@ class Login_Shortcode_Handlers_Test extends TestCase {
             }
         };
 
-        $this->view_presenter = new Shortcode_View_Presenter( new \Racketmanager\Services\View\Shortcode_Template_Renderer( $this->renderer ) );
+        $this->view_presenter = new Shortcode_View_Presenter( new \Racketmanager\Presentation\View\Shortcode_Template_Renderer( $this->renderer ) );
     }
 
     public function test_login_form_handler_logged_in_returns_redirect_script(): void {

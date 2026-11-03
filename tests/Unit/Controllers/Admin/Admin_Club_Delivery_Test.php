@@ -302,7 +302,7 @@ final class Admin_Club_Delivery_Test extends TestCase {
         $_GET                      = array( 'edit' => '10' );
         $_POST                     = array();
 
-        $team = $this->createStub( \Racketmanager\Domain\Team::class );
+        $team = $this->createStub( \Racketmanager\Domain\Team\Team::class );
         $this->team_service->expects( self::once() )
             ->method( 'get_team_by_id' )
             ->with( 10 )

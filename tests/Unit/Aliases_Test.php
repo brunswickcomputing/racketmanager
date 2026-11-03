@@ -4,206 +4,262 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Admin\View_Models\Contact_Page_View_Model;
+use Racketmanager\Admin\View_Models\Teams_List_Page_View_Model;
+use Racketmanager\Application\Account\Commands\Add_Favourite_Command;
+use Racketmanager\Application\Account\Commands\Login_Command;
+use Racketmanager\Application\Club\Commands\Update_Club_Command;
+use Racketmanager\Domain\Club\Club;
+use Racketmanager\Domain\Communication\Message;
+use Racketmanager\Domain\Player\Player;
+use Racketmanager\Domain\Player\User;
+use Racketmanager\Domain\Season\Season;
+use Racketmanager\Domain\Team\Team;
+use Racketmanager\Domain\Tournament\Tournament;
+use Racketmanager\Tests\Architecture\Support\Alias_Map;
+use ReflectionClass;
 
+/**
+ * Sunset verification test confirming that legacy class aliases have been retired
+ * and no longer exist at runtime, while their canonical PSR-4 target classes exist
+ * and are directly instantiable.
+ */
 final class Aliases_Test extends TestCase {
-    public function test_compatibility_aliases_exist(): void {
-        $this->assertTrue( class_exists( 'Racketmanager\Domain\User' ) );
-        $this->assertTrue( class_exists( 'Racketmanager\Domain\Player' ) );
-        $this->assertTrue( class_exists( 'Racketmanager\Domain\Club' ) );
-        $this->assertTrue( class_exists( 'Racketmanager\Domain\Tournament' ) );
-        $this->assertTrue( class_exists( 'Racketmanager\Domain\Team' ) );
-        $this->assertTrue( class_exists( 'Racketmanager\Domain\Season' ) );
-        $this->assertTrue( class_exists( 'Racketmanager\Domain\Message' ) );
-        $this->assertTrue( class_exists( 'Racketmanager\Domain\Results_Report' ) );
-        $this->assertTrue( class_exists( 'Racketmanager\Domain\Charge' ) );
-        $this->assertTrue( class_exists( 'Racketmanager\Domain\Invoice' ) );
-        $this->assertTrue( class_exists( 'Racketmanager\Domain\Club_Player' ) );
-        $this->assertTrue( class_exists( 'Racketmanager\Domain\Club_Role' ) );
+
+    public function test_aliases_runtime_file_and_legacy_view_model_aliases_file_are_deleted(): void {
+        $plugin_root = dirname( __DIR__, 2 );
+
+        $this->assertFileDoesNotExist( $plugin_root . '/src/php/aliases.php' );
+        $this->assertFileDoesNotExist( $plugin_root . '/src/php/Admin/View_Models/Legacy_View_Model_Aliases.php' );
     }
 
-    public function test_command_aliases_exist(): void {
-        $this->assertTrue( class_exists( 'Racketmanager\Domain\DTO\Account\Login_Command' ) );
-        $this->assertTrue( class_exists( 'Racketmanager\Domain\DTO\Account\Add_Favourite_Command' ) );
-        $this->assertTrue( class_exists( 'Racketmanager\Domain\DTO\Club\Update_Club_Command' ) );
-        $this->assertTrue( class_exists( 'Racketmanager\Domain\DTO\Club\Set_Club_Role_Command' ) );
-    }
+    public function test_composer_autoload_does_not_register_aliases_file(): void {
+        $plugin_root   = dirname( __DIR__, 2 );
+        $composer_file = $plugin_root . '/composer.json';
 
-    public function test_naming_collision_aliases_exist(): void {
-        $this->assertTrue( class_exists( 'Racketmanager\Application\Fixture\Services\Fixture_Detail_Service' ) );
-        $this->assertTrue( class_exists( 'Racketmanager\Domain\DTOs\Results_Checker_Data' ) );
-        $this->assertSame(
-            \Racketmanager\Application\Fixture\Services\Fixture_Details_Assembler::class,
-            ( new \ReflectionClass( 'Racketmanager\Application\Fixture\Services\Fixture_Detail_Service' ) )->getName()
-        );
-        $this->assertSame(
-            \Racketmanager\Domain\DTO\Result\Results_Checker_Data::class,
-            ( new \ReflectionClass( 'Racketmanager\Domain\DTOs\Results_Checker_Data' ) )->getName()
-        );
-    }
+        $this->assertFileExists( $composer_file );
+        $composer_json = json_decode( (string) file_get_contents( $composer_file ), true ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+        $this->assertIsArray( $composer_json );
 
-    /**
-     * @return iterable<string, array{0: string, 1: string}>
-     */
-    public static function relocated_request_dtos(): iterable {
-        $contexts = [
-            'Fixture'     => [
-                'Fixture_Date_Update_Request',
-                'Fixture_Option_Request',
-                'Fixture_Reset_Request',
-                'Fixture_Result_Update_Request',
-                'Fixture_Status_Options_Request',
-                'Fixture_Status_Update_Request',
-                'Fixture_Switch_Teams_Request',
-                'Rubber_Status_Options_Request',
-                'Team_Result_Confirmation_Request',
-                'Team_Result_Update_Request',
-            ],
-            'Tournament'  => [
-                'Championship_Rounds_Request_DTO',
-                'Tournament_Contact_Request_DTO',
-                'Tournament_Entry_Request_DTO',
-                'Tournament_Finals_Config_Request_DTO',
-                'Tournament_Finals_Request_DTO',
-                'Tournament_Information_Request_DTO',
-                'Tournament_Partner_Request_DTO',
-                'Tournament_Request_DTO',
-                'Tournament_Payment_Command',
-                'Tournament_Withdrawal_Command',
-            ],
-            'Competition' => [ 'Cup_Entry_Request_DTO', 'League_Entry_Request_DTO' ],
-            'Player'      => [ 'Search_Players_Command' ],
-        ];
-        foreach ( $contexts as $context => $classes ) {
-            foreach ( $classes as $class ) {
-                yield $class => [
-                    'Racketmanager\Domain\DTO\\' . $context . '\\' . $class,
-                    'Racketmanager\Infrastructure\Wordpress\Request\\' . $context . '\\' . $class,
-                ];
-            }
+        $autoload_files = $composer_json['autoload']['files'] ?? [];
+        $this->assertNotContains( 'src/php/aliases.php', $autoload_files );
+
+        $autoload_generated_file = $plugin_root . '/vendor/composer/autoload_files.php';
+        if ( file_exists( $autoload_generated_file ) ) {
+            $generated_content = (string) file_get_contents( $autoload_generated_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+            $this->assertStringNotContainsString( 'aliases.php', $generated_content );
         }
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider( 'relocated_request_dtos' )]
-    public function test_relocated_request_dto_aliases_resolve_to_infrastructure_classes( string $old_fqcn, string $new_fqcn ): void {
-        $this->assertTrue( class_exists( $new_fqcn ), "$new_fqcn must exist under Infrastructure/Wordpress/Request" );
-        $this->assertTrue( class_exists( $old_fqcn ), "$old_fqcn must remain available as a compatibility alias" );
-        $this->assertSame( $new_fqcn, ( new \ReflectionClass( $old_fqcn ) )->getName() );
+    public function test_retired_aliases_catalogue_contains_exact_63_entries(): void {
+        $this->assertCount( 63, Alias_Map::RETIRED_ALIASES );
+        $this->assertCount( 63, Alias_Map::load() );
     }
 
-    public function test_relocated_request_dtos_count(): void {
-        $this->assertCount( 23, iterator_to_array( self::relocated_request_dtos() ) );
+    public function test_strict_rule_alias_names_include_both_view_model_aliases(): void {
+        $names = Alias_Map::alias_names();
+
+        $this->assertCount( 65, $names );
+        $this->assertSame(
+            [ ...array_keys( Alias_Map::RETIRED_ALIASES ), ...array_keys( Alias_Map::RETIRED_VIEW_MODEL_ALIASES ) ],
+            $names
+        );
+        $this->assertContains( 'Racketmanager\Admin\View_Models\Tournament_Contact_Page_View_Model', $names );
+        $this->assertContains( 'Racketmanager\Admin\View_Models\Tournament_Teams_List_Page_View_Model', $names );
     }
 
-    public function test_relocated_port_aliases_exist_and_resolve(): void {
-        $this->assertTrue( interface_exists( 'Racketmanager\Gateways\Mail\Mailer_Interface' ) );
-        $this->assertTrue( interface_exists( 'Racketmanager\Application\Mail\Mailer_Interface' ) );
-        $this->assertSame(
-            \Racketmanager\Application\Mail\Mailer_Interface::class,
-            ( new \ReflectionClass( 'Racketmanager\Gateways\Mail\Mailer_Interface' ) )->getName()
+    /**
+     * Data provider of retired legacy aliases and canonical targets.
+     *
+     * @return iterable<string, array{0: string, 1: string}>
+     */
+    public static function retired_aliases_provider(): iterable {
+        foreach ( Alias_Map::RETIRED_ALIASES as $alias => $target ) {
+            yield $alias => [ $alias, $target ];
+        }
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'retired_aliases_provider' )]
+    public function test_retired_legacy_alias_does_not_exist( string $alias, string $canonical_target ): void {
+        $this->assertFalse(
+            class_exists( $alias, true ),
+            sprintf( 'Legacy alias class %s must not exist.', $alias )
+        );
+        $this->assertFalse(
+            interface_exists( $alias, true ),
+            sprintf( 'Legacy alias interface %s must not exist.', $alias )
+        );
+        $this->assertFalse(
+            trait_exists( $alias, true ),
+            sprintf( 'Legacy alias trait %s must not exist.', $alias )
+        );
+        $this->assertFalse(
+            enum_exists( $alias, true ),
+            sprintf( 'Legacy alias enum %s must not exist.', $alias )
         );
 
-        $this->assertTrue( interface_exists( 'Racketmanager\Services\Contracts\Wtn_Api_Client_Interface' ) );
-        $this->assertTrue( interface_exists( 'Racketmanager\Domain\Ports\Rating_Gateway_Interface' ) );
-        $this->assertSame(
-            \Racketmanager\Domain\Ports\Rating_Gateway_Interface::class,
-            ( new \ReflectionClass( 'Racketmanager\Services\Contracts\Wtn_Api_Client_Interface' ) )->getName()
+        $this->assertTrue(
+            class_exists( $canonical_target ) || interface_exists( $canonical_target ) || enum_exists( $canonical_target ),
+            sprintf( 'Canonical PSR-4 target %s must exist.', $canonical_target )
         );
 
-        $this->assertTrue( interface_exists( 'Racketmanager\Gateways\Option\Option_Gateway_Interface' ) );
-        $this->assertTrue( interface_exists( 'Racketmanager\Application\Ports\Option_Gateway_Interface' ) );
-        $this->assertSame(
-            \Racketmanager\Application\Ports\Option_Gateway_Interface::class,
-            ( new \ReflectionClass( 'Racketmanager\Gateways\Option\Option_Gateway_Interface' ) )->getName()
+        $reflection = new ReflectionClass( $canonical_target );
+        $this->assertSame( $canonical_target, $reflection->getName() );
+    }
+
+    public function test_legacy_view_model_aliases_do_not_exist(): void {
+        $this->assertCount( 2, Alias_Map::RETIRED_VIEW_MODEL_ALIASES );
+
+        foreach ( Alias_Map::RETIRED_VIEW_MODEL_ALIASES as $alias => $target ) {
+            $this->assertFalse(
+                class_exists( $alias, true ),
+                sprintf( 'Legacy view model alias %s must not exist.', $alias )
+            );
+            $this->assertTrue(
+                class_exists( $target ),
+                sprintf( 'Canonical view model target %s must exist.', $target )
+            );
+        }
+
+        $this->assertTrue( class_exists( Teams_List_Page_View_Model::class ) );
+        $this->assertTrue( class_exists( Contact_Page_View_Model::class ) );
+    }
+
+    public function test_no_test_files_reference_retired_aliases(): void {
+        $aliases = array_merge(
+            array_keys( Alias_Map::RETIRED_ALIASES ),
+            array_keys( Alias_Map::RETIRED_VIEW_MODEL_ALIASES )
         );
 
-        $this->assertTrue( interface_exists( 'Racketmanager\Gateways\Account\User_Favourites_Gateway_Interface' ) );
-        $this->assertTrue( interface_exists( 'Racketmanager\Application\Account\Ports\User_Favourites_Gateway_Interface' ) );
-        $this->assertSame(
-            \Racketmanager\Application\Account\Ports\User_Favourites_Gateway_Interface::class,
-            ( new \ReflectionClass( 'Racketmanager\Gateways\Account\User_Favourites_Gateway_Interface' ) )->getName()
+        $plugin_root = dirname( __DIR__, 2 );
+        $exempt      = [
+            realpath( $plugin_root . '/tests/Architecture/Support/Alias_Map.php' ),
+            realpath( $plugin_root . '/tests/Unit/Aliases_Test.php' ),
+            realpath( $plugin_root . '/tests/Architecture/Support_Test/Alias_Map_Test.php' ),
+            realpath( $plugin_root . '/tests/Architecture/Baseline_Integrity_Test.php' ),
+            realpath( $plugin_root . '/tests/Architecture/Support_Test/Layer_Rules_Test.php' ),
+            realpath( $plugin_root . '/tests/Architecture/Ports_Location_Test.php' ),
+            realpath( $plugin_root . '/tests/Architecture/Support_Test/Architecture_Test_Case_Test.php' ),
+        ];
+
+        $dir        = new \RecursiveDirectoryIterator( $plugin_root . '/tests' );
+        $iterator   = new \RecursiveIteratorIterator( $dir );
+        $violations = [];
+
+        foreach ( $iterator as $file ) {
+            if ( ! $file->isFile() || 'php' !== $file->getExtension() ) {
+                continue;
+            }
+            $real = realpath( $file->getPathname() );
+            if ( in_array( $real, $exempt, true ) ) {
+                continue;
+            }
+            $content = (string) file_get_contents( $real ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+            foreach ( self::find_retired_alias_references( $content, $aliases ) as $alias ) {
+                $violations[] = basename( $real ) . ' references retired alias ' . $alias;
+            }
+        }
+
+        $this->assertSame( [], $violations, 'Test suite must not reference retired aliases.' );
+    }
+
+    /**
+     * Regression test: Ensure guardrail matches doubled-backslash retired aliases,
+     * but ignores doubled-backslash canonical classes.
+     */
+    public function test_guardrail_catches_doubled_backslashes_for_retired_aliases_but_ignores_canonical_classes(): void {
+        $aliases = array_merge(
+            array_keys( Alias_Map::RETIRED_ALIASES ),
+            array_keys( Alias_Map::RETIRED_VIEW_MODEL_ALIASES )
         );
 
-        $this->assertTrue( interface_exists( 'Racketmanager\Gateways\Payment\Payment_Gateway_Interface' ) );
-        $this->assertTrue( interface_exists( 'Racketmanager\Application\Payment\Ports\Payment_Gateway_Interface' ) );
-        $this->assertSame(
-            \Racketmanager\Application\Payment\Ports\Payment_Gateway_Interface::class,
-            ( new \ReflectionClass( 'Racketmanager\Gateways\Payment\Payment_Gateway_Interface' ) )->getName()
+        $content_retired   = 'Racketmanager\\\\Domain\\\\User';
+        $content_canonical = 'Racketmanager\\\\Domain\\\\Player\\\\User';
+
+        $this->assertContains(
+            'Racketmanager\\Domain\\User',
+            self::find_retired_alias_references( $content_retired, $aliases )
         );
+        $this->assertSame( [], self::find_retired_alias_references( $content_canonical, $aliases ) );
+    }
 
-        $this->assertTrue( class_exists( 'Racketmanager\Gateways\Payment\Payment_Intent_Result' ) );
-        $this->assertTrue( class_exists( 'Racketmanager\Application\Payment\Ports\Payment_Intent_Result' ) );
-        $this->assertSame(
-            \Racketmanager\Application\Payment\Ports\Payment_Intent_Result::class,
-            ( new \ReflectionClass( 'Racketmanager\Gateways\Payment\Payment_Intent_Result' ) )->getName()
+    /**
+     * Find references to retired aliases in source text, including PHP-escaped namespace strings.
+     *
+     * @param string        $content Source text to scan.
+     * @param array<string> $aliases Retired alias names.
+     * @return array<string> Matched retired alias names.
+     */
+    private static function find_retired_alias_references( string $content, array $aliases ): array {
+        $content = str_replace( '\\\\', '\\', $content );
+        $matches = [];
+
+        foreach ( $aliases as $alias ) {
+            $pattern = '/\b' . preg_quote( $alias, '/' ) . '\b(?!\\\\)/';
+            if ( preg_match( $pattern, $content ) ) {
+                $matches[] = $alias;
+            }
+        }
+
+        return $matches;
+    }
+
+    public function test_canonical_domain_entities_are_directly_instantiable(): void {
+        $user       = new User();
+        $player     = new Player();
+        $club       = new Club();
+        $tournament = new Tournament();
+        $team       = new Team();
+        $season     = new Season();
+        $message    = new Message();
+
+        $this->assertInstanceOf( User::class, $user );
+        $this->assertInstanceOf( Player::class, $player );
+        $this->assertInstanceOf( Club::class, $club );
+        $this->assertInstanceOf( Tournament::class, $tournament );
+        $this->assertInstanceOf( Team::class, $team );
+        $this->assertInstanceOf( Season::class, $season );
+        $this->assertInstanceOf( Message::class, $message );
+    }
+
+    public function test_canonical_application_commands_are_directly_instantiable(): void {
+        $login_cmd = new Login_Command( 'testuser', 'secret' );
+        $this->assertInstanceOf( Login_Command::class, $login_cmd );
+        $this->assertSame( 'testuser', $login_cmd->user_login );
+
+        $fav_cmd = new Add_Favourite_Command( 'club', 42, 101 );
+        $this->assertInstanceOf( Add_Favourite_Command::class, $fav_cmd );
+        $this->assertSame( 'club', $fav_cmd->type );
+        $this->assertSame( 42, $fav_cmd->id );
+        $this->assertSame( 101, $fav_cmd->user_id );
+
+        $update_club_cmd = new Update_Club_Command(
+            club_id: 10,
+            contact_no: '0123456789',
+            facilities: '3 courts',
+            founded: 1990,
+            website: 'https://example.com',
+            address: '123 High St',
+            match_secretary_id: 5,
+            match_secretary_contact_no: '0987654321',
+            match_secretary_email: 'sec@example.com'
         );
+        $this->assertInstanceOf( Update_Club_Command::class, $update_club_cmd );
+        $this->assertSame( 10, $update_club_cmd->club_id );
+    }
 
-        $this->assertTrue( interface_exists( 'Racketmanager\Services\Contracts\Data_Exporter_Interface' ) );
-        $this->assertTrue( interface_exists( 'Racketmanager\Application\Export\Ports\Data_Exporter_Interface' ) );
-        $this->assertSame(
-            \Racketmanager\Application\Export\Ports\Data_Exporter_Interface::class,
-            ( new \ReflectionClass( 'Racketmanager\Services\Contracts\Data_Exporter_Interface' ) )->getName()
+    public function test_canonical_view_models_are_directly_instantiable(): void {
+        $teams_vm = new Teams_List_Page_View_Model(
+            league: (object) [ 'id' => 1 ],
+            league_id: 1,
+            season: '2026'
         );
+        $this->assertInstanceOf( Teams_List_Page_View_Model::class, $teams_vm );
 
-        // Verify behavioral instanceof compatibility for concrete adapters and DTOs
-        $mailer = new \Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer();
-        $this->assertInstanceOf( 'Racketmanager\Gateways\Mail\Mailer_Interface', $mailer );
-        $this->assertInstanceOf( \Racketmanager\Application\Mail\Mailer_Interface::class, $mailer );
-
-        $lta_adapter = new \Racketmanager\Infrastructure\Gateways\Rating\Lta_Wtn_Gateway_Adapter();
-        $this->assertInstanceOf( 'Racketmanager\Services\Contracts\Wtn_Api_Client_Interface', $lta_adapter );
-        $this->assertInstanceOf( \Racketmanager\Domain\Ports\Rating_Gateway_Interface::class, $lta_adapter );
-
-        $wtn_client = new \Racketmanager\Services\External\Wtn_Api_Client();
-        $this->assertInstanceOf( 'Racketmanager\Services\Contracts\Wtn_Api_Client_Interface', $wtn_client );
-        $this->assertInstanceOf( \Racketmanager\Domain\Ports\Rating_Gateway_Interface::class, $wtn_client );
-
-        $option_gateway = new \Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway();
-        $this->assertInstanceOf( 'Racketmanager\Gateways\Option\Option_Gateway_Interface', $option_gateway );
-        $this->assertInstanceOf( \Racketmanager\Application\Ports\Option_Gateway_Interface::class, $option_gateway );
-
-        $favourites_gateway = new \Racketmanager\Infrastructure\Gateways\Account\Wp_User_Favourites_Gateway(
-            new \Racketmanager\Infrastructure\Security\Security_Service()
+        $contact_vm = new Contact_Page_View_Model(
+            tournament: (object) [ 'id' => 1 ],
+            email_message: 'Hello'
         );
-        $this->assertInstanceOf( 'Racketmanager\Gateways\Account\User_Favourites_Gateway_Interface', $favourites_gateway );
-        $this->assertInstanceOf( \Racketmanager\Application\Account\Ports\User_Favourites_Gateway_Interface::class, $favourites_gateway );
-
-        $payment_gateway = new \Racketmanager\Infrastructure\Gateways\Payment\Stripe_Payment_Gateway();
-        $this->assertInstanceOf( 'Racketmanager\Gateways\Payment\Payment_Gateway_Interface', $payment_gateway );
-        $this->assertInstanceOf( \Racketmanager\Application\Payment\Ports\Payment_Gateway_Interface::class, $payment_gateway );
-
-        $payment_intent = new \Racketmanager\Application\Payment\Ports\Payment_Intent_Result( 'pi_123', 'sec_456', 'succeeded', 2500, 'gbp' );
-        $this->assertInstanceOf( 'Racketmanager\Gateways\Payment\Payment_Intent_Result', $payment_intent );
-        $this->assertInstanceOf( \Racketmanager\Application\Payment\Ports\Payment_Intent_Result::class, $payment_intent );
-
-        $exporter = new \Racketmanager\Services\Export\Export_Service(
-            $this->createStub( \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class ),
-            $this->createStub( \Racketmanager\Services\Result\Result_Reporting_Service::class ),
-            $this->createStub( \Racketmanager\Services\Fixture\Fixture_Detail_Service::class ),
-            $this->createStub( \Racketmanager\Repositories\Interfaces\Club_Repository_Interface::class )
-        );
-        $this->assertInstanceOf( 'Racketmanager\Services\Contracts\Data_Exporter_Interface', $exporter );
-        $this->assertInstanceOf( \Racketmanager\Application\Export\Ports\Data_Exporter_Interface::class, $exporter );
-
-        $criteria = new \Racketmanager\Application\Export\DTO\Export_Criteria( [ 'league_id' => 10 ] );
-        $this->assertInstanceOf( 'Racketmanager\Services\Export\DTO\Export_Criteria', $criteria );
-        $this->assertInstanceOf( \Racketmanager\Application\Export\DTO\Export_Criteria::class, $criteria );
-
-        // Verify absence of physical legacy declaration files
-        $legacy_mailer_file     = dirname( __DIR__, 2 ) . '/src/php/Gateways/Mail/Mailer_Interface.php';
-        $legacy_wtn_file        = dirname( __DIR__, 2 ) . '/src/php/Services/Contracts/Wtn_Api_Client_Interface.php';
-        $legacy_option_file     = dirname( __DIR__, 2 ) . '/src/php/Gateways/Option/Option_Gateway_Interface.php';
-        $legacy_favourites_file = dirname( __DIR__, 2 ) . '/src/php/Gateways/Account/User_Favourites_Gateway_Interface.php';
-        $legacy_payment_file    = dirname( __DIR__, 2 ) . '/src/php/Gateways/Payment/Payment_Gateway_Interface.php';
-        $legacy_intent_file     = dirname( __DIR__, 2 ) . '/src/php/Gateways/Payment/Payment_Intent_Result.php';
-        $legacy_exporter_file   = dirname( __DIR__, 2 ) . '/src/php/Services/Contracts/Data_Exporter_Interface.php';
-        $legacy_criteria_file   = dirname( __DIR__, 2 ) . '/src/php/Services/Export/DTO/Export_Criteria.php';
-        $this->assertFileDoesNotExist( $legacy_mailer_file );
-        $this->assertFileDoesNotExist( $legacy_wtn_file );
-        $this->assertFileDoesNotExist( $legacy_option_file );
-        $this->assertFileDoesNotExist( $legacy_favourites_file );
-        $this->assertFileDoesNotExist( $legacy_payment_file );
-        $this->assertFileDoesNotExist( $legacy_intent_file );
-        $this->assertFileDoesNotExist( $legacy_exporter_file );
-        $this->assertFileDoesNotExist( $legacy_criteria_file );
+        $this->assertInstanceOf( Contact_Page_View_Model::class, $contact_vm );
     }
 }

@@ -24,7 +24,6 @@ use Racketmanager\Application\Account\Ports\User_Favourites_Gateway_Interface;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Application\Payment\Ports\Payment_Gateway_Interface;
 use Racketmanager\Infrastructure\Events\Simple_Domain_Event_Dispatcher;
-use Racketmanager\Infrastructure\Legacy\Legacy_User_Factory;
 use Racketmanager\Infrastructure\Gateways\Account\Wp_User_Favourites_Gateway;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
@@ -179,9 +178,6 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->set( 'message_repository', fn() => new Message_Repository() );
         $container->alias( Message_Repository_Interface::class, 'message_repository' );
         $container->alias( Message_Repository::class, 'message_repository' );
-
-        $container->set( 'legacy_user_factory', fn( Simple_Container $c ) => new Legacy_User_Factory( $c->get( 'message_repository' ) ) );
-        $container->alias( Legacy_User_Factory::class, 'legacy_user_factory' );
 
         // Repository Provider Aggregate
         $container->set( 'repository_provider', fn( Simple_Container $c ) => new Repository_Provider(

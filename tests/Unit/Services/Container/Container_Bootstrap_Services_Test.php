@@ -217,7 +217,6 @@ class Container_Bootstrap_Services_Test extends TestCase {
 
         $this->assertTrue( $this->container->has( 'exporter' ) );
         $this->assertInstanceOf( \Racketmanager\Application\Export\Ports\Data_Exporter_Interface::class, $this->container->get( 'exporter' ) );
-        $this->assertInstanceOf( \Racketmanager\Services\Contracts\Data_Exporter_Interface::class, $this->container->get( 'exporter' ) );
         $this->assertTrue( $this->container->has( \Racketmanager\Application\Export\Ports\Data_Exporter_Interface::class ) );
         $this->assertSame( $this->container->get( 'exporter' ), $this->container->get( \Racketmanager\Application\Export\Ports\Data_Exporter_Interface::class ) );
 
@@ -248,7 +247,7 @@ class Container_Bootstrap_Services_Test extends TestCase {
     }
 
     public function test_container_wires_match_and_club_shortcode_adapters_with_required_dependencies(): void {
-        $this->assertInstanceOf( \Racketmanager\Services\View\Shortcode_Template_Renderer::class, $this->container->get( 'shortcode_template_renderer' ) );
+        $this->assertInstanceOf( \Racketmanager\Presentation\View\Shortcode_Template_Renderer::class, $this->container->get( 'shortcode_template_renderer' ) );
         $this->assertInstanceOf( \Racketmanager\Presentation\Presenters\Shortcode_View_Presenter::class, $this->container->get( 'shortcode_view_presenter' ) );
         $this->assertInstanceOf( \Racketmanager\Application\Matches\Queries\Get_Match_Score_Handler::class, $this->container->get( 'get_match_score_handler' ) );
         $this->assertInstanceOf( \Racketmanager\Application\Matches\Queries\Get_Match_Header_Handler::class, $this->container->get( 'get_match_header_handler' ) );

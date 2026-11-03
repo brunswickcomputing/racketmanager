@@ -1,25 +1,6 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager {
-    if ( ! function_exists( 'Racketmanager\get_player' ) ) {
-        function get_player( $id ) {
-            if ( isset( $GLOBALS['wp_stubs_players'][ $id ] ) ) {
-                return $GLOBALS['wp_stubs_players'][ $id ];
-            }
-            return $GLOBALS['player'] ?? null;
-        }
-    }
-    if ( ! function_exists( 'Racketmanager\get_team' ) ) {
-        function get_team( $id ) {
-            if ( isset( $GLOBALS['wp_stubs_teams'][ $id ] ) ) {
-                return $GLOBALS['wp_stubs_teams'][ $id ];
-            }
-            return $GLOBALS['team'] ?? null;
-        }
-    }
-}
-
 namespace Racketmanager\Presentation\Presenters {
     if ( ! function_exists( 'Racketmanager\Presentation\Presenters\get_userdata' ) ) {
         function get_userdata( $id ) {

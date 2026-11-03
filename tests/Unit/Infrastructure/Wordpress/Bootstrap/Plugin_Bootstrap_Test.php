@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Bootstrap;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Infrastructure\Wordpress\Bootstrap\Plugin_Bootstrap;
+use Racketmanager\Public_Api;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
@@ -37,6 +38,7 @@ final class Plugin_Bootstrap_Test extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        Public_Api::reset();
         $this->backup_globals();
         $GLOBALS['wp_stubs_added_actions'] = [];
         $GLOBALS['wp_stubs_added_filters'] = [];
@@ -46,6 +48,7 @@ final class Plugin_Bootstrap_Test extends TestCase {
         if ( '' !== $this->temp_dir ) {
             $this->remove_directory( $this->temp_dir );
         }
+        Public_Api::reset();
         $this->restore_globals();
         parent::tearDown();
     }
@@ -262,6 +265,7 @@ final class Plugin_Bootstrap_Test extends TestCase {
 
             self::assertTrue( $GLOBALS['plugin_bootstrap_test_boot'] ?? false );
             self::assertTrue( $bootstrap->is_booted( $app ) );
+            self::assertSame( $container, Public_Api::get_container() );
             self::assertCount( 3, $GLOBALS['wp_stubs_added_actions']['init'] );
         } finally {
             unset( $GLOBALS['plugin_bootstrap_test_boot'] );
@@ -276,6 +280,18 @@ final class Plugin_Bootstrap_Test extends TestCase {
 
         self::assertSame( $frontend, $instance );
         self::assertSame( $frontend, $GLOBALS['racketmanager'] );
+        self::assertNull( Public_Api::get_container() );
+    }
+
+    public function test_launch_initializes_public_api_with_frontend_container(): void {
+        $container = new Simple_Container();
+        $frontend  = new stdClass();
+        $frontend->container = $container;
+
+        $instance = Plugin_Bootstrap::launch( false, static fn() => $frontend );
+
+        self::assertSame( $frontend, $instance );
+        self::assertSame( $container, Public_Api::get_container() );
     }
 
     public function test_launch_uses_admin_instance_in_dashboard_and_sets_global(): void {

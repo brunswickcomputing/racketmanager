@@ -177,7 +177,7 @@ final class Layer_Rules {
     ];
 
     /**
-     * Root-namespace helper functions from functions.php that act as a hidden service locator.
+     * Root-namespace helper functions retired in v11.0 that acted as a hidden service locator.
      * Patterns are namespaced so the global fallback of an unqualified call (e.g. a root `\seo_url()`)
      * is not counted.
      */
@@ -219,7 +219,6 @@ final class Layer_Rules {
         'Racketmanager\Domain\Team\Team',
         'Racketmanager\Domain\Tournament\Tournament',
         'Racketmanager\Domain\Tournament\Tournament_Entry',
-        'Racketmanager\Infrastructure\Legacy\Legacy_User',
     ];
 
     /** Domain entity files that define the backwards-compatible delegation wrappers and are exempt from domain.no_lenient_from_object. */
@@ -248,9 +247,8 @@ final class Layer_Rules {
     ];
 
     /**
-     * Helpers that functions.php already flags as deprecated (they trigger E_USER_DEPRECATED): no caller
-     * may remain. Both the namespaced and the global spelling are listed because no root function of
-     * these names exists, so either resolution is a bug.
+     * Legacy helpers retired in v11.0: no caller may remain. Both the namespaced and the global
+     * spelling are listed because no root function of these names exists, so either resolution is a bug.
      */
     private const array DEPRECATED_HELPERS = [
         'Racketmanager\get_match',
@@ -515,8 +513,8 @@ final class Layer_Rules {
         return [
             new Layer_Rule(
                 'all.no_legacy_helper_calls',
-                'Layered code and template-tags.php must not call the root helper functions (get_league, get_event, get_team, get_club, get_player, get_league_team, get_user, get_message, seo_url, un_seo_url, get_*_repository_for_helpers, get_*_query_service)',
-                'Inject the Repositories\Interfaces\* port or the *_Query_Service; use Domain\Shared\Seo_Slug for slugs (audit L6, P2-7 done).',
+                'Layered code and template-tags.php must not call retired root helper functions (get_league, get_event, get_team, get_club, get_player, get_league_team, get_user, get_message, seo_url, un_seo_url, get_*_repository_for_helpers, get_*_query_service)',
+                'Use Public_Api, the Repositories\Interfaces\* ports, *_Query_Service, or Domain\Shared\Seo_Slug; helpers were retired in v11.0 (audit L6, P2-7, Item 17 done).',
                 [ self::SRC, self::TEMPLATE_TAGS ],
                 Rule_Kind::FORBIDDEN_FUNCTION_CALL,
                 self::LEGACY_HELPERS,
@@ -524,8 +522,8 @@ final class Layer_Rules {
             ),
             new Layer_Rule(
                 'all.no_deprecated_helper_calls',
-                'Nothing may call a @deprecated helper (get_match, get_rubber, get_competition, match_add_players, get_club_role, to_legacy_user)',
-                'Use the repository/service named in the helper\'s @deprecated tag (audit §6.2).',
+                'Nothing may call a retired helper (get_match, get_rubber, get_competition, match_add_players, get_club_role, to_legacy_user)',
+                'Use Public_Api, the repository ports, or domain services; helpers were retired in v11.0 (audit §6.2).',
                 [ self::SRC, self::TEMPLATES, self::TEMPLATE_TAGS ],
                 Rule_Kind::FORBIDDEN_FUNCTION_CALL,
                 self::DEPRECATED_HELPERS,
@@ -546,8 +544,8 @@ final class Layer_Rules {
             ),
             new Layer_Rule(
                 'all.no_alias_class_references',
-                'No code may reference a deprecated class alias from src/php/aliases.php',
-                'Reference the PSR-4 target class listed in src/php/aliases.php; aliases are removed in v11.0 (audit §6.1).',
+                'No code may reference a retired class alias from Alias_Map::RETIRED_ALIASES or Alias_Map::RETIRED_VIEW_MODEL_ALIASES',
+                'Reference the canonical PSR-4 target class listed in Alias_Map::RETIRED_ALIASES or Alias_Map::RETIRED_VIEW_MODEL_ALIASES; aliases are removed in v11.0 (audit §6.1).',
                 [ self::SRC, self::TEMPLATES, 'functions.php', self::TEMPLATE_TAGS ],
                 Rule_Kind::FORBIDDEN_CLASS_REFERENCE,
                 Alias_Map::alias_names(),

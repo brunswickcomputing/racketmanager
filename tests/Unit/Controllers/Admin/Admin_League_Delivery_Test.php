@@ -509,7 +509,7 @@ final class Admin_League_Delivery_Test extends TestCase {
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $_GET                      = array( 'edit' => '10' );
 
-        $team = $this->createStub( \Racketmanager\Domain\Team::class );
+        $team = $this->createStub( \Racketmanager\Domain\Team\Team::class );
         $team_service = $this->createStub( \Racketmanager\Services\Team_Service::class );
         $team_service->method( 'get_team_by_id' )->willReturn( $team );
         $this->container->set( 'team_service', $team_service );

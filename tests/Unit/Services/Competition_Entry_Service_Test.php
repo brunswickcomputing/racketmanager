@@ -24,7 +24,7 @@ use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Partner
 use Racketmanager\Domain\Tournament\Tournament_Entry;
 use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
-use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Creates_View_Renderer;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Database_Operation_Exception;

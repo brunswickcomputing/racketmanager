@@ -16,6 +16,18 @@
 	<exclude-pattern>*/.phpunit.cache/*</exclude-pattern>
 	<exclude-pattern>*/qodana*.yaml</exclude-pattern>
 
+	<!-- Exclude front-end assets by extension. Patterns are regexes: escape the dot and anchor
+	     with $ so that e.g. "*.js" does not also match PHP files named Json_*.php.
+	     Needed because <arg name="extensions"> is overridden by any CLI "extensions" flag (IDE, hooks). -->
+	<exclude-pattern>*\.js$</exclude-pattern>
+	<exclude-pattern>*\.mjs$</exclude-pattern>
+	<exclude-pattern>*\.cjs$</exclude-pattern>
+	<exclude-pattern>*\.jsx$</exclude-pattern>
+	<exclude-pattern>*\.ts$</exclude-pattern>
+	<exclude-pattern>*\.tsx$</exclude-pattern>
+	<exclude-pattern>*\.css$</exclude-pattern>
+	<exclude-pattern>*\.scss$</exclude-pattern>
+
 	<!-- Arguments: show sniff codes, colors, parallel, cache -->
 	<arg name="extensions" value="php"/>
 	<arg value="s"/>

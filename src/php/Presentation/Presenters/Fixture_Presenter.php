@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Presentation\Presenters;
 
-use BackedEnum;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Date_Update_Read_Model;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
@@ -32,8 +31,6 @@ use Racketmanager\Util\Util_Lookup;
 use stdClass;
 
 use function __;
-use function function_exists;
-use function is_numeric;
 use function is_object;
 use function is_string;
 use function mysql2date;
@@ -47,15 +44,15 @@ readonly class Fixture_Presenter {
     ) {
     }
 
-	public function get_date_format(): string {
-		$format = $this->option_gateway->get_option( 'date_format', 'Y-m-d' );
-		return is_string( $format ) && $format !== '' ? $format : 'Y-m-d';
-	}
+    public function get_date_format(): string {
+        $format = $this->option_gateway->get_option( 'date_format', 'Y-m-d' );
+        return is_string( $format ) && $format !== '' ? $format : 'Y-m-d';
+    }
 
-	public function get_time_format(): string {
-		$format = $this->option_gateway->get_option( 'time_format', 'H:i' );
-		return is_string( $format ) && $format !== '' ? $format : 'H:i';
-	}
+    public function get_time_format(): string {
+        $format = $this->option_gateway->get_option( 'time_format', 'H:i' );
+        return is_string( $format ) && $format !== '' ? $format : 'H:i';
+    }
 
     public function map_to_status_read_model(
         Fixture $fixture, Fixture_Status_Update_Request $request, int $num_rubbers = 0

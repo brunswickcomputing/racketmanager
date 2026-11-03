@@ -7,15 +7,18 @@ namespace Racketmanager\Presentation\View_Models;
  * View model for grouped match listings ([dailymatches], [latest_results]).
  */
 final readonly class Matches_List_View_Model {
+    /**
+     * @var bool
+     */
     public bool $has_matches;
 
     /**
-     * @param string                $template     Template name (without extension), e.g. "matches-daily".
-     * @param array<string, array>  $matches_list Presentation fixtures grouped by league name.
-     * @param string|null           $match_date   Selected match date (daily listing only).
-     * @param int                   $header_level Heading level for the module title.
-     * @param int                   $post_id      Page hosting the daily matches form.
-     * @param string                $form_action  Prepared daily matches form URL.
+     * @param string               $template     Template name (without extension), e.g. "matches-daily".
+     * @param array<string, array> $matches_list Presentation fixtures grouped by league name.
+     * @param string|null          $match_date   Selected match date (daily listing only).
+     * @param int                  $header_level Heading level for the module title.
+     * @param int                  $post_id      Page hosting the daily matches form.
+     * @param string               $form_action  Prepared daily matches form URL.
      */
     public function __construct(
         public string $template,

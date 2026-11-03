@@ -7,6 +7,7 @@ use Racketmanager\Application\Matches\DTOs\Match_List_Result;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Exceptions\Template_Not_Found_Exception;
 use Racketmanager\Presentation\View_Models\Matches_List_View_Model;
+use Racketmanager\Presentation\View_Models\Tournament_Match_Card_View_Model;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
@@ -20,19 +21,40 @@ use function Racketmanager\show_alert;
  * Presents match listing results ([dailymatches], [latest_results]) as grouped view models
  * and renders them through the view renderer (theme overrides supported).
  */
-class Matches_List_Presenter {
+readonly class Matches_List_Presenter {
+    /**
+     * Constructor
+     *
+     * @param Competition_Service              $competition_service competition service.
+     * @param Team_Service                     $team_service          team service.
+     * @param View_Renderer_Interface          $renderer              view renderer interface.
+     * @param Tournament_Presenter             $tournament_presenter  tournament presenter.
+     * @param Fixture_Link_Service|null        $link_service          fixture link service.
+     * @param Fixture_Permission_Service|null  $permission_service    fixture permission service.
+     * @param Club_Presenter|null              $club_presenter        club presenter.
+     * @param Player_Presenter|null            $player_presenter      player presenter.
+     * @param Rubber_Repository_Interface|null $rubber_repository     rubber repository interface.
+     */
     public function __construct(
-        private readonly Competition_Service $competition_service,
-        private readonly Team_Service $team_service,
-        private readonly View_Renderer_Interface $renderer,
-        private readonly Tournament_Presenter $tournament_presenter,
-        private readonly ?Fixture_Link_Service $link_service = null,
-        private readonly ?Fixture_Permission_Service $permission_service = null,
-        private readonly ?Club_Presenter $club_presenter = null,
-        private readonly ?Player_Presenter $player_presenter = null,
-        private readonly ?Rubber_Repository_Interface $rubber_repository = null
+        private Competition_Service $competition_service,
+        private Team_Service $team_service,
+        private View_Renderer_Interface $renderer,
+        private Tournament_Presenter $tournament_presenter,
+        private ?Fixture_Link_Service $link_service = null,
+        private ?Fixture_Permission_Service $permission_service = null,
+        private ?Club_Presenter $club_presenter = null,
+        private ?Player_Presenter $player_presenter = null,
+        private ?Rubber_Repository_Interface $rubber_repository = null
     ) {}
 
+    /**
+     * @param Match_List_Result $result output of the match list query.
+     * @param string            $template template name.
+     * @param int               $post_id post ID.
+     * @param string            $form_action form action.
+     *
+     * @return Matches_List_View_Model
+     */
     public function present_daily( Match_List_Result $result, string $template, int $post_id = 0, string $form_action = '' ): Matches_List_View_Model {
         return new Matches_List_View_Model(
             template: '' !== $template ? 'matches-' . $template : 'matches-daily',
@@ -43,6 +65,13 @@ class Matches_List_Presenter {
         );
     }
 
+    /**
+     * @param Match_List_Result $result output of the match list query.
+     * @param string            $template template name.
+     * @param int               $header_level header level.
+     *
+     * @return Matches_List_View_Model
+     */
     public function present_latest_results( Match_List_Result $result, string $template, int $header_level ): Matches_List_View_Model {
         return new Matches_List_View_Model(
             template: '' !== $template ? 'matches-' . $template : 'matches-results',
@@ -51,6 +80,12 @@ class Matches_List_Presenter {
         );
     }
 
+    /**
+     * @param Matches_List_View_Model $vm view model.
+     *
+     * @return string
+     * @throws Throwable Error rendering the view.
+     */
     public function render( Matches_List_View_Model $vm ): string {
         $vars = array_merge(
             [
@@ -68,7 +103,7 @@ class Matches_List_Presenter {
             /* translators: %1$s: template %2$s: directory */
             $msg = sprintf( __( 'Could not load template %1$s.php from %2$s directory', 'racketmanager' ), $vm->template, 'templates' );
 
-            return (string) show_alert( $msg, 'danger' );
+            return show_alert( $msg, 'danger' );
         } catch ( Throwable $e ) {
             $this->restore_buffer_level( $level );
             throw $e;
@@ -80,17 +115,15 @@ class Matches_List_Presenter {
      *
      * @param array $fixtures Fixture entities.
      *
-     * @return array<string, array<Fixture_Presentation_Adapter|\Racketmanager\Presentation\View_Models\Tournament_Match_Card_View_Model>>
+     * @return array<string, array<Fixture_Presentation_Adapter|Tournament_Match_Card_View_Model>>
      */
     public function group_by_league( array $fixtures ): array {
         $matches_list = [];
         foreach ( $fixtures as $fixture ) {
             if ( $fixture instanceof Fixture && $this->tournament_presenter->is_tournament_competition_match( $fixture ) ) {
-                $league = $fixture->get_league();
-                $title  = is_object( $league )
-                    ? (string) ( method_exists( $league, 'get_name' ) ? $league->get_name() : ( $league->title ?? '' ) )
-                    : '';
-                $key = '' !== $title ? $title : (string) $fixture->get_league_id();
+                $league                 = $fixture->get_league();
+                $title                  = $this->league_title( $league );
+                $key                    = '' !== $title ? $title : (string) $fixture->get_league_id();
                 $matches_list[ $key ][] = $this->tournament_presenter->present_match_card( $fixture, null, null, 'list', false, true );
                 continue;
             }
@@ -113,28 +146,57 @@ class Matches_List_Presenter {
                 $key,
                 $matches,
                 null,
-                [ 'show_header' => false, 'matches_key' => 'league' ]
+                [
+                    'show_header' => false,
+                    'matches_key' => 'league',
+                ]
             );
         }
 
         return $matches_list;
     }
 
+    /**
+     * @param Fixture_Presentation_Adapter $match match presentation adapter.
+     *
+     * @return string
+     */
     private function league_key( Fixture_Presentation_Adapter $match ): string {
         $title = (string) ( $match->league->title ?? '' );
         if ( '' === $title && ! empty( $match->league_id ) ) {
             $league = $this->competition_service->get_league_repository()->find_by_id( (int) $match->league_id );
-            if ( is_object( $league ) ) {
-                $title = (string) ( method_exists( $league, 'get_name' ) ? $league->get_name() : ( $league->title ?? '' ) );
-            }
+            $title  = $this->league_title( $league );
         }
 
         return $title;
     }
 
+    /**
+     * @param int $level buffer level.
+     *
+     * @return void
+     */
     private function restore_buffer_level( int $level ): void {
         while ( ob_get_level() > $level ) {
             ob_end_clean();
         }
+    }
+
+    /**
+     * Resolve a league display title from a league object (or non-object), falling back to ''.
+     *
+     * @param mixed $league League entity, legacy object, or null.
+     *
+     * @return string
+     */
+    private function league_title( mixed $league ): string {
+        if ( ! is_object( $league ) ) {
+            return '';
+        }
+        if ( method_exists( $league, 'get_name' ) ) {
+            return (string) $league->get_name();
+        }
+
+        return $league->title ?? '';
     }
 }

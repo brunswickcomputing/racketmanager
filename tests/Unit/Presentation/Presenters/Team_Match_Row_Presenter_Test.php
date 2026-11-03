@@ -167,6 +167,19 @@ class Team_Match_Row_Presenter_Test extends TestCase {
         $this->assertNull( $plain->status_message );
     }
 
+    public function test_points_are_formatted_without_trailing_zeros(): void {
+        $presenter = $this->create_team_match_row_presenter();
+
+        $whole = $presenter->present( $this->loaded_fixture( 11, 1, 2, '5.000000', '1.000000' ) );
+        $half  = $presenter->present( $this->loaded_fixture( 12, 1, 2, '2.500000', '3.500000' ) );
+        $zero  = $presenter->present( $this->loaded_fixture( 13, 2, 1, '0.000000', '6.000000' ) );
+
+        $this->assertSame( [ '5', '1' ], [ $whole->home_points, $whole->away_points ] );
+        $this->assertSame( [ '2.5', '3.5' ], [ $half->home_points, $half->away_points ] );
+        $this->assertSame( [ '0', '6' ], [ $zero->home_points, $zero->away_points ] );
+        $this->assertFalse( $zero->is_pending );
+    }
+
     public function test_withdrawn_team_title_uses_team_name(): void {
         $fixture                 = $this->loaded_fixture( 9 );
         $fixture->teams['home']->is_withdrawn = true;

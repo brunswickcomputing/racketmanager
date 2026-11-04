@@ -53,6 +53,7 @@ use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Team_Service;
+use Racketmanager\Services\View\Php_View_Renderer;
 use function __;
 use function count;
 use function function_exists;
@@ -110,7 +111,8 @@ class League_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         $this->player_presenter       = $player_presenter ?? new Player_Presenter();
         $this->fixture_presenter      = $fixture_presenter ?? new Fixture_Presenter(
             $fixture_link_service ?? new Fixture_Link_Service(),
-            $option_gateway
+            $option_gateway,
+            new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' )
         );
     }
 

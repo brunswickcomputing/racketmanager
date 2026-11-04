@@ -117,7 +117,7 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 			] );
 
 		$link_service = $this->createStub( Fixture_Link_Service::class );
-		$presenter    = new Fixture_Presenter( $link_service, $gateway );
+		$presenter    = new Fixture_Presenter( $link_service, $gateway, $this->renderer );
 
 		$this->assertSame( 'd/m/Y', $presenter->get_date_format() );
 		$this->assertSame( 'g:i a', $presenter->get_time_format() );
@@ -128,7 +128,7 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$gateway->method( 'get_option' )->willReturn( '' );
 
 		$link_service = $this->createStub( Fixture_Link_Service::class );
-		$presenter    = new Fixture_Presenter( $link_service, $gateway );
+		$presenter    = new Fixture_Presenter( $link_service, $gateway, $this->renderer );
 
 		$this->assertSame( 'Y-m-d', $presenter->get_date_format() );
 		$this->assertSame( 'H:i', $presenter->get_time_format() );
@@ -516,7 +516,7 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 
 		$gateway = $this->createStub( Option_Gateway_Interface::class );
 		$gateway->method( 'get_option' )->willReturn( 'Y-m-d' );
-		$fixture_presenter = new Fixture_Presenter( $this->createStub( Fixture_Link_Service::class ), $gateway );
+		$fixture_presenter = new Fixture_Presenter( $this->createStub( Fixture_Link_Service::class ), $gateway, $this->renderer );
 
 		$view_presenter      = new Shortcode_View_Presenter( $this->template_renderer );
 		$shortcode_presenter = new Match_Shortcode_Presenter(
@@ -596,7 +596,7 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 
 		$gateway = $this->createStub( Option_Gateway_Interface::class );
 		$gateway->method( 'get_option' )->willReturn( 'j F Y' );
-		$fixture_presenter = new Fixture_Presenter( $this->createStub( Fixture_Link_Service::class ), $gateway );
+		$fixture_presenter = new Fixture_Presenter( $this->createStub( Fixture_Link_Service::class ), $gateway, $this->renderer );
 
 		$view_presenter      = new Shortcode_View_Presenter( $this->template_renderer );
 		$shortcode_presenter = new Match_Shortcode_Presenter(
@@ -648,7 +648,7 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 
 		$gateway = $this->createStub( Option_Gateway_Interface::class );
 		$gateway->method( 'get_option' )->willReturn( 'Y-m-d' );
-		$fixture_presenter = new Fixture_Presenter( $this->createStub( Fixture_Link_Service::class ), $gateway );
+		$fixture_presenter = new Fixture_Presenter( $this->createStub( Fixture_Link_Service::class ), $gateway, $this->renderer );
 
 		$view_presenter      = new Shortcode_View_Presenter( $this->template_renderer );
 		$shortcode_presenter = new Match_Shortcode_Presenter(
@@ -789,6 +789,7 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$presenter = new Fixture_Presenter(
 			$this->createStub( Fixture_Link_Service::class ),
 			$this->createStub( Option_Gateway_Interface::class ),
+			$this->renderer,
 			$this->create_team_match_row_presenter()
 		);
 
@@ -824,6 +825,7 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$presenter = new Fixture_Presenter(
 			$this->createStub( Fixture_Link_Service::class ),
 			$this->createStub( Option_Gateway_Interface::class ),
+			$this->renderer,
 			$this->create_team_match_row_presenter()
 		);
 
@@ -859,6 +861,7 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$presenter = new Fixture_Presenter(
 			$this->createStub( Fixture_Link_Service::class ),
 			$this->createStub( Option_Gateway_Interface::class ),
+			$this->renderer,
 			$this->create_team_match_row_presenter()
 		);
 
@@ -900,6 +903,7 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$presenter = new Fixture_Presenter(
 			$this->createStub( Fixture_Link_Service::class ),
 			$this->createStub( Option_Gateway_Interface::class ),
+			$this->renderer,
 			$this->create_team_match_row_presenter()
 		);
 

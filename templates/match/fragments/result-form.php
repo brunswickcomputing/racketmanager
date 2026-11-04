@@ -3,7 +3,7 @@ declare( strict_types=1 );
 /**
  * Template fragment for fixture result entry form
  *
- * @var Fixture_Detail_Read_Model $model
+ * @var Fixture_Detail_Read_Model $vm
  */
 
 use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
@@ -63,11 +63,11 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
                             </div>
                         </div>
                         <div id="showMatchRubbers">
-                            <form id="form-match-<?php echo esc_attr( $model->match_id ); ?>" class="team-match-result" method="post">
+                            <form id="form-match-<?php echo esc_attr( $vm->match_id ); ?>" class="team-match-result" method="post">
                                 <?php wp_nonce_field( 'rubbers-match', 'racketmanager_nonce' ); ?>
                                 <input type="hidden" name="updated_form" value="new"/>
-                                <input type="hidden" name="current_match_id" id="current_match_id" value="<?php echo esc_attr( $model->match_id ); ?>"/>
-                                <input type="hidden" name="new_match_status" id="match_status" value="<?php echo esc_attr( $model->match_status ); ?>"/>
+                                <input type="hidden" name="current_match_id" id="current_match_id" value="<?php echo esc_attr( $vm->match_id ); ?>"/>
+                                <input type="hidden" name="new_match_status" id="match_status" value="<?php echo esc_attr( $vm->match_status ); ?>"/>
                                 <div class="alert_rm" id="matchAlert" style="display:none;">
                                     <div class="alert__body">
                                         <div class="alert__body-inner" id="matchAlertResponse">
@@ -80,13 +80,13 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
                                         <?php
                                         $update_action = 'results';
                                         $button_text   = __( 'Save Result', 'racketmanager' );
-                                        if ( $model->permissions['match_approval_mode'] ?? false ) {
+                                        if ( $vm->permissions['match_approval_mode'] ?? false ) {
                                             $update_action = 'confirm';
                                             $button_text   = __( 'Confirm Result', 'racketmanager' );
                                         }
                                         ?>
                                         <input type="hidden" name="updateRubber" id="updateRubber" value="<?php echo esc_attr( $update_action ); ?>"/>
-                                        <a tabindex="-1" class="btn btn-plain" id="cancelResultsTop" href="<?php echo esc_url( $model->edit_url ); ?>"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></a>
+                                        <a tabindex="-1" class="btn btn-plain" id="cancelResultsTop" href="<?php echo esc_url( $vm->edit_url ); ?>"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></a>
                                         <button class="btn btn-primary" type="button" id="updateRubberResultsTop" data-action="update-team-result" tabindex="-1">
                                             <?php echo esc_html( $button_text ); ?>
                                         </button>
@@ -95,8 +95,8 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
 
                                 <?php
                                 $show_approvals = false;
-                                if ( ! empty( $model->approvals ) ) {
-                                    foreach ( $model->approvals as $approval ) {
+                                if ( ! empty( $vm->approvals ) ) {
+                                    foreach ( $vm->approvals as $approval ) {
                                         if ( ! empty( $approval['approver_name'] ) ) {
                                             $show_approvals = true;
                                             break;
@@ -118,12 +118,12 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
                                             <div class="match__body">
                                                 <div class="match__row-wrapper">
                                                     <?php
-                                                    foreach ( $model->approvals as $opponent_key => $approval ) {
+                                                    foreach ( $vm->approvals as $opponent_key => $approval ) {
                                                         ?>
                                                         <div class="match__row">
                                                             <div class="match__row-title">
                                                                 <div class="match__row-title-header">
-                                                                    <?php echo esc_html( $model->teams[ $opponent_key ]['team_name'] ); ?>
+                                                                    <?php echo esc_html( $vm->teams[ $opponent_key ]['team_name'] ); ?>
                                                                 </div>
                                                                 <div class="match__row-title-value">
                                                                     <?php
@@ -132,8 +132,8 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
                                                                         <span class="match__row-title-value-content"><span class="nav-link__value"><?php echo esc_html( $approval['approver_name'] ); ?></span></span>
                                                                         <?php
                                                                     } else {
-                                                                        $user_type = $model->permissions['user_type'] ?? '';
-                                                                        $user_team = $model->permissions['user_team'] ?? '';
+                                                                        $user_type = $vm->permissions['user_type'] ?? '';
+                                                                        $user_team = $vm->permissions['user_team'] ?? '';
                                                                         if ( 'admin' !== $user_type && ( $opponent_key === $user_team || 'both' === $user_team ) ) {
                                                                             ?>
                                                                             <div class="approval-check">
@@ -157,7 +157,7 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
                                                             </div>
                                                             <?php
                                                             if ( $approval['approver_name'] ) {
-                                                                if ( ( $model->permissions['match_update'] ?? false ) && 'admin' !== ( $model->permissions['user_type'] ?? '' ) ) {
+                                                                if ( ( $vm->permissions['match_update'] ?? false ) && 'admin' !== ( $vm->permissions['user_type'] ?? '' ) ) {
                                                                     ?>
                                                                     <div class="match-comments form-floating">
                                                                         <textarea class="form-control result-comments" placeholder="<?php esc_attr_e( 'Leave a comment here', 'racketmanager' ); ?>" name="matchComments[<?php echo esc_attr( $opponent_key ); ?>]" id="matchComments-<?php echo esc_attr( $opponent_key ); ?>"><?php echo esc_html( $approval['comment'] ); ?></textarea>
@@ -172,8 +172,8 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
                                                                     <?php
                                                                 }
                                                             } else {
-                                                                $user_type = $model->permissions['user_type'] ?? '';
-                                                                $user_team = $model->permissions['user_team'] ?? '';
+                                                                $user_type = $vm->permissions['user_type'] ?? '';
+                                                                $user_team = $vm->permissions['user_team'] ?? '';
                                                                 if ( 'admin' !== $user_type && ( $user_team === $opponent_key || 'both' === $user_team ) ) {
                                                                     ?>
                                                                     <div class="match-comments form-floating">
@@ -200,7 +200,7 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
                                 <ul class="match-group">
                                     <?php
                                     $tab_index = 1;
-                                    foreach ( $model->rubbers as $rubber ) {
+                                    foreach ( $vm->rubbers as $rubber ) {
                                         ?>
                                         <input type="hidden" name="id[<?php echo esc_attr( $rubber['number'] ); ?>]" value="<?php echo esc_html( $rubber['id'] ); ?>" />
                                         <input type="hidden" name="type[<?php echo esc_attr( $rubber['number'] ); ?>]" value="<?php echo esc_html( $rubber['type'] ); ?>" />
@@ -269,7 +269,7 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
                                                                                     <select class="form-select" name="<?php echo esc_attr( $select_name ); ?>" id="<?php echo esc_attr( $player_id_link ); ?>">
                                                                                         <option value="0">&nbsp;</option>
                                                                                         <?php
-                                                                                        foreach ( $model->club_players[ $opponent_key ][ $gender ] ?? [] as $player_option ) {
+                                                                                        foreach ( $vm->club_players[ $opponent_key ][ $gender ] ?? [] as $player_option ) {
                                                                                             $player_display = $player_option->get_fullname();
                                                                                             if ( $player_option->get_btm() ) {
                                                                                                 $player_display .= ' - ' . $player_option->get_btm();
@@ -306,7 +306,7 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
                                                     </div>
                                                     <div class="match__result">
                                                         <?php
-                                                        for ( $s_num = 1; $s_num <= $model->num_sets; $s_num++ ) {
+                                                        for ( $s_num = 1; $s_num <= $vm->num_sets; $s_num++ ) {
                                                             $set            = $rubber['sets'][ $s_num ] ?? [];
                                                             $set_id         = "set_{$rubber['number']}_$s_num";
                                                             $home_val       = $set['home'] ?? '';
@@ -314,7 +314,7 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
                                                             $home_won_class = ! empty( $set['home_won'] ) ? 'match-points__cell-input--won' : '';
                                                             $away_won_class = ! empty( $set['away_won'] ) ? 'match-points__cell-input--won' : '';
                                                             $tb_val         = $set['tiebreak'] ?? '';
-                                                            $set_info       = $model->scoring_info[ $rubber['number'] ][ $s_num ] ?? [];
+                                                            $set_info       = $vm->scoring_info[ $rubber['number'] ][ $s_num ] ?? [];
                                                             ?>
                                                             <ul class="match-points set-points" id="<?php echo esc_attr( $set_id ); ?>"
                                                                 data-settype="<?php echo esc_attr( $set_info['set_type'] ?? '' ); ?>"
@@ -359,7 +359,7 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
                                 </ul>
                                 <div class="row mt-3 mb-3">
                                     <div class="form-floating">
-                                        <textarea class="form-control result-comments" placeholder="<?php esc_attr_e( 'Leave a comment here', 'racketmanager' ); ?>" name="matchComments[result]" id="matchComments"><?php echo esc_html( $model->general_comments ); ?></textarea>
+                                        <textarea class="form-control result-comments" placeholder="<?php esc_attr_e( 'Leave a comment here', 'racketmanager' ); ?>" name="matchComments[result]" id="matchComments"><?php echo esc_html( $vm->general_comments ); ?></textarea>
                                         <label for="matchComments"><?php esc_html_e( 'Match Comments', 'racketmanager' ); ?></label>
                                     </div>
                                 </div>
@@ -369,12 +369,12 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
                                         <?php
                                         $update_action = 'results';
                                         $button_text   = __( 'Save Result', 'racketmanager' );
-                                        if ( $model->permissions['match_approval_mode'] ?? false ) {
+                                        if ( $vm->permissions['match_approval_mode'] ?? false ) {
                                             $update_action = 'confirm';
                                             $button_text   = __( 'Confirm Result', 'racketmanager' );
                                         }
                                         ?>
-                                        <a tabindex="-1" class="btn btn-plain" id="cancelResults" href="<?php echo esc_url( $model->edit_url ); ?>"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></a>
+                                        <a tabindex="-1" class="btn btn-plain" id="cancelResults" href="<?php echo esc_url( $vm->edit_url ); ?>"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></a>
                                         <button class="btn btn-primary" type="button" id="updateRubberResults" data-action="update-team-result">
                                             <?php echo esc_html( $button_text ); ?>
                                         </button>

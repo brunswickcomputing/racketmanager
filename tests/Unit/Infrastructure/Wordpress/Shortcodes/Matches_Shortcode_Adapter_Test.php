@@ -546,7 +546,7 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
             new Get_Match_Score_Handler( $service ),
             new Get_Match_Header_Handler( $service ),
             new Get_Match_Detail_Handler( $service, $players, $rubbers ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class ) ),
-            new Match_Shortcode_Presenter( new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $renderer ) ), new Fixture_Presenter( new Fixture_Link_Service(), $this->createStub( Option_Gateway_Interface::class ) ), $players )
+            new Match_Shortcode_Presenter( new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $renderer ) ), new Fixture_Presenter( new Fixture_Link_Service(), $this->createStub( Option_Gateway_Interface::class ), $renderer ), $players )
         );
     }
 

@@ -3,17 +3,17 @@ declare( strict_types=1 );
 /**
  * Template fragment for fixture detail (rubbers and approvals)
  *
- * @var Fixture_Detail_Read_Model $model
+ * @var Fixture_Detail_Read_Model $vm
  */
 
 use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
 
 ?>
 <?php
-if ( $model->is_standalone ) {
+if ( $vm->is_standalone ) {
     ?>
     <div id="matchRubbers" class="row">
-        <div class="page-content__main <?php echo $model->location || $model->teams ? 'col-12 col-lg-8' : 'col-12'; ?>">
+        <div class="page-content__main <?php echo $vm->location || $vm->teams ? 'col-12 col-lg-8' : 'col-12'; ?>">
             <div class="module module--card">
                 <div class="module__banner">
                     <h3 class="module__title">
@@ -21,9 +21,9 @@ if ( $model->is_standalone ) {
                     </h3>
                     <div class="module__aside">
                         <?php
-                        if ( $model->show_print_button ) {
+                        if ( $vm->show_print_button ) {
                             ?>
-                            <button type="button" class="btn btn--link match-print" id="printMatchCard" data-match-id="<?php echo esc_attr( $model->match_id ); ?>" data-print-match-card="<?php echo esc_attr( $model->match_id ); ?>" data-bs-toggle="tooltip"
+                            <button type="button" class="btn btn--link match-print" id="printMatchCard" data-match-id="<?php echo esc_attr( $vm->match_id ); ?>" data-print-match-card="<?php echo esc_attr( $vm->match_id ); ?>" data-bs-toggle="tooltip"
                                data-bs-placement="top" title="<?php esc_html_e( 'Print match card', 'racketmanager' ); ?>">
                                 <svg width="16" height="16" class="icon ">
                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#printer-fill' ); ?>"></use>
@@ -33,10 +33,10 @@ if ( $model->is_standalone ) {
                         }
                         ?>
                         <?php
-                        if ( $model->show_edit_button ) {
+                        if ( $vm->show_edit_button ) {
                             ?>
                             <div class="match-mode" id="editMatchMode">
-                                <a class="btn btn--link" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Edit', 'racketmanager' ); ?>" href="<?php echo esc_url( $model->edit_url ); ?>">
+                                <a class="btn btn--link" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Edit', 'racketmanager' ); ?>" href="<?php echo esc_url( $vm->edit_url ); ?>">
                                     <svg width="16" height="16" class="icon ">
                                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
                                     </svg>
@@ -54,7 +54,7 @@ if ( $model->is_standalone ) {
                 <div class="module-container">
                     <ul class="match-group">
                         <?php
-                        foreach ( $model->rubbers as $rubber ) {
+                        foreach ( $vm->rubbers as $rubber ) {
                             ?>
                             <li class="match-group__item">
                                 <div class="match" id="rubber-<?php echo esc_attr( $rubber['id'] ); ?>">
@@ -180,7 +180,7 @@ if ( $model->is_standalone ) {
                     </ul>
                     <?php
                     $has_approver = false;
-                    foreach ( $model->approvals as $approval ) {
+                    foreach ( $vm->approvals as $approval ) {
                         if ( $approval['approver_name'] ) {
                             $has_approver = true;
                             break;
@@ -203,7 +203,7 @@ if ( $model->is_standalone ) {
                                         <?php
                                         foreach ( [ 'home', 'away' ] as $opponent_key ) {
                                             ?>
-                                            <?php $approval = $model->approvals[ $opponent_key ]; ?>
+                                            <?php $approval = $vm->approvals[ $opponent_key ]; ?>
                                             <div class="match__row">
                                                 <div class="match__row-title">
                                                     <div class="match__row-title-header">
@@ -240,7 +240,7 @@ if ( $model->is_standalone ) {
                                         ?>
 
                                         <?php
-                                        if ( $model->general_comments ) {
+                                        if ( $vm->general_comments ) {
                                             ?>
                                             <div class="match__row match__row-comments">
                                                 <div class="match__row-title">
@@ -250,7 +250,7 @@ if ( $model->is_standalone ) {
                                                     <div class="match__row-title-value">
                                                         <span class="match__row-title-value-content">
                                                             <span class="nav-link__value match-comments" title="<?php esc_attr_e( 'Match comments', 'racketmanager' ); ?>">
-                                                                <?php echo esc_html( $model->general_comments ); ?>
+                                                                <?php echo esc_html( $vm->general_comments ); ?>
                                                             </span>
                                                         </span>
                                                     </div>
@@ -270,19 +270,19 @@ if ( $model->is_standalone ) {
                 </div>
 
                 <?php
-                if ( $model->is_standalone ) {
+                if ( $vm->is_standalone ) {
                     ?>
             </div>
         </div>
     </div>
 
                     <?php
-                    if ( $model->location || $model->teams ) {
+                    if ( $vm->location || $vm->teams ) {
                         ?>
         <div class="page-content__sidebar col-12 col-lg-4">
             <div class="row">
                                 <?php
-                                if ( $model->location ) {
+                                if ( $vm->location ) {
                                     ?>
                     <div class="col-12 col-sm-6 col-lg-12">
                         <div class="module module--card">
@@ -294,32 +294,32 @@ if ( $model->is_standalone ) {
                             <div class="module__content">
                                 <div class="module-container">
                                     <h5 class="subheading">
-                                        <?php echo esc_html( $model->location['club_name'] ); ?>
+                                        <?php echo esc_html( $vm->location['club_name'] ); ?>
                                     </h5>
                                     <ul class="list list--naked">
                                         <?php
-                                        if ( $model->location['address'] ) {
+                                        if ( $vm->location['address'] ) {
                                             ?>
                                             <li class="list__item">
                                                 <svg width="16" height="16" class="icon icon-marker">
                                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/lta-icons.svg#icon-marker' ); ?>"></use>
                                                 </svg>
                                                 <span class="nav-link__value">
-                                                    <?php echo esc_html( $model->location['address'] ); ?>
+                                                    <?php echo esc_html( $vm->location['address'] ); ?>
                                                 </span>
                                             </li>
                                             <?php
                                         }
                                         ?>
                                         <?php
-                                        if ( $model->location['match_secretary_name'] ) {
+                                        if ( $vm->location['match_secretary_name'] ) {
                                             ?>
                                             <li class="list__item">
                                                 <svg width="16" height="16" class="icon icon-captain">
                                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/lta-icons.svg#icon-captain' ); ?>"></use>
                                                 </svg>
                                                 <span class="">
-                                                    <?php echo esc_html( $model->location['match_secretary_name'] ); ?>
+                                                    <?php echo esc_html( $vm->location['match_secretary_name'] ); ?>
                                                 </span>
                                             </li>
                                             <?php
@@ -327,32 +327,32 @@ if ( $model->is_standalone ) {
                                         ?>
                                         <?php
                                         if ( is_user_logged_in() ) {
-                                            if ( $model->location['match_secretary_contactno'] ) {
+                                            if ( $vm->location['match_secretary_contactno'] ) {
                                                 ?>
                                                 <li class="list__item">
-                                                    <a href="tel:<?php echo esc_attr( $model->location['match_secretary_contactno'] ); ?>" class="nav--link" rel="nofollow">
+                                                    <a href="tel:<?php echo esc_attr( $vm->location['match_secretary_contactno'] ); ?>" class="nav--link" rel="nofollow">
                                                         <svg width="16" height="16" class="icon ">
                                                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#telephone-fill' ); ?>"></use>
                                                         </svg>
                                                         <span class="nav--link">
                                                             <span class="nav-link__value">
-                                                                <?php echo esc_html( $model->location['match_secretary_contactno'] ); ?>
+                                                                <?php echo esc_html( $vm->location['match_secretary_contactno'] ); ?>
                                                             </span>
                                                         </span>
                                                     </a>
                                                 </li>
                                                 <?php
                                             }
-                                            if ( $model->location['match_secretary_email'] ) {
+                                            if ( $vm->location['match_secretary_email'] ) {
                                                 ?>
                                                 <li class="list__item">
-                                                    <a href="mailto:<?php echo esc_attr( $model->location['match_secretary_email'] ); ?>" class="nav--link">
+                                                    <a href="mailto:<?php echo esc_attr( $vm->location['match_secretary_email'] ); ?>" class="nav--link">
                                                         <svg width="16" height="16" class="icon ">
                                                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#envelope-fill' ); ?>"></use>
                                                         </svg>
                                                         <span class="nav--link">
                                                             <span class="nav-link__value">
-                                                                <?php echo esc_html( $model->location['match_secretary_email'] ); ?>
+                                                                <?php echo esc_html( $vm->location['match_secretary_email'] ); ?>
                                                             </span>
                                                         </span>
                                                     </a>
@@ -362,15 +362,15 @@ if ( $model->is_standalone ) {
                                         }
                                         ?>
                                         <?php
-                                        if ( $model->location['website'] ) {
+                                        if ( $vm->location['website'] ) {
                                             ?>
                                             <li class="list__item">
-                                                <a href="<?php echo esc_url( $model->location['website'] ); ?>" class="nav--link" target="_blank" rel="noopener nofollow">
+                                                <a href="<?php echo esc_url( $vm->location['website'] ); ?>" class="nav--link" target="_blank" rel="noopener nofollow">
                                                     <svg width="16" height="16" class="icon icon-globe">
                                                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#globe' ); ?>"></use>
                                                     </svg>
                                                     <span class="">
-                                                        <?php echo esc_html( $model->location['website'] ); ?>
+                                                        <?php echo esc_html( $vm->location['website'] ); ?>
                                                     </span>
                                                 </a>
                                             </li>
@@ -387,7 +387,7 @@ if ( $model->is_standalone ) {
                                 ?>
 
                                 <?php
-                                if ( $model->teams ) {
+                                if ( $vm->teams ) {
                                     ?>
                     <div class="col-12 col-sm-6 col-lg-12">
                         <div class="module module--card">
@@ -402,9 +402,9 @@ if ( $model->is_standalone ) {
                                     foreach ( [ 'home', 'away' ] as $opponent ) {
                                         ?>
                                         <?php
-                                        if ( isset( $model->teams[ $opponent ] ) ) {
+                                        if ( isset( $vm->teams[ $opponent ] ) ) {
                                             ?>
-                                            <?php $team = $model->teams[ $opponent ]; ?>
+                                            <?php $team = $vm->teams[ $opponent ]; ?>
                                             <h5 class="subheading">
                                                 <?php echo esc_html( $team['captain_name'] ); ?>
                                             </h5>

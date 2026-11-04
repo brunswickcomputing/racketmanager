@@ -16,6 +16,7 @@ use Racketmanager\Domain\Team\Team;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
+use Racketmanager\Services\View\View_Renderer_Interface;
 
 class Fixture_Presenter_Phase2_Test extends TestCase {
     private Fixture_Presenter $presenter;
@@ -37,7 +38,7 @@ class Fixture_Presenter_Phase2_Test extends TestCase {
                 return $default;
             }
         );
-        $this->presenter      = new Fixture_Presenter( $this->link_service, $this->option_gateway );
+        $this->presenter      = new Fixture_Presenter( $this->link_service, $this->option_gateway, $this->createStub( View_Renderer_Interface::class ) );
     }
 
     public function test_map_to_header_read_model(): void {

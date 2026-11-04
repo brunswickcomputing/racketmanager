@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Presentation\Presenters;
 
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Exceptions\Template_Not_Found_Exception;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Date_Update_Read_Model;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Details_DTO as Application_Fixture_Details_DTO;
@@ -26,6 +27,7 @@ use Racketmanager\Domain\Scoring\Set_Score;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\View_Models\Team_Match_Row_View_Model;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
+use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
@@ -37,9 +39,18 @@ use function mysql2date;
 
 readonly class Fixture_Presenter {
 
+    /**
+     * Constructor.
+     *
+     * @param Fixture_Link_Service          $link_service             Link service.
+     * @param Option_Gateway_Interface      $option_gateway           Option gateway.
+     * @param View_Renderer_Interface       $view_renderer            View renderer.
+     * @param Team_Match_Row_Presenter|null $team_match_row_presenter Optional team match row presenter.
+     */
     public function __construct(
         private Fixture_Link_Service $link_service,
         private Option_Gateway_Interface $option_gateway,
+        private View_Renderer_Interface $view_renderer,
         private ?Team_Match_Row_Presenter $team_match_row_presenter = null
     ) {
     }
@@ -455,28 +466,44 @@ readonly class Fixture_Presenter {
         return new Fixture_Switch_Teams_Read_Model( msg: __( 'Home and away teams switched', 'racketmanager' ), match_id: $fixture->get_id(), link: $this->link_service->get_fixture_link( $fixture, $details->league, $details->home_team, $details->away_team ), modal: $request->modal );
     }
 
+    /**
+     * Render fixture header fragment.
+     *
+     * @param Fixture_Header_Read_Model $model Header read model.
+     * @return string Rendered HTML.
+     */
     public function render_header( Fixture_Header_Read_Model $model ): string {
         return $this->render( 'match/fragments/header', [ 'model' => $model ] );
     }
 
+    /**
+     * Render fixture detail fragment.
+     *
+     * @param Fixture_Detail_Read_Model $model Detail read model.
+     * @return string Rendered HTML.
+     */
     public function render_detail( Fixture_Detail_Read_Model $model ): string {
         $template = $model->is_editing ? 'match/fragments/result-form' : 'match/fragments/detail';
         return $this->render( $template, [ 'model' => $model ] );
     }
 
+    /**
+     * Render a template fragment.
+     *
+     * @param string $template Template name.
+     * @param array  $args     Template arguments.
+     * @return string Rendered HTML.
+     */
     private function render( string $template, array $args ): string {
-        $model = $args['model'] ?? null;
-        $vm    = $args['vm'] ?? $model;
-        ob_start();
-        $template_path = RACKETMANAGER_PATH . 'src/php/Infrastructure/Wordpress/Views/' . $template . '.php';
-        if ( ! file_exists( $template_path ) ) {
-            // Fallback to legacy templates if new ones don't exist yet
-            $template_path = RACKETMANAGER_PATH . 'templates/' . $template . '.php';
+        $vm = $args['vm'] ?? $args['model'] ?? [];
+        if ( ! $this->view_renderer->template_exists( $template ) ) {
+            return '';
         }
-        if ( file_exists( $template_path ) ) {
-            include $template_path;
+        try {
+            return $this->view_renderer->render_to_string( $template, $vm, $args );
+        } catch ( Template_Not_Found_Exception ) {
+            return '';
         }
-        return ob_get_clean() ?: '';
     }
 
     public function map_to_header_read_model( Application_Fixture_Details_DTO|Fixture_Details_DTO $dto, bool $edit_mode = false, bool $is_shortcode = false ): Fixture_Header_Read_Model {

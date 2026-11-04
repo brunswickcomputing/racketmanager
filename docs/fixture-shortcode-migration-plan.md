@@ -43,7 +43,7 @@ The `Fixture_Presenter` will support a "Focus" context to highlight specific ent
     *   Extend `Fixture_Presenter` to include specific rendering methods: `render_header()`, `render_detail()`. [DONE]
     *   Introduce `Read Model` objects to strip all logic from the `.php` templates. [DONE]
 2.  **Template Fragmentation**:
-    *   Create modular templates under `src/php/Infrastructure/Wordpress/Views/match/fragments/`. [DONE]
+    *   Create modular templates under `templates/match/fragments/`, rendered via `View_Renderer_Interface` (`Php_View_Renderer`) to support child/parent theme overrides in `racketmanager/match/fragments/`. [DONE]
 
 ### Phase 3: Infrastructure (The Bridge) [COMPLETED]
 1.  **New Shortcode Adapter**:

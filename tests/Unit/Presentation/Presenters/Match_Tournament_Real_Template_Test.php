@@ -85,7 +85,7 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         } );
         $presenter = new Match_Shortcode_Presenter(
             $this->view_presenter(),
-            new Fixture_Presenter( new Fixture_Link_Service(), $options ),
+            new Fixture_Presenter( new Fixture_Link_Service(), $options, new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
             $this->createStub( \Racketmanager\Services\Player_Service::class )
         );
 

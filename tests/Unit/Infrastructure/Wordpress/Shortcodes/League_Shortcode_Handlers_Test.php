@@ -745,7 +745,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $league_team_repo->method( 'find_by_id' )->willReturnMap( [ [ 10, $red_team ], [ 20, $blue_team ] ] );
         $options = $this->createStub( Option_Gateway_Interface::class );
         $options->method( 'get_option' )->willReturn( 'd/m/Y' );
-        $fixture_presenter = new Fixture_Presenter( $this->createStub( Fixture_Link_Service::class ), $options );
+        $fixture_presenter = new Fixture_Presenter( $this->createStub( Fixture_Link_Service::class ), $options, $this->createStub( View_Renderer_Interface::class ) );
                 $query_fixtures = $this->createStub( Fixture_Repository_Interface::class );
         $query_fixtures->method( 'find_by_id' )->willReturnCallback( static function ( int $id ) use ( $league ) {
             foreach ( $league->fixtures() as $fixture ) {
@@ -847,7 +847,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $league_team_repo->method( 'find_by_id' )->willReturnMap( [ [ 10, $alpha_team ], [ 20, $beta_team ] ] );
         $options = $this->createStub( Option_Gateway_Interface::class );
         $options->method( 'get_option' )->willReturn( 'd/m/Y' );
-        $fixture_presenter = new Fixture_Presenter( $this->createStub( Fixture_Link_Service::class ), $options );
+        $fixture_presenter = new Fixture_Presenter( $this->createStub( Fixture_Link_Service::class ), $options, $this->createStub( View_Renderer_Interface::class ) );
                 $query_fixtures = $this->createStub( Fixture_Repository_Interface::class );
         $query_fixtures->method( 'find_by_id' )->willReturnCallback( static function ( int $id ) use ( $league ) {
             foreach ( $league->fixtures() as $fixture ) {

@@ -18,6 +18,7 @@ use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Option_Reques
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
+use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use ReflectionClass;
 
@@ -32,7 +33,7 @@ class Fixture_Presenter_Test extends TestCase {
         parent::setUp();
         $this->link_service   = $this->createStub( Fixture_Link_Service::class );
         $this->option_gateway = $this->createStub( Option_Gateway_Interface::class );
-        $this->presenter      = new Fixture_Presenter( $this->link_service, $this->option_gateway, team_match_row_presenter: $this->create_team_match_row_presenter() );
+        $this->presenter      = new Fixture_Presenter( $this->link_service, $this->option_gateway, $this->createStub( View_Renderer_Interface::class ), team_match_row_presenter: $this->create_team_match_row_presenter() );
     }
 
     public function test_map_to_result_read_model(): void {

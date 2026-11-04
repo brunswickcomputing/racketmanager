@@ -512,7 +512,8 @@ final class Public_Links_Modernization_Test extends TestCase {
 
         $fixture_presenter = new \Racketmanager\Presentation\Presenters\Fixture_Presenter(
             link_service: $this->createStub( \Racketmanager\Services\Fixture\Fixture_Link_Service::class ),
-            option_gateway: $this->createStub( \Racketmanager\Application\Ports\Option_Gateway_Interface::class )
+            option_gateway: $this->createStub( \Racketmanager\Application\Ports\Option_Gateway_Interface::class ),
+            view_renderer: $this->view_renderer
         );
 
         $tooltip1 = $fixture_presenter->present_last_5_tooltip( $fixture1 );

@@ -36,6 +36,7 @@ use Racketmanager\RacketManager;
 use Racketmanager\Services\Container\Providers\Service_Provider_Interface;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Notification\Notification_Presenter_Interface;
+use Racketmanager\Services\View\View_Renderer_Interface;
 
 final readonly class Presentation_Service_Provider implements Service_Provider_Interface {
 
@@ -144,6 +145,7 @@ final readonly class Presentation_Service_Provider implements Service_Provider_I
         $container->set( 'fixture_presenter', fn( Simple_Container $c ) => new Fixture_Presenter(
             $c->get( 'fixture_link_service' ),
             $c->get( 'option_gateway' ),
+            $c->get( View_Renderer_Interface::class ),
             $c->get( 'team_match_row_presenter' )
         ) );
         $container->alias( Fixture_Presenter::class, 'fixture_presenter' );

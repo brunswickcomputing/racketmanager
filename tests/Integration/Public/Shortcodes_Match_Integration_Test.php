@@ -151,7 +151,7 @@ namespace Racketmanager\Tests\Integration\Public {
                 new Get_Match_Score_Handler( $detail_service ),
                 new Get_Match_Header_Handler( $detail_service ),
                 new Get_Match_Detail_Handler( $detail_service, $this->createStub( Player_Service::class ), $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class ) ),
-                new Match_Shortcode_Presenter( new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $renderer ) ), new Fixture_Presenter( $link_service, $this->createStub( Option_Gateway_Interface::class ) ), $this->createStub( Player_Service::class ) )
+                new Match_Shortcode_Presenter( new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $renderer ) ), new Fixture_Presenter( $link_service, $this->createStub( Option_Gateway_Interface::class ), $renderer ), $this->createStub( Player_Service::class ) )
             );
             $this->container->set( 'matches_shortcode_adapter', fn() => $this->shortcode );
         }

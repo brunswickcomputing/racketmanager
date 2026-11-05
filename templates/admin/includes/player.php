@@ -8,8 +8,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Error_Bag;
 use Racketmanager\Util\Util_Lookup;
-
 /** @var object $player */
 /** @var array $error_fields */
 /** @var string $page_referrer */
@@ -20,18 +20,18 @@ if ( ! isset( $error_fields ) || ! is_array( $error_fields ) ) {
 if ( ! isset( $error_messages ) || ! is_array( $error_messages ) ) {
     $error_messages = array();
 }
-if ( isset( $errors ) && $errors instanceof \Racketmanager\Admin\View_Models\Error_Bag ) {
+if ( isset( $errors ) && $errors instanceof Error_Bag ) {
     foreach ( $errors->all() as $err_fld => $err_msg ) {
         $error_fields[]   = (string) $err_fld;
-        $error_messages[] = (string) $err_msg;
+        $error_messages[] = $err_msg;
     }
 }
 $is_invalid = false;
 ?>
 <form action="" method="post">
     <?php wp_nonce_field( 'racketmanager_manage-player', 'racketmanager_nonce' ); ?>
-    <fieldset class="form-control mb-3">
-        <legend><?php esc_html_e( 'Personal details', 'racketmanager' ); ?></legend>
+    <fieldset class="border rounded-3 p-3 mb-4">
+        <legend class="float-none w-auto px-2 fs-5 fw-semibold"><?php esc_html_e( 'Personal details', 'racketmanager' ); ?></legend>
         <div class="row gx-3">
             <div class="col-md-6">
                 <div class="form-floating mb-3">
@@ -39,7 +39,7 @@ $is_invalid = false;
                     if ( isset( $form_valid ) && ! $form_valid && is_numeric( array_search( 'firstname', $error_fields, true ) ) ) {
                         $is_invalid = true;
                         $msg_id     = array_search( 'firstname', $error_fields, true );
-                        $msg        = $error_messages[$msg_id] ?? null;
+                        $msg        = $error_messages[ $msg_id ] ?? null;
                     }
                     ?>
                     <input class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" placeholder="<?php esc_html_e( 'Enter first name', 'racketmanager' ); ?>" type="text" name="firstname" id="firstname" value="<?php echo isset( $player->firstname ) ? esc_html( $player->firstname ) : null; ?>" />
@@ -61,7 +61,7 @@ $is_invalid = false;
                     if ( isset( $form_valid ) && ! $form_valid && is_numeric( array_search( 'surname', $error_fields, true ) ) ) {
                         $is_invalid = true;
                         $msg_id     = array_search( 'surname', $error_fields, true );
-                        $msg        = $error_messages[$msg_id] ?? null;
+                        $msg        = $error_messages[ $msg_id ] ?? null;
                     }
                     ?>
                     <input class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" placeholder="<?php esc_html_e( 'Enter surname', 'racketmanager' ); ?>" type="text" name="surname" id="surname" value="<?php echo isset( $player->surname ) ? esc_html( $player->surname ) : null; ?>" />
@@ -79,33 +79,35 @@ $is_invalid = false;
             </div>
         </div>
         <div class="row g-3">
-            <fieldset class="col-md-6 mb-3">
-                <?php
-                if ( isset( $form_valid ) && ! $form_valid && is_numeric( array_search( 'gender', $error_fields, true ) ) ) {
-                    $is_invalid = true;
-                    $msg_id     = array_search( 'gender', $error_fields, true );
-                    $msg        = $error_messages[$msg_id] ?? null;
-                }
-                ?>
-                <legend id="gender" class="<?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>"><?php esc_html_e( 'Gender', 'racketmanager' ); ?></legend>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" type="radio" name="gender" id="gender_male" value="M" <?php echo isset( $player->gender ) && 'M' === $player->gender ? ' ' . esc_html( RACKETMANAGER_CHECKED ) : null; ?>/>
-                    <label for="gender_male" class="form-check-label"><?php esc_html_e( 'Male', 'racketmanager' ); ?></label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" type="radio" name="gender" id="gender_female" value="F" <?php echo isset( $player->gender ) && 'F' === $player->gender ? ' ' . esc_html( RACKETMANAGER_CHECKED ) : null; ?>/>
-                    <label for="gender_female" class="form-check-label"><?php esc_html_e( 'Female', 'racketmanager' ); ?></label>
-                </div>
-                <?php
-                if ( $is_invalid ) {
-                    ?>
-                    <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+            <div class="col-md-6 mb-3">
+                <fieldset>
                     <?php
-                    $is_invalid = false;
-                    $msg        = null;
-                }
-                ?>
-            </fieldset>
+                    if ( isset( $form_valid ) && ! $form_valid && is_numeric( array_search( 'gender', $error_fields, true ) ) ) {
+                        $is_invalid = true;
+                        $msg_id     = array_search( 'gender', $error_fields, true );
+                        $msg        = $error_messages[ $msg_id ] ?? null;
+                    }
+                    ?>
+                    <legend id="gender" class="col-form-label pt-0 <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>"><?php esc_html_e( 'Gender', 'racketmanager' ); ?></legend>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" type="radio" name="gender" id="gender_male" value="M" <?php echo isset( $player->gender ) && 'M' === $player->gender ? ' ' . esc_html( RACKETMANAGER_CHECKED ) : null; ?>/>
+                        <label for="gender_male" class="form-check-label"><?php esc_html_e( 'Male', 'racketmanager' ); ?></label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" type="radio" name="gender" id="gender_female" value="F" <?php echo isset( $player->gender ) && 'F' === $player->gender ? ' ' . esc_html( RACKETMANAGER_CHECKED ) : null; ?>/>
+                        <label for="gender_female" class="form-check-label"><?php esc_html_e( 'Female', 'racketmanager' ); ?></label>
+                    </div>
+                    <?php
+                    if ( $is_invalid ) {
+                        ?>
+                        <div class="invalid-feedback d-block"><?php echo esc_html( $msg ); ?></div>
+                        <?php
+                        $is_invalid = false;
+                        $msg        = null;
+                    }
+                    ?>
+                </fieldset>
+            </div>
         </div>
         <div class="row gx-3">
             <div class="col-md-6">
@@ -114,7 +116,7 @@ $is_invalid = false;
                     if ( isset( $form_valid ) && ! $form_valid && is_numeric( array_search( 'btm', $error_fields, true ) ) ) {
                         $is_invalid = true;
                         $msg_id     = array_search( 'btm', $error_fields, true );
-                        $msg        = $error_messages[$msg_id] ?? null;
+                        $msg        = $error_messages[ $msg_id ] ?? null;
                     }
                     ?>
                     <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" placeholder="<?php esc_html_e( 'Enter LTA Tennis Number', 'racketmanager' ); ?>" name="btm" id="btm" value="<?php echo isset( $player->btm ) ? esc_html( $player->btm ) : null; ?>" />
@@ -136,7 +138,7 @@ $is_invalid = false;
                     if ( isset( $form_valid ) && ! $form_valid && is_numeric( array_search( 'year_of_birth', $error_fields, true ) ) ) {
                         $is_invalid = true;
                         $msg_id     = array_search( 'year_of_birth', $error_fields, true );
-                        $msg        = $error_messages[$msg_id] ?? null;
+                        $msg        = $error_messages[ $msg_id ] ?? null;
                     }
                     ?>
                     <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="year_of_birth" id="year_of_birth">
@@ -170,14 +172,14 @@ $is_invalid = false;
     if ( isset( $player->wtn ) ) {
         $match_types = Util_Lookup::get_match_types();
         ?>
-        <fieldset class="form-control mb-3">
-            <legend><?php esc_html_e( 'Ratings', 'racketmanager' ); ?></legend>
+        <div class="border rounded-3 p-3 mb-4">
+            <h2 class="fs-5 fw-semibold mb-3"><?php esc_html_e( 'Ratings', 'racketmanager' ); ?></h2>
             <div class="row gx-3">
                 <div class="col-md-6">
-                    <div class="form-floating mb-3">
-                        <legend class="fs-6"><?php esc_html_e( 'WTN', 'racketmanager' ); ?></legend>
+                    <div class="mb-3">
+                        <span class="form-label d-block text-muted small fw-semibold mb-1"><?php esc_html_e( 'WTN', 'racketmanager' ); ?></span>
                         <?php
-                        $wtn            = $player->wtn;
+                        $wtn         = $player->wtn;
                         $wtn_display = '';
                         foreach ( $match_types as $match_type => $description ) {
                             if ( ! empty( $wtn_display ) ) {
@@ -185,17 +187,17 @@ $is_invalid = false;
                             }
                             $wtn_display .= '[' . $wtn[ $match_type ] . ']';
                         }
-                        echo ' ' . esc_html( $wtn_display );
                         ?>
+                        <div class="form-control-plaintext fs-6"><?php echo esc_html( $wtn_display ); ?></div>
                     </div>
                 </div>
             </div>
-        </fieldset>
+        </div>
         <?php
     }
     ?>
-    <fieldset class="form-control mb-3">
-        <legend><?php esc_html_e( 'Contact details', 'racketmanager' ); ?></legend>
+    <fieldset class="border rounded-3 p-3 mb-4">
+        <legend class="float-none w-auto px-2 fs-5 fw-semibold"><?php esc_html_e( 'Contact details', 'racketmanager' ); ?></legend>
         <div class="row gx-3">
             <div class="col-md-6">
                 <div class="form-floating mb-3">
@@ -203,7 +205,7 @@ $is_invalid = false;
                     if ( isset( $form_valid ) && ! $form_valid && is_numeric( array_search( 'contactemail', $error_fields, true ) ) ) {
                         $is_invalid = true;
                         $msg_id     = array_search( 'contactemail', $error_fields, true );
-                        $msg        = $error_messages[$msg_id] ?? null;
+                        $msg        = $error_messages[ $msg_id ] ?? null;
                     }
                     ?>
                     <input type="email" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" autocomplete="off" placeholder="<?php esc_html_e( 'Enter email address', 'racketmanager' ); ?>" name="email" id="contactemail" value="<?php echo isset( $player->email ) ? esc_html( $player->email ) : null; ?>" />
@@ -225,7 +227,7 @@ $is_invalid = false;
                     if ( isset( $form_valid ) && ! $form_valid && is_numeric( array_search( 'contactno', $error_fields, true ) ) ) {
                         $is_invalid = true;
                         $msg_id     = array_search( 'contactno', $error_fields, true );
-                        $msg        = $error_messages[$msg_id] ?? null;
+                        $msg        = $error_messages[ $msg_id ] ?? null;
                     }
                     ?>
                     <input type="tel" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" placeholder="<?php esc_html_e( 'Enter telephone number', 'racketmanager' ); ?>" name="contactno" id="contactno" <?php echo isset( $player->contactno ) ? ' value = "' . esc_html( $player->contactno ) . '" ' : null; ?>/>
@@ -246,8 +248,8 @@ $is_invalid = false;
     <?php
     if ( isset( $player_id ) ) {
         ?>
-        <fieldset class="form-control mb-3">
-            <legend><?php esc_html_e( 'System details', 'racketmanager' ); ?></legend>
+        <fieldset class="border rounded-3 p-3 mb-4">
+            <legend class="float-none w-auto px-2 fs-5 fw-semibold"><?php esc_html_e( 'System details', 'racketmanager' ); ?></legend>
             <div class="row gx-3">
                 <div class="col-md-6">
                     <div class="form-check">
@@ -255,9 +257,9 @@ $is_invalid = false;
                         if ( isset( $form_valid ) && ! $form_valid && is_numeric( array_search( 'locked', $error_fields, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'locked', $error_fields, true );
-                            $msg        = $error_messages[$msg_id] ?? null;
+                            $msg        = $error_messages[ $msg_id ] ?? null;
                         }
-                       ?>
+                        ?>
                         <input class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" type="checkbox" name="locked" id="locked" value="Locked" <?php echo empty( $player->locked ) ? null : esc_html( RACKETMANAGER_CHECKED ); ?>>
                         <label for="locked" class="form-check-label"><?php esc_html_e( 'Locked', 'racketmanager' ); ?></label>
                         <?php

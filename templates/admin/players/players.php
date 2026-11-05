@@ -7,7 +7,9 @@
 
 namespace Racketmanager;
 
-/** @var \Racketmanager\Admin\View_Models\Players_Page_View_Model $vm */
+use Racketmanager\Admin\View_Models\Players_Page_View_Model;
+
+/** @var Players_Page_View_Model $vm */
 $players        = $vm->players;
 $player         = $vm->player;
 $errors         = $vm->errors;
@@ -16,7 +18,7 @@ $error_fields   = array();
 $error_messages = array();
 foreach ( $errors->all() as $err_fld => $err_msg ) {
     $error_fields[]   = (string) $err_fld;
-    $error_messages[] = (string) $err_msg;
+    $error_messages[] = $err_msg;
 }
 ?>
 <!-- Add Player -->
@@ -30,7 +32,7 @@ foreach ( $errors->all() as $err_fld => $err_msg ) {
         <div class="row g-3 mb-3 align-items-center">
             <div class="col-auto">
                 <div class="form-floating">
-                    <input placeholder="<?php esc_html_e( 'Enter search', 'racketmanager' ); ?>" type="text" name="name" id="name" size="30" class="form-control" autocomplete="no" />
+                    <input placeholder="<?php esc_html_e( 'Enter search', 'racketmanager' ); ?>" type="text" name="name" id="name" size="30" class="form-control" />
                     <label for="name"><?php esc_html_e( 'Search by name', 'racketmanager' ); ?></label>
                 </div>
             </div>

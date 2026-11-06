@@ -57,7 +57,7 @@ jobs:
       - name: Run PHPUnit with Coverage & JUnit Report
         run: |
           mkdir -p build/logs
-          vendor/bin/phpunit --display-all-issues --fail-on-all-issues --log-junit build/logs/junit.xml --coverage-clover build/logs/clover.xml
+          vendor/bin/phpunit --display-all-issues --fail-on-all-issues --do-not-fail-on-skipped --log-junit build/logs/junit.xml --coverage-clover build/logs/clover.xml
 
       - name: Analyze with SonarCloud
         if: ${{ env.SONAR_TOKEN != '' }}

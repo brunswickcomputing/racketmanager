@@ -154,10 +154,17 @@ final class Sydney_Child_Header_Cart_Test extends TestCase {
     }
 
     private function load_theme_functions(): void {
-        $theme_functions = dirname( __DIR__, 4 ) . '/themes/sydney-child/functions.php';
+        $env_path = getenv( 'SYDNEY_CHILD_THEME_PATH' );
+        if ( is_string( $env_path ) && '' !== $env_path ) {
+            $theme_functions = is_dir( $env_path ) ? rtrim( $env_path, '/\\' ) . '/functions.php' : $env_path;
+        } else {
+            $theme_functions = dirname( __DIR__, 4 ) . '/themes/sydney-child/functions.php';
+        }
+
         if ( ! is_file( $theme_functions ) ) {
             $this->markTestSkipped( 'The sydney-child theme checkout is not available.' );
         }
+
         if ( ! function_exists( 'sydney_woocommerce_header_cart' ) ) {
             require_once $theme_functions;
         }

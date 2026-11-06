@@ -177,3 +177,24 @@ function sydney_woocommerce_header_cart() {
     }
 }
 ```
+
+---
+
+## Testing Strategy & CI Boundaries
+
+Testing around `Racketmanager\Public_Api` is organized into two distinct layers with defined boundaries and CI policies:
+
+### 1. Isolated Unit Tests (`tests/Unit/Public_Api_Test.php`)
+- **Purpose:** Verifies all methods and fallback paths on `Public_Api` in strict isolation.
+- **Dependencies:** Uses pure mocks for repository interfaces (`User_Repository_Interface`, `Message_Repository_Interface`) and in-memory containers (`Simple_Container`).
+- **Isolation:** Has zero dependencies on external themes or files. Runs on every build and CI environment.
+
+### 2. Consumer Integration Tests (`tests/Integration/Sydney_Child_Header_Cart_Test.php`)
+- **Purpose:** Validates that external theme consumers (specifically `sydney_woocommerce_header_cart()` in `wp-content/themes/sydney-child/functions.php`) correctly interact with `Public_Api`, properly encoding URLs, formatting BTM strings, and handling message badges in rendered HTML.
+- **Real Execution vs. Mocking:** Does not mock the theme function under test; executing the live theme function provides real integration confidence.
+- **Environment Handling:** Resolves the theme file dynamically via `SYDNEY_CHILD_THEME_PATH` or `dirname( __DIR__, 4 ) . '/themes/sydney-child/functions.php'`. When the theme checkout is not present (such as in standalone plugin checkouts), the test suite cleanly calls `$this->markTestSkipped()`.
+
+### 3. CI Issue Policy & Skip Flags
+- **Strict Issue Checking:** CI workflows (`.github/workflows/ci.yml` and `.github/workflows/sonarcloud.yml`) run PHPUnit with `--display-all-issues --fail-on-all-issues --do-not-fail-on-skipped`.
+- **Zero False Alarms:** Because PHPUnit's `--fail-on-all-issues` includes `--fail-on-skipped` by default, `--do-not-fail-on-skipped` is paired with it so that intentional skips due to missing external repositories do not fail builds.
+- **Defect Detection Preserved:** Real regressions (warnings, deprecations, notices, risky tests, or failing assertions) continue to immediately fail CI builds with exit status code 1.

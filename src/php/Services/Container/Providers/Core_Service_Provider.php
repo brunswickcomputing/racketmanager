@@ -95,56 +95,97 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
      * @return void
      */
     public function register( Simple_Container $container ): void {
+        $this->register_gateways_and_infrastructure( $container );
+        $this->register_core_services( $container );
+        $this->register_repositories( $container );
+        $this->register_services_and_exports( $container );
+        $this->register_ajax_controllers( $container );
+        $this->register_shortcodes_and_handlers( $container );
+    }
+
+    /**
+     * @param Simple_Container $container a Simple_Container instance.
+     *
+     * @return void
+     */
+    private function register_gateways_and_infrastructure( Simple_Container $container ): void {
         $app = $this->app;
 
-        // Gateways & External Clients
         $container->set( 'domain_event_dispatcher', fn(): Domain_Event_Dispatcher_Interface => new Simple_Domain_Event_Dispatcher() );
         $container->set( Domain_Event_Dispatcher_Interface::class, fn( Simple_Container $c ): Domain_Event_Dispatcher_Interface => $c->get( 'domain_event_dispatcher' ) );
         $container->alias( Simple_Domain_Event_Dispatcher::class, 'domain_event_dispatcher' );
+
         $container->set( 'rating_gateway', fn(): Rating_Gateway_Interface => new Lta_Wtn_Gateway_Adapter() );
         $container->set( Rating_Gateway_Interface::class, fn( Simple_Container $c ): Rating_Gateway_Interface => $c->get( 'rating_gateway' ) );
         $container->alias( Lta_Wtn_Gateway_Adapter::class, 'rating_gateway' );
         $container->set( 'wtn_api_client', fn( Simple_Container $c ): Rating_Gateway_Interface => $c->get( 'rating_gateway' ) );
+
         $container->set( 'mailer', fn(): Mailer_Interface => new Wp_Mailer() );
         $container->set( Mailer_Interface::class, fn( Simple_Container $c ): Mailer_Interface => $c->get( 'mailer' ) );
         $container->alias( Wp_Mailer::class, 'mailer' );
+
         $container->set( 'clock', fn(): Clock_Interface => new Wordpress_Clock() );
         $container->set( Clock_Interface::class, fn( Simple_Container $c ): Clock_Interface => $c->get( 'clock' ) );
         $container->alias( Wordpress_Clock::class, 'clock' );
+
         $container->set( 'option_gateway', fn(): Option_Gateway_Interface => new Wp_Option_Gateway() );
         $container->set( Option_Gateway_Interface::class, fn( Simple_Container $c ): Option_Gateway_Interface => $c->get( 'option_gateway' ) );
         $container->alias( Wp_Option_Gateway::class, 'option_gateway' );
+
         $container->set( 'option_service', fn( Simple_Container $c ): Option_Service => $app?->option_service ?? new Option_Service( $c->get( 'option_gateway' ) ) );
         $container->set( Option_Service::class, fn( Simple_Container $c ): Option_Service => $c->get( 'option_service' ) );
+
         $container->set( 'asset_manager', fn(): Asset_Manager => $app?->asset_manager ?? new Asset_Manager() );
         $container->set( Asset_Manager::class, fn( Simple_Container $c ): Asset_Manager => $c->get( 'asset_manager' ) );
+
         $container->set( 'template_loader', fn(): Template_Loader => $app?->template_loader ?? new Template_Loader() );
         $container->set( Template_Loader::class, fn( Simple_Container $c ): Template_Loader => $c->get( 'template_loader' ) );
+
         $container->set( 'plugin_bootstrap', fn( Simple_Container $c ): Plugin_Bootstrap => new Plugin_Bootstrap( $c ) );
         $container->set( Plugin_Bootstrap::class, fn( Simple_Container $c ): Plugin_Bootstrap => $c->get( 'plugin_bootstrap' ) );
+
         $container->set( 'shortcode_registrar', fn( Simple_Container $c ): Shortcode_Registrar => new Shortcode_Registrar( $c ) );
         $container->set( Shortcode_Registrar::class, fn( Simple_Container $c ): Shortcode_Registrar => $c->get( 'shortcode_registrar' ) );
+
         $container->set( 'payment_gateway', fn( Simple_Container $c ): Payment_Gateway_Interface => new Stripe_Payment_Gateway( $c->get( 'option_service' )->get_options( 'billing' ) ?? [] ) );
         $container->set( Payment_Gateway_Interface::class, fn( Simple_Container $c ): Payment_Gateway_Interface => $c->get( 'payment_gateway' ) );
         $container->alias( Stripe_Payment_Gateway::class, 'payment_gateway' );
 
-        // Core App & Settings
+        $container->set( 'user_favourites_gateway', fn( Simple_Container $c ): User_Favourites_Gateway_Interface => new Wp_User_Favourites_Gateway( $c->get( 'security_service' ) ) );
+        $container->set( User_Favourites_Gateway_Interface::class, fn( Simple_Container $c ): User_Favourites_Gateway_Interface => $c->get( 'user_favourites_gateway' ) );
+        $container->alias( Wp_User_Favourites_Gateway::class, 'user_favourites_gateway' );
+    }
+
+    /**
+     * @param Simple_Container $container a Simple_Container instance.
+     *
+     * @return void
+     */
+    private function register_core_services( Simple_Container $container ): void {
+        $app = $this->app;
+
         $container->set( 'racketmanager_app', fn() => $app );
         $container->set( 'settings_service', fn( Simple_Container $c ) => new Settings_Service( $c->get( 'option_service' )->get_options(), $c->get( 'option_gateway' ) ) );
         $container->alias( Settings_Service::class, 'settings_service' );
+
         $container->set( 'security_service', fn() => new Security_Service() );
         $container->alias( Security_Service_Interface::class, 'security_service' );
         $container->alias( Security_Service::class, 'security_service' );
+
         $container->set( 'json_response_factory', fn() => new Json_Response_Factory() );
         $container->alias( Json_Response_Factory::class, 'json_response_factory' );
+
         $container->set( 'ajax_registry', fn() => new Ajax_Registry() );
         $container->alias( Ajax_Registry::class, 'ajax_registry' );
+
         $container->set( 'view_renderer', fn() => new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) );
         $container->alias( View_Renderer_Interface::class, 'view_renderer' );
         $container->alias( Php_View_Renderer::class, 'view_renderer' );
+
         $container->set( 'page_title_service', fn(): Page_Title_Service => new Page_Title_Service( $app?->site_name ) );
         $container->set( Page_Title_Service::class, fn( Simple_Container $c ): Page_Title_Service => $c->get( 'page_title_service' ) );
         $container->set( Page_Title_Service_Interface::class, fn( Simple_Container $c ): Page_Title_Service => $c->get( 'page_title_service' ) );
+
         $container->set(
             'login',
             fn( Simple_Container $c ): Login => new Login(
@@ -153,9 +194,11 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             )
         );
         $container->set( Login::class, fn( Simple_Container $c ): Login => $c->get( 'login' ) );
+
         $container->set( 'mail_filter_service', fn( Simple_Container $c ): Mail_Filter_Service => new Mail_Filter_Service( $c->get( 'message_repository' ) ) );
         $container->set( Mail_Filter_Service::class, fn( Simple_Container $c ): Mail_Filter_Service => $c->get( 'mail_filter_service' ) );
         $container->set( Mail_Filter_Service_Interface::class, fn( Simple_Container $c ): Mail_Filter_Service => $c->get( 'mail_filter_service' ) );
+
         $container->set(
             'component_coordinator',
             fn( Simple_Container $c ): Component_Coordinator => new Component_Coordinator(
@@ -165,8 +208,14 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         );
         $container->set( Component_Coordinator::class, fn( Simple_Container $c ): Component_Coordinator => $c->get( 'component_coordinator' ) );
         $container->set( Component_Coordinator_Interface::class, fn( Simple_Container $c ): Component_Coordinator_Interface => $c->get( 'component_coordinator' ) );
+    }
 
-        // Core Repositories
+    /**
+     * @param Simple_Container $container a Simple_Container instance.
+     *
+     * @return void
+     */
+    private function register_repositories( Simple_Container $container ): void {
         $container->set( 'season_repository', fn() => new Season_Repository() );
         $container->alias( Season_Repository_Interface::class, 'season_repository' );
         $container->alias( Season_Repository::class, 'season_repository' );
@@ -196,7 +245,6 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->alias( Message_Repository_Interface::class, 'message_repository' );
         $container->alias( Message_Repository::class, 'message_repository' );
 
-        // Repository Provider Aggregate
         $container->set(
             'repository_provider',
             fn( Simple_Container $c ) => new Repository_Provider(
@@ -215,8 +263,16 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             )
         );
         $container->alias( Repository_Provider::class, 'repository_provider' );
+    }
 
-        // Core Services
+    /**
+     * @param Simple_Container $container a Simple_Container instance.
+     *
+     * @return void
+     */
+    private function register_services_and_exports( Simple_Container $container ): void {
+        $app = $this->app;
+
         $container->set(
             'season_service',
             fn( Simple_Container $c ) => new Season_Service(
@@ -261,7 +317,6 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         );
         $container->alias( Notification_Service::class, 'notification_service' );
 
-        // Export Services
         $container->set(
             'exporter',
             fn( Simple_Container $c ): Data_Exporter_Interface => new Export_Service(
@@ -292,8 +347,16 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         );
         $container->alias( Export_Delivery_Adapter::class, 'export_delivery_adapter' );
         $container->set( 'export_admin_controller', fn( Simple_Container $c ) => $c->get( 'export_delivery_adapter' ) );
+    }
 
-        // Core AJAX Controllers & Adapters
+    /**
+     * @param Simple_Container $container a Simple_Container instance.
+     *
+     * @return void
+     */
+    private function register_ajax_controllers( Simple_Container $container ): void {
+        $app = $this->app;
+
         $container->set(
             'account_ajax_adapter',
             fn( Simple_Container $c ) => new Account_Ajax_Adapter(
@@ -329,11 +392,15 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->alias( Finance_Ajax_Adapter::class, 'finance_ajax_adapter' );
         $container->set( 'finance_ajax_controller', fn( Simple_Container $c ) => new Finance_Ajax_Controller( $app, $c->get( 'finance_ajax_adapter' ) ) );
         $container->alias( Finance_Ajax_Controller::class, 'finance_ajax_controller' );
+    }
 
-        // Core Gateways & Adapters
-        $container->set( 'user_favourites_gateway', fn( Simple_Container $c ): User_Favourites_Gateway_Interface => new Wp_User_Favourites_Gateway( $c->get( 'security_service' ) ) );
-        $container->set( User_Favourites_Gateway_Interface::class, fn( Simple_Container $c ): User_Favourites_Gateway_Interface => $c->get( 'user_favourites_gateway' ) );
-        $container->alias( Wp_User_Favourites_Gateway::class, 'user_favourites_gateway' );
+    /**
+     * @param Simple_Container $container a Simple_Container instance.
+     *
+     * @return void
+     */
+    private function register_shortcodes_and_handlers( Simple_Container $container ): void {
+        $app = $this->app;
 
         $container->set(
             'email_shortcode_adapter',
@@ -351,7 +418,6 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         );
         $container->alias( Email_Shortcode_Adapter::class, 'email_shortcode_adapter' );
 
-        // General / Auth / Message Queries & Shortcodes
         $container->set( 'get_login_form_handler', fn( Simple_Container $c ) => new Get_Login_Form_Handler( $c->get( 'option_gateway' ), $c->get( 'settings_service' ) ) );
         $container->set( 'get_password_lost_form_handler', fn() => new Get_Password_Lost_Form_Handler() );
         $container->set( 'get_password_reset_form_handler', fn() => new Get_Password_Reset_Form_Handler() );
@@ -396,6 +462,7 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
                 $c->get( 'club_repository' )
             )
         );
+
         $container->set(
             'get_invoice_handler',
             fn( Simple_Container $c ) => new Get_Invoice_Handler(
@@ -404,12 +471,14 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
                 $c->get( 'option_gateway' )
             )
         );
+
         $container->set(
             'get_purchase_order_handler',
             fn( Simple_Container $c ) => new Get_Purchase_Order_Handler(
                 $c->get( 'finance_service' )
             )
         );
+
         $container->set(
             'get_memberships_handler',
             fn( Simple_Container $c ) => new Get_Memberships_Handler(
@@ -417,6 +486,7 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
                 $c->get( 'registration_service' )
             )
         );
+
         $container->set( 'get_alert_handler', fn() => new Get_Alert_Handler() );
 
         $container->set(

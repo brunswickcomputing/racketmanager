@@ -15,7 +15,9 @@ use Racketmanager\Admin\View_Models\Seasons_Page_View_Model;
 use Racketmanager\Admin\View_Models\Error_Bag;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
+use Racketmanager\RacketManager;
 use Racketmanager\Services\Admin\Season\Season_Action_Dispatcher;
+use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Validator\Validator;
 
 /**
@@ -28,9 +30,24 @@ use Racketmanager\Services\Validator\Validator;
  */
 class Admin_Season extends Admin_Display {
 
+    /**
+     * @var Admin_Action_Adapter|callable|mixed|object|Simple_Container admin action adapter.
+     */
     private Admin_Action_Adapter $actions;
+    /**
+     * @var Admin_Screen_Presenter|callable|mixed|object|Simple_Container admin screen presenter.
+     */
     private Admin_Screen_Presenter $screens;
 
+
+    /**
+     * Constructor.
+     *
+     * @param Racketmanager                 $plugin_instance plugin instance.
+     * @param Admin_Action_Adapter|null     $actions admin action adapter.
+     * @param Admin_Screen_Presenter|null   $screens admin screen presenter.
+     * @param Season_Action_Dispatcher|null $dispatcher season action dispatcher.
+     */
     public function __construct(
         $plugin_instance,
         ?Admin_Action_Adapter $actions = null,
@@ -48,7 +65,7 @@ class Admin_Season extends Admin_Display {
     /**
      * Function to handle administration season displays
      *
-     * @param string|null $view
+     * @param string|null $view view.
      *
      * @return void
      */

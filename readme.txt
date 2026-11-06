@@ -47,6 +47,9 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 9.7.7 =
+* BUGFIX:  scope competition scheduler resources and bye handling by league
+
 = 9.7.6 =
 * BUGFIX: preserve tournament next round team placeholders when opponent match is pending
 

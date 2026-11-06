@@ -8,6 +8,11 @@ declare( strict_types=1 );
 
 namespace Racketmanager;
 
+use BackedEnum;
+use Racketmanager\Admin\View_Models\League_Standings_Page_View_Model;
+use Racketmanager\Domain\Scoring\Set_Score;
+use stdClass;
+
 /** @var object $league */
 /** @var string $season */
 /** @var array  $teams */
@@ -15,7 +20,7 @@ namespace Racketmanager;
 /** @var string $group */
 /** @var string $match_day */
 /** @var array  $matches */
-/** @var \Racketmanager\Admin\View_Models\League_Standings_Page_View_Model|\stdClass $vm */
+/** @var League_Standings_Page_View_Model|stdClass $vm */
 $league             = $league ?? $vars['league'] ?? $vm->league;
 $season             = $season ?? $vars['season'] ?? $vm->season;
 $teams              = $teams ?? $vars['teams'] ?? $vm->teams;
@@ -24,7 +29,7 @@ $group              = $group ?? $vars['group'] ?? $vm->group;
 $match_day          = $match_day ?? $vars['match_day'] ?? $vm->match_day;
 $matches            = $matches ?? $vars['matches'] ?? $vm->matches;
 $pagination_matches = $pagination_matches ?? $vars['pagination_matches'] ?? $vm->pagination_matches ?? '';
-$competition_type = $league->event->competition->type instanceof \BackedEnum ? $league->event->competition->type->value : (string) ( $league->event->competition->type ?? '' );
+$competition_type   = $league->event->competition->type instanceof BackedEnum ? $league->event->competition->type->value : (string) ( $league->event->competition->type ?? '' );
 ?>
 <div class="row gx-3 justify-content-between mb-3">
     <div class="col-auto mb-3 mb-md-0">
@@ -145,7 +150,7 @@ $competition_type = $league->event->competition->type instanceof \BackedEnum ? $
         <thead>
             <tr>
                 <th scope="col" class="check-column">
-                    <label for="check-all-matches"></label><input type="checkbox" id="check-all-matches" data-action="check-all" data-target="matches-action" />
+                    <label for="check-all-matches" class="visually-hidden"><?php esc_html_e( 'Select all', 'racketmanager' ); ?></label><input type="checkbox" id="check-all-matches" data-action="check-all" data-target="matches-action" />
                 </th>
                 <th scope="col"><?php esc_html_e( 'ID', 'racketmanager' ); ?></th>
                 <th scope="col"><?php esc_html_e( 'Date', 'racketmanager' ); ?></th>
@@ -211,10 +216,10 @@ $competition_type = $league->event->competition->type instanceof \BackedEnum ? $
                         } else {
                             for ( $i = 1; $i <= $league->num_sets; $i++ ) {
                                 $set = $match->sets[ $i ] ?? array();
-                                $p1 = '';
-                                $p2 = '';
-                                $tb = '';
-                                if ( $set instanceof \Racketmanager\Domain\Scoring\Set_Score ) {
+                                $p1  = '';
+                                $p2  = '';
+                                $tb  = '';
+                                if ( $set instanceof Set_Score ) {
                                     $p1 = $set->get_home_games();
                                     $p2 = $set->get_away_games();
                                     $tb = $set->get_home_tiebreak() ?? $set->get_away_tiebreak() ?? '';

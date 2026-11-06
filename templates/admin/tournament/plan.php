@@ -11,8 +11,8 @@ use Racketmanager\Admin\View_Models\Tournament_Plan_Page_View_Model;
 
 /** @var Tournament_Plan_Page_View_Model $vm */
 $tournament     = $vm->tournament;
-$tab            = $vm->tab;
-$errors         = $vm->errors;
+$tab            = $vm->tab; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+$errors         = $vm->errors; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 $order_of_play  = $vm->order_of_play;
 $column_width   = $vm->column_width;
 $max_schedules  = $vm->max_schedules;
@@ -185,7 +185,7 @@ jQuery(document).ready(function(){
                                     ?>
                                     <div class="col-<?php echo esc_html( $column_width ); ?>">
                                         <div class="form-group mb-2">
-                                            <label for="court-<?php echo esc_html( $i ); ?>"></label><input type="text" class="form-control" name="court[<?php echo esc_html( $i ); ?>]" id="court-<?php echo esc_html( $i ); ?>" value="<?php echo esc_html( $court_plan['court'] ); ?>" />
+                                            <label for="court-<?php echo esc_html( $i ); ?>" class="visually-hidden"><?php esc_html_e( 'Court', 'racketmanager' ); ?></label><input type="text" class="form-control" name="court[<?php echo esc_html( $i ); ?>]" id="court-<?php echo esc_html( $i ); ?>" value="<?php echo esc_html( $court_plan['court'] ); ?>" />
                                         </div>
                                         <div class="form-group">
                                             <label for="courtStartTime-<?php echo esc_html( $i ); ?>" class="visually-hidden">

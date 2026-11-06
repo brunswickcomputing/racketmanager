@@ -8,9 +8,13 @@ declare( strict_types=1 );
 
 namespace Racketmanager;
 
+use BackedEnum;
+use Racketmanager\Admin\View_Models\League_Standings_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
+use Racketmanager\Presentation\Presenters\League_Standings_Presenter;
+use stdClass;
 
-/** @var Tournament_Draw_Page_View_Model|\Racketmanager\Admin\View_Models\League_Standings_Page_View_Model|\stdClass $vm */
+/** @var Tournament_Draw_Page_View_Model|League_Standings_Page_View_Model|stdClass $vm */
 if ( isset( $vm ) && $vm instanceof Tournament_Draw_Page_View_Model ) {
     $league     = $vm->league;
     $tournament = $vm->tournament;
@@ -118,20 +122,20 @@ $teams = $teams ?? $vars['teams'] ?? $vm->teams;
                 ?>
             </tr>
         </thead>
-        <tbody id="the-list-standings" class="lm-form-table standings-table <?php echo ( 'manual' === $league->event->competition->settings['team_ranking'] ) ? 'sortable' : null ?>">
+        <tbody id="the-list-standings" class="lm-form-table standings-table <?php echo ( 'manual' === $league->event->competition->settings['team_ranking'] ) ? 'sortable' : null; ?>">
             <?php
-            $competition_type = $league->event->competition->type instanceof \BackedEnum ? $league->event->competition->type->value : (string) ( $league->event->competition->type ?? '' );
+            $competition_type = $league->event->competition->type instanceof BackedEnum ? $league->event->competition->type->value : (string) ( $league->event->competition->type ?? '' );
             foreach ( $teams as $i => $team ) {
-                $class = null;
+                $class     = null;
                 $team_link = '/wp-admin/admin.php?page=racketmanager-' . $competition_type . 's&amp;view=team&amp;league_id=' . $league->id . '&amp;edit=' . $team->id;
                 if ( $league->is_championship ) {
-                   if ( $i < $league->championship->num_seeds ) {
-                       $class = 'seeded';
-                   }
-                   if ( $league->event->competition->is_player_entry ) {
-                       $team_link .= '&amp;tournament=' . $tournament->id;
-                   }
-               }
+                    if ( $i < $league->championship->num_seeds ) {
+                        $class = 'seeded';
+                    }
+                    if ( $league->event->competition->is_player_entry ) {
+                        $team_link .= '&amp;tournament=' . $tournament->id;
+                    }
+                }
                 ?>
                 <tr class="<?php echo esc_html( $class ); ?>" id="team_<?php echo esc_html( $team->id ); ?>">
                     <th scope="row" class="check-column">
@@ -142,7 +146,7 @@ $teams = $teams ?? $vars['teams'] ?? $vm->teams;
                         <?php
                         if ( 'manual' === $league->event->competition->settings['team_ranking'] ) {
                             ?>
-                            <label for="rank_<?php echo esc_html( $team->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Rank', 'racketmanager' ); ?></label><input type="text" name="rank[<?php echo esc_html( $team->team_id ); ?>]" size="2" id="rank_<?php echo esc_html( $team->team_id ); ?>" class="rank-input" value="<?php echo esc_html( $team->rank ); ?>" /><input type="hidden" name="table_id[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->id ); ?>" />
+                            <label for="rank_<?php echo esc_html( $team->team_id ); ?>" class="visually-hidden"><?php esc_html_e( 'Rank', 'racketmanager' ); ?></label><input type="text" name="rank[<?php echo esc_html( $team->team_id ); ?>]" size="2" id="rank_<?php echo esc_html( $team->team_id ); ?>" class="rank-input" value="<?php echo esc_html( $team->rank ); ?>" /><input type="hidden" name="table_id[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->id ); ?>" />
                             <?php
                         } else {
                             echo esc_html( $i + 1 );// team rank.
@@ -231,7 +235,7 @@ $teams = $teams ?? $vars['teams'] ?? $vm->teams;
                                 <?php
                                 if ( 1 === $league->standings['pld'] ) {
                                     ?>
-                                    <label>
+                                    <label class="visually-hidden"><?php esc_html_e( 'Played matches', 'racketmanager' ); ?>
                                         <input type="text" size="2" name="num_done_matches[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->done_matches ); ?>" />
                                     </label>
                                     <?php
@@ -244,8 +248,7 @@ $teams = $teams ?? $vars['teams'] ?? $vm->teams;
                             </td>
                             <td class="column-num">
                                 <?php
-                                if ( 1 === $league->standings['won'] )
-                                {
+                                if ( 1 === $league->standings['won'] ) {
                                     ?>
                                     <label class="visually-hidden">" <?php esc_html_e( 'Won matches', 'racketmanager' ); ?>
                                         <input type="text" size="2" name="num_won_matches[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->won_matches ); ?>" />
@@ -306,7 +309,10 @@ $teams = $teams ?? $vars['teams'] ?? $vm->teams;
                         }
                         ?>
                         <?php do_action( 'racketmanager_standings_columns_' . $league->sport, $team, $league->point_rule ); ?>
-                        <?php echo \Racketmanager\Presentation\Presenters\League_Standings_Presenter::render_custom_standings_columns( $league, $team, $league->point_rule ); ?>
+                        <?php
+                        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                        echo League_Standings_Presenter::render_custom_standings_columns( $league, $team, $league->point_rule );
+                        ?>
                         <td class="column-num">
                             <?php
                             if ( 'manual' !== $league->point_rule ) {

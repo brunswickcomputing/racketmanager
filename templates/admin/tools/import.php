@@ -28,6 +28,7 @@ $competitions = $competitions ?? array();
 
 		<div class="form-group mb-3">
 			<input class="form-control" type="file" name="racketmanager_import" id="racketmanager_import" size="40" placeholder="File name" />
+            <label for="racketmanager_import" class="visually-hidden"><?php esc_html_e( 'File', 'racketmanager' ); ?></label>
 		</div>
 		<div class="form-floating mb-3">
 			<input class="form-control" type="text" name="delimiter" id="delimiter" value="TAB" size="3" placeholder="TAB" />

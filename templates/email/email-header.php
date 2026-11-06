@@ -14,15 +14,15 @@ namespace Racketmanager;
 // Producers pass $site_url and $organisation explicitly. The site_url() fallback is a compatibility
 // shim only for email templates whose producers do not yet pass it (e.g. account/privacy emails
 // rendered from WordPress core filters); it resolves the same `siteurl` option as before.
-$site_url        = $site_url ?? $vm->site_url ?? ( function_exists( 'site_url' ) ? site_url() : '' );
-$organisation    = $organisation ?? $vm->organisation ?? '';
-$email_subject   = $email_subject ?? $vm->email_subject ?? '';
-$paragraph       = 'components/paragraph.php';
-$hr              = 'components/hr.php';
-$title           = 'components/title.php';
-$salutation      = 'components/salutation.php';
-$contact         = 'components/contact.php';
-$closing         = 'components/closing.php';
+$site_url      = $site_url ?? $vm->site_url ?? ( function_exists( 'site_url' ) ? site_url() : '' );
+$organisation  = $organisation ?? $vm->organisation ?? '';
+$email_subject = $email_subject ?? $vm->email_subject ?? '';
+$paragraph     = 'components/paragraph.php';
+$hr            = 'components/hr.php';
+$title         = 'components/title.php'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+$salutation    = 'components/salutation.php';
+$contact       = 'components/contact.php';
+$closing       = 'components/closing.php';
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns="http://www.w3.org/1999/xhtml" lang="en-gb" xml:lang="en-gb">
@@ -219,15 +219,15 @@ a[x-apple-data-detectors] {
         <div style="font-size: 16px; color: #006800; background-color: #e6e6e6; max-width: 600px; margin: auto;">
             <!-- header hero -->
             <div style="font-size: 16px; color: #fff; background-color: #006800;">
-                <table align="center" style="border-collapse: collapse; display: block;" cellspacing="0" cellpadding="0">
+                <table align="center" style="border-collapse: collapse; display: block;" cellspacing="0" cellpadding="0" role="presentation">
                     <tbody>
                         <tr>
                             <td cellspacing="0" cellpadding="0" bgcolor="#006800">
-                                <table style="width: 100%; border-collapse: collapse;" cellspacing="0" cellpadding="0">
+                                <table style="width: 100%; border-collapse: collapse;" cellspacing="0" cellpadding="0" role="presentation">
                                     <tbody>
                                         <tr>
                                             <td style="font-weight: 400; min-width: 5px; width: 600px; height: 0;" cellspacing="0" cellpadding="0" align="left" valign="top">
-                                                <table width="100%" style="height: 100%;" cellspacing="0" cellpadding="0">
+                                                <table width="100%" style="height: 100%;" cellspacing="0" cellpadding="0" role="presentation">
                                                     <tbody>
                                                         <tr>
                                                             <td style="min-width: 5px; word-wrap: break-word; word-break: break-word; font-weight: 400;" cellspacing="0" cellpadding="0" align="left" valign="top">

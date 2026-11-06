@@ -12,7 +12,8 @@
 .phpunit.result.cache
 
 # Test Suites & Build Artifacts
-/tests
+/tests/*
+!/tests/test-competition-scheduler.php
 /my-tests
 *phpunit.*
 /bin/*

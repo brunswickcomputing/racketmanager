@@ -782,12 +782,12 @@ final class Admin_League extends Admin_Display {
 	    $home_away             = $validation->home_away;
 	    $match_dates           = $validation->match_dates ?? array();
 	    $competition_scheduler = new Admin_Competition_Scheduler( $max_teams, $home_away, $match_dates );
-	    $divisions = array();
+	    $leagues               = array();
 	    foreach ( $events as $event_id ) {
 		    $event = get_event( $event_id );
 		    foreach ( $event->get_leagues() as $league ) {
-			    $league         = get_league( $league );
-			    $division_teams = array();
+			    $league       = get_league( $league );
+			    $league_teams = array();
 
 			    $teams = $league->get_league_teams(
 				    array(
@@ -802,7 +802,7 @@ final class Admin_League extends Admin_Display {
 			    );
 			    foreach ( $teams as $team ) {
 				    $preferred_slot = $team->match_day . ' ' . $team->match_time;
-				    $division_teams[] = array(
+				    $league_teams[] = array(
 					    'id' => $team->id,
 					    'name' => $team->title,
 					    'club_id' => $team->club_id,
@@ -813,14 +813,14 @@ final class Admin_League extends Admin_Display {
 						'event_id' => $event_id,
 				    );
 			    }
-			    $divisions[ $league->id ] = array(
+			    $leagues[ $league->id ] = array(
 				    'league_id'   => $league->id,
 				    'league_name' => $league->title,
-				    'teams'       => $division_teams,
+				    'teams'       => $league_teams,
 			    );
 		    }
 	    }
-	    $result = $competition_scheduler->build_competition_schedule( $divisions );
+	    $result = $competition_scheduler->build_competition_schedule( $leagues );
 		if ( $result['is_valid'] ) {
 			$schedule_data = $result['schedule'];
 			$total_weeks   = $result['total_weeks'];
@@ -838,13 +838,26 @@ final class Admin_League extends Admin_Display {
 		    .bye-row { font-style: italic; color: #888; background-color: #fafafa; }
 		    .conflict-alert { color: red; font-weight: bold; border: 2px solid red; padding: 10px; margin: 10px 0; }
 		</style>";
-	    echo "<div class='conflict-alert'>
+		$duplicate_alerts = array_filter( $result['alerts'] ?? [], fn( $a ) => ( $a['type'] ?? '' ) === 'duplicate_team' );
+		if ( ! empty( $duplicate_alerts ) ) {
+			echo "<div class='conflict-alert'>
+        <h3>⚠️ Duplicate Team Input Detected</h3>
+        <ul>";
+			foreach ( $duplicate_alerts as $alert ) {
+				echo Admin_Competition_Scheduler::format_duplicate_alert_item( $alert );
+			}
+			echo "</ul><p>Please ensure all teams within each league have unique IDs.</p></div>";
+		}
+
+		if ( ! empty( $result['conflicts'] ) ) {
+			echo "<div class='conflict-alert'>
         <h3>⚠️ Scheduling Conflicts Detected</h3>
         <ul>";
-	    foreach ($result['conflicts'] as $error) {
-		    echo "<li>Week {$error['week']}: {$error['home']} vs {$error['with']} (Shared Court: {$error['court']})</li>";
-	    }
-	    echo "</ul><p>Please manually adjust the times for these matches.</p></div>";
+			foreach ( $result['conflicts'] as $error ) {
+				echo Admin_Competition_Scheduler::format_conflict_item( $error );
+			}
+			echo "</ul><p>Please manually adjust the times for these matches.</p></div>";
+		}
 	    $retry = $result['retry'];
 	    $this->set_message( sprintf( __( 'Scheduling failed after %d attempts', 'racketmanager' ), $retry ), true );
 		$this->display_scheduling_summary( $result );
@@ -891,7 +904,7 @@ final class Admin_League extends Admin_Display {
 				echo "<h4>{$slot} ({$court})</h4>";
 				echo "<ul>";
 				foreach ( $teams as $team ) {
-					echo "<li><strong>" . esc_html( $team['name'] ) . "</strong> (" . esc_html( $team['division'] ) . ")</li>";
+					echo "<li><strong>" . esc_html( $team['name'] ) . "</strong> (" . esc_html( $team['league'] ?? '' ) . ")</li>";
 				}
 				echo "</ul>";
 				echo "</div>";

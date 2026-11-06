@@ -3,7 +3,7 @@
 namespace Racketmanager\admin;
 
 class Admin_Competition_Scheduler {
-	private int $teams_per_division;
+	private int $teams_per_league;
 	private int $total_weeks;
 	private bool $is_home_away;
 	private array $match_dates;
@@ -12,45 +12,74 @@ class Admin_Competition_Scheduler {
 	private float $timeout = 60.0;
 	private int $max_retries = 375550;
 
-	public function __construct( $teams_per_division = 6, $is_home_away = false, $match_dates = [] ) {
-		$this->teams_per_division = (int) $teams_per_division;
-		$this->is_home_away       = (bool) $is_home_away;
-		$this->match_dates        = (array) $match_dates;
-		$this->total_weeks        = $this->is_home_away ? ( $this->teams_per_division - 1 ) * 2 : $this->teams_per_division - 1;
+	public function __construct( $teams_per_league = 6, $is_home_away = false, $match_dates = [] ) {
+		$this->teams_per_league = (int) $teams_per_league;
+		$this->is_home_away     = (bool) $is_home_away;
+		$this->match_dates      = (array) $match_dates;
+		$this->total_weeks      = $this->is_home_away ? ( $this->teams_per_league - 1 ) * 2 : $this->teams_per_league - 1;
 	}
 
-	public function build_competition_schedule( $divisions ): array {
+	public function build_competition_schedule( $leagues ): array {
 		$start_time              = microtime( true );
 		$this->team_resources    = [];
 		$this->resource_pairings = [];
 
-		// Ensure the division array is not empty
-		if ( empty( $divisions ) ) {
+		// Ensure the league array is not empty
+		if ( empty( $leagues ) ) {
 			return [
-				'retry'     => 0,
-				'schedule'  => [],
-				'conflicts' => [],
-				'alerts'    => [],
-				'is_valid'  => true
+				'retry'             => 0,
+				'schedule'          => [],
+				'conflicts'         => [],
+				'alerts'            => [],
+				'resource_pairings' => [],
+				'is_valid'          => true,
+				'total_weeks'       => $this->total_weeks,
 			];
 		}
 
+		// Early validation: detect duplicate team IDs within any league
+		foreach ( $leagues as $league_id => $league_data ) {
+			$seen_team_ids = [];
+			foreach ( $league_data['teams'] as $team ) {
+				$tid = $team['id'];
+				if ( isset( $seen_team_ids[ $tid ] ) ) {
+					return [
+						'retry'             => 0,
+						'schedule'          => [],
+						'conflicts'         => [],
+						'alerts'            => [
+							[
+								'type'      => 'duplicate_team',
+								'team_id'   => $team['id'],
+								'league'    => $league_data['league_name'],
+								'message'   => "League '{$league_data['league_name']}' contains duplicate team ID '{$team['id']}'",
+							],
+						],
+						'resource_pairings' => [],
+						'is_valid'          => false,
+						'total_weeks'       => $this->total_weeks,
+					];
+				}
+				$seen_team_ids[ $tid ] = true;
+			}
+		}
+
 		// 1. GLOBAL RESOURCE MAPPING
-		$this->map_physical_courts( $divisions );
-		$ranked_divisions = $this->rank_divisions( $divisions );
-		$rotation         = $this->get_circle_rotation( $this->teams_per_division );
-		$half_weeks       = $this->teams_per_division - 1;
+		$this->map_physical_courts( $leagues );
+		$ranked_leagues = $this->rank_leagues( $leagues );
+		$rotation       = $this->get_circle_rotation( $this->teams_per_league );
+		$half_weeks     = $this->teams_per_league - 1;
 
 		$best_schedule    = [];
 		$best_home_counts = [];
-		foreach ( $divisions as $div_id => $div_data ) {
-			$best_schedule[ $div_id ] = [
-				'league_id'   => $div_id,
-				'league_name' => $div_data['league_name'],
+		foreach ( $leagues as $league_id => $league_data ) {
+			$best_schedule[ $league_id ] = [
+				'league_id'   => $league_id,
+				'league_name' => $league_data['league_name'],
 				'weeks'       => []
 			];
-			foreach ( $div_data['teams'] as $team ) {
-				$best_home_counts[ $team['id'] ] = 0;
+			foreach ( $league_data['teams'] as $team ) {
+				$best_home_counts[ $league_id ][ $team['id'] ] = 0;
 			}
 		}
 		$best_conflicts = null; // Use null to indicate no best yet
@@ -58,24 +87,24 @@ class Admin_Competition_Scheduler {
 
 		// 2. RETRY LOOP FOR SEED ASSIGNMENT
 		for ( $retry = 0; $retry < $this->max_retries; $retry ++ ) {
-			$division_seeds            = [];
+			$league_seeds              = [];
 			$alerts                    = [];
 			$court_usage               = [];
 			$current_retry_home_counts = [];
 
 			// Initialize home counts for all teams to 0 for this retry
-			foreach ( $divisions as $div_id => $div_data ) {
-				foreach ( $div_data['teams'] as $team ) {
-					$current_retry_home_counts[ $team['id'] ] = 0;
+			foreach ( $leagues as $league_id => $league_data ) {
+				foreach ( $league_data['teams'] as $team ) {
+					$current_retry_home_counts[ $league_id ][ $team['id'] ] = 0;
 				}
 			}
 
 			// 3. GENERATE SCHEDULE FROM SEEDS
 			$current_schedule = [];
-			foreach ( $divisions as $div_id => $div_data ) {
-				$current_schedule[ $div_id ] = [
-					'league_id'   => $div_id,
-					'league_name' => $div_data['league_name'],
+			foreach ( $leagues as $league_id => $league_data ) {
+				$current_schedule[ $league_id ] = [
+					'league_id'   => $league_id,
+					'league_name' => $league_data['league_name'],
 					'weeks'       => []
 				];
 			}
@@ -103,11 +132,29 @@ class Admin_Competition_Scheduler {
 					$t2_info = $teams[0];
 				}
 
-				$div1_id = $this->find_division_id_by_team_id( $divisions, $t1_info['id'] );
-				$div2_id = $this->find_division_id_by_team_id( $divisions, $t2_info['id'] );
+				$l1_id = $t1_info['league_id'] ?? null;
+				$l2_id = $t2_info['league_id'] ?? null;
 
-				if ( $div1_id && $div2_id ) {
-					$n    = $this->teams_per_division;
+				if ( null !== $l1_id && null !== $l2_id ) {
+					// Guard against duplicate seed assignments for identical team IDs within the same league
+					if ( $l1_id === $l2_id && $t1_info['id'] === $t2_info['id'] ) {
+						continue;
+					}
+
+					// Ensure teams aren't already seeded in their respective leagues
+					$already_seeded_t1 = in_array( $t1_info['id'], array_column( $league_seeds[ $l1_id ] ?? [], 'id' ) );
+					$already_seeded_t2 = in_array( $t2_info['id'], array_column( $league_seeds[ $l2_id ] ?? [], 'id' ) );
+					if ( $already_seeded_t1 || $already_seeded_t2 ) {
+						continue;
+					}
+
+					$team1 = $this->find_team_by_id( $leagues[ $l1_id ]['teams'], $t1_info['id'] );
+					$team2 = $this->find_team_by_id( $leagues[ $l2_id ]['teams'], $t2_info['id'] );
+					if ( ! $team1 || ! $team2 ) {
+						continue;
+					}
+
+					$n    = $this->teams_per_league;
 					$half = $n / 2;
 
 					// Shuffle seeds to try different combinations on retry
@@ -118,28 +165,28 @@ class Admin_Competition_Scheduler {
 						$seed_t1 = $x;
 						$seed_t2 = $x + $half;
 
-						if ( ! isset( $division_seeds[ $div1_id ][ $seed_t1 ] ) &&
-						     ! isset( $division_seeds[ $div2_id ][ $seed_t2 ] ) ) {
+						if ( ! isset( $league_seeds[ $l1_id ][ $seed_t1 ] ) &&
+						     ! isset( $league_seeds[ $l2_id ][ $seed_t2 ] ) ) {
 
-							$division_seeds[ $div1_id ][ $seed_t1 ] = $this->find_team_by_id( $divisions[ $div1_id ]['teams'], $t1_info['id'] );
-							$division_seeds[ $div2_id ][ $seed_t2 ] = $this->find_team_by_id( $divisions[ $div2_id ]['teams'], $t2_info['id'] );
+							$league_seeds[ $l1_id ][ $seed_t1 ] = $team1;
+							$league_seeds[ $l2_id ][ $seed_t2 ] = $team2;
 							break;
 						}
 					}
 				}
 			}
 
-			// 2.2 FINALIZE REMAINING SEEDS FOR EACH DIVISION
+			// 2.2 FINALIZE REMAINING SEEDS FOR EACH LEAGUE
 			$failed_to_seed = false;
-			$div_ids        = array_keys( $ranked_divisions );
-			shuffle( $div_ids );
+			$league_ids     = array_keys( $ranked_leagues );
+			shuffle( $league_ids );
 
-			foreach ( $div_ids as $div_id ) {
-				$div_data                  = $ranked_divisions[ $div_id ];
-				$division_seeds[ $div_id ] = $this->finalize_seeds( $div_data['teams'], $this->teams_per_division, $division_seeds[ $div_id ] ?? [] );
-				if ( count( $division_seeds[ $div_id ] ) < count( $div_data['teams'] ) ) {
+			foreach ( $league_ids as $league_id ) {
+				$league_data                 = $ranked_leagues[ $league_id ];
+				$league_seeds[ $league_id ] = $this->finalize_seeds( $league_data['teams'], $this->teams_per_league, $league_seeds[ $league_id ] ?? [] );
+				if ( count( $league_seeds[ $league_id ] ) < count( $league_data['teams'] ) ) {
 					$failed_to_seed = true;
-					// error_log( "RM_DEBUG: Retry $retry: Failed to seed division $div_id (" . $div_data['league_name'] . ")" );
+					// error_log( "RM_DEBUG: Retry $retry: Failed to seed league $league_id (" . $league_data['league_name'] . ")" );
 					break;
 				}
 			}
@@ -148,10 +195,8 @@ class Admin_Competition_Scheduler {
 				continue;
 			}
 
-			// 2.3 DERBY SEEDING (Same club in same division)
-			// Actually, finalize_seeds already handles derbies now. 
-			// But wait, the previous solution said it refactored it to be prioritized.
-			// Let's check finalize_seeds.
+			// 2.3 DERBY SEEDING (Same club in same league)
+			// Actually, finalize_seeds already handles derbies now.
 
 			$conflicts = [];
 
@@ -159,8 +204,8 @@ class Admin_Competition_Scheduler {
 				$week_in_rotation = ( ( $week - 1 ) % $half_weeks );
 				$is_second_half   = $week > $half_weeks;
 
-				foreach ( $divisions as $div_id => $div_data ) {
-					$seeds = $division_seeds[ $div_id ] ?? [];
+				foreach ( $leagues as $league_id => $league_data ) {
+					$seeds = $league_seeds[ $league_id ] ?? [];
 					if ( empty( $seeds ) ) {
 						continue;
 					}
@@ -180,7 +225,7 @@ class Admin_Competition_Scheduler {
 						if ( ! $t1 || ! $t2 ) {
 							$real = $t1 ? : $t2;
 							if ( $real ) {
-								$current_schedule[ $div_id ]['weeks'][ $week ][] = [
+								$current_schedule[ $league_id ]['weeks'][ $week ][] = [
 									'team'    => $real['name'],
 									'team_id' => $real['id'],
 									'is_bye'  => true,
@@ -193,29 +238,37 @@ class Admin_Competition_Scheduler {
 						// Determine Home/Away (Deterministic based on Seeds)
 						$home = $t1;
 						$away = $t2;
-						$res  = $this->team_resources[ $home['id'] ];
+						$res  = $this->team_resources[ $league_id ][ $home['id'] ] ?? ( is_string( $this->team_resources[ $home['id'] ] ?? null ) ? $this->team_resources[ $home['id'] ] : 'N/A' );
 
 						// Check for Court Conflict
 						if ( isset( $court_usage[ $res ][ $week ] ) ) {
-							$conflicts[] = [
-								'week'     => $week,
-								'division' => $div_data['league_name'],
-								'court'    => $res,
-								'home'     => $home['name'],
-								'with'     => $court_usage[ $res ][ $week ]
+							$prev          = $court_usage[ $res ][ $week ];
+							$prev_name     = is_array( $prev ) ? $prev['name'] : $prev;
+							$prev_league   = is_array( $prev ) ? ( $prev['league'] ?? '' ) : '';
+							$conflicts[]   = [
+								'week'        => $week,
+								'league'      => $league_data['league_name'],
+								'court'       => $res,
+								'home'        => $home['name'],
+								'with'        => $prev_name,
+								'with_league' => $prev_league,
+							];
+						} else {
+							$court_usage[ $res ][ $week ] = [
+								'name'   => $home['name'],
+								'league' => $league_data['league_name'],
 							];
 						}
 
-						$court_usage[ $res ][ $week ]                    = $home['name'];
-						$current_retry_home_counts[ $home['id'] ]        = ( $current_retry_home_counts[ $home['id'] ] ?? 0 ) + 1;
-						$current_schedule[ $div_id ]['weeks'][ $week ][] = [
+						$current_retry_home_counts[ $league_id ][ $home['id'] ] = ( $current_retry_home_counts[ $league_id ][ $home['id'] ] ?? 0 ) + 1;
+						$current_schedule[ $league_id ]['weeks'][ $week ][] = [
 							'home'     => $home['name'],
 							'home_id'  => $home['id'],
 							'away'     => $away['name'],
 							'away_id'  => $away['id'],
 							'slot'     => $home['preferred_slot'],
 							'time'     => $home['match_time'],
-							'location' => $home['location'],
+							'location' => $home['location'] ?? '',
 							'resource' => $res,
 							'is_bye'   => false,
 							'date'     => $home['match_day_date'] ?? $this->calculate_match_date( $week, $home['match_day'] )
@@ -225,9 +278,9 @@ class Admin_Competition_Scheduler {
 			}
 
 			// 4. SORT AND STORE BEST SO FAR
-			foreach ( $current_schedule as $sort_div_id => &$sort_div_data ) {
-				ksort( $sort_div_data['weeks'] );
-				foreach ( $sort_div_data['weeks'] as $sort_week => &$sort_matches ) {
+			foreach ( $current_schedule as $sort_league_id => &$sort_league_data ) {
+				ksort( $sort_league_data['weeks'] );
+				foreach ( $sort_league_data['weeks'] as $sort_week => &$sort_matches ) {
 					usort( $sort_matches, function ( $a, $b ) {
 						$d1 = $a['date'] ?? '9999-99-99';
 						$d2 = $b['date'] ?? '9999-99-99';
@@ -237,7 +290,7 @@ class Admin_Competition_Scheduler {
 				}
 				unset( $sort_matches );
 			}
-			unset( $sort_div_data );
+			unset( $sort_league_data );
 
 			if ( empty( $conflicts ) ) {
 				$best_schedule    = $current_schedule;
@@ -279,13 +332,12 @@ class Admin_Competition_Scheduler {
 			unset( $matches_list );
 		}
 
-		// 5. GENERATE BYE-REPLACEMENT MATCHES FOR UNDER-POPULATED DIVISIONS
-		$under_populated_div_ids = [];
-		$meeting_counts          = []; // Track meetings between teams (T1_ID_T2_ID => [T1_home_count, T2_home_count])
+		// 5. GENERATE BYE-REPLACEMENT MATCHES FOR UNDER-POPULATED LEAGUES
+		$meeting_counts = []; // Track meetings between teams scoped by league ([league_id][T1_ID_T2_ID] => [T1_home_count, T2_home_count])
 
-		// 5.1 Initialize meeting counts from regular schedule
-		foreach ( $best_schedule as $meeting_div_id => $meeting_div_data ) {
-			foreach ( $meeting_div_data['weeks'] as $meeting_week => $meeting_matches ) {
+		// 5.1 Initialize meeting counts from regular schedule scoped by league
+		foreach ( $best_schedule as $meeting_league_id => $meeting_league_data ) {
+			foreach ( $meeting_league_data['weeks'] as $meeting_week => $meeting_matches ) {
 				foreach ( $meeting_matches as $meeting_match ) {
 					if ( empty( $meeting_match['is_bye'] ) && ! empty( $meeting_match['home_id'] ) && ! empty( $meeting_match['away_id'] ) ) {
 						$t1_id = $meeting_match['home_id'];
@@ -293,63 +345,70 @@ class Admin_Competition_Scheduler {
 						$ids   = [ $t1_id, $t2_id ];
 						sort( $ids );
 						$meeting_key = $ids[0] . '_' . $ids[1];
-						if ( ! isset( $meeting_counts[ $meeting_key ] ) ) {
-							$meeting_counts[ $meeting_key ] = [
+						if ( ! isset( $meeting_counts[ $meeting_league_id ][ $meeting_key ] ) ) {
+							$meeting_counts[ $meeting_league_id ][ $meeting_key ] = [
 								$ids[0] => 0,
-								$ids[1] => 0
+								$ids[1] => 0,
 							];
 						}
 						// Increment home count for the actual home team in this pair
-						$meeting_counts[ $meeting_key ][ $t1_id ] ++;
+						$meeting_counts[ $meeting_league_id ][ $meeting_key ][ $t1_id ] ++;
 					}
 				}
 			}
 		}
 
-		// 5.2 Identify under-populated divisions
-		$under_populated_div_ids = [];
-		foreach ( $divisions as $div_id_check => $div_data_check ) {
-			if ( count( $div_data_check['teams'] ) <= ( $this->teams_per_division - 1 ) ) {
-				$under_populated_div_ids[] = $div_id_check;
+		// 5.2 Identify under-populated leagues
+		$under_populated_league_ids = [];
+		foreach ( $leagues as $league_id_check => $league_data_check ) {
+			if ( count( $league_data_check['teams'] ) <= ( $this->teams_per_league - 1 ) ) {
+				$under_populated_league_ids[] = $league_id_check;
 			}
 		}
 
-		if ( ! empty( $under_populated_div_ids ) ) {
+		if ( ! empty( $under_populated_league_ids ) ) {
 			for ( $week = 1; $week <= $this->total_weeks; $week ++ ) {
 				$teams_with_byes = [];
-				
-				// Identify which teams actually HAVE a bye this week and aren't already playing
-				$already_playing_team_ids = [];
-				foreach ( $best_schedule as $s_div_id => $s_div_data ) {
-					if ( isset( $s_div_data['weeks'][ $week ] ) ) {
-						foreach ( $s_div_data['weeks'][ $week ] as $m ) {
+
+				// Identify teams already playing (scoped by league) and track occupied court resources & home teams
+				$already_playing_team_ids     = [];
+				$occupied_court_resources     = [];
+				$teams_playing_home_this_week = [];
+
+				foreach ( $best_schedule as $s_league_id => $s_league_data ) {
+					if ( isset( $s_league_data['weeks'][ $week ] ) ) {
+						foreach ( $s_league_data['weeks'][ $week ] as $m ) {
 							if ( empty( $m['is_bye'] ) ) {
 								if ( ! empty( $m['home_id'] ) ) {
-									$already_playing_team_ids[ $m['home_id'] ] = true;
+									$already_playing_team_ids[ $s_league_id ][ $m['home_id'] ] = true;
+									$teams_playing_home_this_week[ $m['home_id'] ]             = true;
 								}
 								if ( ! empty( $m['away_id'] ) ) {
-									$already_playing_team_ids[ $m['away_id'] ] = true;
+									$already_playing_team_ids[ $s_league_id ][ $m['away_id'] ] = true;
+								}
+								if ( ! empty( $m['resource'] ) && $m['resource'] !== 'N/A' ) {
+									$occupied_court_resources[ $m['resource'] ] = true;
 								}
 							}
 						}
 					}
 				}
 
-				foreach ( $under_populated_div_ids as $under_div_id ) {
-					if ( ! isset( $best_schedule[ $under_div_id ]['weeks'][ $week ] ) ) {
+				foreach ( $under_populated_league_ids as $under_league_id ) {
+					if ( ! isset( $best_schedule[ $under_league_id ]['weeks'][ $week ] ) ) {
 						continue;
 					}
-					foreach ( $best_schedule[ $under_div_id ]['weeks'][ $week ] as $idx => $match ) {
+					foreach ( $best_schedule[ $under_league_id ]['weeks'][ $week ] as $idx => $match ) {
 						if ( ! empty( $match['is_bye'] ) && ! empty( $match['team_id'] ) ) {
 							$tid = $match['team_id'];
-							// ONLY if they aren't already scheduled for a real match this week
-							if ( ! isset( $already_playing_team_ids[ $tid ] ) ) {
+							// ONLY if they aren't already scheduled for a real match this week in this league
+							if ( ! isset( $already_playing_team_ids[ $under_league_id ][ $tid ] ) ) {
 								$teams_with_byes[] = [
-									'div_id'    => $under_div_id,
+									'league_id' => $under_league_id,
 									'match_idx' => $idx,
 									'team_id'   => $tid,
 									'team_name' => $match['team'],
-									'team_data' => $this->find_team_by_id( $divisions[ $under_div_id ]['teams'], $tid )
+									'team_data' => $this->find_team_by_id( $leagues[ $under_league_id ]['teams'], $tid )
 								];
 							}
 						}
@@ -361,84 +420,134 @@ class Admin_Competition_Scheduler {
 				$to_process = $teams_with_byes;
 				while ( count( $to_process ) >= 2 ) {
 					$t1_info = array_shift( $to_process );
-					$found   = false;
 					foreach ( $to_process as $i => $t2_info ) {
-						// CRITICAL: ONLY pair if they are from the SAME division
-						if ( $t1_info['div_id'] !== $t2_info['div_id'] ) {
+						// CRITICAL: ONLY pair if they are from the SAME league
+						if ( $t1_info['league_id'] !== $t2_info['league_id'] ) {
 							continue;
 						}
 
-						$home_team = $t1_info['team_data'];
-						$away_team = $t2_info['team_data'];
+						$league_id = $t1_info['league_id'];
+						$team_a    = $t1_info['team_data'];
+						$team_b    = $t2_info['team_data'];
 
 						// Ensure they haven't met more than 3 times, and home counts follow 2+1/1+2 logic
-						$ids = [ $home_team['id'], $away_team['id'] ];
+						$ids = [ $team_a['id'], $team_b['id'] ];
 						sort( $ids );
 						$meeting_key = $ids[0] . '_' . $ids[1];
 
-						$current_pair_counts = $meeting_counts[ $meeting_key ] ?? [
+						$current_pair_counts = $meeting_counts[ $league_id ][ $meeting_key ] ?? [
 							$ids[0] => 0,
-							$ids[1] => 0
+							$ids[1] => 0,
 						];
 
 						$total_meetings = array_sum( $current_pair_counts );
-
-						if ( $total_meetings < 3 && $current_pair_counts[ $home_team['id'] ] < 2 ) {
-							array_splice( $to_process, $i, 1 );
-							$found = true;
-
-							$home = $home_team;
-							$away = $away_team;
-
-							$new_match = [
-								'home'              => $home['name'],
-								'home_id'           => $home['id'],
-								'away'              => $away['name'],
-								'away_id'           => $away['id'],
-								'slot'              => $home['preferred_slot'],
-								'time'              => $home['match_time'],
-								'location'          => 'Extra Match',
-								'resource'          => $this->team_resources[ $home['id'] ] ?? 'N/A',
-								'is_bye'            => false,
-								'is_cross_division' => true,
-								'date'              => $home['match_day_date'] ?? $this->calculate_match_date( $week, $home['match_day'] )
-							];
-
-							// Replace byes in both divisions
-							$best_schedule[ $t1_info['div_id'] ]['weeks'][ $week ][ $t1_info['match_idx'] ] = $new_match;
-							$best_schedule[ $t2_info['div_id'] ]['weeks'][ $week ][ $t2_info['match_idx'] ] = $new_match;
-
-							// Update home counts and meeting counts
-							$best_home_counts[ $home['id'] ] = ( $best_home_counts[ $home['id'] ] ?? 0 ) + 1;
-							
-							if ( ! isset( $meeting_counts[ $meeting_key ] ) ) {
-								$meeting_counts[ $meeting_key ] = [
-									$ids[0] => 0,
-									$ids[1] => 0
-								];
-							}
-							$meeting_counts[ $meeting_key ][ $home['id'] ] ++;
-							
-							// Mark both as playing so we don't pick them again for this week
-							$already_playing_team_ids[ $home['id'] ] = true;
-							$already_playing_team_ids[ $away['id'] ] = true;
-							break;
+						if ( $total_meetings >= 3 ) {
+							continue;
 						}
+
+						$res_a = $this->team_resources[ $league_id ][ $team_a['id'] ] ?? ( is_string( $this->team_resources[ $team_a['id'] ] ?? null ) ? $this->team_resources[ $team_a['id'] ] : 'N/A' );
+						$res_b = $this->team_resources[ $league_id ][ $team_b['id'] ] ?? ( is_string( $this->team_resources[ $team_b['id'] ] ?? null ) ? $this->team_resources[ $team_b['id'] ] : 'N/A' );
+
+						// Determine hosting eligibility to prevent physically simultaneous home matches
+						$can_a_host = ( $current_pair_counts[ $team_a['id'] ] < 2 )
+							&& ( $res_a === 'N/A' || empty( $occupied_court_resources[ $res_a ] ) )
+							&& empty( $teams_playing_home_this_week[ $team_a['id'] ] );
+
+						$can_b_host = ( $current_pair_counts[ $team_b['id'] ] < 2 )
+							&& ( $res_b === 'N/A' || empty( $occupied_court_resources[ $res_b ] ) )
+							&& empty( $teams_playing_home_this_week[ $team_b['id'] ] );
+
+						if ( ! $can_a_host && ! $can_b_host ) {
+							continue;
+						}
+
+						if ( $can_a_host && $can_b_host ) {
+							if ( $current_pair_counts[ $team_a['id'] ] <= $current_pair_counts[ $team_b['id'] ] ) {
+								$home     = $team_a;
+								$away     = $team_b;
+								$home_res = $res_a;
+							} else {
+								$home     = $team_b;
+								$away     = $team_a;
+								$home_res = $res_b;
+							}
+						} elseif ( $can_a_host ) {
+							$home     = $team_a;
+							$away     = $team_b;
+							$home_res = $res_a;
+						} else {
+							$home     = $team_b;
+							$away     = $team_a;
+							$home_res = $res_b;
+						}
+
+						array_splice( $to_process, $i, 1 );
+
+						$new_match = [
+							'home'            => $home['name'],
+							'home_id'         => $home['id'],
+							'away'            => $away['name'],
+							'away_id'         => $away['id'],
+							'slot'            => $home['preferred_slot'],
+							'time'            => $home['match_time'],
+							'location'        => ! empty( $home['location'] ) ? $home['location'] : 'Extra Match',
+							'resource'        => $home_res,
+							'is_bye'          => false,
+							'is_cross_league' => false,
+							'date'            => $home['match_day_date'] ?? $this->calculate_match_date( $week, $home['match_day'] )
+						];
+
+						// Replace byes in schedule: assign match to t1 index and remove t2 bye
+						$best_schedule[ $league_id ]['weeks'][ $week ][ $t1_info['match_idx'] ] = $new_match;
+						unset( $best_schedule[ $league_id ]['weeks'][ $week ][ $t2_info['match_idx'] ] );
+
+						// Update home counts and meeting counts scoped by league
+						$best_home_counts[ $league_id ][ $home['id'] ] = ( $best_home_counts[ $league_id ][ $home['id'] ] ?? 0 ) + 1;
+
+						if ( ! isset( $meeting_counts[ $league_id ][ $meeting_key ] ) ) {
+							$meeting_counts[ $league_id ][ $meeting_key ] = [
+								$ids[0] => 0,
+								$ids[1] => 0,
+							];
+						}
+						$meeting_counts[ $league_id ][ $meeting_key ][ $home['id'] ] ++;
+
+						// Mark both as playing in this league so we don't pick them again for this week
+						$already_playing_team_ids[ $league_id ][ $home['id'] ] = true;
+						$already_playing_team_ids[ $league_id ][ $away['id'] ] = true;
+
+						// Mark court and home hosting as occupied to avoid simultaneous home matches
+						if ( $home_res !== 'N/A' ) {
+							$occupied_court_resources[ $home_res ] = true;
+						}
+						$teams_playing_home_this_week[ $home['id'] ] = true;
+						break;
 					}
 				}
 			}
+
+			// Re-index weeks arrays in case bye elements were unset
+			foreach ( $best_schedule as $reindex_league_id => &$reindex_league_data ) {
+				if ( ! empty( $reindex_league_data['weeks'] ) ) {
+					foreach ( $reindex_league_data['weeks'] as $reindex_week => &$reindex_matches ) {
+						$reindex_matches = array_values( $reindex_matches );
+					}
+					unset( $reindex_matches );
+				}
+			}
+			unset( $reindex_league_data );
 		}
 
 		// 6. EQUITY COMPROMISE DETECTION (Post-check)
-		foreach ( $divisions as $check_div_id => $check_div_data ) {
-			foreach ( $check_div_data['teams'] as $check_team ) {
-				$count            = $best_home_counts[ $check_team['id'] ] ?? 0;
-				$max_allowed_home = count( $check_div_data['teams'] ) - 1;
+		foreach ( $leagues as $check_league_id => $check_league_data ) {
+			foreach ( $check_league_data['teams'] as $check_team ) {
+				$count            = $best_home_counts[ $check_league_id ][ $check_team['id'] ] ?? 0;
+				$max_allowed_home = count( $check_league_data['teams'] ) - 1;
 				if ( $count > $max_allowed_home ) {
 					$alerts[] = [
 						'type'      => 'equity_compromise',
 						'team_name' => $check_team['name'],
-						'division'  => $check_div_data['league_name'],
+						'league'    => $check_league_data['league_name'],
 						'count'     => $count,
 						'ideal'     => $this->total_weeks / 2
 					];
@@ -446,25 +555,26 @@ class Admin_Competition_Scheduler {
 			}
 		}
 
-			return [
-				'retry'             => $retry + 1,
-				'schedule'          => $best_schedule,
-				'conflicts'         => $best_conflicts,
-				'alerts'            => $alerts ?? [],
-				'resource_pairings' => $this->resource_pairings,
-				'is_valid'          => $best_valid,
-				'total_weeks'       => $this->total_weeks
-			];
+		return [
+			'retry'             => $retry + 1,
+			'schedule'          => $best_schedule,
+			'conflicts'         => $best_conflicts,
+			'alerts'            => $alerts ?? [],
+			'resource_pairings' => $this->resource_pairings,
+			'is_valid'          => $best_valid,
+			'total_weeks'       => $this->total_weeks
+		];
 	}
 
-	private function map_physical_courts( $all_divisions ): void {
+	private function map_physical_courts( $all_leagues ): void {
 		$grouped_teams = [];
-		foreach ( $all_divisions as $div_id => $div_data ) {
-			foreach ( $div_data['teams'] as $team ) {
+		foreach ( $all_leagues as $league_id => $league_data ) {
+			foreach ( $league_data['teams'] as $team ) {
 				$key                     = $team['club_id'] . '_' . $team['preferred_slot'];
 				$grouped_teams[ $key ][] = [
-					'team'     => $team,
-					'div_name' => $div_data['league_name']
+					'team'        => $team,
+					'league_name' => $league_data['league_name'],
+					'league_id'   => $league_id,
 				];
 			}
 		}
@@ -491,29 +601,30 @@ class Admin_Competition_Scheduler {
 			}
 
 			foreach ( $interleaved as $idx => $entry ) {
-				$team                                = $entry['team'];
-				$res                                 = $key . "_C" . (int) floor( $idx / 2 );
-				$this->team_resources[ $team['id'] ] = $res;
-				$this->resource_pairings[ $res ][]   = [
-					'id'       => $team['id'],
-					'name'     => $team['name'],
-					'division' => $entry['div_name']
+				$team                                                         = $entry['team'];
+				$res                                                          = $key . "_C" . (int) floor( $idx / 2 );
+				$this->team_resources[ $entry['league_id'] ][ $team['id'] ]   = $res;
+				$this->resource_pairings[ $res ][]                            = [
+					'id'        => $team['id'],
+					'name'      => $team['name'],
+					'league'    => $entry['league_name'],
+					'league_id' => $entry['league_id'],
 				];
 			}
 		}
 	}
 
-	private function rank_divisions( $divisions ): array {
+	private function rank_leagues( $leagues ): array {
 		$club_demand = [];
-		foreach ( $divisions as $div_data ) {
-			foreach ( $div_data['teams'] as $t ) {
+		foreach ( $leagues as $league_data ) {
+			foreach ( $league_data['teams'] as $t ) {
 				$club_demand[ $t['club_id'] ] = ( $club_demand[ $t['club_id'] ] ?? 0 ) + 1;
 			}
 		}
 		$scores = [];
-		foreach ( $divisions as $id => $div_data ) {
+		foreach ( $leagues as $id => $league_data ) {
 			$s = 0;
-			foreach ( $div_data['teams'] as $t ) {
+			foreach ( $league_data['teams'] as $t ) {
 				$s += $club_demand[ $t['club_id'] ];
 			}
 			$scores[ $id ] = $s;
@@ -521,7 +632,7 @@ class Admin_Competition_Scheduler {
 		arsort( $scores );
 		$ordered = [];
 		foreach ( $scores as $id => $v ) {
-			$ordered[ $id ] = $divisions[ $id ];
+			$ordered[ $id ] = $leagues[ $id ];
 		}
 
 		return $ordered;
@@ -571,18 +682,6 @@ class Admin_Competition_Scheduler {
 		return $rounds;
 	}
 
-	private function find_division_id_by_team_id( $divisions, $team_id ): int|string|null {
-		foreach ( $divisions as $id => $data ) {
-			foreach ( $data['teams'] as $team ) {
-				if ( $team['id'] == $team_id ) {
-					return $id;
-				}
-			}
-		}
-
-		return null;
-	}
-
 	private function find_team_by_id( $teams, $team_id ): mixed {
 		foreach ( $teams as $team ) {
 			if ( $team['id'] == $team_id ) {
@@ -603,7 +702,7 @@ class Admin_Competition_Scheduler {
 			$assigned_ids[ $t['id'] ] = true;
 		}
 
-		// 1. Handle Derby (Teams from same club in division)
+		// 1. Handle Derby (Teams from same club in league)
 		$derby_club_ids = array_keys( $club_counts, 2 );
 		if ( ! empty( $derby_club_ids ) ) {
 			shuffle( $derby_club_ids );
@@ -746,6 +845,47 @@ class Admin_Competition_Scheduler {
 		}
 
 		return date( 'Y-m-d', strtotime( "$week_start +$offset days" ) );
+	}
+
+	/**
+	 * Format a scheduling conflict record for HTML display.
+	 *
+	 * @param array $error Conflict data containing week, home, league, with, with_league, and court.
+	 * @return string HTML <li> element.
+	 */
+	public static function format_conflict_item( array $error ): string {
+		$escape = function_exists( 'esc_html' )
+			? 'esc_html'
+			: static fn( $v ) => htmlspecialchars( (string) $v, ENT_QUOTES, 'UTF-8' );
+
+		$week        = $escape( $error['week'] ?? '' );
+		$home        = $escape( $error['home'] ?? '' );
+		$league      = $escape( $error['league'] ?? '' );
+		$with        = $escape( $error['with'] ?? '' );
+		$with_raw    = $error['with_league'] ?? '';
+		$with_league = ! empty( $with_raw ) ? ' (' . $escape( $with_raw ) . ')' : '';
+		$court       = $escape( $error['court'] ?? '' );
+
+		return '<li>Week ' . $week . ': ' . $home . ' (' . $league . ') and ' . $with . $with_league . ' clashing on Shared Court: ' . $court . '</li>';
+	}
+
+	/**
+	 * Format a duplicate team alert record for HTML display.
+	 *
+	 * @param array $alert Duplicate team alert data containing message, league, and/or team_id.
+	 * @return string HTML <li> element.
+	 */
+	public static function format_duplicate_alert_item( array $alert ): string {
+		$escape = function_exists( 'esc_html' )
+			? 'esc_html'
+			: static fn( $v ) => htmlspecialchars( (string) $v, ENT_QUOTES, 'UTF-8' );
+
+		$league_name = $alert['league'] ?? '';
+		$msg         = ! empty( $alert['message'] )
+			? $alert['message']
+			: "League '" . $league_name . "' contains duplicate team ID '" . ( $alert['team_id'] ?? '' ) . "'";
+
+		return '<li>' . $escape( $msg ) . '</li>';
 	}
 
 }

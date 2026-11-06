@@ -20,8 +20,12 @@ use Racketmanager\Services\Season_Service;
 /**
  * Handles season mutations for the seasons admin screen (add season, bulk delete seasons).
  */
-readonly final class Season_Action_Dispatcher {
+final readonly class Season_Action_Dispatcher {
 
+    /**
+     * @param Season_Service         $season_service a Season_Service instance.
+     * @param Action_Guard_Interface $action_guard an Action_Guard_Interface instance.
+     */
     public function __construct(
         private Season_Service $season_service,
         private Action_Guard_Interface $action_guard,
@@ -29,8 +33,8 @@ readonly final class Season_Action_Dispatcher {
     }
 
     /**
-     * @param array<string, mixed> $query Typically $_GET
-     * @param array<string, mixed> $post  Typically $_POST
+     * @param array<string, mixed> $query Typically $_GET.
+     * @param array<string, mixed> $post  Typically $_POST.
      */
     public function handle( array $query, array $post ): Action_Result_DTO {
         if ( isset( $post['addSeason'] ) ) {
@@ -45,7 +49,7 @@ readonly final class Season_Action_Dispatcher {
     }
 
     /**
-     * @param array<string, mixed> $post
+     * @param array<string, mixed> $post Typically $_POST.
      */
     private function handle_add_season( array $post ): Action_Result_DTO {
         try {
@@ -65,7 +69,7 @@ readonly final class Season_Action_Dispatcher {
                 $err_msgs = $response->get_error_messages();
                 $msg      = ! empty( $err_msgs ) ? implode( ' ', $err_msgs ) : __( 'Error adding season', 'racketmanager' );
 
-                return new Action_Result_DTO(
+                $dto = new Action_Result_DTO(
                     message: $msg,
                     message_type: Admin_Message_Type::ERROR,
                     flash_data: array(
@@ -73,12 +77,14 @@ readonly final class Season_Action_Dispatcher {
                         'errors'      => array( 'seasonName' => $msg ),
                     ),
                 );
+            } else {
+                $dto = new Action_Result_DTO(
+                    message: __( 'Season added', 'racketmanager' ),
+                    message_type: Admin_Message_Type::SUCCESS,
+                );
             }
 
-            return new Action_Result_DTO(
-                message: __( 'Season added', 'racketmanager' ),
-                message_type: Admin_Message_Type::SUCCESS,
-            );
+            return $dto;
         } catch ( Invalid_Argument_Exception $e ) {
             return new Action_Result_DTO(
                 message: $e->getMessage(),
@@ -92,7 +98,7 @@ readonly final class Season_Action_Dispatcher {
     }
 
     /**
-     * @param array<string, mixed> $post
+     * @param array<string, mixed> $post Typically $_POST.
      */
     private function handle_delete_seasons( array $post ): Action_Result_DTO {
         try {

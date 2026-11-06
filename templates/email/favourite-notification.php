@@ -54,7 +54,7 @@ require 'email-header.php';
                                                             <td style="min-width: 5px; font-weight: 400;" cellspacing="0" cellpadding="0" align="center" bgcolor="#fff" valign="top">
                                                                 <div style="font-size: 16px; color: #000; background-color: transparent; margin: 10px;">
                                                                     <div style="line-height: 1.25; mso-line-height-rule: at-least; margin: 0 0 20px; padding: 0;">
-                                                                        <table class="body-action" aria-describedby="<?php esc_html_e( 'outside url wrapping action', 'racketmanager' ); ?>">
+                                                                        <table class="body-action" aria-describedby="<?php esc_html_e( 'outside url wrapping action', 'racketmanager' ); ?>" role="presentation">
                                                                             <tr>
                                                                                 <td class="align-right team"><a style="text-decoration: none; color: #006800;" href="<?php echo esc_html( $match_url ); ?>"><?php echo esc_html( $home_team?->get_name() ?? '' ); ?></a></td>
                                                                                 <td class="align-center"><a style="text-decoration: none; color: #006800;" href="<?php echo esc_html( $match_url ); ?>"><?php echo esc_html( ( $fixture->get_home_points() ?? '0' ) . '-' . ( $fixture->get_away_points() ?? '0' ) ); ?></a></td>

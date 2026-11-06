@@ -5,20 +5,20 @@ namespace Racketmanager\Services;
 
 use Racketmanager\Domain\Season\Season;
 use Racketmanager\Domain\Season\Season_Factory;
-use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Season_Repository;
 use Racketmanager\Services\Validator\Validator;
 use WP_Error;
 
+/**
+ * Season_Service
+ */
 class Season_Service {
-    private RacketManager $racketmanager;
     private Season_Repository $season_repository;
 
     /**
      * Constructor
      */
-    public function __construct( RacketManager $plugin_instance, Season_Repository $season_repository ) {
-        $this->racketmanager     = $plugin_instance;
+    public function __construct( Season_Repository $season_repository ) {
         $this->season_repository = $season_repository;
     }
 
@@ -29,9 +29,14 @@ class Season_Service {
         return $this->season_repository->find_all();
     }
 
-    public function create_season( ?string $season_name ): bool|WP_Error {
-        $validator = new Validator();
-        $error_field   = 'seasonName';
+    /**
+     * @param string|null $season_name
+     *
+     * @return bool|int|WP_Error
+     */
+    public function create_season( ?string $season_name ): bool|int|WP_Error {
+        $validator   = new Validator();
+        $error_field = 'seasonName';
         if ( empty( $season_name ) ) {
             $error_message = __( 'Season must be specified', 'racketmanager' );
             $validator->set_errors( $error_field, $error_message );
@@ -62,6 +67,5 @@ class Season_Service {
         } else {
             return false;
         }
-
     }
 }

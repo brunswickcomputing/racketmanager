@@ -82,10 +82,18 @@ use Racketmanager\Services\View\View_Renderer_Interface;
  * Service provider for core infrastructure, gateways, shared repositories, and general handlers.
  */
 final readonly class Core_Service_Provider implements Service_Provider_Interface {
+    /**
+     * @param RacketManager|null $app a RacketManager instance.
+     */
     public function __construct(
         private ?RacketManager $app = null
     ) {}
 
+    /**
+     * @param Simple_Container $container a Simple_Container instance.
+     *
+     * @return void
+     */
     public function register( Simple_Container $container ): void {
         $app = $this->app;
 
@@ -137,18 +145,24 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->set( 'page_title_service', fn(): Page_Title_Service => new Page_Title_Service( $app?->site_name ) );
         $container->set( Page_Title_Service::class, fn( Simple_Container $c ): Page_Title_Service => $c->get( 'page_title_service' ) );
         $container->set( Page_Title_Service_Interface::class, fn( Simple_Container $c ): Page_Title_Service => $c->get( 'page_title_service' ) );
-        $container->set( 'login', fn( Simple_Container $c ): Login => new Login(
-            $c->get( 'option_service' ),
-            $c->get( 'shortcode_template_renderer' )
-        ) );
+        $container->set(
+            'login',
+            fn( Simple_Container $c ): Login => new Login(
+                $c->get( 'option_service' ),
+                $c->get( 'shortcode_template_renderer' )
+            )
+        );
         $container->set( Login::class, fn( Simple_Container $c ): Login => $c->get( 'login' ) );
         $container->set( 'mail_filter_service', fn( Simple_Container $c ): Mail_Filter_Service => new Mail_Filter_Service( $c->get( 'message_repository' ) ) );
         $container->set( Mail_Filter_Service::class, fn( Simple_Container $c ): Mail_Filter_Service => $c->get( 'mail_filter_service' ) );
         $container->set( Mail_Filter_Service_Interface::class, fn( Simple_Container $c ): Mail_Filter_Service => $c->get( 'mail_filter_service' ) );
-        $container->set( 'component_coordinator', fn( Simple_Container $c ): Component_Coordinator => new Component_Coordinator(
-            $c,
-            $c->get( 'ajax_registry' )
-        ) );
+        $container->set(
+            'component_coordinator',
+            fn( Simple_Container $c ): Component_Coordinator => new Component_Coordinator(
+                $c,
+                $c->get( 'ajax_registry' )
+            )
+        );
         $container->set( Component_Coordinator::class, fn( Simple_Container $c ): Component_Coordinator => $c->get( 'component_coordinator' ) );
         $container->set( Component_Coordinator_Interface::class, fn( Simple_Container $c ): Component_Coordinator_Interface => $c->get( 'component_coordinator' ) );
 
@@ -165,13 +179,16 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->alias( Invoice_Repository_Interface::class, 'invoice_repository' );
         $container->alias( Invoice_Repository::class, 'invoice_repository' );
 
-        $container->set( 'user_repository', fn( Simple_Container $c ) => new User_Repository(
-            fn() => $c->get( 'league_repository' ),
-            fn() => $c->get( 'club_repository' ),
-            fn() => $c->get( 'event_repository' ),
-            fn() => $c->get( 'player_repository' ),
-            fn() => $c->get( 'team_repository' )
-        ) );
+        $container->set(
+            'user_repository',
+            fn( Simple_Container $c ) => new User_Repository(
+                fn() => $c->get( 'league_repository' ),
+                fn() => $c->get( 'club_repository' ),
+                fn() => $c->get( 'event_repository' ),
+                fn() => $c->get( 'player_repository' ),
+                fn() => $c->get( 'team_repository' )
+            )
+        );
         $container->alias( User_Repository_Interface::class, 'user_repository' );
         $container->alias( User_Repository::class, 'user_repository' );
 
@@ -180,106 +197,135 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->alias( Message_Repository::class, 'message_repository' );
 
         // Repository Provider Aggregate
-        $container->set( 'repository_provider', fn( Simple_Container $c ) => new Repository_Provider(
-            $c->get( 'league_repository' ),
-            $c->get( 'event_repository' ),
-            $c->get( 'competition_repository' ),
-            $c->get( 'league_team_repository' ),
-            $c->get( 'team_repository' ),
-            $c->get( 'player_repository' ),
-            $c->get( 'rubber_repository' ),
-            $c->get( 'results_checker_repository' ),
-            $c->get( 'results_report_repository' ),
-            $c->get( 'result_repository' ),
-            $c->get( 'fixture_repository' ),
-            $c->get( 'club_repository' )
-        ) );
+        $container->set(
+            'repository_provider',
+            fn( Simple_Container $c ) => new Repository_Provider(
+                $c->get( 'league_repository' ),
+                $c->get( 'event_repository' ),
+                $c->get( 'competition_repository' ),
+                $c->get( 'league_team_repository' ),
+                $c->get( 'team_repository' ),
+                $c->get( 'player_repository' ),
+                $c->get( 'rubber_repository' ),
+                $c->get( 'results_checker_repository' ),
+                $c->get( 'results_report_repository' ),
+                $c->get( 'result_repository' ),
+                $c->get( 'fixture_repository' ),
+                $c->get( 'club_repository' )
+            )
+        );
         $container->alias( Repository_Provider::class, 'repository_provider' );
 
         // Core Services
-        $container->set( 'season_service', fn( Simple_Container $c ) => new Season_Service(
-            $app,
-            $c->get( 'season_repository' )
-        ) );
+        $container->set(
+            'season_service',
+            fn( Simple_Container $c ) => new Season_Service(
+                $c->get( 'season_repository' )
+            )
+        );
         $container->alias( Season_Service::class, 'season_service' );
 
-        $container->set( 'finance_service', fn( Simple_Container $c ) => new Finance_Service(
-            $app,
-            $c->get( 'charge_repository' ),
-            $c->get( 'invoice_repository' ),
-            $c->get( 'club_repository' ),
-            $c->get( 'tournament_repository' ),
-            $c->get( 'competition_service' ),
-            $c->get( 'player_service' ),
-            $c->get( 'payment_gateway' ),
-            $c->get( 'mailer' ),
-            $c->get( 'option_service' )
-        ) );
+        $container->set(
+            'finance_service',
+            fn( Simple_Container $c ) => new Finance_Service(
+                $app,
+                $c->get( 'charge_repository' ),
+                $c->get( 'invoice_repository' ),
+                $c->get( 'club_repository' ),
+                $c->get( 'tournament_repository' ),
+                $c->get( 'competition_service' ),
+                $c->get( 'player_service' ),
+                $c->get( 'payment_gateway' ),
+                $c->get( 'mailer' ),
+                $c->get( 'option_service' )
+            )
+        );
         $container->alias( Finance_Service::class, 'finance_service' );
 
         $container->set( 'notify_service', fn( Simple_Container $c ) => new Notify_Service( $app, $c->get( 'mailer' ) ) );
         $container->alias( Notify_Service::class, 'notify_service' );
 
-        $container->set( 'notification_service', fn( Simple_Container $c ) => new Notification_Service(
-            $c->get( 'repository_provider' ),
-            $c->get( 'settings_service' ),
-            $c->get( 'notification_presenter' ),
-            $c->get( 'view_renderer' ),
-            $c->get( 'racketmanager_app' ),
-            $c->get( 'mailer' ),
-            $c->get( 'event_query_service' ),
-            fn() => $c->get( 'league_query_service' ),
-            $c->get( 'option_service' )
-        ) );
+        $container->set(
+            'notification_service',
+            fn( Simple_Container $c ) => new Notification_Service(
+                $c->get( 'repository_provider' ),
+                $c->get( 'settings_service' ),
+                $c->get( 'notification_presenter' ),
+                $c->get( 'view_renderer' ),
+                $c->get( 'racketmanager_app' ),
+                $c->get( 'mailer' ),
+                $c->get( 'event_query_service' ),
+                fn() => $c->get( 'league_query_service' ),
+                $c->get( 'option_service' )
+            )
+        );
         $container->alias( Notification_Service::class, 'notification_service' );
 
         // Export Services
-        $container->set( 'exporter', fn( Simple_Container $c ): Data_Exporter_Interface => new Export_Service(
-            $c->get( 'fixture_repository' ),
-            $c->get( 'result_reporting_service' ),
-            $c->get( 'fixture_detail_service' ),
-            $c->get( 'club_repository' )
-        ) );
+        $container->set(
+            'exporter',
+            fn( Simple_Container $c ): Data_Exporter_Interface => new Export_Service(
+                $c->get( 'fixture_repository' ),
+                $c->get( 'result_reporting_service' ),
+                $c->get( 'fixture_detail_service' ),
+                $c->get( 'club_repository' )
+            )
+        );
         $container->set( Data_Exporter_Interface::class, fn( Simple_Container $c ): Data_Exporter_Interface => $c->get( 'exporter' ) );
         $container->alias( Export_Service::class, 'exporter' );
 
-        $container->set( 'rest_controller_adapter', fn( Simple_Container $c ) => new Rest_Controller_Adapter(
-            $c->get( 'league_repository' ),
-            $c->get( 'team_repository' ),
-            $c->get( 'competition_service' )
-        ) );
+        $container->set(
+            'rest_controller_adapter',
+            fn( Simple_Container $c ) => new Rest_Controller_Adapter(
+                $c->get( 'league_repository' ),
+                $c->get( 'team_repository' ),
+                $c->get( 'competition_service' )
+            )
+        );
         $container->alias( Rest_Controller_Adapter::class, 'rest_controller_adapter' );
 
-        $container->set( 'export_delivery_adapter', fn( Simple_Container $c ) => new Export_Delivery_Adapter(
-            $c->get( 'racketmanager_app' )
-        ) );
+        $container->set(
+            'export_delivery_adapter',
+            fn( Simple_Container $c ) => new Export_Delivery_Adapter(
+                $c->get( 'racketmanager_app' )
+            )
+        );
         $container->alias( Export_Delivery_Adapter::class, 'export_delivery_adapter' );
         $container->set( 'export_admin_controller', fn( Simple_Container $c ) => $c->get( 'export_delivery_adapter' ) );
 
         // Core AJAX Controllers & Adapters
-        $container->set( 'account_ajax_adapter', fn( Simple_Container $c ) => new Account_Ajax_Adapter(
-            $c->get( 'security_service' ),
-            $c->get( 'json_response_factory' ),
-            $c->get( 'message_repository' ),
-            $c->get( 'user_repository' ),
-            $c->get( 'option_service' )
-        ) );
+        $container->set(
+            'account_ajax_adapter',
+            fn( Simple_Container $c ) => new Account_Ajax_Adapter(
+                $c->get( 'security_service' ),
+                $c->get( 'json_response_factory' ),
+                $c->get( 'message_repository' ),
+                $c->get( 'user_repository' ),
+                $c->get( 'option_service' )
+            )
+        );
         $container->alias( Account_Ajax_Adapter::class, 'account_ajax_adapter' );
         $container->set( 'account_ajax_controller', fn( Simple_Container $c ) => new Account_Ajax_Controller( $app, $c->get( 'account_ajax_adapter' ) ) );
         $container->alias( Account_Ajax_Controller::class, 'account_ajax_controller' );
 
-        $container->set( 'set_purchase_order_handler', fn( Simple_Container $c ) => new Set_Purchase_Order_Handler(
-            $c->get( 'finance_service' )
-        ) );
+        $container->set(
+            'set_purchase_order_handler',
+            fn( Simple_Container $c ) => new Set_Purchase_Order_Handler(
+                $c->get( 'finance_service' )
+            )
+        );
 
-        $container->set( 'finance_ajax_adapter', fn( Simple_Container $c ) => new Finance_Ajax_Adapter(
-            security_service: $c->get( 'security_service' ),
-            response_factory: $c->get( 'json_response_factory' ),
-            finance_service: $c->get( 'finance_service' ),
-            set_purchase_order_handler: $c->get( 'set_purchase_order_handler' ),
-            get_purchase_order_handler: $c->get( 'get_purchase_order_handler' ),
-            view_presenter: $c->get( 'shortcode_view_presenter' )
-        ) );
+        $container->set(
+            'finance_ajax_adapter',
+            fn( Simple_Container $c ) => new Finance_Ajax_Adapter(
+                security_service: $c->get( 'security_service' ),
+                response_factory: $c->get( 'json_response_factory' ),
+                finance_service: $c->get( 'finance_service' ),
+                set_purchase_order_handler: $c->get( 'set_purchase_order_handler' ),
+                get_purchase_order_handler: $c->get( 'get_purchase_order_handler' ),
+                view_presenter: $c->get( 'shortcode_view_presenter' )
+            )
+        );
         $container->alias( Finance_Ajax_Adapter::class, 'finance_ajax_adapter' );
         $container->set( 'finance_ajax_controller', fn( Simple_Container $c ) => new Finance_Ajax_Controller( $app, $c->get( 'finance_ajax_adapter' ) ) );
         $container->alias( Finance_Ajax_Controller::class, 'finance_ajax_controller' );
@@ -289,17 +335,20 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->set( User_Favourites_Gateway_Interface::class, fn( Simple_Container $c ): User_Favourites_Gateway_Interface => $c->get( 'user_favourites_gateway' ) );
         $container->alias( Wp_User_Favourites_Gateway::class, 'user_favourites_gateway' );
 
-        $container->set( 'email_shortcode_adapter', fn( Simple_Container $c ) => new Email_Shortcode_Adapter(
-            fixture_repository: $c->get( 'fixture_repository' ),
-            presenter: $c->get( 'email_shortcode_presenter' ),
-            template_renderer: $c->get( 'shortcode_template_renderer' ),
-            event_query_service: $c->get( 'event_query_service' ),
-            league_query_service: $c->get( 'league_query_service' ),
-            team_repository: $c->get( 'team_repository' ),
-            league_repository: $c->get( 'league_repository' ),
-            event_repository: $c->get( 'event_repository' ),
-            competition_repository: $c->get( 'competition_repository' )
-        ) );
+        $container->set(
+            'email_shortcode_adapter',
+            fn( Simple_Container $c ) => new Email_Shortcode_Adapter(
+                fixture_repository: $c->get( 'fixture_repository' ),
+                presenter: $c->get( 'email_shortcode_presenter' ),
+                template_renderer: $c->get( 'shortcode_template_renderer' ),
+                event_query_service: $c->get( 'event_query_service' ),
+                league_query_service: $c->get( 'league_query_service' ),
+                team_repository: $c->get( 'team_repository' ),
+                league_repository: $c->get( 'league_repository' ),
+                event_repository: $c->get( 'event_repository' ),
+                competition_repository: $c->get( 'competition_repository' )
+            )
+        );
         $container->alias( Email_Shortcode_Adapter::class, 'email_shortcode_adapter' );
 
         // General / Auth / Message Queries & Shortcodes
@@ -308,67 +357,88 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->set( 'get_password_reset_form_handler', fn() => new Get_Password_Reset_Form_Handler() );
         $container->set( 'get_member_account_form_handler', fn( Simple_Container $c ) => new Get_Member_Account_Form_Handler( $c->get( 'user_repository' ) ) );
 
-        $container->set( 'login_shortcode_adapter', fn( Simple_Container $c ) => new Login_Shortcode_Adapter(
-            $app,
-            view_presenter: $c->get( 'shortcode_view_presenter' ),
-            login_form_handler: $c->get( 'get_login_form_handler' ),
-            password_lost_form_handler: $c->get( 'get_password_lost_form_handler' ),
-            password_reset_form_handler: $c->get( 'get_password_reset_form_handler' ),
-            member_account_form_handler: $c->get( 'get_member_account_form_handler' ),
-            template_renderer: $c->get( 'shortcode_template_renderer' ),
-            security_service: $c->get( 'security_service' )
-        ) );
+        $container->set(
+            'login_shortcode_adapter',
+            fn( Simple_Container $c ) => new Login_Shortcode_Adapter(
+                $app,
+                view_presenter: $c->get( 'shortcode_view_presenter' ),
+                login_form_handler: $c->get( 'get_login_form_handler' ),
+                password_lost_form_handler: $c->get( 'get_password_lost_form_handler' ),
+                password_reset_form_handler: $c->get( 'get_password_reset_form_handler' ),
+                member_account_form_handler: $c->get( 'get_member_account_form_handler' ),
+                template_renderer: $c->get( 'shortcode_template_renderer' ),
+                security_service: $c->get( 'security_service' )
+            )
+        );
         $container->alias( Login_Shortcode_Adapter::class, 'login_shortcode_adapter' );
 
         $container->set( 'get_messages_handler', fn( Simple_Container $c ) => new Get_Messages_Handler( $c->get( 'user_repository' ), $c->get( 'message_repository' ) ) );
         $container->set( 'get_message_handler', fn( Simple_Container $c ) => new Get_Message_Handler( $c->get( 'message_repository' ) ) );
 
-        $container->set( 'message_shortcode_adapter', fn( Simple_Container $c ) => new Message_Shortcode_Adapter(
-            $app,
-            view_presenter: $c->get( 'shortcode_view_presenter' ),
-            messages_handler: $c->get( 'get_messages_handler' ),
-            message_handler: $c->get( 'get_message_handler' ),
-            template_renderer: $c->get( 'shortcode_template_renderer' ),
-            security_service: $c->get( 'security_service' ),
-            message_presenter: $c->get( 'message_presenter' )
-        ) );
+        $container->set(
+            'message_shortcode_adapter',
+            fn( Simple_Container $c ) => new Message_Shortcode_Adapter(
+                $app,
+                view_presenter: $c->get( 'shortcode_view_presenter' ),
+                messages_handler: $c->get( 'get_messages_handler' ),
+                message_handler: $c->get( 'get_message_handler' ),
+                template_renderer: $c->get( 'shortcode_template_renderer' ),
+                security_service: $c->get( 'security_service' ),
+                message_presenter: $c->get( 'message_presenter' )
+            )
+        );
         $container->alias( Message_Shortcode_Adapter::class, 'message_shortcode_adapter' );
 
-        $container->set( 'get_favourites_handler', fn( Simple_Container $c ) => new Get_Favourites_Handler(
-            $c->get( 'user_repository' ),
-            $c->get( 'club_repository' )
-        ) );
-        $container->set( 'get_invoice_handler', fn( Simple_Container $c ) => new Get_Invoice_Handler(
-            $c->get( 'finance_service' ),
-            $c->get( 'settings_service' ),
-            $c->get( 'option_gateway' )
-        ) );
-        $container->set( 'get_purchase_order_handler', fn( Simple_Container $c ) => new Get_Purchase_Order_Handler(
-            $c->get( 'finance_service' )
-        ) );
-        $container->set( 'get_memberships_handler', fn( Simple_Container $c ) => new Get_Memberships_Handler(
-            $c->get( 'player_service' ),
-            $c->get( 'registration_service' )
-        ) );
+        $container->set(
+            'get_favourites_handler',
+            fn( Simple_Container $c ) => new Get_Favourites_Handler(
+                $c->get( 'user_repository' ),
+                $c->get( 'club_repository' )
+            )
+        );
+        $container->set(
+            'get_invoice_handler',
+            fn( Simple_Container $c ) => new Get_Invoice_Handler(
+                $c->get( 'finance_service' ),
+                $c->get( 'settings_service' ),
+                $c->get( 'option_gateway' )
+            )
+        );
+        $container->set(
+            'get_purchase_order_handler',
+            fn( Simple_Container $c ) => new Get_Purchase_Order_Handler(
+                $c->get( 'finance_service' )
+            )
+        );
+        $container->set(
+            'get_memberships_handler',
+            fn( Simple_Container $c ) => new Get_Memberships_Handler(
+                $c->get( 'player_service' ),
+                $c->get( 'registration_service' )
+            )
+        );
         $container->set( 'get_alert_handler', fn() => new Get_Alert_Handler() );
 
-        $container->set( 'general_shortcode_adapter', fn( Simple_Container $c ) => new General_Shortcode_Adapter(
-            $app,
-            view_presenter: $c->get( 'shortcode_view_presenter' ),
-            players_handler: $c->get( 'get_players_handler' ),
-            player_handler: $c->get( 'get_player_handler' ),
-            favourites_handler: $c->get( 'get_favourites_handler' ),
-            invoice_handler: $c->get( 'get_invoice_handler' ),
-            purchase_order_handler: $c->get( 'get_purchase_order_handler' ),
-            memberships_handler: $c->get( 'get_memberships_handler' ),
-            player_search_handler: $c->get( 'get_player_search_handler' ),
-            team_order_handler: $c->get( 'get_team_order_handler' ),
-            alert_handler: $c->get( 'get_alert_handler' ),
-            template_renderer: $c->get( 'shortcode_template_renderer' ),
-            security_service: $c->get( 'security_service' ),
-            player_presenter: $c->get( 'player_presenter' ),
-            invoice_presenter: $c->get( 'invoice_presenter' )
-        ) );
+        $container->set(
+            'general_shortcode_adapter',
+            fn( Simple_Container $c ) => new General_Shortcode_Adapter(
+                $app,
+                view_presenter: $c->get( 'shortcode_view_presenter' ),
+                players_handler: $c->get( 'get_players_handler' ),
+                player_handler: $c->get( 'get_player_handler' ),
+                favourites_handler: $c->get( 'get_favourites_handler' ),
+                invoice_handler: $c->get( 'get_invoice_handler' ),
+                purchase_order_handler: $c->get( 'get_purchase_order_handler' ),
+                memberships_handler: $c->get( 'get_memberships_handler' ),
+                player_search_handler: $c->get( 'get_player_search_handler' ),
+                team_order_handler: $c->get( 'get_team_order_handler' ),
+                alert_handler: $c->get( 'get_alert_handler' ),
+                template_renderer: $c->get( 'shortcode_template_renderer' ),
+                security_service: $c->get( 'security_service' ),
+                player_presenter: $c->get( 'player_presenter' ),
+                invoice_presenter: $c->get( 'invoice_presenter' )
+            )
+        );
         $container->alias( General_Shortcode_Adapter::class, 'general_shortcode_adapter' );
     }
 }

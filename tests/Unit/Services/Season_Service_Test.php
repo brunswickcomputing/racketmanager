@@ -20,7 +20,6 @@ final class Season_Service_Test extends TestCase {
 
         try {
             $service = new Season_Service(
-                $GLOBALS['racketmanager'],
                 $this->createStub( Season_Repository::class )
             );
 
@@ -50,7 +49,7 @@ final class Season_Service_Test extends TestCase {
                 ->with( self::callback( static fn( $season ): bool => $season instanceof Season && '2031' === $season->get_name() && null === $season->get_id() ) )
                 ->willReturn( true );
 
-            $service = new Season_Service( $GLOBALS['racketmanager'], $repository );
+            $service = new Season_Service( $repository );
 
             self::assertTrue( $service->create_season( '2031' ) );
         } finally {

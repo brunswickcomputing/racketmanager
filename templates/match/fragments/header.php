@@ -84,11 +84,11 @@ if ( $vm->is_shortcode ) {
                     ?>
                     <div class="match__change">
                         <div class="dropdown">
-                            <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <svg width="16" height="16" class="icon ">
+                            <button type="button" class="nav-link" data-bs-toggle="dropdown" aria-expanded="false" aria-label="<?php esc_attr_e( 'Match options', 'racketmanager' ); ?>">
+                                <svg width="16" height="16" class="icon" aria-hidden="true" focusable="false">
                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
                                 </svg>
-                            </a>
+                            </button>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <?php
                                 if ( $vm->allow_amend_score ) {

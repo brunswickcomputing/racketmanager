@@ -19,7 +19,7 @@ $tab_name = 'fixtures';
     if ( $competition->is_league ) {
         ?>
         <div class="row gx-3 mb-3">
-            <div class="col-md-3 mb-3 mb-md-0">
+            <fieldset class="col-md-3 mb-3 mb-md-0">
                 <?php
                 $is_invalid = false;
                 $match_days = Util_Lookup::get_match_days();
@@ -27,7 +27,7 @@ $tab_name = 'fixtures';
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
                     $msg_id     = array_search( 'fixed_match_dates', $validator->err_flds, true );
-                    $msg        = $validator->err_msgs[$msg_id] ?? null;
+                    $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                 }
                 ?>
                 <legend class="<?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>"><?php esc_html_e( 'Match days allowed', 'racketmanager' ); ?></legend>
@@ -48,7 +48,7 @@ $tab_name = 'fixtures';
                     <?php
                 }
                 ?>
-            </div>
+            </fieldset>
         </div>
         <?php
     }
@@ -63,7 +63,7 @@ $tab_name = 'fixtures';
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
                     $msg_id     = array_search( 'offset', $validator->err_flds, true );
-                    $msg        = $validator->err_msgs[$msg_id] ?? null;
+                    $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                 }
                 ?>
                 <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name='offset' id='offset'>

@@ -17,7 +17,7 @@ $tab_name = 'fixtures';
 ?>
 <div class="form-control">
     <div class="row gx-3 mb-3">
-        <div class="col-md-3 mb-3 mb-md-0">
+        <fieldset class="col-md-3 mb-3 mb-md-0">
             <?php
             $is_invalid = false;
             $msg        = null;
@@ -25,7 +25,7 @@ $tab_name = 'fixtures';
                 $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                 $is_invalid = true;
                 $msg_id     = array_search( 'fixed_match_dates', $validator->err_flds, true );
-                $msg        = $validator->err_msgs[$msg_id] ?? null;
+                $msg        = $validator->err_msgs[ $msg_id ] ?? null;
             }
             $current_value = $vm->config->fixed_match_dates ?? null;
             ?>
@@ -45,8 +45,8 @@ $tab_name = 'fixtures';
                 <?php
             }
             ?>
-        </div>
-        <div class="col-md-3 mb-3 mb-md-0">
+        </fieldset>
+        <fieldset class="col-md-3 mb-3 mb-md-0">
             <?php
             if ( $vm->competition->is_league ) {
                 $home_away_desc_true  = __( 'Home and away', 'racketmanager' );
@@ -61,7 +61,7 @@ $tab_name = 'fixtures';
                 $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                 $is_invalid = true;
                 $msg_id     = array_search( 'home_away', $validator->err_flds, true );
-                $msg        = $validator->err_msgs[$msg_id] ?? null;
+                $msg        = $validator->err_msgs[ $msg_id ] ?? null;
             }
             $current_value = $vm->config->home_away ?? null;
             ?>
@@ -81,7 +81,7 @@ $tab_name = 'fixtures';
                 <?php
             }
             ?>
-        </div>
+        </fieldset>
     </div>
     <div class="row gx-3 mb-3">
         <fieldset class="col-md-3 mb-3 mb-md-0">
@@ -94,7 +94,7 @@ $tab_name = 'fixtures';
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
                     $msg_id     = array_search( 'round_length', $validator->err_flds, true );
-                    $msg        = $validator->err_msgs[$msg_id] ?? null;
+                    $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                 }
                 $current_value = $vm->config->round_length ?? null;
                 ?>
@@ -121,7 +121,7 @@ $tab_name = 'fixtures';
                     if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'home_away_diff', $validator->err_flds, true ) ) ) {
                         $is_invalid = true;
                         $msg_id     = array_search( 'home_away_diff', $validator->err_flds, true );
-                        $msg        = $validator->err_msgs[$msg_id] ?? null;
+                        $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                     }
                     $current_value = $vm->config->home_away_diff ?? null;
                     ?>
@@ -151,7 +151,7 @@ $tab_name = 'fixtures';
                     if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'filler_weeks', $validator->err_flds, true ) ) ) {
                         $is_invalid = true;
                         $msg_id     = array_search( 'filler_weeks', $validator->err_flds, true );
-                        $msg        = $validator->err_msgs[$msg_id] ?? null;
+                        $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                     }
                     $current_value = $vm->config->filler_weeks ?? null;
                     ?>
@@ -173,10 +173,8 @@ $tab_name = 'fixtures';
     <?php
     if ( $vm->competition->is_league || $vm->competition->is_cup ) {
         ?>
-        <fieldset class="row gx-3 mb-3">
-            <?php
-            ?>
-            <div class="col-md-3 mb-3 mb-md-0">
+        <div class="row gx-3 mb-3">
+            <fieldset class="col-md-3 mb-3 mb-md-0">
                 <legend class=""><?php esc_html_e( 'Match days', 'racketmanager' ); ?></legend>
                 <?php
                 $is_invalid = false;
@@ -185,7 +183,7 @@ $tab_name = 'fixtures';
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
                     $msg_id     = array_search( 'match_day_restriction', $validator->err_flds, true );
-                    $msg        = $validator->err_msgs[$msg_id] ?? null;
+                    $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                 }
                 $is_checked = ! empty( $vm->config->match_day_restriction );
                 ?>
@@ -207,7 +205,7 @@ $tab_name = 'fixtures';
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
                     $msg_id     = array_search( 'match_day_weekends', $validator->err_flds, true );
-                    $msg        = $validator->err_msgs[$msg_id] ?? null;
+                    $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                 }
                 $is_checked = ! empty( $vm->config->match_day_weekends );
                 ?>
@@ -222,8 +220,8 @@ $tab_name = 'fixtures';
                     }
                     ?>
                 </div>
-            </div>
-            <div class="col-md-3 mb-3 mb-md-0">
+            </fieldset>
+            <fieldset class="col-md-3 mb-3 mb-md-0">
                 <?php
                 $is_invalid = false;
                 $msg        = null;
@@ -232,7 +230,7 @@ $tab_name = 'fixtures';
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
                     $msg_id     = array_search( 'fixed_match_dates', $validator->err_flds, true );
-                    $msg        = $validator->err_msgs[$msg_id] ?? null;
+                    $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                 }
                 ?>
                 <legend class="<?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>"><?php esc_html_e( 'Match days allowed', 'racketmanager' ); ?></legend>
@@ -254,10 +252,10 @@ $tab_name = 'fixtures';
                     <?php
                 }
                 ?>
-            </div>
-        </fieldset>
+            </fieldset>
+        </div>
         <?php
-        }
+    }
     ?>
     <?php
     if ( $vm->competition->is_league || $vm->competition->is_cup ) {
@@ -269,11 +267,10 @@ $tab_name = 'fixtures';
                     <?php
                     $is_invalid = false;
                     $msg        = null;
-                    $default_start_time = null;
                     if ( isset( $vm->config->default_match_start_time ) ) {
                         if ( is_array( $vm->config->default_match_start_time ) ) {
-                            $hour    = $vm->config->default_match_start_time['hour'] ?? $vm->config->default_match_start_time['hours'] ?? null;
-                            $minutes = $vm->config->default_match_start_time['minutes'] ?? $vm->config->default_match_start_time['minute'] ?? null;
+                            $hour               = $vm->config->default_match_start_time['hour'] ?? $vm->config->default_match_start_time['hours'] ?? null;
+                            $minutes            = $vm->config->default_match_start_time['minutes'] ?? $vm->config->default_match_start_time['minute'] ?? null;
                             $default_start_time = ( null !== $hour && null !== $minutes ) ? sprintf( '%02d:%02d', (int) $hour, (int) $minutes ) : null;
                         } else {
                             $default_start_time = strval( $vm->config->default_match_start_time );
@@ -285,7 +282,7 @@ $tab_name = 'fixtures';
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
                         $msg_id     = array_search( 'default_match_start_time', $validator->err_flds, true );
-                        $msg        = $validator->err_msgs[$msg_id] ?? null;
+                        $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                     }
                     ?>
                     <input type="time" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="default_match_start_time" id="default_match_start_time" placeholder="<?php esc_html_e( 'Default start time', 'racketmanager' ); ?>" value="<?php echo esc_html( $default_start_time ); ?>" />
@@ -310,7 +307,7 @@ $tab_name = 'fixtures';
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
                         $msg_id     = array_search( 'min_start_time_weekday', $validator->err_flds, true );
-                        $msg        = $validator->err_msgs[$msg_id] ?? null;
+                        $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                     }
                     $current_value = $vm->config->start_time['weekday']['min'] ?? null;
                     ?>
@@ -334,7 +331,7 @@ $tab_name = 'fixtures';
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
                         $msg_id     = array_search( 'max_start_time_weekday', $validator->err_flds, true );
-                        $msg        = $validator->err_msgs[$msg_id] ?? null;
+                        $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                     }
                     $current_value = $vm->config->start_time['weekday']['max'] ?? null;
                     ?>
@@ -360,7 +357,7 @@ $tab_name = 'fixtures';
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
                         $msg_id     = array_search( 'min_start_time_weekend', $validator->err_flds, true );
-                        $msg        = $validator->err_msgs[$msg_id] ?? null;
+                        $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                     }
                     $current_value = $vm->config->start_time['weekend']['min'] ?? null;
                     ?>
@@ -384,7 +381,7 @@ $tab_name = 'fixtures';
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
                         $msg_id     = array_search( 'max_start_time_weekend', $validator->err_flds, true );
-                        $msg        = $validator->err_msgs[$msg_id] ?? null;
+                        $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                     }
                     $current_value = $vm->config->start_time['weekend']['max'] ?? null;
                     ?>
@@ -401,6 +398,6 @@ $tab_name = 'fixtures';
             </div>
         </div>
         <?php
-        }
+    }
     ?>
 </div>

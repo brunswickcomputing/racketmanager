@@ -248,4 +248,117 @@ class Club_Template_Test extends TestCase {
         $this->assertStringNotContainsString( 'value="01111"', $club_sections[0][1] );
         $this->assertStringNotContainsString( 'https://leigh.example', $club_sections[0][1] );
     }
+
+    public function test_club_subpage_urls_use_explicit_subpage_links(): void {
+        $club                 = (object) array(
+            'id'        => 10,
+            'name'      => 'Alpha Tennis Club',
+            'shortcode' => 'Alpha TC',
+            'roles'     => array(),
+            'teams'     => array(),
+        );
+        $standalone           = true;
+        $user_can_update_club = true;
+        $subpage_links        = array(
+            'invoices' => '/custom/invoices/',
+            'players'  => '/custom/players/',
+        );
+        $club_presenter       = new Club_Presenter();
+
+        ob_start();
+        include $this->club_template_path;
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString( 'href="/custom/invoices/"', $output );
+        $this->assertStringContainsString( 'href="/custom/players/"', $output );
+    }
+
+    public function test_club_subpage_urls_fallback_to_club_presenter(): void {
+        $club                 = (object) array(
+            'id'        => 11,
+            'name'      => 'Beta Tennis Club',
+            'shortcode' => 'Beta TC',
+            'roles'     => array(),
+            'teams'     => array(),
+        );
+        $standalone           = true;
+        $user_can_update_club = true;
+        $subpage_links        = array();
+        $club_presenter       = new Club_Presenter();
+
+        ob_start();
+        include $this->club_template_path;
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString( 'href="/clubs/beta-tc/invoices/"', $output );
+        $this->assertStringContainsString( 'href="/clubs/beta-tc/players/"', $output );
+    }
+
+    public function test_club_subpage_urls_fallback_to_view_model_slug(): void {
+        $standalone           = true;
+        $user_can_update_club = true;
+        $club                 = null;
+        $subpage_links        = array();
+        $vm                   = (object) array(
+            'club'                 => null,
+            'slug'                 => 'gamma-lawn',
+            'shortcode'            => 'Gamma TC',
+            'roles'                => array(),
+            'teams'                => array(),
+            'user_can_update_club' => true,
+            'standalone'           => true,
+            'id'                   => 12,
+        );
+        $club_presenter       = new Club_Presenter();
+
+        ob_start();
+        include $this->club_template_path;
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString( 'href="/clubs/gamma-lawn/invoices/"', $output );
+        $this->assertStringContainsString( 'href="/clubs/gamma-lawn/players/"', $output );
+    }
+
+    public function test_club_subpage_urls_fallback_to_view_model_shortcode(): void {
+        $standalone           = true;
+        $user_can_update_club = true;
+        $club                 = null;
+        $subpage_links        = array();
+        $vm                   = (object) array(
+            'club'                 => null,
+            'slug'                 => '',
+            'shortcode'            => 'Delta TC',
+            'roles'                => array(),
+            'teams'                => array(),
+            'user_can_update_club' => true,
+            'standalone'           => true,
+            'id'                   => 13,
+        );
+        $club_presenter       = new Club_Presenter();
+
+        ob_start();
+        include $this->club_template_path;
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString( 'href="/clubs/delta-tc/invoices/"', $output );
+        $this->assertStringContainsString( 'href="/clubs/delta-tc/players/"', $output );
+    }
+
+    public function test_club_subpage_urls_fallback_to_empty_when_club_and_vm_are_absent(): void {
+        $standalone           = true;
+        $user_can_update_club = true;
+        $club                 = null;
+        $vm                   = null;
+        $subpage_links        = array();
+        $club_presenter       = new Club_Presenter();
+
+        ob_start();
+        include $this->club_template_path;
+        $output = ob_get_clean();
+
+        $this->assertStringNotContainsString( 'href="/clubs//invoices/"', $output );
+        $this->assertStringNotContainsString( 'href="/clubs//players/"', $output );
+        $this->assertStringNotContainsString( 'Invoices', $output );
+        $this->assertStringNotContainsString( 'Players', $output );
+    }
 }

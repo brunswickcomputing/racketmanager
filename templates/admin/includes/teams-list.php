@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+use BackedEnum;
 use Racketmanager\Admin\View_Models\Teams_List_Page_View_Model;
 
 /** @var Teams_List_Page_View_Model $vm */
@@ -16,7 +17,7 @@ $season        = $vm->season;
 $tournament_id = $vm->tournament_id ?? 0;
 $tournament    = $vm->tournament;
 $teams         = $vm->teams;
-$type          = $vm->type;
+$action_type   = $vm->type;
 
 /** @var object $league */
 /** @var int $league_id */
@@ -24,19 +25,19 @@ $type          = $vm->type;
 /** @var int $tournament_id */
 /** @var object $tournament */
 /** @var array $teams */
-/** @var string $type */
-$competition_type = $league->event->competition->type instanceof \BackedEnum ? $league->event->competition->type->value : (string) ( $league->event->competition->type ?? '' );
-if ( 'constitution' === $type ) {
+/** @var string $action_type */
+$competition_type = $league->event->competition->type instanceof BackedEnum ? $league->event->competition->type->value : (string) ( $league->event->competition->type ?? '' );
+if ( 'constitution' === $action_type ) {
     $page_title = __( 'Add Teams to Constitution', 'racketmanager' );
     $page_link  = $league->event->name;
     $breadcrumb = 'show-event&amp;event_id=' . $league->event_id;
-    $link_ref = 'admin.php?page=racketmanager-leagues&view=constitution&amp;event_id=' . $league->event_id . '&amp;season=' . $season;
+    $link_ref   = 'admin.php?page=racketmanager-leagues&view=constitution&amp;event_id=' . $league->event_id . '&amp;season=' . $season;
 } else {
     $page_title = __( 'Add Teams to League', 'racketmanager' );
     $page_link  = $league->title;
     $breadcrumb = 'show-league&amp;league_id=' . $league->id;
     $link_ref   = 'admin.php?page=racketmanager-' . $competition_type . 's&amp;season=' . $season;
-    $link_ref .= match ($competition_type) {
+    $link_ref  .= match ( $competition_type ) {
         'cup' => '&amp;competition_id=' . $league->event->competition->id . '&amp;view=draw&amp;league=' . $league->id,
         'tournament' => '&amp;tournament=' . $tournament_id . '&amp;view=draw&amp;league=' . $league->id,
         default => '&view=league&amp;league_id=' . $league->id,
@@ -74,48 +75,50 @@ $main_title = $page_link . ' - ' . $page_title;
         <input type="hidden" name="event_id" value="<?php echo esc_html( $league->event->id ); ?>" />
         <input type="hidden" name="league_id" value="<?php echo esc_html( $league_id ); ?>" />
         <input type="hidden" name="season" value="<?php echo esc_html( $season ); ?>" />
-        <legend><?php esc_html_e( 'Select Teams to Add', 'racketmanager' ); ?></legend>
-        <div class="row gx-3 mb-3 align-items-center">
-            <!-- Bulk Actions -->
-            <div class="col-auto">
-                <label>
-                    <select class="form-select" name="action">
-                        <option value="addTeamsToLeague"><?php esc_html_e( 'Add', 'racketmanager' ); ?></option>
-                    </select>
-                </label>
+        <fieldset>
+            <legend><?php esc_html_e( 'Select Teams to Add', 'racketmanager' ); ?></legend>
+            <div class="row gx-3 mb-3 align-items-center">
+                <!-- Bulk Actions -->
+                <div class="col-auto">
+                    <label>
+                        <select class="form-select" name="action">
+                            <option value="addTeamsToLeague"><?php esc_html_e( 'Add', 'racketmanager' ); ?></option>
+                        </select>
+                    </label>
+                </div>
+                <div class="col-auto">
+                    <button name="doAddTeamToLeague" id="doAddTeamToLeague" class="btn btn-primary"><?php esc_html_e( 'Apply', 'racketmanager' ); ?></button>
+                </div>
             </div>
-            <div class="col-auto">
-                <button name="doAddTeamToLeague" id="doAddTeamToLeague" class="btn btn-primary"><?php esc_html_e( 'Apply', 'racketmanager' ); ?></button>
-            </div>
-        </div>
-        <div class="container">
-            <div class="row table-header">
-                <div class="col-1 check-column"><label for="checkAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAll" data-action="check-all" data-target="teams-filter" /></div>
-                <div class="col-1 column-num">ID</div>
-                <div class="col-3"><?php esc_html_e( 'Title', 'racketmanager' ); ?></div>
-                <div class="col-3"><?php esc_html_e( 'Affiliated Club', 'racketmanager' ); ?></div>
-                <div class="col-3"><?php esc_html_e( 'Stadium', 'racketmanager' ); ?></div>
-            </div>
-            <?php
-            if ( $teams ) {
-                $class = '';
-                foreach ( $teams as $team ) {
-                    $club_name = $team->club->shortcode ?? null;
-                    ?>
-                    <?php $class = ( 'alternate' === $class ) ? '' : 'alternate'; ?>
-                    <div class="row table-row <?php echo esc_html( $class ); ?>">
-                        <div class="col-1 check-column">
-                            <label for="team-<?php echo esc_html( $team->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $team->id ); ?>" name="team[<?php echo esc_html( $team->id ); ?>]" id="team-<?php echo esc_html( $team->id ); ?>" />
+            <div class="container">
+                <div class="row table-header">
+                    <div class="col-1 check-column"><label for="checkAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAll" data-action="check-all" data-target="teams-filter" /></div>
+                    <div class="col-1 column-num">ID</div>
+                    <div class="col-3"><?php esc_html_e( 'Title', 'racketmanager' ); ?></div>
+                    <div class="col-3"><?php esc_html_e( 'Affiliated Club', 'racketmanager' ); ?></div>
+                    <div class="col-3"><?php esc_html_e( 'Stadium', 'racketmanager' ); ?></div>
+                </div>
+                <?php
+                if ( $teams ) {
+                    $class = '';
+                    foreach ( $teams as $team ) {
+                        $club_name = $team->club->shortcode ?? null;
+                        ?>
+                        <?php $class = ( 'alternate' === $class ) ? '' : 'alternate'; ?>
+                        <div class="row table-row <?php echo esc_html( $class ); ?>">
+                            <div class="col-1 check-column">
+                                <label for="team-<?php echo esc_html( $team->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $team->id ); ?>" name="team[<?php echo esc_html( $team->id ); ?>]" id="team-<?php echo esc_html( $team->id ); ?>" />
+                            </div>
+                            <div class="col-1 column-num"><?php echo esc_html( $team->id ); ?></div>
+                            <div class="col-3"><?php echo esc_html( $team->title ); ?></div>
+                            <div class="col-3"><?php echo esc_html( $club_name ); ?></div>
+                            <div class="col-3"><?php echo esc_html( $team->stadium ); ?></div>
                         </div>
-                        <div class="col-1 column-num"><?php echo esc_html( $team->id ); ?></div>
-                        <div class="col-3"><?php echo esc_html( $team->title ); ?></div>
-                        <div class="col-3"><?php echo esc_html( $club_name ); ?></div>
-                        <div class="col-3"><?php echo esc_html( $team->stadium ); ?></div>
-                    </div>
-                    <?php
+                        <?php
+                    }
                 }
-            }
-            ?>
-        </div>
+                ?>
+            </div>
+        </fieldset>
     </form>
 </div>

@@ -18,7 +18,7 @@ $tab_name = 'display';
 <div class="form-control">
     <div class="row mb-3">
         <div class="col-md-6 mb-3 mb-md-0">
-            <div class="mb-3">
+            <fieldset class="mb-3">
                 <?php
                 $point_formats = Util_lookup::get_point_formats();
                 ?>
@@ -31,7 +31,7 @@ $tab_name = 'display';
                                 $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                                 $is_invalid = true;
                                 $msg_id     = array_search( 'point_format', $validator->err_flds, true );
-                                $msg        = $validator->err_msgs[$msg_id] ?? null;
+                                $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                             }
                             $current_value = $vm->config->point_format ?? null;
                             ?>
@@ -62,7 +62,7 @@ $tab_name = 'display';
                                 $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                                 $is_invalid = true;
                                 $msg_id     = array_search( 'point_2_format', $validator->err_flds, true );
-                                $msg        = $validator->err_msgs[$msg_id] ?? null;
+                                $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                             }
                             $current_value = $vm->config->point_2_format ?? null;
                             ?>
@@ -89,14 +89,14 @@ $tab_name = 'display';
                         </div>
                     </div>
                 </div>
-            </div>
+            </fieldset>
             <div class="form-floating mb-3">
                 <?php
                 if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'num_matches_per_page', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
                     $msg_id     = array_search( 'num_matches_per_page', $validator->err_flds, true );
-                    $msg        = $validator->err_msgs[$msg_id] ?? null;
+                    $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                 }
                 $current_value = $vm->config->num_matches_per_page ?? null;
                 ?>
@@ -113,14 +113,14 @@ $tab_name = 'display';
                 ?>
             </div>
         </div>
-        <div class="col-md-6">
+        <fieldset class="col-md-6">
             <?php
             $standings_options = Util_lookup::get_standings_display_options();
             if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'standings_option', $validator->err_flds, true ) ) ) {
                 $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                 $is_invalid = true;
                 $msg_id     = array_search( 'standings_option', $validator->err_flds, true );
-                $msg        = $validator->err_msgs[$msg_id] ?? null;
+                $msg        = $validator->err_msgs[ $msg_id ] ?? null;
             }
             ?>
             <legend class="<?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>"><?php esc_html_e( 'Standings', 'racketmanager' ); ?></legend>
@@ -144,6 +144,6 @@ $tab_name = 'display';
                 <?php
             }
             ?>
-        </div>
+        </fieldset>
     </div>
 </div>

@@ -25,7 +25,7 @@ $msg        = null;
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
                     $msg_id     = array_search( 'scoring', $validator->err_flds, true );
-                    $msg        = $validator->err_msgs[$msg_id] ?? null;
+                    $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                 }
                 $current_value = $vm->config->scoring ?? null;
                 ?>
@@ -60,7 +60,7 @@ $msg        = null;
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
                     $msg_id     = array_search( 'num_sets', $validator->err_flds, true );
-                    $msg        = $validator->err_msgs[$msg_id] ?? null;
+                    $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                 }
                 $current_value = $vm->config->num_sets ?? null;
                 ?>
@@ -79,7 +79,7 @@ $msg        = null;
         $current_value = $vm->config->num_rubbers ?? null;
         if ( $vm->competition->is_player_entry ) {
             ?>
-            <input type="hidden" name="num_rubbers" id="num_rubbers" value="<?php echo isset( $current_value ) ? esc_html( $current_value ) : null; ?>" />
+            <input type="hidden" name="num_rubbers" value="<?php echo isset( $current_value ) ? esc_html( $current_value ) : null; ?>" />
             <?php
         } else {
             ?>
@@ -92,7 +92,7 @@ $msg        = null;
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
                         $msg_id     = array_search( 'num_rubbers', $validator->err_flds, true );
-                        $msg        = $validator->err_msgs[$msg_id] ?? null;
+                        $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                     }
                     ?>
                     <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_rubbers" id="num_rubbers" value="<?php echo isset( $current_value ) ? esc_html( $current_value ) : null; ?>"  placeholder="<?php esc_html_e( 'Number of rubbers', 'racketmanager' ); ?>" />
@@ -106,7 +106,7 @@ $msg        = null;
                     ?>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 align-self-center">
                 <div class="form-check">
                     <?php
                     $is_invalid = false;
@@ -115,7 +115,7 @@ $msg        = null;
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
                         $msg_id     = array_search( 'reverse_rubbers', $validator->err_flds, true );
-                        $msg        = $validator->err_msgs[$msg_id] ?? null;
+                        $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                     }
                     $current_value = empty( $vm->config->reverse_rubbers ) ? null : 1;
                     ?>

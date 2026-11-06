@@ -40,8 +40,16 @@ $club_website         = $club_website ?? ( $vm->website ?? ( $club->website ?? n
 $club_address         = $club_address ?? ( $vm->address ?? ( $club->address ?? null ) );
 $club_founded         = $club_founded ?? ( $vm->founded ?? ( $club->founded ?? null ) );
 $club_facilities      = $club_facilities ?? ( $vm->facilities ?? ( $club->facilities ?? null ) );
-$invoices_url         = $subpage_links['invoices'] ?? ( isset( $club ) ? $club_presenter->get_link( $club, 'invoices' ) : ( isset( $vm ) ? '/clubs/' . ( $vm->slug ?: sanitize_title( $vm->shortcode ) ) . '/invoices/' : '' ) );
-$players_url          = $subpage_links['players'] ?? ( isset( $club ) ? $club_presenter->get_link( $club, 'players' ) : ( isset( $vm ) ? '/clubs/' . ( $vm->slug ?: sanitize_title( $vm->shortcode ) ) . '/players/' : '' ) );
+$resolve_subpage_url  = static function ( string $subpage ) use ( $subpage_links, $club, $club_presenter, $vm ): string {
+    return match ( true ) {
+        isset( $subpage_links[ $subpage ] ) => (string) $subpage_links[ $subpage ],
+        isset( $club )                      => $club_presenter->get_link( $club, $subpage ),
+        isset( $vm )                        => '/clubs/' . ( $vm->slug ?: sanitize_title( $vm->shortcode ) ) . '/' . $subpage . '/',
+        default                             => '',
+    };
+};
+$invoices_url         = $resolve_subpage_url( 'invoices' );
+$players_url          = $resolve_subpage_url( 'players' );
 $roles_url            = $subpage_links['roles'] ?? ( isset( $club ) ? $club_presenter->get_link( $club, 'roles' ) : '' );
 $competitions_url     = $subpage_links['competitions'] ?? ( isset( $club ) ? $club_presenter->get_link( $club, 'competitions' ) : '' );
 require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
@@ -65,7 +73,7 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
                     <?php
                     if ( $has_match_secretary || $user_can_update_club ) {
                         ?>
-                        <div class="form-control mb-3">
+                        <fieldset class="form-control mb-3">
                             <legend><?php esc_html_e( 'Match secretary details', 'racketmanager' ); ?></legend>
                             <?php
                             if ( $has_match_secretary || $user_can_update_club ) {
@@ -123,7 +131,7 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
                                 <?php
                             }
                             ?>
-                        </div>
+                        </fieldset>
                         <?php
                     }
                     ?>

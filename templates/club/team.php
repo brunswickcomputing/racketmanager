@@ -34,7 +34,7 @@ require_once RACKETMANAGER_PATH . 'templates/includes/club-header.php';
                     <?php wp_nonce_field( 'team-update', 'racketmanager_nonce' ); ?>
                     <input type="hidden" id="team_id" name="team_id" value="<?php echo esc_html( $team->id ); ?>" />
                     <input type="hidden" id="event_id" name="event_id" value="<?php echo esc_html( $event->id ); ?>" />
-                    <div class="form-control mb-3">
+                    <fieldset class="form-control mb-3">
                         <legend><?php esc_html_e( 'Captain', 'racketmanager' ); ?></legend>
                         <?php
                         if ( ! empty( $team->captain ) || $user_can_update ) {
@@ -82,7 +82,7 @@ require_once RACKETMANAGER_PATH . 'templates/includes/club-header.php';
                             }
                             ?>
                         </div>
-                    </div>
+                    </fieldset>
                     <fieldset class="form-control mb-3">
                         <legend><?php esc_html_e( 'Match times', 'racketmanager' ); ?></legend>
                         <div class="row g-3">

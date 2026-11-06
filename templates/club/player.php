@@ -32,7 +32,7 @@ $page_referrer   = $page_referrer ?? ( $vm->page_referrer ?? ( $vars['page_refer
                 <form id="playerUpdateFrm" action="" method="post">
                     <?php wp_nonce_field( 'racketmanager_update-player', 'racketmanager_nonce' ); ?>
                     <input type="hidden" id="playerId" name="playerId" value="<?php echo esc_html( $player->id ); ?>" />
-                    <div class="form-control mb-3">
+                    <fieldset class="form-control mb-3">
                         <legend><?php esc_html_e( 'Personal details', 'racketmanager' ); ?></legend>
                         <div class="row g-3">
                             <?php
@@ -123,7 +123,7 @@ $page_referrer   = $page_referrer ?? ( $vm->page_referrer ?? ( $vars['page_refer
                             }
                             ?>
                         </div>
-                    </div>
+                    </fieldset>
                     <?php
                     if ( is_user_logged_in() ) {
                         ?>

@@ -9,10 +9,10 @@
     "stripe/stripe-php": "^16.4.0"
   },
   "require-dev": {
-    "dealerdirect/phpcodesniffer-composer-installer": "^1.2",
-    "phpunit/phpunit": "^13.4",
-    "squizlabs/php_codesniffer": "^3.13",
-    "wp-coding-standards/wpcs": "^3.4"
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.2.1",
+    "phpunit/phpunit": "^13.4.6",
+    "squizlabs/php_codesniffer": "^3.13.6",
+    "wp-coding-standards/wpcs": "^3.4.1"
   },
   "autoload": {
     "psr-4": {

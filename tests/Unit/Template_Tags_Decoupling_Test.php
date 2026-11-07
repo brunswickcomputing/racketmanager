@@ -149,8 +149,10 @@ final class Template_Tags_Decoupling_Test extends TestCase {
             public bool $is_shared = false;
             public bool $is_retired = false;
             public function __construct( private object $orig ) {}
-            public function get_rubbers(): array { return []; }
-            public function __get( $name ) { return $this->orig->$name ?? null; }
+            public function get_rubbers(): array {
+                return []; }
+            public function __get( $name ) {
+                return $this->orig->$name ?? null; }
         };
         $home_club_player = [ 'm' => [], 'f' => [] ];
         $away_club_player = [ 'm' => [], 'f' => [] ];
@@ -231,8 +233,10 @@ final class Template_Tags_Decoupling_Test extends TestCase {
             public bool $is_shared = false;
             public bool $is_retired = false;
             public function __construct( private object $orig, private object $rubber ) {}
-            public function get_rubbers(): array { return [ $this->rubber ]; }
-            public function __get( $name ) { return $this->orig->$name ?? null; }
+            public function get_rubbers(): array {
+                return [ $this->rubber ]; }
+            public function __get( $name ) {
+                return $this->orig->$name ?? null; }
         };
 
         // View mode (no update rights): player names are rendered as profile links.
@@ -323,9 +327,12 @@ final class Template_Tags_Decoupling_Test extends TestCase {
             public bool $is_shared = false;
             public bool $is_retired = false;
             public function __construct( private object $orig ) {}
-            public function get_rubbers(): array { return []; }
-            public function __get( $name ) { return $this->orig->$name ?? null; }
-            public function __isset( $name ) { return isset( $this->orig->$name ); }
+            public function get_rubbers(): array {
+                return []; }
+            public function __get( $name ) {
+                return $this->orig->$name ?? null; }
+            public function __isset( $name ) {
+                return isset( $this->orig->$name ); }
         };
 
         $is_update_allowed = (object) [

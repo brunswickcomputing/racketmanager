@@ -5,11 +5,12 @@ namespace Racketmanager\Tests\Unit\Templates;
 
 require_once __DIR__ . '/../../wp-stubs.php';
 
+use ErrorException;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Presentation\View_Models\Order_Of_Play_Match_View_Model;
 use Racketmanager\Presentation\View_Models\Order_Of_Play_View_Model;
-use Racketmanager\Presentation\View_Models\Player_View_Model;
 use Racketmanager\Services\View\Php_View_Renderer;
+use RuntimeException;
 use stdClass;
 
 final class Frontend_Modals_And_Partials_Render_Test extends TestCase {
@@ -30,9 +31,9 @@ final class Frontend_Modals_And_Partials_Render_Test extends TestCase {
      */
     private function trap_racketmanager_locator(): object {
         $previous = $GLOBALS['racketmanager'] ?? null;
-        $GLOBALS['racketmanager'] = new class {
+        $GLOBALS['racketmanager'] = new class() {
             public function get_player_name( int $player_id ): never {
-                throw new \RuntimeException( 'orphan templates must not use the racketmanager locator' );
+                throw new RuntimeException( 'orphan templates must not use the racketmanager locator' );
             }
         };
         return (object) [ 'previous' => $previous ];
@@ -47,9 +48,11 @@ final class Frontend_Modals_And_Partials_Render_Test extends TestCase {
     }
 
     private function render_strictly( string $template, object|array $vars ): string {
-        set_error_handler( static function ( int $errno, string $errstr, string $errfile, int $errline ): bool {
-            throw new \ErrorException( $errstr, 0, $errno, $errfile, $errline );
-        } );
+        set_error_handler( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler
+            static function ( int $errno, string $errstr, string $errfile, int $errline ): bool {
+                throw new ErrorException( $errstr, 0, $errno, $errfile, $errline ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
+            }
+        );
 
         try {
             return $this->renderer->render_to_string( $template, $vars );
@@ -309,7 +312,7 @@ final class Frontend_Modals_And_Partials_Render_Test extends TestCase {
 
 
     public function test_match_teams_result_renders_strictly(): void {
-        $match = new class {
+        $match = new class() {
             public int $id = 55;
             public ?string $season = '2026';
             public ?string $home_team = 'home_id';
@@ -386,7 +389,7 @@ final class Frontend_Modals_And_Partials_Render_Test extends TestCase {
         ];
         $trap = $this->trap_racketmanager_locator();
 
-        $match = new class {
+        $match = new class() {
             public int $id = 55;
             public ?string $season = '2026';
             public ?string $home_team = 'home_id';

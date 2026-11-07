@@ -7,11 +7,14 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Team\Team;
+
 /** @var object $user */
 /** @var string $match_url */
-/** @var \Racketmanager\Domain\Fixture $fixture */
-/** @var \Racketmanager\Domain\Team\Team $home_team */
-/** @var \Racketmanager\Domain\Team\Team $away_team */
+/** @var Fixture $fixture */
+/** @var Team $home_team */
+/** @var Team $away_team */
 /** @var string $salutation */
 /** @var string $contact */
 /** @var string $closing */

@@ -56,7 +56,9 @@ if ( file_exists( $autoload_path ) ) {
 // -----------------------------------------------------------------------------
 // I18n
 // -----------------------------------------------------------------------------
-load_plugin_textdomain( 'racketmanager', false, 'racketmanager/languages' );
+add_action( 'init', static function (): void {
+    load_plugin_textdomain( 'racketmanager', false, 'racketmanager/languages' );
+} );
 
 // -----------------------------------------------------------------------------
 // Activation / Deactivation

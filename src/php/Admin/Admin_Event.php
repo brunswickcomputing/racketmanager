@@ -13,12 +13,15 @@ namespace Racketmanager\Admin;
 
 use Racketmanager\Admin\View_Models\Error_Bag;
 use Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model;
+use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
+use Racketmanager\RacketManager;
 use Racketmanager\Services\Admin\Event\Event_Action_Dispatcher;
+use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Validator\Validator_Config;
 use stdClass;
 
@@ -28,10 +31,25 @@ use stdClass;
  */
 final class Admin_Event extends Admin_Display {
 
+    /**
+     * @var Admin_Action_Adapter|callable|mixed|object|Simple_Container $actions
+     */
     private Admin_Action_Adapter $actions;
+    /**
+     * @var Admin_Screen_Presenter|callable|mixed|object|Simple_Container $screens
+     */
     private Admin_Screen_Presenter $screens;
+    /**
+     * @var Event_Action_Dispatcher|callable|mixed|object|Simple_Container $event_action_dispatcher
+     */
     private Event_Action_Dispatcher $event_action_dispatcher;
 
+    /**
+     * @param Racketmanager                $plugin_instance plugin instance.
+     * @param Admin_Action_Adapter|null    $actions action adapter.
+     * @param Admin_Screen_Presenter|null  $screens screen presenter.
+     * @param Event_Action_Dispatcher|null $event_action_dispatcher event action dispatcher.
+     */
     public function __construct(
         $plugin_instance,
         ?Admin_Action_Adapter $actions = null,
@@ -162,7 +180,7 @@ final class Admin_Event extends Admin_Display {
 
         $tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( strval( $_GET['tab'] ) ) ) : 'general';
 
-        $raw_leagues = ( ! $new_event && ( $competition->is_championship ?? false ) && isset( $event ) && ( $event instanceof \Racketmanager\Domain\Competition\Event ) ) ? $this->get_event_query_service()->get_leagues( $event ) : array();
+        $raw_leagues = ( ! $new_event && ( $competition->is_championship ?? false ) && isset( $event ) && ( $event instanceof Event ) ) ? $this->event_query_service->get_leagues( $event ) : array();
         $leagues     = is_array( $raw_leagues ) ? $raw_leagues : array();
 
         $vm = new Tournament_Event_Config_Page_View_Model(

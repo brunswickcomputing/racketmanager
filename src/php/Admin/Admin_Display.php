@@ -10,6 +10,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Admin;
 
+use LogicException;
 use Racketmanager\Admin\Controllers\Admin_Redirect_Url_Builder;
 use Racketmanager\Admin\Presenters\Admin_Message_Mapper;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
@@ -18,6 +19,7 @@ use Racketmanager\RacketManager;
 use Racketmanager\Services\Admin\Admin_Message_Service;
 use Racketmanager\Services\Admin\Season\Season_Action_Dispatcher;
 use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Season_Service;
@@ -45,31 +47,105 @@ class Admin_Display {
      * @var string|bool $error
      */
     public bool|string $error = false;
+    /**
+     * @var Admin_Cup $admin_cup
+     */
     public Admin_Cup $admin_cup;
+    /**
+     * @var Admin_Import $admin_import
+     */
     public Admin_Import $admin_import;
+    /**
+     * @var Admin_Finances $admin_finances
+     */
     public Admin_Finances $admin_finances;
+    /**
+     * @var Admin_Player $admin_players
+     */
     public Admin_Player $admin_players;
+    /**
+     * @var Admin_Tournament $admin_tournament
+     */
     public Admin_Tournament $admin_tournament;
+    /**
+     * @var string|null $no_permission
+     */
     protected ?string $no_permission = 'You do not have permission to perform this task';
+    /**
+     * @var Admin_League $admin_league
+     */
     public Admin_League $admin_league;
+    /**
+     * @var Admin_Season $admin_seasons
+     */
     public Admin_Season $admin_seasons;
+    /**
+     * @var Admin_Result $admin_results
+     */
     public Admin_Result $admin_results;
+    /**
+     * @var Admin_Options $admin_options
+     */
     public Admin_Options $admin_options;
+    /**
+     * @var Admin_Index $admin_index
+     */
     public Admin_Index $admin_index;
+    /**
+     * @var Admin_Upgrade $admin_upgrade
+     */
     public Admin_Upgrade $admin_upgrade;
+    /**
+     * @var Club_Service|callable|mixed|object|Simple_Container $club_service
+     */
     protected Club_Service $club_service;
+    /**
+     * @var RacketManager $racketmanager
+     */
     protected RacketManager $racketmanager;
+    /**
+     * @var Competition_Service|callable|mixed|object|Simple_Container $competition_service
+     */
     protected Competition_Service $competition_service;
+    /**
+     * @var Season_Service|callable|mixed|object|Simple_Container $season_service
+     */
     protected Season_Service $season_service;
+    /**
+     * @var Tournament_Service|callable|mixed|object|Simple_Container $tournament_service
+     */
     protected Tournament_Service $tournament_service;
+    /**
+     * @var Admin_Club $admin_club
+     */
     public Admin_Club $admin_club;
-    protected \Racketmanager\Services\Competition\Event_Query_Service $event_query_service;
+    /**
+     * @var Event_Query_Service|callable|mixed|object|Simple_Container
+     */
+    protected Event_Query_Service $event_query_service {
+        get {
+            return $this->event_query_service; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
+        }
+    }
+    /**
+     * @var Admin_Action_Adapter|callable|mixed|object|Simple_Container $admin_action_adapter
+     */
     protected Admin_Action_Adapter $admin_action_adapter;
+    /**
+     * @var Admin_Message_Service|callable|mixed|object|Simple_Container $admin_message_service
+     */
     protected Admin_Message_Service $admin_message_service;
+    /**
+     * @var Season_Action_Dispatcher|callable|mixed|object|Simple_Container $season_admin_action_dispatcher
+     */
     protected Season_Action_Dispatcher $season_admin_action_dispatcher;
 
     /**
      * Constructor
+     *
+     * @param RacketManager|null    $racketmanager app instance.
+     * @param Simple_Container|null $container container instance.
+     * @throws LogicException Logic exception.
      */
     public function __construct(
         ?RacketManager $racketmanager = null,
@@ -78,11 +154,10 @@ class Admin_Display {
         if ( $racketmanager instanceof RacketManager ) {
             $this->racketmanager = $racketmanager;
         }
-        $this->load_translations();
-        add_action( 'init', array( &$this, 'load_translations' ) );
-        $c = $container ?? ( isset( $this->racketmanager->container ) ? $this->racketmanager->container : null );
+        add_action( 'init', [ $this, 'load_translations' ] );
+        $c = $container ?? ( $this->racketmanager->container ?? null );
         if ( null === $c ) {
-            throw new \LogicException( 'Admin_Display requires a Simple_Container instance.' );
+            throw new LogicException( 'Admin_Display requires a Simple_Container instance.' );
         }
         $this->club_service                   = $c->get( 'club_service' );
         $this->competition_service            = $c->get( 'competition_service' );
@@ -93,6 +168,10 @@ class Admin_Display {
         $this->admin_message_service          = $c->get( 'admin_message_service' );
         $this->season_admin_action_dispatcher = $c->get( 'season_action_dispatcher' );
     }
+
+    /**
+     * @return void
+     */
     public function load_translations(): void {
         $this->no_permission = __( 'You do not have permission to perform this task', 'racketmanager' );
     }
@@ -184,9 +263,9 @@ class Admin_Display {
     /**
      * Deliver a guarded season mutation result via Post-Redirect-Get.
      *
-     * @param Action_Result_DTO    $result
+     * @param Action_Result_DTO    $result action result DTO.
      * @param array<string, mixed> $query Typically $_GET identifying the current screen.
-     * @param array<string, mixed> $extra_args
+     * @param array<string, mixed> $extra_args extra args.
      *
      * @return bool True when a redirect was issued and the screen must not render.
      */
@@ -211,9 +290,9 @@ class Admin_Display {
     /**
      * Deliver a guarded event mutation result via Post-Redirect-Get.
      *
-     * @param Action_Result_DTO    $result
+     * @param Action_Result_DTO    $result action result DTO.
      * @param array<string, mixed> $query Typically $_GET identifying the current screen.
-     * @param array<string, mixed> $extra_args
+     * @param array<string, mixed> $extra_args extra args.
      *
      * @return bool True when a redirect was issued and the screen must not render.
      */
@@ -238,9 +317,9 @@ class Admin_Display {
     /**
      * Deliver a guarded results mutation result via Post-Redirect-Get.
      *
-     * @param Action_Result_DTO    $result
+     * @param Action_Result_DTO    $result action result DTO.
      * @param array<string, mixed> $query Typically $_GET identifying the current screen.
-     * @param array<string, mixed> $extra_args
+     * @param array<string, mixed> $extra_args extra args.
      *
      * @return bool True when a redirect was issued and the screen must not render.
      */
@@ -269,9 +348,9 @@ class Admin_Display {
     /**
      * Deliver a guarded index (competitions) mutation result via Post-Redirect-Get.
      *
-     * @param Action_Result_DTO    $result
+     * @param Action_Result_DTO    $result action result DTO.
      * @param array<string, mixed> $query Typically $_GET identifying the current screen.
-     * @param array<string, mixed> $extra_args
+     * @param array<string, mixed> $extra_args extra args.
      *
      * @return bool True when a redirect was issued and the screen must not render.
      */
@@ -300,9 +379,9 @@ class Admin_Display {
     /**
      * Deliver a guarded options (settings) mutation result via Post-Redirect-Get.
      *
-     * @param Action_Result_DTO    $result
+     * @param Action_Result_DTO    $result action result DTO.
      * @param array<string, mixed> $query Typically $_GET identifying the current screen.
-     * @param array<string, mixed> $extra_args
+     * @param array<string, mixed> $extra_args extra args.
      *
      * @return bool True when a redirect was issued and the screen must not render.
      */
@@ -331,9 +410,9 @@ class Admin_Display {
     /**
      * Deliver a guarded import mutation result via Post-Redirect-Get.
      *
-     * @param Action_Result_DTO    $result
+     * @param Action_Result_DTO    $result action result DTO.
      * @param array<string, mixed> $query Typically $_GET identifying the current screen.
-     * @param array<string, mixed> $extra_args
+     * @param array<string, mixed> $extra_args extra args.
      *
      * @return bool True when a redirect was issued and the screen must not render.
      */
@@ -362,7 +441,7 @@ class Admin_Display {
     /**
      * Set message
      *
-     * @param string $message message.
+     * @param string              $message message.
      * @param boolean|string|null $error triggers error message if true.
      */
     public function set_message( string $message, bool|string|null $error = false ): void {
@@ -395,9 +474,5 @@ class Admin_Display {
             echo show_alert( $this->message, $alert_class ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         }
         $this->message = '';
-    }
-
-    protected function get_event_query_service(): \Racketmanager\Services\Competition\Event_Query_Service {
-        return $this->event_query_service;
     }
 }

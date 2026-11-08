@@ -577,7 +577,7 @@ final class Layer_Rules {
                 [ self::SERVICES, self::APPLICATION, self::PRESENTATION, self::REPOSITORIES ],
                 Rule_Kind::FORBIDDEN_FUNCTION_CALL,
                 self::WORDPRESS_HOOK_FUNCTIONS,
-                Rule_Mode::RATCHET
+                Rule_Mode::STRICT
             ),
         ];
     }

@@ -247,6 +247,7 @@ final class Layer_Rules_Test extends TestCase {
                 'services.no_wpdb',
                 'services.no_global_racketmanager',
                 'services.no_presentation_imports',
+                'services.no_wordpress_hooks',
                 'all.no_legacy_helper_calls',
                 'all.no_deprecated_helper_calls',
                 'all.no_alias_class_references',

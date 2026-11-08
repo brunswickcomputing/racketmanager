@@ -1,34 +1,39 @@
 <?php
 declare( strict_types=1 );
 /**
- * RacketManagerWidget API: RacketManagerWidget class (moved to PSR-4)
+ * RacketManagerWidget API: Club_Widget class
  *
  * @package RacketManager
- * @subpackage RacketManagerWidget
+ * @subpackage Infrastructure/Wordpress/Widgets
  */
 
-namespace Racketmanager\Services;
+namespace Racketmanager\Infrastructure\Wordpress\Widgets;
 
-use Racketmanager\Repositories\Club_Repository;
+use InvalidArgumentException;
+use Racketmanager\Public_Api;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Container\Simple_Container;
 use stdClass;
 use WP_Widget;
 
 /**
  * Class to implement the widget
  */
-class Widget extends WP_Widget {
+class Club_Widget extends WP_Widget {
     /**
      * Initialize
      *
-     * @param boolean $template set to true if widget is display in template.
-     * @param Club_Service|null $club_service
-     * @param Club_Repository_Interface|null $club_repository
+     * @param boolean                        $template        Set to true if widget is display in template.
+     * @param Club_Service|null              $club_service    Club service instance.
+     * @param Club_Repository_Interface|null $club_repository Club repository instance.
+     * @param Simple_Container|null          $container       Container instance.
      */
     public function __construct(
         $template = false,
         private ?Club_Service $club_service = null,
-        private ?Club_Repository_Interface $club_repository = null
+        private ?Club_Repository_Interface $club_repository = null,
+        private readonly ?Simple_Container $container = null
     ) {
         if ( ! $template ) {
             $widget_ops = array(
@@ -38,6 +43,7 @@ class Widget extends WP_Widget {
             parent::__construct( 'racketmanager-widget', __( 'Racket Manager', 'racketmanager' ), $widget_ops );
         }
     }
+
     /**
      * Displays widget
      *
@@ -73,9 +79,20 @@ class Widget extends WP_Widget {
         $args['limit']     = empty( $instance['num_items'] ) ? 999999 : intval( $instance['num_items'] );
         $args['club_type'] = $instance['club_type'];
         $args['orderby']   = $instance['orderby'];
-        $clubs             = $this->club_service
-            ? $this->club_service->get_clubs( $args )
-            : ( $this->club_repository ??= new Club_Repository() )->find_all( $args );
+
+        $service = $this->resolve( Club_Service::class, $this->club_service );
+        if ( null !== $service ) {
+            $this->club_service = $service;
+            $clubs              = $service->get_clubs( $args );
+        } else {
+            $repo = $this->resolve( Club_Repository_Interface::class, $this->club_repository );
+            if ( null !== $repo ) {
+                $this->club_repository = $repo;
+                $clubs                 = $repo->find_all( $args );
+            } else {
+                $clubs = array();
+            }
+        }
 
         $data                = new stdClass();
         $data->clubs         = is_array( $clubs ) ? $clubs : array();
@@ -91,74 +108,150 @@ class Widget extends WP_Widget {
     }
 
     /**
+     * Resolve a service or repository dependency from injected property or container.
+     *
+     * @param string      $class_name Target class or interface name.
+     * @param object|null $injected   Pre-injected instance if available.
+     * @return object|null Resolved instance or null.
+     */
+    private function resolve( string $class_name, ?object $injected ): ?object {
+        if ( null !== $injected ) {
+            return $injected;
+        }
+
+        $resolved  = null;
+        $container = $this->container ?? Public_Api::get_container();
+
+        if ( null !== $container && $container->has_definition( $class_name ) ) {
+            try {
+                $instance = $container->get( $class_name );
+                if ( $instance instanceof $class_name ) {
+                    $resolved = $instance;
+                }
+            } catch ( InvalidArgumentException ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
+                // Dependency retrieval failed; $resolved retains default null.
+            }
+        }
+
+        return $resolved;
+    }
+
+    /**
      * Function to output widget data
      *
-     * @param object $data
-     *
+     * @param object $data Widget display data.
      * @return void
      */
     private function show_widget( object $data ): void {
-        $clubs         = $data->clubs;
-        $club_name     = $data->club_name;
-        $club_link     = $data->club_link;
-        $title         = $data->title;
-        $before_widget = $data->before_widget;
-        $before_title  = $data->before_title;
-        $after_title   = $data->after_title;
-        $after_widget  = $data->after_widget;
         ob_start();
-        echo esc_html( $before_widget );
-        if ( $clubs ) {
-            ?>
-            <?php
-            if ( $title ) {
-                echo $before_title . esc_html( $title ) . $after_title; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-            }
-            ?>
-            <div id="clubs" class="roll-club" data-autoplay="5000">
-                <?php
-                foreach ( $clubs as $club ) {
-                    ?>
-                    <div class="club-item">
-                        <div class="club-content">
-                            <?php
-                            if ( '1' === $club_name ) {
-                                ?>
-                                <div class="">
-                                    <h4 class=""><a href="<?php echo esc_html( '/clubs/' . sanitize_title( $club->shortcode ) . '/' ); ?>"><?php echo esc_html( $club->name ); ?></a></h4>
-                                    <p><?php echo esc_html( $club->facilities ); ?></p>
-                                    <p><?php echo esc_html( $club->address ); ?></p>
-                                    <?php
-                                    if ( '1' === $club_link && null !== $club->website ) {
-                                        ?>
-                                        <p><a href="<?php echo esc_url( $club->website ); ?>" target="_blank"><?php echo esc_html( $club->website ); ?></a></p>
-                                        <?php
-                                    }
-                                    ?>
-                                </div>
-                                <?php
-                            }
-                            ?>
-                        </div>
-                    </div>
-                    <?php
-                }
-                ?>
-            </div>
-            <a href="/clubs" class="roll-button more-button">
-                <?php esc_html_e( 'See all our clubs', 'racketmanager' ); ?>
-            </a>
-            <?php
+        echo esc_html( $data->before_widget );
+
+        if ( ! empty( $data->clubs ) ) {
+            $this->render_title( (string) $data->title, (string) $data->before_title, (string) $data->after_title );
+            $this->render_clubs_list( (array) $data->clubs, (string) $data->club_name, (string) $data->club_link );
         }
+
         wp_reset_postdata();
-        echo esc_html( $after_widget );
-        if ( $this->is_preview() ) {
-            ob_end_flush();
-        } else {
-            $cache[ $data->widget_id ] = ob_get_flush();
-            wp_cache_set( 'racketmanager', $cache, 'widget' );
+        echo esc_html( $data->after_widget );
+
+        $this->cache_or_flush_output( (string) $data->widget_id );
+    }
+
+    /**
+     * Render widget title if present.
+     *
+     * @param string $title        Widget title.
+     * @param string $before_title Title opening markup.
+     * @param string $after_title  Title closing markup.
+     * @return void
+     */
+    private function render_title( string $title, string $before_title, string $after_title ): void {
+        if ( '' !== $title ) {
+            echo $before_title . esc_html( $title ) . $after_title; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         }
     }
+
+    /**
+     * Render container and list of clubs.
+     *
+     * @param array  $clubs     List of club domain objects.
+     * @param string $club_name Flag indicating if club name should be displayed.
+     * @param string $club_link Flag indicating if club link should be displayed.
+     * @return void
+     */
+    private function render_clubs_list( array $clubs, string $club_name, string $club_link ): void {
+        ?>
+        <div id="clubs" class="roll-club" data-autoplay="5000">
+            <?php
+            foreach ( $clubs as $club ) {
+                $this->render_club_item( $club, $club_name, $club_link );
+            }
+            ?>
+        </div>
+        <a href="/clubs" class="roll-button more-button">
+            <?php esc_html_e( 'See all our clubs', 'racketmanager' ); ?>
+        </a>
+        <?php
+    }
+
+    /**
+     * Render an individual club item.
+     *
+     * @param object $club      Club data object.
+     * @param string $club_name Flag indicating if club name should be displayed.
+     * @param string $club_link Flag indicating if club link should be displayed.
+     * @return void
+     */
+    private function render_club_item( object $club, string $club_name, string $club_link ): void {
+        ?>
+        <div class="club-item">
+            <div class="club-content">
+                <?php if ( '1' === $club_name ) : ?>
+                    <div class="">
+                        <h4 class=""><a href="<?php echo esc_html( '/clubs/' . sanitize_title( $club->shortcode ) . '/' ); ?>"><?php echo esc_html( $club->name ); ?></a></h4>
+                        <p><?php echo esc_html( $club->facilities ); ?></p>
+                        <p><?php echo esc_html( $club->address ); ?></p>
+                        <?php $this->render_club_website( $club->website, $club_link ); ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php
+    }
+
+    /**
+     * Render website link if enabled and available.
+     *
+     * @param string|null $website   Website URL.
+     * @param string      $club_link Flag indicating if club link should be displayed.
+     * @return void
+     */
+    private function render_club_website( ?string $website, string $club_link ): void {
+        if ( '1' === $club_link && null !== $website ) {
+            ?>
+            <p><a href="<?php echo esc_url( $website ); ?>" target="_blank"><?php echo esc_html( $website ); ?></a></p>
+            <?php
+        }
+    }
+
+    /**
+     * Flush output buffer or store to cache.
+     *
+     * @param string $widget_id Identifier for widget instance.
+     * @return void
+     */
+    private function cache_or_flush_output( string $widget_id ): void {
+        if ( $this->is_preview() ) {
+            ob_end_flush();
+            return;
+        }
+
+        $cache               = wp_cache_get( 'racketmanager', 'widget' );
+        $cache               = is_array( $cache ) ? $cache : array();
+        $cache[ $widget_id ] = ob_get_flush();
+        wp_cache_set( 'racketmanager', $cache, 'widget' );
+    }
+
     /**
      * Save settings
      *

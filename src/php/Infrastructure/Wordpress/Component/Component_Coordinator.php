@@ -4,13 +4,13 @@ declare( strict_types=1 );
 namespace Racketmanager\Infrastructure\Wordpress\Component;
 
 use Racketmanager\Infrastructure\Wordpress\Ajax\Ajax_Registry;
+use Racketmanager\Infrastructure\Wordpress\Auth\Login_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Export\Export_Delivery_Adapter;
+use Racketmanager\Infrastructure\Wordpress\Rewrites\Rewrite_Rules;
 use Racketmanager\Public\Shortcodes;
 use Racketmanager\RacketManager;
 use Racketmanager\Rest\Rest_Routes;
 use Racketmanager\Services\Container\Simple_Container;
-use Racketmanager\Services\Login;
-use Racketmanager\Services\Rewrites;
 
 /**
  * Coordinates frontend component resolution, REST route setup, and AJAX action registrations.
@@ -39,8 +39,8 @@ final readonly class Component_Coordinator implements Component_Coordinator_Inte
         $app->shortcodes_match       = $this->container->get( 'matches_shortcode_adapter' );
         $app->shortcodes_message     = $this->container->get( 'message_shortcode_adapter' );
         $app->shortcodes_tournament  = $this->container->get( 'tournament_shortcode_adapter' );
-        $app->rewrites               = new Rewrites();
-        $app->login                  = $this->container->get( 'login' );
+        $app->rewrites               = $this->container->get( Rewrite_Rules::class );
+        $app->login                  = $this->container->get( Login_Action_Adapter::class );
 
         Rest_Routes::single( $app );
         $this->register_ajax_actions();

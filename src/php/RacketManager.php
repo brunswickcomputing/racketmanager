@@ -14,6 +14,7 @@ use Racketmanager\Infrastructure\Wordpress\Assets\Asset_Manager;
 use Racketmanager\Infrastructure\Wordpress\Bootstrap\Plugin_Bootstrap;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\Infrastructure\Wordpress\Templates\Template_Loader;
+use Racketmanager\Infrastructure\Wordpress\Widgets\Club_Widget;
 use Racketmanager\Services\Container\Container_Bootstrap;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Player_Service;
@@ -316,7 +317,7 @@ class RacketManager {
      * Register Widget
      */
     public function register_widget(): void {
-        register_widget( 'Racketmanager\Services\Widget' );
+        register_widget( Club_Widget::class );
     }
 
     /**

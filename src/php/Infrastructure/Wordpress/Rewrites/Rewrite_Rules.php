@@ -1,24 +1,58 @@
 <?php
 declare( strict_types=1 );
 /**
- * RacketManager API: Rewrites class
+ * RacketManager API: Rewrite_Rules class
  *
  * @author Paul Moffat
  * @package RacketManager
  */
 
-namespace Racketmanager\Services;
+namespace Racketmanager\Infrastructure\Wordpress\Rewrites;
 
 /**
  * Main class to implement RacketManager Rewrites
  */
-class Rewrites {
-    protected static ? Rewrites $instance = null;
+class Rewrite_Rules {
+    /**
+     * Rewrite query template for competition event.
+     *
+     * @var string
+     */
     private string $competition_event;
+
+    /**
+     * Rewrite query template for competition event season.
+     *
+     * @var string
+     */
     private string $competition_event_season;
+
+    /**
+     * Rewrite query template for competition event season player.
+     *
+     * @var string
+     */
     private string $competition_event_season_player;
+
+    /**
+     * Rewrite query template for competition event season player tab.
+     *
+     * @var string
+     */
     private string $competition_event_season_player_tab;
+
+    /**
+     * Rewrite query template for competition event season team.
+     *
+     * @var string
+     */
     private string $competition_event_season_team;
+
+    /**
+     * Rewrite query template for competition event season team tab.
+     *
+     * @var string
+     */
     private string $competition_event_season_team_tab;
 
     /**
@@ -27,14 +61,13 @@ class Rewrites {
      * @return void
      */
     public function __construct() {
-        $this->competition_event = 'index.php?pagename=competition%2Fevent&event=$matches[1]';
-        $this->competition_event_season = 'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]';
-        $this->competition_event_season_player = 'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&player_id=$matches[3]';
+        $this->competition_event                   = 'index.php?pagename=competition%2Fevent&event=$matches[1]';
+        $this->competition_event_season            = 'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]';
+        $this->competition_event_season_player     = 'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&player_id=$matches[3]';
         $this->competition_event_season_player_tab = 'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&tab=players';
-        $this->competition_event_season_team = 'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&team=$matches[3]';
-        $this->competition_event_season_team_tab = 'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&tab=teams';
+        $this->competition_event_season_team       = 'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&team=$matches[3]';
+        $this->competition_event_season_team_tab   = 'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&tab=teams';
         $this->racketmanager_rewrites();
-        self::$instance = $this;
     }
     /**
      * Create formatted url
@@ -296,7 +329,6 @@ class Rewrites {
             'index.php?pagename=competition%2Fentry&&competition_name=$matches[1]&competition_type=tournament',
             'top'
         );
-
     }
     /**
      * Rewrite competition urls function
@@ -396,7 +428,7 @@ class Rewrites {
      *
      * @return void
      */
-    private function rewrite_cup_competitions(): void  {
+    private function rewrite_cup_competitions(): void {
         // cup - season - player.
         add_rewrite_rule(
             '(.+?)-cups/([0-9]{4})/player/(.+?)/?$',

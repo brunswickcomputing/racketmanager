@@ -77,8 +77,8 @@ final class Component_Coordinator_Test extends TestCase {
         $this->container->set( 'matches_shortcode_adapter', fn() => new stdClass() );
         $this->container->set( 'message_shortcode_adapter', fn() => new stdClass() );
         $this->container->set( 'tournament_shortcode_adapter', fn() => new stdClass() );
-        $login = $this->createMock( \Racketmanager\Services\Login::class );
-        $this->container->set( 'login', fn() => $login );
+        $login = $this->createMock( \Racketmanager\Infrastructure\Wordpress\Auth\Login_Action_Adapter::class );
+        $this->container->set( \Racketmanager\Infrastructure\Wordpress\Auth\Login_Action_Adapter::class, fn() => $login );
 
         $this->coordinator->init_components( $this->app );
 
@@ -110,8 +110,8 @@ final class Component_Coordinator_Test extends TestCase {
         self::assertInstanceOf( stdClass::class, $this->app->shortcodes_message );
         self::assertInstanceOf( stdClass::class, $this->app->shortcodes_tournament );
 
-        self::assertInstanceOf( \Racketmanager\Services\Rewrites::class, $this->app->rewrites );
-        self::assertInstanceOf( \Racketmanager\Services\Login::class, $this->app->login );
+        self::assertInstanceOf( \Racketmanager\Infrastructure\Wordpress\Rewrites\Rewrite_Rules::class, $this->app->rewrites );
+        self::assertInstanceOf( \Racketmanager\Infrastructure\Wordpress\Auth\Login_Action_Adapter::class, $this->app->login );
     }
 
     public function test_handle_exports_delegates_to_delivery_adapter_when_requested(): void {

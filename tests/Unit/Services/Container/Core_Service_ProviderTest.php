@@ -9,8 +9,10 @@ use Racketmanager\Application\Export\Ports\Data_Exporter_Interface;
 use Racketmanager\Application\General\Queries\Get_Alert_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Lost_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Handler;
+use Racketmanager\Application\Login\Services\Auth_Service;
 use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Application\Payment\Ports\Payment_Gateway_Interface;
+use Racketmanager\Application\Ports\Template_Renderer_Interface;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface;
 use Racketmanager\Domain\Ports\Clock_Interface;
@@ -30,6 +32,9 @@ use Racketmanager\Infrastructure\Wordpress\Ajax\Ajax_Registry;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Finance_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Finance_Ajax_Controller;
 use Racketmanager\Infrastructure\Wordpress\Assets\Asset_Manager;
+use Racketmanager\Infrastructure\Wordpress\Auth\Auth_Email_Filter_Adapter;
+use Racketmanager\Infrastructure\Wordpress\Auth\Login_Action_Adapter;
+use Racketmanager\Infrastructure\Wordpress\Auth\Password_Reset_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Bootstrap\Plugin_Bootstrap;
 use Racketmanager\Infrastructure\Wordpress\Component\Component_Coordinator;
 use Racketmanager\Infrastructure\Wordpress\Component\Component_Coordinator_Interface;
@@ -42,6 +47,7 @@ use Racketmanager\Infrastructure\Wordpress\Shortcodes\General_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Login_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Message_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Shortcode_Registrar;
+use Racketmanager\Infrastructure\Wordpress\Rewrites\Rewrite_Rules;
 use Racketmanager\Infrastructure\Wordpress\Templates\Template_Loader;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Charge_Repository;
@@ -60,7 +66,6 @@ use Racketmanager\Services\Container\Providers\Service_Provider_Interface;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Export\Export_Service;
 use Racketmanager\Services\Finance_Service;
-use Racketmanager\Services\Login;
 use Racketmanager\Services\Mail\Mail_Filter_Service;
 use Racketmanager\Services\Mail\Mail_Filter_Service_Interface;
 use Racketmanager\Services\Notification\Notification_Service;
@@ -172,6 +177,9 @@ class Core_Service_ProviderTest extends TestCase {
         $this->assertTrue( $this->container->has( 'shortcode_registrar' ) );
         $this->assertTrue( $this->container->has( Shortcode_Registrar::class ) );
 
+        $this->assertTrue( $this->container->has( Rewrite_Rules::class ) );
+        $this->assertInstanceOf( Rewrite_Rules::class, $this->container->get( Rewrite_Rules::class ) );
+
         $this->assertTrue( $this->container->has( 'payment_gateway' ) );
         $this->assertTrue( $this->container->has( Payment_Gateway_Interface::class ) );
         $this->assertTrue( $this->container->has( Stripe_Payment_Gateway::class ) );
@@ -205,8 +213,15 @@ class Core_Service_ProviderTest extends TestCase {
         $this->assertTrue( $this->container->has( Page_Title_Service::class ) );
         $this->assertTrue( $this->container->has( Page_Title_Service_Interface::class ) );
 
-        $this->assertTrue( $this->container->has( 'login' ) );
-        $this->assertTrue( $this->container->has( Login::class ) );
+        $this->container->set( 'shortcode_template_renderer', $this->createStub( Template_Renderer_Interface::class ) );
+        $this->assertTrue( $this->container->has( Auth_Service::class ) );
+        $this->assertInstanceOf( Auth_Service::class, $this->container->get( Auth_Service::class ) );
+        $this->assertTrue( $this->container->has( Password_Reset_Action_Adapter::class ) );
+        $this->assertInstanceOf( Password_Reset_Action_Adapter::class, $this->container->get( Password_Reset_Action_Adapter::class ) );
+        $this->assertTrue( $this->container->has( Auth_Email_Filter_Adapter::class ) );
+        $this->assertInstanceOf( Auth_Email_Filter_Adapter::class, $this->container->get( Auth_Email_Filter_Adapter::class ) );
+        $this->assertTrue( $this->container->has( Login_Action_Adapter::class ) );
+        $this->assertInstanceOf( Login_Action_Adapter::class, $this->container->get( Login_Action_Adapter::class ) );
 
         $this->assertTrue( $this->container->has( 'mail_filter_service' ) );
         $this->assertTrue( $this->container->has( Mail_Filter_Service::class ) );
@@ -215,6 +230,48 @@ class Core_Service_ProviderTest extends TestCase {
         $this->assertTrue( $this->container->has( 'component_coordinator' ) );
         $this->assertTrue( $this->container->has( Component_Coordinator::class ) );
         $this->assertTrue( $this->container->has( Component_Coordinator_Interface::class ) );
+    }
+
+    public function test_login_adapter_receives_shared_subadapters_and_registers_twenty_hooks_once(): void {
+        $GLOBALS['wp_stubs_added_actions'] = array();
+        $GLOBALS['wp_stubs_added_filters'] = array();
+
+        $this->container->set( 'shortcode_template_renderer', $this->createStub( Template_Renderer_Interface::class ) );
+
+        $pw_adapter    = $this->container->get( Password_Reset_Action_Adapter::class );
+        $email_adapter = $this->container->get( Auth_Email_Filter_Adapter::class );
+
+        // Subadapters alone do not register hooks on construction.
+        $this->assertEmpty( $GLOBALS['wp_stubs_added_actions'] );
+        $this->assertEmpty( $GLOBALS['wp_stubs_added_filters'] );
+
+        $login_adapter = $this->container->get( Login_Action_Adapter::class );
+
+        $pw_prop = new ReflectionProperty( Login_Action_Adapter::class, 'password_reset_adapter' );
+        $pw_prop->setAccessible( true );
+        $this->assertSame( $pw_adapter, $pw_prop->getValue( $login_adapter ) );
+
+        $email_prop = new ReflectionProperty( Login_Action_Adapter::class, 'email_filter_adapter' );
+        $email_prop->setAccessible( true );
+        $this->assertSame( $email_adapter, $email_prop->getValue( $login_adapter ) );
+
+        $action_count = array_sum( array_map( 'count', $GLOBALS['wp_stubs_added_actions'] ) );
+        $filter_count = array_sum( array_map( 'count', $GLOBALS['wp_stubs_added_filters'] ) );
+
+        $this->assertSame( 12, $action_count );
+        $this->assertSame( 8, $filter_count );
+        $this->assertSame( 20, $action_count + $filter_count );
+
+        // Resolving again or calling subadapters does not duplicate hooks.
+        $this->container->get( Login_Action_Adapter::class );
+        $pw_adapter->register_hooks();
+        $email_adapter->register_hooks();
+
+        $action_count_after = array_sum( array_map( 'count', $GLOBALS['wp_stubs_added_actions'] ) );
+        $filter_count_after = array_sum( array_map( 'count', $GLOBALS['wp_stubs_added_filters'] ) );
+
+        $this->assertSame( 12, $action_count_after );
+        $this->assertSame( 8, $filter_count_after );
     }
 
     public function test_registers_repository_keys_and_aliases(): void {

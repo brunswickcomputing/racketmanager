@@ -81,6 +81,23 @@ trait Manages_Wordpress_Globals {
         'post',
         'match',
         'wp_query',
+        'wp_rewrite_rules_added',
+        'wp_stubs_wp_remote_post_return',
+        'wp_stubs_check_password_reset_key_return',
+        'wp_stubs_last_safe_redirect',
+        'wp_stubs_doing_ajax',
+        'wp_stubs_user_can_return',
+        'wp_stubs_user_can_callback',
+        'wp_stubs_username_exists_return',
+        'wp_stubs_email_exists_return',
+        'wp_stubs_generate_password_return',
+        'wp_stubs_insert_user_return',
+        'wp_stubs_insert_user_error',
+        'wp_stubs_last_inserted_user',
+        'wp_stubs_new_user_notifications',
+        'wp_stubs_count_users_return',
+        'wp_stubs_password_reset_key_return',
+        'wp_stubs_last_reset_password',
     ];
 
     protected function backup_globals(): void {

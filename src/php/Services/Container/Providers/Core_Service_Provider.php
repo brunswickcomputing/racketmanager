@@ -13,6 +13,7 @@ use Racketmanager\Application\Login\Queries\Get_Login_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Member_Account_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Lost_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Handler;
+use Racketmanager\Application\Login\Services\Auth_Service;
 use Racketmanager\Application\Message\Queries\Get_Message_Handler;
 use Racketmanager\Application\Message\Queries\Get_Messages_Handler;
 use Racketmanager\Application\Export\Ports\Data_Exporter_Interface;
@@ -52,6 +53,9 @@ use Racketmanager\Infrastructure\Wordpress\Assets\Asset_Manager;
 use Racketmanager\Infrastructure\Wordpress\Bootstrap\Plugin_Bootstrap;
 use Racketmanager\Infrastructure\Wordpress\Component\Component_Coordinator;
 use Racketmanager\Infrastructure\Wordpress\Component\Component_Coordinator_Interface;
+use Racketmanager\Infrastructure\Wordpress\Auth\Auth_Email_Filter_Adapter;
+use Racketmanager\Infrastructure\Wordpress\Auth\Login_Action_Adapter;
+use Racketmanager\Infrastructure\Wordpress\Auth\Password_Reset_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Export\Export_Delivery_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory;
@@ -61,12 +65,12 @@ use Racketmanager\Infrastructure\Wordpress\Shortcodes\General_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Login_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Message_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Shortcode_Registrar;
+use Racketmanager\Infrastructure\Wordpress\Rewrites\Rewrite_Rules;
 use Racketmanager\Infrastructure\Wordpress\Templates\Template_Loader;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Export\Export_Service;
 use Racketmanager\Services\Finance_Service;
-use Racketmanager\Services\Login;
 use Racketmanager\Services\Mail\Mail_Filter_Service;
 use Racketmanager\Services\Mail\Mail_Filter_Service_Interface;
 use Racketmanager\Services\Notification\Notification_Service;
@@ -147,6 +151,8 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->set( 'shortcode_registrar', fn( Simple_Container $c ): Shortcode_Registrar => new Shortcode_Registrar( $c ) );
         $container->set( Shortcode_Registrar::class, fn( Simple_Container $c ): Shortcode_Registrar => $c->get( 'shortcode_registrar' ) );
 
+        $container->set( Rewrite_Rules::class, fn(): Rewrite_Rules => new Rewrite_Rules() );
+
         $container->set( 'payment_gateway', fn( Simple_Container $c ): Payment_Gateway_Interface => new Stripe_Payment_Gateway( $c->get( 'option_service' )->get_options( 'billing' ) ?? [] ) );
         $container->set( Payment_Gateway_Interface::class, fn( Simple_Container $c ): Payment_Gateway_Interface => $c->get( 'payment_gateway' ) );
         $container->alias( Stripe_Payment_Gateway::class, 'payment_gateway' );
@@ -187,13 +193,36 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->set( Page_Title_Service_Interface::class, fn( Simple_Container $c ): Page_Title_Service => $c->get( 'page_title_service' ) );
 
         $container->set(
-            'login',
-            fn( Simple_Container $c ): Login => new Login(
-                $c->get( 'option_service' ),
+            Auth_Service::class,
+            fn( Simple_Container $c ): Auth_Service => new Auth_Service(
+                $c->get( Option_Service::class ),
                 $c->get( 'shortcode_template_renderer' )
             )
         );
-        $container->set( Login::class, fn( Simple_Container $c ): Login => $c->get( 'login' ) );
+
+        $container->set(
+            Password_Reset_Action_Adapter::class,
+            fn( Simple_Container $c ): Password_Reset_Action_Adapter => new Password_Reset_Action_Adapter(
+                $c->get( Auth_Service::class )
+            )
+        );
+
+        $container->set(
+            Auth_Email_Filter_Adapter::class,
+            fn( Simple_Container $c ): Auth_Email_Filter_Adapter => new Auth_Email_Filter_Adapter(
+                $c->get( Auth_Service::class )
+            )
+        );
+
+        $container->set(
+            Login_Action_Adapter::class,
+            fn( Simple_Container $c ): Login_Action_Adapter => new Login_Action_Adapter(
+                $c->get( Auth_Service::class ),
+                $c->get( Option_Service::class ),
+                $c->get( Password_Reset_Action_Adapter::class ),
+                $c->get( Auth_Email_Filter_Adapter::class )
+            )
+        );
 
         $container->set( 'mail_filter_service', fn( Simple_Container $c ): Mail_Filter_Service => new Mail_Filter_Service( $c->get( 'message_repository' ) ) );
         $container->set( Mail_Filter_Service::class, fn( Simple_Container $c ): Mail_Filter_Service => $c->get( 'mail_filter_service' ) );

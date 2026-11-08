@@ -645,6 +645,11 @@ namespace {
 
     if ( ! function_exists( 'add_rewrite_rule' ) ) {
         function add_rewrite_rule( $regex, $query, $after = 'bottom' ) {
+            $GLOBALS['wp_rewrite_rules_added'][] = array(
+                'regex' => $regex,
+                'query' => $query,
+                'after' => $after,
+            );
             return true;
         }
     }
@@ -873,6 +878,27 @@ namespace {
     if ( ! function_exists( 'wp_verify_nonce' ) ) {
         function wp_verify_nonce( $nonce, $action = -1 ) {
             return $GLOBALS['wp_stubs_wp_verify_nonce_return'] ?? true;
+        }
+    }
+
+    if ( ! function_exists( 'wp_remote_post' ) ) {
+        function wp_remote_post( $url, $args = array() ) {
+            return $GLOBALS['wp_stubs_wp_remote_post_return'] ?? array( 'body' => '{"success":true}' );
+        }
+    }
+
+    if ( ! function_exists( 'check_password_reset_key' ) ) {
+        function check_password_reset_key( $key, $login ) {
+            if ( array_key_exists( 'wp_stubs_check_password_reset_key_return', $GLOBALS ) ) {
+                return $GLOBALS['wp_stubs_check_password_reset_key_return'];
+            }
+            if ( empty( $key ) || empty( $login ) ) {
+                return new WP_Error( 'invalid_key', 'Invalid key' );
+            }
+            $user = new stdClass();
+            $user->ID = 1;
+            $user->user_login = $login;
+            return $user;
         }
     }
 
@@ -1871,6 +1897,38 @@ namespace {
             public function widget( $args, $instance ) {}
             public function update( $new_instance, $old_instance ) { return $new_instance; }
             public function form( $instance ) {}
+            public function get_field_id( $field_name ) {
+                return "widget-" . $this->id_base . "-" . $field_name;
+            }
+            public function get_field_name( $field_name ) {
+                return "widget-" . $this->id_base . "[" . $field_name . "]";
+            }
+        }
+        ');
+    }
+
+    if ( ! class_exists( 'WP_User' ) ) {
+        eval('
+        class WP_User {
+            public int $ID = 0;
+            public string $user_login = "";
+            public string $user_email = "";
+            public string $display_name = "";
+            public array $roles = array();
+            public array $caps = array();
+
+            public function __construct( $id = 0, $name = "" ) {
+                $this->ID         = (int) $id;
+                $this->user_login = (string) $name;
+            }
+
+            public function has_cap( $cap ): bool {
+                return in_array( $cap, $this->caps, true ) || ( "manage_options" === $cap && in_array( "administrator", $this->roles, true ) );
+            }
+
+            public function set_role( $role ): void {
+                $this->roles = array( $role );
+            }
         }
         ');
     }
@@ -2121,6 +2179,88 @@ namespace {
                 'replacement' => $replacement,
                 'message'     => $message,
             );
+        }
+    }
+    if ( ! function_exists( 'wp_safe_redirect' ) ) {
+        function wp_safe_redirect( string $location, int $status = 302 ): bool {
+            $GLOBALS['wp_stubs_last_safe_redirect'] = array(
+                'location' => $location,
+                'status'   => $status,
+            );
+            return true;
+        }
+    }
+    if ( ! function_exists( 'wp_doing_ajax' ) ) {
+        function wp_doing_ajax(): bool {
+            return (bool) ( $GLOBALS['wp_stubs_doing_ajax'] ?? false );
+        }
+    }
+    if ( ! function_exists( 'user_can' ) ) {
+        function user_can( $user, $capability, ...$args ): bool {
+            if ( isset( $GLOBALS['wp_stubs_user_can_callback'] ) && is_callable( $GLOBALS['wp_stubs_user_can_callback'] ) ) {
+                return (bool) ( $GLOBALS['wp_stubs_user_can_callback'] )( $user, $capability, ...$args );
+            }
+            if ( isset( $GLOBALS['wp_stubs_user_can_return'] ) ) {
+                return (bool) $GLOBALS['wp_stubs_user_can_return'];
+            }
+            if ( is_object( $user ) && method_exists( $user, 'has_cap' ) ) {
+                return $user->has_cap( $capability, ...$args );
+            }
+            return false;
+        }
+    }
+    if ( ! function_exists( 'username_exists' ) ) {
+        function username_exists( string $username ) {
+            return $GLOBALS['wp_stubs_username_exists_return'][ $username ] ?? false;
+        }
+    }
+    if ( ! function_exists( 'email_exists' ) ) {
+        function email_exists( string $email ) {
+            return $GLOBALS['wp_stubs_email_exists_return'][ $email ] ?? false;
+        }
+    }
+    if ( ! function_exists( 'wp_generate_password' ) ) {
+        function wp_generate_password( int $length = 12, bool $special_chars = true, bool $extra_special_chars = false ): string {
+            return $GLOBALS['wp_stubs_generate_password_return'] ?? 'generated_password_123';
+        }
+    }
+    if ( ! function_exists( 'wp_insert_user' ) ) {
+        function wp_insert_user( $userdata ) {
+            if ( isset( $GLOBALS['wp_stubs_insert_user_error'] ) ) {
+                return $GLOBALS['wp_stubs_insert_user_error'];
+            }
+            $GLOBALS['wp_stubs_last_inserted_user'] = $userdata;
+            return $GLOBALS['wp_stubs_insert_user_return'] ?? 42;
+        }
+    }
+    if ( ! function_exists( 'wp_new_user_notification' ) ) {
+        function wp_new_user_notification( $user_id, $deprecated = null, $notify = '' ): void {
+            $GLOBALS['wp_stubs_new_user_notifications'][] = array(
+                'user_id' => $user_id,
+                'notify'  => $notify,
+            );
+        }
+    }
+    if ( ! function_exists( 'count_users' ) ) {
+        function count_users( $strategy = 'time', $site_id = null ): array {
+            return $GLOBALS['wp_stubs_count_users_return'] ?? array(
+                'total_users' => 10,
+                'avail_roles' => array( 'subscriber' => 9, 'administrator' => 1 ),
+            );
+        }
+    }
+    if ( ! function_exists( 'get_password_reset_key' ) ) {
+        function get_password_reset_key( $user ) {
+            return $GLOBALS['wp_stubs_password_reset_key_return'] ?? 'mock_reset_key';
+        }
+    }
+    if ( ! function_exists( 'reset_password' ) ) {
+        function reset_password( $user, $new_pass ): bool {
+            $GLOBALS['wp_stubs_last_reset_password'] = array(
+                'user'     => $user,
+                'password' => $new_pass,
+            );
+            return true;
         }
     }
     if ( ! defined( 'ARRAY_A' ) ) {

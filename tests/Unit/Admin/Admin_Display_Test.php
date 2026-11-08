@@ -104,7 +104,8 @@ final class Admin_Display_Test extends TestCase {
         $this->expectException( LogicException::class );
         $this->expectExceptionMessageIsOrContains( 'Admin_Display requires a Simple_Container instance.' );
 
-        new Admin_Display( null, null );
+        $admin_display = new Admin_Display( null, null );
+        self::assertInstanceOf( Admin_Display::class, $admin_display );
     }
 
     public function test_plugin_textdomain_is_registered_on_init_action(): void {

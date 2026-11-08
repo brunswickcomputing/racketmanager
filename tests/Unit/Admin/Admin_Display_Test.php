@@ -41,12 +41,12 @@ final class Admin_Display_Test extends TestCase {
 
     public function test_constructor_defers_translations_and_registers_init_hook(): void {
         $translation_calls = 0;
-        $GLOBALS['wp_stubs_translate_callback'] = static function ( string $text, string $domain ) use ( &$translation_calls ): string {
-            $translation_calls++;
+        $GLOBALS['wp_stubs_translate_callback'] = static function ( string $text, string $domain ) use ( &$translation_calls ): string { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
+            ++$translation_calls;
             return $text;
         };
 
-        $racketmanager = ( new ReflectionClass( RacketManager::class ) )->newInstanceWithoutConstructor();
+        $racketmanager = new ReflectionClass( RacketManager::class )->newInstanceWithoutConstructor();
         $admin_display = new Admin_Display( $racketmanager, $this->container );
 
         self::assertSame( 0, $translation_calls, 'Admin_Display must not execute translation lookups during constructor execution.' );
@@ -61,7 +61,7 @@ final class Admin_Display_Test extends TestCase {
         $actions = $GLOBALS['wp_stubs_added_actions']['init'] ?? [];
         $registered = false;
         foreach ( $actions as $action ) {
-            if ( isset( $action['callback'] ) && $action['callback'] === [ $admin_display, 'load_translations' ] ) {
+            if ( isset( $action['callback'] ) && [ $admin_display, 'load_translations' ] === $action['callback'] ) {
                 $registered = true;
                 break;
             }
@@ -71,7 +71,7 @@ final class Admin_Display_Test extends TestCase {
     }
 
     public function test_load_translations_updates_no_permission_property(): void {
-        $racketmanager = ( new ReflectionClass( RacketManager::class ) )->newInstanceWithoutConstructor();
+        $racketmanager = new ReflectionClass( RacketManager::class )->newInstanceWithoutConstructor();
         $admin_display = new Admin_Display( $racketmanager, $this->container );
 
         $ref = new ReflectionProperty( Admin_Display::class, 'no_permission' );
@@ -102,15 +102,15 @@ final class Admin_Display_Test extends TestCase {
 
     public function test_constructor_throws_exception_when_container_is_missing(): void {
         $this->expectException( LogicException::class );
-        $this->expectExceptionMessage( 'Admin_Display requires a Simple_Container instance.' );
+        $this->expectExceptionMessageIsOrContains( 'Admin_Display requires a Simple_Container instance.' );
 
         new Admin_Display( null, null );
     }
 
     public function test_plugin_textdomain_is_registered_on_init_action(): void {
-        $source = (string) file_get_contents( dirname( __DIR__, 3 ) . '/racketmanager.php' );
+        $source = (string) file_get_contents( dirname( __DIR__, 3 ) . '/racketmanager.php' ); //phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
         self::assertMatchesRegularExpression(
-            '/add_action\(\s*\'init\'\s*,\s*static\s+function\s*\(\)\s*:\s*void\s*\{\s*load_plugin_textdomain\(\s*\'racketmanager\'\s*,\s*false\s*,\s*\'racketmanager\/languages\'\s*\);\s*\}\s*\);/',
+            '/add_action\(\s*\'init\'\s*,\s*static\s+function\s*\(\)\s*:\s*void\s*\{\s*load_plugin_textdomain\(\s*\'racketmanager\'\s*,\s*false\s*,\s*\'racketmanager\/languages\'\s*\);\s*}\s*\);/',
             $source,
             'racketmanager.php must register load_plugin_textdomain within an init action hook.'
         );

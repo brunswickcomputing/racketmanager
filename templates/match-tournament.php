@@ -339,16 +339,14 @@ $match                    = $fixture;
                         ?>
                         <div class="match__header-aside text-uppercase">
                             <div class="match__header-aside-block">
-                                <a href="" class="nav__link statusLink"
-                                   data-match-id="<?php echo esc_attr( $match->id ); ?>"
-                                   data-action="open-match-status-modal">
+                                <button type="button" class="nav__link"
+                                        data-match-id="<?php echo esc_attr( $match->id ); ?>"
+                                        data-action="open-match-status-modal">
                                     <svg width="16" height="16" class="icon-plus nav-link__prefix">
-                                        <use
-                                            xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#plus-lg' ); ?>"></use>
+                                        <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#plus-lg' ); ?>"></use>
                                     </svg>
-                                    <span
-                                        class="nav-link__value"><?php esc_html_e( 'Match status', 'racketmanager' ); ?></span>
-                                </a>
+                                    <span class="nav-link__value"><?php esc_html_e( 'Match status', 'racketmanager' ); ?></span>
+                                </button>
                             </div>
                         </div>
                         <?php
@@ -623,9 +621,11 @@ $match                    = $fixture;
                     if ( $match_editable ) {
                         ?>
                         <div class="match__footer-aside text-uppercase">
-                            <button type="button" class="match__footer-action" data-action="reset-match-scores" data-form-id="<?php echo esc_attr( $form_id ); ?>">
-                                <?php esc_html_e( 'Reset scores', 'racketmanager' ); ?>
-                            </button>
+                            <div class="match__footer-aside-block">
+                                <button type="button" class="nav__link" data-action="reset-match-scores" data-rubber-id="<?php echo esc_attr( $form_id ); ?>">
+                                    <span class="nav-link__value"><?php esc_html_e( 'Reset scores', 'racketmanager' ); ?></span>
+                                </button>
+                            </div>
                         </div>
                         <?php
                     }

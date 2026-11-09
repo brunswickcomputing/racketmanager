@@ -158,6 +158,12 @@ final class Admin_Tournament extends Admin_Championship {
                     )
                 );
                 $pay_due_entries         = Util::get_players_list( $entries_pay_due );
+                $entries_refund_due      = $tournament->get_entries(
+                        array(
+                                'status' => 'refund',
+                        )
+                );
+                $refund_due_entries      = Util::get_players_list( $entries_refund_due );
                 $entries_pending         = $tournament->get_entries(
                     array(
                         'status' => 'pending',

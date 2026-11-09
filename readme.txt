@@ -47,6 +47,9 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 9.7.8 =
+BUGFIX: split tournament unpaid and refund due entry handling
+
 = 9.7.7 =
 * BUGFIX:  scope competition scheduler resources and bye handling by league
 

@@ -1060,7 +1060,15 @@ final class Tournament {
             } elseif ( 'unpaid' === $status ) {
                 if ( ! empty( $this->charge ) ) {
                     $search_terms[] = '`status` = 2';
-                    $search_terms[] = "`player_id` IN (SELECT `player_id` FROM $wpdb->racketmanager_invoices WHERE `charge_id` = %d AND `status` != 'paid')";
+                    $search_terms[] = "`player_id` IN (SELECT `player_id` FROM $wpdb->racketmanager_invoices WHERE `charge_id` = %d AND `status` != 'paid' AND `amount` > 0)";
+                    $search_args[]  = $this->charge->id;
+                } else {
+                    $search_terms[] = '`status` = 99';
+                }
+            } elseif ( 'refund' === $status ) {
+                if ( ! empty( $this->charge ) ) {
+                    $search_terms[] = '`status` = 2';
+                    $search_terms[] = "`player_id` IN (SELECT `player_id` FROM $wpdb->racketmanager_invoices WHERE `charge_id` = %d AND `status` != 'paid' AND `amount` < 0)";
                     $search_args[]  = $this->charge->id;
                 } else {
                     $search_terms[] = '`status` = 99';

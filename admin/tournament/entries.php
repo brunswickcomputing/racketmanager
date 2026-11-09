@@ -9,6 +9,7 @@ namespace Racketmanager;
 
 /** @var array $withdrawn_entries */
 /** @var array $pay_due_entries */
+/** @var array $refund_due_entries */
 /** @var array $pending_entries */
 /** @var array $confirmed_entries */
 ?>
@@ -35,25 +36,51 @@ if ( ! empty( $entries_withdrawn ) ) {
     </div>
     <?php
 }
-if ( ! empty( $entries_pay_due ) ) {
+if ( ! empty( $entries_pay_due ) || ! empty( $entries_refund_due ) ) {
     ?>
     <div class="row">
-        <div class="col-12 col-md-6">
-            <table class="table table-striped">
-                <thead class="table-dark">
+        <?php
+        if ( ! empty( $entries_pay_due ) ) {
+            ?>
+            <div class="col-12 col-md-6">
+                <table class="table table-striped">
+                    <thead class="table-dark">
                     <tr>
                         <th><?php esc_html_e( 'Unpaid Entries', 'racketmanager' ); ?> <?php echo '(' . count( $entries_pay_due ) . ')'; ?></th>
                     </tr>
-                </thead>
-                <tbody>
+                    </thead>
+                    <tbody>
                     <?php
                     $player_list = $pay_due_entries;
                     $entered     = true;
                     require 'player-list.php';
                     ?>
-                </tbody>
-            </table>
-        </div>
+                    </tbody>
+                </table>
+            </div>
+            <?php
+        }
+        if ( ! empty( $entries_refund_due ) ) {
+            ?>
+            <div class="col-12 col-md-6">
+                <table class="table table-striped">
+                    <thead class="table-dark">
+                    <tr>
+                        <th><?php esc_html_e( 'Refund Due Entries', 'racketmanager' ); ?> <?php echo '(' . count( $refund_due_entries ) . ')'; ?></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php
+                    $player_list = $refund_due_entries;
+                    $entered     = true;
+                    require 'player-list.php';
+                    ?>
+                    </tbody>
+                </table>
+            </div>
+            <?php
+        }
+        ?>
     </div>
     <?php
 }

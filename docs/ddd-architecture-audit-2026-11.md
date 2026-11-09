@@ -185,7 +185,7 @@ Each item: where / size · why it matters for DDD · tracked by.
 - `Admin.php` (672 lines) still runs raw SQL: `add_meta_box()` reads leagues and the match row with `$wpdb->get_results()` / `get_row()` (13 `$wpdb` refs — the last query code outside `Repositories/` and the installer) and uses `global $racketmanager` 3× **[M]**.
 - `Public_Api::container()` reaches the container through `global $racketmanager` **[V]** (the façade shipped in P3-17 inherits the locator it was meant to replace); `Admin/Presenters/Admin_Date_Presenter` has one more **[M]**.
 - `Cli/Export_Command` calls `RacketManager::get_instance()` — the single remaining `all.no_get_instance_outside_bootstrap` entry **[A]**.
-- `Presentation/Presenters/Fixture_Presentation_Adapter` carries `#[AllowDynamicProperties]` — the last dynamic-property class in `src/php` **[V]**.
+- `Presentation/Presenters/Fixture_Presentation_Adapter` carried `#[AllowDynamicProperties]` (removed 2026-11-09) — no dynamic-property classes remain in `src/php` **[V]**.
 - **Tracked by:** `all.no_get_instance_outside_bootstrap` (1 / 1); the rest are §9 P1 items 3–5 (small, mechanical).
 
 ### N9 — Interfaces declared outside the port locations
@@ -300,7 +300,7 @@ Effort: S < ½ day · M 1–3 days · L > 3 days. "Tracked by" names the rule wh
 | 1 | Relocate `Services/Login.php`, `Services/Rewrites.php`, `Services/Widget.php` to `Infrastructure/Wordpress/{Auth,Rewrites,Widgets}/`; move their `$_POST`/`$_GET` parsing into `Infrastructure/Wordpress/Request/*` command objects; leave only behaviour (login rules, URL building) in a `Services/` or `Application/` class. Then flip `services.no_wordpress_hooks` to strict (N5). | M | low | `services.no_wordpress_hooks` (176 / 2 → 0), `services.no_superglobals` (61 / 7 → ≤ 17 / 6) |
 | 2 | **(Done 2026-11-09)** Introduce `Application/Ports/Query_Vars_Interface` with an `Infrastructure/Wordpress/Request/Wp_Query_Vars` adapter; inject it into `Get_Tournament_Handler`, `Competition_Season_Service`, `Page_Title_Service`, `Util_Lookup` and the 11 shortcode adapters (N6). | S | low | `application.no_global_wp` (5 / 4 → 0, flipped to strict) |
 | 3 | **(Done 2026-11-09)** `Public_Api::container()` and `Admin_Date_Presenter` resolve the container via `Plugin_Bootstrap` instead of `global $racketmanager`; add `Public_Api.php` and `Admin/` to the `services.no_global_racketmanager` scope (N8). | S | low | `services.no_global_racketmanager` scope widened, stays strict |
-| 4 | Remove `#[AllowDynamicProperties]` from `Fixture_Presentation_Adapter` by declaring the properties it sets (N8). | S | low | — (inspection) |
+| 4 | **(Done 2026-11-09)** Remove `#[AllowDynamicProperties]` from `Fixture_Presentation_Adapter` by declaring the properties it sets (N8). | S | low | — (inspection) |
 | 5 | Move the `Admin::add_meta_box()` SQL into `League_Repository::find_titles()` / `Fixture_Repository::find_by_post()`; delete the 3 `global $racketmanager` in `Admin.php` (N8). | S | low | regex `$wpdb` outside `Repositories/` → `Activator`, `Plugin_Bootstrap`, `Util` only |
 | 6 | `Cli/Export_Command` receives the container from the WP-CLI bootstrap (`Plugin_Bootstrap::container()`), closing the last `get_instance()` call; flip the rule to strict. | S | low | `all.no_get_instance_outside_bootstrap` (1 / 1 → 0 → strict) |
 

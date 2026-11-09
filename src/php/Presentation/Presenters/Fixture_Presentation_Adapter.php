@@ -3,15 +3,10 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Presentation\Presenters;
 
-use AllowDynamicProperties;
-use Racketmanager\Domain\Competition\Competition;
-use Racketmanager\Domain\Competition\Event;
-use Racketmanager\Domain\Competition\League;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Presentation\View_Models\Team_Match_Row_View_Model;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
-use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
@@ -21,43 +16,258 @@ use stdClass;
 /**
  * Presentation adapter providing legacy template compatibility for modern Fixture domain entities.
  */
-#[AllowDynamicProperties]
 class Fixture_Presentation_Adapter {
+    /**
+     * Fixture identifier.
+     *
+     * @var int
+     */
     public int $id;
+
+    /**
+     * Fixture date.
+     *
+     * @var string|null
+     */
     public ?string $date;
+
+    /**
+     * Original fixture date string.
+     *
+     * @var string|null
+     */
     public ?string $date_original;
+
+    /**
+     * Match start time.
+     *
+     * @var string|null
+     */
     public ?string $start_time;
+
+    /**
+     * Formatted match date.
+     *
+     * @var string
+     */
     public string $match_date;
+
+    /**
+     * Match season.
+     *
+     * @var string|null
+     */
     public ?string $season;
+
+    /**
+     * League identifier.
+     *
+     * @var int|null
+     */
     public ?int $league_id;
+
+    /**
+     * Final round title.
+     *
+     * @var string|null
+     */
     public ?string $final_round;
+
+    /**
+     * Match leg number.
+     *
+     * @var int|null
+     */
     public ?int $leg;
+
+    /**
+     * Match day number.
+     *
+     * @var int|null
+     */
     public ?int $match_day;
+
+    /**
+     * Home team identifier or name.
+     *
+     * @var string|int|null
+     */
     public string|int|null $home_team;
+
+    /**
+     * Away team identifier or name.
+     *
+     * @var string|int|null
+     */
     public string|int|null $away_team;
+
+    /**
+     * Match location.
+     *
+     * @var string
+     */
     public string $location;
+
+    /**
+     * Winner identifier.
+     *
+     * @var int|null
+     */
     public ?int $winner_id;
+
+    /**
+     * Loser identifier.
+     *
+     * @var int|null
+     */
     public ?int $loser_id;
+
+    /**
+     * Whether fixture is pending.
+     *
+     * @var bool
+     */
     public bool $is_pending;
+
+    /**
+     * Home team points.
+     *
+     * @var string|null
+     */
     public ?string $home_points;
+
+    /**
+     * Away team points.
+     *
+     * @var string|null
+     */
     public ?string $away_points;
+
+    /**
+     * Fixture status code.
+     *
+     * @var int|null
+     */
     public ?int $status;
+
+    /**
+     * Fixture link URL.
+     *
+     * @var string
+     */
     public string $link;
+
+    /**
+     * Full fixture title.
+     *
+     * @var string
+     */
     public string $title;
+
+    /**
+     * Match title.
+     *
+     * @var string
+     */
     public string $match_title;
+
+    /**
+     * Home team title.
+     *
+     * @var string
+     */
     public string $home_title;
+
+    /**
+     * Away team title.
+     *
+     * @var string
+     */
     public string $away_title;
+
+    /**
+     * Number of rubbers.
+     *
+     * @var int|null
+     */
     public ?int $num_rubbers;
+
+    /**
+     * Number of sets.
+     *
+     * @var int|null
+     */
     public ?int $num_sets;
+
+    /**
+     * Rubbers list.
+     *
+     * @var array
+     */
     public array $rubbers;
-    public stdClass $league;
+
+    /**
+     * Legacy league object representation.
+     *
+     * @var object
+     */
+    public object $league;
+
+    /**
+     * Home and away team representations.
+     *
+     * @var array
+     */
     public array $teams;
+
+    /**
+     * Update permissions status object.
+     *
+     * @var object|null
+     */
     public ?object $is_update_allowed;
+
+    /**
+     * Host team indicator.
+     *
+     * @var string|null
+     */
     public ?string $host;
+
+    /**
+     * Linked fixture identifier.
+     *
+     * @var int|null
+     */
     public ?int $linked_match;
+
+    /**
+     * Previous home match details.
+     *
+     * @var stdClass|null
+     */
     public ?stdClass $prev_home_match = null;
+
+    /**
+     * Previous away match details.
+     *
+     * @var stdClass|null
+     */
     public ?stdClass $prev_away_match = null;
 
+    /**
+     * Constructor.
+     *
+     * @param Fixture               $fixture        Domain fixture entity.
+     * @param object|null           $league         League object or entity.
+     * @param object|null           $event          Event object or entity.
+     * @param object|null           $competition    Competition object or entity.
+     * @param Team_Details_DTO|null $home_team_dtls Home team details DTO.
+     * @param Team_Details_DTO|null $away_team_dtls Away team details DTO.
+     * @param mixed                 ...$options     Optional parameters: string $link, ?object $is_update_allowed,
+     *                                              ?string $prev_home_title, ?string $prev_away_title,
+     *                                              ?Option_Gateway_Interface $option_gateway.
+     */
     public function __construct(
         public readonly Fixture $fixture,
         ?object $league = null,
@@ -65,18 +275,21 @@ class Fixture_Presentation_Adapter {
         ?object $competition = null,
         ?Team_Details_DTO $home_team_dtls = null,
         ?Team_Details_DTO $away_team_dtls = null,
-        string $link = '',
-        ?object $is_update_allowed = null,
-        ?string $prev_home_title = null,
-        ?string $prev_away_title = null,
-        ?Option_Gateway_Interface $option_gateway = null
+        ...$options
     ) {
+        $parsed            = new Fixture_Presentation_Adapter_Options_Parser()->parse( $options );
+        $link              = $parsed['link'];
+        $is_update_allowed = $parsed['is_update_allowed'];
+        $prev_home_title   = $parsed['prev_home_title'];
+        $prev_away_title   = $parsed['prev_away_title'];
+        $option_gateway    = $parsed['option_gateway'];
+
+        $graph_builder       = new Fixture_Presentation_Adapter_Graph_Builder();
         $this->id            = (int) $fixture->get_id();
         $this->date          = $fixture->get_date();
         $this->date_original = $fixture->get_date_original();
         $this->start_time    = $fixture->get_start_time();
-        $date_format         = $option_gateway ? (string) $option_gateway->get_option( 'date_format', 'Y-m-d' ) : ( function_exists( 'get_option' ) ? (string) get_option( 'date_format', 'Y-m-d' ) : 'Y-m-d' );
-        $this->match_date    = $this->date ? ( function_exists( 'mysql2date' ) ? (string) mysql2date( $date_format, $this->date ) : $this->date ) : '';
+        $this->match_date    = $graph_builder->resolve_match_date( $this->date, $option_gateway );
         $this->season        = $fixture->get_season();
         $this->league_id     = $fixture->get_league_id();
         $this->final_round   = $fixture->get_final();
@@ -96,97 +309,20 @@ class Fixture_Presentation_Adapter {
         $this->linked_match  = $fixture->get_linked_fixture();
 
         $this->is_update_allowed = $is_update_allowed ?? (object) array( 'user_can_update' => false );
-        $this->num_rubbers       = $league && method_exists( $league, 'get_num_rubbers' ) ? $league->get_num_rubbers() : count( $fixture->get_rubbers() );
-        $this->num_sets          = $league && method_exists( $league, 'get_num_sets' ) ? $league->get_num_sets() : null;
         $this->rubbers           = $fixture->get_rubbers();
-
-        $league_title = $league ? ( method_exists( $league, 'get_name' ) ? (string) $league->get_name() : (string) ( $league->title ?? '' ) ) : '';
-        $raw_type     = $league ? ( method_exists( $league, 'get_type' ) ? $league->get_type() : ( $league->mode ?? $league->type ?? '' ) ) : '';
-        $league_type  = $raw_type instanceof \BackedEnum ? $raw_type->value : (string) ( $raw_type ?? '' );
-        $league_sport = $league ? ( method_exists( $league, 'get_sport' ) ? (string) $league->get_sport() : (string) ( $league->sport ?? '' ) ) : '';
-
-        // Build league graph for legacy template consumption.
-        $this->league                 = new stdClass();
-        $this->league->id             = $league ? ( method_exists( $league, 'get_id' ) ? (int) $league->get_id() : (int) ( $league->id ?? 0 ) ) : (int) $fixture->get_league_id();
-        $this->league->title          = $league_title;
-        $this->league->name           = $this->league->title;
-        $this->league->type           = $league_type;
-        $this->league->mode           = $league_type;
-        $this->league->sport          = $league_sport;
-        $this->league->num_rubbers    = $this->num_rubbers;
-        $this->league->num_sets       = $this->num_sets;
-        $this->league->event_id       = $league ? ( method_exists( $league, 'get_event_id' ) ? (int) $league->get_event_id() : (int) ( $league->event_id ?? 0 ) ) : ( $event ? ( method_exists( $event, 'get_id' ) ? (int) $event->get_id() : (int) ( $event->id ?? 0 ) ) : 0 );
-        $this->league->current_season = array( 'name' => (string) $fixture->get_season() );
-
-        $event_obj                 = new stdClass();
-        $event_obj->id             = $event ? ( method_exists( $event, 'get_id' ) ? (int) $event->get_id() : (int) ( $event->id ?? 0 ) ) : 0;
-        $event_obj->name           = $event ? ( method_exists( $event, 'get_name' ) ? (string) $event->get_name() : (string) ( $event->name ?? '' ) ) : '';
-        $raw_event_type            = $event ? ( method_exists( $event, 'get_type' ) ? $event->get_type() : ( $event->type ?? '' ) ) : '';
-        $event_type                = $raw_event_type instanceof \BackedEnum ? $raw_event_type->value : (string) ( $raw_event_type ?? '' );
-        $event_obj->type           = $event_type;
-        $event_obj->competition_id = $event ? ( method_exists( $event, 'get_competition_id' ) ? (int) $event->get_competition_id() : (int) ( $event->competition_id ?? 0 ) ) : 0;
-        $event_obj->is_box         = $event ? ( ! empty( $event->is_box ) || 'box' === $event_type ) : false;
-
-        $comp_obj                  = new stdClass();
-        $comp_obj->id              = $competition ? ( method_exists( $competition, 'get_id' ) ? (int) $competition->get_id() : (int) ( $competition->id ?? 0 ) ) : 0;
-        $comp_obj->name            = $competition ? ( method_exists( $competition, 'get_name' ) ? (string) $competition->get_name() : (string) ( $competition->name ?? '' ) ) : '';
-        $raw_comp_type             = $competition ? ( method_exists( $competition, 'get_type' ) ? $competition->get_type() : ( $competition->type ?? '' ) ) : '';
-        $comp_type                 = $raw_comp_type instanceof \BackedEnum ? $raw_comp_type->value : (string) ( $raw_comp_type ?? '' );
-        $comp_obj->type            = $comp_type;
-        $comp_obj->is_championship = ( 'championship' === $comp_type || ! empty( $competition->is_championship ) || ( $competition && method_exists( $competition, 'is_championship' ) && $competition->is_championship() ) );
-        $comp_obj->is_cup          = ( 'cup' === $comp_type || ! empty( $competition->is_cup ) || ( $competition && method_exists( $competition, 'is_cup' ) && $competition->is_cup() ) );
-        $comp_obj->is_tournament   = ( 'tournament' === $comp_type || ! empty( $competition->is_tournament ) || ( $competition && method_exists( $competition, 'is_tournament' ) && $competition->is_tournament() ) );
-        $comp_obj->is_league       = ( 'league' === $comp_type || ! empty( $competition->is_league ) || ( $competition && method_exists( $competition, 'is_league' ) && $competition->is_league() ) );
-
-        $event_obj->competition = $comp_obj;
-        $this->league->event    = $event_obj;
+        $this->league            = $graph_builder->build_league_graph( $fixture, $league, $event, $competition );
+        $this->num_rubbers       = $this->league->num_rubbers;
+        $this->num_sets          = $this->league->num_sets;
 
         // Build home & away team representations.
-        $home_name = $home_team_dtls && $home_team_dtls->team ? $home_team_dtls->team->get_name() : ( $prev_home_title ?? (string) $this->home_team );
-        $away_name = $away_team_dtls && $away_team_dtls->team ? $away_team_dtls->team->get_name() : ( $prev_away_title ?? (string) $this->away_team );
-
-        $this->home_title  = $home_name;
-        $this->away_title  = $away_name;
-        $this->title       = ( $home_name || $away_name ) ? sprintf( '%s - %s', $home_name, $away_name ) : '';
+        $this->home_title  = $graph_builder->resolve_team_name( $home_team_dtls, $prev_home_title, $this->home_team );
+        $this->away_title  = $graph_builder->resolve_team_name( $away_team_dtls, $prev_away_title, $this->away_team );
+        $this->title       = ( $this->home_title || $this->away_title ) ? sprintf( '%s - %s', $this->home_title, $this->away_title ) : '';
         $this->match_title = $this->title;
 
-        $home_team_obj               = new stdClass();
-        $home_team_obj->id           = $this->home_team;
-        $home_team_obj->title        = $home_name;
-        $home_team_obj->name         = $home_name;
-        $home_team_obj->team_type    = $home_team_dtls && $home_team_dtls->team && method_exists( $home_team_dtls->team, 'get_team_type' ) ? $home_team_dtls->team->get_team_type() : ( is_numeric( $this->home_team ) ? 'T' : 'P' );
-        $home_team_obj->club         = new stdClass();
-        $home_team_obj->club->id     = $home_team_dtls && $home_team_dtls->club ? $home_team_dtls->club->get_id() : null;
-        $home_team_obj->club->shortcode = $home_team_dtls && $home_team_dtls->club && method_exists( $home_team_dtls->club, 'get_shortcode' ) ? $home_team_dtls->club->get_shortcode() : '';
-        $home_team_obj->players      = $home_team_dtls->players ?? array();
-        $home_team_obj->player       = $home_team_obj->players;
-        $home_team_obj->captain      = $home_team_dtls->captain ?? '';
-        $home_team_obj->contactemail = $home_team_dtls->contactemail ?? $home_team_dtls->captain_email ?? '';
-        $home_team_obj->contactno    = $home_team_dtls->contactno ?? $home_team_dtls->captain_tel ?? '';
-        $home_team_obj->match_day    = $home_team_dtls->match_day ?? '';
-        $home_team_obj->match_time   = $home_team_dtls->match_time ?? '';
-        $home_team_obj->is_withdrawn = $home_team_dtls->is_withdrawn ?? false;
-
-        $away_team_obj               = new stdClass();
-        $away_team_obj->id           = $this->away_team;
-        $away_team_obj->title        = $away_name;
-        $away_team_obj->name         = $away_name;
-        $away_team_obj->team_type    = $away_team_dtls && $away_team_dtls->team && method_exists( $away_team_dtls->team, 'get_team_type' ) ? $away_team_dtls->team->get_team_type() : ( is_numeric( $this->away_team ) ? 'T' : 'P' );
-        $away_team_obj->club         = new stdClass();
-        $away_team_obj->club->id     = $away_team_dtls && $away_team_dtls->club ? $away_team_dtls->club->get_id() : null;
-        $away_team_obj->club->shortcode = $away_team_dtls && $away_team_dtls->club && method_exists( $away_team_dtls->club, 'get_shortcode' ) ? $away_team_dtls->club->get_shortcode() : '';
-        $away_team_obj->players      = $away_team_dtls->players ?? array();
-        $away_team_obj->player       = $away_team_obj->players;
-        $away_team_obj->captain      = $away_team_dtls->captain ?? '';
-        $away_team_obj->contactemail = $away_team_dtls->contactemail ?? $away_team_dtls->captain_email ?? '';
-        $away_team_obj->contactno    = $away_team_dtls->contactno ?? $away_team_dtls->captain_tel ?? '';
-        $away_team_obj->match_day    = $away_team_dtls->match_day ?? '';
-        $away_team_obj->match_time   = $away_team_dtls->match_time ?? '';
-        $away_team_obj->is_withdrawn = $away_team_dtls->is_withdrawn ?? false;
-
         $this->teams = array(
-            'home' => $home_team_obj,
-            'away' => $away_team_obj,
+            'home' => $graph_builder->build_team_object( $this->home_team, $this->home_title, $home_team_dtls ),
+            'away' => $graph_builder->build_team_object( $this->away_team, $this->away_title, $away_team_dtls ),
         );
 
         if ( $prev_home_title ) {
@@ -199,6 +335,19 @@ class Fixture_Presentation_Adapter {
         }
     }
 
+    /**
+     * Create presentation adapter from fixture and services.
+     *
+     * @param Fixture                          $fixture             Fixture domain entity.
+     * @param Competition_Service              $competition_service Competition service.
+     * @param Team_Service                     $team_service        Team service.
+     * @param Fixture_Link_Service|null        $link_service        Fixture link service.
+     * @param Fixture_Permission_Service|null  $permission_service  Fixture permission service.
+     * @param Option_Gateway_Interface|null    $option_gateway      Option gateway.
+     * @param Rubber_Repository_Interface|null $rubber_repository   Rubber repository.
+     *
+     * @return self
+     */
     public static function from_fixture(
         Fixture $fixture,
         Competition_Service $competition_service,
@@ -208,113 +357,205 @@ class Fixture_Presentation_Adapter {
         ?Option_Gateway_Interface $option_gateway = null,
         ?Rubber_Repository_Interface $rubber_repository = null
     ): self {
-        $league_id = (int) $fixture->get_league_id();
-        $league    = $league_id ? $competition_service->get_league_repository()->find_by_id( $league_id ) : ( method_exists( $fixture, 'get_league' ) ? $fixture->get_league() : ( $fixture->league ?? null ) );
-        if ( null === $fixture->rubbers && $rubber_repository && $fixture->get_id() > 0 && ( ! $league || (int) ( $league->num_rubbers ?? 0 ) > 0 ) ) {
-            $fixture->set_rubbers( $rubber_repository->find_by_fixture_id( $fixture->get_id() ) );
-        }
-        $event     = ( $league && method_exists( $league, 'get_event_id' ) && $league->get_event_id() ) ? $competition_service->get_event_by_id( $league->get_event_id() ) : ( $league->event ?? null );
-        $competition = ( $event && method_exists( $event, 'get_competition_id' ) && $event->get_competition_id() ) ? $competition_service->get_by_id( $event->get_competition_id() ) : ( $event->competition ?? null );
-
-        $home_val = $fixture->get_home_team();
-        $away_val = $fixture->get_away_team();
-
-        $home_dtls = is_numeric( $home_val ) ? $team_service->get_team_details( (int) $home_val ) : ( ! empty( $home_val ) ? $team_service->derive_team_details( (string) $home_val ) : null );
-        $away_dtls = is_numeric( $away_val ) ? $team_service->get_team_details( (int) $away_val ) : ( ! empty( $away_val ) ? $team_service->derive_team_details( (string) $away_val ) : null );
-
-        $link = ( $link_service && $league ) ? $link_service->get_fixture_link( $fixture, $league, $home_dtls, $away_dtls ) : ( $fixture->get_link() ?? '' );
-        if ( empty( $link ) && $fixture->get_link() ) {
-            $link = $fixture->get_link();
-        }
-        $is_update_allowed = $permission_service ? $permission_service->is_update_allowed( $fixture ) : (object) array( 'user_can_update' => false );
-
-        return new self( $fixture, $league, $event, $competition, $home_dtls, $away_dtls, $link, $is_update_allowed, option_gateway: $option_gateway );
+        return Fixture_Presentation_Adapter_Factory::create_from_fixture(
+            $fixture,
+            $competition_service,
+            $team_service,
+            $link_service,
+            $permission_service,
+            $option_gateway,
+            $rubber_repository
+        );
     }
 
+    /**
+     * Get fixture identifier.
+     *
+     * @return int
+     */
     public function get_id(): int {
         return $this->id;
     }
 
+    /**
+     * Get title.
+     *
+     * @return string
+     */
     public function get_title(): string {
         return $this->title;
     }
 
+    /**
+     * Get home team identifier or name.
+     *
+     * @return string|int|null
+     */
     public function get_home_team(): string|int|null {
         return $this->home_team;
     }
 
+    /**
+     * Get away team identifier or name.
+     *
+     * @return string|int|null
+     */
     public function get_away_team(): string|int|null {
         return $this->away_team;
     }
 
+    /**
+     * Get date.
+     *
+     * @return string|null
+     */
     public function get_date(): ?string {
         return $this->date;
     }
 
+    /**
+     * Get start time.
+     *
+     * @return string|null
+     */
     public function get_start_time(): ?string {
         return $this->start_time;
     }
 
+    /**
+     * Get final round.
+     *
+     * @return string|null
+     */
     public function get_final(): ?string {
         return $this->final_round;
     }
 
+    /**
+     * Get match day.
+     *
+     * @return int|null
+     */
     public function get_match_day(): ?int {
         return $this->match_day;
     }
 
+    /**
+     * Get leg.
+     *
+     * @return int|null
+     */
     public function get_leg(): ?int {
         return $this->leg;
     }
 
+    /**
+     * Get status.
+     *
+     * @return int|null
+     */
     public function get_status(): ?int {
         return $this->status;
     }
 
+    /**
+     * Get winner id.
+     *
+     * @return int|null
+     */
     public function get_winner_id(): ?int {
         return $this->winner_id;
     }
 
+    /**
+     * Get loser id.
+     *
+     * @return int|null
+     */
     public function get_loser_id(): ?int {
         return $this->loser_id;
     }
 
+    /**
+     * Get home points.
+     *
+     * @return string|null
+     */
     public function get_home_points(): ?string {
         return $this->home_points;
     }
 
+    /**
+     * Get away points.
+     *
+     * @return string|null
+     */
     public function get_away_points(): ?string {
         return $this->away_points;
     }
 
+    /**
+     * Get league id.
+     *
+     * @return int|null
+     */
     public function get_league_id(): ?int {
         return $this->league_id;
     }
 
+    /**
+     * Get season.
+     *
+     * @return string|null
+     */
     public function get_season(): ?string {
         return $this->season;
     }
 
+    /**
+     * Get location.
+     *
+     * @return string
+     */
     public function get_location(): string {
         return $this->location;
     }
 
+    /**
+     * Get rubbers.
+     *
+     * @return array
+     */
     public function get_rubbers(): array {
         return $this->rubbers;
     }
 
+    /**
+     * Check if match is pending.
+     *
+     * @return bool
+     */
     public function is_pending(): bool {
         return $this->is_pending;
     }
 
+    /**
+     * Check if update is allowed.
+     *
+     * @return object
+     */
     public function is_update_allowed(): object {
         return $this->is_update_allowed ?? (object) array( 'user_can_update' => false );
     }
 
-    public function get_fixture(): Fixture {
-        return $this->fixture;
-    }
-
+    /**
+     * Magic call proxy to domain fixture entity.
+     *
+     * @param string $name      Method name.
+     * @param array  $arguments Method arguments.
+     *
+     * @return mixed
+     */
     public function __call( string $name, array $arguments ) {
         return $this->fixture->$name( ...$arguments );
     }

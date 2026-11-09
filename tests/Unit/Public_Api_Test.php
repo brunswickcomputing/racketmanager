@@ -12,6 +12,7 @@ namespace Racketmanager\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Player\User;
+use Racketmanager\Infrastructure\Wordpress\Bootstrap\Plugin_Bootstrap;
 use Racketmanager\Public_Api;
 use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
@@ -25,10 +26,12 @@ final class Public_Api_Test extends TestCase {
         parent::setUp();
         $this->original_racketmanager = $GLOBALS['racketmanager'] ?? null;
         Public_Api::reset();
+        Plugin_Bootstrap::reset();
     }
 
     protected function tearDown(): void {
         Public_Api::reset();
+        Plugin_Bootstrap::reset();
         $GLOBALS['racketmanager'] = $this->original_racketmanager;
         unset(
             $GLOBALS['wp_stubs_is_user_logged_in'],
@@ -46,11 +49,10 @@ final class Public_Api_Test extends TestCase {
         $this->assertSame( $container, Public_Api::container() );
 
         Public_Api::reset();
-        $GLOBALS['racketmanager'] = null;
+        Plugin_Bootstrap::reset();
         $this->assertNull( Public_Api::get_container() );
 
-        $mock_app = (object) [ 'container' => $container ];
-        $GLOBALS['racketmanager'] = $mock_app;
+        Plugin_Bootstrap::set_container( $container );
         $this->assertSame( $container, Public_Api::get_container() );
     }
 

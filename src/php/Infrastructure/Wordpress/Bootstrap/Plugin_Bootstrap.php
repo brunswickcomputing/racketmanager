@@ -73,6 +73,7 @@ final class Plugin_Bootstrap {
         [ 'rm_send_invoices', 'finance_service', 'send_invoices_for_charge', 10, 1 ],
     ];
 
+    private static ?Simple_Container $container_instance = null;
     private string $plugin_path;
     private bool $libraries_loaded = false;
     /** @var array<int, true> Object ids of application instances whose hooks are registered. */
@@ -82,7 +83,29 @@ final class Plugin_Bootstrap {
         private readonly Simple_Container $container,
         ?string $plugin_path = null
     ) {
+        self::$container_instance = $container;
         $this->plugin_path = $plugin_path ?? ( defined( 'RACKETMANAGER_PATH' ) ? RACKETMANAGER_PATH : dirname( __DIR__, 5 ) . '/' );
+    }
+
+    /**
+     * Resolve the active dependency injection container.
+     */
+    public static function container(): ?Simple_Container {
+        return self::$container_instance;
+    }
+
+    /**
+     * Set or reset the active container (primarily for testing and bootstrapping).
+     */
+    public static function set_container( ?Simple_Container $container ): void {
+        self::$container_instance = $container;
+    }
+
+    /**
+     * Reset the active container instance (primarily for testing).
+     */
+    public static function reset(): void {
+        self::$container_instance = null;
     }
 
     /**
@@ -99,6 +122,7 @@ final class Plugin_Bootstrap {
         $GLOBALS['racketmanager'] = $app;
 
         if ( isset( $app->container ) && $app->container instanceof Simple_Container ) {
+            self::$container_instance = $app->container;
             Public_Api::init( $app->container );
         }
 
@@ -124,6 +148,7 @@ final class Plugin_Bootstrap {
         if ( isset( $wpdb ) && method_exists( $wpdb, 'show_errors' ) ) {
             $wpdb->show_errors();
         }
+        self::$container_instance = $this->container;
         Public_Api::init( $this->container );
         $this->load_libraries();
         $this->register_hooks( $app );

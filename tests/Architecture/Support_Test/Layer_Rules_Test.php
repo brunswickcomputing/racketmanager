@@ -267,6 +267,9 @@ final class Layer_Rules_Test extends TestCase {
         $rule = Layer_Rules::get( 'services.no_global_racketmanager' );
         self::assertFalse( $rule->applies_to( 'src/php/Infrastructure/Wordpress/Bootstrap/Plugin_Bootstrap.php' ) );
         self::assertTrue( $rule->applies_to( 'src/php/Services/Team_Service.php' ) );
+        self::assertTrue( $rule->applies_to( 'src/php/Admin/Admin_League.php' ) );
+        self::assertTrue( $rule->applies_to( 'src/php/Admin/Presenters/Admin_Date_Presenter.php' ) );
+        self::assertTrue( $rule->applies_to( 'src/php/Public_Api.php' ) );
     }
 
     public function test_services_no_presentation_imports_excludes_container_bootstrap(): void {

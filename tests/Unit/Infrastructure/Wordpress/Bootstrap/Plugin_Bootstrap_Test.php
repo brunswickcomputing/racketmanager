@@ -39,6 +39,7 @@ final class Plugin_Bootstrap_Test extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         Public_Api::reset();
+        Plugin_Bootstrap::reset();
         $this->backup_globals();
         $GLOBALS['wp_stubs_added_actions'] = [];
         $GLOBALS['wp_stubs_added_filters'] = [];
@@ -49,8 +50,24 @@ final class Plugin_Bootstrap_Test extends TestCase {
             $this->remove_directory( $this->temp_dir );
         }
         Public_Api::reset();
+        Plugin_Bootstrap::reset();
         $this->restore_globals();
         parent::tearDown();
+    }
+
+    public function test_static_container_access_and_lifecycle(): void {
+        Plugin_Bootstrap::reset();
+        self::assertNull( Plugin_Bootstrap::container() );
+
+        $container = new Simple_Container();
+        Plugin_Bootstrap::set_container( $container );
+        self::assertSame( $container, Plugin_Bootstrap::container() );
+
+        Plugin_Bootstrap::reset();
+        self::assertNull( Plugin_Bootstrap::container() );
+
+        $bootstrap = new Plugin_Bootstrap( $container );
+        self::assertSame( $container, Plugin_Bootstrap::container() );
     }
 
     public function test_container_wiring_and_resolution(): void {

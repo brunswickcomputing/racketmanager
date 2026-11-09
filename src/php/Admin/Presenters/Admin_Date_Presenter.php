@@ -10,6 +10,10 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Admin\Presenters;
 
+use Racketmanager\Infrastructure\Wordpress\Bootstrap\Plugin_Bootstrap;
+use Racketmanager\RacketManager;
+use Racketmanager\Services\Container\Simple_Container;
+
 /**
  * Formats MySQL datetimes for admin screens using WordPress date/time formats.
  */
@@ -65,10 +69,13 @@ final class Admin_Date_Presenter {
             }
         }
 
-        global $racketmanager;
-        $property = 'date_format' === $option ? 'date_format' : 'time_format';
-        if ( is_object( $racketmanager ) && isset( $racketmanager->{$property} ) && is_string( $racketmanager->{$property} ) && '' !== $racketmanager->{$property} ) {
-            return $racketmanager->{$property};
+        $container = Plugin_Bootstrap::container();
+        if ( $container instanceof Simple_Container && $container->has( RacketManager::class ) ) {
+            $app      = $container->get( RacketManager::class );
+            $property = 'date_format' === $option ? 'date_format' : 'time_format';
+            if ( is_object( $app ) && isset( $app->{$property} ) && is_string( $app->{$property} ) && '' !== $app->{$property} ) {
+                return $app->{$property};
+            }
         }
 
         return $default;

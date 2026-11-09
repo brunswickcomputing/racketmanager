@@ -5,12 +5,16 @@ namespace Racketmanager\Tests\Unit\Admin\Presenters;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Presenters\Admin_Date_Presenter;
+use Racketmanager\Infrastructure\Wordpress\Bootstrap\Plugin_Bootstrap;
+use Racketmanager\RacketManager;
+use Racketmanager\Services\Container\Simple_Container;
 
 require_once dirname( __DIR__, 3 ) . '/wp-stubs.php';
 
 final class Admin_Date_Presenter_Test extends TestCase {
 
     protected function tearDown(): void {
+        Plugin_Bootstrap::reset();
         unset( $GLOBALS['wp_stubs_options'] );
         parent::tearDown();
     }
@@ -43,5 +47,29 @@ final class Admin_Date_Presenter_Test extends TestCase {
         $presenter                   = new Admin_Date_Presenter();
 
         $this->assertSame( '2026-04-04', $presenter->format_date( '2026-04-04 18:30:00', 'Y-m-d' ) );
+    }
+
+    public function test_format_date_uses_plugin_bootstrap_container_fallback(): void {
+        $GLOBALS['wp_stubs_options'] = array( 'date_format' => '' );
+
+        $app              = (object) array( 'date_format' => 'd/m/Y' );
+        $container        = new Simple_Container();
+        $container->set( RacketManager::class, static fn() => $app );
+        Plugin_Bootstrap::set_container( $container );
+
+        $presenter = new Admin_Date_Presenter();
+        $this->assertSame( '04/04/2026', $presenter->format_date( '2026-04-04 18:30:00' ) );
+    }
+
+    public function test_format_time_uses_plugin_bootstrap_container_fallback(): void {
+        $GLOBALS['wp_stubs_options'] = array( 'time_format' => '' );
+
+        $app              = (object) array( 'time_format' => 'g:i a' );
+        $container        = new Simple_Container();
+        $container->set( RacketManager::class, static fn() => $app );
+        Plugin_Bootstrap::set_container( $container );
+
+        $presenter = new Admin_Date_Presenter();
+        $this->assertSame( '6:30 pm', $presenter->format_time( '2026-04-04 18:30:00' ) );
     }
 }

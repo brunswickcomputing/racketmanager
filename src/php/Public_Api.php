@@ -13,6 +13,7 @@ namespace Racketmanager;
 use Racketmanager\Domain\Communication\Message;
 use Racketmanager\Domain\Player\User;
 use Racketmanager\Domain\Shared\Seo_Slug;
+use Racketmanager\Infrastructure\Wordpress\Bootstrap\Plugin_Bootstrap;
 use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
 use Racketmanager\Services\Container\Simple_Container;
@@ -57,9 +58,9 @@ final class Public_Api {
         if ( null !== self::$container ) {
             return self::$container;
         }
-        global $racketmanager;
-        if ( isset( $racketmanager->container ) && $racketmanager->container instanceof Simple_Container ) {
-            self::$container = $racketmanager->container;
+        $container = Plugin_Bootstrap::container();
+        if ( $container instanceof Simple_Container ) {
+            self::$container = $container;
         }
         return self::$container;
     }

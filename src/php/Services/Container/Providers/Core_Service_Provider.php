@@ -179,6 +179,7 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $app = $this->app;
 
         $container->set( 'racketmanager_app', fn() => $app );
+        $container->set( RacketManager::class, fn() => $app );
         $container->set( 'settings_service', fn( Simple_Container $c ) => new Settings_Service( $c->get( 'option_service' )->get_options(), $c->get( 'option_gateway' ) ) );
         $container->alias( Settings_Service::class, 'settings_service' );
 

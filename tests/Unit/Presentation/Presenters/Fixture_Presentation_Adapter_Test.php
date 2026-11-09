@@ -125,10 +125,7 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
         $data->date = '2026-05-15 18:30:00';
         $fixture    = Fixture_Factory::from_object( $data );
 
-        $option_gateway = $this->createStub( Option_Gateway_Interface::class );
-        $option_gateway->method( 'get_option' )->willReturnCallback(
-            fn( string $key, mixed $default = null ) => 'date_format' === $key ? 'd/m/Y' : $default
-        );
+        $option_gateway = $this->create_stub_option_gateway();
 
         $adapter = new Fixture_Presentation_Adapter(
             fixture: $fixture,
@@ -378,9 +375,12 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
         $this->expectException( InvalidArgumentException::class );
         $this->expectExceptionMessageIsOrContains( "Unknown option 'linkk'" );
 
-        new Fixture_Presentation_Adapter(
-            fixture: $fixture,
-            linkk: 'https://example.com/typo'
+        $this->assertInstanceOf(
+            Fixture_Presentation_Adapter::class,
+            new Fixture_Presentation_Adapter(
+                fixture: $fixture,
+                linkk: 'https://example.com/typo'
+            )
         );
     }
 
@@ -390,9 +390,12 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
         $this->expectException( InvalidArgumentException::class );
         $this->expectExceptionMessageIsOrContains( "Unknown option 'invalid_key' in options dictionary" );
 
-        new Fixture_Presentation_Adapter(
-            fixture: $fixture,
-            options: array( 'invalid_key' => 'value' )
+        $this->assertInstanceOf(
+            Fixture_Presentation_Adapter::class,
+            new Fixture_Presentation_Adapter(
+                fixture: $fixture,
+                options: array( 'invalid_key' => 'value' )
+            )
         );
     }
 
@@ -402,15 +405,18 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
         $this->expectException( InvalidArgumentException::class );
         $this->expectExceptionMessageIsOrContains( "Option 'link' was passed both positionally and by name" );
 
-        new Fixture_Presentation_Adapter(
-            $fixture,
-            null,
-            null,
-            null,
-            null,
-            null,
-            'https://example.com/pos',
-            link: 'https://example.com/named'
+        $this->assertInstanceOf(
+            Fixture_Presentation_Adapter::class,
+            new Fixture_Presentation_Adapter(
+                $fixture,
+                null,
+                null,
+                null,
+                null,
+                null,
+                'https://example.com/pos',
+                link: 'https://example.com/named'
+            )
         );
     }
 

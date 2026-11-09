@@ -7,6 +7,7 @@ use Racketmanager\Application\Message\Queries\Get_Message_Handler;
 use Racketmanager\Application\Message\Queries\Get_Message_Query;
 use Racketmanager\Application\Message\Queries\Get_Messages_Handler;
 use Racketmanager\Application\Message\Queries\Get_Messages_Query;
+use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Presentation\Presenters\Message_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
@@ -27,7 +28,8 @@ class Message_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly Get_Message_Handler $message_handler,
         private readonly ?Shortcode_Template_Renderer $template_renderer = null,
         private readonly ?Security_Service_Interface $security_service = null,
-        private readonly ?Message_Presenter $message_presenter = null
+        private readonly ?Message_Presenter $message_presenter = null,
+        private readonly ?Query_Vars_Interface $query_vars = null
     ) {}
 
     public function show_messages( array|string $atts = [] ): string {
@@ -85,12 +87,7 @@ class Message_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     }
 
     private function extract_query_vars(): array {
-        global $wp;
-        if ( isset( $wp ) && is_object( $wp ) && isset( $wp->query_vars ) && is_array( $wp->query_vars ) ) {
-            return $wp->query_vars;
-        }
-
-        return [];
+        return $this->query_vars?->all() ?? [];
     }
 
     private function extract_get_params(): array {

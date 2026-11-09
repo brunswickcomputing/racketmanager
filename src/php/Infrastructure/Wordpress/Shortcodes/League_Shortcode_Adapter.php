@@ -33,6 +33,7 @@ use Racketmanager\Application\League\Queries\Get_League_Standings_Handler;
 use Racketmanager\Application\League\Queries\Get_League_Standings_Query;
 use Racketmanager\Application\League\Queries\Get_League_Teams_Handler;
 use Racketmanager\Application\League\Queries\Get_League_Teams_Query;
+use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
 use Racketmanager\Presentation\Presenters\Fixture_Presentation_Adapter;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
@@ -62,7 +63,6 @@ use function is_iterable;
 use function is_numeric;
 use function is_object;
 use function method_exists;
-use function set_query_var;
 use function sprintf;
 use function str_replace;
 
@@ -100,7 +100,8 @@ class League_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly ?Competition_Service $competition_service = null,
         private readonly ?Team_Service $team_service = null,
         private readonly ?Fixture_Link_Service $fixture_link_service = null,
-        private readonly ?Fixture_Permission_Service $fixture_permission_service = null
+        private readonly ?Fixture_Permission_Service $fixture_permission_service = null,
+        private readonly ?Query_Vars_Interface $query_vars = null
     ) {
         $this->view_presenter         = $view_presenter ?? ( $template_renderer ? new Shortcode_View_Presenter( $template_renderer ) : null );
         $option_gateway               = new Wp_Option_Gateway();
@@ -210,8 +211,8 @@ class League_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         $query_vars  = $this->extract_query_vars();
         $league_name = $this->resolve_league_name( $atts, $query_vars );
         $query       = Get_League_Archive_Query::from_atts( $atts, $query_vars, $league_name, is_array( $_GET ) ? $_GET : [] );
-        if ( '-1' === $query->match_day && function_exists( 'set_query_var' ) ) {
-            set_query_var( 'match_day', '-1' );
+        if ( '-1' === $query->match_day ) {
+            $this->query_vars?->set( 'match_day', '-1' );
         }
         $result = $this->archive_handler->handle( $query );
 
@@ -656,13 +657,7 @@ class League_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     }
 
     private function extract_query_vars(): array {
-        global $wp;
-
-        if ( isset( $wp ) && is_object( $wp ) && isset( $wp->query_vars ) && is_array( $wp->query_vars ) ) {
-            return $wp->query_vars;
-        }
-
-        return [];
+        return $this->query_vars?->all() ?? [];
     }
 
     private function resolve_league_id( array|string $atts, array $query_vars = [] ): ?int {

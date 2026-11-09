@@ -36,6 +36,7 @@ use Racketmanager\Application\Tournament\Queries\Get_Tournament_Winners_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Winners_Query;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Withdrawal_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Withdrawal_Query;
+use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Presentation\Presenters\Order_Of_Play_Presenter;
@@ -82,7 +83,8 @@ class Tournament_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly ?Competition_Service $competition_service = null,
         ?Tournament_Presenter $tournament_presenter = null,
         ?Player_Presenter $player_presenter = null,
-        ?Order_Of_Play_Presenter $order_of_play_presenter = null
+        ?Order_Of_Play_Presenter $order_of_play_presenter = null,
+        private readonly ?Query_Vars_Interface $query_vars = null
     ) {
         $this->view_presenter          = $view_presenter ?? ( $template_renderer ? new Shortcode_View_Presenter( $template_renderer ) : null );
         $this->tournament_presenter    = $tournament_presenter ?? new Tournament_Presenter();
@@ -651,12 +653,7 @@ class Tournament_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     }
 
     private function extract_query_vars(): array {
-        global $wp;
-        if ( isset( $wp ) && is_object( $wp ) && isset( $wp->query_vars ) && is_array( $wp->query_vars ) ) {
-            return $wp->query_vars;
-        }
-
-        return [];
+        return $this->query_vars?->all() ?? [];
     }
 
     private function extract_get_params(): array {

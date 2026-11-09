@@ -39,6 +39,7 @@ use Racketmanager\Application\Competition\Queries\Get_Competition_Winners_Query;
 use Racketmanager\Application\Competition\Queries\Get_Competitions_Handler;
 use Racketmanager\Application\Competition\Queries\Get_Competitions_Query;
 use Racketmanager\Application\Competition\Queries\Tournament_Entry_Access;
+use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
@@ -60,7 +61,6 @@ use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 use function current_user_can;
 use function get_current_user_id;
-use function get_query_var;
 use function is_array;
 use function is_object;
 use function is_user_logged_in;
@@ -101,7 +101,8 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         ?Get_Competition_Entry_Handler $entry_handler = null,
         private readonly ?Tournament_Presenter $tournament_presenter = null,
         private readonly ?Event_Query_Service $event_query_service = null,
-        private readonly ?Player_Presenter $player_presenter = null
+        private readonly ?Player_Presenter $player_presenter = null,
+        private readonly ?Query_Vars_Interface $query_vars = null
     ) {
         $this->view_presenter = $view_presenter ?? ( $template_renderer ? new Shortcode_View_Presenter( $template_renderer ) : null );
         $selection_service = $club_entry_selection ?? ( ( $club_service && $player_service ) ? new Club_Entry_Selection_Service( $club_service, $player_service ) : null );
@@ -127,8 +128,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         if ( ! $this->competitions_handler || ! $this->view_presenter ) {
             return $this->render_alert( __( 'Competition type not set', 'racketmanager' ) );
         }
-        global $wp;
-        $query_vars = ( isset( $wp ) && is_object( $wp ) && isset( $wp->query_vars ) && is_array( $wp->query_vars ) ) ? $wp->query_vars : [];
+        $query_vars = $this->extract_query_vars();
         $user_id = is_user_logged_in() ? get_current_user_id() : null;
         $query = Get_Competitions_Query::from_atts( $atts, $query_vars, $_GET ?? [], $user_id );
 
@@ -145,8 +145,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      */
     public function show_competition( array|string $atts = [] ): string {
         if ( $this->get_competition_handler && $this->competition_shortcode_presenter ) {
-            global $wp;
-            $query_vars = ( isset( $wp ) && is_object( $wp ) && isset( $wp->query_vars ) && is_array( $wp->query_vars ) ) ? $wp->query_vars : [];
+            $query_vars = $this->extract_query_vars();
             $get        = $_GET ?? [];
             $query      = Get_Competition_Query::from_atts( is_array( $atts ) ? $atts : [], $query_vars, $get );
             $vm         = $this->get_competition_handler->handle( $query );
@@ -162,8 +161,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      */
     public function show_competition_overview( array|string $atts = [] ): string {
         if ( $this->overview_handler && $this->view_presenter ) {
-            global $wp;
-            $query_vars = ( isset( $wp ) && is_object( $wp ) && isset( $wp->query_vars ) && is_array( $wp->query_vars ) ) ? $wp->query_vars : [];
+            $query_vars = $this->extract_query_vars();
             $get        = $_GET ?? [];
             $query      = Get_Competition_Overview_Query::from_atts( is_array( $atts ) ? $atts : [], $query_vars, $get );
             $result     = $this->overview_handler->handle( $query );
@@ -183,8 +181,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      */
     public function show_competition_events( array|string $atts = [] ): string {
         if ( $this->events_handler && $this->view_presenter ) {
-            global $wp;
-            $query_vars = ( isset( $wp ) && is_object( $wp ) && isset( $wp->query_vars ) && is_array( $wp->query_vars ) ) ? $wp->query_vars : [];
+            $query_vars = $this->extract_query_vars();
             $get        = $_GET ?? [];
             $query      = Get_Competition_Events_Query::from_atts( is_array( $atts ) ? $atts : [], $query_vars, $get );
             $result     = $this->events_handler->handle( $query );
@@ -204,8 +201,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      */
     public function show_competition_teams( array|string $atts = [] ): string {
         if ( $this->teams_handler && $this->view_presenter ) {
-            global $wp;
-            $query_vars = ( isset( $wp ) && is_object( $wp ) && isset( $wp->query_vars ) && is_array( $wp->query_vars ) ) ? $wp->query_vars : [];
+            $query_vars = $this->extract_query_vars();
             $get        = $_GET ?? [];
             $query      = Get_Competition_Teams_Query::from_atts( is_array( $atts ) ? $atts : [], $query_vars, $get );
             $result     = $this->teams_handler->handle( $query );
@@ -225,8 +221,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      */
     public function show_competition_clubs( array|string $atts = [] ): string {
         if ( $this->clubs_handler && $this->view_presenter ) {
-            global $wp;
-            $query_vars = ( isset( $wp ) && is_object( $wp ) && isset( $wp->query_vars ) && is_array( $wp->query_vars ) ) ? $wp->query_vars : [];
+            $query_vars = $this->extract_query_vars();
             $get        = $_GET ?? [];
             $query      = Get_Competition_Clubs_Query::from_atts( is_array( $atts ) ? $atts : [], $query_vars, $get );
             $result     = $this->clubs_handler->handle( $query );
@@ -246,8 +241,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      */
     public function show_competition_players( array|string $atts = [] ): string {
         if ( $this->players_handler && $this->view_presenter ) {
-            global $wp;
-            $query_vars = ( isset( $wp ) && is_object( $wp ) && isset( $wp->query_vars ) && is_array( $wp->query_vars ) ) ? $wp->query_vars : [];
+            $query_vars = $this->extract_query_vars();
             $get        = $_GET ?? [];
             $query      = Get_Competition_Players_Query::from_atts( is_array( $atts ) ? $atts : [], $query_vars, $get );
             $result     = $this->players_handler->handle( $query );
@@ -267,8 +261,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      */
     public function show_competition_winners( array|string $atts = [] ): string {
         if ( $this->winners_handler && $this->view_presenter ) {
-            global $wp;
-            $query_vars = ( isset( $wp ) && is_object( $wp ) && isset( $wp->query_vars ) && is_array( $wp->query_vars ) ) ? $wp->query_vars : [];
+            $query_vars = $this->extract_query_vars();
             $get        = $_GET ?? [];
             $query      = Get_Competition_Winners_Query::from_atts( is_array( $atts ) ? $atts : [], $query_vars, $get );
             $result     = $this->winners_handler->handle( $query );
@@ -300,12 +293,12 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         }
 
         $query_vars = [
-            'competition_name' => get_query_var( 'competition_name' ),
-            'competition_type' => get_query_var( 'competition_type' ),
-            'tournament'       => get_query_var( 'tournament' ),
-            'season'           => get_query_var( 'season' ),
-            'club_name'        => get_query_var( 'club_name' ),
-            'player_id'        => get_query_var( 'player_id' ),
+            'competition_name' => $this->query_vars?->get( 'competition_name' ),
+            'competition_type' => $this->query_vars?->get( 'competition_type' ),
+            'tournament'       => $this->query_vars?->get( 'tournament' ),
+            'season'           => $this->query_vars?->get( 'season' ),
+            'club_name'        => $this->query_vars?->get( 'club_name' ),
+            'player_id'        => $this->query_vars?->get( 'player_id' ),
         ];
         $query = Get_Competition_Entry_Query::from_atts(
             $atts,
@@ -712,8 +705,8 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $this->render_alert( __( 'Tournament not found', 'racketmanager' ) );
         }
         $query_vars = [
-            'competition_type' => get_query_var( 'competition_type' ),
-            'tournament'       => get_query_var( 'tournament' ),
+            'competition_type' => $this->query_vars?->get( 'competition_type' ),
+            'tournament'       => $this->query_vars?->get( 'tournament' ),
         ];
         $billing_options = $this->racketmanager?->get_options( 'billing' );
         $query = Get_Competition_Payment_Query::from_atts(
@@ -770,6 +763,10 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             $club_id ?: null,
             is_string( $entry_level ) ? $entry_level : null
         );
+    }
+
+    private function extract_query_vars(): array {
+        return $this->query_vars?->all() ?? [];
     }
 
     private function render_alert( string $msg, ?string $variant = null ): string {

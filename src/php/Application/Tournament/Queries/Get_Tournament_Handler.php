@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Tournament\Queries;
 
+use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Application\Tournament\DTOs\Tournament_Result;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Tournament_Service;
@@ -13,12 +14,11 @@ use function __;
 class Get_Tournament_Handler {
     public function __construct(
         private readonly Tournament_Service $tournament_service,
-        private readonly ?Get_Latest_Tournament_Handler $latest_tournament_handler = null
+        private readonly ?Get_Latest_Tournament_Handler $latest_tournament_handler = null,
+        private readonly ?Query_Vars_Interface $query_vars = null
     ) {}
 
     public function handle( Get_Tournament_Query $query ): Tournament_Result {
-        global $wp;
-
         $tournament = $query->tournament;
         if ( ! $tournament ) {
             if ( $this->latest_tournament_handler !== null ) {
@@ -53,9 +53,7 @@ class Get_Tournament_Handler {
         ];
         $tournaments = $this->tournament_service->get_tournaments( $tournament_args );
 
-        if ( isset( $wp ) && is_object( $wp ) && method_exists( $wp, 'set_query_var' ) ) {
-            $wp->set_query_var( 'season', $tournament_details->tournament->season );
-        }
+        $this->query_vars?->set( 'season', $tournament_details->tournament->season );
 
         $tab = $query->tab;
         if ( ! empty( $query->match_day ) || ! empty( $query->team_id ) ) {

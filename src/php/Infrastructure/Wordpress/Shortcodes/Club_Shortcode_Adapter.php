@@ -16,6 +16,7 @@ use Racketmanager\Application\Club\Queries\Get_Club_Role_Modal_Query;
 use Racketmanager\Application\Club\Queries\Get_Club_Roles_Handler;
 use Racketmanager\Application\Club\Queries\Get_Club_Roles_Query;
 use Racketmanager\Application\Event\Queries\Event_Allowlist_Guard;
+use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
@@ -35,7 +36,6 @@ use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Util\Util_Lookup;
 use function current_user_can;
-use function get_query_var;
 use function is_user_logged_in;
 use function shortcode_atts;
 use function wp_get_current_user;
@@ -73,7 +73,8 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly ?Club_Presenter $club_presenter = null,
         private readonly ?Player_Presenter $player_presenter = null,
         private readonly ?Invoice_Presenter $invoice_presenter = null,
-        private readonly ?Team_Details_Presenter $team_details_presenter = null
+        private readonly ?Team_Details_Presenter $team_details_presenter = null,
+        private readonly ?Query_Vars_Interface $query_vars = null
     ) {
     }
 
@@ -100,8 +101,7 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      * [club id=ID template=X]
      */
     public function show_club( array|string $atts = [] ): string {
-        global $wp;
-        $query_vars = ( isset( $wp ) && is_object( $wp ) && isset( $wp->query_vars ) && is_array( $wp->query_vars ) ) ? $wp->query_vars : [];
+        $query_vars = $this->query_vars?->all() ?? [];
         $query      = Get_Club_Query::from_atts( $atts, $query_vars );
 
         $result = $this->get_club_handler->handle( $query );
@@ -130,7 +130,7 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      * [club-players template=X]; the player is taken from the player_id query var.
      */
     public function show_club_players( array|string $atts = [] ): string {
-        $player_name = get_query_var( 'player_id' );
+        $player_name = $this->query_vars?->get( 'player_id' );
         $referrer    = function_exists( 'wp_get_referer' ) ? wp_get_referer() : false;
         $query       = new Get_Club_Players_Query(
             club_name: $this->club_name_from_request(),
@@ -254,7 +254,7 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      * [club-competitions template=X]; the competition is taken from the competition_name query var.
      */
     public function show_club_competitions( array|string $atts = [] ): string {
-        $competition_name = get_query_var( 'competition_name' );
+        $competition_name = $this->query_vars?->get( 'competition_name' );
         $query            = new Get_Club_Competitions_Query(
             club_name: $this->club_name_from_request(),
             competition_name: $competition_name ? Seo_Slug::decode( (string) $competition_name ) : null,
@@ -304,7 +304,7 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      */
     public function show_club_invoices( array|string $atts = [] ): string {
         $user_id     = null;
-        $invoice_ref = get_query_var( 'invoice' );
+        $invoice_ref = $this->query_vars?->get( 'invoice' );
         if ( is_user_logged_in() ) {
             $user    = wp_get_current_user();
             $user_id = (int) ( $user->ID ?? 0 );
@@ -372,7 +372,7 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $this->view_presenter->render_error( $e->getMessage() );
         }
 
-        $event_name = get_query_var( 'event' );
+        $event_name = $this->query_vars?->get( 'event' );
         if ( ! $event_name ) {
             return $this->view_presenter->render_error( __( 'Event id not supplied', 'racketmanager' ) );
         }
@@ -381,7 +381,7 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $this->view_presenter->render_error( __( 'Event not found', 'racketmanager' ) );
         }
 
-        $season = get_query_var( 'season' );
+        $season = $this->query_vars?->get( 'season' );
         $this->event_query_service->set_season( $event, $season ? (string) $season : null );
 
         $season_name = $season ? (string) $season : ( is_array( $event->current_season ) && isset( $event->current_season['name'] ) ? (string) $event->current_season['name'] : null );
@@ -457,7 +457,7 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $this->view_presenter->render_error( $e->getMessage() );
         }
 
-        $team_name = get_query_var( 'team' );
+        $team_name = $this->query_vars?->get( 'team' );
         if ( ! $team_name ) {
             return $this->view_presenter->render_error( __( 'Team not supplied', 'racketmanager' ) );
         }
@@ -466,7 +466,7 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $this->view_presenter->render_error( __( 'Team not found', 'racketmanager' ) );
         }
 
-        $event_name = get_query_var( 'event' );
+        $event_name = $this->query_vars?->get( 'event' );
         if ( ! $event_name ) {
             return $this->view_presenter->render_error( __( 'Event id not supplied', 'racketmanager' ) );
         }
@@ -475,7 +475,7 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $this->view_presenter->render_error( __( 'Event not found', 'racketmanager' ) );
         }
 
-        $season      = get_query_var( 'season' );
+        $season      = $this->query_vars?->get( 'season' );
         $this->event_query_service->set_season( $event, $season ? (string) $season : null );
         $season_name = $season ? (string) $season : ( is_array( $event->current_season ) && isset( $event->current_season['name'] ) ? (string) $event->current_season['name'] : null );
 
@@ -533,7 +533,7 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $this->view_presenter->render_error( __( 'Event not found', 'racketmanager' ), 'modal' );
         }
 
-        $season      = get_query_var( 'season' );
+        $season      = $this->query_vars?->get( 'season' );
         $this->event_query_service->set_season( $event, $season ? (string) $season : null );
         $season_name = $season ? (string) $season : ( is_array( $event->current_season ) && isset( $event->current_season['name'] ) ? (string) $event->current_season['name'] : null );
         if ( ! Event_Allowlist_Guard::is_event_allowed( $event, $season_name ) ) {
@@ -562,6 +562,6 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     }
 
     private function club_name_from_request(): string {
-        return Seo_Slug::decode( (string) get_query_var( 'club_name' ) );
+        return Seo_Slug::decode( (string) $this->query_vars?->get( 'club_name' ) );
     }
 }

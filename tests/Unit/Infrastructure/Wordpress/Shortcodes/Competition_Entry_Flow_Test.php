@@ -83,7 +83,8 @@ class Competition_Entry_Flow_Test extends TestCase {
             club_entry_selection: new Club_Entry_Selection_Service( $club_service, $player_service ),
             competition_shortcode_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
             tournament_presenter: new Tournament_Presenter(),
-            event_query_service: $this->event_query_service()
+            event_query_service: $this->event_query_service(),
+            query_vars: new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
         );
 
         $output = $adapter->show_competition_entry();
@@ -125,7 +126,8 @@ class Competition_Entry_Flow_Test extends TestCase {
                 club_entry_selection: new Club_Entry_Selection_Service( $club_service, $player_service ),
                 competition_shortcode_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
                 tournament_presenter: new Tournament_Presenter(),
-                event_query_service: $this->event_query_service()
+                event_query_service: $this->event_query_service(),
+                query_vars: new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
             );
             $this->assertStringContainsString( 'entry-' . $type->value, $adapter->show_competition_entry() );
         }
@@ -160,7 +162,8 @@ class Competition_Entry_Flow_Test extends TestCase {
             ),
             competition_shortcode_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
             tournament_presenter: new Tournament_Presenter(),
-            event_query_service: $this->event_query_service()
+            event_query_service: $this->event_query_service(),
+            query_vars: new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
         );
         $GLOBALS['query_vars'] = [ 'competition_name' => 'Summer League' ];
         $this->assertStringContainsString( 'No season specified', $adapter->show_competition_entry() );
@@ -210,7 +213,8 @@ class Competition_Entry_Flow_Test extends TestCase {
             club_entry_selection: new Club_Entry_Selection_Service( $club_service, $player_service ),
             competition_shortcode_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
             tournament_presenter: new Tournament_Presenter(),
-            event_query_service: $this->event_query_service()
+            event_query_service: $this->event_query_service(),
+            query_vars: new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
         );
         $this->assertStringContainsString( 'Autumn Open', $adapter->show_competition_entry() );
     }
@@ -264,7 +268,8 @@ class Competition_Entry_Flow_Test extends TestCase {
             } );
         $handler = new Get_Competition_Payment_Handler( $tournament_service, $player_service, $finance, $entry_service );
         $adapter = new Competition_Shortcode_Adapter(
-            payment_handler: $handler, view_presenter: new Shortcode_View_Presenter( $renderer )
+            payment_handler: $handler, view_presenter: new Shortcode_View_Presenter( $renderer ),
+            query_vars: new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
         );
         $this->assertStringContainsString( 'tournament-payment</div>', $adapter->show_competition_entry_payment() );
         $this->assertStringContainsString( 'tournament-payment-complete</div>', $adapter->show_competition_entry_payment_complete() );
@@ -285,7 +290,8 @@ class Competition_Entry_Flow_Test extends TestCase {
         );
         $adapter = new Competition_Shortcode_Adapter(
             payment_handler: $handler, template_renderer: $renderer,
-            view_presenter: new Shortcode_View_Presenter( $renderer )
+            view_presenter: new Shortcode_View_Presenter( $renderer ),
+            query_vars: new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
         );
         $this->assertStringContainsString( 'Tournament not found', $adapter->show_competition_entry_payment_complete() );
         $GLOBALS['query_vars'] = [ 'competition_type' => 'tournament', 'tournament' => 'unknown' ];
@@ -308,7 +314,8 @@ class Competition_Entry_Flow_Test extends TestCase {
         );
         $renderer = new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) );
         $adapter = new Competition_Shortcode_Adapter(
-            payment_handler: $handler, view_presenter: new Shortcode_View_Presenter( $renderer )
+            payment_handler: $handler, view_presenter: new Shortcode_View_Presenter( $renderer ),
+            query_vars: new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
         );
 
         $this->assertStringContainsString( 'You have not yet entered the tournament', $adapter->show_competition_entry_payment() );

@@ -5,9 +5,9 @@ namespace Racketmanager\Infrastructure\Wordpress\Shortcodes;
 
 use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Handler;
 use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Query;
+use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
-use function get_query_var;
 use function shortcode_atts;
 
 /**
@@ -16,7 +16,8 @@ use function shortcode_atts;
 readonly class Fixture_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     public function __construct(
         private Get_Fixture_Details_Handler $handler,
-        private Fixture_Presenter $presenter
+        private Fixture_Presenter $presenter,
+        private ?Query_Vars_Interface $query_vars = null
     ) {}
 
     /**
@@ -69,8 +70,8 @@ readonly class Fixture_Shortcode_Adapter implements Shortcode_Adapter_Interface 
         );
 
         return [
-            'fixture_id' => empty( $args['match_id'] ) ? (int) get_query_var( 'match_id' ) : (int) $args['match_id'],
-            'action'     => (string) get_query_var( 'action' ),
+            'fixture_id' => empty( $args['match_id'] ) ? (int) ( $this->query_vars?->get( 'match_id' ) ?? 0 ) : (int) $args['match_id'],
+            'action'     => (string) ( $this->query_vars?->get( 'action' ) ?? '' ),
         ];
     }
 
@@ -81,13 +82,13 @@ readonly class Fixture_Shortcode_Adapter implements Shortcode_Adapter_Interface 
      */
     private function get_slug_criteria(): array {
         return [
-            'league_slug'    => Seo_Slug::decode( (string) get_query_var( 'league_name' ) ) ?: null,
-            'home_team_slug' => Seo_Slug::decode( (string) get_query_var( 'teamHome' ) ) ?: null,
-            'away_team_slug' => Seo_Slug::decode( (string) get_query_var( 'teamAway' ) ) ?: null,
-            'match_day'      => get_query_var( 'match_day' ) ? (int) get_query_var( 'match_day' ) : null,
-            'season'         => get_query_var( 'season' ) ?: null,
-            'round'          => get_query_var( 'round' ) ?: null,
-            'leg'            => get_query_var( 'leg' ) ? (int) get_query_var( 'leg' ) : null,
+            'league_slug'    => Seo_Slug::decode( (string) $this->query_vars?->get( 'league_name' ) ) ?: null,
+            'home_team_slug' => Seo_Slug::decode( (string) $this->query_vars?->get( 'teamHome' ) ) ?: null,
+            'away_team_slug' => Seo_Slug::decode( (string) $this->query_vars?->get( 'teamAway' ) ) ?: null,
+            'match_day'      => $this->query_vars?->get( 'match_day' ) ? (int) $this->query_vars->get( 'match_day' ) : null,
+            'season'         => $this->query_vars?->get( 'season' ) ?: null,
+            'round'          => $this->query_vars?->get( 'round' ) ?: null,
+            'leg'            => $this->query_vars?->get( 'leg' ) ? (int) $this->query_vars->get( 'leg' ) : null,
         ];
     }
 

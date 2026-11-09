@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Infrastructure\Wordpress\Shortcodes;
 
+use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Event_Factory;
@@ -39,7 +40,8 @@ class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly Team_Repository_Interface $team_repository,
         private readonly League_Repository_Interface $league_repository,
         private readonly Event_Repository_Interface $event_repository,
-        private readonly Competition_Repository_Interface $competition_repository
+        private readonly Competition_Repository_Interface $competition_repository,
+        private readonly ?Query_Vars_Interface $query_vars = null
     ) {
     }
 

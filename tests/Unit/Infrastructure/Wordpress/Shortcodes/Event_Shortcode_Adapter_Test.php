@@ -63,7 +63,8 @@ class Event_Shortcode_Adapter_Test extends TestCase {
             $overrides['team_matches_handler'] ?? $this->createStub( Get_Event_Team_Matches_Handler::class ),
             $overrides['team_order_players_handler'] ?? $this->createStub( Get_Team_Order_Players_Handler::class ),
             $overrides['dropdown_handler'] ?? $this->createStub( Get_Event_Dropdown_Handler::class ),
-            $overrides['template_renderer'] ?? $this->createStub( Shortcode_Template_Renderer::class )
+            $overrides['template_renderer'] ?? $this->createStub( Shortcode_Template_Renderer::class ),
+            query_vars: $overrides['query_vars'] ?? new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
         );
     }
 

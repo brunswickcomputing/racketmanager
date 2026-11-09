@@ -4,12 +4,14 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Services\Competition;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Events\Competition_Season_Cascaded_Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface;
 use Racketmanager\Domain\Events\Domain_Event_Interface;
+use Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
@@ -33,7 +35,9 @@ class Competition_Season_Service_Test extends TestCase {
 			$this->createStub( League_Team_Repository_Interface::class ),
 			$this->createStub( Club_Repository_Interface::class ),
 			$this->createStub( Event_Repository_Interface::class ),
-			$this->createStub( League_Repository_Interface::class )
+			$this->createStub( League_Repository_Interface::class ),
+			null,
+			new Wp_Query_Vars()
 		);
 	}
 
@@ -291,6 +295,27 @@ class Competition_Season_Service_Test extends TestCase {
 		$GLOBALS['wp'] = (object) [ 'query_vars' => [ 'season' => '2024' ] ];
 
 		$data = $this->service->resolve_current_season( $this->competition() );
+
+		$this->assertSame( '2024', $data['name'] );
+	}
+
+	public function test_request_query_var_season_uses_injected_query_vars_interface(): void {
+		$query_vars = $this->createMock( Query_Vars_Interface::class );
+		$query_vars->expects( $this->once() )
+			->method( 'get' )
+			->with( 'season' )
+			->willReturn( '2024' );
+
+		$service = new Competition_Season_Service(
+			$this->createStub( League_Team_Repository_Interface::class ),
+			$this->createStub( Club_Repository_Interface::class ),
+			$this->createStub( Event_Repository_Interface::class ),
+			$this->createStub( League_Repository_Interface::class ),
+			null,
+			$query_vars
+		);
+
+		$data = $service->resolve_current_season( $this->competition() );
 
 		$this->assertSame( '2024', $data['name'] );
 	}

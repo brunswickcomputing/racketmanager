@@ -10,6 +10,7 @@ use Racketmanager\Application\Matches\Queries\Get_Latest_Results_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Match_Detail_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Match_Header_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Match_Score_Handler;
+use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface;
 use Racketmanager\Domain\Fixture\Events\Fixture_Result_Finalized_Event;
 use Racketmanager\Application\Fixture\Services\Fixture_Details_Assembler;
@@ -304,7 +305,8 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
 
         $container->set( 'fixture_shortcode_adapter', fn( Simple_Container $c ) => new Fixture_Shortcode_Adapter(
             $c->get( 'get_fixture_details_handler' ),
-            $c->get( 'fixture_presenter' )
+            $c->get( 'fixture_presenter' ),
+            $c->get( Query_Vars_Interface::class )
         ) );
         $container->alias( Fixture_Shortcode_Adapter::class, 'fixture_shortcode_adapter' );
 
@@ -315,7 +317,8 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             score_handler: $c->get( 'get_match_score_handler' ),
             header_handler: $c->get( 'get_match_header_handler' ),
             detail_handler: $c->get( 'get_match_detail_handler' ),
-            match_presenter: $c->get( 'match_shortcode_presenter' )
+            match_presenter: $c->get( 'match_shortcode_presenter' ),
+            query_vars: $c->get( Query_Vars_Interface::class )
         ) );
         $container->alias( Matches_Shortcode_Adapter::class, 'matches_shortcode_adapter' );
 

@@ -11,6 +11,7 @@ use Racketmanager\Application\Login\Queries\Get_Password_Lost_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Lost_Form_Query;
 use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Query;
+use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
@@ -31,7 +32,8 @@ class Login_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly Get_Password_Reset_Form_Handler $password_reset_form_handler,
         private readonly Get_Member_Account_Form_Handler $member_account_form_handler,
         private readonly ?Shortcode_Template_Renderer $template_renderer = null,
-        private readonly ?Security_Service_Interface $security_service = null
+        private readonly ?Security_Service_Interface $security_service = null,
+        private readonly ?Query_Vars_Interface $query_vars = null
     ) {}
 
     public function render_login_form( array|string $vars = [], ?string $action_override = null ): string {
@@ -118,12 +120,7 @@ class Login_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     }
 
     private function extract_query_vars(): array {
-        global $wp;
-        if ( isset( $wp ) && is_object( $wp ) && isset( $wp->query_vars ) && is_array( $wp->query_vars ) ) {
-            return $wp->query_vars;
-        }
-
-        return [];
+        return $this->query_vars?->all() ?? [];
     }
 
     private function extract_get_params(): array {

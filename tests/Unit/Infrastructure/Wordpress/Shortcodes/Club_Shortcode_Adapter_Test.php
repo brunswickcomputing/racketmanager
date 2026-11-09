@@ -1229,7 +1229,8 @@ class Club_Shortcode_Adapter_Test extends TestCase {
             club_presenter: $club_presenter,
             player_presenter: new Player_Presenter(),
             invoice_presenter: new Invoice_Presenter(),
-            team_details_presenter: new Team_Details_Presenter( new Wp_Option_Gateway(), $settings )
+            team_details_presenter: new Team_Details_Presenter( new Wp_Option_Gateway(), $settings ),
+            query_vars: $overrides['query_vars'] ?? new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
         );
     }
 }

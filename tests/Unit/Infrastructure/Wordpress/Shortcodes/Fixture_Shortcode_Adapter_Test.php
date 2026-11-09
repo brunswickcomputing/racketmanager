@@ -20,7 +20,7 @@ class Fixture_Shortcode_Adapter_Test extends TestCase {
         
         $this->handler = $this->createStub(Get_Fixture_Details_Handler::class);
         $this->presenter = $this->createStub(Fixture_Presenter::class);
-        $this->adapter = new Fixture_Shortcode_Adapter($this->handler, $this->presenter);
+        $this->adapter = new Fixture_Shortcode_Adapter($this->handler, $this->presenter, new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars());
 
         if (!function_exists('shortcode_atts')) {
             eval('function shortcode_atts($pairs, $atts) { return array_merge($pairs, $atts); }');

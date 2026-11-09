@@ -10,11 +10,17 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Util;
 
+use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Domain\Enums\Club_Role;
 use Racketmanager\Domain\Enums\Fixture_Status;
 use Racketmanager\Domain\Shared\Seo_Slug;
 
 class Util_Lookup {
+    private static ?Query_Vars_Interface $query_vars = null;
+
+    public static function set_query_vars( ?Query_Vars_Interface $query_vars ): void {
+        self::$query_vars = $query_vars;
+    }
     /**
      * Get event types
      *
@@ -507,27 +513,29 @@ class Util_Lookup {
      * Get player id
      *
      */
-    public static function get_player_id( int|null|string $player_id = null ): ?string {
-        global $wp;
+    public static function get_player_id( int|null|string $player_id = null, ?Query_Vars_Interface $query_vars = null ): ?string {
         if ( $player_id ) {
             return (string) $player_id;
         }
+        $qv = $query_vars ?? self::$query_vars;
         if ( ! empty( $_GET['player'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $player_id = Seo_Slug::decode( htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['player'] ) ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        } elseif ( isset( $wp->query_vars['player'] ) ) {
-            $player_id = Seo_Slug::decode( get_query_var( 'player' ) );
+        } elseif ( $qv?->has( 'player' ) ) {
+            $player_val = $qv->get( 'player' );
+            $player_id  = is_string( $player_val ) ? Seo_Slug::decode( $player_val ) : null;
         } else {
             $player_id = null;
         }
         return $player_id;
     }
 
-    public static function get_tab(): ?string {
-        global $wp;
+    public static function get_tab( ?Query_Vars_Interface $query_vars = null ): ?string {
+        $qv = $query_vars ?? self::$query_vars;
         if ( ! empty( $_GET['tab'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $tab = wp_strip_all_tags( wp_unslash( $_GET['tab'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        } elseif ( isset( $wp->query_vars['tab'] ) ) {
-            $tab = get_query_var( 'tab' );
+        } elseif ( $qv?->has( 'tab' ) ) {
+            $tab_val = $qv->get( 'tab' );
+            $tab     = is_string( $tab_val ) ? $tab_val : null;
         } else {
             $tab = null;
         }

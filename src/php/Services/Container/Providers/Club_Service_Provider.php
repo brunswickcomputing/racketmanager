@@ -10,6 +10,7 @@ use Racketmanager\Application\Club\Queries\Get_Club_Players_Handler;
 use Racketmanager\Application\Club\Queries\Get_Club_Role_Modal_Handler;
 use Racketmanager\Application\Club\Queries\Get_Club_Roles_Handler;
 use Racketmanager\Application\General\Queries\Get_Team_Order_Handler;
+use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Club_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Club_Ajax_Controller;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Club_Shortcode_Adapter;
@@ -148,7 +149,8 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
             club_presenter: $c->get( 'club_presenter' ),
             player_presenter: $c->get( 'player_presenter' ),
             invoice_presenter: $c->get( 'invoice_presenter' ),
-            team_details_presenter: $c->get( 'team_details_presenter' )
+            team_details_presenter: $c->get( 'team_details_presenter' ),
+            query_vars: $c->get( Query_Vars_Interface::class )
         ) );
         $container->alias( Club_Shortcode_Adapter::class, 'club_shortcode_adapter' );
 

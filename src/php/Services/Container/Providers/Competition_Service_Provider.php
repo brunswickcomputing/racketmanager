@@ -8,6 +8,7 @@ use Racketmanager\Application\Competition\Commands\Submit_League_Entry_Handler;
 use Racketmanager\Application\Competition\Queries\Club_Entry_Selection_Service;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Clubs_Handler;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Dropdown_Handler;
+use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Entry_Handler;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Events_Handler;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Handler;
@@ -189,7 +190,8 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'club_repository' ),
             $c->get( 'event_repository' ),
             $c->get( 'league_repository' ),
-            $c->get( 'domain_event_dispatcher' )
+            $c->get( 'domain_event_dispatcher' ),
+            $c->get( Query_Vars_Interface::class )
         ) );
         $container->alias( Competition_Season_Service::class, 'competition_season_service' );
 
@@ -536,7 +538,8 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
         // Tournament Queries
         $container->set( 'get_tournament_handler', fn( Simple_Container $c ) => new Get_Tournament_Handler(
             $c->get( 'tournament_service' ),
-            $c->get( 'get_latest_tournament_handler' )
+            $c->get( 'get_latest_tournament_handler' ),
+            $c->get( Query_Vars_Interface::class )
         ) );
 
         $container->set( 'get_tournament_overview_handler', fn( Simple_Container $c ) => new Get_Tournament_Overview_Handler(
@@ -633,7 +636,8 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             view_presenter: $c->get( 'shortcode_view_presenter' ),
             racketmanager: $app,
             event_query_service: $c->get( 'event_query_service' ),
-            player_presenter: $c->get( 'player_presenter' )
+            player_presenter: $c->get( 'player_presenter' ),
+            query_vars: $c->get( Query_Vars_Interface::class )
         ) );
         $container->alias( Competition_Shortcode_Adapter::class, 'competition_shortcode_adapter' );
 
@@ -660,7 +664,8 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             competition_service: $c->get( 'competition_service' ),
             team_service: $c->get( 'team_service' ),
             fixture_link_service: $c->get( 'fixture_link_service' ),
-            fixture_permission_service: $c->get( 'fixture_permission_service' )
+            fixture_permission_service: $c->get( 'fixture_permission_service' ),
+            query_vars: $c->get( Query_Vars_Interface::class )
         ) );
         $container->alias( League_Shortcode_Adapter::class, 'league_shortcode_adapter' );
 
@@ -682,7 +687,8 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             competition_shortcode_presenter: $c->get( 'competition_shortcode_presenter' ),
             tournament_presenter: $c->get( 'tournament_presenter' ),
             player_presenter: $c->get( 'player_presenter' ),
-            team_details_presenter: $c->get( 'team_details_presenter' )
+            team_details_presenter: $c->get( 'team_details_presenter' ),
+            query_vars: $c->get( Query_Vars_Interface::class )
         ) );
         $container->alias( Event_Shortcode_Adapter::class, 'event_shortcode_adapter' );
 
@@ -704,7 +710,8 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             competition_service: $c->get( 'competition_service' ),
             tournament_presenter: $c->get( 'tournament_presenter' ),
             player_presenter: $c->get( 'player_presenter' ),
-            order_of_play_presenter: $c->get( 'order_of_play_presenter' )
+            order_of_play_presenter: $c->get( 'order_of_play_presenter' ),
+            query_vars: $c->get( Query_Vars_Interface::class )
         ) );
         $container->alias( Tournament_Shortcode_Adapter::class, 'tournament_shortcode_adapter' );
 

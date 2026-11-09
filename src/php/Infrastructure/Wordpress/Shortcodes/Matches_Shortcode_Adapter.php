@@ -13,11 +13,11 @@ use Racketmanager\Application\Matches\Queries\Get_Match_Header_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Match_Header_Query;
 use Racketmanager\Application\Matches\Queries\Get_Match_Score_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Match_Score_Query;
+use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Presentation\Presenters\Match_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Matches_List_Presenter;
 use function get_permalink;
-use function get_query_var;
 use function get_the_ID;
 use function gmdate;
 use function is_numeric;
@@ -41,7 +41,8 @@ class Matches_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly Get_Match_Score_Handler $score_handler,
         private readonly Get_Match_Header_Handler $header_handler,
         private readonly Get_Match_Detail_Handler $detail_handler,
-        private readonly Match_Shortcode_Presenter $match_presenter
+        private readonly Match_Shortcode_Presenter $match_presenter,
+        private readonly ?Query_Vars_Interface $query_vars = null
     ) {}
 
     /**
@@ -59,7 +60,7 @@ class Matches_Shortcode_Adapter implements Shortcode_Adapter_Interface {
 
         $match_date = $args['match_date'];
         if ( ! $match_date ) {
-            $match_date = (string) get_query_var( 'match_date' );
+            $match_date = (string) $this->query_vars?->get( 'match_date' );
             if ( '' === $match_date && isset( $_GET['match_date'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only date filter.
                 $match_date = sanitize_text_field( wp_unslash( (string) $_GET['match_date'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             }
@@ -67,7 +68,7 @@ class Matches_Shortcode_Adapter implements Shortcode_Adapter_Interface {
 
         $competition_type = (string) $args['competition_type'];
         if ( $this->has_query_var( 'competition_type' ) ) {
-            $competition_type = Seo_Slug::decode( (string) get_query_var( 'competition_type' ) );
+            $competition_type = Seo_Slug::decode( (string) $this->query_vars?->get( 'competition_type' ) );
         }
 
         $query  = new Get_Daily_Matches_Query(
@@ -104,23 +105,23 @@ class Matches_Shortcode_Adapter implements Shortcode_Adapter_Interface {
 
         $club_shortcode = null;
         if ( $this->has_query_var( 'club_name' ) ) {
-            $club_shortcode = str_replace( '-', ' ', (string) get_query_var( 'club_name' ) );
+            $club_shortcode = str_replace( '-', ' ', (string) $this->query_vars?->get( 'club_name' ) );
         }
         $days = $args['days'];
         if ( $this->has_query_var( 'days' ) ) {
-            $days = str_replace( '-', ' ', (string) get_query_var( 'days' ) );
+            $days = str_replace( '-', ' ', (string) $this->query_vars?->get( 'days' ) );
         }
         $competition_type = (string) $args['competition_type'];
         if ( $this->has_query_var( 'competition_type' ) ) {
-            $competition_type = Seo_Slug::decode( (string) get_query_var( 'competition_type' ) );
+            $competition_type = Seo_Slug::decode( (string) $this->query_vars?->get( 'competition_type' ) );
         }
         $competition_name = null;
         if ( $this->has_query_var( 'competition_name' ) ) {
-            $competition_name = Seo_Slug::decode( (string) get_query_var( 'competition_name' ) );
+            $competition_name = Seo_Slug::decode( (string) $this->query_vars?->get( 'competition_name' ) );
         }
         $age_group = $args['age_group'];
         if ( $this->has_query_var( 'age_group' ) ) {
-            $age_group = get_query_var( 'age_group' );
+            $age_group = $this->query_vars?->get( 'age_group' );
         }
 
         $query  = new Get_Latest_Results_Query(
@@ -211,8 +212,6 @@ class Matches_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     }
 
     private function has_query_var( string $name ): bool {
-        global $wp;
-
-        return isset( $wp->query_vars[ $name ] );
+        return $this->query_vars?->has( $name ) ?? false;
     }
 }

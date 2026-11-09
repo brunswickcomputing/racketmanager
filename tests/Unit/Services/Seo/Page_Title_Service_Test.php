@@ -5,6 +5,8 @@ namespace Racketmanager\Tests\Unit\Services\Seo;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Ports\Query_Vars_Interface;
+use Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars;
 use Racketmanager\Services\Seo\Page_Title_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
@@ -20,7 +22,7 @@ final class Page_Title_Service_Test extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 		$this->backup_globals();
-		$this->service = new Page_Title_Service( 'My Club' );
+		$this->service = new Page_Title_Service( 'My Club', new Wp_Query_Vars() );
 		global $wp;
 		$wp = new stdClass();
 		$wp->query_vars = [];
@@ -210,5 +212,20 @@ final class Page_Title_Service_Test extends TestCase {
 
 		$title = $this->service->build_title( 'Default Title', 'Overridden Site Name' );
 		$this->assertSame( 'Roger Federer - Overridden Site Name', $title );
+	}
+
+	public function test_build_title_uses_injected_query_vars_interface(): void {
+		$query_vars = $this->createMock( Query_Vars_Interface::class );
+		$query_vars->method( 'get' )
+			->willReturnCallback( static fn( string $key ): ?string => match ( $key ) {
+				'player_id' => 'novak-djokovic',
+				default     => null,
+			} );
+
+		$service = new Page_Title_Service( 'Custom Club', $query_vars );
+		$GLOBALS['post']->post_name = 'player';
+
+		$title = $service->build_title( 'Default Title' );
+		$this->assertSame( 'Novak Djokovic - Custom Club', $title );
 	}
 }

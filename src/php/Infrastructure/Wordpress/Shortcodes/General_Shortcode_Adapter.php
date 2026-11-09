@@ -21,6 +21,7 @@ use Racketmanager\Application\General\Queries\Get_Purchase_Order_Handler;
 use Racketmanager\Application\General\Queries\Get_Purchase_Order_Query;
 use Racketmanager\Application\General\Queries\Get_Team_Order_Handler;
 use Racketmanager\Application\General\Queries\Get_Team_Order_Query;
+use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Presentation\Presenters\Invoice_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
@@ -50,7 +51,8 @@ class General_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly ?Shortcode_Template_Renderer $template_renderer = null,
         private readonly ?Security_Service_Interface $security_service = null,
         private readonly ?Player_Presenter $player_presenter = null,
-        private readonly ?Invoice_Presenter $invoice_presenter = null
+        private readonly ?Invoice_Presenter $invoice_presenter = null,
+        private readonly ?Query_Vars_Interface $query_vars = null
     ) {}
 
     public function show_players( array|string $atts = [] ): string {
@@ -279,12 +281,7 @@ class General_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     }
 
     private function extract_query_vars(): array {
-        global $wp;
-        if ( isset( $wp ) && is_object( $wp ) && isset( $wp->query_vars ) && is_array( $wp->query_vars ) ) {
-            return $wp->query_vars;
-        }
-
-        return [];
+        return $this->query_vars?->all() ?? [];
     }
 
     private function extract_get_params(): array {

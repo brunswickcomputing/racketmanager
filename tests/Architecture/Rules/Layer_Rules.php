@@ -513,7 +513,7 @@ final class Layer_Rules {
                 [ self::APPLICATION, self::SERVICES, self::PRESENTATION, self::REPOSITORIES, self::UTIL ],
                 Rule_Kind::FORBIDDEN_GLOBAL,
                 self::WORDPRESS_GLOBALS,
-                Rule_Mode::RATCHET
+                Rule_Mode::STRICT
             ),
         ];
     }

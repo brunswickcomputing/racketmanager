@@ -68,7 +68,8 @@ class League_Shortcode_Adapter_Test extends TestCase {
             $overrides['season_dropdown_handler'] ?? $this->createStub( Get_League_Season_Dropdown_Handler::class ),
             $overrides['match_dropdown_handler'] ?? $this->createStub( Get_League_Match_Dropdown_Handler::class ),
             $overrides['last_5_handler'] ?? $this->createStub( Get_League_Last_5_Handler::class ),
-            $overrides['template_renderer'] ?? $this->createStub( Shortcode_Template_Renderer::class )
+            $overrides['template_renderer'] ?? $this->createStub( Shortcode_Template_Renderer::class ),
+            query_vars: $overrides['query_vars'] ?? new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
         );
     }
 

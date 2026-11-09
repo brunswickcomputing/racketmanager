@@ -1502,12 +1502,6 @@
         "src/php/Application/Tournament/Queries/Get_Tournament_Winners_Handler.php|depends on Racketmanager\\Services\\Tournament_Service": 1,
         "src/php/Application/Tournament/Queries/Get_Tournament_Withdrawal_Handler.php|depends on Racketmanager\\Services\\Tournament_Service": 1
     },
-    "application.no_global_wp": {
-        "src/php/Application/Tournament/Queries/Get_Tournament_Handler.php|global $wp": 1,
-        "src/php/Services/Competition/Competition_Season_Service.php|global $wp": 1,
-        "src/php/Services/Seo/Page_Title_Service.php|global $wp": 1,
-        "src/php/Util/Util_Lookup.php|global $wp": 2
-    },
     "application.no_superglobals": {
         "src/php/Application/Login/Queries/Get_Login_Form_Query.php|$_SERVER": 1
     },

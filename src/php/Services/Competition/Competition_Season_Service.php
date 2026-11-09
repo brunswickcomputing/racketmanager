@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Competition;
 
+use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Events\Competition_Season_Cascaded_Event;
@@ -22,6 +23,7 @@ class Competition_Season_Service {
 		private Event_Repository_Interface $event_repository,
 		private League_Repository_Interface $league_repository,
 		private ?Domain_Event_Dispatcher_Interface $event_dispatcher = null,
+		private ?Query_Vars_Interface $query_vars = null,
 	) {
 	}
 
@@ -63,15 +65,14 @@ class Competition_Season_Service {
 	 * Season selected by the current request, if any.
 	 */
 	private function get_request_season( Competition $competition ): ?string {
-		global $wp;
-
 		$competition_key = 'season_' . $competition->get_id();
+		$query_season    = $this->query_vars?->get( 'season' );
 		if ( ! empty( $_GET['season'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$raw = $_GET['season']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		} elseif ( ! empty( $_GET[ $competition_key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$raw = $_GET[ $competition_key ]; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		} elseif ( ! empty( $wp->query_vars['season'] ) ) {
-			return (string) $wp->query_vars['season'];
+		} elseif ( ! empty( $query_season ) ) {
+			return (string) $query_season;
 		} else {
 			return null;
 		}

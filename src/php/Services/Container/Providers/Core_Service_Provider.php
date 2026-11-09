@@ -23,6 +23,7 @@ use Racketmanager\Domain\Ports\Clock_Interface;
 use Racketmanager\Domain\Ports\Rating_Gateway_Interface;
 use Racketmanager\Application\Account\Ports\User_Favourites_Gateway_Interface;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Application\Payment\Ports\Payment_Gateway_Interface;
 use Racketmanager\Infrastructure\Events\Simple_Domain_Event_Dispatcher;
 use Racketmanager\Infrastructure\Gateways\Account\Wp_User_Favourites_Gateway;
@@ -58,6 +59,7 @@ use Racketmanager\Infrastructure\Wordpress\Auth\Login_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Auth\Password_Reset_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Export\Export_Delivery_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
+use Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory;
 use Racketmanager\Infrastructure\Wordpress\Rest\Rest_Controller_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Email_Shortcode_Adapter;
@@ -81,6 +83,7 @@ use Racketmanager\Services\Seo\Page_Title_Service_Interface;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Util\Util_Lookup;
 
 /**
  * Service provider for core infrastructure, gateways, shared repositories, and general handlers.
@@ -105,6 +108,8 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $this->register_services_and_exports( $container );
         $this->register_ajax_controllers( $container );
         $this->register_shortcodes_and_handlers( $container );
+
+        Util_Lookup::set_query_vars( $container->get( Query_Vars_Interface::class ) );
     }
 
     /**
@@ -135,6 +140,9 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->set( 'option_gateway', fn(): Option_Gateway_Interface => new Wp_Option_Gateway() );
         $container->set( Option_Gateway_Interface::class, fn( Simple_Container $c ): Option_Gateway_Interface => $c->get( 'option_gateway' ) );
         $container->alias( Wp_Option_Gateway::class, 'option_gateway' );
+
+        $container->set( Query_Vars_Interface::class, fn(): Query_Vars_Interface => new Wp_Query_Vars() );
+        $container->alias( Wp_Query_Vars::class, Query_Vars_Interface::class );
 
         $container->set( 'option_service', fn( Simple_Container $c ): Option_Service => $app?->option_service ?? new Option_Service( $c->get( 'option_gateway' ) ) );
         $container->set( Option_Service::class, fn( Simple_Container $c ): Option_Service => $c->get( 'option_service' ) );
@@ -188,7 +196,7 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->alias( View_Renderer_Interface::class, 'view_renderer' );
         $container->alias( Php_View_Renderer::class, 'view_renderer' );
 
-        $container->set( 'page_title_service', fn(): Page_Title_Service => new Page_Title_Service( $app?->site_name ) );
+        $container->set( 'page_title_service', fn( Simple_Container $c ): Page_Title_Service => new Page_Title_Service( $app?->site_name, $c->get( Query_Vars_Interface::class ) ) );
         $container->set( Page_Title_Service::class, fn( Simple_Container $c ): Page_Title_Service => $c->get( 'page_title_service' ) );
         $container->set( Page_Title_Service_Interface::class, fn( Simple_Container $c ): Page_Title_Service => $c->get( 'page_title_service' ) );
 
@@ -442,7 +450,8 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
                 team_repository: $c->get( 'team_repository' ),
                 league_repository: $c->get( 'league_repository' ),
                 event_repository: $c->get( 'event_repository' ),
-                competition_repository: $c->get( 'competition_repository' )
+                competition_repository: $c->get( 'competition_repository' ),
+                query_vars: $c->get( Query_Vars_Interface::class )
             )
         );
         $container->alias( Email_Shortcode_Adapter::class, 'email_shortcode_adapter' );
@@ -462,7 +471,8 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
                 password_reset_form_handler: $c->get( 'get_password_reset_form_handler' ),
                 member_account_form_handler: $c->get( 'get_member_account_form_handler' ),
                 template_renderer: $c->get( 'shortcode_template_renderer' ),
-                security_service: $c->get( 'security_service' )
+                security_service: $c->get( 'security_service' ),
+                query_vars: $c->get( Query_Vars_Interface::class )
             )
         );
         $container->alias( Login_Shortcode_Adapter::class, 'login_shortcode_adapter' );
@@ -479,7 +489,8 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
                 message_handler: $c->get( 'get_message_handler' ),
                 template_renderer: $c->get( 'shortcode_template_renderer' ),
                 security_service: $c->get( 'security_service' ),
-                message_presenter: $c->get( 'message_presenter' )
+                message_presenter: $c->get( 'message_presenter' ),
+                query_vars: $c->get( Query_Vars_Interface::class )
             )
         );
         $container->alias( Message_Shortcode_Adapter::class, 'message_shortcode_adapter' );
@@ -535,7 +546,8 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
                 template_renderer: $c->get( 'shortcode_template_renderer' ),
                 security_service: $c->get( 'security_service' ),
                 player_presenter: $c->get( 'player_presenter' ),
-                invoice_presenter: $c->get( 'invoice_presenter' )
+                invoice_presenter: $c->get( 'invoice_presenter' ),
+                query_vars: $c->get( Query_Vars_Interface::class )
             )
         );
         $container->alias( General_Shortcode_Adapter::class, 'general_shortcode_adapter' );

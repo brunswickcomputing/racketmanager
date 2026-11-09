@@ -37,6 +37,7 @@ use Racketmanager\Application\Event\Queries\Get_Event_Teams_Handler;
 use Racketmanager\Application\Event\Queries\Get_Event_Teams_Query;
 use Racketmanager\Application\Event\Queries\Get_Team_Order_Players_Handler;
 use Racketmanager\Application\Event\Queries\Get_Team_Order_Players_Query;
+use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
@@ -76,7 +77,8 @@ class Event_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly ?Competition_Shortcode_Presenter $competition_shortcode_presenter = null,
         private readonly ?Tournament_Presenter $tournament_presenter = null,
         private readonly ?Player_Presenter $player_presenter = null,
-        private readonly ?Team_Details_Presenter $team_details_presenter = null
+        private readonly ?Team_Details_Presenter $team_details_presenter = null,
+        private readonly ?Query_Vars_Interface $query_vars = null
     ) {}
 
     public function show_event( array|string $atts = [] ): string {
@@ -540,12 +542,7 @@ class Event_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     }
 
     private function extract_query_vars(): array {
-        global $wp;
-        if ( isset( $wp ) && is_object( $wp ) && isset( $wp->query_vars ) && is_array( $wp->query_vars ) ) {
-            return $wp->query_vars;
-        }
-
-        return [];
+        return $this->query_vars?->all() ?? [];
     }
 
     private function normalize_atts( array|string $atts, array $query_vars ): array {

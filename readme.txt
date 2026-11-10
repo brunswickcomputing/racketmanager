@@ -47,6 +47,9 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 9.7.10 =
+UPDATE: allow pending tournament entries to be confirmed after close
+
 = 9.7.9 =
 UPDATE: count only active tournament entries
 UPDATE: simplify tournament player list player link rendering

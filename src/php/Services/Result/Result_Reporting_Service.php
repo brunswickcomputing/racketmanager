@@ -8,6 +8,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Result;
 
+use Racketmanager\Application\Fixture\Ports\Result_Reporting_Service_Interface;
 use Racketmanager\Domain\Enums\Fixture_Status;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Scoring\Set_Score;
@@ -18,7 +19,7 @@ use stdClass;
 /**
  * Class Result_Reporting_Service
  */
-readonly class Result_Reporting_Service {
+readonly class Result_Reporting_Service implements Result_Reporting_Service_Interface {
 
     /**
      * Result_Reporting_Service constructor.

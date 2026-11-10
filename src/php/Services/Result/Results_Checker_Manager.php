@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Result;
 
+use Racketmanager\Application\Fixture\Ports\Results_Checker_Manager_Interface;
 use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Domain\Enums\Results_Checker_Status;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
@@ -16,7 +17,7 @@ use Racketmanager\Services\Notification\Notification_Service;
 /**
  * Manager for Result Checker workflows
  */
-class Results_Checker_Manager {
+class Results_Checker_Manager implements Results_Checker_Manager_Interface {
     private ?Notification_Service $notification_service = null;
 
     /**

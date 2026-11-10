@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Fixture;
 
+use Racketmanager\Application\Fixture\Ports\Fixture_Permission_Service_Interface;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Update_Authorizer_Interface;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
@@ -15,7 +16,7 @@ use Racketmanager\Services\Registration_Service;
 /**
  * Service to handle fixture update permissions.
  */
-class Fixture_Permission_Service implements Fixture_Update_Authorizer_Interface {
+class Fixture_Permission_Service implements Fixture_Update_Authorizer_Interface, Fixture_Permission_Service_Interface {
 
     private Fixture_Repository_Interface $fixture_repository;
     private Registration_Service $registration_service;

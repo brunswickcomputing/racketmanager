@@ -4,6 +4,14 @@ declare( strict_types=1 );
 namespace Racketmanager\Services\Container\Providers;
 
 use Racketmanager\Application\Fixture\Listeners\Schedule_Fixture_Report_Listener;
+use Racketmanager\Application\Fixture\Ports\Fixture_Detail_Service_Interface;
+use Racketmanager\Application\Fixture\Ports\Fixture_Link_Service_Interface;
+use Racketmanager\Application\Fixture\Ports\Fixture_Maintenance_Service_Interface;
+use Racketmanager\Application\Fixture\Ports\Fixture_Permission_Service_Interface;
+use Racketmanager\Application\Fixture\Ports\Fixture_Result_Manager_Interface;
+use Racketmanager\Application\Fixture\Ports\Fixture_Service_Interface;
+use Racketmanager\Application\Fixture\Ports\Result_Reporting_Service_Interface;
+use Racketmanager\Application\Fixture\Ports\Results_Checker_Manager_Interface;
 use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Daily_Matches_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Latest_Results_Handler;
@@ -101,6 +109,7 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
         // Services
         $container->set( 'fixture_link_service', fn() => new Fixture_Link_Service() );
         $container->alias( Fixture_Link_Service::class, 'fixture_link_service' );
+        $container->alias( Fixture_Link_Service_Interface::class, 'fixture_link_service' );
 
         $container->set( 'fixture_permission_service', fn( Simple_Container $c ) => new Fixture_Permission_Service(
             $c->get( 'repository_provider' ),
@@ -108,6 +117,7 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             $app?->get_options() ?? []
         ) );
         $container->alias( Fixture_Permission_Service::class, 'fixture_permission_service' );
+        $container->alias( Fixture_Permission_Service_Interface::class, 'fixture_permission_service' );
 
         $container->set( 'fixture_detail_service', fn( Simple_Container $c ) => new Fixture_Detail_Service(
             $c->get( 'repository_provider' ),
@@ -117,12 +127,14 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             $c->get( 'fixture_link_service' )
         ) );
         $container->alias( Fixture_Detail_Service::class, 'fixture_detail_service' );
+        $container->alias( Fixture_Detail_Service_Interface::class, 'fixture_detail_service' );
 
         $container->set( 'result_reporting_service', fn( Simple_Container $c ) => new Result_Reporting_Service(
             $c->get( 'repository_provider' ),
             $c->get( 'option_gateway' )
         ) );
         $container->alias( Result_Reporting_Service::class, 'result_reporting_service' );
+        $container->alias( Result_Reporting_Service_Interface::class, 'result_reporting_service' );
 
         $container->set( 'schedule_fixture_report_listener', fn( Simple_Container $c ) => new Schedule_Fixture_Report_Listener(
             $c->get( 'result_reporting_service' )
@@ -186,6 +198,7 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             $c->get( 'fixture_detail_service' )
         ) );
         $container->alias( Fixture_Service::class, 'fixture_service' );
+        $container->alias( Fixture_Service_Interface::class, 'fixture_service' );
 
         $container->set( 'fixture_result_manager', function ( Simple_Container $c ) {
             $service_provider = $c->get( 'fixture_service_provider' );
@@ -198,6 +211,7 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             return $result_manager;
         } );
         $container->alias( Fixture_Result_Manager::class, 'fixture_result_manager' );
+        $container->alias( Fixture_Result_Manager_Interface::class, 'fixture_result_manager' );
 
         $container->set( 'fixture_maintenance_service', function ( Simple_Container $c ) {
             $result_manager = $c->get( 'fixture_result_manager' );
@@ -205,6 +219,7 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             return $result_manager->get_fixture_maintenance_service();
         } );
         $container->alias( Fixture_Maintenance_Service::class, 'fixture_maintenance_service' );
+        $container->alias( Fixture_Maintenance_Service_Interface::class, 'fixture_maintenance_service' );
 
         $container->set( 'fixture_lifecycle_service', fn( Simple_Container $c ) => new Fixture_Lifecycle_Service(
             $c->get( 'repository_provider' ),
@@ -264,6 +279,7 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
             return $manager;
         } );
         $container->alias( Results_Checker_Manager::class, 'results_checker_manager' );
+        $container->alias( Results_Checker_Manager_Interface::class, 'results_checker_manager' );
 
         // Finder
         $container->set( 'fixture_listing_finder', fn( Simple_Container $c ) => new Legacy_Fixture_Listing_Finder( $c->get( 'fixture_repository' ) ) );

@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Fixture;
 
+use Racketmanager\Application\Fixture\Ports\Fixture_Result_Manager_Interface;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Confirmation_Context;
@@ -51,7 +52,7 @@ use Racketmanager\Util\Util_Messages;
 /**
  * Service for managing fixture results and state transitions.
  */
-class Fixture_Result_Manager {
+class Fixture_Result_Manager implements Fixture_Result_Manager_Interface {
     /**
      * @var Result_Service
      */

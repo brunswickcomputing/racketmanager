@@ -5,6 +5,14 @@ namespace Racketmanager\Tests\Unit\Services\Container;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Account\Ports\User_Favourites_Gateway_Interface;
+use Racketmanager\Application\Fixture\Ports\Fixture_Detail_Service_Interface;
+use Racketmanager\Application\Fixture\Ports\Fixture_Link_Service_Interface;
+use Racketmanager\Application\Fixture\Ports\Fixture_Maintenance_Service_Interface;
+use Racketmanager\Application\Fixture\Ports\Fixture_Permission_Service_Interface;
+use Racketmanager\Application\Fixture\Ports\Fixture_Result_Manager_Interface;
+use Racketmanager\Application\Fixture\Ports\Fixture_Service_Interface;
+use Racketmanager\Application\Fixture\Ports\Result_Reporting_Service_Interface;
+use Racketmanager\Application\Fixture\Ports\Results_Checker_Manager_Interface;
 use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Application\Payment\Ports\Payment_Gateway_Interface;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
@@ -580,6 +588,32 @@ class Container_Bootstrap_Services_Test extends TestCase {
 
             $this->assertInstanceOf( $class_or_interface, $from_string );
             $this->assertSame( $from_string, $from_class, "Instance mismatch for $string_id vs $class_or_interface" );
+        }
+    }
+
+    public function test_container_resolves_fixture_port_interfaces_to_canonical_instances(): void {
+        $fixture_port_mappings = [
+            'fixture_service'             => Fixture_Service_Interface::class,
+            'fixture_detail_service'      => Fixture_Detail_Service_Interface::class,
+            'result_reporting_service'    => Result_Reporting_Service_Interface::class,
+            'fixture_link_service'        => Fixture_Link_Service_Interface::class,
+            'fixture_permission_service'  => Fixture_Permission_Service_Interface::class,
+            'fixture_maintenance_service' => Fixture_Maintenance_Service_Interface::class,
+            'fixture_result_manager'      => Fixture_Result_Manager_Interface::class,
+            'results_checker_manager'     => Results_Checker_Manager_Interface::class,
+        ];
+
+        foreach ( $fixture_port_mappings as $string_id => $interface_class ) {
+            $this->assertTrue( $this->container->has( $string_id ), "Missing string ID: $string_id" );
+            $this->assertTrue( $this->container->has_definition( $string_id ), "Missing definition for: $string_id" );
+            $this->assertTrue( $this->container->has( $interface_class ), "Missing interface: $interface_class" );
+            $this->assertTrue( $this->container->has_definition( $interface_class ), "Missing interface definition: $interface_class" );
+
+            $from_string    = $this->container->get( $string_id );
+            $from_interface = $this->container->get( $interface_class );
+
+            $this->assertInstanceOf( $interface_class, $from_string );
+            $this->assertSame( $from_string, $from_interface, "Instance mismatch for $string_id vs $interface_class" );
         }
     }
 

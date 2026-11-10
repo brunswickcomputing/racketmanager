@@ -7,17 +7,17 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Details_DTO;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Enums\Club_Role;
-use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
-use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
-use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
-use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
+use Racketmanager\Application\Fixture\Ports\Fixture_Link_Service_Interface;
+use Racketmanager\Application\Fixture\Ports\Fixture_Permission_Service_Interface;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
-use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
-use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
-use Racketmanager\Services\Fixture\Fixture_Link_Service;
-use Racketmanager\Services\Fixture\Fixture_Permission_Service;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 
 class Fixture_Details_Assembler {
     private League_Repository_Interface $league_repository;
@@ -28,8 +28,8 @@ class Fixture_Details_Assembler {
     private Rubber_Repository_Interface $rubber_repository;
     private League_Team_Repository_Interface $league_team_repository;
     private Player_Repository_Interface $player_repository;
-    private Fixture_Link_Service $link_service;
-    private Fixture_Permission_Service $permission_service;
+    private Fixture_Link_Service_Interface $link_service;
+    private Fixture_Permission_Service_Interface $permission_service;
     private Club_Role_Repository_Interface $club_role_repository;
 
     public function __construct(
@@ -41,8 +41,8 @@ class Fixture_Details_Assembler {
         Rubber_Repository_Interface $rubber_repository,
         League_Team_Repository_Interface $league_team_repository,
         Player_Repository_Interface $player_repository,
-        Fixture_Link_Service $link_service,
-        Fixture_Permission_Service $permission_service,
+        Fixture_Link_Service_Interface $link_service,
+        Fixture_Permission_Service_Interface $permission_service,
         Club_Role_Repository_Interface $club_role_repository
     ) {
         $this->league_repository = $league_repository;

@@ -3,14 +3,14 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Admin\Commands;
 
+use Racketmanager\Application\Fixture\Ports\Results_Checker_Manager_Interface;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
-use Racketmanager\Services\Result\Results_Checker_Manager;
 
 final readonly class Results_Checker_Handler {
     public function __construct(
-        private Results_Checker_Manager $results_checker_manager,
+        private Results_Checker_Manager_Interface $results_checker_manager,
         private Results_Checker_Repository_Interface $results_checker_repository,
     ) {
     }

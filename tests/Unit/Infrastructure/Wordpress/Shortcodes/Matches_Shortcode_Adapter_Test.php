@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Shortcodes;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Fixture\Ports\Fixture_Detail_Service_Interface;
 use Racketmanager\Application\Matches\Queries\Get_Daily_Matches_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Latest_Results_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Match_Detail_Handler;
@@ -37,7 +38,6 @@ use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Fixture_Service;
-use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\View_Renderer_Interface;
@@ -315,7 +315,7 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
     }
 
     public function test_show_score_resolves_fixture_by_attribute_id(): void {
-        $service = $this->createMock( Fixture_Detail_Service::class );
+        $service = $this->createMock( Fixture_Detail_Service_Interface::class );
         $service->expects( $this->once() )->method( 'get_fixture_with_details' )->with( 77 )->willReturn( null );
 
         $this->build_native_adapter( $service )->show_score( [ 'id' => '77' ] );
@@ -383,7 +383,7 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
             }
         );
 
-        $service = $this->createMock( Fixture_Detail_Service::class );
+        $service = $this->createMock( Fixture_Detail_Service_Interface::class );
         $service->expects( $this->once() )->method( 'get_fixture_with_details' )
             ->with( 42, false, 9 )
             ->willReturnCallback( function () use ( $fixture, $rubber, $dto ) {
@@ -512,7 +512,7 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
 
         return $this->new_adapter(
             $renderer,
-            $this->createStub( Fixture_Detail_Service::class ),
+            $this->createStub( Fixture_Detail_Service_Interface::class ),
             $this->createStub( Player_Service::class ),
             new Get_Daily_Matches_Handler( $finder ),
             new Get_Latest_Results_Handler( $finder, $clubs, $this->createStub( Competition_Repository_Interface::class ) ),
@@ -529,7 +529,7 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
         );
     }
 
-    private function build_native_adapter( Fixture_Detail_Service $service, ?Player_Service $players = null, ?View_Renderer_Interface $renderer = null, ?\Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface $rubbers = null ): Matches_Shortcode_Adapter {
+    private function build_native_adapter( Fixture_Detail_Service_Interface $service, ?Player_Service $players = null, ?View_Renderer_Interface $renderer = null, ?\Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface $rubbers = null ): Matches_Shortcode_Adapter {
         return $this->new_adapter(
             $renderer ?? new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ),
             $service,
@@ -543,7 +543,7 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
 
     private function new_adapter(
         View_Renderer_Interface $renderer,
-        Fixture_Detail_Service $service,
+        Fixture_Detail_Service_Interface $service,
         Player_Service $players,
         Get_Daily_Matches_Handler $daily,
         Get_Latest_Results_Handler $latest,
@@ -562,8 +562,8 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
         );
     }
 
-    private function details_service( ?Fixture_Details_DTO $dto ): Fixture_Detail_Service {
-        $service = $this->createStub( Fixture_Detail_Service::class );
+    private function details_service( ?Fixture_Details_DTO $dto ): Fixture_Detail_Service_Interface {
+        $service = $this->createStub( Fixture_Detail_Service_Interface::class );
         $service->method( 'get_fixture_with_details' )->willReturn( $dto );
 
         return $service;

@@ -3,15 +3,15 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Matches\Queries;
 
+use Racketmanager\Application\Fixture\Ports\Fixture_Detail_Service_Interface;
 use Racketmanager\Application\Matches\DTOs\Match_Score_Result;
-use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use function __;
 
 /**
  * Handles the [score] query: resolves the fixture and works out which side/outcome to show.
  */
 class Get_Match_Score_Handler {
-    public function __construct( private readonly Fixture_Detail_Service $fixture_detail_service ) {}
+    public function __construct( private readonly Fixture_Detail_Service_Interface $fixture_detail_service ) {}
 
     public function handle( Get_Match_Score_Query $query ): Match_Score_Result {
         if ( 0 === $query->match_id ) {

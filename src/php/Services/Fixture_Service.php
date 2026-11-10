@@ -10,6 +10,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services;
 
+use Racketmanager\Application\Fixture\Ports\Fixture_Service_Interface;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
@@ -29,7 +30,7 @@ use stdClass;
 /**
  * Class to implement the Fixture Management Service
  */
-class Fixture_Service {
+class Fixture_Service implements Fixture_Service_Interface {
 
     private Fixture_Repository_Interface $fixture_repository;
     private Rubber_Repository_Interface $rubber_repository;

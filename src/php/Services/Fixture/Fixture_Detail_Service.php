@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Fixture;
 
+use Racketmanager\Application\Fixture\Ports\Fixture_Detail_Service_Interface;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
@@ -23,7 +24,7 @@ use Racketmanager\Util\Util;
 /**
  * Service to handle retrieval of fixture details and context.
  */
-class Fixture_Detail_Service {
+class Fixture_Detail_Service implements Fixture_Detail_Service_Interface {
 
     private Fixture_Repository_Interface $fixture_repository;
     private League_Repository_Interface $league_repository;

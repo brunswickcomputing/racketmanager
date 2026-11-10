@@ -3,12 +3,12 @@
  * Match date round validator for league/event setup screens.
  *
  * @package RacketManager
- * @subpackage Services/Admin/League
+ * @subpackage Application/Admin/Validation
  */
 
 declare( strict_types=1 );
 
-namespace Racketmanager\Services\Admin\League;
+namespace Racketmanager\Application\Admin\Validation;
 
 /**
  * Validates sequential match dates posted from the championship setup form.

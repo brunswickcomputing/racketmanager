@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Application\Event\Queries;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Event\Queries\Get_Event_Draw_Handler;
 use Racketmanager\Application\Event\Queries\Get_Event_Matches_Handler;
+use Racketmanager\Application\Fixture\Ports\Fixture_Detail_Service_Interface;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Tournament\Championship;
@@ -14,7 +15,6 @@ use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\League_Service;
 
 class Event_Query_Handler_Delegation_Test extends TestCase {
@@ -104,7 +104,7 @@ class Event_Query_Handler_Delegation_Test extends TestCase {
 		$handler = new Get_Event_Draw_Handler(
 			$this->createStub( Competition_Service::class ),
 			$league_service,
-			$this->createStub( Fixture_Detail_Service::class ),
+			$this->createStub( Fixture_Detail_Service_Interface::class ),
 			$event_query,
 			$league_query
 		);

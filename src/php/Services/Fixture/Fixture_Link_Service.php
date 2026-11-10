@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Fixture;
 
+use Racketmanager\Application\Fixture\Ports\Fixture_Link_Service_Interface;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Tournament_Service;
@@ -11,7 +12,7 @@ use Racketmanager\Util\Util;
 /**
  * Service to encapsulate fixture link generation logic.
  */
-class Fixture_Link_Service {
+class Fixture_Link_Service implements Fixture_Link_Service_Interface {
     private const string MATCH_URL_PATH = '/match/';
     private const string LEAGUE_URL_PATH = '/league/';
     private const string TOURNAMENT_URL_PATH = '/tournament/';

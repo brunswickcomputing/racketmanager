@@ -16,10 +16,10 @@ use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
+use Racketmanager\Application\Fixture\Ports\Fixture_Link_Service_Interface;
+use Racketmanager\Application\Fixture\Ports\Fixture_Permission_Service_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
-use Racketmanager\Services\Fixture\Fixture_Link_Service;
-use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 
 class Fixture_Details_Assembler_Test extends TestCase {
     private Fixture_Details_Assembler $service;
@@ -35,7 +35,7 @@ class Fixture_Details_Assembler_Test extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         
-        $this->permission_service = $this->createStub( Fixture_Permission_Service::class );
+        $this->permission_service = $this->createStub( Fixture_Permission_Service_Interface::class );
         $this->player_repository = $this->createStub( Player_Repository_Interface::class );
         $this->league_team_repository = $this->createStub( League_Team_Repository_Interface::class );
         $this->club_repository = $this->createStub( Club_Repository_Interface::class );
@@ -53,7 +53,7 @@ class Fixture_Details_Assembler_Test extends TestCase {
             $this->createStub( Rubber_Repository_Interface::class ),
             $this->league_team_repository,
             $this->player_repository,
-            $this->createStub( Fixture_Link_Service::class ),
+            $this->createStub( Fixture_Link_Service_Interface::class ),
             $this->permission_service,
             $this->club_role_repository
         );
@@ -186,7 +186,7 @@ class Fixture_Details_Assembler_Test extends TestCase {
         $league_repo = $this->createStub( League_Repository_Interface::class );
         $league_repo->method('find_by_id')->willReturn($league);
 
-        $link_service = $this->createStub( Fixture_Link_Service::class );
+        $link_service = $this->createStub( Fixture_Link_Service_Interface::class );
         $link_service->method('get_fixture_link')->willReturn('https://example.com/match/123');
 
         $this->service = new Fixture_Details_Assembler(
@@ -262,7 +262,7 @@ class Fixture_Details_Assembler_Test extends TestCase {
             $this->createStub( Rubber_Repository_Interface::class ),
             $this->league_team_repository,
             $this->player_repository,
-            $this->createStub( Fixture_Link_Service::class ),
+            $this->createStub( Fixture_Link_Service_Interface::class ),
             $this->permission_service,
             $this->club_role_repository
         );

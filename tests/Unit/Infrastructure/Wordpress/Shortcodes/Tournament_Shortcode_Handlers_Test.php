@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Shortcodes;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Tests\Helpers\Creates_Test_Container;
+use Racketmanager\Application\Fixture\Ports\Fixture_Service_Interface;
 use Racketmanager\Application\Tournament\Queries\Get_Latest_Tournament_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Latest_Tournament_Query;
 use Racketmanager\Application\Tournament\Queries\Get_Order_Of_Play_Handler;
@@ -543,7 +544,7 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
     // -------------------------------------------------------------------------
 
     public function test_match_handler_missing_id_returns_error(): void {
-        $fixture_service = $this->createStub( Fixture_Service::class );
+        $fixture_service = $this->createStub( Fixture_Service_Interface::class );
         $handler         = new Get_Tournament_Match_Handler( $this->tournament_service, $fixture_service );
         $result          = $handler->handle( new Get_Tournament_Match_Query() );
         $vm              = $this->adapter->present_match( $result );
@@ -571,7 +572,7 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
             $competition
         );
 
-        $fixture_service = $this->createStub( Fixture_Service::class );
+        $fixture_service = $this->createStub( Fixture_Service_Interface::class );
         $fixture_service->method( 'get_tournament_fixture_with_details' )->willReturn( $fixture_details );
         $this->tournament_service->method( 'get_tournament_with_details_by_name' )->willReturn( $details );
 

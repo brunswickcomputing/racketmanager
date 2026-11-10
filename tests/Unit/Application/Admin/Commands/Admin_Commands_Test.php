@@ -13,13 +13,20 @@ use Racketmanager\Application\Admin\Commands\League_Constitution_Handler;
 use Racketmanager\Application\Admin\Commands\League_Match_Handler;
 use Racketmanager\Application\Admin\Commands\League_Setup_Handler;
 use Racketmanager\Application\Admin\Commands\League_Team_Handler;
+use Racketmanager\Application\Admin\Commands\Manage_League_Matches_Command;
 use Racketmanager\Application\Admin\Commands\Moderate_Results_Checker_Command;
 use Racketmanager\Application\Admin\Commands\Rank_League_Teams_Command;
 use Racketmanager\Application\Admin\Commands\Results_Checker_Handler;
 use Racketmanager\Application\Admin\Commands\Set_League_Match_Dates_Command;
+use Racketmanager\Application\Admin\Commands\Update_League_Results_Command;
+use Racketmanager\Application\Fixture\Ports\Fixture_Maintenance_Service_Interface;
+use Racketmanager\Application\Fixture\Ports\Fixture_Result_Manager_Interface;
+use Racketmanager\Application\Fixture\Ports\Fixture_Service_Interface;
+use Racketmanager\Application\Fixture\Ports\Results_Checker_Manager_Interface;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Result\Results_Checker_Data;
+use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
@@ -242,7 +249,7 @@ final class Admin_Commands_Test extends TestCase {
     }
 
     public function test_direct_results_handler_preserves_partial_success(): void {
-        $manager = $this->createMock( Results_Checker_Manager::class );
+        $manager = $this->createMock( Results_Checker_Manager_Interface::class );
         $repository = $this->createMock( Results_Checker_Repository_Interface::class );
         $checker = new Results_Checker( new Results_Checker_Data( id: 7 ) );
         $repository->expects( self::exactly( 2 ) )->method( 'find_by_id' )->willReturnMap( [ [ 7, $checker ], [ 8, null ] ] );
@@ -253,6 +260,150 @@ final class Admin_Commands_Test extends TestCase {
         self::assertSame( 'resultschecker', $result->tab_override );
     }
 
+    public function test_direct_league_match_handler_deletes_matches_via_maintenance_port(): void {
+        $maintenance = $this->createMock( Fixture_Maintenance_Service_Interface::class );
+        $maintenance->expects( self::exactly( 2 ) )
+            ->method( 'delete_fixture' )
+            ->willReturnCallback( function ( int $id ): bool {
+                $this->assertContains( $id, [ 7, 8 ] );
+                return true;
+            } );
+
+        $handler = new League_Match_Handler(
+            $this->createStub( Fixture_Repository_Interface::class ),
+            $maintenance,
+            $this->createStub( Fixture_Result_Manager_Interface::class ),
+            $this->createStub( Fixture_Service_Interface::class ),
+            $this->createStub( League_Query_Service::class )
+        );
+
+        $result = $handler->handle_delete_matches( new Delete_League_Matches_Command( [ '7', '8' ] ) );
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+        self::assertSame( 'Match id 7 deleted<br>Match id 8 deleted', $result->message );
+        self::assertSame( 'matches', $result->tab_override );
+    }
+
+    public function test_direct_league_match_handler_updates_results_via_result_manager_port(): void {
+        $league = $this->createStub( League::class );
+        $result_manager = $this->createMock( Fixture_Result_Manager_Interface::class );
+        $result_manager->expects( self::once() )
+            ->method( 'update_match_results' )
+            ->with( $league, [ '7' ], [ 7 => '3' ], [ 7 => '1' ], [ 7 => [ 'sets' => '2' ] ], '2026', false )
+            ->willReturn( 1 );
+
+        $handler = new League_Match_Handler(
+            $this->createStub( Fixture_Repository_Interface::class ),
+            $this->createStub( Fixture_Maintenance_Service_Interface::class ),
+            $result_manager,
+            $this->createStub( Fixture_Service_Interface::class ),
+            $this->createStub( League_Query_Service::class )
+        );
+
+        $command = new Update_League_Results_Command(
+            season: '2026',
+            matches: [ '7' ],
+            home_points: [ 7 => '3' ],
+            away_points: [ 7 => '1' ],
+            custom: [ 7 => [ 'sets' => '2' ] ]
+        );
+
+        $result = $handler->handle_update_results( $command, $league );
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+        self::assertSame( 'Updated Results of 1 matches', $result->message );
+        self::assertSame( 'matches', $result->tab_override );
+    }
+
+    public function test_direct_league_match_handler_adds_match_via_fixture_service_port(): void {
+        $league = $this->createStub( League::class );
+        $fixture_service = $this->createMock( Fixture_Service_Interface::class );
+        $fixture_service->expects( self::once() )
+            ->method( 'add_match' )
+            ->with(
+                self::callback( static fn( object $match ): bool => 'Court 1' === $match->location && '2026-06-01 19:30:00' === $match->date ),
+                $league
+            );
+
+        $handler = new League_Match_Handler(
+            $this->createStub( Fixture_Repository_Interface::class ),
+            $this->createStub( Fixture_Maintenance_Service_Interface::class ),
+            $this->createStub( Fixture_Result_Manager_Interface::class ),
+            $fixture_service,
+            $this->createStub( League_Query_Service::class )
+        );
+
+        $command = new Manage_League_Matches_Command(
+            mode: 'add',
+            match: [ 0 ],
+            season: '2026',
+            final: null,
+            league_id: '5',
+            num_rubbers: 4,
+            match_day: 1,
+            home_team: [ '10' ],
+            away_team: [ '20' ],
+            host: [ null ],
+            location: [ 'Court 1' ],
+            myDatePicker: [ '2026-06-01' ],
+            begin_hour: [ '19' ],
+            begin_minutes: [ '30' ],
+            year: [],
+            month: [],
+            day: []
+        );
+
+        $result = $handler->handle_manage_matches( $command, $league );
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+        self::assertSame( '1 Match added', $result->message );
+    }
+
+    public function test_direct_league_match_handler_edits_match_via_fixture_service_port(): void {
+        $league = $this->createStub( League::class );
+        $league->id = 5;
+
+        $fixture = new Fixture();
+        $fixture->set_id( 7 );
+
+        $repository = $this->createMock( Fixture_Repository_Interface::class );
+        $repository->expects( self::once() )->method( 'find_by_id' )->with( 7 )->willReturn( $fixture );
+
+        $fixture_service = $this->createMock( Fixture_Service_Interface::class );
+        $fixture_service->expects( self::once() )
+            ->method( 'update_match' )
+            ->with( self::callback( static fn( object $m ): bool => $m instanceof Fixture && 7 === $m->get_id() && 'Court 2' === $m->location && '2026-06-01 18:00:00' === $m->date ) );
+
+        $handler = new League_Match_Handler(
+            $repository,
+            $this->createStub( Fixture_Maintenance_Service_Interface::class ),
+            $this->createStub( Fixture_Result_Manager_Interface::class ),
+            $fixture_service,
+            $this->createStub( League_Query_Service::class )
+        );
+
+        $command = new Manage_League_Matches_Command(
+            mode: 'edit',
+            match: [ 7 ],
+            season: null,
+            final: null,
+            league_id: null,
+            num_rubbers: null,
+            match_day: [ 2 ],
+            home_team: [ '10' ],
+            away_team: [ '20' ],
+            host: [ null ],
+            location: [ 'Court 2' ],
+            myDatePicker: [ '2026-06-01' ],
+            begin_hour: [ '18' ],
+            begin_minutes: [ '00' ],
+            year: [],
+            month: [],
+            day: []
+        );
+
+        $result = $handler->handle_manage_matches( $command, $league );
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+        self::assertSame( '1 Match updated', $result->message );
+    }
+
     public function test_results_malformed_action_returns_error_without_repository_calls(): void {
         $repository = $this->createMock( Results_Checker_Repository_Interface::class );
         $repository->expects( self::never() )->method( 'find_by_id' );
@@ -260,7 +411,7 @@ final class Admin_Commands_Test extends TestCase {
             $this->createStub( Results_Checker_Manager::class ),
             $repository,
             $this->createStub( Action_Guard_Interface::class ),
-            new Results_Checker_Handler( $this->createStub( Results_Checker_Manager::class ), $repository )
+            new Results_Checker_Handler( $this->createStub( Results_Checker_Manager_Interface::class ), $repository )
         );
         $result = $dispatcher->handle( [ 'doResultsChecker' => 1, 'action' => [], 'resultsChecker' => [ 7 ] ] );
         self::assertSame( Admin_Message_Type::ERROR, $result->message_type );

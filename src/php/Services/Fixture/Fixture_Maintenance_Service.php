@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Fixture;
 
+use Racketmanager\Application\Fixture\Ports\Fixture_Maintenance_Service_Interface;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Notification\Notification_Service;
@@ -23,7 +24,7 @@ use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 /**
  * Service for fixture maintenance tasks like chasing missing results and auto-confirming.
  */
-class Fixture_Maintenance_Service {
+class Fixture_Maintenance_Service implements Fixture_Maintenance_Service_Interface {
 
     private Fixture_Repository_Interface $fixture_repository;
     private League_Repository_Interface $league_repository;

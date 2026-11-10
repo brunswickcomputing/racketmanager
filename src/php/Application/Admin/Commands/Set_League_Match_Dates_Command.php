@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Admin\Commands;
 
 use InvalidArgumentException;
-use Racketmanager\Services\Admin\League\Match_Date_Round_Validator;
+use Racketmanager\Application\Admin\Validation\Match_Date_Round_Validator;
 
 final readonly class Set_League_Match_Dates_Command {
     /** @var list<string>|null */

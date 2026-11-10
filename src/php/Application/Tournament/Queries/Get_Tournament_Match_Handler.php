@@ -3,17 +3,17 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Tournament\Queries;
 
+use Racketmanager\Application\Fixture\Ports\Fixture_Service_Interface;
 use Racketmanager\Application\Tournament\DTOs\Tournament_Match_Result;
 use Racketmanager\Exceptions\Fixture_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Tournament_Service;
 use function __;
 
 class Get_Tournament_Match_Handler {
     public function __construct(
         private readonly Tournament_Service $tournament_service,
-        private readonly Fixture_Service $fixture_service
+        private readonly Fixture_Service_Interface $fixture_service
     ) {}
 
     public function handle( Get_Tournament_Match_Query $query ): Tournament_Match_Result {

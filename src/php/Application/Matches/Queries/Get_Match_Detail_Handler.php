@@ -3,9 +3,9 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Matches\Queries;
 
+use Racketmanager\Application\Fixture\Ports\Fixture_Detail_Service_Interface;
 use Racketmanager\Application\Matches\DTOs\Match_Detail_Result;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
-use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\Player_Service;
 use function __;
 
@@ -15,7 +15,7 @@ use function __;
  */
 class Get_Match_Detail_Handler {
     public function __construct(
-        private readonly Fixture_Detail_Service $fixture_detail_service,
+        private readonly Fixture_Detail_Service_Interface $fixture_detail_service,
         private readonly Player_Service $player_service
     ) {}
 

@@ -1,10 +1,10 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager\Tests\Unit\Services\Admin\League;
+namespace Racketmanager\Tests\Unit\Application\Admin\Validation;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Services\Admin\League\Match_Date_Round_Validator;
+use Racketmanager\Application\Admin\Validation\Match_Date_Round_Validator;
 
 require_once __DIR__ . '/../../../../wp-stubs.php';
 

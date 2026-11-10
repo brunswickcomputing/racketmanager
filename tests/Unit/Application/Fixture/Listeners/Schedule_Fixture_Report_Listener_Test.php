@@ -5,11 +5,11 @@ namespace Racketmanager\Tests\Unit\Application\Fixture\Listeners;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Fixture\Listeners\Schedule_Fixture_Report_Listener;
+use Racketmanager\Application\Fixture\Ports\Result_Reporting_Service_Interface;
 use Racketmanager\Domain\Fixture\Events\Fixture_Result_Finalized_Event;
 use Racketmanager\Infrastructure\Events\Simple_Domain_Event_Dispatcher;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Container\Container_Bootstrap;
-use Racketmanager\Services\Result\Result_Reporting_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use wpdb;
 
@@ -29,7 +29,7 @@ final class Schedule_Fixture_Report_Listener_Test extends TestCase {
     }
 
     public function test_listener_schedules_report_when_competition_type_and_reporting_service_present(): void {
-        $reporting_service = $this->createStub( Result_Reporting_Service::class );
+        $reporting_service = $this->createStub( Result_Reporting_Service_Interface::class );
         $listener          = new Schedule_Fixture_Report_Listener( $reporting_service );
         $event             = new Fixture_Result_Finalized_Event(
             fixture_id: 42,
@@ -60,7 +60,7 @@ final class Schedule_Fixture_Report_Listener_Test extends TestCase {
     }
 
     public function test_listener_does_not_schedule_when_competition_type_is_empty_or_null(): void {
-        $reporting_service = $this->createStub( Result_Reporting_Service::class );
+        $reporting_service = $this->createStub( Result_Reporting_Service_Interface::class );
         $listener          = new Schedule_Fixture_Report_Listener( $reporting_service );
 
         $null_type_event = new Fixture_Result_Finalized_Event(
@@ -83,7 +83,7 @@ final class Schedule_Fixture_Report_Listener_Test extends TestCase {
     }
 
     public function test_dispatcher_integration_with_listener(): void {
-        $reporting_service = $this->createStub( Result_Reporting_Service::class );
+        $reporting_service = $this->createStub( Result_Reporting_Service_Interface::class );
         $dispatcher        = new Simple_Domain_Event_Dispatcher();
         $listener          = new Schedule_Fixture_Report_Listener( $reporting_service );
 

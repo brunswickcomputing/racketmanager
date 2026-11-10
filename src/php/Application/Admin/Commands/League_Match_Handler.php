@@ -5,22 +5,22 @@ namespace Racketmanager\Application\Admin\Commands;
 
 use InvalidArgumentException;
 use stdClass;
+use Racketmanager\Application\Fixture\Ports\Fixture_Maintenance_Service_Interface;
+use Racketmanager\Application\Fixture\Ports\Fixture_Result_Manager_Interface;
+use Racketmanager\Application\Fixture\Ports\Fixture_Service_Interface;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Time_Parser;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Competition\League_Query_Service;
-use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
-use Racketmanager\Services\Fixture\Fixture_Result_Manager;
-use Racketmanager\Services\Fixture_Service;
 
 final readonly class League_Match_Handler {
     public function __construct(
         private Fixture_Repository_Interface $fixture_repository,
-        private Fixture_Maintenance_Service $fixture_maintenance_service,
-        private Fixture_Result_Manager $fixture_result_manager,
-        private Fixture_Service $fixture_service,
+        private Fixture_Maintenance_Service_Interface $fixture_maintenance_service,
+        private Fixture_Result_Manager_Interface $fixture_result_manager,
+        private Fixture_Service_Interface $fixture_service,
         private League_Query_Service $league_query_service
     ) {
     }

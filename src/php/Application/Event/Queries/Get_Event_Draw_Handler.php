@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Event\Queries;
 
 use Racketmanager\Application\Event\DTOs\Event_Draw_Result;
+use Racketmanager\Application\Fixture\Ports\Fixture_Detail_Service_Interface;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
@@ -11,7 +12,6 @@ use Racketmanager\Exceptions\Fixture_Not_Found_Exception;
 use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\League_Service;
 use function __;
 use function array_reverse;
@@ -23,7 +23,7 @@ class Get_Event_Draw_Handler {
     public function __construct(
         private readonly Competition_Service $competition_service,
         private readonly ?League_Service $league_service,
-        private readonly Fixture_Detail_Service $fixture_detail_service,
+        private readonly Fixture_Detail_Service_Interface $fixture_detail_service,
         private readonly Event_Query_Service $event_query_service,
         private readonly League_Query_Service $league_query_service
     ) {}

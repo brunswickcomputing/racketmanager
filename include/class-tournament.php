@@ -1480,6 +1480,50 @@ final class Tournament {
         return $partners;
     }
     /**
+     * Get player entered events with partners for this tournament
+     *
+     * @param int $player_id player id.
+     *
+     * @return array array of event arrays with event_name and partner
+     */
+    public function get_player_events( int $player_id ): array {
+        $player_events = array();
+        if ( method_exists( $this, 'get_events' ) ) {
+            $events = $this->get_events();
+            if ( is_array( $events ) ) {
+                foreach ( $events as $event_item ) {
+                    $event = is_object( $event_item ) ? $event_item : get_event( $event_item );
+                    if ( $event && method_exists( $event, 'get_teams' ) ) {
+                        $teams = $event->get_teams(
+                            array(
+                                'player' => $player_id,
+                                'season' => $this->season,
+                            )
+                        );
+                        if ( ! empty( $teams ) && is_array( $teams ) ) {
+                            $partner_name = null;
+                            foreach ( $teams as $team ) {
+                                if ( ! empty( $team->players ) && is_array( $team->players ) ) {
+                                    foreach ( $team->players as $team_player ) {
+                                        if ( (int) $team_player->id !== $player_id ) {
+                                            $partner_name = $team_player->fullname ?? ( $team_player->display_name ?? null );
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            $player_events[] = array(
+                                'event_name' => $event->name,
+                                'partner'    => $partner_name,
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        return $player_events;
+    }
+    /**
      * Notify pending entries (partners entered but not entered themselves)
      *
      * @return object notification status

@@ -304,7 +304,7 @@ class Ajax_Tournament extends Ajax {
         $return = $this->check_security_token();
         if ( empty( $return->error ) ) {
             $payment_reference = isset( $_POST['paymentReference'] ) ? sanitize_text_field( wp_unslash( $_POST['paymentReference'] ) ) : null;
-            $payment_status    = isset( $_post['paymentStatus'] ) ? sanitize_text_field( wp_unslash( $_POST['paymentStatus'] ) ) : null;
+            $payment_status    = ! empty( $_POST['paymentStatus'] ) ? sanitize_text_field( wp_unslash( $_POST['paymentStatus'] ) ) : 'paid';
             $stripe = new Stripe_Settings();
             if ( $payment_reference ) {
                 $stripe->update_payment( $payment_reference, $payment_status );

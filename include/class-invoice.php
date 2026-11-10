@@ -277,6 +277,7 @@ final class Invoice {
                 return false;
             }
         }
+        $prev_status  = $this->status ?? '';
         $this->status = $status;
         $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
@@ -286,6 +287,9 @@ final class Invoice {
             )
         );  // db call ok.
         wp_cache_set( $this->id, $this, 'invoice' );
+        if ( 'paid' === $status && 'paid' !== $prev_status ) {
+            $this->send_payment_receipt();
+        }
         return true;
     }
     /**
@@ -387,5 +391,92 @@ final class Invoice {
         } else {
             return false;
         }
+    }
+    /**
+     * Send payment receipt email
+     *
+     * @return bool
+     */
+    public function send_payment_receipt(): bool {
+        global $racketmanager;
+
+        if ( empty( $this->player_id ) && empty( $this->player ) ) {
+            return false;
+        }
+
+        if ( empty( $this->player ) && ! empty( $this->player_id ) ) {
+            $this->player = get_player( $this->player_id );
+        }
+
+        if ( empty( $this->player ) || empty( $this->player->email ) ) {
+            return false;
+        }
+
+        if ( isset( $this->amount ) && (float) $this->amount <= 0 ) {
+            return false;
+        }
+
+        if ( empty( $this->charge ) && ! empty( $this->charge_id ) ) {
+            $this->charge = get_charge( $this->charge_id );
+        }
+
+        $season     = $this->charge?->season ?? '';
+        $tournament = null;
+        if ( ! empty( $this->charge?->competition_id ) && ! empty( $season ) ) {
+            $tournament = get_tournament( $this->charge->competition_id . ',' . $season, 'shortcode' );
+        }
+
+        $competition_type = $this->charge?->competition?->type ?? ( $tournament ? 'tournament' : '' );
+        if ( 'tournament' !== $competition_type && ! $tournament ) {
+            return false;
+        }
+
+        $tournament_name = $tournament ? $tournament->name : ( $this->charge?->competition?->name ?? __( 'Tournament', 'racketmanager' ) );
+        $tournament_link = $tournament ? '<a href="' . esc_url( $racketmanager->site_url . $tournament->link ) . '" style="text-decoration: none; color: #006800;">' . esc_html( $tournament->name ) . '</a>' : esc_html( $tournament_name );
+        $action_url      = $racketmanager->site_url . '/invoice/' . $this->id . '/';
+
+        $billing    = $racketmanager->get_options( 'billing' );
+        $from_email = $racketmanager->get_confirmation_email( 'tournament' );
+        if ( empty( $from_email ) ) {
+            $from_email = $racketmanager->admin_email ?? get_option( 'admin_email' );
+        }
+
+        $player_name = $this->player->fullname ?? $this->player->display_name;
+        $email_to    = $player_name . ' <' . $this->player->email . '>';
+        $headers     = array();
+        $secretary_title = __( 'Tournament Secretary', 'racketmanager' );
+        if ( $from_email ) {
+            $from_header = defined( 'RACKETMANAGER_FROM_EMAIL' ) ? RACKETMANAGER_FROM_EMAIL : 'From: ';
+            $cc_header   = defined( 'RACKETMANAGER_CC_EMAIL' ) ? RACKETMANAGER_CC_EMAIL : 'cc: ';
+            $headers[]   = $from_header . $secretary_title . ' <' . $from_email . '>';
+            $headers[]   = $cc_header . $secretary_title . ' <' . $from_email . '>';
+        }
+        if ( ! empty( $billing['billingEmail'] ) && ( empty( $from_email ) || strtolower( $billing['billingEmail'] ) !== strtolower( $from_email ) ) ) {
+            $cc_header = defined( 'RACKETMANAGER_CC_EMAIL' ) ? RACKETMANAGER_CC_EMAIL : 'cc: ';
+            $headers[] = $cc_header . 'Treasurer <' . $billing['billingEmail'] . '>';
+        }
+
+        $email_subject = $racketmanager->site_name . ' - ' . __( 'Payment Receipt', 'racketmanager' ) . ' - ' . ucfirst( $tournament_name );
+
+        $template_args = array(
+            'email_subject'   => $email_subject,
+            'tournament_name' => $tournament_name,
+            'tournament_link' => $tournament_link,
+            'action_url'      => $action_url,
+            'organisation'    => $racketmanager->site_name,
+            'player'          => $this->player,
+            'invoice'         => $this,
+            'tournament'      => $tournament,
+            'from_email'      => $from_email,
+            'contact_email'   => $from_email,
+        );
+
+        $email_message = $racketmanager->shortcodes->load_template(
+            'tournament-payment-receipt',
+            $template_args,
+            'email'
+        );
+
+        return (bool) wp_mail( $email_to, $email_subject, $email_message, $headers );
     }
 }

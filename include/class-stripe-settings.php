@@ -68,11 +68,12 @@ final class Stripe_Settings {
      * Update payment status
      *
      * @param string $payment_ref paymentIntent id.
-     * @param string $status payment status defaults to paid.
+     * @param string|null $status payment status defaults to paid.
      * @return void
      */
-    public function update_payment(string $payment_ref, string $status = 'paid' ): void {
+    public function update_payment(string $payment_ref, ?string $status = 'paid' ): void {
         global $racketmanager;
+        $status   = $status ?: 'paid';
         $invoices = $racketmanager->get_invoices( array( 'reference' => $payment_ref ) );
         if ( 1 === count( $invoices ) ) {
             $invoice = $invoices[0];

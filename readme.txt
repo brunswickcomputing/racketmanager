@@ -47,6 +47,11 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 9.7.9 =
+UPDATE: count only active tournament entries
+UPDATE: simplify tournament player list player link rendering
+UPDATE: add tournament pending and unpaid entry notifications
+
 = 9.7.8 =
 BUGFIX: split tournament unpaid and refund due entry handling
 

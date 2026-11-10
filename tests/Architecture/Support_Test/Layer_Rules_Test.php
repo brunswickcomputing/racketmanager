@@ -252,6 +252,7 @@ final class Layer_Rules_Test extends TestCase {
                 'services.no_wordpress_hooks',
                 'all.no_legacy_helper_calls',
                 'all.no_deprecated_helper_calls',
+                'all.no_get_instance_outside_bootstrap',
                 'all.no_alias_class_references',
                 'all.strict_types',
                 'all.no_extract',

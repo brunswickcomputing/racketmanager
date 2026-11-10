@@ -39,7 +39,7 @@ What the October rules could not see is a **second tier of debt that sits in the
 | **N5** | WordPress boundary code inside `Services/` (hook registration, superglobal parsing) | **176 hook registrations / 2 files** (`Rewrites` 152, `Login` 24); **61 superglobal reads / 7 files** (`Login` 44) | `services.no_wordpress_hooks`, `services.no_superglobals` |
 | **N6** | `global $wp` query-var reads outside Infrastructure | **5 / 4** in the ratcheted layers (incl. `Application/Tournament/Queries/Get_Tournament_Handler`); 24 / 15 plugin-wide **[M]** | `application.no_global_wp` |
 | **N7** | Remaining `Admin_Display` subclasses with inline request processing | **8 / 8** (60 superglobal reads between them **[M]**); `Admin/` 334 superglobal refs / 53 files **[M]** | `admin.no_admin_display_inheritance` |
-| **N8** | Root-file residue: `Admin.php` raw `$wpdb`, `global $racketmanager`, `get_instance()`, `#[AllowDynamicProperties]` | `Admin.php` 0 `$wpdb` refs, 0 `global $racketmanager` **(Done 2026-11-09)**; `Public_Api` 0 **(Done 2026-11-09)**; `Export_Command` 1 `get_instance()` **[A]**; 0 dynamic-property classes **(Done 2026-11-09)** **[V]** | `all.no_get_instance_outside_bootstrap` (existing); rest §9 P1 |
+| **N8** | Root-file residue: `Admin.php` raw `$wpdb`, `global $racketmanager`, `get_instance()`, `#[AllowDynamicProperties]` | `Admin.php` 0 `$wpdb` refs, 0 `global $racketmanager` **(Done 2026-11-09)**; `Public_Api` 0 **(Done 2026-11-09)**; `Export_Command` 0 `get_instance()` **(Done 2026-11-10)**; 0 dynamic-property classes **(Done 2026-11-09)** **[V]** | `all.no_get_instance_outside_bootstrap` (strict at 0); rest §9 P1 |
 | **N9** | Interfaces declared outside the port locations | **15 in `Services/`, 5 in `Infrastructure/`, 1 in `Admin/`** **[V]** | `Ports_Location_Test` (to extend, §9 item 13) |
 | **N10** | Templates not reading `$vm` | **39 / 302** (34 never mention `$vm`; 5 declare it in a docblock but never read it) | `templates.require_vm` |
 | **N11** | Presentation calls `get_option()` directly although `Option_Gateway_Interface` exists | 7 calls / 4 files vs 22 port consumers **[M]** | — (§9 item 12) |
@@ -184,9 +184,9 @@ Each item: where / size · why it matters for DDD · tracked by.
 
 - `Admin.php` (654 lines) raw SQL and global service locator removed (2026-11-09): `add_meta_box()` and `edit_match_report()` query and update via `League_Repository` / `Fixture_Repository` (0 `$wpdb` refs) and `Admin::get_instance()` resolves via `Plugin_Bootstrap::container()` (0 `global $racketmanager` refs).
 - `Public_Api::container()` and `Admin/Presenters/Admin_Date_Presenter` resolve the container via `Plugin_Bootstrap::container()` rather than `global $racketmanager` (done 2026-11-09) **[V]**; `Public_Api.php`, `Admin/` and `Admin.php` are covered by `services.no_global_racketmanager`.
-- `Cli/Export_Command` calls `RacketManager::get_instance()` — the single remaining `all.no_get_instance_outside_bootstrap` entry **[A]**.
+- `Cli/Export_Command` resolves dependencies via container injection (done 2026-11-10) **[V]**; `all.no_get_instance_outside_bootstrap` is strict at 0.
 - `Presentation/Presenters/Fixture_Presentation_Adapter` carried `#[AllowDynamicProperties]` (removed 2026-11-09) — no dynamic-property classes remain in `src/php` **[V]**.
-- **Tracked by:** `all.no_get_instance_outside_bootstrap` (1 / 1, §9 P1 item 6; items 3–5 done 2026-11-09).
+- **Tracked by:** `all.no_get_instance_outside_bootstrap` (strict at 0; all P1 items 1–6 complete).
 
 ### N9 — Interfaces declared outside the port locations
 
@@ -297,12 +297,12 @@ Effort: S < ½ day · M 1–3 days · L > 3 days. "Tracked by" names the rule wh
 
 | # | Item | Effort | Risk | Tracked by |
 |---|---|---|---|---|
-| 1 | Relocate `Services/Login.php`, `Services/Rewrites.php`, `Services/Widget.php` to `Infrastructure/Wordpress/{Auth,Rewrites,Widgets}/`; move their `$_POST`/`$_GET` parsing into `Infrastructure/Wordpress/Request/*` command objects; leave only behaviour (login rules, URL building) in a `Services/` or `Application/` class. Then flip `services.no_wordpress_hooks` to strict (N5). | M | low | `services.no_wordpress_hooks` (176 / 2 → 0), `services.no_superglobals` (61 / 7 → ≤ 17 / 6) |
+| 1 | **(Done 2026-11-08)** Relocate `Services/Login.php`, `Services/Rewrites.php`, `Services/Widget.php` to `Infrastructure/Wordpress/{Auth,Rewrites,Widgets}/`; move their `$_POST`/`$_GET` parsing into `Infrastructure/Wordpress/Request/*` command objects; leave only behaviour (login rules, URL building) in a `Services/` or `Application/` class. Then flip `services.no_wordpress_hooks` to strict (N5). | M | low | `services.no_wordpress_hooks` (176 / 2 → 0, flipped to strict), `services.no_superglobals` (61 / 7 → ≤ 17 / 6) |
 | 2 | **(Done 2026-11-09)** Introduce `Application/Ports/Query_Vars_Interface` with an `Infrastructure/Wordpress/Request/Wp_Query_Vars` adapter; inject it into `Get_Tournament_Handler`, `Competition_Season_Service`, `Page_Title_Service`, `Util_Lookup` and the 11 shortcode adapters (N6). | S | low | `application.no_global_wp` (5 / 4 → 0, flipped to strict) |
 | 3 | **(Done 2026-11-09)** `Public_Api::container()` and `Admin_Date_Presenter` resolve the container via `Plugin_Bootstrap` instead of `global $racketmanager`; add `Public_Api.php` and `Admin/` to the `services.no_global_racketmanager` scope (N8). | S | low | `services.no_global_racketmanager` scope widened, stays strict |
 | 4 | **(Done 2026-11-09)** Remove `#[AllowDynamicProperties]` from `Fixture_Presentation_Adapter` by declaring the properties it sets (N8). | S | low | — (inspection) |
 | 5 | **(Done 2026-11-09)** Move the `Admin::add_meta_box()` SQL into `League_Repository::find_names()` / `Fixture_Repository::find_by_post()`; delete the 3 `global $racketmanager` in `Admin.php` (N8). | S | low | regex `$wpdb` outside `Repositories/`: 36 occurrences — `Admin.php` 0; `Activator` 24; `Util` 4 (1 UPDATE); `Plugin_Bootstrap` 4 (`show_errors()`, no query); `Upgrade` 1 typed property; 3 docblock mentions |
-| 6 | `Cli/Export_Command` receives the container from the WP-CLI bootstrap (`Plugin_Bootstrap::container()`), closing the last `get_instance()` call; flip the rule to strict. | S | low | `all.no_get_instance_outside_bootstrap` (1 / 1 → 0 → strict) |
+| 6 | **(Done 2026-11-10)** `Cli/Export_Command` receives the container from the WP-CLI bootstrap (`Plugin_Bootstrap::container()`), closing the last `get_instance()` call; flip the rule to strict. | S | low | `all.no_get_instance_outside_bootstrap` (1 / 1 → 0, flipped to strict) |
 
 ### P2 — Finish the layering (M–L)
 
@@ -330,13 +330,13 @@ Effort: S < ½ day · M 1–3 days · L > 3 days. "Tracked by" names the rule wh
 
 ## Appendix A — Guardrail rule catalogue
 
-### A.1 PHP rules (`tests/Architecture/`) — 37 rules, 23 strict / 14 ratchet
+### A.1 PHP rules (`tests/Architecture/`) — 37 rules, 25 strict / 12 ratchet
 
 Rules unchanged since the October report are listed by id only; see `docs/ddd-architecture-audit-2026-10.md` Appendix A.1 for their history.
 
-**Strict (23, baseline 0):** `domain.no_wpdb`, `domain.no_outer_layer_imports`, `domain.no_superglobals`, `domain.no_wordpress_functions`, `domain.no_untyped_constructor`, `domain.no_lenient_from_object`, `application.no_wpdb`, `application.no_global_racketmanager`, `application.no_concrete_repositories`, `application.no_presentation_imports`, `application.no_global_wp`, `services.no_wpdb`, `services.no_global_racketmanager`, `services.no_presentation_imports`, `all.no_legacy_helper_calls`, `all.no_deprecated_helper_calls`, `all.no_alias_class_references`, `all.strict_types`, `all.no_extract`, `templates.no_globals_or_db`, `templates.no_global_racketmanager`, `templates.no_legacy_helper_calls`, `scanner.parse_error`.
+**Strict (25, baseline 0):** `domain.no_wpdb`, `domain.no_outer_layer_imports`, `domain.no_superglobals`, `domain.no_wordpress_functions`, `domain.no_untyped_constructor`, `domain.no_lenient_from_object`, `application.no_wpdb`, `application.no_global_racketmanager`, `application.no_concrete_repositories`, `application.no_presentation_imports`, `application.no_global_wp`, `services.no_wpdb`, `services.no_global_racketmanager`, `services.no_presentation_imports`, `services.no_wordpress_hooks`, `all.no_legacy_helper_calls`, `all.no_deprecated_helper_calls`, `all.no_get_instance_outside_bootstrap`, `all.no_alias_class_references`, `all.strict_types`, `all.no_extract`, `templates.no_globals_or_db`, `templates.no_global_racketmanager`, `templates.no_legacy_helper_calls`, `scanner.parse_error`.
 
-**Ratchet carried over (5):** `domain.no_util_static` 14 / 8 · `application.no_superglobals` 1 / 1 (`Login/Queries/Get_Login_Form_Query`, `$_SERVER`) · `repositories.no_service_imports` 5 / 5 · `all.no_get_instance_outside_bootstrap` 1 / 1 (`Cli/Export_Command`) · `admin.no_template_require` 4 / 3.
+**Ratchet carried over (4):** `domain.no_util_static` 14 / 8 · `application.no_superglobals` 1 / 1 (`Login/Queries/Get_Login_Form_Query`, `$_SERVER`) · `repositories.no_service_imports` 5 / 5 · `admin.no_template_require` 4 / 3.
 
 **Ratchet added 2026-11-03 (10):**
 
@@ -347,13 +347,13 @@ Rules unchanged since the October report are listed by id only; see `docs/ddd-ar
 | `application.no_util_static` | `Application/` | static call on `Util` / `Util_Lookup` | `FORBIDDEN_STATIC_CALL` | **34 / 19** | D4 |
 | `application.no_global_wp` | `Application/`, `Services/`, `Presentation/`, `Repositories/`, `Util/` | `global $wp` / `$wp_query` / `$post` / `$current_user` or the `$GLOBALS[...]` spelling | `FORBIDDEN_GLOBAL` | **0 (strict, was 5 / 4)** | N6 |
 | `services.no_superglobals` | `Services/`, `Repositories/`, `Presentation/`, `Util/` | `$_POST/$_GET/$_REQUEST/$_SERVER/$_COOKIE/$_FILES` | `FORBIDDEN_VARIABLE` | **61 / 7** | N5 |
-| `services.no_wordpress_hooks` | `Services/`, `Application/`, `Presentation/`, `Repositories/` | calls to `add_action`, `add_filter`, `add_shortcode`, `register_widget`, `add_rewrite_rule`, `add_rewrite_tag`, `register_rest_route` (function calls only; `do_action`/`apply_filters` are not registration) | `FORBIDDEN_FUNCTION_CALL` | **176 / 2** | N5 |
+| `services.no_wordpress_hooks` | `Services/`, `Application/`, `Presentation/`, `Repositories/` | calls to `add_action`, `add_filter`, `add_shortcode`, `register_widget`, `add_rewrite_rule`, `add_rewrite_tag`, `register_rest_route` (function calls only; `do_action`/`apply_filters` are not registration) | `FORBIDDEN_FUNCTION_CALL` | **0 (strict, was 176 / 2)** | N5 |
 | `all.no_fallback_construction` | `src/php/**` excl. `Services/Container/`, `Infrastructure/Wordpress/Bootstrap/` | `?? new X()` / `??= new X()` where `X` is `Racketmanager\…(_Service\|_Repository\|_Presenter\|_Handler\|_Adapter\|_Factory\|_Gateway\|_Renderer\|_Validator\|_Dispatcher\|_Mailer\|_Clock\|_Loader\|_Manager)`; detail `?? new FQCN` | `FORBIDDEN_FALLBACK_NEW` | **131 / 60** | N2 |
 | `all.no_literal_container_keys` | `src/php/**` (providers included) | `get\|set\|has\|alias\|has_definition\|is_registered\|remove` called with a string-literal first argument on `$c`, `$container`, `*->container`, `*::$container`; detail `$c->set('key')` | `FORBIDDEN_LITERAL_CONTAINER_KEY` | **1,989 / 45** | N3 |
 | `templates.require_vm` | `templates/**` | file never reads the `$vm` variable (docblock mentions do not count); detail `missing $vm` | `REQUIRE_VARIABLE` | **39 / 39** | N10 |
 | `admin.no_admin_display_inheritance` | `Admin/` | `extends Racketmanager\Admin\Admin_Display` (`contexts: ['extends']`; imports, type hints and `new` are not counted) | `FORBIDDEN_CLASS_REFERENCE` | **8 / 8** | N7 |
 
-Every new rule has at least one positive and one negative case in `Support_Test/Layer_Rules_Test.php` (e.g. `?? new DateTimeImmutable()` and `?? new Money(0)` do not match `all.no_fallback_construction`; `public readonly`, `public private(set)`, `public static` and promoted `public readonly` do not match the property rule; `$request->get('id')` and `$c->get(X::class)` do not match the container-key rule; `use Admin_Display` in a provider does not match the inheritance rule), plus `applies_to` tests for the exclusions. `test_catalogue_modes_match_the_audit` still lists exactly the 22 strict ids.
+Every new rule has at least one positive and one negative case in `Support_Test/Layer_Rules_Test.php` (e.g. `?? new DateTimeImmutable()` and `?? new Money(0)` do not match `all.no_fallback_construction`; `public readonly`, `public private(set)`, `public static` and promoted `public readonly` do not match the property rule; `$request->get('id')` and `$c->get(X::class)` do not match the container-key rule; `use Admin_Display` in a provider does not match the inheritance rule), plus `applies_to` tests for the exclusions. `test_catalogue_modes_match_the_audit` lists the 25 strict ids.
 
 ### A.2 JS / template rules (`tests/js/architecture/`) — 3 rules, all ratchet
 

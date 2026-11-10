@@ -3,10 +3,13 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Cli;
 
+use LogicException;
 use Racketmanager\Application\Export\DTO\Export_Criteria;
-use Racketmanager\RacketManager;
+use Racketmanager\Infrastructure\Wordpress\Bootstrap\Plugin_Bootstrap;
+use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Export\Export_Service;
 use WP_CLI;
+use WP_CLI\ExitException;
 
 /**
  * RacketManager Export Command
@@ -15,18 +18,31 @@ use WP_CLI;
  */
 class Export_Command {
 
+    /**
+     * Export service.
+     *
+     * @var Export_Service
+     */
     private Export_Service $exporter;
 
     /**
      * Export_Command constructor.
+     *
+     * @param Simple_Container|null $container Active dependency injection container.
+     * @param Export_Service|null   $exporter  Optional explicit exporter service.
+     *
+     * @throws LogicException When the container is not initialized and no exporter is provided.
      */
-    public function __construct() {
-        /** @var RacketManager $racketmanager */
-        global $racketmanager;
-        if ( ! $racketmanager ) {
-            $racketmanager = RacketManager::get_instance();
+    public function __construct( ?Simple_Container $container = null, ?Export_Service $exporter = null ) {
+        if ( null === $exporter ) {
+            $container ??= Plugin_Bootstrap::container();
+            if ( null === $container ) {
+                throw new LogicException( 'Export_Command requires an active container or an injected Export_Service.' );
+            }
+            /** @var Export_Service $exporter */
+            $exporter = $container->get( Export_Service::class );
         }
-        $this->exporter = $racketmanager->container->get( 'exporter' );
+        $this->exporter = $exporter;
     }
 
     /**
@@ -68,13 +84,15 @@ class Export_Command {
      *
      *     wp racketmanager export --type=results --league_id=1 --format=csv
      *
-     * @param array $args
-     * @param array $assoc_args
+     * @param array $args Positional CLI arguments.
+     * @param array $assoc_args Associative CLI options and flags.
+     *
+     * @throws ExitException Exit exception.
      */
     public function __invoke( array $args, array $assoc_args ): void {
         $type = $assoc_args['type'] ?? '';
 
-        $criteria = new Export_Criteria();
+        $criteria                 = new Export_Criteria();
         $criteria->league_id      = isset( $assoc_args['league_id'] ) ? (int) $assoc_args['league_id'] : null;
         $criteria->season         = $assoc_args['season'] ?? null;
         $criteria->club_id        = isset( $assoc_args['club_id'] ) ? (int) $assoc_args['club_id'] : null;
@@ -84,7 +102,6 @@ class Export_Command {
         $criteria->date_to        = $assoc_args['date_to'] ?? null;
         $criteria->format         = $assoc_args['format'] ?? 'json';
 
-        $content = '';
         switch ( $type ) {
             case 'calendar':
                 $content = $this->exporter->calendar( $criteria );
@@ -99,15 +116,19 @@ class Export_Command {
                 $content = $this->exporter->report_results( $criteria );
                 break;
             default:
-                WP_CLI::error( "Invalid export type: $type. Available types: calendar, results, fixtures, report_results." );
+                WP_CLI::error( 'Invalid export type: ' . $type . '. Available types: calendar, results, fixtures, report_results.' );
+                return;
         }
 
         if ( isset( $assoc_args['output'] ) ) {
+            // Direct file output is intended for CLI exports.
+            // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
             $result = file_put_contents( $assoc_args['output'], $content );
             if ( false === $result ) {
-                WP_CLI::error( "Failed to write to file: " . $assoc_args['output'] );
+                WP_CLI::error( 'Failed to write to file: ' . $assoc_args['output'] );
+                return;
             }
-            WP_CLI::success( "Export saved to " . $assoc_args['output'] );
+            WP_CLI::success( 'Export saved to ' . $assoc_args['output'] );
         } else {
             WP_CLI::log( $content );
         }

@@ -615,7 +615,7 @@ final class Layer_Rules {
                     'classes' => [ 'Racketmanager\RacketManager', 'Racketmanager\Admin' ],
                     'methods' => [ 'get_instance' ],
                 ],
-                Rule_Mode::RATCHET,
+                Rule_Mode::STRICT,
                 [ self::INFRASTRUCTURE . 'Wordpress/Bootstrap/', self::SRC . 'RacketManager.php', self::SRC . 'Admin.php' ]
             ),
             new Layer_Rule(

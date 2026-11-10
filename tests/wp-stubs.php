@@ -2304,4 +2304,34 @@ namespace {
     if ( ! defined( 'ABSPATH' ) ) {
         define( 'ABSPATH', sys_get_temp_dir() . '/wordpress/' );
     }
+    if ( ! class_exists( 'WP_CLI' ) ) {
+        // phpcs:ignore Squiz.PHP.Eval.Discouraged
+        eval(
+            'class WP_CLI {
+                public static array $logs = [];
+                public static array $errors = [];
+                public static array $successes = [];
+
+                public static function log( $msg ): void {
+                    self::$logs[] = $msg;
+                }
+
+                public static function error( $msg ): void {
+                    self::$errors[] = $msg;
+                }
+
+                public static function success( $msg ): void {
+                    self::$successes[] = $msg;
+                }
+
+                public static function add_command( $name, $callback, $args = [] ): void {}
+
+                public static function reset(): void {
+                    self::$logs = [];
+                    self::$errors = [];
+                    self::$successes = [];
+                }
+            }'
+        );
+    }
 }

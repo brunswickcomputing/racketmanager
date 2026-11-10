@@ -122,9 +122,6 @@
         "src/php/Util/Util.php|?? new Racketmanager\\Repositories\\Club_Repository": 1,
         "src/php/Util/Util.php|?? new Racketmanager\\Repositories\\Fixture_Repository": 1
     },
-    "all.no_get_instance_outside_bootstrap": {
-        "src/php/Cli/Export_Command.php|Racketmanager\\RacketManager::get_instance()": 1
-    },
     "all.no_literal_container_keys": {
         "src/php/Admin.php|$container->get('admin')": 1,
         "src/php/Admin.php|$container->has('admin')": 1,
@@ -378,7 +375,6 @@
         "src/php/Admin/Admin_Tournament.php|$this->racketmanager->container->get('tournament_setup_event_admin_controller')": 1,
         "src/php/Admin/Admin_Tournament.php|$this->racketmanager->container->get('tournament_team_admin_controller')": 1,
         "src/php/Admin/Admin_Tournament.php|$this->racketmanager->container->get('tournament_tournaments_admin_controller')": 1,
-        "src/php/Cli/Export_Command.php|$racketmanager->container->get('exporter')": 1,
         "src/php/Infrastructure/Wordpress/Ajax/Account_Ajax_Controller.php|$c->get('account_ajax_adapter')": 1,
         "src/php/Infrastructure/Wordpress/Ajax/Account_Ajax_Controller.php|$c->get('json_response_factory')": 1,
         "src/php/Infrastructure/Wordpress/Ajax/Account_Ajax_Controller.php|$c->get('message_repository')": 1,

@@ -1055,7 +1055,9 @@ final class Tournament {
         $search_args   = array();
         $search_args[] = $this->id;
         if ( $status ) {
-            if ( 'pending' === $status ) {
+            if ( 'active' === $status ) {
+                $search_terms[] = '`status` != 3';
+            } elseif ( 'pending' === $status ) {
                 $search_terms[] = '`status` = 0';
             } elseif ( 'unpaid' === $status ) {
                 if ( ! empty( $this->charge ) ) {

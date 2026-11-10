@@ -144,7 +144,7 @@ final class Admin_Tournament extends Admin_Championship {
                     }
                     ++ $i;
                 }
-                $tournament->num_entries = $tournament->get_entries( array( 'count' => true ) );
+                $tournament->num_entries = $tournament->get_entries( array( 'status' => 'active', 'count' => true ) );
                 $tab                     = 'overview';
                 $entries_confirmed       = $tournament->get_entries(
                     array(

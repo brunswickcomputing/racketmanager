@@ -15,21 +15,8 @@ foreach ( $player_list as $players ) {
         ?>
         <tr>
             <td>
-                <?php
-                if ( $entered || ! empty( $player->user_email ) ) {
-                    ?>
                 <a href="/tournament/entry-form/<?php echo esc_attr( seo_url( $tournament->name ) ); ?>/player/<?php echo esc_attr( seo_url( $player->display_name ) ); ?>/">
-                    <?php
-                }
-                ?>
                 <?php echo esc_html( $player->display_name ); ?>
-                <?php
-                if ( $entered ) {
-                    ?>
-                    </a>
-                    <?php
-                }
-                ?>
                 <?php
                 $rating         = $player->wtn;
                 $match_types    = Util::get_match_types();

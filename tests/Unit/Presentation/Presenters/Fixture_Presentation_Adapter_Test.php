@@ -424,9 +424,12 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
         $fixture = $this->create_test_fixture();
 
         try {
-            new Fixture_Presentation_Adapter(
-                fixture: $fixture,
-                options: 'not-an-array'
+            $this->assertInstanceOf(
+                Fixture_Presentation_Adapter::class,
+                new Fixture_Presentation_Adapter(
+                    fixture: $fixture,
+                    options: 'not-an-array'
+                )
             );
             $this->fail( 'Expected InvalidArgumentException for non-array options parameter.' );
         } catch ( InvalidArgumentException $e ) {
@@ -434,15 +437,18 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
         }
 
         try {
-            new Fixture_Presentation_Adapter(
-                $fixture,
-                null,
-                null,
-                null,
-                null,
-                null,
-                array( 'link' => 'https://example.com' ),
-                options: array( 'link' => 'https://example.com' )
+            $this->assertInstanceOf(
+                Fixture_Presentation_Adapter::class,
+                new Fixture_Presentation_Adapter(
+                    $fixture,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    array( 'link' => 'https://example.com' ),
+                    options: array( 'link' => 'https://example.com' )
+                )
             );
             $this->fail( 'Expected InvalidArgumentException for duplicate dictionary sources.' );
         } catch ( InvalidArgumentException $e ) {
@@ -450,15 +456,18 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
         }
 
         try {
-            new Fixture_Presentation_Adapter(
-                $fixture,
-                null,
-                null,
-                null,
-                null,
-                null,
-                array( 'link' => 'https://example.com' ),
-                'extra-positional-arg'
+            $this->assertInstanceOf(
+                Fixture_Presentation_Adapter::class,
+                new Fixture_Presentation_Adapter(
+                    $fixture,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    array( 'link' => 'https://example.com' ),
+                    'extra-positional-arg'
+                )
             );
             $this->fail( 'Expected InvalidArgumentException for positional options following positional dictionary.' );
         } catch ( InvalidArgumentException $e ) {
@@ -471,9 +480,12 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
 
         // Invalid link type: int.
         try {
-            new Fixture_Presentation_Adapter(
-                fixture: $fixture,
-                link: 123
+            $this->assertInstanceOf(
+                Fixture_Presentation_Adapter::class,
+                new Fixture_Presentation_Adapter(
+                    fixture: $fixture,
+                    link: 123
+                )
             );
             $this->fail( 'Expected TypeError for integer link.' );
         } catch ( TypeError $e ) {
@@ -482,9 +494,12 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
 
         // Invalid is_update_allowed type: array.
         try {
-            new Fixture_Presentation_Adapter(
-                fixture: $fixture,
-                is_update_allowed: array( 'user_can_update' => true )
+            $this->assertInstanceOf(
+                Fixture_Presentation_Adapter::class,
+                new Fixture_Presentation_Adapter(
+                    fixture: $fixture,
+                    is_update_allowed: array( 'user_can_update' => true )
+                )
             );
             $this->fail( 'Expected TypeError for array is_update_allowed.' );
         } catch ( TypeError $e ) {
@@ -493,9 +508,12 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
 
         // Invalid prev_home_title type: int.
         try {
-            new Fixture_Presentation_Adapter(
-                fixture: $fixture,
-                prev_home_title: 456
+            $this->assertInstanceOf(
+                Fixture_Presentation_Adapter::class,
+                new Fixture_Presentation_Adapter(
+                    fixture: $fixture,
+                    prev_home_title: 456
+                )
             );
             $this->fail( 'Expected TypeError for integer prev_home_title.' );
         } catch ( TypeError $e ) {
@@ -504,9 +522,12 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
 
         // Invalid prev_away_title type: array.
         try {
-            new Fixture_Presentation_Adapter(
-                fixture: $fixture,
-                prev_away_title: array( 'invalid' )
+            $this->assertInstanceOf(
+                Fixture_Presentation_Adapter::class,
+                new Fixture_Presentation_Adapter(
+                    fixture: $fixture,
+                    prev_away_title: array( 'invalid' )
+                )
             );
             $this->fail( 'Expected TypeError for array prev_away_title.' );
         } catch ( TypeError $e ) {
@@ -515,9 +536,12 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
 
         // Invalid option_gateway type: stdClass instead of Option_Gateway_Interface.
         try {
-            new Fixture_Presentation_Adapter(
-                fixture: $fixture,
-                option_gateway: new stdClass()
+            $this->assertInstanceOf(
+                Fixture_Presentation_Adapter::class,
+                new Fixture_Presentation_Adapter(
+                    fixture: $fixture,
+                    option_gateway: new stdClass()
+                )
             );
             $this->fail( 'Expected TypeError for non-gateway object.' );
         } catch ( TypeError $e ) {

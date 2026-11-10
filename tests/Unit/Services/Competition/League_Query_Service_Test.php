@@ -309,6 +309,42 @@ class League_Query_Service_Test extends TestCase {
 		$this->assertTrue( $result->is_withdrawn );
 	}
 
+	public function test_get_team_dtls_expands_placeholder_team_name_with_fixture_relations(): void {
+		$league                 = League_Test_Factory::from_object( (object) array( 'id' => 42, 'title' => 'Premier Division' ) );
+		$league->current_season = array( 'name' => '2026' );
+		$team_details           = (object) array(
+			'id'             => 10,
+			'title'          => '1_semi_145',
+			'captain'        => null,
+			'club_id'        => null,
+			'stadium'        => '',
+			'roster'         => null,
+			'points_plus'    => 0,
+			'points_minus'   => 0,
+			'points_2_plus'  => 0,
+			'points_2_minus' => 0,
+			'team_type'      => 'S',
+		);
+		$this->league_repository->expects( $this->once() )
+			->method( 'get_team_details' )
+			->with( 42, 10, '2026' )
+			->willReturn( $team_details );
+
+		$fixture        = \Racketmanager\Domain\Fixture\Fixture_Factory::from_object( (object) array( 'id' => 145 ) );
+		$fixture->teams = array(
+			'home' => (object) array( 'title' => 'Alpha Team' ),
+			'away' => (object) array( 'title' => 'Beta Team' ),
+		);
+		$this->fixture_repository->expects( $this->once() )
+			->method( 'find_by_id_with_relations' )
+			->with( 145 )
+			->willReturn( $fixture );
+
+		$result = $this->service->get_team_dtls( $league, 10 );
+		$this->assertIsObject( $result );
+		$this->assertSame( 'Winner of Alpha Team vs Beta Team', $result->title );
+	}
+
 	public function test_get_league_team_returns_cached_team_without_repository_lookup(): void {
 		$league       = League_Test_Factory::from_object( (object) array( 'id' => 42, 'title' => 'Premier Division' ) );
 		$cached       = (object) array( 'id' => 7, 'title' => 'Cached Team' );

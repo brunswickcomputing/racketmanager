@@ -10,6 +10,7 @@ use Racketmanager\Domain\Club\Events\Club_Player_Registered_Event;
 use Racketmanager\Domain\DTO\Player\Player_Hydration_DTO;
 use Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface;
 use Racketmanager\Domain\Events\Domain_Event_Interface;
+use Racketmanager\Domain\Ports\Clock_Interface;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\RacketManager;
@@ -58,6 +59,7 @@ final class Registration_Service_Test extends TestCase {
             club_repository: $club_repo,
             player_service: $player_service,
             mailer: $mailer,
+            clock: $this->createStub( Clock_Interface::class ),
             event_dispatcher: $dispatcher
         );
 
@@ -120,6 +122,7 @@ final class Registration_Service_Test extends TestCase {
             club_repository: $club_repo,
             player_service: $player_service,
             mailer: $mailer,
+            clock: $this->createStub( Clock_Interface::class ),
             event_dispatcher: $dispatcher
         );
 

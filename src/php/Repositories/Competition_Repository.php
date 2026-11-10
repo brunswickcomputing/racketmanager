@@ -52,21 +52,22 @@ class Competition_Repository implements Competition_Repository_Interface {
     /**
      * Create a new Competition_Repository instance
      *
-     * @param Closure|null $fixture_repository_resolver Lazily resolves the fixture repository (avoids a construction cycle).
+     * @param Fixture_Repository_Interface|Closure $fixture_repository Fixture repository or resolver (avoids a construction cycle).
      * @param Closure|null $fixture_relation_loader_resolver Lazily resolves the fixture relation loader.
      * @param Closure|null $club_repository_resolver Lazily resolves the club repository used to hydrate team rows.
      * @param Closure|null $player_repository_resolver Lazily resolves the player repository used to hydrate player rows.
      * @param Closure|null $event_repository_resolver Lazily resolves the event repository used to hydrate event rows (avoids a construction cycle).
      */
     public function __construct(
-        ?Closure $fixture_repository_resolver = null,
+        Fixture_Repository_Interface|Closure $fixture_repository,
         ?Closure $fixture_relation_loader_resolver = null,
         ?Closure $club_repository_resolver = null,
         ?Closure $player_repository_resolver = null,
         ?Closure $event_repository_resolver = null
     ) {
         global $wpdb;
-        $this->fixture_repository_resolver      = $fixture_repository_resolver;
+        $this->fixture_repository_resolver      = $fixture_repository instanceof Closure ? $fixture_repository : null;
+        $this->fixture_repository               = $fixture_repository instanceof Fixture_Repository_Interface ? $fixture_repository : null;
         $this->fixture_relation_loader_resolver = $fixture_relation_loader_resolver;
         $this->club_repository_resolver         = $club_repository_resolver;
         $this->player_repository_resolver       = $player_repository_resolver;
@@ -664,7 +665,7 @@ class Competition_Repository implements Competition_Repository_Interface {
 
 		$rows = $this->wpdb->get_results( $sql );
 
-		$fixture_repo    = $this->get_fixture_repository() ?? new Fixture_Repository();
+		$fixture_repo    = $this->get_fixture_repository();
 		$relation_loader = $this->get_fixture_relation_loader();
 		if ( ! $relation_loader ) {
 			throw new LogicException( 'Competition match queries require a fixture relation loader.' );
@@ -709,7 +710,7 @@ class Competition_Repository implements Competition_Repository_Interface {
 		$return = array();
 		foreach ( $winners as $winner ) {
 			$fixture_repo = $this->get_fixture_repository();
-			$match        = $fixture_repo ? $fixture_repo->find_by_id( (int) $winner->id ) : null;
+			$match        = $fixture_repo->find_by_id( (int) $winner->id );
 			if ( $winner->winner_id === $winner->home_team ) {
 				$winner_club = isset( $match->teams['home']->club ) ? $match->teams['home']->club->shortcode : null;
 			} else {
@@ -740,14 +741,17 @@ class Competition_Repository implements Competition_Repository_Interface {
 	/**
 	 * Resolve the fixture repository lazily.
 	 *
-	 * @return Fixture_Repository_Interface|null
+	 * @return Fixture_Repository_Interface
 	 */
-	private function get_fixture_repository(): ?Fixture_Repository_Interface {
+	private function get_fixture_repository(): Fixture_Repository_Interface {
 		if ( null === $this->fixture_repository && null !== $this->fixture_repository_resolver ) {
 			$resolved = ( $this->fixture_repository_resolver )();
 			if ( $resolved instanceof Fixture_Repository_Interface ) {
 				$this->fixture_repository = $resolved;
 			}
+		}
+		if ( ! $this->fixture_repository instanceof Fixture_Repository_Interface ) {
+			throw new LogicException( 'Competition repository requires a fixture repository.' );
 		}
 		return $this->fixture_repository;
 	}

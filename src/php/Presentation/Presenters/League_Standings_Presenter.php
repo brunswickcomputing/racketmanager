@@ -28,8 +28,8 @@ use function Racketmanager\show_alert;
 class League_Standings_Presenter {
     public function __construct(
         private readonly View_Renderer_Interface $renderer,
-        private readonly ?Club_Presenter $club_presenter = null,
-        private readonly ?Player_Presenter $player_presenter = null
+        private readonly Club_Presenter $club_presenter,
+        private readonly Player_Presenter $player_presenter
     ) {}
 
     public function render( League_Standings_View_Model|League_Standings_Result|null $vm ): string {
@@ -72,8 +72,8 @@ class League_Standings_Presenter {
         $vars = array_merge(
             $vm->template_vars(),
             [
-                'club_presenter'   => $this->club_presenter ?? new Club_Presenter(),
-                'player_presenter' => $this->player_presenter ?? new Player_Presenter(),
+                'club_presenter'   => $this->club_presenter,
+                'player_presenter' => $this->player_presenter,
                 'team_links'       => $team_links,
             ]
         );
@@ -92,8 +92,8 @@ class League_Standings_Presenter {
             $error_vars = [
                 'msg'              => $msg,
                 'class'            => 'danger',
-                'club_presenter'   => $this->club_presenter ?? new Club_Presenter(),
-                'player_presenter' => $this->player_presenter ?? new Player_Presenter(),
+                'club_presenter'   => $this->club_presenter,
+                'player_presenter' => $this->player_presenter,
             ];
             return $this->renderer->render_to_string( 'alert', [], $error_vars );
         } catch ( Throwable $e ) {

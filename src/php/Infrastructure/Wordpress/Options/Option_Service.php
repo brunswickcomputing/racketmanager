@@ -26,8 +26,8 @@ class Option_Service {
     private string $admin_email = '';
     private string $site_url = '';
 
-    public function __construct( ?Option_Gateway_Interface $option_gateway = null ) {
-        $this->option_gateway = $option_gateway ?? new Wp_Option_Gateway();
+    public function __construct( Option_Gateway_Interface $option_gateway ) {
+        $this->option_gateway = $option_gateway;
         $this->load_options();
     }
 

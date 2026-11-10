@@ -81,10 +81,10 @@ class Rest_Resources extends WP_REST_Controller {
      * Constructor
      *
      * @param RacketManager                $plugin_instance
+     * @param Rest_Controller_Adapter      $adapter
      * @param Competition_Service|null     $competition_service
      * @param Club_Service|null            $club_service
      * @param Season_Service|null          $season_service
-     * @param Rest_Controller_Adapter|null $adapter
      * @param League_Query_Service|null    $league_query_service
      * @param Event_Query_Service|null     $event_query_service
      * @param League_Repository_Interface|null $league_repository
@@ -94,10 +94,10 @@ class Rest_Resources extends WP_REST_Controller {
      */
     public function __construct(
         $plugin_instance,
+        Rest_Controller_Adapter $adapter,
         ?Competition_Service $competition_service = null,
         ?Club_Service $club_service = null,
         ?Season_Service $season_service = null,
-        ?Rest_Controller_Adapter $adapter = null,
         ?League_Query_Service $league_query_service = null,
         ?Event_Query_Service $event_query_service = null,
         ?League_Repository_Interface $league_repository = null,
@@ -105,16 +105,12 @@ class Rest_Resources extends WP_REST_Controller {
         ?Fixture_Repository_Interface $fixture_repository = null
     ) {
         $this->racketmanager = $plugin_instance;
+        $this->adapter        = $adapter;
         $c                   = $this->racketmanager->container ?? null;
         if ( $c ) {
             $this->competition_service  = $competition_service ?? ( method_exists( $c, 'get' ) ? $c->get( 'competition_service' ) : null );
             $this->club_service         = $club_service ?? ( method_exists( $c, 'get' ) ? $c->get( 'club_service' ) : null );
             $this->season_service       = $season_service ?? ( method_exists( $c, 'get' ) ? $c->get( 'season_service' ) : null );
-            $this->adapter              = $adapter ?? ( ( method_exists( $c, 'has' ) && $c->has( 'rest_controller_adapter' ) ) ? $c->get( 'rest_controller_adapter' ) : new Rest_Controller_Adapter(
-                ( method_exists( $c, 'has' ) && $c->has( 'league_repository' ) ) ? $c->get( 'league_repository' ) : null,
-                ( method_exists( $c, 'has' ) && $c->has( 'team_repository' ) ) ? $c->get( 'team_repository' ) : null,
-                ( method_exists( $c, 'has' ) && $c->has( 'competition_service' ) ) ? $c->get( 'competition_service' ) : null
-            ) );
             $this->league_query_service = $league_query_service ?? ( ( method_exists( $c, 'has' ) && $c->has( 'league_query_service' ) ) ? $c->get( 'league_query_service' ) : null );
             $this->event_query_service  = $event_query_service ?? ( ( method_exists( $c, 'has' ) && $c->has( 'event_query_service' ) ) ? $c->get( 'event_query_service' ) : null );
             $this->league_repository    = $league_repository ?? ( ( method_exists( $c, 'has' ) && $c->has( 'league_repository' ) ) ? $c->get( 'league_repository' ) : null );
@@ -125,7 +121,6 @@ class Rest_Resources extends WP_REST_Controller {
             $this->competition_service  = $competition_service;
             $this->club_service         = $club_service;
             $this->season_service       = $season_service;
-            $this->adapter              = $adapter ?? new Rest_Controller_Adapter();
             $this->league_query_service = $league_query_service;
             $this->event_query_service  = $event_query_service;
             $this->league_repository    = $league_repository;

@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Admin\Controllers\Tournament_Draw_Admin_Controller;
 use Racketmanager\Admin\Presenters\Championship_Finals_Presenter_Interface;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
+use Racketmanager\Application\Tournament\Commands\Generate_Tournament_Bracket_Handler;
 use Racketmanager\Domain\Tournament\Championship_Settings;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Response_DTO;
@@ -32,6 +33,18 @@ require_once __DIR__ . '/../../../wp-stubs.php';
 #[AllowMockObjectsWithoutExpectations]
 final
 class Tournament_Draw_Admin_Controller_Test extends TestCase {
+
+    private function create_draw_action_dispatcher(
+        Draw_Action_Handler_Interface $handler,
+        Action_Guard_Interface $guard,
+        ?Generate_Tournament_Bracket_Handler $bracket_handler = null,
+    ): Draw_Action_Dispatcher {
+        return new Draw_Action_Dispatcher(
+            $handler,
+            $guard,
+            $bracket_handler ?? new Generate_Tournament_Bracket_Handler( $handler )
+        );
+    }
 
     private function passthrough_presenter(): Championship_Finals_Presenter_Interface {
         return new class() implements Championship_Finals_Presenter_Interface {
@@ -64,7 +77,7 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
         $league_service->method( 'get_league' )->willReturn( $league );
 
         $guard      = $this->createMock( Action_Guard_Interface::class );
-        $dispatcher = new Draw_Action_Dispatcher( $this->createMock( Draw_Action_Handler_Interface::class ), $guard );
+        $dispatcher = $this->create_draw_action_dispatcher( $this->createMock( Draw_Action_Handler_Interface::class ), $guard );
 
         $presenter = new class() implements Championship_Finals_Presenter_Interface {
             public array $calls = array();
@@ -135,7 +148,7 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
               ->method( 'assert_capability' )
               ->with( 'edit_matches' );
 
-        $dispatcher = new Draw_Action_Dispatcher(
+        $dispatcher = $this->create_draw_action_dispatcher(
             $this->createMock( Draw_Action_Handler_Interface::class ),
             $guard
         );
@@ -246,7 +259,7 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
         $handler->method( 'update_final_results' )
                 ->willReturn( new Action_Result_DTO( tab_override: 'finalResults' ) );
 
-        $dispatcher = new Draw_Action_Dispatcher( $handler, $guard );
+        $dispatcher = $this->create_draw_action_dispatcher( $handler, $guard );
 
         $controller = new Tournament_Draw_Admin_Controller(
             $tournament_service,
@@ -326,7 +339,7 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
                            ) );
 
         $guard      = $this->createMock( Action_Guard_Interface::class );
-        $dispatcher = new Draw_Action_Dispatcher(
+        $dispatcher = $this->create_draw_action_dispatcher(
             $this->createMock( Draw_Action_Handler_Interface::class ),
             $guard
         );
@@ -427,7 +440,7 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
         $league_service->method( 'get_league' )->willReturn( $league );
 
         $guard      = $this->createMock( Action_Guard_Interface::class );
-        $dispatcher = new Draw_Action_Dispatcher(
+        $dispatcher = $this->create_draw_action_dispatcher(
             $this->createMock( Draw_Action_Handler_Interface::class ),
             $guard
         );
@@ -522,7 +535,7 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
         $league_service->method( 'get_league' )->willReturn( $league );
 
         $guard      = $this->createMock( Action_Guard_Interface::class );
-        $dispatcher = new Draw_Action_Dispatcher(
+        $dispatcher = $this->create_draw_action_dispatcher(
             $this->createMock( Draw_Action_Handler_Interface::class ),
             $guard
         );
@@ -585,7 +598,7 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
         $league_service->method( 'get_league' )->willReturn( $league );
 
         $guard      = $this->createMock( Action_Guard_Interface::class );
-        $dispatcher = new Draw_Action_Dispatcher(
+        $dispatcher = $this->create_draw_action_dispatcher(
             $this->createMock( Draw_Action_Handler_Interface::class ),
             $guard
         );

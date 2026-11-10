@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Templates;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Club\Queries\Get_Club_Competitions_Handler;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Application\Club\Queries\Get_Club_Competitions_Query;
 use Racketmanager\Application\Event\Queries\Get_Event_Teams_Handler;
 use Racketmanager\Application\Event\Queries\Get_Event_Teams_Query;
@@ -57,6 +58,8 @@ class Team_List_Render_Regression_Test extends TestCase {
         $view_renderer             = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
         $this->template_renderer       = new Shortcode_Template_Renderer(
             $view_renderer,
+            new Club_Presenter(),
+            new Player_Presenter(),
             favourite_presenter: new Favourite_Presenter( new Wp_User_Favourites_Gateway( new Security_Service() ) )
         );
         $this->team_details_presenter = new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() );
@@ -65,6 +68,22 @@ class Team_List_Render_Regression_Test extends TestCase {
     protected function tearDown(): void {
         $this->restore_globals();
         parent::tearDown();
+    }
+
+    private function create_league_adapter( ...$args ): League_Shortcode_Adapter {
+        $option_gateway = new Wp_Option_Gateway();
+        return new League_Shortcode_Adapter(
+            archive_presenter: $args['archive_presenter'] ?? new \Racketmanager\Presentation\Presenters\League_Archive_Presenter( $option_gateway ),
+            tournament_presenter: $args['tournament_presenter'] ?? new Tournament_Presenter( 'd/m/Y' ),
+            team_details_presenter: $args['team_details_presenter'] ?? $this->team_details_presenter,
+            player_presenter: $args['player_presenter'] ?? new \Racketmanager\Presentation\Presenters\Player_Presenter(),
+            fixture_presenter: $args['fixture_presenter'] ?? new \Racketmanager\Presentation\Presenters\Fixture_Presenter(
+                new \Racketmanager\Services\Fixture\Fixture_Link_Service(),
+                $option_gateway,
+                new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' )
+            ),
+            template_renderer: $args['template_renderer'] ?? $this->template_renderer
+        );
     }
 
     /**
@@ -129,10 +148,7 @@ class Team_List_Render_Regression_Test extends TestCase {
             $stats_service,
             $league_query
         );
-        $adapter = new League_Shortcode_Adapter(
-            team_details_presenter: $this->team_details_presenter,
-            template_renderer: $this->template_renderer
-        );
+        $adapter = $this->create_league_adapter();
 
         $league = new class extends League {
             public function __construct() {
@@ -254,8 +270,13 @@ class Team_List_Render_Regression_Test extends TestCase {
         );
 
         $adapter = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
-            competition_shortcode_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
+            competition_shortcode_presenter: new Competition_Shortcode_Presenter(
+                new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ),
+                new Club_Presenter(),
+                new Player_Presenter()
+            ),
             tournament_presenter: new Tournament_Presenter( team_match_row_presenter: $this->create_team_match_row_presenter() ),
+            player_presenter: new \Racketmanager\Presentation\Presenters\Player_Presenter(),
             team_details_presenter: $this->team_details_presenter
         );
 
@@ -328,8 +349,13 @@ class Team_List_Render_Regression_Test extends TestCase {
         $hadleigh_club_repository->method( 'find_by_id' )->willReturn( $hadleigh_club );
 
         $adapter = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
-            competition_shortcode_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
+            competition_shortcode_presenter: new Competition_Shortcode_Presenter(
+                new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ),
+                new Club_Presenter(),
+                new Player_Presenter()
+            ),
             tournament_presenter: new Tournament_Presenter( team_match_row_presenter: $this->create_team_match_row_presenter() ),
+            player_presenter: new \Racketmanager\Presentation\Presenters\Player_Presenter(),
             team_details_presenter: $this->team_details_presenter
         );
 

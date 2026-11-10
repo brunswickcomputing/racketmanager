@@ -7,9 +7,11 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\League_Team;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Player\Player_Factory;
 use Racketmanager\Domain\Team\Team_Factory;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
@@ -444,5 +446,161 @@ class League_Team_Repository_Test extends TestCase {
         $this->wpdb->expects( $this->once() )->method( 'get_col' )->willReturn( null );
 
         $this->assertSame( [], $this->repository->find_teams_missing_match_day( [ 5 ], '2026' ) );
+    }
+
+    public function test_hydrate_enriches_placeholder_title_with_translated_match_relations(): void {
+        $GLOBALS['wp_stubs_translate_callback'] = static function ( string $text, string $domain ): string {
+            return match ( $text ) {
+                'Winner of' => 'Vainqueur de',
+                'vs'        => 'contre',
+                default     => $text,
+            };
+        };
+
+        $fixture        = Fixture_Factory::from_object( (object) [ 'id' => 250 ] );
+        $fixture->teams = [
+            'home' => (object) [ 'title' => 'Alpha' ],
+            'away' => (object) [ 'title' => 'Beta' ],
+        ];
+
+        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+        $fixture_repo->expects( $this->once() )
+            ->method( 'find_by_id_with_relations' )
+            ->with( 250 )
+            ->willReturn( $fixture );
+
+        $repo = new League_Team_Repository( $this->wpdb, null, null, $fixture_repo );
+
+        $row = (object) [
+            'id'       => 12,
+            'table_id' => 34,
+            'title'    => '1_semi_250',
+            'team_ref' => '1_semi_250',
+        ];
+
+        $team = $repo->hydrate( $row );
+
+        $this->assertSame( 'Vainqueur de Alpha contre Beta', $team->title );
+    }
+
+    public function test_hydrate_resolves_lazy_fixture_repository_closure_only_once(): void {
+        $fixture        = Fixture_Factory::from_object( (object) [ 'id' => 250 ] );
+        $fixture->teams = [
+            'home' => (object) [ 'title' => 'Alpha' ],
+            'away' => (object) [ 'title' => 'Beta' ],
+        ];
+
+        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+        $fixture_repo->expects( $this->exactly( 2 ) )
+            ->method( 'find_by_id_with_relations' )
+            ->with( 250 )
+            ->willReturn( $fixture );
+
+        $closure_invocations = 0;
+        $repo = new League_Team_Repository(
+            $this->wpdb,
+            null,
+            null,
+            function () use ( &$closure_invocations, $fixture_repo ) {
+                $closure_invocations++;
+                return $fixture_repo;
+            }
+        );
+
+        $row1 = (object) [ 'id' => 12, 'table_id' => 34, 'title' => '1_semi_250', 'team_ref' => '1_semi_250' ];
+        $row2 = (object) [ 'id' => 13, 'table_id' => 35, 'title' => '1_semi_250', 'team_ref' => '1_semi_250' ];
+
+        $repo->hydrate( $row1 );
+        $repo->hydrate( $row2 );
+
+        $this->assertSame( 1, $closure_invocations );
+    }
+
+    public function test_hydrate_falls_back_to_localized_base_label_when_no_fixture_repo_or_match_missing(): void {
+        $GLOBALS['wp_stubs_translate_callback'] = static function ( string $text, string $domain ): string {
+            return 'Winner of' === $text ? 'Vainqueur de' : $text;
+        };
+
+        // Case A: No fixture repository injected
+        $repo_no_fixture = new League_Team_Repository( $this->wpdb );
+        $row = (object) [ 'id' => 12, 'table_id' => 34, 'title' => '1_semi_250', 'team_ref' => '1_semi_250' ];
+        $team = $repo_no_fixture->hydrate( $row );
+        $this->assertSame( 'Vainqueur de', $team->title );
+
+        // Case B: Fixture repo returns null
+        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+        $fixture_repo->expects( $this->once() )
+            ->method( 'find_by_id_with_relations' )
+            ->with( 250 )
+            ->willReturn( null );
+
+        $repo_with_fixture = new League_Team_Repository( $this->wpdb, null, null, $fixture_repo );
+        $team2 = $repo_with_fixture->hydrate( $row );
+        $this->assertSame( 'Vainqueur de', $team2->title );
+    }
+
+    public function test_hydrate_breaks_recursive_fixture_team_cycle_gracefully(): void {
+        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+
+        $repo = new League_Team_Repository( $this->wpdb, null, null, $fixture_repo );
+
+        $fixture_repo->expects( $this->once() )
+            ->method( 'find_by_id_with_relations' )
+            ->with( 250 )
+            ->willReturnCallback( function () use ( $repo ) {
+                $recursive_row = (object) [
+                    'id'       => 12,
+                    'table_id' => 34,
+                    'title'    => '1_semi_250',
+                    'team_ref' => '1_semi_250',
+                ];
+                $repo->hydrate( $recursive_row );
+                $fixture        = Fixture_Factory::from_object( (object) [ 'id' => 250 ] );
+                $fixture->teams = [
+                    'home' => (object) [ 'title' => 'Alpha' ],
+                    'away' => (object) [ 'title' => 'Beta' ],
+                ];
+                return $fixture;
+            } );
+
+        $row = (object) [
+            'id'       => 12,
+            'table_id' => 34,
+            'title'    => '1_semi_250',
+            'team_ref' => '1_semi_250',
+        ];
+
+        $team = $repo->hydrate( $row );
+        $this->assertSame( 'Winner of Alpha vs Beta', $team->title );
+    }
+
+    public function test_save_persists_integer_diff_for_team_with_positive_diff(): void {
+        $team = League_Team::from_array( [
+            'id'        => 25,
+            'table_id'  => 500,
+            'team_id'   => 25,
+            'league_id' => 3,
+            'season'    => '2026',
+            'diff'      => 8,
+        ] );
+
+        $this->assertSame( '+8', $team->diff );
+        $this->assertSame( 8, $team->get_diff() );
+
+        $this->wpdb->expects( $this->once() )
+            ->method( 'update' )
+            ->with(
+                'wp_racketmanager_league_teams',
+                $this->callback( function ( array $data ): bool {
+                    return 8 === $data['diff'];
+                } ),
+                [ 'id' => 500 ],
+                $this->anything(),
+                [ '%d' ]
+            )
+            ->willReturn( 1 );
+
+        $result = $this->repository->save( $team );
+        $this->assertTrue( $result );
     }
 }

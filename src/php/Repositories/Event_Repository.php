@@ -46,11 +46,7 @@ class Event_Repository implements Event_Repository_Interface {
         if ( $competition_id <= 0 ) {
             return null;
         }
-        $repository = $this->competition_repository;
-        if ( null === $repository && $this->wpdb ) {
-            $repository = new Competition_Repository();
-        }
-        return $repository ? $repository->find_by_id( $competition_id ) : null;
+        return $this->competition_repository?->find_by_id( $competition_id );
     }
 
     /**

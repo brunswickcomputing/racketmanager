@@ -63,7 +63,12 @@ final class Admin_Player_Delivery_Test extends TestCase {
         $this->club_service         = $this->createMock( Club_Service::class );
         $this->registration_service = $this->createMock( Registration_Service::class );
 
-        $this->player_action_dispatcher         = new Player_Action_Dispatcher( $this->player_service, $this->guard );
+        $this->player_action_dispatcher         = new Player_Action_Dispatcher(
+            $this->player_service,
+            $this->guard,
+            new \Racketmanager\Application\Player\Commands\Update_Player_Handler( $this->player_service ),
+            new \Racketmanager\Application\Player\Commands\Create_Player_Handler( $this->player_service )
+        );
         $this->player_error_action_dispatcher   = new Player_Error_Action_Dispatcher( $this->player_service, $this->guard );
         $this->player_request_action_dispatcher = new Player_Request_Action_Dispatcher( $this->registration_service, $this->guard );
 

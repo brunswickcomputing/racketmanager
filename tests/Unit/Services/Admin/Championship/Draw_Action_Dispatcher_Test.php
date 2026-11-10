@@ -83,7 +83,7 @@ final class Draw_Action_Dispatcher_Test extends TestCase {
             }
         };
 
-        $dispatcher = new Draw_Action_Dispatcher( $handler, $guard );
+        $dispatcher = new Draw_Action_Dispatcher( $handler, $guard, new Generate_Tournament_Bracket_Handler( $handler ) );
 
         $dto = new Draw_Action_Request_DTO(
             tournament_id: 1,
@@ -134,7 +134,7 @@ final class Draw_Action_Dispatcher_Test extends TestCase {
             }
         };
 
-        $dispatcher = new Draw_Action_Dispatcher( $handler, $guard );
+        $dispatcher = new Draw_Action_Dispatcher( $handler, $guard, new Generate_Tournament_Bracket_Handler( $handler ) );
 
         // Make has_any_action() true, but ensure no policy fixtures.
         $dto = new Draw_Action_Request_DTO(
@@ -162,7 +162,7 @@ final class Draw_Action_Dispatcher_Test extends TestCase {
             ->method( 'assert_allowed' )
             ->willThrowException( new Invalid_Status_Exception( 'Permission denied' ) );
 
-        $dispatcher = new Draw_Action_Dispatcher( $handler, $guard );
+        $dispatcher = new Draw_Action_Dispatcher( $handler, $guard, new Generate_Tournament_Bracket_Handler( $handler ) );
 
         $dto = new Draw_Action_Request_DTO(
             tournament_id: 1,

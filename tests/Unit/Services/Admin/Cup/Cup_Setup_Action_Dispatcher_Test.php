@@ -36,7 +36,8 @@ final class Cup_Setup_Action_Dispatcher_Test extends TestCase {
         $this->dispatcher = new Cup_Setup_Action_Dispatcher(
             $this->competition_service,
             $this->championship_admin_service,
-            $this->action_guard
+            $this->action_guard,
+            new \Racketmanager\Application\Tournament\Commands\Generate_Tournament_Bracket_Handler( $this->championship_admin_service )
         );
     }
 

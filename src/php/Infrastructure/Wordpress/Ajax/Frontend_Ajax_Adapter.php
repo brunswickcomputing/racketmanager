@@ -34,6 +34,7 @@ use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Club_Service;
@@ -75,17 +76,15 @@ class Frontend_Ajax_Adapter {
         private Rubber_Repository_Interface $rubber_repository,
         private Search_Players_Handler $search_players_handler,
         private Get_Player_Details_Handler $get_player_details_handler,
-        private ?Submit_Cup_Entry_Handler $submit_cup_entry_handler = null,
-        private ?Submit_League_Entry_Handler $submit_league_entry_handler = null,
-        private ?Update_Player_Handler $update_player_handler = null,
+        private Submit_Cup_Entry_Handler $submit_cup_entry_handler,
+        private Submit_League_Entry_Handler $submit_league_entry_handler,
+        private Update_Player_Handler $update_player_handler,
+        private Team_Repository_Interface $team_repository,
+        private Player_Repository_Interface $player_repository,
         private ?League_Repository_Interface $league_repository = null,
         private ?Event_Repository_Interface $event_repository = null,
-        private ?Shortcode_View_Presenter $view_presenter = null,
-        private ?Team_Repository_Interface $team_repository = null
+        private ?Shortcode_View_Presenter $view_presenter = null
     ) {
-        $this->submit_cup_entry_handler    = $this->submit_cup_entry_handler ?? new Submit_Cup_Entry_Handler( $this->competition_entry_service );
-        $this->submit_league_entry_handler = $this->submit_league_entry_handler ?? new Submit_League_Entry_Handler( $this->competition_entry_service );
-        $this->update_player_handler       = $this->update_player_handler ?? new Update_Player_Handler( $this->player_service );
     }
 
     private function create_validator(): Validator {
@@ -95,6 +94,7 @@ class Frontend_Ajax_Adapter {
             player_service: $this->player_service,
             registration_service: $this->registration_service,
             team_repository: $this->team_repository,
+            player_repository: $this->player_repository,
             event_repository: $this->event_repository,
             league_repository: $this->league_repository
         );
@@ -107,6 +107,7 @@ class Frontend_Ajax_Adapter {
             player_service: $this->player_service,
             registration_service: $this->registration_service,
             team_repository: $this->team_repository,
+            player_repository: $this->player_repository,
             event_repository: $this->event_repository,
             league_repository: $this->league_repository
         );

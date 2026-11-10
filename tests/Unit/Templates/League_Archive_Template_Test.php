@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Templates;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\League\DTOs\League_View_State;
 use Racketmanager\Application\League\Queries\Get_League_Archive_Handler;
 use Racketmanager\Application\League\Queries\Get_League_Archive_Query;
 use Racketmanager\Domain\Competition\Competition;
@@ -12,10 +13,13 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\League_Shortcode_Adapter;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\League_Archive_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
@@ -29,13 +33,24 @@ class League_Archive_Template_Test extends TestCase {
     private Shortcode_Template_Renderer $template_renderer;
     private Shortcode_View_Presenter $view_presenter;
 
+    private function league_query_service(): League_Query_Service {
+        $service = $this->createStub( League_Query_Service::class );
+        $service->method( 'set_tab' )->willReturn( new League_View_State() );
+
+        return $service;
+    }
+
     protected function setUp(): void {
         parent::setUp();
         $this->backup_globals();
 
         $templates_dir           = ( defined( 'RACKETMANAGER_PATH' ) ? RACKETMANAGER_PATH : dirname( __DIR__, 3 ) . '/' ) . 'templates/';
         $view_renderer           = new Php_View_Renderer( $templates_dir );
-        $this->template_renderer = new Shortcode_Template_Renderer( $view_renderer );
+        $this->template_renderer = new Shortcode_Template_Renderer(
+            $view_renderer,
+            new Club_Presenter(),
+            new Player_Presenter()
+        );
         $this->view_presenter    = new Shortcode_View_Presenter( $this->template_renderer );
     }
 
@@ -109,6 +124,22 @@ class League_Archive_Template_Test extends TestCase {
         };
     }
 
+    private function create_league_adapter( ...$args ): League_Shortcode_Adapter {
+        $option_gateway = new \Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway();
+        return new League_Shortcode_Adapter(
+            archive_presenter: $args['archive_presenter'] ?? new League_Archive_Presenter( $option_gateway ),
+            tournament_presenter: $args['tournament_presenter'] ?? new \Racketmanager\Presentation\Presenters\Tournament_Presenter( 'd/m/Y' ),
+            team_details_presenter: $args['team_details_presenter'] ?? new \Racketmanager\Presentation\Presenters\Team_Details_Presenter( $option_gateway, new \Racketmanager\Services\Settings_Service() ),
+            player_presenter: $args['player_presenter'] ?? new \Racketmanager\Presentation\Presenters\Player_Presenter(),
+            fixture_presenter: $args['fixture_presenter'] ?? new \Racketmanager\Presentation\Presenters\Fixture_Presenter(
+                new \Racketmanager\Services\Fixture\Fixture_Link_Service(),
+                $option_gateway,
+                new Php_View_Renderer( ( defined( 'RACKETMANAGER_PATH' ) ? RACKETMANAGER_PATH : dirname( __DIR__, 3 ) . '/' ) . 'templates/' )
+            ),
+            template_renderer: $args['template_renderer'] ?? null
+        );
+    }
+
     public function test_archive_template_renders_via_handler_with_zero_warnings_and_expected_markup(): void {
         $presenter = new League_Archive_Presenter( $this->create_option_gateway() );
 
@@ -144,7 +175,8 @@ class League_Archive_Template_Test extends TestCase {
         $handler = new Get_League_Archive_Handler(
             league_service: $league_service,
             competition_service: $comp_service,
-            event_query_service: $this->event_query_service()
+            event_query_service: $this->event_query_service(),
+            league_query_service: $this->league_query_service()
         );
 
         $query = new Get_League_Archive_Query(
@@ -153,7 +185,7 @@ class League_Archive_Template_Test extends TestCase {
             post_id: 123
         );
 
-        $vm = ( new League_Shortcode_Adapter( archive_presenter: $presenter ) )->present_archive( $handler->handle( $query ) );
+        $vm = ( $this->create_league_adapter( archive_presenter: $presenter ) )->present_archive( $handler->handle( $query ) );
 
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'archive', $vm->template );
@@ -216,7 +248,8 @@ class League_Archive_Template_Test extends TestCase {
         $handler = new Get_League_Archive_Handler(
             league_service: $league_service,
             competition_service: $comp_service,
-            event_query_service: $this->event_query_service()
+            event_query_service: $this->event_query_service(),
+            league_query_service: $this->league_query_service()
         );
 
         $query = new Get_League_Archive_Query(
@@ -226,7 +259,7 @@ class League_Archive_Template_Test extends TestCase {
             post_id: 74
         );
 
-        $vm = ( new League_Shortcode_Adapter( archive_presenter: $presenter ) )->present_archive( $handler->handle( $query ) );
+        $vm = ( $this->create_league_adapter( archive_presenter: $presenter ) )->present_archive( $handler->handle( $query ) );
 
         $this->assertSame( 'results', $vm->vars['view_state']->get_template( 'matches' ) );
 
@@ -287,7 +320,8 @@ class League_Archive_Template_Test extends TestCase {
         $handler = new Get_League_Archive_Handler(
             league_service: $league_service,
             competition_service: $comp_service,
-            event_query_service: $this->event_query_service()
+            event_query_service: $this->event_query_service(),
+            league_query_service: $this->league_query_service()
         );
 
         $query = new Get_League_Archive_Query(
@@ -295,7 +329,7 @@ class League_Archive_Template_Test extends TestCase {
             tab: 'matches'
         );
 
-        $vm = ( new League_Shortcode_Adapter( archive_presenter: $presenter ) )->present_archive( $handler->handle( $query ) );
+        $vm = ( $this->create_league_adapter( archive_presenter: $presenter ) )->present_archive( $handler->handle( $query ) );
 
         $warnings = [];
         $output   = $this->render_and_capture_warnings(
@@ -341,14 +375,15 @@ class League_Archive_Template_Test extends TestCase {
         $handler   = new Get_League_Archive_Handler(
             league_service: $league_service,
             competition_service: $comp_service,
-            event_query_service: $this->event_query_service()
+            event_query_service: $this->event_query_service(),
+            league_query_service: $this->league_query_service()
         );
 
         $query = new Get_League_Archive_Query(
             league_name: 'Finals League'
         );
 
-        $vm = ( new League_Shortcode_Adapter( archive_presenter: $presenter ) )->present_archive( $handler->handle( $query ) );
+        $vm = ( $this->create_league_adapter( archive_presenter: $presenter ) )->present_archive( $handler->handle( $query ) );
 
         $warnings = [];
         $output   = $this->render_and_capture_warnings(
@@ -401,7 +436,8 @@ class League_Archive_Template_Test extends TestCase {
             event_query_service: $this->event_query_service(
                 event_repository: $event_repo,
                 league_repository: $league_repo
-            )
+            ),
+            league_query_service: $this->league_query_service()
         );
 
         $query = new Get_League_Archive_Query(
@@ -409,7 +445,7 @@ class League_Archive_Template_Test extends TestCase {
             post_id: 88
         );
 
-        $vm = ( new League_Shortcode_Adapter( archive_presenter: $presenter ) )->present_archive( $handler->handle( $query ) );
+        $vm = ( $this->create_league_adapter( archive_presenter: $presenter ) )->present_archive( $handler->handle( $query ) );
 
         $warnings = [];
         $output   = $this->render_and_capture_warnings(

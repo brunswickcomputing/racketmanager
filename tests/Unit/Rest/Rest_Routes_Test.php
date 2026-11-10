@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Rest;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Infrastructure\Wordpress\Rest\Rest_Controller_Adapter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
@@ -41,6 +42,7 @@ final class Rest_Routes_Test extends TestCase {
         $container->set( 'player_service', fn() => $this->createStub( Player_Service::class ) );
         $container->set( 'registration_service', fn() => $this->createStub( Registration_Service::class ) );
         $container->set( 'finance_service', fn() => $this->createStub( Finance_Service::class ) );
+        $container->set( Rest_Controller_Adapter::class, fn() => $this->createStub( Rest_Controller_Adapter::class ) );
         $container->set( 'exporter', fn() => $this->createStub( Export_Service::class ) );
         $event_repository = $this->createStub( Event_Repository_Interface::class );
         $event_repository->method( 'find_all' )->willReturn( [] );

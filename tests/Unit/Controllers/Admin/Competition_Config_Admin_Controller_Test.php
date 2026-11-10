@@ -41,7 +41,8 @@ final class Competition_Config_Admin_Controller_Test extends TestCase {
         $this->dispatcher          = new Competition_Action_Dispatcher(
             $this->competition_service,
             $this->guard,
-            $event_repository
+            $event_repository,
+            new \Racketmanager\Application\Admin\Commands\Competition_Handler( $this->competition_service, $event_repository )
         );
 
         $club_service    = $this->createMock( Club_Service::class );

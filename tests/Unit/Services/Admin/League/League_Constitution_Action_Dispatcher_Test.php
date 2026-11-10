@@ -47,10 +47,42 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
         $this->promotion_relegation_service = $this->createStub( Promotion_Relegation_Service::class );
     }
 
+    private function new_dispatcher(
+        Action_Guard_Interface $guard,
+        League_Team_Repository_Interface $league_team_repository,
+        League_Service $league_service,
+        Competition_League_Schedule_Service $league_schedule_service,
+        League_Repository_Interface $league_repository,
+        Event_Repository_Interface $event_repository,
+        Team_Repository_Interface $team_repository,
+        Promotion_Relegation_Service $promotion_relegation_service,
+        ?\Racketmanager\Application\Admin\Commands\League_Constitution_Handler $commands = null,
+    ): League_Constitution_Action_Dispatcher {
+        return new League_Constitution_Action_Dispatcher(
+            $guard,
+            $league_team_repository,
+            $league_service,
+            $league_schedule_service,
+            $league_repository,
+            $event_repository,
+            $team_repository,
+            $promotion_relegation_service,
+            $commands ?? new \Racketmanager\Application\Admin\Commands\League_Constitution_Handler(
+                $league_team_repository,
+                $league_service,
+                $league_schedule_service,
+                $league_repository,
+                $event_repository,
+                $team_repository,
+                $promotion_relegation_service
+            )
+        );
+    }
+
     public function test_unhandled_action_returns_empty_dto(): void {
         $guard      = $this->createMock( Action_Guard_Interface::class );
         $guard->expects( self::never() )->method( 'assert_allowed' );
-        $dispatcher = new League_Constitution_Action_Dispatcher( $guard, $this->league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
+        $dispatcher = $this->new_dispatcher( $guard, $this->league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
 
         $result = $dispatcher->handle( array(), array() );
 
@@ -65,7 +97,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             ->with( 'racketmanager_nonce', 'constitution-bulk', 'del_leagues' )
             ->willThrowException( new Invalid_Status_Exception( 'Permission denied' ) );
 
-        $dispatcher = new League_Constitution_Action_Dispatcher( $guard, $this->league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
+        $dispatcher = $this->new_dispatcher( $guard, $this->league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -85,7 +117,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             ->with( 'racketmanager_nonce', 'constitution-bulk', 'edit_leagues' )
             ->willThrowException( new Invalid_Status_Exception( 'Invalid token' ) );
 
-        $dispatcher = new League_Constitution_Action_Dispatcher( $guard, $this->league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
+        $dispatcher = $this->new_dispatcher( $guard, $this->league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -117,7 +149,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
 
         $repo->expects( self::atLeastOnce() )->method( 'find_by_id' )->with( 7929 )->willReturn( $league_team );
 
-        $dispatcher = new League_Constitution_Action_Dispatcher( $guard, $repo, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
+        $dispatcher = $this->new_dispatcher( $guard, $repo, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -146,7 +178,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             ->with( 'racketmanager_nonce', 'constitution-bulk', 'edit_leagues' )
             ->willThrowException( new Invalid_Status_Exception( 'Invalid token' ) );
 
-        $dispatcher = new League_Constitution_Action_Dispatcher( $guard, $this->league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
+        $dispatcher = $this->new_dispatcher( $guard, $this->league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -167,7 +199,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
         $promotion_relegation_service = $this->createMock( Promotion_Relegation_Service::class );
         $promotion_relegation_service->expects( self::never() )->method( 'promote_and_relegate' );
 
-        $dispatcher = new League_Constitution_Action_Dispatcher( $guard, $repo, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $promotion_relegation_service );
+        $dispatcher = $this->new_dispatcher( $guard, $repo, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $promotion_relegation_service );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -206,7 +238,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             )
             ->willReturn( true );
 
-        $dispatcher = new League_Constitution_Action_Dispatcher( $guard, $repo, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $promotion_relegation_service );
+        $dispatcher = $this->new_dispatcher( $guard, $repo, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $promotion_relegation_service );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -236,7 +268,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
         $promotion_relegation_service = $this->createMock( Promotion_Relegation_Service::class );
         $promotion_relegation_service->expects( self::once() )->method( 'promote_and_relegate' )->willReturn( false );
 
-        $dispatcher = new League_Constitution_Action_Dispatcher( $this->createStub( Action_Guard_Interface::class ), $this->league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $promotion_relegation_service );
+        $dispatcher = $this->new_dispatcher( $this->createStub( Action_Guard_Interface::class ), $this->league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $promotion_relegation_service );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -275,7 +307,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
         $promotion_relegation_service = $this->createMock( Promotion_Relegation_Service::class );
         $promotion_relegation_service->expects( self::never() )->method( 'promote_and_relegate' );
 
-        $dispatcher = new League_Constitution_Action_Dispatcher( $this->createStub( Action_Guard_Interface::class ), $league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $promotion_relegation_service );
+        $dispatcher = $this->new_dispatcher( $this->createStub( Action_Guard_Interface::class ), $league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $promotion_relegation_service );
         $result     = $dispatcher->handle(
             array(),
             array_merge(
@@ -357,7 +389,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             $team_repository
         );
 
-        $dispatcher = new League_Constitution_Action_Dispatcher( $this->createStub( Action_Guard_Interface::class ), $league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $league_repository, $event_repository, $team_repository, $promotion_relegation_service );
+        $dispatcher = $this->new_dispatcher( $this->createStub( Action_Guard_Interface::class ), $league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $league_repository, $event_repository, $team_repository, $promotion_relegation_service );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -410,7 +442,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             $team_repository
         );
 
-        $dispatcher = new League_Constitution_Action_Dispatcher( $this->createStub( Action_Guard_Interface::class ), $league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $league_repository, $event_repository, $team_repository, $promotion_relegation_service );
+        $dispatcher = $this->new_dispatcher( $this->createStub( Action_Guard_Interface::class ), $league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $league_repository, $event_repository, $team_repository, $promotion_relegation_service );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -437,7 +469,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             ->with( 'racketmanager_nonce', 'racketmanager_add-teams-bulk', 'edit_leagues' )
             ->willThrowException( new Invalid_Status_Exception( 'Token failed' ) );
 
-        $dispatcher = new League_Constitution_Action_Dispatcher( $guard, $this->league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
+        $dispatcher = $this->new_dispatcher( $guard, $this->league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -452,7 +484,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
     public function test_add_teams_empty_warning(): void {
         $guard = $this->createStub( Action_Guard_Interface::class );
 
-        $dispatcher = new League_Constitution_Action_Dispatcher( $guard, $this->league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
+        $dispatcher = $this->new_dispatcher( $guard, $this->league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -473,7 +505,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             ->with( 'racketmanager_nonce', 'constitution-bulk', 'edit_leagues' )
             ->willThrowException( new Invalid_Status_Exception( 'Token invalid' ) );
 
-        $dispatcher = new League_Constitution_Action_Dispatcher( $guard, $this->league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
+        $dispatcher = $this->new_dispatcher( $guard, $this->league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -487,7 +519,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
 
     public function test_generate_matches_missing_event_or_season(): void {
         $guard = $this->createStub( Action_Guard_Interface::class );
-        $dispatcher = new League_Constitution_Action_Dispatcher( $guard, $this->league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
+        $dispatcher = $this->new_dispatcher( $guard, $this->league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
 
         $result1 = $dispatcher->handle(
             array(),
@@ -511,7 +543,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
     public function test_generate_matches_success(): void {
         $guard                   = $this->createStub( Action_Guard_Interface::class );
         $league_schedule_service = $this->createMock( Competition_League_Schedule_Service::class );
-        $dispatcher              = new League_Constitution_Action_Dispatcher( $guard, $this->league_team_repository, $this->createStub( League_Service::class ), $league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
+        $dispatcher              = $this->new_dispatcher( $guard, $this->league_team_repository, $this->createStub( League_Service::class ), $league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
 
         $event = new stdClass();
 
@@ -536,7 +568,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
     }
 
     public function test_generate_matches_reports_empty_event(): void {
-        $dispatcher = new League_Constitution_Action_Dispatcher( $this->createStub( Action_Guard_Interface::class ), $this->league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
+        $dispatcher = $this->new_dispatcher( $this->createStub( Action_Guard_Interface::class ), $this->league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
         $this->league_schedule_service->method( 'generate_box_league_matches' )->willReturn( array( 'scheduled' => 0, 'skipped' => 0 ) );
 
         $result = $dispatcher->handle( array(), array( 'generate_matches' => '1', 'event_id' => 12, 'latest_season' => 2026 ), new stdClass() );
@@ -546,7 +578,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
     }
 
     public function test_generate_matches_warns_when_some_leagues_are_skipped(): void {
-        $dispatcher = new League_Constitution_Action_Dispatcher( $this->createStub( Action_Guard_Interface::class ), $this->league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
+        $dispatcher = $this->new_dispatcher( $this->createStub( Action_Guard_Interface::class ), $this->league_team_repository, $this->createStub( League_Service::class ), $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
         $this->league_schedule_service->method( 'generate_box_league_matches' )->willReturn( array( 'scheduled' => 1, 'skipped' => 2 ) );
 
         $result = $dispatcher->handle( array(), array( 'generate_matches' => '1', 'event_id' => 12, 'latest_season' => 2026 ), new stdClass() );
@@ -568,7 +600,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             ->method( 'delete_team' )
             ->with( $league, 15, '2026' );
 
-        $dispatcher = new League_Constitution_Action_Dispatcher( $guard, $this->league_team_repository, $league_service, $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
+        $dispatcher = $this->new_dispatcher( $guard, $this->league_team_repository, $league_service, $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -597,7 +629,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             ->method( 'delete_team' )
             ->willThrowException( new \RuntimeException( 'Failed to cascade fixture deletion' ) );
 
-        $dispatcher = new League_Constitution_Action_Dispatcher( $guard, $this->league_team_repository, $league_service, $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
+        $dispatcher = $this->new_dispatcher( $guard, $this->league_team_repository, $league_service, $this->league_schedule_service, $this->league_repository, $this->event_repository, $this->team_repository, $this->promotion_relegation_service );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -626,7 +658,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
         $league     = League_Test_Factory::from_object( (object) array( 'id' => 200, 'title' => 'Div 1' ) );
         $league_repository->expects( self::atLeastOnce() )->method( 'find_by_id' )->with( 200 )->willReturn( $league );
 
-        $dispatcher = new League_Constitution_Action_Dispatcher(
+        $dispatcher = $this->new_dispatcher(
             $guard,
             $this->league_team_repository,
             $this->createStub( League_Service::class ),
@@ -667,7 +699,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
         $league     = League_Test_Factory::from_object( (object) array( 'id' => 200, 'title' => 'Div 1' ) );
         $league_repository->expects( self::atLeastOnce() )->method( 'find_by_id' )->with( 200 )->willReturn( $league );
 
-        $dispatcher = new League_Constitution_Action_Dispatcher(
+        $dispatcher = $this->new_dispatcher(
             $guard,
             $this->league_team_repository,
             $this->createStub( League_Service::class ),
@@ -709,7 +741,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
         $league_repository->expects( self::atLeastOnce() )->method( 'find_by_id' )->with( 200 )->willReturn( $league );
         $this->team_repository->method( 'find_by_id' )->willReturnCallback( static fn( int $id ) => 10 === $id ? Team::from_object( (object) array( 'id' => 10, 'title' => 'Team Ten' ) ) : null );
 
-        $dispatcher = new League_Constitution_Action_Dispatcher(
+        $dispatcher = $this->new_dispatcher(
             $guard,
             $this->league_team_repository,
             $this->createStub( League_Service::class ),
@@ -739,7 +771,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
         $league_repository->expects( self::once() )->method( 'find_by_id' )->with( 404 )->willReturn( null );
         $league_repository->expects( self::never() )->method( 'add_team_to_league' );
 
-        $dispatcher = new League_Constitution_Action_Dispatcher(
+        $dispatcher = $this->new_dispatcher(
             $this->createStub( Action_Guard_Interface::class ),
             $this->league_team_repository,
             $this->createStub( League_Service::class ),
@@ -776,7 +808,7 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
         $league     = League_Test_Factory::from_object( (object) array( 'id' => 200, 'title' => 'Div 1' ) );
         $league_repository->expects( self::atLeastOnce() )->method( 'find_by_id' )->with( 200 )->willReturn( $league );
 
-        $dispatcher = new League_Constitution_Action_Dispatcher(
+        $dispatcher = $this->new_dispatcher(
             $guard,
             $this->league_team_repository,
             $this->createStub( League_Service::class ),

@@ -69,7 +69,10 @@ class Standings_Rubbers_Test extends TestCase {
         $repository->expects( $this->once() )->method( 'find_by_fixture_id' )->with( 70 )->willReturn( [ $rubber ] );
 
         $standings = ( new Standings_Service(
+            league_repository: $this->createStub( League_Repository_Interface::class ),
             league_team_repository: $league_team_repository,
+            league_service: null,
+            fixture_repository: $this->createStub( Fixture_Repository_Interface::class ),
             rubber_repository: $repository,
             league_query_service: $this->league_query_service( $league_repository, null, $fixture_repository )
         ) )->get_standings( $league, [ 10 ], 0 );

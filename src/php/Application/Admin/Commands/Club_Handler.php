@@ -7,20 +7,39 @@ use Exception;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Validator\Validator_Club;
 use stdClass;
 
+/**
+ * Club Handler
+ */
 final readonly class Club_Handler {
+    /**
+     * Constructor.
+     *
+     * @param Club_Service                     $club_service club service.
+     * @param Player_Service                   $player_service player service.
+     * @param Player_Repository_Interface|null $player_repository player repository.
+     */
     public function __construct(
         private Club_Service $club_service,
         private Player_Service $player_service,
+        private ?Player_Repository_Interface $player_repository = null,
     ) {
     }
 
+    /**
+     * Add club command handler.
+     *
+     * @param Add_Club_Admin_Command $command add club command handler.
+     *
+     * @return Action_Result_DTO
+     */
     public function handle_add_club( Add_Club_Admin_Command $command ): Action_Result_DTO {
-        $club_input = new stdClass();
+        $club_input                                = new stdClass();
         $club_input->name                          = $command->name;
         $club_input->type                          = $command->type;
         $club_input->shortcode                     = $command->shortcode;
@@ -35,7 +54,7 @@ final readonly class Club_Handler {
         $club_input->facilities                    = $command->facilities;
         $club_input->address                       = $command->address;
 
-        $validator = new Validator_Club();
+        $validator = new Validator_Club( player_repository: $this->player_repository );
         $validator = $validator->name( $club_input->name );
         $validator = $validator->short_code( $club_input->shortcode );
         $validator = $validator->type( $club_input->type );
@@ -57,7 +76,10 @@ final readonly class Club_Handler {
                 message: __( 'Club added', 'racketmanager' ),
                 message_type: Admin_Message_Type::SUCCESS,
                 entity_id: $club_id,
-                query_params: $club_id ? array( 'view' => 'club', 'club_id' => $club_id ) : array(),
+                query_params: $club_id ? array(
+                    'view'    => 'club',
+                    'club_id' => $club_id,
+                ) : array(),
             );
         } catch ( Exception $e ) {
             return new Action_Result_DTO(
@@ -67,6 +89,13 @@ final readonly class Club_Handler {
         }
     }
 
+    /**
+     * Edit club command handler.
+     *
+     * @param Edit_Club_Admin_Command $command edit club command handler.
+     *
+     * @return Action_Result_DTO
+     */
     public function handle_edit_club( Edit_Club_Admin_Command $command ): Action_Result_DTO {
         $club_id = $command->club_id;
         if ( ! $club_id ) {
@@ -85,7 +114,7 @@ final readonly class Club_Handler {
             );
         }
 
-        $club_updated = clone $club;
+        $club_updated                                = clone $club;
         $club_updated->name                          = $command->name;
         $club_updated->type                          = $command->type;
         $club_updated->shortcode                     = $command->shortcode;
@@ -100,7 +129,7 @@ final readonly class Club_Handler {
         $club_updated->facilities                    = $command->facilities;
         $club_updated->address                       = $command->address;
 
-        $validator = new Validator_Club();
+        $validator = new Validator_Club( player_repository: $this->player_repository );
         $validator = $validator->name( $club_updated->name );
         $validator = $validator->short_code( $club_updated->shortcode );
         $validator = $validator->type( $club_updated->type );
@@ -114,36 +143,56 @@ final readonly class Club_Handler {
             return new Action_Result_DTO(
                 message: $error_message,
                 message_type: Admin_Message_Type::ERROR,
-                query_params: array( 'view' => 'club', 'club_id' => $club_id ),
+                query_params: array(
+                    'view'    => 'club',
+                    'club_id' => $club_id,
+                ),
             );
         }
 
         try {
             $response = $this->club_service->update_club( $club_id, $club_updated );
             if ( $response ) {
-                return new Action_Result_DTO(
+                $dto = new Action_Result_DTO(
                     message: __( 'Club updated', 'racketmanager' ),
                     message_type: Admin_Message_Type::SUCCESS,
                     entity_id: $club_id,
-                    query_params: array( 'view' => 'club', 'club_id' => $club_id ),
+                    query_params: array(
+                        'view'    => 'club',
+                        'club_id' => $club_id,
+                    ),
+                );
+            } else {
+                $dto = new Action_Result_DTO(
+                    message: __( 'Club details unchanged', 'racketmanager' ),
+                    message_type: Admin_Message_Type::WARNING,
+                    entity_id: $club_id,
+                    query_params: array(
+                        'view'    => 'club',
+                        'club_id' => $club_id,
+                    ),
                 );
             }
-
-            return new Action_Result_DTO(
-                message: __( 'Club details unchanged', 'racketmanager' ),
-                message_type: Admin_Message_Type::WARNING,
-                entity_id: $club_id,
-                query_params: array( 'view' => 'club', 'club_id' => $club_id ),
-            );
         } catch ( Exception $e ) {
-            return new Action_Result_DTO(
+            $dto = new Action_Result_DTO(
                 message: $e->getMessage(),
                 message_type: Admin_Message_Type::ERROR,
-                query_params: array( 'view' => 'club', 'club_id' => $club_id ),
+                query_params: array(
+                    'view'    => 'club',
+                    'club_id' => $club_id,
+                ),
             );
         }
+        return $dto;
     }
 
+    /**
+     * Delete clubs command handler.
+     *
+     * @param Delete_Clubs_Command $command delete clubs command handler.
+     *
+     * @return Action_Result_DTO
+     */
     public function handle_delete_clubs( Delete_Clubs_Command $command ): Action_Result_DTO {
         $clubs = $command->club;
         if ( empty( $clubs ) ) {
@@ -172,6 +221,13 @@ final readonly class Club_Handler {
         );
     }
 
+    /**
+     * Schedule player ratings command handler.
+     *
+     * @param Schedule_Global_Player_Ratings_Command $command schedule player ratings command handler.
+     *
+     * @return Action_Result_DTO
+     */
     public function handle_schedule_player_ratings( Schedule_Global_Player_Ratings_Command $command ): Action_Result_DTO {
         try {
             $result = $this->player_service->schedule_global_player_ratings();
@@ -183,21 +239,22 @@ final readonly class Club_Handler {
             }
 
             if ( $result ) {
-                return new Action_Result_DTO(
+                $dto = new Action_Result_DTO(
                     message: __( 'Player ratings calculation scheduled', 'racketmanager' ),
                     message_type: Admin_Message_Type::SUCCESS,
                 );
+            } else {
+                $dto = new Action_Result_DTO(
+                    message: __( 'Player ratings calculation already scheduled', 'racketmanager' ),
+                    message_type: Admin_Message_Type::INFO,
+                );
             }
-
-            return new Action_Result_DTO(
-                message: __( 'Player ratings calculation already scheduled', 'racketmanager' ),
-                message_type: Admin_Message_Type::INFO,
-            );
         } catch ( Exception $e ) {
-            return new Action_Result_DTO(
+            $dto = new Action_Result_DTO(
                 message: $e->getMessage(),
                 message_type: Admin_Message_Type::ERROR,
             );
         }
+        return $dto;
     }
 }

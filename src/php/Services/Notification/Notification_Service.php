@@ -10,7 +10,6 @@ use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Domain\Shared\Seo_Slug;
-use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
@@ -111,10 +110,10 @@ class Notification_Service {
         Notification_Presenter_Interface $presenter,
         View_Renderer_Interface $view_renderer,
         RacketManager $app,
-        ?Mailer_Interface $mailer = null,
+        Mailer_Interface $mailer,
+        Option_Service $option_service,
         private ?Event_Query_Service $event_query_service = null,
-        private League_Query_Service|Closure|null $league_query_service = null,
-        ?Option_Service $option_service = null
+        private League_Query_Service|Closure|null $league_query_service = null
     ) {
         $this->league_repository      = $repository_provider->get_league_repository();
         $this->league_team_repository = $repository_provider->get_league_team_repository();
@@ -125,8 +124,8 @@ class Notification_Service {
         $this->presenter              = $presenter;
         $this->view_renderer          = $view_renderer;
         $this->app                    = $app;
-        $this->option_service         = $option_service ?? new Option_Service();
-        $this->mailer                 = $mailer ?? new Wp_Mailer();
+        $this->option_service         = $option_service;
+        $this->mailer                 = $mailer;
     }
 
     private function event_query(): Event_Query_Service {

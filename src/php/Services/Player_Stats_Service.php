@@ -20,8 +20,8 @@ use stdClass;
 class Player_Stats_Service {
     private Player_Query_Service $query_service;
 
-    public function __construct( ?Player_Query_Service $query_service = null ) {
-        $this->query_service = $query_service ?? new Player_Query_Service();
+    public function __construct( Player_Query_Service $query_service ) {
+        $this->query_service = $query_service;
     }
 
     /**

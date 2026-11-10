@@ -24,6 +24,7 @@ use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Presentation\Presenters\Match_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
@@ -52,7 +53,7 @@ class Match_Tournament_Real_Template_Test extends TestCase {
     }
 
     private function view_presenter(): Shortcode_View_Presenter {
-        return new Shortcode_View_Presenter( new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ) );
+        return new Shortcode_View_Presenter( new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ), new Club_Presenter(), new Player_Presenter() ) );
     }
 
     private function render_header( ?Fixture $fixture, string $type = 'league', ?string $home_placeholder = null, ?object $permission = null, bool $edit = false ): string {
@@ -163,7 +164,10 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         $service->method( 'get_fixture_dates_for_tournament' )->willReturn( $dates );
         $service->method( 'get_fixtures_by_date_for_tournament' )->willReturn( $groups );
         $handler = new Get_Tournament_Matches_Handler( $service );
-        $adapter = new Tournament_Shortcode_Adapter( tournament_presenter: new Tournament_Presenter() );
+        $adapter = new Tournament_Shortcode_Adapter(
+            tournament_presenter: new Tournament_Presenter(),
+            player_presenter: new Player_Presenter()
+        );
 
         return $this->view_presenter()->render( $adapter->present_matches( $handler->handle( new Get_Tournament_Matches_Query( 9, $selected ) ) ) );
     }
@@ -635,7 +639,10 @@ class Match_Tournament_Real_Template_Test extends TestCase {
 
         $presenter = new Tournament_Presenter( 'd/m/Y' );
         $handler   = new Get_Tournament_Draws_Handler( $tournament_service );
-        $adapter   = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter );
+        $adapter   = new Tournament_Shortcode_Adapter(
+            tournament_presenter: $presenter,
+            player_presenter: new Player_Presenter()
+        );
 
         $result = $handler->handle( new Get_Tournament_Draws_Query( 5, 12 ) );
         $vm     = $adapter->present_draws( $result );

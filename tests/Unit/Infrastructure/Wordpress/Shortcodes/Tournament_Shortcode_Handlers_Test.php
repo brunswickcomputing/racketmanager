@@ -70,7 +70,10 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->tournament_service = $this->createStub( Tournament_Service::class );
-        $this->adapter            = new Tournament_Shortcode_Adapter();
+        $this->adapter            = new Tournament_Shortcode_Adapter(
+            new Tournament_Presenter(),
+            new Player_Presenter()
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -138,7 +141,7 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
 
         try {
             $view_presenter = new Shortcode_View_Presenter(
-                new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) )
+                new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ), new Club_Presenter(), new Player_Presenter() )
             );
             $render_page = function ( bool $is_open, string $venue ) use ( $view_presenter ): array {
                 $tournament = new Tournament();
@@ -307,7 +310,11 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
         $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
         $this->tournament_service->method( 'get_event_details_for_tournament' )->willReturn( $event );
 
-        $adapter = new Tournament_Shortcode_Adapter( competition_service: $competition_service );
+        $adapter = new Tournament_Shortcode_Adapter(
+            new Tournament_Presenter(),
+            new Player_Presenter(),
+            competition_service: $competition_service
+        );
         $handler = new Get_Tournament_Events_Handler( $this->tournament_service );
         $result  = $handler->handle( new Get_Tournament_Events_Query( tournament_id: 5, event_id: 'Mens Singles' ) );
         $vm      = $adapter->present_events( $result );

@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Services\Standings;
 
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
@@ -22,7 +24,10 @@ class Standings_Match_Counts_Test extends TestCase {
     private function service( League_Repository_Interface $league_repository ): Standings_Service {
         return new Standings_Service(
             league_repository: $league_repository,
+            league_team_repository: $this->createStub( League_Team_Repository_Interface::class ),
+            league_service: null,
             fixture_repository: $this->createStub( Fixture_Repository_Interface::class ),
+            rubber_repository: $this->createStub( Rubber_Repository_Interface::class ),
             league_query_service: $this->league_query_service( $league_repository )
         );
     }

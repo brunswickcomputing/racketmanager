@@ -14,8 +14,6 @@ use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interf
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
-use Racketmanager\Repositories\Message_Repository;
-use Racketmanager\Repositories\User_Repository;
 use Racketmanager\Util\Util;
 use stdClass;
 use function Racketmanager\show_alert;
@@ -32,12 +30,10 @@ class Account_Ajax_Adapter {
     public function __construct(
         private Security_Service_Interface $security_service,
         private Json_Response_Factory_Interface $response_factory,
-        private ?Message_Repository_Interface $message_repository = null,
-        private ?User_Repository_Interface $user_repository = null,
+        private Message_Repository_Interface $message_repository,
+        private User_Repository_Interface $user_repository,
         private readonly ?Option_Service $option_service = null
     ) {
-        $this->message_repository = $this->message_repository ?? new Message_Repository();
-        $this->user_repository    = $this->user_repository ?? new User_Repository();
     }
 
     public function logged_out(): Response {

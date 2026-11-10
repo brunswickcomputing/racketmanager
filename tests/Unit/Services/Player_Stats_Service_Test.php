@@ -13,7 +13,7 @@ final class Player_Stats_Service_Test extends TestCase {
 
 	protected function setUp(): void {
 		parent::setUp();
-		$this->service = new Player_Stats_Service();
+		$this->service = new Player_Stats_Service( $this->createStub( Player_Query_Service::class ) );
 	}
 
 	public function test_get_stats_totals_win_pct_and_walkover(): void {

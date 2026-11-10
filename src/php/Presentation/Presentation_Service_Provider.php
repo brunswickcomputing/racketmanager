@@ -52,7 +52,7 @@ final readonly class Presentation_Service_Provider implements Service_Provider_I
         $container->alias( Club_Presenter::class, 'club_presenter' );
 
         $container->set( 'player_presenter', fn( Simple_Container $c ) => new Player_Presenter(
-            $c->get( 'competition_shortcode_presenter' ),
+            fn() => $c->get( Competition_Shortcode_Presenter::class ),
             $c->get( 'option_gateway' )
         ) );
         $container->alias( Player_Presenter::class, 'player_presenter' );
@@ -87,6 +87,7 @@ final readonly class Presentation_Service_Provider implements Service_Provider_I
         $container->set( 'competition_shortcode_presenter', fn( Simple_Container $c ) => new Competition_Shortcode_Presenter(
             $c->get( 'view_renderer' ),
             $c->get( 'club_presenter' ),
+            $c->get( Player_Presenter::class ),
             option_gateway: $c->get( 'option_gateway' )
         ) );
         $container->alias( Competition_Shortcode_Presenter::class, 'competition_shortcode_presenter' );
@@ -164,10 +165,10 @@ final readonly class Presentation_Service_Provider implements Service_Provider_I
             $c->get( 'team_service' ),
             $c->get( 'view_renderer' ),
             $c->get( 'tournament_presenter' ),
-            $c->get( 'fixture_link_service' ),
-            $c->get( 'fixture_permission_service' ),
             $c->get( 'club_presenter' ),
             $c->get( 'player_presenter' ),
+            $c->get( 'fixture_link_service' ),
+            $c->get( 'fixture_permission_service' ),
             $c->get( 'rubber_repository' )
         ) );
         $container->alias( Matches_List_Presenter::class, 'matches_list_presenter' );

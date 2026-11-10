@@ -31,6 +31,7 @@ use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 
 final class Club_Competition_Service_Registration_Test extends TestCase {
     public function test_runtime_provider_registers_and_resolves_migrated_screens(): void {
@@ -48,6 +49,8 @@ final class Club_Competition_Service_Registration_Test extends TestCase {
         $container->set( 'season_service', fn() => $this->createStub( Season_Service::class ) );
         $container->set( 'registration_service', fn() => $this->createStub( Registration_Service::class ) );
         $container->set( 'event_repository', fn() => $this->createStub( Event_Repository_Interface::class ) );
+        $container->set( 'player_repository', fn() => $this->createStub( Player_Repository_Interface::class ) );
+        $container->alias( Player_Repository_Interface::class, 'player_repository' );
         $container->set( 'player_service', fn() => $this->createStub( Player_Service::class ) );
         $container->set( 'team_service', fn() => $this->createStub( Team_Service::class ) );
         $container->set( 'tournament_service', fn() => $this->createStub( Tournament_Service::class ) );

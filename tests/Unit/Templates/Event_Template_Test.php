@@ -5,7 +5,9 @@ namespace Racketmanager\Tests\Unit\Templates;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Competition_Type;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Services\View\Php_View_Renderer;
 
 class Event_Template_Test extends TestCase {
@@ -15,7 +17,11 @@ class Event_Template_Test extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->template_path = dirname( __DIR__, 3 ) . '/templates/event.php';
-        $this->presenter     = new Competition_Shortcode_Presenter( new Php_View_Renderer( dirname( __DIR__, 3 ) . '/templates/' ) );
+        $this->presenter     = new Competition_Shortcode_Presenter(
+            new Php_View_Renderer( dirname( __DIR__, 3 ) . '/templates/' ),
+            new Club_Presenter(),
+            new Player_Presenter()
+        );
     }
 
     public function test_renders_with_enum_competition_type() {

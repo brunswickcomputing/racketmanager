@@ -23,7 +23,7 @@ final class Club_Team_Action_Dispatcher_Test extends TestCase {
         $guard        = $this->createMock( Action_Guard_Interface::class );
         $guard->expects( self::never() )->method( 'assert_allowed' );
 
-        $dispatcher = new Club_Team_Action_Dispatcher( $club_service, $team_service, $guard );
+        $dispatcher = new Club_Team_Action_Dispatcher( $club_service, $team_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Team_Handler( $club_service, $team_service ) );
         $result     = $dispatcher->handle( array(), array() );
 
         self::assertNull( $result->message );
@@ -39,7 +39,7 @@ final class Club_Team_Action_Dispatcher_Test extends TestCase {
             ->with( 'racketmanager_nonce', 'racketmanager_add-team', 'edit_teams' )
             ->willThrowException( new Invalid_Status_Exception( 'Invalid token' ) );
 
-        $dispatcher = new Club_Team_Action_Dispatcher( $club_service, $team_service, $guard );
+        $dispatcher = new Club_Team_Action_Dispatcher( $club_service, $team_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Team_Handler( $club_service, $team_service ) );
         $result     = $dispatcher->handle( array(), array( 'addTeam' => '1' ) );
 
         self::assertSame( 'Invalid token', $result->message );
@@ -55,7 +55,7 @@ final class Club_Team_Action_Dispatcher_Test extends TestCase {
             ->method( 'create_team' )
             ->with( 5, 'Men' );
 
-        $dispatcher = new Club_Team_Action_Dispatcher( $club_service, $team_service, $guard );
+        $dispatcher = new Club_Team_Action_Dispatcher( $club_service, $team_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Team_Handler( $club_service, $team_service ) );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -79,7 +79,7 @@ final class Club_Team_Action_Dispatcher_Test extends TestCase {
             ->with( 20, 5, 'Mixed' )
             ->willReturn( true );
 
-        $dispatcher = new Club_Team_Action_Dispatcher( $club_service, $team_service, $guard );
+        $dispatcher = new Club_Team_Action_Dispatcher( $club_service, $team_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Team_Handler( $club_service, $team_service ) );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -103,7 +103,7 @@ final class Club_Team_Action_Dispatcher_Test extends TestCase {
             ->with( 'racketmanager_nonce', 'racketmanager_teams-bulk', 'del_teams' )
             ->willThrowException( new Invalid_Status_Exception( 'Permission denied' ) );
 
-        $dispatcher = new Club_Team_Action_Dispatcher( $club_service, $team_service, $guard );
+        $dispatcher = new Club_Team_Action_Dispatcher( $club_service, $team_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Team_Handler( $club_service, $team_service ) );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -121,7 +121,7 @@ final class Club_Team_Action_Dispatcher_Test extends TestCase {
         $team_service = $this->createMock( Team_Service::class );
         $guard        = $this->createStub( Action_Guard_Interface::class );
 
-        $dispatcher = new Club_Team_Action_Dispatcher( $club_service, $team_service, $guard );
+        $dispatcher = new Club_Team_Action_Dispatcher( $club_service, $team_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Team_Handler( $club_service, $team_service ) );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -159,7 +159,7 @@ final class Club_Team_Action_Dispatcher_Test extends TestCase {
                 [ 20, false ],
             ] );
 
-        $dispatcher = new Club_Team_Action_Dispatcher( $club_service, $team_service, $guard );
+        $dispatcher = new Club_Team_Action_Dispatcher( $club_service, $team_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Team_Handler( $club_service, $team_service ) );
         $result     = $dispatcher->handle(
             array(),
             array(

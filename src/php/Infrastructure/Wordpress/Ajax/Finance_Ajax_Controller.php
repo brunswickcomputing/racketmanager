@@ -14,6 +14,8 @@ use Racketmanager\Application\Finance\Commands\Set_Purchase_Order_Handler;
 use Racketmanager\Application\General\Queries\Get_Purchase_Order_Handler;
 use Racketmanager\Infrastructure\Security\Security_Service;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\RacketManager;
@@ -75,7 +77,7 @@ class Finance_Ajax_Controller {
             : new Get_Purchase_Order_Handler( $finance_service );
         $view_presenter             = $c->has( 'shortcode_view_presenter' )
             ? $c->get( 'shortcode_view_presenter' )
-            : new Shortcode_View_Presenter( $c->has( 'shortcode_template_renderer' ) ? $c->get( 'shortcode_template_renderer' ) : new Shortcode_Template_Renderer( $c->get( 'view_renderer' ) ) );
+            : new Shortcode_View_Presenter( $c->has( 'shortcode_template_renderer' ) ? $c->get( 'shortcode_template_renderer' ) : new Shortcode_Template_Renderer( $c->get( 'view_renderer' ), $c->get( Club_Presenter::class ), $c->get( Player_Presenter::class ) ) );
 
         return new Finance_Ajax_Adapter(
             $c->has( 'security_service' ) ? $c->get( 'security_service' ) : new Security_Service(),

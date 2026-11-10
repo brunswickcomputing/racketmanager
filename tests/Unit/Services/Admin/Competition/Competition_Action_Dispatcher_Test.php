@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Services\Admin\Competition;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+use Racketmanager\Application\Admin\Commands\Competition_Handler;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
@@ -28,11 +29,14 @@ final class Competition_Action_Dispatcher_Test extends TestCase {
         Competition_Service $competition_service,
         Action_Guard_Interface $guard,
         ?Event_Repository_Interface $repository = null,
+        ?Competition_Handler $commands = null,
     ): Competition_Action_Dispatcher {
+        $repo = $repository ?? $this->createStub( Event_Repository_Interface::class );
         return new Competition_Action_Dispatcher(
             $competition_service,
             $guard,
-            $repository ?? $this->createStub( Event_Repository_Interface::class )
+            $repo,
+            $commands ?? new Competition_Handler( $competition_service, $repo )
         );
     }
 
@@ -296,7 +300,7 @@ final class Competition_Action_Dispatcher_Test extends TestCase {
         $repository->expects( self::once() )->method( 'find_by_id' )->with( 5 )->willReturn( $event );
         $competition_service->expects( self::once() )->method( 'delete_event' )->with( $event );
 
-        $dispatcher = new Competition_Action_Dispatcher( $competition_service, $guard, $repository );
+        $dispatcher = $this->create_dispatcher( $competition_service, $guard, $repository );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -323,7 +327,7 @@ final class Competition_Action_Dispatcher_Test extends TestCase {
         $repository->expects( self::once() )->method( 'find_by_id' )->with( 905 )->willReturn( $event );
         $competition_service->expects( self::once() )->method( 'delete_event' )->with( $event );
 
-        $result = ( new Competition_Action_Dispatcher( $competition_service, $guard, $repository ) )->handle(
+        $result = $this->create_dispatcher( $competition_service, $guard, $repository )->handle(
             array(),
             array( 'doActionEvent' => '1', 'action' => 'delete', 'event' => array( '905' ) )
         );
@@ -339,7 +343,7 @@ final class Competition_Action_Dispatcher_Test extends TestCase {
         $repository = $this->createStub( Event_Repository_Interface::class );
         $repository->method( 'find_by_id' )->willReturn( $event );
 
-        $result = ( new Competition_Action_Dispatcher( $competition_service, $this->createStub( Action_Guard_Interface::class ), $repository ) )->handle(
+        $result = $this->create_dispatcher( $competition_service, $this->createStub( Action_Guard_Interface::class ), $repository )->handle(
             array(), array( 'doActionEvent' => '1', 'action' => 'delete', 'event' => array( 58 ) )
         );
 

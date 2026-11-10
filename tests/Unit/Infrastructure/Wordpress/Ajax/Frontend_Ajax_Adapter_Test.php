@@ -8,6 +8,8 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Competition\Commands\Submit_Cup_Entry_Handler;
+use Racketmanager\Application\Competition\Commands\Submit_League_Entry_Handler;
 use Racketmanager\Application\General\DTOs\Alert_Result;
 use Racketmanager\Application\General\DTOs\Player_Search_Result;
 use Racketmanager\Application\General\Queries\Get_Alert_Handler;
@@ -76,6 +78,7 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
     private array $validator_events = [];
     private Team_Repository_Interface $team_repository;
     private Event_Repository_Interface $event_repository;
+    private Player_Repository_Interface $player_repository;
 
     protected function setUp(): void {
         parent::setUp();
@@ -112,6 +115,7 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         $this->team_repository->method( 'find_by_id' )->willReturnCallback( fn( $id ): ?Team => $this->validator_teams[ (int) $id ] ?? null );
         $this->event_repository = $this->createStub( Event_Repository_Interface::class );
         $this->event_repository->method( 'find_by_id' )->willReturnCallback( fn( $id ): ?Event => $this->validator_events[ (int) $id ] ?? null );
+        $this->player_repository = $this->createStub( Player_Repository_Interface::class );
     }
 
     private function make_adapter(
@@ -170,9 +174,13 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
             $this->rubber_repository,
             search_players_handler: $search_players_handler,
             get_player_details_handler: $get_player_details_handler,
+            submit_cup_entry_handler: new Submit_Cup_Entry_Handler( $this->competition_entry_service ),
+            submit_league_entry_handler: new Submit_League_Entry_Handler( $this->competition_entry_service ),
+            update_player_handler: new Update_Player_Handler( $this->player_service ),
+            team_repository: $this->team_repository,
+            player_repository: $this->player_repository,
             event_repository: $this->event_repository,
-            view_presenter: $include_view_presenter ? $view_presenter : null,
-            team_repository: $this->team_repository
+            view_presenter: $include_view_presenter ? $view_presenter : null
         );
     }
 
@@ -923,7 +931,11 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
             rubber_repository: $this->rubber_repository,
             search_players_handler: $this->createStub( Search_Players_Handler::class ),
             get_player_details_handler: $this->createStub( Get_Player_Details_Handler::class ),
-            update_player_handler: $update_handler
+            submit_cup_entry_handler: new Submit_Cup_Entry_Handler( $this->competition_entry_service ),
+            submit_league_entry_handler: new Submit_League_Entry_Handler( $this->competition_entry_service ),
+            update_player_handler: $update_handler,
+            team_repository: $this->team_repository,
+            player_repository: $this->player_repository
         );
 
         $response = $adapter->update_player( $request );
@@ -974,6 +986,11 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
             rubber_repository: $this->rubber_repository,
             search_players_handler: $search_handler,
             get_player_details_handler: $this->createStub( Get_Player_Details_Handler::class ),
+            submit_cup_entry_handler: new Submit_Cup_Entry_Handler( $this->competition_entry_service ),
+            submit_league_entry_handler: new Submit_League_Entry_Handler( $this->competition_entry_service ),
+            update_player_handler: new Update_Player_Handler( $this->player_service ),
+            team_repository: $this->team_repository,
+            player_repository: $this->player_repository,
             view_presenter: $view_presenter
         );
 
@@ -1050,7 +1067,12 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
             fixture_repository: $this->fixture_repository,
             rubber_repository: $this->rubber_repository,
             search_players_handler: $this->createStub( Search_Players_Handler::class ),
-            get_player_details_handler: $details_handler
+            get_player_details_handler: $details_handler,
+            submit_cup_entry_handler: new Submit_Cup_Entry_Handler( $this->competition_entry_service ),
+            submit_league_entry_handler: new Submit_League_Entry_Handler( $this->competition_entry_service ),
+            update_player_handler: new Update_Player_Handler( $this->player_service ),
+            team_repository: $this->team_repository,
+            player_repository: $this->player_repository
         );
 
         $response = $adapter->get_player_details( $request );
@@ -1065,8 +1087,15 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
             $params[ $param->getName() ] = $param;
         }
 
-        $this->assertArrayNotHasKey( 'player_repository', $params, 'Adapter must not build handlers from a repository.' );
-        foreach ( [ 'search_players_handler' => Search_Players_Handler::class, 'get_player_details_handler' => Get_Player_Details_Handler::class ] as $name => $class ) {
+        foreach ( [
+            'search_players_handler' => Search_Players_Handler::class,
+            'get_player_details_handler' => Get_Player_Details_Handler::class,
+            'submit_cup_entry_handler' => Submit_Cup_Entry_Handler::class,
+            'submit_league_entry_handler' => Submit_League_Entry_Handler::class,
+            'update_player_handler' => Update_Player_Handler::class,
+            'team_repository' => Team_Repository_Interface::class,
+            'player_repository' => Player_Repository_Interface::class,
+        ] as $name => $class ) {
             $this->assertArrayHasKey( $name, $params );
             $this->assertFalse( $params[ $name ]->isOptional(), "$name must be a required constructor argument." );
             $this->assertFalse( $params[ $name ]->allowsNull(), "$name must not be nullable." );
@@ -1087,11 +1116,16 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
                 team_service: $this->team_service,
                 player_service: $this->player_service,
                 registration_service: $this->registration_service,
-               club_service: $this->club_service,
+                club_service: $this->club_service,
                 tournament_service: $this->tournament_service,
                 fixture_repository: $this->fixture_repository,
                 rubber_repository: $this->rubber_repository,
-                search_players_handler: $this->createStub( Search_Players_Handler::class )
+                search_players_handler: $this->createStub( Search_Players_Handler::class ),
+                submit_cup_entry_handler: new Submit_Cup_Entry_Handler( $this->competition_entry_service ),
+                submit_league_entry_handler: new Submit_League_Entry_Handler( $this->competition_entry_service ),
+                update_player_handler: new Update_Player_Handler( $this->player_service ),
+                team_repository: $this->team_repository,
+                player_repository: $this->player_repository
             )
         );
     }

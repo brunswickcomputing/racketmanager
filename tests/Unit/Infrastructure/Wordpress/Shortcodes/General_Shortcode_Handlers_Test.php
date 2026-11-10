@@ -33,6 +33,7 @@ use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Player\User;
 use Racketmanager\Domain\Tournament\Currency;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Invoice_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
@@ -68,7 +69,7 @@ class General_Shortcode_Handlers_Test extends TestCase {
         parent::setUp();
         $this->backup_globals();
 
-        $this->template_renderer = new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) );
+        $this->template_renderer = new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ), new Club_Presenter(), new Player_Presenter() );
     }
 
     protected function tearDown(): void {
@@ -317,7 +318,7 @@ class General_Shortcode_Handlers_Test extends TestCase {
         );
         $result  = $handler->handle( new Get_Player_Query( template: 'profile', player_name: null, btm: 'BTM123' ) );
 
-        $presenter = new Player_Presenter( new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ) );
+        $presenter = new Player_Presenter( new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ), new Club_Presenter(), new Player_Presenter() ) );
         $vars      = $presenter->present_player(
             player: $result->player,
             clubs: $result->clubs,

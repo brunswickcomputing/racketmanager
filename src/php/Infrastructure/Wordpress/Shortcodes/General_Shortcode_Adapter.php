@@ -48,10 +48,10 @@ class General_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly Get_Player_Search_Handler $player_search_handler,
         private readonly Get_Team_Order_Handler $team_order_handler,
         private readonly Get_Alert_Handler $alert_handler,
+        private readonly Player_Presenter $player_presenter,
+        private readonly Invoice_Presenter $invoice_presenter,
         private readonly ?Shortcode_Template_Renderer $template_renderer = null,
         private readonly ?Security_Service_Interface $security_service = null,
-        private readonly ?Player_Presenter $player_presenter = null,
-        private readonly ?Invoice_Presenter $invoice_presenter = null,
         private readonly ?Query_Vars_Interface $query_vars = null
     ) {}
 
@@ -79,8 +79,7 @@ class General_Shortcode_Adapter implements Shortcode_Adapter_Interface {
 
         $filename = ! empty( $result->template ) ? 'players-' . $result->template : 'players';
 
-        $presenter = $this->player_presenter ?? new Player_Presenter();
-        $player_vm = $presenter->present_players_directory(
+        $player_vm = $this->player_presenter->present_players_directory(
             search_string: $result->search_string ?? '',
             search_results: $search_results,
             favourites: $result->favourites,
@@ -104,8 +103,7 @@ class General_Shortcode_Adapter implements Shortcode_Adapter_Interface {
 
         $filename = ! empty( $result->template ) ? 'player-' . $result->template : 'player';
 
-        $presenter = $this->player_presenter ?? new Player_Presenter();
-        $player_vm = $presenter->present_player(
+        $player_vm = $this->player_presenter->present_player(
             player: $result->player,
             clubs: $result->clubs,
             titles: $result->titles,
@@ -151,8 +149,7 @@ class General_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $this->view_presenter->render( Shortcode_View_Model::for_error( $result->error_message ?? __( 'Invoice not found', 'racketmanager' ) ) );
         }
 
-        $presenter  = $this->invoice_presenter ?? new Invoice_Presenter();
-        $invoice_vm = $presenter->present_invoice(
+        $invoice_vm = $this->invoice_presenter->present_invoice(
             invoice: $result->invoice,
             billing: $result->billing,
             organisation_name: $result->organisation_name,
@@ -209,9 +206,8 @@ class General_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $this->view_presenter->render( Shortcode_View_Model::for_error( $result->error_message ?? __( 'Player not found', 'racketmanager' ) ) );
         }
 
-        $presenter = $this->player_presenter ?? new Player_Presenter();
-        $template_args['clubs']         = array_map( fn( $c ) => $presenter->present_club_membership( $c ), $result->clubs );
-        $template_args['clubs_archive'] = array_map( fn( $c ) => $presenter->present_club_membership( $c ), $result->clubs_archive );
+        $template_args['clubs']         = array_map( fn( $c ) => $this->player_presenter->present_club_membership( $c ), $result->clubs );
+        $template_args['clubs_archive'] = array_map( fn( $c ) => $this->player_presenter->present_club_membership( $c ), $result->clubs_archive );
         $filename                       = ! empty( $result->template ) ? 'player-clubs-' . $result->template : 'player-clubs';
 
         return $this->view_presenter->render( Shortcode_View_Model::for_template( $filename, $template_args, 'account' ) );

@@ -19,8 +19,10 @@ use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Registration_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
 use Racketmanager\Repositories\Registration_Repository;
 use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Services\Club_Service;
@@ -48,11 +50,15 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
         $container->alias( Registration_Repository_Interface::class, 'registration_repository' );
         $container->alias( Registration_Repository::class, 'registration_repository' );
 
-        $container->set( 'club_role_repository', fn( Simple_Container $c ): Club_Role_Repository_Interface => new Club_Role_Repository( null, $c->get( 'user_repository' ) ) );
+        $container->set( 'club_role_repository', fn( Simple_Container $c ): Club_Role_Repository_Interface => new Club_Role_Repository( $c->get( User_Repository_Interface::class ) ) );
         $container->alias( Club_Role_Repository_Interface::class, 'club_role_repository' );
         $container->alias( Club_Role_Repository::class, 'club_role_repository' );
 
-        $container->set( 'team_repository', fn( Simple_Container $c ) => new Team_Repository( null, $c->get( 'player_repository' ) ) );
+        $container->set( 'team_repository', fn( Simple_Container $c ) => new Team_Repository(
+            null,
+            $c->get( 'player_repository' ),
+            fn() => $c->get( Fixture_Repository_Interface::class )
+        ) );
         $container->alias( Team_Repository_Interface::class, 'team_repository' );
         $container->alias( Team_Repository::class, 'team_repository' );
 
@@ -75,8 +81,8 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
             $c->get( 'club_repository' ),
             $c->get( 'player_service' ),
             $c->get( 'mailer' ),
-            $c->get( 'domain_event_dispatcher' ),
-            $c->get( 'clock' )
+            $c->get( 'clock' ),
+            $c->get( 'domain_event_dispatcher' )
         ) );
         $container->alias( Registration_Service::class, 'registration_service' );
 

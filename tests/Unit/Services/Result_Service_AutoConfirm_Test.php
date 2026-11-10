@@ -2,6 +2,7 @@
 
 namespace Racketmanager\Tests\Unit\Services;
 
+use Racketmanager\Application\Mail\Mailer_Interface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
@@ -41,7 +42,8 @@ class Result_Service_AutoConfirm_Test extends TestCase {
             $this->fixture_repository,
             $this->team_repository,
             new Option_Service( $option_gateway ),
-            $this->createMock( Template_Renderer_Interface::class )
+            $this->createMock( Template_Renderer_Interface::class ),
+            $this->createStub( Mailer_Interface::class )
         );
     }
 

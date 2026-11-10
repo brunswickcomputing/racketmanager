@@ -67,6 +67,7 @@ use Racketmanager\Repositories\Competition_Repository;
 use Racketmanager\Repositories\Event_Repository;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Tournament_Entry_Repository_Interface;
@@ -106,7 +107,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
 
         // Repositories
         $container->set( 'competition_repository', fn( Simple_Container $c ) => new Competition_Repository(
-            static fn() => $c->has( 'fixture_repository' ) ? $c->get( 'fixture_repository' ) : null,
+            static fn(): Fixture_Repository_Interface => $c->get( Fixture_Repository_Interface::class ),
             static fn() => $c->has( 'fixture_relation_loader' ) ? $c->get( 'fixture_relation_loader' ) : null,
             static fn() => $c->get( 'club_repository' ),
             static fn() => $c->get( 'player_repository' ),
@@ -119,7 +120,12 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
         $container->alias( Event_Repository_Interface::class, 'event_repository' );
         $container->alias( Event_Repository::class, 'event_repository' );
 
-        $container->set( 'league_team_repository', fn( Simple_Container $c ) => new League_Team_Repository( null, $c->get( 'club_repository' ), $c->get( 'team_repository' ) ) );
+        $container->set( 'league_team_repository', fn( Simple_Container $c ) => new League_Team_Repository(
+            null,
+            $c->get( 'club_repository' ),
+            $c->get( 'team_repository' ),
+            fn() => $c->get( Fixture_Repository_Interface::class )
+        ) );
         $container->alias( League_Team_Repository_Interface::class, 'league_team_repository' );
         $container->alias( League_Team_Repository::class, 'league_team_repository' );
 
@@ -278,8 +284,8 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
                 $c->get( 'finance_service' ),
                 $c->get( 'league_service' ),
                 $c->get( 'mailer' ),
-                $c->get( 'league_repository' ),
-                $c->get( 'option_service' )
+                $c->get( 'option_service' ),
+                $c->get( 'league_repository' )
             );
             $c->get( 'fixture_link_service' )->set_tournament_service( $service );
             return $service;
@@ -302,7 +308,6 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'notify_service' ),
             $c->get( 'event_query_service' ),
             $c->get( 'mailer' ),
-            $c->get( 'option_gateway' ),
             $c->get( 'option_service' ),
             $c->get( 'player_repository' ),
             $c->get( 'event_repository' )
@@ -642,7 +647,12 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
         $container->alias( Competition_Shortcode_Adapter::class, 'competition_shortcode_adapter' );
 
         $container->set( 'league_shortcode_adapter', fn( Simple_Container $c ) => new League_Shortcode_Adapter(
-            $app,
+            archive_presenter: $c->get( 'league_archive_presenter' ),
+            tournament_presenter: $c->get( 'tournament_presenter' ),
+            team_details_presenter: $c->get( 'team_details_presenter' ),
+            player_presenter: $c->get( 'player_presenter' ),
+            fixture_presenter: $c->get( 'fixture_presenter' ),
+            racketmanager: $app,
             get_league_standings_handler: $c->get( 'get_league_standings_handler' ),
             league_standings_presenter: $c->get( 'league_standings_presenter' ),
             view_presenter: $c->get( 'shortcode_view_presenter' ),
@@ -656,11 +666,6 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             match_dropdown_handler: $c->get( 'get_league_match_dropdown_handler' ),
             last_5_handler: $c->get( 'get_league_last_5_handler' ),
             template_renderer: $c->get( 'shortcode_template_renderer' ),
-            archive_presenter: $c->get( 'league_archive_presenter' ),
-            tournament_presenter: $c->get( 'tournament_presenter' ),
-            team_details_presenter: $c->get( 'team_details_presenter' ),
-            player_presenter: $c->get( 'player_presenter' ),
-            fixture_presenter: $c->get( 'fixture_presenter' ),
             competition_service: $c->get( 'competition_service' ),
             team_service: $c->get( 'team_service' ),
             fixture_link_service: $c->get( 'fixture_link_service' ),
@@ -670,7 +675,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
         $container->alias( League_Shortcode_Adapter::class, 'league_shortcode_adapter' );
 
         $container->set( 'event_shortcode_adapter', fn( Simple_Container $c ) => new Event_Shortcode_Adapter(
-            $app,
+            racketmanager: $app,
             view_presenter: $c->get( 'shortcode_view_presenter' ),
             event_handler: $c->get( 'get_event_handler' ),
             standings_handler: $c->get( 'get_event_standings_handler' ),
@@ -693,7 +698,9 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
         $container->alias( Event_Shortcode_Adapter::class, 'event_shortcode_adapter' );
 
         $container->set( 'tournament_shortcode_adapter', fn( Simple_Container $c ) => new Tournament_Shortcode_Adapter(
-            $app,
+            tournament_presenter: $c->get( 'tournament_presenter' ),
+            player_presenter: $c->get( 'player_presenter' ),
+            racketmanager: $app,
             view_presenter: $c->get( 'shortcode_view_presenter' ),
             tournament_handler: $c->get( 'get_tournament_handler' ),
             overview_handler: $c->get( 'get_tournament_overview_handler' ),
@@ -708,8 +715,6 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             withdrawal_handler: $c->get( 'get_tournament_withdrawal_handler' ),
             template_renderer: $c->get( 'shortcode_template_renderer' ),
             competition_service: $c->get( 'competition_service' ),
-            tournament_presenter: $c->get( 'tournament_presenter' ),
-            player_presenter: $c->get( 'player_presenter' ),
             order_of_play_presenter: $c->get( 'order_of_play_presenter' ),
             query_vars: $c->get( Query_Vars_Interface::class )
         ) );
@@ -721,11 +726,11 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'json_response_factory' ),
             $c->get( 'competition_entry_service' ),
             $c->get( 'finance_service' ),
-            $c->get( 'tournament_service' ),
             withdraw_tournament_entry_handler: $c->get( 'withdraw_tournament_entry_handler' ),
             create_tournament_payment_handler: $c->get( 'create_tournament_payment_handler' ),
             submit_tournament_partner_handler: $c->get( 'submit_tournament_partner_handler' ),
-            submit_tournament_entry_handler: $c->get( 'submit_tournament_entry_handler' )
+            submit_tournament_entry_handler: $c->get( 'submit_tournament_entry_handler' ),
+            tournament_service: $c->get( 'tournament_service' )
         ) );
         $container->alias( Tournament_Ajax_Adapter::class, 'tournament_ajax_adapter' );
         $container->set( 'tournament_ajax_controller', fn( Simple_Container $c ) => new Tournament_Ajax_Controller( $app, $c->get( 'tournament_ajax_adapter' ) ) );

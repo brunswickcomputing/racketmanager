@@ -39,7 +39,6 @@ use Racketmanager\Exceptions\Tournament_Entry_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Updated_Exception;
 use Racketmanager\Application\Mail\Mailer_Interface;
-use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Charge_Repository_Interface;
@@ -95,9 +94,9 @@ class Tournament_Service {
         Club_Service $club_service,
         Finance_Service $finance_service,
         League_Service $league_service,
-        ?Mailer_Interface $mailer = null,
-        ?League_Repository_Interface $league_repository = null,
-        ?Option_Service $option_service = null
+        Mailer_Interface $mailer,
+        Option_Service $option_service,
+        ?League_Repository_Interface $league_repository = null
     ) {
         $this->racketmanager               = $plugin_instance;
         $this->tournament_repository       = $tournament_repository;
@@ -112,9 +111,9 @@ class Tournament_Service {
         $this->club_service                = $club_service;
         $this->finance_service             = $finance_service;
         $this->league_service              = $league_service;
-        $this->mailer                      = $mailer ?? new Wp_Mailer();
+        $this->mailer                      = $mailer;
+        $this->option_service              = $option_service;
         $this->league_repository           = $league_repository;
-        $this->option_service              = $option_service ?? new Option_Service();
     }
 
     private function league_repository(): League_Repository_Interface {

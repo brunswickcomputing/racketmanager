@@ -14,7 +14,9 @@ use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Domain\Tournament\Tournament_Entry;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Competition_Shortcode_Adapter;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
@@ -52,6 +54,24 @@ class Competition_Entry_Flow_Test extends TestCase {
         parent::tearDown();
     }
 
+    private function create_shortcode_template_renderer(): Shortcode_Template_Renderer {
+        return new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ), new Club_Presenter(), new Player_Presenter() );
+    }
+
+    private function create_competition_presenter(): Competition_Shortcode_Presenter {
+        return new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ), new Club_Presenter(), new Player_Presenter() );
+    }
+
+    private function create_competition_adapter( mixed ...$args ): Competition_Shortcode_Adapter {
+        $defaults = [
+            'competition_shortcode_presenter' => $this->create_competition_presenter(),
+            'tournament_presenter' => new Tournament_Presenter(),
+            'player_presenter' => new Player_Presenter(),
+        ];
+
+        return new Competition_Shortcode_Adapter( ...array_merge( $defaults, $args ) );
+    }
+
     public function test_captain_and_admin_club_selection_render_a_real_club_link(): void {
         $competition = Competition_Test_Factory::create( seasons: Competition_Test_Factory::season_map() );
         $GLOBALS['query_vars'] = [ 'competition_name' => 'Summer League', 'season' => '2026' ];
@@ -69,7 +89,7 @@ class Competition_Entry_Flow_Test extends TestCase {
         $club_service->expects( $this->once() )->method( 'get_clubs' )->willReturn( [ $club ] );
         $service = $this->createStub( Competition_Service::class );
         $service->method( 'get_by_id' )->willReturn( $competition );
-        $adapter = new Competition_Shortcode_Adapter(
+        $adapter = $this->create_competition_adapter(
             competition_service: $service,
             club_service: $club_service,
             team_service: $this->createStub( Team_Service::class ),
@@ -78,10 +98,10 @@ class Competition_Entry_Flow_Test extends TestCase {
             finance_service: $this->createStub( Finance_Service::class ),
             registration_service: $this->createStub( Registration_Service::class ),
             competition_entry_service: $this->createStub( Competition_Entry_Service::class ),
-            template_renderer: new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
+            template_renderer: $this->create_shortcode_template_renderer(),
             racketmanager: $plugin,
             club_entry_selection: new Club_Entry_Selection_Service( $club_service, $player_service ),
-            competition_shortcode_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
+            competition_shortcode_presenter: $this->create_competition_presenter(),
             tournament_presenter: new Tournament_Presenter(),
             event_query_service: $this->event_query_service(),
             query_vars: new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
@@ -115,7 +135,7 @@ class Competition_Entry_Flow_Test extends TestCase {
         foreach ( [ Competition_Type::LEAGUE, Competition_Type::CUP ] as $type ) {
             $service = $this->createStub( Competition_Service::class );
             $service->method( 'get_by_id' )->willReturn( Competition_Test_Factory::create( type: $type, seasons: Competition_Test_Factory::season_map() ) );
-            $adapter = new Competition_Shortcode_Adapter(
+            $adapter = $this->create_competition_adapter(
                 competition_service: $service, club_service: $club_service,
                 team_service: $team_service, player_service: $player_service,
                 tournament_service: $this->createStub( Tournament_Service::class ),
@@ -124,7 +144,7 @@ class Competition_Entry_Flow_Test extends TestCase {
                 finance_service: $this->createStub( Finance_Service::class ),
                 template_renderer: $renderer,
                 club_entry_selection: new Club_Entry_Selection_Service( $club_service, $player_service ),
-                competition_shortcode_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
+                competition_shortcode_presenter: $this->create_competition_presenter(),
                 tournament_presenter: new Tournament_Presenter(),
                 event_query_service: $this->event_query_service(),
                 query_vars: new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
@@ -136,7 +156,7 @@ class Competition_Entry_Flow_Test extends TestCase {
     public function test_missing_season_and_unauthorised_club_are_rejected(): void {
         $service = $this->createStub( Competition_Service::class );
         $service->method( 'get_by_id' )->willReturn( Competition_Test_Factory::create( type: Competition_Type::CUP, seasons: Competition_Test_Factory::season_map() ) );
-        $renderer = new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) );
+        $renderer = $this->create_shortcode_template_renderer();
         $player_service = $this->createMock( Player_Service::class );
         $player_service->expects( $this->once() )->method( 'find_all_associated_clubs' )
             ->with( 1, 'captain', 4 )->willReturn( [] );
@@ -148,7 +168,7 @@ class Competition_Entry_Flow_Test extends TestCase {
         );
         $club_service = $this->createStub( Club_Service::class );
         $club_service->method( 'get_club_by_shortcode' )->willReturn( $this->club() );
-        $adapter = new Competition_Shortcode_Adapter(
+        $adapter = $this->create_competition_adapter(
             competition_service: $service, club_service: $club_service,
             team_service: $this->createStub( Team_Service::class ),
             player_service: $player_service,
@@ -160,7 +180,7 @@ class Competition_Entry_Flow_Test extends TestCase {
             club_entry_selection: new Club_Entry_Selection_Service(
                 $club_service, $player_service
             ),
-            competition_shortcode_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
+            competition_shortcode_presenter: $this->create_competition_presenter(),
             tournament_presenter: new Tournament_Presenter(),
             event_query_service: $this->event_query_service(),
             query_vars: new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
@@ -202,7 +222,7 @@ class Competition_Entry_Flow_Test extends TestCase {
                 return '<form id="form-entry">Autumn Open</form>';
             } );
         $club_service = $this->createStub( Club_Service::class );
-        $adapter = new Competition_Shortcode_Adapter(
+        $adapter = $this->create_competition_adapter(
             competition_service: $service, tournament_service: $tournament_service,
             player_service: $player_service, finance_service: $finance,
             club_service: $club_service,
@@ -211,7 +231,7 @@ class Competition_Entry_Flow_Test extends TestCase {
             team_service: $this->createStub( Team_Service::class ),
             template_renderer: $renderer,
             club_entry_selection: new Club_Entry_Selection_Service( $club_service, $player_service ),
-            competition_shortcode_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
+            competition_shortcode_presenter: $this->create_competition_presenter(),
             tournament_presenter: new Tournament_Presenter(),
             event_query_service: $this->event_query_service(),
             query_vars: new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
@@ -221,8 +241,8 @@ class Competition_Entry_Flow_Test extends TestCase {
 
     public function test_entry_without_event_query_service_fails_with_configuration_error(): void {
         $GLOBALS['wp_stubs_is_user_logged_in'] = true;
-        $adapter = new Competition_Shortcode_Adapter(
-            template_renderer: new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) )
+        $adapter = $this->create_competition_adapter(
+            template_renderer: $this->create_shortcode_template_renderer()
         );
 
         $this->expectException( \LogicException::class );
@@ -267,7 +287,7 @@ class Competition_Entry_Flow_Test extends TestCase {
                 return '<div class="payment">' . $template . '</div>';
             } );
         $handler = new Get_Competition_Payment_Handler( $tournament_service, $player_service, $finance, $entry_service );
-        $adapter = new Competition_Shortcode_Adapter(
+        $adapter = $this->create_competition_adapter(
             payment_handler: $handler, view_presenter: new Shortcode_View_Presenter( $renderer ),
             query_vars: new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
         );
@@ -279,7 +299,7 @@ class Competition_Entry_Flow_Test extends TestCase {
     }
 
     public function test_payment_rejects_non_tournament_and_unknown_tournament(): void {
-        $renderer = new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) );
+        $renderer = $this->create_shortcode_template_renderer();
         $tournament_service = $this->createStub( Tournament_Service::class );
         $tournament_service->method( 'get_tournament_by_name' )->willThrowException(
             new \Racketmanager\Exceptions\Tournament_Not_Found_Exception( 'Tournament not found' )
@@ -288,7 +308,7 @@ class Competition_Entry_Flow_Test extends TestCase {
             $tournament_service, $this->createStub( Player_Service::class ),
             $this->createStub( Finance_Service::class ), $this->createStub( Competition_Entry_Service::class ), new Tournament_Presenter()
         );
-        $adapter = new Competition_Shortcode_Adapter(
+        $adapter = $this->create_competition_adapter(
             payment_handler: $handler, template_renderer: $renderer,
             view_presenter: new Shortcode_View_Presenter( $renderer ),
             query_vars: new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
@@ -312,8 +332,8 @@ class Competition_Entry_Flow_Test extends TestCase {
         $handler = new Get_Competition_Payment_Handler(
             $tournament_service, $player_service, $finance, $this->createStub( Competition_Entry_Service::class ), new Tournament_Presenter()
         );
-        $renderer = new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) );
-        $adapter = new Competition_Shortcode_Adapter(
+        $renderer = $this->create_shortcode_template_renderer();
+        $adapter = $this->create_competition_adapter(
             payment_handler: $handler, view_presenter: new Shortcode_View_Presenter( $renderer ),
             query_vars: new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
         );

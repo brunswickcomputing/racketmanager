@@ -24,10 +24,13 @@ use Racketmanager\Application\League\Queries\Get_League_Standings_Handler;
 use Racketmanager\Application\League\Queries\Get_League_Teams_Handler;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
+use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\League_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Fixture_Presentation_Adapter;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
+use Racketmanager\Presentation\Presenters\League_Archive_Presenter;
 use Racketmanager\Presentation\Presenters\League_Standings_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
@@ -67,23 +70,25 @@ class League_Shortcode_Adapter_Mapping_Test extends TestCase {
         $settings->method( 'get_category' )->willReturn( [] );
 
         return new League_Shortcode_Adapter(
-            $this->createStub( RacketManager::class ),
-            $this->createStub( Get_League_Standings_Handler::class ),
-            $this->createStub( League_Standings_Presenter::class ),
-            $this->createStub( Shortcode_View_Presenter::class ),
-            $this->createStub( Get_League_Championship_Handler::class ),
-            $this->createStub( Get_League_Archive_Handler::class ),
-            $this->createStub( Get_League_Crosstable_Handler::class ),
-            $this->createStub( Get_League_Matches_Handler::class ),
-            $this->createStub( Get_League_Teams_Handler::class ),
-            $this->createStub( Get_League_Players_Handler::class ),
-            $this->createStub( Get_League_Season_Dropdown_Handler::class ),
-            $this->createStub( Get_League_Match_Dropdown_Handler::class ),
-            $this->createStub( Get_League_Last_5_Handler::class ),
-            template_renderer: $overrides['template_renderer'] ?? $this->createStub( Shortcode_Template_Renderer::class ),
+            archive_presenter: $overrides['archive_presenter'] ?? new League_Archive_Presenter( new Wp_Option_Gateway() ),
             tournament_presenter: $overrides['tournament_presenter'] ?? $this->createStub( Tournament_Presenter::class ),
-            team_details_presenter: new Team_Details_Presenter( $this->createStub( Option_Gateway_Interface::class ), $settings ),
+            team_details_presenter: $overrides['team_details_presenter'] ?? new Team_Details_Presenter( $this->createStub( Option_Gateway_Interface::class ), $settings ),
+            player_presenter: $overrides['player_presenter'] ?? new Player_Presenter(),
             fixture_presenter: $overrides['fixture_presenter'] ?? $this->createStub( Fixture_Presenter::class ),
+            racketmanager: $this->createStub( RacketManager::class ),
+            get_league_standings_handler: $this->createStub( Get_League_Standings_Handler::class ),
+            league_standings_presenter: $this->createStub( League_Standings_Presenter::class ),
+            view_presenter: $this->createStub( Shortcode_View_Presenter::class ),
+            championship_handler: $this->createStub( Get_League_Championship_Handler::class ),
+            archive_handler: $this->createStub( Get_League_Archive_Handler::class ),
+            crosstable_handler: $this->createStub( Get_League_Crosstable_Handler::class ),
+            matches_handler: $this->createStub( Get_League_Matches_Handler::class ),
+            teams_handler: $this->createStub( Get_League_Teams_Handler::class ),
+            players_handler: $this->createStub( Get_League_Players_Handler::class ),
+            season_dropdown_handler: $this->createStub( Get_League_Season_Dropdown_Handler::class ),
+            match_dropdown_handler: $this->createStub( Get_League_Match_Dropdown_Handler::class ),
+            last_5_handler: $this->createStub( Get_League_Last_5_Handler::class ),
+            template_renderer: $overrides['template_renderer'] ?? $this->createStub( Shortcode_Template_Renderer::class ),
             competition_service: $overrides['competition_service'] ?? null,
             team_service: $overrides['team_service'] ?? null
         );

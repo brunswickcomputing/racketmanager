@@ -28,9 +28,11 @@ use Racketmanager\Application\General\Queries\Get_Memberships_Query;
 use Racketmanager\Infrastructure\Gateways\Account\Wp_User_Favourites_Gateway;
 use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
 use Racketmanager\Infrastructure\Security\Security_Service;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Favourite_Presenter;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
+use Racketmanager\Presentation\Presenters\League_Archive_Presenter;
 use Racketmanager\Presentation\Presenters\Match_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
@@ -74,6 +76,8 @@ class Entry_And_Match_Templates_Test extends TestCase {
         $this->view_renderer     = new Php_View_Renderer( $template_path );
         $this->template_renderer = new Shortcode_Template_Renderer(
             $this->view_renderer,
+            new Club_Presenter(),
+            new Player_Presenter(),
             favourite_presenter: new Favourite_Presenter( new Wp_User_Favourites_Gateway( new Security_Service() ) )
         );
     }
@@ -102,8 +106,13 @@ class Entry_And_Match_Templates_Test extends TestCase {
             return Shortcode_View_Model::error( $result->error_message ?? '' );
         }
         $adapter = new Competition_Shortcode_Adapter(
-            competition_shortcode_presenter: new Competition_Shortcode_Presenter( $this->view_renderer ),
-            tournament_presenter: $tournament_presenter ?? new Tournament_Presenter()
+            competition_shortcode_presenter: new Competition_Shortcode_Presenter(
+                $this->view_renderer,
+                new Club_Presenter(),
+                new Player_Presenter()
+            ),
+            tournament_presenter: $tournament_presenter ?? new Tournament_Presenter(),
+            player_presenter: new Player_Presenter()
         );
 
         return $adapter->present_entry( $result );
@@ -541,7 +550,11 @@ class Entry_And_Match_Templates_Test extends TestCase {
             $league_query
         );
         $adapter = new League_Shortcode_Adapter(
+            archive_presenter: new League_Archive_Presenter( new Wp_Option_Gateway() ),
+            tournament_presenter: new Tournament_Presenter( 'd/m/Y' ),
             team_details_presenter: new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() ),
+            player_presenter: new Player_Presenter(),
+            fixture_presenter: new Fixture_Presenter( new Fixture_Link_Service(), new Wp_Option_Gateway(), new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
             template_renderer: $this->template_renderer
         );
 

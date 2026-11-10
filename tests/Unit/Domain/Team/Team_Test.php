@@ -287,7 +287,7 @@ final class Team_Test extends TestCase {
         $team_repo->expects( $this->never() )->method( 'delete' );
         $fixture_repo->expects( $this->never() )->method( 'delete_by_team' );
 
-        $service = new Team_Service( $team_repo, $club_repo, $event_repo, $player_serv, $fixture_repo );
+        $service = new Team_Service( $team_repo, $club_repo, $event_repo, $player_serv, $fixture_repo, new Event_Query_Service( $event_repo, $fixture_repo ) );
         $result  = $service->delete_team( 100 );
         $this->assertTrue( $result );
     }
@@ -304,7 +304,7 @@ final class Team_Test extends TestCase {
             ->with( $this->identicalTo( 100 ), $this->identicalTo( $fixture_repo ) )
             ->willReturn( false );
 
-        $service = new Team_Service( $team_repo, $club_repo, $event_repo, $player_serv, $fixture_repo );
+        $service = new Team_Service( $team_repo, $club_repo, $event_repo, $player_serv, $fixture_repo, new Event_Query_Service( $event_repo, $fixture_repo ) );
         $result  = $service->delete_team( '100' );
         $this->assertFalse( $result );
     }
@@ -318,7 +318,7 @@ final class Team_Test extends TestCase {
 
         $team_repo->expects( $this->never() )->method( 'delete_with_fixtures' );
 
-        $service = new Team_Service( $team_repo, $club_repo, $event_repo, $player_serv, $fixture_repo );
+        $service = new Team_Service( $team_repo, $club_repo, $event_repo, $player_serv, $fixture_repo, new Event_Query_Service( $event_repo, $fixture_repo ) );
         $this->assertFalse( $service->delete_team( null ) );
         $this->assertFalse( $service->delete_team( 0 ) );
         $this->assertFalse( $service->delete_team( '' ) );

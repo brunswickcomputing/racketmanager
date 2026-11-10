@@ -865,7 +865,7 @@ class Competition_Service {
         } else {
             $season_data                   = new stdClass();
             $season_data->season           = $season->name;
-            $season_data->num_match_days   = Util::get_default_match_days( $competition->get_type(), null, $this->option_service, $this->club_repository );
+            $season_data->num_match_days   = Util::get_default_match_days( $competition->get_type(), $this->option_service, $this->club_repository );
             $season_data->match_dates      = array();
             $season_data->fixed_dates      = $competition->settings['fixed_dates'] ?? null;
             $season_data->home_away        = $competition->settings['home_away'] ?? null;
@@ -878,7 +878,7 @@ class Competition_Service {
         $season_data->date_end         = $season->date_end;
         $season_data->competition_code = $season->competition_code;
         $season_data->venue            = $season->venue;
-        $season_data->num_match_days   = $season->num_match_days ?? Util::get_default_match_days( $competition->get_type(), null, $this->option_service, $this->club_repository );
+        $season_data->num_match_days   = $season->num_match_days ?? Util::get_default_match_days( $competition->get_type(), $this->option_service, $this->club_repository );
         $season_data->match_dates      = $season->match_dates ?? array();
         $seasons[ $season->name ]      = $season_data;
         if ( $new_season ) {

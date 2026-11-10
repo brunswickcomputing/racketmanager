@@ -30,9 +30,9 @@ use function Racketmanager\show_alert;
  */
 class Competition_Shortcode_Presenter {
     public function __construct(
-        private readonly ?View_Renderer_Interface $renderer = null,
-        private readonly ?Club_Presenter $club_presenter = null,
-        private readonly ?Player_Presenter $player_presenter = null,
+        private readonly View_Renderer_Interface $renderer,
+        private readonly Club_Presenter $club_presenter,
+        private readonly Player_Presenter $player_presenter,
         private readonly ?Option_Gateway_Interface $option_gateway = null
     ) {}
 
@@ -54,8 +54,8 @@ class Competition_Shortcode_Presenter {
         }
 
         $default_vars = [
-            'club_presenter'   => $this->club_presenter ?? new Club_Presenter(),
-            'player_presenter' => $this->player_presenter ?? new Player_Presenter( $this ),
+            'club_presenter'   => $this->club_presenter,
+            'player_presenter' => $this->player_presenter,
         ];
 
         if ( null !== $vm->error_message ) {
@@ -434,12 +434,7 @@ class Competition_Shortcode_Presenter {
      * Build the club permalink used as an entry-form back URL.
      */
     public function get_club_url( object $club ): string {
-        if ( $this->club_presenter ) {
-            return $this->club_presenter->get_link( $club );
-        }
-        $shortcode = (string) ( $club->shortcode ?? ( method_exists( $club, 'get_shortcode' ) ? $club->get_shortcode() : '' ) );
-
-        return '/clubs/' . Util::seo_url( $shortcode ) . '/';
+        return $this->club_presenter->get_link( $club );
     }
 
     /**
@@ -775,7 +770,7 @@ class Competition_Shortcode_Presenter {
      * @param string $base_url
      * @return array<int, string>
      */
-    public function present_event_league_urls( object $event, iterable $leagues, ?string $season = null, string $base_url = '' ): array {
+    public static function present_event_league_urls( object $event, iterable $leagues, ?string $season = null, string $base_url = '' ): array {
         $is_box      = ! empty( $event->is_box );
         $season_name = $season ?? (string) ( $event->current_season['name'] ?? '' );
 
@@ -804,7 +799,7 @@ class Competition_Shortcode_Presenter {
      * @return array<int, string>
      */
     public function present_event_standings_links( object $event, iterable $leagues ): array {
-        return $this->present_event_league_urls( $event, $leagues );
+        return self::present_event_league_urls( $event, $leagues );
     }
 
     /**

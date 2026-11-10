@@ -22,6 +22,8 @@ use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\League_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Fixture_Presentation_Adapter;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
+use Racketmanager\Presentation\Presenters\League_Archive_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
 use Racketmanager\Presentation\View_Models\Team_Details_View_Model;
 use Racketmanager\Presentation\View_Models\Team_Match_Row_View_Model;
@@ -597,9 +599,13 @@ class Matches_Team_List_Template_Test extends TestCase {
             player_stats_service: $player_stats_service,
             league_query_service: $league_query
         );
+        $option_gateway = new Wp_Option_Gateway();
         $adapter = new League_Shortcode_Adapter(
+            archive_presenter: new League_Archive_Presenter( $option_gateway ),
             tournament_presenter: $tournament_presenter,
-            team_details_presenter: $team_details_presenter
+            team_details_presenter: $team_details_presenter,
+            player_presenter: new Player_Presenter(),
+            fixture_presenter: new Fixture_Presenter( new Fixture_Link_Service(), $option_gateway, new Php_View_Renderer( dirname( $this->template_path, 2 ) . '/' ) )
         );
 
         $result = $adapter->present_teams( $handler->handle( new Get_League_Teams_Query( league_id: 1, team_id: '12' ) ) );
@@ -730,9 +736,13 @@ class Matches_Team_List_Template_Test extends TestCase {
             player_stats_service: $player_stats_service,
             league_query_service: $league_query
         );
+        $option_gateway = new Wp_Option_Gateway();
         $adapter = new League_Shortcode_Adapter(
+            archive_presenter: new League_Archive_Presenter( $option_gateway ),
             tournament_presenter: $tournament_presenter,
-            team_details_presenter: $team_details_presenter
+            team_details_presenter: $team_details_presenter,
+            player_presenter: new Player_Presenter(),
+            fixture_presenter: new Fixture_Presenter( new Fixture_Link_Service(), $option_gateway, new Php_View_Renderer( dirname( $this->template_path, 2 ) . '/' ) )
         );
 
         $result = $adapter->present_teams( $handler->handle( new Get_League_Teams_Query( league_id: 1, team_id: '12' ) ) );

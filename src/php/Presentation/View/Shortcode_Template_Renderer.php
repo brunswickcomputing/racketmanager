@@ -50,18 +50,12 @@ class Shortcode_Template_Renderer implements Template_Renderer_Interface {
         'club'        => 'club/',
     ];
 
-    private readonly Club_Presenter $club_presenter;
-    private readonly Player_Presenter $player_presenter;
-
     public function __construct(
         private readonly View_Renderer_Interface $renderer,
-        ?Club_Presenter $club_presenter = null,
-        ?Player_Presenter $player_presenter = null,
+        private readonly Club_Presenter $club_presenter,
+        private readonly Player_Presenter $player_presenter,
         private readonly ?Favourite_Presenter $favourite_presenter = null
-    ) {
-        $this->club_presenter   = $club_presenter ?? new Club_Presenter();
-        $this->player_presenter = $player_presenter ?? new Player_Presenter();
-    }
+    ) {}
 
     /**
      * Render a template to a string.

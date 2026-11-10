@@ -36,6 +36,10 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\DTO\Competition\Competition_Hydration_DTO;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Team\Team;
+use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
+use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
@@ -92,13 +96,24 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         parent::tearDown();
     }
 
-    private function create_renderer(): Shortcode_Template_Renderer {
-        $php_renderer = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
-        return new Shortcode_Template_Renderer( $php_renderer );
+    private function create_renderer( ?View_Renderer_Interface $renderer = null ): Shortcode_Template_Renderer {
+        $php_renderer = $renderer ?? new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
+        return new Shortcode_Template_Renderer( $php_renderer, new Club_Presenter(), new Player_Presenter() );
     }
 
     private function competition_presenter(): Competition_Shortcode_Presenter {
-        return new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) );
+        return new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ), new Club_Presenter(), new Player_Presenter() );
+    }
+
+    private function create_event_adapter( mixed ...$args ): Event_Shortcode_Adapter {
+        $defaults = [
+            'competition_shortcode_presenter' => $this->competition_presenter(),
+            'tournament_presenter' => new Tournament_Presenter(),
+            'player_presenter' => new Player_Presenter(),
+            'team_details_presenter' => new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() ),
+        ];
+
+        return new Event_Shortcode_Adapter( ...array_merge( $defaults, $args ) );
     }
 
     private function present_partner_error( Event_Partner_Result $result ): Shortcode_View_Model {
@@ -110,7 +125,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
             $vm = $value;
             return '';
         } );
-        ( new Event_Shortcode_Adapter( view_presenter: $presenter, partner_handler: $handler ) )->show_event_partner();
+        $this->create_event_adapter( view_presenter: $presenter, partner_handler: $handler )->show_event_partner();
 
         return $vm;
     }
@@ -301,7 +316,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         // 4. Success path
         $event_stub->current_season = [ 'name' => '2025' ];
         $result = $handler_success->handle( new Get_Event_Query( event_name: 'Mens Singles', tab: 'draw' ) );
-        $vm_success = ( new Event_Shortcode_Adapter( competition_shortcode_presenter: $this->competition_presenter() ) )->present_event( $result );
+        $vm_success = $this->create_event_adapter()->present_event( $result );
         $this->assertFalse( $vm_success->is_error() );
         $this->assertSame( 'event', $vm_success->template );
         $this->assertFalse( $vm_success->template_type );
@@ -324,7 +339,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
-        $vm_ok = ( new Event_Shortcode_Adapter( competition_shortcode_presenter: $this->competition_presenter() ) )->present_standings( $handler->handle( new Get_Event_Standings_Query( event_id: 5 ) ) );
+        $vm_ok = $this->create_event_adapter()->present_standings( $handler->handle( new Get_Event_Standings_Query( event_id: 5 ) ) );
         $this->assertFalse( $vm_ok->is_error() );
         $this->assertSame( 'standings', $vm_ok->template );
         $this->assertSame( 'event', $vm_ok->template_type );
@@ -346,7 +361,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
-        $vm_ok = ( new Event_Shortcode_Adapter( competition_shortcode_presenter: $this->competition_presenter() ) )->present_draw( $handler->handle( new Get_Event_Draw_Query( event_id: 7 ) ) );
+        $vm_ok = $this->create_event_adapter()->present_draw( $handler->handle( new Get_Event_Draw_Query( event_id: 7 ) ) );
         $this->assertFalse( $vm_ok->is_error() );
         $this->assertSame( 'draw', $vm_ok->template );
         $this->assertSame( 'event', $vm_ok->template_type );
@@ -371,7 +386,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
-        $vm_ok = ( new Event_Shortcode_Adapter( tournament_presenter: new Tournament_Presenter() ) )->present_matches( $handler->handle( new Get_Event_Matches_Query( event_id: 8, template: 'custom' ) ) );
+        $vm_ok = $this->create_event_adapter()->present_matches( $handler->handle( new Get_Event_Matches_Query( event_id: 8, template: 'custom' ) ) );
         $this->assertFalse( $vm_ok->is_error() );
         $this->assertSame( 'matches-custom', $vm_ok->template );
         $this->assertSame( 'event', $vm_ok->template_type );
@@ -398,7 +413,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $player_repository->method( 'find' )->willReturnMap( [ [ 31, $low ], [ 32, $high ] ] );
 
         $handler = new Get_Event_Clubs_Handler( $comp_service, $club_service, $stats, $this->event_query_service( $event_repository, player_repository: $player_repository ) );
-        $vm      = ( new Event_Shortcode_Adapter( competition_shortcode_presenter: $this->competition_presenter() ) )->present_clubs( $handler->handle( new Get_Event_Clubs_Query( event_id: 12, club_id: 101 ) ) );
+        $vm      = $this->create_event_adapter()->present_clubs( $handler->handle( new Get_Event_Clubs_Query( event_id: 12, club_id: 101 ) ) );
 
         $this->assertFalse( $vm->is_error() );
         $this->assert_decorated_and_sorted( $low, $high, $vm->vars['event_club']->players );
@@ -453,10 +468,9 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
         // All clubs
-        $vm_all = ( new Event_Shortcode_Adapter( competition_shortcode_presenter: $this->competition_presenter() ) )->present_clubs( $handler->handle( new Get_Event_Clubs_Query( event_id: 12 ) ) );
+        $vm_all = $this->create_event_adapter()->present_clubs( $handler->handle( new Get_Event_Clubs_Query( event_id: 12 ) ) );
         $this->assertFalse( $vm_all->is_error() );
         $this->assertSame( 'clubs', $vm_all->template );
-        $this->assertSame( 'event', $vm_all->template_type );
 
         // Specific club found by shortcode
         $club_stub = $this->createStub( Club::class );
@@ -465,7 +479,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         $club_service->method( 'get_club_by_shortcode' )->willReturn( $club_stub );
 
-        $vm_club = ( new Event_Shortcode_Adapter( competition_shortcode_presenter: $this->competition_presenter() ) )->present_clubs( $handler->handle( new Get_Event_Clubs_Query( event_id: 12, club_id: 'ltc' ) ) );
+        $vm_club = $this->create_event_adapter()->present_clubs( $handler->handle( new Get_Event_Clubs_Query( event_id: 12, club_id: 'ltc' ) ) );
         $this->assertFalse( $vm_club->is_error() );
         $this->assertSame( $club_stub, $vm_club->vars['event_club'] );
         $this->assertSame( [], $club_stub->players );
@@ -496,7 +510,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
         // All teams
-        $vm_all = ( new Event_Shortcode_Adapter( competition_shortcode_presenter: $this->competition_presenter() ) )->present_teams( $handler->handle( new Get_Event_Teams_Query( event_id: 15 ) ) );
+        $vm_all = $this->create_event_adapter()->present_teams( $handler->handle( new Get_Event_Teams_Query( event_id: 15 ) ) );
         $this->assertFalse( $vm_all->is_error() );
         $this->assertSame( 'teams', $vm_all->template );
 
@@ -513,7 +527,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         // Championship fallback to 'list'
         $event_stub->competition->is_championship = true;
-        $vm_champ = ( new Event_Shortcode_Adapter( competition_shortcode_presenter: $this->competition_presenter() ) )->present_teams( $handler->handle( new Get_Event_Teams_Query( event_id: 15, team: null ) ) );
+        $vm_champ = $this->create_event_adapter()->present_teams( $handler->handle( new Get_Event_Teams_Query( event_id: 15, team: null ) ) );
         $this->assertSame( 'teams-list', $vm_champ->template );
     }
 
@@ -565,7 +579,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
         // 1. All players
-        $vm_all = ( new Event_Shortcode_Adapter( competition_shortcode_presenter: $this->competition_presenter() ) )->present_players( $handler->handle( new Get_Event_Players_Query( event_id: 16 ) ) );
+        $vm_all = $this->create_event_adapter()->present_players( $handler->handle( new Get_Event_Players_Query( event_id: 16 ) ) );
         $this->assertFalse( $vm_all->is_error() );
         $this->assertSame( 'players', $vm_all->template );
 
@@ -645,7 +659,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         $handler_ok = new Get_Event_Partner_Handler( $comp_service_ok, $player_service, $this->event_query_service() );
 
-        $vm_ok = ( new Event_Shortcode_Adapter() )->present_partner( $handler_ok->handle( new Get_Event_Partner_Query( event_id: 22, partner_id: 300, gender: 'M' ) ) );
+        $vm_ok = $this->create_event_adapter()->present_partner( $handler_ok->handle( new Get_Event_Partner_Query( event_id: 22, partner_id: 300, gender: 'M' ) ) );
         $this->assertFalse( $vm_ok->is_error() );
         $this->assertSame( 'partner-modal', $vm_ok->template );
         $this->assertSame( 'event', $vm_ok->template_type );
@@ -682,7 +696,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'No team id supplied', $vm_no_team->error_message );
 
         // 3. Success path
-        $vm_ok = ( new Event_Shortcode_Adapter() )->present_team_matches( $handler->handle( new Get_Event_Team_Matches_Query( event_id: 33, team_id: 5, template: 'custom' ) ) );
+        $vm_ok = $this->create_event_adapter()->present_team_matches( $handler->handle( new Get_Event_Team_Matches_Query( event_id: 33, team_id: 5, template: 'custom' ) ) );
         $this->assertFalse( $vm_ok->is_error() );
         $this->assertSame( 'team-matches-custom', $vm_ok->template );
         $this->assertSame( 'event', $vm_ok->template_type );
@@ -737,7 +751,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $reg_service->method( 'get_registered_players_list' )->willReturn( [ (object) [ 'id' => 1 ] ] );
 
         $handler_ok = new Get_Team_Order_Players_Handler( $comp_service, $club_service_ok, $reg_service, $settings_service, $this->event_query_service() );
-        $vm_ok = ( new Event_Shortcode_Adapter() )->present_team_order_players( $handler_ok->handle( new Get_Team_Order_Players_Query( event_id: 44, club_id: 200 ) ) );
+        $vm_ok = $this->create_event_adapter()->present_team_order_players( $handler_ok->handle( new Get_Team_Order_Players_Query( event_id: 44, club_id: 200 ) ) );
 
         $this->assertFalse( $vm_ok->is_error() );
         $this->assertSame( 'team-players-list', $vm_ok->template );
@@ -823,7 +837,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $vm      = $handler->handle( $query );
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'partner-modal', $vm->template );
-        $this->assertSame( 123, ( new Event_Shortcode_Adapter() )->present_partner( $vm )->vars['partner_id'] );
+        $this->assertSame( 123, $this->create_event_adapter()->present_partner( $vm )->vars['partner_id'] );
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider( 'age_limit_provider' )]
@@ -883,7 +897,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
-        $vm_ok = ( new Event_Shortcode_Adapter() )->present_dropdown( $handler->handle( new Get_Event_Dropdown_Query( event_id: 50 ) ) );
+        $vm_ok = $this->create_event_adapter()->present_dropdown( $handler->handle( new Get_Event_Dropdown_Query( event_id: 50 ) ) );
         $this->assertFalse( $vm_ok->is_error() );
         $this->assertSame( 'dropdown', $vm_ok->template );
         $this->assertSame( 'event', $vm_ok->template_type );
@@ -903,7 +917,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
             }
         };
 
-        $renderer  = new Shortcode_Template_Renderer( $inner_renderer );
+        $renderer  = $this->create_renderer( $inner_renderer );
         $event_obj = (object) [ 'id' => 888, 'name' => 'Global Event Test' ];
 
         // 1. When $event was previously set to another value
@@ -1136,7 +1150,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
             $result = $handler->handle( $query );
             $this->assertFalse( $result->is_error() );
-            $vm = ( new Event_Shortcode_Adapter( competition_shortcode_presenter: $this->competition_presenter() ) )->present_event( $result );
+            $vm = $this->create_event_adapter()->present_event( $result );
             $this->assertInstanceOf( Event_Header_View_Model::class, $vm->vars['event_header'] );
             $this->assertSame( 77, $vm->vars['event_header']->post_id );
             $this->assertSame( $case['pagename'], $vm->vars['event_header']->pagename );

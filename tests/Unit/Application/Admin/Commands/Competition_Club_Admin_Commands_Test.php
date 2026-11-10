@@ -35,10 +35,12 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Club\Club_Hydration_DTO;
+use Racketmanager\Domain\DTO\Player\Player_Hydration_DTO;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Services\Admin\Club\Club_Action_Dispatcher;
 use Racketmanager\Services\Admin\Club\Club_Player_Action_Dispatcher;
 use Racketmanager\Services\Admin\Club\Club_Role_Action_Dispatcher;
@@ -176,8 +178,14 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
     public function test_club_handler_add_and_edit_club(): void {
         $GLOBALS['wp_stubs_players']['id'][10] = (object) [ 'id' => 10, 'display_name' => 'John Doe' ];
 
-        $club_service   = $this->createMock( Club_Service::class );
-        $player_service = $this->createStub( Player_Service::class );
+        $club_service      = $this->createMock( Club_Service::class );
+        $player_service    = $this->createStub( Player_Service::class );
+        $player_repository = $this->createStub( Player_Repository_Interface::class );
+        $player_repository->method( 'find' )->willReturnCallback(
+            fn( int|string $id, string $field = 'id' ) => isset( $GLOBALS['wp_stubs_players']['id'][ (int) $id ] )
+                ? new Player( new Player_Hydration_DTO( id: (int) $id, display_name: $GLOBALS['wp_stubs_players']['id'][ (int) $id ]->display_name ) )
+                : null
+        );
 
         $club = new Club( new Club_Hydration_DTO( id: 1, name: 'Westcliff Tennis' ) );
 
@@ -194,7 +202,7 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
             ->method( 'update_club' )
             ->willReturn( $club );
 
-        $handler = new Club_Handler( $club_service, $player_service );
+        $handler = new Club_Handler( $club_service, $player_service, $player_repository );
 
         $add_cmd = new Add_Club_Admin_Command(
             name: 'Westcliff Tennis',
@@ -239,8 +247,14 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
     }
 
     public function test_club_handler_edit_club_validation_failure_and_redirect_params(): void {
-        $club_service   = $this->createMock( Club_Service::class );
-        $player_service = $this->createStub( Player_Service::class );
+        $club_service      = $this->createMock( Club_Service::class );
+        $player_service    = $this->createStub( Player_Service::class );
+        $player_repository = $this->createStub( Player_Repository_Interface::class );
+        $player_repository->method( 'find' )->willReturnCallback(
+            fn( int|string $id, string $field = 'id' ) => isset( $GLOBALS['wp_stubs_players']['id'][ (int) $id ] )
+                ? new Player( new Player_Hydration_DTO( id: (int) $id, display_name: $GLOBALS['wp_stubs_players']['id'][ (int) $id ]->display_name ) )
+                : null
+        );
 
         $club = new Club( new Club_Hydration_DTO( id: 1, name: 'Westcliff Tennis' ) );
         $club_service->expects( self::exactly( 2 ) )
@@ -248,7 +262,7 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
             ->with( 1 )
             ->willReturn( $club );
 
-        $handler = new Club_Handler( $club_service, $player_service );
+        $handler = new Club_Handler( $club_service, $player_service, $player_repository );
 
         // Missing match secretary
         $cmd_no_sec = new Edit_Club_Admin_Command(
@@ -327,7 +341,7 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
         $event_repo   = $this->createStub( Event_Repository_Interface::class );
         $guard        = $this->createStub( Action_Guard_Interface::class );
 
-        $dispatcher = new Competition_Action_Dispatcher( $comp_service, $guard, $event_repo );
+        $dispatcher = new Competition_Action_Dispatcher( $comp_service, $guard, $event_repo, new Competition_Handler( $comp_service, $event_repo ) );
 
         $result = $dispatcher->handle( [], [
             'doActionEvent' => 1,
@@ -945,12 +959,16 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
     }
 
     private function create_season_dispatcher( Competition_Service $comp_service, ?Event_Repository_Interface $event_repo = null ): Competition_Season_Action_Dispatcher {
+        $event_repository = $event_repo ?? $this->createStub( Event_Repository_Interface::class );
+        $season_service   = $this->createStub( Competition_Season_Service::class );
+        $finance_service  = $this->createStub( Finance_Service::class );
         return new Competition_Season_Action_Dispatcher(
             $comp_service,
-            $this->createStub( Finance_Service::class ),
+            $finance_service,
             $this->createStub( Action_Guard_Interface::class ),
-            $this->createStub( Competition_Season_Service::class ),
-            $event_repo ?? $this->createStub( Event_Repository_Interface::class )
+            $season_service,
+            $event_repository,
+            new Competition_Season_Handler( $comp_service, $finance_service, $season_service, $event_repository )
         );
     }
 }

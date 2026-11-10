@@ -22,6 +22,7 @@ use Racketmanager\Domain\Player\Player;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Invoice_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Presentation\View_Models\Invoice_Item_View_Model;
 use Racketmanager\Presentation\View_Models\Invoice_View_Model;
@@ -306,7 +307,11 @@ class Finance_Templates_Test extends TestCase {
             ],
             template_type: 'club'
         );
-        $renderer = new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $this->renderer ) );
+        $renderer = new Shortcode_View_Presenter( new Shortcode_Template_Renderer(
+            $this->renderer,
+            new Club_Presenter(),
+            new Player_Presenter()
+        ) );
         $html = $renderer->render( $view );
 
         $this->assertStringContainsString( 'INV-021', $html );

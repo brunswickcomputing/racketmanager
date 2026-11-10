@@ -30,13 +30,29 @@ final class League_Match_Action_Dispatcher_Test extends TestCase {
         ?Fixture_Service $fixture_service = null,
         ?League_Query_Service $league_query_service = null
     ): League_Match_Action_Dispatcher {
+        $fixture_repo ??= $this->createMock( Fixture_Repository_Interface::class );
+        $maintenance_service ??= $this->createMock( Fixture_Maintenance_Service::class );
+        $guard ??= $this->createStub( Action_Guard_Interface::class );
+        $result_manager ??= $this->createMock( Fixture_Result_Manager::class );
+        $fixture_service ??= $this->createMock( Fixture_Service::class );
+        $league_query_service ??= $this->createStub( League_Query_Service::class );
+
+        $commands = new \Racketmanager\Application\Admin\Commands\League_Match_Handler(
+            $fixture_repo,
+            $maintenance_service,
+            $result_manager,
+            $fixture_service,
+            $league_query_service
+        );
+
         return new League_Match_Action_Dispatcher(
-            $fixture_repo ?? $this->createMock( Fixture_Repository_Interface::class ),
-            $maintenance_service ?? $this->createMock( Fixture_Maintenance_Service::class ),
-            $guard ?? $this->createStub( Action_Guard_Interface::class ),
-            $result_manager ?? $this->createMock( Fixture_Result_Manager::class ),
-            $fixture_service ?? $this->createMock( Fixture_Service::class ),
-            league_query_service: $league_query_service ?? $this->createStub( League_Query_Service::class )
+            $fixture_repo,
+            $maintenance_service,
+            $guard,
+            $result_manager,
+            $fixture_service,
+            $commands,
+            league_query_service: $league_query_service
         );
     }
 

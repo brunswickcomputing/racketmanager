@@ -73,6 +73,23 @@ class Email_Shortcode_Presenter_Test extends TestCase {
         );
     }
 
+    public function test_present_event_constitution_builds_league_urls_without_extra_collaborators(): void {
+        $event                 = new stdClass();
+        $event->name           = 'Men Doubles';
+        $event->is_box         = false;
+        $event->current_season = [ 'name' => '2024' ];
+        $event->leagues        = [
+            (object) [ 'id' => 101, 'title' => 'Men Division 1' ],
+            (object) [ 'id' => 102, 'title' => 'Men Division 2' ],
+        ];
+
+        $vars = $this->presenter->present_event_constitution( $event );
+
+        $this->assertSame( $this->site_url, $vars['site_url'] );
+        $this->assertSame( $this->site_url . '/league/men-division-1/2024/', $vars['league_urls'][101] );
+        $this->assertSame( $this->site_url . '/league/men-division-2/2024/', $vars['league_urls'][102] );
+    }
+
     private function create_test_fixture( array $fixture_data = [] ): Fixture {
         $league_id    = $fixture_data['league_id'] ?? 10;
         $event_id     = $fixture_data['event_id'] ?? 5;

@@ -221,4 +221,29 @@ class League_Team_Test extends TestCase {
             }
         }
     }
+
+    public function test_get_diff_returns_integer_for_positive_negative_and_zero_values(): void {
+        $positive_team = League_Team::from_array( [ 'diff' => 8 ] );
+        $this->assertSame( '+8', $positive_team->diff );
+        $this->assertSame( 8, $positive_team->get_diff() );
+
+        $negative_team = League_Team::from_array( [ 'diff' => -3 ] );
+        $this->assertSame( -3, $negative_team->diff );
+        $this->assertSame( -3, $negative_team->get_diff() );
+
+        $negative_string_team = League_Team::from_array( [ 'diff' => '-5' ] );
+        $this->assertSame( -5, $negative_string_team->get_diff() );
+
+        $zero_team = League_Team::from_array( [ 'diff' => 0 ] );
+        $this->assertSame( 0, $zero_team->diff );
+        $this->assertSame( 0, $zero_team->get_diff() );
+
+        $float_string_team = League_Team::from_array( [ 'diff' => '12.0' ] );
+        $this->assertSame( '+12.0', $float_string_team->diff );
+        $this->assertSame( 12, $float_string_team->get_diff() );
+
+        $empty_team = new League_Team();
+        $this->assertSame( 0, $empty_team->diff );
+        $this->assertSame( 0, $empty_team->get_diff() );
+    }
 }

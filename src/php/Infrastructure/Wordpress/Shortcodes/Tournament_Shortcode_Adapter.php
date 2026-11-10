@@ -61,11 +61,11 @@ use function wp_get_referer;
  */
 class Tournament_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     private readonly ?Shortcode_View_Presenter $view_presenter;
-    private readonly Tournament_Presenter $tournament_presenter;
-    private readonly Player_Presenter $player_presenter;
     private readonly ?Order_Of_Play_Presenter $order_of_play_presenter;
 
     public function __construct(
+        private readonly Tournament_Presenter $tournament_presenter,
+        private readonly Player_Presenter $player_presenter,
         private readonly ?RacketManager $racketmanager = null,
         ?Shortcode_View_Presenter $view_presenter = null,
         private readonly ?Get_Tournament_Handler $tournament_handler = null,
@@ -81,14 +81,10 @@ class Tournament_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly ?Get_Tournament_Withdrawal_Handler $withdrawal_handler = null,
         private readonly ?Shortcode_Template_Renderer $template_renderer = null,
         private readonly ?Competition_Service $competition_service = null,
-        ?Tournament_Presenter $tournament_presenter = null,
-        ?Player_Presenter $player_presenter = null,
         ?Order_Of_Play_Presenter $order_of_play_presenter = null,
         private readonly ?Query_Vars_Interface $query_vars = null
     ) {
         $this->view_presenter          = $view_presenter ?? ( $template_renderer ? new Shortcode_View_Presenter( $template_renderer ) : null );
-        $this->tournament_presenter    = $tournament_presenter ?? new Tournament_Presenter();
-        $this->player_presenter        = $player_presenter ?? new Player_Presenter();
         $this->order_of_play_presenter = $order_of_play_presenter;
     }
 

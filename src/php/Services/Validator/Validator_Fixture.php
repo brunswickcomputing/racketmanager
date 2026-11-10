@@ -13,7 +13,6 @@ namespace Racketmanager\Services\Validator;
 use Racketmanager\Domain\Scoring\Scoring_Context;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Registration_Not_Found_Exception;
-use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
@@ -22,7 +21,6 @@ use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
-use Racketmanager\Repositories\Rubber_Repository;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
@@ -81,11 +79,17 @@ class Validator_Fixture extends Validator {
     }
 
     protected function fixture_repository(): Fixture_Repository_Interface {
-        return $this->fixture_repository ??= new Fixture_Repository();
+        if ( null === $this->fixture_repository ) {
+            throw new \LogicException( 'Fixture repository has not been configured on this Validator_Fixture instance.' );
+        }
+        return $this->fixture_repository;
     }
 
     protected function rubber_repository(): Rubber_Repository_Interface {
-        return $this->rubber_repository ??= new Rubber_Repository();
+        if ( null === $this->rubber_repository ) {
+            throw new \LogicException( 'Rubber repository has not been configured on this Validator_Fixture instance.' );
+        }
+        return $this->rubber_repository;
     }
 
     /**

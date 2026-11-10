@@ -35,9 +35,11 @@ namespace Racketmanager\Tests\Integration\Public {
     use Racketmanager\Domain\Fixture\Fixture;
     use Racketmanager\Domain\Fixture\Fixture_Factory;
     use Racketmanager\Infrastructure\Wordpress\Shortcodes\Matches_Shortcode_Adapter;
+    use Racketmanager\Presentation\Presenters\Club_Presenter;
     use Racketmanager\Presentation\Presenters\Match_Shortcode_Presenter;
     use Racketmanager\Presentation\Presenters\Fixture_Presenter;
     use Racketmanager\Presentation\Presenters\Matches_List_Presenter;
+    use Racketmanager\Presentation\Presenters\Player_Presenter;
     use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
     use Racketmanager\RacketManager;
     use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
@@ -151,7 +153,7 @@ namespace Racketmanager\Tests\Integration\Public {
                 new Get_Match_Score_Handler( $detail_service ),
                 new Get_Match_Header_Handler( $detail_service ),
                 new Get_Match_Detail_Handler( $detail_service, $this->createStub( Player_Service::class ), $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class ) ),
-                new Match_Shortcode_Presenter( new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $renderer ) ), new Fixture_Presenter( $link_service, $this->createStub( Option_Gateway_Interface::class ), $renderer ), $this->createStub( Player_Service::class ) )
+                new Match_Shortcode_Presenter( new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $renderer, new Club_Presenter(), new Player_Presenter() ) ), new Fixture_Presenter( $link_service, $this->createStub( Option_Gateway_Interface::class ), $renderer ), $this->createStub( Player_Service::class ) )
             );
             $this->container->set( 'matches_shortcode_adapter', fn() => $this->shortcode );
         }

@@ -45,16 +45,12 @@ class Tournament_Ajax_Adapter {
         private Json_Response_Factory_Interface $response_factory,
         private Competition_Entry_Service $competition_entry_service,
         private Finance_Service $finance_service,
-        private ?Tournament_Service $tournament_service = null,
-        private ?Withdraw_Tournament_Entry_Handler $withdraw_tournament_entry_handler = null,
-        private ?Create_Tournament_Payment_Handler $create_tournament_payment_handler = null,
-        private ?Submit_Tournament_Partner_Handler $submit_tournament_partner_handler = null,
-        private ?Submit_Tournament_Entry_Handler $submit_tournament_entry_handler = null
+        private Withdraw_Tournament_Entry_Handler $withdraw_tournament_entry_handler,
+        private Create_Tournament_Payment_Handler $create_tournament_payment_handler,
+        private Submit_Tournament_Partner_Handler $submit_tournament_partner_handler,
+        private Submit_Tournament_Entry_Handler $submit_tournament_entry_handler,
+        private ?Tournament_Service $tournament_service = null
     ) {
-        $this->withdraw_tournament_entry_handler = $this->withdraw_tournament_entry_handler ?? new Withdraw_Tournament_Entry_Handler( $this->competition_entry_service );
-        $this->create_tournament_payment_handler = $this->create_tournament_payment_handler ?? new Create_Tournament_Payment_Handler( $this->finance_service );
-        $this->submit_tournament_partner_handler = $this->submit_tournament_partner_handler ?? new Submit_Tournament_Partner_Handler( $this->competition_entry_service );
-        $this->submit_tournament_entry_handler   = $this->submit_tournament_entry_handler ?? new Submit_Tournament_Entry_Handler( $this->competition_entry_service );
     }
 
     public function logged_out(): Response {

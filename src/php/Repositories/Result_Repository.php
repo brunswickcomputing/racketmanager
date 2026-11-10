@@ -23,12 +23,13 @@ use wpdb;
 class Result_Repository implements Result_Repository_Interface {
     private wpdb $wpdb;
     private string $table_name;
-    private Results_Report_Repository_Interface $results_report_repository;
 
-    public function __construct( ?wpdb $wpdb = null, ?Results_Report_Repository_Interface $results_report_repository = null ) {
-        $this->wpdb                      = $wpdb ?? $GLOBALS['wpdb'];
-        $this->table_name                = $this->wpdb->prefix . 'racketmanager_matches';
-        $this->results_report_repository = $results_report_repository ?? new Results_Report_Repository( $this->wpdb );
+    public function __construct(
+        private readonly Results_Report_Repository_Interface $results_report_repository,
+        ?wpdb $wpdb = null
+    ) {
+        $this->wpdb       = $wpdb ?? $GLOBALS['wpdb'];
+        $this->table_name = $this->wpdb->prefix . 'racketmanager_matches';
     }
 
     /**

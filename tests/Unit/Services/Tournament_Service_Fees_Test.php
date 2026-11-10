@@ -5,7 +5,9 @@ namespace Racketmanager\Tests\Unit\Services;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Domain\Finance\Charge;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Request_DTO;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Charge_Repository;
@@ -47,7 +49,9 @@ final class Tournament_Service_Fees_Test extends TestCase {
             $this->createMock( Player_Stats_Service::class ),
             $this->createMock( Club_Service::class ),
             $this->createMock( Finance_Service::class ),
-            $this->createMock( League_Service::class )
+            $this->createMock( League_Service::class ),
+            $this->createMock( Mailer_Interface::class ),
+            $this->createMock( Option_Service::class )
         );
 
         $request = new Tournament_Request_DTO(

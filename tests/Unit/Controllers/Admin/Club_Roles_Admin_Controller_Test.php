@@ -33,7 +33,8 @@ final class Club_Roles_Admin_Controller_Test extends TestCase {
 
         $this->dispatcher = new Club_Role_Action_Dispatcher(
             $this->club_service,
-            $this->guard
+            $this->guard,
+            new \Racketmanager\Application\Admin\Commands\Club_Role_Handler( $this->club_service )
         );
 
         $this->controller = new Club_Roles_Admin_Controller(

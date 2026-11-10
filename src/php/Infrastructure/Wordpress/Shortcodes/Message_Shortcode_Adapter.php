@@ -26,9 +26,9 @@ class Message_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly Shortcode_View_Presenter $view_presenter,
         private readonly Get_Messages_Handler $messages_handler,
         private readonly Get_Message_Handler $message_handler,
+        private readonly Message_Presenter $message_presenter,
         private readonly ?Shortcode_Template_Renderer $template_renderer = null,
         private readonly ?Security_Service_Interface $security_service = null,
-        private readonly ?Message_Presenter $message_presenter = null,
         private readonly ?Query_Vars_Interface $query_vars = null
     ) {}
 
@@ -50,8 +50,7 @@ class Message_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $this->view_presenter->render( Shortcode_View_Model::for_error( $result->error_message ?? '' ) );
         }
 
-        $presenter   = $this->message_presenter ?? new Message_Presenter();
-        $messages_vm = $presenter->present_messages( $result->messages );
+        $messages_vm = $this->message_presenter->present_messages( $result->messages );
         $filename    = ! empty( $result->template ) ? 'messages-' . $result->template : 'messages';
 
         return $this->view_presenter->render( Shortcode_View_Model::for_template( $filename, [
@@ -77,8 +76,7 @@ class Message_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $this->view_presenter->render( Shortcode_View_Model::for_error( $result->error_message ?? '' ) );
         }
 
-        $presenter  = $this->message_presenter ?? new Message_Presenter();
-        $vm_message = $result->message ? $presenter->present_message( $result->message ) : null;
+        $vm_message = $result->message ? $this->message_presenter->present_message( $result->message ) : null;
         $filename   = ! empty( $result->template ) ? 'message-' . $result->template : 'message';
 
         return $this->view_presenter->render( Shortcode_View_Model::for_template( $filename, [

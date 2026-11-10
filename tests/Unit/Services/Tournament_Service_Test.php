@@ -137,8 +137,8 @@ class Tournament_Service_Test extends TestCase {
                 $this->createMock( Finance_Service::class ),
                 $this->createMock( League_Service::class ),
                 $mailer,
-                null,
                 $option_service,
+                null,
             ] )
             ->onlyMethods( [ 'get_tournament' ] )
             ->getMock();
@@ -162,7 +162,9 @@ class Tournament_Service_Test extends TestCase {
                         $this->createMock( Player_Stats_Service::class ),
                         $this->createMock( Club_Service::class ),
                         $this->createMock( Finance_Service::class ),
-                        $this->createMock( League_Service::class )
+                        $this->createMock( League_Service::class ),
+                        $this->createMock( Mailer_Interface::class ),
+                        $this->createMock( Option_Service::class ),
                     ] )
                     ->onlyMethods( [ 'remove_tournament' ] )
                     ->getMock();
@@ -233,7 +235,9 @@ class Tournament_Service_Test extends TestCase {
             $this->createMock( Player_Stats_Service::class ),
             $this->createMock( Club_Service::class ),
             $this->createMock( Finance_Service::class ),
-            $this->createMock( League_Service::class )
+            $this->createMock( League_Service::class ),
+            $this->createMock( Mailer_Interface::class ),
+            $this->createMock( Option_Service::class )
         );
     }
 
@@ -316,7 +320,9 @@ class Tournament_Service_Test extends TestCase {
             $this->createMock( Player_Stats_Service::class ),
             $this->createMock( Club_Service::class ),
             $this->createMock( Finance_Service::class ),
-            $this->createMock( League_Service::class )
+            $this->createMock( League_Service::class ),
+            $this->createMock( Mailer_Interface::class ),
+            $this->createMock( Option_Service::class )
         );
 
         $method = new \ReflectionMethod( $service, 'save_tournament_and_fees' );

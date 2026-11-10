@@ -756,7 +756,13 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
                     ] );
 
         $fixture_repo = $this->createMock( \Racketmanager\Repositories\Fixture_Repository::class );
-        $player_validator = new Player_Validation_Service( $reg_service, $this->results_checker_repository, $fixture_repo );
+        $player_validator = new Player_Validation_Service(
+            $reg_service,
+            $this->results_checker_repository,
+            $fixture_repo,
+            $this->createMock( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class ),
+            $this->createMock( \Racketmanager\Services\Validator\Player_Details_Validator::class )
+        );
 
         $player_validator->run_fixture_checks( $fixture, $league, $rubbers, [] );
     }

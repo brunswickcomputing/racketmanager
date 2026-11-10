@@ -35,25 +35,16 @@ use Racketmanager\Services\Fixture_Service;
  */
 readonly final class League_Match_Action_Dispatcher {
 
-    private League_Match_Handler $commands;
-
     public function __construct(
         Fixture_Repository_Interface $fixture_repository,
         Fixture_Maintenance_Service $fixture_maintenance_service,
         private Action_Guard_Interface $action_guard,
         Fixture_Result_Manager $fixture_result_manager,
         Fixture_Service $fixture_service,
-        ?League_Match_Handler $commands = null,
+        private League_Match_Handler $commands,
         ?League_Query_Service $league_query_service = null,
         private ?League_Repository_Interface $league_repository = null,
     ) {
-        $this->commands = $commands ?? new League_Match_Handler(
-            $fixture_repository,
-            $fixture_maintenance_service,
-            $fixture_result_manager,
-            $fixture_service,
-            $league_query_service ?? throw new LogicException( 'League_Match_Action_Dispatcher requires either a League_Match_Handler or a League_Query_Service.' )
-        );
     }
 
     /**

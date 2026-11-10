@@ -27,7 +27,9 @@ use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Infrastructure\Persistence\Legacy_Fixture_Listing_Finder;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Matches_Shortcode_Adapter;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Matches_List_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Public\Shortcodes;
 use Racketmanager\RacketManager;
@@ -514,7 +516,16 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
             $this->createStub( Player_Service::class ),
             new Get_Daily_Matches_Handler( $finder ),
             new Get_Latest_Results_Handler( $finder, $clubs, $this->createStub( Competition_Repository_Interface::class ) ),
-            new Matches_List_Presenter( $competition_service, $team_service, $renderer, $tournament_presenter, null, $permission_service )
+            new Matches_List_Presenter(
+                $competition_service,
+                $team_service,
+                $renderer,
+                $tournament_presenter,
+                new Club_Presenter(),
+                new Player_Presenter(),
+                null,
+                $permission_service
+            )
         );
     }
 
@@ -546,7 +557,7 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
             new Get_Match_Score_Handler( $service ),
             new Get_Match_Header_Handler( $service ),
             new Get_Match_Detail_Handler( $service, $players, $rubbers ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class ) ),
-            new Match_Shortcode_Presenter( new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $renderer ) ), new Fixture_Presenter( new Fixture_Link_Service(), $this->createStub( Option_Gateway_Interface::class ), $renderer ), $players ),
+            new Match_Shortcode_Presenter( new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $renderer, new Club_Presenter(), new Player_Presenter() ) ), new Fixture_Presenter( new Fixture_Link_Service(), $this->createStub( Option_Gateway_Interface::class ), $renderer ), $players ),
             new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
         );
     }

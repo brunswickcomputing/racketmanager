@@ -32,7 +32,7 @@ class Club_Role_Repository_Test extends TestCase {
         $GLOBALS['wpdb']       = $this->wpdb;
 
         $this->user_repository = $this->createMock( User_Repository_Interface::class );
-        $this->repository      = new Club_Role_Repository( $this->wpdb, $this->user_repository );
+        $this->repository      = new Club_Role_Repository( $this->user_repository, $this->wpdb );
     }
 
     protected function tearDown(): void {

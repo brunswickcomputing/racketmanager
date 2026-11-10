@@ -256,6 +256,7 @@ final class Layer_Rules_Test extends TestCase {
                 'all.no_alias_class_references',
                 'all.strict_types',
                 'all.no_extract',
+                'all.no_fallback_construction',
                 'templates.no_globals_or_db',
                 'templates.no_global_racketmanager',
                 'templates.no_legacy_helper_calls',

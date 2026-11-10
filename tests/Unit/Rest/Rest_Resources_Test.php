@@ -63,7 +63,8 @@ class Rest_Resources_Test extends TestCase {
         $container->set( 'player_service', fn() => $this->createStub( Player_Service::class ) );
         $container->set( 'registration_service', fn() => $this->createStub( Registration_Service::class ) );
         $container->set( 'finance_service', fn() => $this->finance_service );
-        $container->set( 'rest_controller_adapter', fn() => $this->adapter );
+        $container->set( Rest_Controller_Adapter::class, fn() => $this->adapter );
+        $container->alias( Rest_Controller_Adapter::class, 'rest_controller_adapter' );
         $container->set( 'league_query_service', new League_Query_Service(
             $this->createStub( League_Repository_Interface::class ),
             $this->createStub( Fixture_Repository_Interface::class ),
@@ -122,10 +123,10 @@ class Rest_Resources_Test extends TestCase {
 
         return new Rest_Resources(
             $this->plugin,
+            $this->adapter,
             $this->competition_service,
             $this->club_service,
-            $this->season_service,
-            $this->adapter
+            $this->season_service
         );
     }
 
@@ -161,27 +162,30 @@ class Rest_Resources_Test extends TestCase {
         return $league_repository;
     }
 
-    public function test_fallback_adapter_receives_the_container_league_repository(): void {
+    public function test_adapter_is_explicitly_injected_instead_of_resolved_from_container(): void {
         $league_repository = $this->createStub( League_Repository_Interface::class );
+        $adapter           = new Rest_Controller_Adapter( $league_repository );
 
         $container = new Simple_Container();
         $container->set( 'competition_service', fn() => $this->competition_service );
         $container->set( 'club_service', fn() => $this->club_service );
         $container->set( 'season_service', fn() => $this->season_service );
         $container->set( 'league_repository', fn() => $league_repository );
+        $container->set( Rest_Controller_Adapter::class, fn() => $this->createStub( Rest_Controller_Adapter::class ) );
 
         $plugin            = $this->createStub( RacketManager::class );
         $plugin->container = $container;
 
-        $resources = new Rest_Resources( $plugin );
+        $resources = new Rest_Resources( $plugin, $adapter );
 
-        $adapter = ( new \ReflectionProperty( Rest_Resources::class, 'adapter' ) )->getValue( $resources );
-        self::assertInstanceOf( Rest_Controller_Adapter::class, $adapter );
+        $resolved_adapter = ( new \ReflectionProperty( Rest_Resources::class, 'adapter' ) )->getValue( $resources );
+        self::assertSame( $adapter, $resolved_adapter );
         self::assertSame(
             $league_repository,
-            ( new \ReflectionProperty( Rest_Controller_Adapter::class, 'league_repository' ) )->getValue( $adapter )
+            ( new \ReflectionProperty( Rest_Controller_Adapter::class, 'league_repository' ) )->getValue( $resolved_adapter )
         );
     }
+
 
     public function test_register_routes_registers_all_expected_endpoints(): void {
         $GLOBALS['wp_stubs_registered_rest_routes'] = array();
@@ -230,10 +234,10 @@ class Rest_Resources_Test extends TestCase {
 
         $rest_resources = new Rest_Resources(
             $this->plugin,
+            $this->adapter,
             $competition_service,
             $this->club_service,
             $this->season_service,
-            $this->adapter,
             null,
             null,
             null,
@@ -316,10 +320,10 @@ class Rest_Resources_Test extends TestCase {
 
         $rest_resources = new Rest_Resources(
             $this->plugin,
+            $this->adapter,
             $this->competition_service,
             $club_service,
-            $this->season_service,
-            $this->adapter
+            $this->season_service
         );
 
         $response = $rest_resources->get_matches( $request );
@@ -685,10 +689,10 @@ class Rest_Resources_Test extends TestCase {
 
         $rest_resources = new Rest_Resources(
             $this->plugin,
+            $this->adapter,
             $this->competition_service,
             $this->club_service,
             $this->season_service,
-            $this->adapter,
             new League_Query_Service( $injected_repository, $this->createStub( Fixture_Repository_Interface::class ), $this->createStub( Rubber_Repository_Interface::class ) ),
             null,
             $injected_repository
@@ -714,10 +718,10 @@ class Rest_Resources_Test extends TestCase {
 
         $rest_resources = new Rest_Resources(
             $this->plugin,
+            $this->adapter,
             $competition_service,
             $this->club_service,
-            $this->season_service,
-            $this->adapter
+            $this->season_service
         );
 
         $response = $rest_resources->get_standings( $request );
@@ -738,10 +742,10 @@ class Rest_Resources_Test extends TestCase {
 
         $rest_resources = new Rest_Resources(
             $this->plugin,
+            $this->adapter,
             $this->competition_service,
             $club_service,
-            $this->season_service,
-            $this->adapter
+            $this->season_service
         );
 
         $response = $rest_resources->get_standings( $request );
@@ -814,7 +818,7 @@ class Rest_Resources_Test extends TestCase {
             'stripe_is_live'      => false,
             'api_secret_key_test' => 'sk_test_123',
         ) );
-        $resources = new Rest_Resources( $plugin, $this->competition_service, $this->club_service, $this->season_service, $this->adapter );
+        $resources = new Rest_Resources( $plugin, $this->adapter, $this->competition_service, $this->club_service, $this->season_service );
 
         $invoice = new class() {
             public string $status = 'unpaid';
@@ -854,7 +858,7 @@ class Rest_Resources_Test extends TestCase {
             'api_secret_key_test'   => 'sk_test_123',
             'api_endpoint_key_test' => 'whsec_test',
         ) );
-        $resources = new Rest_Resources( $plugin, $this->competition_service, $this->club_service, $this->season_service, $this->adapter );
+        $resources = new Rest_Resources( $plugin, $this->adapter, $this->competition_service, $this->club_service, $this->season_service );
 
         $finance_service->expects( self::never() )->method( 'get_invoices_by_criteria' );
 
@@ -902,10 +906,10 @@ class Rest_Resources_Test extends TestCase {
 
         $rest_resources = new Rest_Resources(
             $this->plugin,
+            $this->adapter,
             $this->competition_service,
             $this->club_service,
             $this->season_service,
-            $this->adapter,
             null,
             null,
             $league_repository,

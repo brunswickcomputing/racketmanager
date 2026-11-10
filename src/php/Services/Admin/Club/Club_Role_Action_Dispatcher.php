@@ -26,14 +26,11 @@ use Racketmanager\Services\Club_Service;
  */
 readonly final class Club_Role_Action_Dispatcher {
 
-    private Club_Role_Handler $commands;
-
     public function __construct(
         Club_Service $club_service,
         private Action_Guard_Interface $action_guard,
-        ?Club_Role_Handler $commands = null,
+        private Club_Role_Handler $commands,
     ) {
-        $this->commands = $commands ?? new Club_Role_Handler( $club_service );
     }
 
     /**

@@ -11,6 +11,7 @@ use Racketmanager\Domain\Player\Player;
 use Racketmanager\Repositories\Competition_Repository;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use wpdb;
@@ -63,7 +64,7 @@ final class Competition_Repository_Resolver_Hydration_Test extends TestCase {
 			return $this->createStub( Club_Repository_Interface::class );
 		};
 
-		$repository = new Competition_Repository( null, null, $spy, $spy, $spy );
+		$repository = new Competition_Repository( $this->createStub( Fixture_Repository_Interface::class ), null, $spy, $spy, $spy );
 
 		$this->assertInstanceOf( Competition_Repository::class, $repository );
 		$this->assertSame( 0, $calls );
@@ -82,7 +83,7 @@ final class Competition_Repository_Resolver_Hydration_Test extends TestCase {
 
 		$resolver_calls = 0;
 		$repository     = new Competition_Repository(
-			null,
+			$this->createStub( Fixture_Repository_Interface::class ),
 			null,
 			null,
 			function () use ( &$resolver_calls, $player_repository ): Player_Repository_Interface {
@@ -103,7 +104,7 @@ final class Competition_Repository_Resolver_Hydration_Test extends TestCase {
 		$player_repository = $this->createMock( Player_Repository_Interface::class );
 		$player_repository->expects( $this->never() )->method( 'find' );
 
-		$repository = new Competition_Repository( null, null, null, static fn() => $player_repository );
+		$repository = new Competition_Repository( $this->createStub( Fixture_Repository_Interface::class ), null, null, static fn() => $player_repository );
 
 		$this->assertSame( [ null, null, null ], $repository->find_players( 5 ) );
 	}
@@ -114,7 +115,7 @@ final class Competition_Repository_Resolver_Hydration_Test extends TestCase {
 		$player_repository = $this->createMock( Player_Repository_Interface::class );
 		$player_repository->expects( $this->never() )->method( 'find' );
 
-		$repository = new Competition_Repository( null, null, null, static fn() => $player_repository );
+		$repository = new Competition_Repository( $this->createStub( Fixture_Repository_Interface::class ), null, null, static fn() => $player_repository );
 
 		$this->assertSame( 12, $repository->find_players( 5, [ 'count' => true ] ) );
 	}
@@ -130,7 +131,7 @@ final class Competition_Repository_Resolver_Hydration_Test extends TestCase {
 			->with( 10 )
 			->willReturn( $event );
 
-		$repository = new Competition_Repository( null, null, null, null, static fn() => $event_repository );
+		$repository = new Competition_Repository( $this->createStub( Fixture_Repository_Interface::class ), null, null, null, static fn() => $event_repository );
 
 		$events = $repository->find_events( 5, [ 'season' => '2026' ] );
 
@@ -185,7 +186,7 @@ final class Competition_Repository_Resolver_Hydration_Test extends TestCase {
 			->with( 4 )
 			->willReturn( $club );
 
-		$repository = new Competition_Repository( null, null, static fn() => $club_repository );
+		$repository = new Competition_Repository( $this->createStub( Fixture_Repository_Interface::class ), null, static fn() => $club_repository );
 
 		$teams = $repository->find_teams( 5, [ 'season' => '2026' ] );
 
@@ -201,7 +202,7 @@ final class Competition_Repository_Resolver_Hydration_Test extends TestCase {
 	public function test_resolver_returning_wrong_type_falls_back_without_error(): void {
 		$this->install_wpdb( [ (object) [ 'id' => 0 ] ] );
 
-		$repository = new Competition_Repository( null, null, null, static fn() => new \stdClass() );
+		$repository = new Competition_Repository( $this->createStub( Fixture_Repository_Interface::class ), null, null, static fn() => new \stdClass() );
 
 		// A zero id never reaches the repository, so the fallback is only ever resolved lazily.
 		$this->assertSame( [ null ], $repository->find_players( 5 ) );

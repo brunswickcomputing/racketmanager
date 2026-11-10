@@ -25,7 +25,12 @@ final class Players_Admin_Controller_Test extends TestCase {
         parent::setUp();
         $this->player_service = $this->createMock( Player_Service::class );
         $this->action_guard   = $this->createMock( Action_Guard_Interface::class );
-        $this->dispatcher     = new Player_Action_Dispatcher( $this->player_service, $this->action_guard );
+        $this->dispatcher     = new Player_Action_Dispatcher(
+            $this->player_service,
+            $this->action_guard,
+            new \Racketmanager\Application\Player\Commands\Update_Player_Handler( $this->player_service ),
+            new \Racketmanager\Application\Player\Commands\Create_Player_Handler( $this->player_service )
+        );
         $this->controller     = new Players_Admin_Controller(
             $this->player_service,
             $this->dispatcher,

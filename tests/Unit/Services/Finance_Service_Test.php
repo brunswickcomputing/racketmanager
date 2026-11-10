@@ -37,6 +37,9 @@ class Finance_Service_Test extends TestCase {
     private Tournament_Repository_Interface $tournament_repo;
     private Competition_Service $competition_service;
     private Player_Service $player_service;
+    private Payment_Gateway_Interface $payment_gateway;
+    private Mailer_Interface $mailer;
+    private Option_Service $option_service;
 
     protected function setUp(): void {
         parent::setUp();
@@ -48,24 +51,39 @@ class Finance_Service_Test extends TestCase {
         $this->tournament_repo     = $this->createStub( Tournament_Repository_Interface::class );
         $this->competition_service = $this->createStub( Competition_Service::class );
         $this->player_service      = $this->createStub( Player_Service::class );
+        $this->payment_gateway     = $this->createStub( Payment_Gateway_Interface::class );
+        $this->mailer              = $this->createStub( Mailer_Interface::class );
+        $this->option_service      = $this->createStub( Option_Service::class );
     }
 
-    public function test_construct_fallback_initializes_default_gateways_without_type_error(): void {
-        $this->app->method( 'get_options' )->willReturn( [
-            'stripe_is_live'      => false,
-            'api_secret_key_test' => 'sk_test_fallback',
-        ] );
-
-        $service = new Finance_Service(
-            $this->app,
-            $this->charge_repo,
-            $this->invoice_repo,
-            $this->club_repo,
-            $this->tournament_repo,
-            $this->competition_service,
-            $this->player_service
+    private function create_service(
+        ?RacketManager $app = null,
+        ?Charge_Repository_Interface $charge_repo = null,
+        ?Invoice_Repository_Interface $invoice_repo = null,
+        ?Club_Repository_Interface $club_repo = null,
+        ?Tournament_Repository_Interface $tournament_repo = null,
+        ?Competition_Service $competition_service = null,
+        ?Player_Service $player_service = null,
+        ?Payment_Gateway_Interface $payment_gateway = null,
+        ?Mailer_Interface $mailer = null,
+        ?Option_Service $option_service = null
+    ): Finance_Service {
+        return new Finance_Service(
+            $app ?? $this->app,
+            $charge_repo ?? $this->charge_repo,
+            $invoice_repo ?? $this->invoice_repo,
+            $club_repo ?? $this->club_repo,
+            $tournament_repo ?? $this->tournament_repo,
+            $competition_service ?? $this->competition_service,
+            $player_service ?? $this->player_service,
+            $payment_gateway ?? $this->payment_gateway,
+            $mailer ?? $this->mailer,
+            $option_service ?? $this->option_service
         );
+    }
 
+    public function test_construct_with_required_collaborators(): void {
+        $service = $this->create_service();
         $this->assertInstanceOf( Finance_Service::class, $service );
     }
 
@@ -76,16 +94,12 @@ class Finance_Service_Test extends TestCase {
         $player_service  = $this->createMock( Player_Service::class );
         $mailer          = $this->createStub( Mailer_Interface::class );
 
-        $service = new Finance_Service(
-            $this->app,
-            $this->charge_repo,
-            $invoice_repo,
-            $this->club_repo,
-            $tournament_repo,
-            $this->competition_service,
-            $player_service,
-            $payment_gateway,
-            $mailer
+        $service = $this->create_service(
+            invoice_repo: $invoice_repo,
+            tournament_repo: $tournament_repo,
+            player_service: $player_service,
+            payment_gateway: $payment_gateway,
+            mailer: $mailer
         );
 
         $invoice = new Invoice();
@@ -149,15 +163,9 @@ class Finance_Service_Test extends TestCase {
         $payment_gateway = $this->createStub( Payment_Gateway_Interface::class );
         $invoice_repo    = $this->createMock( Invoice_Repository_Interface::class );
 
-        $service = new Finance_Service(
-            $this->app,
-            $this->charge_repo,
-            $invoice_repo,
-            $this->club_repo,
-            $this->tournament_repo,
-            $this->competition_service,
-            $this->player_service,
-            $payment_gateway
+        $service = $this->create_service(
+            invoice_repo: $invoice_repo,
+            payment_gateway: $payment_gateway
         );
 
         $invoice_repo->expects( self::once() )
@@ -173,15 +181,9 @@ class Finance_Service_Test extends TestCase {
         $payment_gateway = $this->createStub( Payment_Gateway_Interface::class );
         $tournament_repo = $this->createMock( Tournament_Repository_Interface::class );
 
-        $service = new Finance_Service(
-            $this->app,
-            $this->charge_repo,
-            $this->invoice_repo,
-            $this->club_repo,
-            $tournament_repo,
-            $this->competition_service,
-            $this->player_service,
-            $payment_gateway
+        $service = $this->create_service(
+            tournament_repo: $tournament_repo,
+            payment_gateway: $payment_gateway
         );
 
         $invoice = new Invoice();
@@ -200,15 +202,9 @@ class Finance_Service_Test extends TestCase {
         $payment_gateway = $this->createStub( Payment_Gateway_Interface::class );
         $player_service  = $this->createMock( Player_Service::class );
 
-        $service = new Finance_Service(
-            $this->app,
-            $this->charge_repo,
-            $this->invoice_repo,
-            $this->club_repo,
-            $this->tournament_repo,
-            $this->competition_service,
-            $player_service,
-            $payment_gateway
+        $service = $this->create_service(
+            player_service: $player_service,
+            payment_gateway: $payment_gateway
         );
 
         $invoice = new Invoice();
@@ -229,15 +225,8 @@ class Finance_Service_Test extends TestCase {
 
     public function test_create_tournament_payment_request_propagates_gateway_exception(): void {
         $payment_gateway = $this->createMock( Payment_Gateway_Interface::class );
-        $service = new Finance_Service(
-            $this->app,
-            $this->charge_repo,
-            $this->invoice_repo,
-            $this->club_repo,
-            $this->tournament_repo,
-            $this->competition_service,
-            $this->player_service,
-            $payment_gateway
+        $service = $this->create_service(
+            payment_gateway: $payment_gateway
         );
 
         $invoice = new Invoice();
@@ -276,16 +265,12 @@ class Finance_Service_Test extends TestCase {
         $tournament_repo = $this->createStub( Tournament_Repository_Interface::class );
         $player_service  = $this->createStub( Player_Service::class );
 
-        $service = new Finance_Service(
-            $app,
-            $this->charge_repo,
-            $invoice_repo,
-            $this->club_repo,
-            $tournament_repo,
-            $this->competition_service,
-            $player_service,
-            $payment_gateway,
-            $this->createStub( Mailer_Interface::class )
+        $service = $this->create_service(
+            app: $app,
+            invoice_repo: $invoice_repo,
+            tournament_repo: $tournament_repo,
+            player_service: $player_service,
+            payment_gateway: $payment_gateway
         );
 
         $invoice         = new Invoice();
@@ -330,16 +315,12 @@ class Finance_Service_Test extends TestCase {
         $tournament_repo = $this->createStub( Tournament_Repository_Interface::class );
         $player_service  = $this->createStub( Player_Service::class );
 
-        $service = new Finance_Service(
-            $app,
-            $this->charge_repo,
-            $invoice_repo,
-            $this->club_repo,
-            $tournament_repo,
-            $this->competition_service,
-            $player_service,
-            $payment_gateway,
-            $this->createStub( Mailer_Interface::class )
+        $service = $this->create_service(
+            app: $app,
+            invoice_repo: $invoice_repo,
+            tournament_repo: $tournament_repo,
+            player_service: $player_service,
+            payment_gateway: $payment_gateway
         );
         $invoice = new Invoice();
         $invoice->id = 101;
@@ -375,17 +356,7 @@ class Finance_Service_Test extends TestCase {
         $this->app->method( 'get_options' )->willReturn( [] );
         $this->app->currency_code = 'GBP';
 
-        $service = new Finance_Service(
-            $this->app,
-            $this->charge_repo,
-            $this->invoice_repo,
-            $this->club_repo,
-            $this->tournament_repo,
-            $this->competition_service,
-            $this->player_service,
-            $this->createStub( Payment_Gateway_Interface::class ),
-            $this->createStub( Mailer_Interface::class )
-        );
+        $service = $this->create_service();
 
         self::assertSame( Currency::GBP, $service->get_currency() );
     }
@@ -394,17 +365,7 @@ class Finance_Service_Test extends TestCase {
         $this->app->method( 'get_options' )->willReturn( [ 'billingCurrency' => '' ] );
         $this->app->currency_code = 'GBP';
 
-        $service = new Finance_Service(
-            $this->app,
-            $this->charge_repo,
-            $this->invoice_repo,
-            $this->club_repo,
-            $this->tournament_repo,
-            $this->competition_service,
-            $this->player_service,
-            $this->createStub( Payment_Gateway_Interface::class ),
-            $this->createStub( Mailer_Interface::class )
-        );
+        $service = $this->create_service();
 
         self::assertSame( Currency::GBP, $service->get_currency() );
     }
@@ -519,6 +480,7 @@ class Finance_Service_Test extends TestCase {
                 $this->player_service,
                 $this->createStub( Payment_Gateway_Interface::class ),
                 $this->createStub( Mailer_Interface::class ),
+                $this->createStub( Option_Service::class ),
             ] )
             ->onlyMethods( [ 'send_invoice' ] )
             ->getMock();
@@ -539,16 +501,8 @@ class Finance_Service_Test extends TestCase {
         $invoice_repo->method( 'find_by_id' )->willReturn( $invoice );
         $invoice_repo->expects( self::never() )->method( 'save' );
 
-        $service = new Finance_Service(
-            $this->app,
-            $this->charge_repo,
-            $invoice_repo,
-            $this->club_repo,
-            $this->tournament_repo,
-            $this->competition_service,
-            $this->player_service,
-            $this->createStub( Payment_Gateway_Interface::class ),
-            $this->createStub( Mailer_Interface::class )
+        $service = $this->create_service(
+            invoice_repo: $invoice_repo
         );
 
         $result = $service->amend_invoice( 10, 'bogus', 'PO-1' );
@@ -566,16 +520,8 @@ class Finance_Service_Test extends TestCase {
         $invoice_repo->method( 'find_by_id' )->willReturn( $invoice );
         $invoice_repo->expects( self::never() )->method( 'save' );
 
-        $service = new Finance_Service(
-            $this->app,
-            $this->charge_repo,
-            $invoice_repo,
-            $this->club_repo,
-            $this->tournament_repo,
-            $this->competition_service,
-            $this->player_service,
-            $this->createStub( Payment_Gateway_Interface::class ),
-            $this->createStub( Mailer_Interface::class )
+        $service = $this->create_service(
+            invoice_repo: $invoice_repo
         );
 
         $new_msg = $service->action_invoice( 10, 'new' );
@@ -594,16 +540,8 @@ class Finance_Service_Test extends TestCase {
             ->with( 2245, 23 )
             ->willReturn( 12.5 );
 
-        $service = new Finance_Service(
-            $this->app,
-            $this->charge_repo,
-            $invoice_repo,
-            $this->club_repo,
-            $this->tournament_repo,
-            $this->competition_service,
-            $this->player_service,
-            $this->createStub( Payment_Gateway_Interface::class ),
-            $this->createStub( Mailer_Interface::class )
+        $service = $this->create_service(
+            invoice_repo: $invoice_repo
         );
 
         $result = $service->get_tournament_paid_total_for_player( 2245, 23 );
@@ -627,16 +565,8 @@ class Finance_Service_Test extends TestCase {
                 return true;
             } );
 
-        $service = new Finance_Service(
-            $this->app,
-            $this->charge_repo,
-            $invoice_repo,
-            $this->club_repo,
-            $this->tournament_repo,
-            $this->competition_service,
-            $this->player_service,
-            $this->createStub( Payment_Gateway_Interface::class ),
-            $this->createStub( Mailer_Interface::class )
+        $service = $this->create_service(
+            invoice_repo: $invoice_repo
         );
 
         $entry        = new \stdClass();
@@ -662,16 +592,8 @@ class Finance_Service_Test extends TestCase {
         $invoice_repo = $this->createMock( Invoice_Repository_Interface::class );
         $invoice_repo->expects( self::never() )->method( 'find_tournament_paid_total_by_player' );
 
-        $service = new Finance_Service(
-            $this->app,
-            $this->charge_repo,
-            $invoice_repo,
-            $this->club_repo,
-            $this->tournament_repo,
-            $this->competition_service,
-            $this->player_service,
-            $this->createStub( Payment_Gateway_Interface::class ),
-            $this->createStub( Mailer_Interface::class )
+        $service = $this->create_service(
+            invoice_repo: $invoice_repo
         );
 
         self::assertSame( 0.0, $service->get_tournament_paid_total_for_player( null, 23 ) );

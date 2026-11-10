@@ -52,8 +52,10 @@ use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Domain\Tournament\Tournament_Entry;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
+use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Competition_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
@@ -97,7 +99,11 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
 
         $template_path           = defined( 'RACKETMANAGER_PATH' ) ? RACKETMANAGER_PATH . 'templates/' : dirname( __DIR__, 3 ) . '/templates/';
         $this->view_renderer     = new Php_View_Renderer( $template_path );
-        $this->template_renderer = new Shortcode_Template_Renderer( $this->view_renderer );
+        $this->template_renderer = new Shortcode_Template_Renderer(
+            $this->view_renderer,
+            new Club_Presenter(),
+            new Player_Presenter()
+        );
     }
 
     protected function tearDown(): void {
@@ -251,7 +257,8 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         );
         $adapter = new Tournament_Shortcode_Adapter(
             competition_service: $competition_service,
-            tournament_presenter: $presenter
+            tournament_presenter: $presenter,
+            player_presenter: new \Racketmanager\Presentation\Presenters\Player_Presenter()
         );
 
         $tournament       = $this->createStub( Tournament::class );
@@ -340,7 +347,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $handler = new Get_Tournament_Draws_Handler(
             tournament_service: $tournament_service
         );
-        $adapter = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter );
+        $adapter = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter, player_presenter: new \Racketmanager\Presentation\Presenters\Player_Presenter() );
 
         $tournament       = $this->createStub( Tournament::class );
         $tournament->id   = 12;
@@ -476,7 +483,11 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $reg_service        = $this->createStub( Registration_Service::class );
         $comp_entry_service = $this->createStub( Competition_Entry_Service::class );
         $finance_service    = $this->createStub( Finance_Service::class );
-        $comp_presenter     = new Competition_Shortcode_Presenter( renderer: $this->view_renderer );
+        $comp_presenter     = new Competition_Shortcode_Presenter(
+            renderer: $this->view_renderer,
+            club_presenter: new Club_Presenter(),
+            player_presenter: new Player_Presenter()
+        );
         $tourn_presenter    = new Tournament_Presenter();
 
         $handler = new Get_Competition_Entry_Handler(
@@ -721,7 +732,14 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             user_id: 42
         );
 
-        $vm = $this->adapter( new Tournament_Presenter( 'd/m/Y' ), new Competition_Shortcode_Presenter( renderer: $this->view_renderer ) )->present_entry( $handler->handle( $query ) );
+        $vm = $this->adapter(
+            new Tournament_Presenter( 'd/m/Y' ),
+            new Competition_Shortcode_Presenter(
+                renderer: $this->view_renderer,
+                club_presenter: new Club_Presenter(),
+                player_presenter: new Player_Presenter()
+            )
+        )->present_entry( $handler->handle( $query ) );
         $this->assertFalse( $vm->is_error() );
         $this->assertSame( 'entry-tournament', $vm->template );
         $this->assertSame( '/tournament/summer-open/', $vm->vars['back_url'] );
@@ -738,18 +756,26 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
 
     private function adapter( ?Tournament_Presenter $tournament_presenter = null, ?Competition_Shortcode_Presenter $competition_presenter = null, ?Player_Presenter $player_presenter = null ): Competition_Shortcode_Adapter {
         return new Competition_Shortcode_Adapter(
-            competition_shortcode_presenter: $competition_presenter,
-            tournament_presenter: $tournament_presenter,
-            player_presenter: $player_presenter
+            competition_shortcode_presenter: $competition_presenter ?? new Competition_Shortcode_Presenter(
+                $this->view_renderer,
+                new Club_Presenter(),
+                new Player_Presenter()
+            ),
+            tournament_presenter: $tournament_presenter ?? new Tournament_Presenter(),
+            player_presenter: $player_presenter ?? new Player_Presenter()
         );
     }
 
     private function event_adapter( ?Competition_Shortcode_Presenter $competition_presenter = null, ?Tournament_Presenter $tournament_presenter = null, ?Player_Presenter $player_presenter = null, ?Team_Details_Presenter $team_details_presenter = null ): \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter {
         return new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
-            competition_shortcode_presenter: $competition_presenter,
-            tournament_presenter: $tournament_presenter,
-            player_presenter: $player_presenter,
-            team_details_presenter: $team_details_presenter
+            competition_shortcode_presenter: $competition_presenter ?? new Competition_Shortcode_Presenter(
+                $this->view_renderer,
+                new Club_Presenter(),
+                new Player_Presenter()
+            ),
+            tournament_presenter: $tournament_presenter ?? new Tournament_Presenter(),
+            player_presenter: $player_presenter ?? new Player_Presenter(),
+            team_details_presenter: $team_details_presenter ?? new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() )
         );
     }
 
@@ -979,7 +1005,13 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
 
         $query_service = $this->event_query_service( $this->event_repository_with_results( [ 'query_leagues' => [ $league_one, $league_two ] ] ) );
         $handler       = new Get_Event_Standings_Handler( $service, $query_service );
-        $vm            = $this->event_adapter( competition_presenter: new Competition_Shortcode_Presenter() )
+        $vm            = $this->event_adapter(
+            competition_presenter: new Competition_Shortcode_Presenter(
+                $this->view_renderer,
+                new Club_Presenter(),
+                new Player_Presenter()
+            )
+        )
             ->present_standings( $handler->handle( new Get_Event_Standings_Query( event_id: 77 ) ) );
 
         $this->assertFalse( $vm->is_error() );
@@ -1071,7 +1103,11 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
 
         $handler = new Get_Event_Clubs_Handler( $service, $club_service, $stats, $query_service );
         $event_adapter = $this->event_adapter(
-            competition_presenter: new Competition_Shortcode_Presenter(),
+            competition_presenter: new Competition_Shortcode_Presenter(
+                $this->view_renderer,
+                new Club_Presenter(),
+                new Player_Presenter()
+            ),
             tournament_presenter: new Tournament_Presenter()
         );
 
@@ -1148,7 +1184,11 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             $query_service
         );
         $event_adapter = $this->event_adapter(
-            competition_presenter: new Competition_Shortcode_Presenter(),
+            competition_presenter: new Competition_Shortcode_Presenter(
+                $this->view_renderer,
+                new Club_Presenter(),
+                new Player_Presenter()
+            ),
             tournament_presenter: new Tournament_Presenter(),
             team_details_presenter: new Team_Details_Presenter( $this->createStub( Option_Gateway_Interface::class ), $this->createStub( Settings_Service::class ) )
         );
@@ -1215,7 +1255,11 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             $query_service
         );
         $vm = $this->event_adapter(
-            competition_presenter: new Competition_Shortcode_Presenter(),
+            competition_presenter: new Competition_Shortcode_Presenter(
+                $this->view_renderer,
+                new Club_Presenter(),
+                new Player_Presenter()
+            ),
             player_presenter: new Player_Presenter()
         )->present_players( $handler->handle( new Get_Event_Players_Query( event_id: 77 ) ) );
 
@@ -1277,7 +1321,11 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $vms = [
             'competition' => $this->adapter()->present_players( $competition_handler->handle( new Get_Competition_Players_Query( competition_id: 5, player_identifier: '51' ) ) ),
             'event'       => $this->event_adapter(
-                competition_presenter: new Competition_Shortcode_Presenter(),
+                competition_presenter: new Competition_Shortcode_Presenter(
+                    $this->view_renderer,
+                    new Club_Presenter(),
+                    new Player_Presenter()
+                ),
                 player_presenter: new Player_Presenter()
             )->present_players( $event_handler->handle( new Get_Event_Players_Query( event_id: 77, player_id: 51 ) ) ),
         ];
@@ -1390,7 +1438,11 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $service = $this->createStub( Competition_Service::class );
         $service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $presenter = new Competition_Shortcode_Presenter();
+        $presenter = new Competition_Shortcode_Presenter(
+            $this->view_renderer,
+            new Club_Presenter(),
+            new Player_Presenter()
+        );
 
         // 1. Box event teams links
         $teams_handler = new Get_Event_Teams_Handler(
@@ -1563,7 +1615,11 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         );
 
         $vm = $this->event_adapter(
-            competition_presenter: new Competition_Shortcode_Presenter(),
+            competition_presenter: new Competition_Shortcode_Presenter(
+                $this->view_renderer,
+                new Club_Presenter(),
+                new Player_Presenter()
+            ),
             player_presenter: new Player_Presenter()
         )->present_players( $handler->handle( new Get_Event_Players_Query( event_id: 77, player_id: 51 ) ) );
         $this->assertFalse( $vm->is_error() );
@@ -1598,7 +1654,11 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
 
         $handler = new Get_Event_Handler( $service, $this->event_query_service() );
         $vm      = $this->event_adapter(
-            competition_presenter: new Competition_Shortcode_Presenter()
+            competition_presenter: new Competition_Shortcode_Presenter(
+                $this->view_renderer,
+                new Club_Presenter(),
+                new Player_Presenter()
+            )
         )->present_event( $handler->handle( new Get_Event_Query( event_id: 77 ) ) );
 
         $this->assertFalse( $vm->is_error() );

@@ -50,20 +50,28 @@ class Event_Shortcode_Adapter_Test extends TestCase {
 
     private function create_adapter( array $overrides = [] ): Event_Shortcode_Adapter {
         return new Event_Shortcode_Adapter(
-            $overrides['racketmanager'] ?? $this->createStub( RacketManager::class ),
-            $overrides['view_presenter'] ?? $this->createStub( Shortcode_View_Presenter::class ),
-            $overrides['event_handler'] ?? $this->createStub( Get_Event_Handler::class ),
-            $overrides['standings_handler'] ?? $this->createStub( Get_Event_Standings_Handler::class ),
-            $overrides['draw_handler'] ?? $this->createStub( Get_Event_Draw_Handler::class ),
-            $overrides['matches_handler'] ?? $this->createStub( Get_Event_Matches_Handler::class ),
-            $overrides['clubs_handler'] ?? $this->createStub( Get_Event_Clubs_Handler::class ),
-            $overrides['teams_handler'] ?? $this->createStub( Get_Event_Teams_Handler::class ),
-            $overrides['players_handler'] ?? $this->createStub( Get_Event_Players_Handler::class ),
-            $overrides['partner_handler'] ?? $this->createStub( Get_Event_Partner_Handler::class ),
-            $overrides['team_matches_handler'] ?? $this->createStub( Get_Event_Team_Matches_Handler::class ),
-            $overrides['team_order_players_handler'] ?? $this->createStub( Get_Team_Order_Players_Handler::class ),
-            $overrides['dropdown_handler'] ?? $this->createStub( Get_Event_Dropdown_Handler::class ),
-            $overrides['template_renderer'] ?? $this->createStub( Shortcode_Template_Renderer::class ),
+            competition_shortcode_presenter: $overrides['competition_shortcode_presenter'] ?? new \Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter(
+                new \Racketmanager\Services\View\Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ),
+                new \Racketmanager\Presentation\Presenters\Club_Presenter(),
+                new \Racketmanager\Presentation\Presenters\Player_Presenter()
+            ),
+            tournament_presenter: $overrides['tournament_presenter'] ?? new \Racketmanager\Presentation\Presenters\Tournament_Presenter(),
+            player_presenter: $overrides['player_presenter'] ?? new \Racketmanager\Presentation\Presenters\Player_Presenter(),
+            team_details_presenter: $overrides['team_details_presenter'] ?? new \Racketmanager\Presentation\Presenters\Team_Details_Presenter( new \Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway(), new \Racketmanager\Services\Settings_Service() ),
+            racketmanager: $overrides['racketmanager'] ?? $this->createStub( RacketManager::class ),
+            view_presenter: $overrides['view_presenter'] ?? $this->createStub( Shortcode_View_Presenter::class ),
+            event_handler: $overrides['event_handler'] ?? $this->createStub( Get_Event_Handler::class ),
+            standings_handler: $overrides['standings_handler'] ?? $this->createStub( Get_Event_Standings_Handler::class ),
+            draw_handler: $overrides['draw_handler'] ?? $this->createStub( Get_Event_Draw_Handler::class ),
+            matches_handler: $overrides['matches_handler'] ?? $this->createStub( Get_Event_Matches_Handler::class ),
+            clubs_handler: $overrides['clubs_handler'] ?? $this->createStub( Get_Event_Clubs_Handler::class ),
+            teams_handler: $overrides['teams_handler'] ?? $this->createStub( Get_Event_Teams_Handler::class ),
+            players_handler: $overrides['players_handler'] ?? $this->createStub( Get_Event_Players_Handler::class ),
+            partner_handler: $overrides['partner_handler'] ?? $this->createStub( Get_Event_Partner_Handler::class ),
+            team_matches_handler: $overrides['team_matches_handler'] ?? $this->createStub( Get_Event_Team_Matches_Handler::class ),
+            team_order_players_handler: $overrides['team_order_players_handler'] ?? $this->createStub( Get_Team_Order_Players_Handler::class ),
+            dropdown_handler: $overrides['dropdown_handler'] ?? $this->createStub( Get_Event_Dropdown_Handler::class ),
+            template_renderer: $overrides['template_renderer'] ?? $this->createStub( Shortcode_Template_Renderer::class ),
             query_vars: $overrides['query_vars'] ?? new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
         );
     }

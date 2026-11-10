@@ -111,7 +111,7 @@ class Result_Service_Test extends TestCase {
             $this->team_repository,
             $this->make_option_service( [ 'league' => [ 'resultConfirmation' => 'auto' ] ] ),
             $this->template_renderer,
-            null,
+            $this->createStub( Mailer_Interface::class ),
             $this->league_repository
         );
 
@@ -144,6 +144,7 @@ class Result_Service_Test extends TestCase {
                 $this->team_repository,
                 $this->make_option_service( [] ),
                 $this->template_renderer,
+                $this->createStub( Mailer_Interface::class ),
             ])
             ->onlyMethods(['notify_favourites'])
             ->getMock();
@@ -169,6 +170,7 @@ class Result_Service_Test extends TestCase {
                 $this->team_repository,
                 $this->make_option_service( [] ),
                 $this->template_renderer,
+                $this->createStub( Mailer_Interface::class ),
             ])
             ->onlyMethods(['notify_favourites'])
             ->getMock();

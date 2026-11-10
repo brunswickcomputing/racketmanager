@@ -437,4 +437,51 @@ class Event_Query_Service_Test extends TestCase {
         $this->assertIsArray( $event->current_season );
         $this->assertSame( '2026', $event->current_season['name'] );
     }
+
+    public function test_query_teams_expands_placeholder_team_name_with_fixture_relations(): void {
+        $event_repository   = $this->createMock( Event_Repository_Interface::class );
+        $fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
+        $club_repository    = $this->createMock( Club_Repository_Interface::class );
+
+        $event = $this->event();
+        $team_row = (object) [
+            'id'        => 10,
+            'club_id'   => 133,
+            'team_id'   => 20,
+            'name'      => '1_semi_250',
+            'team_type' => 'S',
+            'roster'    => null,
+        ];
+        $event_repository->expects( $this->once() )
+            ->method( 'query_teams' )
+            ->with( 93, $this->callback( 'is_array' ) )
+            ->willReturn( [ $team_row ] );
+
+        $club_repository->expects( $this->once() )
+            ->method( 'find_by_id' )
+            ->with( 133 )
+            ->willReturn( null );
+
+        $fixture        = Fixture_Factory::from_object( (object) [ 'id' => 250 ] );
+        $fixture->teams = [
+            'home' => (object) [ 'title' => 'Home Club' ],
+            'away' => (object) [ 'title' => 'Away Club' ],
+        ];
+        $fixture_repository->expects( $this->once() )
+            ->method( 'find_by_id_with_relations' )
+            ->with( 250 )
+            ->willReturn( $fixture );
+
+        $service = new Event_Query_Service(
+            $event_repository,
+            fixture_repository: $fixture_repository,
+            team_repository: $this->createStub( Team_Repository_Interface::class ),
+            club_repository: $club_repository,
+            player_repository: $this->createStub( Player_Repository_Interface::class )
+        );
+
+        $teams = $service->get_teams( $event, [] );
+        $this->assertCount( 1, $teams );
+        $this->assertSame( 'Winner of Home Club vs Away Club', $teams[0]->title );
+    }
 }

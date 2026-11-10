@@ -7,9 +7,6 @@ use Racketmanager\Domain\Tournament\Championship;
 use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Competition\League;
-use Racketmanager\Repositories\Fixture_Repository;
-use Racketmanager\Repositories\League_Repository;
-use Racketmanager\Repositories\Event_Repository;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
@@ -27,26 +24,17 @@ class Knockout_Progression_Service
     private League_Query_Service|\Closure|null $league_query_service;
 
     public function __construct(
-        ?Fixture_Repository_Interface $fixture_repository = null,
-        ?League_Repository_Interface $league_repository = null,
-        ?Event_Repository_Interface $event_repository = null,
+        Fixture_Repository_Interface $fixture_repository,
+        League_Repository_Interface $league_repository,
+        Event_Repository_Interface $event_repository,
         ?Notification_Service $notification_service = null,
         League_Query_Service|\Closure|null $league_query_service = null
     ) {
-        $this->event_repository = $event_repository ?? new Event_Repository();
+        $this->fixture_repository   = $fixture_repository;
+        $this->league_repository    = $league_repository;
+        $this->event_repository     = $event_repository;
         $this->notification_service = $notification_service;
         $this->league_query_service = $league_query_service;
-        $this->league_repository = $league_repository ?? new League_Repository(
-            null,
-            $this->event_repository,
-            function (): ?League_Query_Service {
-                if ( $this->league_query_service instanceof \Closure ) {
-                    $this->league_query_service = ( $this->league_query_service )();
-                }
-                return $this->league_query_service instanceof League_Query_Service ? $this->league_query_service : null;
-            }
-        );
-        $this->fixture_repository = $fixture_repository ?? new Fixture_Repository();
     }
 
     /**

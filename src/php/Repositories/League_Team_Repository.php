@@ -10,13 +10,17 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Repositories;
 
+use Closure;
 use Racketmanager\Domain\DTO\League\League_Standings_DTO;
 use Racketmanager\Domain\Enums\Team_Profile;
 use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Competition\League_Team_Factory;
+use Racketmanager\Domain\Team\Team_Placeholder_Ref;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
+use Racketmanager\Util\Util;
 use stdClass;
 use wpdb;
 
@@ -29,17 +33,36 @@ class League_Team_Repository implements League_Team_Repository_Interface {
     private string $season_compare;
     private ?Club_Repository_Interface $club_repository;
     private ?Team_Repository_Interface $team_repository;
+    private Fixture_Repository_Interface|Closure|null $fixture_repository;
+    private ?Fixture_Repository_Interface $resolved_fixture_repository = null;
+
+    /**
+     * @var array<int|string, bool>
+     */
+    private array $resolving_league_teams = array();
 
     public function __construct(
         ?wpdb $wpdb = null,
         ?Club_Repository_Interface $club_repository = null,
-        ?Team_Repository_Interface $team_repository = null
+        ?Team_Repository_Interface $team_repository = null,
+        Fixture_Repository_Interface|Closure|null $fixture_repository = null
     ) {
-        $this->wpdb            = $wpdb ?? $GLOBALS['wpdb'];
-        $this->season_compare  = ' AND `season` = %d';
-        $this->table_name      = $this->wpdb->prefix . 'racketmanager_league_teams';
-        $this->club_repository = $club_repository;
-        $this->team_repository = $team_repository;
+        $this->wpdb               = $wpdb ?? $GLOBALS['wpdb'];
+        $this->season_compare     = ' AND `season` = %d';
+        $this->table_name         = $this->wpdb->prefix . 'racketmanager_league_teams';
+        $this->club_repository    = $club_repository;
+        $this->team_repository    = $team_repository;
+        $this->fixture_repository = $fixture_repository;
+    }
+
+    private function get_fixture_repository(): ?Fixture_Repository_Interface {
+        if ( null === $this->resolved_fixture_repository && null !== $this->fixture_repository ) {
+            $this->resolved_fixture_repository = $this->fixture_repository instanceof Closure
+                ? ( $this->fixture_repository )()
+                : $this->fixture_repository;
+        }
+
+        return $this->resolved_fixture_repository;
     }
 
     public function hydrate( object $row ): League_Team {
@@ -49,22 +72,60 @@ class League_Team_Repository implements League_Team_Repository_Interface {
     }
 
     /**
-     * Enrich a hydrated league team with club and (for player teams) roster players.
+     * Enrich a hydrated league team with club, (for player teams) roster players, and expanded placeholder title.
      *
      * Preserves the original entity rules: club comes from club_id; players are loaded
      * when team_type is exactly 'P' and roster is not null (an empty roster still loads).
      */
     private function enrich( League_Team $league_team ): void {
-        if ( ! empty( $league_team->club_id ) && null !== $this->club_repository ) {
-            $league_team->club = $this->club_repository->find_by_id( (int) $league_team->club_id );
+        $id = $league_team->get_id() ?? $league_team->table_id ?? null;
+        if ( null !== $id && isset( $this->resolving_league_teams[ $id ] ) ) {
+            return;
         }
-        if ( 'P' === ( $league_team->team_type ?? null ) && null !== $league_team->roster && null !== $this->team_repository ) {
-            $team_id = ! empty( $league_team->get_team_id() ) ? $league_team->get_team_id() : (int) ( $league_team->id ?? 0 );
-            if ( ! empty( $team_id ) ) {
-                $team                 = $this->team_repository->find_by_id( $team_id );
-                $league_team->players = $team?->players ?? array();
+        if ( null !== $id ) {
+            $this->resolving_league_teams[ $id ] = true;
+        }
+        try {
+            if ( ! empty( $league_team->club_id ) && null !== $this->club_repository ) {
+                $league_team->club = $this->club_repository->find_by_id( (int) $league_team->club_id );
+            }
+            if ( 'P' === ( $league_team->team_type ?? null ) && null !== $league_team->roster && null !== $this->team_repository ) {
+                $team_id = ! empty( $league_team->get_team_id() ) ? $league_team->get_team_id() : (int) ( $league_team->id ?? 0 );
+                if ( ! empty( $team_id ) ) {
+                    $team                 = $this->team_repository->find_by_id( $team_id );
+                    $league_team->players = $team?->players ?? array();
+                }
+            }
+            $this->enrich_title( $league_team );
+        } finally {
+            if ( null !== $id ) {
+                unset( $this->resolving_league_teams[ $id ] );
             }
         }
+    }
+
+    private function enrich_title( League_Team $league_team ): void {
+        $ref = ! empty( $league_team->team_ref )
+            ? $league_team->team_ref
+            : ( ! empty( $league_team->title ) && str_contains( $league_team->title, '_' ) ? $league_team->title : null );
+        if ( empty( $ref ) ) {
+            return;
+        }
+        $placeholder = Team_Placeholder_Ref::parse( $ref );
+        if ( null === $placeholder ) {
+            return;
+        }
+
+        $fixture_repo = $this->get_fixture_repository();
+        if ( null !== $fixture_repo ) {
+            $expanded = Util::generate_team_name( $ref, $fixture_repo );
+            if ( ! empty( $expanded ) ) {
+                $league_team->title = $expanded;
+                return;
+            }
+        }
+
+        $league_team->title = Util::format_placeholder_label( $placeholder );
     }
 
     public function save( object $entity ): bool|int {

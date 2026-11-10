@@ -17,6 +17,7 @@ use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
 use Racketmanager\Services\Registration_Service;
+use Racketmanager\Services\Validator\Player_Details_Validator;
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
 use Racketmanager\Domain\Result\Results_Checker;
@@ -40,7 +41,8 @@ class Player_Validation_Service_Test extends TestCase {
             $this->registration_service,
             $this->results_checker_repository,
             $this->fixture_repository,
-            $this->player_repository
+            $this->player_repository,
+            new Player_Details_Validator( $this->player_repository )
         );
     }
 
@@ -548,7 +550,8 @@ class Player_Validation_Service_Test extends TestCase {
             $this->registration_service,
             $this->results_checker_repository,
             $this->fixture_repository,
-            $player_repo
+            $player_repo,
+            new Player_Details_Validator( $player_repo )
         );
 
         $input = [

@@ -11,6 +11,8 @@ use Racketmanager\Application\Login\Queries\Get_Password_Lost_Form_Query;
 use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Query;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Settings_Service;
@@ -572,7 +574,7 @@ class Php_View_Renderer_Test extends TestCase {
         $result = $handler->handle( $query );
 
         $php_renderer      = new Php_View_Renderer( $this->template_base_path );
-        $template_renderer = new Shortcode_Template_Renderer( $php_renderer );
+        $template_renderer = new Shortcode_Template_Renderer( $php_renderer, new Club_Presenter(), new Player_Presenter() );
         $presenter         = new Shortcode_View_Presenter( $template_renderer );
 
         $vm = \Racketmanager\Presentation\View_Models\Shortcode_View_Model::for_template(
@@ -608,7 +610,7 @@ class Php_View_Renderer_Test extends TestCase {
         $result = $handler->handle( $query );
 
         $php_renderer      = new Php_View_Renderer( $this->template_base_path );
-        $template_renderer = new Shortcode_Template_Renderer( $php_renderer );
+        $template_renderer = new Shortcode_Template_Renderer( $php_renderer, new Club_Presenter(), new Player_Presenter() );
         $presenter         = new Shortcode_View_Presenter( $template_renderer );
 
         $vm = \Racketmanager\Presentation\View_Models\Shortcode_View_Model::for_template(
@@ -640,7 +642,7 @@ class Php_View_Renderer_Test extends TestCase {
         $result = $handler->handle( $query );
 
         $php_renderer      = new Php_View_Renderer( $this->template_base_path );
-        $template_renderer = new Shortcode_Template_Renderer( $php_renderer );
+        $template_renderer = new Shortcode_Template_Renderer( $php_renderer, new Club_Presenter(), new Player_Presenter() );
         $presenter         = new Shortcode_View_Presenter( $template_renderer );
 
         $vm = \Racketmanager\Presentation\View_Models\Shortcode_View_Model::for_template(
@@ -672,7 +674,7 @@ class Php_View_Renderer_Test extends TestCase {
         $result = $handler->handle( $query );
 
         $php_renderer      = new Php_View_Renderer( $this->template_base_path );
-        $template_renderer = new Shortcode_Template_Renderer( $php_renderer );
+        $template_renderer = new Shortcode_Template_Renderer( $php_renderer, new Club_Presenter(), new Player_Presenter() );
         $presenter         = new Shortcode_View_Presenter( $template_renderer );
 
         $vm = \Racketmanager\Presentation\View_Models\Shortcode_View_Model::for_template(

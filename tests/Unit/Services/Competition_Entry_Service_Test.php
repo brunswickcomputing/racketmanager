@@ -23,7 +23,8 @@ use Racketmanager\Domain\DTO\Tournament\Tournament_Invoice_Details_DTO;
 use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Partner_Request_DTO;
 use Racketmanager\Domain\Tournament\Tournament_Entry;
 use Racketmanager\Application\Mail\Mailer_Interface;
-use Racketmanager\Application\Ports\Option_Gateway_Interface;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Creates_View_Renderer;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
@@ -157,10 +158,15 @@ class Competition_Entry_Service_Test extends TestCase {
             tournament_service: $this->tournament_service,
             notify_service: $this->notify_service,
             event_query_service: $this->event_query_service,
+            mailer: $this->createStub( Mailer_Interface::class ),
             option_service: $this->option_service,
             player_repository: $this->player_repository,
             event_repository: $this->event_repository
         );
+    }
+
+    public function test_construct_with_required_collaborators(): void {
+        $this->assertInstanceOf( Competition_Entry_Service::class, $this->create_competition_entry_service() );
     }
 
     protected function tearDown(): void {
@@ -3237,13 +3243,7 @@ class Competition_Entry_Service_Test extends TestCase {
     }
 
     public function test_notify_team_entry_open_sends_email_with_formatted_dates_for_league_competition(): void {
-        $option_gateway = new class implements Option_Gateway_Interface {
-            public function get_option( string $option, mixed $default = false ): mixed {
-                return 'date_format' === $option ? 'd/m/Y' : $default;
-            }
-            public function update_option( string $option, mixed $value, mixed $autoload = null ): bool { return true; }
-            public function delete_option( string $option ): bool { return true; }
-        };
+        $this->option_service->method( 'get_date_format' )->willReturn( 'd/m/Y' );
 
         $captured_mails = [];
         $fake_mailer = new class( $captured_mails ) implements Mailer_Interface {
@@ -3276,7 +3276,6 @@ class Competition_Entry_Service_Test extends TestCase {
             notify_service: $this->notify_service,
             event_query_service: $this->event_query_service,
             mailer: $fake_mailer,
-            option_gateway: $option_gateway,
             option_service: $this->option_service
         );
 
@@ -3331,7 +3330,7 @@ class Competition_Entry_Service_Test extends TestCase {
             ->willReturn( $secretary );
 
         $view_renderer      = $this->create_view_renderer();
-        $shortcode_renderer = new Shortcode_Template_Renderer( $view_renderer );
+        $shortcode_renderer = new Shortcode_Template_Renderer( $view_renderer, new Club_Presenter(), new Player_Presenter() );
         $shortcodes         = $this->createStub( \Racketmanager\Public\Shortcodes::class );
         $warnings           = [];
         $shortcodes->method( 'load_template' )->willReturnCallback(
@@ -3373,13 +3372,7 @@ class Competition_Entry_Service_Test extends TestCase {
     }
 
     public function test_notify_team_entry_open_falls_back_to_default_date_format_when_option_is_empty(): void {
-        $option_gateway = new class implements Option_Gateway_Interface {
-            public function get_option( string $option, mixed $default = false ): mixed {
-                return 'date_format' === $option ? '' : $default;
-            }
-            public function update_option( string $option, mixed $value, mixed $autoload = null ): bool { return true; }
-            public function delete_option( string $option ): bool { return true; }
-        };
+        $this->option_service->method( 'get_date_format' )->willReturn( '' );
 
         $captured_mails = [];
         $fake_mailer = new class( $captured_mails ) implements Mailer_Interface {
@@ -3412,7 +3405,6 @@ class Competition_Entry_Service_Test extends TestCase {
             notify_service: $this->notify_service,
             event_query_service: $this->event_query_service,
             mailer: $fake_mailer,
-            option_gateway: $option_gateway,
             option_service: $this->option_service
         );
 
@@ -3467,7 +3459,7 @@ class Competition_Entry_Service_Test extends TestCase {
             ->willReturn( $secretary );
 
         $view_renderer      = $this->create_view_renderer();
-        $shortcode_renderer = new Shortcode_Template_Renderer( $view_renderer );
+        $shortcode_renderer = new Shortcode_Template_Renderer( $view_renderer, new Club_Presenter(), new Player_Presenter() );
         $shortcodes         = $this->createStub( \Racketmanager\Public\Shortcodes::class );
         $shortcodes->method( 'load_template' )->willReturnCallback(
             function( string $template, array $args, string $subdir = '' ) use ( $shortcode_renderer ): string {
@@ -3487,13 +3479,7 @@ class Competition_Entry_Service_Test extends TestCase {
     }
 
     public function test_notify_team_entry_open_sends_email_with_venue_for_cup_competition(): void {
-        $option_gateway = new class implements Option_Gateway_Interface {
-            public function get_option( string $option, mixed $default = false ): mixed {
-                return 'date_format' === $option ? 'd/m/Y' : $default;
-            }
-            public function update_option( string $option, mixed $value, mixed $autoload = null ): bool { return true; }
-            public function delete_option( string $option ): bool { return true; }
-        };
+        $this->option_service->method( 'get_date_format' )->willReturn( 'd/m/Y' );
 
         $captured_mails = [];
         $fake_mailer = new class( $captured_mails ) implements Mailer_Interface {
@@ -3555,7 +3541,6 @@ class Competition_Entry_Service_Test extends TestCase {
             notify_service: $this->notify_service,
             event_query_service: $this->event_query_service,
             mailer: $fake_mailer,
-            option_gateway: $option_gateway,
             option_service: $this->option_service
         );
 
@@ -3578,7 +3563,7 @@ class Competition_Entry_Service_Test extends TestCase {
             ->willReturn( $secretary );
 
         $view_renderer      = $this->create_view_renderer();
-        $shortcode_renderer = new Shortcode_Template_Renderer( $view_renderer );
+        $shortcode_renderer = new Shortcode_Template_Renderer( $view_renderer, new Club_Presenter(), new Player_Presenter() );
         $shortcodes         = $this->createStub( \Racketmanager\Public\Shortcodes::class );
         $warnings           = [];
         $shortcodes->method( 'load_template' )->willReturnCallback(

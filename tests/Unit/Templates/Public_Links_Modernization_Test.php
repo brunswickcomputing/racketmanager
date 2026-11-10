@@ -62,12 +62,32 @@ final class Public_Links_Modernization_Test extends TestCase {
 
         $template_path           = defined( 'RACKETMANAGER_PATH' ) ? RACKETMANAGER_PATH . 'templates/' : dirname( __DIR__, 3 ) . '/templates/';
         $this->view_renderer     = new Php_View_Renderer( $template_path );
-        $this->template_renderer = new Shortcode_Template_Renderer( $this->view_renderer );
+        $this->template_renderer = new Shortcode_Template_Renderer(
+            $this->view_renderer,
+            new Club_Presenter(),
+            new Player_Presenter()
+        );
     }
 
     protected function tearDown(): void {
         $this->restore_globals();
         parent::tearDown();
+    }
+
+    private function create_league_adapter( ...$args ): League_Shortcode_Adapter {
+        $option_gateway = new \Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway();
+        return new League_Shortcode_Adapter(
+            archive_presenter: $args['archive_presenter'] ?? new \Racketmanager\Presentation\Presenters\League_Archive_Presenter( $option_gateway ),
+            tournament_presenter: $args['tournament_presenter'] ?? new Tournament_Presenter( 'd/m/Y' ),
+            team_details_presenter: $args['team_details_presenter'] ?? new \Racketmanager\Presentation\Presenters\Team_Details_Presenter( $option_gateway, new \Racketmanager\Services\Settings_Service() ),
+            player_presenter: $args['player_presenter'] ?? new Player_Presenter(),
+            fixture_presenter: $args['fixture_presenter'] ?? new \Racketmanager\Presentation\Presenters\Fixture_Presenter(
+                new \Racketmanager\Services\Fixture\Fixture_Link_Service(),
+                $option_gateway,
+                $this->view_renderer
+            ),
+            template_renderer: $args['template_renderer'] ?? $this->template_renderer
+        );
     }
 
     private function render_and_capture_warnings( callable $render_callback, array &$warnings ): string {
@@ -370,7 +390,11 @@ final class Public_Links_Modernization_Test extends TestCase {
     }
 
     public function test_entry_form_clubs_list_renders_with_precalculated_club_urls(): void {
-        $competition_presenter = new Competition_Shortcode_Presenter();
+        $competition_presenter = new Competition_Shortcode_Presenter(
+            $this->view_renderer,
+            new Club_Presenter(),
+            new Player_Presenter()
+        );
         $tournament_presenter  = new Tournament_Presenter();
 
         $club_selection = $this->createStub( Club_Entry_Selection_Service::class );
@@ -424,7 +448,8 @@ final class Public_Links_Modernization_Test extends TestCase {
 
         $vm = ( new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Competition_Shortcode_Adapter(
             competition_shortcode_presenter: $competition_presenter,
-            tournament_presenter: $tournament_presenter
+            tournament_presenter: $tournament_presenter,
+            player_presenter: new \Racketmanager\Presentation\Presenters\Player_Presenter()
         ) )->present_entry( $handler->handle( $query ) );
         $this->assertSame( 'entry-form-clubs-list', $vm->template );
         $this->assertArrayHasKey( 'club_urls', $vm->vars );
@@ -445,7 +470,11 @@ final class Public_Links_Modernization_Test extends TestCase {
     }
 
     public function test_competition_presenter_presents_club_event_player_links(): void {
-        $competition_presenter = new Competition_Shortcode_Presenter();
+        $competition_presenter = new Competition_Shortcode_Presenter(
+            $this->view_renderer,
+            new Club_Presenter(),
+            new Player_Presenter()
+        );
 
         $event                 = new stdClass();
         $event->id             = 55;
@@ -843,7 +872,7 @@ final class Public_Links_Modernization_Test extends TestCase {
             $stats_service,
             $league_query
         );
-        $adapter = new League_Shortcode_Adapter( player_presenter: $player_presenter, template_renderer: $this->template_renderer );
+        $adapter = $this->create_league_adapter( player_presenter: $player_presenter );
         $vm      = $adapter->present_players( $handler->handle( new Get_League_Players_Query( league_id: 50 ) ) );
 
         $this->assertFalse( $vm->is_error() );
@@ -912,7 +941,7 @@ final class Public_Links_Modernization_Test extends TestCase {
             $stats_service,
             $this->league_query_service( $league_repo )
         );
-        $adapter = new League_Shortcode_Adapter( player_presenter: $player_presenter, template_renderer: $this->template_renderer );
+        $adapter = $this->create_league_adapter( player_presenter: $player_presenter );
         $vm      = $adapter->present_players( $handler->handle( new Get_League_Players_Query( league_id: 50, player_id: '101' ) ) );
 
         $this->assertFalse( $vm->is_error() );
@@ -948,7 +977,7 @@ final class Public_Links_Modernization_Test extends TestCase {
 
         $presenter = new Tournament_Presenter( 'j M Y' );
         $handler   = new Get_Tournament_Overview_Handler( $tournament_service );
-        $adapter   = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter );
+        $adapter   = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter, player_presenter: new \Racketmanager\Presentation\Presenters\Player_Presenter() );
         $vm        = $adapter->present_overview( $handler->handle( new Get_Tournament_Overview_Query( tournament_id: 25 ) ) );
 
         $this->assertFalse( $vm->is_error() );
@@ -989,7 +1018,7 @@ final class Public_Links_Modernization_Test extends TestCase {
 
         $presenter = new Tournament_Presenter( 'j M Y' );
         $handler   = new Get_Tournament_Overview_Handler( $tournament_service );
-        $adapter   = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter );
+        $adapter   = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter, player_presenter: new \Racketmanager\Presentation\Presenters\Player_Presenter() );
         $vm        = $adapter->present_overview( $handler->handle( new Get_Tournament_Overview_Query( tournament_id: 26 ) ) );
 
         $this->assertFalse( $vm->is_error() );

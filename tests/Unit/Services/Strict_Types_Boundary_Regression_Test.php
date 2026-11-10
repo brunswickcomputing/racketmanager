@@ -8,8 +8,10 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Club\Club_Role;
 use Racketmanager\Domain\Enums\Club_Role as Club_Role_Enum;
 use Racketmanager\Domain\Ports\Rating_Gateway_Interface;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\Exceptions\Charge_Not_Found_Exception;
 use Racketmanager\Application\Mail\Mailer_Interface;
+use Racketmanager\Application\Payment\Ports\Payment_Gateway_Interface;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Interfaces\Charge_Repository_Interface;
@@ -95,7 +97,8 @@ final class Strict_Types_Boundary_Regression_Test extends TestCase {
             $club_role_repository,
             $this->createMock( Player_Repository::class ),
             $this->createMock( Team_Repository::class ),
-            $this->createMock( Player_Service::class )
+            $this->createMock( Player_Service::class ),
+            $this->createMock( Option_Service::class )
         );
     }
 
@@ -111,7 +114,10 @@ final class Strict_Types_Boundary_Regression_Test extends TestCase {
             $this->createStub( Club_Repository_Interface::class ),
             $this->createStub( Tournament_Repository_Interface::class ),
             $this->createStub( Competition_Service::class ),
-            $this->createStub( Player_Service::class )
+            $this->createStub( Player_Service::class ),
+            $this->createStub( Payment_Gateway_Interface::class ),
+            $this->createStub( Mailer_Interface::class ),
+            $this->createStub( Option_Service::class )
         );
     }
 

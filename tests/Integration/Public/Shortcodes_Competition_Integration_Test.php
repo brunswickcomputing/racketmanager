@@ -102,16 +102,19 @@ class Shortcodes_Competition_Integration_Test extends TestCase {
         $overview_handler = new Get_Competition_Overview_Handler( $comp_service, $this->competition_season_service() );
         $events_handler   = new Get_Competition_Events_Handler( $comp_service, $this->competition_season_service() );
         $teams_handler    = new Get_Competition_Teams_Handler( $comp_service, $this->competition_season_service() );
-        $clubs_handler    = new Get_Competition_Clubs_Handler( $comp_service, $club_service, new \Racketmanager\Services\Player_Stats_Service(), $this->competition_season_service() );
+        $clubs_handler    = new Get_Competition_Clubs_Handler( $comp_service, $club_service, new \Racketmanager\Services\Player_Stats_Service( new \Racketmanager\Services\Player_Query_Service( new \Racketmanager\Repositories\Player_Statistics_Repository() ) ), $this->competition_season_service() );
         $players_handler  = new Get_Competition_Players_Handler(
             $comp_service,
             $player_service,
             new \Racketmanager\Services\Player_Query_Service( new \Racketmanager\Repositories\Player_Statistics_Repository() ),
-            new \Racketmanager\Services\Player_Stats_Service(),
+            new \Racketmanager\Services\Player_Stats_Service( new \Racketmanager\Services\Player_Query_Service( new \Racketmanager\Repositories\Player_Statistics_Repository() ) ),
             $this->competition_season_service() );
         $winners_handler  = new Get_Competition_Winners_Handler( $comp_service, $this->competition_season_service() );
 
         $this->adapter = new Competition_Shortcode_Adapter(
+            competition_shortcode_presenter: $presenter,
+            tournament_presenter: new Tournament_Presenter(),
+            player_presenter: new Player_Presenter(),
             competition_service: $comp_service,
             club_service: $club_service,
             team_service: $team_service,
@@ -122,7 +125,6 @@ class Shortcodes_Competition_Integration_Test extends TestCase {
             competition_entry_service: $entry_service,
             template_renderer: $template_renderer,
             get_competition_handler: $handler,
-            competition_shortcode_presenter: $presenter,
             overview_handler: $overview_handler,
             events_handler: $events_handler,
             teams_handler: $teams_handler,

@@ -12,7 +12,6 @@ use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
-use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Services\Competition\Knockout_Progression_Service;
 use Racketmanager\Services\Competition\League_Query_Service;
 
@@ -196,40 +195,25 @@ final class Knockout_Progression_Service_Test extends TestCase {
 	}
 
 	/**
-	 * The no-container fallback `League_Repository` must still receive the league query service (lazily) so the
-	 * Championship_Factory's consolation "outstanding matches" check is not silently skipped.
+	 * Collaborators are required constructor dependencies: the injected league repository is used as-is
+	 * (no fallback construction) and the league query service closure stays lazy.
 	 */
-	public function test_fallback_league_repository_forwards_lazy_league_query_service(): void {
-		$league_query_service = $this->createStub( League_Query_Service::class );
-		$resolutions          = 0;
+	public function test_construct_uses_injected_league_repository_and_keeps_league_query_service_lazy(): void {
+		$league_repo = $this->createStub( League_Repository_Interface::class );
+		$resolutions = 0;
 
 		$service = new Knockout_Progression_Service(
 			$this->createStub( Fixture_Repository_Interface::class ),
-			null,
+			$league_repo,
 			$this->createStub( Event_Repository_Interface::class ),
 			null,
-			function () use ( &$resolutions, $league_query_service ): League_Query_Service {
+			function () use ( &$resolutions ): League_Query_Service {
 				++$resolutions;
-				return $league_query_service;
+				return $this->createStub( League_Query_Service::class );
 			}
 		);
 
-		$repository = ( new \ReflectionProperty( $service, 'league_repository' ) )->getValue( $service );
-		$this->assertInstanceOf( League_Repository::class, $repository );
+		$this->assertSame( $league_repo, ( new \ReflectionProperty( $service, 'league_repository' ) )->getValue( $service ) );
 		$this->assertSame( 0, $resolutions, 'service closure must stay lazy' );
-
-		$resolver = ( new \ReflectionProperty( $repository, 'league_query_service_resolver' ) )->getValue( $repository );
-		$this->assertInstanceOf( \Closure::class, $resolver );
-		$this->assertSame( $league_query_service, $resolver() );
-		$this->assertSame( $league_query_service, $resolver() );
-		$this->assertSame( 1, $resolutions, 'service closure resolved once and cached' );
-	}
-
-	public function test_fallback_league_repository_resolver_yields_null_when_no_league_query_service(): void {
-		$service    = new Knockout_Progression_Service( $this->createStub( Fixture_Repository_Interface::class ), null, $this->createStub( Event_Repository_Interface::class ) );
-		$repository = ( new \ReflectionProperty( $service, 'league_repository' ) )->getValue( $service );
-		$resolver   = ( new \ReflectionProperty( $repository, 'league_query_service_resolver' ) )->getValue( $repository );
-
-		$this->assertNull( $resolver() );
 	}
 }

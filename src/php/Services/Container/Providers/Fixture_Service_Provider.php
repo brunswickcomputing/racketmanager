@@ -75,7 +75,7 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
 
         $container->set( 'fixture_repository', fn( Simple_Container $c ) => new Fixture_Repository(
             relation_loader: $c->get( 'fixture_relation_loader' ),
-            rubber_repository: $c->get( 'rubber_repository' ),
+            rubber_repository: $c->get( Rubber_Repository_Interface::class ),
             league_repository: $c->get( 'league_repository' ),
             team_repository: $c->get( 'team_repository' )
         ) );
@@ -94,7 +94,7 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
         $container->alias( Results_Report_Repository_Interface::class, 'results_report_repository' );
         $container->alias( Results_Report_Repository::class, 'results_report_repository' );
 
-        $container->set( 'result_repository', fn(): Result_Repository_Interface => new Result_Repository() );
+        $container->set( 'result_repository', fn( Simple_Container $c ): Result_Repository_Interface => new Result_Repository( $c->get( Results_Report_Repository_Interface::class ) ) );
         $container->alias( Result_Repository_Interface::class, 'result_repository' );
         $container->alias( Result_Repository::class, 'result_repository' );
 

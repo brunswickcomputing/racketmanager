@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Services\Standings;
 
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -80,7 +82,14 @@ final class Standings_Service_Test extends TestCase {
         $ranking->expects( $this->once() )->method( 'rank_teams_by_points' )->with( [ $team ] )->willReturn( [ $team ] );
         $ranking->expects( $this->once() )->method( 'get_ranking' )->with( $league, [ $team ] )->willReturn( [ $team ] );
 
-        $rows = ( new Standings_Service( league_service: $ranking, league_query_service: $this->league_query_service( $league_repository, null, $fixture_repository ) ) )->get_standings( $league, [ $team ], 3, $mode );
+        $rows = ( new Standings_Service(
+            league_repository: $this->createStub( League_Repository_Interface::class ),
+            league_team_repository: $this->createStub( League_Team_Repository_Interface::class ),
+            league_service: $ranking,
+            fixture_repository: $this->createStub( Fixture_Repository_Interface::class ),
+            rubber_repository: $this->createStub( Rubber_Repository_Interface::class ),
+            league_query_service: $this->league_query_service( $league_repository, null, $fixture_repository )
+        ) )->get_standings( $league, [ $team ], 3, $mode );
 
         $this->assertSame( [ $team ], $rows );
         $this->assertSame( 1, $team->done_matches );
@@ -105,7 +114,14 @@ final class Standings_Service_Test extends TestCase {
         $ranking = $this->createMock( League_Service::class );
         $ranking->expects( $this->never() )->method( 'update_ranking' );
 
-        ( new Standings_Service( league_repository: $repository, league_service: $ranking, league_query_service: $this->league_query_service( $repository ) ) )->save_standings_manually(
+        ( new Standings_Service(
+            league_repository: $repository,
+            league_team_repository: $this->createStub( League_Team_Repository_Interface::class ),
+            league_service: $ranking,
+            fixture_repository: $this->createStub( Fixture_Repository_Interface::class ),
+            rubber_repository: $this->createStub( Rubber_Repository_Interface::class ),
+            league_query_service: $this->league_query_service( $repository )
+        ) )->save_standings_manually(
             $league, [ 41 => 10 ], [ 'points_plus' => [ 41 => 12 ], 'points_minus' => [ 41 => 3 ] ],
             [ 'num_done_matches' => [ 41 => 5 ], 'num_won_matches' => [ 41 => 4 ], 'num_lost_matches' => [ 41 => 1 ] ], []
         );
@@ -133,7 +149,14 @@ final class Standings_Service_Test extends TestCase {
         $ranking->expects( $this->exactly( 2 ) )->method( 'get_ranking' )->with( $league, [ $team ] )->willReturn( [ $team ] );
         $ranking->expects( $this->exactly( 2 ) )->method( 'update_ranking' )->with( [ $team ] );
 
-        ( new Standings_Service( league_service: $ranking, league_query_service: $league_query_service ) )->set_teams_rank( $league );
+        ( new Standings_Service(
+            league_repository: $this->createStub( League_Repository_Interface::class ),
+            league_team_repository: $this->createStub( League_Team_Repository_Interface::class ),
+            league_service: $ranking,
+            fixture_repository: $this->createStub( Fixture_Repository_Interface::class ),
+            rubber_repository: $this->createStub( Rubber_Repository_Interface::class ),
+            league_query_service: $league_query_service
+        ) )->set_teams_rank( $league );
 
         $this->assertSame( [ 'A', 'B' ], $groups );
     }
@@ -177,7 +200,14 @@ final class Standings_Service_Test extends TestCase {
         $ranking->expects( $this->once() )->method( 'get_ranking' )->with( $league, [ $team ] )->willReturn( [ $team ] );
         $ranking->expects( $this->once() )->method( 'update_ranking' )->with( [ $team ] );
 
-        ( new Standings_Service( league_repository: $repository, league_service: $ranking, league_query_service: $league_query_service ) )->update_standings( $league, '2026' );
+        ( new Standings_Service(
+            league_repository: $repository,
+            league_team_repository: $this->createStub( League_Team_Repository_Interface::class ),
+            league_service: $ranking,
+            fixture_repository: $this->createStub( Fixture_Repository_Interface::class ),
+            rubber_repository: $this->createStub( Rubber_Repository_Interface::class ),
+            league_query_service: $league_query_service
+        ) )->update_standings( $league, '2026' );
         $this->assertCount( 4, $count_queries );
         $this->assertSame( 10, $count_queries[0]['team_id'] );
         $this->assertSame( 10, $count_queries[1]['winner_id'] );
@@ -191,11 +221,23 @@ final class Standings_Service_Test extends TestCase {
         $repository = $this->createMock( League_Repository_Interface::class );
         $repository->expects( $this->never() )->method( 'update_team_standings' );
 
-        ( new Standings_Service( league_repository: $repository ) )->save_standings( $league, new League_Team() );
+        ( new Standings_Service(
+            league_repository: $repository,
+            league_team_repository: $this->createStub( League_Team_Repository_Interface::class ),
+            league_service: null,
+            fixture_repository: $this->createStub( Fixture_Repository_Interface::class ),
+            rubber_repository: $this->createStub( Rubber_Repository_Interface::class )
+        ) )->save_standings( $league, new League_Team() );
     }
 
     public function test_tie_requires_all_ranking_criteria_to_match(): void {
-        $service = new Standings_Service();
+        $service = new Standings_Service(
+            league_repository: $this->createStub( League_Repository_Interface::class ),
+            league_team_repository: $this->createStub( League_Team_Repository_Interface::class ),
+            league_service: null,
+            fixture_repository: $this->createStub( Fixture_Repository_Interface::class ),
+            rubber_repository: $this->createStub( Rubber_Repository_Interface::class )
+        );
         $team = (object) [ 'points' => [ 'plus' => 10 ], 'sets_won' => 5, 'sets_allowed' => 2, 'games_won' => 30, 'games_allowed' => 20 ];
         $this->assertTrue( $service->is_tie( $team, clone $team ) );
         foreach ( [ 'points' => [ 'plus' => 9 ], 'sets_won' => 4, 'sets_allowed' => 3, 'games_won' => 29, 'games_allowed' => 21 ] as $field => $value ) {

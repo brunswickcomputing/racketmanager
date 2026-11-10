@@ -312,7 +312,7 @@ class Event_Query_Service {
 			$event_team->roster = maybe_unserialize( $event_team->roster );
 			$event_team->club   = $club_repo->find_by_id( (int) $event_team->club_id );
 			if ( str_contains( (string) $event_team->name, '_' ) ) {
-				$team_name = Util::generate_team_name( (string) $event_team->name, $this->optional_fixture_repository() );
+				$team_name = Util::generate_team_name( (string) $event_team->name, $this->get_fixture_repository() );
 				if ( ! empty( $team_name ) ) {
 					$event_team->title = $team_name;
 				}

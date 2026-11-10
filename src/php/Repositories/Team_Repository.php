@@ -10,11 +10,13 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Repositories;
 
+use Closure;
 use QM_DB;
 use Racketmanager\Domain\DTO\Team\Team_Competition_DTO;
 use Racketmanager\Domain\DTO\Team\Team_Fixture_Settings_DTO;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Team\Team_Factory;
+use Racketmanager\Domain\Team\Team_Placeholder_Ref;
 use Racketmanager\Exceptions\Database_Operation_Exception;
 use Racketmanager\Repositories\Concerns\Wpdb_Transactions;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
@@ -34,14 +36,26 @@ class Team_Repository implements Team_Repository_Interface {
     private ?string $table_name = null;
     private ?string $team_players_table = null;
     private ?Player_Repository_Interface $player_repository;
+    private Fixture_Repository_Interface|Closure|null $fixture_repository;
+    private ?Fixture_Repository_Interface $resolved_fixture_repository = null;
+
+    /**
+     * @var array<int|string, bool>
+     */
+    private array $resolving_teams = array();
 
     /**
      * Create a new Team_Repository instance
      *
      * @param object|null $wpdb
      * @param Player_Repository_Interface|null $player_repository
+     * @param Fixture_Repository_Interface|Closure|null $fixture_repository
      */
-    public function __construct( ?object $wpdb = null, ?Player_Repository_Interface $player_repository = null ) {
+    public function __construct(
+        ?object $wpdb = null,
+        ?Player_Repository_Interface $player_repository = null,
+        Fixture_Repository_Interface|Closure|null $fixture_repository = null
+    ) {
         if ( null === $wpdb ) {
             global $wpdb;
         }
@@ -52,6 +66,17 @@ class Team_Repository implements Team_Repository_Interface {
             $this->team_players_table = $prefix . 'racketmanager_team_players';
         }
         $this->player_repository  = $player_repository;
+        $this->fixture_repository = $fixture_repository;
+    }
+
+    private function get_fixture_repository(): ?Fixture_Repository_Interface {
+        if ( null === $this->resolved_fixture_repository && null !== $this->fixture_repository ) {
+            $this->resolved_fixture_repository = $this->fixture_repository instanceof Closure
+                ? ( $this->fixture_repository )()
+                : $this->fixture_repository;
+        }
+
+        return $this->resolved_fixture_repository;
     }
 
     /**
@@ -86,33 +111,82 @@ class Team_Repository implements Team_Repository_Interface {
                 return null;
             }
             $team = Team_Factory::from_object( $team );
-            if ( $team->id && ( 'P' === $team->team_type || ! empty( $team->roster ) ) ) {
-                $players = $this->wpdb->get_results(
-                    $this->wpdb->prepare(
-                        "SELECT `player_id` FROM $this->team_players_table WHERE `team_id` = %d",
-                        $team->id
-                    )
-                );
-                if ( ! empty( $players ) ) {
-                    $player_objects = [];
-                    $player_ids     = [];
-                    $i              = 1;
-                    foreach ( $players as $team_player ) {
-                        $player = $this->player_repository ? $this->player_repository->find( (int) $team_player->player_id ) : null;
-                        if ( $player ) {
-                            $player_objects[] = $player;
-                        }
-                        $player_ids[ $i ] = (int) $team_player->player_id;
-                        ++$i;
-                    }
-                    $team->players    = $player_objects;
-                    $team->player_ids = $player_ids;
-                }
-            }
+            $this->enrich( $team );
             wp_cache_set( $team->id, $team, 'teams' );
         }
 
         return $team;
+    }
+
+    /**
+     * Enrich a team with roster players and expanded placeholder title.
+     */
+    private function enrich( Team $team ): void {
+        $id = $team->get_id();
+        if ( null !== $id && isset( $this->resolving_teams[ $id ] ) ) {
+            return;
+        }
+        if ( null !== $id ) {
+            $this->resolving_teams[ $id ] = true;
+        }
+        try {
+            $this->enrich_players( $team );
+            $this->enrich_title( $team );
+        } finally {
+            if ( null !== $id ) {
+                unset( $this->resolving_teams[ $id ] );
+            }
+        }
+    }
+
+    private function enrich_players( Team $team ): void {
+        if ( $team->id && ( 'P' === $team->team_type || ! empty( $team->roster ) ) && $this->wpdb ) {
+            $players = $this->wpdb->get_results(
+                $this->wpdb->prepare(
+                    "SELECT `player_id` FROM $this->team_players_table WHERE `team_id` = %d",
+                    $team->id
+                )
+            );
+            if ( ! empty( $players ) ) {
+                $player_objects = [];
+                $player_ids     = [];
+                $i              = 1;
+                foreach ( $players as $team_player ) {
+                    $player = $this->player_repository ? $this->player_repository->find( (int) $team_player->player_id ) : null;
+                    if ( $player ) {
+                        $player_objects[] = $player;
+                    }
+                    $player_ids[ $i ] = (int) $team_player->player_id;
+                    ++$i;
+                }
+                $team->players    = $player_objects;
+                $team->player_ids = $player_ids;
+            }
+        }
+    }
+
+    private function enrich_title( Team $team ): void {
+        $ref = ! empty( $team->team_ref )
+            ? $team->team_ref
+            : ( ! empty( $team->title ) && str_contains( $team->title, '_' ) ? $team->title : null );
+        if ( empty( $ref ) ) {
+            return;
+        }
+        $placeholder = Team_Placeholder_Ref::parse( $ref );
+        if ( null === $placeholder ) {
+            return;
+        }
+
+        $fixture_repo = $this->get_fixture_repository();
+        if ( null !== $fixture_repo ) {
+            $expanded = Util::generate_team_name( $ref, $fixture_repo );
+            if ( ! empty( $expanded ) ) {
+                $team->title = $expanded;
+                return;
+            }
+        }
+
+        $team->title = Util::format_placeholder_label( $placeholder );
     }
 
     /**
@@ -210,7 +284,11 @@ class Team_Repository implements Team_Repository_Interface {
         $query   .= " AND team_type IS NULL ORDER BY title";
         $results = $this->wpdb->get_results( $this->wpdb->prepare( $query, $params ) );
 
-        return array_map( fn ( $row ) => Team_Factory::from_object( $row ), $results );
+        return array_map( function ( $row ) {
+            $team = Team_Factory::from_object( $row );
+            $this->enrich( $team );
+            return $team;
+        }, $results );
     }
 
     /**
@@ -232,7 +310,11 @@ class Team_Repository implements Team_Repository_Interface {
             )
         );
 
-        return array_map( fn ( $row ) => Team_Factory::from_object( $row ), $results );
+        return array_map( function ( $row ) {
+            $team = Team_Factory::from_object( $row );
+            $this->enrich( $team );
+            return $team;
+        }, $results );
     }
 
     /**

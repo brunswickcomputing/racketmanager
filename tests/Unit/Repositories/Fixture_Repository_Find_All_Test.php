@@ -29,7 +29,7 @@ class Fixture_Repository_Find_All_Test extends TestCase {
         $this->wpdb->prefix = 'wp_';
         $GLOBALS['wpdb']    = $this->wpdb; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
-        $this->repository = new Fixture_Repository( $this->wpdb );
+        $this->repository = new Fixture_Repository( $this->wpdb, rubber_repository: $this->createStub( Rubber_Repository_Interface::class ) );
     }
 
     protected function tearDown(): void {

@@ -7,6 +7,10 @@ use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Event\Queries\Get_Team_Order_Players_Handler;
 use Racketmanager\Application\Event\Queries\Get_Team_Order_Players_Query;
+use Racketmanager\Application\Tournament\Commands\Create_Tournament_Payment_Handler;
+use Racketmanager\Application\Tournament\Commands\Submit_Tournament_Entry_Handler;
+use Racketmanager\Application\Tournament\Commands\Submit_Tournament_Partner_Handler;
+use Racketmanager\Application\Tournament\Commands\Withdraw_Tournament_Entry_Handler;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
@@ -368,7 +372,11 @@ class Ajax_Adapter_Test extends TestCase {
             $resp_factory,
             $entry_service,
             $this->createStub( Finance_Service::class ),
-            $tournament_service
+            withdraw_tournament_entry_handler: new Withdraw_Tournament_Entry_Handler( $entry_service ),
+            create_tournament_payment_handler: new Create_Tournament_Payment_Handler( $this->createStub( Finance_Service::class ) ),
+            submit_tournament_partner_handler: new Submit_Tournament_Partner_Handler( $entry_service ),
+            submit_tournament_entry_handler: new Submit_Tournament_Entry_Handler( $entry_service ),
+            tournament_service: $tournament_service
         );
 
         $response = $adapter->tournament_entry_request( [
@@ -562,6 +570,11 @@ class Ajax_Adapter_Test extends TestCase {
             get_player_details_handler: new \Racketmanager\Application\Player\Queries\Get_Player_Details_Handler(
                 $this->createStub( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class )
             ),
+            submit_cup_entry_handler: new \Racketmanager\Application\Competition\Commands\Submit_Cup_Entry_Handler( $entry_service ),
+            submit_league_entry_handler: new \Racketmanager\Application\Competition\Commands\Submit_League_Entry_Handler( $entry_service ),
+            update_player_handler: new \Racketmanager\Application\Player\Commands\Update_Player_Handler( $player_service ),
+            team_repository: $this->createStub( \Racketmanager\Repositories\Interfaces\Team_Repository_Interface::class ),
+            player_repository: $this->createStub( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class ),
             league_repository: $league_repo,
             event_repository: $event_repository ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class )
         );

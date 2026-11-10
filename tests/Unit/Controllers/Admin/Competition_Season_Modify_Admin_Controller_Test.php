@@ -48,7 +48,13 @@ final class Competition_Season_Modify_Admin_Controller_Test extends TestCase {
             $finance_service,
             $this->guard,
             $comp_season_service,
-            $event_repository
+            $event_repository,
+            new \Racketmanager\Application\Admin\Commands\Competition_Season_Handler(
+                $this->competition_service,
+                $finance_service,
+                $comp_season_service,
+                $event_repository
+            )
         );
 
         $this->pages = new Admin_Competition_Page_Presenter(

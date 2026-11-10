@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\League\Queries;
 
 use Racketmanager\Application\League\DTOs\League_Archive_Result;
-use Racketmanager\Application\League\DTOs\League_View_State;
+use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Competition_Service;
@@ -17,14 +17,29 @@ use function method_exists;
 /**
  * Query handler for [leaguearchive] shortcode.
  */
-class Get_League_Archive_Handler {
+readonly class Get_League_Archive_Handler {
+    /**
+     * Constructor.
+     *
+     * @param League_Service       $league_service league service.
+     * @param Competition_Service  $competition_service competition service.
+     * @param Event_Query_Service  $event_query_service event query service.
+     * @param League_Query_Service $league_query_service league query service.
+     */
     public function __construct(
-        private readonly League_Service $league_service,
-        private readonly Competition_Service $competition_service,
-        private readonly Event_Query_Service $event_query_service,
-        private readonly ?League_Query_Service $league_query_service = null,
+        private League_Service $league_service,
+        private Competition_Service $competition_service,
+        private Event_Query_Service $event_query_service,
+        private League_Query_Service $league_query_service,
     ) {}
 
+    /**
+     * Handle a Get_League_Archive_Query.
+     *
+     * @param Get_League_Archive_Query $query query.
+     *
+     * @return League_Archive_Result
+     */
     public function handle( Get_League_Archive_Query $query ): League_Archive_Result {
         $league = null;
         if ( $query->league_name ) {
@@ -34,21 +49,21 @@ class Get_League_Archive_Handler {
             return League_Archive_Result::error( __( 'League not found', 'racketmanager' ) );
         }
 
-        $event = isset( $league->event_id ) ? $this->competition_service->get_event_by_id( (int) $league->event_id ) : null;
+        $event = isset( $league->event_id ) ? $this->competition_service->get_event_by_id( $league->event_id ) : null;
         if ( ! $event ) {
             return League_Archive_Result::error( __( 'Event not found', 'racketmanager' ) );
         }
 
-        $league_query_service = $this->league_query_service ?? new League_Query_Service( $this->event_query_service->get_league_repository() );
+        $league_query_service = $this->league_query_service;
         if ( false !== $league_query_service->resolve_requested_season( $league ) ) {
             $league_query_service->set_season( $league );
         }
         $seasons = is_object( $event ) && method_exists( $event, 'get_seasons' ) ? $event->get_seasons() : [];
-        $leagues = $event instanceof \Racketmanager\Domain\Competition\Event ? $this->event_query_service->get_leagues( $event ) : [];
+        $leagues = $event instanceof Event ? $this->event_query_service->get_leagues( $event ) : [];
         $tab     = $query->tab ?? 'standings';
 
         $tab_state = $league_query_service->set_tab( $league, true );
-        $templates   = [
+        $templates = [
             'standings'  => $query->standings,
             'crosstable' => $query->crosstable,
             'matches'    => $query->matches,
@@ -61,7 +76,7 @@ class Get_League_Archive_Handler {
                 'tab'                   => $tab,
                 'templates'             => $templates,
                 'matches_template_type' => $query->matches_template_type,
-                'current_match_day'     => is_numeric( $league->match_day ?? null ) ? (int) $league->match_day : 1,
+                'current_match_day'     => is_numeric( $league->match_day ?? null ) ? $league->match_day : 1,
             ]
         );
 

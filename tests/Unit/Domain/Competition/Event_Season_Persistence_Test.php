@@ -4,6 +4,8 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Domain\Competition;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Admin\Commands\Competition_Season_Handler;
+use Racketmanager\Application\Admin\Commands\League_Setup_Handler;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
@@ -410,7 +412,12 @@ final class Event_Season_Persistence_Test extends TestCase {
 			)
 			->willReturn( true );
 
-		$dispatcher = new League_Setup_Action_Dispatcher( $comp_service, $guard, $event_repo );
+		$dispatcher = new League_Setup_Action_Dispatcher(
+			$comp_service,
+			$guard,
+			$event_repo,
+			new League_Setup_Handler( $comp_service, $event_repo )
+		);
 
 		$query  = array( 'competition_id' => 10 );
 		$post   = array(
@@ -460,7 +467,12 @@ final class Event_Season_Persistence_Test extends TestCase {
 		$event_repo = $this->createMock( Event_Repository_Interface::class );
 		$event_repo->expects( $this->once() )->method( 'update_seasons' )->with( 16, $this->isArray() );
 
-		$dispatcher = new League_Setup_Action_Dispatcher( $comp_service, $this->createStub( Action_Guard_Interface::class ), $event_repo );
+		$dispatcher = new League_Setup_Action_Dispatcher(
+			$comp_service,
+			$this->createStub( Action_Guard_Interface::class ),
+			$event_repo,
+			new League_Setup_Handler( $comp_service, $event_repo )
+		);
 		$result     = $dispatcher->handle(
 			array( 'competition_id' => 10 ),
 			array(
@@ -569,7 +581,8 @@ final class Event_Season_Persistence_Test extends TestCase {
 			$finance_service,
 			$guard,
 			$season_service,
-			$event_repo
+			$event_repo,
+			new Competition_Season_Handler( $comp_service, $finance_service, $season_service, $event_repo )
 		);
 
 		$query  = array();
@@ -658,7 +671,8 @@ final class Event_Season_Persistence_Test extends TestCase {
 			$finance_service,
 			$guard,
 			$season_service,
-			$event_repo
+			$event_repo,
+			new Competition_Season_Handler( $comp_service, $finance_service, $season_service, $event_repo )
 		);
 
 		$query  = array();

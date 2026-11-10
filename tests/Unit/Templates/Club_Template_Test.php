@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Templates;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
@@ -192,7 +193,11 @@ class Club_Template_Test extends TestCase {
     public function test_club_renders_through_production_shortcode_template_renderer(): void {
         $base_path         = dirname( __DIR__, 3 ) . '/templates/';
         $php_renderer      = new \Racketmanager\Services\View\Php_View_Renderer( $base_path );
-        $template_renderer = new \Racketmanager\Presentation\View\Shortcode_Template_Renderer( $php_renderer );
+        $template_renderer = new \Racketmanager\Presentation\View\Shortcode_Template_Renderer(
+            $php_renderer,
+            new Club_Presenter(),
+            new Player_Presenter()
+        );
 
         $presenter = new Club_Presenter();
         $club      = (object) array(

@@ -34,7 +34,8 @@ final class Club_Teams_Admin_Controller_Test extends TestCase {
         $this->dispatcher = new Club_Team_Action_Dispatcher(
             $this->club_service,
             $this->team_service,
-            $this->guard
+            $this->guard,
+            new \Racketmanager\Application\Admin\Commands\Club_Team_Handler( $this->club_service, $this->team_service )
         );
 
         $this->controller = new Club_Teams_Admin_Controller(

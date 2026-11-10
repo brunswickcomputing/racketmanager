@@ -29,15 +29,12 @@ use Racketmanager\Services\Player_Service;
  */
 readonly final class Club_Action_Dispatcher {
 
-    private Club_Handler $commands;
-
     public function __construct(
         Club_Service $club_service,
         Player_Service $player_service,
         private Action_Guard_Interface $action_guard,
-        ?Club_Handler $commands = null,
+        private Club_Handler $commands,
     ) {
-        $this->commands = $commands ?? new Club_Handler( $club_service, $player_service );
     }
 
     /**

@@ -39,8 +39,6 @@ use Racketmanager\Exceptions\Player_Update_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Application\Mail\Mailer_Interface;
-use Racketmanager\Application\Ports\Option_Gateway_Interface;
-use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Club_Repository;
@@ -78,7 +76,6 @@ class Competition_Entry_Service {
     private Notify_Service $notify_service;
     private Tournament_Service $tournament_service;
     private Mailer_Interface $mailer;
-    private ?Option_Gateway_Interface $option_gateway;
     private Option_Service $option_service;
     private Event_Query_Service $event_query_service;
     private ?Player_Repository_Interface $player_repository;
@@ -103,9 +100,8 @@ class Competition_Entry_Service {
         Tournament_Service $tournament_service,
         Notify_Service $notify_service,
         Event_Query_Service $event_query_service,
-        ?Mailer_Interface $mailer = null,
-        ?Option_Gateway_Interface $option_gateway = null,
-        ?Option_Service $option_service = null,
+        Mailer_Interface $mailer,
+        Option_Service $option_service,
         ?Player_Repository_Interface $player_repository = null,
         ?Event_Repository_Interface $event_repository = null
     ) {
@@ -123,9 +119,8 @@ class Competition_Entry_Service {
         $this->tournament_service          = $tournament_service;
         $this->notify_service              = $notify_service;
         $this->event_query_service         = $event_query_service;
-        $this->mailer                      = $mailer ?? new Wp_Mailer();
-        $this->option_gateway              = $option_gateway;
-        $this->option_service              = $option_service ?? new Option_Service( $option_gateway );
+        $this->mailer                      = $mailer;
+        $this->option_service              = $option_service;
         $this->player_repository           = $player_repository;
         $this->event_repository            = $event_repository;
     }
@@ -172,11 +167,8 @@ class Competition_Entry_Service {
             return '';
         }
 
-        $format = $this->option_gateway
-            ? $this->option_gateway->get_option( 'date_format', 'd/m/Y' )
-            : ( function_exists( 'get_option' ) ? get_option( 'date_format', 'd/m/Y' ) : 'd/m/Y' );
-
-        if ( ! is_string( $format ) || '' === $format ) {
+        $format = $this->option_service->get_date_format();
+        if ( empty( $format ) ) {
             $format = 'd/m/Y';
         }
 

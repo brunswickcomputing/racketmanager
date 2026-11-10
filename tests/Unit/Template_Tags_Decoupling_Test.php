@@ -12,6 +12,7 @@ final class Template_Tags_Decoupling_Test extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->backup_globals();
+        unset( $GLOBALS['wp_stubs_wp_get_referer'] );
         $GLOBALS['wp_stubs_deprecated_files'] = [];
     }
 

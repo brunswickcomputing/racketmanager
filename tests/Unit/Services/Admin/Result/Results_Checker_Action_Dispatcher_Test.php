@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Tests\Unit\Services\Admin\Result;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Admin\Commands\Results_Checker_Handler;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Result\Results_Checker_Data;
 use Racketmanager\Domain\Result\Results_Checker;
@@ -33,7 +34,8 @@ final class Results_Checker_Action_Dispatcher_Test extends TestCase {
         $this->manager    = $this->createMock( Results_Checker_Manager::class );
         $this->repository = $this->createMock( Results_Checker_Repository_Interface::class );
         $this->guard      = $this->createMock( Action_Guard_Interface::class );
-        $this->dispatcher = new Results_Checker_Action_Dispatcher( $this->manager, $this->repository, $this->guard );
+        $commands         = new Results_Checker_Handler( $this->manager, $this->repository );
+        $this->dispatcher = new Results_Checker_Action_Dispatcher( $this->manager, $this->repository, $this->guard, $commands );
     }
 
     public function test_no_post_action_returns_empty_dto(): void {

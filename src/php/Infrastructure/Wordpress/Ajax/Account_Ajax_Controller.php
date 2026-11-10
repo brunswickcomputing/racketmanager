@@ -10,8 +10,6 @@ declare( strict_types=1 );
 namespace Racketmanager\Infrastructure\Wordpress\Ajax;
 
 use JetBrains\PhpStorm\NoReturn;
-use Racketmanager\Infrastructure\Security\Security_Service;
-use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory;
 use Racketmanager\RacketManager;
 
 /**
@@ -88,18 +86,7 @@ class Account_Ajax_Controller {
             return $this->adapter;
         }
 
-        $c = $this->racketmanager->container;
-        if ( $c->has( 'account_ajax_adapter' ) ) {
-            return $c->get( 'account_ajax_adapter' );
-        }
-
-        return new Account_Ajax_Adapter(
-            $c->has( 'security_service' ) ? $c->get( 'security_service' ) : new Security_Service(),
-            $c->has( 'json_response_factory' ) ? $c->get( 'json_response_factory' ) : new Json_Response_Factory(),
-            $c->has( 'message_repository' ) ? $c->get( 'message_repository' ) : null,
-            $c->has( 'user_repository' ) ? $c->get( 'user_repository' ) : null,
-            $c->has( 'option_service' ) ? $c->get( 'option_service' ) : null
-        );
+        return $this->racketmanager->container->get( Account_Ajax_Adapter::class );
     }
 
     #[NoReturn]

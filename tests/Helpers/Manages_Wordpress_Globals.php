@@ -98,6 +98,7 @@ trait Manages_Wordpress_Globals {
         'wp_stubs_count_users_return',
         'wp_stubs_password_reset_key_return',
         'wp_stubs_last_reset_password',
+        'wp_stubs_translate_callback',
     ];
 
     protected function backup_globals(): void {

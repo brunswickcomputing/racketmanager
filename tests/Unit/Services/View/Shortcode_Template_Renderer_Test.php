@@ -5,6 +5,8 @@ namespace Racketmanager\Tests\Unit\Services\View;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Exceptions\Template_Not_Found_Exception;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
@@ -31,6 +33,10 @@ class Shortcode_Template_Renderer_Test extends TestCase {
         parent::tearDown();
     }
 
+    private function create_template_renderer( View_Renderer_Interface $renderer ): Shortcode_Template_Renderer {
+        return new Shortcode_Template_Renderer( $renderer, new Club_Presenter(), new Player_Presenter() );
+    }
+
     public function test_uses_type_directory_and_injects_default_presenters(): void {
         $captured = [];
         $renderer = $this->createStub( View_Renderer_Interface::class );
@@ -42,7 +48,7 @@ class Shortcode_Template_Renderer_Test extends TestCase {
             }
         );
 
-        $output = ( new Shortcode_Template_Renderer( $renderer ) )->render( 'score', [ 'a' => 1 ], 'match' );
+        $output = ( $this->create_template_renderer( $renderer ) )->render( 'score', [ 'a' => 1 ], 'match' );
 
         $this->assertSame( 'html', $output );
         $this->assertSame( 'match/score', $captured['path'] );
@@ -61,7 +67,7 @@ class Shortcode_Template_Renderer_Test extends TestCase {
                 return '';
             }
         );
-        $subject = new Shortcode_Template_Renderer( $renderer );
+        $subject = $this->create_template_renderer( $renderer );
 
         $subject->render( 'clubs' );
         $subject->render( 'clubs', [], 'nonsense' );
@@ -76,7 +82,7 @@ class Shortcode_Template_Renderer_Test extends TestCase {
         $renderer = $this->createMock( View_Renderer_Interface::class );
         $renderer->expects( $this->never() )->method( 'render_to_string' );
 
-        $output = ( new Shortcode_Template_Renderer( $renderer ) )->render( 'score', [ 'answer' => 42 ], 'match' );
+        $output = ( $this->create_template_renderer( $renderer ) )->render( 'score', [ 'answer' => 42 ], 'match' );
 
         $this->assertSame( 'theme:42:42', $output );
     }
@@ -91,7 +97,7 @@ class Shortcode_Template_Renderer_Test extends TestCase {
         $renderer = $this->createMock( View_Renderer_Interface::class );
         $renderer->expects( $this->never() )->method( 'render_to_string' );
 
-        $output = ( new Shortcode_Template_Renderer( $renderer ) )->render(
+        $output = ( $this->create_template_renderer( $renderer ) )->render(
             'clobber',
             [
                 'answer' => 42,
@@ -108,7 +114,7 @@ class Shortcode_Template_Renderer_Test extends TestCase {
         file_put_contents( $this->theme_dir . '/racketmanager/players.php', 'parent-theme' );
         $GLOBALS['wp_stubs_template_directory'] = $this->theme_dir;
 
-        $output = ( new Shortcode_Template_Renderer( $this->createStub( View_Renderer_Interface::class ) ) )->render( 'players', [], 'club' );
+        $output = ( $this->create_template_renderer( $this->createStub( View_Renderer_Interface::class ) ) )->render( 'players', [], 'club' );
 
         $this->assertSame( 'parent-theme', $output );
     }
@@ -119,7 +125,7 @@ class Shortcode_Template_Renderer_Test extends TestCase {
         $level                                    = ob_get_level();
 
         try {
-            ( new Shortcode_Template_Renderer( $this->createStub( View_Renderer_Interface::class ) ) )->render( 'boom' );
+            ( $this->create_template_renderer( $this->createStub( View_Renderer_Interface::class ) ) )->render( 'boom' );
             $this->fail( 'Expected exception' );
         } catch ( RuntimeException $e ) {
             $this->assertSame( 'boom', $e->getMessage() );
@@ -142,7 +148,7 @@ class Shortcode_Template_Renderer_Test extends TestCase {
             }
         );
 
-        $output = ( new Shortcode_Template_Renderer( $renderer ) )->render( 'nope', [], 'club' );
+        $output = ( $this->create_template_renderer( $renderer ) )->render( 'nope', [], 'club' );
 
         $this->assertSame( 'alert-html', $output );
         $this->assertSame( 'alert', $calls[1]['path'] );
@@ -160,7 +166,7 @@ class Shortcode_Template_Renderer_Test extends TestCase {
                 return '';
             }
         );
-        $subject = new Shortcode_Template_Renderer( $renderer );
+        $subject = $this->create_template_renderer( $renderer );
 
         $subject->render_alert( 'x' );
         $subject->render_alert( 'x', 'modal' );
@@ -178,7 +184,7 @@ class Shortcode_Template_Renderer_Test extends TestCase {
                 return 'out:' . $path;
             }
         );
-        $presenter = new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $renderer ) );
+        $presenter = new Shortcode_View_Presenter( $this->create_template_renderer( $renderer ) );
 
         $this->assertSame( 'out:club/roles', $presenter->render( new Shortcode_View_Model( 'roles', [ 'x' => 1 ], 'club' ) ) );
         $this->assertSame( 1, $calls[0]['vars']['x'] );
@@ -198,7 +204,7 @@ class Shortcode_Template_Renderer_Test extends TestCase {
         $GLOBALS['wp_stubs_stylesheet_directory'] = $this->theme_dir;
 
         $renderer = $this->createStub( View_Renderer_Interface::class );
-        $output   = ( new Shortcode_Template_Renderer( $renderer ) )->render( 'scope-check', [ 'foo' => 'bar' ] );
+        $output   = ( $this->create_template_renderer( $renderer ) )->render( 'scope-check', [ 'foo' => 'bar' ] );
 
         $this->assertSame( 'vm_foo:bar|local_foo:none', $output );
     }
@@ -211,7 +217,7 @@ class Shortcode_Template_Renderer_Test extends TestCase {
         $GLOBALS['wp_stubs_stylesheet_directory'] = $this->theme_dir;
 
         $renderer = $this->createStub( View_Renderer_Interface::class );
-        $output   = ( new Shortcode_Template_Renderer( $renderer ) )->render(
+        $output   = ( $this->create_template_renderer( $renderer ) )->render(
             'vm-array',
             [ 'vm' => [ 'score' => 10, 'winner' => 'Alice' ] ]
         );
@@ -230,7 +236,7 @@ class Shortcode_Template_Renderer_Test extends TestCase {
         $custom_vm->id = 888;
 
         $renderer = $this->createStub( View_Renderer_Interface::class );
-        ( new Shortcode_Template_Renderer( $renderer ) )->render(
+        ( $this->create_template_renderer( $renderer ) )->render(
             'vm-identity',
             [ 'vm' => $custom_vm ]
         );
@@ -252,7 +258,7 @@ class Shortcode_Template_Renderer_Test extends TestCase {
         $custom_vm     = new \stdClass();
         $custom_vm->id = 999;
 
-        $output = ( new Shortcode_Template_Renderer( $renderer ) )->render(
+        $output = ( $this->create_template_renderer( $renderer ) )->render(
             'team-list',
             [ 'vm' => $custom_vm, 'page' => 1 ],
             'club'

@@ -16,6 +16,8 @@ use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Query;
 use Racketmanager\Domain\Player\User;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Login_Shortcode_Adapter;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
@@ -49,7 +51,7 @@ class Login_Shortcode_Handlers_Test extends TestCase {
             }
         };
 
-        $this->view_presenter = new Shortcode_View_Presenter( new \Racketmanager\Presentation\View\Shortcode_Template_Renderer( $this->renderer ) );
+        $this->view_presenter = new Shortcode_View_Presenter( new \Racketmanager\Presentation\View\Shortcode_Template_Renderer( $this->renderer, new Club_Presenter(), new Player_Presenter() ) );
     }
 
     public function test_login_form_handler_logged_in_returns_redirect_script(): void {

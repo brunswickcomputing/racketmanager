@@ -40,10 +40,10 @@ readonly class Matches_List_Presenter {
         private Team_Service $team_service,
         private View_Renderer_Interface $renderer,
         private Tournament_Presenter $tournament_presenter,
+        private Club_Presenter $club_presenter,
+        private Player_Presenter $player_presenter,
         private ?Fixture_Link_Service $link_service = null,
         private ?Fixture_Permission_Service $permission_service = null,
-        private ?Club_Presenter $club_presenter = null,
-        private ?Player_Presenter $player_presenter = null,
         private ?Rubber_Repository_Interface $rubber_repository = null
     ) {}
 
@@ -89,8 +89,8 @@ readonly class Matches_List_Presenter {
     public function render( Matches_List_View_Model $vm ): string {
         $vars = array_merge(
             [
-                'club_presenter'   => $this->club_presenter ?? new Club_Presenter(),
-                'player_presenter' => $this->player_presenter ?? new Player_Presenter(),
+                'club_presenter'   => $this->club_presenter,
+                'player_presenter' => $this->player_presenter,
             ],
             $vm->template_vars()
         );

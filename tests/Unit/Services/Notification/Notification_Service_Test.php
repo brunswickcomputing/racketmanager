@@ -158,8 +158,8 @@ class Notification_Service_Test extends TestCase {
             $this->view_renderer,
             $this->app,
             $this->mailer,
-            league_query_service: $this->league_query_service,
-            option_service: $this->option_service
+            $this->option_service,
+            league_query_service: $this->league_query_service
         );
 
         $this->app->site_name = 'Test Site';

@@ -10,18 +10,21 @@ use Racketmanager\Application\Event\Queries\Get_Event_Handler;
 use Racketmanager\Application\Event\Queries\Get_Event_Query;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Query;
-use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Details_DTO;
 use Racketmanager\Domain\Tournament\Tournament;
+use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
@@ -56,10 +59,18 @@ class Parent_Page_Templates_Test extends TestCase {
         $wp                          = (object) [ 'query_vars' => [] ];
         $this->templates_dir         = dirname( __DIR__, 3 ) . '/templates/';
         $this->renderer              = new Php_View_Renderer( $this->templates_dir );
-        $this->competition_presenter = new Competition_Shortcode_Presenter( $this->renderer );
+        $this->competition_presenter = new Competition_Shortcode_Presenter(
+            $this->renderer,
+            new Club_Presenter(),
+            new Player_Presenter()
+        );
         $this->tournament_presenter  = new Tournament_Presenter();
         $this->view_presenter        = new Shortcode_View_Presenter(
-            new Shortcode_Template_Renderer( $this->renderer )
+            new Shortcode_Template_Renderer(
+                $this->renderer,
+                new Club_Presenter(),
+                new Player_Presenter()
+            )
         );
     }
 
@@ -71,6 +82,15 @@ class Parent_Page_Templates_Test extends TestCase {
         unset( $GLOBALS['wp_query'] );
         $this->restore_globals();
         parent::tearDown();
+    }
+
+    private function event_adapter(): Event_Shortcode_Adapter {
+        return new Event_Shortcode_Adapter(
+            competition_shortcode_presenter: $this->competition_presenter,
+            tournament_presenter: $this->tournament_presenter,
+            player_presenter: new Player_Presenter(),
+            team_details_presenter: new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() )
+        );
     }
 
     public function test_competition_handler_to_page_render_league_with_no_post(): void {
@@ -297,9 +317,7 @@ class Parent_Page_Templates_Test extends TestCase {
             pagename: 'mens-division-1'
         );
 
-        $adapter = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
-            competition_shortcode_presenter: $this->competition_presenter
-        );
+        $adapter = $this->event_adapter();
         $result = $handler->handle( $query );
         $vm     = $adapter->present_event( $result );
 
@@ -346,9 +364,7 @@ class Parent_Page_Templates_Test extends TestCase {
             tab: 'draw'
         );
 
-        $adapter = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
-            competition_shortcode_presenter: $this->competition_presenter
-        );
+        $adapter = $this->event_adapter();
         $result = $handler->handle( $query );
         $vm     = $adapter->present_event( $result );
 
@@ -394,9 +410,7 @@ class Parent_Page_Templates_Test extends TestCase {
             tab: 'standings'
         );
 
-        $adapter = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
-            competition_shortcode_presenter: $this->competition_presenter
-        );
+        $adapter = $this->event_adapter();
         $result = $handler->handle( $query );
         $vm     = $adapter->present_event( $result );
 
@@ -446,7 +460,7 @@ class Parent_Page_Templates_Test extends TestCase {
             tab: 'draws'
         );
 
-        $adapter = new Tournament_Shortcode_Adapter( tournament_presenter: $this->tournament_presenter );
+        $adapter = new Tournament_Shortcode_Adapter( tournament_presenter: $this->tournament_presenter, player_presenter: new \Racketmanager\Presentation\Presenters\Player_Presenter() );
         $vm      = $adapter->present_tournament( $handler->handle( $query ) );
 
         $this->assertSame( 'draws', $vm->vars['tab'] );
@@ -498,7 +512,7 @@ class Parent_Page_Templates_Test extends TestCase {
         $tournament_service->method( 'get_tournaments' )->willReturn( [ $details ] );
 
         $handler = new Get_Tournament_Handler( $tournament_service );
-        $adapter = new Tournament_Shortcode_Adapter( tournament_presenter: $this->tournament_presenter );
+        $adapter = new Tournament_Shortcode_Adapter( tournament_presenter: $this->tournament_presenter, player_presenter: new \Racketmanager\Presentation\Presenters\Player_Presenter() );
 
         // 1. With match_day -> tab forced to matches
         $query1 = new Get_Tournament_Query( tournament: 88, match_day: '2026-09-02' );

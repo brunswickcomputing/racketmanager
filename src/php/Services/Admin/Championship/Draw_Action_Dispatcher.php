@@ -28,7 +28,7 @@ class Draw_Action_Dispatcher {
     public function __construct(
         private Draw_Action_Handler_Interface $championship_admin_service,
         private Action_Guard_Interface $action_guard,
-        private ?Generate_Tournament_Bracket_Handler $generate_tournament_bracket_handler = null,
+        private Generate_Tournament_Bracket_Handler $generate_tournament_bracket_handler,
     ) {
     }
 
@@ -160,7 +160,7 @@ class Draw_Action_Dispatcher {
 
         if ( 'set_championship_fixtures' === $method ) {
             $command = Generate_Tournament_Bracket_Command::from_post( $dto->post, $dto->league_id, $dto->tournament_id, $dto->season );
-            $bracket_handler = $this->generate_tournament_bracket_handler ?? new Generate_Tournament_Bracket_Handler( $this->championship_admin_service );
+            $bracket_handler = $this->generate_tournament_bracket_handler;
             return $bracket_handler->handle( $command );
         }
 

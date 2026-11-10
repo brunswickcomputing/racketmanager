@@ -44,8 +44,10 @@ use Racketmanager\Domain\DTO\Tournament\Tournament_Event_DTO;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Order_Of_Play_Presenter;
-use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Presentation\Presenters\Tournament_Presenter;
+use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
@@ -53,6 +55,8 @@ use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 class Tournament_Shortcode_Adapter_Test extends TestCase {
     private function create_adapter( array $overrides = [] ): Tournament_Shortcode_Adapter {
         return new Tournament_Shortcode_Adapter(
+            $overrides['tournament_presenter'] ?? new Tournament_Presenter(),
+            $overrides['player_presenter'] ?? new Player_Presenter(),
             $overrides['racketmanager'] ?? $this->createStub( RacketManager::class ),
             $overrides['view_presenter'] ?? $this->createStub( Shortcode_View_Presenter::class ),
             $overrides['tournament_handler'] ?? $this->createStub( Get_Tournament_Handler::class ),
@@ -68,8 +72,6 @@ class Tournament_Shortcode_Adapter_Test extends TestCase {
             $overrides['withdrawal_handler'] ?? $this->createStub( Get_Tournament_Withdrawal_Handler::class ),
             $overrides['template_renderer'] ?? $this->createStub( Shortcode_Template_Renderer::class ),
             $overrides['competition_service'] ?? null,
-            $overrides['tournament_presenter'] ?? null,
-            $overrides['player_presenter'] ?? null,
             $overrides['order_of_play_presenter'] ?? new Order_Of_Play_Presenter(
                 $this->createStub( \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class ),
                 $this->createStub( Competition_Service::class ),

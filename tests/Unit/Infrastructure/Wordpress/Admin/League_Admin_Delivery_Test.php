@@ -168,7 +168,13 @@ final class League_Admin_Delivery_Test extends TestCase {
         $guard = $this->createMock( Action_Guard_Interface::class );
         $guard->method( 'assert_allowed' )->willThrowException( new \Racketmanager\Exceptions\Invalid_Status_Exception( 'Security token invalid' ) );
 
-        $result = ( new League_Setup_Action_Dispatcher( $competition_service, $guard, $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ) ) )->handle(
+        $event_repo = $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class );
+        $result     = ( new League_Setup_Action_Dispatcher(
+            $competition_service,
+            $guard,
+            $event_repo,
+            new \Racketmanager\Application\Admin\Commands\League_Setup_Handler( $competition_service, $event_repo )
+        ) )->handle(
             array( 'competition_id' => '3' ),
             array( 'action' => 'update', 'season' => '2026', 'rounds' => array( array( 'round' => '1', 'match_date' => '2026-04-01' ) ) )
         );

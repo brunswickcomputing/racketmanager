@@ -563,8 +563,7 @@ readonly class Notification_Presenter implements Notification_Presenter_Interfac
     public function present_event_constitution( object $event, ?string $season = null ): array {
         $league_urls = [];
         if ( isset( $event->leagues ) && is_iterable( $event->leagues ) ) {
-            $presenter   = new Competition_Shortcode_Presenter();
-            $league_urls = $presenter->present_event_league_urls( $event, $event->leagues, $season, $this->site_url );
+            $league_urls = Competition_Shortcode_Presenter::present_event_league_urls( $event, $event->leagues, $season, $this->site_url );
         }
 
         return array(

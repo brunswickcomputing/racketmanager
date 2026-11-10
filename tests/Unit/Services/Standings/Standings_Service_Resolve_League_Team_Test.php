@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Services\Standings;
 
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Settings;
@@ -78,8 +80,11 @@ final class Standings_Service_Resolve_League_Team_Test extends TestCase {
 
         $team    = $this->league_team( 10 );
         $service = new Standings_Service(
-            $this->createStub( League_Repository_Interface::class ),
-            $league_team_repository,
+            league_repository: $this->createStub( League_Repository_Interface::class ),
+            league_team_repository: $league_team_repository,
+            league_service: null,
+            fixture_repository: $this->createStub( Fixture_Repository_Interface::class ),
+            rubber_repository: $this->createStub( Rubber_Repository_Interface::class ),
             league_query_service: $this->league_query_service()
         );
 
@@ -98,8 +103,11 @@ final class Standings_Service_Resolve_League_Team_Test extends TestCase {
         $league_team_repository->expects( $this->never() )->method( 'find_by_id' );
 
         $service = new Standings_Service(
-            $this->createStub( League_Repository_Interface::class ),
-            $league_team_repository,
+            league_repository: $this->createStub( League_Repository_Interface::class ),
+            league_team_repository: $league_team_repository,
+            league_service: null,
+            fixture_repository: $this->createStub( Fixture_Repository_Interface::class ),
+            rubber_repository: $this->createStub( Rubber_Repository_Interface::class ),
             league_query_service: $this->league_query_service()
         );
 
@@ -123,8 +131,11 @@ final class Standings_Service_Resolve_League_Team_Test extends TestCase {
         $league_team_repository->expects( $this->never() )->method( 'hydrate' );
 
         $service = new Standings_Service(
-            $this->createStub( League_Repository_Interface::class ),
-            $league_team_repository,
+            league_repository: $this->createStub( League_Repository_Interface::class ),
+            league_team_repository: $league_team_repository,
+            league_service: null,
+            fixture_repository: $this->createStub( Fixture_Repository_Interface::class ),
+            rubber_repository: $this->createStub( Rubber_Repository_Interface::class ),
             league_query_service: $this->league_query_service()
         );
 
@@ -141,8 +152,11 @@ final class Standings_Service_Resolve_League_Team_Test extends TestCase {
         $league_team_repository->expects( $this->never() )->method( 'hydrate' );
 
         $service = new Standings_Service(
-            $this->createStub( League_Repository_Interface::class ),
-            $league_team_repository,
+            league_repository: $this->createStub( League_Repository_Interface::class ),
+            league_team_repository: $league_team_repository,
+            league_service: null,
+            fixture_repository: $this->createStub( Fixture_Repository_Interface::class ),
+            rubber_repository: $this->createStub( Rubber_Repository_Interface::class ),
             league_query_service: $this->league_query_service()
         );
 
@@ -169,9 +183,11 @@ final class Standings_Service_Resolve_League_Team_Test extends TestCase {
         $ranking->expects( $this->once() )->method( 'get_ranking' )->with( $league, [ $entity, $hydrated, $found ] )->willReturnArgument( 1 );
 
         $service = new Standings_Service(
-            $this->createStub( League_Repository_Interface::class ),
-            $league_team_repository,
-            $ranking,
+            league_repository: $this->createStub( League_Repository_Interface::class ),
+            league_team_repository: $league_team_repository,
+            league_service: $ranking,
+            fixture_repository: $this->createStub( Fixture_Repository_Interface::class ),
+            rubber_repository: $this->createStub( Rubber_Repository_Interface::class ),
             league_query_service: $this->league_query_service()
         );
 
@@ -193,8 +209,11 @@ final class Standings_Service_Resolve_League_Team_Test extends TestCase {
             ->with( 12, '2026', 21, $this->isArray() );
 
         $service = new Standings_Service(
-            $league_repository,
-            $league_team_repository,
+            league_repository: $league_repository,
+            league_team_repository: $league_team_repository,
+            league_service: null,
+            fixture_repository: $this->createStub( Fixture_Repository_Interface::class ),
+            rubber_repository: $this->createStub( Rubber_Repository_Interface::class ),
             league_query_service: $this->league_query_service()
         );
 
@@ -212,8 +231,11 @@ final class Standings_Service_Resolve_League_Team_Test extends TestCase {
         $league_repository->expects( $this->once() )->method( 'update_team_standings' )->with( 12, '2026', 10, $this->isArray() );
 
         $service = new Standings_Service(
-            $league_repository,
-            $league_team_repository,
+            league_repository: $league_repository,
+            league_team_repository: $league_team_repository,
+            league_service: null,
+            fixture_repository: $this->createStub( Fixture_Repository_Interface::class ),
+            rubber_repository: $this->createStub( Rubber_Repository_Interface::class ),
             league_query_service: $this->league_query_service()
         );
 

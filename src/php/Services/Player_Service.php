@@ -29,7 +29,6 @@ use Racketmanager\Exceptions\Player_Not_Updated_Exception;
 use Racketmanager\Exceptions\Role_Assignment_Not_Found_Exception;
 use Racketmanager\Exceptions\WTN_Error_Exception;
 use Racketmanager\Application\Mail\Mailer_Interface;
-use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
@@ -74,7 +73,7 @@ class Player_Service {
         League_Team_Repository $league_team_repository,
         Club_Repository $club_repository,
         Registration_Repository_Interface $registration_repository,
-        ?Mailer_Interface $mailer = null,
+        Mailer_Interface $mailer,
         ?Player_Details_Validator $player_details_validator = null
     ) {
         $this->racketmanager            = $plugin_instance;
@@ -85,7 +84,7 @@ class Player_Service {
         $this->league_team_repository   = $league_team_repository;
         $this->club_repository          = $club_repository;
         $this->registration_repository  = $registration_repository;
-        $this->mailer                   = $mailer ?? new Wp_Mailer();
+        $this->mailer                   = $mailer;
         $this->player_details_validator = $player_details_validator;
     }
 

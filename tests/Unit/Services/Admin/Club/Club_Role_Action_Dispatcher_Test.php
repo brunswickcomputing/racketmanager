@@ -21,7 +21,7 @@ final class Club_Role_Action_Dispatcher_Test extends TestCase {
         $guard        = $this->createMock( Action_Guard_Interface::class );
         $guard->expects( self::never() )->method( 'assert_allowed' );
 
-        $dispatcher = new Club_Role_Action_Dispatcher( $club_service, $guard );
+        $dispatcher = new Club_Role_Action_Dispatcher( $club_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Role_Handler( $club_service ) );
         $result     = $dispatcher->handle( array(), array() );
 
         self::assertNull( $result->message );
@@ -36,7 +36,7 @@ final class Club_Role_Action_Dispatcher_Test extends TestCase {
             ->with( 'racketmanager_nonce', 'racketmanager_add-club-role', 'edit_teams' )
             ->willThrowException( new Invalid_Status_Exception( 'Invalid token' ) );
 
-        $dispatcher = new Club_Role_Action_Dispatcher( $club_service, $guard );
+        $dispatcher = new Club_Role_Action_Dispatcher( $club_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Role_Handler( $club_service ) );
         $result     = $dispatcher->handle( array(), array( 'addRole' => '1' ) );
 
         self::assertSame( 'Invalid token', $result->message );
@@ -52,7 +52,7 @@ final class Club_Role_Action_Dispatcher_Test extends TestCase {
             ->with( 5, 2, 10 )
             ->willReturn( true );
 
-        $dispatcher = new Club_Role_Action_Dispatcher( $club_service, $guard );
+        $dispatcher = new Club_Role_Action_Dispatcher( $club_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Role_Handler( $club_service ) );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -74,7 +74,7 @@ final class Club_Role_Action_Dispatcher_Test extends TestCase {
         $club_service->expects( self::exactly( 2 ) )
             ->method( 'remove_club_role' );
 
-        $dispatcher = new Club_Role_Action_Dispatcher( $club_service, $guard );
+        $dispatcher = new Club_Role_Action_Dispatcher( $club_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Role_Handler( $club_service ) );
         $result     = $dispatcher->handle(
             array(),
             array(

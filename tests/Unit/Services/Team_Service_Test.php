@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Services;
 
+use Racketmanager\Services\Competition\Event_Query_Service;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Repositories\Club_Repository;
@@ -28,7 +29,8 @@ final class Team_Service_Test extends TestCase {
             $this->createMock( Club_Repository::class ),
             $this->createMock( Event_Repository::class ),
             $this->createMock( Player_Service::class ),
-            $this->createMock( Fixture_Repository_Interface::class )
+            $this->createMock( Fixture_Repository_Interface::class ),
+            $this->createStub( Event_Query_Service::class )
         );
     }
 

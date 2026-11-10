@@ -3,10 +3,14 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Services\Container;
 
+use Closure;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin;
 use Racketmanager\Admin\Admin_Display;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
+use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Competition_Repository;
 use Racketmanager\Services\Container\Container_Bootstrap;
@@ -16,6 +20,7 @@ use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Validator\Player_Details_Validator;
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+use ReflectionProperty;
 use wpdb;
 
 final class Container_Resolution_Regression_Test extends TestCase {
@@ -71,5 +76,40 @@ final class Container_Resolution_Regression_Test extends TestCase {
 
         $admin = $container->get( 'admin' );
         $this->assertInstanceOf( Admin::class, $admin );
+    }
+
+    /**
+     * @return array<string, array{0: bool}>
+     */
+    public static function presenter_resolution_orders(): array {
+        return [
+            'player presenter first'      => [ true ],
+            'competition presenter first' => [ false ],
+        ];
+    }
+
+    #[DataProvider( 'presenter_resolution_orders' )]
+    public function test_player_and_competition_presenters_resolve_together_and_share_the_competition_instance( bool $player_first ): void {
+        $container = Container_Bootstrap::boot( $this->app );
+
+        if ( $player_first ) {
+            $player_presenter      = $container->get( Player_Presenter::class );
+            $competition_presenter = $container->get( Competition_Shortcode_Presenter::class );
+        } else {
+            $competition_presenter = $container->get( Competition_Shortcode_Presenter::class );
+            $player_presenter      = $container->get( Player_Presenter::class );
+        }
+
+        $this->assertInstanceOf( Player_Presenter::class, $player_presenter );
+        $this->assertInstanceOf( Competition_Shortcode_Presenter::class, $competition_presenter );
+        $this->assertSame( $player_presenter, $container->get( 'player_presenter' ) );
+        $this->assertSame( $competition_presenter, $container->get( 'competition_shortcode_presenter' ) );
+
+        $lazy = ( new ReflectionProperty( Player_Presenter::class, 'competition_presenter' ) )->getValue( $player_presenter );
+        $this->assertInstanceOf( Closure::class, $lazy );
+        $this->assertSame( $competition_presenter, $lazy() );
+
+        $shared_player = ( new ReflectionProperty( Competition_Shortcode_Presenter::class, 'player_presenter' ) )->getValue( $competition_presenter );
+        $this->assertSame( $player_presenter, $shared_player );
     }
 }

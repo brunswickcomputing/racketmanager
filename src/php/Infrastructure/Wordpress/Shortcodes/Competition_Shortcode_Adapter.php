@@ -75,6 +75,9 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     private readonly ?Get_Competition_Entry_Handler $entry_handler;
 
     public function __construct(
+        private readonly Competition_Shortcode_Presenter $competition_shortcode_presenter,
+        private readonly Tournament_Presenter $tournament_presenter,
+        private readonly Player_Presenter $player_presenter,
         private readonly ?Competition_Service $competition_service = null,
         private readonly ?Club_Service $club_service = null,
         private readonly ?Team_Service $team_service = null,
@@ -85,7 +88,6 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly ?Competition_Entry_Service $competition_entry_service = null,
         private readonly ?Shortcode_Template_Renderer $template_renderer = null,
         private readonly ?Get_Competition_Handler $get_competition_handler = null,
-        private readonly ?Competition_Shortcode_Presenter $competition_shortcode_presenter = null,
         private readonly ?Get_Competition_Overview_Handler $overview_handler = null,
         private readonly ?Get_Competition_Events_Handler $events_handler = null,
         private readonly ?Get_Competition_Teams_Handler $teams_handler = null,
@@ -99,9 +101,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly ?Get_Competition_Payment_Handler $payment_handler = null,
         private readonly ?Club_Entry_Selection_Service $club_entry_selection = null,
         ?Get_Competition_Entry_Handler $entry_handler = null,
-        private readonly ?Tournament_Presenter $tournament_presenter = null,
         private readonly ?Event_Query_Service $event_query_service = null,
-        private readonly ?Player_Presenter $player_presenter = null,
         private readonly ?Query_Vars_Interface $query_vars = null
     ) {
         $this->view_presenter = $view_presenter ?? ( $template_renderer ? new Shortcode_View_Presenter( $template_renderer ) : null );
@@ -320,7 +320,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      * Map a competition entry query result onto the shortcode view model.
      */
     public function present_entry( Competition_Entry_Result $result ): Shortcode_View_Model {
-        $comp_presenter = $this->competition_shortcode_presenter ?? new Competition_Shortcode_Presenter();
+        $comp_presenter = $this->competition_shortcode_presenter;
 
         if ( 'clubs_list' === $result->type ) {
             $club_urls = $comp_presenter->present_entry_form_club_urls( $result->clubs );
@@ -403,7 +403,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
 
         // 'tournament'
         $tournament = $result->tournament;
-        $tourn_presenter = $this->tournament_presenter ?? new Tournament_Presenter();
+        $tourn_presenter = $this->tournament_presenter;
         $vars = [
             'tournament'       => $tournament,
             'player'           => $result->player,
@@ -438,7 +438,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      * Map an overview query result onto the shortcode view model.
      */
     public function present_overview( Competition_Overview_Result $result ): Shortcode_View_Model {
-        $presenter   = $this->competition_shortcode_presenter ?? new Competition_Shortcode_Presenter();
+        $presenter   = $this->competition_shortcode_presenter;
         $overview_vm = $presenter->present_overview(
             competition: $result->competition,
             overview: $result->overview,
@@ -463,7 +463,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      * Map an events query result onto the shortcode view model.
      */
     public function present_events( Competition_Events_Result $result ): Shortcode_View_Model {
-        $presenter   = $this->competition_shortcode_presenter ?? new Competition_Shortcode_Presenter();
+        $presenter   = $this->competition_shortcode_presenter;
         $event_links = $presenter->present_competition_events_links( $result->competition, $result->events );
 
         $vm = new Shortcode_View_Model(
@@ -484,7 +484,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      * Map a teams query result onto the shortcode view model.
      */
     public function present_teams( Competition_Teams_Result $result ): Shortcode_View_Model {
-        $presenter  = $this->competition_shortcode_presenter ?? new Competition_Shortcode_Presenter();
+        $presenter  = $this->competition_shortcode_presenter;
         $team_links = $presenter->present_competition_teams_links( $result->competition, $result->teams );
 
         $vm = new Shortcode_View_Model(
@@ -507,7 +507,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     public function present_clubs( Competition_Clubs_Result $result ): Shortcode_View_Model {
         $competition_club = $result->competition_club;
         if ( $competition_club ) {
-            $tourn_presenter = $this->tournament_presenter ?? new Tournament_Presenter();
+            $tourn_presenter = $this->tournament_presenter;
             $club_id         = (int) ( $competition_club->id ?? 0 );
             if ( ! empty( $competition_club->matches ) && is_array( $competition_club->matches ) ) {
                 foreach ( $competition_club->matches as $key => $group_matches ) {
@@ -545,7 +545,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             'clubs'            => $result->clubs,
         ];
 
-        $presenter = $this->competition_shortcode_presenter ?? new Competition_Shortcode_Presenter();
+        $presenter = $this->competition_shortcode_presenter;
         if ( $competition_club ) {
             $club_details         = $presenter->present_competition_club_detail_links( $result->competition, $competition_club );
             $vars['club_url']     = $club_details['club_url'];
@@ -568,8 +568,8 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      * Map a players query result onto the shortcode view model.
      */
     public function present_players( Competition_Players_Result $result ): Shortcode_View_Model {
-        $comp_presenter   = $this->competition_shortcode_presenter ?? new Competition_Shortcode_Presenter();
-        $player_presenter = $this->player_presenter ?? new Player_Presenter( $comp_presenter );
+        $comp_presenter   = $this->competition_shortcode_presenter;
+        $player_presenter = $this->player_presenter;
 
         $player_vm          = null;
         $match_group_links  = [];
@@ -603,7 +603,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      * Map a winners query result onto the shortcode view model.
      */
     public function present_winners( Competition_Winners_Result $result ): Shortcode_View_Model {
-        $presenter = $this->competition_shortcode_presenter ?? new Competition_Shortcode_Presenter();
+        $presenter = $this->competition_shortcode_presenter;
         $winners   = $presenter->present_competition_winners( $result->raw_winners );
 
         $vm = new Shortcode_View_Model(
@@ -622,7 +622,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      * Map a competitions list query result onto the shortcode view model.
      */
     public function present_competitions( Competitions_List_Result $result ): Shortcode_View_Model {
-        $presenter = $this->competition_shortcode_presenter ?? new Competition_Shortcode_Presenter();
+        $presenter = $this->competition_shortcode_presenter;
         $user_competition_items = $presenter->present_competition_list( $result->user_competitions, $result->competition_type, null );
         $competition_items      = $presenter->present_competition_list( $result->competitions, $result->competition_type, null );
 
@@ -641,7 +641,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      */
     public function present_payment( Competition_Payment_Result $result ): Shortcode_View_Model {
         $site_url = defined( 'RACKETMANAGER_SITE' ) ? RACKETMANAGER_SITE : '/';
-        $tourn_presenter = $this->tournament_presenter ?? new Tournament_Presenter();
+        $tourn_presenter = $this->tournament_presenter;
 
         $vars = [
             'tournament'           => $result->tournament,

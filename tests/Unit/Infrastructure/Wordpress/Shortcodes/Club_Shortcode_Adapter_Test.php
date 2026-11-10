@@ -738,7 +738,9 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $this->assertSame( '/test-competition-10/2026/', $event_header->competition_link );
 
         $event_header_html = ( new Shortcode_Template_Renderer(
-            new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' )
+            new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ),
+            new Club_Presenter(),
+            new Player_Presenter()
         ) )->render( 'event-header', [ 'event_header' => $event_header ], 'includes' );
         $this->assertStringContainsString( '<h2', $event_header_html );
         $this->assertStringContainsString( 'id="pagename" value="/clubs/leigh-ltc/event/mens-doubles/"', $event_header_html );
@@ -1222,7 +1224,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
             new Get_Club_Competitions_Handler( $club_service, $competitions, $repository, $event_query_service ),
             new Get_Club_Invoices_Handler( $club_service, $finance, $settings ),
             new Shortcode_View_Presenter( $template_renderer ),
-            $overrides['competition_presenter'] ?? new Competition_Shortcode_Presenter( $renderer ),
+            $overrides['competition_presenter'] ?? new Competition_Shortcode_Presenter( $renderer, new Club_Presenter(), new Player_Presenter() ),
             $event_query_service,
             $lookup_event_repository,
             $team_repository,

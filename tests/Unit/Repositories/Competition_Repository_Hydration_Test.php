@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Repositories;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Repositories\Competition_Repository;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use wpdb;
@@ -82,12 +83,16 @@ final class Competition_Repository_Hydration_Test extends TestCase {
         parent::tearDown();
     }
 
+    private function create_repository(): Competition_Repository {
+        return new Competition_Repository( $this->createStub( Fixture_Repository_Interface::class ) );
+    }
+
     public function test_find_by_id_ignores_request_season_and_does_not_resolve_venue(): void {
         $_GET['season']   = '2016';
         $_GET['season_7'] = '2016';
         $GLOBALS['wp']    = (object) [ 'query_vars' => [ 'season' => '2016' ] ];
 
-        $competition = ( new Competition_Repository() )->find_by_id( 7 );
+        $competition = $this->create_repository()->find_by_id( 7 );
 
         $this->assertInstanceOf( Competition::class, $competition );
         $this->assertSame( '2026', $competition->current_season['name'], 'Hydration uses the domain default season, not the request' );
@@ -96,7 +101,7 @@ final class Competition_Repository_Hydration_Test extends TestCase {
 
     public function test_cached_entity_is_request_neutral(): void {
         $_GET['season'] = '2016';
-        $repository     = new Competition_Repository();
+        $repository     = $this->create_repository();
         $repository->find_by_id( 7 );
 
         $cached = $GLOBALS['wp_stubs_cache']['competitions']['7'] ?? null;
@@ -107,7 +112,7 @@ final class Competition_Repository_Hydration_Test extends TestCase {
     }
 
     public function test_request_season_applied_by_service_does_not_leak_into_cache(): void {
-        $repository = new Competition_Repository();
+        $repository = $this->create_repository();
         $service    = $this->competition_season_service( [ 12 => 'Hadleigh', 130 => 'Thorpe Bay' ] );
 
         $_GET['season'] = '2016';
@@ -127,7 +132,7 @@ final class Competition_Repository_Hydration_Test extends TestCase {
 
     public function test_find_all_and_find_by_return_request_neutral_entities(): void {
         $_GET['season'] = '2016';
-        $repository     = new Competition_Repository();
+        $repository     = $this->create_repository();
 
         $all = $repository->find_all();
         $by  = $repository->find_by( [ 'type' => 'cup' ] );

@@ -50,7 +50,7 @@ final class Email_Templates_Render_Test extends TestCase {
         $this->backup_globals();
 
         $view_renderer           = $this->create_view_renderer();
-        $this->template_renderer = new Shortcode_Template_Renderer( $view_renderer );
+        $this->template_renderer = $this->create_shortcode_template_renderer( $view_renderer );
 
         $this->option_gateway = new class implements Option_Gateway_Interface {
             public function get_option( string $option, mixed $default = false ): mixed {

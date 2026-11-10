@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Services;
 
+use Racketmanager\Services\Competition\Event_Query_Service;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
@@ -24,7 +25,8 @@ final class Team_Service_Derive_Team_Details_Test extends TestCase {
             $this->createMock( Club_Repository::class ),
             $this->createMock( Event_Repository::class ),
             $this->createMock( Player_Service::class ),
-            $this->createMock( Fixture_Repository_Interface::class )
+            $this->createMock( Fixture_Repository_Interface::class ),
+            $this->createStub( Event_Query_Service::class )
         );
     }
 
@@ -48,5 +50,25 @@ final class Team_Service_Derive_Team_Details_Test extends TestCase {
 
         self::assertInstanceOf( Team_Details_DTO::class, $details );
         self::assertSame( 'Loser Final 1', $details->team->get_name() );
+    }
+
+    public function test_winner_reference_does_not_lookup_fixture_even_if_id_matches_match_number(): void {
+        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+        $fixture_repo->expects( $this->never() )
+            ->method( 'find_by_id_with_relations' );
+
+        $service = new Team_Service(
+            $this->createMock( Team_Repository::class ),
+            $this->createMock( Club_Repository::class ),
+            $this->createMock( Event_Repository::class ),
+            $this->createMock( Player_Service::class ),
+            $fixture_repo,
+            $this->createStub( Event_Query_Service::class )
+        );
+
+        $details = $service->derive_team_details( '1_semi_2' );
+
+        self::assertInstanceOf( Team_Details_DTO::class, $details );
+        self::assertSame( 'Winner Semi Final 2', $details->team->get_name() );
     }
 }

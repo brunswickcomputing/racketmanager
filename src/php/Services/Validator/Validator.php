@@ -10,18 +10,12 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Validator;
 
-use Racketmanager\Repositories\Club_Repository;
-use Racketmanager\Repositories\Event_Repository;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
-use Racketmanager\Repositories\League_Repository;
-use Racketmanager\Repositories\Player_Repository;
-use Racketmanager\Repositories\Team_Repository;
-use Racketmanager\Repositories\User_Repository;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Registration_Service;
@@ -86,9 +80,8 @@ class Validator {
     /**
      * Constructor
      *
-     * Repositories left as null are resolved from the plugin container when one is
-     * available and otherwise instantiated lazily on first use (mirroring the
-     * legacy get_* helpers this class used to call).
+     * Repositories must be explicitly passed via constructor injection when needed
+     * for repository-backed validation checks.
      */
     public function __construct(
         ?Competition_Service $competition_service = null,
@@ -123,27 +116,45 @@ class Validator {
     }
 
     protected function team_repository(): Team_Repository_Interface {
-        return $this->team_repository ??= new Team_Repository();
+        if ( null === $this->team_repository ) {
+            throw new \LogicException( 'Team repository has not been configured on this Validator instance.' );
+        }
+        return $this->team_repository;
     }
 
     protected function player_repository(): Player_Repository_Interface {
-        return $this->player_repository ??= new Player_Repository();
+        if ( null === $this->player_repository ) {
+            throw new \LogicException( 'Player repository has not been configured on this Validator instance.' );
+        }
+        return $this->player_repository;
     }
 
     protected function club_repository(): Club_Repository_Interface {
-        return $this->club_repository ??= new Club_Repository();
+        if ( null === $this->club_repository ) {
+            throw new \LogicException( 'Club repository has not been configured on this Validator instance.' );
+        }
+        return $this->club_repository;
     }
 
     protected function event_repository(): Event_Repository_Interface {
-        return $this->event_repository ??= new Event_Repository();
+        if ( null === $this->event_repository ) {
+            throw new \LogicException( 'Event repository has not been configured on this Validator instance.' );
+        }
+        return $this->event_repository;
     }
 
     protected function league_repository(): League_Repository_Interface {
-        return $this->league_repository ??= new League_Repository( null, fn() => $this->event_repository() );
+        if ( null === $this->league_repository ) {
+            throw new \LogicException( 'League repository has not been configured on this Validator instance.' );
+        }
+        return $this->league_repository;
     }
 
     protected function user_repository(): User_Repository_Interface {
-        return $this->user_repository ??= new User_Repository();
+        if ( null === $this->user_repository ) {
+            throw new \LogicException( 'User repository has not been configured on this Validator instance.' );
+        }
+        return $this->user_repository;
     }
 
     /**

@@ -10,6 +10,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Rest;
 
+use Racketmanager\Infrastructure\Wordpress\Rest\Rest_Controller_Adapter;
 use Racketmanager\RacketManager;
 
 /**
@@ -49,7 +50,7 @@ class Rest_Routes {
      */
     public function register_rest_routes(): void {
         $resources = array(
-            new Rest_Resources( $this->racketmanager ),
+            new Rest_Resources( $this->racketmanager, $this->racketmanager->container->get( Rest_Controller_Adapter::class ) ),
             new Export_Controller( $this->racketmanager ),
         );
         foreach ( $resources as $resource ) {

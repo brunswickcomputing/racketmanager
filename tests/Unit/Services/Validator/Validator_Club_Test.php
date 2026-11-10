@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Services\Validator;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Club\Club_Role;
 use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
+use Racketmanager\Repositories\User_Repository;
 use Racketmanager\Services\Validator\Validator_Club;
 
 final class Validator_Club_Test extends TestCase {
@@ -86,12 +87,12 @@ final class Validator_Club_Test extends TestCase {
     public function test_user_validation(): void {
         $GLOBALS['wp_stubs_users'][5] = (object) [ 'ID' => 5 ];
 
-        $validator = new Validator_Club();
+        $validator = new Validator_Club( user_repository: new User_Repository() );
         $validator->user( null );
         $this->assertTrue( $validator->error );
         $this->assertContains( 'userName', $validator->err_flds );
 
-        $validator_valid = new Validator_Club();
+        $validator_valid = new Validator_Club( user_repository: new User_Repository() );
         $validator_valid->user( 5 );
         $this->assertFalse( $validator_valid->error );
 

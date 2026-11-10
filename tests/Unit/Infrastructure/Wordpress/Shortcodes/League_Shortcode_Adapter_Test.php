@@ -55,20 +55,29 @@ class League_Shortcode_Adapter_Test extends TestCase {
 
     private function create_adapter( array $overrides = [] ): League_Shortcode_Adapter {
         return new League_Shortcode_Adapter(
-            $overrides['racketmanager'] ?? $this->createStub( RacketManager::class ),
-            $overrides['get_league_standings_handler'] ?? $this->createStub( Get_League_Standings_Handler::class ),
-            $overrides['league_standings_presenter'] ?? $this->createStub( League_Standings_Presenter::class ),
-            $overrides['view_presenter'] ?? $this->createStub( Shortcode_View_Presenter::class ),
-            $overrides['championship_handler'] ?? $this->createStub( Get_League_Championship_Handler::class ),
-            $overrides['archive_handler'] ?? $this->createStub( Get_League_Archive_Handler::class ),
-            $overrides['crosstable_handler'] ?? $this->createStub( Get_League_Crosstable_Handler::class ),
-            $overrides['matches_handler'] ?? $this->createStub( Get_League_Matches_Handler::class ),
-            $overrides['teams_handler'] ?? $this->createStub( Get_League_Teams_Handler::class ),
-            $overrides['players_handler'] ?? $this->createStub( Get_League_Players_Handler::class ),
-            $overrides['season_dropdown_handler'] ?? $this->createStub( Get_League_Season_Dropdown_Handler::class ),
-            $overrides['match_dropdown_handler'] ?? $this->createStub( Get_League_Match_Dropdown_Handler::class ),
-            $overrides['last_5_handler'] ?? $this->createStub( Get_League_Last_5_Handler::class ),
-            $overrides['template_renderer'] ?? $this->createStub( Shortcode_Template_Renderer::class ),
+            archive_presenter: $overrides['archive_presenter'] ?? new \Racketmanager\Presentation\Presenters\League_Archive_Presenter( new \Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway() ),
+            tournament_presenter: $overrides['tournament_presenter'] ?? new \Racketmanager\Presentation\Presenters\Tournament_Presenter(),
+            team_details_presenter: $overrides['team_details_presenter'] ?? new \Racketmanager\Presentation\Presenters\Team_Details_Presenter( new \Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway(), new \Racketmanager\Services\Settings_Service() ),
+            player_presenter: $overrides['player_presenter'] ?? new \Racketmanager\Presentation\Presenters\Player_Presenter(),
+            fixture_presenter: $overrides['fixture_presenter'] ?? new \Racketmanager\Presentation\Presenters\Fixture_Presenter(
+                new \Racketmanager\Services\Fixture\Fixture_Link_Service(),
+                new \Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway(),
+                new \Racketmanager\Services\View\Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' )
+            ),
+            racketmanager: $overrides['racketmanager'] ?? $this->createStub( RacketManager::class ),
+            get_league_standings_handler: $overrides['get_league_standings_handler'] ?? $this->createStub( Get_League_Standings_Handler::class ),
+            league_standings_presenter: $overrides['league_standings_presenter'] ?? $this->createStub( League_Standings_Presenter::class ),
+            view_presenter: $overrides['view_presenter'] ?? $this->createStub( Shortcode_View_Presenter::class ),
+            championship_handler: $overrides['championship_handler'] ?? $this->createStub( Get_League_Championship_Handler::class ),
+            archive_handler: $overrides['archive_handler'] ?? $this->createStub( Get_League_Archive_Handler::class ),
+            crosstable_handler: $overrides['crosstable_handler'] ?? $this->createStub( Get_League_Crosstable_Handler::class ),
+            matches_handler: $overrides['matches_handler'] ?? $this->createStub( Get_League_Matches_Handler::class ),
+            teams_handler: $overrides['teams_handler'] ?? $this->createStub( Get_League_Teams_Handler::class ),
+            players_handler: $overrides['players_handler'] ?? $this->createStub( Get_League_Players_Handler::class ),
+            season_dropdown_handler: $overrides['season_dropdown_handler'] ?? $this->createStub( Get_League_Season_Dropdown_Handler::class ),
+            match_dropdown_handler: $overrides['match_dropdown_handler'] ?? $this->createStub( Get_League_Match_Dropdown_Handler::class ),
+            last_5_handler: $overrides['last_5_handler'] ?? $this->createStub( Get_League_Last_5_Handler::class ),
+            template_renderer: $overrides['template_renderer'] ?? $this->createStub( Shortcode_Template_Renderer::class ),
             query_vars: $overrides['query_vars'] ?? new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
         );
     }
@@ -121,7 +130,7 @@ class League_Shortcode_Adapter_Test extends TestCase {
 
         $handler   = new Get_League_Standings_Handler( $league_service, null, $this->league_query_service( $league_repo ) );
         $renderer  = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
-        $presenter = $presenter ?? new League_Standings_Presenter( $renderer );
+        $presenter = $presenter ?? new League_Standings_Presenter( $renderer, new Club_Presenter(), new Player_Presenter() );
 
         return $this->create_adapter( [
             'get_league_standings_handler' => $handler,

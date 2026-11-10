@@ -348,9 +348,9 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
                 $c->get( 'view_renderer' ),
                 $c->get( 'racketmanager_app' ),
                 $c->get( 'mailer' ),
+                $c->get( 'option_service' ),
                 $c->get( 'event_query_service' ),
-                fn() => $c->get( 'league_query_service' ),
-                $c->get( 'option_service' )
+                fn() => $c->get( 'league_query_service' )
             )
         );
         $container->alias( Notification_Service::class, 'notification_service' );

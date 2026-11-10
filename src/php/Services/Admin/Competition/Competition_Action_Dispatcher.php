@@ -28,15 +28,12 @@ use stdClass;
  */
 readonly final class Competition_Action_Dispatcher {
 
-    private Competition_Handler $commands;
-
     public function __construct(
         Competition_Service $competition_service,
         private Action_Guard_Interface $action_guard,
         Event_Repository_Interface $event_repository,
-        ?Competition_Handler $commands = null,
+        private Competition_Handler $commands,
     ) {
-        $this->commands = $commands ?? new Competition_Handler( $competition_service, $event_repository );
     }
 
     /**

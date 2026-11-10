@@ -23,7 +23,7 @@ final class Club_Player_Action_Dispatcher_Test extends TestCase {
         $guard                = $this->createMock( Action_Guard_Interface::class );
         $guard->expects( self::never() )->method( 'assert_allowed' );
 
-        $dispatcher = new Club_Player_Action_Dispatcher( $registration_service, $player_service, $guard );
+        $dispatcher = new Club_Player_Action_Dispatcher( $registration_service, $player_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Player_Handler( $registration_service, $player_service ) );
         $result     = $dispatcher->handle( array(), array() );
 
         self::assertNull( $result->message );
@@ -39,7 +39,7 @@ final class Club_Player_Action_Dispatcher_Test extends TestCase {
             ->with( 'racketmanager_nonce', 'racketmanager_manage-player', 'edit_teams' )
             ->willThrowException( new Invalid_Status_Exception( 'Invalid token' ) );
 
-        $dispatcher = new Club_Player_Action_Dispatcher( $registration_service, $player_service, $guard );
+        $dispatcher = new Club_Player_Action_Dispatcher( $registration_service, $player_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Player_Handler( $registration_service, $player_service ) );
         $result     = $dispatcher->handle( array(), array( 'addPlayer' => '1' ) );
 
         self::assertSame( 'Invalid token', $result->message );
@@ -55,7 +55,7 @@ final class Club_Player_Action_Dispatcher_Test extends TestCase {
             ->method( 'register_player_to_club' )
             ->willReturn( 'Player registered' );
 
-        $dispatcher = new Club_Player_Action_Dispatcher( $registration_service, $player_service, $guard );
+        $dispatcher = new Club_Player_Action_Dispatcher( $registration_service, $player_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Player_Handler( $registration_service, $player_service ) );
         $result     = $dispatcher->handle(
             array( 'club_id' => 12 ),
             array(
@@ -76,7 +76,7 @@ final class Club_Player_Action_Dispatcher_Test extends TestCase {
         $registration_service->expects( self::exactly( 2 ) )
             ->method( 'remove_registration' );
 
-        $dispatcher = new Club_Player_Action_Dispatcher( $registration_service, $player_service, $guard );
+        $dispatcher = new Club_Player_Action_Dispatcher( $registration_service, $player_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Player_Handler( $registration_service, $player_service ) );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -98,7 +98,7 @@ final class Club_Player_Action_Dispatcher_Test extends TestCase {
             ->method( 'schedule_player_ratings' )
             ->with( 15 );
 
-        $dispatcher = new Club_Player_Action_Dispatcher( $registration_service, $player_service, $guard );
+        $dispatcher = new Club_Player_Action_Dispatcher( $registration_service, $player_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Player_Handler( $registration_service, $player_service ) );
         $result     = $dispatcher->handle(
             array(),
             array(

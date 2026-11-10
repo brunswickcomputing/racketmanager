@@ -63,8 +63,8 @@ class Account_Ajax_Adapter_Test extends TestCase {
         return new Account_Ajax_Adapter(
             $this->security_service,
             $response_factory,
-            $message_repo,
-            $user_repo,
+            $message_repo ?? $this->createStub( Message_Repository_Interface::class ),
+            $user_repo ?? $this->createStub( User_Repository_Interface::class ),
             $option_service
         );
     }

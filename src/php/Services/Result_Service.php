@@ -6,7 +6,6 @@ namespace Racketmanager\Services;
 use Racketmanager\Domain\Result\Result;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Application\Mail\Mailer_Interface;
-use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
@@ -47,13 +46,13 @@ class Result_Service {
      */
     private Template_Renderer_Interface $template_renderer;
 
-    public function __construct( Fixture_Repository_Interface $fixture_repository, Team_Repository_Interface $team_repository, Option_Service $option_service, Template_Renderer_Interface $template_renderer, ?Mailer_Interface $mailer = null, ?League_Repository_Interface $league_repository = null ) {
+    public function __construct( Fixture_Repository_Interface $fixture_repository, Team_Repository_Interface $team_repository, Option_Service $option_service, Template_Renderer_Interface $template_renderer, Mailer_Interface $mailer, ?League_Repository_Interface $league_repository = null ) {
         $this->league_repository  = $league_repository;
         $this->fixture_repository = $fixture_repository;
         $this->team_repository    = $team_repository;
         $this->option_service     = $option_service;
         $this->template_renderer  = $template_renderer;
-        $this->mailer             = $mailer ?? new Wp_Mailer();
+        $this->mailer             = $mailer;
     }
 
     /**

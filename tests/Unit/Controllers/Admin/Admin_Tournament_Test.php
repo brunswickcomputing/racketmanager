@@ -7,6 +7,9 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Admin\Admin_Tournament;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
+use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
+use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
+use Racketmanager\Infrastructure\Wordpress\Admin\Wp_Admin_Redirector;
 use Racketmanager\Admin\View_Models\Contact_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model;
@@ -46,10 +49,15 @@ class Admin_Tournament_Test extends TestCase {
         $this->container          = new Simple_Container();
         $racketmanager->container = $this->container;
 
+        $actions = new Admin_Action_Adapter( $message_service, new Wp_Admin_Redirector() );
+        $screens = new Admin_Screen_Presenter( $this->renderer, $message_service );
+
         $this->admin_tournament = new Admin_Tournament(
             $racketmanager,
             $this->renderer,
-            $message_service
+            $message_service,
+            $actions,
+            $screens
         );
     }
 

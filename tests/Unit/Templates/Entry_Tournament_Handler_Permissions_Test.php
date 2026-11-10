@@ -19,7 +19,9 @@ use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Domain\Tournament\Tournament_Entry;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Competition_Shortcode_Adapter;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Club_Service;
@@ -62,7 +64,9 @@ final class Entry_Tournament_Handler_Permissions_Test extends TestCase {
         $GLOBALS['wp_stubs_clubs'][1]         = (object) [ 'id' => 1, 'name' => 'Leigh Tennis Club' ];
 
         $this->template_renderer = new Shortcode_Template_Renderer(
-            new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' )
+            new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ),
+            new Club_Presenter(),
+            new Player_Presenter()
         );
     }
 
@@ -92,8 +96,13 @@ final class Entry_Tournament_Handler_Permissions_Test extends TestCase {
             return Shortcode_View_Model::error( $result->error_message ?? '' );
         }
         $adapter = new Competition_Shortcode_Adapter(
-            competition_shortcode_presenter: new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
-            tournament_presenter: new Tournament_Presenter( 'd/m/Y' )
+            competition_shortcode_presenter: new Competition_Shortcode_Presenter(
+                new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ),
+                new Club_Presenter(),
+                new Player_Presenter()
+            ),
+            tournament_presenter: new Tournament_Presenter( 'd/m/Y' ),
+            player_presenter: new Player_Presenter()
         );
 
         return $adapter->present_entry( $result );

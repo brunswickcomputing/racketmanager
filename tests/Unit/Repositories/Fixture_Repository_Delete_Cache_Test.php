@@ -303,4 +303,17 @@ class Fixture_Repository_Delete_Cache_Test extends TestCase {
         $this->assertStringNotContainsString( '{', $captured_sql );
         $this->assertStringNotContainsString( '}', $captured_sql );
     }
+
+    public function test_find_all_without_rubber_repository_only_requires_it_for_player_hydration(): void {
+        $this->wpdb->method( 'get_results' )->willReturn( [ (object) [ 'id' => 904 ] ] );
+        $this->wpdb->method( 'get_row' )->willReturn( (object) [ 'id' => 904 ] );
+
+        $matches = $this->repository->find_all( [ 'season' => '2099' ] );
+        $this->assertCount( 1, $matches );
+        $this->assertSame( 904, $matches[0]->get_id() );
+
+        $this->expectException( \LogicException::class );
+        $this->expectExceptionMessage( 'Fixture player queries require a rubber repository.' );
+        $this->repository->find_all( [ 'season' => '2099', 'player' => 123 ] );
+    }
 }

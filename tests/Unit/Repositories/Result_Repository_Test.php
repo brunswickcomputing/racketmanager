@@ -22,7 +22,7 @@ class Result_Repository_Test extends TestCase {
         $this->wpdb->prefix = 'wp_';
         $this->report_repository = $this->createMock( Results_Report_Repository_Interface::class );
 
-        $this->repository = new Result_Repository( $this->wpdb, $this->report_repository );
+        $this->repository = new Result_Repository( $this->report_repository, $this->wpdb );
     }
 
     public function test_update_result_success(): void {

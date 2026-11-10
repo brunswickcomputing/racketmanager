@@ -8,7 +8,6 @@ use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
-use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
@@ -21,17 +20,14 @@ use function Racketmanager\withdrawn_team_email;
  * Service for competition notifications.
  */
 class Competition_Notification_Service {
-    private Mailer_Interface $mailer;
-
     public function __construct(
         private Option_Service $option_service,
         private Club_Repository_Interface $club_repository,
-        ?Mailer_Interface $mailer = null,
+        private Mailer_Interface $mailer,
         private ?Event_Repository_Interface $event_repository = null,
         private ?League_Query_Service $league_query_service = null,
         private ?League_Repository_Interface $league_repository = null,
     ) {
-        $this->mailer = $mailer ?? new Wp_Mailer();
     }
 
     private function league_query(): League_Query_Service {

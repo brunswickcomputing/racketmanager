@@ -71,7 +71,25 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
     }
 
     private function competition_shortcode_presenter(): Competition_Shortcode_Presenter {
-        return new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) );
+        return new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ), new Club_Presenter(), new Player_Presenter() );
+    }
+
+    private function create_template_renderer( ?\Racketmanager\Services\View\View_Renderer_Interface $renderer = null ): Shortcode_Template_Renderer {
+        return new Shortcode_Template_Renderer(
+            $renderer ?? new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ),
+            new Club_Presenter(),
+            new Player_Presenter()
+        );
+    }
+
+    private function create_competition_adapter( mixed ...$args ): Competition_Shortcode_Adapter {
+        $defaults = [
+            'competition_shortcode_presenter' => $this->competition_shortcode_presenter(),
+            'tournament_presenter' => new Tournament_Presenter(),
+            'player_presenter' => new Player_Presenter(),
+        ];
+
+        return new Competition_Shortcode_Adapter( ...array_merge( $defaults, $args ) );
     }
 
     public function test_show_competition_renders_competition_via_handler_and_presenter(): void {
@@ -93,7 +111,7 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
         $renderer       = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
         $presenter      = new Competition_Shortcode_Presenter( $renderer, new Club_Presenter(), new Player_Presenter() );
 
-        $adapter = new Competition_Shortcode_Adapter(
+        $adapter = $this->create_competition_adapter(
             competition_service: $comp_service,
             club_service: $club_service,
             get_competition_handler: $handler,
@@ -122,7 +140,7 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
         $renderer       = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
         $presenter      = new Competition_Shortcode_Presenter( $renderer, new Club_Presenter(), new Player_Presenter() );
 
-        $adapter = new Competition_Shortcode_Adapter(
+        $adapter = $this->create_competition_adapter(
             competition_service: $comp_service,
             club_service: $club_service,
             get_competition_handler: $handler,
@@ -143,9 +161,9 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
         $settings       = new \Racketmanager\Services\Settings_Service( [] );
         $handler        = new Get_Competition_Handler( $comp_service, $club_service, $player_service, $security, $settings, $this->competition_season_service() );
         $renderer       = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
-        $presenter      = new Competition_Shortcode_Presenter( $renderer );
+        $presenter      = new Competition_Shortcode_Presenter( $renderer, new Club_Presenter(), new Player_Presenter() );
 
-        $adapter = new Competition_Shortcode_Adapter(
+        $adapter = $this->create_competition_adapter(
             competition_service: $comp_service,
             get_competition_handler: $handler,
             competition_shortcode_presenter: $presenter
@@ -162,11 +180,11 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
         $comp_service->method( 'get_by_criteria' )->willReturn( [ $competition ] );
 
         $renderer          = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
-        $template_renderer = new Shortcode_Template_Renderer( $renderer );
+        $template_renderer = $this->create_template_renderer( $renderer );
         $tournament_service = $this->createStub( Tournament_Service::class );
         $player_service = $this->createStub( Player_Service::class );
 
-        $adapter = new Competition_Shortcode_Adapter(
+        $adapter = $this->create_competition_adapter(
             competition_service: $comp_service,
             tournament_service: $tournament_service,
             player_service: $player_service,
@@ -197,11 +215,11 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
         $comp_service->method( 'get_competition_overview' )->willReturn( $dto );
 
         $renderer          = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
-        $template_renderer = new Shortcode_Template_Renderer( $renderer );
+        $template_renderer = $this->create_template_renderer( $renderer );
         $view_presenter    = new Shortcode_View_Presenter( $template_renderer );
         $overview_handler  = new Get_Competition_Overview_Handler( $comp_service, $this->competition_season_service() );
 
-        $adapter = new Competition_Shortcode_Adapter(
+        $adapter = $this->create_competition_adapter(
             competition_service: $comp_service,
             template_renderer: $template_renderer,
             overview_handler: $overview_handler,
@@ -220,11 +238,11 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
         $comp_service->method( 'get_events_with_details_for_competition' )->willReturn( [] );
 
         $renderer          = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
-        $template_renderer = new Shortcode_Template_Renderer( $renderer );
+        $template_renderer = $this->create_template_renderer( $renderer );
         $view_presenter    = new Shortcode_View_Presenter( $template_renderer );
         $events_handler    = new Get_Competition_Events_Handler( $comp_service, $this->competition_season_service() );
 
-        $adapter = new Competition_Shortcode_Adapter(
+        $adapter = $this->create_competition_adapter(
             competition_service: $comp_service,
             template_renderer: $template_renderer,
             events_handler: $events_handler,
@@ -243,11 +261,11 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
         $comp_service->method( 'get_teams_for_competition' )->willReturn( [] );
 
         $renderer          = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
-        $template_renderer = new Shortcode_Template_Renderer( $renderer );
+        $template_renderer = $this->create_template_renderer( $renderer );
         $view_presenter    = new Shortcode_View_Presenter( $template_renderer );
         $teams_handler     = new Get_Competition_Teams_Handler( $comp_service, $this->competition_season_service() );
 
-        $adapter = new Competition_Shortcode_Adapter(
+        $adapter = $this->create_competition_adapter(
             competition_service: $comp_service,
             template_renderer: $template_renderer,
             teams_handler: $teams_handler,
@@ -267,11 +285,11 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
 
         $club_service      = $this->createStub( Club_Service::class );
         $renderer          = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
-        $template_renderer = new Shortcode_Template_Renderer( $renderer );
+        $template_renderer = $this->create_template_renderer( $renderer );
         $view_presenter    = new Shortcode_View_Presenter( $template_renderer );
         $clubs_handler     = new Get_Competition_Clubs_Handler( $comp_service, $club_service, $this->createStub( Player_Stats_Service::class ), $this->competition_season_service() );
 
-        $adapter = new Competition_Shortcode_Adapter(
+        $adapter = $this->create_competition_adapter(
             competition_service: $comp_service,
             club_service: $club_service,
             template_renderer: $template_renderer,
@@ -302,11 +320,11 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
         $club_service->method( 'get_club_by_shortcode' )->willReturn( $club );
 
         $renderer          = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
-        $template_renderer = new Shortcode_Template_Renderer( $renderer );
+        $template_renderer = $this->create_template_renderer( $renderer );
         $view_presenter    = new Shortcode_View_Presenter( $template_renderer );
         $clubs_handler     = new Get_Competition_Clubs_Handler( $comp_service, $club_service, $this->createStub( Player_Stats_Service::class ), $this->competition_season_service() );
 
-        $adapter = new Competition_Shortcode_Adapter(
+        $adapter = $this->create_competition_adapter(
             competition_service: $comp_service,
             club_service: $club_service,
             template_renderer: $template_renderer,
@@ -383,7 +401,7 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
         $player_service->method( 'get_players_for_competition' )->willReturn( [] );
 
         $renderer          = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
-        $template_renderer = new Shortcode_Template_Renderer( $renderer );
+        $template_renderer = $this->create_template_renderer( $renderer );
         $view_presenter    = new Shortcode_View_Presenter( $template_renderer );
         $players_handler   = new Get_Competition_Players_Handler(
             $comp_service,
@@ -392,7 +410,7 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
             $this->createStub( Player_Stats_Service::class ),
             $this->competition_season_service() );
 
-        $adapter = new Competition_Shortcode_Adapter(
+        $adapter = $this->create_competition_adapter(
             competition_service: $comp_service,
             player_service: $player_service,
             template_renderer: $template_renderer,
@@ -412,11 +430,11 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
         $comp_service->method( 'get_winners_for_competition' )->willReturn( [] );
 
         $renderer          = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
-        $template_renderer = new Shortcode_Template_Renderer( $renderer );
+        $template_renderer = $this->create_template_renderer( $renderer );
         $view_presenter    = new Shortcode_View_Presenter( $template_renderer );
         $winners_handler   = new Get_Competition_Winners_Handler( $comp_service, $this->competition_season_service() );
 
-        $adapter = new Competition_Shortcode_Adapter(
+        $adapter = $this->create_competition_adapter(
             competition_service: $comp_service,
             template_renderer: $template_renderer,
             winners_handler: $winners_handler,
@@ -433,8 +451,8 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
         $service->method( 'get_by_id' )->willReturn( $competition );
         $service->expects( $this->never() )->method( 'get_winners_for_competition' );
         $service->expects( $this->never() )->method( 'get_competition_overview' );
-        $renderer = new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) );
-        $adapter  = new Competition_Shortcode_Adapter(
+        $renderer = $this->create_template_renderer();
+        $adapter  = $this->create_competition_adapter(
             template_renderer: $renderer,
             winners_handler: new Get_Competition_Winners_Handler( $service, $this->competition_season_service() ),
             overview_handler: new Get_Competition_Overview_Handler( $service, $this->competition_season_service() ),
@@ -453,7 +471,7 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
         $player_service = $this->createMock( Player_Service::class );
         $player_service->expects( $this->once() )->method( 'find_all_associated_clubs' )
             ->with( 1, 'captain', null )->willReturn( [ (object) [ 'shortcode' => 'WST' ] ] );
-        $adapter = new Competition_Shortcode_Adapter(
+        $adapter = $this->create_competition_adapter(
             player_service: $player_service,
             racketmanager: $plugin,
             club_entry_selection: new Club_Entry_Selection_Service( $this->createStub( Club_Service::class ), $player_service )
@@ -467,9 +485,9 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
         $comp_service->method( 'get_events_for_competition' )->willReturn( [ (object) [ 'id' => 11, 'name' => 'Singles' ] ] );
 
         $renderer          = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
-        $template_renderer = new Shortcode_Template_Renderer( $renderer );
+        $template_renderer = $this->create_template_renderer( $renderer );
 
-        $adapter = new Competition_Shortcode_Adapter(
+        $adapter = $this->create_competition_adapter(
             competition_service: $comp_service,
             template_renderer: $template_renderer,
             dropdown_handler: new Get_Competition_Dropdown_Handler( $comp_service ),
@@ -485,9 +503,9 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
     public function test_show_competition_entry_requires_login(): void {
         $GLOBALS['wp_stubs_is_user_logged_in'] = false;
         $renderer          = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
-        $template_renderer = new Shortcode_Template_Renderer( $renderer );
+        $template_renderer = $this->create_template_renderer( $renderer );
 
-        $adapter = new Competition_Shortcode_Adapter(
+        $adapter = $this->create_competition_adapter(
             template_renderer: $template_renderer
         );
 
@@ -522,11 +540,11 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
         $player_service->method( 'get_player_by_name' )->willReturn( $player );
 
         $renderer          = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
-        $template_renderer = new Shortcode_Template_Renderer( $renderer );
+        $template_renderer = $this->create_template_renderer( $renderer );
         $view_presenter    = new Shortcode_View_Presenter( $template_renderer );
         $players_handler   = new Get_Competition_Players_Handler( $comp_service, $player_service, $player_query_service, $player_stats_service, $this->competition_season_service() );
 
-        $adapter = new Competition_Shortcode_Adapter(
+        $adapter = $this->create_competition_adapter(
             competition_service: $comp_service,
             player_service: $player_service,
             template_renderer: $template_renderer,
@@ -572,11 +590,11 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
         $comp_service->method( 'get_by_id' )->willThrowException( new Competition_Not_Found_Exception( 'Competition not found' ) );
 
         $renderer          = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
-        $template_renderer = new Shortcode_Template_Renderer( $renderer );
+        $template_renderer = $this->create_template_renderer( $renderer );
         $club_service      = $this->createStub( Club_Service::class );
         $player_service    = $this->createStub( Player_Service::class );
 
-        $adapter = new Competition_Shortcode_Adapter(
+        $adapter = $this->create_competition_adapter(
             competition_service: $comp_service,
             club_service: $club_service,
             team_service: $this->createStub( Team_Service::class ),
@@ -608,7 +626,7 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
 
     public function test_competition_shortcode_presenter_header_date_boundaries(): void {
         $renderer  = $this->createStub( \Racketmanager\Services\View\View_Renderer_Interface::class );
-        $presenter = new Competition_Shortcode_Presenter( $renderer );
+        $presenter = new Competition_Shortcode_Presenter( $renderer, new Club_Presenter(), new Player_Presenter() );
 
         $competition = (object) [
             'id'             => 10,

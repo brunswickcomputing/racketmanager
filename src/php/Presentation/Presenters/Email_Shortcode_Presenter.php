@@ -462,8 +462,7 @@ readonly class Email_Shortcode_Presenter {
     public function present_event_constitution( object $event ): array {
         $league_urls = [];
         if ( isset( $event->leagues ) && is_iterable( $event->leagues ) ) {
-            $presenter   = new Competition_Shortcode_Presenter();
-            $league_urls = $presenter->present_event_league_urls( $event, $event->leagues, null, $this->site_url );
+            $league_urls = Competition_Shortcode_Presenter::present_event_league_urls( $event, $event->leagues, null, $this->site_url );
         }
 
         return [

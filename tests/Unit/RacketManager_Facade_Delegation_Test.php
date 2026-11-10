@@ -26,6 +26,7 @@ use Racketmanager\Services\Mail\Mail_Filter_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Result\Result_Reporting_Service;
 use Racketmanager\Services\Seo\Page_Title_Service;
+use Racketmanager\Services\Validator\Player_Details_Validator;
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
@@ -182,9 +183,13 @@ final class RacketManager_Facade_Delegation_Test extends TestCase {
             'email'     => 'alice@example.com',
         ];
 
+        $player_repository = $this->createStub( Player_Repository_Interface::class );
         $validator_service = new Player_Validation_Service(
             $this->createStub( \Racketmanager\Services\Registration_Service::class ),
-            $this->createStub( \Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface::class )
+            $this->createStub( Results_Checker_Repository_Interface::class ),
+            $this->createStub( Fixture_Repository_Interface::class ),
+            $player_repository,
+            new Player_Details_Validator( $player_repository )
         );
         $this->container->set( 'player_validation_service', fn() => $validator_service );
 
@@ -205,9 +210,13 @@ final class RacketManager_Facade_Delegation_Test extends TestCase {
             'email'     => 'alice@example.com',
         ];
 
+        $player_repository = $this->createStub( Player_Repository_Interface::class );
         $validator_service = new Player_Validation_Service(
             $this->createStub( \Racketmanager\Services\Registration_Service::class ),
-            $this->createStub( \Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface::class )
+            $this->createStub( Results_Checker_Repository_Interface::class ),
+            $this->createStub( Fixture_Repository_Interface::class ),
+            $player_repository,
+            new Player_Details_Validator( $player_repository )
         );
         $this->container->set( 'player_validation_service', fn() => $validator_service );
 

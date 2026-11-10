@@ -12,9 +12,8 @@ namespace Racketmanager\Util;
 
 use NumberFormatter;
 use Racketmanager\Domain\Shared\Seo_Slug;
+use Racketmanager\Domain\Team\Team_Placeholder_Ref;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
-use Racketmanager\Repositories\Club_Repository;
-use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Club_Service;
@@ -619,29 +618,71 @@ class Util {
     }
 
     /**
-     * Generate team name for winner/loser of previous match
+     * Format localized placeholder role label.
+     *
+     * @param Team_Placeholder_Ref $placeholder
+     *
+     * @return string
+     */
+    public static function format_placeholder_label( Team_Placeholder_Ref $placeholder ): string {
+        return $placeholder->is_winner()
+            ? __( 'Winner of', 'racketmanager' )
+            : __( 'Loser of', 'racketmanager' );
+    }
+
+    /**
+     * Extract placeholder role label from slot title (e.g. '1_semi_1' -> 'Winner of').
      *
      * @param string $title
-     * @param Fixture_Repository_Interface|null $fixture_repository
      *
      * @return string|null
      */
-    public static function generate_team_name( string $title, ?Fixture_Repository_Interface $fixture_repository = null ): ?string {
-        $name_array = explode( '_', $title );
-        if ( '1' === $name_array[0] ) {
-            $team_name = __( 'Winner of', 'racketmanager' );
-        } elseif ( '2' === $name_array[0] ) {
-            $team_name = __( 'Loser of', 'racketmanager' );
-        } else {
-            $team_name = null;
+    public static function get_placeholder_team_title( string $title ): ?string {
+        $placeholder = Team_Placeholder_Ref::parse( $title );
+        if ( null === $placeholder ) {
+            return null;
         }
-        if ( ! empty( $team_name ) && isset( $name_array[2] ) && is_numeric( $name_array[2] ) ) {
-            $fixture_repo = $fixture_repository ?? new Fixture_Repository();
-            $match        = $fixture_repo->find_by_id_with_relations( (int) $name_array[2] );
-            if ( $match ) {
-                $home_title = isset( $match->teams['home']->title ) ? (string) $match->teams['home']->title : '';
-                $away_title = isset( $match->teams['away']->title ) ? (string) $match->teams['away']->title : '';
-                $team_name .= ' ' . trim( $home_title . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $away_title );
+
+        return self::format_placeholder_label( $placeholder );
+    }
+
+    /**
+     * Set of fixture IDs currently being resolved in generate_team_name to prevent cycles.
+     *
+     * @var array<int, bool>
+     */
+    private static array $resolving_fixture_ids = array();
+
+    /**
+     * Generate team name for winner/loser of previous match
+     *
+     * @param string $title
+     * @param Fixture_Repository_Interface $fixture_repository
+     *
+     * @return string|null
+     */
+    public static function generate_team_name( string $title, Fixture_Repository_Interface $fixture_repository ): ?string {
+        $placeholder = Team_Placeholder_Ref::parse( $title );
+        if ( null === $placeholder ) {
+            return null;
+        }
+        $team_name = self::format_placeholder_label( $placeholder );
+        if ( null !== $placeholder->fixture_id ) {
+            if ( isset( self::$resolving_fixture_ids[ $placeholder->fixture_id ] ) ) {
+                return $team_name;
+            }
+            self::$resolving_fixture_ids[ $placeholder->fixture_id ] = true;
+            try {
+                $match = $fixture_repository->find_by_id_with_relations( $placeholder->fixture_id );
+                if ( $match ) {
+                    $home_title = isset( $match->teams['home']->title ) ? trim( (string) $match->teams['home']->title ) : '';
+                    $away_title = isset( $match->teams['away']->title ) ? trim( (string) $match->teams['away']->title ) : '';
+                    if ( '' !== $home_title || '' !== $away_title ) {
+                        $team_name .= ' ' . trim( $home_title . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $away_title );
+                    }
+                }
+            } finally {
+                unset( self::$resolving_fixture_ids[ $placeholder->fixture_id ] );
             }
         }
         return $team_name;
@@ -693,19 +734,16 @@ class Util {
      * Get default number of match days
      *
      * @param string $type competition type.
-     * @param Club_Service|null $club_service
-     * @param Option_Service|null $option_service
-     * @param Club_Repository_Interface|null $club_repository
+     * @param Option_Service $option_service
+     * @param Club_Repository_Interface|Club_Service $club_collaborator
      *
      * @return int default number of match days.
      */
     public static function get_default_match_days(
         string $type,
-        ?Club_Service $club_service = null,
-        ?Option_Service $option_service = null,
-        ?Club_Repository_Interface $club_repository = null
+        Option_Service $option_service,
+        Club_Repository_Interface|Club_Service $club_collaborator
     ): int {
-        $option_service         ??= new Option_Service();
         $options                = $option_service->get_options();
         $rm_options             = $options['championship'] ?? array();
         $default_num_match_days = $rm_options['numRounds'] ?? 1;
@@ -715,9 +753,9 @@ class Util {
                     'count' => true,
                     'type'  => 'affiliated',
                 );
-                $num_clubs = $club_service
-                    ? $club_service->get_clubs( $args )
-                    : ( $club_repository ?? new Club_Repository() )->find_all( $args );
+                $num_clubs = $club_collaborator instanceof Club_Service
+                    ? $club_collaborator->get_clubs( $args )
+                    : $club_collaborator->find_all( $args );
                 if ( $num_clubs ) {
                     $num_match_days = (int) ceil( log( (float) $num_clubs, 2 ) );
                 } else {

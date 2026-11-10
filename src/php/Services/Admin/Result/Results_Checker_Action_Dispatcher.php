@@ -27,15 +27,12 @@ use Racketmanager\Services\Admin\Result\Results_Checker_Action_Dispatcher_Interf
  */
 readonly class Results_Checker_Action_Dispatcher implements Results_Checker_Action_Dispatcher_Interface {
 
-    private Results_Checker_Handler $commands;
-
     public function __construct(
         Results_Checker_Manager $results_checker_manager,
         Results_Checker_Repository_Interface $results_checker_repository,
         private Action_Guard_Interface $action_guard,
-        ?Results_Checker_Handler $commands = null,
+        private Results_Checker_Handler $commands,
     ) {
-        $this->commands = $commands ?? new Results_Checker_Handler( $results_checker_manager, $results_checker_repository );
     }
 
     /**

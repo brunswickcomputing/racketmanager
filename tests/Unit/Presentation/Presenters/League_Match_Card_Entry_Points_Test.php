@@ -34,11 +34,15 @@ use Racketmanager\Domain\Scoring\Set_Score;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\League_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Fixture_Presentation_Adapter;
+use Racketmanager\Presentation\Presenters\Fixture_Presenter;
+use Racketmanager\Presentation\Presenters\League_Archive_Presenter;
 use Racketmanager\Presentation\Presenters\Matches_List_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
 use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
@@ -100,11 +104,40 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
     }
 
     private function renderer(): Shortcode_Template_Renderer {
-        return new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) );
+        return new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ), new Club_Presenter(), new Player_Presenter() );
     }
 
     private function competition_presenter(): Competition_Shortcode_Presenter {
-        return new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) );
+        return new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ), new Club_Presenter(), new Player_Presenter() );
+    }
+
+    private function create_event_adapter( ...$args ): Event_Shortcode_Adapter {
+        return new Event_Shortcode_Adapter(
+            competition_shortcode_presenter: $args['competition_shortcode_presenter'] ?? $this->competition_presenter(),
+            tournament_presenter: $args['tournament_presenter'] ?? new Tournament_Presenter( 'd/m/Y' ),
+            player_presenter: $args['player_presenter'] ?? new Player_Presenter(),
+            team_details_presenter: $args['team_details_presenter'] ?? new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() )
+        );
+    }
+
+    private function create_league_adapter( ...$args ): League_Shortcode_Adapter {
+        $option_gateway = new Wp_Option_Gateway();
+        return new League_Shortcode_Adapter(
+            archive_presenter: $args['archive_presenter'] ?? new League_Archive_Presenter( $option_gateway ),
+            tournament_presenter: $args['tournament_presenter'] ?? new Tournament_Presenter( 'd/m/Y' ),
+            team_details_presenter: $args['team_details_presenter'] ?? new Team_Details_Presenter( $option_gateway, new Settings_Service() ),
+            player_presenter: $args['player_presenter'] ?? new Player_Presenter(),
+            fixture_presenter: $args['fixture_presenter'] ?? new Fixture_Presenter(
+                new Fixture_Link_Service(),
+                $option_gateway,
+                new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' )
+            ),
+            competition_service: $args['competition_service'] ?? null,
+            team_service: $args['team_service'] ?? null,
+            fixture_link_service: $args['fixture_link_service'] ?? null,
+            fixture_permission_service: $args['fixture_permission_service'] ?? null,
+            template_renderer: $args['template_renderer'] ?? null
+        );
     }
 
     /**
@@ -294,7 +327,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $presenter = new Tournament_Presenter( 'd/m/Y', $this->detail_service_expecting( $fixture, $detail, true ), team_match_row_presenter: $this->create_team_match_row_presenter() );
 
         $handler = new Get_League_Matches_Handler( $league_service, $this->league_query_service_with_matches( [ $fixture ] ) );
-        $adapter = new League_Shortcode_Adapter(
+        $adapter = $this->create_league_adapter(
             tournament_presenter: $presenter,
             template_renderer: $this->renderer()
         );
@@ -321,7 +354,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $league_service->method( 'get_league' )->willReturn( $league );
         $presenter = new Tournament_Presenter( 'd/m/Y', $service, team_match_row_presenter: $this->create_team_match_row_presenter() );
         $handler   = new Get_League_Matches_Handler( $league_service, $this->league_query_service_with_matches( [ $fixture ] ) );
-        $adapter   = new League_Shortcode_Adapter(
+        $adapter   = $this->create_league_adapter(
             tournament_presenter: $presenter,
             template_renderer: $this->renderer()
         );
@@ -356,7 +389,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $team_presenter = new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() );
         $presenter = new Tournament_Presenter( 'd/m/Y', $this->detail_service_expecting( $fixture, $detail, true ), team_match_row_presenter: $this->create_team_match_row_presenter() );
         $handler   = new Get_League_Teams_Handler( $league_service, $team_service, $stats, $this->league_query_service_with_matches( [ $fixture ] ) );
-        $adapter   = new League_Shortcode_Adapter(
+        $adapter   = $this->create_league_adapter(
             tournament_presenter: $presenter,
             team_details_presenter: $team_presenter,
             template_renderer: $this->renderer()
@@ -381,7 +414,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $presenter = new Tournament_Presenter( 'd/m/Y', $this->detail_service_expecting( $fixture, $detail, true ), team_match_row_presenter: $this->create_team_match_row_presenter() );
 
         $handler = new Get_League_Matches_Handler( $league_service, $this->league_query_service_with_matches( [ $fixture ] ) );
-        $adapter = new League_Shortcode_Adapter(
+        $adapter = $this->create_league_adapter(
             tournament_presenter: $presenter,
             template_renderer: $this->renderer()
         );
@@ -421,7 +454,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $team_presenter = new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() );
         $presenter = new Tournament_Presenter( 'd/m/Y', $service, team_match_row_presenter: $this->create_team_match_row_presenter() );
         $handler   = new Get_League_Teams_Handler( $league_service, $team_service, $stats, $this->league_query_service_with_matches( [ $fixture ] ) );
-        $adapter   = new League_Shortcode_Adapter(
+        $adapter   = $this->create_league_adapter(
             tournament_presenter: $presenter,
             team_details_presenter: $team_presenter,
             template_renderer: $this->renderer()
@@ -533,7 +566,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
             $rubber_repo,
             $this->league_query_service_with_matches( [ $fixture ] )
         );
-        $adapter = new League_Shortcode_Adapter(
+        $adapter = $this->create_league_adapter(
             competition_service: $comp_service,
             team_service: $team_service,
             fixture_link_service: $link_service,
@@ -591,7 +624,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
 
         $presenter = new Tournament_Presenter( 'd/m/Y', $this->detail_service_expecting( $fixture, $detail, true ), team_match_row_presenter: $this->create_team_match_row_presenter() );
         $handler   = new Get_Event_Teams_Handler( $comp_service, $stats, $team_service, $this->event_query_service_with_fixtures( [ $fixture ] ) );
-        $adapter   = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
+        $adapter   = $this->create_event_adapter(
             competition_shortcode_presenter: $this->competition_presenter(),
             tournament_presenter: $presenter,
             team_details_presenter: new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() )
@@ -653,7 +686,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $stats     = $this->createStub( Player_Stats_Service::class );
         $presenter = new Tournament_Presenter( 'd/m/Y', team_match_row_presenter: $this->create_team_match_row_presenter() );
         $handler   = new Get_Event_Teams_Handler( $competition_service, $stats, $team_service, $this->event_query_service_with_fixtures( [ $fixture ] ) );
-        $adapter   = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
+        $adapter   = $this->create_event_adapter(
             competition_shortcode_presenter: $this->competition_presenter(),
             tournament_presenter: $presenter,
             team_details_presenter: new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() )
@@ -710,7 +743,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
             $this->event_query_service_with_fixtures( [], [ $league ] ),
             $this->league_query_service_with_matches( [ $fixture ] )
         );
-        $adapter = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
+        $adapter = $this->create_event_adapter(
             tournament_presenter: new Tournament_Presenter( 'd/m/Y', team_match_row_presenter: $this->create_team_match_row_presenter() )
         );
 
@@ -747,7 +780,9 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
             $comp_service,
             $team_service,
             $renderer,
-            $presenter
+            $presenter,
+            new Club_Presenter(),
+            new Player_Presenter()
         );
 
         $grouped = $list_presenter->group_by_league( [ $fixture ] );
@@ -804,7 +839,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
 
         $presenter = new Tournament_Presenter( 'd/m/Y', $this->detail_service_expecting( $fixture, $detail, true ), team_match_row_presenter: $this->create_team_match_row_presenter() );
         $handler   = new Get_Event_Matches_Handler( $comp_service, null, $this->event_query_service_with_fixtures( [], [ $league ] ), $this->league_query_service_with_matches( [ $fixture ] ) );
-        $adapter   = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
+        $adapter   = $this->create_event_adapter(
             tournament_presenter: $presenter
         );
         $vm = $adapter->present_matches( $handler->handle( new Get_Event_Matches_Query( event_id: 12 ) ) );
@@ -830,8 +865,8 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
 
         $handler = new Get_Event_Draw_Handler( $comp_service, null, $this->createStub( Fixture_Detail_Service::class ), $this->event_query_service_with_fixtures( [], [ $league ] ), $this->league_query_service_with_matches( [ $fixture ] ) );
-        $adapter = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
-            competition_shortcode_presenter: new Competition_Shortcode_Presenter()
+        $adapter = $this->create_event_adapter(
+            competition_shortcode_presenter: $this->competition_presenter()
         );
         $vm      = $adapter->present_draw( $handler->handle( new Get_Event_Draw_Query( event_id: 12 ) ) );
 
@@ -872,7 +907,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
 
         $presenter = new Tournament_Presenter( 'd/m/Y', $detail_service, team_match_row_presenter: $this->create_team_match_row_presenter() );
         $handler   = new Get_Event_Clubs_Handler( $comp_service, $club_service, $stats, $this->event_query_service_with_fixtures( [ $fixture ] ) );
-        $adapter   = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
+        $adapter   = $this->create_event_adapter(
             competition_shortcode_presenter: $this->competition_presenter(),
             tournament_presenter: $presenter
         );
@@ -926,7 +961,8 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $handler   = new Get_Competition_Clubs_Handler( $comp_service, $club_service, $stats, $this->competition_season_service() );
         $vm        = ( new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Competition_Shortcode_Adapter(
             competition_shortcode_presenter: $this->competition_presenter(),
-            tournament_presenter: $presenter
+            tournament_presenter: $presenter,
+            player_presenter: new Player_Presenter()
         ) )->present_clubs( $handler->handle( new Get_Competition_Clubs_Query( competition_id: 1, club_identifier: '5', template: '' ) ) );
 
         $this->assertSame( 'clubs', $vm->template, (string) $vm->error_message );

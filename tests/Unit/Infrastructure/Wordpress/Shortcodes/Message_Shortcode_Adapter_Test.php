@@ -11,6 +11,9 @@ use Racketmanager\Application\Message\Queries\Get_Message_Query;
 use Racketmanager\Application\Message\Queries\Get_Messages_Handler;
 use Racketmanager\Application\Message\Queries\Get_Messages_Query;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Message_Shortcode_Adapter;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
+use Racketmanager\Presentation\Presenters\Message_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
@@ -36,7 +39,7 @@ class Message_Shortcode_Adapter_Test extends TestCase {
             }
         };
 
-        $view_presenter = new Shortcode_View_Presenter( new \Racketmanager\Presentation\View\Shortcode_Template_Renderer( $renderer ) );
+        $view_presenter = new Shortcode_View_Presenter( new \Racketmanager\Presentation\View\Shortcode_Template_Renderer( $renderer, new Club_Presenter(), new Player_Presenter() ) );
         $this->messages_handler = $this->createStub( Get_Messages_Handler::class );
         $this->message_handler  = $this->createStub( Get_Message_Handler::class );
 
@@ -44,7 +47,8 @@ class Message_Shortcode_Adapter_Test extends TestCase {
             $racketmanager,
             $view_presenter,
             $this->messages_handler,
-            $this->message_handler
+            $this->message_handler,
+            new Message_Presenter()
         );
     }
 

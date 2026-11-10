@@ -11,7 +11,6 @@ declare( strict_types=1 );
 namespace Racketmanager\Services;
 
 use Racketmanager\Application\Mail\Mailer_Interface;
-use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\RacketManager;
 
 class Notify_Service {
@@ -19,9 +18,9 @@ class Notify_Service {
     private RacketManager $racketmanager;
     private Mailer_Interface $mailer;
 
-    public function __construct( RacketManager $plugin_instance, ?Mailer_Interface $mailer = null ) {
+    public function __construct( RacketManager $plugin_instance, Mailer_Interface $mailer ) {
         $this->racketmanager = $plugin_instance;
-        $this->mailer        = $mailer ?? new Wp_Mailer();
+        $this->mailer        = $mailer;
     }
 
     /**

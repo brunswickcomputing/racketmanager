@@ -12,6 +12,9 @@ use Racketmanager\Application\Message\Queries\Get_Messages_Query;
 use Racketmanager\Domain\Communication\Message;
 use Racketmanager\Domain\Player\User;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Message_Shortcode_Adapter;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
+use Racketmanager\Presentation\Presenters\Message_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;
@@ -45,7 +48,7 @@ class Message_Shortcode_Handlers_Test extends TestCase {
             }
         };
 
-        $this->view_presenter = new Shortcode_View_Presenter( new \Racketmanager\Presentation\View\Shortcode_Template_Renderer( $this->renderer ) );
+        $this->view_presenter = new Shortcode_View_Presenter( new \Racketmanager\Presentation\View\Shortcode_Template_Renderer( $this->renderer, new Club_Presenter(), new Player_Presenter() ) );
     }
 
     public function test_messages_handler_when_logged_out(): void {
@@ -234,11 +237,14 @@ class Message_Shortcode_Handlers_Test extends TestCase {
             $this->racketmanager,
             new Shortcode_View_Presenter(
                 new Shortcode_Template_Renderer(
-                    new Php_View_Renderer( dirname( __DIR__, 5 ) . '/templates/' )
+                    new Php_View_Renderer( dirname( __DIR__, 5 ) . '/templates/' ),
+                    new Club_Presenter(),
+                    new Player_Presenter()
                 )
             ),
             $this->createStub( Get_Messages_Handler::class ),
             $handler,
+            new Message_Presenter(),
             security_service: new class implements \Racketmanager\Infrastructure\Security\Security_Service_Interface {
                 public function is_user_logged_in(): bool { return true; }
                 public function get_current_user_id(): int { return 101; }
@@ -283,10 +289,11 @@ class Message_Shortcode_Handlers_Test extends TestCase {
         $adapter = new Message_Shortcode_Adapter(
             $this->racketmanager,
             new Shortcode_View_Presenter(
-                new Shortcode_Template_Renderer( new Php_View_Renderer( dirname( __DIR__, 5 ) . '/templates/' ) )
+                new Shortcode_Template_Renderer( new Php_View_Renderer( dirname( __DIR__, 5 ) . '/templates/' ), new Club_Presenter(), new Player_Presenter() )
             ),
             $handler,
             $this->createStub( Get_Message_Handler::class ),
+            new Message_Presenter(),
             security_service: new class implements \Racketmanager\Infrastructure\Security\Security_Service_Interface {
                 public function is_user_logged_in(): bool { return true; }
                 public function get_current_user_id(): int { return 101; }
@@ -321,10 +328,11 @@ class Message_Shortcode_Handlers_Test extends TestCase {
         $adapter = new Message_Shortcode_Adapter(
             $this->racketmanager,
             new Shortcode_View_Presenter(
-                new Shortcode_Template_Renderer( new Php_View_Renderer( dirname( __DIR__, 5 ) . '/templates/' ) )
+                new Shortcode_Template_Renderer( new Php_View_Renderer( dirname( __DIR__, 5 ) . '/templates/' ), new Club_Presenter(), new Player_Presenter() )
             ),
             $handler,
             $this->createStub( Get_Message_Handler::class ),
+            new Message_Presenter(),
             security_service: new class implements \Racketmanager\Infrastructure\Security\Security_Service_Interface {
                 public function is_user_logged_in(): bool { return true; }
                 public function get_current_user_id(): int { return 101; }
@@ -350,7 +358,8 @@ class Message_Shortcode_Handlers_Test extends TestCase {
             $this->racketmanager,
             $this->view_presenter,
             $messages_handler,
-            $message_handler
+            $message_handler,
+            new Message_Presenter()
         );
 
         $this->assertNotEmpty( $adapter->show_messages( [] ) );

@@ -10,8 +10,6 @@ declare( strict_types=1 );
 namespace Racketmanager\Infrastructure\Wordpress\Ajax;
 
 use JetBrains\PhpStorm\NoReturn;
-use Racketmanager\Infrastructure\Security\Security_Service;
-use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory;
 use Racketmanager\RacketManager;
 
 /**
@@ -80,19 +78,7 @@ class Club_Ajax_Controller {
             return $this->adapter;
         }
 
-        $c = $this->racketmanager->container;
-        if ( $c->has( 'club_ajax_adapter' ) ) {
-            return $c->get( 'club_ajax_adapter' );
-        }
-
-        return new Club_Ajax_Adapter(
-            $c->has( 'security_service' ) ? $c->get( 'security_service' ) : new Security_Service(),
-            $c->has( 'json_response_factory' ) ? $c->get( 'json_response_factory' ) : new Json_Response_Factory(),
-            $c->get( 'club_service' ),
-            $c->get( 'registration_service' ),
-            $c->has( 'user_repository' ) ? $c->get( 'user_repository' ) : null,
-            $c->has( 'club_role_repository' ) ? $c->get( 'club_role_repository' ) : null
-        );
+        return $this->racketmanager->container->get( Club_Ajax_Adapter::class );
     }
 
     #[NoReturn]

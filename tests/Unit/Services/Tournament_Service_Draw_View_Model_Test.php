@@ -9,6 +9,7 @@ use Racketmanager\Admin\Presenters\Admin_Championship_Finals_Presenter;
 use Racketmanager\Admin\Presenters\Admin_Date_Presenter;
 use Racketmanager\Admin\View_Models\Admin_Championship_Final_Fixture_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
+use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
@@ -19,6 +20,7 @@ use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Tournament\Championship;
 use Racketmanager\Domain\Tournament\Tournament;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Charge_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
@@ -77,6 +79,8 @@ final class Tournament_Service_Draw_View_Model_Test extends TestCase {
             club_service: $this->createStub( Club_Service::class ),
             finance_service: $this->createStub( Finance_Service::class ),
             league_service: $league_service,
+            mailer: $this->createStub( Mailer_Interface::class ),
+            option_service: $this->createStub( Option_Service::class ),
             league_repository: $league_repository,
         );
 

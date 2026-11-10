@@ -5,6 +5,8 @@ namespace Racketmanager\Tests\Unit\Services\Admin\Player;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Player\Commands\Create_Player_Handler;
+use Racketmanager\Application\Player\Commands\Update_Player_Handler;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Exceptions\Duplicate_BTM_Exception;
@@ -33,7 +35,12 @@ final class Player_Action_Dispatcher_Test extends TestCase {
         parent::setUp();
         $this->player_service = $this->createMock( Player_Service::class );
         $this->guard          = $this->createMock( Action_Guard_Interface::class );
-        $this->dispatcher     = new Player_Action_Dispatcher( $this->player_service, $this->guard );
+        $this->dispatcher     = new Player_Action_Dispatcher(
+            $this->player_service,
+            $this->guard,
+            new Update_Player_Handler( $this->player_service ),
+            new Create_Player_Handler( $this->player_service )
+        );
     }
 
     public function test_unhandled_action_returns_empty_dto(): void {
@@ -455,7 +462,8 @@ final class Player_Action_Dispatcher_Test extends TestCase {
         $dispatcher = new Player_Action_Dispatcher(
             player_service: $this->player_service,
             action_guard: $this->guard,
-            update_player_handler: $update_handler
+            update_player_handler: $update_handler,
+            create_player_handler: new Create_Player_Handler( $this->player_service )
         );
 
         $result = $dispatcher->handle(
@@ -484,6 +492,7 @@ final class Player_Action_Dispatcher_Test extends TestCase {
         $dispatcher = new Player_Action_Dispatcher(
             player_service: $this->player_service,
             action_guard: $this->guard,
+            update_player_handler: new Update_Player_Handler( $this->player_service ),
             create_player_handler: $create_handler
         );
 

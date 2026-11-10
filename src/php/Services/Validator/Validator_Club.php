@@ -10,7 +10,6 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Validator;
 
-use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
@@ -20,14 +19,15 @@ use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
  * Class to implement the Club Validator object
  */
 final class Validator_Club extends Validator {
-    private Club_Role_Repository_Interface $club_role_repository;
+    private ?Club_Role_Repository_Interface $club_role_repository = null;
 
     /**
      * Constructor
      *
      * @param Club_Role_Repository_Interface|null $club_role_repository
-     * @param Player_Repository_Interface|null    $player_repository  Resolved from the container / instantiated lazily when null.
-     * @param User_Repository_Interface|null      $user_repository    Resolved from the container / instantiated lazily when null.
+     * @param Player_Repository_Interface|null    $player_repository
+     * @param User_Repository_Interface|null      $user_repository
+     * @param Club_Repository_Interface|null      $club_repository
      */
     public function __construct(
         ?Club_Role_Repository_Interface $club_role_repository = null,
@@ -36,7 +36,7 @@ final class Validator_Club extends Validator {
         ?Club_Repository_Interface $club_repository = null
     ) {
         parent::__construct( player_repository: $player_repository, club_repository: $club_repository, user_repository: $user_repository );
-        $this->club_role_repository = $club_role_repository ?? new Club_Role_Repository();
+        $this->club_role_repository = $club_role_repository;
     }
     /**
      * Validate name
@@ -119,6 +119,9 @@ final class Validator_Club extends Validator {
             $this->err_flds[] = 'userName';
             $this->err_msgs[] = __( 'Club role not found', 'racketmanager' );
         } else {
+            if ( null === $this->club_role_repository ) {
+                throw new \LogicException( 'Club role repository has not been configured on this Validator_Club instance.' );
+            }
             $club_role = $this->club_role_repository->find( $club_role_id );
             if ( ! $club_role ) {
                 $this->error      = true;

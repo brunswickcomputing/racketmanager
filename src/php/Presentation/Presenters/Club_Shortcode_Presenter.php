@@ -15,15 +15,15 @@ use function Racketmanager\show_alert;
 class Club_Shortcode_Presenter {
     public function __construct(
         private readonly View_Renderer_Interface $renderer,
-        private readonly ?Club_Presenter $club_presenter = null,
-        private readonly ?Player_Presenter $player_presenter = null,
+        private readonly Club_Presenter $club_presenter,
+        private readonly Player_Presenter $player_presenter,
         private readonly ?Favourite_Presenter $favourite_presenter = null
     ) {}
 
     public function render( Club_View_Model $vm ): string {
         $default_vars = [
-            'club_presenter'   => $this->club_presenter ?? new Club_Presenter(),
-            'player_presenter' => $this->player_presenter ?? new Player_Presenter(),
+            'club_presenter'   => $this->club_presenter,
+            'player_presenter' => $this->player_presenter,
         ];
 
         if ( null !== $vm->error_message ) {

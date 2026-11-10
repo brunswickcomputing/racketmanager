@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Repositories;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Repositories\Concerns\Wpdb_Transactions;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
@@ -435,5 +436,153 @@ final class Team_Repository_Test extends TestCase {
 				'sql'
 			)
 		);
+	}
+
+	public function test_find_by_id_enriches_placeholder_title_with_translated_match_relations(): void {
+		$GLOBALS['wp_stubs_translate_callback'] = static function ( string $text, string $domain ): string {
+			return match ( $text ) {
+				'Winner of' => 'Vainqueur de',
+				'vs'        => 'contre',
+				default     => $text,
+			};
+		};
+
+		$fixture        = Fixture_Factory::from_object( (object) array( 'id' => 250 ) );
+		$fixture->teams = array(
+			'home' => (object) array( 'title' => 'Alpha' ),
+			'away' => (object) array( 'title' => 'Beta' ),
+		);
+
+		$fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+		$fixture_repo->expects( $this->once() )
+			->method( 'find_by_id_with_relations' )
+			->with( 250 )
+			->willReturn( $fixture );
+
+		$this->db->get_row_return = (object) array(
+			'id'        => 12,
+			'title'     => '1_semi_250',
+			'team_ref'  => '1_semi_250',
+			'team_type' => null,
+		);
+
+		$repo = new Team_Repository( $this->db, null, $fixture_repo );
+		$team = $repo->find_by_id( 12 );
+
+		$this->assertNotNull( $team );
+		$this->assertSame( 'Vainqueur de Alpha contre Beta', $team->title );
+	}
+
+	public function test_find_by_id_resolves_lazy_fixture_repository_closure_only_once(): void {
+		$fixture        = Fixture_Factory::from_object( (object) array( 'id' => 250 ) );
+		$fixture->teams = array(
+			'home' => (object) array( 'title' => 'Alpha' ),
+			'away' => (object) array( 'title' => 'Beta' ),
+		);
+
+		$fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+		$fixture_repo->expects( $this->exactly( 2 ) )
+			->method( 'find_by_id_with_relations' )
+			->with( 250 )
+			->willReturn( $fixture );
+
+		$closure_invocations = 0;
+		$repo = new Team_Repository(
+			$this->db,
+			null,
+			function () use ( &$closure_invocations, $fixture_repo ) {
+				$closure_invocations++;
+				return $fixture_repo;
+			}
+		);
+
+		$this->db->get_row_return = (object) array(
+			'id'        => 12,
+			'title'     => '1_semi_250',
+			'team_ref'  => '1_semi_250',
+			'team_type' => null,
+		);
+		$repo->find_by_id( 12 );
+
+		$this->db->get_row_return = (object) array(
+			'id'        => 13,
+			'title'     => '1_semi_250',
+			'team_ref'  => '1_semi_250',
+			'team_type' => null,
+		);
+		$repo->find_by_id( 13 );
+
+		$this->assertSame( 1, $closure_invocations );
+	}
+
+	public function test_find_by_id_falls_back_to_localized_base_label_when_no_fixture_repo_or_match_missing(): void {
+		$GLOBALS['wp_stubs_translate_callback'] = static function ( string $text, string $domain ): string {
+			return 'Winner of' === $text ? 'Vainqueur de' : $text;
+		};
+
+		// Case A: No fixture repository injected
+		$this->db->get_row_return = (object) array(
+			'id'        => 12,
+			'title'     => '1_semi_250',
+			'team_ref'  => '1_semi_250',
+			'team_type' => null,
+		);
+		$repo_no_fixture = new Team_Repository( $this->db );
+		$team1           = $repo_no_fixture->find_by_id( 12 );
+		$this->assertNotNull( $team1 );
+		$this->assertSame( 'Vainqueur de', $team1->title );
+
+		// Clear cache for next lookup
+		wp_cache_delete( 12, 'teams' );
+
+		// Case B: Fixture repo returns null
+		$fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+		$fixture_repo->expects( $this->once() )
+			->method( 'find_by_id_with_relations' )
+			->with( 250 )
+			->willReturn( null );
+
+		$repo_with_fixture = new Team_Repository( $this->db, null, $fixture_repo );
+		$team2             = $repo_with_fixture->find_by_id( 12 );
+		$this->assertNotNull( $team2 );
+		$this->assertSame( 'Vainqueur de', $team2->title );
+	}
+
+	public function test_find_by_id_breaks_recursive_fixture_team_cycle_gracefully(): void {
+		$fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+
+		$repo = new Team_Repository( $this->db, null, $fixture_repo );
+
+		$fixture_repo->expects( $this->once() )
+			->method( 'find_by_id_with_relations' )
+			->with( 250 )
+			->willReturnCallback( function () use ( $repo ) {
+				// Re-entrant call while resolving fixture 250
+				$this->db->get_row_return = (object) array(
+					'id'        => 12,
+					'title'     => '1_semi_250',
+					'team_ref'  => '1_semi_250',
+					'team_type' => null,
+				);
+				$repo->find_by_id( 12 );
+
+				$fixture        = Fixture_Factory::from_object( (object) array( 'id' => 250 ) );
+				$fixture->teams = array(
+					'home' => (object) array( 'title' => 'Alpha' ),
+					'away' => (object) array( 'title' => 'Beta' ),
+				);
+				return $fixture;
+			} );
+
+		$this->db->get_row_return = (object) array(
+			'id'        => 12,
+			'title'     => '1_semi_250',
+			'team_ref'  => '1_semi_250',
+			'team_type' => null,
+		);
+
+		$team = $repo->find_by_id( 12 );
+		$this->assertNotNull( $team );
+		$this->assertSame( 'Winner of Alpha vs Beta', $team->title );
 	}
 }

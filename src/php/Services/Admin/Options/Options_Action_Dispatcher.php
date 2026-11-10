@@ -51,7 +51,7 @@ readonly final class Options_Action_Dispatcher implements Options_Action_Dispatc
 
     /**
      * @param Action_Guard_Interface $action_guard Security and capability guard.
-     * @param Option_Service|null    $option_service Optional options service.
+     * @param Option_Service         $option_service Required options service.
      * @param callable|null          $options_updater Optional callable to update options.
      * @param callable|null          $options_provider Optional callable to retrieve current options.
      * @param callable|null          $scheduler Optional callable to schedule result chase.
@@ -60,19 +60,17 @@ readonly final class Options_Action_Dispatcher implements Options_Action_Dispatc
      */
     public function __construct(
         private Action_Guard_Interface $action_guard,
-        ?Option_Service $option_service = null,
+        Option_Service $option_service,
         ?callable $options_updater = null,
         ?callable $options_provider = null,
         ?callable $scheduler = null,
         ?callable $competition_types_provider = null,
         ?callable $event_grades_provider = null,
     ) {
-        $service = $option_service ?? new Option_Service();
-
-        $updater = $options_updater ?? ( $service->update_plugin_options( ... ) );
+        $updater = $options_updater ?? ( $option_service->update_plugin_options( ... ) );
         $this->options_updater = $updater( ... );
 
-        $provider = $options_provider ?? ( $service->get_options( ... ) );
+        $provider = $options_provider ?? ( $option_service->get_options( ... ) );
         $this->options_provider = $provider( ... );
 
         $schedule        = $scheduler ?? ( Util::schedule_result_chase( ... ) );

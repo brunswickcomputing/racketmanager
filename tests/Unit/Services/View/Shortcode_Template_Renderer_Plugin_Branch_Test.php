@@ -6,6 +6,8 @@ namespace Racketmanager\Tests\Unit\Services\View;
 require_once __DIR__ . '/../../../wp-stubs.php';
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Typed_Scope_Vm;
@@ -39,7 +41,7 @@ final class Shortcode_Template_Renderer_Plugin_Branch_Test extends TestCase {
             '<?php echo "vm_title:" . $vm->title . "|local_title:" . ( isset( $title ) ? "yes" : "no" ) . "|presenter:" . ( isset( $vm->club_presenter ) ? "yes" : "no" );'
         );
 
-        $subject = new Shortcode_Template_Renderer( new Php_View_Renderer( $this->base ) );
+        $subject = new Shortcode_Template_Renderer( new Php_View_Renderer( $this->base ), new Club_Presenter(), new Player_Presenter() );
         $output  = $subject->render( 'plain', [ 'title' => 'Cup' ], 'match' );
 
         $this->assertSame( 'vm_title:Cup|local_title:no|presenter:yes', $output );
@@ -52,14 +54,14 @@ final class Shortcode_Template_Renderer_Plugin_Branch_Test extends TestCase {
         );
 
         $vm      = new Typed_Scope_Vm( 'Typed title' );
-        $subject = new Shortcode_Template_Renderer( new Php_View_Renderer( $this->base ) );
+        $subject = new Shortcode_Template_Renderer( new Php_View_Renderer( $this->base ), new Club_Presenter(), new Player_Presenter() );
         $output  = $subject->render( 'typed', [ 'vm' => $vm, 'extra' => 'supplemental' ], 'match' );
 
         $this->assertSame( Typed_Scope_Vm::class . '|title:Typed title|extra:supplemental|presenter:yes|vm_has_extra:no', $output );
     }
 
     public function test_real_plugin_alert_template_renders_message_through_the_renderer(): void {
-        $subject = new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) );
+        $subject = new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ), new Club_Presenter(), new Player_Presenter() );
         $output  = $subject->render_alert( 'Something broke' );
 
         $this->assertStringContainsString( 'Something broke', $output );

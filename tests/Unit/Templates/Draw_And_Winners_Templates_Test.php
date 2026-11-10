@@ -23,14 +23,19 @@ use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Tournament\Tournament;
+use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Draw_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
+use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
+use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
@@ -53,7 +58,11 @@ class Draw_And_Winners_Templates_Test extends TestCase {
 
         $template_path           = defined( 'RACKETMANAGER_PATH' ) ? RACKETMANAGER_PATH . 'templates/' : dirname( __DIR__, 3 ) . '/templates/';
         $this->view_renderer     = new Php_View_Renderer( $template_path );
-        $this->template_renderer = new Shortcode_Template_Renderer( $this->view_renderer );
+        $this->template_renderer = new Shortcode_Template_Renderer(
+            $this->view_renderer,
+            new Club_Presenter(),
+            new Player_Presenter()
+        );
     }
 
     protected function tearDown(): void {
@@ -75,7 +84,11 @@ class Draw_And_Winners_Templates_Test extends TestCase {
     }
 
     public function test_present_competition_winners_generates_correct_urls(): void {
-        $presenter = new Competition_Shortcode_Presenter();
+        $presenter = new Competition_Shortcode_Presenter(
+            $this->view_renderer,
+            new Club_Presenter(),
+            new Player_Presenter()
+        );
         $winner_item = (object) [
             'competition_type' => 'cup',
             'event_name'       => 'Mens Singles',
@@ -145,7 +158,11 @@ class Draw_And_Winners_Templates_Test extends TestCase {
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
         $comp_service->method( 'get_winners_for_competition' )->willReturn( [ 'LADIES' => [ $winner_item ] ] );
 
-        $presenter = new Competition_Shortcode_Presenter();
+        $presenter = new Competition_Shortcode_Presenter(
+            $this->view_renderer,
+            new Club_Presenter(),
+            new Player_Presenter()
+        );
         $handler   = new Get_Competition_Winners_Handler( $comp_service, $this->competition_season_service() );
         $result    = $handler->handle( new Get_Competition_Winners_Query( competition_id: 10, season: 2026 ) );
 
@@ -193,7 +210,7 @@ class Draw_And_Winners_Templates_Test extends TestCase {
 
         $handler = new Get_Tournament_Winners_Handler( $tourn_service );
         $result  = $handler->handle( new Get_Tournament_Winners_Query( tournament_id: 55 ) );
-        $adapter = new Tournament_Shortcode_Adapter( tournament_presenter: new Tournament_Presenter() );
+        $adapter = new Tournament_Shortcode_Adapter( tournament_presenter: new Tournament_Presenter(), player_presenter: new \Racketmanager\Presentation\Presenters\Player_Presenter() );
         $vm      = $adapter->present_winners( $result );
 
         $this->assertFalse( $vm->is_error() );
@@ -344,7 +361,14 @@ class Draw_And_Winners_Templates_Test extends TestCase {
             );
 
         $adapter = new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter(
-            competition_shortcode_presenter: new Competition_Shortcode_Presenter()
+            competition_shortcode_presenter: new Competition_Shortcode_Presenter(
+                $this->view_renderer,
+                new Club_Presenter(),
+                new Player_Presenter()
+            ),
+            tournament_presenter: new Tournament_Presenter(),
+            player_presenter: new Player_Presenter(),
+            team_details_presenter: new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() )
         );
         $handler = new Get_Event_Draw_Handler( $comp_service, $league_service, $detail_service, $this->event_query_service( $this->event_repository_with_results( [ 'query_leagues' => [ $league ] ] ) ), $this->stub_league_query );
         $result  = $handler->handle( new Get_Event_Draw_Query( event_id: 8, season: '2025' ) );
@@ -537,7 +561,7 @@ class Draw_And_Winners_Templates_Test extends TestCase {
         $handler   = new Get_Tournament_Draws_Handler( $tournament_service );
 
         $result  = $handler->handle( new Get_Tournament_Draws_Query( tournament_id: 20, draw_id: 'mens-doubles' ) );
-        $adapter = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter );
+        $adapter = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter, player_presenter: new \Racketmanager\Presentation\Presenters\Player_Presenter() );
         $vm      = $adapter->present_draws( $result );
 
         $this->assertFalse( $vm->is_error() );

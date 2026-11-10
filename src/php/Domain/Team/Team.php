@@ -205,10 +205,10 @@ class Team {
 		$this->matches     = $dto->matches;
 
 		if ( ! empty( $this->title ) && str_contains( $this->title, '_' ) ) {
-			$team_name = Util::generate_team_name( $this->title );
-			if ( ! empty( $team_name ) ) {
+			$placeholder = Team_Placeholder_Ref::parse( $this->title );
+			if ( null !== $placeholder ) {
 				$this->team_ref = $this->title;
-				$this->title    = $team_name;
+				$this->title    = $placeholder->default_label();
 			}
 		}
 	}

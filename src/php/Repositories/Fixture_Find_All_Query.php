@@ -51,30 +51,22 @@ class Fixture_Find_All_Query {
     private Fixture_Repository_Interface $fixture_repository;
 
     /**
-     * Rubber repository for player match rubber loading.
-     *
-     * @var Rubber_Repository_Interface|null
-     */
-    private ?Rubber_Repository_Interface $rubber_repository;
-
-    /**
      * Constructor.
      *
      * @param wpdb|null                        $wpdb               Database object.
      * @param string                           $table_name         Matches table name.
      * @param Fixture_Repository_Interface     $fixture_repository Fixture repository.
-     * @param Rubber_Repository_Interface|null $rubber_repository  Rubber repository.
+     * @param Rubber_Repository_Interface|null $rubber_repository Rubber repository for player hydration.
      */
     public function __construct(
         ?wpdb $wpdb,
         string $table_name,
         Fixture_Repository_Interface $fixture_repository,
-        ?Rubber_Repository_Interface $rubber_repository = null
+        private readonly ?Rubber_Repository_Interface $rubber_repository
     ) {
         $this->wpdb               = $wpdb;
         $this->table_name         = $table_name;
         $this->fixture_repository = $fixture_repository;
-        $this->rubber_repository  = $rubber_repository;
     }
 
     /**
@@ -476,8 +468,10 @@ class Fixture_Find_All_Query {
             $match_id = (int) ( is_object( $match ) ? $match->id : $match );
             $fixture  = $this->fixture_repository->find_by_id( $match_id );
             if ( $player && $fixture ) {
-                $rubber_repo = $this->rubber_repository ?? new Rubber_Repository();
-                $fixture->set_rubbers( $rubber_repo->find_by_fixture_id( (int) $fixture->get_id(), (int) $player ) );
+                if ( null === $this->rubber_repository ) {
+                    throw new \LogicException( 'Fixture player queries require a rubber repository.' );
+                }
+                $fixture->set_rubbers( $this->rubber_repository->find_by_fixture_id( (int) $fixture->get_id(), (int) $player ) );
             }
             if ( $fixture ) {
                 $hydrated_matches[ $i ] = $fixture;

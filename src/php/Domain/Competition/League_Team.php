@@ -15,7 +15,7 @@ use Racketmanager\Domain\DTO\Competition\League_Team_Hydration_DTO;
 use Racketmanager\Domain\Enums\Team_Profile;
 use Racketmanager\Domain\Shared\Serialized_Column;
 use Racketmanager\Domain\Shared\Typed_Property_Hydrator;
-use Racketmanager\Util\Util;
+use Racketmanager\Domain\Team\Team_Placeholder_Ref;
 use Racketmanager\Util\Util_Lookup;
 
 /**
@@ -489,10 +489,10 @@ class League_Team {
             $this->status_icon = 'dot';
         }
         if ( ! empty( $this->title ) && str_contains( $this->title, '_' ) ) {
-            $team_name = Util::generate_team_name( $this->title );
-            if ( ! empty( $team_name ) ) {
+            $placeholder = Team_Placeholder_Ref::parse( $this->title );
+            if ( null !== $placeholder ) {
                 $this->team_ref = $this->title;
-                $this->title    = $team_name;
+                $this->title    = $placeholder->default_label();
             }
         }
     }
@@ -667,7 +667,7 @@ class League_Team {
      * @return int
      */
     public function get_diff(): int {
-        return $this->diff;
+        return (int) $this->diff;
     }
 
     /**

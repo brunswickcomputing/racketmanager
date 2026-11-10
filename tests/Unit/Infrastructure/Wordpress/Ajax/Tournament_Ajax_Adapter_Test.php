@@ -5,7 +5,10 @@ namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Ajax;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Tournament\Commands\Create_Tournament_Payment_Handler;
 use Racketmanager\Application\Tournament\Commands\Submit_Tournament_Entry_Handler;
+use Racketmanager\Application\Tournament\Commands\Submit_Tournament_Partner_Handler;
+use Racketmanager\Application\Tournament\Commands\Withdraw_Tournament_Entry_Handler;
 use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Entry_Request_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Entry_Response_DTO;
 use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Partner_Request_DTO;
@@ -73,8 +76,11 @@ class Tournament_Ajax_Adapter_Test extends TestCase {
             $response_factory,
             $this->competition_entry_service,
             $this->finance_service,
-            $tournament_service,
-            submit_tournament_entry_handler: $entry_handler
+            withdraw_tournament_entry_handler: new Withdraw_Tournament_Entry_Handler( $this->competition_entry_service ),
+            create_tournament_payment_handler: new Create_Tournament_Payment_Handler( $this->finance_service ),
+            submit_tournament_partner_handler: new Submit_Tournament_Partner_Handler( $this->competition_entry_service ),
+            submit_tournament_entry_handler: $entry_handler ?? new Submit_Tournament_Entry_Handler( $this->competition_entry_service ),
+            tournament_service: $tournament_service
         );
     }
 

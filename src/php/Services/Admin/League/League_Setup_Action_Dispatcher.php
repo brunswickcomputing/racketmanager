@@ -28,15 +28,12 @@ use Racketmanager\Services\Competition_Service;
  */
 readonly final class League_Setup_Action_Dispatcher {
 
-    private League_Setup_Handler $commands;
-
     public function __construct(
         Competition_Service $competition_service,
         private Action_Guard_Interface $action_guard,
         Event_Repository_Interface $event_repository,
-        ?League_Setup_Handler $commands = null,
+        private League_Setup_Handler $commands,
     ) {
-        $this->commands = $commands ?? new League_Setup_Handler( $competition_service, $event_repository );
     }
 
     /**

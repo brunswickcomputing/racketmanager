@@ -8,14 +8,10 @@ use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Domain\Enums\Fixture_Status;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
-use Racketmanager\Repositories\League_Repository;
-use Racketmanager\Repositories\League_Team_Repository;
-use Racketmanager\Repositories\Rubber_Repository;
 use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Util\Util;
@@ -24,19 +20,19 @@ use Racketmanager\Util\Util;
  * Service for calculating and managing competition standings (league tables).
  */
 class Standings_Service {
-	private ?League_Repository_Interface $league_repository = null;
-	private ?League_Team_Repository_Interface $league_team_repository = null;
+	private League_Repository_Interface $league_repository;
+	private League_Team_Repository_Interface $league_team_repository;
 	private ?League_Service $league_service = null;
-	private ?Fixture_Repository_Interface $fixture_repository = null;
-	private ?Rubber_Repository_Interface $rubber_repository = null;
+	private Fixture_Repository_Interface $fixture_repository;
+	private Rubber_Repository_Interface $rubber_repository;
 	private League_Query_Service|\Closure|null $league_query_service = null;
 
 	public function __construct(
-		?League_Repository_Interface $league_repository = null,
-		?League_Team_Repository_Interface $league_team_repository = null,
-		?League_Service $league_service = null,
-		?Fixture_Repository_Interface $fixture_repository = null,
-		?Rubber_Repository_Interface $rubber_repository = null,
+		League_Repository_Interface $league_repository,
+		League_Team_Repository_Interface $league_team_repository,
+		?League_Service $league_service,
+		Fixture_Repository_Interface $fixture_repository,
+		Rubber_Repository_Interface $rubber_repository,
 		League_Query_Service|\Closure|null $league_query_service = null
 	) {
 		$this->league_repository      = $league_repository;
@@ -45,27 +41,6 @@ class Standings_Service {
 		$this->fixture_repository     = $fixture_repository;
 		$this->rubber_repository      = $rubber_repository;
 		$this->league_query_service   = $league_query_service;
-	}
-
-	private function get_fixture_repository(): Fixture_Repository_Interface {
-		if ( null === $this->fixture_repository ) {
-			$this->fixture_repository = new Fixture_Repository();
-		}
-		return $this->fixture_repository;
-	}
-
-	private function get_league_repository(): League_Repository_Interface {
-		if ( null === $this->league_repository ) {
-			$this->league_repository = new League_Repository();
-		}
-		return $this->league_repository;
-	}
-
-	private function get_league_team_repository(): League_Team_Repository_Interface {
-		if ( null === $this->league_team_repository ) {
-			$this->league_team_repository = new League_Team_Repository();
-		}
-		return $this->league_team_repository;
 	}
 
 	/**
@@ -77,12 +52,12 @@ class Standings_Service {
 			return $league_team;
 		}
 		if ( is_object( $league_team ) ) {
-			return $this->get_league_team_repository()->hydrate( $league_team );
+			return $this->league_team_repository->hydrate( $league_team );
 		}
 		if ( empty( $league_team ) ) {
 			return null;
 		}
-		return $this->get_league_team_repository()->find_by_id( $league_team );
+		return $this->league_team_repository->find_by_id( $league_team );
 	}
 
 	private function get_league_service(): ?League_Service {
@@ -183,7 +158,6 @@ class Standings_Service {
 			if ( $league->num_rubbers > 0 ) {
 				foreach ( $matches as $match ) {
 					if ( $match instanceof Fixture && null === $match->rubbers ) {
-						$this->rubber_repository ??= new Rubber_Repository();
 						$rubbers_by_fixture[ $match->get_id() ] ??= $this->rubber_repository->find_by_fixture_id( $match->get_id() );
 						$match->set_rubbers( $rubbers_by_fixture[ $match->get_id() ] );
 					}
@@ -274,7 +248,7 @@ class Standings_Service {
 	 */
 	public function save_standings_manually( League $league, array $teams, array $points, array $matches, array $custom ): void {
 		$season      = $league->current_season['name'] ?? '';
-		$league_repo = $this->get_league_repository();
+		$league_repo = $this->league_repository;
 
 		foreach ( array_keys( $teams ) as $id ) {
 			$league_repo->update_standings_manually(
@@ -348,7 +322,7 @@ class Standings_Service {
 			// get custom team standings data.
 			$league_team->custom = $this->get_standings_data( $league, (int) $league_team->id, $league_team->custom );
 
-			$this->get_league_repository()->update_team_standings(
+			$this->league_repository->update_team_standings(
 				(int) $league_team->league_id,
 				(string) $league_team->season,
 				(int) $league_team->id,
@@ -543,7 +517,7 @@ class Standings_Service {
 			$team_ref_alt   = 'home' === $team_ref ? 'away' : 'home';
 			$player_ref     = strval( $team_id ) === strval( $match->home_team ) ? 'player1' : 'player2';
 			$player_ref_alt = 'player1' === $player_ref ? 'player2' : 'player1';
-			$match          = is_object( $match ) && method_exists( $match, 'get_rubbers' ) ? $match : $this->get_fixture_repository()->find_by_id( is_numeric( $match ) ? (int) $match : (int) $match->id );
+			$match          = is_object( $match ) && method_exists( $match, 'get_rubbers' ) ? $match : $this->fixture_repository->find_by_id( is_numeric( $match ) ? (int) $match : (int) $match->id );
 			if ( $match && ! empty( $match->winner_id ) && ! empty( $match->loser_id ) && ( $match->teams['home']->status ?? '' ) !== 'W' && ( $match->teams['away']->status ?? '' ) !== 'W' && empty( $match->is_cancelled ) ) {
 				if ( Fixture_Status::SHARED === Fixture_Status::try_from_value( $match->status ?? null ) ) {
 					++$data['matches_shared'];

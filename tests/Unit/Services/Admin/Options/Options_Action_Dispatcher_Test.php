@@ -29,6 +29,7 @@ final class Options_Action_Dispatcher_Test extends TestCase {
 
         $dispatcher = new Options_Action_Dispatcher(
             action_guard: $guard,
+            option_service: $this->createStub( \Racketmanager\Infrastructure\Wordpress\Options\Option_Service::class ),
             options_updater: $updater,
             options_provider: fn(): array => array(),
             scheduler: $scheduler
@@ -52,6 +53,7 @@ final class Options_Action_Dispatcher_Test extends TestCase {
         $scheduled = false;
         $dispatcher = new Options_Action_Dispatcher(
             action_guard: $guard,
+            option_service: $this->createStub( \Racketmanager\Infrastructure\Wordpress\Options\Option_Service::class ),
             options_updater: function () use ( &$saved ): void {
                 $saved = true;
             },
@@ -76,6 +78,7 @@ final class Options_Action_Dispatcher_Test extends TestCase {
         $scheduled = false;
         $dispatcher = new Options_Action_Dispatcher(
             action_guard: $guard,
+            option_service: $this->createStub( \Racketmanager\Infrastructure\Wordpress\Options\Option_Service::class ),
             options_updater: function () use ( &$saved ): void {
                 $saved = true;
             },
@@ -112,6 +115,7 @@ final class Options_Action_Dispatcher_Test extends TestCase {
         $scheduled = false;
         $dispatcher = new Options_Action_Dispatcher(
             action_guard: $guard,
+            option_service: $this->createStub( \Racketmanager\Infrastructure\Wordpress\Options\Option_Service::class ),
             options_updater: function () use ( &$saved ): void {
                 $saved = true;
             },
@@ -146,6 +150,7 @@ final class Options_Action_Dispatcher_Test extends TestCase {
 
         $dispatcher = new Options_Action_Dispatcher(
             action_guard: $guard,
+            option_service: $this->createStub( \Racketmanager\Infrastructure\Wordpress\Options\Option_Service::class ),
             options_updater: function ( array $opts ) use ( &$persisted_options ): void {
                 $persisted_options = $opts;
             },
@@ -293,6 +298,7 @@ final class Options_Action_Dispatcher_Test extends TestCase {
         $persisted_options = null;
         $dispatcher        = new Options_Action_Dispatcher(
             action_guard: $guard,
+            option_service: $this->createStub( \Racketmanager\Infrastructure\Wordpress\Options\Option_Service::class ),
             options_updater: function ( array $opts ) use ( &$persisted_options ): void {
                 $persisted_options = $opts;
             },
@@ -346,6 +352,7 @@ final class Options_Action_Dispatcher_Test extends TestCase {
         $persisted_options = null;
         $dispatcher        = new Options_Action_Dispatcher(
             action_guard: $guard,
+            option_service: $this->createStub( \Racketmanager\Infrastructure\Wordpress\Options\Option_Service::class ),
             options_updater: function ( array $opts ) use ( &$persisted_options ): void {
                 $persisted_options = $opts;
             },
@@ -368,6 +375,7 @@ final class Options_Action_Dispatcher_Test extends TestCase {
         $persisted_options = null;
         $dispatcher        = new Options_Action_Dispatcher(
             action_guard: $guard,
+            option_service: $this->createStub( \Racketmanager\Infrastructure\Wordpress\Options\Option_Service::class ),
             options_updater: function ( array $opts ) use ( &$persisted_options ): void {
                 $persisted_options = $opts;
             },
@@ -421,6 +429,7 @@ final class Options_Action_Dispatcher_Test extends TestCase {
 
         $dispatcher = new Options_Action_Dispatcher(
             action_guard: $guard,
+            option_service: $this->createStub( \Racketmanager\Infrastructure\Wordpress\Options\Option_Service::class ),
             options_updater: fn() => null,
             options_provider: fn(): array => array(),
             scheduler: fn() => null,

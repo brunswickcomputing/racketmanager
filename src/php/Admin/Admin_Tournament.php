@@ -48,11 +48,9 @@ final readonly class Admin_Tournament {
         private RacketManager $racketmanager,
         View_Renderer_Interface $renderer,
         private Admin_Message_Service $message_service,
-        ?Admin_Action_Adapter $actions = null,
-        ?Admin_Screen_Presenter $screens = null
+        private Admin_Action_Adapter $actions,
+        private Admin_Screen_Presenter $screens
     ) {
-        $this->actions = $actions ?? new Admin_Action_Adapter( $message_service, new Wp_Admin_Redirector() );
-        $this->screens = $screens ?? new Admin_Screen_Presenter( $renderer, $message_service );
     }
 
     /**

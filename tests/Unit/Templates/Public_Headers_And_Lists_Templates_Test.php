@@ -14,6 +14,7 @@ use Racketmanager\Domain\DTO\Competition\Competition_Overview_DTO;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Competition_Shortcode_Adapter;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
@@ -280,7 +281,11 @@ class Public_Headers_And_Lists_Templates_Test extends TestCase {
         $player->display_name = 'John Smith';
         $player_service->method( 'get_player' )->willReturn( $player );
         $player_query_service->method( 'get_competitions' )->willReturn( [ $comp ] );
-        $competition_presenter = new Competition_Shortcode_Presenter( new Php_View_Renderer( $this->templates_dir ) );
+        $competition_presenter = new Competition_Shortcode_Presenter(
+            new Php_View_Renderer( $this->templates_dir ),
+            new Club_Presenter(),
+            new Player_Presenter()
+        );
 
         $handler = new Get_Competitions_Handler(
             competition_service: $comp_service,
@@ -290,14 +295,22 @@ class Public_Headers_And_Lists_Templates_Test extends TestCase {
         );
 
         $query = new Get_Competitions_Query( type: 'league', user_id: 42 );
-        $vm    = ( new Competition_Shortcode_Adapter( competition_shortcode_presenter: $competition_presenter ) )->present_competitions( $handler->handle( $query ) );
+        $vm    = ( new Competition_Shortcode_Adapter(
+            competition_shortcode_presenter: $competition_presenter,
+            tournament_presenter: new Tournament_Presenter(),
+            player_presenter: new Player_Presenter()
+        ) )->present_competitions( $handler->handle( $query ) );
 
         $this->assertEquals( 'competitions', $vm->template );
         $this->assertArrayHasKey( 'competition_items', $vm->vars );
         $this->assertNotEmpty( $vm->vars['competition_items'] );
         $this->assertInstanceOf( Competition_List_Item_View_Model::class, $vm->vars['competition_items'][0] );
 
-        $presenter = new Shortcode_View_Presenter( new Shortcode_Template_Renderer( new Php_View_Renderer( $this->templates_dir ) ) );
+        $presenter = new Shortcode_View_Presenter( new Shortcode_Template_Renderer(
+            new Php_View_Renderer( $this->templates_dir ),
+            new Club_Presenter(),
+            new Player_Presenter()
+        ) );
         $output    = $presenter->render( $vm );
 
         $this->assertStringContainsString( 'Summer League 2026', $output );
@@ -314,7 +327,11 @@ class Public_Headers_And_Lists_Templates_Test extends TestCase {
             'current_season' => [ 'name' => '2026' ],
         ];
         $player = (object) [ 'id' => 42, 'display_name' => 'John Smith' ];
-        $competition_presenter = new Competition_Shortcode_Presenter( new Php_View_Renderer( $this->templates_dir ) );
+        $competition_presenter = new Competition_Shortcode_Presenter(
+            new Php_View_Renderer( $this->templates_dir ),
+            new Club_Presenter(),
+            new Player_Presenter()
+        );
         $player_presenter = new Player_Presenter( $competition_presenter );
         $player_vm = $player_presenter->present_player(
             player: $player,
@@ -361,16 +378,28 @@ class Public_Headers_And_Lists_Templates_Test extends TestCase {
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
         $comp_service->method( 'get_competition_overview' )->willReturn( $overview );
 
-        $competition_presenter = new Competition_Shortcode_Presenter( new Php_View_Renderer( $this->templates_dir ) );
+        $competition_presenter = new Competition_Shortcode_Presenter(
+            new Php_View_Renderer( $this->templates_dir ),
+            new Club_Presenter(),
+            new Player_Presenter()
+        );
         $handler = new Get_Competition_Overview_Handler( $comp_service, $this->competition_season_service( [ 130 => 'Thorpe Bay Lawn Tennis Club' ] ) );
         $query   = new Get_Competition_Overview_Query( competition_id: 10, season: 2026 );
-        $vm      = ( new Competition_Shortcode_Adapter( competition_shortcode_presenter: $competition_presenter ) )->present_overview( $handler->handle( $query ) );
+        $vm      = ( new Competition_Shortcode_Adapter(
+            competition_shortcode_presenter: $competition_presenter,
+            tournament_presenter: new Tournament_Presenter(),
+            player_presenter: new Player_Presenter()
+        ) )->present_overview( $handler->handle( $query ) );
 
         $this->assertEquals( 'overview', $vm->template );
         $this->assertArrayHasKey( 'overview_vm', $vm->vars );
         $this->assertInstanceOf( Competition_Overview_View_Model::class, $vm->vars['overview_vm'] );
 
-        $presenter = new Shortcode_View_Presenter( new Shortcode_Template_Renderer( new Php_View_Renderer( $this->templates_dir ) ) );
+        $presenter = new Shortcode_View_Presenter( new Shortcode_Template_Renderer(
+            new Php_View_Renderer( $this->templates_dir ),
+            new Club_Presenter(),
+            new Player_Presenter()
+        ) );
         $output    = $presenter->render( $vm );
 
         $this->assertStringContainsString( 'Thorpe Bay Lawn Tennis Club', $output );

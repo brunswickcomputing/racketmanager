@@ -16,6 +16,8 @@ use Racketmanager\Application\General\Queries\Get_Players_Handler;
 use Racketmanager\Application\General\Queries\Get_Purchase_Order_Handler;
 use Racketmanager\Application\General\Queries\Get_Team_Order_Handler;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\General_Shortcode_Adapter;
+use Racketmanager\Presentation\Presenters\Invoice_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Application\General\DTOs\Alert_Result;
 use Racketmanager\Application\General\DTOs\Favourites_Result;
 use Racketmanager\Application\General\DTOs\Invoice_Result;
@@ -78,6 +80,8 @@ class General_Shortcode_Adapter_Test extends TestCase {
             player_search_handler: $this->player_search_handler,
             team_order_handler: $this->team_order_handler,
             alert_handler: $this->alert_handler,
+            player_presenter: new Player_Presenter(),
+            invoice_presenter: new Invoice_Presenter(),
             template_renderer: $this->template_renderer
         );
     }

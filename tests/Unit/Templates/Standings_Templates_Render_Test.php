@@ -15,6 +15,9 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
+use Racketmanager\Presentation\Presenters\League_Standings_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\View_Models\League_Standings_View_Model;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
@@ -398,7 +401,11 @@ final class Standings_Templates_Render_Test extends TestCase {
             teams: [ $team, $withdrawn_team ],
         );
 
-        $presenter = new \Racketmanager\Presentation\Presenters\League_Standings_Presenter( $this->renderer );
+        $presenter = new League_Standings_Presenter(
+            $this->renderer,
+            new Club_Presenter(),
+            new Player_Presenter()
+        );
         $html      = $presenter->render( $vm );
 
         self::assertStringContainsString( 'Hawks', $html );

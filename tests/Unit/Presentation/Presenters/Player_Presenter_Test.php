@@ -8,6 +8,7 @@ use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Club\Club_Player;
 use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
 use Racketmanager\Domain\Player\Player;
+use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\View_Models\Club_Membership_View_Model;
 use Racketmanager\Presentation\View_Models\Competition_List_Item_View_Model;
@@ -396,5 +397,60 @@ class Player_Presenter_Test extends TestCase {
         $this->assertSame( '', $presented->approval_date_display );
         $this->assertSame( '', $presented->removal_date_display );
         $this->assertSame( '', $presented->registration_date_display );
+    }
+
+    public function test_present_player_resolves_competition_presenter_lazily_from_closure(): void {
+        $resolutions           = 0;
+        $expected_items        = [ 'item' ];
+        $competition_presenter = $this->createMock( Competition_Shortcode_Presenter::class );
+        $competition_presenter->expects( $this->once() )
+            ->method( 'present_competition_list' )
+            ->with( $this->anything(), 'league' )
+            ->willReturn( $expected_items );
+
+        $presenter = new Player_Presenter(
+            static function () use ( &$resolutions, $competition_presenter ) {
+                ++$resolutions;
+                return $competition_presenter;
+            }
+        );
+        $this->assertSame( 0, $resolutions, 'Closure must not run at construction time.' );
+
+        $vm = $presenter->present_player(
+            player: (object) [ 'id' => 5, 'display_name' => 'Jane Doe' ],
+            player_competitions: [ 'league' => [ (object) [ 'id' => 1 ] ], 'cup' => [] ]
+        );
+
+        $this->assertSame( 1, $resolutions );
+        $this->assertSame( $expected_items, $vm->player_competitions['league'] );
+        $this->assertSame( [], $vm->player_competitions['cup'] );
+    }
+
+    public function test_present_player_does_not_resolve_closure_when_no_raw_competitions(): void {
+        $resolutions = 0;
+        $presenter   = new Player_Presenter(
+            static function () use ( &$resolutions ) {
+                ++$resolutions;
+                throw new \LogicException( 'Should not be resolved.' );
+            }
+        );
+
+        $vm = $presenter->present_player( player: (object) [ 'id' => 5, 'display_name' => 'Jane Doe' ] );
+
+        $this->assertSame( 0, $resolutions );
+        $this->assertSame( [], $vm->player_competitions );
+    }
+
+    public function test_present_player_accepts_direct_competition_presenter_instance(): void {
+        $competition_presenter = $this->createMock( Competition_Shortcode_Presenter::class );
+        $competition_presenter->expects( $this->once() )->method( 'present_competition_list' )->willReturn( [ 'x' ] );
+
+        $presenter = new Player_Presenter( $competition_presenter );
+        $vm        = $presenter->present_player(
+            player: (object) [ 'id' => 5, 'display_name' => 'Jane Doe' ],
+            player_competitions: [ 'league' => [ (object) [ 'id' => 1 ] ] ]
+        );
+
+        $this->assertSame( [ 'x' ], $vm->player_competitions['league'] );
     }
 }

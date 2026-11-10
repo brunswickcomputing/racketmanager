@@ -34,7 +34,6 @@ use Racketmanager\Application\League\Queries\Get_League_Standings_Query;
 use Racketmanager\Application\League\Queries\Get_League_Teams_Handler;
 use Racketmanager\Application\League\Queries\Get_League_Teams_Query;
 use Racketmanager\Application\Ports\Query_Vars_Interface;
-use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
 use Racketmanager\Presentation\Presenters\Fixture_Presentation_Adapter;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Presentation\Presenters\League_Archive_Presenter;
@@ -52,9 +51,7 @@ use Racketmanager\RacketManager;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
-use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Team_Service;
-use Racketmanager\Services\View\Php_View_Renderer;
 use function __;
 use function count;
 use function function_exists;
@@ -71,13 +68,13 @@ use function str_replace;
  */
 class League_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     private readonly ?Shortcode_View_Presenter $view_presenter;
-    private readonly League_Archive_Presenter $archive_presenter;
-    private readonly Tournament_Presenter $tournament_presenter;
-    private readonly Team_Details_Presenter $team_details_presenter;
-    private readonly Player_Presenter $player_presenter;
-    private readonly Fixture_Presenter $fixture_presenter;
 
     public function __construct(
+        private readonly League_Archive_Presenter $archive_presenter,
+        private readonly Tournament_Presenter $tournament_presenter,
+        private readonly Team_Details_Presenter $team_details_presenter,
+        private readonly Player_Presenter $player_presenter,
+        private readonly Fixture_Presenter $fixture_presenter,
         private readonly ?RacketManager $racketmanager = null,
         private readonly ?Get_League_Standings_Handler $get_league_standings_handler = null,
         private readonly ?League_Standings_Presenter $league_standings_presenter = null,
@@ -92,29 +89,13 @@ class League_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly ?Get_League_Match_Dropdown_Handler $match_dropdown_handler = null,
         private readonly ?Get_League_Last_5_Handler $last_5_handler = null,
         private readonly ?Shortcode_Template_Renderer $template_renderer = null,
-        ?League_Archive_Presenter $archive_presenter = null,
-        ?Tournament_Presenter $tournament_presenter = null,
-        ?Team_Details_Presenter $team_details_presenter = null,
-        ?Player_Presenter $player_presenter = null,
-        ?Fixture_Presenter $fixture_presenter = null,
         private readonly ?Competition_Service $competition_service = null,
         private readonly ?Team_Service $team_service = null,
         private readonly ?Fixture_Link_Service $fixture_link_service = null,
         private readonly ?Fixture_Permission_Service $fixture_permission_service = null,
         private readonly ?Query_Vars_Interface $query_vars = null
     ) {
-        $this->view_presenter         = $view_presenter ?? ( $template_renderer ? new Shortcode_View_Presenter( $template_renderer ) : null );
-        $option_gateway               = new Wp_Option_Gateway();
-        $date_format                  = (string) $option_gateway->get_option( 'date_format', 'Y-m-d' );
-        $this->archive_presenter      = $archive_presenter ?? new League_Archive_Presenter( $option_gateway );
-        $this->tournament_presenter   = $tournament_presenter ?? new Tournament_Presenter( $date_format );
-        $this->team_details_presenter = $team_details_presenter ?? new Team_Details_Presenter( $option_gateway, new Settings_Service() );
-        $this->player_presenter       = $player_presenter ?? new Player_Presenter();
-        $this->fixture_presenter      = $fixture_presenter ?? new Fixture_Presenter(
-            $fixture_link_service ?? new Fixture_Link_Service(),
-            $option_gateway,
-            new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' )
-        );
+        $this->view_presenter = $view_presenter ?? ( $template_renderer ? new Shortcode_View_Presenter( $template_renderer ) : null );
     }
 
     public function show_championship( array|string $atts = [] ): string {

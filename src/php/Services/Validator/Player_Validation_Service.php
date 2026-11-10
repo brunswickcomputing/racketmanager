@@ -12,9 +12,6 @@ use Racketmanager\Domain\DTO\Player\Validation_Context_DTO;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
-use Racketmanager\Repositories\Fixture_Repository;
-use Racketmanager\Repositories\Player_Repository;
-use Racketmanager\Repositories\Results_Checker_Repository;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Util\Util;
 use DateTime;
@@ -35,15 +32,15 @@ class Player_Validation_Service {
     public function __construct(
         Registration_Service $registration_service,
         Results_Checker_Repository_Interface $results_checker_repository,
-        ?Fixture_Repository_Interface $fixture_repository = null,
-        ?Player_Repository_Interface $player_repository = null,
-        ?Player_Details_Validator $player_details_validator = null
+        Fixture_Repository_Interface $fixture_repository,
+        Player_Repository_Interface $player_repository,
+        Player_Details_Validator $player_details_validator
     ) {
         $this->registration_service       = $registration_service;
         $this->results_checker_repository = $results_checker_repository;
-        $this->fixture_repository         = $fixture_repository ?? new Fixture_Repository();
-        $this->player_repository          = $player_repository ?? new Player_Repository();
-        $this->player_details_validator   = $player_details_validator ?? new Player_Details_Validator( $this->player_repository );
+        $this->fixture_repository         = $fixture_repository;
+        $this->player_repository          = $player_repository;
+        $this->player_details_validator   = $player_details_validator;
     }
 
     /**

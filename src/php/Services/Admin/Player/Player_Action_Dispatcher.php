@@ -33,17 +33,12 @@ use Racketmanager\Services\Player_Service;
  */
 readonly final class Player_Action_Dispatcher {
 
-    private Update_Player_Handler $update_player_handler;
-    private Create_Player_Handler $create_player_handler;
-
     public function __construct(
         private Player_Service $player_service,
         private Action_Guard_Interface $action_guard,
-        ?Update_Player_Handler $update_player_handler = null,
-        ?Create_Player_Handler $create_player_handler = null,
+        private Update_Player_Handler $update_player_handler,
+        private Create_Player_Handler $create_player_handler,
     ) {
-        $this->update_player_handler = $update_player_handler ?? new Update_Player_Handler( $this->player_service );
-        $this->create_player_handler = $create_player_handler ?? new Create_Player_Handler( $this->player_service );
     }
 
     /**

@@ -38,7 +38,6 @@ use Racketmanager\Application\Event\Queries\Get_Event_Teams_Query;
 use Racketmanager\Application\Event\Queries\Get_Team_Order_Players_Handler;
 use Racketmanager\Application\Event\Queries\Get_Team_Order_Players_Query;
 use Racketmanager\Application\Ports\Query_Vars_Interface;
-use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
@@ -47,7 +46,6 @@ use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\RacketManager;
-use Racketmanager\Services\Settings_Service;
 use Racketmanager\Util\Util;
 use function is_array;
 use function is_numeric;
@@ -60,6 +58,10 @@ use function str_replace;
  */
 class Event_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     public function __construct(
+        private readonly Competition_Shortcode_Presenter $competition_shortcode_presenter,
+        private readonly Tournament_Presenter $tournament_presenter,
+        private readonly Player_Presenter $player_presenter,
+        private readonly Team_Details_Presenter $team_details_presenter,
         private readonly ?RacketManager $racketmanager = null,
         private readonly ?Shortcode_View_Presenter $view_presenter = null,
         private readonly ?Get_Event_Handler $event_handler = null,
@@ -74,10 +76,6 @@ class Event_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly ?Get_Team_Order_Players_Handler $team_order_players_handler = null,
         private readonly ?Get_Event_Dropdown_Handler $dropdown_handler = null,
         private readonly ?Shortcode_Template_Renderer $template_renderer = null,
-        private readonly ?Competition_Shortcode_Presenter $competition_shortcode_presenter = null,
-        private readonly ?Tournament_Presenter $tournament_presenter = null,
-        private readonly ?Player_Presenter $player_presenter = null,
-        private readonly ?Team_Details_Presenter $team_details_presenter = null,
         private readonly ?Query_Vars_Interface $query_vars = null
     ) {}
 
@@ -258,7 +256,7 @@ class Event_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     }
 
     public function present_event( Event_Page_Result $result ): Shortcode_View_Model {
-        $comp_presenter = $this->competition_shortcode_presenter ?? new Competition_Shortcode_Presenter();
+        $comp_presenter = $this->competition_shortcode_presenter;
 
         $event_header = $result->event ? $comp_presenter->present_event_header(
             event: $result->event,
@@ -289,7 +287,7 @@ class Event_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     }
 
     public function present_standings( Event_Standings_Result $result ): Shortcode_View_Model {
-        $comp_presenter = $this->competition_shortcode_presenter ?? new Competition_Shortcode_Presenter();
+        $comp_presenter = $this->competition_shortcode_presenter;
 
         $league_links = $result->event ? $comp_presenter->present_event_standings_links( $result->event, $result->leagues ) : [];
 
@@ -304,7 +302,7 @@ class Event_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     }
 
     public function present_draw( Event_Draw_Result $result ): Shortcode_View_Model {
-        $comp_presenter = $this->competition_shortcode_presenter ?? new Competition_Shortcode_Presenter();
+        $comp_presenter = $this->competition_shortcode_presenter;
 
         $event = $result->event ? $comp_presenter->present_event_draw( $result->event ) : null;
 
@@ -318,7 +316,7 @@ class Event_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     }
 
     public function present_matches( Event_Matches_Result $result ): Shortcode_View_Model {
-        $tourn_presenter = $this->tournament_presenter ?? new Tournament_Presenter();
+        $tourn_presenter = $this->tournament_presenter;
 
         $event = $result->event;
         if ( $event && ! empty( $event->leagues ) && is_array( $event->leagues ) ) {
@@ -347,8 +345,8 @@ class Event_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     }
 
     public function present_clubs( Event_Clubs_Result $result ): Shortcode_View_Model {
-        $comp_presenter  = $this->competition_shortcode_presenter ?? new Competition_Shortcode_Presenter();
-        $tourn_presenter = $this->tournament_presenter ?? new Tournament_Presenter();
+        $comp_presenter  = $this->competition_shortcode_presenter;
+        $tourn_presenter = $this->tournament_presenter;
 
         $event      = $result->event;
         $event_club = $result->event_club;
@@ -407,9 +405,9 @@ class Event_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     }
 
     public function present_teams( Event_Teams_Result $result ): Shortcode_View_Model {
-        $comp_presenter    = $this->competition_shortcode_presenter ?? new Competition_Shortcode_Presenter();
-        $tourn_presenter   = $this->tournament_presenter ?? new Tournament_Presenter();
-        $details_presenter = $this->team_details_presenter ?? new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() );
+        $comp_presenter    = $this->competition_shortcode_presenter;
+        $tourn_presenter   = $this->tournament_presenter;
+        $details_presenter = $this->team_details_presenter;
 
         $event = $result->event;
         $team  = $result->team;
@@ -456,8 +454,8 @@ class Event_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     }
 
     public function present_players( Event_Players_Result $result ): Shortcode_View_Model {
-        $comp_presenter   = $this->competition_shortcode_presenter ?? new Competition_Shortcode_Presenter();
-        $player_presenter = $this->player_presenter ?? new Player_Presenter( $comp_presenter );
+        $comp_presenter   = $this->competition_shortcode_presenter;
+        $player_presenter = $this->player_presenter;
 
         $event             = $result->event;
         $player_vm         = null;

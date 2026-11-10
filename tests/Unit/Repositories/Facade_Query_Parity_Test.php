@@ -11,6 +11,7 @@ use Racketmanager\Repositories\Competition_Repository;
 use Racketmanager\Repositories\Event_Repository;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Repositories\Registration_Repository;
@@ -66,7 +67,7 @@ final class Facade_Query_Parity_Test extends TestCase {
 
 	public function test_fixture_find_all_default_order_is_league_then_id(): void {
 		$this->db->results = array();
-		$repo              = new Fixture_Repository( $this->db );
+		$repo              = new Fixture_Repository( $this->db, rubber_repository: $this->createStub( Rubber_Repository_Interface::class ) );
 
 		$this->assertSame( array(), $repo->find_all( array( 'season' => '2026' ) ) );
 		$this->assertStringEndsWith( ' ORDER BY `league_id` ASC,`id` ASC', $this->db->last_sql );
@@ -74,7 +75,7 @@ final class Facade_Query_Parity_Test extends TestCase {
 
 	public function test_fixture_find_all_count_returns_int(): void {
 		$this->db->var = '7';
-		$repo          = new Fixture_Repository( $this->db );
+		$repo          = new Fixture_Repository( $this->db, rubber_repository: $this->createStub( Rubber_Repository_Interface::class ) );
 
 		$this->assertSame( 7, $repo->find_all( array( 'count' => true ) ) );
 		$this->assertStringNotContainsString( 'ORDER BY', $this->db->last_sql );
@@ -82,7 +83,7 @@ final class Facade_Query_Parity_Test extends TestCase {
 
 	public function test_fixture_find_all_honours_explicit_orderby(): void {
 		$this->db->results = array();
-		( new Fixture_Repository( $this->db ) )->find_all( array( 'orderby' => array( 'date' => 'DESC' ) ) );
+		( new Fixture_Repository( $this->db, rubber_repository: $this->createStub( Rubber_Repository_Interface::class ) ) )->find_all( array( 'orderby' => array( 'date' => 'DESC' ) ) );
 		$this->assertStringEndsWith( ' ORDER BY `date` DESC', $this->db->last_sql );
 	}
 
@@ -133,7 +134,7 @@ final class Facade_Query_Parity_Test extends TestCase {
 
 	public function test_get_winners_returns_false_without_rows_and_uses_final_filter(): void {
 		$this->db->results = array();
-		$repo              = new Competition_Repository();
+		$repo              = new Competition_Repository( $this->createStub( Fixture_Repository_Interface::class ) );
 
 		$this->assertFalse( $repo->get_winners( '2026', 4, 'tournament' ) );
 		$this->assertStringContainsString( "m.`final` = 'FINAL'", $this->db->last_sql );
@@ -175,7 +176,9 @@ final class Facade_Query_Parity_Test extends TestCase {
 		$this->db->results = array(
 			(object) array( 'id' => 11, 'title' => 'T', 'home_team' => 1, 'away_team' => 2, 'winner_id' => 1, 'loser_id' => 2, 'type' => 'MS' ),
 		);
-		$result            = ( new Competition_Repository() )->get_winners( '2026', 4 );
+		$fixture_repo      = $this->createStub( Fixture_Repository_Interface::class );
+		$fixture_repo->method( 'find_by_id' )->willReturn( null );
+		$result            = ( new Competition_Repository( $fixture_repo ) )->get_winners( '2026', 4 );
 
 		$this->assertCount( 1, $result );
 		$this->assertNull( $result[0]->winner_club );

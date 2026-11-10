@@ -31,10 +31,14 @@ final class Club_Admin_Controller_Test extends TestCase {
         $this->player_service = $this->createMock( Player_Service::class );
         $this->guard          = $this->createMock( Action_Guard_Interface::class );
 
+        $player_repo = $this->createStub( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class );
+        $player_repo->method( 'find' )->willReturn( \Racketmanager\Tests\Helpers\Player_Test_Factory::create_sparse( array( 'id' => 7 ) ) );
+
         $this->dispatcher = new Club_Action_Dispatcher(
             $this->club_service,
             $this->player_service,
-            $this->guard
+            $this->guard,
+            new \Racketmanager\Application\Admin\Commands\Club_Handler( $this->club_service, $this->player_service, $player_repo )
         );
 
         $this->controller = new Club_Admin_Controller(

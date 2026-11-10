@@ -57,7 +57,7 @@ class Club_Service {
         Player_Repository $player_repository,
         Team_Repository $team_repository,
         Player_Service $player_service,
-        ?Option_Service $option_service = null
+        Option_Service $option_service
     ) {
         $this->club_repository        = $club_repository;
         $this->club_role_repository   = $club_role_repository;
@@ -65,7 +65,7 @@ class Club_Service {
         $this->player_repository      = $player_repository;
         $this->team_repository        = $team_repository;
         $this->player_service         = $player_service;
-        $this->option_service         = $option_service ?? new Option_Service();
+        $this->option_service         = $option_service;
     }
 
     /**

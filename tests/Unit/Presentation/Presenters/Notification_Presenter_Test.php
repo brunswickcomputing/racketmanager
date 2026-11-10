@@ -331,6 +331,20 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
             $this->assertStringContainsString( 'result/', $vars['action_url'] );
         }
 
+        #[AllowMockObjectsWithoutExpectations]
+        public function test_present_event_constitution_builds_league_urls_without_extra_collaborators(): void {
+            $event                 = new \stdClass();
+            $event->name           = 'Cup Event';
+            $event->is_box         = true;
+            $event->current_season = [ 'name' => '2024' ];
+            $event->leagues        = [ (object) [ 'id' => 201, 'title' => 'Group A' ] ];
+
+            $vars = $this->presenter->present_event_constitution( $event, '2024-r1' );
+
+            $this->assertSame( 'https://example.com/league/group-a/round-2024-r1/', $vars['league_urls'][201] );
+            $this->assertSame( $event, $vars['event'] );
+        }
+
         protected function setUp(): void {
             parent::setUp();
             $this->backup_globals();

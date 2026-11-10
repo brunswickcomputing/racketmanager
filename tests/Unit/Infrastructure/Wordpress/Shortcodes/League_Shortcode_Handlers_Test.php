@@ -84,9 +84,68 @@ class League_Shortcode_Handlers_Test extends TestCase {
         parent::tearDown();
     }
 
-    private function create_renderer(): Shortcode_Template_Renderer {
-        $php_renderer = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
-        return new Shortcode_Template_Renderer( $php_renderer );
+    private function create_renderer( ?View_Renderer_Interface $renderer = null ): Shortcode_Template_Renderer {
+        $php_renderer = $renderer ?? new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
+        return new Shortcode_Template_Renderer( $php_renderer, new Club_Presenter(), new Player_Presenter() );
+    }
+
+    private function create_league_adapter(
+        ?League_Archive_Presenter $archive_presenter = null,
+        ?Tournament_Presenter $tournament_presenter = null,
+        ?Team_Details_Presenter $team_details_presenter = null,
+        ?Player_Presenter $player_presenter = null,
+        ?Fixture_Presenter $fixture_presenter = null,
+        ?RacketManager $racketmanager = null,
+        ?Get_League_Standings_Handler $get_league_standings_handler = null,
+        ?League_Standings_Presenter $league_standings_presenter = null,
+        ?Shortcode_View_Presenter $view_presenter = null,
+        ?Get_League_Championship_Handler $championship_handler = null,
+        ?Get_League_Archive_Handler $archive_handler = null,
+        ?Get_League_Crosstable_Handler $crosstable_handler = null,
+        ?Get_League_Matches_Handler $matches_handler = null,
+        ?Get_League_Teams_Handler $teams_handler = null,
+        ?Get_League_Players_Handler $players_handler = null,
+        ?Get_League_Season_Dropdown_Handler $season_dropdown_handler = null,
+        ?Get_League_Match_Dropdown_Handler $match_dropdown_handler = null,
+        ?Get_League_Last_5_Handler $last_5_handler = null,
+        ?Shortcode_Template_Renderer $template_renderer = null,
+        ?Competition_Service $competition_service = null,
+        ?Team_Service $team_service = null,
+        ?Fixture_Link_Service $fixture_link_service = null,
+        ?Fixture_Permission_Service $fixture_permission_service = null,
+        ?\Racketmanager\Application\Ports\Query_Vars_Interface $query_vars = null
+    ): League_Shortcode_Adapter {
+        $option_gateway = new Wp_Option_Gateway();
+        return new League_Shortcode_Adapter(
+            archive_presenter: $archive_presenter ?? new League_Archive_Presenter( $option_gateway ),
+            tournament_presenter: $tournament_presenter ?? new Tournament_Presenter( 'd/m/Y' ),
+            team_details_presenter: $team_details_presenter ?? new Team_Details_Presenter( $option_gateway, new Settings_Service() ),
+            player_presenter: $player_presenter ?? new Player_Presenter(),
+            fixture_presenter: $fixture_presenter ?? new Fixture_Presenter(
+                new Fixture_Link_Service(),
+                $option_gateway,
+                new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' )
+            ),
+            racketmanager: $racketmanager,
+            get_league_standings_handler: $get_league_standings_handler,
+            league_standings_presenter: $league_standings_presenter,
+            view_presenter: $view_presenter,
+            championship_handler: $championship_handler,
+            archive_handler: $archive_handler,
+            crosstable_handler: $crosstable_handler,
+            matches_handler: $matches_handler,
+            teams_handler: $teams_handler,
+            players_handler: $players_handler,
+            season_dropdown_handler: $season_dropdown_handler,
+            match_dropdown_handler: $match_dropdown_handler,
+            last_5_handler: $last_5_handler,
+            template_renderer: $template_renderer,
+            competition_service: $competition_service,
+            team_service: $team_service,
+            fixture_link_service: $fixture_link_service,
+            fixture_permission_service: $fixture_permission_service,
+            query_vars: $query_vars
+        );
     }
 
     public function test_championship_handler_success_and_error(): void {
@@ -104,7 +163,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
             $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class ),
             $this->league_query_service()
         );
-        $adapter = new League_Shortcode_Adapter(
+        $adapter = $this->create_league_adapter(
             template_renderer: $renderer,
             tournament_presenter: new Tournament_Presenter( 'd/m/Y' )
         );
@@ -184,7 +243,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
             $rubbers,
             $this->league_query_service( $query_league_repository, null, $query_fixtures )
         );
-        $adapter = new League_Shortcode_Adapter(
+        $adapter = $this->create_league_adapter(
             competition_service: $competition,
             team_service: $teams,
             fixture_link_service: $this->createStub( Fixture_Link_Service::class ),
@@ -213,7 +272,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $renderer       = $this->create_renderer();
 
         $handler = new Get_League_Archive_Handler( $league_service, $comp_service, $this->event_query_service(), $this->league_query_service() );
-        $adapter = new League_Shortcode_Adapter(
+        $adapter = $this->create_league_adapter(
             archive_presenter: new League_Archive_Presenter(),
             template_renderer: $renderer
         );
@@ -320,7 +379,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
             $this->createStub( Player_Stats_Service::class ),
             $this->league_query_service( $query_league_repository, null, $query_fixtures )
         );
-        $adapter = new League_Shortcode_Adapter(
+        $adapter = $this->create_league_adapter(
             tournament_presenter: new Tournament_Presenter( team_match_row_presenter: $this->create_team_match_row_presenter() ),
             team_details_presenter: $team_presenter,
             template_renderer: $this->create_renderer()
@@ -424,7 +483,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $league_query->method( 'get_team_dtls' )->willReturn( (object) [ 'name' => 'T' ] );
         $league_query->method( 'get_league_team' )->willReturn( (object) [ 'rank' => 1 ] );
         $handler = new Get_League_Teams_Handler( $league_service, $team_service, $stats, $league_query );
-        $adapter = new League_Shortcode_Adapter(
+        $adapter = $this->create_league_adapter(
             tournament_presenter: new Tournament_Presenter(),
             team_details_presenter: $team_presenter
         );
@@ -467,7 +526,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $league_query = $this->createMock( League_Query_Service::class );
         $league_query->expects( $this->once() )->method( 'get_players' )->with( $league_obj )->willReturn( [ $low, $high ] );
         $handler = new Get_League_Players_Handler( $league_service, $repo, $player_service, $this->createStub( Player_Query_Service::class ), $stats, $league_query );
-        $adapter = new League_Shortcode_Adapter(
+        $adapter = $this->create_league_adapter(
             player_presenter: new Player_Presenter(),
             template_renderer: $renderer
         );
@@ -524,7 +583,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $stats_service->method( 'get_stats' )->willReturn( [] );
         $league_repo   = $this->createStub( League_Repository_Interface::class );
         $handler       = new Get_League_Players_Handler( $league_service, $league_repo, $player_service, $query_service, $stats_service, $this->league_query_service( $league_repo ) );
-        $adapter       = new League_Shortcode_Adapter(
+        $adapter       = $this->create_league_adapter(
             player_presenter: new Player_Presenter(),
             template_renderer: $renderer
         );
@@ -592,7 +651,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
             ->with( 1, '', 'current' )
             ->willReturn( 2 );
         $handler = new Get_League_Matches_Handler( $league_service, $this->league_query_service( $league_repository ) );
-        $adapter = new League_Shortcode_Adapter(
+        $adapter = $this->create_league_adapter(
             tournament_presenter: new Tournament_Presenter(),
             template_renderer: $renderer
         );
@@ -660,7 +719,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
             public function get_matches( array $query_args = [], ?\Racketmanager\Repositories\Interfaces\League_Repository_Interface $league_repository = null, ?\Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface $fixture_repository = null, ?\Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface $rubber_repository = null ): array|int|object { return []; }
         };
         $league_service->method( 'get_league' )->willReturn( $league_obj );
-        $adapter = new League_Shortcode_Adapter(
+        $adapter = $this->create_league_adapter(
             fixture_presenter: $this->createStub( Fixture_Presenter::class ),
             template_renderer: $renderer
         );
@@ -757,7 +816,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
         } );
         $league_repo->method( 'query_matches' )->willReturnCallback( static fn(): array => array_map( static fn( $fixture ) => (object) [ 'id' => $fixture->id ], $league->fixtures() ) );
         $handler = new Get_League_Last_5_Handler( $league_service, $this->league_query_service( $league_repo, $league_team_repo, $query_fixtures ) );
-        $adapter = new League_Shortcode_Adapter(
+        $adapter = $this->create_league_adapter(
             fixture_presenter: $fixture_presenter,
             template_renderer: $this->create_renderer()
         );
@@ -859,7 +918,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
         } );
         $league_repo->method( 'query_matches' )->willReturnCallback( static fn(): array => array_map( static fn( $fixture ) => (object) [ 'id' => $fixture->id ], $league->fixtures() ) );
         $handler = new Get_League_Last_5_Handler( $league_service, $this->league_query_service( $league_repo, $league_team_repo, $query_fixtures ) );
-        $adapter = new League_Shortcode_Adapter(
+        $adapter = $this->create_league_adapter(
             fixture_presenter: $fixture_presenter,
             template_renderer: $this->create_renderer()
         );
@@ -909,7 +968,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
             }
         };
 
-        $renderer   = new Shortcode_Template_Renderer( $inner_renderer );
+        $renderer   = $this->create_renderer( $inner_renderer );
         $league_obj = (object) [ 'id' => 42, 'title' => 'Global League Test' ];
 
         // 1. When $league was previously set to another value

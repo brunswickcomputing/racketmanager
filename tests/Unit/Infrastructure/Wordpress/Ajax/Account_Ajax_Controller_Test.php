@@ -8,6 +8,8 @@ use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Account_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Account_Ajax_Controller;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
+use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory;
+use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;
@@ -111,15 +113,16 @@ class Account_Ajax_Controller_Test extends TestCase {
         );
     }
 
-    public function test_get_adapter_fallback_wires_repositories_and_option_service_from_container(): void {
-        $container      = new Simple_Container();
-        $option_service = $this->createStub( Option_Service::class );
-        $message_repo   = $this->createStub( Message_Repository_Interface::class );
-        $user_repo      = $this->createStub( User_Repository_Interface::class );
-
-        $container->set( 'option_service', $option_service );
-        $container->set( 'message_repository', $message_repo );
-        $container->set( 'user_repository', $user_repo );
+    public function test_get_adapter_resolves_registered_adapter_from_container(): void {
+        $container = new Simple_Container();
+        $adapter   = new Account_Ajax_Adapter(
+            $this->createStub( Security_Service_Interface::class ),
+            $this->createStub( Json_Response_Factory_Interface::class ),
+            $this->createStub( Message_Repository_Interface::class ),
+            $this->createStub( User_Repository_Interface::class ),
+            $this->createStub( Option_Service::class )
+        );
+        $container->set( Account_Ajax_Adapter::class, $adapter );
 
         $app            = $this->createStub( RacketManager::class );
         $app->container = $container;
@@ -128,24 +131,11 @@ class Account_Ajax_Controller_Test extends TestCase {
 
         $ref = new \ReflectionMethod( $controller, 'get_adapter' );
         $ref->setAccessible( true );
-        $adapter = $ref->invoke( $controller );
 
-        $this->assertInstanceOf( Account_Ajax_Adapter::class, $adapter );
-
-        $opt_prop = new \ReflectionProperty( Account_Ajax_Adapter::class, 'option_service' );
-        $opt_prop->setAccessible( true );
-        $this->assertSame( $option_service, $opt_prop->getValue( $adapter ) );
-
-        $msg_prop = new \ReflectionProperty( Account_Ajax_Adapter::class, 'message_repository' );
-        $msg_prop->setAccessible( true );
-        $this->assertSame( $message_repo, $msg_prop->getValue( $adapter ) );
-
-        $usr_prop = new \ReflectionProperty( Account_Ajax_Adapter::class, 'user_repository' );
-        $usr_prop->setAccessible( true );
-        $this->assertSame( $user_repo, $usr_prop->getValue( $adapter ) );
+        $this->assertSame( $adapter, $ref->invoke( $controller ) );
     }
 
-    public function test_fallback_adapter_enforces_btm_requirement_when_option_service_configured(): void {
+    public function test_container_adapter_enforces_btm_requirement_when_option_service_configured(): void {
         $GLOBALS['wp_stubs_current_user_id'] = 5;
 
         $security = $this->createStub( Security_Service_Interface::class );
@@ -162,9 +152,16 @@ class Account_Ajax_Controller_Test extends TestCase {
         $user_repo->method( 'find' )->willReturn( $user );
 
         $container = new Simple_Container();
-        $container->set( 'security_service', $security );
-        $container->set( 'option_service', $option_service );
-        $container->set( 'user_repository', $user_repo );
+        $container->set(
+            Account_Ajax_Adapter::class,
+            new Account_Ajax_Adapter(
+                $security,
+                new Json_Response_Factory(),
+                $this->createStub( Message_Repository_Interface::class ),
+                $user_repo,
+                $option_service
+            )
+        );
 
         $app            = $this->createStub( RacketManager::class );
         $app->container = $container;

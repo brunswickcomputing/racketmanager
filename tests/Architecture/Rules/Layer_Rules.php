@@ -652,7 +652,7 @@ final class Layer_Rules {
                 [ self::SRC ],
                 Rule_Kind::FORBIDDEN_FALLBACK_NEW,
                 [ self::PLUGIN_COLLABORATORS ],
-                Rule_Mode::RATCHET,
+                Rule_Mode::STRICT,
                 [ self::SERVICES . 'Container/', self::INFRASTRUCTURE . 'Wordpress/Bootstrap/' ]
             ),
             new Layer_Rule(

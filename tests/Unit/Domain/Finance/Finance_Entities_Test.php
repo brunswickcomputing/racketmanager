@@ -4,6 +4,8 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Domain\Finance;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Mail\Mailer_Interface;
+use Racketmanager\Application\Payment\Ports\Payment_Gateway_Interface;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\DTO\Finance\Charge_Details_DTO;
 use Racketmanager\Domain\DTO\Finance\Invoice_Details_DTO;
@@ -16,6 +18,7 @@ use Racketmanager\Domain\Finance\Invoice;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Tournament\Currency;
 use Racketmanager\Domain\Value_Objects\Money;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\Presentation\Presenters\Invoice_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Charge_Repository_Interface;
@@ -299,7 +302,10 @@ final class Finance_Entities_Test extends TestCase {
             $club_repo,
             $tourn_repo,
             $comp_svc,
-            $player_svc
+            $player_svc,
+            $this->createStub( Payment_Gateway_Interface::class ),
+            $this->createStub( Mailer_Interface::class ),
+            $this->createStub( Option_Service::class )
         );
 
         self::assertSame( Currency::EUR, $finance_svc->get_currency() );
@@ -359,7 +365,10 @@ final class Finance_Entities_Test extends TestCase {
             $this->createStub( Club_Repository_Interface::class ),
             $this->createStub( Tournament_Repository_Interface::class ),
             $comp_svc,
-            $this->createStub( Player_Service::class )
+            $this->createStub( Player_Service::class ),
+            $this->createStub( Payment_Gateway_Interface::class ),
+            $this->createStub( Mailer_Interface::class ),
+            $this->createStub( Option_Service::class )
         );
 
         $charge = new Charge();

@@ -32,7 +32,9 @@ final class Get_Default_Match_Days_Test extends TestCase {
 			->with( array( 'count' => true, 'type' => 'affiliated' ) )
 			->willReturn( 8 );
 
-		$this->assertSame( 3, Util::get_default_match_days( 'cup', club_repository: $club_repository ) );
+		$option_service = $this->createStub( Option_Service::class );
+
+		$this->assertSame( 3, Util::get_default_match_days( 'cup', $option_service, $club_repository ) );
 	}
 
 	public function test_cup_with_injected_club_service_calculates_log2(): void {
@@ -42,7 +44,9 @@ final class Get_Default_Match_Days_Test extends TestCase {
 			->with( array( 'count' => true, 'type' => 'affiliated' ) )
 			->willReturn( 16 );
 
-		$this->assertSame( 4, Util::get_default_match_days( 'cup', club_service: $club_service ) );
+		$option_service = $this->createStub( Option_Service::class );
+
+		$this->assertSame( 4, Util::get_default_match_days( 'cup', $option_service, $club_service ) );
 	}
 
 	public function test_cup_with_zero_clubs_falls_back_to_option_rounds(): void {
@@ -57,7 +61,7 @@ final class Get_Default_Match_Days_Test extends TestCase {
 			->method( 'get_options' )
 			->willReturn( array( 'championship' => array( 'numRounds' => 5 ) ) );
 
-		$this->assertSame( 5, Util::get_default_match_days( 'cup', option_service: $option_service, club_repository: $club_repository ) );
+		$this->assertSame( 5, Util::get_default_match_days( 'cup', $option_service, $club_repository ) );
 	}
 
 	public function test_tournament_uses_configured_num_rounds(): void {
@@ -66,7 +70,9 @@ final class Get_Default_Match_Days_Test extends TestCase {
 			->method( 'get_options' )
 			->willReturn( array( 'championship' => array( 'numRounds' => 6 ) ) );
 
-		$this->assertSame( 6, Util::get_default_match_days( 'tournament', option_service: $option_service ) );
+		$club_repository = $this->createStub( Club_Repository_Interface::class );
+
+		$this->assertSame( 6, Util::get_default_match_days( 'tournament', $option_service, $club_repository ) );
 	}
 
 	public function test_tournament_defaults_to_one_when_not_configured(): void {
@@ -75,11 +81,16 @@ final class Get_Default_Match_Days_Test extends TestCase {
 			->method( 'get_options' )
 			->willReturn( array() );
 
-		$this->assertSame( 1, Util::get_default_match_days( 'tournament', option_service: $option_service ) );
+		$club_repository = $this->createStub( Club_Repository_Interface::class );
+
+		$this->assertSame( 1, Util::get_default_match_days( 'tournament', $option_service, $club_repository ) );
 	}
 
 	public function test_default_type_returns_zero(): void {
-		$this->assertSame( 0, Util::get_default_match_days( 'league' ) );
-		$this->assertSame( 0, Util::get_default_match_days( 'other' ) );
+		$option_service  = $this->createStub( Option_Service::class );
+		$club_repository = $this->createStub( Club_Repository_Interface::class );
+
+		$this->assertSame( 0, Util::get_default_match_days( 'league', $option_service, $club_repository ) );
+		$this->assertSame( 0, Util::get_default_match_days( 'other', $option_service, $club_repository ) );
 	}
 }

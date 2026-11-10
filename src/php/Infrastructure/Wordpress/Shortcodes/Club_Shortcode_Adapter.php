@@ -19,7 +19,6 @@ use Racketmanager\Application\Event\Queries\Event_Allowlist_Guard;
 use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
-use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Club_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
@@ -33,7 +32,6 @@ use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition\Event_Query_Service;
-use Racketmanager\Services\Settings_Service;
 use Racketmanager\Util\Util_Lookup;
 use function current_user_can;
 use function is_user_logged_in;
@@ -70,10 +68,10 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly Event_Query_Service $event_query_service,
         private readonly Event_Repository_Interface $event_repository,
         private readonly Team_Repository_Interface $team_repository,
-        private readonly ?Club_Presenter $club_presenter = null,
-        private readonly ?Player_Presenter $player_presenter = null,
-        private readonly ?Invoice_Presenter $invoice_presenter = null,
-        private readonly ?Team_Details_Presenter $team_details_presenter = null,
+        private readonly Club_Presenter $club_presenter,
+        private readonly Player_Presenter $player_presenter,
+        private readonly Invoice_Presenter $invoice_presenter,
+        private readonly Team_Details_Presenter $team_details_presenter,
         private readonly ?Query_Vars_Interface $query_vars = null
     ) {
     }
@@ -114,7 +112,7 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $this->club_shortcode_presenter->render( Club_View_Model::for_error( __( 'Club not found', 'racketmanager' ) ) );
         }
 
-        $presenter = $this->club_presenter ?? new Club_Presenter();
+        $presenter = $this->club_presenter;
         $club_vm   = $presenter->present(
             club: $result->club_details,
             standalone: true,
@@ -145,8 +143,8 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $this->view_presenter->render( Shortcode_View_Model::error( $result->error_message ?? '' ) );
         }
 
-        $club_presenter   = $this->club_presenter ?? new Club_Presenter();
-        $player_presenter = $this->player_presenter ?? new Player_Presenter();
+        $club_presenter   = $this->club_presenter;
+        $player_presenter = $this->player_presenter;
 
         $player_vm = null;
         $players   = [];
@@ -267,8 +265,8 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $this->view_presenter->render( Shortcode_View_Model::error( $result->error_message ?? '' ) );
         }
 
-        $club_presenter         = $this->club_presenter ?? new Club_Presenter();
-        $team_details_presenter = $this->team_details_presenter ?? new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() );
+        $club_presenter         = $this->club_presenter;
+        $team_details_presenter = $this->team_details_presenter;
 
         $competitions = [];
         foreach ( $result->competitions_data as $comp_data ) {
@@ -323,8 +321,8 @@ class Club_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $this->view_presenter->render( Shortcode_View_Model::error( $result->error_message ?? '' ) );
         }
 
-        $club_presenter    = $this->club_presenter ?? new Club_Presenter();
-        $invoice_presenter = $this->invoice_presenter ?? new Invoice_Presenter();
+        $club_presenter    = $this->club_presenter;
+        $invoice_presenter = $this->invoice_presenter;
 
         $invoices_vm = null;
         $invoice_vm  = null;

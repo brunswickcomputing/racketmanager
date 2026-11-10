@@ -36,8 +36,6 @@ use Racketmanager\Services\League_Service;
  */
 readonly final class League_Constitution_Action_Dispatcher {
 
-    private League_Constitution_Handler $commands;
-
     public function __construct(
         private Action_Guard_Interface $action_guard,
         League_Team_Repository_Interface $league_team_repository,
@@ -47,9 +45,8 @@ readonly final class League_Constitution_Action_Dispatcher {
         Event_Repository_Interface $event_repository,
         Team_Repository_Interface $team_repository,
         Promotion_Relegation_Service $promotion_relegation_service,
-        ?League_Constitution_Handler $commands = null,
+        private League_Constitution_Handler $commands,
     ) {
-        $this->commands = $commands ?? new League_Constitution_Handler( $league_team_repository, $league_service, $league_schedule_service, $league_repository, $event_repository, $team_repository, $promotion_relegation_service );
     }
 
     /**

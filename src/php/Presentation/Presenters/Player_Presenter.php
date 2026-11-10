@@ -23,7 +23,7 @@ use function str_starts_with;
 readonly class Player_Presenter {
 
     public function __construct(
-        private readonly ?Competition_Shortcode_Presenter $competition_presenter = null,
+        private readonly Competition_Shortcode_Presenter|\Closure|null $competition_presenter = null,
         private readonly ?Option_Gateway_Interface $option_gateway = null
     ) {}
 
@@ -98,7 +98,10 @@ readonly class Player_Presenter {
                 if ( $first instanceof Competition_List_Item_View_Model ) {
                     $presented_competitions[ $competition_type ] = $competitions;
                 } elseif ( $this->competition_presenter ) {
-                    $presented_competitions[ $competition_type ] = $this->competition_presenter->present_competition_list(
+                    $competition_presenter = $this->competition_presenter instanceof \Closure
+                        ? ( $this->competition_presenter )()
+                        : $this->competition_presenter;
+                    $presented_competitions[ $competition_type ] = $competition_presenter->present_competition_list(
                         competitions: (array) $competitions,
                         competition_type: (string) $competition_type,
                         player: $player

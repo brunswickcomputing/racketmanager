@@ -9,7 +9,6 @@ use Racketmanager\Domain\Enums\Fixture_Status;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Exceptions\Fixture_Validation_Exception;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
-use Racketmanager\Repositories\Rubber_Repository;
 use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Domain\Scoring\Scoring_Context;
 use Racketmanager\Services\League_Service;
@@ -29,13 +28,13 @@ class Rubber_Result_Manager {
     public function __construct(
         Score_Validation_Service $score_validator,
         League_Service $league_service,
-        ?Rubber_Repository_Interface $rubber_repository = null,
+        Rubber_Repository_Interface $rubber_repository,
         ?Player_Validation_Service $player_validator = null,
         ?Validator_Fixture $validator = null
     ) {
         $this->score_validator   = $score_validator;
         $this->league_service    = $league_service;
-        $this->rubber_repository = $rubber_repository ?? new Rubber_Repository();
+        $this->rubber_repository = $rubber_repository;
         $this->player_validator  = $player_validator;
         $this->validator         = $validator;
     }

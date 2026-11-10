@@ -24,9 +24,11 @@ use wpdb;
 class Club_Role_Repository implements Club_Role_Repository_Interface {
     private ?wpdb $wpdb;
     private string $table_name;
-    private ?User_Repository_Interface $user_repository;
 
-    public function __construct( ?wpdb $wpdb = null, ?User_Repository_Interface $user_repository = null ) {
+    public function __construct(
+        private readonly User_Repository_Interface $user_repository,
+        ?wpdb $wpdb = null
+    ) {
         if ( null === $wpdb ) {
             global $wpdb;
             $this->wpdb = $wpdb;
@@ -35,7 +37,6 @@ class Club_Role_Repository implements Club_Role_Repository_Interface {
         }
         $prefix = ( $this->wpdb && isset( $this->wpdb->prefix ) ) ? $this->wpdb->prefix : 'wp_';
         $this->table_name = $prefix . 'racketmanager_club_roles';
-        $this->user_repository = $user_repository ?? new User_Repository();
     }
 
     /**

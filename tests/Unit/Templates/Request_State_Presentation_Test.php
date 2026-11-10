@@ -25,7 +25,9 @@ use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Matches_List_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Matches_List_View_Model;
@@ -51,7 +53,11 @@ class Request_State_Presentation_Test extends TestCase {
         $this->backup_globals();
         $_GET = [];
         unset( $GLOBALS['wp_query'], $GLOBALS['post'] );
-        $this->renderer = new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) );
+        $this->renderer = new Shortcode_Template_Renderer(
+            new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ),
+            new Club_Presenter(),
+            new Player_Presenter()
+        );
     }
 
     protected function tearDown(): void {
@@ -63,7 +69,9 @@ class Request_State_Presentation_Test extends TestCase {
             $this->createStub( Competition_Service::class ),
             $this->createStub( Team_Service::class ),
             new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ),
-            new Tournament_Presenter()
+            new Tournament_Presenter(),
+            new Club_Presenter(),
+            new Player_Presenter()
         );
         $vm = new Matches_List_View_Model(
             template: 'matches-daily', match_date: '2026-10-12',
@@ -93,6 +101,22 @@ class Request_State_Presentation_Test extends TestCase {
         return [ 'register' => [ 'register', 'registration' ], 'login' => [ '', 'login' ], 'unknown' => [ 'unknown', 'login' ] ];
     }
 
+    private function create_league_adapter( ...$args ): League_Shortcode_Adapter {
+        $option_gateway = new \Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway();
+        return new League_Shortcode_Adapter(
+            archive_presenter: $args['archive_presenter'] ?? new \Racketmanager\Presentation\Presenters\League_Archive_Presenter( $option_gateway ),
+            tournament_presenter: $args['tournament_presenter'] ?? new Tournament_Presenter( 'd/m/Y' ),
+            team_details_presenter: $args['team_details_presenter'] ?? new Team_Details_Presenter( $option_gateway, new Settings_Service( [] ) ),
+            player_presenter: $args['player_presenter'] ?? new \Racketmanager\Presentation\Presenters\Player_Presenter(),
+            fixture_presenter: $args['fixture_presenter'] ?? new \Racketmanager\Presentation\Presenters\Fixture_Presenter(
+                new \Racketmanager\Services\Fixture\Fixture_Link_Service(),
+                $option_gateway,
+                new \Racketmanager\Services\View\Php_View_Renderer( ( defined( 'RACKETMANAGER_PATH' ) ? RACKETMANAGER_PATH : dirname( __DIR__, 3 ) . '/' ) . 'templates/' )
+            ),
+            template_renderer: $args['template_renderer'] ?? null
+        );
+    }
+
     public function test_tournament_handler_supplies_selection_form_target(): void {
         $tournament = new Tournament();
         $tournament->id = 8;
@@ -104,7 +128,7 @@ class Request_State_Presentation_Test extends TestCase {
         $service->method( 'get_tournament_with_details' )->willReturn( new Tournament_Details_DTO( $tournament, $competition, $this->createStub( Club::class ) ) );
         $service->method( 'get_tournaments' )->willReturn( [ $tournament ] );
         $handler = new Get_Tournament_Handler( $service );
-        $adapter = new Tournament_Shortcode_Adapter( tournament_presenter: new Tournament_Presenter() );
+        $adapter = new Tournament_Shortcode_Adapter( tournament_presenter: new Tournament_Presenter(), player_presenter: new \Racketmanager\Presentation\Presenters\Player_Presenter() );
         $result = $adapter->present_tournament( $handler->handle( new Get_Tournament_Query( tournament: 'Summer Open', post_id: 73 ) ) );
 
         self::assertSame( 'https://example.test/page/73', $result->vars['form_action'] );
@@ -127,7 +151,7 @@ class Request_State_Presentation_Test extends TestCase {
         $service = $this->createStub( League_Service::class );
         $service->method( 'get_league' )->willReturn( $league );
         $handler = new Get_League_Matches_Handler( $service, $league_query );
-        $adapter = new League_Shortcode_Adapter(
+        $adapter = $this->create_league_adapter(
             tournament_presenter: new Tournament_Presenter(),
             template_renderer: $this->renderer
         );
@@ -177,7 +201,7 @@ class Request_State_Presentation_Test extends TestCase {
             $leagues, $teams, $stats, $league_query
         );
         $team_presenter = new Team_Details_Presenter( $this->createStub( Option_Gateway_Interface::class ), new Settings_Service( [] ) );
-        $adapter = new League_Shortcode_Adapter(
+        $adapter = $this->create_league_adapter(
             tournament_presenter: $matches,
             team_details_presenter: $team_presenter,
             template_renderer: $this->renderer

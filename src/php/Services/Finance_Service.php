@@ -40,8 +40,6 @@ use Racketmanager\Exceptions\Invoice_Not_Updated_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Role_Assignment_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
-use Racketmanager\Infrastructure\Gateways\Payment\Stripe_Payment_Gateway;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Charge_Repository_Interface;
@@ -81,9 +79,9 @@ class Finance_Service {
         Tournament_Repository_Interface $tournament_repository,
         Competition_Service $competition_service,
         Player_Service $player_service,
-        ?Payment_Gateway_Interface $payment_gateway = null,
-        ?Mailer_Interface $mailer = null,
-        ?Option_Service $option_service = null
+        Payment_Gateway_Interface $payment_gateway,
+        Mailer_Interface $mailer,
+        Option_Service $option_service
     ) {
         $this->racketmanager         = $plugin_instance;
         $this->charge_repository     = $charge_repository;
@@ -92,9 +90,9 @@ class Finance_Service {
         $this->tournament_repository = $tournament_repository;
         $this->competition_service   = $competition_service;
         $this->player_service        = $player_service;
-        $this->payment_gateway       = $payment_gateway ?? new Stripe_Payment_Gateway( $plugin_instance->get_options( 'billing' ) );
-        $this->mailer                = $mailer ?? new Wp_Mailer();
-        $this->option_service        = $option_service ?? new Option_Service();
+        $this->payment_gateway       = $payment_gateway;
+        $this->mailer                = $mailer;
+        $this->option_service        = $option_service;
     }
 
     public function get_charge( $charge_id ): Charge {

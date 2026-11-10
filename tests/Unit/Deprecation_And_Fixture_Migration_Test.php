@@ -56,10 +56,11 @@ class Deprecation_And_Fixture_Migration_Test extends TestCase {
 
     public function test_validator_fixture_match_without_repository(): void {
         $validator = new Validator_Fixture( fixture_repository: null );
-        $result    = $validator->match( 123 );
 
-        $this->assertTrue( $result->error );
-        $this->assertContains( 'Match not found', $result->err_msgs );
+        $this->expectException( \LogicException::class );
+        $this->expectExceptionMessage( 'Fixture repository has not been configured on this Validator_Fixture instance.' );
+
+        $validator->match( 123 );
     }
 
     public function test_validator_fixture_match_missing_id(): void {

@@ -13,12 +13,10 @@ use Racketmanager\Exceptions\Registration_Not_Found_Exception;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
-use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
-use Racketmanager\Repositories\User_Repository;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Validator\Validator_Club;
@@ -39,13 +37,11 @@ class Club_Ajax_Adapter {
         private Json_Response_Factory_Interface $response_factory,
         private Club_Service $club_service,
         private Registration_Service $registration_service,
-        private ?User_Repository_Interface $user_repository = null,
-        private ?Club_Role_Repository_Interface $club_role_repository = null,
+        private User_Repository_Interface $user_repository,
+        private Club_Role_Repository_Interface $club_role_repository,
         private ?Club_Repository_Interface $club_repository = null,
         private ?Player_Repository_Interface $player_repository = null
     ) {
-        $this->user_repository      = $this->user_repository ?? new User_Repository();
-        $this->club_role_repository = $this->club_role_repository ?? new Club_Role_Repository();
     }
 
     private function create_validator(): Validator_Club {

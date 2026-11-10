@@ -27,7 +27,7 @@ class Cup_Setup_Action_Dispatcher {
         private readonly Competition_Service $competition_service,
         private readonly Draw_Action_Handler_Interface $championship_admin_service,
         private readonly Action_Guard_Interface $action_guard,
-        private readonly ?Generate_Tournament_Bracket_Handler $generate_tournament_bracket_handler = null,
+        private readonly Generate_Tournament_Bracket_Handler $generate_tournament_bracket_handler,
     ) {
     }
 
@@ -180,7 +180,7 @@ class Cup_Setup_Action_Dispatcher {
         $season = isset( $post['season'] ) ? sanitize_text_field( wp_unslash( strval( $post['season'] ) ) ) : ( isset( $query['season'] ) ? sanitize_text_field( wp_unslash( strval( $query['season'] ) ) ) : null );
 
         $command = Generate_Tournament_Bracket_Command::from_post( $post, $league_id, 0, $season );
-        $handler = $this->generate_tournament_bracket_handler ?? new Generate_Tournament_Bracket_Handler( $this->championship_admin_service );
+        $handler = $this->generate_tournament_bracket_handler;
         return $handler->handle( $command );
     }
 

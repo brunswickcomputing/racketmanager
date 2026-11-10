@@ -16,7 +16,9 @@ use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Email_Shortcode_Adapter;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Email_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
@@ -153,7 +155,7 @@ class Shortcodes_Email_Integration_Test extends TestCase {
             return 'rendered_html_' . $path;
         } );
 
-        $template_renderer = new Shortcode_Template_Renderer( $renderer );
+        $template_renderer = new Shortcode_Template_Renderer( $renderer, new Club_Presenter(), new Player_Presenter() );
 
         $this->shortcode = new Email_Shortcode_Adapter(
             $this->fixture_repo,
@@ -297,7 +299,7 @@ class Shortcodes_Email_Integration_Test extends TestCase {
         $adapter = new Email_Shortcode_Adapter(
             $fixture_repo,
             $this->presenter,
-            new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
+            new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ), new Club_Presenter(), new Player_Presenter() ),
             $this->createStub( \Racketmanager\Services\Competition\Event_Query_Service::class ),
             $this->createStub( \Racketmanager\Services\Competition\League_Query_Service::class ),
             $this->createStub( \Racketmanager\Repositories\Interfaces\Team_Repository_Interface::class ),
@@ -338,7 +340,7 @@ class Shortcodes_Email_Integration_Test extends TestCase {
         $adapter = new Email_Shortcode_Adapter(
             $this->fixture_repo,
             $this->presenter,
-            new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) ),
+            new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ), new Club_Presenter(), new Player_Presenter() ),
             $this->createStub( \Racketmanager\Services\Competition\Event_Query_Service::class ),
             $this->createStub( \Racketmanager\Services\Competition\League_Query_Service::class ),
             $this->createStub( \Racketmanager\Repositories\Interfaces\Team_Repository_Interface::class ),

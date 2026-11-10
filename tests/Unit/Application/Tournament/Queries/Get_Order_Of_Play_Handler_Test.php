@@ -13,6 +13,8 @@ use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Order_Of_Play_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
+use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Presentation\View_Models\Order_Of_Play_View_Model;
 use Racketmanager\Repositories\Competition_Repository;
 use Racketmanager\Repositories\Fixture_Repository;
@@ -133,7 +135,11 @@ class Get_Order_Of_Play_Handler_Test extends TestCase
         $result = $this->handler->handle($query);
         
         $this->assertFalse($result->is_error());
-        $adapter = new Tournament_Shortcode_Adapter( order_of_play_presenter: $this->order_of_play_presenter );
+        $adapter = new Tournament_Shortcode_Adapter(
+            tournament_presenter: new Tournament_Presenter(),
+            player_presenter: new Player_Presenter(),
+            order_of_play_presenter: $this->order_of_play_presenter
+        );
         $vm = $adapter->present_order_of_play($result);
         $this->assertArrayHasKey('order_of_play', $vm->vars);
         $order_of_play = $vm->vars['order_of_play'];
@@ -195,7 +201,11 @@ class Get_Order_Of_Play_Handler_Test extends TestCase
         $result = $this->handler->handle($query);
 
         $this->assertFalse($result->is_error());
-        $adapter = new Tournament_Shortcode_Adapter( order_of_play_presenter: $this->order_of_play_presenter );
+        $adapter = new Tournament_Shortcode_Adapter(
+            tournament_presenter: new Tournament_Presenter(),
+            player_presenter: new Player_Presenter(),
+            order_of_play_presenter: $this->order_of_play_presenter
+        );
         $vm = $adapter->present_order_of_play($result);
         $order_of_play = $vm->vars['order_of_play'];
         $this->assertInstanceOf(Order_Of_Play_View_Model::class, $order_of_play);
@@ -220,7 +230,11 @@ class Get_Order_Of_Play_Handler_Test extends TestCase
         $result = $this->handler->handle($query);
 
         $this->assertFalse($result->is_error());
-        $adapter = new Tournament_Shortcode_Adapter( order_of_play_presenter: $this->order_of_play_presenter );
+        $adapter = new Tournament_Shortcode_Adapter(
+            tournament_presenter: new Tournament_Presenter(),
+            player_presenter: new Player_Presenter(),
+            order_of_play_presenter: $this->order_of_play_presenter
+        );
         $vm = $adapter->present_order_of_play($result);
         $order_of_play = $vm->vars['order_of_play'];
         $this->assertInstanceOf(Order_Of_Play_View_Model::class, $order_of_play);

@@ -30,22 +30,14 @@ use stdClass;
  */
 readonly final class Competition_Season_Action_Dispatcher {
 
-    private Competition_Season_Handler $commands;
-
     public function __construct(
         Competition_Service $competition_service,
         Finance_Service $finance_service,
         private Action_Guard_Interface $action_guard,
         Competition_Season_Service $competition_season_service,
         Event_Repository_Interface $event_repository,
-        ?Competition_Season_Handler $commands = null,
+        private Competition_Season_Handler $commands,
     ) {
-        $this->commands = $commands ?? new Competition_Season_Handler(
-            $competition_service,
-            $finance_service,
-            $competition_season_service,
-            $event_repository
-        );
     }
 
     /**

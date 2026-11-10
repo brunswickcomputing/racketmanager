@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Repositories;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Competition\Competition_Summary_DTO;
 use Racketmanager\Repositories\Competition_Repository;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use wpdb;
 
@@ -63,7 +64,7 @@ final class Competition_Repository_Summary_Test extends TestCase {
 
 		$GLOBALS['wpdb'] = $wpdb;
 
-		$repository   = new Competition_Repository();
+		$repository   = new Competition_Repository( $this->createStub( Fixture_Repository_Interface::class ) );
 		$competitions = $repository->find_competitions_with_summary();
 
 		$this->assertCount( 2, $competitions );
@@ -109,7 +110,7 @@ final class Competition_Repository_Summary_Test extends TestCase {
 
 		$GLOBALS['wpdb'] = $wpdb;
 
-		$repository   = new Competition_Repository();
+		$repository   = new Competition_Repository( $this->createStub( Fixture_Repository_Interface::class ) );
 		$competitions = $repository->find_competitions_with_summary( 'juniors', 'tournament' );
 
 		$this->assertSame( array(), $competitions );
@@ -131,7 +132,7 @@ final class Competition_Repository_Summary_Test extends TestCase {
 
 		$GLOBALS['wpdb'] = $wpdb;
 
-		$repository   = new Competition_Repository();
+		$repository   = new Competition_Repository( $this->createStub( Fixture_Repository_Interface::class ) );
 		$competitions = $repository->find_competitions_with_summary();
 
 		$this->assertSame( array(), $competitions );

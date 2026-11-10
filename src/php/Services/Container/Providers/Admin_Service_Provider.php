@@ -275,7 +275,8 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
 
         $container->set( 'club_handler', fn( Simple_Container $c ) => new \Racketmanager\Application\Admin\Commands\Club_Handler(
             $c->get( 'club_service' ),
-            $c->get( 'player_service' )
+            $c->get( 'player_service' ),
+            $c->get( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class )
         ) );
 
         $container->set( 'club_action_dispatcher', fn( Simple_Container $c ) => new Club_Action_Dispatcher(
@@ -490,10 +491,11 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             update_player_handler: $c->get( 'update_player_handler' ),
             search_players_handler: $c->get( 'search_players_handler' ),
             get_player_details_handler: $c->get( 'get_player_details_handler' ),
+            team_repository: $c->get( \Racketmanager\Repositories\Interfaces\Team_Repository_Interface::class ),
+            player_repository: $c->get( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class ),
             league_repository: $c->get( 'league_repository' ),
             event_repository: $c->get( 'event_repository' ),
-            view_presenter: $c->get( 'shortcode_view_presenter' ),
-            team_repository: $c->get( 'team_repository' )
+            view_presenter: $c->get( 'shortcode_view_presenter' )
         ) );
         $container->alias( Frontend_Ajax_Adapter::class, 'frontend_ajax_adapter' );
         $container->set( 'frontend_ajax_controller', fn( Simple_Container $c ) => new Frontend_Ajax_Controller( $app, $c->get( 'frontend_ajax_adapter' ) ) );

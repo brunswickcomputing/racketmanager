@@ -27,8 +27,10 @@ use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapt
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use ReflectionClass;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Presentation\Presenters\Match_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
@@ -50,7 +52,11 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		parent::setUp();
 		$template_path           = defined( 'RACKETMANAGER_PATH' ) ? RACKETMANAGER_PATH . 'templates/' : dirname( __DIR__, 3 ) . '/templates/';
 		$this->renderer          = new Php_View_Renderer( $template_path );
-		$this->template_renderer = new Shortcode_Template_Renderer( $this->renderer );
+		$this->template_renderer = new Shortcode_Template_Renderer(
+			$this->renderer,
+			new Club_Presenter(),
+			new Player_Presenter()
+		);
 	}
 
 	protected function tearDown(): void {
@@ -204,7 +210,10 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 
 		$query      = new Get_Tournament_Match_Query( 'summer-championship-2026', 555 );
 		$result     = $handler->handle( $query );
-		$adapter    = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter );
+		$adapter    = new Tournament_Shortcode_Adapter(
+			tournament_presenter: $presenter,
+			player_presenter: new Player_Presenter()
+		);
 		$view_model = $adapter->present_match( $result );
 
 		$this->assertSame( 'match-tournament', $view_model->template );
@@ -301,7 +310,7 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$presenter = new Tournament_Presenter( 'Y-m-d' );
 		$handler   = new Get_Tournament_Match_Handler( $tournament_service, $fixture_service );
 		$result    = $handler->handle( new Get_Tournament_Match_Query( 'summer-championship-2026', 555, $referrer ) );
-		$adapter   = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter );
+		$adapter   = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter, player_presenter: new \Racketmanager\Presentation\Presenters\Player_Presenter() );
 
 		return $adapter->present_match( $result );
 	}
@@ -403,7 +412,10 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$handler   = new Get_Tournament_Match_Handler( $tournament_service, $fixture_service );
 
 		$result     = $handler->handle( new Get_Tournament_Match_Query( 'autumn-box-league', 777 ) );
-		$adapter    = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter );
+		$adapter    = new Tournament_Shortcode_Adapter(
+			tournament_presenter: $presenter,
+			player_presenter: new Player_Presenter()
+		);
 		$view_model = $adapter->present_match( $result );
 
 		$this->assertSame( 'League', $view_model->vars['svg_link_text'] );
@@ -736,7 +748,10 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$presenter  = new Tournament_Presenter( 'Y-m-d' );
 		$handler    = new Get_Tournament_Match_Handler( $tournament_service, $fixture_service );
 		$result     = $handler->handle( new Get_Tournament_Match_Query( 'played-finals', 999 ) );
-		$adapter    = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter );
+		$adapter    = new Tournament_Shortcode_Adapter(
+			tournament_presenter: $presenter,
+			player_presenter: new Player_Presenter()
+		);
 		$view_model = $adapter->present_match( $result );
 
 		$this->assertTrue( $view_model->vars['user_can_update'] );

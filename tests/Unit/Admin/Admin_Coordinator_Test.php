@@ -517,7 +517,10 @@ final class Admin_Coordinator_Test extends TestCase {
         $container->set( League_Repository_Interface::class, fn() => new stdClass() );
 
         $this->expectException( TypeError::class );
-        new Admin( container: $container );
+        self::assertInstanceOf(
+            Admin::class,
+            new Admin( container: $container )
+        );
     }
 
     public function test_constructor_throws_type_error_when_container_key_binding_is_invalid_type(): void {
@@ -525,6 +528,9 @@ final class Admin_Coordinator_Test extends TestCase {
         $container->set( 'league_repository', fn() => new stdClass() );
 
         $this->expectException( TypeError::class );
-        new Admin( container: $container );
+        self::assertInstanceOf(
+            Admin::class,
+            new Admin( container: $container )
+        );
     }
 }

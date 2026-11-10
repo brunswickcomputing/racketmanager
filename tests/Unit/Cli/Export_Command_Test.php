@@ -63,9 +63,12 @@ final class Export_Command_Test extends TestCase {
         Plugin_Bootstrap::reset();
 
         $this->expectException( LogicException::class );
-        $this->expectExceptionMessage( 'Export_Command requires an active container or an injected Export_Service.' );
+        $this->expectExceptionMessageIsOrContains( 'Export_Command requires an active container or an injected Export_Service.' );
 
-        new Export_Command();
+        self::assertInstanceOf(
+            Export_Command::class,
+            new Export_Command()
+        );
     }
 
     public function test_invoke_calls_exporter_and_logs_content(): void {

@@ -155,6 +155,25 @@ class Ajax_Tournament extends Ajax {
                 $validator         = $validator->events_entry( $events, $tournament ? $tournament->num_entries : null, $allowed_event_ids );
                 $events            = $validator->validated_events;
                 $tournament_events = array_map( 'strval', $allowed_event_ids );
+                if ( $tournament && $tournament->is_closed && ! current_user_can( 'manage_racketmanager' ) ) {
+                    foreach ( $events as $event_id ) {
+                        $event = get_event( $event_id );
+                        if ( $event ) {
+                            $teams = $event->get_teams(
+                                array(
+                                    'player' => $player_id,
+                                    'season' => $tournament->season,
+                                )
+                            );
+                            if ( empty( $teams ) ) {
+                                $validator->error      = true;
+                                $validator->err_flds[] = 'event';
+                                $validator->err_msgs[] = __( 'Tournament entries are now closed', 'racketmanager' );
+                                break;
+                            }
+                        }
+                    }
+                }
                 foreach ( $events as $event ) {
                     $event = get_event( $event );
                     if ( substr( $event->type, 1, 1 ) === 'D' ) {

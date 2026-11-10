@@ -183,6 +183,8 @@ final class Tournament_Entry {
         if ( ! empty( $fee ) ) {
             $this->set_fee( $fee );
         }
+        wp_cache_delete( $this->id, 'tournament_entries' );
+        wp_cache_delete( $this->tournament_id . '_' . $this->player_id, 'tournament_entries' );
     }
     /**
      * Set tournament entry fee
@@ -200,6 +202,8 @@ final class Tournament_Entry {
                     $this->id
                 )
             );
+            wp_cache_delete( $this->id, 'tournament_entries' );
+            wp_cache_delete( $this->tournament_id . '_' . $this->player_id, 'tournament_entries' );
         }
     }
     /**
@@ -211,6 +215,10 @@ final class Tournament_Entry {
         global $wpdb;
         if ( ! empty( $club ) ) {
             $this->club_id = $club;
+            $club_obj      = get_club( $club );
+            if ( $club_obj ) {
+                $this->club = $club_obj;
+            }
             $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
                 $wpdb->prepare(
                     "UPDATE $wpdb->racketmanager_tournament_entries SET `club_id` = %d WHERE `id` = %d",
@@ -218,6 +226,8 @@ final class Tournament_Entry {
                     $this->id
                 )
             );
+            wp_cache_delete( $this->id, 'tournament_entries' );
+            wp_cache_delete( $this->tournament_id . '_' . $this->player_id, 'tournament_entries' );
         }
     }
     /**
@@ -234,5 +244,6 @@ final class Tournament_Entry {
         );
         $racketmanager->set_message( __( 'Tournament Entry Deleted', 'racketmanager' ) );
         wp_cache_delete( $this->id, 'tournament_entries' );
+        wp_cache_delete( $this->tournament_id . '_' . $this->player_id, 'tournament_entries' );
     }
 }

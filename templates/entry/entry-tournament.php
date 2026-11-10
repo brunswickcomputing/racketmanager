@@ -27,26 +27,31 @@ global $racketmanager;
 /** @var array $club_memberships */
 $withdrawal_allowed = false;
 $entry_option = false;
+$confirm_allowed = false;
+$entered = ! empty( $player->entry );
+$entry_is_pending = empty( $player->tournament_entry ) || 0 === intval( $player->tournament_entry->status );
+
 if ( get_current_user_id() !== intval( $player->id ) && ! current_user_can( 'manage_racketmanager' ) ) {
     $changes_allowed = false;
 } elseif ( ! $tournament->is_open ) {
-    if (current_user_can( 'manage_racketmanager' ) ) {
+    if ( current_user_can( 'manage_racketmanager' ) ) {
         $changes_allowed = true;
     } else {
         $changes_allowed = false;
     }
     if ( $tournament->is_closed ) {
         $withdrawal_allowed = true;
+        if ( $entered ) {
+            $confirm_allowed = true;
+        }
     }
 } else {
     $changes_allowed    = true;
     $withdrawal_allowed = true;
 }
-if ( ! empty( $player->entry ) ) {
-    $entered    = true;
-    $form_title = __( 'Entry details', 'racketmanager' );
+if ( $entered ) {
+    $form_title = ( $confirm_allowed && $entry_is_pending ) ? __( 'Confirm entry', 'racketmanager' ) : __( 'Entry details', 'racketmanager' );
 } else {
-    $entered    = false;
     $form_title = __( 'Enter online', 'racketmanager' );
 }
 ?>
@@ -84,7 +89,11 @@ if ( ! empty( $player->entry ) ) {
                         if ( $tournament->is_closed ) {
                             $alert_class = 'warning';
                             $alert_msg[] = __( 'Tournament entries are now closed.', 'racketmanager' );
-                            $alert_msg[] = __( 'You can still withdraw from events.', 'racketmanager' );
+                            if ( $confirm_allowed && $entry_is_pending ) {
+                                $alert_msg[] = __( 'You can still confirm your entry or withdraw from events.', 'racketmanager' );
+                            } else {
+                                $alert_msg[] = __( 'You can still withdraw from events.', 'racketmanager' );
+                            }
                         } elseif ( ! $tournament->is_open ) {
                             if ( $entered ) {
                                 $alert_class = 'info';
@@ -176,7 +185,7 @@ if ( ! empty( $player->entry ) ) {
                                     <div class="hgroup">
                                         <h4 class="hgroup__heading"><?php esc_html_e( 'My details', 'racketmanager' ); ?></h4>
                                         <?php
-                                        if ( $changes_allowed ) {
+                                        if ( $changes_allowed || $confirm_allowed ) {
                                             ?>
                                             <p class="hgroup__subheading"><?php esc_html_e( 'Check if your details are correct, and change them if necessary', 'racketmanager' ); ?></p>
                                             <?php
@@ -191,14 +200,14 @@ if ( ! empty( $player->entry ) ) {
                                                     <div class="list__item">
                                                         <dt class="list__label"><label for="contactno"><?php esc_html_e( 'Phone', 'racketmanager' ); ?></label></dt>
                                                         <dd class="list__value">
-                                                            <input type="tel" class="form-control" id="contactno" name="contactno" value="<?php echo esc_html( $player->contactno ); ?>" <?php echo $changes_allowed ? null : 'readonly'; ?> />
+                                                            <input type="tel" class="form-control" id="contactno" name="contactno" value="<?php echo esc_html( $player->contactno ); ?>" <?php echo ( $changes_allowed || $confirm_allowed ) ? null : 'readonly'; ?> />
                                                             <div id="contactnoFeedback" class="invalid-feedback"></div>
                                                         </dd>
                                                     </div>
                                                     <div class="list__item">
                                                         <dt class="list__label"><label for="contactemail"><?php esc_html_e( 'Email', 'racketmanager' ); ?></label></dt>
                                                         <dd class="list__value">
-                                                            <input type="email" class="form-control" id="contactemail" name="contactemail" value="<?php echo esc_html( $player->user_email ); ?>" <?php echo $changes_allowed ? null : 'readonly'; ?> />
+                                                            <input type="email" class="form-control" id="contactemail" name="contactemail" value="<?php echo esc_html( $player->user_email ); ?>" <?php echo ( $changes_allowed || $confirm_allowed ) ? null : 'readonly'; ?> />
                                                             <div id="contactemailFeedback" class="invalid-feedback"></div>
                                                         </dd>
                                                     </div>
@@ -229,7 +238,7 @@ if ( ! empty( $player->entry ) ) {
                                                                 default:
                                                                     ?>
                                                                     <label for="clubId" class="visually-hidden"><?php esc_html_e( 'Club', 'racketmanager' ); ?></label>
-                                                                        <select class="form-select" size="1" name="clubId" id="clubId" <?php echo $changes_allowed ? null : 'readonly'; ?>>
+                                                                        <select class="form-select" size="1" name="clubId" id="clubId" <?php echo ( $changes_allowed || $confirm_allowed ) ? null : 'disabled'; ?>>
                                                                             <option value="0"><?php esc_html_e( 'Select club', 'racketmanager' ); ?></option>
                                                                             <?php
                                                                             foreach ( $club_memberships as $club_player ) {
@@ -244,14 +253,14 @@ if ( ! empty( $player->entry ) ) {
                                                                     <div id="clubIdFeedback" class="invalid-feedback"></div>
                                                                     <?php
                                                                     break;
-                                                            }
-                                                            ?>
+                                                                }
+                                                                ?>
                                                         </dd>
                                                     </div>
                                                     <div class="list__item">
                                                         <dt class="list__label"><label for="btm"><?php esc_html_e( 'LTA Number', 'racketmanager' ); ?></label></dt>
                                                         <dd class="list__value">
-                                                            <input type="number" class="form-control" id="btm" name="btm" value="<?php echo esc_html( $player->btm ); ?>" <?php echo $changes_allowed ? null : 'readonly'; ?> />
+                                                            <input type="number" class="form-control" id="btm" name="btm" value="<?php echo esc_html( $player->btm ); ?>" <?php echo ( $changes_allowed || $confirm_allowed ) ? null : 'readonly'; ?> />
                                                             <div id="btmFeedback" class="invalid-feedback"></div>
                                                         </dd>
                                                     </div>
@@ -402,7 +411,7 @@ if ( ! empty( $player->entry ) ) {
                                     </div>
                                     <div class="col-12 col-md-8">
                                         <div class="form-floating">
-                                            <textarea class="form-control" placeholder="<?php esc_attr_e( 'Information', 'racketmanager' ); ?>" id="commentDetails" name="commentDetails" <?php echo $changes_allowed ? null : 'readonly'; ?>></textarea>
+                                            <textarea class="form-control" placeholder="<?php esc_attr_e( 'Information', 'racketmanager' ); ?>" id="commentDetails" name="commentDetails" <?php echo ( $changes_allowed || $confirm_allowed ) ? null : 'readonly'; ?>></textarea>
                                             <label for="commentDetails"><?php esc_attr_e( 'Additional information', 'racketmanager' ); ?></label>
                                             <div id="commentDetailsFeedback" class="invalid-feedback"></div>
                                         </div>
@@ -419,7 +428,7 @@ if ( ! empty( $player->entry ) ) {
                                     printf( __( 'I agree to abide by %s.', 'racketmanager' ), $rules_link ); //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
                                     ?>
                                 </label>
-                                <input class="form-check-input switch" id="acceptance" name="acceptance" type="checkbox" role="switch" aria-checked="false" <?php echo $changes_allowed || $withdrawal_allowed ? null : 'disabled'; ?>>
+                                <input class="form-check-input switch" id="acceptance" name="acceptance" type="checkbox" role="switch" aria-checked="false" <?php echo ( $changes_allowed || $withdrawal_allowed || $confirm_allowed ) ? null : 'disabled'; ?>>
                                 <div id="acceptanceFeedback" class="invalid-feedback"></div>
                             </div>
                         </div>
@@ -454,10 +463,10 @@ if ( ! empty( $player->entry ) ) {
                         ?>
                         <div class="btn__group">
                             <?php
-                            if ( $changes_allowed || $withdrawal_allowed ) {
+                            if ( $changes_allowed || $withdrawal_allowed || $confirm_allowed ) {
                                 ?>
                                 <div class="individual-entry__submit">
-                                    <button type="submit" class="btn btn-primary" id="entrySubmit" name="entrySubmit" data-type="tournament"><?php esc_html_e( 'Enter', 'racketmanager' ); ?></button>
+                                    <button type="submit" class="btn btn-primary" id="entrySubmit" name="entrySubmit" data-type="tournament"><?php echo esc_html( ( $confirm_allowed && $entry_is_pending ) ? __( 'Confirm entry', 'racketmanager' ) : __( 'Enter', 'racketmanager' ) ); ?></button>
                                 </div>
                                 <?php
                             }
@@ -484,8 +493,11 @@ if ( ! empty( $player->entry ) ) {
         Racketmanager.partnerModal(e, eventId);
     }));
     <?php require_once RACKETMANAGER_PATH . 'js/entry-link.js'; ?>
-    document.getElementById('tournamentWithdraw').addEventListener('click', function (e) {
-        Racketmanager.withdrawTournament(e);
-    });
+    const tournamentWithdrawBtn = document.getElementById('tournamentWithdraw');
+    if (tournamentWithdrawBtn) {
+        tournamentWithdrawBtn.addEventListener('click', function (e) {
+            Racketmanager.withdrawTournament(e);
+        });
+    }
 </script>
 <div class="modal" id="partnerModal" tabindex="-1"></div>

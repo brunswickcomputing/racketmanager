@@ -1748,12 +1748,21 @@ final class Tournament {
         global $racketmanager;
         $updates = false;
         $player  = get_player( $entry->player_id );
-        $player->update_btm( $entry->btm );
-        $player->update_contact( $entry->contactno, $entry->contactemail );
+        if ( $player->update_btm( $entry->btm ) ) {
+            $updates = true;
+        }
+        if ( $player->update_contact( $entry->contactno, $entry->contactemail ) ) {
+            $updates = true;
+        }
         $club               = get_club( $entry->club_id );
         $fee_due            = 0;
         $tournament_entries = array();
-        $this->set_tournament_entry( $player->id, $club->id, $fee_due );
+        if ( $this->set_tournament_entry( $player->id, $club->id, $fee_due ) ) {
+            $updates = true;
+        }
+        if ( ! empty( $entry->comments ) ) {
+            $updates = true;
+        }
         foreach ( $entry->all_events as $event_id ) {
             $event = get_event( $event_id );
             if ( $event ) {
@@ -1968,9 +1977,10 @@ final class Tournament {
      * @param int $player player id.
      * @param false|int $club club id - false if partner entry.
      * @param false|string $payment_required payment required value.
-     * @return void
+     * @return bool
      */
-    private function set_tournament_entry(int $player, false|int $club = false, false|string $payment_required = false ): void {
+    private function set_tournament_entry(int $player, false|int $club = false, false|string $payment_required = false ): bool {
+        $updates = false;
         if ( $club ) {
             $status = 2;
         } else {
@@ -1980,12 +1990,13 @@ final class Tournament {
         $tournament_entry = get_tournament_entry( $search, 'key' );
         if ( $tournament_entry ) {
             if ( $club ) {
-                if ( empty( $tournament_entry->club_id ) ) {
+                if ( empty( $tournament_entry->club_id ) || (int) $tournament_entry->club_id !== (int) $club ) {
                     $tournament_entry->set_club( $club );
+                    $updates = true;
                 }
                 if ( $tournament_entry->status !== $status ) {
-                    $tournament_entry->set_status( $status );
-                    $tournament_entry->set_fee( $payment_required );
+                    $tournament_entry->set_status( $status, $payment_required );
+                    $updates = true;
                 }
             }
         } else {
@@ -1998,7 +2009,9 @@ final class Tournament {
                 $tournament_entry->club_id = $club;
             }
             new Tournament_Entry( $tournament_entry );
+            $updates = true;
         }
+        return $updates;
     }
 
     /**

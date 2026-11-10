@@ -14,12 +14,15 @@ use Racketmanager\Infrastructure\Wordpress\Bootstrap\Plugin_Bootstrap;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\Public_Api;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Container\Container_Bootstrap;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use ReflectionClass;
+use ReflectionProperty;
 use stdClass;
+use TypeError;
 use WP_Error;
 
 require_once __DIR__ . '/../../wp-stubs.php';
@@ -35,11 +38,13 @@ final class Admin_Coordinator_Test extends TestCase {
         $GLOBALS['wp_stubs_added_filters'] = [];
         Admin::reset_instance();
         Public_Api::reset();
+        Plugin_Bootstrap::reset();
     }
 
     protected function tearDown(): void {
         Admin::reset_instance();
         Public_Api::reset();
+        Plugin_Bootstrap::reset();
         $this->restore_globals();
         parent::tearDown();
     }
@@ -186,6 +191,7 @@ final class Admin_Coordinator_Test extends TestCase {
             ->willReturn( true );
 
         $container->set( 'player_service', $player_service );
+        $container->alias( Player_Service::class, 'player_service' );
 
         $admin = new Admin(
             $container,
@@ -290,6 +296,7 @@ final class Admin_Coordinator_Test extends TestCase {
 
         $container      = Container_Bootstrap::boot( $app );
         $app->container = $container;
+        Plugin_Bootstrap::set_container( $container );
         $GLOBALS['racketmanager'] = $app;
 
         $GLOBALS['wp_stubs_added_actions'] = [];
@@ -339,15 +346,23 @@ final class Admin_Coordinator_Test extends TestCase {
 
         $league_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );
         $league_repository->expects( self::once() )->method( 'find_by_id' )->with( 42 )->willReturn( $league );
+        $league_repository->expects( self::once() )->method( 'find_names' )->willReturn( array( (object) array( 'id' => 42, 'name' => 'Division 1' ) ) );
+
+        $fixture            = new \Racketmanager\Domain\Fixture\Fixture();
+        $fixture->id        = 77;
+        $fixture->league_id = 42;
+        $fixture->season    = '2026';
+
+        $fixture_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class );
+        $fixture_repository->expects( self::once() )->method( 'find_by_post' )->with( 5 )->willReturn( $fixture );
 
         $container = new Simple_Container();
         $container->set( 'league_repository', fn() => $league_repository );
+        $container->set( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class, fn() => $league_repository );
+        $container->set( 'fixture_repository', fn() => $fixture_repository );
+        $container->set( \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class, fn() => $fixture_repository );
 
-        $wpdb                       = new \wpdb( 'test', 'test', 'test', 'localhost' );
-        $wpdb->get_results_callback = static fn() => array( (object) array( 'id' => 42, 'title' => 'Division 1' ) );
-        $wpdb->get_row_callback     = static fn() => (object) array( 'id' => 77, 'league_id' => '42', 'season' => '2026' );
-        $GLOBALS['wpdb']            = $wpdb;
-        $GLOBALS['post']            = (object) array( 'ID' => 5 );
+        $GLOBALS['post'] = (object) array( 'ID' => 5 );
 
         $admin = new Admin(
             $container,
@@ -367,12 +382,35 @@ final class Admin_Coordinator_Test extends TestCase {
         self::assertStringContainsString( "<select name='season'></select>", $html );
     }
 
-    public function test_add_meta_box_without_league_repository_renders_without_current_league(): void {
-        $wpdb                       = new \wpdb( 'test', 'test', 'test', 'localhost' );
-        $wpdb->get_results_callback = static fn() => array( (object) array( 'id' => 42, 'title' => 'Division 1' ) );
-        $wpdb->get_row_callback     = static fn() => null;
-        $GLOBALS['wpdb']            = $wpdb;
-        $GLOBALS['post']            = (object) array( 'ID' => 5 );
+    public function test_add_meta_box_without_current_league_renders_without_seasons(): void {
+        $league_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );
+        $league_repository->method( 'find_names' )->willReturn( array( (object) array( 'id' => 42, 'name' => 'Division 1' ) ) );
+
+        $container = new Simple_Container();
+        $container->set( 'league_repository', fn() => $league_repository );
+
+        $GLOBALS['post'] = (object) array( 'ID' => 5 );
+
+        $admin = new Admin(
+            $container,
+            null,
+            $this->createStub( Admin_Display::class ),
+            new Asset_Manager()
+        );
+
+        ob_start();
+        try {
+            $admin->add_meta_box( $GLOBALS['post'] );
+        } finally {
+            $html = (string) ob_get_clean();
+        }
+
+        self::assertStringContainsString( 'Division 1', $html );
+        self::assertStringNotContainsString( "<select name='season'></select>", $html );
+    }
+
+    public function test_add_meta_box_without_league_repository_renders_empty(): void {
+        $GLOBALS['post'] = (object) array( 'ID' => 5 );
 
         $admin = new Admin(
             new Simple_Container(),
@@ -388,8 +426,7 @@ final class Admin_Coordinator_Test extends TestCase {
             $html = (string) ob_get_clean();
         }
 
-        self::assertStringContainsString( 'Division 1', $html );
-        self::assertStringNotContainsString( "<select name='season'></select>", $html );
+        self::assertSame( '', $html );
     }
 
     public function test_register_admin_hooks_is_idempotent(): void {
@@ -423,5 +460,71 @@ final class Admin_Coordinator_Test extends TestCase {
 
         $this->expectException( \LogicException::class );
         $container->get( 'admin_display' );
+    }
+
+    public function test_constructor_resolves_league_repository_from_explicit_parameter(): void {
+        $explicit_repo  = $this->createStub( League_Repository_Interface::class );
+        $container_repo = $this->createStub( League_Repository_Interface::class );
+
+        $container = new Simple_Container();
+        $container->set( League_Repository_Interface::class, fn() => $container_repo );
+        $container->set( 'league_repository', fn() => $container_repo );
+
+        $admin = new Admin(
+            container: $container,
+            league_repository: $explicit_repo
+        );
+
+        $prop = new ReflectionProperty( Admin::class, 'league_repository' );
+        self::assertSame( $explicit_repo, $prop->getValue( $admin ) );
+    }
+
+    public function test_constructor_resolves_league_repository_from_container_interface_precedence(): void {
+        $interface_repo = $this->createStub( League_Repository_Interface::class );
+        $key_repo       = $this->createStub( League_Repository_Interface::class );
+
+        $container = new Simple_Container();
+        $container->set( League_Repository_Interface::class, fn() => $interface_repo );
+        $container->set( 'league_repository', fn() => $key_repo );
+
+        $admin = new Admin( container: $container );
+
+        $prop = new ReflectionProperty( Admin::class, 'league_repository' );
+        self::assertSame( $interface_repo, $prop->getValue( $admin ) );
+    }
+
+    public function test_constructor_resolves_league_repository_from_container_key_fallback(): void {
+        $key_repo = $this->createStub( League_Repository_Interface::class );
+
+        $container = new Simple_Container();
+        $container->set( 'league_repository', fn() => $key_repo );
+
+        $admin = new Admin( container: $container );
+
+        $prop = new ReflectionProperty( Admin::class, 'league_repository' );
+        self::assertSame( $key_repo, $prop->getValue( $admin ) );
+    }
+
+    public function test_constructor_defaults_league_repository_to_null_when_missing(): void {
+        $admin = new Admin( container: new Simple_Container() );
+
+        $prop = new ReflectionProperty( Admin::class, 'league_repository' );
+        self::assertNull( $prop->getValue( $admin ) );
+    }
+
+    public function test_constructor_throws_type_error_when_container_interface_binding_is_invalid_type(): void {
+        $container = new Simple_Container();
+        $container->set( League_Repository_Interface::class, fn() => new stdClass() );
+
+        $this->expectException( TypeError::class );
+        new Admin( container: $container );
+    }
+
+    public function test_constructor_throws_type_error_when_container_key_binding_is_invalid_type(): void {
+        $container = new Simple_Container();
+        $container->set( 'league_repository', fn() => new stdClass() );
+
+        $this->expectException( TypeError::class );
+        new Admin( container: $container );
     }
 }

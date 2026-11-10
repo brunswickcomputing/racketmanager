@@ -176,4 +176,131 @@ class Fixture_Repository_Delete_Cache_Test extends TestCase {
 
         $this->assertNull( $result );
     }
+
+    public function test_find_by_id_hydrates_fixture(): void {
+        $row = (object) [
+            'id'        => 42,
+            'home_team' => '1',
+            'away_team' => '2',
+            'league_id' => 3,
+            'season'    => '2026',
+        ];
+
+        $this->wpdb->expects( $this->once() )
+            ->method( 'prepare' )
+            ->willReturn( 'SELECT * FROM wp_racketmanager_matches WHERE `id` = 42 LIMIT 1' );
+        $this->wpdb->expects( $this->once() )
+            ->method( 'get_row' )
+            ->willReturn( $row );
+
+        $fixture = $this->repository->find_by_id( 42 );
+
+        $this->assertInstanceOf( Fixture::class, $fixture );
+        $this->assertSame( 42, $fixture->get_id() );
+    }
+
+    public function test_find_by_team_prepares_query_and_returns_fixtures(): void {
+        $row = (object) [
+            'id'        => 10,
+            'home_team' => '5',
+            'away_team' => '6',
+            'league_id' => 1,
+            'season'    => '2026',
+        ];
+
+        $this->wpdb->expects( $this->once() )
+            ->method( 'prepare' )
+            ->with(
+                'SELECT * FROM wp_racketmanager_matches WHERE `home_team` = %s OR `away_team` = %s',
+                '5',
+                '5'
+            )
+            ->willReturn( "SELECT * FROM wp_racketmanager_matches WHERE `home_team` = '5' OR `away_team` = '5'" );
+        $this->wpdb->expects( $this->once() )
+            ->method( 'get_results' )
+            ->willReturn( [ $row ] );
+
+        $fixtures = $this->repository->find_by_team( 5 );
+
+        $this->assertCount( 1, $fixtures );
+        $this->assertInstanceOf( Fixture::class, $fixtures[0] );
+        $this->assertSame( 10, $fixtures[0]->get_id() );
+    }
+
+    public function test_delete_by_team_finds_and_deletes_fixtures(): void {
+        $row = (object) [
+            'id'        => 20,
+            'home_team' => '7',
+            'away_team' => '8',
+            'league_id' => 1,
+            'season'    => '2026',
+        ];
+
+        $this->wpdb->expects( $this->once() )
+            ->method( 'prepare' )
+            ->willReturn( "SELECT * FROM wp_racketmanager_matches WHERE `home_team` = '7' OR `away_team` = '7'" );
+        $this->wpdb->expects( $this->once() )
+            ->method( 'get_results' )
+            ->willReturn( [ $row ] );
+
+        $this->wpdb->expects( $this->exactly( 2 ) )
+            ->method( 'delete' )
+            ->willReturn( 1 );
+
+        $this->assertTrue( $this->repository->delete_by_team( 7 ) );
+    }
+
+    public function test_find_all_count_queries_matches_table(): void {
+        $this->wpdb->expects( $this->once() )
+            ->method( 'get_var' )
+            ->with( 'SELECT COUNT(*) FROM wp_racketmanager_matches' )
+            ->willReturn( '4' );
+
+        $count = $this->repository->find_all( array( 'count' => true ) );
+
+        $this->assertSame( 4, $count );
+    }
+
+    public function test_find_all_count_queries_matches_table_with_filters(): void {
+        $this->wpdb->expects( $this->once() )
+            ->method( 'get_var' )
+            ->with( "SELECT COUNT(*) FROM wp_racketmanager_matches WHERE `league_id`  = '3' AND `season`  = '2026'" )
+            ->willReturn( '2' );
+
+        $count = $this->repository->find_all(
+            array(
+                'count'    => true,
+                'leagueId' => 3,
+                'season'   => '2026',
+            )
+        );
+
+        $this->assertSame( 2, $count );
+    }
+
+    public function test_find_all_builds_sql_with_unwrapped_tables(): void {
+        $captured_sql = null;
+        $this->wpdb->expects( $this->once() )
+            ->method( 'get_results' )
+            ->willReturnCallback(
+                function ( string $sql ) use ( &$captured_sql ): array {
+                    $captured_sql = $sql;
+                    return array();
+                }
+            );
+
+        $this->repository->find_all(
+            array(
+                'competition_name' => 'Summer Cup',
+                'club'             => 5,
+            )
+        );
+
+        $this->assertNotNull( $captured_sql );
+        $this->assertStringContainsString( 'FROM wp_racketmanager_matches AS m, wp_racketmanager_leagues AS l', $captured_sql );
+        $this->assertStringContainsString( 'wp_racketmanager_events e, wp_racketmanager_competitions c', $captured_sql );
+        $this->assertStringContainsString( 'SELECT `id` FROM wp_racketmanager_teams WHERE `club_id` = 5', $captured_sql );
+        $this->assertStringNotContainsString( '{', $captured_sql );
+        $this->assertStringNotContainsString( '}', $captured_sql );
+    }
 }

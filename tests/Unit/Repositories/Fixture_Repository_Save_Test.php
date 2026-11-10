@@ -9,6 +9,7 @@ use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+use Racketmanager\Tests\Helpers\Recording_Wpdb;
 use wpdb;
 
 #[AllowMockObjectsWithoutExpectations]
@@ -201,5 +202,197 @@ class Fixture_Repository_Save_Test extends TestCase {
     public function test_update_date_throws_on_invalid_datetime(): void {
         $this->expectException( InvalidArgumentException::class );
         $this->repository->update_date( 123, 'garbage-date' );
+    }
+
+    public function test_find_by_post_queries_matches_and_hydrates_fixture(): void {
+        $raw_row = (object) [
+            'id'            => 789,
+            'post_id'       => 42,
+            'date'          => '2026-05-15 19:30:00',
+            'date_original' => '2026-05-01 00:00:00',
+            'home_team'     => '1',
+            'away_team'     => '2',
+            'league_id'     => 10,
+            'season'        => '2026',
+            'match_day'     => 1,
+            'status'        => 0,
+        ];
+
+        $this->wpdb->expects( $this->once() )
+            ->method( 'prepare' )
+            ->with(
+                'SELECT * FROM wp_racketmanager_matches WHERE `post_id` = %d LIMIT 1',
+                42
+            )
+            ->willReturn( 'SELECT * FROM wp_racketmanager_matches WHERE `post_id` = 42 LIMIT 1' );
+
+        $this->wpdb->expects( $this->once() )
+            ->method( 'get_row' )
+            ->with( 'SELECT * FROM wp_racketmanager_matches WHERE `post_id` = 42 LIMIT 1' )
+            ->willReturn( $raw_row );
+
+        $fixture = $this->repository->find_by_post( 42 );
+
+        $this->assertInstanceOf( Fixture::class, $fixture );
+        $this->assertSame( 789, $fixture->get_id() );
+        $this->assertSame( 10, $fixture->get_league_id() );
+        $this->assertSame( '2026', $fixture->get_season() );
+    }
+
+    public function test_find_by_post_returns_null_when_row_not_found(): void {
+        $this->wpdb->expects( $this->once() )
+            ->method( 'prepare' )
+            ->willReturn( 'SELECT * FROM wp_racketmanager_matches WHERE `post_id` = 999 LIMIT 1' );
+
+        $this->wpdb->expects( $this->once() )
+            ->method( 'get_row' )
+            ->willReturn( null );
+
+        $fixture = $this->repository->find_by_post( 999 );
+
+        $this->assertNull( $fixture );
+    }
+
+    public function test_find_by_post_returns_null_for_non_positive_post_id(): void {
+        $this->wpdb->expects( $this->never() )
+            ->method( 'prepare' );
+
+        $this->assertNull( $this->repository->find_by_post( 0 ) );
+        $this->assertNull( $this->repository->find_by_post( -5 ) );
+    }
+
+    public function test_update_post_id_updates_db_and_invalidates_cache(): void {
+        $GLOBALS['wp_stubs_cache_enabled'] = true;
+        $GLOBALS['wp_stubs_cache_deleted'] = array();
+
+        $this->wpdb->expects( $this->once() )
+            ->method( 'update' )
+            ->with(
+                'wp_racketmanager_matches',
+                array( 'post_id' => 789 ),
+                array( 'id' => 123 ),
+                array( '%d' ),
+                array( '%d' )
+            )
+            ->willReturn( 1 );
+
+        $result = $this->repository->update_post_id( 123, 789 );
+
+        $this->assertTrue( $result );
+        $deleted = $GLOBALS['wp_stubs_cache_deleted'];
+        $this->assertContains( array( 123, 'fixtures' ), $deleted );
+        $this->assertContains( array( '123_legacy', 'fixtures' ), $deleted );
+    }
+
+    public function test_update_post_id_allows_unlinking_with_zero_post_id(): void {
+        $GLOBALS['wp_stubs_cache_enabled'] = true;
+        $GLOBALS['wp_stubs_cache_deleted'] = array();
+
+        $this->wpdb->expects( $this->once() )
+            ->method( 'update' )
+            ->with(
+                'wp_racketmanager_matches',
+                array( 'post_id' => 0 ),
+                array( 'id' => 123 ),
+                array( '%d' ),
+                array( '%d' )
+            )
+            ->willReturn( 1 );
+
+        $result = $this->repository->update_post_id( 123, 0 );
+
+        $this->assertTrue( $result );
+        $deleted = $GLOBALS['wp_stubs_cache_deleted'];
+        $this->assertContains( array( 123, 'fixtures' ), $deleted );
+        $this->assertContains( array( '123_legacy', 'fixtures' ), $deleted );
+    }
+
+    public function test_update_post_id_returns_false_and_skips_cache_invalidation_on_db_failure(): void {
+        $GLOBALS['wp_stubs_cache_enabled'] = true;
+        $GLOBALS['wp_stubs_cache_deleted'] = array();
+
+        $this->wpdb->expects( $this->once() )
+            ->method( 'update' )
+            ->willReturn( false );
+
+        $result = $this->repository->update_post_id( 123, 456 );
+
+        $this->assertFalse( $result );
+        $this->assertEmpty( $GLOBALS['wp_stubs_cache_deleted'] );
+    }
+
+    public function test_update_post_id_returns_false_for_non_positive_id(): void {
+        $this->wpdb->expects( $this->never() )
+            ->method( 'update' );
+
+        $this->assertFalse( $this->repository->update_post_id( 0, 456 ) );
+        $this->assertFalse( $this->repository->update_post_id( -1, 456 ) );
+    }
+
+    public function test_find_by_post_and_update_post_id_with_recording_wpdb(): void {
+        $db = new class extends wpdb {
+            public array $prepared = [];
+            public array $executed = [];
+            public $get_row_return = null;
+
+            public function __construct() {
+                $this->prefix = 'wp_';
+                $this->racketmanager_matches = 'wp_racketmanager_matches';
+            }
+
+            public function prepare( $query, ...$args ) {
+                if ( isset( $args[0] ) && is_array( $args[0] ) && 1 === count( $args ) ) {
+                    $args = $args[0];
+                }
+                $this->prepared[] = [
+                    'sql'  => (string) $query,
+                    'args' => $args,
+                ];
+                $this->last_query = (string) $query;
+                return (string) $query;
+            }
+
+            public function get_row( $query, $output = 'OBJECT' ) {
+                $this->last_query = (string) $query;
+                return $this->get_row_return;
+            }
+
+            public function update( $table, $data, $where, $format = null, $where_format = null ) {
+                $this->executed[] = [
+                    'method' => 'update',
+                    'table'  => $table,
+                    'data'   => $data,
+                    'where'  => $where,
+                ];
+                return 1;
+            }
+        };
+
+        $db->get_row_return = (object) [
+            'id'        => 55,
+            'post_id'   => 99,
+            'home_team' => '1',
+            'away_team' => '2',
+            'league_id' => 3,
+            'season'    => '2026',
+        ];
+
+        $repo = new Fixture_Repository( $db );
+
+        $fixture = $repo->find_by_post( 99 );
+        $this->assertInstanceOf( Fixture::class, $fixture );
+        $this->assertSame( 55, $fixture->get_id() );
+        $this->assertNotEmpty( $db->prepared );
+        $last_prepared = $db->prepared[ array_key_last( $db->prepared ) ];
+        $this->assertStringContainsString( 'WHERE `post_id` = %d LIMIT 1', $last_prepared['sql'] );
+        $this->assertSame( array( 99 ), $last_prepared['args'] );
+
+        $updated = $repo->update_post_id( 55, 101 );
+        $this->assertTrue( $updated );
+        $last_executed = $db->executed[ array_key_last( $db->executed ) ];
+        $this->assertSame( 'update', $last_executed['method'] );
+        $this->assertSame( 'wp_racketmanager_matches', $last_executed['table'] );
+        $this->assertSame( array( 'post_id' => 101 ), $last_executed['data'] );
+        $this->assertSame( array( 'id' => 55 ), $last_executed['where'] );
     }
 }

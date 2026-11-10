@@ -534,9 +534,9 @@ final class Layer_Rules {
             ),
             new Layer_Rule(
                 'services.no_global_racketmanager',
-                'Services, Infrastructure, Presentation, Admin, Rest, Util, Public code and Public_Api must not use the global $racketmanager service locator',
+                'Services, Infrastructure, Presentation, Admin, Rest, Util, Public code, Public_Api and Admin.php must not use the global $racketmanager service locator',
                 'Inject the collaborator through the container provider instead of global $racketmanager / $GLOBALS[\'racketmanager\'] (audit L5, P3-12 done).',
-                [ self::SERVICES, self::INFRASTRUCTURE, self::PRESENTATION, self::ADMIN, self::REST, self::UTIL, self::PUBLIC, self::SRC . 'Public_Api.php' ],
+                [ self::SERVICES, self::INFRASTRUCTURE, self::PRESENTATION, self::ADMIN, self::REST, self::UTIL, self::PUBLIC, self::SRC . 'Public_Api.php', self::SRC . 'Admin.php' ],
                 Rule_Kind::FORBIDDEN_GLOBAL,
                 [ 'racketmanager' ],
                 Rule_Mode::STRICT,

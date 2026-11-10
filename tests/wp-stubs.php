@@ -401,6 +401,9 @@ namespace {
     if ( ! function_exists( 'wp_nonce_field' ) ) {
         function wp_nonce_field( $action = -1, $name = '_wpnonce', $referer = true, $echo = true ): string {
             $html = '<input type="hidden" name="' . htmlspecialchars( (string) $name ) . '" value="test_nonce" data-action="' . htmlspecialchars( (string) $action ) . '" />';
+            if ( $referer ) {
+                $html .= '<input type="hidden" name="_wp_http_referer" value="/test" />';
+            }
             if ( $echo ) {
                 echo $html;
             }
@@ -877,6 +880,13 @@ namespace {
 
     if ( ! function_exists( 'wp_verify_nonce' ) ) {
         function wp_verify_nonce( $nonce, $action = -1 ) {
+            $GLOBALS['wp_stubs_wp_verify_nonce_calls'][] = [
+                'nonce'  => $nonce,
+                'action' => $action,
+            ];
+            if ( isset( $GLOBALS['wp_stubs_valid_nonce_actions'] ) && is_array( $GLOBALS['wp_stubs_valid_nonce_actions'] ) ) {
+                return in_array( $action, $GLOBALS['wp_stubs_valid_nonce_actions'], true );
+            }
             return $GLOBALS['wp_stubs_wp_verify_nonce_return'] ?? true;
         }
     }
@@ -1606,7 +1616,14 @@ namespace {
     }
 
     if ( ! function_exists( 'current_user_can' ) ) {
-        function current_user_can( $capability ) {
+        function current_user_can( $capability, ...$args ) {
+            $GLOBALS['wp_stubs_current_user_can_calls'][] = [
+                'capability' => $capability,
+                'args'       => $args,
+            ];
+            if ( isset( $GLOBALS['wp_stubs_current_user_can_callback'] ) && is_callable( $GLOBALS['wp_stubs_current_user_can_callback'] ) ) {
+                return (bool) call_user_func( $GLOBALS['wp_stubs_current_user_can_callback'], $capability, ...$args );
+            }
             return $GLOBALS['wp_stubs_current_user_can'] ?? false;
         }
     }

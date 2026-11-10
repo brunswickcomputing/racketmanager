@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Repositories;
 
 use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Repositories\League_Repository;
@@ -15,7 +16,7 @@ use wpdb;
 class League_Repository_Cache_Test extends TestCase {
     use Manages_Wordpress_Globals;
 
-    private $wpdb;
+    private MockObject&wpdb $wpdb;
     private League_Repository $repository;
 
     protected function setUp(): void {
@@ -27,6 +28,7 @@ class League_Repository_Cache_Test extends TestCase {
 
         $this->wpdb         = $this->createMock( wpdb::class );
         $this->wpdb->prefix = 'wp_';
+        // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Unit test setup of global wpdb mock.
         $GLOBALS['wpdb']    = $this->wpdb;
 
         $this->repository = new League_Repository( $this->wpdb );
@@ -87,7 +89,13 @@ class League_Repository_Cache_Test extends TestCase {
     }
 
     public function test_update_title_and_sequence_clears_id_and_title_cache(): void {
-        $existing_league = League_Test_Factory::from_object( (object) array( 'id' => 12, 'title' => 'Old Division 1' ) );
+        $existing_league = League_Test_Factory::from_object(
+            (object) array(
+                'id'       => 12,
+                'title'    => 'Old Division 1',
+                'event_id' => 5,
+            )
+        );
         wp_cache_set( 12, $existing_league, 'leagues' );
 
         $this->wpdb->expects( $this->once() )
@@ -101,6 +109,9 @@ class League_Repository_Cache_Test extends TestCase {
         $this->assertContains( array( 12, 'leagues' ), $deleted );
         $this->assertContains( array( 'New Division 1', 'leagues' ), $deleted );
         $this->assertContains( array( 'Old Division 1', 'leagues' ), $deleted );
+
+        $version = wp_cache_get( 'ver_event_leagues_5', 'leagues' );
+        $this->assertSame( 1, $version );
     }
 
     public function test_update_seasons_clears_league_cache(): void {
@@ -120,11 +131,14 @@ class League_Repository_Cache_Test extends TestCase {
     }
 
     public function test_delete_clears_league_and_match_day_caches(): void {
-        $existing_league = League_Test_Factory::from_object( (object) array(
-            'id'      => 20,
-            'title'   => 'Premier Division',
-            'seasons' => array( '2025' => array(), '2026' => array() ),
-        ) );
+        $existing_league = League_Test_Factory::from_object(
+            (object) array(
+                'id'       => 20,
+                'title'    => 'Premier Division',
+                'event_id' => 7,
+                'seasons'  => array( '2025' => array(), '2026' => array() ),
+            )
+        );
         wp_cache_set( 20, $existing_league, 'leagues' );
 
         $this->wpdb->expects( $this->once() )
@@ -143,6 +157,9 @@ class League_Repository_Cache_Test extends TestCase {
         $this->assertContains( array( 'last_20_2026', 'leagues_match_days' ), $deleted );
         $this->assertContains( array( 'next_20_2026', 'leagues_match_days' ), $deleted );
         $this->assertContains( array( 'current_20_2026', 'leagues_match_days' ), $deleted );
+
+        $version = wp_cache_get( 'ver_event_leagues_7', 'leagues' );
+        $this->assertSame( 1, $version );
     }
 
     public function test_get_by_event_id_uses_leagues_cache_group(): void {
@@ -162,12 +179,15 @@ class League_Repository_Cache_Test extends TestCase {
     public function test_delete_clears_match_days_and_event_cache_when_league_is_not_cached(): void {
         $this->wpdb->expects( $this->once() )
             ->method( 'get_row' )
-            ->willReturn( (object) array(
-                'id'       => 25,
-                'title'    => 'Uncached Div',
-                'event_id' => 7,
-                'seasons'  => serialize( array( '2024' => array(), '2025' => array() ) ),
-            ) );
+            ->willReturn(
+                (object) array(
+                    'id'       => 25,
+                    'title'    => 'Uncached Div',
+                    'event_id' => 7,
+                    // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize -- Testing DB serialized string decoding.
+                    'seasons'  => serialize( array( '2024' => array(), '2025' => array() ) ),
+                )
+            );
 
         $this->wpdb->expects( $this->once() )
             ->method( 'delete' )
@@ -221,11 +241,14 @@ class League_Repository_Cache_Test extends TestCase {
     }
 
     public function test_update_seasons_clears_match_days_for_both_old_and_new_seasons(): void {
-        $existing_league = League_Test_Factory::from_object( (object) array(
-            'id'      => 33,
-            'title'   => 'Division 3',
-            'seasons' => array( '2024' => array() ),
-        ) );
+        $existing_league = League_Test_Factory::from_object(
+            (object) array(
+                'id'       => 33,
+                'title'    => 'Division 3',
+                'event_id' => 6,
+                'seasons'  => array( '2024' => array() ),
+            )
+        );
         wp_cache_set( 33, $existing_league, 'leagues' );
 
         $this->wpdb->expects( $this->once() )
@@ -244,5 +267,158 @@ class League_Repository_Cache_Test extends TestCase {
         $this->assertContains( array( 'last_33_2026', 'leagues_match_days' ), $deleted );
         $this->assertContains( array( 'next_33_2026', 'leagues_match_days' ), $deleted );
         $this->assertContains( array( 'current_33_2026', 'leagues_match_days' ), $deleted );
+
+        $version = wp_cache_get( 'ver_event_leagues_6', 'leagues' );
+        $this->assertSame( 1, $version );
+    }
+
+    public function test_update_seasons_clears_match_days_and_event_cache_when_league_is_not_cached(): void {
+        $this->wpdb->expects( $this->once() )
+            ->method( 'get_row' )
+            ->willReturn(
+                (object) array(
+                    'id'       => 44,
+                    'title'    => 'Uncached Div 4',
+                    'event_id' => 9,
+                    // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize -- Testing DB serialized string decoding.
+                    'seasons'  => serialize( array( '2023' => array() ) ),
+                )
+            );
+
+        $this->wpdb->expects( $this->once() )
+            ->method( 'update' )
+            ->willReturn( 1 );
+        $this->wpdb->method( 'prepare' )->willReturnArgument( 0 );
+
+        $result = $this->repository->update_seasons( 44, array( '2026' => array( 'rounds' => 6 ) ) );
+        $this->assertTrue( $result );
+
+        $deleted = $GLOBALS['wp_stubs_cache_deleted'];
+        $this->assertContains( array( 44, 'leagues' ), $deleted );
+        $this->assertContains( array( 'Uncached Div 4', 'leagues' ), $deleted );
+        $this->assertContains( array( 'last_44_2023', 'leagues_match_days' ), $deleted );
+        $this->assertContains( array( 'next_44_2023', 'leagues_match_days' ), $deleted );
+        $this->assertContains( array( 'current_44_2023', 'leagues_match_days' ), $deleted );
+        $this->assertContains( array( 'last_44_2026', 'leagues_match_days' ), $deleted );
+        $this->assertContains( array( 'next_44_2026', 'leagues_match_days' ), $deleted );
+        $this->assertContains( array( 'current_44_2026', 'leagues_match_days' ), $deleted );
+
+        $version = wp_cache_get( 'ver_event_leagues_9', 'leagues' );
+        $this->assertSame( 1, $version );
+    }
+
+    public function test_update_title_and_sequence_clears_cache_and_invalidates_event_when_league_is_not_cached(): void {
+        $this->wpdb->expects( $this->once() )
+            ->method( 'get_row' )
+            ->willReturn(
+                (object) array(
+                    'title'    => 'Old DB Title',
+                    'event_id' => 11,
+                )
+            );
+
+        $this->wpdb->expects( $this->once() )
+            ->method( 'update' )
+            ->willReturn( 1 );
+        $this->wpdb->method( 'prepare' )->willReturnArgument( 0 );
+
+        $result = $this->repository->update_title_and_sequence( 55, 'New DB Title' );
+        $this->assertTrue( $result );
+
+        $deleted = $GLOBALS['wp_stubs_cache_deleted'];
+        $this->assertContains( array( 55, 'leagues' ), $deleted );
+        $this->assertContains( array( 'New DB Title', 'leagues' ), $deleted );
+        $this->assertContains( array( 'Old DB Title', 'leagues' ), $deleted );
+
+        $version = wp_cache_get( 'ver_event_leagues_11', 'leagues' );
+        $this->assertSame( 1, $version );
+    }
+
+    /**
+     * Seed a cached League with title, event and a season.
+     *
+     * @param int $id League ID.
+     */
+    private function seed_cached_league( int $id ): void {
+        $league = League_Test_Factory::from_object(
+            (object) array(
+                'id'       => $id,
+                'title'    => 'Cached Div ' . $id,
+                'event_id' => 7,
+                'seasons'  => array( '2024' => array() ),
+            )
+        );
+        wp_cache_set( $id, $league, 'leagues' );
+    }
+
+    /**
+     * Assert a failed write left every cache entry and the event version untouched.
+     *
+     * @param int $id League ID.
+     */
+    private function assert_no_invalidation( int $id ): void {
+        $this->assertSame( array(), $GLOBALS['wp_stubs_cache_deleted'] );
+        $this->assertInstanceOf( League::class, wp_cache_get( $id, 'leagues' ) );
+        $this->assertFalse( wp_cache_get( 'ver_event_leagues_7', 'leagues' ) );
+    }
+
+    public function test_delete_failure_does_not_invalidate_caches(): void {
+        $this->seed_cached_league( 61 );
+        $this->wpdb->expects( $this->once() )->method( 'delete' )->willReturn( false );
+
+        $this->assertFalse( $this->repository->delete( 61 ) );
+        $this->assert_no_invalidation( 61 );
+    }
+
+    public function test_update_title_and_sequence_failure_does_not_invalidate_caches(): void {
+        $this->seed_cached_league( 62 );
+        $this->wpdb->expects( $this->once() )->method( 'update' )->willReturn( false );
+
+        $this->assertFalse( $this->repository->update_title_and_sequence( 62, 'Renamed' ) );
+        $this->assert_no_invalidation( 62 );
+    }
+
+    public function test_update_seasons_failure_does_not_invalidate_caches(): void {
+        $this->seed_cached_league( 63 );
+        $this->wpdb->expects( $this->once() )->method( 'update' )->willReturn( false );
+
+        $this->assertFalse( $this->repository->update_seasons( 63, array( '2026' => array() ) ) );
+        $this->assert_no_invalidation( 63 );
+    }
+
+    public function test_mutations_return_false_without_database_and_leave_cache_untouched(): void {
+        unset( $GLOBALS['wpdb'] );
+        $repository = new League_Repository( null );
+        $this->seed_cached_league( 64 );
+
+        $this->assertFalse( $repository->delete( 64 ) );
+        $this->assertFalse( $repository->update_title_and_sequence( 64, 'Renamed' ) );
+        $this->assertFalse( $repository->update_seasons( 64, array( '2026' => array() ) ) );
+        $this->assert_no_invalidation( 64 );
+    }
+
+    public function test_delete_with_non_league_cache_entry_uses_db_row_snapshot(): void {
+        wp_cache_set( 65, (object) array( 'title' => 'Not A League' ), 'leagues' );
+        $this->wpdb->expects( $this->once() )
+            ->method( 'get_row' )
+            ->willReturn(
+                (object) array(
+                    'id'       => 65,
+                    'title'    => 'Row Title',
+                    'event_id' => 12,
+                    // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize -- Testing DB serialized string decoding.
+                    'seasons'  => serialize( array( '2022' => array() ) ),
+                )
+            );
+        $this->wpdb->expects( $this->once() )->method( 'delete' )->willReturn( 1 );
+        $this->wpdb->method( 'prepare' )->willReturnArgument( 0 );
+
+        $this->assertTrue( $this->repository->delete( 65 ) );
+
+        $deleted = $GLOBALS['wp_stubs_cache_deleted'];
+        $this->assertContains( array( 65, 'leagues' ), $deleted );
+        $this->assertContains( array( 'Row Title', 'leagues' ), $deleted );
+        $this->assertContains( array( 'last_65_2022', 'leagues_match_days' ), $deleted );
+        $this->assertSame( 1, wp_cache_get( 'ver_event_leagues_12', 'leagues' ) );
     }
 }

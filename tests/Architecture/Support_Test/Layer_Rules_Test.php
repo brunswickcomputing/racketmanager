@@ -65,6 +65,7 @@ final class Layer_Rules_Test extends TestCase {
         $svc = "<?php\nnamespace Racketmanager\\Services;\n";
         yield 'services.no_wpdb' => [ 'services.no_wpdb', 'src/php/Services/Team_Service.php', $svc . 'class Team_Service { function f() { global $wpdb; $wpdb->query( "x" ); } }', '$wpdb' ];
         yield 'services.no_global_racketmanager' => [ 'services.no_global_racketmanager', 'src/php/Rest/Rest_Resources.php', "<?php\nnamespace Racketmanager\\Rest;\n" . 'class R { function f() { global $racketmanager; } }', 'global $racketmanager' ];
+        yield 'services.no_global_racketmanager (Admin.php)' => [ 'services.no_global_racketmanager', 'src/php/Admin.php', "<?php\nnamespace Racketmanager;\n" . 'class Admin { function f() { global $racketmanager; } }', 'global $racketmanager' ];
         yield 'services.no_presentation_imports' => [ 'services.no_presentation_imports', 'src/php/Services/Team_Service.php', $svc . 'use Racketmanager\Admin\Admin_Display;' . "\n" . 'class Team_Service {}', 'depends on Racketmanager\Admin\Admin_Display' ];
         yield 'services.no_presentation_imports (fq static, no use)' => [ 'services.no_presentation_imports', 'src/php/Services/Team_Service.php', $svc . 'class Team_Service { function f() { return \Racketmanager\Presentation\Formatters\Slug_Formatter::format( "x" ); } }', 'depends on Racketmanager\Presentation\Formatters\Slug_Formatter' ];
         yield 'repositories.no_service_imports' => [ 'repositories.no_service_imports', 'src/php/Repositories/User_Repository.php', "<?php\nnamespace Racketmanager\\Repositories;\n" . 'use Racketmanager\Services\Club_Service;' . "\n" . 'class User_Repository {}', 'depends on Racketmanager\Services\Club_Service' ];
@@ -270,6 +271,19 @@ final class Layer_Rules_Test extends TestCase {
         self::assertTrue( $rule->applies_to( 'src/php/Admin/Admin_League.php' ) );
         self::assertTrue( $rule->applies_to( 'src/php/Admin/Presenters/Admin_Date_Presenter.php' ) );
         self::assertTrue( $rule->applies_to( 'src/php/Public_Api.php' ) );
+        self::assertTrue( $rule->applies_to( 'src/php/Admin.php' ) );
+    }
+
+    public function test_services_no_global_racketmanager_flags_admin_root_class(): void {
+        $rule       = Layer_Rules::get( 'services.no_global_racketmanager' );
+        $evaluator  = new Rule_Evaluator();
+        $path       = 'src/php/Admin.php';
+        $code       = "<?php\nnamespace Racketmanager;\nclass Admin { function f() { global \$racketmanager; } }";
+        $file_obj   = Source_Scanner::scan_source( $code, $path );
+        $violations = $evaluator->evaluate( $rule, [ $path => $file_obj ] );
+
+        self::assertCount( 1, $violations );
+        self::assertStringContainsString( 'global $racketmanager', $violations[0]->detail );
     }
 
     public function test_services_no_presentation_imports_excludes_container_bootstrap(): void {

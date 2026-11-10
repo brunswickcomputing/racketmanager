@@ -39,7 +39,7 @@ What the October rules could not see is a **second tier of debt that sits in the
 | **N5** | WordPress boundary code inside `Services/` (hook registration, superglobal parsing) | **176 hook registrations / 2 files** (`Rewrites` 152, `Login` 24); **61 superglobal reads / 7 files** (`Login` 44) | `services.no_wordpress_hooks`, `services.no_superglobals` |
 | **N6** | `global $wp` query-var reads outside Infrastructure | **5 / 4** in the ratcheted layers (incl. `Application/Tournament/Queries/Get_Tournament_Handler`); 24 / 15 plugin-wide **[M]** | `application.no_global_wp` |
 | **N7** | Remaining `Admin_Display` subclasses with inline request processing | **8 / 8** (60 superglobal reads between them **[M]**); `Admin/` 334 superglobal refs / 53 files **[M]** | `admin.no_admin_display_inheritance` |
-| **N8** | Root-file residue: `Admin.php` raw `$wpdb`, `global $racketmanager`, `get_instance()`, `#[AllowDynamicProperties]` | `Admin.php` 13 `$wpdb` refs, 3 `global $racketmanager` **[M]**; `Public_Api` 1; `Export_Command` 1 `get_instance()` **[A]**; 1 dynamic-property class **[V]** | `all.no_get_instance_outside_bootstrap` (existing); rest §9 P1 |
+| **N8** | Root-file residue: `Admin.php` raw `$wpdb`, `global $racketmanager`, `get_instance()`, `#[AllowDynamicProperties]` | `Admin.php` 0 `$wpdb` refs, 0 `global $racketmanager` **(Done 2026-11-09)**; `Public_Api` 0 **(Done 2026-11-09)**; `Export_Command` 1 `get_instance()` **[A]**; 0 dynamic-property classes **(Done 2026-11-09)** **[V]** | `all.no_get_instance_outside_bootstrap` (existing); rest §9 P1 |
 | **N9** | Interfaces declared outside the port locations | **15 in `Services/`, 5 in `Infrastructure/`, 1 in `Admin/`** **[V]** | `Ports_Location_Test` (to extend, §9 item 13) |
 | **N10** | Templates not reading `$vm` | **39 / 302** (34 never mention `$vm`; 5 declare it in a docblock but never read it) | `templates.require_vm` |
 | **N11** | Presentation calls `get_option()` directly although `Option_Gateway_Interface` exists | 7 calls / 4 files vs 22 port consumers **[M]** | — (§9 item 12) |
@@ -123,8 +123,8 @@ The 20 % growth is almost entirely the P2-9 / P2-11 decomposition (per-view admi
 | `Services/` | ✅ | ✅ | 🔒 **57 / 6** | ✅ (`services.no_presentation_imports`) | — | 🔒 **52 / 35** | 🔒 2 / 2 | 🔒 **176 / 2** | ⚠️ not ratcheted | ⚠️ 15 interfaces declared here (N9) |
 | `Repositories/` | — (owner) | ✅ (`services.no_global_racketmanager` scope) | 🔒 0 (in scope) | 🔒 5 / 5 (`repositories.no_service_imports`) | — | 🔒 4 / 4 | 🔒 0 | 🔒 0 | ⚠️ | ✅ `Repositories/Interfaces/` (21) |
 | `Presentation/` | — | ✅ | 🔒 0 (in scope) | — | — | 🔒 **12 / 5** | 🔒 0 | 🔒 0 | ⚠️ | ⚠️ `get_option()` 7 / 4 bypasses `Option_Gateway_Interface` (N11) |
-| `Infrastructure/` | ⚠️ `Plugin_Bootstrap` 4 (install SQL) | ✅ (excl. `Plugin_Bootstrap`) | — (driving adapters may parse HTTP) | — | — | 🔒 **56 / 12** | — (allowed) | — (allowed) | ⚠️ | ⚠️ 5 interfaces declared here (N9) |
-| `Admin/` | — | ⚠️ `Admin_Date_Presenter` 1 **[M]** | ⚠️ 334 / 53 **[M]** | — | — | 🔒 2 / 1 | — | — | ⚠️ | 🔒 `Admin_Display` subclasses **8 / 8**; `admin.no_template_require` 4 / 3 |
+| `Infrastructure/` | ⚠️ `Plugin_Bootstrap` 4 (`show_errors()`, no query) | ✅ (excl. `Plugin_Bootstrap`) | — (driving adapters may parse HTTP) | — | — | 🔒 **56 / 12** | — (allowed) | — (allowed) | ⚠️ | ⚠️ 5 interfaces declared here (N9) |
+| `Admin/` | — | ✅ (`services.no_global_racketmanager` scope; `Admin_Date_Presenter` resolved 2026-11-09) | ⚠️ 334 / 53 **[M]** | — | — | 🔒 2 / 1 | — | — | ⚠️ | 🔒 `Admin_Display` subclasses **8 / 8**; `admin.no_template_require` 4 / 3 |
 | `Util/` | ⚠️ `Util.php` 4 **[M]** | ✅ | 🔒 4 / 1 (`Util_Lookup`) | — | — | 🔒 3 / 1 | 🔒 **2 / 1** (`Util_Lookup`) | — | (is `Util`) | — |
 | `Rest/` | — | ✅ | — | — | — | 🔒 1 / 1 | — | — | ⚠️ | — |
 | `templates/` | ✅ | ✅ | ✅ | ✅ (`templates.no_legacy_helper_calls`) | — | — | — | — | — | 🔒 `templates.require_vm` **39 / 39** |
@@ -182,11 +182,11 @@ Each item: where / size · why it matters for DDD · tracked by.
 
 ### N8 — Root-file residue
 
-- `Admin.php` (672 lines) still runs raw SQL: `add_meta_box()` reads leagues and the match row with `$wpdb->get_results()` / `get_row()` (13 `$wpdb` refs — the last query code outside `Repositories/` and the installer) and uses `global $racketmanager` 3× **[M]**.
-- `Public_Api::container()` reaches the container through `global $racketmanager` **[V]** (the façade shipped in P3-17 inherits the locator it was meant to replace); `Admin/Presenters/Admin_Date_Presenter` has one more **[M]**.
+- `Admin.php` (654 lines) raw SQL and global service locator removed (2026-11-09): `add_meta_box()` and `edit_match_report()` query and update via `League_Repository` / `Fixture_Repository` (0 `$wpdb` refs) and `Admin::get_instance()` resolves via `Plugin_Bootstrap::container()` (0 `global $racketmanager` refs).
+- `Public_Api::container()` and `Admin/Presenters/Admin_Date_Presenter` resolve the container via `Plugin_Bootstrap::container()` rather than `global $racketmanager` (done 2026-11-09) **[V]**; `Public_Api.php`, `Admin/` and `Admin.php` are covered by `services.no_global_racketmanager`.
 - `Cli/Export_Command` calls `RacketManager::get_instance()` — the single remaining `all.no_get_instance_outside_bootstrap` entry **[A]**.
 - `Presentation/Presenters/Fixture_Presentation_Adapter` carried `#[AllowDynamicProperties]` (removed 2026-11-09) — no dynamic-property classes remain in `src/php` **[V]**.
-- **Tracked by:** `all.no_get_instance_outside_bootstrap` (1 / 1); the rest are §9 P1 items 3–5 (small, mechanical).
+- **Tracked by:** `all.no_get_instance_outside_bootstrap` (1 / 1, §9 P1 item 6; items 3–5 done 2026-11-09).
 
 ### N9 — Interfaces declared outside the port locations
 
@@ -219,7 +219,7 @@ See §7. 755 token/bracket references in 77 files **[J]**; the admin UI widgets 
 | S1 | **Two dependency-injection styles coexist**: 25 `::class` bindings and autowiring (P3-15) next to 357 string keys, 187 aliases and 449 nullable-with-fallback constructor parameters (N2/N3). | New code has no single pattern to copy; `Admin_Screens_Service_Provider` (603 lines, 343 literal keys) is the largest file in `Admin/`. |
 | S2 | **"Services" means four things**: domain-ish orchestration (`Competition_Entry_Service`), WordPress adapters (`Login`, `Rewrites`, `Widget`), the DI container (`Container/`), and ports (15 interfaces). | The layer cannot be given a rule stricter than "no `$wpdb`, no Presentation" without first splitting it (N5, N9). |
 | S3 | **`Util` / `Util_Lookup` grab-bag** — 65 static methods, 1,368 lines, 105 consumer files, 4 `$wpdb` refs, 4 superglobal reads, 2 `global $wp` **[M]**; only Domain (14 / 8) and Application (34 / 19) are ratcheted. | Every layer reaches into it, so it is the one place where a change can break all layers at once (D4). |
-| S4 | **Three admin screen generations**: 7 `final readonly` bridges (P2-9), 8 `Admin_Display` subclasses (N7), and the root `Admin.php` god object with its own `add_meta_box` SQL (N8). | Onboarding cost; two of the three cannot be unit-tested. |
+| S4 | **Three admin screen generations**: 7 `final readonly` bridges (P2-9), 8 `Admin_Display` subclasses (N7), and the root `Admin.php` god object (654 lines; SQL moved to repositories 2026-11-09) (N8). | Onboarding cost; two of the three cannot be unit-tested. |
 | S5 | **`Public/Shortcodes.php` (792 lines)** is the last pre-adapter shortcode host: 48 literal container keys, 2 `global $wp`, 2 `@deprecated` methods (`show_daily_matches()`, `show_latest_results()`) whose replacements (`Matches_Shortcode_Adapter`) already exist. | The 11 `*_Shortcode_Adapter`s are the pattern; this file is the exception that keeps the container-as-locator alive on the front end. |
 | S6 | **Domain vocabulary is thin**: 3 events, 3 value objects, 12 enums against 21 entities with 581 public fields (N4). `Season` is an entity with 1 property; `Money` exists but prices are still `float`/`string` fields on `Charge`, `Invoice`, `Competition`. | Business rules are expressed as service code rather than as types. |
 
@@ -301,7 +301,7 @@ Effort: S < ½ day · M 1–3 days · L > 3 days. "Tracked by" names the rule wh
 | 2 | **(Done 2026-11-09)** Introduce `Application/Ports/Query_Vars_Interface` with an `Infrastructure/Wordpress/Request/Wp_Query_Vars` adapter; inject it into `Get_Tournament_Handler`, `Competition_Season_Service`, `Page_Title_Service`, `Util_Lookup` and the 11 shortcode adapters (N6). | S | low | `application.no_global_wp` (5 / 4 → 0, flipped to strict) |
 | 3 | **(Done 2026-11-09)** `Public_Api::container()` and `Admin_Date_Presenter` resolve the container via `Plugin_Bootstrap` instead of `global $racketmanager`; add `Public_Api.php` and `Admin/` to the `services.no_global_racketmanager` scope (N8). | S | low | `services.no_global_racketmanager` scope widened, stays strict |
 | 4 | **(Done 2026-11-09)** Remove `#[AllowDynamicProperties]` from `Fixture_Presentation_Adapter` by declaring the properties it sets (N8). | S | low | — (inspection) |
-| 5 | Move the `Admin::add_meta_box()` SQL into `League_Repository::find_titles()` / `Fixture_Repository::find_by_post()`; delete the 3 `global $racketmanager` in `Admin.php` (N8). | S | low | regex `$wpdb` outside `Repositories/` → `Activator`, `Plugin_Bootstrap`, `Util` only |
+| 5 | **(Done 2026-11-09)** Move the `Admin::add_meta_box()` SQL into `League_Repository::find_names()` / `Fixture_Repository::find_by_post()`; delete the 3 `global $racketmanager` in `Admin.php` (N8). | S | low | regex `$wpdb` outside `Repositories/`: 36 occurrences — `Admin.php` 0; `Activator` 24; `Util` 4 (1 UPDATE); `Plugin_Bootstrap` 4 (`show_errors()`, no query); `Upgrade` 1 typed property; 3 docblock mentions |
 | 6 | `Cli/Export_Command` receives the container from the WP-CLI bootstrap (`Plugin_Bootstrap::container()`), closing the last `get_instance()` call; flip the rule to strict. | S | low | `all.no_get_instance_outside_bootstrap` (1 / 1 → 0 → strict) |
 
 ### P2 — Finish the layering (M–L)

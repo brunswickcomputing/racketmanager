@@ -867,6 +867,10 @@ final class Tournament {
         Util::clear_scheduled_event( $schedule_name, $schedule_args );
         $schedule_name = 'rm_notify_tournament_entry_reminder';
         Util::clear_scheduled_event( $schedule_name, $schedule_args );
+        $schedule_name = 'rm_notify_tournament_entry_pending';
+        Util::clear_scheduled_event( $schedule_name, $schedule_args );
+        $schedule_name = 'rm_notify_tournament_entry_unpaid';
+        Util::clear_scheduled_event( $schedule_name, $schedule_args );
         $schedule_name = 'rm_notify_tournament_finalists';
         Util::clear_scheduled_event( $schedule_name, $schedule_args );
         if ( isset( $this->charge ) ) {
@@ -1189,7 +1193,7 @@ final class Tournament {
      * @return void
      */
     private function schedule_emails(): void {
-        $schedule_args = array();
+        $schedule_args = array( $this->id );
         if ( ! empty( $this->date_open ) ) {
             $schedule_date   = strtotime( $this->date_open );
             $day             = intval( gmdate( 'd', $schedule_date ) );
@@ -1197,7 +1201,6 @@ final class Tournament {
             $year            = intval( gmdate( 'Y', $schedule_date ) );
             $schedule_start  = mktime( 00, 00, 01, $month, $day, $year );
             $schedule_name   = 'rm_notify_tournament_entry_open';
-            $schedule_args[] = $this->id;
             Util::clear_scheduled_event( $schedule_name, $schedule_args );
             $success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
             if ( ! $success ) {
@@ -1215,6 +1218,26 @@ final class Tournament {
             $success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
             if ( ! $success ) {
                 error_log( __( 'Error scheduling tournament reminder emails', 'racketmanager' ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+            }
+
+            $close_date     = Util::amend_date( $this->date_closing, 1 );
+            $day            = substr( $close_date, 8, 2 );
+            $month          = substr( $close_date, 5, 2 );
+            $year           = substr( $close_date, 0, 4 );
+            $schedule_start = mktime( 00, 00, 01, $month, $day, $year );
+
+            $schedule_name = 'rm_notify_tournament_entry_pending';
+            Util::clear_scheduled_event( $schedule_name, $schedule_args );
+            $success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
+            if ( ! $success ) {
+                error_log( __( 'Error scheduling tournament pending entry emails', 'racketmanager' ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+            }
+
+            $schedule_name = 'rm_notify_tournament_entry_unpaid';
+            Util::clear_scheduled_event( $schedule_name, $schedule_args );
+            $success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
+            if ( ! $success ) {
+                error_log( __( 'Error scheduling tournament unpaid entry emails', 'racketmanager' ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
             }
         }
         if ( ! empty( $this->date ) ) {
@@ -1382,6 +1405,244 @@ final class Tournament {
                 $return->error = true;
                 $msg[]         = __( 'No secretary email', 'racketmanager' );
             }
+        }
+        if ( ! empty( $return->error ) ) {
+            $return->msg = __( 'Notification error', 'racketmanager' );
+            foreach ( $msg as $error ) {
+                $return->msg .= '<br>' . $error;
+            }
+        }
+        return $return;
+    }
+    /**
+     * Get partners for a player in this tournament
+     *
+     * @param int $player_id player id.
+     *
+     * @return array array of Player objects
+     */
+    public function get_player_partners( int $player_id ): array {
+        global $wpdb;
+        $partners = array();
+        if ( ! empty( $this->competition_id ) && ! empty( $this->season ) ) {
+            $sql = "SELECT DISTINCT tp2.`player_id`
+                FROM $wpdb->racketmanager_team_players tp1
+                JOIN $wpdb->racketmanager_team_players tp2 ON tp1.`team_id` = tp2.`team_id` AND tp2.`player_id` != tp1.`player_id`
+                JOIN $wpdb->racketmanager_table t ON t.`team_id` = tp1.`team_id`
+                JOIN $wpdb->racketmanager l ON l.`id` = t.`league_id`
+                JOIN $wpdb->racketmanager_events e ON e.`id` = l.`event_id`
+                WHERE tp1.`player_id` = %d AND e.`competition_id` = %d AND t.`season` = %s";
+            $partner_rows = $wpdb->get_results(
+                $wpdb->prepare(
+                    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                    $sql,
+                    $player_id,
+                    $this->competition_id,
+                    $this->season,
+                )
+            );
+            if ( ! empty( $partner_rows ) && is_array( $partner_rows ) ) {
+                foreach ( $partner_rows as $row ) {
+                    $partner = get_player( (int) $row->player_id );
+                    if ( $partner ) {
+                        $partners[ $partner->id ] = $partner;
+                    }
+                }
+            }
+        }
+        if ( empty( $partners ) && method_exists( $this, 'get_events' ) ) {
+            $events = $this->get_events();
+            if ( is_array( $events ) ) {
+                foreach ( $events as $event ) {
+                    $event = get_event( $event );
+                    if ( $event && method_exists( $event, 'get_teams' ) ) {
+                        $teams = $event->get_teams(
+                            array(
+                                'player' => $player_id,
+                                'season' => $this->season,
+                            )
+                        );
+                        if ( is_array( $teams ) ) {
+                            foreach ( $teams as $team ) {
+                                if ( ! empty( $team->players ) ) {
+                                    foreach ( $team->players as $team_player ) {
+                                        if ( (int) $team_player->id !== $player_id ) {
+                                            $partners[ $team_player->id ] = $team_player;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $partners;
+    }
+    /**
+     * Notify pending entries (partners entered but not entered themselves)
+     *
+     * @return object notification status
+     */
+    public function notify_entry_pending(): object {
+        global $racketmanager;
+        $return             = new stdClass();
+        $msg                = array();
+        $url                = $this->entry_link;
+        $competition_name   = $this->name . ' ' . __( 'Tournament', 'racketmanager' );
+        $entries            = $this->get_entries( array( 'status' => 'pending' ) );
+        $players            = array();
+        $partners_to_notify = array();
+        foreach ( $entries as $player ) {
+            if ( is_object( $player ) ) {
+                if ( ! empty( $player->email ) ) {
+                    $players[ $player->id ] = $player;
+                } else {
+                    $partners = $this->get_player_partners( $player->id );
+                    foreach ( $partners as $partner ) {
+                        if ( is_object( $partner ) && ! empty( $partner->email ) ) {
+                            $key                        = $partner->id . '_' . $player->id;
+                            $partners_to_notify[ $key ] = array(
+                                'partner'        => $partner,
+                                'pending_player' => $player,
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        if ( ! empty( $players ) || ! empty( $partners_to_notify ) ) {
+            $headers    = array();
+            $from_email = $racketmanager->get_confirmation_email( 'tournament' );
+            if ( $from_email ) {
+                $message_sent      = false;
+                $headers[]         = RACKETMANAGER_FROM_EMAIL . 'Tournament Secretary <' . $from_email . '>';
+                $headers[]         = RACKETMANAGER_CC_EMAIL . 'Tournament Secretary <' . $from_email . '>';
+                $organisation_name = $racketmanager->site_name;
+                $account_link      = '<a href="' . $racketmanager->site_url . '/member-account/" style="text-decoration: none; color: #006800;">' . __( 'link', 'racketmanager' ) . '</a>';
+                $email_subject     = $racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entry Confirmation', 'racketmanager' );
+                foreach ( $players as $player ) {
+                    $email_to      = $player->display_name . ' <' . $player->email . '>';
+                    $action_url    = $url;
+                    $email_message = $racketmanager->shortcodes->load_template(
+                        'tournament-entry-pending',
+                        array(
+                            'email_subject' => $email_subject,
+                            'from_email'    => $from_email,
+                            'action_url'    => $action_url,
+                            'organisation'  => $organisation_name,
+                            'tournament'    => $this,
+                            'addressee'     => $player->display_name,
+                            'account_link'  => $account_link,
+                        ),
+                        'email'
+                    );
+                    wp_mail( $email_to, $email_subject, $email_message, $headers );
+                    $message_sent = true;
+                }
+                $partner_email_subject = $racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Partner Entry Confirmation', 'racketmanager' );
+                foreach ( $partners_to_notify as $item ) {
+                    $partner        = $item['partner'];
+                    $pending_player = $item['pending_player'];
+                    $email_to       = $partner->display_name . ' <' . $partner->email . '>';
+                    $action_url     = $url;
+                    $email_message  = $racketmanager->shortcodes->load_template(
+                        'tournament-entry-pending-partner',
+                        array(
+                            'email_subject' => $partner_email_subject,
+                            'from_email'    => $from_email,
+                            'action_url'    => $action_url,
+                            'organisation'  => $organisation_name,
+                            'tournament'    => $this,
+                            'addressee'     => $partner->display_name,
+                            'partner_name'  => $pending_player->display_name,
+                            'account_link'  => $account_link,
+                        ),
+                        'email'
+                    );
+                    wp_mail( $email_to, $partner_email_subject, $email_message, $headers );
+                    $message_sent = true;
+                }
+                if ( $message_sent ) {
+                    $return->msg = __( 'Players notified', 'racketmanager' );
+                } else {
+                    $return->error = true;
+                    $msg[]         = __( 'No notification', 'racketmanager' );
+                }
+            } else {
+                $return->error = true;
+                $msg[]         = __( 'No secretary email', 'racketmanager' );
+            }
+        } else {
+            $return->msg = __( 'No players to notify', 'racketmanager' );
+        }
+        if ( ! empty( $return->error ) ) {
+            $return->msg = __( 'Notification error', 'racketmanager' );
+            foreach ( $msg as $error ) {
+                $return->msg .= '<br>' . $error;
+            }
+        }
+        return $return;
+    }
+    /**
+     * Notify unpaid entries
+     *
+     * @return object notification status
+     */
+    public function notify_entry_unpaid(): object {
+        global $racketmanager;
+        $return           = new stdClass();
+        $msg              = array();
+        $url              = $this->entry_link . 'payment/';
+        $competition_name = $this->name . ' ' . __( 'Tournament', 'racketmanager' );
+        $entries          = $this->get_entries( array( 'status' => 'unpaid' ) );
+        $players          = array();
+        foreach ( $entries as $player ) {
+            if ( is_object( $player ) && ! empty( $player->email ) ) {
+                $players[ $player->id ] = $player;
+            }
+        }
+        if ( ! empty( $players ) ) {
+            $headers    = array();
+            $from_email = $racketmanager->get_confirmation_email( 'tournament' );
+            if ( $from_email ) {
+                $message_sent      = false;
+                $headers[]         = RACKETMANAGER_FROM_EMAIL . 'Tournament Secretary <' . $from_email . '>';
+                $headers[]         = RACKETMANAGER_CC_EMAIL . 'Tournament Secretary <' . $from_email . '>';
+                $organisation_name = $racketmanager->site_name;
+                $account_link      = '<a href="' . $racketmanager->site_url . '/member-account/" style="text-decoration: none; color: #006800;">' . __( 'link', 'racketmanager' ) . '</a>';
+                $email_subject     = $racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Payment Reminder', 'racketmanager' );
+                foreach ( $players as $player ) {
+                    $email_to      = $player->display_name . ' <' . $player->email . '>';
+                    $action_url    = $url;
+                    $email_message = $racketmanager->shortcodes->load_template(
+                        'tournament-entry-unpaid',
+                        array(
+                            'email_subject' => $email_subject,
+                            'from_email'    => $from_email,
+                            'action_url'    => $action_url,
+                            'organisation'  => $organisation_name,
+                            'tournament'    => $this,
+                            'addressee'     => $player->display_name,
+                            'account_link'  => $account_link,
+                        ),
+                        'email'
+                    );
+                    wp_mail( $email_to, $email_subject, $email_message, $headers );
+                    $message_sent = true;
+                }
+                if ( $message_sent ) {
+                    $return->msg = __( 'Players notified', 'racketmanager' );
+                } else {
+                    $return->error = true;
+                    $msg[]         = __( 'No notification', 'racketmanager' );
+                }
+            } else {
+                $return->error = true;
+                $msg[]         = __( 'No secretary email', 'racketmanager' );
+            }
+        } else {
+            $return->msg = __( 'No players to notify', 'racketmanager' );
         }
         if ( ! empty( $return->error ) ) {
             $return->msg = __( 'Notification error', 'racketmanager' );

@@ -64,6 +64,12 @@ namespace Racketmanager;
                 <button class="btn btn-secondary" id="notifyOpen" data-tournament-id="<?php echo esc_html( $tournament->id ); ?>"><?php esc_html_e( 'Notify open', 'racketmanager' ); ?></button>
                 <?php
             }
+            if ( ! empty( $tournament->date_closing ) ) {
+                ?>
+                <button class="btn btn-secondary notifyPending" data-tournament-id="<?php echo esc_html( $tournament->id ); ?>"><?php esc_html_e( 'Notify pending', 'racketmanager' ); ?></button>
+                <button class="btn btn-secondary notifyUnpaid" data-tournament-id="<?php echo esc_html( $tournament->id ); ?>"><?php esc_html_e( 'Notify unpaid', 'racketmanager' ); ?></button>
+                <?php
+            }
             if ( ! empty( $tournament->competition_code ) && $tournament->is_complete ) {
                 ?>
                 <a href="/index.php?tournament_id=<?php echo esc_html( $tournament->id ); ?>&season=<?php echo esc_html( $tournament->season ); ?>&competition_code=<?php echo esc_html( $tournament->competition_code ); ?>&racketmanager_export=report_results" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Report results', 'racketmanager' ); ?>" >
@@ -83,8 +89,11 @@ namespace Racketmanager;
         </div>
     </div>
 <script type="text/javascript">
-    document.getElementById('notifyOpen').addEventListener('click', function (e) {
-        let tournamentId = this.dataset.tournamentId;
-        Racketmanager.notifyTournamentEntryOpen(e, tournamentId);
-    });
+    let notifyOpenBtn = document.getElementById('notifyOpen');
+    if (notifyOpenBtn) {
+        notifyOpenBtn.addEventListener('click', function (e) {
+            let tournamentId = this.dataset.tournamentId;
+            Racketmanager.notifyTournamentEntryOpen(e, tournamentId);
+        });
+    }
 </script>

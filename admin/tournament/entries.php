@@ -46,7 +46,10 @@ if ( ! empty( $entries_pay_due ) || ! empty( $entries_refund_due ) ) {
                 <table class="table table-striped">
                     <thead class="table-dark">
                     <tr>
-                        <th><?php esc_html_e( 'Unpaid Entries', 'racketmanager' ); ?> <?php echo '(' . count( $entries_pay_due ) . ')'; ?></th>
+                        <th class="d-flex justify-content-between align-items-center">
+                            <span><?php esc_html_e( 'Unpaid Entries', 'racketmanager' ); ?> <?php echo '(' . count( $entries_pay_due ) . ')'; ?></span>
+                            <button class="btn btn-secondary btn-sm notifyUnpaid" data-tournament-id="<?php echo esc_html( $tournament->id ); ?>"><?php esc_html_e( 'Notify unpaid', 'racketmanager' ); ?></button>
+                        </th>
                     </tr>
                     </thead>
                     <tbody>
@@ -90,7 +93,12 @@ if ( ! empty( $entries_pay_due ) || ! empty( $entries_refund_due ) ) {
         <table class="table table-striped">
             <thead class="table-dark">
                 <tr>
-                    <th><?php esc_html_e( 'Pending Entries', 'racketmanager' ); ?> <?php echo empty( $entries_pending ) ? null : '(' . count( $entries_pending ) . ')'; ?></th>
+                    <th class="d-flex justify-content-between align-items-center">
+                        <span><?php esc_html_e( 'Pending Entries', 'racketmanager' ); ?> <?php echo empty( $entries_pending ) ? null : '(' . count( $entries_pending ) . ')'; ?></span>
+                        <?php if ( ! empty( $entries_pending ) ) : ?>
+                            <button class="btn btn-secondary btn-sm notifyPending" data-tournament-id="<?php echo esc_html( $tournament->id ); ?>"><?php esc_html_e( 'Notify pending', 'racketmanager' ); ?></button>
+                        <?php endif; ?>
+                    </th>
                 </tr>
             </thead>
             <tbody>

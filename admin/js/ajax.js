@@ -348,6 +348,74 @@ Racketmanager.notifyTournamentEntryOpen = function(e, tournamentId) {
 		}
 	});
 };
+Racketmanager.notifyTournamentEntryPending = function(e, tournamentId) {
+	e.preventDefault();
+	let notifyField1 = "#alert-tournaments";
+	jQuery(notifyField1).hide();
+	jQuery(notifyField1).removeClass('alert--success alert--danger');
+	let notifyField2 = "#alert-tournaments-response";
+	jQuery(notifyField2).html('');
+	jQuery.ajax({
+		url: ajaxurl,
+		type: "POST",
+		data: {
+			"tournamentId": tournamentId,
+			"action": "racketmanager_notify_tournament_entries_pending",
+			"security": ajax_var.ajax_nonce,
+		},
+		success: function (response) {
+			let message = response.data;
+			jQuery(notifyField2).text(message);
+			jQuery(notifyField1).addClass('alert--success');
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				let message = response.responseJSON.data;
+				jQuery(notifyField2).html(message);
+			} else {
+				jQuery(notifyField2).text(response.statusText);
+			}
+			jQuery(notifyField1).addClass('alert--danger');
+		},
+		complete: function() {
+			jQuery(notifyField1).show();
+		}
+	});
+};
+Racketmanager.notifyTournamentEntryUnpaid = function(e, tournamentId) {
+	e.preventDefault();
+	let notifyField1 = "#alert-tournaments";
+	jQuery(notifyField1).hide();
+	jQuery(notifyField1).removeClass('alert--success alert--danger');
+	let notifyField2 = "#alert-tournaments-response";
+	jQuery(notifyField2).html('');
+	jQuery.ajax({
+		url: ajaxurl,
+		type: "POST",
+		data: {
+			"tournamentId": tournamentId,
+			"action": "racketmanager_notify_tournament_entries_unpaid",
+			"security": ajax_var.ajax_nonce,
+		},
+		success: function (response) {
+			let message = response.data;
+			jQuery(notifyField2).text(message);
+			jQuery(notifyField1).addClass('alert--success');
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				let message = response.responseJSON.data;
+				jQuery(notifyField2).html(message);
+			} else {
+				jQuery(notifyField2).text(response.statusText);
+			}
+			jQuery(notifyField1).addClass('alert--danger');
+		},
+		complete: function() {
+			jQuery(notifyField1).show();
+		}
+	});
+};
 Racketmanager.getImportOption = function(option) {
 	let selectedOption = option;
 	if (selectedOption === 'table' || selectedOption === 'fixtures') {

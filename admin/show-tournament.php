@@ -63,6 +63,12 @@ jQuery(document).ready(function(){
             </div>
         </nav>
     </div>
+    <div class="alert_rm" id="alert-tournaments" style="display:none;">
+        <div class="alert__body">
+            <div class="alert__body-inner" id="alert-tournaments-response">
+            </div>
+        </div>
+    </div>
     <div class="tab-content">
         <div class="tab-pane" id="overview" role="tabpanel" aria-labelledby="overview-tab">
             <h2><?php esc_html_e( 'Overview', 'racketmanager' ); ?></h2>
@@ -77,3 +83,17 @@ jQuery(document).ready(function(){
             <?php require_once 'tournament/entries.php'; ?>
         </div>
     </div>
+<script type="text/javascript">
+    document.querySelectorAll('.notifyPending').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            let tournamentId = this.dataset.tournamentId;
+            Racketmanager.notifyTournamentEntryPending(e, tournamentId);
+        });
+    });
+    document.querySelectorAll('.notifyUnpaid').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            let tournamentId = this.dataset.tournamentId;
+            Racketmanager.notifyTournamentEntryUnpaid(e, tournamentId);
+        });
+    });
+</script>

@@ -47,6 +47,8 @@ class Ajax_Admin extends Ajax {
         add_action( 'wp_ajax_racketmanager_email_constitution', array( &$this, 'email_constitution' ) );
         add_action( 'wp_ajax_racketmanager_notify_competition_entries_open', array( &$this, 'notify_competition_entries_open' ) );
         add_action( 'wp_ajax_racketmanager_notify_tournament_entries_open', array( &$this, 'notify_tournament_entries_open' ) );
+        add_action( 'wp_ajax_racketmanager_notify_tournament_entries_pending', array( &$this, 'notify_tournament_entries_pending' ) );
+        add_action( 'wp_ajax_racketmanager_notify_tournament_entries_unpaid', array( &$this, 'notify_tournament_entries_unpaid' ) );
 
         add_action( 'wp_ajax_racketmanager_notify_teams', array( &$this, 'notify_teams_fixture' ) );
         add_action( 'wp_ajax_racketmanager_set_tournament_dates', array( &$this, 'set_tournament_dates' ) );
@@ -307,6 +309,48 @@ class Ajax_Admin extends Ajax {
             $tournament    = get_tournament( $tournament_id );
             if ( $tournament ) {
                 $return = $tournament->notify_entry_open();
+            } else {
+                $return->error = true;
+                $return->msg   = __( 'Tournament not found', 'racketmanager' );
+            }
+        }
+        if ( isset( $return->error ) ) {
+            wp_send_json_error( $return->msg, 500 );
+        } else {
+            wp_send_json_success( $return->msg );
+        }
+    }
+    /**
+     * Notify tournament pending entries
+     */
+    public function notify_tournament_entries_pending(): void {
+        $return = $this->check_security_token();
+        if ( ! isset( $return->error ) ) {
+            $tournament_id = isset( $_POST['tournamentId'] ) ? intval( $_POST['tournamentId'] ) : '';
+            $tournament    = get_tournament( $tournament_id );
+            if ( $tournament ) {
+                $return = $tournament->notify_entry_pending();
+            } else {
+                $return->error = true;
+                $return->msg   = __( 'Tournament not found', 'racketmanager' );
+            }
+        }
+        if ( isset( $return->error ) ) {
+            wp_send_json_error( $return->msg, 500 );
+        } else {
+            wp_send_json_success( $return->msg );
+        }
+    }
+    /**
+     * Notify tournament unpaid entries
+     */
+    public function notify_tournament_entries_unpaid(): void {
+        $return = $this->check_security_token();
+        if ( ! isset( $return->error ) ) {
+            $tournament_id = isset( $_POST['tournamentId'] ) ? intval( $_POST['tournamentId'] ) : '';
+            $tournament    = get_tournament( $tournament_id );
+            if ( $tournament ) {
+                $return = $tournament->notify_entry_unpaid();
             } else {
                 $return->error = true;
                 $return->msg   = __( 'Tournament not found', 'racketmanager' );

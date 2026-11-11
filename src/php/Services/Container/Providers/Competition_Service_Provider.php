@@ -617,6 +617,9 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
 
         // Shortcode Adapters
         $container->set( 'competition_shortcode_adapter', fn( Simple_Container $c ) => new Competition_Shortcode_Adapter(
+            competition_shortcode_presenter: $c->get( 'competition_shortcode_presenter' ),
+            tournament_presenter: $c->get( 'tournament_presenter' ),
+            player_presenter: $c->get( 'player_presenter' ),
             competition_service: $c->get( 'competition_service' ),
             club_service: $c->get( 'club_service' ),
             team_service: $c->get( 'team_service' ),
@@ -627,23 +630,20 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             competition_entry_service: $c->get( 'competition_entry_service' ),
             template_renderer: $c->get( 'shortcode_template_renderer' ),
             get_competition_handler: $c->get( 'get_competition_handler' ),
-            competition_shortcode_presenter: $c->get( 'competition_shortcode_presenter' ),
             overview_handler: $c->get( 'get_competition_overview_handler' ),
             events_handler: $c->get( 'get_competition_events_handler' ),
             teams_handler: $c->get( 'get_competition_teams_handler' ),
             clubs_handler: $c->get( 'get_competition_clubs_handler' ),
             players_handler: $c->get( 'get_competition_players_handler' ),
             winners_handler: $c->get( 'get_competition_winners_handler' ),
+            view_presenter: $c->get( 'shortcode_view_presenter' ),
+            racketmanager: $app,
             dropdown_handler: $c->get( 'get_competition_dropdown_handler' ),
             competitions_handler: $c->get( 'get_competitions_handler' ),
             payment_handler: $c->get( 'get_competition_payment_handler' ),
             club_entry_selection: $c->get( 'club_entry_selection_service' ),
             entry_handler: $c->get( 'get_competition_entry_handler' ),
-            tournament_presenter: $c->get( 'tournament_presenter' ),
-            view_presenter: $c->get( 'shortcode_view_presenter' ),
-            racketmanager: $app,
             event_query_service: $c->get( 'event_query_service' ),
-            player_presenter: $c->get( 'player_presenter' ),
             query_vars: $c->get( Query_Vars_Interface::class )
         ) );
         $container->alias( Competition_Shortcode_Adapter::class, 'competition_shortcode_adapter' );

@@ -5,6 +5,8 @@ namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Shortcodes;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Competition\Queries\Club_Entry_Selection_Service;
+use Racketmanager\Application\Competition\Queries\Get_Competition_Entry_Handler;
+use Racketmanager\Application\Competition\Queries\Get_Competition_Entry_Query;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Payment_Handler;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Payment_Query;
 use Racketmanager\Domain\Finance\Charge;
@@ -13,11 +15,15 @@ use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Domain\Tournament\Tournament_Entry;
 use Racketmanager\Domain\Player\Player;
+use Racketmanager\Exceptions\Service_Missing_Exception;
+use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Competition_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
+use Racketmanager\Presentation\View_Models\Competition_Header_View_Model;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
@@ -77,7 +83,8 @@ class Competition_Entry_Flow_Test extends TestCase {
         $GLOBALS['query_vars'] = [ 'competition_name' => 'Summer League', 'season' => '2026' ];
         $club = (object) [ 'id' => 4, 'shortcode' => 'WST', 'name' => 'Westcliff Tennis' ];
         $plugin = $this->createStub( RacketManager::class );
-        $plugin->method( 'get_options' )->willReturnCallback( static fn( false|string $type = false ): array =>
+        $plugin->method( 'get_options' )->willReturnCallback(
+            static fn( false|string $type = false ): array =>
             ( 'league' === $type || 'cup' === $type )
                 ? [ 'entry_level' => 'captain' ]
                 : [ 'league' => [ 'entry_level' => 'captain' ] ]
@@ -104,7 +111,7 @@ class Competition_Entry_Flow_Test extends TestCase {
             competition_shortcode_presenter: $this->create_competition_presenter(),
             tournament_presenter: new Tournament_Presenter(),
             event_query_service: $this->event_query_service(),
-            query_vars: new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
+            query_vars: new Wp_Query_Vars()
         );
 
         $output = $adapter->show_competition_entry();
@@ -125,19 +132,23 @@ class Competition_Entry_Flow_Test extends TestCase {
         $player_service = $this->createStub( Player_Service::class );
         $renderer = $this->createMock( Shortcode_Template_Renderer::class );
         $renderer->expects( $this->exactly( 2 ) )->method( 'render' )
-            ->willReturnCallback( static function ( string $template, array $vars, $type ): string {
-                TestCase::assertSame( 'entry', $type );
-                TestCase::assertSame( '2026', $vars['season'] );
-                TestCase::assertSame( 4, $vars['club']->id );
-                TestCase::assertInstanceOf( \Racketmanager\Presentation\View_Models\Competition_Header_View_Model::class, $vars['competition_header'] );
-                return '<form id="form-entry">' . $template . '</form>';
-            } );
+            ->willReturnCallback(
+                static function ( string $template, array $vars, $type ): string {
+                    TestCase::assertSame( 'entry', $type );
+                    TestCase::assertSame( '2026', $vars['season'] );
+                    TestCase::assertSame( 4, $vars['club']->id );
+                    TestCase::assertInstanceOf( Competition_Header_View_Model::class, $vars['competition_header'] );
+                    return '<form id="form-entry">' . $template . '</form>';
+                }
+            );
         foreach ( [ Competition_Type::LEAGUE, Competition_Type::CUP ] as $type ) {
             $service = $this->createStub( Competition_Service::class );
             $service->method( 'get_by_id' )->willReturn( Competition_Test_Factory::create( type: $type, seasons: Competition_Test_Factory::season_map() ) );
             $adapter = $this->create_competition_adapter(
-                competition_service: $service, club_service: $club_service,
-                team_service: $team_service, player_service: $player_service,
+                competition_service: $service,
+                club_service: $club_service,
+                team_service: $team_service,
+                player_service: $player_service,
                 tournament_service: $this->createStub( Tournament_Service::class ),
                 registration_service: $this->createStub( Registration_Service::class ),
                 competition_entry_service: $this->createStub( Competition_Entry_Service::class ),
@@ -147,7 +158,7 @@ class Competition_Entry_Flow_Test extends TestCase {
                 competition_shortcode_presenter: $this->create_competition_presenter(),
                 tournament_presenter: new Tournament_Presenter(),
                 event_query_service: $this->event_query_service(),
-                query_vars: new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
+                query_vars: new Wp_Query_Vars()
             );
             $this->assertStringContainsString( 'entry-' . $type->value, $adapter->show_competition_entry() );
         }
@@ -161,7 +172,8 @@ class Competition_Entry_Flow_Test extends TestCase {
         $player_service->expects( $this->once() )->method( 'find_all_associated_clubs' )
             ->with( 1, 'captain', 4 )->willReturn( [] );
         $plugin = $this->createStub( RacketManager::class );
-        $plugin->method( 'get_options' )->willReturnCallback( static fn( false|string $type = false ): array =>
+        $plugin->method( 'get_options' )->willReturnCallback(
+            static fn( false|string $type = false ): array =>
             ( 'league' === $type || 'cup' === $type )
                 ? [ 'entry_level' => 'captain' ]
                 : [ 'cup' => [ 'entry_level' => 'captain' ] ]
@@ -169,21 +181,24 @@ class Competition_Entry_Flow_Test extends TestCase {
         $club_service = $this->createStub( Club_Service::class );
         $club_service->method( 'get_club_by_shortcode' )->willReturn( $this->club() );
         $adapter = $this->create_competition_adapter(
-            competition_service: $service, club_service: $club_service,
+            competition_service: $service,
+            club_service: $club_service,
             team_service: $this->createStub( Team_Service::class ),
             player_service: $player_service,
             tournament_service: $this->createStub( Tournament_Service::class ),
             registration_service: $this->createStub( Registration_Service::class ),
             competition_entry_service: $this->createStub( Competition_Entry_Service::class ),
             finance_service: $this->createStub( Finance_Service::class ),
-            template_renderer: $renderer, racketmanager: $plugin,
+            template_renderer: $renderer,
+            racketmanager: $plugin,
             club_entry_selection: new Club_Entry_Selection_Service(
-                $club_service, $player_service
+                $club_service,
+                $player_service
             ),
             competition_shortcode_presenter: $this->create_competition_presenter(),
             tournament_presenter: new Tournament_Presenter(),
             event_query_service: $this->event_query_service(),
-            query_vars: new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
+            query_vars: new Wp_Query_Vars()
         );
         $GLOBALS['query_vars'] = [ 'competition_name' => 'Summer League' ];
         $this->assertStringContainsString( 'No season specified', $adapter->show_competition_entry() );
@@ -211,20 +226,24 @@ class Competition_Entry_Flow_Test extends TestCase {
         $finance->method( 'get_tournament_paid_total_for_player' )->willReturn( 0.0 );
         $renderer = $this->createMock( Shortcode_Template_Renderer::class );
         $renderer->expects( $this->once() )->method( 'render' )
-            ->willReturnCallback( static function ( string $template, array $vars, $type ) use ( $tournament, $player ): string {
-                TestCase::assertSame( 'entry-tournament', $template );
-                TestCase::assertSame( 'entry', $type );
-                TestCase::assertSame( $tournament, $vars['tournament'] );
-                TestCase::assertInstanceOf( Tournament_Header_View_Model::class, $vars['tournament_header'] );
-                TestCase::assertFalse( $vars['tournament_header']->show_entry_button );
-                TestCase::assertSame( $player, $vars['player'] );
-                TestCase::assertSame( '2026', (string) $vars['season'] );
-                return '<form id="form-entry">Autumn Open</form>';
-            } );
+            ->willReturnCallback(
+                static function ( string $template, array $vars, $type ) use ( $tournament, $player ): string {
+                    TestCase::assertSame( 'entry-tournament', $template );
+                    TestCase::assertSame( 'entry', $type );
+                    TestCase::assertSame( $tournament, $vars['tournament'] );
+                    TestCase::assertInstanceOf( Tournament_Header_View_Model::class, $vars['tournament_header'] );
+                    TestCase::assertFalse( $vars['tournament_header']->show_entry_button );
+                    TestCase::assertSame( $player, $vars['player'] );
+                    TestCase::assertSame( '2026', (string) $vars['season'] );
+                    return '<form id="form-entry">Autumn Open</form>';
+                }
+            );
         $club_service = $this->createStub( Club_Service::class );
         $adapter = $this->create_competition_adapter(
-            competition_service: $service, tournament_service: $tournament_service,
-            player_service: $player_service, finance_service: $finance,
+            competition_service: $service,
+            tournament_service: $tournament_service,
+            player_service: $player_service,
+            finance_service: $finance,
             club_service: $club_service,
             registration_service: $this->createStub( Registration_Service::class ),
             competition_entry_service: $this->createStub( Competition_Entry_Service::class ),
@@ -234,7 +253,7 @@ class Competition_Entry_Flow_Test extends TestCase {
             competition_shortcode_presenter: $this->create_competition_presenter(),
             tournament_presenter: new Tournament_Presenter(),
             event_query_service: $this->event_query_service(),
-            query_vars: new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
+            query_vars: new Wp_Query_Vars()
         );
         $this->assertStringContainsString( 'Autumn Open', $adapter->show_competition_entry() );
     }
@@ -245,8 +264,8 @@ class Competition_Entry_Flow_Test extends TestCase {
             template_renderer: $this->create_shortcode_template_renderer()
         );
 
-        $this->expectException( \LogicException::class );
-        $this->expectExceptionMessage( 'Event_Query_Service' );
+        $this->expectException( Service_Missing_Exception::class );
+        $this->expectExceptionMessageIsOrContains( 'Event_Query_Service' );
         $adapter->show_competition_entry();
     }
 
@@ -254,9 +273,15 @@ class Competition_Entry_Flow_Test extends TestCase {
         $GLOBALS['query_vars'] = [ 'competition_type' => 'tournament', 'tournament' => 'Autumn Open' ];
         $tournament = $this->tournament();
         $player = $this->player();
-        $entry = Tournament_Entry::from_object( (object) [
-            'id' => 42, 'tournament_id' => 8, 'player_id' => 1, 'status' => 1, 'fee' => 30,
-        ] );
+        $entry = Tournament_Entry::from_object(
+            (object) [
+                'id' => 42,
+                'tournament_id' => 8,
+                'player_id' => 1,
+                'status' => 1,
+                'fee' => 30,
+            ]
+        );
         $tournament_service = $this->createStub( Tournament_Service::class );
         $tournament_service->method( 'get_tournament_by_name' )->willReturn( $tournament );
         $player_service = $this->createStub( Player_Service::class );
@@ -273,45 +298,56 @@ class Competition_Entry_Flow_Test extends TestCase {
             ->willReturn( [ (object) [ 'id' => 2, 'amount' => 30 ], (object) [ 'id' => 3, 'amount' => 5 ] ] );
         $renderer = $this->createMock( Shortcode_Template_Renderer::class );
         $renderer->expects( $this->exactly( 2 ) )->method( 'render' )
-            ->willReturnCallback( static function ( string $template, array $vars, $type ) use ( $entry ): string {
-                TestCase::assertSame( 'entry', $type );
-                TestCase::assertSame( $entry, $vars['tournament_entry'] );
-                TestCase::assertInstanceOf( Tournament_Header_View_Model::class, $vars['tournament_header'] );
-                TestCase::assertFalse( $vars['tournament_header']->show_entry_button );
-                if ( 'tournament-payment' === $template ) {
-                    TestCase::assertEquals( 35, $vars['total_due'] );
-                    TestCase::assertSame( 3, $vars['invoice_id'] );
-                } else {
-                    TestCase::assertSame( 'tournament-payment-complete', $template );
+            ->willReturnCallback(
+                static function ( string $template, array $vars, $type ) use ( $entry ): string {
+                    TestCase::assertSame( 'entry', $type );
+                    TestCase::assertSame( $entry, $vars['tournament_entry'] );
+                    TestCase::assertInstanceOf( Tournament_Header_View_Model::class, $vars['tournament_header'] );
+                    TestCase::assertFalse( $vars['tournament_header']->show_entry_button );
+                    if ( 'tournament-payment' === $template ) {
+                        TestCase::assertEquals( 35, $vars['total_due'] );
+                        TestCase::assertSame( 3, $vars['invoice_id'] );
+                    } else {
+                        TestCase::assertSame( 'tournament-payment-complete', $template );
+                    }
+                    return '<div class="payment">' . $template . '</div>';
                 }
-                return '<div class="payment">' . $template . '</div>';
-            } );
+            );
         $handler = new Get_Competition_Payment_Handler( $tournament_service, $player_service, $finance, $entry_service );
         $adapter = $this->create_competition_adapter(
-            payment_handler: $handler, view_presenter: new Shortcode_View_Presenter( $renderer ),
-            query_vars: new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
+            payment_handler: $handler,
+            view_presenter: new Shortcode_View_Presenter( $renderer ),
+            query_vars: new Wp_Query_Vars()
         );
         $this->assertStringContainsString( 'tournament-payment</div>', $adapter->show_competition_entry_payment() );
         $this->assertStringContainsString( 'tournament-payment-complete</div>', $adapter->show_competition_entry_payment_complete() );
-        $this->assertSame( 'foo', Get_Competition_Payment_Query::from_atts(
-            [ 'template' => 'foo' ], $GLOBALS['query_vars'], 1
-        )->template );
+        $this->assertSame(
+            'foo',
+            Get_Competition_Payment_Query::from_atts(
+                [ 'template' => 'foo' ],
+                $GLOBALS['query_vars'],
+                1
+            )->template
+        );
     }
 
     public function test_payment_rejects_non_tournament_and_unknown_tournament(): void {
         $renderer = $this->create_shortcode_template_renderer();
         $tournament_service = $this->createStub( Tournament_Service::class );
         $tournament_service->method( 'get_tournament_by_name' )->willThrowException(
-            new \Racketmanager\Exceptions\Tournament_Not_Found_Exception( 'Tournament not found' )
+            new Tournament_Not_Found_Exception( 'Tournament not found' )
         );
         $handler = new Get_Competition_Payment_Handler(
-            $tournament_service, $this->createStub( Player_Service::class ),
-            $this->createStub( Finance_Service::class ), $this->createStub( Competition_Entry_Service::class ), new Tournament_Presenter()
+            $tournament_service,
+            $this->createStub( Player_Service::class ),
+            $this->createStub( Finance_Service::class ),
+            $this->createStub( Competition_Entry_Service::class )
         );
         $adapter = $this->create_competition_adapter(
-            payment_handler: $handler, template_renderer: $renderer,
+            payment_handler: $handler,
+            template_renderer: $renderer,
             view_presenter: new Shortcode_View_Presenter( $renderer ),
-            query_vars: new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
+            query_vars: new Wp_Query_Vars()
         );
         $this->assertStringContainsString( 'Tournament not found', $adapter->show_competition_entry_payment_complete() );
         $GLOBALS['query_vars'] = [ 'competition_type' => 'tournament', 'tournament' => 'unknown' ];
@@ -330,12 +366,16 @@ class Competition_Entry_Flow_Test extends TestCase {
         $finance->method( 'get_charge' )->willReturn( $charge );
         $finance->method( 'get_invoices_by_criteria' )->willReturn( [] );
         $handler = new Get_Competition_Payment_Handler(
-            $tournament_service, $player_service, $finance, $this->createStub( Competition_Entry_Service::class ), new Tournament_Presenter()
+            $tournament_service,
+            $player_service,
+            $finance,
+            $this->createStub( Competition_Entry_Service::class )
         );
         $renderer = $this->create_shortcode_template_renderer();
         $adapter = $this->create_competition_adapter(
-            payment_handler: $handler, view_presenter: new Shortcode_View_Presenter( $renderer ),
-            query_vars: new \Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars()
+            payment_handler: $handler,
+            view_presenter: new Shortcode_View_Presenter( $renderer ),
+            query_vars: new Wp_Query_Vars()
         );
 
         $this->assertStringContainsString( 'You have not yet entered the tournament', $adapter->show_competition_entry_payment() );
@@ -343,7 +383,7 @@ class Competition_Entry_Flow_Test extends TestCase {
     }
 
     public function test_entry_query_parsing_and_fallbacks(): void {
-        $query = \Racketmanager\Application\Competition\Queries\Get_Competition_Entry_Query::from_atts(
+        $query = Get_Competition_Entry_Query::from_atts(
             [ 'template' => 'custom' ],
             [
                 'competition_name' => 'summer-league',
@@ -368,7 +408,7 @@ class Competition_Entry_Flow_Test extends TestCase {
         $this->assertSame( 'captain', $query->entry_level );
         $this->assertSame( 'custom', $query->template );
 
-        $tournament_query = \Racketmanager\Application\Competition\Queries\Get_Competition_Entry_Query::from_atts(
+        $tournament_query = Get_Competition_Entry_Query::from_atts(
             [],
             [
                 'competition_name' => 'autumn-open',
@@ -383,7 +423,7 @@ class Competition_Entry_Flow_Test extends TestCase {
             $this->createStub( Club_Service::class ),
             $this->createStub( Player_Service::class )
         );
-        $handler = new \Racketmanager\Application\Competition\Queries\Get_Competition_Entry_Handler(
+        $handler = new Get_Competition_Entry_Handler(
             club_entry_selection: $club_entry_selection,
             competition_service: $this->createStub( Competition_Service::class ),
             tournament_service: $this->createStub( Tournament_Service::class ),
@@ -395,15 +435,15 @@ class Competition_Entry_Flow_Test extends TestCase {
             finance_service: $this->createStub( Finance_Service::class ),
             event_query_service: $this->event_query_service()
         );
-        $vm = $handler->handle( new \Racketmanager\Application\Competition\Queries\Get_Competition_Entry_Query() );
+        $vm = $handler->handle( new Get_Competition_Entry_Query() );
         $this->assertTrue( $vm->is_error() );
         $this->assertSame( 'Competition not found', $vm->error_message );
 
         $tournament_service = $this->createStub( Tournament_Service::class );
         $tournament_service->method( 'get_tournament_by_name' )->willThrowException(
-            new \Racketmanager\Exceptions\Tournament_Not_Found_Exception( 'Tournament not found' )
+            new Tournament_Not_Found_Exception( 'Tournament not found' )
         );
-        $handler = new \Racketmanager\Application\Competition\Queries\Get_Competition_Entry_Handler(
+        $handler = new Get_Competition_Entry_Handler(
             club_entry_selection: $club_entry_selection,
             competition_service: $this->createStub( Competition_Service::class ),
             tournament_service: $tournament_service,
@@ -415,7 +455,7 @@ class Competition_Entry_Flow_Test extends TestCase {
             finance_service: $this->createStub( Finance_Service::class ),
             event_query_service: $this->event_query_service()
         );
-        $vm = $handler->handle( new \Racketmanager\Application\Competition\Queries\Get_Competition_Entry_Query( tournament_name: 'Unknown' ) );
+        $vm = $handler->handle( new Get_Competition_Entry_Query( tournament_name: 'Unknown' ) );
         $this->assertTrue( $vm->is_error() );
         $this->assertSame( 'Tournament not found', $vm->error_message );
     }
@@ -435,6 +475,6 @@ class Competition_Entry_Flow_Test extends TestCase {
     }
 
     private function club(): Club {
-        return Club_Test_Factory::create( id: 4, shortcode: 'WST', name: 'Westcliff Tennis' );
+        return Club_Test_Factory::create( id: 4, name: 'Westcliff Tennis', shortcode: 'WST' );
     }
 }

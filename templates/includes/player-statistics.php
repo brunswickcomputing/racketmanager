@@ -8,11 +8,13 @@
 namespace Racketmanager;
 
 /** @var array  $player_statistics */
-$walkover_allowed = $vm->walkover_allowed ?? null;
+/** @var array $vars */
+$player_statistics = $player_statistics ?? $vars['player_statistics'];
+$walkover_allowed  = $vm->walkover_allowed ?? null;
 if ( empty( $player_statistics ) ) {
     return;
 }
-$statistics = $player_statistics['total'] ?? ( $player->statistics['total'] ?? null );
+$statistics = $player_statistics['total'] ?? null;
 if ( ! $statistics ) {
     return;
 }

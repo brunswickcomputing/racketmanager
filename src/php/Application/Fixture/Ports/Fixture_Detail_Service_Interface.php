@@ -13,8 +13,8 @@ interface Fixture_Detail_Service_Interface {
     /**
      * Get tournament fixtures for a specific player.
      *
-     * @param int|null $player_id
-     * @param int|null $tournament_id
+     * @param int|null $player_id player id.
+     * @param int|null $tournament_id tournament id.
      *
      * @return Fixture_Details_DTO[]
      */
@@ -23,9 +23,9 @@ interface Fixture_Detail_Service_Interface {
     /**
      * Retrieve fixture details DTO.
      *
-     * @param int|Fixture|null $fixture_id
-     * @param bool $is_tournament
-     * @param int|null $rubber_player_id
+     * @param int|Fixture|null $fixture_id fixture id.
+     * @param bool             $is_tournament whether fixture is tournament.
+     * @param int|null         $rubber_player_id rubber player id.
      *
      * @return Fixture_Details_DTO|null
      */
@@ -34,7 +34,7 @@ interface Fixture_Detail_Service_Interface {
     /**
      * Retrieve tournament fixture details DTO.
      *
-     * @param int|Fixture|null $fixture_id
+     * @param int|Fixture|null $fixture_id fixture id.
      *
      * @return Fixture_Details_DTO|null
      */
@@ -43,10 +43,10 @@ interface Fixture_Detail_Service_Interface {
     /**
      * Resolve placeholder title for knockouts.
      *
-     * @param string $team_ref
-     * @param string $season
-     * @param object $league
-     * @param string|null $fixture_final
+     * @param string      $team_ref team reference.
+     * @param string      $season season.
+     * @param object      $league league.
+     * @param string|null $fixture_final fixture final.
      *
      * @return string|null
      */
@@ -55,8 +55,8 @@ interface Fixture_Detail_Service_Interface {
     /**
      * Retrieve previous fixture for tournament progression.
      *
-     * @param Fixture $fixture
-     * @param string|int|null $team_ref
+     * @param Fixture         $fixture fixture.
+     * @param string|int|null $team_ref team reference.
      *
      * @return Fixture|null
      */
@@ -65,7 +65,7 @@ interface Fixture_Detail_Service_Interface {
     /**
      * Collect player IDs associated with a fixture.
      *
-     * @param int|Fixture|Fixture_Details_DTO|null $fixture_id_or_entity
+     * @param int|Fixture|Fixture_Details_DTO|null $fixture_id_or_entity fixture id or entity.
      *
      * @return int[]
      */
@@ -74,12 +74,12 @@ interface Fixture_Detail_Service_Interface {
     /**
      * Get team name or placeholder label.
      *
-     * @param mixed $team_id
-     * @param string $season
-     * @param object $league
-     * @param string|null $final
+     * @param mixed       $team_id team id.
+     * @param string      $season season.
+     * @param object      $league league.
+     * @param string|null $final_round final.
      *
      * @return string
      */
-    public function get_team_name_or_placeholder( $team_id, string $season, object $league, ?string $final ): string;
+    public function get_team_name_or_placeholder( mixed $team_id, string $season, object $league, ?string $final_round ): string;
 }

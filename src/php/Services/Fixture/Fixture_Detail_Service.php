@@ -435,14 +435,21 @@ class Fixture_Detail_Service implements Fixture_Detail_Service_Interface {
 
     /**
      * Get team name or resolve recursively if placeholder.
+     *
+     * @param mixed       $team_id team id.
+     * @param string      $season season.
+     * @param object      $league league.
+     * @param string|null $final_round final round.
+     *
+     * @return string
      */
-    public function get_team_name_or_placeholder( $team_id, string $season, object $league, ?string $final ): string {
+    public function get_team_name_or_placeholder( mixed $team_id, string $season, object $league, ?string $final_round ): string {
         if ( is_numeric( $team_id ) ) {
             $team = $this->team_repository->find_by_id( (int) $team_id );
             return $team ? $team->get_name() : __( 'Unknown', 'racketmanager' );
         }
 
-        return $this->resolve_placeholder_title( $team_id, $season, $league, $final ) ?? __( 'Unknown', 'racketmanager' );
+        return $this->resolve_placeholder_title( $team_id, $season, $league, $final_round ) ?? __( 'Unknown', 'racketmanager' );
     }
 
     /**

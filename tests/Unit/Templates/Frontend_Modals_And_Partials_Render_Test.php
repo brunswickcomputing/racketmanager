@@ -505,21 +505,6 @@ final class Frontend_Modals_And_Partials_Render_Test extends TestCase {
     }
 
     public function test_includes_player_statistics_renders_strictly(): void {
-        $player = (object) [
-            'statistics' => [
-                'total' => (object) [
-                    'matches_won'  => 8,
-                    'matches_lost' => 2,
-                    'matches_tie'  => 0,
-                    'sets_won'     => 16,
-                    'sets_lost'    => 4,
-                    'games_won'    => 90,
-                    'games_lost'   => 30,
-                    'walkover'     => 1,
-                ],
-            ],
-        ];
-
         $player_statistics = [
             'detail' => [
                 's' => [
@@ -529,10 +514,19 @@ final class Frontend_Modals_And_Partials_Render_Test extends TestCase {
                     'walkover' => 0,
                 ],
             ],
+            'total' => (object) [
+                'matches_won'  => 8,
+                'matches_lost' => 2,
+                'matches_tie'  => 0,
+                'sets_won'     => 16,
+                'sets_lost'    => 4,
+                'games_won'    => 90,
+                'games_lost'   => 30,
+                'walkover'     => 1,
+            ],
         ];
 
         $vars = [
-            'player'            => $player,
             'player_statistics' => $player_statistics,
             'walkover_allowed'  => true,
         ];

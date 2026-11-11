@@ -376,13 +376,15 @@ class Club_Shortcode_Adapter_Test extends TestCase {
 
     public function test_show_club_role_modal_passes_role_modal_and_lookup(): void {
         $club_service = $this->createMock( Club_Service::class );
-        $role         = Club_Role::from_object( (object) [
-            'id'      => 5,
-            'role_id' => 1,
-            'club_id' => 10,
-            'user'    => (object) [ 'id' => 1, 'display_name' => 'John Doe' ],
-            'role'    => (object) [ 'id' => 1, 'name' => 'Secretary', 'desc' => 'Club Secretary' ],
-        ] );
+        $role         = Club_Role::from_object(
+            (object) [
+                'id'      => 5,
+                'role_id' => 1,
+                'club_id' => 10,
+                'user'    => (object) [ 'id' => 1, 'display_name' => 'John Doe' ],
+                'role'    => (object) [ 'id' => 1, 'name' => 'Secretary', 'desc' => 'Club Secretary' ],
+            ]
+        );
         $club_service->expects( $this->once() )->method( 'get_role' )->with( 5 )->willReturn( $role );
 
         $this->adapter( [ 'club_service' => $club_service, 'renderer' => $this->capturing_renderer() ] )
@@ -683,7 +685,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         ?Competition $competition = null,
         string $season = '2026'
     ): Event {
-        $event                 = new class extends Event {
+        $event                 = new class() extends Event {
             public ?League $primary_league_obj = null;
             public function __construct() {
                 // no-op
@@ -712,10 +714,12 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $GLOBALS['wp_stubs_events']['mens doubles']   = $allowed_event;
         $GLOBALS['wp_stubs_events']['ladies doubles'] = $blocked_event;
 
-        $adapter = $this->adapter( [
-            'club_service' => $this->club_service_for( $this->club() ),
-            'renderer'     => $this->capturing_renderer(),
-        ] );
+        $adapter = $this->adapter(
+            [
+                'club_service' => $this->club_service_for( $this->club() ),
+                'renderer'     => $this->capturing_renderer(),
+            ]
+        );
 
         // 1. Blocked event
         $GLOBALS['query_vars']['season'] = '2026';
@@ -760,10 +764,12 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $competition->type = Competition_Type::CUP;
 
         $championship = $this->createStub( Championship::class );
-        $championship->method( 'get_finals' )->willReturn( [
-            'final' => [ 'round' => 1, 'name' => 'Final' ],
-            'semi'  => [ 'round' => 2, 'name' => 'Semi Final' ],
-        ] );
+        $championship->method( 'get_finals' )->willReturn(
+            [
+                'final' => [ 'round' => 1, 'name' => 'Final' ],
+                'semi'  => [ 'round' => 2, 'name' => 'Semi Final' ],
+            ]
+        );
         $championship->method( 'num_rounds' )->willReturn( 2 );
 
         $primary_league               = $this->createStub( League::class );
@@ -778,10 +784,12 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $GLOBALS['query_vars']['season']         = '2026';
         $GLOBALS['query_vars']['event']          = 'cup-event';
 
-        $adapter = $this->adapter( [
-            'club_service' => $this->club_service_for( $this->club() ),
-            'renderer'     => $this->capturing_renderer(),
-        ] );
+        $adapter = $this->adapter(
+            [
+                'club_service' => $this->club_service_for( $this->club() ),
+                'renderer'     => $this->capturing_renderer(),
+            ]
+        );
 
         $adapter->show_club_event( [] );
 
@@ -794,10 +802,12 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $competition->type = Competition_Type::CUP;
 
         $championship = $this->createStub( Championship::class );
-        $championship->method( 'get_finals' )->willReturn( [
-            'final' => [ 'round' => 1, 'name' => 'Final' ],
-            'semi'  => [ 'round' => 2, 'name' => 'Semi Final' ],
-        ] );
+        $championship->method( 'get_finals' )->willReturn(
+            [
+                'final' => [ 'round' => 1, 'name' => 'Final' ],
+                'semi'  => [ 'round' => 2, 'name' => 'Semi Final' ],
+            ]
+        );
         $championship->method( 'num_rounds' )->willReturn( 2 );
 
         $primary_league               = $this->createStub( League::class );
@@ -812,9 +822,11 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $GLOBALS['query_vars']['season']         = '2026';
         $GLOBALS['query_vars']['event']          = 'cup-event';
 
-        $adapter = $this->adapter( [
-            'club_service' => $this->club_service_for( $this->club() ),
-        ] );
+        $adapter = $this->adapter(
+            [
+                'club_service' => $this->club_service_for( $this->club() ),
+            ]
+        );
 
         $html = $adapter->show_club_event( [] );
 
@@ -832,10 +844,12 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $GLOBALS['wp_stubs_events']['ladies doubles'] = $blocked_event;
         $GLOBALS['wp_stubs_teams']['first team']      = Team::from_object( (object) [ 'id' => 3, 'title' => 'First Team' ] );
 
-        $adapter = $this->adapter( [
-            'club_service' => $this->club_service_for( $this->club() ),
-            'renderer'     => $this->capturing_renderer(),
-        ] );
+        $adapter = $this->adapter(
+            [
+                'club_service' => $this->club_service_for( $this->club() ),
+                'renderer'     => $this->capturing_renderer(),
+            ]
+        );
 
         // 1. Blocked event
         $GLOBALS['query_vars']['team']  = 'first-team';
@@ -854,23 +868,29 @@ class Club_Shortcode_Adapter_Test extends TestCase {
 
     public function test_show_club_team_and_event_resolve_query_var_season_and_reject_unknown_season(): void {
         $competition = $this->create_test_competition( 10, [ 101 ] );
-        $competition->set_seasons( [
-            '2025' => [ 'name' => '2025', 'entry_events' => [ 101 ] ],
-            '2026' => [ 'name' => '2026', 'entry_events' => [ 101 ] ],
-        ] );
+        $competition->set_seasons(
+            [
+                '2025' => [ 'name' => '2025', 'entry_events' => [ 101 ] ],
+                '2026' => [ 'name' => '2026', 'entry_events' => [ 101 ] ],
+            ]
+        );
         $event = $this->create_test_event( 101, 'Mens Doubles', 10, $competition, '2026' );
-        $event->seasons = json_encode( [
-            '2025' => [ 'name' => '2025' ],
-            '2026' => [ 'name' => '2026' ],
-        ] );
+        $event->seasons = json_encode(
+            [
+                '2025' => [ 'name' => '2025' ],
+                '2026' => [ 'name' => '2026' ],
+            ]
+        );
 
         $GLOBALS['wp_stubs_events']['mens doubles'] = $event;
         $GLOBALS['wp_stubs_teams']['first team']    = Team::from_object( (object) [ 'id' => 3, 'title' => 'First Team' ] );
 
-        $adapter = $this->adapter( [
-            'club_service' => $this->club_service_for( $this->club() ),
-            'renderer'     => $this->capturing_renderer(),
-        ] );
+        $adapter = $this->adapter(
+            [
+                'club_service' => $this->club_service_for( $this->club() ),
+                'renderer'     => $this->capturing_renderer(),
+            ]
+        );
 
         // 1. Valid query var season 2025 in show_club_event
         $this->rendered = [];
@@ -914,10 +934,12 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $GLOBALS['wp_stubs_events'][103] = $blocked_event;
         $GLOBALS['wp_stubs_teams'][3]    = Team::from_object( (object) [ 'id' => 3, 'title' => 'First Team' ] );
 
-        $adapter = $this->adapter( [
-            'club_service' => $this->club_service_for( $this->club() ),
-            'renderer'     => $this->capturing_renderer(),
-        ] );
+        $adapter = $this->adapter(
+            [
+                'club_service' => $this->club_service_for( $this->club() ),
+                'renderer'     => $this->capturing_renderer(),
+            ]
+        );
 
         // 1. Blocked event
         $adapter->show_team_edit_modal( [ 'id' => '3', 'event_id' => '103' ] );
@@ -944,10 +966,12 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $GLOBALS['wp_stubs_teams'][3]                = Team::from_object( (object) [ 'id' => 3, 'title' => 'First Team' ] );
         $GLOBALS['query_vars']['season']             = '2026';
 
-        $adapter = $this->adapter( [
-            'club_service' => $this->club_service_for( $this->club() ),
-            'renderer'     => $this->capturing_renderer(),
-        ] );
+        $adapter = $this->adapter(
+            [
+                'club_service' => $this->club_service_for( $this->club() ),
+                'renderer'     => $this->capturing_renderer(),
+            ]
+        );
 
         // Foreign event in show_club_event
         $GLOBALS['query_vars']['event'] = 'foreign-event';

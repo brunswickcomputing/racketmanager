@@ -12,6 +12,10 @@ declare( strict_types=1 );
 namespace Racketmanager\Rest;
 
 use LogicException;
+use Racketmanager\Application\Finance\Commands\Update_Payment_Command;
+use Racketmanager\Application\Finance\Commands\Update_Payment_Handler;
+use Racketmanager\Application\Finance\DTOs\Stripe_Settings;
+use Racketmanager\Application\Ports\Finance_Service_Interface;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event as Competition_Event;
 use Racketmanager\Domain\Competition\League;
@@ -30,7 +34,6 @@ use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Season_Service;
-use Racketmanager\Services\Stripe_Settings;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Util\Util_Lookup;
 use Stripe\Event;
@@ -76,20 +79,22 @@ class Rest_Resources extends WP_REST_Controller {
     private ?Event_Repository_Interface $event_repository;
     private ?Fixture_Repository_Interface $fixture_repository;
     private ?Competition_Repository_Interface $competition_repository;
+    private ?Update_Payment_Handler $update_payment_handler;
 
     /**
      * Constructor
      *
-     * @param RacketManager                $plugin_instance
-     * @param Rest_Controller_Adapter      $adapter
-     * @param Competition_Service|null     $competition_service
-     * @param Club_Service|null            $club_service
-     * @param Season_Service|null          $season_service
-     * @param League_Query_Service|null    $league_query_service
-     * @param Event_Query_Service|null     $event_query_service
-     * @param League_Repository_Interface|null $league_repository
-     * @param Event_Repository_Interface|null  $event_repository
+     * @param RacketManager                     $plugin_instance
+     * @param Rest_Controller_Adapter           $adapter
+     * @param Competition_Service|null          $competition_service
+     * @param Club_Service|null                 $club_service
+     * @param Season_Service|null               $season_service
+     * @param League_Query_Service|null         $league_query_service
+     * @param Event_Query_Service|null          $event_query_service
+     * @param League_Repository_Interface|null  $league_repository
+     * @param Event_Repository_Interface|null   $event_repository
      * @param Fixture_Repository_Interface|null $fixture_repository
+     * @param Update_Payment_Handler|null       $update_payment_handler
      * @return void
      */
     public function __construct(
@@ -102,35 +107,72 @@ class Rest_Resources extends WP_REST_Controller {
         ?Event_Query_Service $event_query_service = null,
         ?League_Repository_Interface $league_repository = null,
         ?Event_Repository_Interface $event_repository = null,
-        ?Fixture_Repository_Interface $fixture_repository = null
+        ?Fixture_Repository_Interface $fixture_repository = null,
+        ?Update_Payment_Handler $update_payment_handler = null
     ) {
         $this->racketmanager = $plugin_instance;
-        $this->adapter        = $adapter;
+        $this->adapter       = $adapter;
         $c                   = $this->racketmanager->container ?? null;
         if ( $c ) {
-            $this->competition_service  = $competition_service ?? ( method_exists( $c, 'get' ) ? $c->get( 'competition_service' ) : null );
-            $this->club_service         = $club_service ?? ( method_exists( $c, 'get' ) ? $c->get( 'club_service' ) : null );
-            $this->season_service       = $season_service ?? ( method_exists( $c, 'get' ) ? $c->get( 'season_service' ) : null );
-            $this->league_query_service = $league_query_service ?? ( ( method_exists( $c, 'has' ) && $c->has( 'league_query_service' ) ) ? $c->get( 'league_query_service' ) : null );
-            $this->event_query_service  = $event_query_service ?? ( ( method_exists( $c, 'has' ) && $c->has( 'event_query_service' ) ) ? $c->get( 'event_query_service' ) : null );
-            $this->league_repository    = $league_repository ?? ( ( method_exists( $c, 'has' ) && $c->has( 'league_repository' ) ) ? $c->get( 'league_repository' ) : null );
-            $this->event_repository     = $event_repository ?? ( ( method_exists( $c, 'has' ) && $c->has( 'event_repository' ) ) ? $c->get( 'event_repository' ) : null );
-            $this->fixture_repository   = $fixture_repository ?? ( ( method_exists( $c, 'has' ) && $c->has( 'fixture_repository' ) ) ? $c->get( 'fixture_repository' ) : null );
+            $this->competition_service    = $competition_service ?? ( method_exists( $c, 'get' ) ? $c->get( 'competition_service' ) : null );
+            $this->club_service           = $club_service ?? ( method_exists( $c, 'get' ) ? $c->get( 'club_service' ) : null );
+            $this->season_service         = $season_service ?? ( method_exists( $c, 'get' ) ? $c->get( 'season_service' ) : null );
+            $this->league_query_service   = $league_query_service ?? ( ( method_exists( $c, 'has' ) && $c->has( 'league_query_service' ) ) ? $c->get( 'league_query_service' ) : null );
+            $this->event_query_service    = $event_query_service ?? ( ( method_exists( $c, 'has' ) && $c->has( 'event_query_service' ) ) ? $c->get( 'event_query_service' ) : null );
+            $this->league_repository      = $league_repository ?? ( ( method_exists( $c, 'has' ) && $c->has( 'league_repository' ) ) ? $c->get( 'league_repository' ) : null );
+            $this->event_repository       = $event_repository ?? ( ( method_exists( $c, 'has' ) && $c->has( 'event_repository' ) ) ? $c->get( 'event_repository' ) : null );
+            $this->fixture_repository     = $fixture_repository ?? ( ( method_exists( $c, 'has' ) && $c->has( 'fixture_repository' ) ) ? $c->get( 'fixture_repository' ) : null );
             $this->competition_repository = ( method_exists( $c, 'has' ) && $c->has( 'competition_repository' ) ) ? $c->get( 'competition_repository' ) : null;
+            $this->update_payment_handler = $update_payment_handler;
         } else {
-            $this->competition_service  = $competition_service;
-            $this->club_service         = $club_service;
-            $this->season_service       = $season_service;
-            $this->league_query_service = $league_query_service;
-            $this->event_query_service  = $event_query_service;
-            $this->league_repository    = $league_repository;
-            $this->event_repository     = $event_repository;
-            $this->fixture_repository   = $fixture_repository;
+            $this->competition_service    = $competition_service;
+            $this->club_service           = $club_service;
+            $this->season_service         = $season_service;
+            $this->league_query_service   = $league_query_service;
+            $this->event_query_service    = $event_query_service;
+            $this->league_repository      = $league_repository;
+            $this->event_repository       = $event_repository;
+            $this->fixture_repository     = $fixture_repository;
             $this->competition_repository = null;
+            $this->update_payment_handler = $update_payment_handler;
         }
 
         $this->version   = '1';
         $this->namespace = 'racketmanager/v' . $this->version;
+    }
+
+    /**
+     * Resolve the update payment handler.
+     *
+     * @return Update_Payment_Handler|null
+     */
+    private function get_update_payment_handler(): ?Update_Payment_Handler {
+        if ( null !== $this->update_payment_handler ) {
+            return $this->update_payment_handler;
+        }
+
+        $c = $this->racketmanager->container ?? null;
+        if ( ! $c || ! method_exists( $c, 'get' ) ) {
+            return null;
+        }
+
+        if ( method_exists( $c, 'has_definition' ) ) {
+            if ( $c->has_definition( Update_Payment_Handler::class ) ) {
+                $handler = $c->get( Update_Payment_Handler::class );
+                if ( $handler instanceof Update_Payment_Handler ) {
+                    return $handler;
+                }
+            }
+
+            if ( $c->has_definition( Finance_Service_Interface::class ) ) {
+                $finance_service = $c->get( Finance_Service_Interface::class );
+                if ( $finance_service instanceof Finance_Service_Interface ) {
+                    return new Update_Payment_Handler( $finance_service );
+                }
+            }
+        }
+
+        return null;
     }
 
     private function league_query(): League_Query_Service {
@@ -216,7 +258,7 @@ class Rest_Resources extends WP_REST_Controller {
      * Register the routes for the objects of the controller.
      */
     public function register_routes(): void {
-        $base      = 'stripe';
+        $base = 'stripe';
         register_rest_route(
             $this->namespace,
             '/' . $base,
@@ -228,7 +270,7 @@ class Rest_Resources extends WP_REST_Controller {
                 ),
             )
         );
-        $base      = 'standings';
+        $base = 'standings';
         register_rest_route(
             $this->namespace,
             '/' . $base,
@@ -313,12 +355,12 @@ class Rest_Resources extends WP_REST_Controller {
      * @return WP_Error|WP_REST_Response
      */
     public function get_standings( WP_REST_Request $request ): WP_Error|WP_REST_Response {
-        $query   = $this->adapter->prepare_standings_query_from_request( $request );
-        $season  = $query->season;
-        $club    = $query->club;
-        $events  = array();
-        $league  = null;
-        $club_id = null;
+        $query    = $this->adapter->prepare_standings_query_from_request( $request );
+        $season   = $query->season;
+        $club     = $query->club;
+        $events   = array();
+        $league   = null;
+        $club_id  = null;
         $club_obj = null;
         if ( $club ) {
             $club_name = Seo_Slug::decode( $club );
@@ -367,7 +409,7 @@ class Rest_Resources extends WP_REST_Controller {
                 $events[]  = $league->event;
             }
         } else {
-            $validator->error = true;
+            $validator->error      = true;
             $validator->err_msgs[] = __( 'The standings grouping is missing', 'racketmanager' );
         }
         if ( ! empty( $validator->error ) ) {
@@ -389,13 +431,14 @@ class Rest_Resources extends WP_REST_Controller {
                     if ( null === $league_item ) {
                         continue;
                     }
-                    $teams  = $this->league_query()->get_league_teams( $league_item,
+                    $teams = $this->league_query()->get_league_teams(
+                        $league_item,
                         array(
                             'season' => $season,
                             'club'   => $club_id,
                         )
                     );
-                    $i      = 0;
+                    $i     = 0;
                     foreach ( $teams as $team ) {
                         $team->league = $league_item->title;
                         $teams[ $i ]  = $team;
@@ -468,7 +511,7 @@ class Rest_Resources extends WP_REST_Controller {
                         $matches = $this->fixture_repository->find_all( $match_args );
                     }
                 } else {
-                    $validator->error = true;
+                    $validator->error      = true;
                     $validator->err_msgs[] = __( 'Competition not found', 'racketmanager' );
                 }
             }
@@ -483,7 +526,7 @@ class Rest_Resources extends WP_REST_Controller {
                         $matches = $this->event_query()->get_matches( $event, $match_args );
                     }
                 } else {
-                    $validator->error = true;
+                    $validator->error      = true;
                     $validator->err_msgs[] = __( 'Event not found', 'racketmanager' );
                 }
             }
@@ -493,11 +536,11 @@ class Rest_Resources extends WP_REST_Controller {
             if ( $league ) {
                 $matches = $this->league_query()->get_matches( $league, $match_args );
             } else {
-                $validator->error = true;
+                $validator->error      = true;
                 $validator->err_msgs[] = __( 'League not found', 'racketmanager' );
             }
         } else {
-            $validator->error = true;
+            $validator->error      = true;
             $validator->err_msgs[] = __( 'The matches grouping is missing', 'racketmanager' );
         }
         if ( ! empty( $validator->error ) ) {
@@ -571,53 +614,53 @@ class Rest_Resources extends WP_REST_Controller {
      * @param string $type argument name.
      * @return array
      */
-    private function get_arg(string $type ): array {
-        return match ($type) {
+    private function get_arg( string $type ): array {
+        return match ( $type ) {
             'club' => array(
-                'description' => __('Club name', 'racketmanager'),
-                'type' => 'string',
-                'required' => false,
+                'description'       => __( 'Club name', 'racketmanager' ),
+                'type'              => 'string',
+                'required'          => false,
                 'sanitize_callback' => array( $this, 'data_arg_sanitize_callback' ),
-                'enum' => $this->get_clubs(),
+                'enum'              => $this->get_clubs(),
                 'validate_callback' => array( $this, 'string_arg_validate_callback' ),
             ),
             'competition' => array(
-                'description' => __('Competition name', 'racketmanager'),
-                'type' => 'string',
-                'required' => false,
-                'sanitize_callback' => array($this, 'data_arg_sanitize_callback'),
-                'enum' => $this->get_competitions(),
-                'validate_callback' => array($this, 'string_arg_validate_callback'),
+                'description'       => __( 'Competition name', 'racketmanager' ),
+                'type'              => 'string',
+                'required'          => false,
+                'sanitize_callback' => array( $this, 'data_arg_sanitize_callback' ),
+                'enum'              => $this->get_competitions(),
+                'validate_callback' => array( $this, 'string_arg_validate_callback' ),
             ),
             'event' => array(
-                'description' => __('Event name', 'racketmanager'),
-                'type' => 'string',
-                'required' => false,
-                'sanitize_callback' => array($this, 'data_arg_sanitize_callback'),
-                'enum' => $this->get_events(),
-                'validate_callback' => array($this, 'string_arg_validate_callback'),
+                'description'       => __( 'Event name', 'racketmanager' ),
+                'type'              => 'string',
+                'required'          => false,
+                'sanitize_callback' => array( $this, 'data_arg_sanitize_callback' ),
+                'enum'              => $this->get_events(),
+                'validate_callback' => array( $this, 'string_arg_validate_callback' ),
             ),
             'league' => array(
-                'description' => __('League name', 'racketmanager'),
-                'type' => 'string',
-                'required' => false,
-                'sanitize_callback' => array($this, 'data_arg_sanitize_callback'),
-                'enum' => $this->get_leagues(),
-                'validate_callback' => array($this, 'string_arg_validate_callback'),
+                'description'       => __( 'League name', 'racketmanager' ),
+                'type'              => 'string',
+                'required'          => false,
+                'sanitize_callback' => array( $this, 'data_arg_sanitize_callback' ),
+                'enum'              => $this->get_leagues(),
+                'validate_callback' => array( $this, 'string_arg_validate_callback' ),
             ),
             'season' => array(
-                'description' => __('Season', 'racketmanager'),
-                'type' => 'integer',
-                'required' => true,
-                'sanitize_callback' => array($this, 'data_arg_sanitize_callback'),
-                'enum' => $this->get_seasons(),
-                'validate_callback' => array($this, 'int_arg_validate_callback'),
+                'description'       => __( 'Season', 'racketmanager' ),
+                'type'              => 'integer',
+                'required'          => true,
+                'sanitize_callback' => array( $this, 'data_arg_sanitize_callback' ),
+                'enum'              => $this->get_seasons(),
+                'validate_callback' => array( $this, 'int_arg_validate_callback' ),
             ),
             'days' => array(
-                'description' => __('Number of days to look for results', 'racketmanager'),
-                'type' => 'integer',
-                'required' => false,
-                'default' => 7,
+                'description' => __( 'Number of days to look for results', 'racketmanager' ),
+                'type'        => 'integer',
+                'required'    => false,
+                'default'     => 7,
             ),
             default => array(),
         };
@@ -625,10 +668,10 @@ class Rest_Resources extends WP_REST_Controller {
     /**
      * Sanitize a request argument based on details registered to the route.
      *
-     * @param  mixed           $value   Value of the 'filter' argument.
+     * @param  mixed $value   Value of the 'filter' argument.
      * @return string
      */
-    public function data_arg_sanitize_callback(mixed $value): string {
+    public function data_arg_sanitize_callback( mixed $value ): string {
         // It is as simple as returning the sanitized value.
         return sanitize_text_field( $value );
     }
@@ -636,9 +679,9 @@ class Rest_Resources extends WP_REST_Controller {
     /**
      * Validate string argument function
      *
-     * @param mixed $value value to check.
+     * @param mixed           $value value to check.
      * @param WP_REST_Request $request request object.
-     * @param string $param parameter value.
+     * @param string          $param parameter value.
      * @return true|WP_Error
      */
     public function string_arg_validate_callback( mixed $value, WP_REST_Request $request, string $param ): true|WP_Error {
@@ -664,9 +707,9 @@ class Rest_Resources extends WP_REST_Controller {
     /**
      * Validate integer argument function
      *
-     * @param int|mixed $value value to check.
+     * @param int|mixed       $value value to check.
      * @param WP_REST_Request $request request object.
-     * @param mixed $param parameter value.
+     * @param mixed           $param parameter value.
      * @return true|WP_Error|null
      */
     public function int_arg_validate_callback( mixed $value, WP_REST_Request $request, mixed $param ): true|WP_Error|null {
@@ -765,7 +808,7 @@ class Rest_Resources extends WP_REST_Controller {
             return array();
         }
         foreach ( $seasons as $i => $season ) {
-            $name = is_object( $season ) ? ( method_exists( $season, 'get_name' ) ? $season->get_name() : ( $season->name ?? '' ) ) : (string) $season;
+            $name          = is_object( $season ) ? ( method_exists( $season, 'get_name' ) ? $season->get_name() : ( $season->name ?? '' ) ) : (string) $season;
             $seasons[ $i ] = Seo_Slug::encode( (string) $name );
         }
         return $seasons;
@@ -781,17 +824,16 @@ class Rest_Resources extends WP_REST_Controller {
         $data           = null;
         $status         = 200;
         $stripe_details = new Stripe_Settings( $this->racketmanager->get_options( 'billing' ) );
-        $finance_service = $this->racketmanager->container?->get( 'finance_service' );
         Stripe::setApiKey( $stripe_details->api_secret_key );
-        $command        = $this->adapter->prepare_stripe_webhook_command_from_request( $request ?? new WP_REST_Request() );
-        $payload        = $command->payload;
+        $command = $this->adapter->prepare_stripe_webhook_command_from_request( $request ?? new WP_REST_Request() );
+        $payload = $command->payload;
         try {
             $decoded = ! empty( $payload ) ? json_decode( $payload, true ) : null;
             if ( ! is_array( $decoded ) ) {
                 throw new UnexpectedValueException( 'Invalid payload' );
             }
             $event = Event::constructFrom( $decoded );
-        } catch( UnexpectedValueException ) {
+        } catch ( UnexpectedValueException ) {
             echo '⚠️  Webhook error while parsing basic request.';
             $status = 400;
             return new WP_REST_Response( $data, $status );
@@ -802,9 +844,11 @@ class Rest_Resources extends WP_REST_Controller {
             $sig_header = $command->signature_header ?? ( $_SERVER['HTTP_STRIPE_SIGNATURE'] ?? '' );
             try {
                 $event = Webhook::constructEvent(
-                    $payload, $sig_header, $stripe_details->api_endpoint_key
+                    $payload,
+                    $sig_header,
+                    $stripe_details->api_endpoint_key
                 );
-            } catch( SignatureVerificationException ) {
+            } catch ( SignatureVerificationException ) {
                 // Invalid signature
                 echo '⚠️  Webhook error while validating signature.';
                 $status = 400;
@@ -812,24 +856,22 @@ class Rest_Resources extends WP_REST_Controller {
             }
         }
         // Handle the event
-        switch ($event->type) {
+        switch ( $event->type ) {
             case 'payment_intent.succeeded':
-                $payment_intent = $event->data->object; // contains a \Stripe_Settings\PaymentIntent
-                if ( $finance_service ) {
-                    $stripe_details->update_payment( $finance_service, $payment_intent->id );
-                }
-                break;
             case 'payment_intent.processing':
-                $payment_intent = $event->data->object; // contains a \Stripe_Settings\PaymentIntent
-                if ( $finance_service ) {
-                    $stripe_details->update_payment( $finance_service, $payment_intent->id, 'pending' );
-                }
-                break;
             case 'payment_intent.payment_failed':
-                $payment_intent = $event->data->object; // contains a \Stripe_Settings\PaymentIntent
-                if ( $finance_service ) {
-                    $stripe_details->update_payment( $finance_service, $payment_intent->id, 'failed' );
+                $payment_handler = $this->get_update_payment_handler();
+                if ( null === $payment_handler ) {
+                    error_log( 'Unable to resolve payment handler for Stripe event: ' . $event->type );
+                    return new WP_REST_Response( null, 500 );
                 }
+                $payment_intent = $event->data->object; // Contains a \Stripe\PaymentIntent.
+                $payment_status = match ( $event->type ) {
+                    'payment_intent.processing'     => 'pending',
+                    'payment_intent.payment_failed' => 'failed',
+                    default                         => 'paid',
+                };
+                $payment_handler->handle( new Update_Payment_Command( (string) $payment_intent->id, $payment_status ) );
                 break;
             case 'payment_method.attached':
             case 'payment_intent.created':
@@ -838,7 +880,7 @@ class Rest_Resources extends WP_REST_Controller {
                 break;
             default:
                 // Unexpected event type
-                error_log('Received unknown event type');
+                error_log( 'Received unknown event type' );
                 error_log( $event->type );
                 $status = 400;
         }

@@ -10,6 +10,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Rest;
 
+use Racketmanager\Application\Finance\Commands\Update_Payment_Handler;
 use Racketmanager\Infrastructure\Wordpress\Rest\Rest_Controller_Adapter;
 use Racketmanager\RacketManager;
 
@@ -49,8 +50,28 @@ class Rest_Routes {
      * Register all our REST resources.
      */
     public function register_rest_routes(): void {
+        $update_payment_handler = null;
+        if ( method_exists( $this->racketmanager->container, 'has_definition' ) && $this->racketmanager->container->has_definition( Update_Payment_Handler::class ) ) {
+            $handler = $this->racketmanager->container->get( Update_Payment_Handler::class );
+            if ( $handler instanceof Update_Payment_Handler ) {
+                $update_payment_handler = $handler;
+            }
+        }
+
         $resources = array(
-            new Rest_Resources( $this->racketmanager, $this->racketmanager->container->get( Rest_Controller_Adapter::class ) ),
+            new Rest_Resources(
+                $this->racketmanager,
+                $this->racketmanager->container->get( Rest_Controller_Adapter::class ),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                $update_payment_handler
+            ),
             new Export_Controller( $this->racketmanager ),
         );
         foreach ( $resources as $resource ) {

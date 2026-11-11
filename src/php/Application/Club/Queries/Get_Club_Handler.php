@@ -4,26 +4,38 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Club\Queries;
 
 use Racketmanager\Application\Club\DTOs\Club_Overview_Result;
+use Racketmanager\Application\Ports\Settings_Service_Interface;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Services\Club_Service;
-use Racketmanager\Services\Settings_Service;
 
 /**
  * Query handler for resolving [club] shortcode data into a view model.
  */
-class Get_Club_Handler {
+readonly class Get_Club_Handler {
+    /**
+     * Constructor
+     *
+     * @param Club_Service               $club_service club service.
+     * @param Settings_Service_Interface $settings_service settings service.
+     * @param Security_Service_Interface $security_service security service.
+     */
     public function __construct(
-        private readonly Club_Service $club_service,
-        private readonly Settings_Service $settings_service,
-        private readonly Security_Service_Interface $security_service
+        private Club_Service $club_service,
+        private Settings_Service_Interface $settings_service,
+        private Security_Service_Interface $security_service
     ) {}
 
+    /**
+     * Handle query.
+     *
+     * @param Get_Club_Query $query query.
+     *
+     * @return Club_Overview_Result
+     */
     public function handle( Get_Club_Query $query ): Club_Overview_Result {
-        $club_name    = $query->club_name;
-        $club         = null;
-        $club_details = null;
+        $club_name = $query->club_name;
 
         if ( empty( $club_name ) ) {
             return Club_Overview_Result::error( __( 'Club not found', 'racketmanager' ) );
@@ -36,16 +48,8 @@ class Get_Club_Handler {
             return Club_Overview_Result::error( $e->getMessage() );
         }
 
-        if ( ! $club_details ) {
-            return Club_Overview_Result::error( __( 'Club not found', 'racketmanager' ) );
-        }
-
-        if ( is_object( $club ) ) {
-            $club->single = true;
-        }
-        if ( is_object( $club_details ) ) {
-            $club_details->single = true;
-        }
+        $club->single         = true;
+        $club_details->single = true;
 
         $user_can_update_club = false;
         if ( $this->security_service->is_user_logged_in() ) {
@@ -70,6 +74,14 @@ class Get_Club_Handler {
         );
     }
 
+    /**
+     * Resolve target club id.
+     *
+     * @param object|null       $club club.
+     * @param object|array|null $club_details club details.
+     *
+     * @return int
+     */
     private function resolve_target_club_id( ?object $club, object|array|null $club_details ): int {
         if ( $club && isset( $club->id ) ) {
             return (int) $club->id;

@@ -3,12 +3,16 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Services;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Application\Payment\Ports\Payment_Gateway_Interface;
 use Racketmanager\Application\Payment\Ports\Payment_Intent_Result;
+use Racketmanager\Application\Ports\Finance_Service_Interface;
+use Racketmanager\Domain\DTO\Finance\Invoice_Details_DTO;
 use Racketmanager\Domain\DTO\Finance\Invoice_Full_Details_DTO;
 use Racketmanager\Domain\Enums\Invoice_Status;
+use Racketmanager\Domain\Finance\Charge;
 use Racketmanager\Domain\Finance\Invoice;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Tournament\Currency;
@@ -598,5 +602,236 @@ class Finance_Service_Test extends TestCase {
 
         self::assertSame( 0.0, $service->get_tournament_paid_total_for_player( null, 23 ) );
         self::assertSame( 0.0, $service->get_tournament_paid_total_for_player( 2245, null ) );
+    }
+
+    public function test_finance_service_implements_port_contract(): void {
+        self::assertInstanceOf( Finance_Service_Interface::class, $this->create_service() );
+    }
+
+    public function test_set_purchase_order_updates_and_saves_invoice(): void {
+        $invoice_repo = $this->createMock( Invoice_Repository_Interface::class );
+        $invoice      = new Invoice();
+        $invoice->id  = 15;
+        $invoice->set_purchase_order( 'OLD-PO' );
+        $invoice_repo->expects( self::once() )->method( 'find_by_id' )->with( 15 )->willReturn( $invoice );
+        $invoice_repo->expects( self::once() )->method( 'save' )->with( $invoice )->willReturn( true );
+
+        $service = $this->create_service( invoice_repo: $invoice_repo );
+
+        $result = $service->set_purchase_order( 15, 'NEW-PO' );
+
+        self::assertTrue( $result );
+        self::assertSame( 'NEW-PO', $invoice->get_purchase_order() );
+    }
+
+    private function make_invoice_details( int $id, string $status, string $reference ): Invoice_Details_DTO {
+        $row                    = new \stdClass();
+        $row->id                = $id;
+        $row->charge_id         = 1;
+        $row->billable_id       = 2;
+        $row->billable_type     = 'player';
+        $row->invoice_number    = 100 + $id;
+        $row->status            = $status;
+        $row->date              = '2026-01-01';
+        $row->season            = '2026';
+        $row->competition_name  = 'Summer';
+        $row->payment_reference = $reference;
+
+        return new Invoice_Details_DTO( $row );
+    }
+
+    public function test_update_payment_updates_and_saves_invoice_entity(): void {
+        $invoice_repo = $this->createMock( Invoice_Repository_Interface::class );
+        $invoice      = new Invoice();
+        $invoice->id  = 20;
+        $invoice->set_status( 'final' );
+
+        $invoice_repo->expects( self::once() )
+            ->method( 'find_by' )
+            ->with( array( 'reference' => 'pi_12345' ) )
+            ->willReturn( array( $this->make_invoice_details( 20, 'final', 'pi_12345' ) ) );
+        $invoice_repo->expects( self::once() )
+            ->method( 'find_by_id' )
+            ->with( 20 )
+            ->willReturn( $invoice );
+        $invoice_repo->expects( self::once() )
+            ->method( 'save' )
+            ->with( $invoice )
+            ->willReturn( true );
+
+        $service = $this->create_service( invoice_repo: $invoice_repo );
+        $service->update_payment( 'pi_12345', 'paid' );
+
+        self::assertSame( 'paid', $invoice->get_status() );
+    }
+
+    #[DataProvider( 'legacy_webhook_statuses' )]
+    public function test_update_payment_supports_legacy_webhook_statuses( string $status ): void {
+        $invoice_repo = $this->createMock( Invoice_Repository_Interface::class );
+        $invoice      = new Invoice();
+        $invoice->id  = 22;
+        $invoice->set_status( 'final' );
+
+        $invoice_repo->method( 'find_by' )->willReturn( array( $this->make_invoice_details( 22, 'final', 'pi_legacy' ) ) );
+        $invoice_repo->method( 'find_by_id' )->willReturn( $invoice );
+        $invoice_repo->expects( self::once() )->method( 'save' )->with( $invoice )->willReturn( true );
+
+        $service = $this->create_service( invoice_repo: $invoice_repo );
+        $service->update_payment( 'pi_legacy', $status );
+
+        self::assertSame( $status, $invoice->get_status() );
+    }
+
+    public static function legacy_webhook_statuses(): array {
+        return array(
+            'pending' => array( 'pending' ),
+            'failed'  => array( 'failed' ),
+        );
+    }
+
+    public function test_update_payment_does_nothing_if_no_invoice_found(): void {
+        $invoice_repo = $this->createMock( Invoice_Repository_Interface::class );
+        $invoice_repo->expects( self::once() )
+            ->method( 'find_by' )
+            ->with( array( 'reference' => 'pi_unknown' ) )
+            ->willReturn( array() );
+        $invoice_repo->expects( self::never() )->method( 'find_by_id' );
+        $invoice_repo->expects( self::never() )->method( 'save' );
+
+        $service = $this->create_service( invoice_repo: $invoice_repo );
+        $service->update_payment( 'pi_unknown', 'paid' );
+    }
+
+    public function test_update_payment_does_not_save_if_invoice_already_has_target_status(): void {
+        $invoice_repo = $this->createMock( Invoice_Repository_Interface::class );
+
+        $invoice_repo->expects( self::once() )
+            ->method( 'find_by' )
+            ->with( array( 'reference' => 'pi_already_paid' ) )
+            ->willReturn( array( $this->make_invoice_details( 21, 'paid', 'pi_already_paid' ) ) );
+        $invoice_repo->expects( self::never() )->method( 'find_by_id' );
+        $invoice_repo->expects( self::never() )->method( 'save' );
+
+        $service = $this->create_service( invoice_repo: $invoice_repo );
+        $service->update_payment( 'pi_already_paid', 'paid' );
+    }
+
+    public function test_update_payment_does_nothing_if_multiple_invoices_found(): void {
+        $invoice_repo = $this->createMock( Invoice_Repository_Interface::class );
+
+        $invoice_repo->expects( self::once() )
+            ->method( 'find_by' )
+            ->with( array( 'reference' => 'pi_duplicate' ) )
+            ->willReturn(
+                array(
+                    $this->make_invoice_details( 31, 'final', 'pi_duplicate' ),
+                    $this->make_invoice_details( 32, 'final', 'pi_duplicate' ),
+                )
+            );
+        $invoice_repo->expects( self::never() )->method( 'find_by_id' );
+        $invoice_repo->expects( self::never() )->method( 'save' );
+
+        $service = $this->create_service( invoice_repo: $invoice_repo );
+        $service->update_payment( 'pi_duplicate', 'paid' );
+    }
+
+    public function test_update_payment_does_nothing_if_invoice_entity_cannot_be_loaded(): void {
+        $invoice_repo = $this->createMock( Invoice_Repository_Interface::class );
+        $invoice_repo->method( 'find_by' )->willReturn( array( $this->make_invoice_details( 40, 'final', 'pi_gone' ) ) );
+        $invoice_repo->expects( self::once() )->method( 'find_by_id' )->with( 40 )->willReturn( null );
+        $invoice_repo->expects( self::never() )->method( 'save' );
+
+        $service = $this->create_service( invoice_repo: $invoice_repo );
+        $service->update_payment( 'pi_gone', 'paid' );
+    }
+
+    public function test_action_invoices_actions_multiple_invoices(): void {
+        $invoice_repo = $this->createMock( Invoice_Repository_Interface::class );
+        $invoice1     = new Invoice();
+        $invoice1->id = 1;
+        $invoice1->set_status( 'draft' );
+
+        $invoice2     = new Invoice();
+        $invoice2->id = 2;
+        $invoice2->set_status( 'draft' );
+
+        $invoice_repo->method( 'find_by_id' )->willReturnCallback(
+            function ( $id ) use ( $invoice1, $invoice2 ) {
+                return 1 === $id ? $invoice1 : ( 2 === $id ? $invoice2 : null );
+            }
+        );
+        $invoice_repo->expects( self::exactly( 2 ) )->method( 'save' )->willReturn( true );
+
+        $service = $this->create_service( invoice_repo: $invoice_repo );
+        $results = $service->action_invoices( 'final', array( 1, 2 ) );
+
+        self::assertCount( 2, $results );
+        self::assertSame( 'final', $invoice1->get_status() );
+        self::assertSame( 'final', $invoice2->get_status() );
+    }
+
+    public function test_generate_invoices_throws_when_charge_not_found(): void {
+        $charge_repo = $this->createStub( Charge_Repository_Interface::class );
+        $charge_repo->method( 'find_by_id' )->willReturn( null );
+
+        $service = $this->create_service( charge_repo: $charge_repo );
+
+        $this->expectException( \Racketmanager\Exceptions\Charge_Not_Found_Exception::class );
+        $service->generate_invoices( 999 );
+    }
+
+    public function test_generate_invoices_returns_zero_when_no_clubs_have_entries(): void {
+        $charge = new Charge();
+        $charge->set_id( 10 );
+        $charge->set_competition_id( 2 );
+
+        $charge_repo = $this->createStub( Charge_Repository_Interface::class );
+        $charge_repo->method( 'find_by_id' )->willReturn( $charge );
+
+        $club_repo = $this->createStub( Club_Repository_Interface::class );
+        $club_repo->method( 'find_all' )->willReturn( array() );
+
+        $service = $this->create_service( charge_repo: $charge_repo, club_repo: $club_repo );
+
+        self::assertSame( 0, $service->generate_invoices( 10 ) );
+    }
+
+    public function test_generate_invoices_counts_only_saved_invoices(): void {
+        $charge = new Charge();
+        $charge->set_id( 10 );
+        $charge->set_competition_id( 2 );
+        $charge_repo = $this->createStub( Charge_Repository_Interface::class );
+        $charge_repo->method( 'find_by_id' )->willReturn( $charge );
+
+        $entries = array();
+        foreach ( array( 1, 2, 3 ) as $club_id ) {
+            $entry       = new \stdClass();
+            $entry->id   = $club_id;
+            $entries[]   = $entry;
+        }
+
+        $service = $this->getMockBuilder( Finance_Service::class )
+            ->setConstructorArgs(
+                array(
+                    $this->app,
+                    $charge_repo,
+                    $this->invoice_repo,
+                    $this->club_repo,
+                    $this->tournament_repo,
+                    $this->competition_service,
+                    $this->player_service,
+                    $this->payment_gateway,
+                    $this->mailer,
+                    $this->option_service,
+                )
+            )
+            ->onlyMethods( array( 'get_charges_for_clubs', 'add_club_invoice' ) )
+            ->getMock();
+        $service->expects( self::once() )->method( 'get_charges_for_clubs' )->with( 10 )->willReturn( $entries );
+        $service->expects( self::exactly( 3 ) )
+            ->method( 'add_club_invoice' )
+            ->willReturnOnConsecutiveCalls( new Invoice(), false, new Invoice() );
+
+        self::assertSame( 2, $service->generate_invoices( 10 ) );
     }
 }

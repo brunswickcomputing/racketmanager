@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Services;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Settings_Service_Interface;
 use Racketmanager\Services\Settings_Service;
 
 class Settings_Service_Test extends TestCase {
@@ -81,5 +82,23 @@ class Settings_Service_Test extends TestCase {
         // Missing category
         $this->assertNull( $service->get_option( 'missing_category', 'some_key' ) );
         $this->assertEquals( 'fallback', $service->get_option( 'missing_category', 'some_key', 'fallback' ) );
+    }
+
+    public function test_implements_settings_service_port(): void {
+        $this->assertInstanceOf( Settings_Service_Interface::class, new Settings_Service( $this->test_options ) );
+    }
+
+    public function test_get_field_returns_existing_field(): void {
+        $service = new Settings_Service( $this->test_options );
+        $this->assertSame( 'manual', $service->get_field( 'league', 'resultConfirmation' ) );
+        $this->assertTrue( $service->get_field( 'checks', 'ageLimitCheck' ) );
+    }
+
+    public function test_get_field_returns_default_for_missing_field_or_category(): void {
+        $service = new Settings_Service( $this->test_options );
+        $this->assertNull( $service->get_field( 'league', 'missing_field' ) );
+        $this->assertSame( 'fallback', $service->get_field( 'league', 'missing_field', 'fallback' ) );
+        $this->assertNull( $service->get_field( 'missing_category', 'some_key' ) );
+        $this->assertSame( 'fallback', $service->get_field( 'missing_category', 'some_key', 'fallback' ) );
     }
 }

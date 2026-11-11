@@ -5,6 +5,7 @@ namespace Racketmanager\Services\Container\Providers;
 
 use Racketmanager\Application\Finance\Commands\Action_Invoice_Handler;
 use Racketmanager\Application\Finance\Commands\Generate_Charge_Invoices_Handler;
+use Racketmanager\Application\Ports\Competition_Config_Validator_Factory_Interface;
 use Racketmanager\Exceptions\Interface_Exception;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
@@ -342,7 +343,8 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'competition_service' ),
             $c->get( 'finance_service' ),
             $c->get( 'competition_season_service' ),
-            $c->get( 'event_repository' )
+            $c->get( 'event_repository' ),
+            $c->get( Competition_Config_Validator_Factory_Interface::class )
         ) );
 
         $container->set( 'competition_season_action_dispatcher', fn( Simple_Container $c ) => new Competition_Season_Action_Dispatcher(

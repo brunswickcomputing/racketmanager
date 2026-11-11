@@ -4,15 +4,30 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\General\Queries;
 
 use Racketmanager\Application\General\DTOs\Purchase_Order_Result;
+use Racketmanager\Application\Ports\Finance_Service_Interface;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
-use Racketmanager\Services\Finance_Service;
 use function __;
 
-class Get_Purchase_Order_Handler {
+/**
+ * Handles requests for retrieving purchase order data.
+ */
+readonly class Get_Purchase_Order_Handler {
+    /**
+     * Constructor.
+     *
+     * @param Finance_Service_Interface|null $finance_service finance service.
+     */
     public function __construct(
-        private readonly ?Finance_Service $finance_service = null
+        private ?Finance_Service_Interface $finance_service = null
     ) {}
 
+    /**
+     * Handle get purchase order query.
+     *
+     * @param Get_Purchase_Order_Query $query query.
+     *
+     * @return Purchase_Order_Result
+     */
     public function handle( Get_Purchase_Order_Query $query ): Purchase_Order_Result {
         if ( ! $query->id || ! $this->finance_service ) {
             return Purchase_Order_Result::error( __( 'Invoice not found', 'racketmanager' ) );

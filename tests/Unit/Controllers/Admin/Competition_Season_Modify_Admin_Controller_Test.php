@@ -53,7 +53,8 @@ final class Competition_Season_Modify_Admin_Controller_Test extends TestCase {
                 $this->competition_service,
                 $finance_service,
                 $comp_season_service,
-                $event_repository
+                $event_repository,
+                new \Racketmanager\Services\Validator\Competition_Config_Validator_Factory( $this->competition_service )
             )
         );
 

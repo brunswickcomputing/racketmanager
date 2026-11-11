@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Competition\Queries;
 
 use Racketmanager\Application\Competition\DTOs\Competition_Page_Result;
+use Racketmanager\Application\Ports\Settings_Service_Interface;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
@@ -11,7 +12,6 @@ use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
-use Racketmanager\Services\Settings_Service;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use function __;
@@ -19,16 +19,33 @@ use function __;
 /**
  * Query handler for resolving [competition] shortcode data into a view model.
  */
-class Get_Competition_Handler {
+readonly class Get_Competition_Handler {
+    /**
+     * Constructor.
+     *
+     * @param Competition_Service        $competition_service Competition service.
+     * @param Club_Service               $club_service Club service.
+     * @param Player_Service             $player_service Player service.
+     * @param Security_Service_Interface $security_service Security service.
+     * @param Settings_Service_Interface $settings_service Settings service.
+     * @param Competition_Season_Service $competition_season_service Competition season service.
+     */
     public function __construct(
-        private readonly Competition_Service $competition_service,
-        private readonly Club_Service $club_service,
-        private readonly Player_Service $player_service,
-        private readonly Security_Service_Interface $security_service,
-        private readonly Settings_Service $settings_service,
-        private readonly Competition_Season_Service $competition_season_service
+        private Competition_Service $competition_service,
+        private Club_Service $club_service,
+        private Player_Service $player_service,
+        private Security_Service_Interface $security_service,
+        private Settings_Service_Interface $settings_service,
+        private Competition_Season_Service $competition_season_service
     ) {}
 
+    /**
+     * Handle query.
+     *
+     * @param Get_Competition_Query $query Query.
+     *
+     * @return Competition_Page_Result
+     */
     public function handle( Get_Competition_Query $query ): Competition_Page_Result {
         $comp_id = $query->competition_id ?? $query->competition_name;
         if ( null === $comp_id || '' === $comp_id ) {
@@ -46,12 +63,6 @@ class Get_Competition_Handler {
         } catch ( Competition_Not_Found_Exception $e ) {
             return Competition_Page_Result::error(
                 $e->getMessage()
-            );
-        }
-
-        if ( ! $competition ) {
-            return Competition_Page_Result::error(
-                __( 'Competition not found', 'racketmanager' )
             );
         }
 
@@ -73,7 +84,7 @@ class Get_Competition_Handler {
 
         $tab                  = $query->tab ?: ( Util_Lookup::get_tab() ?: 'overview' );
         $is_singular          = $query->is_singular;
-        $competition_seo_name = Util::seo_url( (string) ( $competition->name ?? '' ) );
+        $competition_seo_name = Util::seo_url( $competition->name ?? '' );
         $post_id              = $query->post_id;
         $pagename             = $query->pagename ?: $competition_seo_name;
 
@@ -116,7 +127,7 @@ class Get_Competition_Handler {
                 'description' => __( 'Order of play', 'racketmanager' ),
             ];
         }
-        $menu_options['winners']  = [
+        $menu_options['winners'] = [
             'name'        => 'winners',
             'selected'    => 'winners' === $tab,
             'available'   => empty( $competition_season['date_end'] ) || gmdate( 'Y-m-d' ) >= $competition_season['date_end'],
@@ -126,7 +137,7 @@ class Get_Competition_Handler {
         $is_logged_in = $this->security_service->is_user_logged_in();
 
         if ( ! empty( $competition->is_open ) && $is_logged_in ) {
-            $comp_name  = (string) ( $competition->name ?? '' );
+            $comp_name  = $competition->name ?? '';
             $entry_link = '/entry-form/' . Util::seo_url( $comp_name ) . '/' . $season . '/';
             $clubs      = $this->club_selection_available( $competition );
             if ( $clubs ) {
@@ -160,14 +171,19 @@ class Get_Competition_Handler {
         );
     }
 
-    private function club_selection_available( Competition $competition, false|int $club_id = false ): object|int|bool|array {
-        $userid       = $this->security_service->get_current_user_id();
-        $can_manage   = $this->security_service->current_user_can( 'manage_racketmanager' );
-        $args['type'] = 'affiliated';
-        if ( $club_id ) {
-            $args['club']  = $club_id;
-            $args['count'] = true;
-        }
+    /**
+     * Check if club selection is available.
+     *
+     * @param Competition $competition Competition.
+     *
+     * @return object|int|bool|array
+     */
+    private function club_selection_available( Competition $competition ): object|int|bool|array {
+        $userid        = $this->security_service->get_current_user_id();
+        $can_manage    = $this->security_service->current_user_can( 'manage_racketmanager' );
+        $args['type']  = 'affiliated';
+        $args['club']  = false;
+        $args['count'] = true;
         if ( $can_manage ) {
             $clubs = $this->club_service->get_clubs( $args );
         } else {
@@ -178,7 +194,7 @@ class Get_Competition_Handler {
             if ( $competition_options ) {
                 $entry_option = $competition_options['entry_level'] ?? null;
                 if ( $entry_option ) {
-                    $clubs = $this->player_service->find_all_associated_clubs( $userid, (string) $entry_option, $club_id ?: null );
+                    $clubs = $this->player_service->find_all_associated_clubs( $userid, (string) $entry_option, null );
                 }
             }
         }

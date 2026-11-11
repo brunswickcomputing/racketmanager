@@ -4,24 +4,42 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Competition\Queries;
 
 use Racketmanager\Application\Competition\DTOs\Competition_Payment_Result;
+use Racketmanager\Application\Finance\DTOs\Stripe_Settings;
+use Racketmanager\Application\Ports\Finance_Service_Interface;
 use Racketmanager\Exceptions\Charge_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Competition_Entry_Service;
-use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Player_Service;
-use Racketmanager\Services\Stripe_Settings;
 use Racketmanager\Services\Tournament_Service;
 use function __;
 
-class Get_Competition_Payment_Handler {
+/**
+ * Get competition payment handler.
+ */
+readonly class Get_Competition_Payment_Handler {
+    /**
+     * Constructor.
+     *
+     * @param Tournament_Service        $tournament_service Tournament service.
+     * @param Player_Service            $player_service Player service.
+     * @param Finance_Service_Interface $finance_service Finance service.
+     * @param Competition_Entry_Service $entry_service Competition entry service.
+     */
     public function __construct(
-        private readonly Tournament_Service $tournament_service,
-        private readonly Player_Service $player_service,
-        private readonly Finance_Service $finance_service,
-        private readonly Competition_Entry_Service $entry_service
+        private Tournament_Service $tournament_service,
+        private Player_Service $player_service,
+        private Finance_Service_Interface $finance_service,
+        private Competition_Entry_Service $entry_service
     ) {}
 
+    /**
+     * Handle query.
+     *
+     * @param Get_Competition_Payment_Query $query Query.
+     *
+     * @return Competition_Payment_Result
+     */
     public function handle( Get_Competition_Payment_Query $query ): Competition_Payment_Result {
         if ( 'tournament' !== $query->competition_type || '' === $query->tournament_name ) {
             return Competition_Payment_Result::error( __( 'Tournament not found', 'racketmanager' ) );
@@ -29,8 +47,8 @@ class Get_Competition_Payment_Handler {
 
         try {
             $tournament = $this->tournament_service->get_tournament_by_name( $query->tournament_name );
-            $player = $this->player_service->get_player( $query->player_id );
-            $entry = $this->entry_service->get_tournament_entry_by_tournament_and_player( (int) $tournament->id, (int) $player->id );
+            $player     = $this->player_service->get_player( $query->player_id );
+            $entry      = $this->entry_service->get_tournament_entry_by_tournament_and_player( (int) $tournament->id, (int) $player->id );
 
             if ( $query->complete ) {
                 return new Competition_Payment_Result(
@@ -45,13 +63,15 @@ class Get_Competition_Payment_Handler {
                 );
             }
 
-            $charge = $this->finance_service->get_charge( $tournament->competition_id . '_' . $tournament->season );
-            $invoices = $this->finance_service->get_invoices_by_criteria( [
-                'charge' => $charge->id,
-                'player' => $query->player_id,
-                'status' => 'open',
-            ] );
-        } catch ( Tournament_Not_Found_Exception|Player_Not_Found_Exception|Charge_Not_Found_Exception $e ) {
+            $charge   = $this->finance_service->get_charge( $tournament->competition_id . '_' . $tournament->season );
+            $invoices = $this->finance_service->get_invoices_by_criteria(
+                [
+                    'charge' => $charge->id,
+                    'player' => $query->player_id,
+                    'status' => 'open',
+                ]
+            );
+        } catch ( Tournament_Not_Found_Exception | Player_Not_Found_Exception | Charge_Not_Found_Exception $e ) {
             return Competition_Payment_Result::error( $e->getMessage() );
         }
 

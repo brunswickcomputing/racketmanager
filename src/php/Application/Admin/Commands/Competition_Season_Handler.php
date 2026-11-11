@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Admin\Commands;
 
+use Racketmanager\Application\Ports\Competition_Config_Validator_Factory_Interface;
+use Racketmanager\Application\Ports\Finance_Service_Interface;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
@@ -11,25 +13,28 @@ use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\Finance_Service;
-use Racketmanager\Services\Validator\Validator_Config;
 use Racketmanager\Util\Util;
 use stdClass;
 
 final readonly class Competition_Season_Handler {
     public function __construct(
         private Competition_Service $competition_service,
-        private Finance_Service $finance_service,
+        private Finance_Service_Interface $finance_service,
         private Competition_Season_Service $competition_season_service,
         private Event_Repository_Interface $event_repository,
+        private Competition_Config_Validator_Factory_Interface $validator_factory,
     ) {
+    }
+
+    private function get_validator(): object {
+        return $this->validator_factory->create();
     }
 
     public function handle_add_season( Add_Competition_Season_Command $command ): Action_Result_DTO {
         $competition_id = $command->competition_id;
         $season         = $command->season;
 
-        $validator = new Validator_Config( $this->competition_service );
+        $validator = $this->get_validator();
         $validator = $validator->competition( $competition_id );
         if ( empty( $validator->error ) ) {
             $validator = $validator->season( $season !== null && '' !== $season ? (string) $season : null );
@@ -88,7 +93,7 @@ final readonly class Competition_Season_Handler {
         $competition_id = $command->competition_id;
         $season         = $command->season;
 
-        $validator = new Validator_Config( $this->competition_service );
+        $validator = $this->get_validator();
         $validator = $validator->competition( $competition_id );
         if ( empty( $validator->error ) ) {
             $validator = $validator->season( $season !== null && '' !== $season ? (string) $season : null );
@@ -154,7 +159,7 @@ final readonly class Competition_Season_Handler {
 
     private function set_competition_dates( object $current_season, Competition $competition ): object {
         $return    = new stdClass();
-        $validator = new Validator_Config( $this->competition_service );
+        $validator = $this->get_validator();
         $validator = $validator->season( $current_season->name ? (string) $current_season->name : null );
         $validator = $validator->grade( $current_season->grade );
         $validator = $validator->date( $current_season->date_open, 'open' );

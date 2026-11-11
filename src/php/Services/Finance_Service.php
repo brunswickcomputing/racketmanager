@@ -16,6 +16,7 @@ use DateMalformedStringException;
 use DateTime;
 use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Application\Payment\Ports\Payment_Gateway_Interface;
+use Racketmanager\Application\Ports\Finance_Service_Interface;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\DTO\Finance\Charge_Details_DTO;
 use Racketmanager\Domain\DTO\Finance\Invoice_Full_Details_DTO;
@@ -55,7 +56,7 @@ use WP_Error;
 /**
  * Class to implement the Finance Management Service
  */
-class Finance_Service {
+class Finance_Service implements Finance_Service_Interface {
     private RacketManager $racketmanager;
     private Charge_Repository_Interface $charge_repository;
     private Invoice_Repository_Interface $invoice_repository;
@@ -95,7 +96,7 @@ class Finance_Service {
         $this->option_service        = $option_service;
     }
 
-    public function get_charge( $charge_id ): Charge {
+    public function get_charge( int|string|null $charge_id ): Charge {
         $charge = $this->charge_repository->find_by_id( $charge_id );
         if ( ! $charge ) {
             throw new Charge_Not_Found_Exception( Util_Messages::charge_not_found( $charge_id ) );
@@ -222,6 +223,34 @@ class Finance_Service {
         }
 
         return $sent;
+    }
+
+    /**
+     * Generate invoices for a charge.
+     *
+     * Note: The underlying billing system associates invoices with clubs/charges rather than user accounts;
+     * the optional $user_id parameter is retained for interface contract compatibility.
+     *
+     * @param int         $charge_id Charge ID.
+     * @param string|null $user_id   Optional user ID (unused by underlying invoice creation).
+     * @return int Number of invoices created.
+     * @throws Charge_Not_Found_Exception If the charge does not exist.
+     */
+    public function generate_invoices( int $charge_id, ?string $user_id = null ): int {
+        $charge = $this->charge_repository->find_by_id( $charge_id );
+        if ( ! $charge ) {
+            throw new Charge_Not_Found_Exception( esc_html( Util_Messages::charge_not_found( $charge_id ) ) );
+        }
+        $count        = 0;
+        $club_charges = $this->get_charges_for_clubs( $charge_id );
+        foreach ( $club_charges as $entry ) {
+            $invoice = $this->add_club_invoice( $charge, $entry );
+            if ( $invoice instanceof Invoice ) {
+                ++$count;
+            }
+        }
+
+        return $count;
     }
 
     public function get_charges_for_clubs( int $charge_id ): array {
@@ -427,7 +456,7 @@ class Finance_Service {
         return new Invoice_Full_Details_DTO( $invoice, $billable_name, $billable_address, $contact, $charge );
     }
 
-    public function get_invoice( $invoice_id ): ?Invoice {
+    public function get_invoice( int|string|null $invoice_id ): ?Invoice {
         $invoice = $this->invoice_repository->find_by_id( $invoice_id );
         if ( ! $invoice ) {
             throw new Invoice_Not_Found_Exception( Util_Messages::invoice_not_found( $invoice_id ) );
@@ -526,6 +555,30 @@ class Finance_Service {
         return $msg;
     }
 
+    /**
+     * Action multiple invoices.
+     *
+     * Note: Underlying invoice actions operate on domain entities and do not take a user ID parameter;
+     * $user_id is documented as reserved for audit context.
+     *
+     * @param string      $action   Action name.
+     * @param array       $invoices Array of invoice IDs.
+     * @param string|null $user_id  Optional user ID (reserved for audit context).
+     * @return array Map of invoice ID to outcome message or error message.
+     */
+    public function action_invoices( string $action, array $invoices, ?string $user_id = null ): array {
+        $results = array();
+        foreach ( $invoices as $invoice_id ) {
+            try {
+                $results[ $invoice_id ] = $this->action_invoice( (int) $invoice_id, $action );
+            } catch ( Invoice_Not_Found_Exception | Invalid_Argument_Exception $e ) {
+                $results[ $invoice_id ] = $e->getMessage();
+            }
+        }
+
+        return $results;
+    }
+
     public function remove_invoice( $invoice_id ): int {
         $invoice = $this->invoice_repository->find_by_id( $invoice_id );
         if ( ! $invoice ) {
@@ -586,6 +639,17 @@ class Finance_Service {
         return $this->invoice_repository->save( $invoice );
     }
 
+    /**
+     * Set purchase order for an invoice (alias).
+     *
+     * @param int    $invoice_id     Invoice ID.
+     * @param string $purchase_order Purchase order reference.
+     * @return bool
+     */
+    public function set_purchase_order( int $invoice_id, string $purchase_order ): bool {
+        return $this->set_purchase_order_for_invoice( $invoice_id, $purchase_order );
+    }
+
     public function create_tournament_payment_request( ?int $tournament_id, ?int $player_id, ?int $invoice_id ): string {
         $invoice = $this->invoice_repository->find_by_id( $invoice_id );
         if ( ! $invoice ) {
@@ -636,4 +700,32 @@ class Finance_Service {
         return $this->invoice_repository->find_tournament_paid_total_by_player( $player_id, $tournament_id );
     }
 
+    /**
+     * Update payment status.
+     *
+     * Handles webhook payment status updates for the single invoice matching the payment reference.
+     * The matching invoice summary is resolved from the repository and the invoice entity is
+     * reloaded, updated and persisted. Does nothing if there is not exactly one matching invoice
+     * or the invoice already has the target status.
+     *
+     * @param string $payment_intent_id Payment intent ID.
+     * @param string $status            Payment status (e.g. paid, pending, failed).
+     * @return void
+     */
+    public function update_payment( string $payment_intent_id, string $status = 'paid' ): void {
+        $invoices = $this->get_invoices_by_criteria( array( 'reference' => $payment_intent_id ) );
+        if ( 1 !== count( $invoices ) ) {
+            return;
+        }
+        $invoice_details = reset( $invoices );
+        if ( $status === (string) $invoice_details->status ) {
+            return;
+        }
+        $invoice = $this->invoice_repository->find_by_id( $invoice_details->id );
+        if ( ! $invoice || $status === $invoice->get_status() ) {
+            return;
+        }
+        $invoice->set_status( $status );
+        $this->invoice_repository->save( $invoice );
+    }
 }

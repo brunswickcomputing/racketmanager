@@ -49,6 +49,7 @@ trait Creates_Test_Container {
         $container->set( 'competition_service', fn() => $this->createStub( Competition_Service::class ) );
         $container->set( 'club_service', fn() => $this->createStub( Club_Service::class ) );
         $container->set( 'finance_service', fn() => $this->createStub( Finance_Service::class ) );
+        $container->alias( \Racketmanager\Application\Ports\Finance_Service_Interface::class, 'finance_service' );
         $container->set( 'player_service', fn() => $this->createStub( Player_Service::class ) );
         $container->set( 'registration_service', fn() => $this->createStub( Registration_Service::class ) );
         $container->set( 'team_service', fn() => $team_service );

@@ -16,6 +16,7 @@ use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
+use Racketmanager\Services\Validator\Competition_Config_Validator_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
@@ -79,7 +80,8 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
                 $competition_service,
                 $finance_service,
                 $this->season_service,
-                $event_repo
+                $event_repo,
+                new Competition_Config_Validator_Factory( $competition_service )
             )
         );
     }

@@ -3,9 +3,9 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Competition\DTOs;
 
+use Racketmanager\Application\Finance\DTOs\Stripe_Settings;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Tournament\Tournament;
-use Racketmanager\Services\Stripe_Settings;
 
 /**
  * Result DTO for Get_Competition_Payment_Handler.

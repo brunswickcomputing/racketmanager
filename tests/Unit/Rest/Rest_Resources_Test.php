@@ -5,6 +5,9 @@ namespace Racketmanager\Tests\Unit\Rest;
 
 use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Finance\Commands\Update_Payment_Command;
+use Racketmanager\Application\Finance\Commands\Update_Payment_Handler;
+use Racketmanager\Application\Ports\Finance_Service_Interface;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
@@ -804,12 +807,12 @@ class Rest_Resources_Test extends TestCase {
     }
 
     public function test_stripe_event_with_payment_intent_succeeded_calls_update_payment(): void {
-        $finance_service = $this->createMock( Finance_Service::class );
+        $payment_handler = $this->createMock( Update_Payment_Handler::class );
         $container = new Simple_Container();
         $container->set( 'competition_service', fn() => $this->competition_service );
         $container->set( 'club_service', fn() => $this->club_service );
         $container->set( 'season_service', fn() => $this->season_service );
-        $container->set( 'finance_service', fn() => $finance_service );
+        $container->set( Update_Payment_Handler::class, fn() => $payment_handler );
         $container->set( 'rest_controller_adapter', fn() => $this->adapter );
 
         $plugin = $this->createStub( RacketManager::class );
@@ -820,17 +823,11 @@ class Rest_Resources_Test extends TestCase {
         ) );
         $resources = new Rest_Resources( $plugin, $this->adapter, $this->competition_service, $this->club_service, $this->season_service );
 
-        $invoice = new class() {
-            public string $status = 'unpaid';
-            public ?string $set_to = null;
-            public function set_status( string $status ): void {
-                $this->set_to = $status;
-            }
-        };
-        $finance_service->expects( self::once() )
-            ->method( 'get_invoices_by_criteria' )
-            ->with( array( 'reference' => 'pi_test_123' ) )
-            ->willReturn( array( $invoice ) );
+        $payment_handler->expects( self::once() )
+            ->method( 'handle' )
+            ->with( self::callback( static fn( Update_Payment_Command $command ): bool =>
+                'pi_test_123' === $command->reference && 'paid' === $command->status
+            ) );
 
         $request = new WP_REST_Request( 'POST', '/racketmanager/v1/stripe' );
         $request->set_body( $this->stripe_payload() );
@@ -839,19 +836,114 @@ class Rest_Resources_Test extends TestCase {
 
         self::assertInstanceOf( WP_REST_Response::class, $response );
         self::assertSame( 200, $response->get_status() );
-        self::assertSame( 'paid', $invoice->set_to );
     }
 
-    public function test_stripe_event_with_invalid_signature_prevents_update(): void {
+    public function test_stripe_event_falls_back_to_finance_service_when_handler_not_in_container(): void {
         $finance_service = $this->createMock( Finance_Service::class );
         $container = new Simple_Container();
         $container->set( 'competition_service', fn() => $this->competition_service );
         $container->set( 'club_service', fn() => $this->club_service );
         $container->set( 'season_service', fn() => $this->season_service );
-        $container->set( 'finance_service', fn() => $finance_service );
+        $container->set( Finance_Service_Interface::class, fn() => $finance_service );
         $container->set( 'rest_controller_adapter', fn() => $this->adapter );
 
         $plugin = $this->createStub( RacketManager::class );
+        $plugin->container = $container;
+        $plugin->method( 'get_options' )->willReturn( array(
+            'stripe_is_live'      => false,
+            'api_secret_key_test' => 'sk_test_123',
+        ) );
+        $resources = new Rest_Resources( $plugin, $this->adapter, $this->competition_service, $this->club_service, $this->season_service );
+
+        $finance_service->expects( self::once() )
+            ->method( 'update_payment' )
+            ->with( 'pi_test_123', 'paid' );
+
+        $request = new WP_REST_Request( 'POST', '/racketmanager/v1/stripe' );
+        $request->set_body( $this->stripe_payload() );
+
+        $response = $resources->stripe_event( $request );
+
+        self::assertInstanceOf( WP_REST_Response::class, $response );
+        self::assertSame( 200, $response->get_status() );
+    }
+
+    public function test_stripe_event_with_processing_dispatches_pending_status(): void {
+        $payment_handler = $this->createMock( Update_Payment_Handler::class );
+        $container = new Simple_Container();
+        $container->set( 'competition_service', fn() => $this->competition_service );
+        $container->set( 'club_service', fn() => $this->club_service );
+        $container->set( 'season_service', fn() => $this->season_service );
+        $container->set( Update_Payment_Handler::class, fn() => $payment_handler );
+        $container->set( 'rest_controller_adapter', fn() => $this->adapter );
+
+        $plugin = $this->createStub( RacketManager::class );
+        $plugin->container = $container;
+        $plugin->method( 'get_options' )->willReturn( array(
+            'stripe_is_live'      => false,
+            'api_secret_key_test' => 'sk_test_123',
+        ) );
+        $resources = new Rest_Resources( $plugin, $this->adapter, $this->competition_service, $this->club_service, $this->season_service );
+
+        $payment_handler->expects( self::once() )
+            ->method( 'handle' )
+            ->with( self::callback( static fn( Update_Payment_Command $command ): bool =>
+                'pi_test_123' === $command->reference && 'pending' === $command->status
+            ) );
+
+        $request = new WP_REST_Request( 'POST', '/racketmanager/v1/stripe' );
+        $request->set_body( $this->stripe_payload( 'payment_intent.processing' ) );
+
+        $response = $resources->stripe_event( $request );
+
+        self::assertInstanceOf( WP_REST_Response::class, $response );
+        self::assertSame( 200, $response->get_status() );
+    }
+
+    public function test_stripe_event_with_payment_failed_dispatches_failed_status(): void {
+        $payment_handler = $this->createMock( Update_Payment_Handler::class );
+        $container = new Simple_Container();
+        $container->set( 'competition_service', fn() => $this->competition_service );
+        $container->set( 'club_service', fn() => $this->club_service );
+        $container->set( 'season_service', fn() => $this->season_service );
+        $container->set( Update_Payment_Handler::class, fn() => $payment_handler );
+        $container->set( 'rest_controller_adapter', fn() => $this->adapter );
+
+        $plugin = $this->createStub( RacketManager::class );
+        $plugin->container = $container;
+        $plugin->method( 'get_options' )->willReturn( array(
+            'stripe_is_live'      => false,
+            'api_secret_key_test' => 'sk_test_123',
+        ) );
+        $resources = new Rest_Resources( $plugin, $this->adapter, $this->competition_service, $this->club_service, $this->season_service );
+
+        $payment_handler->expects( self::once() )
+            ->method( 'handle' )
+            ->with( self::callback( static fn( Update_Payment_Command $command ): bool =>
+                'pi_test_123' === $command->reference && 'failed' === $command->status
+            ) );
+
+        $request = new WP_REST_Request( 'POST', '/racketmanager/v1/stripe' );
+        $request->set_body( $this->stripe_payload( 'payment_intent.payment_failed' ) );
+
+        $response = $resources->stripe_event( $request );
+
+        self::assertInstanceOf( WP_REST_Response::class, $response );
+        self::assertSame( 200, $response->get_status() );
+    }
+
+    public function test_stripe_event_with_invalid_signature_prevents_update(): void {
+        $payment_handler = $this->createMock( Update_Payment_Handler::class );
+        $finance_service = $this->createMock( Finance_Service::class );
+        $container       = new Simple_Container();
+        $container->set( 'competition_service', fn() => $this->competition_service );
+        $container->set( 'club_service', fn() => $this->club_service );
+        $container->set( 'season_service', fn() => $this->season_service );
+        $container->set( Finance_Service_Interface::class, fn() => $finance_service );
+        $container->set( Update_Payment_Handler::class, fn() => $payment_handler );
+        $container->set( 'rest_controller_adapter', fn() => $this->adapter );
+
+        $plugin            = $this->createStub( RacketManager::class );
         $plugin->container = $container;
         $plugin->method( 'get_options' )->willReturn( array(
             'stripe_is_live'        => false,
@@ -860,7 +952,8 @@ class Rest_Resources_Test extends TestCase {
         ) );
         $resources = new Rest_Resources( $plugin, $this->adapter, $this->competition_service, $this->club_service, $this->season_service );
 
-        $finance_service->expects( self::never() )->method( 'get_invoices_by_criteria' );
+        $payment_handler->expects( self::never() )->method( 'handle' );
+        $finance_service->expects( self::never() )->method( 'update_payment' );
 
         $request = new WP_REST_Request( 'POST', '/racketmanager/v1/stripe' );
         $request->set_body( $this->stripe_payload() );
@@ -873,6 +966,30 @@ class Rest_Resources_Test extends TestCase {
         self::assertInstanceOf( WP_REST_Response::class, $response );
         self::assertSame( 400, $response->get_status() );
         self::assertStringContainsString( 'validating signature', $output );
+    }
+
+    public function test_stripe_event_with_unresolvable_handler_returns_500(): void {
+        $container = new Simple_Container();
+        $container->set( 'competition_service', fn() => $this->competition_service );
+        $container->set( 'club_service', fn() => $this->club_service );
+        $container->set( 'season_service', fn() => $this->season_service );
+        $container->set( 'rest_controller_adapter', fn() => $this->adapter );
+
+        $plugin            = $this->createStub( RacketManager::class );
+        $plugin->container = $container;
+        $plugin->method( 'get_options' )->willReturn( array(
+            'stripe_is_live'      => false,
+            'api_secret_key_test' => 'sk_test_123',
+        ) );
+        $resources = new Rest_Resources( $plugin, $this->adapter, $this->competition_service, $this->club_service, $this->season_service );
+
+        $request = new WP_REST_Request( 'POST', '/racketmanager/v1/stripe' );
+        $request->set_body( $this->stripe_payload( 'payment_intent.succeeded' ) );
+
+        $response = $resources->stripe_event( $request );
+
+        self::assertInstanceOf( WP_REST_Response::class, $response );
+        self::assertSame( 500, $response->get_status() );
     }
 
     public function test_stripe_event_with_unhandled_event_type_returns_400(): void {

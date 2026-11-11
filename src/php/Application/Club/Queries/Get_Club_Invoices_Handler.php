@@ -4,16 +4,14 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Club\Queries;
 
 use Racketmanager\Application\Club\DTOs\Club_Invoices_Result;
+use Racketmanager\Application\Ports\Finance_Service_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Settings_Service_Interface;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
-use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Services\Club_Service;
-use Racketmanager\Services\Finance_Service;
-use Racketmanager\Services\Settings_Service;
 use stdClass;
 use function __;
-use function function_exists;
-use function Racketmanager\show_invoice;
 use function trim;
 
 /**
@@ -21,13 +19,28 @@ use function trim;
  * and management permissions resolved here rather than in the template.
  */
 readonly class Get_Club_Invoices_Handler {
+    /**
+     * Constructor
+     *
+     * @param Club_Service                    $club_service club service.
+     * @param Finance_Service_Interface       $finance_service finance service.
+     * @param Settings_Service_Interface|null $settings_service settings service.
+     * @param Option_Gateway_Interface|null   $option_gateway option gateway.
+     */
     public function __construct(
         private Club_Service $club_service,
-        private Finance_Service $finance_service,
-        private ?Settings_Service $settings_service = null,
+        private Finance_Service_Interface $finance_service,
+        private ?Settings_Service_Interface $settings_service = null,
         private ?Option_Gateway_Interface $option_gateway = null
     ) {}
 
+    /**
+     * Handle get club invoices query.
+     *
+     * @param Get_Club_Invoices_Query $query query.
+     *
+     * @return Club_Invoices_Result
+     */
     public function handle( Get_Club_Invoices_Query $query ): Club_Invoices_Result {
         try {
             $club = $this->club_service->get_club_by_shortcode( $query->club_name );
@@ -51,7 +64,7 @@ readonly class Get_Club_Invoices_Handler {
             } else {
                 $invoices_data = $this->finance_service->get_invoices_by_criteria( [ 'billable' => $club->id ] );
             }
-        } catch ( Club_Not_Found_Exception|Invoice_Not_Found_Exception $e ) {
+        } catch ( Club_Not_Found_Exception | Invoice_Not_Found_Exception $e ) {
             return Club_Invoices_Result::error( $e->getMessage() );
         }
 
@@ -85,5 +98,4 @@ readonly class Get_Club_Invoices_Handler {
         // short-circuit behaviour; test stubs of Finance_Service rely on this).
         return $this->finance_service->get_currency()->value;
     }
-
 }

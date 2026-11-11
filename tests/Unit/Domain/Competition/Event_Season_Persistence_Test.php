@@ -34,6 +34,7 @@ use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Tournament_Service;
+use Racketmanager\Services\Validator\Competition_Config_Validator_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
@@ -582,7 +583,7 @@ final class Event_Season_Persistence_Test extends TestCase {
 			$guard,
 			$season_service,
 			$event_repo,
-			new Competition_Season_Handler( $comp_service, $finance_service, $season_service, $event_repo )
+			new Competition_Season_Handler( $comp_service, $finance_service, $season_service, $event_repo, new Competition_Config_Validator_Factory( $comp_service ) )
 		);
 
 		$query  = array();
@@ -672,7 +673,7 @@ final class Event_Season_Persistence_Test extends TestCase {
 			$guard,
 			$season_service,
 			$event_repo,
-			new Competition_Season_Handler( $comp_service, $finance_service, $season_service, $event_repo )
+			new Competition_Season_Handler( $comp_service, $finance_service, $season_service, $event_repo, new Competition_Config_Validator_Factory( $comp_service ) )
 		);
 
 		$query  = array();

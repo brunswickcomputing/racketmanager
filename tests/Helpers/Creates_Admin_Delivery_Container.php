@@ -212,8 +212,13 @@ trait Creates_Admin_Delivery_Container {
         $container->set( 'season_action_dispatcher', fn() => $services['season_action_dispatcher'] ?? new Season_Action_Dispatcher( $season_service, $guard_instance ) );
 
         $competition_season_service = $services['competition_season_service'] ?? new \Racketmanager\Services\Competition\Competition_Season_Service( $league_team_repo, $this->createStub( \Racketmanager\Repositories\Interfaces\Club_Repository_Interface::class ), $event_repo, $league_repo );
+        $validator_factory          = $services['competition_config_validator_factory'] ?? new \Racketmanager\Services\Validator\Competition_Config_Validator_Factory( $competition_service );
+        $container->set( \Racketmanager\Application\Ports\Competition_Config_Validator_Factory_Interface::class, fn() => $validator_factory );
+        $container->alias( \Racketmanager\Services\Validator\Competition_Config_Validator_Factory::class, \Racketmanager\Application\Ports\Competition_Config_Validator_Factory_Interface::class );
+
+        $container->set( 'competition_season_handler', fn() => $services['competition_season_handler'] ?? new \Racketmanager\Application\Admin\Commands\Competition_Season_Handler( $competition_service, $finance_service, $competition_season_service, $event_repo, $validator_factory ) );
         $container->set( 'competition_action_dispatcher', fn() => $services['competition_action_dispatcher'] ?? new Competition_Action_Dispatcher( $competition_service, $guard_instance, $event_repo, $services['competition_handler'] ?? new \Racketmanager\Application\Admin\Commands\Competition_Handler( $competition_service, $event_repo ) ) );
-        $container->set( 'competition_season_action_dispatcher', fn() => $services['competition_season_action_dispatcher'] ?? new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard_instance, $competition_season_service, $event_repo, commands: $services['competition_season_handler'] ?? new \Racketmanager\Application\Admin\Commands\Competition_Season_Handler( $competition_service, $finance_service, $competition_season_service, $event_repo ) ) );
+        $container->set( 'competition_season_action_dispatcher', fn( Simple_Container $c ) => $services['competition_season_action_dispatcher'] ?? new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard_instance, $competition_season_service, $event_repo, commands: $c->get( 'competition_season_handler' ) ) );
         $container->set( 'event_action_dispatcher', fn() => $services['event_action_dispatcher'] ?? new Event_Action_Dispatcher( $competition_service, $services['competition_season_service'] ?? $this->createStub( \Racketmanager\Services\Competition\Competition_Season_Service::class ), $guard_instance, $services['event_repository'] ?? $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class ), $league_service ) );
         $container->set( 'finance_charge_action_dispatcher', fn() => $services['finance_charge_action_dispatcher'] ?? new Finance_Charge_Action_Dispatcher( $finance_service, $guard_instance, $services['generate_charge_invoices_handler'] ?? new \Racketmanager\Application\Finance\Commands\Generate_Charge_Invoices_Handler( $finance_service ) ) );
         $container->set( 'finance_invoice_action_dispatcher', fn() => $services['finance_invoice_action_dispatcher'] ?? new Finance_Invoice_Action_Dispatcher( $finance_service, $guard_instance, $services['action_invoice_handler'] ?? new \Racketmanager\Application\Finance\Commands\Action_Invoice_Handler( $finance_service ) ) );
@@ -275,6 +280,7 @@ trait Creates_Admin_Delivery_Container {
         $container->alias( \Racketmanager\Presentation\Presenters\Results_Checker_Presenter::class, 'results_checker_presenter' );
         $container->alias( \Racketmanager\Services\Admin\Result\Results_Checker_Action_Dispatcher_Interface::class, 'results_checker_action_dispatcher' );
         $container->alias( \Racketmanager\Services\Admin\Import\Import_Action_Dispatcher_Interface::class, 'import_action_dispatcher' );
+        $container->alias( \Racketmanager\Application\Ports\Finance_Service_Interface::class, 'finance_service' );
 
         if ( array_key_exists( 'admin_results_match_presenter', $services ) && false === $services['admin_results_match_presenter'] ) {
             $container->remove( 'admin_results_match_presenter' );

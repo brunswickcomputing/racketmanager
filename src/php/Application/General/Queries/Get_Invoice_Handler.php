@@ -4,10 +4,10 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\General\Queries;
 
 use Racketmanager\Application\General\DTOs\Invoice_Result;
-use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
+use Racketmanager\Application\Ports\Finance_Service_Interface;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
-use Racketmanager\Services\Finance_Service;
-use Racketmanager\Services\Settings_Service;
+use Racketmanager\Application\Ports\Settings_Service_Interface;
+use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use function __;
 use function htmlspecialchars_decode;
 use function is_object;
@@ -17,8 +17,8 @@ use function wp_specialchars_decode;
 
 readonly class Get_Invoice_Handler {
     public function __construct(
-        private Finance_Service $finance_service,
-        private Settings_Service $settings_service,
+        private Finance_Service_Interface $finance_service,
+        private Settings_Service_Interface $settings_service,
         private Option_Gateway_Interface $option_gateway
     ) {}
 

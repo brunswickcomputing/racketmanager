@@ -29,6 +29,8 @@ use Racketmanager\Application\Admin\Commands\Edit_Competition_Season_Command;
 use Racketmanager\Application\Admin\Commands\Schedule_Club_Player_Ratings_Command;
 use Racketmanager\Application\Admin\Commands\Schedule_Global_Player_Ratings_Command;
 use Racketmanager\Application\Admin\Commands\Update_Competition_Config_Command;
+use Racketmanager\Application\Ports\Competition_Config_Validator_Factory_Interface;
+use Racketmanager\Application\Ports\Finance_Service_Interface;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
@@ -56,6 +58,8 @@ use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Team_Service;
+use Racketmanager\Services\Validator\Competition_Config_Validator_Factory;
+use Racketmanager\Services\Validator\Validator_Config;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 use wpdb;
@@ -857,6 +861,84 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
         self::assertInstanceOf( Club_Role_Action_Dispatcher::class, $container->get( 'club_role_action_dispatcher' ) );
     }
 
+    public function test_competition_season_handler_uses_injected_validator_factory_and_propagates_validation_error(): void {
+        $comp_service      = $this->createMock( Competition_Service::class );
+        $finance_service   = $this->createMock( Finance_Service_Interface::class );
+        $season_service    = $this->createMock( Competition_Season_Service::class );
+        $event_repository  = $this->createMock( Event_Repository_Interface::class );
+        $validator_factory = $this->createMock( Competition_Config_Validator_Factory_Interface::class );
+
+        $validator = new Validator_Config( $comp_service );
+        $comp_service->method( 'get_by_id' )->willThrowException( new \Racketmanager\Exceptions\Competition_Not_Found_Exception( 'Competition not found' ) );
+
+        $validator_factory->expects( self::once() )
+            ->method( 'create' )
+            ->willReturn( $validator );
+
+        $handler = new Competition_Season_Handler(
+            $comp_service,
+            $finance_service,
+            $season_service,
+            $event_repository,
+            $validator_factory
+        );
+
+        $command = new Add_Competition_Season_Command(
+            10,
+            $this->test_season_year(),
+            $this->complete_season_record(),
+            $this->season_post()
+        );
+
+        $result = $handler->handle_add_season( $command );
+        self::assertInstanceOf( Action_Result_DTO::class, $result );
+        self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
+        self::assertSame( 'Competition not found', $result->message );
+    }
+
+    public function test_competition_season_handler_uses_injected_validator_factory(): void {
+        $comp_service      = $this->createMock( Competition_Service::class );
+        $finance_service   = $this->createMock( Finance_Service_Interface::class );
+        $season_service    = $this->createMock( Competition_Season_Service::class );
+        $event_repository  = $this->createMock( Event_Repository_Interface::class );
+        $validator_factory = $this->createMock( Competition_Config_Validator_Factory_Interface::class );
+
+        $validator = new Validator_Config( $comp_service );
+        $validator_factory->expects( self::atLeastOnce() )
+            ->method( 'create' )
+            ->willReturn( $validator );
+
+        $handler = new Competition_Season_Handler(
+            $comp_service,
+            $finance_service,
+            $season_service,
+            $event_repository,
+            $validator_factory
+        );
+
+        $competition = new Competition(
+            name: 'Summer League',
+            type: 'league',
+            age_group: 'open',
+            seasons: [],
+            settings: [],
+            id: 10
+        );
+        $this->stub_competition_lookup( $comp_service, $competition );
+
+        $command = new Add_Competition_Season_Command(
+            10,
+            $this->test_season_year(),
+            $this->complete_season_record(),
+            $this->season_post()
+        );
+
+        $result = $handler->handle_add_season( $command );
+        self::assertInstanceOf( Action_Result_DTO::class, $result );
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+        self::assertSame( 'Season added to competition', $result->message );
+    }
+
     private function test_season_year(): string {
         return (string) ( (int) gmdate( 'Y' ) + 5 );
     }
@@ -968,7 +1050,13 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
             $this->createStub( Action_Guard_Interface::class ),
             $season_service,
             $event_repository,
-            new Competition_Season_Handler( $comp_service, $finance_service, $season_service, $event_repository )
+            new Competition_Season_Handler(
+                $comp_service,
+                $finance_service,
+                $season_service,
+                $event_repository,
+                new Competition_Config_Validator_Factory( $comp_service )
+            )
         );
     }
 }

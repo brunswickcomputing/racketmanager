@@ -4,27 +4,46 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Event\Queries;
 
 use Racketmanager\Application\Event\DTOs\Team_Order_Players_Result;
+use Racketmanager\Application\Ports\Settings_Service_Interface;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Registration_Service;
-use Racketmanager\Services\Settings_Service;
 use function __;
 use function is_numeric;
 use function method_exists;
 use function substr;
 
-class Get_Team_Order_Players_Handler {
+/**
+ * Handler for getting team order players.
+ */
+readonly class Get_Team_Order_Players_Handler {
+    /**
+     * Constructor.
+     *
+     * @param Competition_Service        $competition_service Competition service.
+     * @param Club_Service               $club_service Club service.
+     * @param Registration_Service       $registration_service Registration service.
+     * @param Settings_Service_Interface $settings_service Settings service.
+     * @param Event_Query_Service        $event_query_service Event query service.
+     */
     public function __construct(
-        private readonly Competition_Service $competition_service,
-        private readonly Club_Service $club_service,
-        private readonly Registration_Service $registration_service,
-        private readonly Settings_Service $settings_service,
-        private readonly Event_Query_Service $event_query_service
+        private Competition_Service $competition_service,
+        private Club_Service $club_service,
+        private Registration_Service $registration_service,
+        private Settings_Service_Interface $settings_service,
+        private Event_Query_Service $event_query_service
     ) {}
 
+    /**
+     * Handle get team order players query.
+     *
+     * @param Get_Team_Order_Players_Query $query Get team order players query.
+     *
+     * @return Team_Order_Players_Result Team order players result.
+     */
     public function handle( Get_Team_Order_Players_Query $query ): Team_Order_Players_Result {
         $identifier = $query->event_id ?? $query->event_name;
         if ( null === $identifier || '' === $identifier ) {
@@ -76,11 +95,19 @@ class Get_Team_Order_Players_Handler {
         );
     }
 
+    /**
+     * Get club players.
+     *
+     * @param object $event Event.
+     * @param object $club Club.
+     *
+     * @return array
+     */
     private function get_club_players( object $event, object $club ): array {
         $max_age        = null;
         $min_age        = null;
         $min_age_female = null;
-        $options        = $this->settings_service->get_category( 'rosters', [] ) ?: [];
+        $options        = $this->settings_service->get_category( 'rosters' ) ?: [];
         $age_limit      = $event->age_limit ?? null;
         $age_offset     = 0;
         if ( $age_limit ) {
@@ -97,7 +124,7 @@ class Get_Team_Order_Players_Handler {
             }
         }
 
-        $club_id = method_exists( $club, 'get_id' ) ? $club->get_id() : ( $club->id ?? null );
+        $club_id      = method_exists( $club, 'get_id' ) ? $club->get_id() : ( $club->id ?? null );
         $club_players = [];
 
         switch ( substr( $event->type, 0, 1 ) ) {

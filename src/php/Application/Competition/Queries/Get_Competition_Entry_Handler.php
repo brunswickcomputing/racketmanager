@@ -5,6 +5,7 @@ namespace Racketmanager\Application\Competition\Queries;
 
 use BackedEnum;
 use Racketmanager\Application\Competition\DTOs\Competition_Entry_Result;
+use Racketmanager\Application\Ports\Finance_Service_Interface;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Tournament\Tournament;
@@ -16,7 +17,6 @@ use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Team_Service;
@@ -42,7 +42,7 @@ final readonly class Get_Competition_Entry_Handler {
         private Team_Service $team_service,
         private Registration_Service $registration_service,
         private Competition_Entry_Service $competition_entry_service,
-        private Finance_Service $finance_service,
+        private Finance_Service_Interface $finance_service,
         private Event_Query_Service $event_query_service
     ) {
     }

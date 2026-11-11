@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Services\Container\Providers;
 
 use Racketmanager\Application\Finance\Commands\Set_Purchase_Order_Handler;
+use Racketmanager\Application\Finance\Commands\Update_Payment_Handler;
 use Racketmanager\Application\General\Queries\Get_Alert_Handler;
 use Racketmanager\Application\General\Queries\Get_Favourites_Handler;
 use Racketmanager\Application\General\Queries\Get_Invoice_Handler;
@@ -18,13 +19,16 @@ use Racketmanager\Application\Message\Queries\Get_Message_Handler;
 use Racketmanager\Application\Message\Queries\Get_Messages_Handler;
 use Racketmanager\Application\Export\Ports\Data_Exporter_Interface;
 use Racketmanager\Application\Mail\Mailer_Interface;
+use Racketmanager\Application\Ports\Competition_Config_Validator_Factory_Interface;
+use Racketmanager\Application\Ports\Finance_Service_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Query_Vars_Interface;
+use Racketmanager\Application\Ports\Settings_Service_Interface;
+use Racketmanager\Application\Payment\Ports\Payment_Gateway_Interface;
 use Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface;
 use Racketmanager\Domain\Ports\Clock_Interface;
 use Racketmanager\Domain\Ports\Rating_Gateway_Interface;
 use Racketmanager\Application\Account\Ports\User_Favourites_Gateway_Interface;
-use Racketmanager\Application\Ports\Option_Gateway_Interface;
-use Racketmanager\Application\Ports\Query_Vars_Interface;
-use Racketmanager\Application\Payment\Ports\Payment_Gateway_Interface;
 use Racketmanager\Infrastructure\Events\Simple_Domain_Event_Dispatcher;
 use Racketmanager\Infrastructure\Gateways\Account\Wp_User_Favourites_Gateway;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
@@ -70,6 +74,7 @@ use Racketmanager\Infrastructure\Wordpress\Shortcodes\Shortcode_Registrar;
 use Racketmanager\Infrastructure\Wordpress\Rewrites\Rewrite_Rules;
 use Racketmanager\Infrastructure\Wordpress\Templates\Template_Loader;
 use Racketmanager\RacketManager;
+use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Export\Export_Service;
 use Racketmanager\Services\Finance_Service;
@@ -81,6 +86,7 @@ use Racketmanager\Services\Season_Service;
 use Racketmanager\Services\Seo\Page_Title_Service;
 use Racketmanager\Services\Seo\Page_Title_Service_Interface;
 use Racketmanager\Services\Settings_Service;
+use Racketmanager\Services\Validator\Competition_Config_Validator_Factory;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Util\Util_Lookup;
@@ -182,6 +188,7 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->set( RacketManager::class, fn() => $app );
         $container->set( 'settings_service', fn( Simple_Container $c ) => new Settings_Service( $c->get( 'option_service' )->get_options(), $c->get( 'option_gateway' ) ) );
         $container->alias( Settings_Service::class, 'settings_service' );
+        $container->alias( Settings_Service_Interface::class, 'settings_service' );
 
         $container->set( 'security_service', fn() => new Security_Service() );
         $container->alias( Security_Service_Interface::class, 'security_service' );
@@ -335,6 +342,22 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             )
         );
         $container->alias( Finance_Service::class, 'finance_service' );
+        $container->alias( Finance_Service_Interface::class, 'finance_service' );
+
+        $container->set(
+            Competition_Config_Validator_Factory_Interface::class,
+            fn( Simple_Container $c ): Competition_Config_Validator_Factory_Interface => new Competition_Config_Validator_Factory(
+                $c->get( Competition_Service::class )
+            )
+        );
+        $container->alias( Competition_Config_Validator_Factory::class, Competition_Config_Validator_Factory_Interface::class );
+
+        $container->set(
+            Update_Payment_Handler::class,
+            fn( Simple_Container $c ): Update_Payment_Handler => new Update_Payment_Handler(
+                $c->get( Finance_Service_Interface::class )
+            )
+        );
 
         $container->set( 'notify_service', fn( Simple_Container $c ) => new Notify_Service( $app, $c->get( 'mailer' ) ) );
         $container->alias( Notify_Service::class, 'notify_service' );
@@ -488,9 +511,9 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
                 view_presenter: $c->get( 'shortcode_view_presenter' ),
                 messages_handler: $c->get( 'get_messages_handler' ),
                 message_handler: $c->get( 'get_message_handler' ),
+                message_presenter: $c->get( 'message_presenter' ),
                 template_renderer: $c->get( 'shortcode_template_renderer' ),
                 security_service: $c->get( 'security_service' ),
-                message_presenter: $c->get( 'message_presenter' ),
                 query_vars: $c->get( Query_Vars_Interface::class )
             )
         );
@@ -544,10 +567,10 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
                 player_search_handler: $c->get( 'get_player_search_handler' ),
                 team_order_handler: $c->get( 'get_team_order_handler' ),
                 alert_handler: $c->get( 'get_alert_handler' ),
-                template_renderer: $c->get( 'shortcode_template_renderer' ),
-                security_service: $c->get( 'security_service' ),
                 player_presenter: $c->get( 'player_presenter' ),
                 invoice_presenter: $c->get( 'invoice_presenter' ),
+                template_renderer: $c->get( 'shortcode_template_renderer' ),
+                security_service: $c->get( 'security_service' ),
                 query_vars: $c->get( Query_Vars_Interface::class )
             )
         );

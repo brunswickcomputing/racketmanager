@@ -64,50 +64,57 @@ use function get_current_user_id;
 use function is_array;
 use function is_object;
 use function is_user_logged_in;
+use function Racketmanager\debug_to_console;
 use function wp_get_current_user;
 use function __;
 
 /**
  * Driving adapter for Competition shortcodes.
  */
-class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
-    private readonly ?Shortcode_View_Presenter $view_presenter;
-    private readonly ?Get_Competition_Entry_Handler $entry_handler;
+readonly class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
+    /**
+     * @var Shortcode_View_Presenter|null
+     */
+    private ?Shortcode_View_Presenter $view_presenter;
+    /**
+     * @var Get_Competition_Entry_Handler|null
+     */
+    private ?Get_Competition_Entry_Handler $entry_handler;
 
     public function __construct(
-        private readonly Competition_Shortcode_Presenter $competition_shortcode_presenter,
-        private readonly Tournament_Presenter $tournament_presenter,
-        private readonly Player_Presenter $player_presenter,
-        private readonly ?Competition_Service $competition_service = null,
-        private readonly ?Club_Service $club_service = null,
-        private readonly ?Team_Service $team_service = null,
-        private readonly ?Player_Service $player_service = null,
-        private readonly ?Tournament_Service $tournament_service = null,
-        private readonly ?Finance_Service $finance_service = null,
-        private readonly ?Registration_Service $registration_service = null,
-        private readonly ?Competition_Entry_Service $competition_entry_service = null,
-        private readonly ?Shortcode_Template_Renderer $template_renderer = null,
-        private readonly ?Get_Competition_Handler $get_competition_handler = null,
-        private readonly ?Get_Competition_Overview_Handler $overview_handler = null,
-        private readonly ?Get_Competition_Events_Handler $events_handler = null,
-        private readonly ?Get_Competition_Teams_Handler $teams_handler = null,
-        private readonly ?Get_Competition_Clubs_Handler $clubs_handler = null,
-        private readonly ?Get_Competition_Players_Handler $players_handler = null,
-        private readonly ?Get_Competition_Winners_Handler $winners_handler = null,
+        private Competition_Shortcode_Presenter $competition_shortcode_presenter,
+        private Tournament_Presenter $tournament_presenter,
+        private Player_Presenter $player_presenter,
+        private ?Competition_Service $competition_service = null,
+        private ?Club_Service $club_service = null,
+        private ?Team_Service $team_service = null,
+        private ?Player_Service $player_service = null,
+        private ?Tournament_Service $tournament_service = null,
+        private ?Finance_Service $finance_service = null,
+        private ?Registration_Service $registration_service = null,
+        private ?Competition_Entry_Service $competition_entry_service = null,
+        private ?Shortcode_Template_Renderer $template_renderer = null,
+        private ?Get_Competition_Handler $get_competition_handler = null,
+        private ?Get_Competition_Overview_Handler $overview_handler = null,
+        private ?Get_Competition_Events_Handler $events_handler = null,
+        private ?Get_Competition_Teams_Handler $teams_handler = null,
+        private ?Get_Competition_Clubs_Handler $clubs_handler = null,
+        private ?Get_Competition_Players_Handler $players_handler = null,
+        private ?Get_Competition_Winners_Handler $winners_handler = null,
         ?Shortcode_View_Presenter $view_presenter = null,
-        private readonly ?RacketManager $racketmanager = null,
-        private readonly ?Get_Competition_Dropdown_Handler $dropdown_handler = null,
-        private readonly ?Get_Competitions_Handler $competitions_handler = null,
-        private readonly ?Get_Competition_Payment_Handler $payment_handler = null,
-        private readonly ?Club_Entry_Selection_Service $club_entry_selection = null,
+        private ?RacketManager $racketmanager = null,
+        private ?Get_Competition_Dropdown_Handler $dropdown_handler = null,
+        private ?Get_Competitions_Handler $competitions_handler = null,
+        private ?Get_Competition_Payment_Handler $payment_handler = null,
+        private ?Club_Entry_Selection_Service $club_entry_selection = null,
         ?Get_Competition_Entry_Handler $entry_handler = null,
-        private readonly ?Event_Query_Service $event_query_service = null,
-        private readonly ?Query_Vars_Interface $query_vars = null
+        private ?Event_Query_Service $event_query_service = null,
+        private ?Query_Vars_Interface $query_vars = null
     ) {
-        $this->view_presenter = $view_presenter ?? ( $template_renderer ? new Shortcode_View_Presenter( $template_renderer ) : null );
-        $selection_service = $club_entry_selection ?? ( ( $club_service && $player_service ) ? new Club_Entry_Selection_Service( $club_service, $player_service ) : null );
+        $this->view_presenter     = $view_presenter ?? ( $template_renderer ? new Shortcode_View_Presenter( $template_renderer ) : null );
+        $selection_service        = $club_entry_selection ?? ( ( $club_service && $player_service ) ? new Club_Entry_Selection_Service( $club_service, $player_service ) : null );
         $entry_services_available = $selection_service && $competition_service && $tournament_service && $player_service && $club_service && $team_service && $registration_service && $competition_entry_service && $finance_service && $this->event_query_service;
-        $this->entry_handler = $entry_handler ?? ( $entry_services_available ? new Get_Competition_Entry_Handler(
+        $this->entry_handler      = $entry_handler ?? ( $entry_services_available ? new Get_Competition_Entry_Handler(
             club_entry_selection: $selection_service,
             competition_service: $competition_service,
             tournament_service: $tournament_service,
@@ -129,8 +136,8 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $this->render_alert( __( 'Competition type not set', 'racketmanager' ) );
         }
         $query_vars = $this->extract_query_vars();
-        $user_id = is_user_logged_in() ? get_current_user_id() : null;
-        $query = Get_Competitions_Query::from_atts( $atts, $query_vars, $_GET ?? [], $user_id );
+        $user_id    = is_user_logged_in() ? get_current_user_id() : null;
+        $query      = Get_Competitions_Query::from_atts( $atts, $query_vars, $_GET ?? [], $user_id );
 
         $result = $this->competitions_handler->handle( $query );
         if ( $result->is_error() ) {
@@ -300,13 +307,13 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             'club_name'        => $this->query_vars?->get( 'club_name' ),
             'player_id'        => $this->query_vars?->get( 'player_id' ),
         ];
-        $query = Get_Competition_Entry_Query::from_atts(
+        $query      = Get_Competition_Entry_Query::from_atts(
             $atts,
             $query_vars,
             (int) ( wp_get_current_user()->ID ?? 0 ),
             current_user_can( 'manage_racketmanager' )
         );
-        $query = $query->with_entry_level( $this->get_entry_level( $query ) );
+        $query      = $query->with_entry_level( $this->get_entry_level( $query ) );
 
         $result = $this->entry_handler->handle( $query );
         if ( $result->is_error() ) {
@@ -323,8 +330,8 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         $comp_presenter = $this->competition_shortcode_presenter;
 
         if ( 'clubs_list' === $result->type ) {
-            $club_urls = $comp_presenter->present_entry_form_club_urls( $result->clubs );
-            $vars = [
+            $club_urls                  = $comp_presenter->present_entry_form_club_urls( $result->clubs );
+            $vars                       = [
                 'competition'        => $result->competition,
                 'season'             => $result->season,
                 'competition_season' => $result->competition_season,
@@ -345,7 +352,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         }
 
         if ( 'cup' === $result->type ) {
-            $vars = [
+            $vars                         = [
                 'competition'        => $result->competition,
                 'club'               => $result->club,
                 'season'             => $result->season,
@@ -358,7 +365,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
                 'rules_url'          => $comp_presenter->get_rules_url( $result->competition ),
                 'back_url'           => $comp_presenter->get_club_url( $result->club ),
             ];
-            $vars['competition_header'] = $comp_presenter->present_header(
+            $vars['competition_header']   = $comp_presenter->present_header(
                 competition: $result->competition,
                 competition_season: $result->competition_season,
                 season: $result->season,
@@ -375,7 +382,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         }
 
         if ( 'league' === $result->type ) {
-            $vars = [
+            $vars                         = [
                 'competition'        => $result->competition,
                 'club'               => $result->club,
                 'season'             => $result->season,
@@ -385,7 +392,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
                 'rules_url'          => $comp_presenter->get_rules_url( $result->competition ),
                 'back_url'           => $comp_presenter->get_club_url( $result->club ),
             ];
-            $vars['competition_header'] = $comp_presenter->present_header(
+            $vars['competition_header']   = $comp_presenter->present_header(
                 competition: $result->competition,
                 competition_season: $result->competition_season,
                 season: $result->season,
@@ -402,9 +409,9 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         }
 
         // 'tournament'
-        $tournament = $result->tournament;
-        $tourn_presenter = $this->tournament_presenter;
-        $vars = [
+        $tournament                   = $result->tournament;
+        $tourn_presenter              = $this->tournament_presenter;
+        $vars                         = [
             'tournament'       => $tournament,
             'player'           => $result->player,
             'events'           => $result->events,
@@ -414,14 +421,14 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             'season'           => $result->season,
             'back_url'         => $tourn_presenter->get_link( $tournament ),
         ];
-        $access = Tournament_Entry_Access::resolve(
+        $access                       = Tournament_Entry_Access::resolve(
             is_open: (bool) ( $tournament?->is_open ?? false ),
             is_closed: (bool) ( $tournament?->is_closed ?? false ),
             user_id: $result->user_id,
             player_id: (int) ( $result->player?->id ?? 0 ),
             can_manage: $result->can_manage
         );
-        $vars = array_merge( $vars, $access->to_vars() );
+        $vars                         = array_merge( $vars, $access->to_vars() );
         $vars['tournament_header']    = $tourn_presenter->present_header( $tournament, false );
         $tournament_dates             = $tourn_presenter->present_dates( $tournament );
         $vars['tournament_dates']     = $tournament_dates;
@@ -552,7 +559,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             $vars['team_links']   = $club_details['team_links'];
             $vars['player_links'] = $club_details['player_links'];
         } else {
-            $vars['club_links']   = $presenter->present_competition_club_links( $result->competition, $result->clubs );
+            $vars['club_links'] = $presenter->present_competition_club_links( $result->competition, $result->clubs );
         }
 
         $vm = new Shortcode_View_Model(
@@ -571,10 +578,10 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         $comp_presenter   = $this->competition_shortcode_presenter;
         $player_presenter = $this->player_presenter;
 
-        $player_vm          = null;
-        $match_group_links  = [];
-        $player_links       = [];
-        $player_link        = null;
+        $player_vm         = null;
+        $match_group_links = [];
+        $player_links      = [];
+        $player_link       = null;
 
         if ( $result->player ) {
             $player_vm         = $player_presenter->present_player( $result->player );
@@ -584,7 +591,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             $player_link  = $comp_presenter->get_competition_player_base_url( $result->competition );
         }
 
-        $vm = new Shortcode_View_Model(
+        return new Shortcode_View_Model(
             template: $result->template,
             vars: [
                 'competition'       => $result->competition,
@@ -595,8 +602,6 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             ],
             template_type: 'competition'
         );
-
-        return $vm;
     }
 
     /**
@@ -606,7 +611,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         $presenter = $this->competition_shortcode_presenter;
         $winners   = $presenter->present_competition_winners( $result->raw_winners );
 
-        $vm = new Shortcode_View_Model(
+        return new Shortcode_View_Model(
             template: $result->template,
             vars: [
                 'competition' => $result->competition,
@@ -614,33 +619,34 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             ],
             template_type: 'competition'
         );
-
-        return $vm;
     }
 
     /**
      * Map a competitions list query result onto the shortcode view model.
      */
     public function present_competitions( Competitions_List_Result $result ): Shortcode_View_Model {
-        $presenter = $this->competition_shortcode_presenter;
+        $presenter              = $this->competition_shortcode_presenter;
         $user_competition_items = $presenter->present_competition_list( $result->user_competitions, $result->competition_type, null );
         $competition_items      = $presenter->present_competition_list( $result->competitions, $result->competition_type, null );
 
-        return new Shortcode_View_Model( template: $result->template, vars: [
-            'competitions'           => $result->competitions,
-            'competition_items'      => $competition_items,
-            'type'                   => $result->type,
-            'competition_type'       => $result->competition_type,
-            'user_competitions'      => $result->user_competitions,
-            'user_competition_items' => $user_competition_items,
-        ] );
+        return new Shortcode_View_Model(
+            template: $result->template,
+            vars: [
+                'competitions'           => $result->competitions,
+                'competition_items'      => $competition_items,
+                'type'                   => $result->type,
+                'competition_type'       => $result->competition_type,
+                'user_competitions'      => $result->user_competitions,
+                'user_competition_items' => $user_competition_items,
+            ]
+        );
     }
 
     /**
      * Map a payment query result onto the shortcode view model.
      */
     public function present_payment( Competition_Payment_Result $result ): Shortcode_View_Model {
-        $site_url = defined( 'RACKETMANAGER_SITE' ) ? RACKETMANAGER_SITE : '/';
+        $site_url        = defined( 'RACKETMANAGER_SITE' ) ? RACKETMANAGER_SITE : '/';
         $tourn_presenter = $this->tournament_presenter;
 
         $vars = [
@@ -681,7 +687,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         }
 
         $competition_options = $this->racketmanager?->get_options( $type );
-        $entry_level        = is_array( $competition_options ) ? ( $competition_options['entry_level'] ?? null ) : null;
+        $entry_level         = is_array( $competition_options ) ? ( $competition_options['entry_level'] ?? null ) : null;
 
         return is_string( $entry_level ) ? $entry_level : null;
     }
@@ -704,14 +710,17 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         if ( ! $this->payment_handler || ! $this->view_presenter ) {
             return $this->render_alert( __( 'Tournament not found', 'racketmanager' ) );
         }
-        $query_vars = [
+        $query_vars      = [
             'competition_type' => $this->query_vars?->get( 'competition_type' ),
             'tournament'       => $this->query_vars?->get( 'tournament' ),
         ];
         $billing_options = $this->racketmanager?->get_options( 'billing' );
-        $query = Get_Competition_Payment_Query::from_atts(
-            $atts, $query_vars, (int) ( wp_get_current_user()->ID ?? 0 ),
-            is_array( $billing_options ) ? $billing_options : [], $complete
+        $query           = Get_Competition_Payment_Query::from_atts(
+            $atts,
+            $query_vars,
+            (int) ( wp_get_current_user()->ID ?? 0 ),
+            is_array( $billing_options ) ? $billing_options : [],
+            $complete
         );
 
         $result = $this->payment_handler->handle( $query );
@@ -735,11 +744,13 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $this->view_presenter->render( Shortcode_View_Model::error( $result->error_message ?? '' ) );
         }
 
-        return $this->view_presenter->render( new Shortcode_View_Model(
-            template: $result->template,
-            vars: [ 'events' => $result->events ],
-            template_type: 'competition'
-        ) );
+        return $this->view_presenter->render(
+            new Shortcode_View_Model(
+                template: $result->template,
+                vars: [ 'events' => $result->events ],
+                template_type: 'competition'
+            )
+        );
     }
 
     /**
@@ -755,7 +766,7 @@ class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             $type = $type->value;
         }
         $competition_options = $this->racketmanager?->get_options( (string) $type );
-        $entry_level = is_array( $competition_options ) ? ( $competition_options['entry_level'] ?? null ) : null;
+        $entry_level         = is_array( $competition_options ) ? ( $competition_options['entry_level'] ?? null ) : null;
 
         return $this->club_entry_selection->available_clubs(
             current_user_can( 'manage_racketmanager' ),

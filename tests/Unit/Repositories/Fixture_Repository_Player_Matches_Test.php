@@ -6,11 +6,10 @@ namespace Racketmanager\Tests\Unit\Repositories;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Exceptions\Rubber_Repository_Missing_Exception;
+use Racketmanager\Exceptions\Repository_Missing_Exception;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
-use RuntimeException;
 use wpdb;
 
 #[AllowMockObjectsWithoutExpectations]
@@ -112,8 +111,8 @@ class Fixture_Repository_Player_Matches_Test extends TestCase {
         $this->capture_results( [] );
         $repository = new Fixture_Repository( $this->wpdb );
 
-        $this->expectException( RuntimeException::class );
-        $this->expectExceptionMessage( 'requires a Rubber_Repository_Interface' );
+        $this->expectException( Repository_Missing_Exception::class );
+        $this->expectExceptionMessageIsOrContains( 'requires a Rubber_Repository_Interface' );
         $repository->find_player_matches( 7 );
     }
 
@@ -121,8 +120,8 @@ class Fixture_Repository_Player_Matches_Test extends TestCase {
         $this->capture_results( [] );
         $repository = new Fixture_Repository( $this->wpdb );
 
-        $this->expectException( Rubber_Repository_Missing_Exception::class );
-        $this->expectExceptionMessage( 'Fixture_Repository::find_player_matches requires a Rubber_Repository_Interface.' );
+        $this->expectException( Repository_Missing_Exception::class );
+        $this->expectExceptionMessageIsOrContains( 'Fixture_Repository::find_player_matches requires a Rubber_Repository_Interface.' );
         $repository->find_player_matches( 7 );
     }
 }

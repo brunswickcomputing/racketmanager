@@ -9,30 +9,33 @@ namespace Racketmanager;
 
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Scoring\Set_Score;
+use stdClass;
 
+/** @var stdClass $vm */
 /** @var Fixture_Details_DTO $dto */
 /** @var Fixture $match */
 /** @var string $match_type */
-$dto              = $dto ?? $vars['dto'] ?? $vm->dto ?? null;
-$match            = $match ?? $vars['match'] ?? $vm->match ?? $dto?->fixture ?? null;
+$dto   = $dto ?? $vm->dto ?? null;
+$match = $match ?? $vm->match ?? $dto?->fixture ?? null;
 if ( ! $match ) {
     return;
 }
-$match_type       = $match_type ?? $vars['match_type'] ?? $vm->match_type ?? '';
-$competition_team = $competition_team ?? $vars['competition_team'] ?? $vm->competition_team ?? null;
-$team_statistics  = $team_statistics ?? $vars['team_statistics'] ?? $vm->team_statistics ?? null;
-$opponents               = array( 'home', 'away' );
-$opponents_points        = array( 'player1', 'player2' );
-$match_player            = $match_player ?? $vars['match_player'] ?? $vm->match_player ?? null;
-$rubber_player_urls      = $rubber_player_urls ?? $vars['rubber_player_urls'] ?? $vm->rubber_player_urls ?? null;
-$rubber_player_urls = is_array( $rubber_player_urls ) ? $rubber_player_urls : array();
-$approval_captain_names  = $approval_captain_names ?? $vars['approval_captain_names'] ?? $vm->approval_captain_names ?? null;
+$match_type             = $vm->match_type ?? '';
+$competition_team       = $vm->competition_team ?? null;
+$team_statistics        = $vm->team_statistics ?? array();
+$opponents              = array( 'home', 'away' );
+$opponents_points       = array( 'player1', 'player2' );
+$match_player           = $vm->match_player ?? null;
+$rubber_player_urls     = $vm->rubber_player_urls ?? null;
+$rubber_player_urls     = is_array( $rubber_player_urls ) ? $rubber_player_urls : array();
+$approval_captain_names = $vm->approval_captain_names ?? null;
 $approval_captain_names = is_array( $approval_captain_names ) ? $approval_captain_names : array();
-$final_name              = $final_name ?? $vars['final_name'] ?? $vm->final_name ?? '';
-$match_date_formatted    = $match_date_formatted ?? $vars['match_date_formatted'] ?? $vm->match_date_formatted ?? '';
-$team        = null;
-$team_status = null;
-$winner      = null;
+$final_name             = $vm->final_name ?? '';
+$match_date_formatted   = $vm->match_date_formatted ?? '';
+$team                   = null;
+$team_status            = null;
+$winner                 = null;
 if ( ! empty( $competition_team ) ) {
     if ( $competition_team === $match->get_home_team() ) {
         $team = 'home';
@@ -46,9 +49,9 @@ if ( ! empty( $match->get_winner_id() ) ) {
     } elseif ( (string) $match->get_winner_id() === $match->get_away_team() ) {
         $winner = 'away';
     }
-    if ( isset( $team_statistics ) ) {
-        ++ $team_statistics['played'][ $team_statistics ][ $match_type ];
-        ++ $team_statistics['played'][ $team_statistics ]['t'];
+    if ( isset( $team_statistics['played'] ) ) {
+        ++$team_statistics['played'][ $match_type ];
+        ++$team_statistics['played']['t'];
     }
 }
 ?>
@@ -115,13 +118,13 @@ if ( ! empty( $match->get_winner_id() ) ) {
             $loser              = null;
             $is_tie             = false;
             if ( ! empty( $rubber->winner_id ) ) {
-                if ( $rubber->winner_id === $match->get_home_team() ) {
+                if ( (string) $rubber->winner_id === $match->get_home_team() ) {
                     $winner = 'home';
                     $loser  = 'away';
-                } elseif ( $rubber->winner_id === $match->get_away_team() ) {
+                } elseif ( (string) $rubber->winner_id === $match->get_away_team() ) {
                     $winner = 'away';
                     $loser  = 'home';
-                } elseif ( '-1' == $rubber->winner_id ) {
+                } elseif ( '-1' === (string) $rubber->winner_id ) {
                     $is_tie = true;
                 }
                 if ( $winner === $team ) {
@@ -294,8 +297,8 @@ if ( ! empty( $match->get_winner_id() ) ) {
                                                 $match_status_class = 'd-none';
                                             }
                                             if ( isset( $team_statistics ) && 'winner' === $team_status ) {
-                                                ++ $team_statistics['walkover'][ $match_type ];
-                                                ++ $team_statistics['walkover']['t'];
+                                                ++$team_statistics['walkover'][ $match_type ];
+                                                ++$team_statistics['walkover']['t'];
                                             }
                                         } elseif ( $rubber->is_invalid ) {
                                             $match_message_class = 'match-warning';
@@ -304,8 +307,8 @@ if ( ! empty( $match->get_winner_id() ) ) {
                                                 $match_status_class = 'd-none';
                                             }
                                             if ( isset( $team_statistics ) && 'winner' === $team_status ) {
-                                                ++ $team_statistics['walkover'][ $match_type ];
-                                                ++ $team_statistics['walkover']['t'];
+                                                ++$team_statistics['walkover'][ $match_type ];
+                                                ++$team_statistics['walkover']['t'];
                                             }
                                         } elseif ( $rubber->is_retired ) {
                                             $match_message_class = 'match-warning';
@@ -358,12 +361,12 @@ if ( ! empty( $match->get_winner_id() ) ) {
                         <div class="match__result">
                             <?php
                             $sets = $rubber->sets ?? array();
-                            for ( $i = 1; $i <= $dto->league->num_sets; $i ++ ) {
+                            for ( $i = 1; $i <= $dto->league->num_sets; $i++ ) {
                                 $set = $sets[ $i ] ?? array();
-                                $p1 = '';
-                                $p2 = '';
-                                $tb = '';
-                                if ( $set instanceof \Racketmanager\Domain\Scoring\Set_Score ) {
+                                $p1  = '';
+                                $p2  = '';
+                                $tb  = '';
+                                if ( $set instanceof Set_Score ) {
                                     $p1 = $set->get_home_games();
                                     $p2 = $set->get_away_games();
                                     $tb = $set->get_home_tiebreak() ?? $set->get_away_tiebreak() ?? '';

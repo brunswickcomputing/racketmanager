@@ -20,6 +20,7 @@ use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Util\Util;
+use Throwable;
 
 /**
  * Service to handle retrieval of fixture details and context.
@@ -42,14 +43,14 @@ class Fixture_Detail_Service implements Fixture_Detail_Service_Interface {
         Fixture_Permission_Service $permission_service,
         Fixture_Link_Service $link_service
     ) {
-        $this->fixture_repository   = $repository_provider->get_fixture_repository();
-        $this->league_repository    = $repository_provider->get_league_repository();
-        $this->team_repository      = $repository_provider->get_team_repository();
-        $this->rubber_repository    = $repository_provider->get_rubber_repository();
-        $this->competition_service  = $competition_service;
-        $this->team_service         = $team_service;
-        $this->permission_service   = $permission_service;
-        $this->link_service         = $link_service;
+        $this->fixture_repository  = $repository_provider->get_fixture_repository();
+        $this->league_repository   = $repository_provider->get_league_repository();
+        $this->team_repository     = $repository_provider->get_team_repository();
+        $this->rubber_repository   = $repository_provider->get_rubber_repository();
+        $this->competition_service = $competition_service;
+        $this->team_service        = $team_service;
+        $this->permission_service  = $permission_service;
+        $this->link_service        = $link_service;
     }
 
     /**
@@ -89,7 +90,7 @@ class Fixture_Detail_Service implements Fixture_Detail_Service_Interface {
             $status_flags  = $this->generate_status_flags( $fixture );
             $fixture_title = $this->generate_fixture_title( $home_team, $away_team, $prev_home_fixture_title, $prev_away_fixture_title );
 
-        } catch ( Fixture_Not_Found_Exception|League_Not_Found_Exception|Event_Not_Found_Exception|Competition_Not_Found_Exception $e ) {
+        } catch ( Fixture_Not_Found_Exception | League_Not_Found_Exception | Event_Not_Found_Exception | Competition_Not_Found_Exception $e ) {
             throw new Fixture_Not_Found_Exception( $e->getMessage() );
         }
 
@@ -111,7 +112,7 @@ class Fixture_Detail_Service implements Fixture_Detail_Service_Interface {
      * Get league, event, and competition context.
      */
     private function get_competition_context( int $league_id ): array {
-        $league      = $this->league_repository->find_by_id( $league_id );
+        $league = $this->league_repository->find_by_id( $league_id );
         if ( ! $league ) {
             throw new League_Not_Found_Exception();
         }
@@ -194,8 +195,8 @@ class Fixture_Detail_Service implements Fixture_Detail_Service_Interface {
             '2' => __( 'Loser', 'racketmanager' ),
             default => null
         };
-        $round_name = Util::get_final_name( $team[1] );
-        $fixture_num  = $team[2] ?? '';
+        $round_name  = Util::get_final_name( $team[1] );
+        $fixture_num = $team[2] ?? '';
 
         /* translators: %1$s: type (Winner/Loser), %2$s: round name, %3$s: fixture number */
         return sprintf( __( '%1$s %2$s %3$s', 'racketmanager' ), $type, $round_name, $fixture_num );
@@ -249,7 +250,7 @@ class Fixture_Detail_Service implements Fixture_Detail_Service_Interface {
     /**
      * Resolve previous fixture entity for a placeholder reference (leg-aware).
      *
-     * @param Fixture $fixture
+     * @param Fixture         $fixture
      * @param string|int|null $team_ref
      * @return Fixture|null
      */
@@ -267,19 +268,20 @@ class Fixture_Detail_Service implements Fixture_Detail_Service_Interface {
         $league_id = (int) $fixture->get_league_id();
         $season    = (string) $fixture->get_season();
 
-        $leg = null;
         try {
             $league = $this->league_repository->find_by_id( $league_id );
             if ( $league ) {
                 $leg = $this->resolve_home_away_leg( $league, $season );
+            } else {
+                $leg = null;
             }
-        } catch ( \Throwable ) {
+        } catch ( Throwable ) {
             $leg = null;
         }
 
         try {
             $prev_fixtures = $this->fixture_repository->find_by_league_and_final( $league_id, $season, $final, $leg );
-        } catch ( \Throwable ) {
+        } catch ( Throwable ) {
             return null;
         }
         if ( empty( $prev_fixtures ) ) {
@@ -293,7 +295,7 @@ class Fixture_Detail_Service implements Fixture_Detail_Service_Interface {
     /**
      * Collect player IDs for a fixture, walking ancestor placeholder rounds.
      *
-     * @param int|Fixture|Fixture_Details_DTO|null $fixture_id_or_entity
+     * @param int|Fixture|Fixture_Details_DTO|null $fixture_id_or_entity Fixture ID, entity, or DTO.
      * @return int[]
      */
     public function collect_fixture_player_ids( int|Fixture|Fixture_Details_DTO|null $fixture_id_or_entity ): array {
@@ -307,8 +309,8 @@ class Fixture_Detail_Service implements Fixture_Detail_Service_Interface {
     /**
      * Recursively collect player IDs, guarding against cycles.
      *
-     * @param mixed $fixture_id_or_entity
-     * @param int[] $player_ids
+     * @param mixed            $fixture_id_or_entity
+     * @param int[]            $player_ids
      * @param array<int, bool> $visited
      */
     private function collect_fixture_player_ids_recursive( mixed $fixture_id_or_entity, array &$player_ids, array &$visited ): void {
@@ -340,7 +342,7 @@ class Fixture_Detail_Service implements Fixture_Detail_Service_Interface {
             }
             try {
                 $prev_fixture = $this->get_previous_fixture( $fixture_entity, (string) $team_ref );
-            } catch ( \Throwable ) {
+            } catch ( Throwable ) {
                 $prev_fixture = null;
             }
             if ( $prev_fixture ) {
@@ -365,7 +367,7 @@ class Fixture_Detail_Service implements Fixture_Detail_Service_Interface {
             if ( $details ) {
                 return $details;
             }
-        } catch ( \Throwable ) {
+        } catch ( Throwable ) {
         }
 
         if ( $fixture_id_or_entity instanceof Fixture ) {
@@ -374,7 +376,7 @@ class Fixture_Detail_Service implements Fixture_Detail_Service_Interface {
 
         try {
             return $this->fixture_repository->find_by_id( (int) $fixture_id_or_entity );
-        } catch ( \Throwable ) {
+        } catch ( Throwable ) {
             return null;
         }
     }
@@ -417,7 +419,7 @@ class Fixture_Detail_Service implements Fixture_Detail_Service_Interface {
             if ( empty( $players ) && ! property_exists( $team_entity, 'players' ) && method_exists( $team_entity, 'get_players' ) ) {
                 try {
                     $players = $team_entity->get_players();
-                } catch ( \Throwable ) {
+                } catch ( Throwable ) {
                     $players = array();
                 }
             }

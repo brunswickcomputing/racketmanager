@@ -8,6 +8,7 @@
 namespace RacketManager;
 
 use Racketmanager\Presentation\View_Models\Team_Match_Row_View_Model;
+use UnexpectedValueException;
 
 /** @var Team_Match_Row_View_Model|object|null $match */
 /** @var Team_Match_Row_View_Model|null $vm */
@@ -16,7 +17,7 @@ if ( isset( $vm ) && $vm instanceof Team_Match_Row_View_Model ) {
 } elseif ( isset( $match ) && $match instanceof Team_Match_Row_View_Model ) {
     $row_vm = $match;
 } else {
-    throw new \UnexpectedValueException( 'Expected Team_Match_Row_View_Model, got ' . ( isset( $vm ) ? get_debug_type( $vm ) : ( isset( $match ) ? get_debug_type( $match ) : 'null' ) ) );
+    throw new UnexpectedValueException( 'Expected Team_Match_Row_View_Model, got ' . ( isset( $vm ) ? get_debug_type( $vm ) : ( isset( $match ) ? get_debug_type( $match ) : 'null' ) ) );
 }
 ?>
 <div class="match match--team-match <?php echo $row_vm->is_selected ? 'is-selected' : ''; ?>">

@@ -3,7 +3,9 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Presentation\Presenters;
 
-use Racketmanager\Domain\Player\Player;
+use BackedEnum;
+use Closure;
+use LogicException;
 use Racketmanager\Domain\Player\Player_Ranking;
 use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
@@ -22,13 +24,31 @@ use function str_starts_with;
  */
 readonly class Player_Presenter {
 
+    /**
+     * Constructor.
+     *
+     * @param Competition_Shortcode_Presenter|Closure|null $competition_presenter Competition shortcode presenter or closure.
+     * @param Option_Gateway_Interface|null                $option_gateway        Option gateway.
+     */
     public function __construct(
-        private readonly Competition_Shortcode_Presenter|\Closure|null $competition_presenter = null,
-        private readonly ?Option_Gateway_Interface $option_gateway = null
+        private Competition_Shortcode_Presenter|Closure|null $competition_presenter = null,
+        private ?Option_Gateway_Interface $option_gateway = null
     ) {}
 
     /**
      * Present full immutable Player view model for player profile and details.
+     *
+     * @param object     $player player object.
+     * @param array      $clubs clubs array.
+     * @param array      $titles titles array.
+     * @param array      $player_competitions player competitions array.
+     * @param bool       $is_page_header page header.
+     * @param mixed|null $header_level header level.
+     * @param bool       $user_can_update can user update.
+     * @param string     $template template.
+     *
+     * @return Player_View_Model
+     * @throws LogicException Logic exception.
      */
     public function present_player(
         object $player,
@@ -43,7 +63,7 @@ readonly class Player_Presenter {
         $id           = (int) ( $player->id ?? ( $player->ID ?? ( method_exists( $player, 'get_id' ) ? $player->get_id() : 0 ) ) );
         $firstname    = isset( $player->firstname ) ? (string) $player->firstname : null;
         $surname      = isset( $player->surname ) ? (string) $player->surname : null;
-        $display_name = (string) ( $player->display_name ?? ( method_exists( $player, 'get_display_name' ) ? $player->get_display_name() : ( trim( (string) $firstname . ' ' . (string) $surname ) ) ) );
+        $display_name = (string) ( $player->display_name ?? ( method_exists( $player, 'get_display_name' ) ? $player->get_display_name() : ( trim( $firstname . ' ' . $surname ) ) ) );
         $btm          = isset( $player->btm ) ? (string) $player->btm : null;
         $gender       = isset( $player->gender ) ? (string) $player->gender : null;
         $yob          = isset( $player->year_of_birth ) && is_numeric( $player->year_of_birth ) ? (int) $player->year_of_birth : null;
@@ -98,7 +118,7 @@ readonly class Player_Presenter {
                 if ( $first instanceof Competition_List_Item_View_Model ) {
                     $presented_competitions[ $competition_type ] = $competitions;
                 } elseif ( $this->competition_presenter ) {
-                    $competition_presenter = $this->competition_presenter instanceof \Closure
+                    $competition_presenter                       = $this->competition_presenter instanceof Closure
                         ? ( $this->competition_presenter )()
                         : $this->competition_presenter;
                     $presented_competitions[ $competition_type ] = $competition_presenter->present_competition_list(
@@ -107,7 +127,7 @@ readonly class Player_Presenter {
                         player: $player
                     );
                 } else {
-                    throw new \LogicException( 'A Competition_Shortcode_Presenter is required to present raw player competitions.' );
+                    throw new LogicException( 'A Competition_Shortcode_Presenter is required to present raw player competitions.' );
                 }
             } else {
                 $presented_competitions[ $competition_type ] = [];
@@ -145,7 +165,7 @@ readonly class Player_Presenter {
     /**
      * Present player titles with precalculated URLs.
      *
-     * @param array $titles
+     * @param array $titles titles array.
      * @return array
      */
     public function present_titles( array $titles ): array {
@@ -163,11 +183,11 @@ readonly class Player_Presenter {
                 $presented[ $season ][ $tournament ] = [];
                 if ( is_iterable( $matches ) ) {
                     foreach ( $matches as $match ) {
-                        $m      = is_object( $match ) ? clone $match : (object) $match;
-                        $t_name = $m->tournament ?? $tournament;
-                        $d_name = $m->draw ?? '';
-                        $m->tournament_url = '/tournament/' . Util::seo_url( (string) $t_name ) . '/';
-                        $m->draw_url       = '/tournament/' . Util::seo_url( (string) $t_name ) . '/draw/' . Util::seo_url( (string) $d_name ) . '/';
+                        $m                                     = is_object( $match ) ? clone $match : (object) $match;
+                        $t_name                                = $m->tournament ?? $tournament;
+                        $d_name                                = $m->draw ?? '';
+                        $m->tournament_url                     = '/tournament/' . Util::seo_url( (string) $t_name ) . '/';
+                        $m->draw_url                           = '/tournament/' . Util::seo_url( (string) $t_name ) . '/draw/' . Util::seo_url( (string) $d_name ) . '/';
                         $presented[ $season ][ $tournament ][] = $m;
                     }
                 }
@@ -178,6 +198,13 @@ readonly class Player_Presenter {
 
     /**
      * Present player search and directory view model.
+     *
+     * @param string      $search_string search string.
+     * @param string|null $search_results search results.
+     * @param array       $favourites favourites array.
+     * @param string      $template template.
+     *
+     * @return Player_View_Model
      */
     public function present_players_directory(
         string $search_string = '',
@@ -195,6 +222,12 @@ readonly class Player_Presenter {
 
     /**
      * Present grouped players list with alphabet navigation.
+     *
+     * @param array  $players_list players list array.
+     * @param array  $active_keys active keys array.
+     * @param string $template template.
+     *
+     * @return Player_View_Model
      */
     public function present_players_list(
         array $players_list,
@@ -212,16 +245,26 @@ readonly class Player_Presenter {
 
     /**
      * Get player initials (e.g. "JD" for John Doe).
+     *
+     * @param string|null $firstname firstname.
+     * @param string|null $surname surname.
+     *
+     * @return string
      */
     public function get_initials( ?string $firstname, ?string $surname ): string {
-        $first_initial = ! empty( $firstname ) ? mb_substr( trim( (string) $firstname ), 0, 1 ) : '';
-        $last_initial  = ! empty( $surname ) ? mb_substr( trim( (string) $surname ), 0, 1 ) : '';
+        $first_initial = ! empty( $firstname ) ? mb_substr( trim( $firstname ), 0, 1 ) : '';
+        $last_initial  = ! empty( $surname ) ? mb_substr( trim( $surname ), 0, 1 ) : '';
 
         return mb_strtoupper( $first_initial . $last_initial );
     }
 
     /**
      * Get heading level for player header.
+     *
+     * @param bool       $is_page_header page header.
+     * @param mixed|null $header_level header level.
+     *
+     * @return int
      */
     public function get_heading_level( bool $is_page_header = false, mixed $header_level = null ): int {
         if ( ! empty( $header_level ) ) {
@@ -233,6 +276,11 @@ readonly class Player_Presenter {
 
     /**
      * Format WTN ratings into badge presentation structures.
+     *
+     * @param mixed $wtn wtn.
+     *
+     * @return array
+     * @throws LogicException Logic exception.
      */
     public function get_wtn_badges( mixed $wtn ): array {
         if ( empty( $wtn ) || ! is_array( $wtn ) ) {
@@ -247,14 +295,14 @@ readonly class Player_Presenter {
 
         $badges = array();
         foreach ( $match_types as $match_type => $description ) {
-            $val = $wtn[ $match_type ] 
-                ?? $wtn[ strtolower( (string) $match_type ) ] 
-                ?? $wtn[ strtolower( $description ) ] 
-                ?? $wtn[ $description ] 
+            $val = $wtn[ $match_type ]
+                ?? $wtn[ strtolower( $match_type ) ]
+                ?? $wtn[ strtolower( $description ) ]
+                ?? $wtn[ $description ]
                 ?? null;
 
             if ( null !== $val ) {
-                $ranking = Player_Ranking::from_raw( $val, (string) $match_type );
+                $ranking = Player_Ranking::from_raw( $val, $match_type );
 
                 $badges[] = array(
                     'type'        => $match_type,
@@ -270,6 +318,11 @@ readonly class Player_Presenter {
 
     /**
      * Format win/loss summary statistics into presentation structures.
+     *
+     * @param mixed $statistics statistics.
+     *
+     * @return array|null
+     * @throws LogicException Logic exception.
      */
     public function get_win_loss_summary( mixed $statistics ): ?array {
         if ( ! is_array( $statistics ) && ! is_object( $statistics ) ) {
@@ -281,8 +334,8 @@ readonly class Player_Presenter {
             return null;
         }
 
-        $total   = (object) $stats_array['total'];
-        $played  = (int) ( $total->played ?? 0 );
+        $total  = (object) $stats_array['total'];
+        $played = (int) ( $total->played ?? 0 );
         if ( $played <= 0 ) {
             return null;
         }
@@ -304,6 +357,13 @@ readonly class Player_Presenter {
 
     /**
      * Generate canonical player profile link.
+     *
+     * @param string      $player_name player name.
+     * @param string|null $club_shortcode club shortcode.
+     * @param string|null $base_url base url.
+     *
+     * @return string
+     * @throws LogicException Logic exception.
      */
     public function get_player_link( string $player_name, ?string $club_shortcode = null, ?string $base_url = null ): string {
         $slug = Seo_Slug::encode( $player_name );
@@ -322,6 +382,10 @@ readonly class Player_Presenter {
 
     /**
      * Generate canonical club page link from a club name or shortcode.
+     *
+     * @param string $club_name club name.
+     *
+     * @return string
      */
     public function get_club_link( string $club_name ): string {
         if ( '' === $club_name ) {
@@ -333,15 +397,19 @@ readonly class Player_Presenter {
 
     /**
      * Generate alphabet navigation array.
+     *
+     * @param array $active_keys active keys.
+     *
+     * @return array
      */
     public function get_alphabet_navigation( array $active_keys ): array {
         $navigation = array();
         foreach ( range( 'A', 'Z' ) as $char ) {
-            $is_active = in_array( $char, $active_keys, true );
+            $is_active    = in_array( $char, $active_keys, true );
             $navigation[] = array(
-                'letter'      => $char,
-                'is_active'   => $is_active,
-                'class'       => $is_active ? null : 'is-disabled',
+                'letter'    => $char,
+                'is_active' => $is_active,
+                'class'     => $is_active ? null : 'is-disabled',
             );
         }
 
@@ -350,9 +418,14 @@ readonly class Player_Presenter {
 
     /**
      * Format a date string using the configured date format.
+     *
+     * @param string|null $date date.
+     *
+     * @return string
+     * @throws LogicException Logic exception.
      */
     public function format_date( ?string $date ): string {
-        if ( empty( $date ) || str_starts_with( (string) $date, '0000-00-00' ) ) {
+        if ( empty( $date ) || str_starts_with( $date, '0000-00-00' ) ) {
             return '';
         }
         $date_format = $this->option_gateway?->get_option( 'date_format', 'd/m/Y' );
@@ -362,11 +435,16 @@ readonly class Player_Presenter {
         if ( empty( $date_format ) || ! is_string( $date_format ) ) {
             $date_format = 'd/m/Y';
         }
-        return (string) mysql2date( $date_format, (string) $date );
+        return (string) mysql2date( $date_format, $date );
     }
 
     /**
      * Present a single club membership item with preformatted display dates.
+     *
+     * @param object|array $club_player club player.
+     *
+     * @return Club_Membership_View_Model
+     * @throws LogicException Logic exception.
      */
     public function present_club_membership( object|array $club_player ): Club_Membership_View_Model {
         $club_name             = is_object( $club_player ) ? ( $club_player->club_name ?? ( $club_player->shortcode ?? ( $club_player->name ?? '' ) ) ) : ( $club_player['club_name'] ?? ( $club_player['shortcode'] ?? ( $club_player['name'] ?? '' ) ) );
@@ -406,12 +484,14 @@ readonly class Player_Presenter {
     /**
      * Build per-player link mappings (player_link, team_link) for league player rows.
      *
-     * @param object $league
-     * @param array<int|string, object|array> $players
+     * @param object                          $league league.
+     * @param array<int|string, object|array> $players players.
+     *
      * @return array<int, array{player_link: string, team_link: string}>
+     * @throws LogicException Logic exception.
      */
     public function present_league_player_links( object $league, array $players ): array {
-        $competition_type = ( isset( $league->event->competition->type ) && $league->event->competition->type instanceof \BackedEnum )
+        $competition_type = ( isset( $league->event->competition->type ) && $league->event->competition->type instanceof BackedEnum )
             ? $league->event->competition->type->value
             : (string) ( $league->event->competition->type ?? 'league' );
 

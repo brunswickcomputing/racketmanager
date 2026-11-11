@@ -70,6 +70,7 @@ use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Tournament_Entry_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Tournament_Repository_Interface;
 use Racketmanager\Repositories\League_Repository;
@@ -111,7 +112,8 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             static fn() => $c->has( 'fixture_relation_loader' ) ? $c->get( 'fixture_relation_loader' ) : null,
             static fn() => $c->get( 'club_repository' ),
             static fn() => $c->get( 'player_repository' ),
-            static fn() => $c->get( 'event_repository' )
+            static fn() => $c->get( 'event_repository' ),
+            static fn(): Rubber_Repository_Interface => $c->get( Rubber_Repository_Interface::class )
         ) );
         $container->alias( Competition_Repository_Interface::class, 'competition_repository' );
         $container->alias( Competition_Repository::class, 'competition_repository' );

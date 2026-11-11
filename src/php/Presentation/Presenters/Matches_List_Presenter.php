@@ -25,14 +25,14 @@ readonly class Matches_List_Presenter {
     /**
      * Constructor
      *
-     * @param Competition_Service              $competition_service competition service.
+     * @param Competition_Service              $competition_service   competition service.
      * @param Team_Service                     $team_service          team service.
      * @param View_Renderer_Interface          $renderer              view renderer interface.
      * @param Tournament_Presenter             $tournament_presenter  tournament presenter.
+     * @param Club_Presenter                   $club_presenter        club presenter.
+     * @param Player_Presenter                 $player_presenter      player presenter.
      * @param Fixture_Link_Service|null        $link_service          fixture link service.
      * @param Fixture_Permission_Service|null  $permission_service    fixture permission service.
-     * @param Club_Presenter|null              $club_presenter        club presenter.
-     * @param Player_Presenter|null            $player_presenter      player presenter.
      * @param Rubber_Repository_Interface|null $rubber_repository     rubber repository interface.
      */
     public function __construct(

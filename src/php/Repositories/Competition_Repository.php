@@ -22,6 +22,7 @@ use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Fixture\Fixture_Relation_Loader;
 use wpdb;
 
@@ -45,9 +46,11 @@ class Competition_Repository implements Competition_Repository_Interface {
     private ?Closure $club_repository_resolver;
     private ?Closure $player_repository_resolver;
     private ?Closure $event_repository_resolver;
+    private ?Closure $rubber_repository_resolver;
     private ?Club_Repository_Interface $club_repository = null;
     private ?Player_Repository_Interface $player_repository = null;
     private ?Event_Repository_Interface $event_repository = null;
+    private ?Rubber_Repository_Interface $rubber_repository = null;
 
     /**
      * Create a new Competition_Repository instance
@@ -57,13 +60,15 @@ class Competition_Repository implements Competition_Repository_Interface {
      * @param Closure|null $club_repository_resolver Lazily resolves the club repository used to hydrate team rows.
      * @param Closure|null $player_repository_resolver Lazily resolves the player repository used to hydrate player rows.
      * @param Closure|null $event_repository_resolver Lazily resolves the event repository used to hydrate event rows (avoids a construction cycle).
+     * @param Rubber_Repository_Interface|Closure|null $rubber_repository_resolver Lazily resolves the rubber repository used to hydrate rubbers.
      */
     public function __construct(
         Fixture_Repository_Interface|Closure $fixture_repository,
         ?Closure $fixture_relation_loader_resolver = null,
         ?Closure $club_repository_resolver = null,
         ?Closure $player_repository_resolver = null,
-        ?Closure $event_repository_resolver = null
+        ?Closure $event_repository_resolver = null,
+        Rubber_Repository_Interface|Closure|null $rubber_repository_resolver = null
     ) {
         global $wpdb;
         $this->fixture_repository_resolver      = $fixture_repository instanceof Closure ? $fixture_repository : null;
@@ -72,6 +77,8 @@ class Competition_Repository implements Competition_Repository_Interface {
         $this->club_repository_resolver         = $club_repository_resolver;
         $this->player_repository_resolver       = $player_repository_resolver;
         $this->event_repository_resolver        = $event_repository_resolver;
+        $this->rubber_repository_resolver       = $rubber_repository_resolver instanceof Closure ? $rubber_repository_resolver : null;
+        $this->rubber_repository                = $rubber_repository_resolver instanceof Rubber_Repository_Interface ? $rubber_repository_resolver : null;
         $this->wpdb                             = $wpdb;
         $this->table_name           = $this->wpdb->prefix . 'racketmanager_competitions';
         $this->events_table         = $this->wpdb->prefix . 'racketmanager_events';
@@ -620,14 +627,16 @@ class Competition_Repository implements Competition_Repository_Interface {
 	 */
 	public function find_matches( int $competition_id, array $args = [] ): array|int {
 		$defaults = [
-			'offset'  => 0,
-			'limit'   => 99999999,
-			'season'  => false,
-			'orderby' => [
+			'offset'    => 0,
+			'limit'     => 99999999,
+			'season'    => false,
+			'orderby'   => [
 				'league_id' => 'ASC',
 				'id'        => 'ASC',
 			],
-			'count'   => false,
+			'count'     => false,
+			'player'    => false,
+			'player_id' => false,
 		];
 		$args     = array_merge( $defaults, $args );
 		$offset   = $args['offset'];
@@ -636,6 +645,22 @@ class Competition_Repository implements Competition_Repository_Interface {
 		$orderby  = $args['orderby'];
 		$count    = $args['count'];
 
+		$player_arg = false;
+		if ( array_key_exists( 'player_id', $args ) && false !== $args['player_id'] && null !== $args['player_id'] ) {
+			$player_arg = $args['player_id'];
+		} elseif ( array_key_exists( 'player', $args ) && false !== $args['player'] && null !== $args['player'] ) {
+			$player_arg = $args['player'];
+		}
+
+		$player_id = null;
+		if ( false !== $player_arg ) {
+			if ( is_numeric( $player_arg ) && (int) $player_arg > 0 ) {
+				$player_id = (int) $player_arg;
+			} else {
+				return $count ? 0 : [];
+			}
+		}
+
 		$search_terms   = [];
 		$search_terms[] = $this->wpdb->prepare( 'e.`competition_id` = %d', $competition_id );
 
@@ -643,24 +668,67 @@ class Competition_Repository implements Competition_Repository_Interface {
 			$search_terms[] = $this->wpdb->prepare( 'm.`season` = %s', $season );
 		}
 
-		$search = \Racketmanager\Util\Util::search_string( $search_terms );
+		if ( $player_id ) {
+			$search_terms[] = $this->wpdb->prepare( 'rp.`player_id` = %d', $player_id );
+		}
+
+		$search = \Racketmanager\Util\Util::search_string( $search_terms, true );
+
+		$order_clauses = [];
+		$select_fields = [ 'm.id' ];
+
+		if ( is_array( $orderby ) ) {
+			foreach ( $orderby as $field => $direction ) {
+				$direction = strtoupper( (string) $direction );
+				if ( ! in_array( $direction, [ 'ASC', 'DESC' ], true ) ) {
+					$direction = 'ASC';
+				}
+
+				if ( ! preg_match( '/^[a-zA-Z0-9_.]+$/', (string) $field ) ) {
+					continue;
+				}
+
+				if ( str_contains( (string) $field, '.' ) ) {
+					$parts     = explode( '.', (string) $field, 2 );
+					$qualified = $parts[0] . '.`' . $parts[1] . '`';
+				} else {
+					$qualified = 'm.`' . $field . '`';
+				}
+
+				$order_clauses[] = $qualified . ' ' . $direction;
+				if ( ! in_array( $qualified, $select_fields, true ) ) {
+					$select_fields[] = $qualified;
+				}
+			}
+		}
 
 		if ( $count ) {
-			$sql = 'SELECT COUNT(*)';
+			$sql = $player_id ? 'SELECT COUNT(DISTINCT m.id)' : 'SELECT COUNT(*)';
+		} elseif ( $player_id ) {
+			$sql = 'SELECT DISTINCT ' . implode( ', ', $select_fields );
 		} else {
 			$sql = 'SELECT m.id';
 		}
 
 		$sql .= " FROM {$this->fixtures_table} m
                   INNER JOIN {$this->leagues_table} l ON m.league_id = l.id
-                  INNER JOIN {$this->events_table} e ON l.event_id = e.id " . $search;
+                  INNER JOIN {$this->events_table} e ON l.event_id = e.id";
+
+		if ( $player_id ) {
+			$sql .= " INNER JOIN {$this->rubbers_table} r ON m.id = r.match_id
+                  INNER JOIN {$this->rubber_players_table} rp ON r.id = rp.rubber_id";
+		}
+
+		$sql .= $search;
 
 		if ( $count ) {
 			$result = $this->wpdb->get_var( $sql );
 			return null !== $result ? (int) $result : 0;
 		}
 
-		$sql .= \Racketmanager\Util\Util::order_by_string( $orderby );
+		if ( ! empty( $order_clauses ) ) {
+			$sql .= ' ORDER BY ' . implode( ', ', $order_clauses );
+		}
 		$sql .= $this->wpdb->prepare( ' LIMIT %d, %d', $offset, $limit );
 
 		$rows = $this->wpdb->get_results( $sql );
@@ -671,11 +739,21 @@ class Competition_Repository implements Competition_Repository_Interface {
 			throw new LogicException( 'Competition match queries require a fixture relation loader.' );
 		}
 
-		$fixtures = array_map(
-			function ( $row ) use ( $fixture_repo, $relation_loader ): ?Fixture {
-				$fixture = $fixture_repo->find_by_id( (int) $row->id );
+		$rubber_repo = $player_id ? $this->get_rubber_repository() : null;
 
-				return $fixture ? $relation_loader->load_league( $fixture ) : null;
+		$fixtures = array_map(
+			function ( $row ) use ( $fixture_repo, $relation_loader, $rubber_repo, $player_id ): ?Fixture {
+				$fixture = $fixture_repo->find_by_id( (int) $row->id );
+				if ( ! $fixture ) {
+					return null;
+				}
+
+				$fixture = $relation_loader->load_league( $fixture );
+				if ( $rubber_repo && $player_id ) {
+					$fixture->set_rubbers( $rubber_repo->find_by_fixture_id( (int) $fixture->get_id(), $player_id ) );
+				}
+
+				return $fixture;
 			},
 			$rows
 		);
@@ -802,5 +880,20 @@ class Competition_Repository implements Competition_Repository_Interface {
 			}
 		}
 		return $this->fixture_relation_loader;
+	}
+
+	/**
+	 * Resolve the rubber repository lazily.
+	 *
+	 * @return Rubber_Repository_Interface|null
+	 */
+	private function get_rubber_repository(): ?Rubber_Repository_Interface {
+		if ( null === $this->rubber_repository && null !== $this->rubber_repository_resolver ) {
+			$resolved = ( $this->rubber_repository_resolver )();
+			if ( $resolved instanceof Rubber_Repository_Interface ) {
+				$this->rubber_repository = $resolved;
+			}
+		}
+		return $this->rubber_repository;
 	}
 }

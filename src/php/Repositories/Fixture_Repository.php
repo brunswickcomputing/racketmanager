@@ -14,7 +14,7 @@ use Racketmanager\Application\Export\DTO\Export_Criteria;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Fixture\Fixture_Time_Parser;
-use Racketmanager\Exceptions\Rubber_Repository_Missing_Exception;
+use Racketmanager\Exceptions\Repository_Missing_Exception;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
@@ -840,12 +840,13 @@ class Fixture_Repository implements Fixture_Repository_Interface {
      *
      * @param int   $player_id The player ID.
      * @param array $args      Optional filter arguments (season, time, type, status).
+     *
      * @return Fixture[] Array of fixture objects.
-     * @throws Rubber_Repository_Missing_Exception If Rubber_Repository_Interface is not set.
+     * @throws Repository_Missing_Exception If Repository_Interface is not set.
      */
     public function find_player_matches( int $player_id, array $args = [] ): array {
         if ( ! $this->rubber_repository ) {
-            throw new Rubber_Repository_Missing_Exception( 'Fixture_Repository::find_player_matches requires a Rubber_Repository_Interface.' );
+            throw new Repository_Missing_Exception( 'Fixture_Repository::find_player_matches requires a Rubber_Repository_Interface.' );
         }
 
         $defaults = [

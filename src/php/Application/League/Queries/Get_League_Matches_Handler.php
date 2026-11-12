@@ -4,8 +4,8 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\League\Queries;
 
 use Racketmanager\Application\League\DTOs\League_Matches_Result;
-use Racketmanager\Services\Competition\League_Query_Service;
-use Racketmanager\Services\League_Service;
+use Racketmanager\Application\League\Ports\League_Query_Service_Interface;
+use Racketmanager\Application\League\Ports\League_Service_Interface;
 use function __;
 use function array_key_exists;
 use function function_exists;
@@ -24,8 +24,8 @@ use function wp_verify_nonce;
  */
 class Get_League_Matches_Handler {
     public function __construct(
-        private readonly League_Service $league_service,
-        private readonly League_Query_Service $league_query_service
+        private readonly League_Service_Interface $league_service,
+        private readonly League_Query_Service_Interface $league_query_service
     ) {}
 
     public function handle( Get_League_Matches_Query $query ): League_Matches_Result {

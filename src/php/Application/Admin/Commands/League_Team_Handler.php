@@ -3,18 +3,18 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Admin\Commands;
 
+use Racketmanager\Application\League\Ports\League_Service_Interface;
+use Racketmanager\Application\League\Ports\Standings_Service_Interface;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
-use Racketmanager\Services\League_Service;
-use Racketmanager\Services\Standings\Standings_Service;
 
 final readonly class League_Team_Handler {
     public function __construct(
-        private League_Service $league_service,
-        private Standings_Service $standings_service,
+        private League_Service_Interface $league_service,
+        private Standings_Service_Interface $standings_service,
         private Team_Repository_Interface $team_repository
     ) {
     }

@@ -5,10 +5,10 @@ namespace Racketmanager\Application\League\Queries;
 
 use Racketmanager\Application\League\DTOs\League_Standings_Result;
 use Racketmanager\Application\League\DTOs\League_View_State;
+use Racketmanager\Application\League\Ports\League_Query_Service_Interface;
+use Racketmanager\Application\League\Ports\League_Service_Interface;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
-use Racketmanager\Services\Competition\League_Query_Service;
-use Racketmanager\Services\League_Service;
 use function is_array;
 
 /**
@@ -16,9 +16,9 @@ use function is_array;
  */
 class Get_League_Standings_Handler {
     public function __construct(
-        private readonly ?League_Service $league_service,
+        private readonly ?League_Service_Interface $league_service,
         private readonly ?League_Repository_Interface $league_repository,
-        private readonly League_Query_Service $league_query_service
+        private readonly League_Query_Service_Interface $league_query_service
     ) {}
 
     public function handle( Get_League_Standings_Query $query ): ?League_Standings_Result {

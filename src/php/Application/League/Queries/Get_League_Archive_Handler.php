@@ -4,11 +4,11 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\League\Queries;
 
 use Racketmanager\Application\League\DTOs\League_Archive_Result;
+use Racketmanager\Application\League\Ports\League_Query_Service_Interface;
+use Racketmanager\Application\League\Ports\League_Service_Interface;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Services\Competition\Event_Query_Service;
-use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\League_Service;
 use function __;
 use function is_numeric;
 use function is_object;
@@ -21,16 +21,16 @@ readonly class Get_League_Archive_Handler {
     /**
      * Constructor.
      *
-     * @param League_Service       $league_service league service.
-     * @param Competition_Service  $competition_service competition service.
-     * @param Event_Query_Service  $event_query_service event query service.
-     * @param League_Query_Service $league_query_service league query service.
+     * @param League_Service_Interface       $league_service league service.
+     * @param Competition_Service            $competition_service competition service.
+     * @param Event_Query_Service            $event_query_service event query service.
+     * @param League_Query_Service_Interface $league_query_service league query service.
      */
     public function __construct(
-        private League_Service $league_service,
+        private League_Service_Interface $league_service,
         private Competition_Service $competition_service,
         private Event_Query_Service $event_query_service,
-        private League_Query_Service $league_query_service,
+        private League_Query_Service_Interface $league_query_service,
     ) {}
 
     /**

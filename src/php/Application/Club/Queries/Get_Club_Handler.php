@@ -4,11 +4,11 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Club\Queries;
 
 use Racketmanager\Application\Club\DTOs\Club_Overview_Result;
+use Racketmanager\Application\Club\Ports\Club_Service_Interface;
 use Racketmanager\Application\Ports\Settings_Service_Interface;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
-use Racketmanager\Services\Club_Service;
 
 /**
  * Query handler for resolving [club] shortcode data into a view model.
@@ -17,12 +17,12 @@ readonly class Get_Club_Handler {
     /**
      * Constructor
      *
-     * @param Club_Service               $club_service club service.
+     * @param Club_Service_Interface     $club_service club service.
      * @param Settings_Service_Interface $settings_service settings service.
      * @param Security_Service_Interface $security_service security service.
      */
     public function __construct(
-        private Club_Service $club_service,
+        private Club_Service_Interface $club_service,
         private Settings_Service_Interface $settings_service,
         private Security_Service_Interface $security_service
     ) {}

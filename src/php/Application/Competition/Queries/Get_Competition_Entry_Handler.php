@@ -4,6 +4,8 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Competition\Queries;
 
 use BackedEnum;
+use Racketmanager\Application\Club\Ports\Club_Service_Interface;
+use Racketmanager\Application\Club\Ports\Team_Service_Interface;
 use Racketmanager\Application\Competition\DTOs\Competition_Entry_Result;
 use Racketmanager\Application\Ports\Finance_Service_Interface;
 use Racketmanager\Application\Tournament\Ports\Tournament_Service_Interface;
@@ -14,13 +16,11 @@ use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
-use Racketmanager\Services\Team_Service;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function array_column;
@@ -32,14 +32,47 @@ use function str_starts_with;
 use function substr;
 use function __;
 
+/**
+ * Handles retrieval and preparation of competition entry data.
+ *
+ * Resolves the requested competition from either a tournament name or competition
+ * identifier, validates the requested entry context, and returns a structured
+ * competition entry result for tournament, league, or cup entry flows.
+ *
+ * Tournament entries resolve the relevant tournament and player before building
+ * the tournament entry response. League and cup entries require a valid season
+ * and club context, including authorisation checks for club-based entry. When no
+ * club is supplied and multiple eligible clubs are available, the handler returns
+ * a club-selection result instead of an entry form result.
+ *
+ * The handler converts missing or invalid entities, unavailable seasons,
+ * unauthorised club access, and unsupported competition types into error results
+ * rather than allowing domain lookup failures to escape to the caller.
+ */
 final readonly class Get_Competition_Entry_Handler {
+    /**
+     * Initialises the service with required dependencies.
+     *
+     * @param Club_Entry_Selection_Service $club_entry_selection Service for club entry selection operations.
+     * @param Competition_Service          $competition_service Service for competition operations.
+     * @param Tournament_Service_Interface $tournament_service Service for tournament operations.
+     * @param Player_Service               $player_service Service for player operations.
+     * @param Club_Service_Interface       $club_service Service for club operations.
+     * @param Team_Service_Interface       $team_service Service for team operations.
+     * @param Registration_Service         $registration_service Service for registration operations.
+     * @param Competition_Entry_Service    $competition_entry_service Service for competition entry operations.
+     * @param Finance_Service_Interface    $finance_service Service for finance operations.
+     * @param Event_Query_Service          $event_query_service Service for event query operations.
+     *
+     * @return void
+     */
     public function __construct(
         private Club_Entry_Selection_Service $club_entry_selection,
         private Competition_Service $competition_service,
         private Tournament_Service_Interface $tournament_service,
         private Player_Service $player_service,
-        private Club_Service $club_service,
-        private Team_Service $team_service,
+        private Club_Service_Interface $club_service,
+        private Team_Service_Interface $team_service,
         private Registration_Service $registration_service,
         private Competition_Entry_Service $competition_entry_service,
         private Finance_Service_Interface $finance_service,
@@ -47,12 +80,18 @@ final readonly class Get_Competition_Entry_Handler {
     ) {
     }
 
+    /**
+     * Handles a competition entry query and returns the appropriate entry result.
+     *
+     * @param Get_Competition_Entry_Query $query Query containing competition, tournament, season, club, player, user, and template context.
+     *
+     * @return Competition_Entry_Result Result containing the resolved entry form data, club selection list, or an error message.
+     */
     public function handle( Get_Competition_Entry_Query $query ): Competition_Entry_Result {
         $is_tournament    = false;
         $tournament_name  = $query->tournament_name;
         $competition_name = $query->competition_name;
         $tournament       = null;
-        $player           = null;
 
         if ( $tournament_name ) {
             $is_tournament = true;
@@ -74,10 +113,6 @@ final readonly class Get_Competition_Entry_Handler {
             $competition = $this->competition_service->get_by_id( $competition_ref );
         } catch ( Competition_Not_Found_Exception $e ) {
             return Competition_Entry_Result::error( $e->getMessage() );
-        }
-
-        if ( ! $competition ) {
-            return Competition_Entry_Result::error( __( 'Competition not found', 'racketmanager' ) );
         }
 
         if ( $competition->is_tournament ) {
@@ -102,7 +137,7 @@ final readonly class Get_Competition_Entry_Handler {
             return $this->build_tournament_entry( $tournament, $player, $query->template, $query->user_id, $query->is_admin );
         }
 
-        // League / Cup flow
+        // League / Cup flow.
         if ( ! $query->season ) {
             return Competition_Entry_Result::error( __( 'No season specified', 'racketmanager' ) );
         }
@@ -114,14 +149,13 @@ final readonly class Get_Competition_Entry_Handler {
 
         if ( ! empty( $competition_season['venue'] ) ) {
             try {
-                $venue_club = $this->club_service->get_club( (int) $competition_season['venue'] );
+                $venue_club                       = $this->club_service->get_club( (int) $competition_season['venue'] );
                 $competition_season['venue_name'] = $venue_club->shortcode;
-            } catch ( Club_Not_Found_Exception ) {
-                // venue club not found
+            } catch ( Club_Not_Found_Exception ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
+                // venue club not found.
             }
         }
 
-        $club = null;
         if ( $query->club_name ) {
             try {
                 $club = $this->club_service->get_club_by_shortcode( $query->club_name );
@@ -132,7 +166,7 @@ final readonly class Get_Competition_Entry_Handler {
                 return Competition_Entry_Result::error( __( 'Club not found', 'racketmanager' ) );
             }
 
-            $club_id = method_exists( $club, 'get_id' ) ? $club->get_id() : ( $club->id ?? 0 );
+            $club_id   = method_exists( $club, 'get_id' ) ? $club->get_id() : ( $club->id ?? 0 );
             $can_enter = $this->club_entry_selection->available_clubs(
                 $query->is_admin,
                 $query->user_id,
@@ -171,17 +205,35 @@ final readonly class Get_Competition_Entry_Handler {
         }
 
         return match ( (string) $comp_type ) {
-            'league' => $this->build_league_entry( $competition, $query->season, (array) $competition_season, $club, $query->template ),
-            'cup'    => $this->build_cup_entry( $competition, $query->season, (array) $competition_season, $club, $query->template ),
+            'league' => $this->build_league_entry( $competition, $query->season, $competition_season, $club, $query->template ),
+            'cup'    => $this->build_cup_entry( $competition, $query->season, $competition_season, $club, $query->template ),
             default  => Competition_Entry_Result::error( __( 'Invalid competition type specified', 'racketmanager' ) ),
         };
     }
 
+    /**
+     * Resolves the closing date from the competition season data.
+     *
+     * @param array $competition_season Competition season data that may contain a non-empty date_closing value.
+     *
+     * @return string|null The closing date when available, or null when missing, empty, or not a string.
+     */
     private function resolve_closing_date( array $competition_season ): ?string {
         $date = $competition_season['date_closing'] ?? null;
         return is_string( $date ) && '' !== $date ? $date : null;
     }
 
+    /**
+     * Builds a cup competition entry result for the given competition, season, and club.
+     *
+     * @param object $competition Competition object used to resolve the competition ID and load related events.
+     * @param string $season Season identifier used to filter club teams registered for each event.
+     * @param array  $competition_season Competition season data used to resolve season-specific entry details.
+     * @param object $club Club object used to resolve the club ID and attach matching event entry data.
+     * @param string $template Optional template suffix used to determine the entry result template filename.
+     *
+     * @return Competition_Entry_Result Cup competition entry result containing competition, club, event, team, match day, closing date, and template data.
+     */
     private function build_cup_entry( object $competition, string $season, array $competition_season, object $club, string $template ): Competition_Entry_Result {
         $comp_id = method_exists( $competition, 'get_id' ) ? $competition->get_id() : ( $competition->id ?? null );
         $events  = $comp_id ? $this->competition_service->get_events_for_competition( (int) $comp_id ) : [];
@@ -239,6 +291,17 @@ final readonly class Get_Competition_Entry_Handler {
         );
     }
 
+    /**
+     * Builds a league competition entry result for the specified club and season.
+     *
+     * @param object $competition Competition object or data object used to resolve the competition ID and related events.
+     * @param string $season Season identifier used to filter event team entries.
+     * @param array  $competition_season Competition season data used to resolve season-specific entry details.
+     * @param object $club Club object or data object used to resolve club teams and mark entered events.
+     * @param string $template Optional template suffix used to determine the league entry template name.
+     *
+     * @return Competition_Entry_Result League entry result containing competition, club, event, match day, closing date, and template data.
+     */
     private function build_league_entry( object $competition, string $season, array $competition_season, object $club, string $template ): Competition_Entry_Result {
         $comp_id = method_exists( $competition, 'get_id' ) ? $competition->get_id() : ( $competition->id ?? null );
         $events  = $comp_id ? $this->competition_service->get_events_for_competition( (int) $comp_id ) : [];
@@ -281,9 +344,9 @@ final readonly class Get_Competition_Entry_Handler {
                 $event_type = 'XD';
             }
             $event->teams = $this->team_service->get_teams_for_club( (int) $club_id, $event_type );
-            $key = 0;
+            $key          = 0;
             foreach ( $event->teams as $team ) {
-                $found = in_array( $team->id, array_column( $event->event_teams, 'team_id' ) );
+                $found = in_array( $team->id, array_column( $event->event_teams, 'team_id' ), true );
                 if ( false !== $found ) {
                     unset( $event->teams[ $key ] );
                 }
@@ -328,6 +391,21 @@ final readonly class Get_Competition_Entry_Handler {
         );
     }
 
+    /**
+     * Builds a tournament competition entry result for the specified tournament and player.
+     *
+     * Determines eligible events based on player gender and age, loads existing player event entries,
+     * tournament fees, player payments, club memberships, and tournament entry details, then packages
+     * the data for rendering with the selected entry template.
+     *
+     * @param Tournament  $tournament Tournament for which the entry result is being built.
+     * @param Player|null $player Player entering the tournament, or null when no player is selected.
+     * @param string      $template Optional template suffix used to select the tournament entry template.
+     * @param int         $user_id User ID associated with the entry context.
+     * @param bool        $can_manage Whether the current context allows management of the entry.
+     *
+     * @return Competition_Entry_Result Tournament entry result containing tournament, player, eligible events, entry details, memberships, permissions, and template information.
+     */
     private function build_tournament_entry( Tournament $tournament, ?Player $player, string $template, int $user_id = 0, bool $can_manage = false ): Competition_Entry_Result {
         $player_id     = $player ? $player->get_id() : 0;
         $tournament_id = $tournament->get_id();
@@ -336,7 +414,7 @@ final readonly class Get_Competition_Entry_Handler {
         if ( empty( $player?->year_of_birth ) ) {
             $player_age = 0;
         } else {
-            $player_age = (int) substr( (string) $tournament->date_end, 0, 4 ) - intval( $player->year_of_birth );
+            $player_age = (int) substr( $tournament->date_end, 0, 4 ) - intval( $player->year_of_birth );
         }
 
         $tournament->fees     = $this->tournament_service->get_fees( $tournament_id );
@@ -409,8 +487,8 @@ final readonly class Get_Competition_Entry_Handler {
             type: 'tournament',
             tournament: $tournament,
             player: $player,
-            events: $events,
             season: $tournament->season,
+            events: $events,
             player_entries: $player_entries,
             club_memberships: $club_memberships,
             tournament_entry: $tournament_entry,

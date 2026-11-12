@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Standings;
 
+use Racketmanager\Application\League\Ports\Standings_Service_Interface;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Competition\Stage;
@@ -19,7 +20,7 @@ use Racketmanager\Util\Util;
 /**
  * Service for calculating and managing competition standings (league tables).
  */
-class Standings_Service {
+class Standings_Service implements Standings_Service_Interface {
 	private League_Repository_Interface $league_repository;
 	private League_Team_Repository_Interface $league_team_repository;
 	private ?League_Service $league_service = null;

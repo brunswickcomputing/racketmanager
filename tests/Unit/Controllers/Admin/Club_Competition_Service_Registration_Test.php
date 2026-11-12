@@ -43,6 +43,7 @@ final class Club_Competition_Service_Registration_Test extends TestCase {
         $container->set( 'club_service', fn() => $this->createStub( Club_Service::class ) );
         $container->set( 'competition_service', fn() => $this->createStub( Competition_Service::class ) );
         $container->set( \Racketmanager\Application\Ports\Competition_Config_Validator_Factory_Interface::class, fn() => $this->createStub( \Racketmanager\Application\Ports\Competition_Config_Validator_Factory_Interface::class ) );
+        $container->set( \Racketmanager\Application\Club\Ports\Club_Validator_Factory_Interface::class, fn() => $this->createStub( \Racketmanager\Application\Club\Ports\Club_Validator_Factory_Interface::class ) );
         $container->set( 'competition_season_service', fn() => $this->createStub( Competition_Season_Service::class ) );
         $container->set( 'league_service', fn() => $this->createStub( League_Service::class ) );
         $container->set( 'league_query_service', fn() => $this->createStub( League_Query_Service::class ) );

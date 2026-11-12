@@ -38,7 +38,7 @@ final class Club_Admin_Controller_Test extends TestCase {
             $this->club_service,
             $this->player_service,
             $this->guard,
-            new \Racketmanager\Application\Admin\Commands\Club_Handler( $this->club_service, $this->player_service, $player_repo )
+            new \Racketmanager\Application\Admin\Commands\Club_Handler( $this->club_service, $this->player_service, new \Racketmanager\Services\Validator\Club_Validator_Factory( player_repository: $player_repo ) )
         );
 
         $this->controller = new Club_Admin_Controller(

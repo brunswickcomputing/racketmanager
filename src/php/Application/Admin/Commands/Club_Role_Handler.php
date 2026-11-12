@@ -4,16 +4,37 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Admin\Commands;
 
 use Exception;
+use Racketmanager\Application\Club\Ports\Club_Service_Interface;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
-use Racketmanager\Services\Club_Service;
 
+/**
+ * Handles club role administration commands.
+ *
+ * Coordinates role assignment and removal operations through the club service and
+ * converts service outcomes or caught exceptions into action result DTOs suitable
+ * for administrative feedback.
+ */
 final readonly class Club_Role_Handler {
+    /**
+     * Initialises the service with the club service dependency.
+     *
+     * @param Club_Service_Interface $club_service Club service dependency.
+     *
+     * @return void
+     */
     public function __construct(
-        private Club_Service $club_service,
+        private Club_Service_Interface $club_service,
     ) {
     }
 
+    /**
+     * Handles adding a role to a user within a club.
+     *
+     * @param Add_Club_Role_Command $command Command containing the club, role, and user identifiers.
+     *
+     * @return Action_Result_DTO Result describing whether the role was added successfully.
+     */
     public function handle_add_role( Add_Club_Role_Command $command ): Action_Result_DTO {
         $club_id = $command->club_id;
         $role_id = $command->role_id;
@@ -40,6 +61,13 @@ final readonly class Club_Role_Handler {
         }
     }
 
+    /**
+     * Handles deletion of selected club roles and returns the resulting action status.
+     *
+     * @param Delete_Club_Roles_Command $command Command containing the club role identifiers to delete.
+     *
+     * @return Action_Result_DTO Result containing the deletion messages and message type.
+     */
     public function handle_delete_roles( Delete_Club_Roles_Command $command ): Action_Result_DTO {
         $roles = $command->role;
         if ( empty( $roles ) ) {

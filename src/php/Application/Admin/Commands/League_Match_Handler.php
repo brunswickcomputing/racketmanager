@@ -13,7 +13,7 @@ use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Time_Parser;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
-use Racketmanager\Services\Competition\League_Query_Service;
+use Racketmanager\Application\League\Ports\League_Query_Service_Interface;
 
 final readonly class League_Match_Handler {
     public function __construct(
@@ -21,7 +21,7 @@ final readonly class League_Match_Handler {
         private Fixture_Maintenance_Service_Interface $fixture_maintenance_service,
         private Fixture_Result_Manager_Interface $fixture_result_manager,
         private Fixture_Service_Interface $fixture_service,
-        private League_Query_Service $league_query_service
+        private League_Query_Service_Interface $league_query_service
     ) {
     }
 

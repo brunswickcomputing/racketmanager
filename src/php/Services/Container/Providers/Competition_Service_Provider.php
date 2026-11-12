@@ -44,6 +44,11 @@ use Racketmanager\Application\Tournament\Commands\Generate_Tournament_Bracket_Ha
 use Racketmanager\Application\Tournament\Commands\Submit_Tournament_Entry_Handler;
 use Racketmanager\Application\Tournament\Commands\Submit_Tournament_Partner_Handler;
 use Racketmanager\Application\Tournament\Commands\Withdraw_Tournament_Entry_Handler;
+use Racketmanager\Application\League\Ports\League_Query_Service_Interface;
+use Racketmanager\Application\League\Ports\League_Schedule_Service_Interface;
+use Racketmanager\Application\League\Ports\League_Service_Interface;
+use Racketmanager\Application\League\Ports\Promotion_Relegation_Service_Interface;
+use Racketmanager\Application\League\Ports\Standings_Service_Interface;
 use Racketmanager\Application\Tournament\Ports\Tournament_Service_Interface;
 use Racketmanager\Application\Tournament\Queries\Get_Latest_Tournament_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Order_Of_Play_Handler;
@@ -157,6 +162,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             fn() => $c->get( 'club_repository' ),
             fn() => $c->get( 'player_repository' )
         ) );
+        $container->alias( League_Query_Service_Interface::class, 'league_query_service' );
         $container->alias( League_Query_Service::class, 'league_query_service' );
 
         $container->set( 'event_query_service', fn( Simple_Container $c ) => new Event_Query_Service(
@@ -177,6 +183,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'event_query_service' ),
             fn() => $c->get( 'league_query_service' )
         ) );
+        $container->alias( League_Schedule_Service_Interface::class, 'competition_league_schedule_service' );
         $container->alias( Competition_League_Schedule_Service::class, 'competition_league_schedule_service' );
 
         $container->set( 'competition_scheduler', fn() => new Competition_Scheduler() );
@@ -233,6 +240,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'event_repository' ),
             $c->get( 'team_repository' )
         ) );
+        $container->alias( Promotion_Relegation_Service_Interface::class, 'promotion_relegation_service' );
         $container->alias( Promotion_Relegation_Service::class, 'promotion_relegation_service' );
 
         $container->set( 'league_service', fn( Simple_Container $c ) => new League_Service(
@@ -248,6 +256,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'competition_notification_service' ),
             fn() => $c->get( 'league_query_service' )
         ) );
+        $container->alias( League_Service_Interface::class, 'league_service' );
         $container->alias( League_Service::class, 'league_service' );
 
         $container->set( 'standings_service', fn( Simple_Container $c ) => new Standings_Service(
@@ -258,6 +267,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'rubber_repository' ),
             fn() => $c->get( 'league_query_service' )
         ) );
+        $container->alias( Standings_Service_Interface::class, 'standings_service' );
         $container->alias( Standings_Service::class, 'standings_service' );
 
         $container->set( 'knockout_progression_service', fn( Simple_Container $c ) => new Knockout_Progression_Service(

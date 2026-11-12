@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Services;
 
 use Exception;
+use Racketmanager\Application\Club\Ports\Club_Service_Interface;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Club\Club_Factory;
 use Racketmanager\Domain\Club\Club_Role;
@@ -37,7 +38,7 @@ use stdClass;
 /**
  * Class to implement the Club Management Service
  */
-class Club_Service {
+class Club_Service implements Club_Service_Interface {
     private Club_Role_Repository_Interface $club_role_repository;
     private Club_Repository $club_repository;
     private Registration_Repository_Interface $club_player_repository;
@@ -160,11 +161,11 @@ class Club_Service {
     /**
      * Get club by ID
      *
-     * @param $club_id
+     * @param mixed $club_id
      *
      * @return Club
      */
-    public function get_club( $club_id ): Club {
+    public function get_club( mixed $club_id ): Club {
         $club = $this->club_repository->find_by_id( $club_id );
         if ( ! $club ) {
             throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
@@ -176,11 +177,11 @@ class Club_Service {
     /**
      * Get club by shortcode
      *
-     * @param $club_id
+     * @param mixed $club_id
      *
      * @return Club
      */
-    public function get_club_by_shortcode( $club_id ): Club {
+    public function get_club_by_shortcode( mixed $club_id ): Club {
         $club = $this->club_repository->find_by_id( $club_id, 'shortcode' );
         if ( ! $club ) {
             throw new Club_Not_Found_Exception( Util_Messages::club_shortcode_not_found( $club_id ) );
@@ -275,12 +276,12 @@ class Club_Service {
     /**
      * Function to reassign a club role to a user
      *
-     * @param $club_role_id
-     * @param $user_id
+     * @param mixed $club_role_id
+     * @param mixed $user_id
      *
      * @return Club_Role|null
      */
-    public function reassign_role_user( $club_role_id, $user_id ): ?Club_Role {
+    public function reassign_role_user( mixed $club_role_id, mixed $user_id ): ?Club_Role {
         $club_role = $this->club_role_repository->find( $club_role_id );
         // Update the state and save it
         $club_role->set_user_id( $user_id );

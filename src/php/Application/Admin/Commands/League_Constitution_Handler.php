@@ -4,25 +4,25 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Admin\Commands;
 
 use stdClass;
+use Racketmanager\Application\League\Ports\League_Schedule_Service_Interface;
+use Racketmanager\Application\League\Ports\League_Service_Interface;
+use Racketmanager\Application\League\Ports\Promotion_Relegation_Service_Interface;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
-use Racketmanager\Services\Competition\League_Schedule_Service as Competition_League_Schedule_Service;
-use Racketmanager\Services\Competition\Promotion_Relegation_Service;
-use Racketmanager\Services\League_Service;
 
 final readonly class League_Constitution_Handler {
     public function __construct(
         private League_Team_Repository_Interface $league_team_repository,
-        private League_Service $league_service,
-        private Competition_League_Schedule_Service $league_schedule_service,
+        private League_Service_Interface $league_service,
+        private League_Schedule_Service_Interface $league_schedule_service,
         private League_Repository_Interface $league_repository,
         private Event_Repository_Interface $event_repository,
         private Team_Repository_Interface $team_repository,
-        private Promotion_Relegation_Service $promotion_relegation_service
+        private Promotion_Relegation_Service_Interface $promotion_relegation_service
     ) {
     }
 

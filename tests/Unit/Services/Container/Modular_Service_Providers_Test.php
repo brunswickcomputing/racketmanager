@@ -98,6 +98,9 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has( 'registration_service' ) );
         $this->assertTrue( $container->has( 'team_service' ) );
         $this->assertTrue( $container->has( \Racketmanager\Services\Team_Service::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Application\Club\Ports\Club_Service_Interface::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Application\Club\Ports\Team_Service_Interface::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Application\Club\Ports\Club_Validator_Factory_Interface::class ) );
         $this->assertFalse( $container->has( 'club_presenter' ) );
     }
 

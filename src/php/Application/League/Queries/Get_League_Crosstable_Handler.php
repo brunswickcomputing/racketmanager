@@ -4,9 +4,9 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\League\Queries;
 
 use Racketmanager\Application\League\DTOs\League_Crosstable_Result;
+use Racketmanager\Application\League\Ports\League_Query_Service_Interface;
+use Racketmanager\Application\League\Ports\League_Service_Interface;
 use Racketmanager\Domain\Competition\League;
-use Racketmanager\Services\Competition\League_Query_Service;
-use Racketmanager\Services\League_Service;
 use function __;
 use function array_slice;
 use function array_values;
@@ -18,8 +18,8 @@ use function is_array;
  */
 class Get_League_Crosstable_Handler {
     public function __construct(
-        private readonly League_Service $league_service,
-        private readonly League_Query_Service $league_query_service
+        private readonly League_Service_Interface $league_service,
+        private readonly League_Query_Service_Interface $league_query_service
     ) {}
 
     public function handle( Get_League_Crosstable_Query $query ): League_Crosstable_Result {

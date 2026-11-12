@@ -10,6 +10,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services;
 
+use Racketmanager\Application\Club\Ports\Team_Service_Interface;
 use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\DTO\Team\Team_Fixture_Settings_DTO;
@@ -34,7 +35,7 @@ use WP_Error;
 /**
  * Class to implement the Team Management Service
  */
-class Team_Service implements Fixture_Team_Resolver_Interface {
+class Team_Service implements Fixture_Team_Resolver_Interface, Team_Service_Interface {
     private Team_Repository_Interface $team_repository;
     private Club_Repository $club_repository;
     private Event_Repository $event_repository;
@@ -77,11 +78,11 @@ class Team_Service implements Fixture_Team_Resolver_Interface {
      * Get teams for a club
      *
      * @param int|null $club_id
-     * @param $type
+     * @param string|null $type
      *
      * @return array
      */
-    public function get_teams_for_club( ?int $club_id, $type = null ): array {
+    public function get_teams_for_club( ?int $club_id, ?string $type = null ): array {
         if ( ! $this->club_repository->find_by_id( $club_id ) ) {
             throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
         }
@@ -137,11 +138,11 @@ class Team_Service implements Fixture_Team_Resolver_Interface {
      * Get the latest team fixture settings for an event
      *
      * @param int|null $team_id
-     * @param $event_id
+     * @param int|null $event_id
      *
      * @return Team_Fixture_Settings_DTO
      */
-    public function get_latest_team_details_for_event( ?int $team_id, $event_id = null ): Team_Fixture_Settings_DTO {
+    public function get_latest_team_details_for_event( ?int $team_id, ?int $event_id = null ): Team_Fixture_Settings_DTO {
         $team = $this->team_repository->find_by_id( $team_id );
         if ( ! $team ) {
             throw new Team_Not_Found_Exception( Util_Messages::team_not_found( $team->$team_id ) );

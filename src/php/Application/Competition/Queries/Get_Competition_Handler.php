@@ -3,12 +3,12 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Competition\Queries;
 
+use Racketmanager\Application\Club\Ports\Club_Service_Interface;
 use Racketmanager\Application\Competition\DTOs\Competition_Page_Result;
 use Racketmanager\Application\Ports\Settings_Service_Interface;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
-use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
@@ -24,7 +24,7 @@ readonly class Get_Competition_Handler {
      * Constructor.
      *
      * @param Competition_Service        $competition_service Competition service.
-     * @param Club_Service               $club_service Club service.
+     * @param Club_Service_Interface     $club_service Club service.
      * @param Player_Service             $player_service Player service.
      * @param Security_Service_Interface $security_service Security service.
      * @param Settings_Service_Interface $settings_service Settings service.
@@ -32,7 +32,7 @@ readonly class Get_Competition_Handler {
      */
     public function __construct(
         private Competition_Service $competition_service,
-        private Club_Service $club_service,
+        private Club_Service_Interface $club_service,
         private Player_Service $player_service,
         private Security_Service_Interface $security_service,
         private Settings_Service_Interface $settings_service,

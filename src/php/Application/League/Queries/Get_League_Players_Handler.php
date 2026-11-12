@@ -4,9 +4,9 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\League\Queries;
 
 use Racketmanager\Application\League\DTOs\League_Players_Result;
+use Racketmanager\Application\League\Ports\League_Query_Service_Interface;
+use Racketmanager\Application\League\Ports\League_Service_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
-use Racketmanager\Services\Competition\League_Query_Service;
-use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Player_Stats_Service;
@@ -20,12 +20,12 @@ use Throwable;
  */
 class Get_League_Players_Handler {
     public function __construct(
-        private readonly League_Service $league_service,
+        private readonly League_Service_Interface $league_service,
         private readonly League_Repository_Interface $league_repository,
         private readonly Player_Service $player_service,
         private readonly Player_Query_Service $player_query_service,
         private readonly Player_Stats_Service $player_stats_service,
-        private readonly League_Query_Service $league_query_service
+        private readonly League_Query_Service_Interface $league_query_service
     ) {}
 
     public function handle( Get_League_Players_Query $query ): League_Players_Result {
@@ -80,7 +80,7 @@ class Get_League_Players_Handler {
         );
     }
 
-    private function league_query(): League_Query_Service {
+    private function league_query(): League_Query_Service_Interface {
         return $this->league_query_service;
     }
 }

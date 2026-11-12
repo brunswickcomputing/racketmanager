@@ -4,12 +4,12 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Club\Queries;
 
 use Racketmanager\Application\Club\DTOs\Club_Invoices_Result;
+use Racketmanager\Application\Club\Ports\Club_Service_Interface;
 use Racketmanager\Application\Ports\Finance_Service_Interface;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Application\Ports\Settings_Service_Interface;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
-use Racketmanager\Services\Club_Service;
 use stdClass;
 use function __;
 use function trim;
@@ -22,13 +22,13 @@ readonly class Get_Club_Invoices_Handler {
     /**
      * Constructor
      *
-     * @param Club_Service                    $club_service club service.
+     * @param Club_Service_Interface          $club_service club service.
      * @param Finance_Service_Interface       $finance_service finance service.
      * @param Settings_Service_Interface|null $settings_service settings service.
      * @param Option_Gateway_Interface|null   $option_gateway option gateway.
      */
     public function __construct(
-        private Club_Service $club_service,
+        private Club_Service_Interface $club_service,
         private Finance_Service_Interface $finance_service,
         private ?Settings_Service_Interface $settings_service = null,
         private ?Option_Gateway_Interface $option_gateway = null

@@ -3,18 +3,18 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Admin\Commands;
 
+use Racketmanager\Application\Club\Ports\Club_Service_Interface;
+use Racketmanager\Application\Club\Ports\Team_Service_Interface;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
-use Racketmanager\Services\Club_Service;
-use Racketmanager\Services\Team_Service;
 
 final readonly class Club_Team_Handler {
     public function __construct(
-        private Club_Service $club_service,
-        private Team_Service $team_service,
+        private Club_Service_Interface $club_service,
+        private Team_Service_Interface $team_service,
     ) {
     }
 

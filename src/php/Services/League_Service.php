@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services;
 
+use Racketmanager\Application\League\Ports\League_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Result_Update_Request;
 use Racketmanager\Domain\Enums\Team_Profile;
 use Racketmanager\Domain\Competition\League;
@@ -29,7 +30,7 @@ use Racketmanager\Services\Standings\Standings_Service;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 
-class League_Service {
+class League_Service implements League_Service_Interface {
 
     private ?RacketManager $racketmanager;
     private League_Team_Repository_Interface $league_team_repository;

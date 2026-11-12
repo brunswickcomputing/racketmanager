@@ -4,10 +4,10 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Club\Queries;
 
 use Racketmanager\Application\Club\DTOs\Club_Players_Result;
+use Racketmanager\Application\Club\Ports\Club_Service_Interface;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
-use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
 use function __;
@@ -17,13 +17,32 @@ use function is_array;
  * Handles the [club-players] query: the club's active roster, or a single club player.
  */
 readonly class Get_Club_Players_Handler {
+    /**
+     * Initialises the service with required club, player, registration, and option gateway dependencies.
+     *
+     * @param Club_Service_Interface   $club_service Club service dependency.
+     * @param Player_Service           $player_service Player service dependency.
+     * @param Registration_Service     $registration_service Registration service dependency.
+     * @param Option_Gateway_Interface $option_gateway Option gateway dependency.
+     *
+     * @return void
+     */
     public function __construct(
-        private Club_Service $club_service,
+        private Club_Service_Interface $club_service,
         private Player_Service $player_service,
         private Registration_Service $registration_service,
         private Option_Gateway_Interface $option_gateway
     ) {}
 
+    /**
+     * Handles a club players query by retrieving the requested club, an optional player registration,
+     * or the active registered players list, and returns the assembled result data.
+     *
+     * @param Get_Club_Players_Query $query Query containing the club name, optional player name, referrer, and template.
+     *
+     * @return Club_Players_Result Result containing club player data, display options, permissions, or an error message.
+     * @throws Player_Not_Found_Exception If an error occurs during the query handling.
+     */
     public function handle( Get_Club_Players_Query $query ): Club_Players_Result {
         $raw_players = [];
         $player      = null;
@@ -50,7 +69,7 @@ readonly class Get_Club_Players_Handler {
             } else {
                 $raw_players = $this->registration_service->get_registered_players_list( 'active', null, (int) $club->id );
             }
-        } catch ( Club_Not_Found_Exception|Player_Not_Found_Exception $e ) {
+        } catch ( Club_Not_Found_Exception | Player_Not_Found_Exception $e ) {
             return Club_Players_Result::error( $e->getMessage() );
         }
 

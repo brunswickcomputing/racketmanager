@@ -4,13 +4,13 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Admin\Commands;
 
 use Exception;
+use Racketmanager\Application\Club\Ports\Club_Service_Interface;
+use Racketmanager\Application\Club\Ports\Club_Validator_Factory_Interface;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
-use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
-use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Player_Service;
-use Racketmanager\Services\Validator\Validator_Club;
+use RuntimeException;
 use stdClass;
 
 /**
@@ -20,14 +20,14 @@ final readonly class Club_Handler {
     /**
      * Constructor.
      *
-     * @param Club_Service                     $club_service club service.
-     * @param Player_Service                   $player_service player service.
-     * @param Player_Repository_Interface|null $player_repository player repository.
+     * @param Club_Service_Interface                $club_service club service.
+     * @param Player_Service                        $player_service player service.
+     * @param Club_Validator_Factory_Interface|null $club_validator_factory validator factory.
      */
     public function __construct(
-        private Club_Service $club_service,
+        private Club_Service_Interface $club_service,
         private Player_Service $player_service,
-        private ?Player_Repository_Interface $player_repository = null,
+        private ?Club_Validator_Factory_Interface $club_validator_factory = null,
     ) {
     }
 
@@ -37,6 +37,7 @@ final readonly class Club_Handler {
      * @param Add_Club_Admin_Command $command add club command handler.
      *
      * @return Action_Result_DTO
+     * @throws RuntimeException If club validator factory is missing.
      */
     public function handle_add_club( Add_Club_Admin_Command $command ): Action_Result_DTO {
         $club_input                                = new stdClass();
@@ -54,14 +55,17 @@ final readonly class Club_Handler {
         $club_input->facilities                    = $command->facilities;
         $club_input->address                       = $command->address;
 
-        $validator = new Validator_Club( player_repository: $this->player_repository );
+        if ( null === $this->club_validator_factory ) {
+            throw new RuntimeException( 'Club validator factory is required to validate club.' );
+        }
+        $validator = $this->club_validator_factory->create();
         $validator = $validator->name( $club_input->name );
         $validator = $validator->short_code( $club_input->shortcode );
         $validator = $validator->type( $club_input->type );
         $validator = $validator->address( $club_input->address );
 
-        if ( ! empty( $validator->error ) ) {
-            $error_message = ! empty( $validator->err_msgs[0] ) ? strval( $validator->err_msgs[0] ) : __( 'Unable to add club', 'racketmanager' );
+        if ( $validator->has_errors() ) {
+            $error_message = $validator->get_first_error_message() ?? __( 'Unable to add club', 'racketmanager' );
             return new Action_Result_DTO(
                 message: $error_message,
                 message_type: Admin_Message_Type::ERROR,
@@ -70,7 +74,7 @@ final readonly class Club_Handler {
 
         try {
             $new_club = $this->club_service->add_club( $club_input );
-            $club_id  = is_object( $new_club ) && isset( $new_club->id ) ? (int) $new_club->id : null;
+            $club_id  = isset( $new_club->id ) ? (int) $new_club->id : null;
 
             return new Action_Result_DTO(
                 message: __( 'Club added', 'racketmanager' ),
@@ -95,6 +99,7 @@ final readonly class Club_Handler {
      * @param Edit_Club_Admin_Command $command edit club command handler.
      *
      * @return Action_Result_DTO
+     * @throws RuntimeException If club validator factory is missing.
      */
     public function handle_edit_club( Edit_Club_Admin_Command $command ): Action_Result_DTO {
         $club_id = $command->club_id;
@@ -129,7 +134,10 @@ final readonly class Club_Handler {
         $club_updated->facilities                    = $command->facilities;
         $club_updated->address                       = $command->address;
 
-        $validator = new Validator_Club( player_repository: $this->player_repository );
+        if ( null === $this->club_validator_factory ) {
+            throw new RuntimeException( 'Club validator factory is required to validate club.' );
+        }
+        $validator = $this->club_validator_factory->create();
         $validator = $validator->name( $club_updated->name );
         $validator = $validator->short_code( $club_updated->shortcode );
         $validator = $validator->type( $club_updated->type );
@@ -138,8 +146,8 @@ final readonly class Club_Handler {
         $validator = $validator->telephone( $club_updated->match_secretary->contactno );
         $validator = $validator->email( $club_updated->match_secretary->email, $club_updated->match_secretary->id );
 
-        if ( ! empty( $validator->error ) ) {
-            $error_message = ! empty( $validator->err_msgs[0] ) ? strval( $validator->err_msgs[0] ) : __( 'Unable to update club', 'racketmanager' );
+        if ( $validator->has_errors() ) {
+            $error_message = $validator->get_first_error_message() ?? __( 'Unable to update club', 'racketmanager' );
             return new Action_Result_DTO(
                 message: $error_message,
                 message_type: Admin_Message_Type::ERROR,

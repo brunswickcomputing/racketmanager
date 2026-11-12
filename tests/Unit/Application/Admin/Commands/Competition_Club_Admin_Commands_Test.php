@@ -58,6 +58,7 @@ use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Team_Service;
+use Racketmanager\Services\Validator\Club_Validator_Factory;
 use Racketmanager\Services\Validator\Competition_Config_Validator_Factory;
 use Racketmanager\Services\Validator\Validator_Config;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
@@ -206,7 +207,8 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
             ->method( 'update_club' )
             ->willReturn( $club );
 
-        $handler = new Club_Handler( $club_service, $player_service, $player_repository );
+        $validator_factory = new Club_Validator_Factory( player_repository: $player_repository );
+        $handler = new Club_Handler( $club_service, $player_service, $validator_factory );
 
         $add_cmd = new Add_Club_Admin_Command(
             name: 'Westcliff Tennis',
@@ -266,7 +268,8 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
             ->with( 1 )
             ->willReturn( $club );
 
-        $handler = new Club_Handler( $club_service, $player_service, $player_repository );
+        $validator_factory = new Club_Validator_Factory( player_repository: $player_repository );
+        $handler = new Club_Handler( $club_service, $player_service, $validator_factory );
 
         // Missing match secretary
         $cmd_no_sec = new Edit_Club_Admin_Command(
@@ -314,7 +317,7 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
                 return new Club( new Club_Hydration_DTO( id: 1, name: 'Test' ) );
             } );
 
-        $handler    = new Club_Handler( $club_service, $player_service );
+        $handler    = new Club_Handler( $club_service, $player_service, new Club_Validator_Factory() );
         $dispatcher = new Club_Action_Dispatcher( $club_service, $player_service, $guard, $handler );
 
         // Empty founded string maps to null

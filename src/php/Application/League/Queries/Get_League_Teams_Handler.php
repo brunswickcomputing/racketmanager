@@ -4,12 +4,12 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\League\Queries;
 
 use BackedEnum;
+use Racketmanager\Application\Club\Ports\Team_Service_Interface;
 use Racketmanager\Application\League\DTOs\League_Teams_Result;
 use Racketmanager\Application\League\DTOs\League_View_State;
-use Racketmanager\Services\Competition\League_Query_Service;
-use Racketmanager\Services\League_Service;
+use Racketmanager\Application\League\Ports\League_Query_Service_Interface;
+use Racketmanager\Application\League\Ports\League_Service_Interface;
 use Racketmanager\Services\Player_Stats_Service;
-use Racketmanager\Services\Team_Service;
 use Racketmanager\Util\Util;
 use function __;
 use function current_user_can;
@@ -26,10 +26,10 @@ use Throwable;
  */
 class Get_League_Teams_Handler {
 	public function __construct(
-		private readonly League_Service $league_service,
-		private readonly Team_Service $team_service,
+		private readonly League_Service_Interface $league_service,
+		private readonly Team_Service_Interface $team_service,
 		private readonly Player_Stats_Service $player_stats_service,
-		private readonly League_Query_Service $league_query_service
+		private readonly League_Query_Service_Interface $league_query_service
 	) {}
 
 	public function handle( Get_League_Teams_Query $query ): League_Teams_Result {

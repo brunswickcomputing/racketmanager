@@ -6,8 +6,8 @@ namespace Racketmanager\Application\League\Queries;
 use Racketmanager\Application\League\DTOs\League_Championship_Result;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
-use Racketmanager\Services\Competition\League_Query_Service;
-use Racketmanager\Services\League_Service;
+use Racketmanager\Application\League\Ports\League_Query_Service_Interface;
+use Racketmanager\Application\League\Ports\League_Service_Interface;
 use stdClass;
 use function __;
 use function array_reverse;
@@ -24,10 +24,10 @@ use function method_exists;
  */
 class Get_League_Championship_Handler {
     public function __construct(
-        private readonly League_Service $league_service,
+        private readonly League_Service_Interface $league_service,
         private readonly Fixture_Repository_Interface $fixture_repository,
         private readonly Rubber_Repository_Interface $rubber_repository,
-        private readonly League_Query_Service $league_query_service
+        private readonly League_Query_Service_Interface $league_query_service
     ) {}
 
     public function handle( Get_League_Championship_Query $query ): League_Championship_Result {

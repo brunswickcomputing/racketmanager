@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\League\Queries;
 
 use Racketmanager\Application\League\DTOs\League_Season_Dropdown_Result;
-use Racketmanager\Services\League_Service;
+use Racketmanager\Application\League\Ports\League_Service_Interface;
 use function __;
 
 /**
@@ -12,7 +12,7 @@ use function __;
  */
 class Get_League_Season_Dropdown_Handler {
     public function __construct(
-        private readonly League_Service $league_service
+        private readonly League_Service_Interface $league_service
     ) {}
 
     public function handle( Get_League_Season_Dropdown_Query $query ): League_Season_Dropdown_Result {

@@ -4,11 +4,11 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\General\Queries;
 
 use Racketmanager\Application\General\DTOs\Player_Result;
+use Racketmanager\Application\Tournament\Ports\Tournament_Service_Interface;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Registration_Service;
-use Racketmanager\Services\Tournament_Service;
 use function __;
 use function is_object;
 use function method_exists;
@@ -19,7 +19,7 @@ class Get_Player_Handler {
         private readonly Player_Stats_Service $player_stats_service,
         private readonly Player_Service $player_service,
         private readonly ?Registration_Service $registration_service = null,
-        private readonly ?Tournament_Service $tournament_service = null
+        private readonly ?Tournament_Service_Interface $tournament_service = null
     ) {}
 
     public function handle( Get_Player_Query $query ): Player_Result {

@@ -4,14 +4,14 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Tournament\Queries;
 
 use Racketmanager\Application\Tournament\DTOs\Latest_Tournament_Result;
-use Racketmanager\Services\Tournament_Service;
+use Racketmanager\Application\Tournament\Ports\Tournament_Service_Interface;
 use Racketmanager\Util\Util;
 
 class Get_Latest_Tournament_Handler {
     private const BASE_TOURNAMENTS = '/tournaments/';
 
     public function __construct(
-        private readonly Tournament_Service $tournament_service
+        private readonly Tournament_Service_Interface $tournament_service
     ) {}
 
     public function handle( Get_Latest_Tournament_Query $query ): Latest_Tournament_Result {

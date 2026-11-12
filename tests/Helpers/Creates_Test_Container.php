@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Helpers;
 
+use Racketmanager\Application\Tournament\Ports\Tournament_Service_Interface;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
@@ -54,6 +55,7 @@ trait Creates_Test_Container {
         $container->set( 'registration_service', fn() => $this->createStub( Registration_Service::class ) );
         $container->set( 'team_service', fn() => $team_service );
         $container->set( 'tournament_service', fn() => $this->createStub( Tournament_Service::class ) );
+        $container->alias( Tournament_Service_Interface::class, 'tournament_service' );
         $container->set( 'competition_entry_service', fn() => $this->createStub( Competition_Entry_Service::class ) );
         $container->set( 'fixture_service', fn() => $this->createStub( Fixture_Service::class ) );
         $container->set( 'fixture_detail_service', fn() => $this->createStub( Fixture_Detail_Service::class ) );

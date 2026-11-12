@@ -4,14 +4,14 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Tournament\Queries;
 
 use Racketmanager\Application\Tournament\DTOs\Tournament_Withdrawal_Result;
+use Racketmanager\Application\Tournament\Ports\Tournament_Service_Interface;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Services\Tournament_Service;
 use function __;
 
 class Get_Tournament_Withdrawal_Handler {
     public function __construct(
-        private readonly Tournament_Service $tournament_service
+        private readonly Tournament_Service_Interface $tournament_service
     ) {}
 
     public function handle( Get_Tournament_Withdrawal_Query $query ): Tournament_Withdrawal_Result {

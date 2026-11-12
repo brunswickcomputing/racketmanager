@@ -5,15 +5,15 @@ namespace Racketmanager\Application\Tournament\Queries;
 
 use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Application\Tournament\DTOs\Tournament_Result;
+use Racketmanager\Application\Tournament\Ports\Tournament_Service_Interface;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use function __;
 
 class Get_Tournament_Handler {
     public function __construct(
-        private readonly Tournament_Service $tournament_service,
+        private readonly Tournament_Service_Interface $tournament_service,
         private readonly ?Get_Latest_Tournament_Handler $latest_tournament_handler = null,
         private readonly ?Query_Vars_Interface $query_vars = null
     ) {}

@@ -11,10 +11,11 @@ declare( strict_types=1 );
 namespace Racketmanager\Services;
 
 use LogicException;
-use Racketmanager\Domain\Finance\Charge;
-use Racketmanager\Domain\Finance\Charge_Factory;
+use Racketmanager\Application\Tournament\Ports\Tournament_Service_Interface;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\DTO\Admin\Tournament\Tournament_Draw_Data_DTO;
+use Racketmanager\Domain\Finance\Charge;
+use Racketmanager\Domain\Finance\Charge_Factory;
 use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Championship_Rounds_Request_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Details_DTO;
@@ -58,7 +59,7 @@ use WP_Error;
 /**
  * Class to implement the Tournament Management Service
  */
-class Tournament_Service {
+class Tournament_Service implements Tournament_Service_Interface {
     private RacketManager $racketmanager;
     private Tournament_Repository_Interface $tournament_repository;
     private Charge_Repository_Interface $charge_repository;
@@ -190,7 +191,7 @@ class Tournament_Service {
         return $this->get_tournament( $name, 'name' );
     }
 
-    public function get_tournament( null|string|int $tournament_id, $search_term = 'id' ): ?Tournament {
+    public function get_tournament( null|string|int $tournament_id, string $search_term = 'id' ): ?Tournament {
         $tournament = $this->tournament_repository->find_by_id( $tournament_id, $search_term );
         if ( ! $tournament ) {
             throw new Tournament_Not_Found_Exception( Util_Messages::tournament_not_found( $tournament_id ) );

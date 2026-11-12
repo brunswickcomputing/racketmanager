@@ -6,6 +6,7 @@ namespace Racketmanager\Application\Competition\Queries;
 use BackedEnum;
 use Racketmanager\Application\Competition\DTOs\Competition_Entry_Result;
 use Racketmanager\Application\Ports\Finance_Service_Interface;
+use Racketmanager\Application\Tournament\Ports\Tournament_Service_Interface;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Tournament\Tournament;
@@ -20,7 +21,6 @@ use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Team_Service;
-use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function array_column;
@@ -36,7 +36,7 @@ final readonly class Get_Competition_Entry_Handler {
     public function __construct(
         private Club_Entry_Selection_Service $club_entry_selection,
         private Competition_Service $competition_service,
-        private Tournament_Service $tournament_service,
+        private Tournament_Service_Interface $tournament_service,
         private Player_Service $player_service,
         private Club_Service $club_service,
         private Team_Service $team_service,

@@ -4,18 +4,18 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Competition\Queries;
 
 use Racketmanager\Application\Competition\DTOs\Competitions_List_Result;
+use Racketmanager\Application\Tournament\Ports\Tournament_Service_Interface;
 use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Player_Query_Service;
-use Racketmanager\Services\Tournament_Service;
 use function __;
 
 class Get_Competitions_Handler {
     public function __construct(
         private readonly Competition_Service $competition_service,
-        private readonly Tournament_Service $tournament_service,
+        private readonly Tournament_Service_Interface $tournament_service,
         private readonly Player_Service $player_service,
         private readonly Player_Query_Service $player_query_service
     ) {}

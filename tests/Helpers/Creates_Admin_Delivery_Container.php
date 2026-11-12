@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Helpers;
 use Racketmanager\Admin\Admin_Screens_Service_Provider;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Admin\Presenters\Admin_Competition_Page_Presenter;
+use Racketmanager\Application\Tournament\Ports\Tournament_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
@@ -281,6 +282,7 @@ trait Creates_Admin_Delivery_Container {
         $container->alias( \Racketmanager\Services\Admin\Result\Results_Checker_Action_Dispatcher_Interface::class, 'results_checker_action_dispatcher' );
         $container->alias( \Racketmanager\Services\Admin\Import\Import_Action_Dispatcher_Interface::class, 'import_action_dispatcher' );
         $container->alias( \Racketmanager\Application\Ports\Finance_Service_Interface::class, 'finance_service' );
+        $container->alias( Tournament_Service_Interface::class, 'tournament_service' );
 
         if ( array_key_exists( 'admin_results_match_presenter', $services ) && false === $services['admin_results_match_presenter'] ) {
             $container->remove( 'admin_results_match_presenter' );

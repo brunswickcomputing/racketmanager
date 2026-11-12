@@ -44,6 +44,7 @@ use Racketmanager\Application\Tournament\Commands\Generate_Tournament_Bracket_Ha
 use Racketmanager\Application\Tournament\Commands\Submit_Tournament_Entry_Handler;
 use Racketmanager\Application\Tournament\Commands\Submit_Tournament_Partner_Handler;
 use Racketmanager\Application\Tournament\Commands\Withdraw_Tournament_Entry_Handler;
+use Racketmanager\Application\Tournament\Ports\Tournament_Service_Interface;
 use Racketmanager\Application\Tournament\Queries\Get_Latest_Tournament_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Order_Of_Play_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Draws_Handler;
@@ -90,8 +91,6 @@ use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\League_Service;
-use Racketmanager\Services\Player_Query_Service;
-use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Standings\Standings_Service;
 use Racketmanager\Services\Tournament_Service;
 
@@ -292,6 +291,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'fixture_link_service' )->set_tournament_service( $service );
             return $service;
         } );
+        $container->alias( Tournament_Service_Interface::class, 'tournament_service' );
         $container->alias( Tournament_Service::class, 'tournament_service' );
 
         $container->set( 'competition_entry_service', fn( Simple_Container $c ) => new Competition_Entry_Service(

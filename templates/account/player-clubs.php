@@ -33,7 +33,7 @@ $clubs_archive = $clubs_archive ?? ( $vm->clubs_archive ?? ( $vars['clubs_archiv
                                 <div class="media">
                                     <div class="media__wrapper">
                                         <div class="media__img">
-                                            <svg width="16" height="16" class="media__img-element--icon">
+                                            <svg width="16" height="16" class="media__img-element--icon" aria-label="club">
                                                 <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . $image ); ?>"></use>
                                             </svg>
                                         </div>
@@ -90,7 +90,7 @@ $clubs_archive = $clubs_archive ?? ( $vm->clubs_archive ?? ( $vars['clubs_archiv
                                 <div class="media">
                                     <div class="media__wrapper">
                                         <div class="media__img">
-                                            <svg width="16" height="16" class="media__img-element--icon">
+                                            <svg width="16" height="16" class="media__img-element--icon" aria-label="club">
                                                 <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . $image ); ?>"></use>
                                             </svg>
                                         </div>

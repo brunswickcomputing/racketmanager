@@ -35,7 +35,7 @@ if ( ! $winners ) {
                                     $link_class     = $winner->link_class ?? null;
                                     ?>
                                     <?php if ( '' !== $link_ref ) : ?>
-                                        <a href="<?php echo esc_url( $link_ref ); ?>" class="<?php echo esc_attr( (string) $link_class ); ?>" data-type="<?php echo esc_attr( (string) $data_type ); ?>" data-type-id="<?php echo esc_attr( (string) $data_type_id ); ?>" data-season="<?php echo esc_attr( (string) $data_season ); ?>" data-link="<?php echo esc_attr( $link_ref ); ?>" data-link-id="<?php echo esc_attr( (string) ( $winner->event_id ?? '' ) ); ?>" data-link-type="<?php echo esc_attr( (string) $data_type_type ); ?>">
+                                        <a href="<?php echo esc_url( $link_ref ); ?>" class="<?php echo esc_attr( (string) $link_class ); ?>" data-type="<?php echo esc_attr( (string) $data_type ); ?>" data-type-id="<?php echo esc_attr( (string) $data_type_id ); ?>" data-season="<?php echo esc_attr( (string) $data_season ); ?>" data-link="<?php echo esc_attr( $link_ref ); ?>" data-link-id="<?php echo esc_attr( $winner->event_id ?? '' ); ?>" data-link-type="<?php echo esc_attr( (string) $data_type_type ); ?>">
                                             <span class="header">
                                                 <?php echo esc_html( $winner->league ?? '' ); ?>
                                             </span>

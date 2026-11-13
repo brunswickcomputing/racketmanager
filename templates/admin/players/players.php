@@ -87,7 +87,7 @@ foreach ( $errors->all() as $err_fld => $err_msg ) {
                         <div class="col-4 col-md-2"><a href="/wp-admin/admin.php?page=racketmanager-players&amp;view=player&amp;player_id=<?php echo esc_html( $player->id ); ?>"><?php echo esc_html( $player->fullname ); ?></a></div>
                         <div class="col-2 col-md-1">
                             <button type="button" class="btn btn-secondary player-clubs" id="linkedClubs_<?php echo esc_html( $player->id ); ?>" data-bs-toggle="popover" data-bs-placement="left" data-bs-html="true">
-                                <svg width="16" height="16" class="icon icon-white">
+                                <svg width="16" height="16" class="icon icon-white" aria-label="club-link">
                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#link-45deg' ); ?>"></use>
                                 </svg>
                             </button>

@@ -31,7 +31,7 @@ $vm = $archive_vm ?? $vm;
         <div class="media competition-head">
             <div class="media__wrapper">
                 <div class="media__img">
-                    <svg width="16" height="16" class="media__img-element--icon">
+                    <svg width="16" height="16" class="media__img-element--icon" aria-label="competition-type">
                         <use xlink:href="<?php echo esc_url( $vm->icon_url ); ?>"></use>
                     </svg>
                 </div>
@@ -61,7 +61,7 @@ $vm = $archive_vm ?? $vm;
                             <small class="media__subheading">
                                 <span class="nav--link">
                                     <span class="nav-link__value">
-                                        <svg width="32" height="32" class="icon ">
+                                        <svg width="32" height="32" class="icon" aria-label="calendar">
                                             <use xlink:href="<?php echo esc_url( $vm->calendar_icon_url ); ?>"></use>
                                         </svg>
                                         <?php echo esc_html( $vm->date_start_display ); ?> <?php esc_html_e( 'to', 'racketmanager' ); ?> <?php echo esc_html( $vm->date_end_display ); ?>
@@ -96,11 +96,13 @@ $vm = $archive_vm ?? $vm;
         </div>
     </div>
     <?php require 'league-selections.php'; ?>
-    <?php if ( $vm->is_championship ) : ?>
-        <?php if ( function_exists( 'Racketmanager\racketmanager_championship' ) ) {
+    <?php
+    if ( $vm->is_championship ) {
+        if ( function_exists( 'Racketmanager\racketmanager_championship' ) ) {
             racketmanager_championship( 0, [ 'season' => $vm->championship_season ] );
-        } ?>
-    <?php else : ?>
+        }
+    } else {
+        ?>
         <div id="pageContentTab">
             <nav class="navbar navbar-expand-lg">
                 <div class="">
@@ -110,13 +112,17 @@ $vm = $archive_vm ?? $vm;
                     <div class="collapse navbar-collapse mt-3" id="navbarSupportedContent">
                         <!-- Nav tabs -->
                         <ul class="nav nav-pills frontend" id="myTab" role="tablist">
-                            <?php foreach ( $vm->menu_options as $option ) : ?>
-                                <?php if ( ! empty( $option['available'] ) ) : ?>
+                            <?php
+                            foreach ( $vm->menu_options as $option ) {
+                                if ( ! empty( $option['available'] ) ) {
+                                    ?>
                                     <li class="nav-item" role="presentation">
                                         <button class="nav-link tabData <?php echo ! empty( $option['selected'] ) ? 'active' : ''; ?>" id="<?php echo esc_attr( $option['name'] ); ?>-tab" data-bs-toggle="pill" data-bs-target="#<?php echo esc_attr( $option['name'] ); ?>" type="button" role="tab" aria-controls="<?php echo esc_attr( $option['name'] ); ?>" aria-selected="<?php echo ! empty( $option['selected'] ) ? 'true' : 'false'; ?>" data-type="league" data-type-id="<?php echo esc_attr( (string) $vm->league_id ); ?>" data-season="<?php echo esc_attr( $vm->current_season_name ); ?>" data-name="<?php echo esc_attr( $vm->league_seo_name ); ?>" data-competition-type="<?php echo esc_attr( $vm->competition_type ); ?>"><?php echo esc_html( $option['description'] ); ?></button>
                                     </li>
-                                <?php endif; ?>
-                            <?php endforeach; ?>
+                                    <?php
+                                }
+                            }
+                            ?>
                         </ul>
                     </div>
                 </div>
@@ -128,8 +134,10 @@ $vm = $archive_vm ?? $vm;
                     require RACKETMANAGER_PATH . 'templates/includes/loading.php';
                 }
                 ?>
-                <?php foreach ( $vm->menu_options as $option ) : ?>
-                    <?php if ( ! empty( $option['available'] ) ) : ?>
+                <?php
+                foreach ( $vm->menu_options as $option ) {
+                    if ( ! empty( $option['available'] ) ) {
+                        ?>
                         <div class="tab-pane <?php echo ! empty( $option['selected'] ) ? 'active' : 'fade'; ?>" id="<?php echo esc_attr( $option['name'] ); ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( $option['name'] ); ?>-tab">
                             <?php
                             if ( ! empty( $option['selected'] ) ) {
@@ -148,9 +156,13 @@ $vm = $archive_vm ?? $vm;
                             }
                             ?>
                         </div>
-                    <?php endif; ?>
-                <?php endforeach; ?>
+                        <?php
+                    }
+                }
+                ?>
             </div>
         </div>
-    <?php endif; ?>
+        <?php
+    }
+    ?>
 </div>

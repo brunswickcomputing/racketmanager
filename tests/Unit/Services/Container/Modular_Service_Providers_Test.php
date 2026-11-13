@@ -96,6 +96,8 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has( 'club_service' ) );
         $this->assertTrue( $container->has( \Racketmanager\Services\Club_Service::class ) );
         $this->assertTrue( $container->has( 'registration_service' ) );
+        $this->assertTrue( $container->has( \Racketmanager\Services\Registration_Service::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Application\Player\Ports\Registration_Service_Interface::class ) );
         $this->assertTrue( $container->has( 'team_service' ) );
         $this->assertTrue( $container->has( \Racketmanager\Services\Team_Service::class ) );
         $this->assertTrue( $container->has( \Racketmanager\Application\Club\Ports\Club_Service_Interface::class ) );
@@ -112,8 +114,14 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has( 'player_repository' ) );
         $this->assertTrue( $container->has( 'player_error_repository' ) );
         $this->assertTrue( $container->has( 'player_query_service' ) );
+        $this->assertTrue( $container->has( \Racketmanager\Services\Player_Query_Service::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Application\Player\Ports\Player_Query_Service_Interface::class ) );
         $this->assertTrue( $container->has( 'player_stats_service' ) );
+        $this->assertTrue( $container->has( \Racketmanager\Services\Player_Stats_Service::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Application\Player\Ports\Player_Stats_Service_Interface::class ) );
         $this->assertTrue( $container->has( 'player_service' ) );
+        $this->assertTrue( $container->has( \Racketmanager\Services\Player_Service::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Application\Player\Ports\Player_Service_Interface::class ) );
         $this->assertTrue( $container->has( 'player_validation_service' ) );
         $this->assertFalse( $container->has( 'player_presenter' ) );
     }
@@ -495,6 +503,27 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertSame(
             $this->app,
             ( new \ReflectionProperty( $export_adapter, 'racketmanager' ) )->getValue( $export_adapter )
+        );
+    }
+
+    public function test_player_and_registration_ports_resolve_from_container(): void {
+        $container = Container_Bootstrap::boot( $this->app );
+
+        $this->assertInstanceOf(
+            \Racketmanager\Services\Player_Service::class,
+            $container->get( \Racketmanager\Application\Player\Ports\Player_Service_Interface::class )
+        );
+        $this->assertInstanceOf(
+            \Racketmanager\Services\Player_Stats_Service::class,
+            $container->get( \Racketmanager\Application\Player\Ports\Player_Stats_Service_Interface::class )
+        );
+        $this->assertInstanceOf(
+            \Racketmanager\Services\Player_Query_Service::class,
+            $container->get( \Racketmanager\Application\Player\Ports\Player_Query_Service_Interface::class )
+        );
+        $this->assertInstanceOf(
+            \Racketmanager\Services\Registration_Service::class,
+            $container->get( \Racketmanager\Application\Player\Ports\Registration_Service_Interface::class )
         );
     }
 }

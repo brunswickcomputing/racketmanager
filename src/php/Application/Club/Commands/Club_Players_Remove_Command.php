@@ -8,7 +8,12 @@ namespace Racketmanager\Application\Club\Commands;
  */
 readonly class Club_Players_Remove_Command {
     /**
-     * @param int[] $club_player_ids
+     * Initialises the object with the provided club player identifiers and user identifier.
+     *
+     * @param array $club_player_ids Club player identifiers to be removed.
+     * @param int   $user_id Identifier of the user performing the removal.
+     *
+     * @return void
      */
     public function __construct(
         public array $club_player_ids,
@@ -17,11 +22,17 @@ readonly class Club_Players_Remove_Command {
     }
 
     /**
-     * @param array<string, mixed> $post
+     * Creates an instance from submitted post data and a user identifier.
+     *
+     * @param array $post Posted form data for the current request.
+     * @param int   $user_id Identifier of the user performing the removal.
+     *
+     * @return self
      */
     public static function from_post( array $post, int $user_id ): self {
-        $raw = empty( $post['clubPlayer'] ) ? array() : $post['clubPlayer'];
-        $ids = array();
+        $fallback = empty( $post['clubPlayer'] ) ? array() : $post['clubPlayer'];
+        $raw      = empty( $post['club_player'] ) ? $fallback : $post['club_player'];
+        $ids      = array();
         foreach ( (array) $raw as $club_player_id ) {
             $ids[] = (int) $club_player_id;
         }

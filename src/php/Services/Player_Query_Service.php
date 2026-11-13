@@ -13,6 +13,7 @@ namespace Racketmanager\Services;
 
 use ArrayAccess;
 use Closure;
+use Racketmanager\Application\Player\Ports\Player_Query_Service_Interface;
 use Racketmanager\Exceptions\Repository_Missing_Exception;
 use Racketmanager\Exceptions\Service_Missing_Exception;
 use Racketmanager\Services\Competition\Event_Query_Service;
@@ -32,7 +33,7 @@ use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 /**
  * Service for querying player matches, competitions, and raw match statistics.
  */
-class Player_Query_Service {
+class Player_Query_Service implements Player_Query_Service_Interface {
     /**
      * @var Player_Statistics_Repository_Interface|null
      */

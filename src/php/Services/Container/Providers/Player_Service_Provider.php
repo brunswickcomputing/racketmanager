@@ -8,6 +8,9 @@ use Racketmanager\Application\General\Queries\Get_Player_Search_Handler;
 use Racketmanager\Application\General\Queries\Get_Players_Handler;
 use Racketmanager\Application\Player\Commands\Create_Player_Handler;
 use Racketmanager\Application\Player\Commands\Update_Player_Handler;
+use Racketmanager\Application\Player\Ports\Player_Query_Service_Interface;
+use Racketmanager\Application\Player\Ports\Player_Service_Interface;
+use Racketmanager\Application\Player\Ports\Player_Stats_Service_Interface;
 use Racketmanager\Application\Player\Queries\Get_Player_Details_Handler;
 use Racketmanager\Application\Player\Queries\Search_Players_Handler;
 use Racketmanager\RacketManager;
@@ -59,11 +62,13 @@ final readonly class Player_Service_Provider implements Service_Provider_Interfa
             fn() => $c->get( 'league_query_service' )
         ) );
         $container->alias( Player_Query_Service::class, 'player_query_service' );
+        $container->alias( Player_Query_Service_Interface::class, 'player_query_service' );
 
         $container->set( 'player_stats_service', fn( Simple_Container $c ) => new Player_Stats_Service(
             $c->get( 'player_query_service' )
         ) );
         $container->alias( Player_Stats_Service::class, 'player_stats_service' );
+        $container->alias( Player_Stats_Service_Interface::class, 'player_stats_service' );
 
         $container->set( 'player_details_validator', fn( Simple_Container $c ) => new Player_Details_Validator(
             $c->get( 'player_repository' )
@@ -83,6 +88,7 @@ final readonly class Player_Service_Provider implements Service_Provider_Interfa
             $c->get( 'player_details_validator' )
         ) );
         $container->alias( Player_Service::class, 'player_service' );
+        $container->alias( Player_Service_Interface::class, 'player_service' );
 
         $container->set( 'player_validation_service', fn( Simple_Container $c ) => new Player_Validation_Service(
             $c->get( 'registration_service' ),

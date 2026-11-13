@@ -82,7 +82,7 @@ final class Club_Player_Action_Dispatcher_Test extends TestCase {
             array(
                 'doClubPlayerDel' => '1',
                 'action'          => 'delete',
-                'clubPlayer'      => array( 101, 102 ),
+                'club_player'      => array( 101, 102 ),
             )
         );
 

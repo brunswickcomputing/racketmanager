@@ -25,13 +25,27 @@ final class Club_Commands_Test extends TestCase {
 
     public function test_club_players_remove_command(): void {
         $post = [
-            'clubPlayer' => [ '1', '2', '3' ],
+            'club_player' => [ '1', '2', '3' ],
         ];
 
         $cmd = Club_Players_Remove_Command::from_post( $post, 5 );
 
         $this->assertSame( [ 1, 2, 3 ], $cmd->club_player_ids );
         $this->assertSame( 5, $cmd->user_id );
+
+        $post_fallback = [
+            'clubPlayer' => [ '4', '5' ],
+        ];
+
+        $cmd_fallback = Club_Players_Remove_Command::from_post( $post_fallback, 6 );
+
+        $this->assertSame( [ 4, 5 ], $cmd_fallback->club_player_ids );
+        $this->assertSame( 6, $cmd_fallback->user_id );
+
+        $cmd_empty = Club_Players_Remove_Command::from_post( [], 7 );
+
+        $this->assertSame( [], $cmd_empty->club_player_ids );
+        $this->assertSame( 7, $cmd_empty->user_id );
     }
 
     public function test_set_club_role_command(): void {

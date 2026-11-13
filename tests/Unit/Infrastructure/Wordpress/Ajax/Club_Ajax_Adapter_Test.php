@@ -215,7 +215,7 @@ class Club_Ajax_Adapter_Test extends TestCase {
 
     public function test_club_player_remove_success(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $request = array( 'racketmanager_nonce' => 'valid', 'clubPlayer' => array( 3, 4 ) );
+        $request = array( 'racketmanager_nonce' => 'valid', 'club_player' => array( 3, 4 ) );
         $this->registration_service = $this->createMock( Registration_Service::class );
         $this->registration_service->expects( $this->exactly( 2 ) )->method( 'remove_registration' );
         $this->adapter = $this->make_adapter();
@@ -272,7 +272,7 @@ class Club_Ajax_Adapter_Test extends TestCase {
 
     public function test_club_player_remove_rejects_invalid_nonce(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( false );
-        $request = array( 'racketmanager_nonce' => 'bad', 'clubPlayer' => array( 3 ) );
+        $request = array( 'racketmanager_nonce' => 'bad', 'club_player' => array( 3 ) );
         $this->registration_service = $this->createMock( Registration_Service::class );
         $this->registration_service->expects( $this->never() )->method( 'remove_registration' );
         $this->adapter = $this->make_adapter();

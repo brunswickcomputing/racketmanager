@@ -5,13 +5,13 @@ namespace Racketmanager\Application\Competition\Queries;
 
 use Racketmanager\Application\Club\Ports\Club_Service_Interface;
 use Racketmanager\Application\Competition\DTOs\Competition_Page_Result;
+use Racketmanager\Application\Player\Ports\Player_Service_Interface;
 use Racketmanager\Application\Ports\Settings_Service_Interface;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\Player_Service;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use function __;
@@ -25,7 +25,7 @@ readonly class Get_Competition_Handler {
      *
      * @param Competition_Service        $competition_service Competition service.
      * @param Club_Service_Interface     $club_service Club service.
-     * @param Player_Service             $player_service Player service.
+     * @param Player_Service_Interface   $player_service Player service.
      * @param Security_Service_Interface $security_service Security service.
      * @param Settings_Service_Interface $settings_service Settings service.
      * @param Competition_Season_Service $competition_season_service Competition season service.
@@ -33,7 +33,7 @@ readonly class Get_Competition_Handler {
     public function __construct(
         private Competition_Service $competition_service,
         private Club_Service_Interface $club_service,
-        private Player_Service $player_service,
+        private Player_Service_Interface $player_service,
         private Security_Service_Interface $security_service,
         private Settings_Service_Interface $settings_service,
         private Competition_Season_Service $competition_season_service

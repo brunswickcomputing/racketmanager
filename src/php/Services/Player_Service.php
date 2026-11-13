@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Services;
 
 use Exception;
+use Racketmanager\Application\Player\Ports\Player_Service_Interface;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Enums\Club_Role;
 use Racketmanager\Domain\Player\Player;
@@ -45,7 +46,7 @@ use WP_Error;
 /**
  * Class to implement the Player Management Service
  */
-class Player_Service {
+class Player_Service implements Player_Service_Interface {
     private Player_Repository $player_repository;
     private ?RacketManager $racketmanager;
     private ?Player_Error_Repository_Interface $player_error_repository;

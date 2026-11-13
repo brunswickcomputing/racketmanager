@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Competition\Queries;
 
 use Racketmanager\Application\Club\Ports\Club_Service_Interface;
-use Racketmanager\Services\Player_Service;
+use Racketmanager\Application\Player\Ports\Player_Service_Interface;
 
 /**
  * Provides club selection data for entry workflows.
@@ -15,14 +15,14 @@ readonly class Club_Entry_Selection_Service {
     /**
      * Initialises the service with dependencies for club and player operations.
      *
-     * @param Club_Service_Interface $club_service Service used to handle club-related operations.
-     * @param Player_Service         $player_service Service used to handle player-related operations.
+     * @param Club_Service_Interface   $club_service Service used to handle club-related operations.
+     * @param Player_Service_Interface $player_service Service used to handle player-related operations.
      *
      * @return void
      */
     public function __construct(
         private Club_Service_Interface $club_service,
-        private Player_Service $player_service
+        private Player_Service_Interface $player_service
     ) {}
 
     /**

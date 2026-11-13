@@ -33,6 +33,7 @@ use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Player\User;
 use Racketmanager\Domain\Tournament\Currency;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
+use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Invoice_Presenter;
@@ -721,6 +722,39 @@ class General_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'compact', $result->template );
         $this->assertSame( [ $dto_active ], $result->clubs );
         $this->assertSame( [ $dto_removed ], $result->clubs_archive );
+    }
+
+    public function test_get_memberships_handler_returns_error_when_services_missing(): void {
+        $handler = new Get_Memberships_Handler();
+        $query   = new Get_Memberships_Query( is_logged_in: true, user_id: 42 );
+
+        $result = $handler->handle( $query );
+
+        $this->assertTrue( $result->is_error() );
+        $this->assertSame( 'Player not found', $result->error_message );
+
+        $player_service  = $this->createStub( Player_Service::class );
+        $partial_handler = new Get_Memberships_Handler( player_service: $player_service );
+
+        $partial_result = $partial_handler->handle( $query );
+
+        $this->assertTrue( $partial_result->is_error() );
+        $this->assertSame( 'Player not found', $partial_result->error_message );
+    }
+
+    public function test_get_memberships_handler_catches_player_not_found_exception(): void {
+        $player_service = $this->createStub( Player_Service::class );
+        $player_service->method( 'get_player' )->willThrowException( new Player_Not_Found_Exception( 'Player does not exist' ) );
+
+        $reg_service = $this->createStub( Registration_Service::class );
+
+        $handler = new Get_Memberships_Handler( $player_service, $reg_service );
+        $query   = new Get_Memberships_Query( is_logged_in: true, user_id: 42 );
+
+        $result = $handler->handle( $query );
+
+        $this->assertTrue( $result->is_error() );
+        $this->assertSame( 'Player does not exist', $result->error_message );
     }
 
     public function test_memberships_are_presented_as_club_membership_view_models(): void {

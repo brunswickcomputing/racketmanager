@@ -149,8 +149,8 @@ final class Registration_Service_Test extends TestCase {
         $service->approve_registration( 100, 7 );
 
         $this->assertSame( 'approved', $registration->get_status() );
-        $this->assertSame( 7, $registration->get_created_user() );
-        $this->assertSame( '2026-03-01 12:34:56', $registration->get_created_date() );
+        $this->assertSame( 7, $registration->created_user );
+        $this->assertSame( '2026-03-01 12:34:56', $registration->created_date );
     }
 
     /**
@@ -168,8 +168,8 @@ final class Registration_Service_Test extends TestCase {
 
         $service->remove_registration( 100, 9 );
 
-        $this->assertSame( 9, $registration->get_created_user() );
-        $this->assertSame( '2026-07-15 08:00:00', $registration->get_created_date() );
+        $this->assertSame( 9, $registration->created_user );
+        $this->assertSame( '2026-07-15 08:00:00', $registration->created_date );
     }
 
     private function service_with_clock( Registration_Repository_Interface $club_player_repo, Fixed_Clock $clock ): Registration_Service {

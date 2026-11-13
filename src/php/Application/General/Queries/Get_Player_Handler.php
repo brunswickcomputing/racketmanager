@@ -4,24 +4,54 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\General\Queries;
 
 use Racketmanager\Application\General\DTOs\Player_Result;
+use Racketmanager\Application\Player\Ports\Player_Query_Service_Interface;
+use Racketmanager\Application\Player\Ports\Player_Service_Interface;
+use Racketmanager\Application\Player\Ports\Player_Stats_Service_Interface;
+use Racketmanager\Application\Player\Ports\Registration_Service_Interface;
 use Racketmanager\Application\Tournament\Ports\Tournament_Service_Interface;
-use Racketmanager\Services\Player_Service;
-use Racketmanager\Services\Player_Query_Service;
-use Racketmanager\Services\Player_Stats_Service;
-use Racketmanager\Services\Registration_Service;
 use function __;
 use function is_object;
 use function method_exists;
 
-class Get_Player_Handler {
+/**
+ * Handles retrieval of a player and related profile data.
+ *
+ * Resolves a player from a query by BTM identifier or player name, then builds
+ * a player result containing club registrations, titles, career statistics, and
+ * competition history grouped by competition type. Returns an error result when
+ * no matching player can be found.
+ */
+readonly class Get_Player_Handler {
+    /**
+     * Initialises the service with player query, statistics, player management, registration, and tournament dependencies.
+     *
+     * @param Player_Query_Service_Interface      $player_query_service Service used to query player data.
+     * @param Player_Stats_Service_Interface      $player_stats_service Service used to retrieve or manage player statistics.
+     * @param Player_Service_Interface            $player_service Service used to manage player operations.
+     * @param Registration_Service_Interface|null $registration_service Optional service used to manage registrations.
+     * @param Tournament_Service_Interface|null   $tournament_service Optional service used to manage tournaments.
+     *
+     * @return void
+     */
     public function __construct(
-        private readonly Player_Query_Service $player_query_service,
-        private readonly Player_Stats_Service $player_stats_service,
-        private readonly Player_Service $player_service,
-        private readonly ?Registration_Service $registration_service = null,
-        private readonly ?Tournament_Service_Interface $tournament_service = null
+        private Player_Query_Service_Interface $player_query_service,
+        private Player_Stats_Service_Interface $player_stats_service,
+        private Player_Service_Interface $player_service,
+        private ?Registration_Service_Interface $registration_service = null,
+        private ?Tournament_Service_Interface $tournament_service = null
     ) {}
 
+    /**
+     * Handles a player lookup query and builds the corresponding player result.
+     *
+     * Retrieves a player by BTM number or player name, loads related clubs, titles,
+     * career statistics, and competition data, then returns a populated result. If
+     * no matching player is found, an error result is returned.
+     *
+     * @param Get_Player_Query $query Query containing the player lookup criteria and template name.
+     *
+     * @return Player_Result Result containing the player details and related data, or an error result when not found.
+     */
     public function handle( Get_Player_Query $query ): Player_Result {
         $player = null;
         if ( ! empty( $query->btm ) ) {
@@ -34,11 +64,12 @@ class Get_Player_Handler {
             return Player_Result::error( __( 'Player not found', 'racketmanager' ) );
         }
 
-        $player_id = method_exists( $player, 'get_id' ) ? (int) $player->get_id() : (int) ( $player->ID ?? 0 );
+        $player_id = method_exists( $player, 'get_id' ) ? (int) $player->get_id() : $player->ID ?? 0;
 
-        $player_clubs = $this->registration_service
+        $fallback_clubs = method_exists( $player, 'get_clubs' ) ? $player->get_clubs() : [];
+        $player_clubs   = $this->registration_service
             ? $this->registration_service->get_clubs_for_player( $player_id )
-            : ( method_exists( $player, 'get_clubs' ) ? $player->get_clubs() : [] );
+            : $fallback_clubs;
 
         $titles = $this->player_service->get_titles_for_player( $player_id );
 

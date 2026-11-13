@@ -4,14 +4,14 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Competition\Queries;
 
 use Racketmanager\Application\Competition\DTOs\Competition_Players_Result;
+use Racketmanager\Application\Player\Ports\Player_Query_Service_Interface;
+use Racketmanager\Application\Player\Ports\Player_Service_Interface;
+use Racketmanager\Application\Player\Ports\Player_Stats_Service_Interface;
 use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\Player_Service;
-use Racketmanager\Services\Player_Query_Service;
-use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Util\Util;
 use function asort;
 use function is_numeric;
@@ -23,9 +23,9 @@ use function __;
 class Get_Competition_Players_Handler {
     public function __construct(
         private readonly Competition_Service $competition_service,
-        private readonly Player_Service $player_service,
-        private readonly Player_Query_Service $player_query_service,
-        private readonly Player_Stats_Service $player_stats_service,
+        private readonly Player_Service_Interface $player_service,
+        private readonly Player_Query_Service_Interface $player_query_service,
+        private readonly Player_Stats_Service_Interface $player_stats_service,
         private readonly Competition_Season_Service $competition_season_service
     ) {}
 

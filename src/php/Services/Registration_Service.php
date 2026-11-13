@@ -21,6 +21,7 @@ use Racketmanager\Exceptions\Player_Already_Registered_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Registration_Not_Found_Exception;
 use Racketmanager\Application\Mail\Mailer_Interface;
+use Racketmanager\Application\Player\Ports\Registration_Service_Interface;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Registration_Repository_Interface;
 use Racketmanager\Repositories\Club_Repository;
@@ -32,7 +33,7 @@ use function Racketmanager\club_players_notification;
 /**
  * Class to implement the Club Player Management Service
  */
-class Registration_Service {
+class Registration_Service implements Registration_Service_Interface {
     private Registration_Repository_Interface $club_player_repository;
     private Player_Repository $player_repository;
     private Club_Repository $club_repository;
@@ -250,16 +251,16 @@ class Registration_Service {
         $registered_by_name = null;
         $removed_by_name    = null;
         $approved_by_name   = null;
-        if ( ! empty( $registration->get_requested_user() ) ) {
-            $registered_by      = $this->player_repository->find( $registration->get_requested_user() );
+        if ( ! empty( $registration->requested_user ) ) {
+            $registered_by      = $this->player_repository->find( $registration->requested_user );
             $registered_by_name = $registered_by?->display_name;
         }
-        if ( ! empty( $registration->get_removed_user() ) ) {
-            $removed_by      = $this->player_repository->find( $registration->get_removed_user() );
+        if ( ! empty( $registration->removed_user ) ) {
+            $removed_by      = $this->player_repository->find( $registration->removed_user );
             $removed_by_name = $removed_by?->display_name;
         }
-        if ( ! empty( $registration->get_requested_user() ) ) {
-            $approved_by      = $this->player_repository->find( $registration->get_requested_user() );
+        if ( ! empty( $registration->requested_user ) ) {
+            $approved_by      = $this->player_repository->find( $registration->requested_user );
             $approved_by_name = $approved_by?->display_name;
         }
 

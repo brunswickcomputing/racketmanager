@@ -5,10 +5,10 @@ namespace Racketmanager\Application\Event\Queries;
 
 use Racketmanager\Application\Club\Ports\Team_Service_Interface;
 use Racketmanager\Application\Event\DTOs\Event_Teams_Result;
+use Racketmanager\Application\Player\Ports\Player_Stats_Service_Interface;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\Player_Stats_Service;
 use Throwable;
 use function __;
 
@@ -30,16 +30,16 @@ readonly class Get_Event_Teams_Handler {
     /**
      * Initialises the instance with the required service dependencies.
      *
-     * @param Competition_Service         $competition_service Competition service dependency.
-     * @param Player_Stats_Service        $player_stats_service Player statistics service dependency.
-     * @param Team_Service_Interface|null $team_service Optional team service dependency.
-     * @param Event_Query_Service         $event_query_service Event query service dependency.
+     * @param Competition_Service            $competition_service Competition service dependency.
+     * @param Player_Stats_Service_Interface $player_stats_service Player statistics service dependency.
+     * @param Team_Service_Interface|null    $team_service Optional team service dependency.
+     * @param Event_Query_Service            $event_query_service Event query service dependency.
      *
      * @return void
      */
     public function __construct(
         private Competition_Service $competition_service,
-        private Player_Stats_Service $player_stats_service,
+        private Player_Stats_Service_Interface $player_stats_service,
         private ?Team_Service_Interface $team_service,
         private Event_Query_Service $event_query_service
     ) {}

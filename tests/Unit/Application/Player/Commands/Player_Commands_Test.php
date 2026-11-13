@@ -243,4 +243,47 @@ final class Player_Commands_Test extends TestCase {
 		$this->expectExceptionMessage( 'Player already exists' );
 		$handler->handle( $command );
 	}
+
+	public function test_create_player_command_from_post_alternative_keys(): void {
+		$post = [
+			'first_name' => 'Alice',
+			'last_name'  => 'Wonder',
+			'telephone'  => '01234567890',
+			'dob'        => '2000',
+			'club'       => '8',
+		];
+
+		$command = Create_Player_Command::from_post( $post );
+
+		$this->assertSame( 'Alice', $command->first_name );
+		$this->assertSame( 'Wonder', $command->last_name );
+		$this->assertSame( '01234567890', $command->telephone );
+		$this->assertSame( 2000, $command->year_of_birth );
+		$this->assertSame( 8, $command->club_id );
+		$this->assertNull( $command->locked );
+	}
+
+	public function test_create_player_command_from_post_normalizes_empty_and_invalid_values(): void {
+		$post = [
+			'firstname'     => '   ',
+			'first_name'    => '',
+			'surname'       => '',
+			'email'         => '   ',
+			'year_of_birth' => '0',
+			'dob'           => '-5',
+			'club_Id'       => 'invalid',
+			'club_id'       => '0',
+			'club'          => '',
+			'locked'        => '0',
+		];
+
+		$command = Create_Player_Command::from_post( $post );
+
+		$this->assertNull( $command->first_name );
+		$this->assertNull( $command->last_name );
+		$this->assertNull( $command->email );
+		$this->assertNull( $command->year_of_birth );
+		$this->assertNull( $command->club_id );
+		$this->assertFalse( $command->locked );
+	}
 }

@@ -38,65 +38,74 @@ readonly class Update_Player_Command {
     /**
      * Build command from POST / request array.
      *
-     * @param array<string, mixed> $post
+     * @param array<string, mixed> $post POST request array.
      * @return self
      */
     public static function from_post( array $post ): self {
-        $player_id = isset( $post['playerId'] ) && '' !== strval( $post['playerId'] )
-            ? intval( $post['playerId'] )
-            : ( isset( $post['id'] ) && '' !== strval( $post['id'] ) ? intval( $post['id'] ) : null );
-
-        $first_name = isset( $post['firstname'] )
-            ? trim( sanitize_text_field( wp_unslash( (string) $post['firstname'] ) ) )
-            : ( isset( $post['first_name'] ) ? trim( sanitize_text_field( wp_unslash( (string) $post['first_name'] ) ) ) : null );
-
-        $last_name = isset( $post['surname'] )
-            ? trim( sanitize_text_field( wp_unslash( (string) $post['surname'] ) ) )
-            : ( isset( $post['last_name'] ) ? trim( sanitize_text_field( wp_unslash( (string) $post['last_name'] ) ) ) : null );
-
-        $gender = isset( $post['gender'] ) && '' !== strval( $post['gender'] )
-            ? sanitize_text_field( wp_unslash( (string) $post['gender'] ) )
-            : null;
-
-        $email = isset( $post['email'] ) && '' !== strval( $post['email'] )
-            ? sanitize_text_field( wp_unslash( (string) $post['email'] ) )
-            : null;
-
-        $telephone = isset( $post['contactno'] ) && '' !== strval( $post['contactno'] )
-            ? sanitize_text_field( wp_unslash( (string) $post['contactno'] ) )
-            : ( isset( $post['telephone'] ) && '' !== strval( $post['telephone'] ) ? sanitize_text_field( wp_unslash( (string) $post['telephone'] ) ) : null );
-
-        $btm = isset( $post['btm'] ) && '' !== strval( $post['btm'] )
-            ? sanitize_text_field( wp_unslash( (string) $post['btm'] ) )
-            : null;
-
-        $year_of_birth = isset( $post['year_of_birth'] ) && '' !== strval( $post['year_of_birth'] )
-            ? intval( $post['year_of_birth'] )
-            : ( isset( $post['dob'] ) && '' !== strval( $post['dob'] ) ? intval( $post['dob'] ) : null );
-
-        $locked = isset( $post['locked'] ) ? ! empty( $post['locked'] ) : null;
-
-        $club_id = isset( $post['club_Id'] ) && '' !== strval( $post['club_Id'] )
-            ? intval( $post['club_Id'] )
-            : ( isset( $post['club_id'] ) && '' !== strval( $post['club_id'] ) ? intval( $post['club_id'] ) : ( isset( $post['club'] ) && '' !== strval( $post['club'] ) ? intval( $post['club'] ) : null ) );
-
-        $page_referrer = isset( $post['page_referrer'] ) && '' !== strval( $post['page_referrer'] )
-            ? sanitize_text_field( wp_unslash( (string) $post['page_referrer'] ) )
-            : null;
-
         return new self(
-            player_id: $player_id > 0 ? $player_id : null,
-            first_name: '' !== $first_name ? $first_name : null,
-            last_name: '' !== $last_name ? $last_name : null,
-            gender: $gender,
-            email: '' !== $email ? $email : null,
-            telephone: '' !== $telephone ? $telephone : null,
-            btm: '' !== $btm ? $btm : null,
-            year_of_birth: $year_of_birth > 0 ? $year_of_birth : null,
-            locked: $locked,
-            club_id: $club_id > 0 ? $club_id : null,
-            page_referrer: $page_referrer
+            player_id: self::parse_positive_int( $post, 'playerId', 'id' ),
+            first_name: self::parse_string( $post, 'firstname', 'first_name' ),
+            last_name: self::parse_string( $post, 'surname', 'last_name' ),
+            gender: self::parse_string( $post, 'gender' ),
+            email: self::parse_string( $post, 'email' ),
+            telephone: self::parse_string( $post, 'contactno', 'telephone' ),
+            btm: self::parse_string( $post, 'btm' ),
+            year_of_birth: self::parse_positive_int( $post, 'year_of_birth', 'dob' ),
+            locked: self::parse_bool( $post, 'locked' ),
+            club_id: self::parse_positive_int( $post, 'club_Id', 'club_id', 'club' ),
+            page_referrer: self::parse_string( $post, 'page_referrer' )
         );
+    }
+
+    /**
+     * Extract, sanitize, and trim the first non-empty string value for the given keys.
+     *
+     * @param array<string, mixed> $post POST request array.
+     * @param string ...$keys Candidate keys in fallback order.
+     * @return string|null Sanitized non-empty string, or null if none match.
+     */
+    private static function parse_string( array $post, string ...$keys ): ?string {
+        foreach ( $keys as $key ) {
+            if ( isset( $post[ $key ] ) && '' !== strval( $post[ $key ] ) ) {
+                $value = trim( sanitize_text_field( wp_unslash( (string) $post[ $key ] ) ) );
+                if ( '' !== $value ) {
+                    return $value;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Extract the first positive integer value (> 0) for the given keys.
+     *
+     * @param array<string, mixed> $post POST request array.
+     * @param string ...$keys Candidate keys in fallback order.
+     * @return int|null Positive integer, or null if missing or not positive.
+     */
+    private static function parse_positive_int( array $post, string ...$keys ): ?int {
+        foreach ( $keys as $key ) {
+            if ( isset( $post[ $key ] ) && '' !== strval( $post[ $key ] ) ) {
+                $value = intval( $post[ $key ] );
+                if ( $value > 0 ) {
+                    return $value;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Extract a boolean value indicating whether the key is present and not empty.
+     *
+     * @param array<string, mixed> $post POST request array.
+     * @param string $key Request key to evaluate.
+     * @return bool|null True if non-empty, false if empty, null if not present.
+     */
+    private static function parse_bool( array $post, string $key ): ?bool {
+        return isset( $post[ $key ] ) ? ! empty( $post[ $key ] ) : null;
     }
 
     /**

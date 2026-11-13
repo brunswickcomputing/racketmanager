@@ -11,13 +11,14 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services;
 
+use Racketmanager\Application\Player\Ports\Player_Stats_Service_Interface;
 use Racketmanager\Domain\Player\Player;
 use stdClass;
 
 /**
  * Service for calculating, aggregating and formatting player match and career statistics.
  */
-class Player_Stats_Service {
+class Player_Stats_Service implements Player_Stats_Service_Interface {
     private Player_Query_Service $query_service;
 
     public function __construct( Player_Query_Service $query_service ) {

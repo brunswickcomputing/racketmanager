@@ -13,6 +13,7 @@ use Racketmanager\Application\Club\Queries\Get_Club_Players_Handler;
 use Racketmanager\Application\Club\Queries\Get_Club_Role_Modal_Handler;
 use Racketmanager\Application\Club\Queries\Get_Club_Roles_Handler;
 use Racketmanager\Application\General\Queries\Get_Team_Order_Handler;
+use Racketmanager\Application\Player\Ports\Registration_Service_Interface;
 use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Club_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Club_Ajax_Controller;
@@ -112,6 +113,7 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
             )
         );
         $container->alias( Registration_Service::class, 'registration_service' );
+        $container->alias( Registration_Service_Interface::class, 'registration_service' );
 
         $container->set(
             'team_service',

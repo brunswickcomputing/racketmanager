@@ -79,11 +79,11 @@ class Club_Ajax_Controller_Test extends TestCase {
     }
 
     public function test_club_player_remove_passes_request_to_adapter(): void {
-        $_POST = array( 'racketmanager_nonce' => 'test_nonce', 'clubPlayer' => array( 3, 4 ) );
+        $_POST = array( 'racketmanager_nonce' => 'test_nonce', 'club_player' => array( 3, 4 ) );
 
         $this->assert_controller_delegates(
             'club_player_remove',
-            static fn( array $req ): bool => ( $req['clubPlayer'] ?? array() ) === array( 3, 4 ),
+            static fn( array $req ): bool => ( $req['club_player'] ?? array() ) === array( 3, 4 ),
             new Response( 'removed', 200 ),
             'removed',
             'club_player_remove'

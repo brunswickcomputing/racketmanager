@@ -43,37 +43,37 @@ class Club_Player {
      *
      * @var string|null
      */
-    public ?string $removed_date = null;
+    public private(set) ?string $removed_date = null;
     /**
      * Removed user
      *
      * @var int|null
      */
-    public ?int $removed_user = null;
+    public private(set) ?int $removed_user = null;
     /**
      * Created date
      *
      * @var ?string
      */
-    public ?string $created_date = null;
+    public private(set) ?string $created_date = null;
     /**
      * Created user
      *
      * @var int|null
      */
-    public ?int $created_user = null;
+    public private(set) ?int $created_user = null;
     /**
      * Requested date
      *
      * @var string|null
      */
-    public ?string $requested_date;
+    public private(set) ?string $requested_date = null;
     /**
      * Requested user
      *
      * @var int|null
      */
-    public ?int $requested_user;
+    public private(set) ?int $requested_user = null;
     /**
      * Player
      *
@@ -85,13 +85,13 @@ class Club_Player {
      *
      * @var boolean|null
      */
-    public bool|null $system_record = null;
+    public private(set) ?bool $system_record = null;
     /**
      * Status
      *
      * @var string|null
      */
-    private ?string $status = null;
+    public private(set) ?string $status = null;
 
     /**
      * Constructor
@@ -139,7 +139,7 @@ class Club_Player {
     /**
      * Set the id
      *
-     * @param int $insert_id
+     * @param int $insert_id Id for player.
      *
      * @return void
      */
@@ -166,69 +166,6 @@ class Club_Player {
     }
 
     /**
-     * Get the requested date
-     *
-     * @return string|null
-     */
-    public function get_requested_date(): ?string {
-        return $this->requested_date;
-    }
-
-    /**
-     * Get requested user id
-     *
-     * @return int|null
-     */
-    public function get_requested_user(): ?int {
-        return $this->requested_user;
-    }
-
-    /**
-     * Get the approval date
-     *
-     * @return string|null
-     */
-    public function get_created_date(): ?string {
-        return $this->created_date;
-    }
-
-    /**
-     * Get approval user id
-     *
-     * @return int|null
-     */
-    public function get_created_user(): ?int {
-        return $this->created_user;
-    }
-
-    /**
-     * Get the removed date
-     *
-     * @return string|null
-     */
-    public function get_removed_date(): ?string {
-        return $this->removed_date;
-    }
-
-    /**
-     * Get removed user id
-     *
-     * @return int|null
-     */
-    public function get_removed_user(): ?int {
-        return $this->removed_user;
-    }
-
-    /**
-     * Get system record indicator
-     *
-     * @return bool|null
-     */
-    public function get_system_record(): ?bool {
-        return $this->system_record;
-    }
-
-    /**
      * Get status
      *
      * @return string|null
@@ -238,12 +175,12 @@ class Club_Player {
     }
 
      /**
-     * Set the removal date
-     *
-     * @param string $date
-     *
-     * @return void
-     */
+      * Set the removal date
+      *
+      * @param string $date removal date.
+      *
+      * @return void
+      */
     public function set_removal_date( string $date ): void {
         $this->removed_date = $date;
     }
@@ -251,7 +188,7 @@ class Club_Player {
     /**
      * Set removal user id
      *
-     * @param int $userid
+     * @param int $userid removal user id.
      *
      * @return void
      */
@@ -266,6 +203,7 @@ class Club_Player {
      * @param DateTimeImmutable $now     approval time (site-local, see Clock_Interface).
      *
      * @return void
+     * @throws Invalid_Status_Exception Registration is not pending approval.
      */
     public function approve( int $user_id, DateTimeImmutable $now ): void {
         if ( 'pending' !== $this->status ) {
@@ -283,6 +221,7 @@ class Club_Player {
      * @param DateTimeImmutable $now     removal time (site-local, see Clock_Interface).
      *
      * @return void
+     * @throws Invalid_Status_Exception Registration is already removed.
      */
     public function remove( int $user_id, DateTimeImmutable $now ): void {
         if ( 'removed' === $this->status ) {

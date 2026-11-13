@@ -66,6 +66,7 @@
 		<exclude name="Squiz.PHP.NonExecutableCode.Unreachable"/>
 		<exclude name="PSR2.Classes.PropertyDeclaration.Multiple"/>
 		<exclude name="PSR2.Classes.PropertyDeclaration.ScopeMissing"/>
+		<exclude name="Squiz.Commenting.VariableComment.Missing"/>
 
 		<!-- 6. Allow short ternary ?: -->
 		<exclude name="Universal.Operators.DisallowShortTernary"/>

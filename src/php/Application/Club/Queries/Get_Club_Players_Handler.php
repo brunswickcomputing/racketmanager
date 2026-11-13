@@ -5,11 +5,11 @@ namespace Racketmanager\Application\Club\Queries;
 
 use Racketmanager\Application\Club\DTOs\Club_Players_Result;
 use Racketmanager\Application\Club\Ports\Club_Service_Interface;
+use Racketmanager\Application\Player\Ports\Player_Service_Interface;
+use Racketmanager\Application\Player\Ports\Registration_Service_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
-use Racketmanager\Application\Ports\Option_Gateway_Interface;
-use Racketmanager\Services\Player_Service;
-use Racketmanager\Services\Registration_Service;
 use function __;
 use function is_array;
 
@@ -20,17 +20,17 @@ readonly class Get_Club_Players_Handler {
     /**
      * Initialises the service with required club, player, registration, and option gateway dependencies.
      *
-     * @param Club_Service_Interface   $club_service Club service dependency.
-     * @param Player_Service           $player_service Player service dependency.
-     * @param Registration_Service     $registration_service Registration service dependency.
-     * @param Option_Gateway_Interface $option_gateway Option gateway dependency.
+     * @param Club_Service_Interface         $club_service Club service dependency.
+     * @param Player_Service_Interface       $player_service Player service dependency.
+     * @param Registration_Service_Interface $registration_service Registration service dependency.
+     * @param Option_Gateway_Interface       $option_gateway Option gateway dependency.
      *
      * @return void
      */
     public function __construct(
         private Club_Service_Interface $club_service,
-        private Player_Service $player_service,
-        private Registration_Service $registration_service,
+        private Player_Service_Interface $player_service,
+        private Registration_Service_Interface $registration_service,
         private Option_Gateway_Interface $option_gateway
     ) {}
 

@@ -13,7 +13,6 @@ namespace Racketmanager\Repositories;
 use Racketmanager\Domain\Club\Club_Player;
 use Racketmanager\Domain\Club\Club_Player_Factory;
 use Racketmanager\Repositories\Interfaces\Registration_Repository_Interface;
-use Racketmanager\Util\Util;
 use wpdb;
 
 /**
@@ -35,40 +34,41 @@ class Registration_Repository implements Registration_Repository_Interface {
     /**
      * Save a club player.
      *
-     * @param object $entity
+     * @param object $entity Club player entity.
      *
      * @return int|bool
      */
     public function save( object $entity ): bool|int {
         /** @var Club_Player $club_player */
         $club_player = $entity;
-        //`id`, `player_id`, `system_record`, `club_id`, `removed_date`, `removed_user`, `created_date`, `created_user`, `requested_date`, `requested_user`
+        // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
+        // fields are `id`, `player_id`, `system_record`, `club_id`, `removed_date`, `removed_user`, `created_date`, `created_user`, `requested_date`, `requested_user`.
         if ( $club_player->get_id() === null ) {
             $inserted = $this->wpdb->insert(
                 $this->table_name,
                 array(
                     'player_id'      => $club_player->get_player_id(),
                     'club_id'        => $club_player->get_club_id(),
-                    'requested_date' => $club_player->get_requested_date(),
-                    'requested_user' => $club_player->get_requested_user(),
-                    'created_date'   => $club_player->get_created_date(),
-                    'created_user'   => $club_player->get_created_user(),
-                    'removed_date'   => $club_player->get_removed_date(),
-                    'removed_user'   => $club_player->get_removed_user(),
-                    'system_record'  => $club_player->get_system_record(),
+                    'requested_date' => $club_player->requested_date,
+                    'requested_user' => $club_player->requested_user,
+                    'created_date'   => $club_player->created_date,
+                    'created_user'   => $club_player->created_user,
+                    'removed_date'   => $club_player->removed_date,
+                    'removed_user'   => $club_player->removed_user,
+                    'system_record'  => $club_player->system_record,
                     'status'         => $club_player->get_status(),
                 ),
                 array(
-                    '%d', // Format for player_id (int)
-                    '%d', // Format for club_id (int)
-                    '%s', // Format for requested_date (string)
-                    '%d', // Format for requested_user (int)
-                    '%s', // Format for created_date (string)
-                    '%d', // Format for created_user (int)
-                    '%s', // Format for removed_date (string)
-                    '%d', // Format for removed_user (int)
-                    '%s', // Format for system_record (bool)
-                    '%s', // Format for status (string)
+                    '%d', // Format for player_id (int).
+                    '%d', // Format for club_id (int).
+                    '%s', // Format for requested_date (string).
+                    '%d', // Format for requested_user (int).
+                    '%s', // Format for created_date (string).
+                    '%d', // Format for created_user (int).
+                    '%s', // Format for removed_date (string).
+                    '%d', // Format for removed_user (int).
+                    '%s', // Format for system_record (bool).
+                    '%s', // Format for status (string).
                 )
             );
             if ( $inserted ) {
@@ -83,48 +83,48 @@ class Registration_Repository implements Registration_Repository_Interface {
                 array(
                     'player_id'      => $club_player->get_player_id(),
                     'club_id'        => $club_player->get_club_id(),
-                    'requested_date' => $club_player->get_requested_date(),
-                    'requested_user' => $club_player->get_requested_user(),
-                    'created_date'   => $club_player->get_created_date(),
-                    'created_user'   => $club_player->get_created_user(),
-                    'removed_date'   => $club_player->get_removed_date(),
-                    'removed_user'   => $club_player->get_removed_user(),
-                    'system_record'  => $club_player->get_system_record(),
+                    'requested_date' => $club_player->requested_date,
+                    'requested_user' => $club_player->requested_user,
+                    'created_date'   => $club_player->created_date,
+                    'created_user'   => $club_player->created_user,
+                    'removed_date'   => $club_player->removed_date,
+                    'removed_user'   => $club_player->removed_user,
+                    'system_record'  => $club_player->system_record,
                     'status'         => $club_player->get_status(),
-                ), // Data to update
-                array( // Where clause
-                    'id' => $club_player->get_id()
+                ), // Data to update.
+                array( // Where clause.
+                    'id' => $club_player->get_id(),
                 ),
-                array( // Data format
-                    '%d', // Format for player_id (int)
-                    '%d', // Format for club_id (int)
-                    '%s', // Format for requested_date (string)
-                    '%d', // Format for requested_user (int)
-                    '%s', // Format for created_date (string)
-                    '%d', // Format for created_user (int)
-                    '%s', // Format for removed_date (string)
-                    '%d', // Format for removed_user (int)
-                    '%s', // Format for system_record (bool)
-                    '%s', // Format for status (string)
+                array( // Data format.
+                    '%d', // Format for player_id (int).
+                    '%d', // Format for club_id (int).
+                    '%s', // Format for requested_date (string).
+                    '%d', // Format for requested_user (int).
+                    '%s', // Format for created_date (string).
+                    '%d', // Format for created_user (int).
+                    '%s', // Format for removed_date (string).
+                    '%d', // Format for removed_user (int).
+                    '%s', // Format for system_record (bool).
+                    '%s', // Format for status (string).
                 ),
-                array( // Where format
-                    '%d'
+                array( // Where format.
+                    '%d',
                 )
             );
             wp_cache_flush_group( 'club_players' );
-            return $updated !== false;
+            return false !== $updated;
         }
     }
 
     /**
      * Find a club player by its ID.
      *
-     * @param $id
+     * @param int $id id.
      *
      * @return Club_Player|null
      */
     public function find_by_id( $id ): ?Club_Player {
-        $row   = $this->wpdb->get_row(
+        $row = $this->wpdb->get_row(
             $this->wpdb->prepare(
                 "SELECT `id`, `player_id`, `system_record`, `club_id`, `removed_date`, `removed_user`, `created_date`, `created_user`, `requested_date`, `requested_user`, `status` FROM $this->table_name WHERE id = %d",
                 $id
@@ -136,8 +136,8 @@ class Registration_Repository implements Registration_Repository_Interface {
     /**
      * Find club players by player ID.
      *
-     * @param int $player_id
-     * @param string $status
+     * @param int    $player_id player ID.
+     * @param string $status status.
      *
      * @return array
      */
@@ -145,7 +145,7 @@ class Registration_Repository implements Registration_Repository_Interface {
         $search = null;
         if ( 'active' === $status ) {
             $search = ' AND `removed_date` IS NULL';
-        } elseif( 'removed' === $status ) {
+        } elseif ( 'removed' === $status ) {
             $search = ' AND `removed_date` IS NOT NULL';
         }
         $query   = $this->wpdb->prepare(
@@ -154,7 +154,7 @@ class Registration_Repository implements Registration_Repository_Interface {
         );
         $results = $this->wpdb->get_results( $query );
         return array_map(
-            function( $row ) {
+            function ( $row ) {
                 return Club_Player_Factory::from_object( $row );
             },
             $results
@@ -164,12 +164,12 @@ class Registration_Repository implements Registration_Repository_Interface {
     /**
      * Find a club player by club and player IDs.
      *
-     * @param int $club_id
-     * @param int $player_id
+     * @param int $club_id club_id club id.
+     * @param int $player_id player id.
      *
      * @return Club_Player|null
      */
-    public function find_by_club_and_player( int $club_id, int $player_id): ?Club_Player {
+    public function find_by_club_and_player( int $club_id, int $player_id ): ?Club_Player {
         $row = $this->wpdb->get_row(
             $this->wpdb->prepare(
                 "SELECT * FROM $this->table_name WHERE club_id = %d AND player_id = %d AND `removed_date` IS NULL",
@@ -183,7 +183,7 @@ class Registration_Repository implements Registration_Repository_Interface {
     /**
      * Find a club player by its ID.
      *
-     * @param int $club_player_id
+     * @param int $club_player_id club_player_id.
      *
      * @return Club_Player|null
      */
@@ -205,7 +205,7 @@ class Registration_Repository implements Registration_Repository_Interface {
     /**
      * Delete a registration by its ID.
      *
-     * @param int $id
+     * @param int $id id.
      * @return bool True on success, false on failure.
      */
     public function delete( int $id ): bool {
@@ -219,7 +219,7 @@ class Registration_Repository implements Registration_Repository_Interface {
     /**
      * Delete all club players for a club.
      *
-     * @param int $club_id
+     * @param int $club_id club_id.
      *
      * @return bool
      */
@@ -234,8 +234,8 @@ class Registration_Repository implements Registration_Repository_Interface {
     /**
      * Finds all Club IDs where the given player has any type of registration.
      *
-     * @param int $player_id
-     * @param int|null $club_id
+     * @param int      $player_id player_id.
+     * @param int|null $club_id club_id.
      *
      * @return int[] Array of Club IDs.
      */
@@ -243,13 +243,13 @@ class Registration_Repository implements Registration_Repository_Interface {
         $sql      = "SELECT club_id FROM $this->table_name WHERE player_id = %d AND `removed_date` IS NULL";
         $params[] = $player_id;
         if ( $club_id ) {
-            $sql .= " AND club_id = %d";
+            $sql     .= ' AND club_id = %d';
             $params[] = $club_id;
         }
         $query = $this->wpdb->prepare(
             $sql,
             $params
         );
-        return $this->wpdb->get_col($query);
+        return $this->wpdb->get_col( $query );
     }
 }

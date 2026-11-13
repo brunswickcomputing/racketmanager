@@ -6,10 +6,10 @@ namespace Racketmanager\Application\Admin\Commands;
 use Exception;
 use Racketmanager\Application\Club\Ports\Club_Service_Interface;
 use Racketmanager\Application\Club\Ports\Club_Validator_Factory_Interface;
+use Racketmanager\Application\Player\Ports\Player_Service_Interface;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
-use Racketmanager\Services\Player_Service;
 use RuntimeException;
 use stdClass;
 
@@ -21,12 +21,12 @@ final readonly class Club_Handler {
      * Constructor.
      *
      * @param Club_Service_Interface                $club_service club service.
-     * @param Player_Service                        $player_service player service.
+     * @param Player_Service_Interface              $player_service player service.
      * @param Club_Validator_Factory_Interface|null $club_validator_factory validator factory.
      */
     public function __construct(
         private Club_Service_Interface $club_service,
-        private Player_Service $player_service,
+        private Player_Service_Interface $player_service,
         private ?Club_Validator_Factory_Interface $club_validator_factory = null,
     ) {
     }

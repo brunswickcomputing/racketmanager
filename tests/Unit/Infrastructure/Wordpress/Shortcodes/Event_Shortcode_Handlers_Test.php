@@ -667,6 +667,272 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'Partner Name', $vm_ok->vars['partner_name'] );
     }
 
+    public function test_event_partner_handler_event_resolution_and_allowlist(): void {
+        $player_service = $this->createStub( Player_Service::class );
+
+        // 1. Missing event id and empty event name -> error 'Event not found'
+        $comp_service_empty = $this->createMock( Competition_Service::class );
+        $comp_service_empty->expects( $this->never() )->method( 'get_event_by_id' );
+
+        $handler_empty = new Get_Event_Partner_Handler( $comp_service_empty, $player_service, $this->event_query_service() );
+        $err_empty     = $handler_empty->handle( new Get_Event_Partner_Query( event_id: null, event_name: '' ) );
+        $this->assertTrue( $err_empty->is_error() );
+        $this->assertSame( 'Event not found', $err_empty->error_message );
+
+        // 2. Event name fallback when event_id is null
+        $competition = $this->create_test_competition( 10, [ 55 ] );
+        $event_stub  = $this->create_test_event( 55, 10, $competition );
+        $event_stub->name = 'Mixed Doubles';
+
+        $comp_service_name = $this->createMock( Competition_Service::class );
+        $comp_service_name->expects( $this->once() )
+            ->method( 'get_event_by_id' )
+            ->with( 'Mixed Doubles' )
+            ->willReturn( $event_stub );
+
+        $handler_name = new Get_Event_Partner_Handler( $comp_service_name, $player_service, $this->event_query_service() );
+        $vm_name      = $handler_name->handle( new Get_Event_Partner_Query( event_id: null, event_name: 'Mixed Doubles' ) );
+        $this->assertFalse( $vm_name->is_error() );
+        $this->assertSame( 55, $vm_name->event->id );
+
+        // 3. Zero event id is treated as valid identifier and queried
+        $comp_service_zero = $this->createMock( Competition_Service::class );
+        $comp_service_zero->expects( $this->once() )
+            ->method( 'get_event_by_id' )
+            ->with( 0 )
+            ->willThrowException( new Competition_Not_Found_Exception( 'Not found' ) );
+
+        $handler_zero = new Get_Event_Partner_Handler( $comp_service_zero, $player_service, $this->event_query_service() );
+        $err_zero     = $handler_zero->handle( new Get_Event_Partner_Query( event_id: 0 ) );
+        $this->assertTrue( $err_zero->is_error() );
+        $this->assertSame( 'Event not found', $err_zero->error_message );
+
+        // 4. Event allowlist rejection
+        $blocked_event          = $this->create_test_event( 99, 10, $competition );
+        $comp_service_allowlist = $this->createStub( Competition_Service::class );
+        $comp_service_allowlist->method( 'get_event_by_id' )->willReturn( $blocked_event );
+
+        $handler_allowlist = new Get_Event_Partner_Handler( $comp_service_allowlist, $player_service, $this->event_query_service() );
+        $err_blocked       = $handler_allowlist->handle( new Get_Event_Partner_Query( event_id: 99 ) );
+        $this->assertTrue( $err_blocked->is_error() );
+        $this->assertSame( 'Event not found for competition', $err_blocked->error_message );
+
+        // 5. Season side effect: query season updates event season context via event_query_service
+        $season_event = $this->create_test_event( 55, 10, $competition );
+        $season_event->current_season = [ 'name' => '2025' ];
+        $comp_service_season          = $this->createStub( Competition_Service::class );
+        $comp_service_season->method( 'get_event_by_id' )->willReturn( $season_event );
+
+        $handler_season = new Get_Event_Partner_Handler( $comp_service_season, $player_service, $this->event_query_service() );
+        $res_season     = $handler_season->handle( new Get_Event_Partner_Query( event_id: 55, season: '2026' ) );
+        $this->assertFalse( $res_season->is_error() );
+        $this->assertSame( '2026', $res_season->season );
+
+        // When query has no season, existing current_season['name'] is preserved
+        $season_event_default                 = $this->create_test_event( 55, 10, $competition );
+        $season_event_default->seasons        = wp_json_encode( [ '2025' => [ 'name' => '2025' ] ] );
+        $season_event_default->current_season = [ 'name' => '2025' ];
+        $comp_service_default                 = $this->createStub( Competition_Service::class );
+        $comp_service_default->method( 'get_event_by_id' )->willReturn( $season_event_default );
+
+        $handler_default = new Get_Event_Partner_Handler( $comp_service_default, $player_service, $this->event_query_service() );
+        $res_default     = $handler_default->handle( new Get_Event_Partner_Query( event_id: 55 ) );
+        $this->assertFalse( $res_default->is_error() );
+        $this->assertSame( '2025', $res_default->season );
+
+        // When current_season has no 'name', isolates DTO fallback to query season
+        $season_event_fallback = new class() extends Event {
+            public function set_season( ?string $season = null, bool $force_overwrite = false, bool $strict = false ): void {
+                $this->current_season = [];
+            }
+
+            public function get_season_by_name( string $season ): ?array {
+                return [ 'name' => $season ];
+            }
+        };
+        $season_event_fallback->id             = 55;
+        $season_event_fallback->competition_id = 10;
+        $season_event_fallback->competition    = $competition;
+        $season_event_fallback->current_season = [];
+
+        $comp_service_fallback = $this->createStub( Competition_Service::class );
+        $comp_service_fallback->method( 'get_event_by_id' )->willReturn( $season_event_fallback );
+
+        $handler_fallback = new Get_Event_Partner_Handler( $comp_service_fallback, $player_service, $this->event_query_service() );
+        $res_fallback     = $handler_fallback->handle( new Get_Event_Partner_Query( event_id: 55, season: '2026' ) );
+        $this->assertFalse( $res_fallback->is_error() );
+        $this->assertArrayNotHasKey( 'name', $season_event_fallback->current_season );
+        $this->assertSame( '2026', $res_fallback->season );
+    }
+
+    public function test_event_partner_handler_partner_resolution_fallbacks(): void {
+        $competition = $this->create_test_competition( 10, [ 22 ] );
+        $event_stub  = $this->create_test_event( 22, 10, $competition );
+
+        $comp_service = $this->createStub( Competition_Service::class );
+        $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
+
+        // 1. Null and zero partner_id -> [ null, null ] without querying player_service
+        $player_service_empty = $this->createMock( Player_Service::class );
+        $player_service_empty->expects( $this->never() )->method( 'get_player' );
+
+        $handler_empty = new Get_Event_Partner_Handler( $comp_service, $player_service_empty, $this->event_query_service() );
+
+        $res_null = $handler_empty->handle( new Get_Event_Partner_Query( event_id: 22, partner_id: null ) );
+        $this->assertFalse( $res_null->is_error() );
+        $this->assertNull( $res_null->partner_name );
+        $this->assertNull( $res_null->partner_btm );
+
+        $res_zero = $handler_empty->handle( new Get_Event_Partner_Query( event_id: 22, partner_id: 0 ) );
+        $this->assertFalse( $res_zero->is_error() );
+        $this->assertNull( $res_zero->partner_name );
+        $this->assertNull( $res_zero->partner_btm );
+
+        // 2. Player_Not_Found_Exception gracefully caught -> [ null, null ] without error
+        $player_service_404 = $this->createMock( Player_Service::class );
+        $player_service_404->expects( $this->once() )
+            ->method( 'get_player' )
+            ->with( 404 )
+            ->willThrowException( new Player_Not_Found_Exception( 'Player not found' ) );
+
+        $handler_404 = new Get_Event_Partner_Handler( $comp_service, $player_service_404, $this->event_query_service() );
+        $res_404     = $handler_404->handle( new Get_Event_Partner_Query( event_id: 22, partner_id: 404 ) );
+        $this->assertFalse( $res_404->is_error() );
+        $this->assertNull( $res_404->partner_name );
+        $this->assertNull( $res_404->partner_btm );
+
+        // 3. Partner with display_name and btm
+        $partner_with_display               = new Player();
+        $partner_with_display->id           = 101;
+        $partner_with_display->display_name = 'Display Name';
+        $partner_with_display->btm          = 'BTM12345';
+
+        $player_service_display = $this->createStub( Player_Service::class );
+        $player_service_display->method( 'get_player' )->willReturn( $partner_with_display );
+
+        $handler_display = new Get_Event_Partner_Handler( $comp_service, $player_service_display, $this->event_query_service() );
+        $res_display     = $handler_display->handle( new Get_Event_Partner_Query( event_id: 22, partner_id: 101 ) );
+        $this->assertFalse( $res_display->is_error() );
+        $this->assertSame( 'Display Name', $res_display->partner_name );
+        $this->assertSame( 'BTM12345', $res_display->partner_btm );
+
+        // 4. Partner with fullname only (display_name is null) and null btm
+        $partner_with_fullname = new class() extends Player {
+            public ?string $display_name = null;
+            public ?string $fullname {
+                get => 'Only Fullname';
+            }
+        };
+        $partner_with_fullname->id  = 102;
+        $partner_with_fullname->btm = null;
+
+        $player_service_fullname = $this->createStub( Player_Service::class );
+        $player_service_fullname->method( 'get_player' )->willReturn( $partner_with_fullname );
+
+        $handler_fullname = new Get_Event_Partner_Handler( $comp_service, $player_service_fullname, $this->event_query_service() );
+        $res_fullname     = $handler_fullname->handle( new Get_Event_Partner_Query( event_id: 22, partner_id: 102 ) );
+        $this->assertFalse( $res_fullname->is_error() );
+        $this->assertSame( 'Only Fullname', $res_fullname->partner_name );
+        $this->assertNull( $res_fullname->partner_btm );
+
+        // 5. Partner with both display_name and fullname prefers display_name
+        $partner_prefers_display = new class() extends Player {
+            public ?string $display_name = 'Primary Display';
+            public ?string $fullname {
+                get => 'Fallback Fullname';
+            }
+        };
+        $partner_prefers_display->id  = 103;
+        $partner_prefers_display->btm = null;
+
+        $player_service_prefers = $this->createStub( Player_Service::class );
+        $player_service_prefers->method( 'get_player' )->willReturn( $partner_prefers_display );
+
+        $handler_prefers = new Get_Event_Partner_Handler( $comp_service, $player_service_prefers, $this->event_query_service() );
+        $res_prefers     = $handler_prefers->handle( new Get_Event_Partner_Query( event_id: 22, partner_id: 103 ) );
+        $this->assertFalse( $res_prefers->is_error() );
+        $this->assertSame( 'Primary Display', $res_prefers->partner_name );
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'partner_gender_matrix_provider' )]
+    public function test_event_partner_handler_gender_permutations( ?string $player_gender, string $event_type, string $expected_partner_gender ): void {
+        $competition = $this->create_test_competition( 10, [ 22 ] );
+        $event_stub  = $this->create_test_event( 22, 10, $competition );
+        $event_stub->type = $event_type;
+
+        $comp_service   = $this->createStub( Competition_Service::class );
+        $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
+        $player_service = $this->createStub( Player_Service::class );
+
+        $handler = new Get_Event_Partner_Handler( $comp_service, $player_service, $this->event_query_service() );
+        $result  = $handler->handle( new Get_Event_Partner_Query( event_id: 22, gender: $player_gender ) );
+
+        $this->assertFalse( $result->is_error() );
+        $this->assertSame( $expected_partner_gender, $result->partner_gender );
+    }
+
+    public static function partner_gender_matrix_provider(): array {
+        return [
+            'male in mens doubles'     => [ 'M', 'MD', 'M' ],
+            'male in boys doubles'     => [ 'M', 'BD', 'M' ],
+            'male in mixed doubles'    => [ 'M', 'XD', 'F' ],
+            'male in womens doubles'   => [ 'M', 'WD', 'F' ],
+            'male in girls doubles'    => [ 'M', 'GD', 'F' ],
+            'male in unclassified'     => [ 'M', '', 'F' ],
+            'female in womens doubles' => [ 'F', 'WD', 'F' ],
+            'female in girls doubles'  => [ 'F', 'GD', 'F' ],
+            'female in mixed doubles'  => [ 'F', 'XD', 'M' ],
+            'female in mens doubles'   => [ 'F', 'MD', 'M' ],
+            'female in boys doubles'   => [ 'F', 'BD', 'M' ],
+            'female in unclassified'   => [ 'F', '', 'M' ],
+            'null in womens doubles'   => [ null, 'WD', 'F' ],
+            'null in mixed doubles'    => [ null, 'XD', 'M' ],
+            'null in mens doubles'     => [ null, 'MD', 'M' ],
+        ];
+    }
+
+    public function test_event_partner_handler_template_and_metadata_passthrough(): void {
+        $competition = $this->create_test_competition( 10, [ 22 ] );
+        $event_stub  = $this->create_test_event( 22, 10, $competition );
+        $event_stub->current_season = [ 'name' => '2025' ];
+
+        $comp_service   = $this->createStub( Competition_Service::class );
+        $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
+        $player_service = $this->createStub( Player_Service::class );
+
+        $handler = new Get_Event_Partner_Handler( $comp_service, $player_service, $this->event_query_service() );
+
+        // 1. Default template when template is omitted or empty
+        $res_default = $handler->handle( new Get_Event_Partner_Query( event_id: 22 ) );
+        $this->assertSame( 'partner-modal', $res_default->template );
+
+        $res_empty = $handler->handle( new Get_Event_Partner_Query( event_id: 22, template: '' ) );
+        $this->assertSame( 'partner-modal', $res_empty->template );
+
+        // 2. Custom template prefixed with 'partner-modal-' and metadata passthrough
+        $query_custom = new Get_Event_Partner_Query(
+            event_id: 22,
+            player_id: 15,
+            partner_id: null,
+            gender: 'M',
+            template: 'tournament',
+            date_end: '2026-08-31',
+            modal: 'true',
+            tournament_id: 88
+        );
+        $res_custom = $handler->handle( $query_custom );
+
+        $this->assertFalse( $res_custom->is_error() );
+        $this->assertSame( 'partner-modal-tournament', $res_custom->template );
+        $this->assertSame( 'event', $res_custom->template_type );
+        $this->assertSame( 15, $res_custom->player_id );
+        $this->assertNull( $res_custom->partner_id );
+        $this->assertSame( '2026-08-31', $res_custom->date_end );
+        $this->assertSame( 'true', $res_custom->modal );
+        $this->assertSame( 88, $res_custom->tournament_id );
+        $this->assertSame( $event_stub, $res_custom->event );
+    }
+
     public function test_event_team_matches_handler_success_and_error(): void {
         $comp_service = $this->createStub( Competition_Service::class );
         $fixture = $this->createStub( \Racketmanager\Domain\Fixture\Fixture::class );

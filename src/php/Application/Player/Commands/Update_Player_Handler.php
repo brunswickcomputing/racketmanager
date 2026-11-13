@@ -3,34 +3,32 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Player\Commands;
 
-use Exception;
+use Racketmanager\Application\Player\Ports\Player_Service_Interface;
 use Racketmanager\Domain\Player\Player;
-use Racketmanager\Exceptions\Duplicate_BTM_Exception;
-use Racketmanager\Exceptions\Duplicate_Email_Exception;
-use Racketmanager\Exceptions\Player_Not_Found_Exception;
-use Racketmanager\Exceptions\Player_Not_Updated_Exception;
-use Racketmanager\Services\Player_Service;
 use WP_Error;
 
 /**
  * Handler for executing player profile updates.
  */
-class Update_Player_Handler {
+readonly class Update_Player_Handler {
+    /**
+     * Initialises the service with the player service dependency.
+     *
+     * @param Player_Service_Interface $player_service Player service instance.
+     *
+     * @return void
+     */
     public function __construct(
-        private readonly Player_Service $player_service
+        private Player_Service_Interface $player_service
     ) {
     }
 
     /**
-     * Handle updating player details.
+     * Handles the command to update player details.
      *
-     * @param Update_Player_Command $command
-     * @return Player|WP_Error
-     * @throws Player_Not_Found_Exception
-     * @throws Player_Not_Updated_Exception
-     * @throws Duplicate_Email_Exception
-     * @throws Duplicate_BTM_Exception
-     * @throws Exception
+     * @param Update_Player_Command $command Command containing the player update data.
+     *
+     * @return Player|WP_Error Updated player instance on success, or error on failure.
      */
     public function handle( Update_Player_Command $command ): Player|WP_Error {
         return $this->player_service->amend_player_details(

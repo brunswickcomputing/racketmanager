@@ -738,7 +738,7 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
         self::assertSame( Admin_Message_Type::SUCCESS, $add_res->message_type );
 
         $del_cmd = new Delete_Club_Players_Command(
-            clubPlayer: [ '55' ],
+            club_player: [ '55' ],
             user_id: 101
         );
         $del_res = $handler->handle_delete_club_players( $del_cmd );

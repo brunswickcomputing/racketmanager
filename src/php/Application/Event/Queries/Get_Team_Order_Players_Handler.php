@@ -5,12 +5,12 @@ namespace Racketmanager\Application\Event\Queries;
 
 use Racketmanager\Application\Club\Ports\Club_Service_Interface;
 use Racketmanager\Application\Event\DTOs\Team_Order_Players_Result;
+use Racketmanager\Application\Player\Ports\Registration_Service_Interface;
 use Racketmanager\Application\Ports\Settings_Service_Interface;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\Registration_Service;
 use function __;
 use function is_numeric;
 use function method_exists;
@@ -23,16 +23,16 @@ readonly class Get_Team_Order_Players_Handler {
     /**
      * Initialises the instance with the required service dependencies.
      *
-     * @param Competition_Service        $competition_service Competition service.
-     * @param Club_Service_Interface     $club_service Club service.
-     * @param Registration_Service       $registration_service Registration service.
-     * @param Settings_Service_Interface $settings_service Settings service.
-     * @param Event_Query_Service        $event_query_service Event query service.
+     * @param Competition_Service            $competition_service Competition service.
+     * @param Club_Service_Interface         $club_service Club service.
+     * @param Registration_Service_Interface $registration_service Registration service.
+     * @param Settings_Service_Interface     $settings_service Settings service.
+     * @param Event_Query_Service            $event_query_service Event query service.
      */
     public function __construct(
         private Competition_Service $competition_service,
         private Club_Service_Interface $club_service,
-        private Registration_Service $registration_service,
+        private Registration_Service_Interface $registration_service,
         private Settings_Service_Interface $settings_service,
         private Event_Query_Service $event_query_service
     ) {}

@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Shortcodes;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Event\DTOs\Event_Partner_Result;
 use Racketmanager\Application\Event\Queries\Event_Allowlist_Guard;
@@ -34,6 +36,7 @@ use Racketmanager\Domain\Competition\Competition_Factory;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\DTO\Competition\Competition_Hydration_DTO;
+use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
@@ -48,6 +51,11 @@ use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
+use Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
+use Racketmanager\Tests\Helpers\Creates_League_Query_Service;
 use ReflectionClass;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter;
 use Racketmanager\RacketManager;
@@ -66,11 +74,10 @@ use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Tests\Helpers\Creates_Test_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
-use stdClass;
 
 class Event_Shortcode_Handlers_Test extends TestCase {
-    use \Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
-    use \Racketmanager\Tests\Helpers\Creates_League_Query_Service;
+    use Creates_Event_Query_Service;
+    use Creates_League_Query_Service;
     use Creates_Test_Container;
     use Manages_Wordpress_Globals;
 
@@ -121,18 +128,21 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $handler->method( 'handle' )->willReturn( $result );
         $vm = null;
         $presenter = $this->createStub( Shortcode_View_Presenter::class );
-        $presenter->method( 'render' )->willReturnCallback( function ( Shortcode_View_Model $value ) use ( &$vm ): string {
-            $vm = $value;
-            return '';
-        } );
+        $presenter->method( 'render' )->willReturnCallback(
+            function ( Shortcode_View_Model $value ) use ( &$vm ): string {
+                $vm = $value;
+                return '';
+            }
+        );
         $this->create_event_adapter( view_presenter: $presenter, partner_handler: $handler )->show_event_partner();
 
         return $vm;
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider( 'season_request_handlers' )]
+    #[DataProvider( 'season_request_handlers' )]
     public function test_event_handlers_resolve_url_season_before_shortcode_attribute( string $name, string $source ): void {
-        $_GET = $_POST = [];
+        $_GET  = [];
+        $_POST = [];
         if ( 'query_var' === $source ) {
             $GLOBALS['wp']->query_vars['season'] = '2025';
         } else {
@@ -145,7 +155,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $service = $this->event_query_service();
         $stats = $this->createStub( Player_Stats_Service::class );
         $club_service = $this->createStub( Club_Service::class );
-        $club_service->method( 'get_club' )->willReturn( \Racketmanager\Domain\Club\Club::from_object( (object) [ 'id' => 1 ] ) );
+        $club_service->method( 'get_club' )->willReturn( Club::from_object( (object) [ 'id' => 1 ] ) );
         [ $handler, $query ] = match ( $name ) {
             'event' => [ new Get_Event_Handler( $competition_service, $service ), new Get_Event_Query( event_id: 93, season: '2026' ) ],
             'partner' => [ new Get_Event_Partner_Handler( $competition_service, $this->createStub( Player_Service::class ), $service ), new Get_Event_Partner_Query( event_id: 93, season: '2026' ) ],
@@ -156,7 +166,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
             'teams' => [ new Get_Event_Teams_Handler( $competition_service, $stats, null, $service ), new Get_Event_Teams_Query( event_id: 93, season: '2026' ) ],
             'players' => [ new Get_Event_Players_Handler( $competition_service, $this->createStub( Player_Service::class ), $this->createStub( Player_Query_Service::class ), $stats, $service ), new Get_Event_Players_Query( event_id: 93, season: '2026' ) ],
             'team_matches' => [ new Get_Event_Team_Matches_Handler( $competition_service, $service ), new Get_Event_Team_Matches_Query( event_id: 93, team_id: 1, season: '2026' ) ],
-            'team_order_players' => [ new Get_Team_Order_Players_Handler( $competition_service, $club_service, $this->createStub( \Racketmanager\Services\Registration_Service::class ), $this->createStub( Settings_Service::class ), $service ), new Get_Team_Order_Players_Query( event_id: 93, club_id: 1, season: '2026' ) ],
+            'team_order_players' => [ new Get_Team_Order_Players_Handler( $competition_service, $club_service, $this->createStub( Registration_Service::class ), $this->createStub( Settings_Service::class ), $service ), new Get_Team_Order_Players_Query( event_id: 93, club_id: 1, season: '2026' ) ],
             'dropdown' => [ new Get_Event_Dropdown_Handler( $competition_service, $service ), new Get_Event_Dropdown_Query( event_id: 93, season: '2026' ) ],
         };
         self::assertFalse( $handler->handle( $query )->is_error() );
@@ -187,13 +197,13 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'Season not found for event', $result->error_message );
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider( 'repository_backed_handlers' )]
+    #[DataProvider( 'repository_backed_handlers' )]
     public function test_public_handlers_query_real_events_through_injected_repositories( string $handler_name, string $repository_method, string $template ): void {
         unset( $GLOBALS['racketmanager'] );
         $event = $this->create_test_event( 93, 10, $this->create_test_competition( 10, [ 93 ] ) );
         $competition_service = $this->createStub( Competition_Service::class );
         $competition_service->method( 'get_event_by_id' )->willReturn( $event );
-        $repository = $this->createMock( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class );
+        $repository = $this->createMock( Event_Repository_Interface::class );
         $repository->expects( $this->once() )->method( $repository_method )->with( 93 )->willReturn( [] );
         $service = $this->event_query_service( $repository );
         $stats = $this->createStub( Player_Stats_Service::class );
@@ -273,10 +283,12 @@ class Event_Shortcode_Handlers_Test extends TestCase {
             $event->seasons = json_encode( $seasons_map );
         }
         if ( method_exists( $event, 'method' ) ) {
-            $event->method( 'get_season_by_name' )->willReturnCallback( function ( string $name ) use ( $event ) {
-                $seasons = json_decode( (string) $event->seasons, true ) ?? [];
-                return $seasons[ $name ] ?? null;
-            } );
+            $event->method( 'get_season_by_name' )->willReturnCallback(
+                function ( string $name ) use ( $event ) {
+                    $seasons = json_decode( (string) $event->seasons, true ) ?? [];
+                    return $seasons[ $name ] ?? null;
+                }
+            );
         }
         return $event;
     }
@@ -409,7 +421,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $event_repository = $this->event_repository_with_results(
             [ 'query_players' => [ (object) [ 'player_id' => 31 ], (object) [ 'player_id' => 32 ] ] ]
         );
-        $player_repository = $this->createStub( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class );
+        $player_repository = $this->createStub( Player_Repository_Interface::class );
         $player_repository->method( 'find' )->willReturnMap( [ [ 31, $low ], [ 32, $high ] ] );
 
         $handler = new Get_Event_Clubs_Handler( $comp_service, $club_service, $stats, $this->event_query_service( $event_repository, player_repository: $player_repository ) );
@@ -423,7 +435,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
     /**
      * Build two players (low wins first) and a real stats service over a mocked query service.
      *
-     * @return array{0: Player, 1: Player, 2: Player_Stats_Service, 3: \PHPUnit\Framework\MockObject\MockObject}
+     * @return array{0: Player, 1: Player, 2: Player_Stats_Service, 3: MockObject}
      */
     private function build_stat_players( object $grouping, string $season, string $source ): array {
         $low             = new Player();
@@ -549,7 +561,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $event_repository = $this->event_repository_with_results(
             [ 'query_players' => [ (object) [ 'player_id' => 31 ], (object) [ 'player_id' => 32 ] ] ]
         );
-        $player_repository = $this->createStub( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class );
+        $player_repository = $this->createStub( Player_Repository_Interface::class );
         $player_repository->method( 'find' )->willReturnMap( [ [ 31, $low ], [ 32, $high ] ] );
 
         $handler = new Get_Event_Teams_Handler( $comp_service, $stats, $team_service, $this->event_query_service( $event_repository, player_repository: $player_repository ) );
@@ -588,12 +600,14 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $player_stub->id = 55;
         $player_stub->fullname = 'Roger Federer';
 
-        $player_service->method( 'get_player' )->willReturnCallback( function ( ?int $id ) use ( $player_stub ) {
-            if ( 55 === $id ) {
-                return $player_stub;
+        $player_service->method( 'get_player' )->willReturnCallback(
+            function ( ?int $id ) use ( $player_stub ) {
+                if ( 55 === $id ) {
+                      return $player_stub;
+                }
+                throw new Player_Not_Found_Exception( 'Player not found' );
             }
-            throw new Player_Not_Found_Exception( 'Player not found' );
-        } );
+        );
 
         $vm_player = $handler->handle( new Get_Event_Players_Query( event_id: 16, player_id: 55 ) );
         $this->assertFalse( $vm_player->is_error() );
@@ -607,12 +621,14 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'Player not found', $vm_not_found->error_message );
 
         // 4. String player name lookup - found
-        $player_service->method( 'get_player_by_name' )->willReturnCallback( function ( string $name ) use ( $player_stub ) {
-            if ( 'Roger Federer' === $name ) {
-                return $player_stub;
+        $player_service->method( 'get_player_by_name' )->willReturnCallback(
+            function ( string $name ) use ( $player_stub ) {
+                if ( 'Roger Federer' === $name ) {
+                      return $player_stub;
+                }
+                return null;
             }
-            return null;
-        } );
+        );
 
         $vm_name = $handler->handle( new Get_Event_Players_Query( event_id: 16, player_id: 'Roger Federer' ) );
         $this->assertFalse( $vm_name->is_error() );
@@ -659,7 +675,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         $handler_ok = new Get_Event_Partner_Handler( $comp_service_ok, $player_service, $this->event_query_service() );
 
-        $vm_ok = $this->create_event_adapter()->present_partner( $handler_ok->handle( new Get_Event_Partner_Query( event_id: 22, partner_id: 300, gender: 'M' ) ) );
+        $vm_ok = $this->create_event_adapter()->present_partner( $handler_ok->handle( new Get_Event_Partner_Query( event_id: 22, gender: 'M', partner_id: 300 ) ) );
         $this->assertFalse( $vm_ok->is_error() );
         $this->assertSame( 'partner-modal', $vm_ok->template );
         $this->assertSame( 'event', $vm_ok->template_type );
@@ -746,8 +762,8 @@ class Event_Shortcode_Handlers_Test extends TestCase {
                 $this->current_season = [];
             }
 
-            public function get_season_by_name( string $season ): ?array {
-                return [ 'name' => $season ];
+            public function get_season_by_name( string $name ): ?array {
+                return [ 'name' => $name ];
             }
         };
         $season_event_fallback->id             = 55;
@@ -817,14 +833,10 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'BTM12345', $res_display->partner_btm );
 
         // 4. Partner with fullname only (display_name is null) and null btm
-        $partner_with_fullname = new class() extends Player {
-            public ?string $display_name = null;
-            public ?string $fullname {
-                get => 'Only Fullname';
-            }
-        };
-        $partner_with_fullname->id  = 102;
-        $partner_with_fullname->btm = null;
+        $partner_with_fullname           = new Player();
+        $partner_with_fullname->id       = 102;
+        $partner_with_fullname->fullname = 'Only Fullname';
+        $partner_with_fullname->btm      = null;
 
         $player_service_fullname = $this->createStub( Player_Service::class );
         $player_service_fullname->method( 'get_player' )->willReturn( $partner_with_fullname );
@@ -836,14 +848,11 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertNull( $res_fullname->partner_btm );
 
         // 5. Partner with both display_name and fullname prefers display_name
-        $partner_prefers_display = new class() extends Player {
-            public ?string $display_name = 'Primary Display';
-            public ?string $fullname {
-                get => 'Fallback Fullname';
-            }
-        };
+        $partner_prefers_display = new Player();
         $partner_prefers_display->id  = 103;
         $partner_prefers_display->btm = null;
+        $partner_prefers_display->display_name = 'Primary Display';
+        $partner_prefers_display->fullname = 'Fallback Fullname';
 
         $player_service_prefers = $this->createStub( Player_Service::class );
         $player_service_prefers->method( 'get_player' )->willReturn( $partner_prefers_display );
@@ -854,7 +863,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'Primary Display', $res_prefers->partner_name );
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider( 'partner_gender_matrix_provider' )]
+    #[DataProvider( 'partner_gender_matrix_provider' )]
     public function test_event_partner_handler_gender_permutations( ?string $player_gender, string $event_type, string $expected_partner_gender ): void {
         $competition = $this->create_test_competition( 10, [ 22 ] );
         $event_stub  = $this->create_test_event( 22, 10, $competition );
@@ -913,12 +922,12 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $query_custom = new Get_Event_Partner_Query(
             event_id: 22,
             player_id: 15,
-            partner_id: null,
             gender: 'M',
-            template: 'tournament',
             date_end: '2026-08-31',
             modal: 'true',
-            tournament_id: 88
+            partner_id: null,
+            tournament_id: 88,
+            template: 'tournament'
         );
         $res_custom = $handler->handle( $query_custom );
 
@@ -935,12 +944,12 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
     public function test_event_team_matches_handler_success_and_error(): void {
         $comp_service = $this->createStub( Competition_Service::class );
-        $fixture = $this->createStub( \Racketmanager\Domain\Fixture\Fixture::class );
+        $fixture = $this->createStub( Fixture::class );
         $fixture->method( 'get_id' )->willReturn( 1 );
         $fixture->method( 'get_league' )->willReturn( null );
         $fixture->method( 'get_title' )->willReturn( 'Match 1' );
         $event_repository = $this->event_repository_with_results( [ 'query_matches' => [ (object) [ 'id' => 1 ] ] ] );
-        $fixture_repository = $this->createStub( \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class );
+        $fixture_repository = $this->createStub( Fixture_Repository_Interface::class );
         $fixture_repository->method( 'find_by_id_with_relations' )->willReturn( $fixture );
         $handler = new Get_Event_Team_Matches_Handler( $comp_service, $this->event_query_service( $event_repository, fixture_repository: $fixture_repository ) );
 
@@ -1056,19 +1065,21 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         $reg_service->expects( $this->exactly( 2 ) )
             ->method( 'get_registered_players_list' )
-            ->willReturnCallback( function( $status, $group, $club_id, $gender, $include_unranked, $max_age, $min_age ) {
-                if ( 'm' === $gender ) {
-                    $this->assertSame( 45, $min_age );
-                    $this->assertNull( $max_age );
-                    return [ (object) [ 'id' => 1 ] ];
+            ->willReturnCallback(
+                function ( $status, $group, $club_id, $gender, $include_unranked, $max_age, $min_age ) {
+                    if ( 'm' === $gender ) {
+                          $this->assertSame( 45, $min_age );
+                          $this->assertNull( $max_age );
+                          return [ (object) [ 'id' => 1 ] ];
+                    }
+                    if ( 'f' === $gender ) {
+                        $this->assertSame( 40, $min_age );
+                        $this->assertNull( $max_age );
+                        return [ (object) [ 'id' => 2 ] ];
+                    }
+                    return [];
                 }
-                if ( 'f' === $gender ) {
-                    $this->assertSame( 40, $min_age );
-                    $this->assertNull( $max_age );
-                    return [ (object) [ 'id' => 2 ] ];
-                }
-                return [];
-            } );
+            );
 
         $handler = new Get_Team_Order_Players_Handler( $comp_service, $club_service, $reg_service, $settings_svc, $this->event_query_service() );
         $vm      = $handler->handle( new Get_Team_Order_Players_Query( event_id: 88, club_id: 50 ) );
@@ -1106,7 +1117,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 123, $this->create_event_adapter()->present_partner( $vm )->vars['partner_id'] );
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider( 'age_limit_provider' )]
+    #[DataProvider( 'age_limit_provider' )]
     public function test_team_order_players_age_logic( string $age_limit, ?int $exp_max, ?int $exp_min ): void {
         $comp_service = $this->createStub( Competition_Service::class );
         $club_service = $this->createStub( Club_Service::class );
@@ -1171,7 +1182,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_renderer_sets_and_restores_global_event(): void {
-        $inner_renderer = new class implements View_Renderer_Interface {
+        $inner_renderer = new class() implements View_Renderer_Interface {
             public ?int $observed_event_id = null;
             public function render( string $template_path, object|array $view_model, array $additional_vars = [] ): void {}
             public function render_to_string( string $template_path, object|array $view_model, array $additional_vars = [] ): string {
@@ -1190,21 +1201,21 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         global $event;
         $event = 'previous_event_value';
 
-        $output = $renderer->render( 'event', [ 'event' => $event_obj ], false );
+        $output = $renderer->render( 'event', [ 'event' => $event_obj ] );
         $this->assertSame( 'rendered-output', $output );
         $this->assertSame( 888, $inner_renderer->observed_event_id );
         $this->assertSame( 'previous_event_value', $GLOBALS['event'] );
 
         // 2. When $event was not previously set
         unset( $GLOBALS['event'] );
-        $output_unset = $renderer->render( 'event', [ 'event' => $event_obj ], false );
+        $output_unset = $renderer->render( 'event', [ 'event' => $event_obj ] );
         $this->assertSame( 'rendered-output', $output_unset );
         $this->assertSame( 888, $inner_renderer->observed_event_id );
-        $this->assertFalse( array_key_exists( 'event', $GLOBALS ) );
+        $this->assertArrayNotHasKey( 'event', $GLOBALS );
     }
 
     private function create_test_event( int $id, int $competition_id = 10, ?Competition $competition = null ): Event {
-        $event                 = ( new ReflectionClass( Event::class ) )->newInstanceWithoutConstructor();
+        $event                 = new ReflectionClass( Event::class )->newInstanceWithoutConstructor();
         $event->id             = $id;
         $event->name           = 'Event ' . $id;
         $event->competition_id = $competition_id;
@@ -1364,8 +1375,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
     public function test_event_query_preserves_routing_metadata_and_rejects_nonscalar_post_ids(): void {
         $from_atts = Get_Event_Query::from_atts(
-            [ 'id' => 10, 'post_id' => 77, 'pagename' => 'x' ],
-            []
+            [ 'id' => 10, 'post_id' => 77, 'pagename' => 'x' ]
         );
         $this->assertSame( 77, $from_atts->post_id );
         $this->assertSame( 'x', $from_atts->pagename );
@@ -1377,8 +1387,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'tournament/summer-open/event/mens-singles', $from_query_vars->pagename );
 
         $invalid_routing = Get_Event_Query::from_atts(
-            [ 'id' => 10, 'post_id' => [ 77 ], 'pagename' => [ 'invalid' ] ],
-            []
+            [ 'id' => 10, 'post_id' => [ 77 ], 'pagename' => [ 'invalid' ] ]
         );
         $this->assertSame( '', $invalid_routing->post_id );
         $this->assertSame( '', $invalid_routing->pagename );

@@ -31,14 +31,28 @@ use Racketmanager\Services\Validator\Player_Validation_Service;
  * Service provider for Player bounded context.
  */
 final readonly class Player_Service_Provider implements Service_Provider_Interface {
+    /**
+     * Initialises the instance with an optional racket manager.
+     *
+     * @param RacketManager|null $app Optional racket manager instance.
+     *
+     * @return void
+     */
     public function __construct(
         private ?RacketManager $app = null
     ) {}
 
+    /**
+     * Registers player-related repositories, services, validators, and handlers in the container.
+     *
+     * @param Simple_Container $container Container used to define services and aliases.
+     *
+     * @return void
+     */
     public function register( Simple_Container $container ): void {
         $app = $this->app;
 
-        // Repositories
+        // Repositories.
         $container->set( 'player_repository', fn() => new Player_Repository() );
         $container->alias( Player_Repository_Interface::class, 'player_repository' );
         $container->alias( Player_Repository::class, 'player_repository' );
@@ -51,81 +65,111 @@ final readonly class Player_Service_Provider implements Service_Provider_Interfa
         $container->alias( Player_Statistics_Repository_Interface::class, 'player_statistics_repository' );
         $container->alias( Player_Statistics_Repository::class, 'player_statistics_repository' );
 
-        // Services
-        $container->set( 'player_query_service', fn( Simple_Container $c ) => new Player_Query_Service(
-            $c->get( 'player_statistics_repository' ),
-            $c->get( 'competition_repository' ),
-            $c->get( 'fixture_repository' ),
-            $c->get( 'event_repository' ),
-            $c->get( 'rubber_repository' ),
-            fn() => $c->get( 'event_query_service' ),
-            fn() => $c->get( 'league_query_service' )
-        ) );
+        // Services.
+        $container->set(
+            'player_query_service',
+            fn( Simple_Container $c ) => new Player_Query_Service(
+                $c->get( 'player_statistics_repository' ),
+                $c->get( 'competition_repository' ),
+                $c->get( 'fixture_repository' ),
+                $c->get( 'event_repository' ),
+                $c->get( 'rubber_repository' ),
+                fn() => $c->get( 'event_query_service' ),
+                fn() => $c->get( 'league_query_service' )
+            )
+        );
         $container->alias( Player_Query_Service::class, 'player_query_service' );
         $container->alias( Player_Query_Service_Interface::class, 'player_query_service' );
 
-        $container->set( 'player_stats_service', fn( Simple_Container $c ) => new Player_Stats_Service(
-            $c->get( 'player_query_service' )
-        ) );
+        $container->set(
+            'player_stats_service',
+            fn( Simple_Container $c ) => new Player_Stats_Service(
+                $c->get( 'player_query_service' )
+            )
+        );
         $container->alias( Player_Stats_Service::class, 'player_stats_service' );
         $container->alias( Player_Stats_Service_Interface::class, 'player_stats_service' );
 
-        $container->set( 'player_details_validator', fn( Simple_Container $c ) => new Player_Details_Validator(
-            $c->get( 'player_repository' )
-        ) );
+        $container->set(
+            'player_details_validator',
+            fn( Simple_Container $c ) => new Player_Details_Validator(
+                $c->get( 'player_repository' )
+            )
+        );
         $container->alias( Player_Details_Validator::class, 'player_details_validator' );
 
-        $container->set( 'player_service', fn( Simple_Container $c ) => new Player_Service(
-            $app,
-            $c->get( 'player_repository' ),
-            $c->get( 'player_error_repository' ),
-            $c->get( 'club_role_repository' ),
-            $c->get( 'wtn_api_client' ),
-            $c->get( 'league_team_repository' ),
-            $c->get( 'club_repository' ),
-            $c->get( 'registration_repository' ),
-            $c->get( 'mailer' ),
-            $c->get( 'player_details_validator' )
-        ) );
+        $container->set(
+            'player_service',
+            fn( Simple_Container $c ) => new Player_Service(
+                $app,
+                $c->get( 'player_repository' ),
+                $c->get( 'player_error_repository' ),
+                $c->get( 'club_role_repository' ),
+                $c->get( 'wtn_api_client' ),
+                $c->get( 'league_team_repository' ),
+                $c->get( 'club_repository' ),
+                $c->get( 'registration_repository' ),
+                $c->get( 'mailer' ),
+                $c->get( 'player_details_validator' )
+            )
+        );
         $container->alias( Player_Service::class, 'player_service' );
         $container->alias( Player_Service_Interface::class, 'player_service' );
 
-        $container->set( 'player_validation_service', fn( Simple_Container $c ) => new Player_Validation_Service(
-            $c->get( 'registration_service' ),
-            $c->get( 'results_checker_repository' ),
-            $c->get( 'fixture_repository' ),
-            $c->get( 'player_repository' ),
-            $c->get( 'player_details_validator' )
-        ) );
+        $container->set(
+            'player_validation_service',
+            fn( Simple_Container $c ) => new Player_Validation_Service(
+                $c->get( 'registration_service' ),
+                $c->get( 'results_checker_repository' ),
+                $c->get( 'fixture_repository' ),
+                $c->get( 'player_repository' ),
+                $c->get( 'player_details_validator' )
+            )
+        );
         $container->alias( Player_Validation_Service::class, 'player_validation_service' );
 
-        // Query Handlers
-        $container->set( 'get_players_handler', fn( Simple_Container $c ) => new Get_Players_Handler(
-            $c->get( 'player_repository' ),
-            $c->get( 'user_repository' )
-        ) );
+        // Query Handlers.
+        $container->set(
+            'get_players_handler',
+            fn( Simple_Container $c ) => new Get_Players_Handler(
+                $c->get( 'player_repository' ),
+                $c->get( 'user_repository' )
+            )
+        );
+        $container->alias( Get_Players_Handler::class, 'get_players_handler' );
 
-        $container->set( 'get_player_handler', fn( Simple_Container $c ) => new Get_Player_Handler(
-            $c->get( 'player_query_service' ),
-            $c->get( 'player_stats_service' ),
-            $c->get( 'player_service' ),
-            $c->get( 'registration_service' ),
-            $c->get( 'tournament_service' )
-        ) );
+        $container->set(
+            'get_player_handler',
+            fn( Simple_Container $c ) => new Get_Player_Handler(
+                $c->get( 'player_query_service' ),
+                $c->get( 'player_stats_service' ),
+                $c->get( 'player_service' ),
+                $c->get( 'registration_service' ),
+                $c->get( 'tournament_service' )
+            )
+        );
+        $container->alias( Get_Player_Handler::class, 'get_player_handler' );
 
         $container->set( 'get_player_search_handler', fn( Simple_Container $c ) => new Get_Player_Search_Handler( $c->get( 'player_repository' ) ) );
+        $container->alias( Get_Player_Search_Handler::class, 'get_player_search_handler' );
 
-        // Application Command Handlers
+        // Application Command Handlers.
         $container->set( 'update_player_handler', fn( Simple_Container $c ) => new Update_Player_Handler( $c->get( 'player_service' ) ) );
         $container->set( 'create_player_handler', fn( Simple_Container $c ) => new Create_Player_Handler( $c->get( 'player_service' ) ) );
 
-        // Application Query Handlers
-        $container->set( 'get_player_details_handler', fn( Simple_Container $c ) => new Get_Player_Details_Handler(
-            $c->get( 'player_repository' )
-        ) );
-        $container->set( 'search_players_handler', fn( Simple_Container $c ) => new Search_Players_Handler(
-            player_search_handler: $c->get( 'get_player_search_handler' ),
-            alert_handler: $c->get( 'get_alert_handler' )
-        ) );
+        // Application Query Handlers.
+        $container->set(
+            'get_player_details_handler',
+            fn( Simple_Container $c ) => new Get_Player_Details_Handler(
+                $c->get( 'player_repository' )
+            )
+        );
+        $container->set(
+            'search_players_handler',
+            fn( Simple_Container $c ) => new Search_Players_Handler(
+                player_search_handler: $c->get( 'get_player_search_handler' ),
+                alert_handler: $c->get( 'get_alert_handler' )
+            )
+        );
     }
 }

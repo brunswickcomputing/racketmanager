@@ -152,15 +152,24 @@ class Email_Shortcode_Presenter_Test extends TestCase {
 
         $home_team = $this->createStub( Team::class );
         $home_team->method( 'get_name' )->willReturn( $fixture_data['home_name'] ?? 'Home Team' );
+        if ( isset( $fixture_data['home_team_type'] ) ) {
+            $home_team->method( 'get_team_type' )->willReturn( $fixture_data['home_team_type'] );
+        }
         $home_club = $this->createStub( Club::class );
-        $home_club->shortcode = 'CA';
+        $home_club->shortcode = $fixture_data['home_club_shortcode'] ?? 'CA';
+        $home_club->method( 'get_shortcode' )->willReturn( $fixture_data['home_club_shortcode'] ?? 'CA' );
 
         $away_team = $this->createStub( Team::class );
         $away_team->method( 'get_name' )->willReturn( $fixture_data['away_name'] ?? 'Away Team' );
+        if ( isset( $fixture_data['away_team_type'] ) ) {
+            $away_team->method( 'get_team_type' )->willReturn( $fixture_data['away_team_type'] );
+        }
         $away_club = $this->createStub( Club::class );
-        $away_club->shortcode = 'CB';
+        $away_club->shortcode = $fixture_data['away_club_shortcode'] ?? 'CB';
+        $away_club->method( 'get_shortcode' )->willReturn( $fixture_data['away_club_shortcode'] ?? 'CB' );
 
         $home_dto = new Team_Details_DTO( $home_team, $home_club, null );
+        $home_dto->players      = $fixture_data['home_players'] ?? [];
         $home_dto->captain      = $fixture_data['home_captain'] ?? 'John Doe';
         $home_dto->contactemail = $fixture_data['home_email'] ?? 'john@example.com';
         $home_dto->contactno    = $fixture_data['home_tel'] ?? '0123456789';
@@ -168,6 +177,7 @@ class Email_Shortcode_Presenter_Test extends TestCase {
         $home_dto->match_time   = '19:00';
 
         $away_dto = new Team_Details_DTO( $away_team, $away_club, null );
+        $away_dto->players      = $fixture_data['away_players'] ?? [];
         $away_dto->captain      = $fixture_data['away_captain'] ?? 'Jane Smith';
         $away_dto->contactemail = $fixture_data['away_email'] ?? 'jane@example.com';
         $away_dto->contactno    = $fixture_data['away_tel'] ?? '0987654321';
@@ -299,6 +309,209 @@ class Email_Shortcode_Presenter_Test extends TestCase {
         $this->assertSame( 'Away Club 2', $vars['teams']['home']->name );
         $this->assertSame( 'Captain Away', $vars['teams']['home']->captain );
         $this->assertSame( 'away@example.com', $vars['teams']['home']->captain_email );
+    }
+
+    public function test_present_match_notification_league_defaults(): void {
+        $fixture = $this->create_test_fixture(
+            [
+                'comp_type'    => 'league',
+                'league_title' => 'Division 1',
+                'home_name'    => 'Home Team',
+                'away_name'    => 'Away Team',
+            ]
+        );
+
+        $vars = $this->presenter->present_match_notification(
+            $fixture,
+            [
+                'competition_type' => 'league',
+                'competition'      => 'Custom Competition',
+                'round'            => 'Round 1',
+                'email_from'       => 'league@example.com',
+                'emailfrom'        => 'legacy@example.com',
+                'template'         => 'league_match',
+            ]
+        );
+
+        $expected_keys = [
+            'template',
+            'tournament',
+            'competition',
+            'competition_name',
+            'match',
+            'home_dtls',
+            'away_dtls',
+            'round',
+            'organisation',
+            'site_url',
+            'email_from',
+            'teams',
+            'tournament_link',
+            'draw_link',
+            'action_url',
+            'rules_link',
+            'cup_link',
+            'match_date',
+            'match_time',
+        ];
+        $this->assertSame( $expected_keys, array_keys( $vars ) );
+
+        $this->assertSame( 'league_match', $vars['template'] );
+        $this->assertFalse( $vars['tournament'] );
+        $this->assertSame( 'Custom Competition', $vars['competition'] );
+        $this->assertSame( 'Custom Competition', $vars['competition_name'] );
+        $this->assertSame( [], $vars['home_dtls'] );
+        $this->assertSame( [], $vars['away_dtls'] );
+        $this->assertSame( 'Round 1', $vars['round'] );
+        $this->assertSame( 'Test Site', $vars['organisation'] );
+        $this->assertSame( 'https://example.com', $vars['site_url'] );
+        $this->assertSame( 'league@example.com', $vars['email_from'] );
+        $this->assertSame( '', $vars['tournament_link'] );
+        $this->assertSame( '', $vars['draw_link'] );
+        $this->assertSame( '', $vars['action_url'] );
+        $this->assertSame( 'https://example.com/rules/league-rules/', $vars['rules_link'] );
+        $this->assertSame( '', $vars['cup_link'] );
+        $this->assertSame( '15/10/2026', $vars['match_date'] );
+        $this->assertSame( '19:00', $vars['match_time'] );
+
+        $this->assertFalse( property_exists( $vars['teams']['home'], 'title' ) );
+        $this->assertFalse( property_exists( $vars['teams']['away'], 'title' ) );
+        $this->assertSame( 'Home Team', $vars['teams']['home']->name );
+        $this->assertSame( 'Away Team', $vars['teams']['away']->name );
+        $this->assertSame( 'CA', $vars['teams']['home']->club );
+        $this->assertSame( 'CB', $vars['teams']['away']->club );
+        $this->assertSame( 'John Doe', $vars['teams']['home']->captain );
+        $this->assertSame( 'Jane Smith', $vars['teams']['away']->captain );
+        $this->assertFalse( property_exists( $vars['teams']['home'], 'player' ) );
+        $this->assertFalse( property_exists( $vars['teams']['away'], 'player' ) );
+    }
+
+    public function test_present_match_notification_numeric_competition_type_uses_generic_fallback(): void {
+        $fixture = $this->create_test_fixture(
+            [
+                'comp_type' => 'league',
+            ]
+        );
+
+        $vars = $this->presenter->present_match_notification(
+            $fixture,
+            [
+                'competition_type' => 7,
+            ]
+        );
+
+        $this->assertSame( 'https://example.com/rules/7-rules/', $vars['rules_link'] );
+        $this->assertSame( '', $vars['tournament_link'] );
+        $this->assertSame( '', $vars['cup_link'] );
+    }
+
+    public function test_present_match_notification_player_team_type(): void {
+        $player_1 = (object) [ 'name' => 'Alice' ];
+        $player_2 = (object) [ 'name' => 'Bob' ];
+
+        $fixture = $this->create_test_fixture(
+            [
+                'comp_type'      => 'tournament',
+                'home_team_type' => 'P',
+                'away_team_type' => 'P',
+                'home_players'   => [ $player_1 ],
+                'away_players'   => [ $player_2 ],
+            ]
+        );
+
+        $tournament       = $this->createStub( Tournament::class );
+        $tournament->name = 'Singles Open';
+        $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
+
+        $vars = $this->presenter->present_match_notification(
+            $fixture,
+            [
+                'competition_type' => 'tournament',
+                'tournament'       => 'singles-open',
+            ]
+        );
+
+        $this->assertSame( [ $player_1 ], $vars['teams']['home']->player );
+        $this->assertSame( [ $player_2 ], $vars['teams']['away']->player );
+        $this->assertFalse( property_exists( $vars['teams']['home'], 'captain' ) );
+        $this->assertFalse( property_exists( $vars['teams']['home'], 'captain_email' ) );
+        $this->assertFalse( property_exists( $vars['teams']['away'], 'captain' ) );
+        $this->assertFalse( property_exists( $vars['teams']['away'], 'captain_email' ) );
+    }
+
+    public function test_present_match_notification_host_away_player_mode(): void {
+        $player_home = (object) [ 'name' => 'Player Alpha' ];
+        $player_away = (object) [ 'name' => 'Player Beta' ];
+
+        // In host 'away' mode: source home team is host (placed in $teams['away']),
+        // source away team is visitor (placed in $teams['home']).
+        // Player mode is determined by source home team_type: when source home is 'P',
+        // BOTH teams are populated with player rosters even if source away was 'T'.
+        $fixture = $this->create_test_fixture(
+            [
+                'comp_type'      => 'cup',
+                'host'           => 'away',
+                'home_name'      => 'Source Home (Host)',
+                'away_name'      => 'Source Away (Visitor)',
+                'home_team_type' => 'P',
+                'away_team_type' => 'T',
+                'home_players'   => [ $player_home ],
+                'away_players'   => [ $player_away ],
+            ]
+        );
+
+        $vars = $this->presenter->present_match_notification(
+            $fixture,
+            [
+                'competition_type' => 'cup',
+            ]
+        );
+
+        $this->assertSame( 'Source Home (Host)', $vars['teams']['away']->name );
+        $this->assertSame( [ $player_home ], $vars['teams']['away']->player );
+        $this->assertFalse( property_exists( $vars['teams']['away'], 'captain' ) );
+
+        $this->assertSame( 'Source Away (Visitor)', $vars['teams']['home']->name );
+        $this->assertSame( [ $player_away ], $vars['teams']['home']->player );
+        $this->assertFalse( property_exists( $vars['teams']['home'], 'captain' ) );
+    }
+
+    public function test_present_match_notification_cup_overrides_template(): void {
+        $fixture = $this->create_test_fixture(
+            [
+                'comp_type' => 'cup',
+            ]
+        );
+
+        $vars = $this->presenter->present_match_notification(
+            $fixture,
+            [
+                'competition_type' => 'cup',
+                'template'         => 'custom_template',
+            ]
+        );
+
+        $this->assertSame( 'cup', $vars['template'] );
+    }
+
+    public function test_present_match_notification_unknown_club_fallback(): void {
+        $fixture = $this->create_test_fixture(
+            [
+                'comp_type'           => 'league',
+                'home_club_shortcode' => '',
+                'away_club_shortcode' => '',
+            ]
+        );
+
+        $vars = $this->presenter->present_match_notification(
+            $fixture,
+            [
+                'competition_type' => 'league',
+            ]
+        );
+
+        $this->assertSame( 'Unknown', $vars['teams']['home']->club );
+        $this->assertSame( 'Unknown', $vars['teams']['away']->club );
     }
 
     public function test_present_result_notification_admin_url(): void {

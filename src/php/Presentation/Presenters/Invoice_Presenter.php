@@ -22,6 +22,7 @@ use Racketmanager\Admin\View_Models\Finances_Invoice_Page_View_Model;
 use Racketmanager\Admin\View_Models\Finances_Invoices_Page_View_Model;
 use Racketmanager\Domain\Enums\Invoice_Status;
 use Racketmanager\Domain\Value_Objects\Money;
+use Racketmanager\Infrastructure\Wordpress\Presentation\Ports\Invoice_Presenter_Interface;
 use Racketmanager\Presentation\View_Models\Club_Invoices_List_View_Model;
 use Racketmanager\Presentation\View_Models\Invoice_Item_View_Model;
 use Racketmanager\Presentation\View_Models\Invoice_Summary_View_Model;
@@ -46,7 +47,7 @@ use function trim;
 use function ucfirst;
 use function ucwords;
 
-class Invoice_Presenter {
+class Invoice_Presenter implements Invoice_Presenter_Interface {
 
     /**
      * Present full Invoice View Model.

@@ -204,6 +204,7 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
                 $c->get( 'event_repository' )
             )
         );
+        $container->alias( Get_Team_Order_Handler::class, 'get_team_order_handler' );
 
         // Shortcode Adapter.
         $container->set(

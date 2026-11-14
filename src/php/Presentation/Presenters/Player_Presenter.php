@@ -9,6 +9,7 @@ use LogicException;
 use Racketmanager\Domain\Player\Player_Ranking;
 use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
+use Racketmanager\Infrastructure\Wordpress\Presentation\Ports\Player_Presenter_Interface;
 use Racketmanager\Presentation\View_Models\Club_Link_View_Model;
 use Racketmanager\Presentation\View_Models\Club_Membership_View_Model;
 use Racketmanager\Presentation\View_Models\Competition_List_Item_View_Model;
@@ -22,7 +23,7 @@ use function str_starts_with;
 /**
  * Presenter for Player domain objects and templates.
  */
-readonly class Player_Presenter {
+readonly class Player_Presenter implements Player_Presenter_Interface {
 
     /**
      * Constructor.

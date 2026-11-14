@@ -11,11 +11,12 @@ declare( strict_types=1 );
 namespace Racketmanager\Presentation\Presenters;
 
 use Racketmanager\Domain\Communication\Message;
+use Racketmanager\Infrastructure\Wordpress\Presentation\Ports\Message_Presenter_Interface;
 use Racketmanager\Presentation\View_Models\Message_View_Model;
 use Racketmanager\Presentation\View_Models\Messages_List_View_Model;
 use function mysql2date;
 
-class Message_Presenter {
+class Message_Presenter implements Message_Presenter_Interface {
     public function present_message( object $message ): Message_View_Model {
         $raw_date       = $message->date ?? null;
         $date_formatted = ! empty( $raw_date ) ? (string) mysql2date( 'd-m-Y G:i:s', $raw_date ) : '';

@@ -18,6 +18,7 @@ use Racketmanager\Infrastructure\Wordpress\Ajax\Finance_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Finance_Ajax_Controller;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
+use Racketmanager\Infrastructure\Wordpress\Presentation\Ports\Shortcode_View_Presenter_Interface;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\RacketManager;
@@ -42,7 +43,7 @@ class Finance_Ajax_Adapter_Test extends TestCase {
     private function make_adapter(
         ?Set_Purchase_Order_Handler $set_purchase_order_handler = null,
         ?Get_Purchase_Order_Handler $get_purchase_order_handler = null,
-        ?Shortcode_View_Presenter $view_presenter = null
+        ?Shortcode_View_Presenter_Interface $view_presenter = null
     ): Finance_Ajax_Adapter {
         $response_factory = $this->createStub( Json_Response_Factory_Interface::class );
         $response_factory->method( 'create_success_response' )->willReturnCallback(
@@ -247,7 +248,7 @@ class Finance_Ajax_Adapter_Test extends TestCase {
             } ) )
             ->willReturn( new Purchase_Order_Result( modal: 'poModal' ) );
 
-        $presenter = $this->createMock( Shortcode_View_Presenter::class );
+        $presenter = $this->createMock( Shortcode_View_Presenter_Interface::class );
         $presenter->expects( $this->once() )
             ->method( 'render' )
             ->with( $view_model )
@@ -311,7 +312,7 @@ class Finance_Ajax_Adapter_Test extends TestCase {
         foreach ( [
             'set_purchase_order_handler' => Set_Purchase_Order_Handler::class,
             'get_purchase_order_handler' => Get_Purchase_Order_Handler::class,
-            'view_presenter'             => Shortcode_View_Presenter::class,
+            'view_presenter'             => Shortcode_View_Presenter_Interface::class,
         ] as $name => $class ) {
             $this->assertArrayHasKey( $name, $params );
             $this->assertFalse( $params[ $name ]->isOptional(), "$name must be a required constructor argument." );

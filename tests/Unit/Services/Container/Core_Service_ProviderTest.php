@@ -6,14 +6,25 @@ namespace Racketmanager\Tests\Unit\Services\Container;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Account\Ports\User_Favourites_Gateway_Interface;
 use Racketmanager\Application\Export\Ports\Data_Exporter_Interface;
+use Racketmanager\Application\Finance\Commands\Set_Purchase_Order_Handler;
 use Racketmanager\Application\General\Queries\Get_Alert_Handler;
+use Racketmanager\Application\General\Queries\Get_Favourites_Handler;
+use Racketmanager\Application\General\Queries\Get_Invoice_Handler;
+use Racketmanager\Application\General\Queries\Get_Memberships_Handler;
+use Racketmanager\Application\General\Queries\Get_Purchase_Order_Handler;
+use Racketmanager\Application\Login\Queries\Get_Login_Form_Handler;
+use Racketmanager\Application\Login\Queries\Get_Member_Account_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Lost_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Handler;
 use Racketmanager\Application\Login\Services\Auth_Service;
 use Racketmanager\Application\Mail\Mailer_Interface;
+use Racketmanager\Application\Message\Queries\Get_Message_Handler;
+use Racketmanager\Application\Message\Queries\Get_Messages_Handler;
 use Racketmanager\Application\Payment\Ports\Payment_Gateway_Interface;
-use Racketmanager\Application\Ports\Template_Renderer_Interface;
+use Racketmanager\Application\Ports\Finance_Service_Interface;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
+use Racketmanager\Application\Ports\Settings_Service_Interface;
+use Racketmanager\Application\Ports\Template_Renderer_Interface;
 use Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface;
 use Racketmanager\Domain\Ports\Clock_Interface;
 use Racketmanager\Domain\Ports\Rating_Gateway_Interface;
@@ -47,8 +58,10 @@ use Racketmanager\Infrastructure\Wordpress\Shortcodes\General_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Login_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Message_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Shortcode_Registrar;
+use Racketmanager\Infrastructure\Wordpress\Presentation\Ports\Shortcode_View_Presenter_Interface;
 use Racketmanager\Infrastructure\Wordpress\Rewrites\Rewrite_Rules;
 use Racketmanager\Infrastructure\Wordpress\Templates\Template_Loader;
+use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Charge_Repository;
 use Racketmanager\Repositories\Interfaces\Charge_Repository_Interface;
@@ -193,6 +206,7 @@ class Core_Service_ProviderTest extends TestCase {
         $this->assertTrue( $this->container->has( 'racketmanager_app' ) );
 
         $this->assertTrue( $this->container->has( 'settings_service' ) );
+        $this->assertTrue( $this->container->has( Settings_Service_Interface::class ) );
         $this->assertTrue( $this->container->has( Settings_Service::class ) );
 
         $this->assertTrue( $this->container->has( 'security_service' ) );
@@ -213,7 +227,9 @@ class Core_Service_ProviderTest extends TestCase {
         $this->assertTrue( $this->container->has( Page_Title_Service::class ) );
         $this->assertTrue( $this->container->has( Page_Title_Service_Interface::class ) );
 
-        $this->container->set( 'shortcode_template_renderer', $this->createStub( Template_Renderer_Interface::class ) );
+        $renderer = $this->createStub( Template_Renderer_Interface::class );
+        $this->container->set( Template_Renderer_Interface::class, $renderer );
+        $this->container->alias( 'shortcode_template_renderer', Template_Renderer_Interface::class );
         $this->assertTrue( $this->container->has( Auth_Service::class ) );
         $this->assertInstanceOf( Auth_Service::class, $this->container->get( Auth_Service::class ) );
         $this->assertTrue( $this->container->has( Password_Reset_Action_Adapter::class ) );
@@ -236,7 +252,9 @@ class Core_Service_ProviderTest extends TestCase {
         $GLOBALS['wp_stubs_added_actions'] = array();
         $GLOBALS['wp_stubs_added_filters'] = array();
 
-        $this->container->set( 'shortcode_template_renderer', $this->createStub( Template_Renderer_Interface::class ) );
+        $renderer = $this->createStub( Template_Renderer_Interface::class );
+        $this->container->set( Template_Renderer_Interface::class, $renderer );
+        $this->container->alias( 'shortcode_template_renderer', Template_Renderer_Interface::class );
 
         $pw_adapter    = $this->container->get( Password_Reset_Action_Adapter::class );
         $email_adapter = $this->container->get( Auth_Email_Filter_Adapter::class );
@@ -304,6 +322,7 @@ class Core_Service_ProviderTest extends TestCase {
         $this->assertTrue( $this->container->has( Season_Service::class ) );
 
         $this->assertTrue( $this->container->has( 'finance_service' ) );
+        $this->assertTrue( $this->container->has( Finance_Service_Interface::class ) );
         $this->assertTrue( $this->container->has( Finance_Service::class ) );
 
         $this->assertTrue( $this->container->has( 'notify_service' ) );
@@ -333,6 +352,7 @@ class Core_Service_ProviderTest extends TestCase {
         $this->assertTrue( $this->container->has( Account_Ajax_Controller::class ) );
 
         $this->assertTrue( $this->container->has( 'set_purchase_order_handler' ) );
+        $this->assertTrue( $this->container->has( Set_Purchase_Order_Handler::class ) );
 
         $this->assertTrue( $this->container->has( 'finance_ajax_adapter' ) );
         $this->assertTrue( $this->container->has( Finance_Ajax_Adapter::class ) );
@@ -346,24 +366,35 @@ class Core_Service_ProviderTest extends TestCase {
         $this->assertTrue( $this->container->has( Email_Shortcode_Adapter::class ) );
 
         $this->assertTrue( $this->container->has( 'get_login_form_handler' ) );
+        $this->assertTrue( $this->container->has( Get_Login_Form_Handler::class ) );
         $this->assertTrue( $this->container->has( 'get_password_lost_form_handler' ) );
+        $this->assertTrue( $this->container->has( Get_Password_Lost_Form_Handler::class ) );
         $this->assertTrue( $this->container->has( 'get_password_reset_form_handler' ) );
+        $this->assertTrue( $this->container->has( Get_Password_Reset_Form_Handler::class ) );
         $this->assertTrue( $this->container->has( 'get_member_account_form_handler' ) );
+        $this->assertTrue( $this->container->has( Get_Member_Account_Form_Handler::class ) );
 
         $this->assertTrue( $this->container->has( 'login_shortcode_adapter' ) );
         $this->assertTrue( $this->container->has( Login_Shortcode_Adapter::class ) );
 
         $this->assertTrue( $this->container->has( 'get_messages_handler' ) );
+        $this->assertTrue( $this->container->has( Get_Messages_Handler::class ) );
         $this->assertTrue( $this->container->has( 'get_message_handler' ) );
+        $this->assertTrue( $this->container->has( Get_Message_Handler::class ) );
 
         $this->assertTrue( $this->container->has( 'message_shortcode_adapter' ) );
         $this->assertTrue( $this->container->has( Message_Shortcode_Adapter::class ) );
 
         $this->assertTrue( $this->container->has( 'get_favourites_handler' ) );
+        $this->assertTrue( $this->container->has( Get_Favourites_Handler::class ) );
         $this->assertTrue( $this->container->has( 'get_invoice_handler' ) );
+        $this->assertTrue( $this->container->has( Get_Invoice_Handler::class ) );
         $this->assertTrue( $this->container->has( 'get_purchase_order_handler' ) );
+        $this->assertTrue( $this->container->has( Get_Purchase_Order_Handler::class ) );
         $this->assertTrue( $this->container->has( 'get_memberships_handler' ) );
+        $this->assertTrue( $this->container->has( Get_Memberships_Handler::class ) );
         $this->assertTrue( $this->container->has( 'get_alert_handler' ) );
+        $this->assertTrue( $this->container->has( Get_Alert_Handler::class ) );
 
         $this->assertTrue( $this->container->has( 'general_shortcode_adapter' ) );
         $this->assertTrue( $this->container->has( General_Shortcode_Adapter::class ) );
@@ -417,6 +448,17 @@ class Core_Service_ProviderTest extends TestCase {
         $this->assertSame( $option_gateway, $this->container->get( Option_Gateway_Interface::class ) );
         $this->assertSame( $option_gateway, $this->container->get( Wp_Option_Gateway::class ) );
 
+        $payment = $this->container->get( 'payment_gateway' );
+        $this->assertSame( $payment, $this->container->get( Payment_Gateway_Interface::class ) );
+        $this->assertSame( $payment, $this->container->get( Stripe_Payment_Gateway::class ) );
+
+        $favourites = $this->container->get( 'user_favourites_gateway' );
+        $this->assertSame( $favourites, $this->container->get( User_Favourites_Gateway_Interface::class ) );
+        $this->assertSame( $favourites, $this->container->get( Wp_User_Favourites_Gateway::class ) );
+
+        $this->assertSame( $this->container->get( 'plugin_bootstrap' ), $this->container->get( Plugin_Bootstrap::class ) );
+        $this->assertSame( $this->container->get( 'shortcode_registrar' ), $this->container->get( Shortcode_Registrar::class ) );
+
         $security = $this->container->get( 'security_service' );
         $this->assertSame( $security, $this->container->get( Security_Service_Interface::class ) );
         $this->assertSame( $security, $this->container->get( Security_Service::class ) );
@@ -447,6 +489,80 @@ class Core_Service_ProviderTest extends TestCase {
         $page_title = $this->container->get( 'page_title_service' );
         $this->assertSame( $page_title, $this->container->get( Page_Title_Service::class ) );
         $this->assertSame( $page_title, $this->container->get( Page_Title_Service_Interface::class ) );
+
+        $app_service = $this->container->get( 'racketmanager_app' );
+        $this->assertSame( $app_service, $this->container->get( RacketManager::class ) );
+
+        $settings = $this->container->get( 'settings_service' );
+        $this->assertSame( $settings, $this->container->get( Settings_Service_Interface::class ) );
+        $this->assertSame( $settings, $this->container->get( Settings_Service::class ) );
+
+        $mail_filter = $this->container->get( 'mail_filter_service' );
+        $this->assertSame( $mail_filter, $this->container->get( Mail_Filter_Service_Interface::class ) );
+        $this->assertSame( $mail_filter, $this->container->get( Mail_Filter_Service::class ) );
+
+        $coordinator = $this->container->get( 'component_coordinator' );
+        $this->assertSame( $coordinator, $this->container->get( Component_Coordinator_Interface::class ) );
+        $this->assertSame( $coordinator, $this->container->get( Component_Coordinator::class ) );
+
+        $season_service = $this->container->get( 'season_service' );
+        $this->assertSame( $season_service, $this->container->get( Season_Service::class ) );
+
+        $notify_service = $this->container->get( 'notify_service' );
+        $this->assertSame( $notify_service, $this->container->get( Notify_Service::class ) );
+
+        $export_delivery = $this->container->get( 'export_delivery_adapter' );
+        $this->assertSame( $export_delivery, $this->container->get( Export_Delivery_Adapter::class ) );
+        $this->assertSame( $export_delivery, $this->container->get( 'export_admin_controller' ) );
+
+        $account_adapter = $this->container->get( 'account_ajax_adapter' );
+        $this->assertSame( $account_adapter, $this->container->get( Account_Ajax_Adapter::class ) );
+
+        $account_controller = $this->container->get( 'account_ajax_controller' );
+        $this->assertSame( $account_controller, $this->container->get( Account_Ajax_Controller::class ) );
+
+        $finance_stub = $this->createStub( Finance_Service::class );
+        $this->container->set( Finance_Service_Interface::class, $finance_stub );
+        $this->container->alias( Finance_Service::class, Finance_Service_Interface::class );
+
+        $view_presenter_stub = $this->createStub( Shortcode_View_Presenter::class );
+        $this->container->set( Shortcode_View_Presenter_Interface::class, $view_presenter_stub );
+
+        $set_po = $this->container->get( 'set_purchase_order_handler' );
+        $this->assertSame( $set_po, $this->container->get( Set_Purchase_Order_Handler::class ) );
+
+        $get_po = $this->container->get( 'get_purchase_order_handler' );
+        $this->assertSame( $get_po, $this->container->get( Get_Purchase_Order_Handler::class ) );
+
+        $finance_adapter = $this->container->get( 'finance_ajax_adapter' );
+        $this->assertSame( $finance_adapter, $this->container->get( Finance_Ajax_Adapter::class ) );
+
+        $finance_controller = $this->container->get( 'finance_ajax_controller' );
+        $this->assertSame( $finance_controller, $this->container->get( Finance_Ajax_Controller::class ) );
+
+        $login_form = $this->container->get( 'get_login_form_handler' );
+        $this->assertSame( $login_form, $this->container->get( Get_Login_Form_Handler::class ) );
+
+        $pw_lost = $this->container->get( 'get_password_lost_form_handler' );
+        $this->assertSame( $pw_lost, $this->container->get( Get_Password_Lost_Form_Handler::class ) );
+
+        $pw_reset = $this->container->get( 'get_password_reset_form_handler' );
+        $this->assertSame( $pw_reset, $this->container->get( Get_Password_Reset_Form_Handler::class ) );
+
+        $member_account = $this->container->get( 'get_member_account_form_handler' );
+        $this->assertSame( $member_account, $this->container->get( Get_Member_Account_Form_Handler::class ) );
+
+        $get_messages = $this->container->get( 'get_messages_handler' );
+        $this->assertSame( $get_messages, $this->container->get( Get_Messages_Handler::class ) );
+
+        $get_message = $this->container->get( 'get_message_handler' );
+        $this->assertSame( $get_message, $this->container->get( Get_Message_Handler::class ) );
+
+        $get_invoice = $this->container->get( 'get_invoice_handler' );
+        $this->assertSame( $get_invoice, $this->container->get( Get_Invoice_Handler::class ) );
+
+        $alert = $this->container->get( 'get_alert_handler' );
+        $this->assertSame( $alert, $this->container->get( Get_Alert_Handler::class ) );
     }
 
     public function test_resolves_with_app_properties(): void {

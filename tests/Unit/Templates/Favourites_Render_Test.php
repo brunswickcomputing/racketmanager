@@ -44,7 +44,8 @@ class Favourites_Render_Test extends TestCase {
         $this->container = new Simple_Container();
         ( new Core_Service_Provider() )->register( $this->container );
         ( new Presentation_Service_Provider() )->register( $this->container );
-        $this->container->set( 'club_repository', fn() => $this->createStub( Club_Repository_Interface::class ) );
+        $this->container->set( Club_Repository_Interface::class, fn() => $this->createStub( Club_Repository_Interface::class ) );
+        $this->container->alias( 'club_repository', Club_Repository_Interface::class );
         $this->container->set( 'club_presenter', fn() => new Club_Presenter() );
         $this->container->set( 'player_presenter', fn() => new Player_Presenter() );
         $this->renderer = $this->container->get( 'shortcode_template_renderer' );
@@ -166,11 +167,13 @@ class Favourites_Render_Test extends TestCase {
         $repository = $this->createMock( User_Repository_Interface::class );
         $repository->expects( self::once() )->method( 'find' )->with( 41 )->willReturn( $user );
         $repository->method( 'get_favourites' )->willReturn( $groups );
-        $this->container->set( 'user_repository', $repository );
+        $this->container->set( User_Repository_Interface::class, $repository );
+        $this->container->alias( 'user_repository', User_Repository_Interface::class );
 
         $club_repo = $this->createMock( Club_Repository_Interface::class );
         $club_repo->expects( self::once() )->method( 'find_by_id' )->with( 99 )->willReturn( Club_Test_Factory::create( id: 99, shortcode: 'Westcliff TC' ) );
-        $this->container->set( 'club_repository', $club_repo );
+        $this->container->set( Club_Repository_Interface::class, $club_repo );
+        $this->container->alias( 'club_repository', Club_Repository_Interface::class );
 
         $res = $this->container->get( 'get_favourites_handler' )->handle( new Get_Favourites_Query( is_logged_in: true, user_id: 41 ) );
         $html = $this->render( 'form-favourites', [ 'favourite_types' => $res->favourite_types ], 'form' );
@@ -224,11 +227,13 @@ class Favourites_Render_Test extends TestCase {
         $repository = $this->createMock( User_Repository_Interface::class );
         $repository->expects( self::once() )->method( 'find' )->with( 41 )->willReturn( $user );
         $repository->method( 'get_favourites' )->willReturn( $groups );
-        $this->container->set( 'user_repository', $repository );
+        $this->container->set( User_Repository_Interface::class, $repository );
+        $this->container->alias( 'user_repository', User_Repository_Interface::class );
 
         $club_repo = $this->createMock( Club_Repository_Interface::class );
         $club_repo->expects( self::once() )->method( 'find_by_id' )->with( 999 )->willReturn( null );
-        $this->container->set( 'club_repository', $club_repo );
+        $this->container->set( Club_Repository_Interface::class, $club_repo );
+        $this->container->alias( 'club_repository', Club_Repository_Interface::class );
 
         $res = $this->container->get( 'get_favourites_handler' )->handle( new Get_Favourites_Query( is_logged_in: true, user_id: 41 ) );
         $html = $this->render( 'form-favourites', [ 'favourite_types' => $res->favourite_types ], 'form' );
@@ -243,7 +248,8 @@ class Favourites_Render_Test extends TestCase {
     public function test_favourites_handler_still_denies_anonymous_requests_before_loading_user(): void {
         $repository = $this->createMock( User_Repository_Interface::class );
         $repository->expects( self::never() )->method( 'find' );
-        $this->container->set( 'user_repository', $repository );
+        $this->container->set( User_Repository_Interface::class, $repository );
+        $this->container->alias( 'user_repository', User_Repository_Interface::class );
         $res = $this->container->get( 'get_favourites_handler' )->handle( new Get_Favourites_Query( is_logged_in: false, user_id: 41 ) );
         self::assertTrue( $res->is_error() );
         $html = $this->container->get( 'shortcode_view_presenter' )->render( \Racketmanager\Presentation\View_Models\Shortcode_View_Model::for_error( $res->error_message ?? '' ) );

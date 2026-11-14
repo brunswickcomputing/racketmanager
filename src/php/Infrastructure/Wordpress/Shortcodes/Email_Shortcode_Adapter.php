@@ -12,7 +12,7 @@ use Racketmanager\Domain\Competition\League_Factory;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Team\Team_Factory;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Presentation\Presenters\Email_Shortcode_Presenter;
+use Racketmanager\Infrastructure\Wordpress\Presentation\Ports\Email_Shortcode_Presenter_Interface;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
@@ -30,37 +30,58 @@ use function shortcode_atts;
 /**
  * Driving adapter for Email and Notification template shortcodes.
  */
-class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
+readonly class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
+    /**
+     * Initialises the email shortcode handler with required repositories, services, presenter, renderer, and optional query vars provider.
+     *
+     * @param Fixture_Repository_Interface        $fixture_repository Fixture repository.
+     * @param Email_Shortcode_Presenter_Interface $presenter Email shortcode presenter.
+     * @param Shortcode_Template_Renderer         $template_renderer Shortcode template renderer.
+     * @param Event_Query_Service                 $event_query_service Event query service.
+     * @param League_Query_Service                $league_query_service League query service.
+     * @param Team_Repository_Interface           $team_repository Team repository.
+     * @param League_Repository_Interface         $league_repository League repository.
+     * @param Event_Repository_Interface          $event_repository Event repository.
+     * @param Competition_Repository_Interface    $competition_repository Competition repository.
+     * @param Query_Vars_Interface|null           $query_vars Optional query vars provider.
+     *
+     * @return void
+     */
     public function __construct(
-        private readonly Fixture_Repository_Interface $fixture_repository,
-        private readonly Email_Shortcode_Presenter $presenter,
-        private readonly Shortcode_Template_Renderer $template_renderer,
-        private readonly Event_Query_Service $event_query_service,
-        private readonly League_Query_Service $league_query_service,
-        private readonly Team_Repository_Interface $team_repository,
-        private readonly League_Repository_Interface $league_repository,
-        private readonly Event_Repository_Interface $event_repository,
-        private readonly Competition_Repository_Interface $competition_repository,
-        private readonly ?Query_Vars_Interface $query_vars = null
+        private Fixture_Repository_Interface $fixture_repository,
+        private Email_Shortcode_Presenter_Interface $presenter,
+        private Shortcode_Template_Renderer $template_renderer,
+        private Event_Query_Service $event_query_service,
+        private League_Query_Service $league_query_service,
+        private Team_Repository_Interface $team_repository,
+        private League_Repository_Interface $league_repository,
+        private Event_Repository_Interface $event_repository,
+        private Competition_Repository_Interface $competition_repository,
+        private ?Query_Vars_Interface $query_vars = null
     ) {
     }
 
     /**
-     * [match-notification match=ID template=X tournament=X competition=X emailfrom=X round=X competition_type=X]
+     * [match-notification match=ID id=ID template=X tournament=ID competition=ID emailfrom=X round=X competition_type=X]
      *
-     * @param array|string $atts shortcode attributes.
+     * @param array|string $atts Shortcode attributes.
+     *
+     * @return string Rendered match notification email content or alert message.
      */
     public function show_match_notification( array|string $atts = [] ): string {
-        $args = shortcode_atts( [
-            'match'            => '',
-            'id'               => '',
-            'template'         => '',
-            'tournament'       => false,
-            'competition'      => '',
-            'emailfrom'        => '',
-            'round'            => '',
-            'competition_type' => '',
-        ], is_array( $atts ) ? $atts : [] );
+        $args = shortcode_atts(
+            [
+                'match'            => '',
+                'id'               => '',
+                'template'         => '',
+                'tournament'       => false,
+                'competition'      => '',
+                'emailfrom'        => '',
+                'round'            => '',
+                'competition_type' => '',
+            ],
+            is_array( $atts ) ? $atts : []
+        );
 
         $match    = $args['match'] ?: $args['id'];
         $match_id = (int) ( is_object( $match ) ? ( $match->id ?? 0 ) : $match );
@@ -91,18 +112,21 @@ class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      * @param array|string $atts shortcode attributes.
      */
     public function show_result_notification( array|string $atts = [] ): string {
-        $args = shortcode_atts( [
-            'match'      => '',
-            'id'         => '',
-            'template'   => '',
-            'league'     => false,
-            'round'      => false,
-            'complete'   => false,
-            'errors'     => false,
-            'match_day'  => '',
-            'from_email' => false,
-            'challenge'  => false,
-        ], is_array( $atts ) ? $atts : [] );
+        $args = shortcode_atts(
+            [
+                'match'      => '',
+                'id'         => '',
+                'template'   => '',
+                'league'     => false,
+                'round'      => false,
+                'complete'   => false,
+                'errors'     => false,
+                'match_day'  => '',
+                'from_email' => false,
+                'challenge'  => false,
+            ],
+            is_array( $atts ) ? $atts : []
+        );
 
         $match    = $args['match'] ?: $args['id'];
         $match_id = (int) ( is_object( $match ) ? ( $match->id ?? 0 ) : $match );
@@ -127,19 +151,22 @@ class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      * @param array|string $atts shortcode attributes.
      */
     public function show_captain_result_notification( array|string $atts = [] ): string {
-        $args = shortcode_atts( [
-            'match'                 => '',
-            'id'                    => '',
-            'template'              => '',
-            'outstanding'           => false,
-            'time_period'           => false,
-            'override'              => false,
-            'from_email'            => false,
-            'confirmation_required' => false,
-            'confirmation_timeout'  => false,
-            'timeout'               => false,
-            'penalty'               => false,
-        ], is_array( $atts ) ? $atts : [] );
+        $args = shortcode_atts(
+            [
+                'match'                 => '',
+                'id'                    => '',
+                'template'              => '',
+                'outstanding'           => false,
+                'time_period'           => false,
+                'override'              => false,
+                'from_email'            => false,
+                'confirmation_required' => false,
+                'confirmation_timeout'  => false,
+                'timeout'               => false,
+                'penalty'               => false,
+            ],
+            is_array( $atts ) ? $atts : []
+        );
 
         $match    = $args['match'] ?: $args['id'];
         $match_id = (int) ( is_object( $match ) ? ( $match->id ?? 0 ) : $match );
@@ -173,15 +200,18 @@ class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      * @param array|string $atts shortcode attributes.
      */
     public function show_result_outstanding_notification( array|string $atts = [] ): string {
-        $args = shortcode_atts( [
-            'match'       => '',
-            'id'          => '',
-            'template'    => '',
-            'time_period' => false,
-            'timeout'     => false,
-            'penalty'     => false,
-            'from_email'  => null,
-        ], is_array( $atts ) ? $atts : [] );
+        $args = shortcode_atts(
+            [
+                'match'       => '',
+                'id'          => '',
+                'template'    => '',
+                'time_period' => false,
+                'timeout'     => false,
+                'penalty'     => false,
+                'from_email'  => null,
+            ],
+            is_array( $atts ) ? $atts : []
+        );
 
         $match    = $args['match'] ?: $args['id'];
         $match_id = (int) ( is_object( $match ) ? ( $match->id ?? 0 ) : $match );
@@ -212,14 +242,17 @@ class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      * @param array|string $atts shortcode attributes.
      */
     public function show_club_player_notification( array|string $atts = [] ): string {
-        $args = shortcode_atts( [
-            'club'      => '',
-            'action'    => false,
-            'player'    => false,
-            'requestor' => false,
-            'btm'       => false,
-            'template'  => '',
-        ], is_array( $atts ) ? $atts : [] );
+        $args = shortcode_atts(
+            [
+                'club'      => '',
+                'action'    => false,
+                'player'    => false,
+                'requestor' => false,
+                'btm'       => false,
+                'template'  => '',
+            ],
+            is_array( $atts ) ? $atts : []
+        );
 
         $vars     = $this->presenter->present_club_player_notification( $args );
         $filename = ! empty( $args['template'] ) ? 'club-player-notification-' . $args['template'] : 'club-player-notification';
@@ -233,20 +266,23 @@ class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      * @param array|string $atts shortcode attributes.
      */
     public function show_match_date_change_notification( array|string $atts = [] ): string {
-        $args = shortcode_atts( [
-            'match'            => '',
-            'id'               => '',
-            'template'         => '',
-            'tournament'       => false,
-            'competition'      => '',
-            'emailfrom'        => '',
-            'round'            => '',
-            'competition_type' => '',
-            'original_date'    => '',
-            'new_date'         => '',
-            'delay'            => false,
-            'email_subject'    => '',
-        ], is_array( $atts ) ? $atts : [] );
+        $args = shortcode_atts(
+            [
+                'match'            => '',
+                'id'               => '',
+                'template'         => '',
+                'tournament'       => false,
+                'competition'      => '',
+                'emailfrom'        => '',
+                'round'            => '',
+                'competition_type' => '',
+                'original_date'    => '',
+                'new_date'         => '',
+                'delay'            => false,
+                'email_subject'    => '',
+            ],
+            is_array( $atts ) ? $atts : []
+        );
 
         $match    = $args['match'] ?: $args['id'];
         $match_id = (int) ( is_object( $match ) ? ( $match->id ?? 0 ) : $match );
@@ -276,14 +312,17 @@ class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      * @param array|string $atts shortcode attributes.
      */
     public function show_team_withdrawn( array|string $atts = [] ): string {
-        $args = shortcode_atts( [
-            'team'     => false,
-            'league'   => false,
-            'season'   => false,
-            'subject'  => false,
-            'from'     => false,
-            'template' => '',
-        ], is_array( $atts ) ? $atts : [] );
+        $args = shortcode_atts(
+            [
+                'team'     => false,
+                'league'   => false,
+                'season'   => false,
+                'subject'  => false,
+                'from'     => false,
+                'template' => '',
+            ],
+            is_array( $atts ) ? $atts : []
+        );
 
         $team_id = $args['team'];
         if ( ! $team_id ) {
@@ -332,15 +371,18 @@ class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      * @param array|string $atts shortcode attributes.
      */
     public function show_withdrawn_team_match( array|string $atts = [] ): string {
-        $args = shortcode_atts( [
-            'id'            => '',
-            'template'      => '',
-            'is_tournament' => false,
-            'event'         => '',
-            'emailfrom'     => '',
-            'round'         => '',
-            'subject'       => null,
-        ], is_array( $atts ) ? $atts : [] );
+        $args = shortcode_atts(
+            [
+                'id'            => '',
+                'template'      => '',
+                'is_tournament' => false,
+                'event'         => '',
+                'emailfrom'     => '',
+                'round'         => '',
+                'subject'       => null,
+            ],
+            is_array( $atts ) ? $atts : []
+        );
 
         $vars     = $this->presenter->present_withdrawn_team_match( $args );
         $filename = ! empty( $args['template'] ) ? 'match-team-withdrawn-' . $args['template'] : 'match-team-withdrawn';
@@ -354,11 +396,14 @@ class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      * @param array|string $atts shortcode attributes.
      */
     public function show_event_constitution( array|string $atts = [] ): string {
-        $args = shortcode_atts( [
-            'id'       => false,
-            'season'   => null,
-            'template' => '',
-        ], is_array( $atts ) ? $atts : [] );
+        $args = shortcode_atts(
+            [
+                'id'       => false,
+                'season'   => null,
+                'template' => '',
+            ],
+            is_array( $atts ) ? $atts : []
+        );
 
         $event_id = $args['id'];
         $event    = $event_id ? $this->resolve_event( $event_id ) : null;
@@ -366,7 +411,7 @@ class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return $this->template_renderer->render_alert( __( 'Event not found', 'racketmanager' ) );
         }
 
-        if ( $event instanceof \Racketmanager\Domain\Competition\Event ) {
+        if ( $event instanceof Event ) {
             $event->leagues = $this->event_query_service->get_leagues( $event );
         }
         if ( method_exists( $event, 'set_season' ) && null !== $args['season'] ) {
@@ -382,6 +427,10 @@ class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     /**
      * Resolve a team from a shortcode value (legacy `get_team()` shape): entity passthrough,
      * raw object → Team, id or title → repository.
+     *
+     * @param mixed $team Shortcode value to resolve as a Team entity.
+     *
+     * @return ?Team Resolved Team entity or null if not found.
      */
     private function resolve_team( mixed $team ): ?Team {
         if ( $team instanceof Team ) {
@@ -396,6 +445,10 @@ class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     /**
      * Resolve a league from a shortcode value (legacy `get_league()` shape): entity passthrough,
      * raw object → League_Factory (+ event via embedded object or event_id, + set_season), id or name → repository.
+     *
+     * @param mixed $league Shortcode value to resolve as a League entity.
+     *
+     * @return ?League Resolved League entity or null if not found.
      */
     private function resolve_league( mixed $league ): ?League {
         if ( $league instanceof League ) {
@@ -420,6 +473,10 @@ class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     /**
      * Resolve an event from a shortcode value (legacy `get_event()` shape): entity passthrough,
      * raw object → Event, id → repository.
+     *
+     * @param mixed $event Shortcode value to resolve as an Event entity.
+     *
+     * @return ?Event Resolved Event entity or null if not found.
      */
     private function resolve_event( mixed $event ): ?Event {
         if ( $event instanceof Event ) {

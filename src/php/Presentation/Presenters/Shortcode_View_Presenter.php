@@ -3,13 +3,14 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Presentation\Presenters;
 
+use Racketmanager\Infrastructure\Wordpress\Presentation\Ports\Shortcode_View_Presenter_Interface;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 
 /**
  * Renders a Shortcode_View_Model (template + variables, or an error alert) to HTML.
  */
-readonly class Shortcode_View_Presenter {
+readonly class Shortcode_View_Presenter implements Shortcode_View_Presenter_Interface {
     /**
      * Constructor
      *

@@ -3,10 +3,11 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Presentation\Presenters;
 
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Application\Ports\Option_Gateway_Interface;
+use Racketmanager\Infrastructure\Wordpress\Presentation\Ports\Email_Shortcode_Presenter_Interface;
 use Racketmanager\Presentation\Formatters\Email_Date_Formatter;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
@@ -14,7 +15,6 @@ use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
-use Racketmanager\Util\Util;
 use stdClass;
 use function __;
 use function admin_url;
@@ -26,7 +26,22 @@ use function substr;
 /**
  * Presenter specifically responsible for preparing view data for email and notification shortcodes.
  */
-readonly class Email_Shortcode_Presenter {
+readonly class Email_Shortcode_Presenter implements Email_Shortcode_Presenter_Interface {
+    /**
+     * Initialises the service with required dependencies and site configuration.
+     *
+     * @param Tournament_Service               $tournament_service Tournament service dependency.
+     * @param Competition_Service              $competition_service Competition service dependency.
+     * @param Team_Service                     $team_service Team service dependency.
+     * @param Fixture_Link_Service             $fixture_link_service Fixture link service dependency.
+     * @param Fixture_Permission_Service       $permission_service Fixture permission service dependency.
+     * @param string                           $site_url Site URL.
+     * @param string                           $site_name Site name.
+     * @param Rubber_Repository_Interface|null $rubber_repository Optional rubber repository dependency.
+     * @param Option_Gateway_Interface|null    $option_gateway Optional option gateway dependency.
+     *
+     * @return void
+     */
     public function __construct(
         private Tournament_Service $tournament_service,
         private Competition_Service $competition_service,
@@ -40,6 +55,11 @@ readonly class Email_Shortcode_Presenter {
     ) {
     }
 
+    /**
+     * Create the email date formatter.
+     *
+     * @return Email_Date_Formatter
+     */
     private function date_formatter(): Email_Date_Formatter {
         return new Email_Date_Formatter( $this->option_gateway );
     }
@@ -47,20 +67,14 @@ readonly class Email_Shortcode_Presenter {
     /**
      * Prepare presentation variables for [match-notification].
      *
-     * @param Fixture $fixture
-     * @param array $args
+     * @param Fixture $fixture Fixture details.
+     * @param array   $args    Query arguments.
      * @return array
-     * @throws Tournament_Not_Found_Exception
+     * @throws Tournament_Not_Found_Exception Tournament not found.
      */
     public function present_match_notification( Fixture $fixture, array $args ): array {
         $competition_type = $args['competition_type'] ?? '';
-        $tournament_param = $args['tournament'] ?? false;
-        $competition      = $args['competition'] ?? '';
-        $email_from       = $args['email_from'] ?? ( $args['emailfrom'] ?? '' );
-        $round            = $args['round'] ?? '';
-        $template         = $args['template'] ?? '';
-
-        $match = Fixture_Presentation_Adapter::from_fixture(
+        $match            = Fixture_Presentation_Adapter::from_fixture(
             $fixture,
             $this->competition_service,
             $this->team_service,
@@ -70,124 +84,39 @@ readonly class Email_Shortcode_Presenter {
             rubber_repository: $this->rubber_repository
         );
 
-        $teams = [
-            'home' => new stdClass(),
-            'away' => new stdClass(),
-        ];
-
-        $home_dtls       = [];
-        $away_dtls       = [];
-        $tournament_link = '';
-        $match_link      = '';
-        $cup_link        = '';
-        $draw_link       = '';
-        $rules_link      = $this->site_url . '/rules/' . $competition_type . '-rules/';
-        $tournament      = $tournament_param;
-
-        if ( 'tournament' === $competition_type ) {
-            $tournament      = $this->tournament_service->get_tournament( $tournament_param );
-            $tournament_path = ( new Tournament_Presenter() )->get_link( $tournament );
-            $tournament_link = '<a href="' . $this->site_url . $tournament_path . '">' . $tournament->name . '</a>';
-            $draw_link       = '<a href="' . $this->site_url . $tournament_path . 'draw/' . Seo_Slug::encode( $match->league->event->name ?? '' ) . '/">' . ( $match->league->event->name ?? '' ) . '</a>';
-            $match_link      = $this->site_url . $tournament_path . 'match/' . Seo_Slug::encode( $match->league->title ?? '' ) . '/' . Seo_Slug::encode( $match->teams['home']->title ?? '' ) . '-vs-' . Seo_Slug::encode( $match->teams['away']->title ?? '' ) . '/' . $match->id . '/';
-
-            $league_type = $match->league->type ?? '';
-            if ( is_string( $league_type ) && strlen( $league_type ) >= 2 && 'D' === substr( $league_type, 1, 1 ) ) {
-                $teams['home']->title = __( 'Home Players', 'racketmanager' );
-                $teams['away']->title = __( 'Away Players', 'racketmanager' );
-                $home_dtls['title']   = 'Home Players';
-                $away_dtls['title']   = 'Away Players';
-            } else {
-                $teams['home']->title = __( 'Home Player', 'racketmanager' );
-                $teams['away']->title = __( 'Away Player', 'racketmanager' );
-                $home_dtls['title']   = 'Home Player';
-                $away_dtls['title']   = 'Away Player';
-            }
-        } elseif ( 'cup' === $competition_type ) {
-            $cup_link   = '<a href="' . $this->site_url . '/cups/' . Seo_Slug::encode( $match->league->title ?? '' ) . '/' . ( $match->season ?? '' ) . '/">' . ( $match->league->title ?? '' ) . '</a>';
-            $match_link = $this->site_url . ( $match->link ?? '' );
-            if ( ! empty( $match->leg ) ) {
-                $match_link .= 'leg-' . $match->leg . '/';
-            }
-            $template             = 'cup';
-            $teams['home']->title = __( 'Home Team', 'racketmanager' );
-            $teams['away']->title = __( 'Away Team', 'racketmanager' );
-            $home_dtls['title']   = 'Home Team';
-            $away_dtls['title']   = 'Away Team';
-        }
-
-        if ( 'home' === ( $match->host ?? 'home' ) ) {
-            $team_1     = 'home';
-            $opponent_1 = 'away';
-        } else {
-            $team_1     = 'away';
-            $opponent_1 = 'home';
-        }
-        $team_2                     = 'home';
-        $opponent_2                 = 'away';
-        $teams[ $team_1 ]->name     = $match->teams[ $team_2 ]->title ?? '';
-        $teams[ $opponent_1 ]->name = $match->teams[ $opponent_2 ]->title ?? '';
-
-        if ( ! empty( $match->teams[ $team_2 ]->club->shortcode ) ) {
-            $teams[ $team_1 ]->club = $match->teams[ $team_2 ]->club->shortcode;
-        } else {
-            $teams[ $team_1 ]->club = __( 'Unknown', 'racketmanager' );
-        }
-        if ( ! empty( $match->teams[ $opponent_2 ]->club->shortcode ) ) {
-            $teams[ $opponent_1 ]->club = $match->teams[ $opponent_2 ]->club->shortcode;
-        } else {
-            $teams[ $opponent_1 ]->club = __( 'Unknown', 'racketmanager' );
-        }
-
-        if ( isset( $match->teams['home']->team_type ) && 'P' === $match->teams['home']->team_type ) {
-            $teams[ $team_1 ]->player     = $match->teams[ $team_2 ]->players ?? [];
-            $teams[ $opponent_1 ]->player = $match->teams[ $opponent_2 ]->players ?? [];
-        } else {
-            $teams[ $team_1 ]->captain           = $match->teams[ $team_2 ]->captain ?? '';
-            $teams[ $team_1 ]->captain_email     = $match->teams[ $team_2 ]->contactemail ?? '';
-            $teams[ $team_1 ]->captain_tel       = $match->teams[ $team_2 ]->contactno ?? '';
-            $teams[ $team_1 ]->matchDay          = $match->teams[ $team_2 ]->match_day ?? '';
-            $teams[ $team_1 ]->matchTime         = $match->teams[ $team_2 ]->match_time ?? '';
-            $teams[ $opponent_1 ]->captain       = $match->teams[ $opponent_2 ]->captain ?? '';
-            $teams[ $opponent_1 ]->captain_email = $match->teams[ $opponent_2 ]->contactemail ?? '';
-            $teams[ $opponent_1 ]->captain_tel   = $match->teams[ $opponent_2 ]->contactno ?? '';
-            $teams[ $opponent_1 ]->matchDay      = $match->teams[ $opponent_2 ]->match_day ?? '';
-            $teams[ $opponent_1 ]->matchTime     = $match->teams[ $opponent_2 ]->match_time ?? '';
-        }
-
-        $formatter   = $this->date_formatter();
-        $comp_name   = $competition ?: ( $match->league->title ?? '' );
-        $match_date  = $formatter->date( $fixture->get_date() );
-        $match_time  = $formatter->time( $fixture->get_date() );
+        $comp_context = $this->build_competition_context( $match, $competition_type, $args['tournament'] ?? false );
+        $teams        = $this->build_teams_presentation( $match, $comp_context['home_title'], $comp_context['away_title'] );
+        $formatter    = $this->date_formatter();
+        $comp_name    = ( $args['competition'] ?? '' ) ?: ( $match->league->title ?? '' );
 
         return [
-            'template'         => $template,
-            'tournament'       => $tournament,
+            'template'         => $comp_context['template'] ?: ( $args['template'] ?? '' ),
+            'tournament'       => $comp_context['tournament'],
             'competition'      => $comp_name,
             'competition_name' => $comp_name,
             'match'            => $match,
-            'home_dtls'        => $home_dtls,
-            'away_dtls'        => $away_dtls,
-            'round'            => $round,
+            'home_dtls'        => $comp_context['home_dtls'],
+            'away_dtls'        => $comp_context['away_dtls'],
+            'round'            => $args['round'] ?? '',
             'organisation'     => $this->site_name,
             'site_url'         => $this->site_url,
-            'email_from'       => $email_from,
+            'email_from'       => $args['email_from'] ?? ( $args['emailfrom'] ?? '' ),
             'teams'            => $teams,
-            'tournament_link'  => $tournament_link,
-            'draw_link'        => $draw_link,
-            'action_url'       => $match_link,
-            'rules_link'       => $rules_link,
-            'cup_link'         => $cup_link,
-            'match_date'       => $match_date,
-            'match_time'       => $match_time,
+            'tournament_link'  => $comp_context['tournament_link'],
+            'draw_link'        => $comp_context['draw_link'],
+            'action_url'       => $comp_context['action_url'],
+            'rules_link'       => $this->site_url . '/rules/' . $competition_type . '-rules/',
+            'cup_link'         => $comp_context['cup_link'],
+            'match_date'       => $formatter->date( $fixture->get_date() ),
+            'match_time'       => $formatter->time( $fixture->get_date() ),
         ];
     }
 
     /**
      * Prepare presentation variables for [result-notification].
      *
-     * @param Fixture $fixture
-     * @param array $args
+     * @param Fixture $fixture Fixture details.
+     * @param array   $args    Query arguments.
      * @return array
      */
     public function present_result_notification( Fixture $fixture, array $args ): array {
@@ -230,8 +159,8 @@ readonly class Email_Shortcode_Presenter {
     /**
      * Prepare presentation variables for [result-notification-captain].
      *
-     * @param Fixture $fixture
-     * @param array $args
+     * @param Fixture $fixture Fixture details.
+     * @param array   $args    Query arguments.
      * @return array
      */
     public function present_captain_result_notification( Fixture $fixture, array $args ): array {
@@ -273,10 +202,10 @@ readonly class Email_Shortcode_Presenter {
     /**
      * Prepare presentation variables for [result-outstanding-notification].
      *
-     * @param Fixture $fixture
-     * @param array $args
+     * @param Fixture $fixture Fixture details.
+     * @param array   $args    Query arguments.
      * @return array
-     * @throws Tournament_Not_Found_Exception
+     * @throws Tournament_Not_Found_Exception Tournament not found.
      */
     public function present_result_outstanding_notification( Fixture $fixture, array $args ): array {
         $match = Fixture_Presentation_Adapter::from_fixture(
@@ -322,7 +251,7 @@ readonly class Email_Shortcode_Presenter {
     /**
      * Prepare presentation variables for [club-player-notification].
      *
-     * @param array $args
+     * @param array $args Query arguments.
      * @return array
      */
     public function present_club_player_notification( array $args ): array {
@@ -345,10 +274,10 @@ readonly class Email_Shortcode_Presenter {
     /**
      * Prepare presentation variables for [match_date_change_notification].
      *
-     * @param Fixture $fixture
-     * @param array $args
+     * @param Fixture $fixture Fixture details.
+     * @param array   $args Query arguments.
      * @return array
-     * @throws Tournament_Not_Found_Exception
+     * @throws Tournament_Not_Found_Exception Tournament not found.
      */
     public function present_match_date_change_notification( Fixture $fixture, array $args ): array {
         $match = Fixture_Presentation_Adapter::from_fixture(
@@ -370,7 +299,7 @@ readonly class Email_Shortcode_Presenter {
 
         if ( 'tournament' === $competition_type ) {
             $tournament      = $this->tournament_service->get_tournament( $tournament_param );
-            $tournament_path = ( new Tournament_Presenter() )->get_link( $tournament );
+            $tournament_path = new Tournament_Presenter()->get_link( $tournament );
             $tournament_link = '<a href="' . $this->site_url . $tournament_path . '">' . $tournament->name . '</a>';
             $draw_link       = '<a href="' . $this->site_url . $tournament_path . 'draw/' . Seo_Slug::encode( $match->league->event->name ?? '' ) . '/">' . ( $match->league->event->name ?? '' ) . '</a>';
             $match_link      = $this->site_url . $tournament_path . 'match/' . Seo_Slug::encode( $match->league->title ?? '' ) . '/' . Seo_Slug::encode( $match->teams['home']->title ?? '' ) . '-vs-' . Seo_Slug::encode( $match->teams['away']->title ?? '' ) . '/' . $match->id . '/';
@@ -419,10 +348,10 @@ readonly class Email_Shortcode_Presenter {
     /**
      * Prepare presentation variables for [team-withdrawn].
      *
-     * @param object $team
-     * @param object $league
-     * @param string $season
-     * @param array $args
+     * @param object $team Team details.
+     * @param object $league League details.
+     * @param string $season Season details.
+     * @param array  $args Query arguments.
      * @return array
      */
     public function present_team_withdrawn_email( object $team, object $league, string $season, array $args ): array {
@@ -439,7 +368,7 @@ readonly class Email_Shortcode_Presenter {
     /**
      * Prepare presentation variables for [withdrawn-team-match].
      *
-     * @param array $args
+     * @param array $args Query arguments.
      * @return array
      */
     public function present_withdrawn_team_match( array $args ): array {
@@ -456,7 +385,7 @@ readonly class Email_Shortcode_Presenter {
     /**
      * Prepare presentation variables for [event-constitution].
      *
-     * @param object $event
+     * @param object $event Event details.
      * @return array
      */
     public function present_event_constitution( object $event ): array {
@@ -471,5 +400,160 @@ readonly class Email_Shortcode_Presenter {
             'site_url'     => $this->site_url,
             'league_urls'  => $league_urls,
         ];
+    }
+
+    /**
+     * Determine whether a tournament league is formatted for doubles.
+     *
+     * @param mixed $league_type League type identifier.
+     *
+     * @return bool
+     */
+    private function is_doubles_league( mixed $league_type ): bool {
+        return is_string( $league_type ) && strlen( $league_type ) >= 2 && 'D' === substr( $league_type, 1, 1 );
+    }
+
+    /**
+     * Build competition context including links, template, and titles.
+     *
+     * @param object $match            Match adapter object.
+     * @param mixed  $competition_type Competition type identifier.
+     * @param mixed  $tournament_param Tournament parameter identifier.
+     *
+     * @return array
+     * @throws Tournament_Not_Found_Exception When tournament cannot be found.
+     */
+    private function build_competition_context( object $match, mixed $competition_type, mixed $tournament_param ): array {
+        $tournament      = $tournament_param;
+        $tournament_link = '';
+        $draw_link       = '';
+        $action_url      = '';
+        $cup_link        = '';
+        $template        = '';
+        $home_dtls       = [];
+        $away_dtls       = [];
+        $home_title      = null;
+        $away_title      = null;
+
+        if ( 'tournament' === $competition_type ) {
+            $tournament      = $this->tournament_service->get_tournament( $tournament_param );
+            $tournament_path = new Tournament_Presenter()->get_link( $tournament );
+            $tournament_link = '<a href="' . $this->site_url . $tournament_path . '">' . $tournament->name . '</a>';
+            $draw_link       = '<a href="' . $this->site_url . $tournament_path . 'draw/' . Seo_Slug::encode( $match->league->event->name ?? '' ) . '/">' . ( $match->league->event->name ?? '' ) . '</a>';
+            $action_url      = $this->site_url . $tournament_path . 'match/' . Seo_Slug::encode( $match->league->title ?? '' ) . '/' . Seo_Slug::encode( $match->teams['home']->title ?? '' ) . '-vs-' . Seo_Slug::encode( $match->teams['away']->title ?? '' ) . '/' . $match->id . '/';
+
+            if ( $this->is_doubles_league( $match->league->type ?? '' ) ) {
+                $home_title         = __( 'Home Players', 'racketmanager' );
+                $away_title         = __( 'Away Players', 'racketmanager' );
+                $home_dtls['title'] = 'Home Players';
+                $away_dtls['title'] = 'Away Players';
+            } else {
+                $home_title         = __( 'Home Player', 'racketmanager' );
+                $away_title         = __( 'Away Player', 'racketmanager' );
+                $home_dtls['title'] = 'Home Player';
+                $away_dtls['title'] = 'Away Player';
+            }
+        } elseif ( 'cup' === $competition_type ) {
+            $cup_link   = '<a href="' . $this->site_url . '/cups/' . Seo_Slug::encode( $match->league->title ?? '' ) . '/' . ( $match->season ?? '' ) . '/">' . ( $match->league->title ?? '' ) . '</a>';
+            $action_url = $this->site_url . ( $match->link ?? '' );
+            if ( ! empty( $match->leg ) ) {
+                $action_url .= 'leg-' . $match->leg . '/';
+            }
+            $template           = 'cup';
+            $home_title         = __( 'Home Team', 'racketmanager' );
+            $away_title         = __( 'Away Team', 'racketmanager' );
+            $home_dtls['title'] = 'Home Team';
+            $away_dtls['title'] = 'Away Team';
+        }
+
+        return [
+            'tournament'      => $tournament,
+            'tournament_link' => $tournament_link,
+            'draw_link'       => $draw_link,
+            'action_url'      => $action_url,
+            'cup_link'        => $cup_link,
+            'template'        => $template,
+            'home_dtls'       => $home_dtls,
+            'away_dtls'       => $away_dtls,
+            'home_title'      => $home_title,
+            'away_title'      => $away_title,
+        ];
+    }
+
+    /**
+     * Populate captain contact details on target presentation object.
+     *
+     * @param stdClass    $target      Target presentation object.
+     * @param object|null $source_team Source team object.
+     *
+     * @return void
+     */
+    private function populate_captain_info( stdClass $target, ?object $source_team ): void {
+        $target->captain       = $source_team->captain ?? '';
+        $target->captain_email = $source_team->contactemail ?? '';
+        $target->captain_tel   = $source_team->contactno ?? '';
+        $target->matchDay      = $source_team->match_day ?? ''; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+        $target->matchTime     = $source_team->match_time ?? ''; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+    }
+
+    /**
+     * Populate team presentation attributes including name, club, and roster or captain info.
+     *
+     * @param stdClass    $target         Target presentation object.
+     * @param object|null $source_team    Source team object.
+     * @param bool        $is_player_type Whether team is in player mode.
+     *
+     * @return void
+     */
+    private function populate_team_attributes( stdClass $target, ?object $source_team, bool $is_player_type ): void {
+        $target->name = $source_team->title ?? '';
+
+        if ( ! empty( $source_team->club->shortcode ) ) {
+            $target->club = $source_team->club->shortcode;
+        } else {
+            $target->club = __( 'Unknown', 'racketmanager' );
+        }
+
+        if ( $is_player_type ) {
+            $target->player = $source_team->players ?? [];
+        } else {
+            $this->populate_captain_info( $target, $source_team );
+        }
+    }
+
+    /**
+     * Build teams presentation array with host/visitor orientation and titles.
+     *
+     * @param object      $match      Match adapter object.
+     * @param string|null $home_title Optional home team/player title.
+     * @param string|null $away_title Optional away team/player title.
+     *
+     * @return array<string, stdClass>
+     */
+    private function build_teams_presentation( object $match, ?string $home_title, ?string $away_title ): array {
+        $teams = [
+            'home' => new stdClass(),
+            'away' => new stdClass(),
+        ];
+
+        if ( null !== $home_title ) {
+            $teams['home']->title = $home_title;
+        }
+        if ( null !== $away_title ) {
+            $teams['away']->title = $away_title;
+        }
+
+        $is_host_home   = 'home' === ( $match->host ?? 'home' );
+        $source_home    = $match->teams['home'] ?? null;
+        $source_away    = $match->teams['away'] ?? null;
+        $is_player_type = isset( $source_home->team_type ) && 'P' === $source_home->team_type;
+
+        $target_for_source_home = $is_host_home ? $teams['home'] : $teams['away'];
+        $target_for_source_away = $is_host_home ? $teams['away'] : $teams['home'];
+
+        $this->populate_team_attributes( $target_for_source_home, $source_home, $is_player_type );
+        $this->populate_team_attributes( $target_for_source_away, $source_away, $is_player_type );
+
+        return $teams;
     }
 }

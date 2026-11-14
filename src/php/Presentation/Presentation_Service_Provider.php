@@ -11,6 +11,12 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Presentation;
 
+use Racketmanager\Application\Ports\Template_Renderer_Interface;
+use Racketmanager\Infrastructure\Wordpress\Presentation\Ports\Email_Shortcode_Presenter_Interface;
+use Racketmanager\Infrastructure\Wordpress\Presentation\Ports\Invoice_Presenter_Interface;
+use Racketmanager\Infrastructure\Wordpress\Presentation\Ports\Message_Presenter_Interface;
+use Racketmanager\Infrastructure\Wordpress\Presentation\Ports\Player_Presenter_Interface;
+use Racketmanager\Infrastructure\Wordpress\Presentation\Ports\Shortcode_View_Presenter_Interface;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Club_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
@@ -56,15 +62,18 @@ final readonly class Presentation_Service_Provider implements Service_Provider_I
             $c->get( 'option_gateway' )
         ) );
         $container->alias( Player_Presenter::class, 'player_presenter' );
+        $container->alias( Player_Presenter_Interface::class, 'player_presenter' );
 
         $container->set( 'favourite_presenter', fn( Simple_Container $c ) => new Favourite_Presenter( $c->get( 'user_favourites_gateway' ) ) );
         $container->alias( Favourite_Presenter::class, 'favourite_presenter' );
 
         $container->set( 'invoice_presenter', fn() => new Invoice_Presenter() );
         $container->alias( Invoice_Presenter::class, 'invoice_presenter' );
+        $container->alias( Invoice_Presenter_Interface::class, 'invoice_presenter' );
 
         $container->set( 'message_presenter', fn() => new Message_Presenter() );
         $container->alias( Message_Presenter::class, 'message_presenter' );
+        $container->alias( Message_Presenter_Interface::class, 'message_presenter' );
 
         $container->set( 'notification_presenter', fn( Simple_Container $c ): Notification_Presenter_Interface => new Notification_Presenter(
             $c->get( 'team_repository' ),
@@ -187,9 +196,11 @@ final readonly class Presentation_Service_Provider implements Service_Provider_I
             $c->get( 'favourite_presenter' )
         ) );
         $container->alias( Shortcode_Template_Renderer::class, 'shortcode_template_renderer' );
+        $container->alias( Template_Renderer_Interface::class, 'shortcode_template_renderer' );
 
         $container->set( 'shortcode_view_presenter', fn( Simple_Container $c ) => new Shortcode_View_Presenter( $c->get( 'shortcode_template_renderer' ) ) );
         $container->alias( Shortcode_View_Presenter::class, 'shortcode_view_presenter' );
+        $container->alias( Shortcode_View_Presenter_Interface::class, 'shortcode_view_presenter' );
 
         $container->set( 'email_shortcode_presenter', fn( Simple_Container $c ) => new Email_Shortcode_Presenter(
             tournament_service: $c->get( 'tournament_service' ),
@@ -203,5 +214,6 @@ final readonly class Presentation_Service_Provider implements Service_Provider_I
             option_gateway: $c->get( 'option_gateway' )
         ) );
         $container->alias( Email_Shortcode_Presenter::class, 'email_shortcode_presenter' );
+        $container->alias( Email_Shortcode_Presenter_Interface::class, 'email_shortcode_presenter' );
     }
 }

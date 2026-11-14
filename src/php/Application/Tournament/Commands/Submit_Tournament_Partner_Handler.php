@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Tournament\Commands;
 
-use Racketmanager\Services\Competition_Entry_Service;
+use Racketmanager\Application\Competition\Ports\Competition_Entry_Service_Interface;
 use WP_Error;
 
 /**
@@ -11,7 +11,7 @@ use WP_Error;
  */
 class Submit_Tournament_Partner_Handler {
     public function __construct(
-        private readonly Competition_Entry_Service $competition_entry_service
+        private readonly Competition_Entry_Service_Interface $competition_entry_service
     ) {
     }
 

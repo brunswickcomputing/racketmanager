@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Event\Queries;
 
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface;
 use Racketmanager\Application\Event\DTOs\Event_Draw_Result;
 use Racketmanager\Application\Fixture\Ports\Fixture_Detail_Service_Interface;
 use Racketmanager\Domain\Competition\Event;
@@ -12,8 +14,6 @@ use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Fixture_Not_Found_Exception;
 use Racketmanager\Application\League\Ports\League_Query_Service_Interface;
 use Racketmanager\Application\League\Ports\League_Service_Interface;
-use Racketmanager\Services\Competition\Event_Query_Service;
-use Racketmanager\Services\Competition_Service;
 use function __;
 use function array_reverse;
 use function count;
@@ -32,19 +32,19 @@ readonly class Get_Event_Draw_Handler {
      * Initialise the service with dependencies used to retrieve competition, league, fixture detail,
      * event query, and league query data.
      *
-     * @param Competition_Service              $competition_service Competition service used to validate the event competition context.
+     * @param Competition_Service_Interface    $competition_service Competition service used to validate the event competition context.
      * @param League_Service_Interface|null    $league_service League service used to retrieve league data for championship events.
      * @param Fixture_Detail_Service_Interface $fixture_detail_service Fixture detail service used to retrieve fixture details for championship events.
-     * @param Event_Query_Service              $event_query_service Event query service used to retrieve event data.
+     * @param Event_Query_Service_Interface    $event_query_service Event query service used to retrieve event data.
      * @param League_Query_Service_Interface   $league_query_service League query service used to retrieve league data for non-championship events.
      *
      * @return void
      */
     public function __construct(
-        private Competition_Service $competition_service,
+        private Competition_Service_Interface $competition_service,
         private ?League_Service_Interface $league_service,
         private Fixture_Detail_Service_Interface $fixture_detail_service,
-        private Event_Query_Service $event_query_service,
+        private Event_Query_Service_Interface $event_query_service,
         private League_Query_Service_Interface $league_query_service
     ) {}
 

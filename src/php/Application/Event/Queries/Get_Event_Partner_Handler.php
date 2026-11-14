@@ -3,13 +3,13 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Event\Queries;
 
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface;
 use Racketmanager\Application\Event\DTOs\Event_Partner_Result;
 use Racketmanager\Application\Player\Ports\Player_Service_Interface;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
-use Racketmanager\Services\Competition\Event_Query_Service;
-use Racketmanager\Services\Competition_Service;
 use function __;
 use function str_starts_with;
 
@@ -29,16 +29,16 @@ readonly class Get_Event_Partner_Handler {
     /**
      * Initialises the instance with required service dependencies.
      *
-     * @param Competition_Service      $competition_service Competition service dependency.
-     * @param Player_Service_Interface $player_service Player service dependency.
-     * @param Event_Query_Service      $event_query_service Event query service dependency.
+     * @param Competition_Service_Interface $competition_service Competition service dependency.
+     * @param Player_Service_Interface      $player_service Player service dependency.
+     * @param Event_Query_Service_Interface $event_query_service Event query service dependency.
      *
      * @return void
      */
     public function __construct(
-        private Competition_Service $competition_service,
+        private Competition_Service_Interface $competition_service,
         private Player_Service_Interface $player_service,
-        private Event_Query_Service $event_query_service
+        private Event_Query_Service_Interface $event_query_service
     ) {}
 
     /**
@@ -140,7 +140,7 @@ readonly class Get_Event_Partner_Handler {
             $partner = $this->player_service->get_player( $partner_id );
 
             return [
-                $partner->display_name ?? ( $partner->fullname ?? null ),
+                $partner->display_name,
                 $partner->btm ?? null,
             ];
         } catch ( Player_Not_Found_Exception ) {

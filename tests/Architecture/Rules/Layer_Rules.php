@@ -495,7 +495,7 @@ final class Layer_Rules {
                 [ self::APPLICATION ],
                 Rule_Kind::FORBIDDEN_DEPENDENCY,
                 [ self::CONCRETE_SERVICES ],
-                Rule_Mode::RATCHET
+                Rule_Mode::STRICT
             ),
             new Layer_Rule(
                 'application.no_util_static',

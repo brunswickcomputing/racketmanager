@@ -4,17 +4,17 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Admin\Commands;
 
 use InvalidArgumentException;
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Updated_Exception;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
-use Racketmanager\Services\Competition_Service;
 use RuntimeException;
 
 final readonly class Competition_Handler {
     public function __construct(
-        private Competition_Service $competition_service,
+        private Competition_Service_Interface $competition_service,
         private Event_Repository_Interface $event_repository,
     ) {
     }

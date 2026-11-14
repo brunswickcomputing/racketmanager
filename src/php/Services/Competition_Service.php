@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Services;
 
 use Closure;
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Factory;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
@@ -43,7 +44,7 @@ use WP_Error;
 /**
  * Class to implement the Competition Management Service
  */
-class Competition_Service {
+class Competition_Service implements Competition_Service_Interface {
     private Competition_Repository_Interface $competition_repository;
     private Event_Repository_Interface $event_repository;
     private League_Team_Repository_Interface $league_team_repository;

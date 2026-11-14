@@ -3,8 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Competition\Commands;
 
+use Racketmanager\Application\Competition\Ports\Competition_Entry_Service_Interface;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
-use Racketmanager\Services\Competition_Entry_Service;
 use WP_Error;
 
 /**
@@ -12,7 +12,7 @@ use WP_Error;
  */
 class Submit_Cup_Entry_Handler {
     public function __construct(
-        private readonly Competition_Entry_Service $competition_entry_service
+        private readonly Competition_Entry_Service_Interface $competition_entry_service
     ) {
     }
 

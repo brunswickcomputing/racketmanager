@@ -5,6 +5,10 @@ namespace Racketmanager\Services\Container\Providers;
 
 use Racketmanager\Application\Competition\Commands\Submit_Cup_Entry_Handler;
 use Racketmanager\Application\Competition\Commands\Submit_League_Entry_Handler;
+use Racketmanager\Application\Competition\Ports\Competition_Entry_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Competition_Season_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface;
 use Racketmanager\Application\Competition\Queries\Club_Entry_Selection_Service;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Clubs_Handler;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Dropdown_Handler;
@@ -175,6 +179,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             fn() => $c->get( 'player_repository' )
         ) );
         $container->alias( Event_Query_Service::class, 'event_query_service' );
+        $container->alias( Event_Query_Service_Interface::class, 'event_query_service' );
 
         $container->set( 'competition_league_schedule_service', fn( Simple_Container $c ) => new Competition_League_Schedule_Service(
             $c->get( 'fixture_service' ),
@@ -208,6 +213,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( Query_Vars_Interface::class )
         ) );
         $container->alias( Competition_Season_Service::class, 'competition_season_service' );
+        $container->alias( Competition_Season_Service_Interface::class, 'competition_season_service' );
 
         $container->set( 'competition_service', fn( Simple_Container $c ) => new Competition_Service(
             $app,
@@ -223,6 +229,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'option_service' )
         ) );
         $container->alias( Competition_Service::class, 'competition_service' );
+        $container->alias( Competition_Service_Interface::class, 'competition_service' );
 
         $container->set( 'competition_notification_service', fn( Simple_Container $c ) => new Competition_Notification_Service(
             $c->get( 'option_service' ),
@@ -325,58 +332,59 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'event_repository' )
         ) );
         $container->alias( Competition_Entry_Service::class, 'competition_entry_service' );
+        $container->alias( Competition_Entry_Service_Interface::class, 'competition_entry_service' );
 
         // Competition Queries
         $container->set( 'get_competition_handler', fn( Simple_Container $c ) => new Get_Competition_Handler(
-            $c->get( 'competition_service' ),
+            $c->get( Competition_Service_Interface::class ),
             $c->get( 'club_service' ),
             $c->get( 'player_service' ),
             $c->get( 'security_service' ),
             $c->get( 'settings_service' ),
-            $c->get( 'competition_season_service' )
+            $c->get( Competition_Season_Service_Interface::class )
         ) );
 
         $container->set( 'get_competition_overview_handler', fn( Simple_Container $c ) => new Get_Competition_Overview_Handler(
-            $c->get( 'competition_service' ),
-            $c->get( 'competition_season_service' )
+            $c->get( Competition_Service_Interface::class ),
+            $c->get( Competition_Season_Service_Interface::class )
         ) );
 
         $container->set( 'get_competition_events_handler', fn( Simple_Container $c ) => new Get_Competition_Events_Handler(
-            $c->get( 'competition_service' ),
-            $c->get( 'competition_season_service' )
+            $c->get( Competition_Service_Interface::class ),
+            $c->get( Competition_Season_Service_Interface::class )
         ) );
 
         $container->set( 'get_competition_teams_handler', fn( Simple_Container $c ) => new Get_Competition_Teams_Handler(
-            $c->get( 'competition_service' ),
-            $c->get( 'competition_season_service' )
+            $c->get( Competition_Service_Interface::class ),
+            $c->get( Competition_Season_Service_Interface::class )
         ) );
 
         $container->set( 'get_competition_clubs_handler', fn( Simple_Container $c ) => new Get_Competition_Clubs_Handler(
-            $c->get( 'competition_service' ),
+            $c->get( Competition_Service_Interface::class ),
             $c->get( 'club_service' ),
             $c->get( 'player_stats_service' ),
-            $c->get( 'competition_season_service' )
+            $c->get( Competition_Season_Service_Interface::class )
         ) );
 
         $container->set( 'get_competition_players_handler', fn( Simple_Container $c ) => new Get_Competition_Players_Handler(
-            $c->get( 'competition_service' ),
+            $c->get( Competition_Service_Interface::class ),
             $c->get( 'player_service' ),
             $c->get( 'player_query_service' ),
             $c->get( 'player_stats_service' ),
-            $c->get( 'competition_season_service' )
+            $c->get( Competition_Season_Service_Interface::class )
         ) );
 
         $container->set( 'get_competition_winners_handler', fn( Simple_Container $c ) => new Get_Competition_Winners_Handler(
-            $c->get( 'competition_service' ),
-            $c->get( 'competition_season_service' )
+            $c->get( Competition_Service_Interface::class ),
+            $c->get( Competition_Season_Service_Interface::class )
         ) );
 
         $container->set( 'get_competition_dropdown_handler', fn( Simple_Container $c ) => new Get_Competition_Dropdown_Handler(
-            $c->get( 'competition_service' )
+            $c->get( Competition_Service_Interface::class )
         ) );
 
         $container->set( 'get_competitions_handler', fn( Simple_Container $c ) => new Get_Competitions_Handler(
-            $c->get( 'competition_service' ),
+            $c->get( Competition_Service_Interface::class ),
             $c->get( 'tournament_service' ),
             $c->get( 'player_service' ),
             $c->get( 'player_query_service' )
@@ -386,7 +394,7 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'tournament_service' ),
             $c->get( 'player_service' ),
             $c->get( 'finance_service' ),
-            $c->get( 'competition_entry_service' )
+            $c->get( Competition_Entry_Service_Interface::class )
         ) );
 
         $container->set( 'club_entry_selection_service', fn( Simple_Container $c ) => new Club_Entry_Selection_Service(
@@ -396,15 +404,15 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
 
         $container->set( 'get_competition_entry_handler', fn( Simple_Container $c ) => new Get_Competition_Entry_Handler(
             club_entry_selection: $c->get( 'club_entry_selection_service' ),
-            competition_service: $c->get( 'competition_service' ),
+            competition_service: $c->get( Competition_Service_Interface::class ),
             tournament_service: $c->get( 'tournament_service' ),
             player_service: $c->get( 'player_service' ),
             club_service: $c->get( 'club_service' ),
             team_service: $c->get( 'team_service' ),
             registration_service: $c->get( 'registration_service' ),
-            competition_entry_service: $c->get( 'competition_entry_service' ),
+            competition_entry_service: $c->get( Competition_Entry_Service_Interface::class ),
             finance_service: $c->get( 'finance_service' ),
-            event_query_service: $c->get( 'event_query_service' )
+            event_query_service: $c->get( Event_Query_Service_Interface::class )
         ) );
 
         // League Queries
@@ -424,8 +432,8 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
 
         $container->set( 'get_league_archive_handler', fn( Simple_Container $c ) => new Get_League_Archive_Handler(
             $c->get( 'league_service' ),
-            $c->get( 'competition_service' ),
-            $c->get( 'event_query_service' ),
+            $c->get( Competition_Service_Interface::class ),
+            $c->get( Event_Query_Service_Interface::class ),
             $c->get( 'league_query_service' )
         ) );
 
@@ -472,69 +480,69 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
 
         // Event Queries
         $container->set( 'get_event_handler', fn( Simple_Container $c ) => new Get_Event_Handler(
-            $c->get( 'competition_service' ),
-            $c->get( 'event_query_service' )
+            $c->get( Competition_Service_Interface::class ),
+            $c->get( Event_Query_Service_Interface::class )
         ) );
 
         $container->set( 'get_event_standings_handler', fn( Simple_Container $c ) => new Get_Event_Standings_Handler(
-            $c->get( 'competition_service' ),
-            $c->get( 'event_query_service' )
+            $c->get( Competition_Service_Interface::class ),
+            $c->get( Event_Query_Service_Interface::class )
         ) );
 
         $container->set( 'get_event_draw_handler', fn( Simple_Container $c ) => new Get_Event_Draw_Handler(
-            $c->get( 'competition_service' ),
+            $c->get( Competition_Service_Interface::class ),
             $c->get( 'league_service' ),
             $c->get( 'fixture_detail_service' ),
-            $c->get( 'event_query_service' ),
+            $c->get( Event_Query_Service_Interface::class ),
             $c->get( 'league_query_service' )
         ) );
 
         $container->set( 'get_event_matches_handler', fn( Simple_Container $c ) => new Get_Event_Matches_Handler(
-            $c->get( 'competition_service' ),
+            $c->get( Competition_Service_Interface::class ),
             $c->get( 'league_service' ),
-            $c->get( 'event_query_service' ),
+            $c->get( Event_Query_Service_Interface::class ),
             $c->get( 'league_query_service' )
         ) );
 
         $container->set( 'get_event_clubs_handler', fn( Simple_Container $c ) => new Get_Event_Clubs_Handler(
-            $c->get( 'competition_service' ),
+            $c->get( Competition_Service_Interface::class ),
             $c->get( 'club_service' ),
             $c->get( 'player_stats_service' ),
-            $c->get( 'event_query_service' )
+            $c->get( Event_Query_Service_Interface::class )
         ) );
 
         $container->set( 'get_event_teams_handler', fn( Simple_Container $c ) => new Get_Event_Teams_Handler(
-            $c->get( 'competition_service' ),
+            $c->get( Competition_Service_Interface::class ),
             $c->get( 'player_stats_service' ),
             $c->get( 'team_service' ),
-            $c->get( 'event_query_service' )
+            $c->get( Event_Query_Service_Interface::class )
         ) );
 
         $container->set( 'get_event_players_handler', fn( Simple_Container $c ) => new Get_Event_Players_Handler(
-            $c->get( 'competition_service' ),
+            $c->get( Competition_Service_Interface::class ),
             $c->get( 'player_service' ),
             $c->get( 'player_query_service' ),
             $c->get( 'player_stats_service' ),
-            $c->get( 'event_query_service' )
+            $c->get( Event_Query_Service_Interface::class )
         ) );
 
         $container->set( 'get_event_partner_handler', fn( Simple_Container $c ) => new Get_Event_Partner_Handler(
-            $c->get( 'competition_service' ),
+            $c->get( Competition_Service_Interface::class ),
             $c->get( 'player_service' ),
-            $c->get( 'event_query_service' )
+            $c->get( Event_Query_Service_Interface::class )
         ) );
 
         $container->set( 'get_event_team_matches_handler', fn( Simple_Container $c ) => new Get_Event_Team_Matches_Handler(
-            $c->get( 'competition_service' ),
-            $c->get( 'event_query_service' )
+            $c->get( Competition_Service_Interface::class ),
+            $c->get( Event_Query_Service_Interface::class )
         ) );
 
         $container->set( 'get_team_order_players_handler', fn( Simple_Container $c ) => new Get_Team_Order_Players_Handler(
-            $c->get( 'competition_service' ),
+            $c->get( Competition_Service_Interface::class ),
             $c->get( 'club_service' ),
             $c->get( 'registration_service' ),
             $c->get( 'settings_service' ),
-            $c->get( 'event_query_service' )
+            $c->get( Event_Query_Service_Interface::class )
         ) );
 
         $container->set( 'championship_manager', fn( Simple_Container $c ) => new Championship_Manager(
@@ -548,8 +556,8 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
         $container->alias( Championship_Manager::class, 'championship_manager' );
 
         $container->set( 'get_event_dropdown_handler', fn( Simple_Container $c ) => new Get_Event_Dropdown_Handler(
-            $c->get( 'competition_service' ),
-            $c->get( 'event_query_service' )
+            $c->get( Competition_Service_Interface::class ),
+            $c->get( Event_Query_Service_Interface::class )
         ) );
 
         // Tournament Queries
@@ -604,19 +612,19 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
 
         // Command Handlers
         $container->set( 'submit_cup_entry_handler', fn( Simple_Container $c ) => new Submit_Cup_Entry_Handler(
-            $c->get( 'competition_entry_service' )
+            $c->get( Competition_Entry_Service_Interface::class )
         ) );
         $container->set( 'submit_league_entry_handler', fn( Simple_Container $c ) => new Submit_League_Entry_Handler(
-            $c->get( 'competition_entry_service' )
+            $c->get( Competition_Entry_Service_Interface::class )
         ) );
         $container->set( 'submit_tournament_entry_handler', fn( Simple_Container $c ) => new Submit_Tournament_Entry_Handler(
-            $c->get( 'competition_entry_service' )
+            $c->get( Competition_Entry_Service_Interface::class )
         ) );
         $container->set( 'withdraw_tournament_entry_handler', fn( Simple_Container $c ) => new Withdraw_Tournament_Entry_Handler(
-            $c->get( 'competition_entry_service' )
+            $c->get( Competition_Entry_Service_Interface::class )
         ) );
         $container->set( 'submit_tournament_partner_handler', fn( Simple_Container $c ) => new Submit_Tournament_Partner_Handler(
-            $c->get( 'competition_entry_service' )
+            $c->get( Competition_Entry_Service_Interface::class )
         ) );
         $container->set( 'create_tournament_payment_handler', fn( Simple_Container $c ) => new Create_Tournament_Payment_Handler(
             $c->get( 'finance_service' )

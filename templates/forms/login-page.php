@@ -45,7 +45,7 @@ $redirect_val     = $redirect ?? $vm->redirect ?? ( is_array( $vars ?? null ) ? 
             <input type="password" class="form-control password <?php echo empty( $password_error ) ? null : 'is-invalid'; ?>" name="pwd" placeholder="<?php esc_html_e( 'Password', 'racketmanager' ); ?>" id="user_pass" aria-describedby="passwordFeedback"/>
             <label class="" for="user_pass"><?php esc_html_e( 'Password', 'racketmanager' ); ?></label>
             <i class="passwordShow">
-                <svg width="16" height="16" class="icon ">
+                <svg width="16" height="16" class="icon " aria-label="show-password">
                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#eye-fill' ); ?>"></use>
                 </svg>
             </i>

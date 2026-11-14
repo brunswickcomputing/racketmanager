@@ -3,14 +3,14 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Event\Queries;
 
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface;
 use Racketmanager\Application\Event\DTOs\Event_Matches_Result;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Application\League\Ports\League_Query_Service_Interface;
 use Racketmanager\Application\League\Ports\League_Service_Interface;
-use Racketmanager\Services\Competition\Event_Query_Service;
-use Racketmanager\Services\Competition_Service;
 use function __;
 use function array_reverse;
 use function count;
@@ -31,17 +31,17 @@ readonly class Get_Event_Matches_Handler {
     /**
      * Initialises the service with the dependencies required to handle competition, league, and event queries.
      *
-     * @param Competition_Service            $competition_service Service for competition-related operations.
+     * @param Competition_Service_Interface  $competition_service Service for competition-related operations.
      * @param League_Service_Interface|null  $league_service Optional service for league-related operations.
-     * @param Event_Query_Service            $event_query_service Service for event query operations.
+     * @param Event_Query_Service_Interface  $event_query_service Service for event query operations.
      * @param League_Query_Service_Interface $league_query_service Service for league query operations.
      *
      * @return void
      */
     public function __construct(
-        private Competition_Service $competition_service,
+        private Competition_Service_Interface $competition_service,
         private ?League_Service_Interface $league_service,
-        private Event_Query_Service $event_query_service,
+        private Event_Query_Service_Interface $event_query_service,
         private League_Query_Service_Interface $league_query_service
     ) {}
 

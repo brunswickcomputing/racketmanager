@@ -832,35 +832,35 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'Display Name', $res_display->partner_name );
         $this->assertSame( 'BTM12345', $res_display->partner_btm );
 
-        // 4. Partner with fullname only (display_name is null) and null btm
-        $partner_with_fullname           = new Player();
-        $partner_with_fullname->id       = 102;
-        $partner_with_fullname->fullname = 'Only Fullname';
-        $partner_with_fullname->btm      = null;
+        // 4. Partner with display_name only and null btm
+        $partner_without_btm               = new Player();
+        $partner_without_btm->id           = 102;
+        $partner_without_btm->display_name = 'Display Only';
+        $partner_without_btm->btm          = null;
 
-        $player_service_fullname = $this->createStub( Player_Service::class );
-        $player_service_fullname->method( 'get_player' )->willReturn( $partner_with_fullname );
+        $player_service_without_btm = $this->createStub( Player_Service::class );
+        $player_service_without_btm->method( 'get_player' )->willReturn( $partner_without_btm );
 
-        $handler_fullname = new Get_Event_Partner_Handler( $comp_service, $player_service_fullname, $this->event_query_service() );
-        $res_fullname     = $handler_fullname->handle( new Get_Event_Partner_Query( event_id: 22, partner_id: 102 ) );
-        $this->assertFalse( $res_fullname->is_error() );
-        $this->assertSame( 'Only Fullname', $res_fullname->partner_name );
-        $this->assertNull( $res_fullname->partner_btm );
+        $handler_without_btm = new Get_Event_Partner_Handler( $comp_service, $player_service_without_btm, $this->event_query_service() );
+        $res_without_btm     = $handler_without_btm->handle( new Get_Event_Partner_Query( event_id: 22, partner_id: 102 ) );
+        $this->assertFalse( $res_without_btm->is_error() );
+        $this->assertSame( 'Display Only', $res_without_btm->partner_name );
+        $this->assertNull( $res_without_btm->partner_btm );
 
-        // 5. Partner with both display_name and fullname prefers display_name
-        $partner_prefers_display = new Player();
-        $partner_prefers_display->id  = 103;
-        $partner_prefers_display->btm = null;
-        $partner_prefers_display->display_name = 'Primary Display';
-        $partner_prefers_display->fullname = 'Fallback Fullname';
+        // 5. Partner with null display_name and null btm
+        $partner_null_fields               = new Player();
+        $partner_null_fields->id           = 103;
+        $partner_null_fields->display_name = null;
+        $partner_null_fields->btm          = null;
 
-        $player_service_prefers = $this->createStub( Player_Service::class );
-        $player_service_prefers->method( 'get_player' )->willReturn( $partner_prefers_display );
+        $player_service_null = $this->createStub( Player_Service::class );
+        $player_service_null->method( 'get_player' )->willReturn( $partner_null_fields );
 
-        $handler_prefers = new Get_Event_Partner_Handler( $comp_service, $player_service_prefers, $this->event_query_service() );
-        $res_prefers     = $handler_prefers->handle( new Get_Event_Partner_Query( event_id: 22, partner_id: 103 ) );
-        $this->assertFalse( $res_prefers->is_error() );
-        $this->assertSame( 'Primary Display', $res_prefers->partner_name );
+        $handler_null = new Get_Event_Partner_Handler( $comp_service, $player_service_null, $this->event_query_service() );
+        $res_null     = $handler_null->handle( new Get_Event_Partner_Query( event_id: 22, partner_id: 103 ) );
+        $this->assertFalse( $res_null->is_error() );
+        $this->assertNull( $res_null->partner_name );
+        $this->assertNull( $res_null->partner_btm );
     }
 
     #[DataProvider( 'partner_gender_matrix_provider' )]

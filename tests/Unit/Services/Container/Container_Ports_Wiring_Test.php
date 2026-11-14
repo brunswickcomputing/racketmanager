@@ -5,12 +5,20 @@ namespace Racketmanager\Tests\Unit\Services\Container;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Admin\Commands\Competition_Season_Handler;
+use Racketmanager\Application\Competition\Ports\Competition_Entry_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Competition_Season_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface;
 use Racketmanager\Application\Finance\Commands\Update_Payment_Handler;
 use Racketmanager\Application\Ports\Competition_Config_Validator_Factory_Interface;
 use Racketmanager\Application\Ports\Finance_Service_Interface;
 use Racketmanager\Application\Ports\Settings_Service_Interface;
 use Racketmanager\Application\Tournament\Ports\Tournament_Service_Interface;
 use Racketmanager\RacketManager;
+use Racketmanager\Services\Competition\Competition_Season_Service;
+use Racketmanager\Services\Competition\Event_Query_Service;
+use Racketmanager\Services\Competition_Entry_Service;
+use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Container\Container_Bootstrap;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Settings_Service;
@@ -91,5 +99,37 @@ final class Container_Ports_Wiring_Test extends TestCase {
         $tournament_service = $container->get( Tournament_Service_Interface::class );
         self::assertInstanceOf( Tournament_Service::class, $tournament_service );
         self::assertSame( $tournament_service, $container->get( 'tournament_service' ) );
+    }
+
+    public function test_container_resolves_competition_ports_wiring(): void {
+        $container = Container_Bootstrap::boot( $this->app );
+
+        self::assertTrue( $container->has( Competition_Service_Interface::class ) );
+        $competition_service = $container->get( Competition_Service_Interface::class );
+        self::assertInstanceOf( Competition_Service_Interface::class, $competition_service );
+        self::assertInstanceOf( Competition_Service::class, $competition_service );
+        self::assertSame( $competition_service, $container->get( Competition_Service::class ) );
+        self::assertSame( $competition_service, $container->get( 'competition_service' ) );
+
+        self::assertTrue( $container->has( Competition_Season_Service_Interface::class ) );
+        $season_service = $container->get( Competition_Season_Service_Interface::class );
+        self::assertInstanceOf( Competition_Season_Service_Interface::class, $season_service );
+        self::assertInstanceOf( Competition_Season_Service::class, $season_service );
+        self::assertSame( $season_service, $container->get( Competition_Season_Service::class ) );
+        self::assertSame( $season_service, $container->get( 'competition_season_service' ) );
+
+        self::assertTrue( $container->has( Event_Query_Service_Interface::class ) );
+        $event_query_service = $container->get( Event_Query_Service_Interface::class );
+        self::assertInstanceOf( Event_Query_Service_Interface::class, $event_query_service );
+        self::assertInstanceOf( Event_Query_Service::class, $event_query_service );
+        self::assertSame( $event_query_service, $container->get( Event_Query_Service::class ) );
+        self::assertSame( $event_query_service, $container->get( 'event_query_service' ) );
+
+        self::assertTrue( $container->has( Competition_Entry_Service_Interface::class ) );
+        $entry_service = $container->get( Competition_Entry_Service_Interface::class );
+        self::assertInstanceOf( Competition_Entry_Service_Interface::class, $entry_service );
+        self::assertInstanceOf( Competition_Entry_Service::class, $entry_service );
+        self::assertSame( $entry_service, $container->get( Competition_Entry_Service::class ) );
+        self::assertSame( $entry_service, $container->get( 'competition_entry_service' ) );
     }
 }

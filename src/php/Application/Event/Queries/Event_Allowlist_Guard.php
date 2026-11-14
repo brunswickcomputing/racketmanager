@@ -3,10 +3,10 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Event\Queries;
 
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
-use Racketmanager\Services\Competition_Service;
 
 final class Event_Allowlist_Guard {
 
@@ -15,13 +15,13 @@ final class Event_Allowlist_Guard {
      *
      * @param object|Event $event Event instance.
      * @param int|string|null $season Season identifier (or null to use the event's current season).
-     * @param Competition_Service|null $competition_service Competition service.
+     * @param Competition_Service_Interface|null $competition_service Competition service.
      * @return bool True if allowed; false if restricted or competition invalid/missing.
      */
     public static function is_event_allowed(
         object $event,
         int|string|null $season = null,
-        ?Competition_Service $competition_service = null
+        ?Competition_Service_Interface $competition_service = null
     ): bool {
         $season_name = null !== $season && '' !== $season ? (string) $season : null;
         if ( empty( $season_name ) && isset( $event->current_season['name'] ) ) {

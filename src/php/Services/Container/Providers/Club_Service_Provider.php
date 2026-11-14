@@ -12,6 +12,8 @@ use Racketmanager\Application\Club\Queries\Get_Club_Invoices_Handler;
 use Racketmanager\Application\Club\Queries\Get_Club_Players_Handler;
 use Racketmanager\Application\Club\Queries\Get_Club_Role_Modal_Handler;
 use Racketmanager\Application\Club\Queries\Get_Club_Roles_Handler;
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface;
 use Racketmanager\Application\General\Queries\Get_Team_Order_Handler;
 use Racketmanager\Application\Player\Ports\Registration_Service_Interface;
 use Racketmanager\Application\Ports\Query_Vars_Interface;
@@ -179,9 +181,9 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
             'get_club_competitions_handler',
             fn( Simple_Container $c ) => new Get_Club_Competitions_Handler(
                 $c->get( 'club_service' ),
-                $c->get( 'competition_service' ),
+                $c->get( Competition_Service_Interface::class ),
                 $c->get( 'competition_repository' ),
-                $c->get( 'event_query_service' )
+                $c->get( Event_Query_Service_Interface::class )
             )
         );
 

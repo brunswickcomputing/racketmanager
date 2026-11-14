@@ -27,23 +27,20 @@ use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Team\Team;
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface;
+use Racketmanager\Application\League\DTOs\League_View_State;
 use Racketmanager\Domain\Tournament\Championship;
 use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
-use Racketmanager\Application\League\DTOs\League_View_State;
-use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
-use Racketmanager\Presentation\Presenters\Tournament_Presenter;
+use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Competition\League_Query_Service;
-use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\Fixture\Fixture_Link_Service;
-use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Team_Service;
-use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use RuntimeException;
 use Throwable;
 use TypeError;
@@ -889,10 +886,10 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 		$event->method( 'get_seasons' )->willReturn( [ '2026' ] );
 
 		$league_service = $this->league_service( $league );
-		$comp_service   = $this->createStub( Competition_Service::class );
+		$comp_service   = $this->createStub( Competition_Service_Interface::class );
 		$comp_service->method( 'get_event_by_id' )->willReturn( $event );
 
-		$event_query = $this->createStub( \Racketmanager\Services\Competition\Event_Query_Service::class );
+		$event_query = $this->createStub( Event_Query_Service_Interface::class );
 		$event_query->method( 'get_leagues' )->willReturn( [ $league ] );
 
 		$league_query = $this->createStub( League_Query_Service::class );
@@ -949,10 +946,10 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 		$event->method( 'get_seasons' )->willReturn( [] );
 
 		$league_service = $this->league_service( $league );
-		$comp_service   = $this->createStub( Competition_Service::class );
+		$comp_service   = $this->createStub( Competition_Service_Interface::class );
 		$comp_service->method( 'get_event_by_id' )->willReturn( $event );
 
-		$event_query = $this->createStub( \Racketmanager\Services\Competition\Event_Query_Service::class );
+		$event_query = $this->createStub( Event_Query_Service_Interface::class );
 		$event_query->method( 'get_leagues' )->willReturn( [ $league ] );
 
 		$league_query = $this->createStub( League_Query_Service::class );

@@ -15,6 +15,8 @@ use Racketmanager\Application\Admin\Commands\League_Setup_Handler;
 use Racketmanager\Application\Admin\Commands\League_Team_Handler;
 use Racketmanager\Application\Admin\Commands\Results_Checker_Handler;
 use Racketmanager\Application\Club\Ports\Club_Validator_Factory_Interface;
+use Racketmanager\Application\Competition\Ports\Competition_Season_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
 use Racketmanager\Application\Finance\Commands\Action_Invoice_Handler;
 use Racketmanager\Application\Finance\Commands\Generate_Charge_Invoices_Handler;
 use Racketmanager\Application\Ports\Competition_Config_Validator_Factory_Interface;
@@ -260,7 +262,7 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
         $container->set(
             'league_setup_handler',
             fn( Simple_Container $c ) => new League_Setup_Handler(
-                $c->get( 'competition_service' ),
+                $c->get( Competition_Service_Interface::class ),
                 $c->get( 'event_repository' )
             )
         );
@@ -463,7 +465,7 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
         $container->set(
             'competition_handler',
             fn( Simple_Container $c ) => new Competition_Handler(
-                $c->get( 'competition_service' ),
+                $c->get( Competition_Service_Interface::class ),
                 $c->get( 'event_repository' )
             )
         );
@@ -481,9 +483,9 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
         $container->set(
             'competition_season_handler',
             fn( Simple_Container $c ) => new Competition_Season_Handler(
-                $c->get( 'competition_service' ),
+                $c->get( Competition_Service_Interface::class ),
                 $c->get( 'finance_service' ),
-                $c->get( 'competition_season_service' ),
+                $c->get( Competition_Season_Service_Interface::class ),
                 $c->get( 'event_repository' ),
                 $c->get( Competition_Config_Validator_Factory_Interface::class )
             )

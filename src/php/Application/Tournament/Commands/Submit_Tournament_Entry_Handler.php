@@ -3,8 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Tournament\Commands;
 
+use Racketmanager\Application\Competition\Ports\Competition_Entry_Service_Interface;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Entry_Response_DTO;
-use Racketmanager\Services\Competition_Entry_Service;
 use WP_Error;
 
 /**
@@ -12,7 +12,7 @@ use WP_Error;
  */
 readonly class Submit_Tournament_Entry_Handler {
     public function __construct(
-        private Competition_Entry_Service $competition_entry_service
+        private Competition_Entry_Service_Interface $competition_entry_service
     ) {
     }
 

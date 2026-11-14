@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Competition\Queries;
 
 use Racketmanager\Application\Competition\DTOs\Competition_Payment_Result;
+use Racketmanager\Application\Competition\Ports\Competition_Entry_Service_Interface;
 use Racketmanager\Application\Finance\DTOs\Stripe_Settings;
 use Racketmanager\Application\Player\Ports\Player_Service_Interface;
 use Racketmanager\Application\Ports\Finance_Service_Interface;
@@ -11,7 +12,6 @@ use Racketmanager\Application\Tournament\Ports\Tournament_Service_Interface;
 use Racketmanager\Exceptions\Charge_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Services\Competition_Entry_Service;
 use function __;
 
 /**
@@ -21,16 +21,16 @@ readonly class Get_Competition_Payment_Handler {
     /**
      * Constructor.
      *
-     * @param Tournament_Service_Interface $tournament_service Tournament service.
-     * @param Player_Service_Interface     $player_service Player service.
-     * @param Finance_Service_Interface    $finance_service Finance service.
-     * @param Competition_Entry_Service    $entry_service Competition entry service.
+     * @param Tournament_Service_Interface        $tournament_service Tournament service.
+     * @param Player_Service_Interface            $player_service Player service.
+     * @param Finance_Service_Interface           $finance_service Finance service.
+     * @param Competition_Entry_Service_Interface $entry_service Competition entry service.
      */
     public function __construct(
         private Tournament_Service_Interface $tournament_service,
         private Player_Service_Interface $player_service,
         private Finance_Service_Interface $finance_service,
-        private Competition_Entry_Service $entry_service
+        private Competition_Entry_Service_Interface $entry_service
     ) {}
 
     /**

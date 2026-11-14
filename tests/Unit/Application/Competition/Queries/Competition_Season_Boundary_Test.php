@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Application\Competition\Queries;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Events_Handler;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Events_Query;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Handler;
@@ -14,12 +15,9 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\DTO\Competition\Competition_Overview_DTO;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
-use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Services\Club_Service;
-use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Settings_Service;
-use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
@@ -86,7 +84,7 @@ class Competition_Season_Boundary_Test extends TestCase {
 
     public function test_overview_handler_exposes_venue_name_to_view_model(): void {
         $competition  = $this->competition();
-        $comp_service = $this->createMock( Competition_Service::class );
+        $comp_service = $this->createMock( Competition_Service_Interface::class );
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
         $comp_service->expects( $this->once() )
             ->method( 'get_competition_overview' )
@@ -107,7 +105,7 @@ class Competition_Season_Boundary_Test extends TestCase {
     public function test_overview_handler_honours_request_season(): void {
         $_GET['season_7'] = '2016';
         $competition      = $this->competition();
-        $comp_service     = $this->createMock( Competition_Service::class );
+        $comp_service     = $this->createMock( Competition_Service_Interface::class );
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
         $comp_service->expects( $this->once() )
             ->method( 'get_competition_overview' )
@@ -163,7 +161,7 @@ class Competition_Season_Boundary_Test extends TestCase {
 
     private function events_handler_season( Get_Competition_Events_Query $query ): int {
         $captured     = null;
-        $comp_service = $this->createStub( Competition_Service::class );
+        $comp_service = $this->createStub( Competition_Service_Interface::class );
         $comp_service->method( 'get_by_id' )->willReturn( $this->competition() );
         $comp_service->method( 'get_events_with_details_for_competition' )->willReturnCallback(
             function ( int $id, ?int $season ) use ( &$captured ): array {
@@ -188,7 +186,7 @@ class Competition_Season_Boundary_Test extends TestCase {
     }
 
     private function competition_handler( Competition $competition ): Get_Competition_Handler {
-        $comp_service = $this->createStub( Competition_Service::class );
+        $comp_service = $this->createStub( Competition_Service_Interface::class );
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
 
         $club_service = $this->createMock( Club_Service::class );

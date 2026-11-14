@@ -7,6 +7,9 @@ use BackedEnum;
 use Racketmanager\Application\Club\Ports\Club_Service_Interface;
 use Racketmanager\Application\Club\Ports\Team_Service_Interface;
 use Racketmanager\Application\Competition\DTOs\Competition_Entry_Result;
+use Racketmanager\Application\Competition\Ports\Competition_Entry_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface;
 use Racketmanager\Application\Player\Ports\Player_Service_Interface;
 use Racketmanager\Application\Player\Ports\Registration_Service_Interface;
 use Racketmanager\Application\Ports\Finance_Service_Interface;
@@ -18,9 +21,6 @@ use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Services\Competition\Event_Query_Service;
-use Racketmanager\Services\Competition_Entry_Service;
-use Racketmanager\Services\Competition_Service;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function array_column;
@@ -53,30 +53,30 @@ final readonly class Get_Competition_Entry_Handler {
     /**
      * Initialises the service with required dependencies.
      *
-     * @param Club_Entry_Selection_Service   $club_entry_selection Service for club entry selection operations.
-     * @param Competition_Service            $competition_service Service for competition operations.
-     * @param Tournament_Service_Interface   $tournament_service Service for tournament operations.
-     * @param Player_Service_Interface       $player_service Service for player operations.
-     * @param Club_Service_Interface         $club_service Service for club operations.
-     * @param Team_Service_Interface         $team_service Service for team operations.
-     * @param Registration_Service_Interface $registration_service Service for registration operations.
-     * @param Competition_Entry_Service      $competition_entry_service Service for competition entry operations.
-     * @param Finance_Service_Interface      $finance_service Service for finance operations.
-     * @param Event_Query_Service            $event_query_service Service for event query operations.
+     * @param Club_Entry_Selection_Service        $club_entry_selection Service for club entry selection operations.
+     * @param Competition_Service_Interface       $competition_service Service for competition operations.
+     * @param Tournament_Service_Interface        $tournament_service Service for tournament operations.
+     * @param Player_Service_Interface            $player_service Service for player operations.
+     * @param Club_Service_Interface              $club_service Service for club operations.
+     * @param Team_Service_Interface              $team_service Service for team operations.
+     * @param Registration_Service_Interface      $registration_service Service for registration operations.
+     * @param Competition_Entry_Service_Interface $competition_entry_service Service for competition entry operations.
+     * @param Finance_Service_Interface           $finance_service Service for finance operations.
+     * @param Event_Query_Service_Interface       $event_query_service Service for event query operations.
      *
      * @return void
      */
     public function __construct(
         private Club_Entry_Selection_Service $club_entry_selection,
-        private Competition_Service $competition_service,
+        private Competition_Service_Interface $competition_service,
         private Tournament_Service_Interface $tournament_service,
         private Player_Service_Interface $player_service,
         private Club_Service_Interface $club_service,
         private Team_Service_Interface $team_service,
         private Registration_Service_Interface $registration_service,
-        private Competition_Entry_Service $competition_entry_service,
+        private Competition_Entry_Service_Interface $competition_entry_service,
         private Finance_Service_Interface $finance_service,
-        private Event_Query_Service $event_query_service
+        private Event_Query_Service_Interface $event_query_service
     ) {
     }
 

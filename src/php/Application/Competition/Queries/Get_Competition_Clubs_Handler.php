@@ -5,13 +5,13 @@ namespace Racketmanager\Application\Competition\Queries;
 
 use Racketmanager\Application\Club\Ports\Club_Service_Interface;
 use Racketmanager\Application\Competition\DTOs\Competition_Clubs_Result;
+use Racketmanager\Application\Competition\Ports\Competition_Season_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
 use Racketmanager\Application\Player\Ports\Player_Stats_Service_Interface;
 use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
-use Racketmanager\Services\Competition\Competition_Season_Service;
-use Racketmanager\Services\Competition_Service;
 use function is_numeric;
 use function method_exists;
 use function substr;
@@ -24,18 +24,18 @@ readonly class Get_Competition_Clubs_Handler {
     /**
      * Initialises the service with required competition, club, player statistics, and season dependencies.
      *
-     * @param Competition_Service             $competition_service Competition service dependency.
-     * @param Club_Service_Interface          $club_service Club service dependency.
-     * @param Player_Stats_Service_Interface  $player_stats_service Player statistics service dependency.
-     * @param Competition_Season_Service      $competition_season_service Competition season service dependency.
+     * @param Competition_Service_Interface        $competition_service Competition service dependency.
+     * @param Club_Service_Interface               $club_service Club service dependency.
+     * @param Player_Stats_Service_Interface       $player_stats_service Player statistics service dependency.
+     * @param Competition_Season_Service_Interface $competition_season_service Competition season service dependency.
      *
      * @return void
      */
     public function __construct(
-        private Competition_Service $competition_service,
+        private Competition_Service_Interface $competition_service,
         private Club_Service_Interface $club_service,
         private Player_Stats_Service_Interface $player_stats_service,
-        private Competition_Season_Service $competition_season_service
+        private Competition_Season_Service_Interface $competition_season_service
     ) {}
 
     /**

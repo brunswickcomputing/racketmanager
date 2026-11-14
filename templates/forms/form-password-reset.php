@@ -7,14 +7,14 @@
 
 namespace Racketmanager;
 
-$password_error     = false;
-$password_2_error   = false;
-$password_message   = '';
-$error_found        = false;
+$password_error   = false;
+$password_2_error = false;
+$password_message = '';
+$error_found      = false;
 /** @var string $login_error_msg */
 /** @var array $vars */
-$errors_list        = $errors ?? $vm->errors ?? ( is_array( $vars ?? null ) ? ( $vars['errors'] ?? [] ) : [] );
-$error_codes_list   = $error_codes ?? $vm->error_codes ?? ( is_array( $vars ?? null ) ? ( $vars['error_codes'] ?? [] ) : [] );
+$errors_list      = $errors ?? $vm->errors ?? ( is_array( $vars ?? null ) ? ( $vars['errors'] ?? [] ) : [] );
+$error_codes_list = $error_codes ?? $vm->error_codes ?? ( is_array( $vars ?? null ) ? ( $vars['error_codes'] ?? [] ) : [] );
 if ( ! empty( $errors_list ) && is_array( $errors_list ) ) {
     $error_found     = true;
     $login_error_msg = __( 'Error in password reset', 'racketmanager' );
@@ -69,7 +69,7 @@ $key_val   = $key ?? $vm->key ?? ( is_array( $vars ?? null ) ? ( $vars['key'] ??
                 ?>
                 " type="password" placeholder="<?php esc_html_e( 'New password', 'racketmanager' ); ?>" name="password" id="password" size="20" value="" autocomplete="off" aria-describedby="passwordFeedback" />
                 <i class="passwordShow">
-                    <svg width="16" height="16" class="icon ">
+                    <svg width="16" height="16" class="icon " aria-label="show-password">
                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#eye-fill' ); ?>"></use>
                     </svg>
                 </i>
@@ -97,7 +97,7 @@ $key_val   = $key ?? $vm->key ?? ( is_array( $vars ?? null ) ? ( $vars['key'] ??
                 ?>
                 " type="password" placeholder="<?php esc_html_e( 'Repeat new password', 'racketmanager' ); ?>" name="rePassword" id="rePassword" size="20" value="" autocomplete="off"  aria-describedby="password2Feedback"/>
                 <i class="passwordShow">
-                    <svg width="16" height="16" class="icon ">
+                    <svg width="16" height="16" class="icon " aria-label="show-password">
                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#eye-fill' ); ?>"></use>
                     </svg>
                 </i>

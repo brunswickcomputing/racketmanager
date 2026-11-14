@@ -4,10 +4,10 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Application\Event\Queries;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
 use Racketmanager\Application\Event\Queries\Event_Allowlist_Guard;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
-use Racketmanager\Services\Competition_Service;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use ReflectionClass;
 
@@ -26,8 +26,8 @@ final class Event_Allowlist_Guard_Test extends TestCase {
         return Competition_Test_Factory::create( id: 10, name: 'Comp', seasons: [ '2026' => $season ] );
     }
 
-    private function service_returning( Competition $competition, ?Event $resolved ): Competition_Service {
-        $service = $this->createStub( Competition_Service::class );
+    private function service_returning( Competition $competition, ?Event $resolved ): Competition_Service_Interface {
+        $service = $this->createStub( Competition_Service_Interface::class );
         $service->method( 'get_by_id' )->willReturn( $competition );
         $service->method( 'resolve_competition_event' )->willReturn( $resolved );
 

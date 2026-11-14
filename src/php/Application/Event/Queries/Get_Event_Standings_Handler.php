@@ -3,16 +3,16 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Event\Queries;
 
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface;
 use Racketmanager\Application\Event\DTOs\Event_Standings_Result;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
-use Racketmanager\Services\Competition\Event_Query_Service;
-use Racketmanager\Services\Competition_Service;
 use function __;
 
 class Get_Event_Standings_Handler {
     public function __construct(
-        private readonly Competition_Service $competition_service,
-        private readonly Event_Query_Service $event_query_service
+        private readonly Competition_Service_Interface $competition_service,
+        private readonly Event_Query_Service_Interface $event_query_service
     ) {}
 
     public function handle( Get_Event_Standings_Query $query ): Event_Standings_Result {

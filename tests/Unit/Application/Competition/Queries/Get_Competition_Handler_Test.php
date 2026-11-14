@@ -5,19 +5,19 @@ namespace Racketmanager\Tests\Unit\Application\Competition\Queries;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Competition\DTOs\Competition_Page_Result;
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Handler;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Query;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Services\Club_Service;
-use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;
 
-class Get_Competition_Handler_Test extends TestCase {
+final class Get_Competition_Handler_Test extends TestCase {
     use Creates_Competition_Season_Service;
     public function test_handle_when_competition_open_and_logged_in_as_admin(): void {
         $competition = Competition_Test_Factory::create(
@@ -28,7 +28,7 @@ class Get_Competition_Handler_Test extends TestCase {
             ] )
         );
 
-        $comp_service = $this->createStub( Competition_Service::class );
+        $comp_service = $this->createStub( Competition_Service_Interface::class );
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
 
         $club_service = $this->createStub( Club_Service::class );
@@ -71,7 +71,7 @@ class Get_Competition_Handler_Test extends TestCase {
             ] )
         );
 
-        $comp_service = $this->createStub( Competition_Service::class );
+        $comp_service = $this->createStub( Competition_Service_Interface::class );
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
 
         $club_service = $this->createStub( Club_Service::class );

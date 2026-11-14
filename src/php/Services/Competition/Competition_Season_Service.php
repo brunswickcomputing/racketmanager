@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Competition;
 
+use Racketmanager\Application\Competition\Ports\Competition_Season_Service_Interface;
 use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
@@ -16,7 +17,7 @@ use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 /**
  * Service for managing competition seasons and their lifecycle states.
  */
-class Competition_Season_Service {
+class Competition_Season_Service implements Competition_Season_Service_Interface {
 	public function __construct(
 		private League_Team_Repository_Interface $league_team_repository,
 		private Club_Repository_Interface $club_repository,

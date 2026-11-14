@@ -25,10 +25,9 @@ use Racketmanager\Application\Admin\Commands\Delete_Clubs_Command;
 use Racketmanager\Application\Admin\Commands\Delete_Competition_Events_Command;
 use Racketmanager\Application\Admin\Commands\Edit_Club_Admin_Command;
 use Racketmanager\Application\Admin\Commands\Edit_Club_Team_Command;
-use Racketmanager\Application\Admin\Commands\Edit_Competition_Season_Command;
-use Racketmanager\Application\Admin\Commands\Schedule_Club_Player_Ratings_Command;
-use Racketmanager\Application\Admin\Commands\Schedule_Global_Player_Ratings_Command;
 use Racketmanager\Application\Admin\Commands\Update_Competition_Config_Command;
+use Racketmanager\Application\Competition\Ports\Competition_Season_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
 use Racketmanager\Application\Ports\Competition_Config_Validator_Factory_Interface;
 use Racketmanager\Application\Ports\Finance_Service_Interface;
 use Racketmanager\Domain\Club\Club;
@@ -116,7 +115,7 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
     }
 
     public function test_update_competition_config_command_validates_and_handles(): void {
-        $competition_service = $this->createMock( Competition_Service::class );
+        $competition_service = $this->createMock( Competition_Service_Interface::class );
         $event_repository    = $this->createStub( Event_Repository_Interface::class );
 
         $config = (object) [ 'name' => 'Premier League' ];
@@ -139,7 +138,7 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
     }
 
     public function test_update_competition_config_command_mismatched_id(): void {
-        $competition_service = $this->createMock( Competition_Service::class );
+        $competition_service = $this->createMock( Competition_Service_Interface::class );
         $event_repository    = $this->createStub( Event_Repository_Interface::class );
 
         $handler = new Competition_Handler( $competition_service, $event_repository );
@@ -156,7 +155,7 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
     }
 
     public function test_delete_competition_events_success(): void {
-        $competition_service = $this->createMock( Competition_Service::class );
+        $competition_service = $this->createMock( Competition_Service_Interface::class );
         $event_repository    = $this->createMock( Event_Repository_Interface::class );
 
         $event = $this->createStub( Event::class );
@@ -361,7 +360,7 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
     }
 
     public function test_competition_handler_delete_events_when_none_found(): void {
-        $comp_service = $this->createStub( Competition_Service::class );
+        $comp_service = $this->createStub( Competition_Service_Interface::class );
         $event_repo   = $this->createMock( Event_Repository_Interface::class );
         $event_repo->expects( self::once() )
             ->method( 'find_by_id' )
@@ -867,7 +866,7 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
     public function test_competition_season_handler_uses_injected_validator_factory_and_propagates_validation_error(): void {
         $comp_service      = $this->createMock( Competition_Service::class );
         $finance_service   = $this->createMock( Finance_Service_Interface::class );
-        $season_service    = $this->createMock( Competition_Season_Service::class );
+        $season_service    = $this->createMock( Competition_Season_Service_Interface::class );
         $event_repository  = $this->createMock( Event_Repository_Interface::class );
         $validator_factory = $this->createMock( Competition_Config_Validator_Factory_Interface::class );
 
@@ -902,7 +901,7 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
     public function test_competition_season_handler_uses_injected_validator_factory(): void {
         $comp_service      = $this->createMock( Competition_Service::class );
         $finance_service   = $this->createMock( Finance_Service_Interface::class );
-        $season_service    = $this->createMock( Competition_Season_Service::class );
+        $season_service    = $this->createMock( Competition_Season_Service_Interface::class );
         $event_repository  = $this->createMock( Event_Repository_Interface::class );
         $validator_factory = $this->createMock( Competition_Config_Validator_Factory_Interface::class );
 

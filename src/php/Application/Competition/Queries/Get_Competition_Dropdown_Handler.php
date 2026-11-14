@@ -4,11 +4,11 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Competition\Queries;
 
 use Racketmanager\Application\Competition\DTOs\Competition_Dropdown_Result;
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
-use Racketmanager\Services\Competition_Service;
 
 class Get_Competition_Dropdown_Handler {
-    public function __construct( private readonly Competition_Service $competition_service ) {}
+    public function __construct( private readonly Competition_Service_Interface $competition_service ) {}
 
     public function handle( Get_Competition_Dropdown_Query $query ): Competition_Dropdown_Result {
         try {

@@ -4,20 +4,18 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Application\Event\Queries;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface;
 use Racketmanager\Application\Event\Queries\Get_Event_Draw_Handler;
 use Racketmanager\Application\Event\Queries\Get_Event_Matches_Handler;
 use Racketmanager\Application\Fixture\Ports\Fixture_Detail_Service_Interface;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Tournament\Championship;
-use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
-use Racketmanager\Presentation\Presenters\Tournament_Presenter;
-use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition\League_Query_Service;
-use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\League_Service;
 
-class Event_Query_Handler_Delegation_Test extends TestCase {
+final class Event_Query_Handler_Delegation_Test extends TestCase {
 	private function league_with_finals(): League {
 		$championship = $this->createStub( Championship::class );
 		$championship->method( 'get_finals' )->willReturn(
@@ -41,7 +39,7 @@ class Event_Query_Handler_Delegation_Test extends TestCase {
 		$league = $this->league_with_finals();
 		$event  = $this->createStub( Event::class );
 
-		$event_query = $this->createStub( Event_Query_Service::class );
+		$event_query = $this->createStub( Event_Query_Service_Interface::class );
 		$event_query->method( 'get_leagues' )->willReturn( [ $league ] );
 
 		$league_service = $this->createStub( League_Service::class );
@@ -63,7 +61,7 @@ class Event_Query_Handler_Delegation_Test extends TestCase {
 			->willReturn( [ (object) [ 'id' => 88 ] ] );
 
 		$handler = new Get_Event_Matches_Handler(
-			$this->createStub( Competition_Service::class ),
+			$this->createStub( Competition_Service_Interface::class ),
 			$league_service,
 			$event_query,
 			$league_query
@@ -80,7 +78,7 @@ class Event_Query_Handler_Delegation_Test extends TestCase {
 		$league = $this->league_with_finals();
 		$event  = $this->createStub( Event::class );
 
-		$event_query = $this->createStub( Event_Query_Service::class );
+		$event_query = $this->createStub( Event_Query_Service_Interface::class );
 		$event_query->method( 'get_leagues' )->willReturn( [ $league ] );
 
 		$league_service = $this->createStub( League_Service::class );
@@ -102,7 +100,7 @@ class Event_Query_Handler_Delegation_Test extends TestCase {
 			->willReturn( [] );
 
 		$handler = new Get_Event_Draw_Handler(
-			$this->createStub( Competition_Service::class ),
+			$this->createStub( Competition_Service_Interface::class ),
 			$league_service,
 			$this->createStub( Fixture_Detail_Service_Interface::class ),
 			$event_query,

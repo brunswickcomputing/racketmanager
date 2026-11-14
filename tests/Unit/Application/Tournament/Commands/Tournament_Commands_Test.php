@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Application\Tournament\Commands;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Competition\Ports\Competition_Entry_Service_Interface;
 use Racketmanager\Application\Tournament\Commands\Create_Tournament_Payment_Command;
 use Racketmanager\Application\Tournament\Commands\Create_Tournament_Payment_Handler;
 use Racketmanager\Application\Tournament\Commands\Generate_Tournament_Bracket_Command;
@@ -20,12 +21,9 @@ use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Entry_Request_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Entry_Response_DTO;
 use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Partner_Request_DTO;
-use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
-use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Stripe_API_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface;
-use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Finance_Service;
 use WP_Error;
 
@@ -91,7 +89,7 @@ final class Tournament_Commands_Test extends TestCase {
     }
 
     public function test_submit_tournament_entry_handler_delegates_to_service(): void {
-        $service = $this->createMock( Competition_Entry_Service::class );
+        $service = $this->createMock( Competition_Entry_Service_Interface::class );
         $response_dto = new Tournament_Entry_Response_DTO(
             status: 200,
             message: 'Entry submitted'
@@ -115,7 +113,7 @@ final class Tournament_Commands_Test extends TestCase {
     }
 
     public function test_submit_tournament_entry_handler_returns_wp_error(): void {
-        $service = $this->createMock( Competition_Entry_Service::class );
+        $service = $this->createMock( Competition_Entry_Service_Interface::class );
         $error   = new WP_Error( 'entry_closed', 'Tournament is closed' );
 
         $service->expects( $this->once() )
@@ -158,7 +156,7 @@ final class Tournament_Commands_Test extends TestCase {
     }
 
     public function test_withdraw_tournament_entry_handler_delegates_to_service(): void {
-        $service = $this->createMock( Competition_Entry_Service::class );
+        $service = $this->createMock( Competition_Entry_Service_Interface::class );
         $service->expects( $this->once() )
             ->method( 'confirm_tournament_withdrawal' )
             ->with( 12, 34 )
@@ -172,7 +170,7 @@ final class Tournament_Commands_Test extends TestCase {
     }
 
     public function test_withdraw_tournament_entry_handler_propagates_exceptions(): void {
-        $service = $this->createMock( Competition_Entry_Service::class );
+        $service = $this->createMock( Competition_Entry_Service_Interface::class );
         $service->expects( $this->once() )
             ->method( 'confirm_tournament_withdrawal' )
             ->willThrowException( new Tournament_Not_Found_Exception( 'Tournament not found' ) );
@@ -215,7 +213,7 @@ final class Tournament_Commands_Test extends TestCase {
     }
 
     public function test_submit_tournament_partner_handler_delegates_to_service(): void {
-        $service = $this->createMock( Competition_Entry_Service::class );
+        $service = $this->createMock( Competition_Entry_Service_Interface::class );
         $service->expects( $this->once() )
             ->method( 'validate_tournament_partner' )
             ->with( $this->isInstanceOf( Tournament_Partner_Request_DTO::class ) )

@@ -52,7 +52,7 @@ $is_invalid = false;
                                 if ( isset( $user->err_flds ) && is_numeric( array_search( 'firstname', $user->err_flds, true ) ) ) {
                                     $is_invalid = true;
                                     $msg_id     = array_search( 'firstname', $user->err_flds, true );
-                                    $msg        = $user->err_msgs[$msg_id] ?? null;
+                                    $msg        = $user->err_msgs[ $msg_id ] ?? null;
                                 }
                                 ?>
                                 <input type="text" autocomplete='given-name' placeholder="<?php esc_html_e( 'First Name', 'racketmanager' ); ?>" name="firstname" id="firstname" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" value="<?php echo esc_html( $user->firstname ); ?>" />
@@ -64,7 +64,7 @@ $is_invalid = false;
                                 if ( isset( $user->err_flds ) && is_numeric( array_search( 'lastname', $user->err_flds, true ) ) ) {
                                     $is_invalid = true;
                                     $msg_id     = array_search( 'lastname', $user->err_flds, true );
-                                    $msg        = $user->err_msgs[$msg_id] ?? null;
+                                    $msg        = $user->err_msgs[ $msg_id ] ?? null;
                                 } else {
                                     $is_invalid = false;
                                     $msg        = null;
@@ -80,7 +80,7 @@ $is_invalid = false;
                             if ( isset( $user->err_flds ) && is_numeric( array_search( 'gender', $user->err_flds, true ) ) ) {
                                 $is_invalid = true;
                                 $msg_id     = array_search( 'gender', $user->err_flds, true );
-                                $msg        = $user->err_msgs[$msg_id] ?? null;
+                                $msg        = $user->err_msgs[ $msg_id ] ?? null;
                             } else {
                                 $is_invalid = false;
                                 $msg        = null;
@@ -103,7 +103,7 @@ $is_invalid = false;
                                 if ( isset( $user->err_flds ) && is_numeric( array_search( 'btm', $user->err_flds, true ) ) ) {
                                     $is_invalid = true;
                                     $msg_id     = array_search( 'btm', $user->err_flds, true );
-                                    $msg        = $user->err_msgs[$msg_id] ?? null;
+                                    $msg        = $user->err_msgs[ $msg_id ] ?? null;
                                 } else {
                                     $is_invalid = false;
                                     $msg        = null;
@@ -118,7 +118,7 @@ $is_invalid = false;
                                 if ( isset( $user->err_flds ) && is_numeric( array_search( 'year_of_birth', $user->err_flds, true ) ) ) {
                                     $is_invalid = true;
                                     $msg_id     = array_search( 'year_of_birth', $user->err_flds, true );
-                                    $msg        = $user->err_msgs[$msg_id] ?? null;
+                                    $msg        = $user->err_msgs[ $msg_id ] ?? null;
                                 } else {
                                     $is_invalid = false;
                                     $msg        = null;
@@ -150,7 +150,7 @@ $is_invalid = false;
                                 if ( isset( $user->err_flds ) && is_numeric( array_search( 'username', $user->err_flds, true ) ) ) {
                                     $is_invalid = true;
                                     $msg_id     = array_search( 'username', $user->err_flds, true );
-                                    $msg        = $user->err_msgs[$msg_id] ?? null;
+                                    $msg        = $user->err_msgs[ $msg_id ] ?? null;
                                 } else {
                                     $is_invalid = false;
                                     $msg        = null;
@@ -165,7 +165,7 @@ $is_invalid = false;
                                 if ( isset( $user->err_flds ) && is_numeric( array_search( 'contactno', $user->err_flds, true ) ) ) {
                                     $is_invalid = true;
                                     $msg_id     = array_search( 'contactno', $user->err_flds, true );
-                                    $msg        = $user->err_msgs[$msg_id] ?? null;
+                                    $msg        = $user->err_msgs[ $msg_id ] ?? null;
                                 } else {
                                     $is_invalid = false;
                                     $msg        = null;
@@ -209,7 +209,7 @@ $is_invalid = false;
                                 if ( isset( $user->err_flds ) && is_numeric( array_search( 'password', $user->err_flds, true ) ) ) {
                                     $is_invalid = true;
                                     $msg_id     = array_search( 'password', $user->err_flds, true );
-                                    $msg        = $user->err_msgs[$msg_id] ?? null;
+                                    $msg        = $user->err_msgs[ $msg_id ] ?? null;
                                 } else {
                                     $is_invalid = false;
                                     $msg        = null;
@@ -217,7 +217,7 @@ $is_invalid = false;
                                 ?>
                                 <input type="password" placeholder="<?php esc_html_e( 'Password', 'racketmanager' ); ?>" name="password" id="password" class="form-control password <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" size="20" value="" autocomplete="off" />
                                 <i class="passwordShow">
-                                    <svg width="16" height="16" class="icon ">
+                                    <svg width="16" height="16" class="icon " aria-label="show-password">
                                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#eye-fill' ); ?>"></use>
                                     </svg>
                                 </i>
@@ -227,7 +227,7 @@ $is_invalid = false;
                             <div class="form-floating col-md-6 mb-3">
                                 <input type="password" placeholder="<?php esc_html_e( 'Re-enter password', 'racketmanager' ); ?>" name="rePassword" id="rePassword" class="form-control password <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" value="" autocomplete="off" />
                                 <i class="passwordShow">
-                                    <svg width="16" height="16" class="icon ">
+                                    <svg width="16" height="16" class="icon " aria-label="show-password">
                                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#eye-fill' ); ?>"></use>
                                     </svg>
                                 </i>

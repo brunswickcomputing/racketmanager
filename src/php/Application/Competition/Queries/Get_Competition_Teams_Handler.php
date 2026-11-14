@@ -4,11 +4,11 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Competition\Queries;
 
 use Racketmanager\Application\Competition\DTOs\Competition_Teams_Result;
+use Racketmanager\Application\Competition\Ports\Competition_Season_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
 use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
-use Racketmanager\Services\Competition\Competition_Season_Service;
-use Racketmanager\Services\Competition_Service;
 use function is_numeric;
 use function __;
 
@@ -17,8 +17,8 @@ use function __;
  */
 class Get_Competition_Teams_Handler {
     public function __construct(
-        private readonly Competition_Service $competition_service,
-        private readonly Competition_Season_Service $competition_season_service
+        private readonly Competition_Service_Interface $competition_service,
+        private readonly Competition_Season_Service_Interface $competition_season_service
     ) {}
 
     public function handle( Get_Competition_Teams_Query $query ): Competition_Teams_Result {

@@ -5,11 +5,11 @@ namespace Racketmanager\Application\Club\Queries;
 
 use Racketmanager\Application\Club\DTOs\Club_Competitions_Result;
 use Racketmanager\Application\Club\Ports\Club_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
-use Racketmanager\Services\Competition\Event_Query_Service;
-use Racketmanager\Services\Competition_Service;
 use function __;
 use function is_array;
 
@@ -24,17 +24,17 @@ class Get_Club_Competitions_Handler {
      * Initialises the service with dependencies for club, competition, repository, and event query operations.
      *
      * @param Club_Service_Interface           $club_service Club service dependency.
-     * @param Competition_Service              $competition_service Competition service dependency.
+     * @param Competition_Service_Interface    $competition_service Competition service dependency.
      * @param Competition_Repository_Interface $competition_repository Competition repository dependency.
-     * @param Event_Query_Service              $event_query_service Event query service dependency.
+     * @param Event_Query_Service_Interface    $event_query_service Event query service dependency.
      *
      * @return void
      */
     public function __construct(
         private readonly Club_Service_Interface $club_service,
-        private readonly Competition_Service $competition_service,
+        private readonly Competition_Service_Interface $competition_service,
         private readonly Competition_Repository_Interface $competition_repository,
-        private readonly Event_Query_Service $event_query_service
+        private readonly Event_Query_Service_Interface $event_query_service
     ) {
     }
 

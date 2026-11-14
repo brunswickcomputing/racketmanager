@@ -5,9 +5,9 @@ namespace Racketmanager\Services\Competition;
 
 use Closure;
 use LogicException;
+use Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
-use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Domain\Fixture\Rubber_Factory;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Infrastructure\Wordpress\Request\Competition_Request;
@@ -28,7 +28,7 @@ use stdClass;
  * Supplies explicit repository arguments to Event data methods, giving callers
  * outside the domain a single dependency without storing collaborators on Event.
  */
-class Event_Query_Service {
+class Event_Query_Service implements Event_Query_Service_Interface {
 	private Event_Repository_Interface $event_repository;
 	private Fixture_Repository_Interface|Closure|null $fixture_repository;
 	private Rubber_Repository_Interface|Closure|null $rubber_repository;

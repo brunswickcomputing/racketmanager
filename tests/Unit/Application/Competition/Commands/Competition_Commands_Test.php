@@ -8,9 +8,9 @@ use Racketmanager\Application\Competition\Commands\Submit_Cup_Entry_Command;
 use Racketmanager\Application\Competition\Commands\Submit_Cup_Entry_Handler;
 use Racketmanager\Application\Competition\Commands\Submit_League_Entry_Command;
 use Racketmanager\Application\Competition\Commands\Submit_League_Entry_Handler;
+use Racketmanager\Application\Competition\Ports\Competition_Entry_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Request\Competition\Cup_Entry_Request_DTO;
 use Racketmanager\Infrastructure\Wordpress\Request\Competition\League_Entry_Request_DTO;
-use Racketmanager\Services\Competition_Entry_Service;
 use WP_Error;
 
 require_once dirname( __DIR__, 4 ) . '/wp-stubs.php';
@@ -88,7 +88,7 @@ final class Competition_Commands_Test extends TestCase {
     }
 
     public function test_submit_cup_entry_handler_delegates_to_service(): void {
-        $service = $this->createMock( Competition_Entry_Service::class );
+        $service = $this->createMock( Competition_Entry_Service_Interface::class );
         $service->expects( $this->once() )
             ->method( 'request_cup_entry' )
             ->with( $this->isInstanceOf( Cup_Entry_Request_DTO::class ) )
@@ -109,7 +109,7 @@ final class Competition_Commands_Test extends TestCase {
 
     public function test_submit_cup_entry_handler_returns_wp_error(): void {
         $error   = new WP_Error( 'invalid_entry', 'Cup entry closed' );
-        $service = $this->createMock( Competition_Entry_Service::class );
+        $service = $this->createMock( Competition_Entry_Service_Interface::class );
         $service->expects( $this->once() )
             ->method( 'request_cup_entry' )
             ->willReturn( $error );
@@ -206,7 +206,7 @@ final class Competition_Commands_Test extends TestCase {
     }
 
     public function test_submit_league_entry_handler_delegates_to_service(): void {
-        $service = $this->createMock( Competition_Entry_Service::class );
+        $service = $this->createMock( Competition_Entry_Service_Interface::class );
         $service->expects( $this->once() )
             ->method( 'request_league_entry' )
             ->with( $this->isInstanceOf( League_Entry_Request_DTO::class ) )

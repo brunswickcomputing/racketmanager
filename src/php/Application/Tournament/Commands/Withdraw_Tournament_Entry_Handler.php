@@ -3,16 +3,16 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Tournament\Commands;
 
+use Racketmanager\Application\Competition\Ports\Competition_Entry_Service_Interface;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Services\Competition_Entry_Service;
 
 /**
  * Handler for confirming tournament withdrawals.
  */
 class Withdraw_Tournament_Entry_Handler {
     public function __construct(
-        private readonly Competition_Entry_Service $competition_entry_service
+        private readonly Competition_Entry_Service_Interface $competition_entry_service
     ) {
     }
 

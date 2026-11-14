@@ -27,7 +27,7 @@ if ( ! $header_vm instanceof Competition_Header_View_Model ) {
         <div class="media__wrapper">
             <?php if ( ! empty( $header_vm->icon_path ) ) : ?>
                 <div class="media__img">
-                    <svg width="16" height="16" class="media__img-element--icon">
+                    <svg width="16" height="16" class="media__img-element--icon" aria-label="competition-icon">
                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . $header_vm->icon_path ); ?>"></use>
                     </svg>
                 </div>
@@ -48,7 +48,7 @@ if ( ! $header_vm instanceof Competition_Header_View_Model ) {
                         <small class="media__subheading">
                             <span class="nav--link">
                                 <span class="nav-link__value">
-                                    <svg width="32" height="32" class="icon ">
+                                    <svg width="32" height="32" class="icon " aria-label="competition-date">
                                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar-range-fill' ); ?>"></use>
                                     </svg>
                                     <?php echo esc_html( $header_vm->date_start_display ); ?> <?php esc_html_e( 'to', 'racketmanager' ); ?> <?php echo esc_html( $header_vm->date_end_display ); ?>
@@ -61,7 +61,7 @@ if ( ! $header_vm instanceof Competition_Header_View_Model ) {
             <div class="media__aside">
                 <?php if ( ! empty( $header_vm->entry_link ) ) : ?>
                     <a href="<?php echo esc_url( $header_vm->entry_link ); ?>" class="btn btn-primary reverse">
-                        <svg width="16" height="16" class="icon ">
+                        <svg width="16" height="16" class="icon " aria-label="enter-competition">
                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#pencil' ); ?>"></use>
                         </svg>
                         <span><?php esc_html_e( 'Enter', 'racketmanager' ); ?></span>

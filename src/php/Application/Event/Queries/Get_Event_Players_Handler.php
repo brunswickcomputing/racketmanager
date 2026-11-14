@@ -3,14 +3,14 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Event\Queries;
 
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface;
 use Racketmanager\Application\Event\DTOs\Event_Players_Result;
 use Racketmanager\Application\Player\Ports\Player_Query_Service_Interface;
 use Racketmanager\Application\Player\Ports\Player_Service_Interface;
 use Racketmanager\Application\Player\Ports\Player_Stats_Service_Interface;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
-use Racketmanager\Services\Competition\Event_Query_Service;
-use Racketmanager\Services\Competition_Service;
 use Racketmanager\Util\Util;
 use function __;
 use function asort;
@@ -32,20 +32,20 @@ readonly class Get_Event_Players_Handler {
     /**
      * Initialises the service with competition, player, statistics, and event query dependencies.
      *
-     * @param Competition_Service            $competition_service Competition service dependency.
+     * @param Competition_Service_Interface  $competition_service Competition service dependency.
      * @param Player_Service_Interface       $player_service Player service dependency.
      * @param Player_Query_Service_Interface $player_query_service Player query service dependency.
      * @param Player_Stats_Service_Interface $player_stats_service Player statistics service dependency.
-     * @param Event_Query_Service            $event_query_service Event query service dependency.
+     * @param Event_Query_Service_Interface  $event_query_service Event query service dependency.
      *
      * @return void
      */
     public function __construct(
-        private Competition_Service $competition_service,
+        private Competition_Service_Interface $competition_service,
         private Player_Service_Interface $player_service,
         private Player_Query_Service_Interface $player_query_service,
         private Player_Stats_Service_Interface $player_stats_service,
-        private Event_Query_Service $event_query_service
+        private Event_Query_Service_Interface $event_query_service
     ) {}
 
     /**

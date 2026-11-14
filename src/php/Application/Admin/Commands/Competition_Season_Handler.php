@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Admin\Commands;
 
+use Racketmanager\Application\Competition\Ports\Competition_Season_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
 use Racketmanager\Application\Ports\Competition_Config_Validator_Factory_Interface;
 use Racketmanager\Application\Ports\Finance_Service_Interface;
 use Racketmanager\Domain\Competition\Competition;
@@ -11,16 +13,14 @@ use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Charge_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
-use Racketmanager\Services\Competition\Competition_Season_Service;
-use Racketmanager\Services\Competition_Service;
 use Racketmanager\Util\Util;
 use stdClass;
 
 final readonly class Competition_Season_Handler {
     public function __construct(
-        private Competition_Service $competition_service,
+        private Competition_Service_Interface $competition_service,
         private Finance_Service_Interface $finance_service,
-        private Competition_Season_Service $competition_season_service,
+        private Competition_Season_Service_Interface $competition_season_service,
         private Event_Repository_Interface $event_repository,
         private Competition_Config_Validator_Factory_Interface $validator_factory,
     ) {

@@ -38,6 +38,7 @@ use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Update_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Application\Competition\Ports\Competition_Entry_Service_Interface;
 use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\RacketManager;
@@ -61,7 +62,7 @@ use WP_Error;
 /**
  * Class to implement the Competition Entry Management Service
  */
-class Competition_Entry_Service {
+class Competition_Entry_Service implements Competition_Entry_Service_Interface {
     private Club_Repository $club_repository;
     private Club_Service $club_service;
     private Competition_Service $competition_service;

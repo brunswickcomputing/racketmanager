@@ -5,6 +5,7 @@ import {
     getCurrentUrl,
     getUrlBase,
     navigateTo,
+    replaceLocation,
     reloadPage,
     parseQueryString,
     getQueryParam,
@@ -85,10 +86,11 @@ describe('url-helpers', () => {
         });
     });
 
-    describe('navigateTo and reloadPage', () => {
+    describe('navigateTo, replaceLocation and reloadPage', () => {
         // jsdom's `location` is unforgeable (non-configurable) so it cannot be mocked.
         // jsdom reports every navigation attempt through console.error as
         // "Not implemented: navigation", which proves the call reached `location`.
+        // The error stack trace identifies the specific Location method invoked (set href, replace, or reload).
         let errorSpy;
 
         beforeEach(() => {
@@ -99,24 +101,36 @@ describe('url-helpers', () => {
             errorSpy.mockRestore();
         });
 
-        const expectNavigationAttempt = () => {
+        const expectNavigationAttempt = (expectedMethod = null) => {
             expect(errorSpy).toHaveBeenCalledTimes(1);
-            expect(String(errorSpy.mock.calls[0][0])).toContain('Not implemented: navigation');
+            const err = errorSpy.mock.calls[0][0];
+            expect(String(err)).toContain('Not implemented: navigation');
+            if (expectedMethod) {
+                expect(err.stack).toMatch(expectedMethod);
+            }
         };
 
         test('navigateTo assigns href by default', () => {
             expect(() => navigateTo('http://localhost/new')).not.toThrow();
-            expectNavigationAttempt();
+            expectNavigationAttempt(/set href/);
+            expect(errorSpy.mock.calls[0][0].stack).not.toContain('replaceLocation');
         });
 
-        test('navigateTo uses replace when requested', () => {
+        test('replaceLocation calls location.replace', () => {
+            expect(() => replaceLocation('http://localhost/replaced')).not.toThrow();
+            expectNavigationAttempt(/Location(?:\.js|Impl)?\.replace/);
+            expect(errorSpy.mock.calls[0][0].stack).not.toContain('navigateTo');
+        });
+
+        test('navigateTo delegates to replaceLocation when legacy replace flag is true', () => {
             expect(() => navigateTo('http://localhost/replaced', true)).not.toThrow();
-            expectNavigationAttempt();
+            expectNavigationAttempt(/Location(?:\.js|Impl)?\.replace/);
+            expect(errorSpy.mock.calls[0][0].stack).toContain('replaceLocation');
         });
 
         test('reloadPage calls location.reload', () => {
             expect(() => reloadPage()).not.toThrow();
-            expectNavigationAttempt();
+            expectNavigationAttempt(/Location(?:\.js|Impl)?\.reload/);
         });
     });
 

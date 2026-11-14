@@ -1,13 +1,13 @@
 
 /**
- * URL manipulation and sanitization utilities
+ * URL manipulation and sanitisation utilities
  */
 
 /**
- * Sanitize URL parameter by removing unwanted characters
+ * Sanitise URL parameter by removing unwanted characters
  * and converting to URL-friendly format
  *
- * @param {string} value - Value to sanitize
+ * @param {string} value - Value to sanitise
  * @param {boolean} hyphens - Whether to replace hyphens in the value
  * @returns {string} Sanitized value
  */
@@ -85,17 +85,30 @@ export function getUrlBase() {
 }
 
 /**
- * Navigate to URL
+ * Navigate to URL (pushes new entry to session history)
  *
- * @param {string} url - URL to navigate to
- * @param {boolean} replace - Whether to replace history or push
+ * Assigns to `globalThis.location.href`, creating a new entry in the browser session history.
+ *
+ * @param {string} url - Target URL to navigate to (relative or absolute)
+ * @param {boolean} [replace=false] - Deprecated: use replaceLocation(url) instead
  */
 export function navigateTo(url, replace = false) {
     if (replace) {
-        globalThis.location.replace(url);
-    } else {
-        globalThis.location.href = url;
+        replaceLocation(url);
+        return;
     }
+    globalThis.location.href = url;
+}
+
+/**
+ * Navigate to URL replacing current session history entry
+ *
+ * Executes `globalThis.location.replace(url)` to navigate without creating a new session history entry.
+ *
+ * @param {string} url - Target URL to navigate to (relative or absolute)
+ */
+export function replaceLocation(url) {
+    globalThis.location.replace(url);
 }
 
 /**
@@ -220,7 +233,7 @@ export function isExternalUrl(url) {
  */
 export function encodeUrlComponent(str) {
     return encodeURIComponent(str)
-        .replaceAll(/[!'()*]/g, c => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
+        .replaceAll(/[!'()*]/g, c => `%${c.codePointAt(0).toString(16).toUpperCase()}`);
 }
 
 /**

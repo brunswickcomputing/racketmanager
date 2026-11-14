@@ -85,7 +85,7 @@ if ( $vm->is_shortcode ) {
                     <div class="match__change">
                         <div class="dropdown">
                             <button type="button" class="nav-link" data-bs-toggle="dropdown" aria-expanded="false" aria-label="<?php esc_attr_e( 'Match options', 'racketmanager' ); ?>">
-                                <svg width="16" height="16" class="icon" aria-hidden="true" focusable="false">
+                                <svg width="16" height="16" class="icon" aria-hidden="true" focusable="false" aria-label="<?php esc_attr_e( 'Edit', 'racketmanager' ); ?>">
                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
                                 </svg>
                             </button>
@@ -223,7 +223,7 @@ if ( $vm->is_shortcode ) {
                 ?>
                 <div class="text-center mt-2">
                     <a href="/status" class="nav__link btn btn-outline statusLink" data-match-id="<?php echo esc_attr( $vm->id ); ?>" id="matchStatusButton" data-action="open-match-status-modal">
-                        <svg width="16" height="16" class="icon-plus nav-link__prefix">
+                        <svg width="16" height="16" class="icon-plus nav-link__prefix" aria-label="<?php esc_attr_e( 'Match status', 'racketmanager' ); ?>">
                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#plus-lg' ); ?>"></use>
                         </svg>
                         <span class="nav-link__value"><?php esc_html_e( 'Match status', 'racketmanager' ); ?></span>

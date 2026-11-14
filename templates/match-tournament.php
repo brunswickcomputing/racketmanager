@@ -65,7 +65,7 @@ $match                    = $fixture;
         <div class="media tournament-head">
             <div class="media__wrapper">
                 <div class="media__img">
-                    <svg width="16" height="16" class="media__img-element--icon">
+                    <svg width="16" height="16" class="media__img-element--icon" aria-label="<?php esc_attr_e( 'Logo', 'racketmanager' ); ?>">
                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . $image ); ?>"></use>
                     </svg>
                 </div>
@@ -104,7 +104,7 @@ $match                    = $fixture;
                             <small class="media__subheading">
                                 <span class="nav--link">
                                     <span class="nav-link__value">
-                                    <svg width="32" height="32" class="icon ">
+                                    <svg width="32" height="32" class="icon " aria-label="<?php esc_attr_e( 'Date range', 'racketmanager' ); ?>">
                                         <use
                                             xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar-range-fill' ); ?>"></use>
                                     </svg>
@@ -124,7 +124,7 @@ $match                    = $fixture;
                         <div class="match__change">
                             <div class="dropdown">
                                 <a class="nav-link" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <svg width="16" height="16" class="icon ">
+                                    <svg width="16" height="16" class="icon " aria-label="<?php esc_attr_e( 'Edit', 'racketmanager' ); ?>">
                                         <use
                                             xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
                                     </svg>
@@ -176,7 +176,7 @@ $match                    = $fixture;
     <div class="match-info-meta wrapper--padding-medium">
         <div class="row">
             <div class="col-6 col-sm-4">
-                <svg width="20" height="20" class="match-info-meta__icon">
+                <svg width="20" height="20" class="match-info-meta__icon" aria-label="<?php esc_attr_e( 'League type', 'racketmanager' ); ?>">
                     <?php
                     if ( ! empty( $league->is_championship ) ) {
                         ?>
@@ -208,7 +208,7 @@ $match                    = $fixture;
             if ( ! empty( $match_date_formatted ) ) {
                 ?>
                 <div class="col-6 col-sm-4">
-                    <svg width="20" height="20" class="match-info-meta__icon">
+                    <svg width="20" height="20" class="match-info-meta__icon" aria-label="<?php esc_attr_e( 'Date', 'racketmanager' ); ?>">
                         <use
                             xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar' ); ?>"></use>
                     </svg>
@@ -252,7 +252,7 @@ $match                    = $fixture;
             if ( ! empty( $location ) ) {
                 ?>
                 <div class="d-none d-sm-block col-sm-4">
-                    <svg width="20" height="20" class="match-info-meta__icon">
+                    <svg width="20" height="20" class="match-info-meta__icon" aria-label="<?php esc_attr_e( 'Location', 'racketmanager' ); ?>">
                         <use
                             xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#geo-alt-fill' ); ?>"></use>
                     </svg>
@@ -342,7 +342,7 @@ $match                    = $fixture;
                                 <button type="button" class="nav__link"
                                         data-match-id="<?php echo esc_attr( $match->id ); ?>"
                                         data-action="open-match-status-modal">
-                                    <svg width="16" height="16" class="icon-plus nav-link__prefix">
+                                    <svg width="16" height="16" class="icon-plus nav-link__prefix" aria-label="<?php esc_attr_e( 'Match status', 'racketmanager' ); ?>">
                                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#plus-lg' ); ?>"></use>
                                     </svg>
                                     <span class="nav-link__value"><?php esc_html_e( 'Match status', 'racketmanager' ); ?></span>

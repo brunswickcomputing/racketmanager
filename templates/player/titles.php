@@ -61,7 +61,7 @@ $titles = $vm->titles ?? ( $titles ?? [] );
                                     <div class="media">
                                         <div class="media__wrapper">
                                             <div class="media__img">
-                                                <svg width="16" height="16" class="media__img-element--icon <?php echo esc_attr( $class ); ?>">
+                                                <svg width="16" height="16" class="media__img-element--icon <?php echo esc_attr( $class ); ?>" aria-label="<?php esc_attr_e( 'Title', 'racketmanager' ); ?>">
                                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#trophy-fill' ); ?>"></use>
                                                 </svg>
                                             </div>

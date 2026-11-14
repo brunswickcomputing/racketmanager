@@ -120,7 +120,7 @@ if ( count( $league->teams ) ) {
                         if ( $is_column_visible( 'status' ) ) {
                             ?>
                             <td class="num d-none d-md-table-cell" title="<?php echo esc_html( $team->status_text ); ?>">
-                                <svg width="32" height="32" class="icon ">
+                                <svg width="32" height="32" class="icon " aria-label="<?php esc_attr_e( 'Status', 'racketmanager' ); ?>">
                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#' . $team->status_icon ); ?>"></use>
                                 </svg>
                             </td>

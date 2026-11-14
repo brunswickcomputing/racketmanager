@@ -222,7 +222,7 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
                                                                 <button type="button" class="nav__link" data-action="open-rubber-status-modal"
                                                                         data-rubber-id="<?php echo esc_attr( $rubber['id'] ); ?>"
                                                                         data-rubber-number="<?php echo esc_attr( $rubber['number'] ); ?>">
-                                                                    <svg width="16" height="16" class="icon-plus nav-link__prefix">
+                                                                    <svg width="16" height="16" class="icon-plus nav-link__prefix" aria-label="<?php esc_attr_e( 'Score status', 'racketmanager' ); ?>">
                                                                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#plus-lg' ); ?>"></use>
                                                                     </svg>
                                                                     <span class="nav-link__value"><?php esc_html_e( 'Score status', 'racketmanager' ); ?></span>

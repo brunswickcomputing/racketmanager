@@ -26,7 +26,7 @@ if ( ! empty( $favourite_controls->can_toggle ) ) {
         <a href="" id="fav-<?php echo esc_html( $favourite_id ); ?>" data-bs-toggle="tooltip" data-bs-placement="top"  title="<?php echo esc_html( $favourite_state->title ); ?>" data-js="add-favourite" data-type="<?php echo esc_attr( $favourite_type ); ?>" data-favourite="<?php echo esc_html( $favourite_id ); ?>">
             <i class="fav-icon-svg <?php echo esc_html( $visible ); ?> racketmanager-svg-icon <?php echo esc_attr( $favourite_state->icon_class ); ?>
             ">
-                <svg width="16" height="16" class="">
+                <svg width="16" height="16" class="" aria-label="<?php esc_attr_e( 'Favourite', 'racketmanager' ); ?>">
                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#star-fill' ); ?>"></use>
                 </svg>
             </i>

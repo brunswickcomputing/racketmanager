@@ -154,7 +154,7 @@ if ( isset( $vm ) && $vm instanceof Team_Match_Row_View_Model ) {
         ?>
         <div class="match__button">
             <a href="<?php echo esc_url( $row_vm->update_link ); ?>" class="btn match__btn">
-                <svg width="16" height="16" class="icon ">
+                <svg width="16" height="16" class="icon " aria-label="<?php esc_attr_e( 'Update', 'racketmanager' ); ?>">
                     <use xlink:href="<?php echo esc_url( $row_vm->pencil_icon_url ); ?>"></use>
                 </svg>
             </a>

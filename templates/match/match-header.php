@@ -72,7 +72,7 @@ $header = $model;
                 <div class="match__change">
                     <div class="dropdown">
                         <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <svg width="16" height="16" class="icon ">
+                            <svg width="16" height="16" class="icon " aria-label="<?php esc_attr_e( 'Edit', 'racketmanager' ); ?>">
                                 <use xlink:href="<?php echo esc_url( $header->pencil_icon_url ); ?>"></use>
                             </svg>
                         </a>
@@ -207,7 +207,7 @@ $header = $model;
             ?>
             <div class="text-center mt-2">
                 <a href="/status" class="nav__link btn btn-outline statusLink" data-match-id="<?php echo esc_attr( (string) $header->id ); ?>" id="matchStatusButton" data-action="open-match-status-modal">
-                    <svg width="16" height="16" class="icon-plus nav-link__prefix">
+                    <svg width="16" height="16" class="icon-plus nav-link__prefix" aria-label="<?php esc_attr_e( 'Match status', 'racketmanager' ); ?>">
                         <use xlink:href="<?php echo esc_url( $header->plus_icon_url ); ?>"></use>
                     </svg>
                     <span class="nav-link__value"><?php esc_html_e( 'Match status', 'racketmanager' ); ?></span>

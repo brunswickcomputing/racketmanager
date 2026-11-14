@@ -39,7 +39,7 @@ if ( $team instanceof Team_Row_View_Model ) {
                 if ( ! empty( $row->calendar_url ) ) {
                     ?>
                     <a href="<?php echo esc_url( $row->calendar_url ); ?>" class="btn btn--link calendar-add" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Add Matches to Calendar', 'racketmanager' ); ?>" >
-                        <svg width="32" height="32" class="icon ">
+                        <svg width="32" height="32" class="icon " aria-label="<?php esc_attr_e( 'Calendar', 'racketmanager' ); ?>">
                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar-fill' ); ?>"></use>
                         </svg>
                         <span class="nav-link__value text-uppercase">
@@ -64,7 +64,7 @@ if ( $team instanceof Team_Row_View_Model ) {
             ?>
             <li class="list__item">
                 <span class="nav--link">
-                    <svg width="16" height="16" class="icon-team">
+                    <svg width="16" height="16" class="icon-team" aria-label="<?php esc_attr_e( 'Team', 'racketmanager' ); ?>">
                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/lta-icons-extra.svg#icon-team' ); ?>"></use>
                     </svg>
                     <span class="nav-link__value" id="captain-name<?php echo esc_attr( (string) $row->suffix ); ?>">
@@ -88,7 +88,7 @@ if ( $team instanceof Team_Row_View_Model ) {
                         ?>
                         <li class="list__item">
                             <a href="tel:<?php echo esc_html( $team_player['contactno'] ); ?>" class="nav--link" rel="nofollow">
-                                <svg width="16" height="16" class="">
+                                <svg width="16" height="16" class="" aria-label="<?php esc_attr_e( 'Phone', 'racketmanager' ); ?>">
                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#telephone-fill' ); ?>"></use>
                                 </svg>
                                 <span class="nav-link__value">
@@ -102,7 +102,7 @@ if ( $team instanceof Team_Row_View_Model ) {
                         ?>
                         <li class="list__item">
                             <a href="mailto:<?php echo esc_html( $team_player['email'] ); ?>" class="nav--link">
-                                <svg width="16" height="16" class="">
+                                <svg width="16" height="16" class="" aria-label="<?php esc_attr_e( 'Email', 'racketmanager' ); ?>">
                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#envelope-fill' ); ?>"></use>
                                 </svg>
                                 <span class="nav-link__value">
@@ -118,7 +118,7 @@ if ( $team instanceof Team_Row_View_Model ) {
                     ?>
                     <li class="list__item">
                         <a href="tel:<?php echo esc_html( $row->captain_contactno ); ?>" class="nav--link" rel="nofollow">
-                            <svg width="16" height="16" class="">
+                            <svg width="16" height="16" class="" aria-label="<?php esc_attr_e( 'Phone', 'racketmanager' ); ?>">
                                 <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#telephone-fill' ); ?>"></use>
                             </svg>
                             <span class="nav-link__value" id="captain-contact-no<?php echo esc_attr( (string) $row->suffix ); ?>">
@@ -132,7 +132,7 @@ if ( $team instanceof Team_Row_View_Model ) {
                     ?>
                     <li class="list__item">
                         <a href="mailto:<?php echo esc_html( $row->captain_contactemail ); ?>" class="nav--link">
-                            <svg width="16" height="16" class="">
+                            <svg width="16" height="16" class="" aria-label="<?php esc_attr_e( 'Email', 'racketmanager' ); ?>">
                                 <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#envelope-fill' ); ?>"></use>
                             </svg>
                             <span class="nav-link__value" id="captain-contact-email<?php echo esc_attr( (string) $row->suffix ); ?>">
@@ -150,7 +150,7 @@ if ( $team instanceof Team_Row_View_Model ) {
             ?>
             <li class="list__item">
                 <span class="nav--link">
-                    <svg width="16" height="16" class="icon-team">
+                    <svg width="16" height="16" class="icon-team" aria-label="<?php esc_attr_e( 'Match Day', 'racketmanager' ); ?>">
                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar-day-fill' ); ?>"></use>
                     </svg>
                     <span class="nav-link__value">
@@ -166,7 +166,7 @@ if ( $team instanceof Team_Row_View_Model ) {
             ?>
             <li class="list__item">
                 <span class="nav--link">
-                    <svg width="16" height="16" class="icon-team">
+                    <svg width="16" height="16" class="icon-team" aria-label="<?php esc_attr_e( 'Match Time', 'racketmanager' ); ?>">
                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#clock-fill' ); ?>"></use>
                     </svg>
                     <span class="nav-link__value">

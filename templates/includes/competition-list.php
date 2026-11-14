@@ -35,7 +35,7 @@ foreach ( $competition_list as $item ) {
                 if ( ! empty( $item->icon_path ) ) {
                     ?>
                     <div class="media__img">
-                        <svg width="16" height="16" class="media__img-element--icon">
+                        <svg width="16" height="16" class="media__img-element--icon" aria-label="<?php esc_attr_e( 'Competition', 'racketmanager' ); ?>">
                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . $item->icon_path ); ?>"></use>
                         </svg>
                     </div>
@@ -68,7 +68,7 @@ foreach ( $competition_list as $item ) {
                             <small class="media__subheading">
                                 <span class="nav--link">
                                     <span class="nav-link__value">
-                                        <svg width="16" height="16" class="icon " aria-label="competition-dates">
+                                        <svg width="16" height="16" class="icon " aria-label="<?php esc_attr_e( 'competition-dates', 'racketmanager' ); ?>">
                                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar-range' ); ?>"></use>
                                         </svg>
                                         <?php echo esc_html( $item->date_start_display ); ?> <?php esc_html_e( 'to', 'racketmanager' ); ?> <?php echo esc_html( $item->date_end_display ); ?>
@@ -85,7 +85,7 @@ foreach ( $competition_list as $item ) {
                     if ( $item->is_open && ! empty( $item->entry_url ) ) {
                         ?>
                         <a href="<?php echo esc_url( $item->entry_url ); ?>" class="btn btn-primary">
-                            <svg width="16" height="16" class="icon " aria-label="competition-entry">
+                            <svg width="16" height="16" class="icon " aria-label="<?php esc_attr_e( 'competition-entry', 'racketmanager' ); ?>">
                                 <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#pencil' ); ?>"></use>
                             </svg>
                             <span class="btn__text" aria-label="competition-entry"><?php esc_html_e( 'Enter', 'racketmanager' ); ?></span>

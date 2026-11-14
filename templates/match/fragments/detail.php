@@ -25,7 +25,7 @@ if ( $vm->is_standalone ) {
                             ?>
                             <button type="button" class="btn btn--link match-print" id="printMatchCard" data-match-id="<?php echo esc_attr( $vm->match_id ); ?>" data-print-match-card="<?php echo esc_attr( $vm->match_id ); ?>" data-bs-toggle="tooltip"
                                data-bs-placement="top" title="<?php esc_html_e( 'Print match card', 'racketmanager' ); ?>">
-                                <svg width="16" height="16" class="icon ">
+                                <svg width="16" height="16" class="icon " aria-label="<?php esc_attr_e( 'Print match card', 'racketmanager' ); ?>">
                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#printer-fill' ); ?>"></use>
                                 </svg>
                             </button>
@@ -37,7 +37,7 @@ if ( $vm->is_standalone ) {
                             ?>
                             <div class="match-mode" id="editMatchMode">
                                 <a class="btn btn--link" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Edit', 'racketmanager' ); ?>" href="<?php echo esc_url( $vm->edit_url ); ?>">
-                                    <svg width="16" height="16" class="icon ">
+                                    <svg width="16" height="16" class="icon " aria-label="<?php esc_attr_e( 'Edit', 'racketmanager' ); ?>">
                                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
                                     </svg>
                                 </a>
@@ -301,7 +301,7 @@ if ( $vm->is_standalone ) {
                                         if ( $vm->location['address'] ) {
                                             ?>
                                             <li class="list__item">
-                                                <svg width="16" height="16" class="icon icon-marker">
+                                                <svg width="16" height="16" class="icon icon-marker" aria-label="<?php esc_attr_e( 'Address', 'racketmanager' ); ?>">
                                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/lta-icons.svg#icon-marker' ); ?>"></use>
                                                 </svg>
                                                 <span class="nav-link__value">
@@ -315,7 +315,7 @@ if ( $vm->is_standalone ) {
                                         if ( $vm->location['match_secretary_name'] ) {
                                             ?>
                                             <li class="list__item">
-                                                <svg width="16" height="16" class="icon icon-captain">
+                                                <svg width="16" height="16" class="icon icon-captain" aria-label="<?php esc_attr_e( 'Match secretary', 'racketmanager' ); ?>">
                                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/lta-icons.svg#icon-captain' ); ?>"></use>
                                                 </svg>
                                                 <span class="">
@@ -331,7 +331,7 @@ if ( $vm->is_standalone ) {
                                                 ?>
                                                 <li class="list__item">
                                                     <a href="tel:<?php echo esc_attr( $vm->location['match_secretary_contactno'] ); ?>" class="nav--link" rel="nofollow">
-                                                        <svg width="16" height="16" class="icon ">
+                                                        <svg width="16" height="16" class="icon " aria-label="<?php esc_attr_e( 'Contact number', 'racketmanager' ); ?>">
                                                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#telephone-fill' ); ?>"></use>
                                                         </svg>
                                                         <span class="nav--link">
@@ -347,7 +347,7 @@ if ( $vm->is_standalone ) {
                                                 ?>
                                                 <li class="list__item">
                                                     <a href="mailto:<?php echo esc_attr( $vm->location['match_secretary_email'] ); ?>" class="nav--link">
-                                                        <svg width="16" height="16" class="icon ">
+                                                        <svg width="16" height="16" class="icon " aria-label="<?php esc_attr_e( 'Email', 'racketmanager' ); ?>">
                                                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#envelope-fill' ); ?>"></use>
                                                         </svg>
                                                         <span class="nav--link">
@@ -366,7 +366,7 @@ if ( $vm->is_standalone ) {
                                             ?>
                                             <li class="list__item">
                                                 <a href="<?php echo esc_url( $vm->location['website'] ); ?>" class="nav--link" target="_blank" rel="noopener nofollow">
-                                                    <svg width="16" height="16" class="icon icon-globe">
+                                                    <svg width="16" height="16" class="icon icon-globe" aria-label="<?php esc_attr_e( 'Website', 'racketmanager' ); ?>">
                                                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#globe' ); ?>"></use>
                                                     </svg>
                                                     <span class="">
@@ -410,7 +410,7 @@ if ( $vm->is_standalone ) {
                                             </h5>
                                             <ul class="list list--naked">
                                                 <li class="list__item">
-                                                    <svg width="16" height="16" class="icon-team">
+                                                    <svg width="16" height="16" class="icon-team" aria-label="<?php esc_attr_e( 'Team', 'racketmanager' ); ?>">
                                                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/lta-icons-extra.svg#icon-team' ); ?>"></use>
                                                     </svg>
                                                     <span class=""><?php echo esc_html( $team['team_name'] ); ?></span>
@@ -421,7 +421,7 @@ if ( $vm->is_standalone ) {
                                                         ?>
                                                         <li class="list__item">
                                                             <a href="tel:<?php echo esc_attr( $team['contactno'] ); ?>" class="nav--link" rel="nofollow">
-                                                                <svg width="16" height="16" class="icon ">
+                                                                <svg width="16" height="16" class="icon " aria-label="<?php esc_attr_e( 'Contact number', 'racketmanager' ); ?>">
                                                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#telephone-fill' ); ?>"></use>
                                                                 </svg>
                                                                 <span class="nav--link">
@@ -437,7 +437,7 @@ if ( $vm->is_standalone ) {
                                                         ?>
                                                         <li class="list__item">
                                                             <a href="mailto:<?php echo esc_attr( $team['contactemail'] ); ?>" class="nav--link">
-                                                                <svg width="16" height="16" class="icon ">
+                                                                <svg width="16" height="16" class="icon " aria-label="<?php esc_attr_e( 'Email', 'racketmanager' ); ?>">
                                                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#envelope-fill' ); ?>"></use>
                                                                 </svg>
                                                                 <span class="nav--link">

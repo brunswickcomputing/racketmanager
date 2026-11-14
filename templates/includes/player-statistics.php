@@ -73,7 +73,7 @@ $walkover       = ! empty( $statistics->walkover ) ? ( $statistics->walkover ) :
                         <?php require RACKETMANAGER_PATH . 'templates/includes/statistics.php'; ?>
                         <div class="col-1">
                             <div class="">
-                                <svg width="16" height="16" class="icon-stats">
+                                <svg width="16" height="16" class="icon-stats" aria-label="<?php esc_attr_e( 'Statistics', 'racketmanager' ); ?>">
                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#caret-up-fill' ); ?>"></use>
                                 </svg>
                             </div>

@@ -13,12 +13,15 @@
 
 namespace Racketmanager;
 
+use BackedEnum;
+use Racketmanager\Presentation\View_Models\Tournament_Match_Card_View_Model;
+
 /** @var object $object */
 /** @var object $team_details */
-$team_details       = $team_details ?? ( $vars['team_details'] ?? ( $vm->team_details ?? null ) );
-$object             = $object ?? ( $vars['object'] ?? ( $vm->object ?? ( $vars['league'] ?? ( $vm->league ?? null ) ) ) );
-$team               = $team ?? ( $team_details?->team ?? ( $vars['team'] ?? ( $vm->team ?? ( $object->team ?? null ) ) ) );
-$club               = $club ?? ( $team_details?->club ?? ( $vars['club'] ?? ( $vm->club ?? ( $object->club ?? null ) ) ) );
+$team_details = $team_details ?? ( $vars['team_details'] ?? ( $vm->team_details ?? null ) );
+$object       = $object ?? ( $vars['object'] ?? ( $vm->object ?? ( $vars['league'] ?? ( $vm->league ?? null ) ) ) );
+$team         = $team ?? ( $team_details?->team ?? ( $vars['team'] ?? ( $vm->team ?? ( $object->team ?? null ) ) ) );
+$club         = $club ?? ( $team_details?->club ?? ( $vars['club'] ?? ( $vm->club ?? ( $object->club ?? null ) ) ) );
 if ( ! $team || ! $object ) {
     return;
 }
@@ -35,7 +38,7 @@ if ( isset( $object->competition ) ) {
     $object_event       = $object->event;
     $object_type        = 'league';
 }
-$competition_type = $object_competition->type instanceof \BackedEnum ? $object_competition->type->value : (string) ( $object_competition->type ?? '' );
+$competition_type = $object_competition->type instanceof BackedEnum ? $object_competition->type->value : (string) ( $object_competition->type ?? '' );
 $show_wtn         = $show_wtn ?? ( $vm->show_wtn ?? ( $vars['show_wtn'] ?? false ) );
 $format           = $format ?? ( $vm->format ?? ( $vars['format'] ?? null ) );
 $help_text        = $help_text ?? ( $vm->help_text ?? ( $vars['help_text'] ?? '' ) );
@@ -50,7 +53,7 @@ $match_time_val   = $match_time_val ?? ( $vm->match_time_formatted ?? ( $vars['m
                     <span class="profile-icon">
                         <span class="profile-icon__abbr">
                             <?php
-                            $words    = array_filter( explode( ' ', (string) ( $team->get_name() ?? '' ) ) );
+                            $words    = array_filter( explode( ' ', $team->get_name() ?? '' ) );
                             $initials = '';
                             foreach ( $words as $w ) {
                                 if ( '' !== $w ) {
@@ -85,7 +88,7 @@ $match_time_val   = $match_time_val ?? ( $vm->match_time_formatted ?? ( $vars['m
                         <h3 class="module__title"><?php esc_html_e( 'Standings', 'racketmanager' ); ?></h3>
                         <div class="module__aside">
                             <button class="btn btn--link tabDataLink" data-type="league" data-type-id="<?php echo esc_attr( $object->id ); ?>" data-season="<?php echo esc_attr( $object->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $standings_link ); ?>" data-link-id="" data-link-type="standings" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'View standings', 'racketmanager' ); ?>">
-                                <svg width="32" height="32" class="icon ">
+                                <svg width="32" height="32" class="icon " aria-label="<?php esc_attr_e( 'Standings', 'racketmanager' ); ?>">
                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#table' ); ?>"></use>
                                 </svg>
                             </button>
@@ -133,7 +136,7 @@ $match_time_val   = $match_time_val ?? ( $vm->match_time_formatted ?? ( $vars['m
                         <h3 class="module__title"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></h3>
                         <div class="module__aside">
                             <a href="<?php echo esc_url( $calendar_url ); ?>" class="btn btn--link calendar-add" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Add Matches to Calendar', 'racketmanager' ); ?>" >
-                                <svg width="32" height="32" class="icon ">
+                                <svg width="32" height="32" class="icon " aria-label="<?php esc_attr_e( 'Calendar', 'racketmanager' ); ?>">
                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar-fill' ); ?>"></use>
                                 </svg>
                             </a>
@@ -146,7 +149,7 @@ $match_time_val   = $match_time_val ?? ( $vm->match_time_formatted ?? ( $vars['m
                                 $matches = $object->team->matches;
                                 if ( $object_competition->is_player_entry ) {
                                     foreach ( $matches as $card ) {
-                                        if ( $card instanceof \Racketmanager\Presentation\View_Models\Tournament_Match_Card_View_Model ) {
+                                        if ( $card instanceof Tournament_Match_Card_View_Model ) {
                                             require RACKETMANAGER_PATH . 'templates/tournament/match.php';
                                         } else {
                                             require RACKETMANAGER_PATH . 'templates/tournament/match-unavailable.php';
@@ -181,7 +184,7 @@ $match_time_val   = $match_time_val ?? ( $vm->match_time_formatted ?? ( $vars['m
                         ?>
                         <div class="module__aside">
                             <button class="btn btn--link" id="teamEditLink" data-action="open-team-edit-modal" data-team-id="<?php echo esc_attr( $team->get_id() ); ?>" data-event-id="<?php echo esc_attr( $object_event->id ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Edit team', 'racketmanager' ); ?>">
-                                <svg width="16" height="16" class="icon ">
+                                <svg width="16" height="16" class="icon " aria-label="<?php esc_attr_e( 'Edit', 'racketmanager' ); ?>">
                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
                                 </svg>
                             </button>
@@ -215,7 +218,7 @@ $match_time_val   = $match_time_val ?? ( $vm->match_time_formatted ?? ( $vars['m
                                             ?>
                                             <li class="list__item">
                                                 <a href="tel:<?php echo esc_html( $team_player->contactno ); ?>" class="nav--link" rel="nofollow">
-                                                    <svg width="16" height="16" class="">
+                                                    <svg width="16" height="16" class="" aria-label="<?php esc_attr_e( 'Phone', 'racketmanager' ); ?>">
                                                         <use xlink:href="<?php echo esc_url( $telephone ); ?>"></use>
                                                     </svg>
                                                     <span class="nav--link">
@@ -231,7 +234,7 @@ $match_time_val   = $match_time_val ?? ( $vm->match_time_formatted ?? ( $vars['m
                                             ?>
                                             <li class="list__item">
                                                 <a href="mailto:<?php echo esc_html( $team_player->email ); ?>" class="nav--link">
-                                                    <svg width="16" height="16" class="">
+                                                    <svg width="16" height="16" class="" aria-label="<?php esc_attr_e( 'Email', 'racketmanager' ); ?>">
                                                         <use xlink:href="<?php echo esc_url( $envelope ); ?>"></use>
                                                     </svg>
                                                     <span class="nav--link">
@@ -249,7 +252,7 @@ $match_time_val   = $match_time_val ?? ( $vm->match_time_formatted ?? ( $vars['m
                                         ?>
                                         <li class="list__item">
                                             <a href="tel:<?php echo esc_html( $object->team->info->contactno ); ?>" class="nav--link" rel="nofollow">
-                                                <svg width="16" height="16" class="">
+                                                <svg width="16" height="16" class="" aria-label="<?php esc_attr_e( 'Phone', 'racketmanager' ); ?>">
                                                     <use xlink:href="<?php echo esc_url( $telephone ); ?>"></use>
                                                 </svg>
                                                 <span class="nav--link">
@@ -267,7 +270,7 @@ $match_time_val   = $match_time_val ?? ( $vm->match_time_formatted ?? ( $vars['m
                                         ?>
                                         <li class="list__item">
                                             <a href="mailto:<?php echo esc_html( $object->team->info->contactemail ); ?>" class="nav--link">
-                                                <svg width="16" height="16" class="">
+                                                <svg width="16" height="16" class="" aria-label="<?php esc_attr_e( 'Email', 'racketmanager' ); ?>">
                                                     <use xlink:href="<?php echo esc_url( $envelope ); ?>"></use>
                                                 </svg>
                                                 <span class="nav--link">
@@ -287,7 +290,7 @@ $match_time_val   = $match_time_val ?? ( $vm->match_time_formatted ?? ( $vars['m
                                 ?>
                                 <li class="list__item">
                                     <span class="nav--link">
-                                        <svg width="16" height="16" class="icon-team">
+                                        <svg width="16" height="16" class="icon-team" aria-label="<?php esc_attr_e( 'Match Day', 'racketmanager' ); ?>">
                                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar-day-fill' ); ?>"></use>
                                         </svg>
                                         <span class="nav-link__value" id="team-match-day-<?php echo esc_attr( $object_event->id ); ?>-<?php echo esc_attr( $team->get_id() ); ?>">
@@ -297,7 +300,7 @@ $match_time_val   = $match_time_val ?? ( $vm->match_time_formatted ?? ( $vars['m
                                 </li>
                                 <li class="list__item">
                                     <span class="nav--link">
-                                        <svg width="16" height="16" class="icon-team">
+                                        <svg width="16" height="16" class="icon-team" aria-label="<?php esc_attr_e( 'Match Time', 'racketmanager' ); ?>">
                                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#clock-fill' ); ?>"></use>
                                         </svg>
                                         <span class="nav-link__value" id="team-match-time-<?php echo esc_attr( $object_event->id ); ?>-<?php echo esc_attr( $team->get_id() ); ?>">
@@ -331,7 +334,7 @@ $match_time_val   = $match_time_val ?? ( $vm->match_time_formatted ?? ( $vars['m
                             <ul class="list list--naked">
                                 <li class="list__item">
                                     <span class="nav--link">
-                                        <svg width="16" height="16" class="icon-marker">
+                                        <svg width="16" height="16" class="icon-marker" aria-label="<?php esc_attr_e( 'Address', 'racketmanager' ); ?>">
                                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/lta-icons.svg#icon-marker' ); ?>"></use>
                                         </svg>
                                         <span class="nav-link__value">
@@ -342,7 +345,7 @@ $match_time_val   = $match_time_val ?? ( $vm->match_time_formatted ?? ( $vars['m
                                 <?php if ( ! empty( $team_details->match_secretary->display_name ) ) : ?>
                                 <li class="list__item">
                                     <span class="nav--link">
-                                        <svg width="16" height="16" class="icon-captain">
+                                        <svg width="16" height="16" class="icon-captain" aria-label="<?php esc_attr_e( 'Match Secretary', 'racketmanager' ); ?>">
                                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/lta-icons.svg#icon-captain' ); ?>"></use>
                                         </svg>
                                         <span class="nav-link__value">
@@ -357,7 +360,7 @@ $match_time_val   = $match_time_val ?? ( $vm->match_time_formatted ?? ( $vars['m
                                         ?>
                                         <li class="list__item">
                                             <a href="tel:<?php echo esc_html( $team_details->match_secretary->contactno ); ?>" class="nav--link" rel="nofollow">
-                                                <svg width="16" height="16" class="">
+                                                <svg width="16" height="16" class="" aria-label="<?php esc_attr_e( 'Phone', 'racketmanager' ); ?>">
                                                     <use xlink:href="<?php echo esc_url( $telephone ); ?>"></use>
                                                 </svg>
                                                 <span class="nav--link">
@@ -375,7 +378,7 @@ $match_time_val   = $match_time_val ?? ( $vm->match_time_formatted ?? ( $vars['m
                                         ?>
                                         <li class="list__item">
                                             <a href="mailto:<?php echo esc_html( $team_details->match_secretary->email ); ?>" class="nav--link">
-                                                <svg width="16" height="16" class="">
+                                                <svg width="16" height="16" class="" aria-label="<?php esc_attr_e( 'Email', 'racketmanager' ); ?>">
                                                     <use xlink:href="<?php echo esc_url( $envelope ); ?>"></use>
                                                 </svg>
                                                 <span class="nav--link">
@@ -394,7 +397,7 @@ $match_time_val   = $match_time_val ?? ( $vm->match_time_formatted ?? ( $vars['m
                                     ?>
                                     <li class="list__item">
                                         <a href="<?php echo esc_html( $team_details->club->website ); ?>" class="nav--link" target="_blank" rel="noopener nofollow">
-                                            <svg width="16" height="16" class="icon-globe">
+                                            <svg width="16" height="16" class="icon-globe" aria-label="<?php esc_attr_e( 'Website', 'racketmanager' ); ?>">
                                                 <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#globe' ); ?>"></use>
                                             </svg>
                                             <span class="nav--link">
@@ -422,7 +425,7 @@ $match_time_val   = $match_time_val ?? ( $vm->match_time_formatted ?? ( $vars['m
                                     <?php
                                     foreach ( $object->team->players as $player ) {
                                         $selected_player = false;
-                                        $player_id = method_exists( $player, 'get_id' ) ? $player->get_id() : ( $player->id ?? null );
+                                        $player_id       = method_exists( $player, 'get_id' ) ? $player->get_id() : ( $player->id ?? null );
                                         if ( intval( $player_id ) === get_current_user_id() ) {
                                             $selected_player = true;
                                         }

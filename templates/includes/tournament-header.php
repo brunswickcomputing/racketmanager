@@ -25,7 +25,7 @@ if ( ! $header_vm instanceof Tournament_Header_View_Model ) {
         <div class="media tournament-head">
             <div class="media__wrapper">
                 <div class="media__img">
-                    <svg width="16" height="16" class="media__img-element--icon">
+                    <svg width="16" height="16" class="media__img-element--icon" aria-label="<?php esc_attr_e( 'Tournament', 'racketmanager' ); ?>">
                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/lta-icons.svg#icon-bracket' ); ?>"></use>
                     </svg>
                 </div>
@@ -45,7 +45,7 @@ if ( ! $header_vm instanceof Tournament_Header_View_Model ) {
                             <small class="media__subheading">
                                 <span class="nav--link">
                                     <span class="nav-link__value">
-                                        <svg width="32" height="32" class="icon ">
+                                        <svg width="32" height="32" class="icon " aria-label="<?php esc_attr_e( 'Date range', 'racketmanager' ); ?>">
                                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar-range-fill' ); ?>"></use>
                                         </svg>
                                         <?php echo esc_html( $header_vm->date_start_display ); ?> <?php esc_html_e( 'to', 'racketmanager' ); ?> <?php echo esc_html( $header_vm->date_end_display ); ?>
@@ -58,7 +58,7 @@ if ( ! $header_vm instanceof Tournament_Header_View_Model ) {
                 <div class="media__aside">
                     <?php if ( $header_vm->show_entry_button && ! empty( $header_vm->entry_url ) ) : ?>
                         <a href="<?php echo esc_url( $header_vm->entry_url ); ?>" class="btn btn-primary reverse">
-                            <svg width="16" height="16" class="icon ">
+                            <svg width="16" height="16" class="icon " aria-label="<?php esc_attr_e( 'Enter', 'racketmanager' ); ?>">
                                 <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#pencil' ); ?>"></use>
                             </svg>
                             <span><?php esc_html_e( 'Enter', 'racketmanager' ); ?></span>

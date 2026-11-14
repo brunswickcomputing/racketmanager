@@ -27,7 +27,7 @@ $favourite_rows = $favourite_rows ?? ( $vars['favourite_rows'] ?? ( $vm->favouri
                                 <div class="search-box">
                                     <div class="input-group">
                                         <span class="input-group-text">
-                                            <svg width="16" height="16" class="">
+                                            <svg width="16" height="16" class="" aria-label="<?php esc_attr_e( 'Search', 'racketmanager' ); ?>">
                                                 <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#search' ); ?>"></use>
                                             </svg>
                                         </span>

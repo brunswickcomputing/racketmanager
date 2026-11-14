@@ -16,7 +16,8 @@ use Racketmanager\Presentation\View_Models\Event_Header_View_Model;
 /** @var array|null $seasons */
 /** @var int|null $header_level */
 /** @var string|null $standings_template */
-
+/** @var Event_Header_View_Model|null $header_vm */
+/** @var Event_Header_View_Model $vm */
 $header_vm = $event_header ?? $vm->event_header ?? ( $vars['event_header'] ?? ( $vm instanceof Event_Header_View_Model ? $vm : null ) );
 if ( ! $header_vm instanceof Event_Header_View_Model ) {
     return;
@@ -27,7 +28,7 @@ if ( ! $header_vm instanceof Event_Header_View_Model ) {
         <div class="media__wrapper">
             <?php if ( ! empty( $header_vm->icon_path ) ) : ?>
                 <div class="media__img">
-                    <svg width="16" height="16" class="media__img-element--icon">
+                    <svg width="16" height="16" class="media__img-element--icon" aria-label="<?php esc_attr_e( 'Event', 'racketmanager' ); ?>">
                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . $header_vm->icon_path ); ?>"></use>
                     </svg>
                 </div>
@@ -50,7 +51,7 @@ if ( ! $header_vm instanceof Event_Header_View_Model ) {
                         <small class="media__subheading">
                             <span class="nav--link">
                                 <span class="nav-link__value">
-                                    <svg width="32" height="32" class="icon ">
+                                    <svg width="32" height="32" class="icon " aria-label="<?php esc_attr_e( 'Date', 'racketmanager' ); ?>">
                                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar-range-fill' ); ?>"></use>
                                     </svg>
                                     <?php echo esc_html( $header_vm->date_start_display ); ?> <?php esc_html_e( 'to', 'racketmanager' ); ?> <?php echo esc_html( $header_vm->date_end_display ); ?>
@@ -70,7 +71,7 @@ if ( ! $header_vm instanceof Event_Header_View_Model ) {
                                 <div class="form-floating">
                                     <select class="form-select" size="1" name="season" id="season">
                                         <?php
-                                        // Only iterate arrays and ensure each season item is an array with a name
+                                        // Only iterate arrays and ensure each season item is an array with a name.
                                         foreach ( array_reverse( $header_vm->seasons ) as $season ) {
                                             if ( ! is_array( $season ) ) {
                                                 continue;

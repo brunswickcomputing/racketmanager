@@ -22,7 +22,7 @@ $match             = $vars['match'] ?? $vm->match ?? $match ?? null;
 if ( ! $match ) {
     return;
 }
-$user_can_update   = ! empty( $is_update_allowed->user_can_update );
+$user_can_update = ! empty( $is_update_allowed->user_can_update );
 ?>
     <div id="match-header" class="team-match-header module module--dark module--card">
         <?php echo match_header( $match->id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
@@ -45,7 +45,7 @@ $user_can_update   = ! empty( $is_update_allowed->user_can_update );
                         if ( ! $match->winner_id ) {
                             ?>
                             <a role="button" class="btn btn--link match-print" id="printMatchCard" data-match-id="<?php echo esc_attr( $match->id ); ?>" data-print-match-card="<?php echo esc_attr( $match->id ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Print match card', 'racketmanager' ); ?>">
-                                <svg width="16" height="16" class="icon ">
+                                <svg width="16" height="16" class="icon " aria-label="<?php esc_attr_e( 'Print match card', 'racketmanager' ); ?>">
                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#printer-fill' ); ?>"></use>
                                 </svg>
                             </a>
@@ -57,7 +57,7 @@ $user_can_update   = ! empty( $is_update_allowed->user_can_update );
                             ?>
                             <div class="match-mode" id="editMatchMode">
                                 <a role="button" class="btn btn--link" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Edit', 'racketmanager' ); ?>" href="<?php echo esc_url( $target_url ); ?>">
-                                    <svg width="16" height="16" class="icon ">
+                                    <svg width="16" height="16" class="icon " aria-label="<?php esc_attr_e( 'Edit', 'racketmanager' ); ?>">
                                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
                                     </svg>
                                 </a>
@@ -97,7 +97,7 @@ $user_can_update   = ! empty( $is_update_allowed->user_can_update );
                                 </h5>
                                 <ul class="list list--naked">
                                     <li class="list__item">
-                                        <svg width="16" height="16" class="icon icon-marker">
+                                        <svg width="16" height="16" class="icon icon-marker" aria-label="<?php esc_attr_e( 'Location', 'racketmanager' ); ?>">
                                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/lta-icons.svg#icon-marker' ); ?>"></use>
                                         </svg>
                                         <span class="nav-link__value">
@@ -105,7 +105,7 @@ $user_can_update   = ! empty( $is_update_allowed->user_can_update );
                                         </span>
                                     </li>
                                     <li class="list__item">
-                                        <svg width="16" height="16" class="icon icon-captain">
+                                        <svg width="16" height="16" class="icon icon-captain" aria-label="<?php esc_attr_e( 'Captain', 'racketmanager' ); ?>">
                                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/lta-icons.svg#icon-captain' ); ?>"></use>
                                         </svg>
                                         <span class="">
@@ -118,7 +118,7 @@ $user_can_update   = ! empty( $is_update_allowed->user_can_update );
                                             ?>
                                             <li class="list__item">
                                                 <a href="tel:<?php echo esc_html( $match->teams[ $opponent ]->club->match_secretary->contactno ); ?>" class="nav--link" rel="nofollow">
-                                                    <svg width="16" height="16" class="icon ">
+                                                    <svg width="16" height="16" class="icon " aria-label="<?php esc_attr_e( 'Contact number', 'racketmanager' ); ?>">
                                                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#telephone-fill' ); ?>"></use>
                                                     </svg>
                                                     <span class="nav--link">
@@ -136,7 +136,7 @@ $user_can_update   = ! empty( $is_update_allowed->user_can_update );
                                             ?>
                                             <li class="list__item">
                                                 <a href="mailto:<?php echo esc_html( $match->teams[ $opponent ]->club->match_secretary->email ); ?>" class="nav--link">
-                                                    <svg width="16" height="16" class="icon ">
+                                                    <svg width="16" height="16" class="icon " aria-label="<?php esc_attr_e( 'Email', 'racketmanager' ); ?>">
                                                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#envelope-fill' ); ?>"></use>
                                                     </svg>
                                                     <span class="nav--link">
@@ -155,7 +155,7 @@ $user_can_update   = ! empty( $is_update_allowed->user_can_update );
                                         ?>
                                         <li class="list__item">
                                             <a href="<?php echo esc_html( $match->teams[ $opponent ]->club->website ); ?>" class="nav--link" target="_blank" rel="noopener nofollow">
-                                                <svg width="16" height="16" class="icon icon-globe">
+                                                <svg width="16" height="16" class="icon icon-globe" aria-label="<?php esc_attr_e( 'Website', 'racketmanager' ); ?>">
                                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#globe' ); ?>"></use>
                                                 </svg>
                                                 <span class="">
@@ -192,7 +192,7 @@ $user_can_update   = ! empty( $is_update_allowed->user_can_update );
                                     </h5>
                                     <ul class="list list--naked">
                                         <li class="list__item">
-                                            <svg width="16" height="16" class="icon-team">
+                                            <svg width="16" height="16" class="icon-team" aria-label="<?php esc_attr_e( 'Team', 'racketmanager' ); ?>">
                                                 <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/lta-icons-extra.svg#icon-team' ); ?>"></use>
                                             </svg>
                                             <span class="">
@@ -205,7 +205,7 @@ $user_can_update   = ! empty( $is_update_allowed->user_can_update );
                                                 ?>
                                                 <li class="list__item">
                                                     <a href="tel:<?php echo esc_html( $match->teams[ $opponent ]->contactno ); ?>" class="nav--link" rel="nofollow">
-                                                        <svg width="16" height="16" class="icon ">
+                                                        <svg width="16" height="16" class="icon " aria-label="<?php esc_attr_e( 'Contact number', 'racketmanager' ); ?>">
                                                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#telephone-fill' ); ?>"></use>
                                                         </svg>
                                                         <span class="nav--link">
@@ -223,7 +223,7 @@ $user_can_update   = ! empty( $is_update_allowed->user_can_update );
                                                 ?>
                                                 <li class="list__item">
                                                     <a href="mailto:<?php echo esc_html( $match->teams[ $opponent ]->contactemail ); ?>" class="nav--link">
-                                                        <svg width="16" height="16" class="icon ">
+                                                        <svg width="16" height="16" class="icon " aria-label="<?php esc_attr_e( 'Email', 'racketmanager' ); ?>">
                                                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#envelope-fill' ); ?>"></use>
                                                         </svg>
                                                         <span class="nav--link">

@@ -28,7 +28,7 @@ if ( ! empty( $favourite_controls->can_toggle ) ) {
             <a href="" >
                 <i class="fav-icon-svg <?php echo esc_html( $visible ); ?> racketmanager-svg-icon <?php echo esc_attr( $favourite_state->icon_class ); ?>
                 ">
-                <svg width="12" height="12" class="">
+                <svg width="12" height="12" class="" aria-label="<?php esc_attr_e( 'Favourite', 'racketmanager' ); ?>">
                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#suit-heart-fill' ); ?>"></use>
                 </svg>
                 </i>

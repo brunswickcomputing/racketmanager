@@ -152,10 +152,33 @@ class Ajax_Tournament extends Ajax {
                         }
                     }
                 }
+                if ( $tournament && ( $tournament->is_closed || $tournament->is_withdrawal ) && empty( $events ) ) {
+                    foreach ( $allowed_event_ids as $allowed_id ) {
+                        $check_event = get_event( $allowed_id );
+                        if ( $check_event ) {
+                            $existing_teams = $check_event->get_teams(
+                                array(
+                                    'player' => $player_id,
+                                    'season' => $tournament->season,
+                                )
+                            );
+                            if ( ! empty( $existing_teams ) ) {
+                                $events[ $allowed_id ] = (string) $allowed_id;
+                                if ( empty( $partners[ $allowed_id ] ) && ! empty( $existing_teams[0]->player_id ) ) {
+                                    foreach ( $existing_teams[0]->player_id as $team_player_id ) {
+                                        if ( (int) $team_player_id !== (int) $player_id ) {
+                                            $partners[ $allowed_id ] = $team_player_id;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 $validator         = $validator->events_entry( $events, $tournament ? $tournament->num_entries : null, $allowed_event_ids );
                 $events            = $validator->validated_events;
                 $tournament_events = array_map( 'strval', $allowed_event_ids );
-                if ( $tournament && $tournament->is_closed && ! current_user_can( 'manage_racketmanager' ) ) {
+                if ( $tournament && ( $tournament->is_closed || $tournament->is_withdrawal ) && ! current_user_can( 'manage_racketmanager' ) ) {
                     foreach ( $events as $event_id ) {
                         $event = get_event( $event_id );
                         if ( $event ) {

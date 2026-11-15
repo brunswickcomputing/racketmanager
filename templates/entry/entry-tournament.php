@@ -44,6 +44,11 @@ if ( get_current_user_id() !== intval( $player->id ) && ! current_user_can( 'man
         if ( $entered ) {
             $confirm_allowed = true;
         }
+    } elseif ( $tournament->is_withdrawal ) {
+        $withdrawal_allowed = false;
+        if ( $entered ) {
+            $confirm_allowed = true;
+        }
     }
 } else {
     $changes_allowed    = true;
@@ -93,6 +98,14 @@ if ( $entered ) {
                                 $alert_msg[] = __( 'You can still confirm your entry or withdraw from events.', 'racketmanager' );
                             } else {
                                 $alert_msg[] = __( 'You can still withdraw from events.', 'racketmanager' );
+                            }
+                        } elseif ( $tournament->is_withdrawal ) {
+                            $alert_class = 'warning';
+                            $alert_msg[] = __( 'Tournament entries and withdrawals are now closed.', 'racketmanager' );
+                            if ( $confirm_allowed && $entry_is_pending ) {
+                                $alert_msg[] = __( 'You can still confirm your entry and pay any outstanding fees.', 'racketmanager' );
+                            } elseif ( $confirm_allowed ) {
+                                $alert_msg[] = __( 'You can still pay any outstanding fees.', 'racketmanager' );
                             }
                         } elseif ( ! $tournament->is_open ) {
                             if ( $entered ) {
@@ -343,6 +356,9 @@ if ( $entered ) {
                                                 <div class="col-8 col-lg-6 tournament-entry--row">
                                                     <div class="form-check form-check-lg">
                                                         <input type="hidden" name="eventFee[<?php echo esc_attr( $event->id ); ?>]" id="eventFee-<?php echo esc_attr( $event->id ); ?>" value="<?php echo esc_attr( $tournament->fees->event ); ?>" />
+                                                        <?php if ( $entered && $disabled ) { ?>
+                                                            <input type="hidden" name="event[<?php echo esc_attr( $event->id ); ?>]" value="<?php echo esc_attr( $event->id ); ?>" />
+                                                        <?php } ?>
                                                         <input class="form-check-input form-check--event hasModal" id="event-<?php echo esc_html( $event->id ); ?>" name="event[<?php echo esc_html( $event->id ); ?>]" type="checkbox" value=<?php echo esc_html( $event->id ); ?> aria-controls="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo $entered ? 'checked' : ''; ?> <?php echo $disabled ? 'disabled' : null; ?> >
                                                         <label class="form-check-label" for="event-<?php echo esc_html( $event->id ); ?>"><?php echo esc_html( $event->name ); ?></label>
                                                         <div id="event-<?php echo esc_html( $event->id ); ?>Feedback" class="invalid-feedback"></div>

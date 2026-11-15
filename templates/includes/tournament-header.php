@@ -47,15 +47,30 @@ global $racketmanager;
                 </div>
                 <div class="media__aside">
                     <?php
-                    if ( $tournament->is_open && ! empty( $entry_option ) ) {
-                        ?>
-                        <a href="/tournament/entry-form/<?php echo esc_attr( seo_url( $tournament->name ) ); ?>/" class="btn btn-primary reverse">
-                            <i class="racketmanager-svg-icon">
-                                <?php racketmanager_the_svg( 'icon-pencil' ); ?>
-                            </i>
-                            <span><?php esc_html_e( 'Enter', 'racketmanager' ); ?></span>
-                        </a>
-                        <?php
+                    if ( ! empty( $entry_option ) ) {
+                        if ( $tournament->is_open ) {
+                            ?>
+                            <a href="/tournament/entry-form/<?php echo esc_attr( seo_url( $tournament->name ) ); ?>/" class="btn btn-primary reverse">
+                                <i class="racketmanager-svg-icon">
+                                    <?php racketmanager_the_svg( 'icon-pencil' ); ?>
+                                </i>
+                                <span><?php esc_html_e( 'Enter', 'racketmanager' ); ?></span>
+                            </a>
+                            <?php
+                        } elseif ( ( $tournament->is_closed || $tournament->is_withdrawal ) && is_user_logged_in() ) {
+                            $user_id          = get_current_user_id();
+                            $tournament_entry = get_tournament_entry( $tournament->id . '_' . $user_id, 'key' );
+                            if ( $tournament_entry && 3 !== (int) $tournament_entry->status ) {
+                                ?>
+                                <a href="/tournament/entry-form/<?php echo esc_attr( seo_url( $tournament->name ) ); ?>/" class="btn btn-primary reverse">
+                                    <i class="racketmanager-svg-icon">
+                                        <?php racketmanager_the_svg( 'icon-pencil' ); ?>
+                                    </i>
+                                    <span><?php esc_html_e( 'Confirm entry', 'racketmanager' ); ?></span>
+                                </a>
+                                <?php
+                            }
+                        }
                     }
                     ?>
                 </div>

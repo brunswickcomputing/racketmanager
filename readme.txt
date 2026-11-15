@@ -47,6 +47,9 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 9.7.12 =
+UPDATE: allow tournament entries to be confirmed after withdrawal close
+
 = 9.7.11 =
 UPDATE: add tournament payment receipt emails
 

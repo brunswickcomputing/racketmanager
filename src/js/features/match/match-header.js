@@ -17,6 +17,13 @@ export function matchHeader(matchId, editMode = false) {
   const notifyField = MATCH_HEADER_CONTAINER;
   jQuery(notifyField).val('');
 
+  // Safeguard: preserve modals if nested inside #match-header before emptying
+  document.querySelectorAll('#matchModal, #scoreModal').forEach((modal) => {
+    if (modal.parentElement && modal.parentElement !== document.body) {
+      document.body.appendChild(modal);
+    }
+  });
+
   jQuery.ajax({
     url: getAjaxUrl(),
     type: 'POST',

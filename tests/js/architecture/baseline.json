@@ -32,7 +32,7 @@
         "src/js/features/match/rubber-status-modal.js|jQuery": 23,
         "src/js/features/match/rubber-status-ui.js|jQuery": 8,
         "src/js/features/match/set-calculator.js|jQuery": 32,
-        "src/js/features/match/set-match-date.js|jQuery": 13,
+        "src/js/features/match/set-match-date.js|jQuery": 12,
         "src/js/features/match/set-match-rubber-status.js|jQuery": 1,
         "src/js/features/match/set-match-status.js|jQuery": 14,
         "src/js/features/match/switch-home-away.js|jQuery": 13,

@@ -23,7 +23,7 @@ export function setMatchDate(link, isTournament = false) {
 
   const formId = `#${link.form.id}`;
   let $form = jQuery(formId).serialize();
-  $form += '&action=racketmanager_set_match_date';
+  $form += '&action=racketmanager_set_fixture_date';
 
   // Reset alerts
   const alert1 = isTournament ? ALERT_MATCH : '#matchOptionsAlert';
@@ -40,19 +40,32 @@ export function setMatchDate(link, isTournament = false) {
     success: function (response) {
       const data = response?.data || {};
       const message = data.msg;
-      const modalId = `#${data.modal}`;
       const matchId = data.match_id;
       const matchDate = data.schedule_date;
 
+      jQuery(ALERT_DATE).show().addClass('alert--success');
+      const alertDateText = document.querySelector(ALERT_DATE_TEXT);
+      if (alertDateText) {
+        alertDateText.innerHTML = message;
+      }
       jQuery(alert1).show().addClass('alert--success');
       jQuery(alert1Text).html(message);
-      try { jQuery(modalId).modal('hide'); } catch (e) { console.error(e); }
 
       if (matchDate) {
         if (isTournament) {
-          jQuery('#match-tournament-date-header').html(matchDate);
+          const tournamentDateHeader = document.getElementById('match-tournament-date-header');
+          if (tournamentDateHeader) {
+            tournamentDateHeader.innerHTML = matchDate;
+          }
         } else {
-          matchHeader(matchId);
+          const modalEl = link?.closest('.modal') || (data.modal ? document.getElementById(data.modal) : null) || document.getElementById('matchModal');
+          if (modalEl) {
+            jQuery(modalEl).off('hidden.bs.modal.setMatchDate').one('hidden.bs.modal.setMatchDate', function () {
+              matchHeader(matchId);
+            });
+          } else {
+            matchHeader(matchId);
+          }
         }
       }
     },
@@ -68,7 +81,7 @@ export function initializeSetMatchDate() {
     .off('click.racketmanager.setMatchDate', '[data-action="set-match-date"]')
     .on('click.racketmanager.setMatchDate', '[data-action="set-match-date"]', function (e) {
       if (e && typeof e.preventDefault === 'function') e.preventDefault();
-      const isTournament = this.getAttribute('data-is-tournament') === 'true' || jQuery(this).data('isTournament') === true;
+      const isTournament = this.getAttribute('data-is-tournament') === 'true' || this.dataset?.isTournament === 'true';
       return setMatchDate(this, isTournament);
     });
 }

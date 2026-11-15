@@ -4,8 +4,10 @@ declare( strict_types=1 );
 namespace Racketmanager\Infrastructure\Wordpress\Ajax;
 
 use Exception;
+use LogicException;
 use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Handler;
 use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Query;
+use Racketmanager\Exceptions\Fixture_Update_Exception;
 use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Date_Update_Request;
 use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Reset_Request;
 use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Result_Update_Request;
@@ -31,15 +33,27 @@ use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Services\Validator\Validator_Fixture;
 use Racketmanager\Util\Util_Messages;
-use function Racketmanager\match_header;
 use function Racketmanager\show_alert;
 
 /**
  * Adapter for Fixture AJAX requests
  */
-class Fixture_Ajax_Adapter {
+readonly class Fixture_Ajax_Adapter {
+    /**
+     * Initialise the fixture details controller with its required services.
+     *
+     * @param Simple_Container                $container Service container used to resolve additional dependencies.
+     * @param Security_Service_Interface      $security_service Service used to handle request security and authorization.
+     * @param Json_Response_Factory_Interface $response_factory Factory used to create JSON responses.
+     * @param Fixture_Detail_Service          $fixture_detail_service Service used to retrieve fixture detail data.
+     * @param View_Renderer_Interface         $view_renderer Renderer used to generate view output.
+     * @param Fixture_Presenter               $presenter Presenter used to format fixture data for display.
+     * @param Get_Fixture_Details_Handler     $fixture_details_handler Handler used to process fixture detail queries.
+     *
+     * @return void
+     */
     public function __construct(
-        private $container,
+        private Simple_Container $container,
         private Security_Service_Interface $security_service,
         private Json_Response_Factory_Interface $response_factory,
         private Fixture_Detail_Service $fixture_detail_service,
@@ -50,6 +64,11 @@ class Fixture_Ajax_Adapter {
 
     /**
      * Build screen to allow printing of match cards
+     *
+     * @param array $post post data.
+     *
+     * @return Response
+     * @throws Fixture_Not_Found_Exception Fixture not found.
      */
     public function print_match_card( array $post = [] ): Response {
         if ( ! $this->security_service->verify_nonce( $post['security'] ?? '', 'ajax-nonce' ) ) {
@@ -74,7 +93,7 @@ class Fixture_Ajax_Adapter {
                 $template       = 'match/match-card-rubbers';
             }
 
-            $vars = $this->presenter->map_to_match_card_vars( $dto, $match, '' );
+            $vars = $this->presenter->map_to_match_card_vars( $dto, $match );
 
             $output = $this->view_renderer->render_to_string(
                 $template,
@@ -90,7 +109,12 @@ class Fixture_Ajax_Adapter {
     }
 
     /**
-     * Update fixture result
+     * Updates a fixture result from submitted post data and returns the corresponding response.
+     *
+     * @param array $post Submitted fixture result data, including nonce and fixture result fields.
+     *
+     * @return Response Success response containing the updated result read model, or an error response when validation or saving fails.
+     * @throws Fixture_Not_Found_Exception When the fixture is not found.
      */
     public function update_fixture_result( array $post = [] ): Response {
         if ( ! $this->security_service->verify_nonce( $post['racketmanager_nonce'] ?? '', 'scores-match' ) ) {
@@ -108,7 +132,7 @@ class Fixture_Ajax_Adapter {
                 throw new Fixture_Not_Found_Exception( Util_Messages::fixture_not_found( $fixture_id ), 404 );
             }
 
-            $result_manager = $this->get_fixture_result_manager();
+            $result_manager  = $this->get_fixture_result_manager();
             $result_response = $result_manager->handle_fixture_result_update( $fixture, $request );
 
             $read_model = $this->presenter->map_to_result_read_model( $fixture, $result_response, $request );
@@ -131,8 +155,15 @@ class Fixture_Ajax_Adapter {
         return $response;
     }
 
+
     /**
-     * Build screen to allow match status to be captured
+     * Builds the fixture status options modal response after validating the request nonce,
+     * parsing submitted data, loading fixture details, and rendering the status options view.
+     *
+     * @param array $post Submitted request data used to verify security and determine the fixture status options to render.
+     *
+     * @return Response Raw rendered modal content on success, or an error response when validation, security, or fixture lookup fails.
+     * @throws Fixture_Not_Found_Exception When the fixture is not found.
      */
     public function fixture_status_options( array $post = [] ): Response {
         if ( ! $this->security_service->verify_nonce( $post['security'] ?? '', 'ajax-nonce' ) ) {
@@ -162,8 +193,14 @@ class Fixture_Ajax_Adapter {
         return $response;
     }
 
+
     /**
-     * Build screen to allow rubber status to be captured
+     * Builds and returns the rubber status options modal response after validating the AJAX request.
+     *
+     * @param array $post Posted request data used to verify security, identify the rubber, and determine status options.
+     *
+     * @return Response Raw rendered modal response on success, or an alert response when validation, lookup, or processing fails.
+     * @throws Fixture_Not_Found_Exception When the fixture is not found.
      */
     public function match_rubber_status_options( array $post = [] ): Response {
         if ( ! $this->security_service->verify_nonce( $post['security'] ?? '', 'ajax-nonce' ) ) {
@@ -201,14 +238,24 @@ class Fixture_Ajax_Adapter {
     }
 
     /**
-     * Set match status
+     * Updates the fixture status using the provided request data.
+     *
+     * @param array $post Status update data for the fixture.
+     *
+     * @return Response Response returned after handling the fixture status update.
      */
     public function set_fixture_status( array $post = [] ): Response {
         return $this->handle_status_update( 'match-status', $post );
     }
 
     /**
-     * Build screen to show the selected match option
+     * Renders the fixture option modal response for a validated AJAX request.
+     *
+     * @param array $post Posted request data containing security, fixture, option, and optional template values.
+     *
+     * @return Response Raw modal HTML response when successful, or an alert response when validation, security, lookup, or unexpected errors occur.
+     * @throws Fixture_Not_Found_Exception When the fixture is not found.
+     * @throws Fixture_Validation_Exception When the request is invalid.
      */
     public function show_fixture_option( array $post = [] ): Response {
         if ( ! $this->security_service->verify_nonce( $post['security'] ?? '', 'ajax-nonce' ) ) {
@@ -269,15 +316,25 @@ class Fixture_Ajax_Adapter {
     }
 
     /**
-     * Set match rubber status
+     * Updates the rubber status for a match using the provided post data.
      *
+     * @param array $post Status update data submitted for the rubber.
+     *
+     * @return Response Response generated after handling the rubber status update.
      */
     public function set_rubber_status( array $post = [] ): Response {
         return $this->handle_status_update( 'match-rubber-status', $post );
     }
 
     /**
-     * Set the match date
+     * Updates a fixture's scheduled date after validating the submitted request and nonce.
+     *
+     * @param array $post Posted fixture date update data.
+     *
+     * @return Response Success response containing the updated fixture date data, or an error response when validation, security, lookup, or update fails.
+     * @throws Fixture_Not_Found_Exception When the fixture is not found.
+     * @throws Fixture_Validation_Exception When fixture date validation fails.
+     * @throws Fixture_Update_Exception When the fixture date update operation fails.
      */
     public function set_fixture_date( array $post = [] ): Response {
         if ( ! $this->security_service->verify_nonce( $post['racketmanager_nonce'] ?? '', 'match-option' ) ) {
@@ -294,6 +351,24 @@ class Fixture_Ajax_Adapter {
                 throw new Fixture_Not_Found_Exception( Util_Messages::fixture_not_found( $request->match_id ), 404 );
             }
 
+            $current_match_date = $match->get_date();
+            $is_date_unchanged  = false;
+            if ( ! empty( $current_match_date ) && ! str_starts_with( trim( (string) $current_match_date ), '0000-00-00' ) ) {
+                if ( strlen( (string) $request->schedule_date ) === 10 ) {
+                    $is_date_unchanged = substr( (string) $current_match_date, 0, 10 ) === $request->schedule_date;
+                } else {
+                    try {
+                        $is_date_unchanged = Fixture_Time_Parser::to_mysql_datetime( $request->schedule_date ) === Fixture_Time_Parser::to_mysql_datetime( $current_match_date );
+                    } catch ( \InvalidArgumentException ) {
+                        $is_date_unchanged = false;
+                    }
+                }
+            }
+
+            if ( $is_date_unchanged ) {
+                throw new Fixture_Validation_Exception( array( __( 'Date not changed', 'racketmanager' ) ), array( 'schedule-date' ) );
+            }
+
             if ( strlen( (string) $request->schedule_date ) === 10 ) {
                 $schedule_date_fmt = mysql2date( 'D j M', $request->schedule_date );
             } else {
@@ -303,14 +378,14 @@ class Fixture_Ajax_Adapter {
             $maintenance_service = $this->get_fixture_maintenance_service();
             $updated             = $maintenance_service->update_fixture_date( $request->match_id, (string) $request->schedule_date, $match->get_date() );
             if ( ! $updated ) {
-                throw new Exception( __( 'Failed to update match schedule', 'racketmanager' ) );
+                throw new Fixture_Update_Exception( __( 'Failed to update match schedule', 'racketmanager' ) );
             }
             $maintenance_service->update_fixture_status( $request->match_id, 5 );
 
             $read_model = $this->presenter->map_to_date_update_read_model( $request, $schedule_date_fmt );
 
             $response = $this->response_factory->create_success_response( $read_model->to_array() );
-        } catch ( Fixture_Validation_Exception $e ) {
+        } catch ( Fixture_Not_Found_Exception $e ) {
             $response = $this->response_factory->create_error_response(
                 [
                     'msg'      => $e->getMessage(),
@@ -319,7 +394,16 @@ class Fixture_Ajax_Adapter {
                 ],
                 400
             );
-        } catch ( Exception $e ) {
+        } catch ( Fixture_Validation_Exception $e ) {
+            $response = $this->response_factory->create_error_response(
+                array(
+                    'msg'      => __( 'Unable to set fixture date', 'racketmanager' ),
+                    'err_msgs' => $e->get_error_msgs(),
+                    'err_flds' => $e->get_error_flds(),
+                ),
+                400
+            );
+        } catch ( Fixture_Update_Exception $e ) {
             $response = $this->response_factory->create_error_response( [ 'msg' => $e->getMessage() ], $e->getCode() ?: 400 );
         }
 
@@ -327,7 +411,14 @@ class Fixture_Ajax_Adapter {
     }
 
     /**
-     * Switch home and away teams
+     * Switch the home and away teams for a fixture after validating the request and restoring the scheduled match date.
+     *
+     * @param array $post Posted request data containing the nonce and fixture switch details.
+     *
+     * @return Response Success response with updated fixture details, or an error response when validation or processing fails.
+     * @throws Fixture_Not_Found_Exception When the fixture is not found.
+     * @throws Fixture_Validation_Exception When the request is invalid.
+     * @throws Event_Not_Found_Exception When the event is not found.
      */
     public function switch_home_away( array $post = [] ): Response {
         if ( ! $this->security_service->verify_nonce( $post['racketmanager_nonce'] ?? '', 'match-option' ) ) {
@@ -374,11 +465,14 @@ class Fixture_Ajax_Adapter {
             $read_model = $this->presenter->map_to_switch_teams_read_model( $fixture, $request, $details );
             $response   = $this->response_factory->create_success_response( $read_model->to_array() );
         } catch ( Fixture_Validation_Exception $e ) {
-            $response = $this->response_factory->create_error_response( [
-                'msg'      => $e->getMessage(),
-                'err_msgs' => $e->get_error_msgs(),
-                'err_flds' => $e->get_error_flds(),
-            ], 400 );
+            $response = $this->response_factory->create_error_response(
+                [
+                    'msg'      => $e->getMessage(),
+                    'err_msgs' => $e->get_error_msgs(),
+                    'err_flds' => $e->get_error_flds(),
+                ],
+                400
+            );
         } catch ( Exception $e ) {
             $response = $this->response_factory->create_error_response( [ 'msg' => $e->getMessage() ?: __( 'Unable to update switch home and away teams', 'racketmanager' ) ], $e->getCode() ?: 400 );
         }
@@ -387,7 +481,12 @@ class Fixture_Ajax_Adapter {
     }
 
     /**
-     * Reset fixture result
+     * Resets the result for a fixture from submitted request data.
+     *
+     * @param array $post Submitted request data containing the nonce, fixture identifier, and related reset options.
+     *
+     * @return Response Success response with reset details, or error response when security validation fails or the fixture cannot be found.
+     * @throws Fixture_Not_Found_Exception When the fixture is not found.
      */
     public function reset_fixture_result( array $post = [] ): Response {
         if ( ! $this->security_service->verify_nonce( $post['racketmanager_nonce'] ?? '', 'match-option' ) ) {
@@ -409,11 +508,13 @@ class Fixture_Ajax_Adapter {
 
             $message = $this->presenter->get_reset_message( $result_response->status );
 
-            $response = $this->response_factory->create_success_response( [
-                'msg'      => $message,
-                'modal'    => $request->modal,
-                'match_id' => $result_response->fixture_id,
-            ] );
+            $response = $this->response_factory->create_success_response(
+                [
+                    'msg'      => $message,
+                    'modal'    => $request->modal,
+                    'match_id' => $result_response->fixture_id,
+                ]
+            );
 
         } catch ( Fixture_Not_Found_Exception $e ) {
             $response = $this->response_factory->create_error_response( array( 'msg' => $e->getMessage() ), $e->getCode() ?: 500 );
@@ -423,7 +524,9 @@ class Fixture_Ajax_Adapter {
     }
 
     /**
-     * Build a fixture validator wired with the container's repositories (when registered).
+     * Creates a validator for fixtures using configured repository dependencies when available.
+     *
+     * @return Validator_Fixture Fixture validator instance.
      */
     private function create_validator(): Validator_Fixture {
         return new Validator_Fixture(
@@ -433,7 +536,18 @@ class Fixture_Ajax_Adapter {
     }
 
     /**
-     * Update match header
+     * Updates and renders the fixture header for the specified match.
+     *
+     * Validates the request security token and match identifier, retrieves fixture
+     * details, maps them to a header read model, and returns a success response with
+     * the rendered header. Returns an error response when validation fails or the
+     * fixture cannot be found.
+     *
+     * @param array $post Request data containing the security token, match ID, and optional edit mode flag.
+     *
+     * @return Response Response containing the rendered fixture header or validation error details.
+     * @throws Fixture_Update_Exception When the request security token or match identifier is invalid.
+     * @throws Fixture_Not_Found_Exception When the fixture is not found.
      */
     public function update_fixture_header( array $post = [] ): Response {
         $validator = $this->create_validator();
@@ -441,21 +555,21 @@ class Fixture_Ajax_Adapter {
 
         try {
             if ( ! empty( $validator->error ) ) {
-                throw new Exception();
+                throw new Fixture_Update_Exception();
             }
 
             $match_id  = isset( $post['match_id'] ) ? intval( $post['match_id'] ) : null;
             $validator = $validator->match( $match_id );
 
             if ( ! empty( $validator->error ) ) {
-                throw new Exception();
+                throw new Fixture_Not_Found_Exception();
             }
 
-            $edit_mode = isset( $post['edit_mode'] ) ? (bool) $post['edit_mode'] : false;
-            
+            $edit_mode = ! empty( $post['edit_mode'] ) && filter_var( $post['edit_mode'], FILTER_VALIDATE_BOOLEAN );
+
             $query = new Get_Fixture_Details_Query( fixture_id: $match_id );
             $dto   = $this->fixture_details_handler->handle( $query );
-            
+
             if ( ! $dto ) {
                 throw new Fixture_Not_Found_Exception( Util_Messages::fixture_not_found(), 400 );
             }
@@ -464,7 +578,7 @@ class Fixture_Ajax_Adapter {
             $output = $this->presenter->render_header( $model );
 
             $response = $this->response_factory->create_success_response( $output );
-        } catch ( Exception $e ) {
+        } catch ( Fixture_Update_Exception ) {
             $return   = $validator->get_details();
             $response = $this->response_factory->create_error_response( $return, $return->status ?: 400 );
         }
@@ -473,7 +587,13 @@ class Fixture_Ajax_Adapter {
     }
 
     /**
-     * Update match details for team matches only
+     * Updates or confirms the result for a team match from submitted post data.
+     *
+     * @param array $post Submitted match result data, including the security token, match identifier, and update action.
+     *
+     * @return Response Success response containing updated validation data, rubbers, status, and warnings, or an error response when validation or saving fails.
+     * @throws Fixture_Not_Found_Exception When the fixture is not found.
+     * @throws Fixture_Update_Exception When the request security token or match identifier is invalid.
      */
     public function update_team_match( array $post = [] ): Response {
         $validator = $this->create_validator();
@@ -481,7 +601,7 @@ class Fixture_Ajax_Adapter {
 
         try {
             if ( ! empty( $validator->error ) ) {
-                throw new Exception();
+                throw new Fixture_Update_Exception();
             }
 
             $request = Team_Result_Update_Request::from_post( $post );
@@ -509,7 +629,7 @@ class Fixture_Ajax_Adapter {
             }
 
             if ( ! empty( $validator->error ) ) {
-                throw new Exception();
+                throw new Fixture_Update_Exception();
             }
 
             $return           = $validator;
@@ -519,7 +639,7 @@ class Fixture_Ajax_Adapter {
 
             $response = $this->response_factory->create_success_response( $return );
 
-        } catch ( Exception $e ) {
+        } catch ( Fixture_Update_Exception $e ) {
             if ( ! empty( $e->getMessage() ) ) {
                 $validator->error = true;
                 $validator->msg   = $e->getMessage();
@@ -537,10 +657,13 @@ class Fixture_Ajax_Adapter {
     }
 
     /**
-     * Handle status update
+     * Handles a fixture status update request and returns the corresponding response.
      *
-     * @param string $nonce_action
-     * @return Response
+     * @param string $nonce_action The nonce action used to verify the request.
+     * @param array  $post The submitted post data used to build and validate the status update request.
+     *
+     * @return Response The success response containing the fixture status read model, or an error response when verification, validation, or lookup fails.
+     * @throws Fixture_Not_Found_Exception When the fixture is not found.
      */
     private function handle_status_update( string $nonce_action, array $post = [] ): Response {
         if ( ! $this->security_service->verify_nonce( $post['racketmanager_nonce'] ?? '', $nonce_action ) ) {
@@ -583,7 +706,9 @@ class Fixture_Ajax_Adapter {
     }
 
     /**
-     * Build error response for logged-out users.
+     * Creates an unauthorised error response for users who are not logged in.
+     *
+     * @return Response The error response indicating that login is required.
      */
     public function logged_out(): Response {
         $msg = __( 'Must be logged in to access this feature', 'racketmanager' );
@@ -599,7 +724,9 @@ class Fixture_Ajax_Adapter {
     }
 
     /**
-     * Build error response for logged-out users (modal style).
+     * Creates an unauthorised error response for users who are not logged in.
+     *
+     * @return Response The error response containing the login-required message and modal alert output.
      */
     public function logged_out_modal(): Response {
         $msg    = __( 'Must be logged in to access this feature', 'racketmanager' );
@@ -615,7 +742,11 @@ class Fixture_Ajax_Adapter {
     }
 
     /**
-     * Get the Fixture Maintenance Service with its dependencies.
+     * Retrieves the fixture maintenance service from the container or service provider.
+     *
+     * @return Fixture_Maintenance_Service The fixture maintenance service instance.
+     *
+     * @throws LogicException If the fixture result manager required for fallback retrieval is not configured.
      */
     public function get_fixture_maintenance_service(): Fixture_Maintenance_Service {
         if ( $this->container->has( 'fixture_maintenance_service' ) ) {
@@ -629,22 +760,27 @@ class Fixture_Ajax_Adapter {
     }
 
     /**
-     * Replicate the complex dependency injection for Fixture_Result_Manager
+     * Retrieves the configured fixture result manager from the container.
+     *
+     * @return Fixture_Result_Manager The fixture result manager instance.
+     *
+     * @throws LogicException If the fixture result manager has not been configured.
      */
     public function get_fixture_result_manager(): Fixture_Result_Manager {
         if ( $this->container->has( 'fixture_result_manager' ) ) {
             return $this->container->get( 'fixture_result_manager' );
         }
 
-        throw new \LogicException( 'fixture_result_manager has not been configured in the container.' );
+        throw new LogicException( 'fixture_result_manager has not been configured in the container.' );
     }
 
     /**
-     * Helper to create an alert response
+     * Creates a response containing a rendered danger alert modal.
      *
-     * @param string $message
-     * @param int $status_code
-     * @return Response
+     * @param string $message The alert message to display.
+     * @param int    $status_code The HTTP status code for the response.
+     *
+     * @return Response The raw response containing the rendered alert modal HTML.
      */
     private function create_alert_response( string $message, int $status_code = 200 ): Response {
         $vars = $this->presenter->map_to_alert( $message, 'danger' );

@@ -84,6 +84,7 @@ use Racketmanager\Infrastructure\Wordpress\Export\Export_Delivery_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\Infrastructure\Wordpress\Request\Wp_Query_Vars;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory;
+use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Rest\Rest_Controller_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Email_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\General_Shortcode_Adapter;
@@ -226,8 +227,9 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->alias( Security_Service::class, Security_Service_Interface::class );
         $container->alias( 'security_service', Security_Service_Interface::class );
 
-        $container->set( Json_Response_Factory::class, fn(): Json_Response_Factory => new Json_Response_Factory() );
-        $container->alias( 'json_response_factory', Json_Response_Factory::class );
+        $container->set( Json_Response_Factory_Interface::class, fn(): Json_Response_Factory_Interface => new Json_Response_Factory() );
+        $container->alias( Json_Response_Factory::class, Json_Response_Factory_Interface::class );
+        $container->alias( 'json_response_factory', Json_Response_Factory_Interface::class );
 
         $container->set( Ajax_Registry::class, fn(): Ajax_Registry => new Ajax_Registry() );
         $container->alias( 'ajax_registry', Ajax_Registry::class );

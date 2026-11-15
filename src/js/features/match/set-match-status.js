@@ -21,7 +21,7 @@ export function setMatchStatus(link) {
 
     jQuery(splashBlock).addClass('is-loading');
 
-    $form += '&action=racketmanager_set_match_status';
+    $form += '&action=racketmanager_set_fixture_status';
 
     const notifyField = '#matchStatusResponse';
     const alertTextField = '#matchStatusResponseText';

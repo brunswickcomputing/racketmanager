@@ -27,6 +27,13 @@ export function openMatchOptions(event, matchId, optionKey) {
   // Show loading modal
   try { jQuery(LOADING_MODAL).modal('show'); } catch (e) { console.error(e); }
 
+  // Safeguard: ensure match and score modals are attached to body, not nested in #match-header
+  document.querySelectorAll('#matchModal, #scoreModal').forEach((modal) => {
+    if (modal.parentElement && modal.parentElement !== document.body) {
+      document.body.appendChild(modal);
+    }
+  });
+
   // Reset header error area
   jQuery(HEADER_ALERT).hide();
   jQuery(HEADER_ALERT_TEXT).html('');

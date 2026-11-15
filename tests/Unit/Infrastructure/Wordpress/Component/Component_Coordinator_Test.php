@@ -88,6 +88,18 @@ final class Component_Coordinator_Test extends TestCase {
         self::assertArrayHasKey( 'wp_ajax_nopriv_racketmanager_match_rubber_status', $GLOBALS['wp_action_hooks'] );
         self::assertSame( [ $fixture_ajax, 'logged_out_modal' ], $GLOBALS['wp_action_hooks']['wp_ajax_nopriv_racketmanager_match_rubber_status'][0] );
 
+        self::assertArrayHasKey( 'wp_ajax_racketmanager_set_fixture_date', $GLOBALS['wp_action_hooks'] );
+        self::assertSame( [ $fixture_ajax, 'set_fixture_date' ], $GLOBALS['wp_action_hooks']['wp_ajax_racketmanager_set_fixture_date'][0] );
+
+        self::assertArrayHasKey( 'wp_ajax_racketmanager_set_match_date', $GLOBALS['wp_action_hooks'] );
+        self::assertSame( [ $fixture_ajax, 'set_fixture_date' ], $GLOBALS['wp_action_hooks']['wp_ajax_racketmanager_set_match_date'][0] );
+
+        self::assertArrayHasKey( 'wp_ajax_racketmanager_set_fixture_status', $GLOBALS['wp_action_hooks'] );
+        self::assertSame( [ $fixture_ajax, 'set_fixture_status' ], $GLOBALS['wp_action_hooks']['wp_ajax_racketmanager_set_fixture_status'][0] );
+
+        self::assertArrayHasKey( 'wp_ajax_racketmanager_set_match_status', $GLOBALS['wp_action_hooks'] );
+        self::assertSame( [ $fixture_ajax, 'set_fixture_status' ], $GLOBALS['wp_action_hooks']['wp_ajax_racketmanager_set_match_status'][0] );
+
         self::assertArrayHasKey( 'wp_ajax_racketmanager_account_test_action', $GLOBALS['wp_action_hooks'] );
         self::assertSame( [ $account_ajax, 'add_favourite' ], $GLOBALS['wp_action_hooks']['wp_ajax_racketmanager_account_test_action'][0] );
 

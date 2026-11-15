@@ -29,6 +29,30 @@ class Simple_Container {
     private array $resolving = [];
 
     /**
+     * Map of port interfaces to legacy container keys for fallback resolution
+     * when unit tests register only the legacy string key on a container.
+     *
+     * @var array<string, string>
+     */
+    private const PORT_LEGACY_FALLBACKS = [
+        \Racketmanager\Services\View\View_Renderer_Interface::class => 'view_renderer',
+        \Racketmanager\Application\Club\Ports\Club_Service_Interface::class => 'club_service',
+        \Racketmanager\Application\Club\Ports\Team_Service_Interface::class => 'team_service',
+        \Racketmanager\Application\Player\Ports\Player_Service_Interface::class => 'player_service',
+        \Racketmanager\Application\Player\Ports\Registration_Service_Interface::class => 'registration_service',
+        \Racketmanager\Application\Ports\Finance_Service_Interface::class => 'finance_service',
+        \Racketmanager\Application\League\Ports\League_Service_Interface::class => 'league_service',
+        \Racketmanager\Application\Tournament\Ports\Tournament_Service_Interface::class => 'tournament_service',
+        \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class => 'event_repository',
+        \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class => 'league_repository',
+        \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class => 'fixture_repository',
+        \Racketmanager\Application\League\Ports\League_Query_Service_Interface::class => 'league_query_service',
+        \Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface::class => 'event_query_service',
+        \Racketmanager\Infrastructure\Security\Security_Service_Interface::class => 'security_service',
+        \Racketmanager\Application\Ports\Settings_Service_Interface::class => 'settings_service',
+    ];
+
+    /**
      * Register a service, factory, or alias.
      *
      * @param string $id
@@ -43,6 +67,12 @@ class Simple_Container {
         if ( is_string( $concrete ) ) {
             $this->alias( $id, $concrete );
             return;
+        }
+
+        if ( isset( $this->aliases[ $id ] ) ) {
+            $target_id = $this->resolve_alias( $id );
+            unset( $this->instances[ $target_id ] );
+            $this->definitions[ $target_id ] = $concrete;
         }
 
         unset( $this->aliases[ $id ] );
@@ -236,6 +266,12 @@ class Simple_Container {
             }
             $visited[ $current ] = true;
             $current             = $this->aliases[ $current ];
+        }
+
+        if ( ! isset( $this->definitions[ $current ] ) && ! isset( $this->instances[ $current ] ) ) {
+            if ( isset( self::PORT_LEGACY_FALLBACKS[ $current ] ) && $this->has( self::PORT_LEGACY_FALLBACKS[ $current ] ) ) {
+                return $this->resolve_alias( self::PORT_LEGACY_FALLBACKS[ $current ] );
+            }
         }
 
         return $current;

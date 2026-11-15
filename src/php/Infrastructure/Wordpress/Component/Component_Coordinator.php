@@ -59,8 +59,10 @@ final readonly class Component_Coordinator implements Component_Coordinator_Inte
         $registry->register_with_unauthenticated( 'set_rubber_status', [ $controller, 'set_rubber_status' ], [ $controller, 'logged_out' ] );
         $registry->register_with_unauthenticated( 'match_status', [ $controller, 'fixture_status_options' ], [ $controller, 'logged_out_modal' ] );
         $registry->register_with_unauthenticated( 'set_fixture_status', [ $controller, 'set_fixture_status' ], [ $controller, 'logged_out' ] );
+        $registry->register_with_unauthenticated( 'set_match_status', [ $controller, 'set_fixture_status' ], [ $controller, 'logged_out' ] );
         $registry->register_with_unauthenticated( 'match_option', [ $controller, 'show_fixture_option' ], [ $controller, 'logged_out_modal' ] );
         $registry->register_with_unauthenticated( 'set_fixture_date', [ $controller, 'set_fixture_date' ], [ $controller, 'logged_out' ] );
+        $registry->register_with_unauthenticated( 'set_match_date', [ $controller, 'set_fixture_date' ], [ $controller, 'logged_out' ] );
         $registry->register_with_unauthenticated( 'switch_home_away', [ $controller, 'switch_home_away' ], [ $controller, 'logged_out' ] );
         $registry->register_with_unauthenticated( 'reset_fixture_result', [ $controller, 'reset_fixture_result' ], [ $controller, 'logged_out' ] );
         $registry->register( 'update_fixture_header', [ $controller, 'update_fixture_header' ] );

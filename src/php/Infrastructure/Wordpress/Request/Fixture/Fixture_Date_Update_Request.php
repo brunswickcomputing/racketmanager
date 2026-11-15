@@ -10,6 +10,15 @@ use Racketmanager\Exceptions\Fixture_Validation_Exception;
  * Data Transfer Object for fixture date update requests.
  */
 readonly class Fixture_Date_Update_Request {
+    /**
+     * Initialises a match schedule instance.
+     *
+     * @param int         $match_id Match identifier.
+     * @param string|null $schedule_date Scheduled date for the match, or null if not set.
+     * @param string|null $modal Modal value, or null if not set.
+     *
+     * @return void
+     */
     public function __construct(
         public int $match_id,
         public ?string $schedule_date = null,
@@ -18,11 +27,11 @@ readonly class Fixture_Date_Update_Request {
     }
 
     /**
-     * Create from request data.
+     * Creates an instance from submitted post data.
      *
-     * @param array $post
+     * @param array $post Posted data containing match details.
      *
-     * @return self
+     * @return self Instance populated with sanitized post values.
      */
     public static function from_post( array $post ): self {
         return new self(
@@ -35,8 +44,7 @@ readonly class Fixture_Date_Update_Request {
     /**
      * Validate the request.
      *
-     *
-     * @throws Fixture_Validation_Exception
+     * @throws Fixture_Validation_Exception Fixture validation failed.
      */
     public function validate(): void {
         $error_msgs = [];
@@ -56,10 +64,10 @@ readonly class Fixture_Date_Update_Request {
         }
 
         // Simplified validation for now, mirroring Validator_Fixture behaviour if needed
-        // In a real scenario, we'd add more checks (e.g. date format, range, etc.)
+        // In a real scenario, we'd add more checks (e.g. date format, range, etc.).
 
         if ( ! empty( $error_msgs ) ) {
-            throw new Fixture_Validation_Exception( $error_msgs, $error_flds );
+            throw new Fixture_Validation_Exception( $error_msgs, $error_flds ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
     }
 }

@@ -139,9 +139,14 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
 
         $this->fixture_detail_service->expects( $this->once() )->method( 'get_fixture_with_details' )->with( 123 )->willReturn( $dto );
 
-        $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with( 'match/match-card', $this->callback( function ( $args ) use ( $dto, $fixture ) {
-                return $args['dto'] === $dto && $args['match'] === $fixture && '2026-10-18' === $args['date_display'];
-            } ) )->willReturn( 'Rendered Content' );
+        $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with(
+            'match/match-card',
+            $this->callback(
+                function ( $args ) use ( $dto, $fixture ) {
+                    return $args['dto'] === $dto && $args['match'] === $fixture && '2026-10-18' === $args['date_display'];
+                }
+            )
+        )->willReturn( 'Rendered Content' );
 
         $response = $this->adapter->print_match_card( $post );
         $this->assertSame( 'Rendered Content', $response->get_content() );
@@ -166,9 +171,14 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
 
         $this->fixture_detail_service->expects( $this->once() )->method( 'get_fixture_with_details' )->with( 123 )->willReturn( $dto );
 
-        $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with( 'match/match-card-rubbers', $this->callback( function ( $args ) use ( $dto, $fixture ) {
-                return $args['dto'] === $dto && $args['match'] === $fixture && $fixture->rubbers === [ 'rubber1' ] && '2026-10-18' === $args['date_display'];
-            } ) )->willReturn( 'Rendered Rubbers Content' );
+        $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with(
+            'match/match-card-rubbers',
+            $this->callback(
+                function ( $args ) use ( $dto, $fixture ) {
+                    return $args['dto'] === $dto && $args['match'] === $fixture && $fixture->rubbers === [ 'rubber1' ] && '2026-10-18' === $args['date_display'];
+                }
+            )
+        )->willReturn( 'Rendered Rubbers Content' );
 
         $response = $this->adapter->print_match_card( $post );
         $this->assertSame( 'Rendered Rubbers Content', $response->get_content() );
@@ -243,9 +253,14 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
 
         $this->fixture_detail_service->expects( $this->once() )->method( 'get_fixture_with_details' )->with( 123 )->willReturn( $dto );
 
-        $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with( 'match/match-status-modal', $this->callback( function ( $vars ) use ( $dto ) {
-                return $vars['dto'] === $dto && $vars['modal'] === 'test-modal';
-            } ) )->willReturn( '<html lang="">modal content</html>' );
+        $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with(
+            'match/match-status-modal',
+            $this->callback(
+                function ( $vars ) use ( $dto ) {
+                    return $vars['dto'] === $dto && $vars['modal'] === 'test-modal';
+                }
+            )
+        )->willReturn( '<html lang="">modal content</html>' );
 
         $response = $this->adapter->fixture_status_options( $post );
         $this->assertSame( '<html lang="">modal content</html>', $response->get_content() );
@@ -372,9 +387,14 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
 
         $this->fixture_detail_service->expects( $this->once() )->method( 'get_fixture_with_details' )->with( 123 )->willReturn( $dto );
 
-        $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with( 'match/rubber-status-modal', $this->callback( function ( $vars ) use ( $dto, $rubber ) {
-                return $vars['dto'] === $dto && $vars['rubber'] === $rubber && $vars['not_played'] === 'Not played';
-            } ) )->willReturn( '<html lang="">Modal Content</html>' );
+        $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with(
+            'match/rubber-status-modal',
+            $this->callback(
+                function ( $vars ) use ( $dto, $rubber ) {
+                    return $vars['dto'] === $dto && $vars['rubber'] === $rubber && $vars['not_played'] === 'Not played';
+                }
+            )
+        )->willReturn( '<html lang="">Modal Content</html>' );
 
         $response = $this->adapter->match_rubber_status_options( $post );
         $this->assertSame( '<html lang="">Modal Content</html>', $response->get_content() );
@@ -386,9 +406,14 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $post = [ 'security' => 'valid' ];
         // Missing rubber_id
 
-        $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with( 'alert-modal', $this->callback( function ( $vars ) {
-                return isset( $vars['msg'] ) && $vars['class'] === 'danger';
-            } ) )->willReturn( 'ALERT: rubber_id is required' );
+        $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with(
+            'alert-modal',
+            $this->callback(
+                function ( $vars ) {
+                    return isset( $vars['msg'] ) && $vars['class'] === 'danger';
+                }
+            )
+        )->willReturn( 'ALERT: rubber_id is required' );
 
         $response = $this->adapter->match_rubber_status_options( $post );
         $this->assertSame( 400, $response->get_status_code() );
@@ -399,9 +424,14 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     public function test_match_rubber_status_options_security_fails(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( false );
 
-        $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with( 'alert-modal', $this->callback( function ( $vars ) {
-                return $vars['msg'] === 'Security check failed' && $vars['class'] === 'danger';
-            } ) )->willReturn( 'ALERT: Security check failed' );
+        $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with(
+            'alert-modal',
+            $this->callback(
+                function ( $vars ) {
+                    return $vars['msg'] === 'Security check failed' && $vars['class'] === 'danger';
+                }
+            )
+        )->willReturn( 'ALERT: Security check failed' );
 
         $response = $this->adapter->match_rubber_status_options( [] );
         $this->assertSame( 403, $response->get_status_code() );
@@ -421,9 +451,14 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $rubber_repo->expects( $this->once() )->method( 'find_by_id' )->with( 999 )->willReturn( null );
         $this->container->set( 'rubber_repository', $rubber_repo );
 
-        $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with( 'alert-modal', $this->callback( function ( $vars ) {
-                return $vars['msg'] === 'Rubber not found' && $vars['class'] === 'danger';
-            } ) )->willReturn( 'ALERT: Rubber not found' );
+        $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with(
+            'alert-modal',
+            $this->callback(
+                function ( $vars ) {
+                    return $vars['msg'] === 'Rubber not found' && $vars['class'] === 'danger';
+                }
+            )
+        )->willReturn( 'ALERT: Rubber not found' );
 
         $response = $this->adapter->match_rubber_status_options( $post );
         $this->assertSame( 404, $response->get_status_code() );
@@ -447,9 +482,14 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
 
         $this->fixture_detail_service->expects( $this->once() )->method( 'get_fixture_with_details' )->willReturn( null );
 
-        $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with( 'alert-modal', $this->callback( function ( $vars ) {
-                return $vars['msg'] === 'Fixture not found' && $vars['class'] === 'danger';
-            } ) )->willReturn( 'ALERT: Fixture not found' );
+        $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with(
+            'alert-modal',
+            $this->callback(
+                function ( $vars ) {
+                    return $vars['msg'] === 'Fixture not found' && $vars['class'] === 'danger';
+                }
+            )
+        )->willReturn( 'ALERT: Fixture not found' );
 
         $response = $this->adapter->match_rubber_status_options( $post );
         $this->assertSame( 404, $response->get_status_code() );
@@ -473,9 +513,14 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
 
         $this->fixture_detail_service->expects( $this->once() )->method( 'get_fixture_with_details' )->willThrowException( new Exception( 'Boom' ) );
 
-        $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with( 'alert-modal', $this->callback( function ( $vars ) {
-                return $vars['msg'] === 'An unexpected error occurred' && $vars['class'] === 'danger';
-            } ) )->willReturn( 'ALERT: Unexpected' );
+        $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with(
+            'alert-modal',
+            $this->callback(
+                function ( $vars ) {
+                    return $vars['msg'] === 'An unexpected error occurred' && $vars['class'] === 'danger';
+                }
+            )
+        )->willReturn( 'ALERT: Unexpected' );
 
         $response = $this->adapter->match_rubber_status_options( $post );
         $this->assertSame( 500, $response->get_status_code() );
@@ -499,20 +544,25 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $league = $this->createMock( League::class );
         $event = $this->createMock( Event::class );
         $competition = $this->createMock( Competition::class );
-        
+
         $dto = new Fixture_Details_DTO(
             $fixture,
             $league,
             $event,
             $competition
         );
-        
+
         $this->fixture_detail_service->expects( $this->once() )->method( 'get_fixture_with_details' )->with( 123 )->willReturn( $dto );
 
         $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )
-            ->with( 'match/match-option-modal', $this->callback( function ( $vars ) use ( $dto ) {
-                return $vars['dto'] === $dto && $vars['title'] === '(Re)schedule fixture' && $vars['action'] === 'setMatchDate' && 'datetime-local' === $vars['date_input_type'] && '2026-10-18 19:30:00' === $vars['date_input'];
-            } ) )->willReturn( 'rendered content' );
+            ->with(
+                'match/match-option-modal',
+                $this->callback(
+                    function ( $vars ) use ( $dto ) {
+                        return $vars['dto'] === $dto && $vars['title'] === '(Re)schedule fixture' && $vars['action'] === 'setMatchDate' && 'datetime-local' === $vars['date_input_type'] && '2026-10-18 19:30:00' === $vars['date_input'];
+                    }
+                )
+            )->willReturn( 'rendered content' );
 
         $response = $this->adapter->show_fixture_option( $post );
         $this->assertSame( 200, $response->get_status_code() );
@@ -527,36 +577,114 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
             'match_id' => 123,
             'security' => 'valid',
         ];
-        
+
         $fixture = $this->createStub( Fixture::class );
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $fixture );
         $this->container->set( 'fixture_repository', $fixture_repo );
 
         $dto = new App_Fixture_Details_DTO( $fixture );
-        
+
         $fixture_details_handler = $this->createMock( Get_Fixture_Details_Handler::class );
         $fixture_details_handler->expects( $this->once() )->method( 'handle' )->willReturn( $dto );
 
         $presenter = $this->createMock( Fixture_Presenter::class );
         $header_model = $this->createStub( Fixture_Header_Read_Model::class );
-        $presenter->expects( $this->once() )->method( 'map_to_header_read_model' )->willReturn( $header_model );
+        $presenter->expects( $this->once() )->method( 'map_to_header_read_model' )->with( $dto, false )->willReturn( $header_model );
         $presenter->expects( $this->once() )->method( 'render_header' )->willReturn( 'match header content' );
 
         // Inject modified presenter and handler for this test
-        $this->adapter = new Fixture_Ajax_Adapter( 
-            $this->container, 
-            $this->security_service, 
-            $this->container->get('fixture_ajax_adapter_response_factory'), // I should probably have stored this
-            $this->fixture_detail_service, 
-            $this->view_renderer, 
-            $presenter, 
-            $fixture_details_handler 
+        $this->adapter = new Fixture_Ajax_Adapter(
+            $this->container,
+            $this->security_service,
+            $this->container->get( 'fixture_ajax_adapter_response_factory' ), // I should probably have stored this
+            $this->fixture_detail_service,
+            $this->view_renderer,
+            $presenter,
+            $fixture_details_handler
         );
 
         $response = $this->adapter->update_fixture_header( $post );
-        $this->assertSame( 200, $response->get_status_code(), 'Response status should be 200. Content: ' . json_encode($response->get_content()) );
+        $this->assertSame( 200, $response->get_status_code(), 'Response status should be 200. Content: ' . json_encode( $response->get_content() ) );
         $this->assertSame( 'match header content', $response->get_content() );
+    }
+
+    #[AllowMockObjectsWithoutExpectations]
+    public function test_update_match_header_when_edit_mode_is_string_false_evaluates_to_false(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+        $GLOBALS['wp_stubs_wp_verify_nonce_return'] = true;
+        $post = [
+            'match_id'  => 123,
+            'security'  => 'valid',
+            'edit_mode' => 'false',
+        ];
+
+        $fixture = $this->createStub( Fixture::class );
+        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+        $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $fixture );
+        $this->container->set( 'fixture_repository', $fixture_repo );
+
+        $dto = new App_Fixture_Details_DTO( $fixture );
+
+        $fixture_details_handler = $this->createMock( Get_Fixture_Details_Handler::class );
+        $fixture_details_handler->expects( $this->once() )->method( 'handle' )->willReturn( $dto );
+
+        $presenter = $this->createMock( Fixture_Presenter::class );
+        $header_model = $this->createStub( Fixture_Header_Read_Model::class );
+        $presenter->expects( $this->once() )->method( 'map_to_header_read_model' )->with( $dto, false )->willReturn( $header_model );
+        $presenter->expects( $this->once() )->method( 'render_header' )->willReturn( 'match header content' );
+
+        $this->adapter = new Fixture_Ajax_Adapter(
+            $this->container,
+            $this->security_service,
+            $this->container->get( 'fixture_ajax_adapter_response_factory' ),
+            $this->fixture_detail_service,
+            $this->view_renderer,
+            $presenter,
+            $fixture_details_handler
+        );
+
+        $response = $this->adapter->update_fixture_header( $post );
+        $this->assertSame( 200, $response->get_status_code() );
+    }
+
+    #[AllowMockObjectsWithoutExpectations]
+    public function test_update_match_header_when_edit_mode_is_string_true_evaluates_to_true(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+        $GLOBALS['wp_stubs_wp_verify_nonce_return'] = true;
+        $post = [
+            'match_id'  => 123,
+            'security'  => 'valid',
+            'edit_mode' => 'true',
+        ];
+
+        $fixture = $this->createStub( Fixture::class );
+        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+        $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $fixture );
+        $this->container->set( 'fixture_repository', $fixture_repo );
+
+        $dto = new App_Fixture_Details_DTO( $fixture );
+
+        $fixture_details_handler = $this->createMock( Get_Fixture_Details_Handler::class );
+        $fixture_details_handler->expects( $this->once() )->method( 'handle' )->willReturn( $dto );
+
+        $presenter = $this->createMock( Fixture_Presenter::class );
+        $header_model = $this->createStub( Fixture_Header_Read_Model::class );
+        $presenter->expects( $this->once() )->method( 'map_to_header_read_model' )->with( $dto, true )->willReturn( $header_model );
+        $presenter->expects( $this->once() )->method( 'render_header' )->willReturn( 'match header content' );
+
+        $this->adapter = new Fixture_Ajax_Adapter(
+            $this->container,
+            $this->security_service,
+            $this->container->get( 'fixture_ajax_adapter_response_factory' ),
+            $this->fixture_detail_service,
+            $this->view_renderer,
+            $presenter,
+            $fixture_details_handler
+        );
+
+        $response = $this->adapter->update_fixture_header( $post );
+        $this->assertSame( 200, $response->get_status_code() );
     }
 
     #[AllowMockObjectsWithoutExpectations]
@@ -586,7 +714,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
 
         $match        = $this->getMockBuilder( Fixture::class )->disableOriginalConstructor()->getMock();
         $match->id    = 123;
-        $match->method('get_date')->willReturn('2023-10-09');
+        $match->method( 'get_date' )->willReturn( '2023-10-09' );
 
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $match );
@@ -619,7 +747,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
 
         $match        = $this->getMockBuilder( Fixture::class )->disableOriginalConstructor()->getMock();
         $match->id    = 123;
-        $match->method('get_date')->willReturn('2026-10-09 18:00:00');
+        $match->method( 'get_date' )->willReturn( '2026-10-09 18:00:00' );
 
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $match );
@@ -687,6 +815,58 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     }
 
     #[AllowMockObjectsWithoutExpectations]
+    public function test_set_match_date_when_date_not_changed_returns_validation_error(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+        $GLOBALS['wp_stubs_wp_verify_nonce_return'] = true;
+        $post = [
+            'racketmanager_nonce' => 'valid',
+            'match_id'            => 123,
+            'modal'               => 'test-modal',
+            'schedule-date'       => '2023-10-10',
+        ];
+
+        $match     = $this->getMockBuilder( Fixture::class )->disableOriginalConstructor()->getMock();
+        $match->id = 123;
+        $match->method( 'get_date' )->willReturn( '2023-10-10 00:00:00' );
+
+        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+        $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $match );
+        $this->container->set( 'fixture_repository', $fixture_repo );
+
+        $response = $this->adapter->set_fixture_date( $post );
+        $this->assertSame( 400, $response->get_status_code() );
+        $data = $response->get_content();
+        $this->assertContains( 'schedule-date', $data['err_flds'] );
+        $this->assertContains( 'Date not changed', $data['err_msgs'] );
+    }
+
+    #[AllowMockObjectsWithoutExpectations]
+    public function test_set_match_date_with_time_when_date_and_time_not_changed_returns_validation_error(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+        $GLOBALS['wp_stubs_wp_verify_nonce_return'] = true;
+        $post = [
+            'racketmanager_nonce' => 'valid',
+            'match_id'            => 123,
+            'modal'               => 'test-modal',
+            'schedule-date'       => '2026-10-10T19:30',
+        ];
+
+        $match     = $this->getMockBuilder( Fixture::class )->disableOriginalConstructor()->getMock();
+        $match->id = 123;
+        $match->method( 'get_date' )->willReturn( '2026-10-10 19:30:00' );
+
+        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+        $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $match );
+        $this->container->set( 'fixture_repository', $fixture_repo );
+
+        $response = $this->adapter->set_fixture_date( $post );
+        $this->assertSame( 400, $response->get_status_code() );
+        $data = $response->get_content();
+        $this->assertContains( 'schedule-date', $data['err_flds'] );
+        $this->assertContains( 'Date not changed', $data['err_msgs'] );
+    }
+
+    #[AllowMockObjectsWithoutExpectations]
     public function test_switch_home_away_success(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
         $GLOBALS['wp_stubs_wp_verify_nonce_return'] = true;
@@ -731,9 +911,11 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $event_repo->expects( $this->once() )->method( 'find_by_id' )->with( 456 )->willReturn( $event );
         $this->container->set( 'event_repository', $event_repo );
 
-        $event->expects( $this->once() )->method( 'get_season_by_name' )->with( '2023' )->willReturn( [
-            'match_dates' => [ '2023-10-10' ]
-        ] );
+        $event->expects( $this->once() )->method( 'get_season_by_name' )->with( '2023' )->willReturn(
+            [
+                'match_dates' => [ '2023-10-10' ],
+            ]
+        );
 
         $maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
         $maintenance_service->expects( $this->once() )->method( 'update_fixture_date' )->with( 123, '2023-10-10' );
@@ -795,9 +977,11 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $event_repo->expects( $this->once() )->method( 'find_by_id' )->with( 456 )->willReturn( $event );
         $this->container->set( 'event_repository', $event_repo );
 
-        $event->expects( $this->once() )->method( 'get_season_by_name' )->with( '2023' )->willReturn( [
-            'match_dates' => [ '2023-10-10' ]
-        ] );
+        $event->expects( $this->once() )->method( 'get_season_by_name' )->with( '2023' )->willReturn(
+            [
+                'match_dates' => [ '2023-10-10' ],
+            ]
+        );
 
         $maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
         $maintenance_service->expects( $this->once() )->method( 'update_fixture_date' )->with( 123, '2023-10-10 19:30:00' );
@@ -895,15 +1079,21 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $this->security_service = $this->createMock( Security_Service_Interface::class );
         $response_factory = $this->createStub( Json_Response_Factory_Interface::class );
 
-        $response_factory->method( 'create_success_response' )->willReturnCallback( function ( $data, $status = null ) {
-            return new Response( $data, $status );
-        } );
-        $response_factory->method( 'create_error_response' )->willReturnCallback( function ( $data, $status = null ) {
-            return new Response( $data, $status );
-        } );
-        $response_factory->method( 'create_raw_response' )->willReturnCallback( function ( $content, $status = null ) {
-            return new Response( $content, $status );
-        } );
+        $response_factory->method( 'create_success_response' )->willReturnCallback(
+            function ( $data, $status = null ) {
+                return new Response( $data, $status );
+            }
+        );
+        $response_factory->method( 'create_error_response' )->willReturnCallback(
+            function ( $data, $status = null ) {
+                return new Response( $data, $status );
+            }
+        );
+        $response_factory->method( 'create_raw_response' )->willReturnCallback(
+            function ( $content, $status = null ) {
+                return new Response( $content, $status );
+            }
+        );
         $this->container->set( 'fixture_ajax_adapter_response_factory', $response_factory );
 
         $rubber_repo = $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );

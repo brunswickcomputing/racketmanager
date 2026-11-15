@@ -15,16 +15,28 @@ use Racketmanager\Application\Club\Queries\Get_Club_Roles_Handler;
 use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
 use Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface;
 use Racketmanager\Application\General\Queries\Get_Team_Order_Handler;
+use Racketmanager\Application\Mail\Mailer_Interface;
+use Racketmanager\Application\Player\Ports\Player_Service_Interface;
 use Racketmanager\Application\Player\Ports\Registration_Service_Interface;
+use Racketmanager\Application\Ports\Finance_Service_Interface;
+use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Application\Ports\Query_Vars_Interface;
+use Racketmanager\Application\Ports\Settings_Service_Interface;
+use Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface;
+use Racketmanager\Domain\Ports\Clock_Interface;
+use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Club_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Club_Ajax_Controller;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
+use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Club_Shortcode_Adapter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Registration_Repository_Interface;
@@ -62,74 +74,74 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
         $app = $this->app;
 
         // Repositories.
-        $container->set( 'club_repository', fn() => new Club_Repository() );
-        $container->alias( Club_Repository_Interface::class, 'club_repository' );
-        $container->alias( Club_Repository::class, 'club_repository' );
+        $container->set( Club_Repository_Interface::class, fn(): Club_Repository_Interface => new Club_Repository() );
+        $container->alias( Club_Repository::class, Club_Repository_Interface::class );
+        $container->alias( 'club_repository', Club_Repository_Interface::class );
 
-        $container->set( 'registration_repository', fn(): Registration_Repository_Interface => new Registration_Repository() );
-        $container->alias( Registration_Repository_Interface::class, 'registration_repository' );
-        $container->alias( Registration_Repository::class, 'registration_repository' );
+        $container->set( Registration_Repository_Interface::class, fn(): Registration_Repository_Interface => new Registration_Repository() );
+        $container->alias( Registration_Repository::class, Registration_Repository_Interface::class );
+        $container->alias( 'registration_repository', Registration_Repository_Interface::class );
 
-        $container->set( 'club_role_repository', fn( Simple_Container $c ): Club_Role_Repository_Interface => new Club_Role_Repository( $c->get( User_Repository_Interface::class ) ) );
-        $container->alias( Club_Role_Repository_Interface::class, 'club_role_repository' );
-        $container->alias( Club_Role_Repository::class, 'club_role_repository' );
+        $container->set( Club_Role_Repository_Interface::class, fn( Simple_Container $c ): Club_Role_Repository_Interface => new Club_Role_Repository( $c->get( User_Repository_Interface::class ) ) );
+        $container->alias( Club_Role_Repository::class, Club_Role_Repository_Interface::class );
+        $container->alias( 'club_role_repository', Club_Role_Repository_Interface::class );
 
         $container->set(
-            'team_repository',
-            fn( Simple_Container $c ) => new Team_Repository(
+            Team_Repository_Interface::class,
+            fn( Simple_Container $c ): Team_Repository_Interface => new Team_Repository(
                 null,
-                $c->get( 'player_repository' ),
+                $c->get( Player_Repository_Interface::class ),
                 fn() => $c->get( Fixture_Repository_Interface::class )
             )
         );
-        $container->alias( Team_Repository_Interface::class, 'team_repository' );
-        $container->alias( Team_Repository::class, 'team_repository' );
+        $container->alias( Team_Repository::class, Team_Repository_Interface::class );
+        $container->alias( 'team_repository', Team_Repository_Interface::class );
 
         // Services.
         $container->set(
-            'club_service',
-            fn( Simple_Container $c ) => new Club_Service(
-                $c->get( 'club_repository' ),
-                $c->get( 'registration_repository' ),
-                $c->get( 'club_role_repository' ),
-                $c->get( 'player_repository' ),
-                $c->get( 'team_repository' ),
-                $c->get( 'player_service' ),
-                $c->get( 'option_service' )
+            Club_Service_Interface::class,
+            fn( Simple_Container $c ): Club_Service_Interface => new Club_Service(
+                $c->get( Club_Repository_Interface::class ),
+                $c->get( Registration_Repository_Interface::class ),
+                $c->get( Club_Role_Repository_Interface::class ),
+                $c->get( Player_Repository_Interface::class ),
+                $c->get( Team_Repository_Interface::class ),
+                $c->get( Player_Service_Interface::class ),
+                $c->get( Option_Service::class )
             )
         );
-        $container->alias( Club_Service::class, 'club_service' );
-        $container->alias( Club_Service_Interface::class, 'club_service' );
+        $container->alias( Club_Service::class, Club_Service_Interface::class );
+        $container->alias( 'club_service', Club_Service_Interface::class );
 
         $container->set(
-            'registration_service',
-            fn( Simple_Container $c ) => new Registration_Service(
+            Registration_Service_Interface::class,
+            fn( Simple_Container $c ): Registration_Service_Interface => new Registration_Service(
                 $app,
-                $c->get( 'registration_repository' ),
-                $c->get( 'player_repository' ),
-                $c->get( 'club_repository' ),
-                $c->get( 'player_service' ),
-                $c->get( 'mailer' ),
-                $c->get( 'clock' ),
-                $c->get( 'domain_event_dispatcher' )
+                $c->get( Registration_Repository_Interface::class ),
+                $c->get( Player_Repository_Interface::class ),
+                $c->get( Club_Repository_Interface::class ),
+                $c->get( Player_Service_Interface::class ),
+                $c->get( Mailer_Interface::class ),
+                $c->get( Clock_Interface::class ),
+                $c->get( Domain_Event_Dispatcher_Interface::class )
             )
         );
-        $container->alias( Registration_Service::class, 'registration_service' );
-        $container->alias( Registration_Service_Interface::class, 'registration_service' );
+        $container->alias( Registration_Service::class, Registration_Service_Interface::class );
+        $container->alias( 'registration_service', Registration_Service_Interface::class );
 
         $container->set(
-            'team_service',
-            fn( Simple_Container $c ) => new Team_Service(
-                $c->get( 'team_repository' ),
-                $c->get( 'club_repository' ),
-                $c->get( 'event_repository' ),
-                $c->get( 'player_service' ),
-                $c->get( 'fixture_repository' ),
-                $c->get( 'event_query_service' )
+            Team_Service_Interface::class,
+            fn( Simple_Container $c ): Team_Service_Interface => new Team_Service(
+                $c->get( Team_Repository_Interface::class ),
+                $c->get( Club_Repository_Interface::class ),
+                $c->get( Event_Repository_Interface::class ),
+                $c->get( Player_Service_Interface::class ),
+                $c->get( Fixture_Repository_Interface::class ),
+                $c->get( Event_Query_Service_Interface::class )
             )
         );
-        $container->alias( Team_Service::class, 'team_service' );
-        $container->alias( Team_Service_Interface::class, 'team_service' );
+        $container->alias( Team_Service::class, Team_Service_Interface::class );
+        $container->alias( 'team_service', Team_Service_Interface::class );
 
         // Validator Factory.
         $container->set(
@@ -145,109 +157,99 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
 
         // Query Handlers.
         $container->set(
-            'get_club_handler',
-            fn( Simple_Container $c ) => new Get_Club_Handler(
-                $c->get( 'club_service' ),
-                $c->get( 'settings_service' ),
-                $c->get( 'security_service' )
+            Get_Club_Handler::class,
+            fn( Simple_Container $c ): Get_Club_Handler => new Get_Club_Handler(
+                $c->get( Club_Service_Interface::class ),
+                $c->get( Settings_Service_Interface::class ),
+                $c->get( Security_Service_Interface::class )
             )
         );
+        $container->alias( 'get_club_handler', Get_Club_Handler::class );
 
         $container->set(
-            'get_club_players_handler',
-            fn( Simple_Container $c ) => new Get_Club_Players_Handler(
-                $c->get( 'club_service' ),
-                $c->get( 'player_service' ),
-                $c->get( 'registration_service' ),
-                $c->get( 'option_gateway' )
+            Get_Club_Players_Handler::class,
+            fn( Simple_Container $c ): Get_Club_Players_Handler => new Get_Club_Players_Handler(
+                $c->get( Club_Service_Interface::class ),
+                $c->get( Player_Service_Interface::class ),
+                $c->get( Registration_Service_Interface::class ),
+                $c->get( Option_Gateway_Interface::class )
             )
         );
+        $container->alias( 'get_club_players_handler', Get_Club_Players_Handler::class );
 
         $container->set(
-            'get_club_roles_handler',
-            fn( Simple_Container $c ) => new Get_Club_Roles_Handler(
-                $c->get( 'club_service' )
+            Get_Club_Roles_Handler::class,
+            fn( Simple_Container $c ): Get_Club_Roles_Handler => new Get_Club_Roles_Handler(
+                $c->get( Club_Service_Interface::class )
             )
         );
+        $container->alias( 'get_club_roles_handler', Get_Club_Roles_Handler::class );
 
         $container->set(
-            'get_club_role_modal_handler',
-            fn( Simple_Container $c ) => new Get_Club_Role_Modal_Handler(
-                $c->get( 'club_service' )
+            Get_Club_Role_Modal_Handler::class,
+            fn( Simple_Container $c ): Get_Club_Role_Modal_Handler => new Get_Club_Role_Modal_Handler(
+                $c->get( Club_Service_Interface::class )
             )
         );
+        $container->alias( 'get_club_role_modal_handler', Get_Club_Role_Modal_Handler::class );
 
         $container->set(
-            'get_club_competitions_handler',
-            fn( Simple_Container $c ) => new Get_Club_Competitions_Handler(
-                $c->get( 'club_service' ),
+            Get_Club_Competitions_Handler::class,
+            fn( Simple_Container $c ): Get_Club_Competitions_Handler => new Get_Club_Competitions_Handler(
+                $c->get( Club_Service_Interface::class ),
                 $c->get( Competition_Service_Interface::class ),
-                $c->get( 'competition_repository' ),
+                $c->get( Competition_Repository_Interface::class ),
                 $c->get( Event_Query_Service_Interface::class )
             )
         );
+        $container->alias( 'get_club_competitions_handler', Get_Club_Competitions_Handler::class );
 
         $container->set(
-            'get_club_invoices_handler',
-            fn( Simple_Container $c ) => new Get_Club_Invoices_Handler(
-                $c->get( 'club_service' ),
-                $c->get( 'finance_service' ),
-                $c->get( 'settings_service' ),
-                $c->get( 'option_gateway' )
+            Get_Club_Invoices_Handler::class,
+            fn( Simple_Container $c ): Get_Club_Invoices_Handler => new Get_Club_Invoices_Handler(
+                $c->get( Club_Service_Interface::class ),
+                $c->get( Finance_Service_Interface::class ),
+                $c->get( Settings_Service_Interface::class ),
+                $c->get( Option_Gateway_Interface::class )
             )
         );
+        $container->alias( 'get_club_invoices_handler', Get_Club_Invoices_Handler::class );
 
         $container->set(
-            'get_team_order_handler',
-            fn( Simple_Container $c ) => new Get_Team_Order_Handler(
-                $c->get( 'club_service' ),
-                $c->get( 'event_repository' )
+            Get_Team_Order_Handler::class,
+            fn( Simple_Container $c ): Get_Team_Order_Handler => new Get_Team_Order_Handler(
+                $c->get( Club_Service_Interface::class ),
+                $c->get( Event_Repository_Interface::class )
             )
         );
-        $container->alias( Get_Team_Order_Handler::class, 'get_team_order_handler' );
+        $container->alias( 'get_team_order_handler', Get_Team_Order_Handler::class );
 
-        // Shortcode Adapter.
-        $container->set(
-            'club_shortcode_adapter',
-            fn( Simple_Container $c ) => new Club_Shortcode_Adapter(
-                club_service: $c->get( 'club_service' ),
-                get_club_handler: $c->get( 'get_club_handler' ),
-                club_shortcode_presenter: $c->get( 'club_shortcode_presenter' ),
-                players_handler: $c->get( 'get_club_players_handler' ),
-                roles_handler: $c->get( 'get_club_roles_handler' ),
-                role_modal_handler: $c->get( 'get_club_role_modal_handler' ),
-                competitions_handler: $c->get( 'get_club_competitions_handler' ),
-                invoices_handler: $c->get( 'get_club_invoices_handler' ),
-                view_presenter: $c->get( 'shortcode_view_presenter' ),
-                competition_shortcode_presenter: $c->get( 'competition_shortcode_presenter' ),
-                event_query_service: $c->get( 'event_query_service' ),
-                event_repository: $c->get( 'event_repository' ),
-                team_repository: $c->get( 'team_repository' ),
-                club_presenter: $c->get( 'club_presenter' ),
-                player_presenter: $c->get( 'player_presenter' ),
-                invoice_presenter: $c->get( 'invoice_presenter' ),
-                team_details_presenter: $c->get( 'team_details_presenter' ),
-                query_vars: $c->get( Query_Vars_Interface::class )
-            )
-        );
-        $container->alias( Club_Shortcode_Adapter::class, 'club_shortcode_adapter' );
+        // Shortcode Adapter (autowired via container class resolution).
+        $container->alias( 'club_shortcode_adapter', Club_Shortcode_Adapter::class );
 
         // AJAX Adapter & Controller.
         $container->set(
-            'club_ajax_adapter',
-            fn( Simple_Container $c ) => new Club_Ajax_Adapter(
-                $c->get( 'security_service' ),
-                $c->get( 'json_response_factory' ),
-                $c->get( 'club_service' ),
-                $c->get( 'registration_service' ),
-                $c->get( 'user_repository' ),
-                $c->get( 'club_role_repository' ),
-                $c->get( 'club_repository' ),
-                $c->get( 'player_repository' )
+            Club_Ajax_Adapter::class,
+            fn( Simple_Container $c ): Club_Ajax_Adapter => new Club_Ajax_Adapter(
+                $c->get( Security_Service_Interface::class ),
+                $c->get( Json_Response_Factory_Interface::class ),
+                $c->get( Club_Service_Interface::class ),
+                $c->get( Registration_Service_Interface::class ),
+                $c->get( User_Repository_Interface::class ),
+                $c->get( Club_Role_Repository_Interface::class ),
+                $c->get( Club_Repository_Interface::class ),
+                $c->get( Player_Repository_Interface::class )
             )
         );
-        $container->alias( Club_Ajax_Adapter::class, 'club_ajax_adapter' );
-        $container->set( 'club_ajax_controller', fn( Simple_Container $c ) => new Club_Ajax_Controller( $app, $c->get( 'club_ajax_adapter' ) ) );
-        $container->alias( Club_Ajax_Controller::class, 'club_ajax_controller' );
+        $container->alias( 'club_ajax_adapter', Club_Ajax_Adapter::class );
+
+        $container->set(
+            Club_Ajax_Controller::class,
+            fn( Simple_Container $c ): Club_Ajax_Controller => new Club_Ajax_Controller(
+                $app,
+                $c->get( Club_Ajax_Adapter::class )
+            )
+        );
+        $container->alias( 'club_ajax_controller', Club_Ajax_Controller::class );
     }
 }

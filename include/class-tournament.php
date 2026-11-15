@@ -1801,6 +1801,7 @@ final class Tournament {
         $club               = get_club( $entry->club_id );
         $fee_due            = 0;
         $tournament_entries = array();
+        $is_post_closing    = ( ! empty( $this->is_closed ) || ! empty( $this->is_withdrawal ) || ! empty( $this->is_started ) || ! empty( $this->is_complete ) );
         if ( $this->set_tournament_entry( $player->id, $club->id, $fee_due ) ) {
             $updates = true;
         }
@@ -1836,7 +1837,10 @@ final class Tournament {
                         $existing_entry = true;
                         $team           = $teams[0];
                     } else {
-                        $new_entry    = true;
+                        $new_entry    = ! $is_post_closing;
+                    }
+                    if ( ! $existing_entry && ! $new_entry ) {
+                        continue;
                     }
                     if ( substr( $event->type, 1, 1 ) === 'D' ) {
                         $is_doubles = true;
@@ -1850,19 +1854,50 @@ final class Tournament {
                         }
                         if ( $existing_entry ) {
                             $same_partner = false;
-                            foreach ( $team->players as $team_player ) {
-                                if ( $team_player->id === $partner_id ) {
-                                    $same_partner = true;
-                                    break;
+                            if ( ! empty( $team->players ) ) {
+                                foreach ( $team->players as $team_player ) {
+                                    if ( ! empty( $partner_id ) && (int) $team_player->id === (int) $partner_id ) {
+                                        $same_partner = true;
+                                        break;
+                                    }
+                                }
+                            } elseif ( ! empty( $team->player_id ) ) {
+                                foreach ( $team->player_id as $team_player_id ) {
+                                    if ( ! empty( $partner_id ) && (int) $team_player_id === (int) $partner_id ) {
+                                        $same_partner = true;
+                                        break;
+                                    }
                                 }
                             }
-                            if ( ! $same_partner ) {
+                            if ( empty( $partner_name ) || ( $is_post_closing && ! $same_partner ) ) {
+                                if ( ! empty( $team->players ) ) {
+                                    foreach ( $team->players as $team_player ) {
+                                        if ( (int) $team_player->id !== (int) $entry->player_id ) {
+                                            $partner_name                = $team_player->fullname;
+                                            $tournament_entry['partner'] = $partner_name;
+                                            break;
+                                        }
+                                    }
+                                } elseif ( ! empty( $team->player_id ) ) {
+                                    foreach ( $team->player_id as $team_player_id ) {
+                                        if ( (int) $team_player_id !== (int) $entry->player_id ) {
+                                            $partner = get_player( $team_player_id );
+                                            if ( $partner ) {
+                                                $partner_name                = $partner->fullname;
+                                                $tournament_entry['partner'] = $partner_name;
+                                            }
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            if ( ! $is_post_closing && ! $same_partner && ! empty( $partner_id ) ) {
                                 $league->delete_team( $team->team_id, $this->season );
                                 $new_entry    = true;
                             }
                         }
                     }
-                    if ( $new_entry ) {
+                    if ( $new_entry && ! $is_post_closing ) {
                         if ( $is_doubles ) {
                             $team_args            = array();
                             $team_args['player']  = $player->id;
@@ -1902,9 +1937,11 @@ final class Tournament {
                     $tournament_entry['event_name'] = $event->name;
                     $tournament_entries[]           = $tournament_entry;
                 } else {
-                    foreach ( $teams as $team ) {
-                        $updates = true;
-                        $league->delete_team( $team->team_id, $this->season );
+                    if ( ! $is_post_closing ) {
+                        foreach ( $teams as $team ) {
+                            $updates = true;
+                            $league->delete_team( $team->team_id, $this->season );
+                        }
                     }
                 }
             }

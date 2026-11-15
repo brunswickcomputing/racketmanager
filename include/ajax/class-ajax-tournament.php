@@ -152,7 +152,8 @@ class Ajax_Tournament extends Ajax {
                         }
                     }
                 }
-                if ( $tournament && ( $tournament->is_closed || $tournament->is_withdrawal ) && empty( $events ) ) {
+                $is_post_closing = $tournament && ( ! empty( $tournament->is_closed ) || ! empty( $tournament->is_withdrawal ) || ! empty( $tournament->is_started ) || ! empty( $tournament->is_complete ) );
+                if ( $is_post_closing && empty( $events ) ) {
                     foreach ( $allowed_event_ids as $allowed_id ) {
                         $check_event = get_event( $allowed_id );
                         if ( $check_event ) {
@@ -164,10 +165,20 @@ class Ajax_Tournament extends Ajax {
                             );
                             if ( ! empty( $existing_teams ) ) {
                                 $events[ $allowed_id ] = (string) $allowed_id;
-                                if ( empty( $partners[ $allowed_id ] ) && ! empty( $existing_teams[0]->player_id ) ) {
-                                    foreach ( $existing_teams[0]->player_id as $team_player_id ) {
-                                        if ( (int) $team_player_id !== (int) $player_id ) {
-                                            $partners[ $allowed_id ] = $team_player_id;
+                                if ( empty( $partners[ $allowed_id ] ) ) {
+                                    if ( ! empty( $existing_teams[0]->players ) ) {
+                                        foreach ( $existing_teams[0]->players as $team_player ) {
+                                            if ( (int) $team_player->id !== (int) $player_id ) {
+                                                $partners[ $allowed_id ] = $team_player->id;
+                                                break;
+                                            }
+                                        }
+                                    } elseif ( ! empty( $existing_teams[0]->player_id ) ) {
+                                        foreach ( $existing_teams[0]->player_id as $team_player_id ) {
+                                            if ( (int) $team_player_id !== (int) $player_id ) {
+                                                $partners[ $allowed_id ] = $team_player_id;
+                                                break;
+                                            }
                                         }
                                     }
                                 }
@@ -177,8 +188,9 @@ class Ajax_Tournament extends Ajax {
                 }
                 $validator         = $validator->events_entry( $events, $tournament ? $tournament->num_entries : null, $allowed_event_ids );
                 $events            = $validator->validated_events;
-                $tournament_events = array_map( 'strval', $allowed_event_ids );
-                if ( $tournament && ( $tournament->is_closed || $tournament->is_withdrawal ) && ! current_user_can( 'manage_racketmanager' ) ) {
+                $tournament_events     = array_map( 'strval', $allowed_event_ids );
+                $post_closing_rejected = false;
+                if ( $is_post_closing ) {
                     foreach ( $events as $event_id ) {
                         $event = get_event( $event_id );
                         if ( $event ) {
@@ -192,18 +204,49 @@ class Ajax_Tournament extends Ajax {
                                 $validator->error      = true;
                                 $validator->err_flds[] = 'event';
                                 $validator->err_msgs[] = __( 'Tournament entries are now closed', 'racketmanager' );
+                                $post_closing_rejected = true;
                                 break;
+                            }
+                            if ( substr( $event->type, 1, 1 ) === 'D' ) {
+                                $existing_partner_id = null;
+                                if ( ! empty( $teams[0]->players ) ) {
+                                    foreach ( $teams[0]->players as $team_player ) {
+                                        if ( (int) $team_player->id !== (int) $player_id ) {
+                                            $existing_partner_id = (int) $team_player->id;
+                                            break;
+                                        }
+                                    }
+                                } elseif ( ! empty( $teams[0]->player_id ) ) {
+                                    foreach ( $teams[0]->player_id as $team_player_id ) {
+                                        if ( (int) $team_player_id !== (int) $player_id ) {
+                                            $existing_partner_id = (int) $team_player_id;
+                                            break;
+                                        }
+                                    }
+                                }
+                                $submitted_partner_id = ! empty( $partners[ $event_id ] ) ? (int) $partners[ $event_id ] : null;
+                                if ( empty( $submitted_partner_id ) && ! empty( $existing_partner_id ) ) {
+                                    $partners[ $event_id ] = $existing_partner_id;
+                                } elseif ( ! empty( $submitted_partner_id ) && ! empty( $existing_partner_id ) && $submitted_partner_id !== $existing_partner_id ) {
+                                    $validator->error      = true;
+                                    $validator->err_flds[] = 'partner[' . $event_id . ']';
+                                    $validator->err_msgs[] = __( 'Partner changes are not permitted after entries close', 'racketmanager' );
+                                    $post_closing_rejected = true;
+                                    break;
+                                }
                             }
                         }
                     }
                 }
-                foreach ( $events as $event ) {
-                    $event = get_event( $event );
-                    if ( substr( $event->type, 1, 1 ) === 'D' ) {
-                        $partner_id = $partners[$event->id] ?? 0;
-                        $field_ref  = $event->id;
-                        $field_name = $event->name;
-                        $validator  = $validator->partner( $partner_id, $field_ref, $field_name, $event, $season, $player_id, $tournament->date );
+                if ( ! $post_closing_rejected ) {
+                    foreach ( $events as $event ) {
+                        $event = get_event( $event );
+                        if ( substr( $event->type, 1, 1 ) === 'D' ) {
+                            $partner_id = $partners[$event->id] ?? 0;
+                            $field_ref  = $event->id;
+                            $field_name = $event->name;
+                            $validator  = $validator->partner( $partner_id, $field_ref, $field_name, $event, $season, $player_id, $tournament->date );
+                        }
                     }
                 }
                 $acceptance = isset( $_POST['acceptance'] ) ? sanitize_text_field( wp_unslash( $_POST['acceptance'] ) ) : '';

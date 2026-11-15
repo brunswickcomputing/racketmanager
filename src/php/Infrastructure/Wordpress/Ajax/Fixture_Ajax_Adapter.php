@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Infrastructure\Wordpress\Ajax;
 
 use Exception;
+use InvalidArgumentException;
 use LogicException;
 use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Handler;
 use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Query;
@@ -359,7 +360,7 @@ readonly class Fixture_Ajax_Adapter {
                 } else {
                     try {
                         $is_date_unchanged = Fixture_Time_Parser::to_mysql_datetime( $request->schedule_date ) === Fixture_Time_Parser::to_mysql_datetime( $current_match_date );
-                    } catch ( \InvalidArgumentException ) {
+                    } catch ( InvalidArgumentException ) {
                         $is_date_unchanged = false;
                     }
                 }

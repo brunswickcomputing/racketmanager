@@ -19,7 +19,7 @@ use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Services\Admin\Admin_Command_Input as Input;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Team_Service;
 

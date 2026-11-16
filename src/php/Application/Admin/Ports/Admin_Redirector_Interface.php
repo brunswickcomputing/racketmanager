@@ -1,14 +1,14 @@
 <?php
+declare( strict_types=1 );
+
 /**
  * Admin redirector port
  *
  * @package RacketManager
- * @subpackage Infrastructure/Wordpress/Admin
+ * @subpackage Application/Admin/Ports
  */
 
-declare( strict_types=1 );
-
-namespace Racketmanager\Infrastructure\Wordpress\Admin;
+namespace Racketmanager\Application\Admin\Ports;
 
 /**
  * Delivers a Post-Redirect-Get redirect for an admin request.

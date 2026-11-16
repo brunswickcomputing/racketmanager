@@ -6,7 +6,7 @@ namespace Racketmanager\Tests\Unit\Services\Admin;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Tournament_Contact_Action_Result_DTO;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Admin\Tournament\Tournament_Contact_Action_Dispatcher;
 use Racketmanager\Services\Tournament_Service;
 

@@ -12,7 +12,7 @@ namespace Racketmanager\Services\Admin\Tournament;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Tournament_Contact_Action_Result_DTO;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Tournament_Service;
 
 readonly final class Tournament_Contact_Action_Dispatcher {

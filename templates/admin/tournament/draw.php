@@ -8,7 +8,7 @@
 namespace Racketmanager;
 
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 
 // Preferred input.
 $vm = isset( $vm ) && ( $vm instanceof Tournament_Draw_Page_View_Model ) ? $vm : null;

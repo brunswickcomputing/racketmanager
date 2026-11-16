@@ -12,7 +12,7 @@ use Racketmanager\Domain\Tournament\Currency;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Presentation\Presenters\Invoice_Presenter;
 use Racketmanager\Services\Admin\Finance\Finance_Invoice_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Finance_Service;
 

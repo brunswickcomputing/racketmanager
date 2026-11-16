@@ -17,7 +17,7 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition\League_Query_Service;

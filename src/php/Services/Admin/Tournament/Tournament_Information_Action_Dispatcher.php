@@ -14,7 +14,7 @@ use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Information_Request_DTO;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Tournament_Service;
 
 readonly final class Tournament_Information_Action_Dispatcher {

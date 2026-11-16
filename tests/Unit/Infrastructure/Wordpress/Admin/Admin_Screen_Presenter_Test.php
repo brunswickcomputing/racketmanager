@@ -9,7 +9,7 @@ use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
 use Racketmanager\Services\Admin\Admin_Message_Service;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 use stdClass;
 
 require_once __DIR__ . '/../../../../wp-stubs.php';

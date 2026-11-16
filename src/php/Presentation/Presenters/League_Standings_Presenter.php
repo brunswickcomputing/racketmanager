@@ -8,7 +8,7 @@ use Racketmanager\Application\League\DTOs\League_Standings_Result;
 use Racketmanager\Application\League\DTOs\League_View_State;
 use Racketmanager\Exceptions\Template_Not_Found_Exception;
 use Racketmanager\Presentation\View_Models\League_Standings_View_Model;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Util\Util;
 use Throwable;
 use function __;

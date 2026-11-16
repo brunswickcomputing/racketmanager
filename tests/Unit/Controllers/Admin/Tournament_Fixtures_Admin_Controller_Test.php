@@ -12,7 +12,7 @@ use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Response_DTO;
 use Racketmanager\Domain\DTO\Admin\Tournament\Tournament_Fixtures_Data_DTO;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Admin\Tournament\Tournament_Fixtures_Admin_Service;
 use Racketmanager\Services\Tournament_Service;
 use ReflectionClass;

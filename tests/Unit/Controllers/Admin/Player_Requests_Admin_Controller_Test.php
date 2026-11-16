@@ -9,7 +9,7 @@ use Racketmanager\Admin\Controllers\Player_Requests_Admin_Controller;
 use Racketmanager\Admin\View_Models\Player_Requests_Page_View_Model;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Services\Admin\Player\Player_Request_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Registration_Service;
 

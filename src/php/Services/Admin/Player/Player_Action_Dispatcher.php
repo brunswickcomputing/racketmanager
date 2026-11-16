@@ -25,7 +25,7 @@ use Racketmanager\Exceptions\Player_Exists_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Updated_Exception;
 use Racketmanager\Exceptions\WTN_Error_Exception;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Player_Service;
 
 /**

@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Admin\Controllers\Tournament_Setup_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Setup_Page_View_Model;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Details_DTO;
 use Racketmanager\Domain\Tournament\Tournament;

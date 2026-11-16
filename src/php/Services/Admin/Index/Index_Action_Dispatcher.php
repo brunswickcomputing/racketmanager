@@ -11,11 +11,12 @@ declare( strict_types=1 );
 namespace Racketmanager\Services\Admin\Index;
 
 use Closure;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Index_Action_Dispatcher_Interface;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Duplicate_Competition_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Validator\Validator;
 

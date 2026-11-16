@@ -14,7 +14,7 @@ use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Admin\League\League_Team_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Standings\Standings_Service;
 

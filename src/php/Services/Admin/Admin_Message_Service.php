@@ -10,6 +10,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Services\Admin;
 
 use function Racketmanager\show_alert;
+use Racketmanager\Application\Admin\Ports\Flash_Message_Store_Interface;
 
 /**
  * Service to handle admin UI notifications (both flash and current request).

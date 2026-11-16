@@ -5,7 +5,7 @@ namespace Racketmanager\Presentation\Presenters;
 
 use Racketmanager\Exceptions\Template_Not_Found_Exception;
 use Racketmanager\Presentation\View_Models\Club_View_Model;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Throwable;
 use function Racketmanager\show_alert;
 

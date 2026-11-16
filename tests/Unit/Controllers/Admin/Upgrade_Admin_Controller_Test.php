@@ -11,7 +11,7 @@ use Racketmanager\Admin\Controllers\Upgrade_Admin_Controller;
 use Racketmanager\Admin\View_Models\Upgrade_Page_View_Model;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\RacketManager;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;

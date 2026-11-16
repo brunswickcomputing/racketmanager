@@ -22,7 +22,7 @@ use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Services\Admin\Cup\Cup_Plan_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Validator\Validator_Plan;
 

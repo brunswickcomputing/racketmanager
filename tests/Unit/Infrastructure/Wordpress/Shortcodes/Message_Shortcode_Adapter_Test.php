@@ -17,7 +17,7 @@ use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 
 class Message_Shortcode_Adapter_Test extends TestCase {

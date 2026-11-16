@@ -8,7 +8,7 @@ use Racketmanager\Application\Club\Ports\Club_Service_Interface;
 use Racketmanager\Application\Ports\Settings_Service_Interface;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
-use Racketmanager\Infrastructure\Security\Security_Service_Interface;
+use Racketmanager\Application\Ports\Security_Service_Interface;
 
 /**
  * Query handler for resolving [club] shortcode data into a view model.

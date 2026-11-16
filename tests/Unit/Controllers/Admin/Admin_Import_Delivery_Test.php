@@ -12,13 +12,13 @@ use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
-use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
-use Racketmanager\Services\Admin\Import\Import_Action_Dispatcher_Interface;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Admin_Redirector_Interface;
+use Racketmanager\Application\Admin\Ports\Import_Action_Dispatcher_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Tests\Helpers\Creates_Admin_Delivery_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 

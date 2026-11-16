@@ -1403,7 +1403,7 @@ final class Admin_Test extends TestCase {
     public function test_menu_registers_top_level_page_with_expected_arguments_and_asset_hooks(): void {
         $container    = new Simple_Container();
         $presenter    = new Admin_Screen_Presenter(
-            $this->createStub( \Racketmanager\Services\View\View_Renderer_Interface::class ),
+            $this->createStub( \Racketmanager\Application\Ports\View_Renderer_Interface::class ),
             new \Racketmanager\Services\Admin\Admin_Message_Service( new \Racketmanager\Admin\Flash\Admin_Flash_Message_Store() )
         );
         $admin_router = new Admin_Page_Router(
@@ -1443,7 +1443,7 @@ final class Admin_Test extends TestCase {
     public function test_menu_registers_all_twelve_submenus_in_exact_order_with_asset_hooks(): void {
         $container    = new Simple_Container();
         $presenter    = new Admin_Screen_Presenter(
-            $this->createStub( \Racketmanager\Services\View\View_Renderer_Interface::class ),
+            $this->createStub( \Racketmanager\Application\Ports\View_Renderer_Interface::class ),
             new \Racketmanager\Services\Admin\Admin_Message_Service( new \Racketmanager\Admin\Flash\Admin_Flash_Message_Store() )
         );
         $admin_router = new Admin_Page_Router(

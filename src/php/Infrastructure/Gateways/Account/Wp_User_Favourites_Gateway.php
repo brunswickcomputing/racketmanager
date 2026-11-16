@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Infrastructure\Gateways\Account;
 
 use Racketmanager\Application\Account\Ports\User_Favourites_Gateway_Interface;
-use Racketmanager\Infrastructure\Security\Security_Service_Interface;
+use Racketmanager\Application\Ports\Security_Service_Interface;
 
 final readonly class Wp_User_Favourites_Gateway implements User_Favourites_Gateway_Interface {
     public function __construct( private Security_Service_Interface $security ) {}

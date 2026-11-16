@@ -15,11 +15,11 @@ use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Partner
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Exceptions\Stripe_API_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Infrastructure\Security\Security_Service_Interface;
+use Racketmanager\Application\Ports\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Ajax_Registry;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Tournament_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Tournament_Ajax_Controller;
-use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
+use Racketmanager\Application\Ports\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Competition_Entry_Service;

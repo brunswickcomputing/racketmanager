@@ -86,7 +86,7 @@ use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\RacketManager;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
     use Racketmanager\Services\Competition\League_Query_Service;
     use stdClass;

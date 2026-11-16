@@ -5,9 +5,11 @@ namespace Racketmanager\Services\Notification;
 
 use Closure;
 use LogicException;
+use Racketmanager\Application\Mail\Mailer_Interface;
+use Racketmanager\Application\Notification\Ports\Notification_Presenter_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
@@ -21,7 +23,6 @@ use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Settings_Service;
-use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Util\Util;
 
 /**

@@ -345,7 +345,7 @@ final class Plugin_Bootstrap_Test extends TestCase {
 
         $app->calculate_player_ratings( 42 );
 
-        $orchestrator = $this->createMock( \Racketmanager\Services\Fixture\Pending_Result_Orchestrator_Interface::class );
+        $orchestrator = $this->createMock( \Racketmanager\Application\Fixture\Ports\Pending_Result_Orchestrator_Interface::class );
         $orchestrator->expects( self::once() )->method( 'chase_pending_results' )->with( 'league' );
         $container->set( 'pending_result_orchestration_service', $orchestrator );
 

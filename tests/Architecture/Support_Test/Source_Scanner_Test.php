@@ -401,6 +401,41 @@ final class Source_Scanner_Test extends TestCase {
         self::assertSame( [], array_filter( $files, static fn( Source_File $file ): bool => $file->has_parse_error() ), 'every plugin PHP file must parse' );
     }
 
+    public function test_declared_interfaces_tracks_interfaces_separately_from_classes(): void {
+        $code = <<<'PHP'
+        <?php
+        declare(strict_types=1);
+        namespace Racketmanager\Application\Sample;
+
+        interface First_Interface {}
+        interface Second_Interface {}
+        class Sample_Class {}
+        trait Sample_Trait {}
+        enum Sample_Enum {}
+        PHP;
+
+        $file = Source_Scanner::scan_source( $code, 'in-memory/interfaces.php' );
+
+        self::assertFalse( $file->has_parse_error(), (string) $file->parse_error );
+        self::assertSame(
+            [
+                'Racketmanager\Application\Sample\First_Interface',
+                'Racketmanager\Application\Sample\Second_Interface',
+            ],
+            $file->declared_interfaces
+        );
+        self::assertSame(
+            [
+                'Racketmanager\Application\Sample\First_Interface',
+                'Racketmanager\Application\Sample\Second_Interface',
+                'Racketmanager\Application\Sample\Sample_Class',
+                'Racketmanager\Application\Sample\Sample_Trait',
+                'Racketmanager\Application\Sample\Sample_Enum',
+            ],
+            $file->declared_classes
+        );
+    }
+
     /**
      * @return array<int, array{name: string, fallback: ?string, line: int}>
      */

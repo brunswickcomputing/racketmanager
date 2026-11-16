@@ -1,7 +1,13 @@
 <?php
 declare( strict_types=1 );
+/**
+ * Page Title Service Interface
+ *
+ * @package RacketManager
+ * @subpackage Application/Ports
+ */
 
-namespace Racketmanager\Services\Seo;
+namespace Racketmanager\Application\Ports;
 
 /**
  * Contract for building dynamic page and document titles.

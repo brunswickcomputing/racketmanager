@@ -17,7 +17,7 @@ use Racketmanager\Admin\View_Models\League_Overview_Page_View_Model;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
 use Racketmanager\Services\Admin\League\League_Contact_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Competition_Service;
 
 final readonly class League_Overview_Admin_Controller {

@@ -23,7 +23,7 @@ use Racketmanager\Application\General\Queries\Get_Team_Order_Handler;
 use Racketmanager\Application\General\Queries\Get_Team_Order_Query;
 use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Application\Ports\Template_Renderer_Interface;
-use Racketmanager\Infrastructure\Security\Security_Service_Interface;
+use Racketmanager\Application\Ports\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Presentation\Ports\Invoice_Presenter_Interface;
 use Racketmanager\Infrastructure\Wordpress\Presentation\Ports\Player_Presenter_Interface;
 use Racketmanager\Infrastructure\Wordpress\Presentation\Ports\Shortcode_View_Presenter_Interface;

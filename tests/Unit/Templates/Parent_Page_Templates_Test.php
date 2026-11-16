@@ -17,7 +17,7 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Details_DTO;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
-use Racketmanager\Infrastructure\Security\Security_Service_Interface;
+use Racketmanager\Application\Ports\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Club_Presenter;

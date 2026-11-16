@@ -23,7 +23,7 @@ use Racketmanager\Domain\DTO\Tournament\Tournament_Entry_Response_DTO;
 use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Partner_Request_DTO;
 use Racketmanager\Exceptions\Stripe_API_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface;
+use Racketmanager\Application\Admin\Ports\Draw_Action_Handler_Interface;
 use Racketmanager\Services\Finance_Service;
 use WP_Error;
 

@@ -16,7 +16,7 @@ use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Finals_
 use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Finals_Request_DTO;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\Validator\Validator_Tournament;
 

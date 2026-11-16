@@ -12,7 +12,7 @@ use Racketmanager\Domain\Player\Player;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Services\Admin\Player\Player_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;

@@ -59,9 +59,9 @@ use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Fixture\Fixture_Relation_Loader;
-use Racketmanager\Services\Notification\Notification_Presenter_Interface;
+use Racketmanager\Application\Notification\Ports\Notification_Presenter_Interface;
 use Racketmanager\Services\Settings_Service;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 
 /**
  * Service provider for Presentation layer.

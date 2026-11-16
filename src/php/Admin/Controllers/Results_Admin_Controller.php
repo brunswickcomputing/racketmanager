@@ -13,7 +13,7 @@ namespace Racketmanager\Admin\Controllers;
 
 use Racketmanager\Admin\Presenters\Admin_Message_Mapper;
 use Racketmanager\Admin\View_Models\Results_Page_View_Model;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 
 /**
  * Class Results_Admin_Controller

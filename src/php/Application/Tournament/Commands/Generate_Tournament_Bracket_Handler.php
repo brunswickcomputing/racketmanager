@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Tournament\Commands;
 
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
-use Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface;
+use Racketmanager\Application\Admin\Ports\Draw_Action_Handler_Interface;
 
 /**
  * Handler for generating and setting tournament/championship bracket fixtures.

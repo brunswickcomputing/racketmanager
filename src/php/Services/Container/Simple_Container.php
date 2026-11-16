@@ -35,7 +35,7 @@ class Simple_Container {
      * @var array<string, string>
      */
     private const PORT_LEGACY_FALLBACKS = [
-        \Racketmanager\Services\View\View_Renderer_Interface::class => 'view_renderer',
+        \Racketmanager\Application\Ports\View_Renderer_Interface::class => 'view_renderer',
         \Racketmanager\Application\Club\Ports\Club_Service_Interface::class => 'club_service',
         \Racketmanager\Application\Club\Ports\Team_Service_Interface::class => 'team_service',
         \Racketmanager\Application\Player\Ports\Player_Service_Interface::class => 'player_service',
@@ -48,7 +48,7 @@ class Simple_Container {
         \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class => 'fixture_repository',
         \Racketmanager\Application\League\Ports\League_Query_Service_Interface::class => 'league_query_service',
         \Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface::class => 'event_query_service',
-        \Racketmanager\Infrastructure\Security\Security_Service_Interface::class => 'security_service',
+        \Racketmanager\Application\Ports\Security_Service_Interface::class => 'security_service',
         \Racketmanager\Application\Ports\Settings_Service_Interface::class => 'settings_service',
     ];
 

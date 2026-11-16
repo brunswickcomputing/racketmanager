@@ -10,7 +10,7 @@ use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Tournament\Championship;
-use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
+use Racketmanager\Application\Admin\Ports\Admin_Redirector_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Championship_Manager;

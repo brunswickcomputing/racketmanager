@@ -16,7 +16,7 @@ use Racketmanager\Admin\View_Models\Error_Bag;
 use Racketmanager\Admin\View_Models\Player_Page_View_Model;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Services\Admin\Player\Player_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Player_Service;
 use stdClass;

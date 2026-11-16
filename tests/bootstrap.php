@@ -27,16 +27,16 @@ if ( ! class_exists( 'Racketmanager\\Domain\\DTO\\Admin\\Championship\\Draw_Acti
     require_once __DIR__ . '/../src/php/Domain/DTO/Admin/Championship/Draw_Action_Response_DTO.php';
 }
 
-if ( ! interface_exists( 'Racketmanager\\Services\\Admin\\Security\\Action_Guard_Interface' ) ) {
-    require_once __DIR__ . '/../src/php/Services/Admin/Security/Wp_Action_Guard.php';
+if ( ! interface_exists( 'Racketmanager\\Application\\Admin\\Ports\\Action_Guard_Interface' ) ) {
+    require_once __DIR__ . '/../src/php/Application/Admin/Ports/Action_Guard_Interface.php';
 }
 
 if ( ! class_exists( 'Racketmanager\\Services\\Admin\\Championship\\Draw_Action_Resolver' ) ) {
     require_once __DIR__ . '/../src/php/Services/Admin/Championship/Draw_Action_Resolver.php';
 }
 
-if ( ! interface_exists( 'Racketmanager\\Services\\Admin\\Championship\\Draw_Action_Handler_Interface' ) ) {
-    require_once __DIR__ . '/../src/php/Services/Admin/Championship/Draw_Action_Handler_Interface.php';
+if ( ! interface_exists( 'Racketmanager\\Application\\Admin\\Ports\\Draw_Action_Handler_Interface' ) ) {
+    require_once __DIR__ . '/../src/php/Application/Admin/Ports/Draw_Action_Handler_Interface.php';
 }
 
 if ( ! class_exists( 'Racketmanager\\Services\\Admin\\Championship\\Draw_Action_Dispatcher' ) ) {

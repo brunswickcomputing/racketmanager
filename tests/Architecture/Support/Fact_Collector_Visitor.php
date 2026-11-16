@@ -48,6 +48,8 @@ final class Fact_Collector_Visitor extends NodeVisitorAbstract {
     public array $declared_functions = [];
     /** @var array<int,string> */
     public array $declared_classes = [];
+    /** @var array<int,string> */
+    public array $declared_interfaces = [];
     /** @var array<int,array{class: string, op: string, line: int}> */
     public array $fallback_news = [];
     /** @var array<int,array{class: ?string, name: string, readonly: bool, static: bool, restricted_set: bool, promoted: bool, line: int}> */
@@ -171,6 +173,9 @@ final class Fact_Collector_Visitor extends NodeVisitorAbstract {
             $name     = $resolved->toString();
 
             $this->declared_classes[] = $name;
+            if ( $node instanceof Stmt\Interface_ ) {
+                $this->declared_interfaces[] = $name;
+            }
         }
         $this->class_stack[]          = $name;
         $this->readonly_class_stack[] = $node instanceof Stmt\Class_ && $node->isReadonly();

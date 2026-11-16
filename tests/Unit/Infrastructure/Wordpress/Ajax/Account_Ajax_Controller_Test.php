@@ -4,12 +4,12 @@ namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Ajax;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Player\User;
-use Racketmanager\Infrastructure\Security\Security_Service_Interface;
+use Racketmanager\Application\Ports\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Account_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Account_Ajax_Controller;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory;
-use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
+use Racketmanager\Application\Ports\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;

@@ -9,15 +9,15 @@ use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
-use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
+use Racketmanager\Application\Admin\Ports\Admin_Redirector_Interface;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
 use Racketmanager\Services\Admin\Admin_Message_Service;
 use Racketmanager\Services\Admin\League\Event_Setup_Action_Dispatcher;
 use Racketmanager\Services\Admin\League\League_Setup_Action_Dispatcher;
 use Racketmanager\Services\Admin\League\Season_Delete_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use ReflectionProperty;
 

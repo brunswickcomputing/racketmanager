@@ -15,7 +15,7 @@ use Racketmanager\Admin\Presenters\Admin_Message_Mapper;
 use Racketmanager\Admin\View_Models\Error_Bag;
 use Racketmanager\Admin\View_Models\Player_Errors_Page_View_Model;
 use Racketmanager\Services\Admin\Player\Player_Error_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Player_Service;
 
 final readonly class Player_Errors_Admin_Controller {

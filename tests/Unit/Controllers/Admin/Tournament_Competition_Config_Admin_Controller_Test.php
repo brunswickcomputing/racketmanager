@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Admin\Controllers\Tournament_Competition_Config_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Tournament_Service;

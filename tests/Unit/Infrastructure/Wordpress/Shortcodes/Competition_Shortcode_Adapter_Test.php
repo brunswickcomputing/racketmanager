@@ -74,7 +74,7 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
         return new Competition_Shortcode_Presenter( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ), new Club_Presenter(), new Player_Presenter() );
     }
 
-    private function create_template_renderer( ?\Racketmanager\Services\View\View_Renderer_Interface $renderer = null ): Shortcode_Template_Renderer {
+    private function create_template_renderer( ?\Racketmanager\Application\Ports\View_Renderer_Interface $renderer = null ): Shortcode_Template_Renderer {
         return new Shortcode_Template_Renderer(
             $renderer ?? new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ),
             new Club_Presenter(),
@@ -104,7 +104,7 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
         $venue_club   = Club_Test_Factory::create( id: 12, name: 'Venue Club', shortcode: 'VC' );
         $club_service->method( 'get_club' )->willReturn( $venue_club );
 
-        $security       = $this->createStub( \Racketmanager\Infrastructure\Security\Security_Service_Interface::class );
+        $security       = $this->createStub( \Racketmanager\Application\Ports\Security_Service_Interface::class );
         $settings       = new \Racketmanager\Services\Settings_Service( [] );
         $player_service = $this->createStub( Player_Service::class );
         $handler        = new Get_Competition_Handler( $comp_service, $club_service, $player_service, $security, $settings, $this->competition_season_service() );
@@ -133,7 +133,7 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
         $club_service = $this->createStub( Club_Service::class );
         $club_service->method( 'get_club' )->willThrowException( new Club_Not_Found_Exception( 'Club not found' ) );
 
-        $security       = $this->createStub( \Racketmanager\Infrastructure\Security\Security_Service_Interface::class );
+        $security       = $this->createStub( \Racketmanager\Application\Ports\Security_Service_Interface::class );
         $settings       = new \Racketmanager\Services\Settings_Service( [] );
         $player_service = $this->createStub( Player_Service::class );
         $handler        = new Get_Competition_Handler( $comp_service, $club_service, $player_service, $security, $settings, $this->competition_season_service() );
@@ -157,7 +157,7 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
 
         $club_service   = $this->createStub( Club_Service::class );
         $player_service = $this->createStub( Player_Service::class );
-        $security       = $this->createStub( \Racketmanager\Infrastructure\Security\Security_Service_Interface::class );
+        $security       = $this->createStub( \Racketmanager\Application\Ports\Security_Service_Interface::class );
         $settings       = new \Racketmanager\Services\Settings_Service( [] );
         $handler        = new Get_Competition_Handler( $comp_service, $club_service, $player_service, $security, $settings, $this->competition_season_service() );
         $renderer       = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
@@ -625,7 +625,7 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
     }
 
     public function test_competition_shortcode_presenter_header_date_boundaries(): void {
-        $renderer  = $this->createStub( \Racketmanager\Services\View\View_Renderer_Interface::class );
+        $renderer  = $this->createStub( \Racketmanager\Application\Ports\View_Renderer_Interface::class );
         $presenter = new Competition_Shortcode_Presenter( $renderer, new Club_Presenter(), new Player_Presenter() );
 
         $competition = (object) [

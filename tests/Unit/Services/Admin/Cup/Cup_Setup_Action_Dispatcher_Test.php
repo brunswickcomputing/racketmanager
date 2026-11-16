@@ -12,9 +12,9 @@ use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
-use Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface;
+use Racketmanager\Application\Admin\Ports\Draw_Action_Handler_Interface;
 use Racketmanager\Services\Admin\Cup\Cup_Setup_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Competition_Service;
 
 require_once __DIR__ . '/../../../../wp-stubs.php';

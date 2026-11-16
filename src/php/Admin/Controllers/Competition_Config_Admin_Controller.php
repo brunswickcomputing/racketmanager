@@ -16,7 +16,7 @@ use Racketmanager\Admin\Presenters\Admin_Message_Mapper;
 use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Services\Admin\Competition\Competition_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Tournament_Service;
 

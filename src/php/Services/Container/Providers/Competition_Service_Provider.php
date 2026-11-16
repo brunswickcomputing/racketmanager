@@ -80,7 +80,7 @@ use Racketmanager\Application\Tournament\Queries\Get_Tournament_Winners_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Withdrawal_Handler;
 use Racketmanager\Domain\Competition\Scheduling\Competition_Scheduler;
 use Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface;
-use Racketmanager\Infrastructure\Security\Security_Service_Interface;
+use Racketmanager\Application\Ports\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Tournament_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Tournament_Ajax_Controller;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;

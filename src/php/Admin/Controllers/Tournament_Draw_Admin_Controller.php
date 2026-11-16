@@ -10,7 +10,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Admin\Controllers;
 
 use Racketmanager\Admin\Presenters\Admin_Message_Mapper;
-use Racketmanager\Admin\Presenters\Championship_Finals_Presenter_Interface;
+use Racketmanager\Application\Admin\Ports\Championship_Finals_Presenter_Interface;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Domain\Competition\League;
@@ -20,7 +20,7 @@ use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\League_Service;
 

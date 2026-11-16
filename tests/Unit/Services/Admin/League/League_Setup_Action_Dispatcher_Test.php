@@ -10,7 +10,7 @@ use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
 use Racketmanager\Services\Admin\League\League_Setup_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Competition_Service;
 
 require_once __DIR__ . '/../../../../wp-stubs.php';

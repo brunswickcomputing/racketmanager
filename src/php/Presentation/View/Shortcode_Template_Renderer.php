@@ -9,7 +9,7 @@ use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Favourite_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Services\View\Template_Scope;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Throwable;
 use function __;
 use function array_key_exists;

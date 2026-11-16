@@ -22,7 +22,7 @@ use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
 use Racketmanager\Services\Settings_Service;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Util\Util;
 
 class Login_Shortcode_Handlers_Test extends TestCase {

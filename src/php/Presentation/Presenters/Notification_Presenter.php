@@ -17,7 +17,7 @@ use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Tournament_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Application\Export\DTO\Export_Criteria;
-use Racketmanager\Services\Notification\Notification_Presenter_Interface;
+use Racketmanager\Application\Notification\Ports\Notification_Presenter_Interface;
 use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;

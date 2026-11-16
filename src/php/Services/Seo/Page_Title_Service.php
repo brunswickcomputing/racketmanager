@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Seo;
 
+use Racketmanager\Application\Ports\Page_Title_Service_Interface;
 use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Domain\Shared\Seo_Slug;
 

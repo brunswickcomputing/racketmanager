@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Services\Admin\Options\Options_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 
 require_once __DIR__ . '/../../../../wp-stubs.php';
 

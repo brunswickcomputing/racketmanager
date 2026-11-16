@@ -17,7 +17,7 @@ use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Fixture_Not_Found_Exception;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Team_Service;

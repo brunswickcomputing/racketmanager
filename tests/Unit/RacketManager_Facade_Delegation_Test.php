@@ -262,7 +262,7 @@ final class RacketManager_Facade_Delegation_Test extends TestCase {
     }
 
     public function test_chase_pending_results_delegates_to_pending_result_orchestration_service(): void {
-        $mock = $this->createMock( \Racketmanager\Services\Fixture\Pending_Result_Orchestrator_Interface::class );
+        $mock = $this->createMock( \Racketmanager\Application\Fixture\Ports\Pending_Result_Orchestrator_Interface::class );
         $mock->expects( $this->once() )
             ->method( 'chase_pending_results' )
             ->with( 'league' );
@@ -273,7 +273,7 @@ final class RacketManager_Facade_Delegation_Test extends TestCase {
     }
 
     public function test_chase_pending_approvals_delegates_to_pending_result_orchestration_service(): void {
-        $mock = $this->createMock( \Racketmanager\Services\Fixture\Pending_Result_Orchestrator_Interface::class );
+        $mock = $this->createMock( \Racketmanager\Application\Fixture\Ports\Pending_Result_Orchestrator_Interface::class );
         $mock->expects( $this->once() )
             ->method( 'chase_pending_approvals' )
             ->with( 'tournament' );

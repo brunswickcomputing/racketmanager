@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Infrastructure\Security;
 
+use Racketmanager\Application\Ports\Security_Service_Interface;
+
 /**
  * Service for handling security checks
  */

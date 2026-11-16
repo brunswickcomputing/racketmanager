@@ -10,7 +10,7 @@ use Racketmanager\Application\Competition\Queries\Get_Competition_Handler;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Query;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
-use Racketmanager\Infrastructure\Security\Security_Service_Interface;
+use Racketmanager\Application\Ports\Security_Service_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Settings_Service;

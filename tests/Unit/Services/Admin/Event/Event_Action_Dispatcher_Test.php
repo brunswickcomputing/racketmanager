@@ -12,7 +12,7 @@ use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Services\Admin\Event\Event_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\League_Service;

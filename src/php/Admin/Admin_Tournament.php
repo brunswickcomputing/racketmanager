@@ -30,7 +30,7 @@ use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Wp_Admin_Redirector;
 use Racketmanager\RacketManager;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 
 /**
  * RacketManager administration functions

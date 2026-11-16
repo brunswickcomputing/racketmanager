@@ -13,7 +13,7 @@ use Racketmanager\Presentation\View_Models\Competition_List_Item_View_Model;
 use Racketmanager\Presentation\View_Models\Competition_Overview_View_Model;
 use Racketmanager\Presentation\View_Models\Competition_View_Model;
 use Racketmanager\Presentation\View_Models\Event_Header_View_Model;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Util\Util;
 use Throwable;
 use function __;

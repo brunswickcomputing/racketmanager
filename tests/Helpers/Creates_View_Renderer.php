@@ -8,7 +8,7 @@ use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Services\View\Php_View_Renderer;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 
 trait Creates_View_Renderer {
 

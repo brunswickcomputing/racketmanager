@@ -10,7 +10,7 @@ use Racketmanager\Admin\View_Models\Players_Page_View_Model;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Services\Admin\Player\Player_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Player_Service;
 
 #[AllowMockObjectsWithoutExpectations]

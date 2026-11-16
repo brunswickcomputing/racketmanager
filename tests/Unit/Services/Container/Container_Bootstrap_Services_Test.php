@@ -193,7 +193,7 @@ class Container_Bootstrap_Services_Test extends TestCase {
     }
 
     public function test_container_resolves_admin_delivery_adapters_and_league_contact_dispatcher(): void {
-        $this->assertInstanceOf( \Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface::class, $this->container->get( 'admin_redirector' ) );
+        $this->assertInstanceOf( \Racketmanager\Application\Admin\Ports\Admin_Redirector_Interface::class, $this->container->get( 'admin_redirector' ) );
         $this->assertInstanceOf( \Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter::class, $this->container->get( 'admin_action_adapter' ) );
         $this->assertInstanceOf( \Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter::class, $this->container->get( 'admin_screen_presenter' ) );
         $this->assertInstanceOf( \Racketmanager\Services\Admin\League\League_Contact_Action_Dispatcher::class, $this->container->get( 'league_contact_action_dispatcher' ) );
@@ -206,11 +206,11 @@ class Container_Bootstrap_Services_Test extends TestCase {
     }
 
     public function test_container_resolves_index_action_dispatcher(): void {
-        $this->assertInstanceOf( \Racketmanager\Services\Admin\Index\Index_Action_Dispatcher_Interface::class, $this->container->get( 'index_action_dispatcher' ) );
+        $this->assertInstanceOf( \Racketmanager\Application\Admin\Ports\Index_Action_Dispatcher_Interface::class, $this->container->get( 'index_action_dispatcher' ) );
     }
 
     public function test_container_resolves_options_action_dispatcher(): void {
-        $this->assertInstanceOf( \Racketmanager\Services\Admin\Options\Options_Action_Dispatcher_Interface::class, $this->container->get( 'options_action_dispatcher' ) );
+        $this->assertInstanceOf( \Racketmanager\Application\Admin\Ports\Options_Action_Dispatcher_Interface::class, $this->container->get( 'options_action_dispatcher' ) );
     }
 
     public function test_container_resolves_rating_and_export_secondary_gateways(): void {
@@ -270,10 +270,10 @@ class Container_Bootstrap_Services_Test extends TestCase {
 
     public function test_container_resolves_club_and_tournament_ajax_controllers(): void {
         $this->assertTrue( $this->container->has( 'security_service' ) );
-        $this->assertInstanceOf( \Racketmanager\Infrastructure\Security\Security_Service_Interface::class, $this->container->get( 'security_service' ) );
+        $this->assertInstanceOf( \Racketmanager\Application\Ports\Security_Service_Interface::class, $this->container->get( 'security_service' ) );
 
         $this->assertTrue( $this->container->has( 'json_response_factory' ) );
-        $this->assertInstanceOf( \Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface::class, $this->container->get( 'json_response_factory' ) );
+        $this->assertInstanceOf( \Racketmanager\Application\Ports\Json_Response_Factory_Interface::class, $this->container->get( 'json_response_factory' ) );
 
         $this->assertTrue( $this->container->has( 'fixture_ajax_adapter' ) );
         $this->assertInstanceOf( \Racketmanager\Infrastructure\Wordpress\Ajax\Fixture_Ajax_Adapter::class, $this->container->get( 'fixture_ajax_adapter' ) );
@@ -378,7 +378,7 @@ class Container_Bootstrap_Services_Test extends TestCase {
                 template: 'custom'
             ) );
 
-        $security_service = $this->createStub( \Racketmanager\Infrastructure\Security\Security_Service_Interface::class );
+        $security_service = $this->createStub( \Racketmanager\Application\Ports\Security_Service_Interface::class );
         $security_service->method( 'verify_nonce' )->willReturn( true );
         $view_presenter = $this->createMock( \Racketmanager\Presentation\Presenters\Shortcode_View_Presenter::class );
         $view_presenter->expects( $this->once() )
@@ -560,8 +560,8 @@ class Container_Bootstrap_Services_Test extends TestCase {
             'event_query_service'     => \Racketmanager\Services\Competition\Event_Query_Service::class,
             'player_query_service'    => \Racketmanager\Services\Player_Query_Service::class,
             'player_stats_service'    => \Racketmanager\Services\Player_Stats_Service::class,
-            'security_service'        => \Racketmanager\Infrastructure\Security\Security_Service_Interface::class,
-            'view_renderer'           => \Racketmanager\Services\View\View_Renderer_Interface::class,
+            'security_service'        => \Racketmanager\Application\Ports\Security_Service_Interface::class,
+            'view_renderer'           => \Racketmanager\Application\Ports\View_Renderer_Interface::class,
             'mailer'                  => \Racketmanager\Application\Mail\Mailer_Interface::class,
             'clock'                   => \Racketmanager\Domain\Ports\Clock_Interface::class,
             'rating_gateway'          => \Racketmanager\Domain\Ports\Rating_Gateway_Interface::class,
@@ -569,9 +569,9 @@ class Container_Bootstrap_Services_Test extends TestCase {
             'option_gateway'          => \Racketmanager\Application\Ports\Option_Gateway_Interface::class,
             'user_favourites_gateway' => \Racketmanager\Application\Account\Ports\User_Favourites_Gateway_Interface::class,
             'exporter'                => \Racketmanager\Application\Export\Ports\Data_Exporter_Interface::class,
-            'admin_redirector'        => \Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface::class,
-            'action_guard'            => \Racketmanager\Services\Admin\Security\Action_Guard_Interface::class,
-            'notification_presenter'  => \Racketmanager\Services\Notification\Notification_Presenter_Interface::class,
+            'admin_redirector'        => \Racketmanager\Application\Admin\Ports\Admin_Redirector_Interface::class,
+            'action_guard'            => \Racketmanager\Application\Admin\Ports\Action_Guard_Interface::class,
+            'notification_presenter'  => \Racketmanager\Application\Notification\Ports\Notification_Presenter_Interface::class,
             'club_presenter'          => \Racketmanager\Presentation\Presenters\Club_Presenter::class,
             'player_presenter'        => \Racketmanager\Presentation\Presenters\Player_Presenter::class,
             'fixture_presenter'       => \Racketmanager\Presentation\Presenters\Fixture_Presenter::class,

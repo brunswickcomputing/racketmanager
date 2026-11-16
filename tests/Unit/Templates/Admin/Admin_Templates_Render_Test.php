@@ -30,7 +30,7 @@ use Racketmanager\Domain\Competition\Competition_Settings;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Tournament\Tournament;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Tests\Helpers\Creates_View_Renderer;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;

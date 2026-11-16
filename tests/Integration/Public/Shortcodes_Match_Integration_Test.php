@@ -56,7 +56,7 @@ namespace Racketmanager\Tests\Integration\Public {
     use Racketmanager\Services\Registration_Service;
     use Racketmanager\Services\Tournament_Service;
     use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
-    use Racketmanager\Services\View\View_Renderer_Interface;
+    use Racketmanager\Application\Ports\View_Renderer_Interface;
     use Racketmanager\Tests\Helpers\Creates_Test_Container;
 
     #[AllowMockObjectsWithoutExpectations]

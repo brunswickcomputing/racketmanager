@@ -23,7 +23,7 @@ use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Admin\League\League_Contact_Action_Dispatcher;
 use Racketmanager\Services\Admin\League\League_Match_Action_Dispatcher;
 use Racketmanager\Services\Admin\League\League_Team_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\League_Service;

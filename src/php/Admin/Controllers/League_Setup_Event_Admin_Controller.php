@@ -18,7 +18,7 @@ use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Services\Admin\League\Event_Setup_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 
 final readonly class League_Setup_Event_Admin_Controller {
 

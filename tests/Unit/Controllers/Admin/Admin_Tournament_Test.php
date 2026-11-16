@@ -17,7 +17,7 @@ use Racketmanager\Admin\View_Models\Teams_List_Page_View_Model;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Admin\Admin_Message_Service;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Services\Container\Simple_Container;
 use ReflectionClass;
 use ReflectionException;

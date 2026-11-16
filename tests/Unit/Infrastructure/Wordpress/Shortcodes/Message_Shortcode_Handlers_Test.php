@@ -22,7 +22,7 @@ use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
 use Racketmanager\Repositories\Message_Repository;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 
 class Message_Shortcode_Handlers_Test extends TestCase {
     use Creates_Test_Container;
@@ -245,7 +245,7 @@ class Message_Shortcode_Handlers_Test extends TestCase {
             $this->createStub( Get_Messages_Handler::class ),
             $handler,
             new Message_Presenter(),
-            security_service: new class implements \Racketmanager\Infrastructure\Security\Security_Service_Interface {
+            security_service: new class implements \Racketmanager\Application\Ports\Security_Service_Interface {
                 public function is_user_logged_in(): bool { return true; }
                 public function get_current_user_id(): int { return 101; }
                 public function verify_nonce( string $nonce, string $nonce_action ): bool { return true; }
@@ -294,7 +294,7 @@ class Message_Shortcode_Handlers_Test extends TestCase {
             $handler,
             $this->createStub( Get_Message_Handler::class ),
             new Message_Presenter(),
-            security_service: new class implements \Racketmanager\Infrastructure\Security\Security_Service_Interface {
+            security_service: new class implements \Racketmanager\Application\Ports\Security_Service_Interface {
                 public function is_user_logged_in(): bool { return true; }
                 public function get_current_user_id(): int { return 101; }
                 public function verify_nonce( string $nonce, string $nonce_action ): bool { return true; }
@@ -333,7 +333,7 @@ class Message_Shortcode_Handlers_Test extends TestCase {
             $handler,
             $this->createStub( Get_Message_Handler::class ),
             new Message_Presenter(),
-            security_service: new class implements \Racketmanager\Infrastructure\Security\Security_Service_Interface {
+            security_service: new class implements \Racketmanager\Application\Ports\Security_Service_Interface {
                 public function is_user_logged_in(): bool { return true; }
                 public function get_current_user_id(): int { return 101; }
                 public function verify_nonce( string $nonce, string $nonce_action ): bool { return true; }

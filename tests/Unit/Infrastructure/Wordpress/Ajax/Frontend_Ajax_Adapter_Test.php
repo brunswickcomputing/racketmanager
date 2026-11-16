@@ -35,11 +35,11 @@ use Racketmanager\Infrastructure\Wordpress\Request\Competition\Cup_Entry_Request
 use Racketmanager\Infrastructure\Wordpress\Request\Competition\League_Entry_Request_DTO;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Team\Team;
-use Racketmanager\Infrastructure\Security\Security_Service_Interface;
+use Racketmanager\Application\Ports\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Ajax_Registry;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Frontend_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Frontend_Ajax_Controller;
-use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
+use Racketmanager\Application\Ports\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;

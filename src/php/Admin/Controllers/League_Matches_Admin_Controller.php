@@ -17,7 +17,7 @@ use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Competition\Event_Query_Service;
 
 final readonly class League_Matches_Admin_Controller {

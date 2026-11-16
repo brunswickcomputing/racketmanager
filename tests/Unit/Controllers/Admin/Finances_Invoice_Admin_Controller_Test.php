@@ -16,7 +16,7 @@ use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Presentation\Presenters\Invoice_Presenter;
 use Racketmanager\Services\Admin\Finance\Finance_Invoice_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Finance_Service;
 use stdClass;
 use WP_Error;

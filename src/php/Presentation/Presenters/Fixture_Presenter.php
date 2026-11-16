@@ -27,7 +27,7 @@ use Racketmanager\Domain\Scoring\Set_Score;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\View_Models\Team_Match_Row_View_Model;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;

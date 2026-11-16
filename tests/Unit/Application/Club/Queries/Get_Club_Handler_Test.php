@@ -9,7 +9,7 @@ use Racketmanager\Application\Club\Queries\Get_Club_Handler;
 use Racketmanager\Application\Club\Queries\Get_Club_Query;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\DTO\Club\Club_Details_DTO;
-use Racketmanager\Infrastructure\Security\Security_Service_Interface;
+use Racketmanager\Application\Ports\Security_Service_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;

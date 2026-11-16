@@ -9,9 +9,10 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Admin\Overview;
 
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Tournament_Overview_Action_Handler_Interface;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Overview\Tournament_Overview_Action_Request_DTO;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 
 class Tournament_Overview_Action_Dispatcher {
 

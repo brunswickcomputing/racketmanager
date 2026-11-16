@@ -11,7 +11,7 @@ use Racketmanager\Application\Player\Ports\Player_Service_Interface;
 use Racketmanager\Application\Ports\Settings_Service_Interface;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
-use Racketmanager\Infrastructure\Security\Security_Service_Interface;
+use Racketmanager\Application\Ports\Security_Service_Interface;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use function __;

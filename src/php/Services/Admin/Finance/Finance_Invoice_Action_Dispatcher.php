@@ -18,7 +18,7 @@ use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Exceptions\Invoice_Not_Updated_Exception;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Finance_Service;
 
 final readonly class Finance_Invoice_Action_Dispatcher {

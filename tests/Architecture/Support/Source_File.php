@@ -39,6 +39,7 @@ final readonly class Source_File {
      * @param array<int,Include_Target>     $includes           include/require expressions with their literal path fragments.
      * @param array<int,string>             $declared_functions Fully qualified names of functions declared in the file.
      * @param array<int,string>             $declared_classes   Fully qualified names of classes/interfaces/traits/enums declared.
+     * @param array<int,string>             $declared_interfaces Fully qualified names of interfaces declared in the file.
      * @param array<int,Fallback_New>       $fallback_news      `$x ?? new Class` / `$x ??= new Class` where the right-hand operand is a
      *                                                          `new` with a static class name. `op` is `??` or `??=`.
      * @param array<int,Public_Property>    $public_properties  Public properties (declared or constructor-promoted) of every class-like
@@ -64,6 +65,7 @@ final readonly class Source_File {
         public array $includes = [],
         public array $declared_functions = [],
         public array $declared_classes = [],
+        public array $declared_interfaces = [],
         public array $fallback_news = [],
         public array $public_properties = [],
         public array $literal_key_method_calls = [],

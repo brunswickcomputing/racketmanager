@@ -18,7 +18,7 @@ use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Option_Reques
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use ReflectionClass;
 

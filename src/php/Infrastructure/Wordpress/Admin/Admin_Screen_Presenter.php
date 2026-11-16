@@ -13,7 +13,7 @@ namespace Racketmanager\Infrastructure\Wordpress\Admin;
 use Closure;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Services\Admin\Admin_Message_Service;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 
 /**
  * Driving adapter for the display (GET) half of an admin screen.

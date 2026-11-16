@@ -5,7 +5,7 @@ namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Response;
 use JetBrains\PhpStorm\NoReturn;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
+use Racketmanager\Application\Ports\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Logging_Json_Response_Factory;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 

@@ -22,7 +22,7 @@ use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
@@ -160,7 +160,7 @@ class Login_Shortcode_Adapter_Test extends TestCase {
             $real_handler     = new Get_Login_Form_Handler( $option_gateway, new \Racketmanager\Services\Settings_Service( [] ) );
             $php_renderer     = new \Racketmanager\Services\View\Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
             $view_presenter   = new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $php_renderer, new Club_Presenter(), new Player_Presenter() ) );
-            $security_service = $this->createStub( \Racketmanager\Infrastructure\Security\Security_Service_Interface::class );
+            $security_service = $this->createStub( \Racketmanager\Application\Ports\Security_Service_Interface::class );
             $security_service->method( 'is_user_logged_in' )->willReturn( false );
 
             $adapter = new Login_Shortcode_Adapter(
@@ -201,7 +201,7 @@ class Login_Shortcode_Adapter_Test extends TestCase {
             $real_handler     = new Get_Login_Form_Handler( $option_gateway, new \Racketmanager\Services\Settings_Service( [] ) );
             $php_renderer     = new \Racketmanager\Services\View\Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
             $view_presenter   = new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $php_renderer, new Club_Presenter(), new Player_Presenter() ) );
-            $security_service = $this->createStub( \Racketmanager\Infrastructure\Security\Security_Service_Interface::class );
+            $security_service = $this->createStub( \Racketmanager\Application\Ports\Security_Service_Interface::class );
             $security_service->method( 'is_user_logged_in' )->willReturn( false );
 
             $adapter = new Login_Shortcode_Adapter(
@@ -248,7 +248,7 @@ class Login_Shortcode_Adapter_Test extends TestCase {
             $real_handler     = new Get_Login_Form_Handler( $option_gateway, $settings_service );
             $php_renderer     = new \Racketmanager\Services\View\Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
             $view_presenter   = new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $php_renderer, new Club_Presenter(), new Player_Presenter() ) );
-            $security_service = $this->createStub( \Racketmanager\Infrastructure\Security\Security_Service_Interface::class );
+            $security_service = $this->createStub( \Racketmanager\Application\Ports\Security_Service_Interface::class );
             $security_service->method( 'is_user_logged_in' )->willReturn( false );
 
             $adapter = new Login_Shortcode_Adapter(

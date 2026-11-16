@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager\Services\Fixture;
+namespace Racketmanager\Application\Fixture\Ports;
 
 /**
  * Interface for orchestrating scheduled workflows for pending results and approvals.

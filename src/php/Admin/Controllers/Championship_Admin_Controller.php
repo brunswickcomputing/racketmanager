@@ -13,7 +13,7 @@ namespace Racketmanager\Admin\Controllers;
 
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Championship_Manager;
 use Racketmanager\Services\League_Service;
 

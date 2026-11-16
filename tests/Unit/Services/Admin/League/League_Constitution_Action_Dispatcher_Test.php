@@ -19,7 +19,7 @@ use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Admin\League\League_Constitution_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Competition\League_Schedule_Service as Competition_League_Schedule_Service;
 use Racketmanager\Services\Competition\Promotion_Relegation_Service;
 use Racketmanager\Services\League_Service;

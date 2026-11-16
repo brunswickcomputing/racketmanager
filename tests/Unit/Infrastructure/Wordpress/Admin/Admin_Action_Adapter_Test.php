@@ -7,7 +7,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
-use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
+use Racketmanager\Application\Admin\Ports\Admin_Redirector_Interface;
 use Racketmanager\Services\Admin\Admin_Message_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 

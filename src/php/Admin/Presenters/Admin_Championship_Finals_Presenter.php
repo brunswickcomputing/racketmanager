@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Admin\Presenters;
 
 use Racketmanager\Admin\View_Models\Admin_Championship_Final_Fixture_View_Model;
+use Racketmanager\Application\Admin\Ports\Championship_Finals_Presenter_Interface;
 use Racketmanager\Exceptions\Fixture_Not_Found_Exception;
 use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;

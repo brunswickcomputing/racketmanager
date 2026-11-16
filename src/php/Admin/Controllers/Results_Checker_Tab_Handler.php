@@ -15,7 +15,7 @@ use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Presentation\Presenters\Results_Checker_Presenter;
 use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
-use Racketmanager\Services\Admin\Result\Results_Checker_Action_Dispatcher_Interface;
+use Racketmanager\Application\Admin\Ports\Results_Checker_Action_Dispatcher_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Season_Service;
 

@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Fixture;
 
+use Racketmanager\Application\Fixture\Ports\Pending_Result_Orchestrator_Interface;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 

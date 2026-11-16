@@ -18,7 +18,7 @@ use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
 use Racketmanager\Services\Admin\Result\Results_Checker_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Result\Results_Checker_Manager;
 
 require_once __DIR__ . '/../../../../wp-stubs.php';

@@ -30,7 +30,7 @@ use Racketmanager\Services\Admin\Championship_Admin_Service;
 use Racketmanager\Services\Admin\Competition\Competition_Season_Action_Dispatcher;
 use Racketmanager\Services\Admin\League\Event_Setup_Action_Dispatcher;
 use Racketmanager\Services\Admin\League\League_Setup_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Championship_Manager;
 use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition\Event_Query_Service;

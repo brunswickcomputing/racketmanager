@@ -18,7 +18,7 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Services\Admin\League\League_Event_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;

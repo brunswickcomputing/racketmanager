@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Mail;
 
+use Racketmanager\Application\Mail\Ports\Mail_Filter_Service_Interface;
 use Racketmanager\Domain\Communication\Message;
 use Racketmanager\Domain\Communication\Message_Factory;
 use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;

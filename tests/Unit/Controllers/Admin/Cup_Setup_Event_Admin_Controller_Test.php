@@ -17,7 +17,7 @@ use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
-use Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface;
+use Racketmanager\Application\Admin\Ports\Draw_Action_Handler_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Resolves_Cup_Admin_Controllers;

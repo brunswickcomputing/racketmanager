@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Helpers;
 
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 
 /**
  * Resolves Cup admin controllers from the delivery container so tests exercise the real wiring and dispatchers.

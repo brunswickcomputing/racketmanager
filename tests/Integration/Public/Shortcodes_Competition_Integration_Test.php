@@ -93,7 +93,7 @@ class Shortcodes_Competition_Integration_Test extends TestCase {
 
         $renderer          = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
         $template_renderer = new Shortcode_Template_Renderer( $renderer, new Club_Presenter(), new Player_Presenter() );
-        $security          = $this->createStub( \Racketmanager\Infrastructure\Security\Security_Service_Interface::class );
+        $security          = $this->createStub( \Racketmanager\Application\Ports\Security_Service_Interface::class );
         $settings          = new \Racketmanager\Services\Settings_Service( [] );
         $handler           = new Get_Competition_Handler( $comp_service, $club_service, $player_service, $security, $settings, $this->competition_season_service() );
         $presenter         = new Competition_Shortcode_Presenter( $renderer, new Club_Presenter(), new Player_Presenter() );

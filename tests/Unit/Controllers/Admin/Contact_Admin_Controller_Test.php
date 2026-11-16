@@ -14,7 +14,7 @@ use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\League\League_Contact_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Admin\Tournament\Tournament_Contact_Action_Dispatcher;
 use Racketmanager\Services\Competition\Competition_Notification_Service;
 use Racketmanager\Services\Competition_Service;

@@ -11,7 +11,7 @@ use Racketmanager\Admin\View_Models\Club_Roles_Page_View_Model;
 use Racketmanager\Admin\View_Models\Club_Teams_Page_View_Model;
 use Racketmanager\Admin\View_Models\Clubs_Page_View_Model;
 use Racketmanager\Domain\Club\Club;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_View_Renderer;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;

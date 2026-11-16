@@ -9,7 +9,7 @@ use Racketmanager\Application\Message\Queries\Get_Messages_Handler;
 use Racketmanager\Application\Message\Queries\Get_Messages_Query;
 use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Application\Ports\Template_Renderer_Interface;
-use Racketmanager\Infrastructure\Security\Security_Service_Interface;
+use Racketmanager\Application\Ports\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Presentation\Ports\Message_Presenter_Interface;
 use Racketmanager\Infrastructure\Wordpress\Presentation\Ports\Shortcode_View_Presenter_Interface;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;

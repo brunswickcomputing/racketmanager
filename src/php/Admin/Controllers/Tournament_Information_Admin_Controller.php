@@ -13,7 +13,7 @@ use Racketmanager\Admin\Presenters\Admin_Message_Mapper;
 use Racketmanager\Admin\View_Models\Error_Bag;
 use Racketmanager\Admin\View_Models\Tournament_Information_Page_View_Model;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Admin\Tournament\Tournament_Information_Action_Dispatcher;
 use Racketmanager\Services\Tournament_Service;
 

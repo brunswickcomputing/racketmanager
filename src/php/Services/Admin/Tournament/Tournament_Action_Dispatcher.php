@@ -14,7 +14,7 @@ use Racketmanager\Domain\DTO\Admin\Tournament_Action_Result_DTO;
 use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Request_DTO;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Updated_Exception;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Tournament_Service;
 
 class Tournament_Action_Dispatcher {

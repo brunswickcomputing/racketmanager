@@ -56,7 +56,7 @@ final class Admin_Coordinator_Test extends TestCase {
             $c,
             $rm,
             new \Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter(
-                $this->createStub( \Racketmanager\Services\View\View_Renderer_Interface::class ),
+                $this->createStub( \Racketmanager\Application\Ports\View_Renderer_Interface::class ),
                 new \Racketmanager\Services\Admin\Admin_Message_Service( $this->createStub( \Racketmanager\Admin\Flash\Admin_Flash_Message_Store::class ) )
             )
         );

@@ -10,6 +10,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Infrastructure\Wordpress\Admin;
 
+use Racketmanager\Application\Admin\Ports\Admin_Redirector_Interface;
+
 /**
  * Redirects via wp_safe_redirect(), falling back to a JS/meta redirect once headers are sent.
  *

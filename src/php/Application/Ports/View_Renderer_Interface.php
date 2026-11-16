@@ -4,10 +4,10 @@ declare( strict_types=1 );
  * View Renderer Interface
  *
  * @package RacketManager
- * @subpackage Services/View
+ * @subpackage Application/Ports
  */
 
-namespace Racketmanager\Services\View;
+namespace Racketmanager\Application\Ports;
 
 /**
  * Interface View_Renderer_Interface
@@ -19,8 +19,8 @@ interface View_Renderer_Interface {
     /**
      * Renders a template with a given view model and outputs it directly.
      *
-     * @param string       $template_path   Relative path to the template (e.g. 'admin/tournament/overview')
-     * @param object|array $view_model      The View Model instance or an array of variables
+     * @param string       $template_path   Relative path to the template (e.g. 'admin/tournament/overview').
+     * @param object|array $view_model      The View Model instance or an array of variables.
      * @param array        $additional_vars Optional additional variables to extract into the template scope.
      */
     public function render( string $template_path, object|array $view_model, array $additional_vars = [] ): void;
@@ -28,8 +28,8 @@ interface View_Renderer_Interface {
     /**
      * Renders a template with a given view model and returns it as a string.
      *
-     * @param string       $template_path   Relative path to the template (e.g. 'admin/tournament/overview')
-     * @param object|array $view_model      The View Model instance or an array of variables
+     * @param string       $template_path   Relative path to the template (e.g. 'admin/tournament/overview').
+     * @param object|array $view_model      The View Model instance or an array of variables.
      * @param array        $additional_vars Optional additional variables to extract into the template scope.
      * @return string
      */

@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Infrastructure\Wordpress\Response;
 
 use JetBrains\PhpStorm\NoReturn;
+use Racketmanager\Application\Ports\Json_Response_Factory_Interface;
 
 /**
  * Decorator for Json_Response_Factory that logs errors.

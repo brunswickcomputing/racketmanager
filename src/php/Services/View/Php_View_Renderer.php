@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\View;
 
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Exceptions\Template_Not_Found_Exception;
 
 /**

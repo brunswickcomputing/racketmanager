@@ -10,6 +10,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Infrastructure\Wordpress\Admin;
 
+use Racketmanager\Application\Admin\Ports\Admin_Redirector_Interface;
 use Racketmanager\Services\Admin\Admin_Message_Service;
 
 /**

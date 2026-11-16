@@ -43,7 +43,7 @@ use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Standings\Standings_Service;
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use Racketmanager\Services\Validator\Score_Validation_Service;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Throwable;
 
 #[AllowMockObjectsWithoutExpectations]

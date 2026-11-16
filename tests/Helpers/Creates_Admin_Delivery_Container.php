@@ -8,7 +8,7 @@ use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Admin\Presenters\Admin_Competition_Page_Presenter;
 use Racketmanager\Application\Tournament\Ports\Tournament_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
-use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
+use Racketmanager\Application\Admin\Ports\Admin_Redirector_Interface;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
@@ -43,7 +43,7 @@ use Racketmanager\Services\Admin\Player\Player_Error_Action_Dispatcher;
 use Racketmanager\Services\Admin\Player\Player_Request_Action_Dispatcher;
 use Racketmanager\Services\Admin\Result\Results_Checker_Action_Dispatcher;
 use Racketmanager\Services\Admin\Season\Season_Action_Dispatcher;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Container\Simple_Container;
@@ -59,7 +59,7 @@ use Racketmanager\Services\Standings\Standings_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\Validator\Score_Validation_Service;
-use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
 
 trait Creates_Admin_Delivery_Container {
 
@@ -240,7 +240,7 @@ trait Creates_Admin_Delivery_Container {
         $container->set( 'player_error_action_dispatcher', fn() => $services['player_error_action_dispatcher'] ?? new Player_Error_Action_Dispatcher( $player_service, $guard_instance ) );
         $container->set( 'player_request_action_dispatcher', fn() => $services['player_request_action_dispatcher'] ?? new Player_Request_Action_Dispatcher( $registration_service, $guard_instance ) );
 
-        $draw_action_handler = $services['draw_action_handler'] ?? $this->createStub( \Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface::class );
+        $draw_action_handler = $services['draw_action_handler'] ?? $this->createStub( \Racketmanager\Application\Admin\Ports\Draw_Action_Handler_Interface::class );
         $container->set( 'cup_setup_action_dispatcher', fn() => $services['cup_setup_action_dispatcher'] ?? new Cup_Setup_Action_Dispatcher( $competition_service, $draw_action_handler, $guard_instance, $services['generate_tournament_bracket_handler'] ?? new \Racketmanager\Application\Tournament\Commands\Generate_Tournament_Bracket_Handler( $draw_action_handler ) ) );
         $container->set( 'cup_plan_action_dispatcher', fn() => $services['cup_plan_action_dispatcher'] ?? new Cup_Plan_Action_Dispatcher( $competition_service, $guard_instance ) );
         $container->set( 'draw_action_dispatcher', fn() => $services['draw_action_dispatcher'] ?? new Draw_Action_Dispatcher( $draw_action_handler, $guard_instance, $services['generate_tournament_bracket_handler'] ?? new \Racketmanager\Application\Tournament\Commands\Generate_Tournament_Bracket_Handler( $draw_action_handler ) ) );
@@ -301,14 +301,14 @@ trait Creates_Admin_Delivery_Container {
         $container->alias( \Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter::class, 'admin_action_adapter' );
         $container->alias( \Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter::class, 'admin_screen_presenter' );
         $container->alias( \Racketmanager\Services\Admin\Admin_Message_Service::class, 'admin_message_service' );
-        $container->alias( \Racketmanager\Services\Admin\Security\Action_Guard_Interface::class, 'action_guard' );
+        $container->alias( \Racketmanager\Application\Admin\Ports\Action_Guard_Interface::class, 'action_guard' );
         $container->alias( \Racketmanager\Services\Season_Service::class, 'season_service' );
         $container->alias( \Racketmanager\Services\Admin\Season\Season_Action_Dispatcher::class, 'season_action_dispatcher' );
-        $container->alias( \Racketmanager\Services\View\View_Renderer_Interface::class, 'view_renderer' );
+        $container->alias( \Racketmanager\Application\Ports\View_Renderer_Interface::class, 'view_renderer' );
         $container->alias( \Racketmanager\Presentation\Presenters\Results_Checker_Presenter::class, 'results_checker_presenter' );
-        $container->alias( \Racketmanager\Services\Admin\Result\Results_Checker_Action_Dispatcher_Interface::class, 'results_checker_action_dispatcher' );
-        $container->alias( \Racketmanager\Services\Admin\Import\Import_Action_Dispatcher_Interface::class, 'import_action_dispatcher' );
-        $container->alias( \Racketmanager\Services\Admin\Options\Options_Action_Dispatcher_Interface::class, 'options_action_dispatcher' );
+        $container->alias( \Racketmanager\Application\Admin\Ports\Results_Checker_Action_Dispatcher_Interface::class, 'results_checker_action_dispatcher' );
+        $container->alias( \Racketmanager\Application\Admin\Ports\Import_Action_Dispatcher_Interface::class, 'import_action_dispatcher' );
+        $container->alias( \Racketmanager\Application\Admin\Ports\Options_Action_Dispatcher_Interface::class, 'options_action_dispatcher' );
         $container->alias( \Racketmanager\Services\Club_Service::class, 'club_service' );
         $container->alias( \Racketmanager\Services\Competition_Service::class, 'competition_service' );
         $container->alias( \Racketmanager\Services\League_Service::class, 'league_service' );
@@ -317,7 +317,7 @@ trait Creates_Admin_Delivery_Container {
         $container->alias( Tournament_Service_Interface::class, 'tournament_service' );
         $container->alias( \Racketmanager\Services\Tournament_Service::class, 'tournament_service' );
         $container->alias( \Racketmanager\Services\Competition\Competition_Season_Service::class, 'competition_season_service' );
-        $container->alias( \Racketmanager\Services\Admin\Index\Index_Action_Dispatcher_Interface::class, 'index_action_dispatcher' );
+        $container->alias( \Racketmanager\Application\Admin\Ports\Index_Action_Dispatcher_Interface::class, 'index_action_dispatcher' );
         $container->alias( Event_Action_Dispatcher::class, 'event_action_dispatcher' );
 
         if ( array_key_exists( 'admin_results_match_presenter', $services ) && false === $services['admin_results_match_presenter'] ) {
@@ -334,15 +334,15 @@ trait Creates_Admin_Delivery_Container {
         }
         if ( array_key_exists( 'results_checker_action_dispatcher', $services ) && false === $services['results_checker_action_dispatcher'] ) {
             $container->remove( 'results_checker_action_dispatcher' );
-            $container->remove( \Racketmanager\Services\Admin\Result\Results_Checker_Action_Dispatcher_Interface::class );
+            $container->remove( \Racketmanager\Application\Admin\Ports\Results_Checker_Action_Dispatcher_Interface::class );
         }
         if ( array_key_exists( 'import_action_dispatcher', $services ) && false === $services['import_action_dispatcher'] ) {
             $container->remove( 'import_action_dispatcher' );
-            $container->remove( \Racketmanager\Services\Admin\Import\Import_Action_Dispatcher_Interface::class );
+            $container->remove( \Racketmanager\Application\Admin\Ports\Import_Action_Dispatcher_Interface::class );
         }
         if ( array_key_exists( 'index_action_dispatcher', $services ) && false === $services['index_action_dispatcher'] ) {
             $container->remove( 'index_action_dispatcher' );
-            $container->remove( \Racketmanager\Services\Admin\Index\Index_Action_Dispatcher_Interface::class );
+            $container->remove( \Racketmanager\Application\Admin\Ports\Index_Action_Dispatcher_Interface::class );
         }
 
         foreach ( $services as $id => $service ) {

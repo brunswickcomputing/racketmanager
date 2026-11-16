@@ -12,8 +12,8 @@ use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
-use Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface;
-use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Application\Admin\Ports\Draw_Action_Handler_Interface;
+use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 
 final class Draw_Action_Dispatcher_Test extends TestCase {
 

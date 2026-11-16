@@ -26,12 +26,7 @@ class Fixture_Presentation_Adapter_Graph_Builder {
             return '';
         }
 
-        $date_format = 'Y-m-d';
-        if ( $option_gateway ) {
-            $date_format = (string) $option_gateway->get_option( 'date_format', 'Y-m-d' );
-        } elseif ( function_exists( 'get_option' ) ) {
-            $date_format = (string) get_option( 'date_format', 'Y-m-d' );
-        }
+        $date_format = $option_gateway ? (string) $option_gateway->get_option( 'date_format', 'Y-m-d' ) : 'Y-m-d';
 
         if ( function_exists( 'mysql2date' ) ) {
             return (string) mysql2date( $date_format, $date );

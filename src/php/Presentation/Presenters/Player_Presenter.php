@@ -16,7 +16,6 @@ use Racketmanager\Presentation\View_Models\Competition_List_Item_View_Model;
 use Racketmanager\Presentation\View_Models\Player_View_Model;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
-use function get_option;
 use function mysql2date;
 use function str_starts_with;
 
@@ -429,13 +428,12 @@ readonly class Player_Presenter implements Player_Presenter_Interface {
         if ( empty( $date ) || str_starts_with( $date, '0000-00-00' ) ) {
             return '';
         }
+
         $date_format = $this->option_gateway?->get_option( 'date_format', 'd/m/Y' );
-        if ( empty( $date_format ) || ! is_string( $date_format ) ) {
-            $date_format = function_exists( 'get_option' ) ? get_option( 'date_format', 'd/m/Y' ) : 'd/m/Y';
-        }
         if ( empty( $date_format ) || ! is_string( $date_format ) ) {
             $date_format = 'd/m/Y';
         }
+
         return (string) mysql2date( $date_format, $date );
     }
 

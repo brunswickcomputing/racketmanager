@@ -12,10 +12,13 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Domain\Tournament\Championship;
 use Racketmanager\Domain\Tournament\Championship_Settings;
+use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
@@ -31,6 +34,7 @@ use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Championship_Manager;
 use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition\Event_Query_Service;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Fixture_Service;
@@ -38,6 +42,8 @@ use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\Validator\Competition_Config_Validator_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+use ReflectionClass;
+use ReflectionMethod;
 use stdClass;
 
 final class Event_Season_Persistence_Test extends TestCase {
@@ -83,13 +89,15 @@ final class Event_Season_Persistence_Test extends TestCase {
 	public function test_legacy_serialized_settings_and_seasons_keep_their_keys_and_json_wire_format(): void {
 		$seasons  = array( '2026' => array( 'name' => '2026', 'rounds' => array( 1, 2 ) ) );
 		$settings = array( 'mode' => 'knockout' );
-		$event    = Event::from_object( (object) array(
-			'name'           => 'Open',
-			'type'           => 'singles',
-			'competition_id' => 10,
-			'settings'       => serialize( $settings ),
-			'seasons'        => serialize( $seasons ),
-		) );
+		$event    = Event::from_object(
+            (object) array(
+                'name'           => 'Open',
+                'type'           => 'singles',
+                'competition_id' => 10,
+                'settings'       => serialize( $settings ),
+                'seasons'        => serialize( $seasons ),
+            )
+        );
 
 		$this->assertSame( $settings, $event->get_settings() );
 		$this->assertSame( $seasons, $event->get_seasons() );
@@ -251,8 +259,8 @@ final class Event_Season_Persistence_Test extends TestCase {
 			->willReturn( true );
 
 		$comp_service = new Competition_Service(
-			$this->createStub( \Racketmanager\RacketManager::class ),
-			$this->createStub( \Racketmanager\Repositories\Interfaces\Competition_Repository_Interface::class ),
+			$this->createStub( RacketManager::class ),
+			$this->createStub( Competition_Repository_Interface::class ),
 			$this->createStub( Club_Repository_Interface::class ),
 			$event_repo,
 			$this->createStub( League_Repository_Interface::class ),
@@ -311,7 +319,7 @@ final class Event_Season_Persistence_Test extends TestCase {
 			'away_team' => 2,
 			'season'    => '2026',
 		);
-		$fixture = \Racketmanager\Domain\Fixture\Fixture_Factory::from_object( $fixture_raw );
+		$fixture = Fixture_Factory::from_object( $fixture_raw );
 
 		$rubber = Rubber::from_object( (object) array( 'id' => 501, 'match_id' => 101 ) );
 
@@ -491,7 +499,7 @@ final class Event_Season_Persistence_Test extends TestCase {
 	public function test_dispatchers_require_event_repository(): void {
 		foreach ( array( Event_Setup_Action_Dispatcher::class, League_Setup_Action_Dispatcher::class, Competition_Season_Action_Dispatcher::class ) as $class ) {
 			$param = null;
-			foreach ( ( new \ReflectionClass( $class ) )->getConstructor()->getParameters() as $p ) {
+			foreach ( new ReflectionClass( $class )->getConstructor()->getParameters() as $p ) {
 				if ( 'event_repository' === $p->getName() ) {
 					$param = $p;
 				}
@@ -599,8 +607,8 @@ final class Event_Season_Persistence_Test extends TestCase {
 			'dateClose'      => '2026-04-15',
 			'max_teams'      => 8,
 			'teams_per_club' => 2,
-			'teams_prom_relg'=> 2,
-			'lowest_promotion'=> 1,
+			'teams_prom_relg' => 2,
+			'lowest_promotion' => 1,
 			'num_match_days' => 5,
 			'round_length'   => 7,
 			'home_away_diff' => 0,
@@ -689,8 +697,8 @@ final class Event_Season_Persistence_Test extends TestCase {
 			'dateClose'      => '2026-04-15',
 			'max_teams'      => 8,
 			'teams_per_club' => 2,
-			'teams_prom_relg'=> 2,
-			'lowest_promotion'=> 1,
+			'teams_prom_relg' => 2,
+			'lowest_promotion' => 1,
 			'num_match_days' => 5,
 			'round_length'   => 7,
 			'homeAway'       => 'true',
@@ -728,7 +736,7 @@ final class Event_Season_Persistence_Test extends TestCase {
 		$league_mock->event_id          = 35;
 		$league_mock->num_rubbers       = 2;
 		$league_mock->championship      = $championship;
-		$league_query_service = $this->createMock( \Racketmanager\Services\Competition\League_Query_Service::class );
+		$league_query_service = $this->createMock( League_Query_Service::class );
 		$league_query_service->expects( $this->once() )->method( 'set_rounds' )->with( $league_mock, self::isString(), self::isArray() );
 
 		$league_service          = $this->createStub( League_Service::class );
@@ -737,7 +745,7 @@ final class Event_Season_Persistence_Test extends TestCase {
 		$league_team_repo        = $this->createStub( League_Team_Repository_Interface::class );
 		$team_repo               = $this->createStub( Team_Repository_Interface::class );
 		$fixture_repo            = $this->createStub( Fixture_Repository_Interface::class );
-		$championship_manager    = ( new \ReflectionClass( Championship_Manager::class ) )->newInstanceWithoutConstructor();
+		$championship_manager    = new ReflectionClass( Championship_Manager::class )->newInstanceWithoutConstructor();
 
 		$event_repo = $this->createMock( Event_Repository_Interface::class );
 		$event_repo->expects( $this->once() )
@@ -769,7 +777,7 @@ final class Event_Season_Persistence_Test extends TestCase {
 			$league_query_service
 		);
 
-		$ref_method = new \ReflectionMethod( Championship_Admin_Service::class, 'apply_championship_rounds_and_fixtures' );
+		$ref_method = new ReflectionMethod( Championship_Admin_Service::class, 'apply_championship_rounds_and_fixtures' );
 		$ref_method->invoke(
 			$service,
 			$league_mock,
@@ -815,7 +823,7 @@ final class Event_Season_Persistence_Test extends TestCase {
 		$league_mock->event_id     = 36;
 		$league_mock->num_rubbers  = 2;
 		$league_mock->championship = $championship;
-		$league_query_service = $this->createMock( \Racketmanager\Services\Competition\League_Query_Service::class );
+		$league_query_service = $this->createMock( League_Query_Service::class );
 		$league_query_service->expects( $this->once() )->method( 'set_rounds' )->with( $league_mock, self::isString(), self::isArray() );
 
 		$league_service       = $this->createStub( League_Service::class );
@@ -824,7 +832,7 @@ final class Event_Season_Persistence_Test extends TestCase {
 		$league_team_repo     = $this->createStub( League_Team_Repository_Interface::class );
 		$team_repo            = $this->createStub( Team_Repository_Interface::class );
 		$fixture_repo         = $this->createStub( Fixture_Repository_Interface::class );
-		$championship_manager = ( new \ReflectionClass( Championship_Manager::class ) )->newInstanceWithoutConstructor();
+		$championship_manager = new ReflectionClass( Championship_Manager::class )->newInstanceWithoutConstructor();
 
 		$event_repo = $this->createMock( Event_Repository_Interface::class );
 		$event_repo->expects( $this->once() )
@@ -846,7 +854,7 @@ final class Event_Season_Persistence_Test extends TestCase {
 			$league_query_service
 		);
 
-		$ref_method = new \ReflectionMethod( Championship_Admin_Service::class, 'apply_championship_rounds_and_fixtures' );
+		$ref_method = new ReflectionMethod( Championship_Admin_Service::class, 'apply_championship_rounds_and_fixtures' );
 		$ref_method->invoke(
 			$service,
 			$league_mock,
@@ -880,8 +888,8 @@ final class Event_Season_Persistence_Test extends TestCase {
 			->method( 'delete_season_fixtures' )
 			->with( 77, 2026 );
 
-		$racketmanager   = ( new \ReflectionClass( \Racketmanager\RacketManager::class ) )->newInstanceWithoutConstructor();
-		$comp_repo       = $this->createMock( \Racketmanager\Repositories\Interfaces\Competition_Repository_Interface::class );
+		$racketmanager   = new ReflectionClass( RacketManager::class )->newInstanceWithoutConstructor();
+		$comp_repo       = $this->createMock( Competition_Repository_Interface::class );
 		$comp_repo->expects( $this->atLeastOnce() )->method( 'find_by_id' )->with( 10 )->willReturn( $competition );
 		$comp_repo->expects( $this->once() )->method( 'save' );
 
@@ -978,17 +986,20 @@ final class Event_Season_Persistence_Test extends TestCase {
 		$league->num_rubbers  = 2;
 		$league->championship = $championship;
 
-		$league_service = $this->createMock( League_Service::class );
-		$league_service->method( 'get_league' )->with( 25 )->willReturn( $league );
+        $league_service = $this->createMock( League_Service::class );
+        $league_service->expects( $this->once() )
+                       ->method( 'get_league' )
+                       ->with( 25 )
+                       ->willReturn( $league );
 
 		$fixture_service      = $this->createStub( Fixture_Service::class );
 		$tournament_service   = $this->createStub( Tournament_Service::class );
 		$league_team_repo     = $this->createStub( League_Team_Repository_Interface::class );
 		$team_repo            = $this->createStub( Team_Repository_Interface::class );
 		$fixture_repo         = $this->createStub( Fixture_Repository_Interface::class );
-		$championship_manager = ( new \ReflectionClass( Championship_Manager::class ) )->newInstanceWithoutConstructor();
+		$championship_manager = new ReflectionClass( Championship_Manager::class )->newInstanceWithoutConstructor();
 		$event_repo           = $this->createStub( Event_Repository_Interface::class );
-		$league_query_service = $this->createStub( \Racketmanager\Services\Competition\League_Query_Service::class );
+		$league_query_service = $this->createStub( League_Query_Service::class );
 
 		$service = new Championship_Admin_Service(
 			$league_service,

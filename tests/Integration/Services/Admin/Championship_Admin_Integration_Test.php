@@ -7,23 +7,29 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
+use Racketmanager\Domain\Result\Result;
 use Racketmanager\Domain\Tournament\Championship;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Team\Team;
+use Racketmanager\Domain\Tournament\Championship_Settings;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Admin\Championship_Admin_Service;
 use Racketmanager\Services\Championship_Manager;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Result_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use ReflectionClass;
+use ReflectionMethod;
+use RuntimeException;
 use stdClass;
 
 #[AllowMockObjectsWithoutExpectations]
@@ -70,10 +76,10 @@ class Championship_Admin_Integration_Test extends TestCase {
                 $fixture_repo,
                 $league_service,
                 $event_repo,
-                $this->createStub( \Racketmanager\Services\Competition\League_Query_Service::class )
+                $this->createStub( League_Query_Service::class )
             ),
             $event_repo,
-            $this->createStub( \Racketmanager\Services\Competition\League_Query_Service::class )
+            $this->createStub( League_Query_Service::class )
         );
     }
 
@@ -104,7 +110,7 @@ class Championship_Admin_Integration_Test extends TestCase {
         $team_array            = [];
         $admin_service         = $this->create_admin_service();
 
-        $method = new \ReflectionMethod( $admin_service, 'build_fixtures_for_round' );
+        $method = new ReflectionMethod( $admin_service, 'build_fixtures_for_round' );
         $args   = [ $league, 2026, $round, $teams, 4, &$team_array ];
         $result = $method->invokeArgs( $admin_service, $args );
 
@@ -144,11 +150,13 @@ class Championship_Admin_Integration_Test extends TestCase {
             ->willReturn( $league );
         $league_service->expects( self::once() )
                        ->method( 'remove_teams_from_league' )
-                       ->with( [$league_team_id], $league_id, $season )
-                       ->willReturn( [
-                           'messages'  => [$league_team_id . ': Matches exist'],
-                           'any_error' => true,
-                       ] );
+                       ->with( [ $league_team_id ], $league_id, $season )
+                    ->willReturn(
+                        [
+                            'messages'  => [ $league_team_id . ': Matches exist' ],
+                            'any_error' => true,
+                        ]
+                    );
 
         $admin_service = $this->create_admin_service( league_service: $league_service );
 
@@ -157,7 +165,7 @@ class Championship_Admin_Integration_Test extends TestCase {
             season: $season,
             post: [
                 'action' => 'delete',
-                'team'   => [$league_team_id],
+                'team'   => [ $league_team_id ],
                 'season' => $season,
             ]
         );
@@ -186,9 +194,13 @@ class Championship_Admin_Integration_Test extends TestCase {
         $new_team_id = 999;
         $team_repository->expects( self::once() )
             ->method( 'save' )
-            ->with( self::callback( function ( $team ) use ( $team_name ) {
-                return $team instanceof Team && $team->get_name() === $team_name && $team->get_type() === 'S';
-            } ) )
+            ->with(
+                self::callback(
+                    function ( $team ) use ( $team_name ) {
+                        return $team instanceof Team && $team->get_name() === $team_name && $team->get_type() === 'S';
+                    }
+                )
+            )
             ->willReturn( $new_team_id );
 
         // Mock League_Service::add_team_to_league to be called with the new team ID
@@ -205,7 +217,7 @@ class Championship_Admin_Integration_Test extends TestCase {
             league_id: $league_id,
             season: $season,
             post: [
-                'team'   => [$team_name],
+                'team'   => [ $team_name ],
                 'action' => 'add',
             ]
         );
@@ -243,7 +255,7 @@ class Championship_Admin_Integration_Test extends TestCase {
             league_id: $league_id,
             season: $season,
             post: [
-                'team'   => [$team_name],
+                'team'   => [ $team_name ],
                 'action' => 'add',
             ]
         );
@@ -272,13 +284,13 @@ class Championship_Admin_Integration_Test extends TestCase {
         $result_service = $this->createMock( Result_Service::class );
         $result_service->expects( self::once() )
             ->method( 'apply_to_fixture' )
-            ->with( $fixture, self::isInstanceOf( \Racketmanager\Domain\Result\Result::class ) );
+            ->with( $fixture, self::isInstanceOf( Result::class ) );
         $championship_manager = new Championship_Manager(
             $result_service,
             $fixture_repository,
             $league_service,
             $this->createStub( Event_Repository_Interface::class ),
-            $this->createStub( \Racketmanager\Services\Competition\League_Query_Service::class )
+            $this->createStub( League_Query_Service::class )
         );
 
         $admin_service = $this->create_admin_service(
@@ -286,16 +298,18 @@ class Championship_Admin_Integration_Test extends TestCase {
             fixture_repository: $fixture_repository,
             championship_manager: $championship_manager
         );
-        $result = $admin_service->update_final_results( $this->create_draw_dto(
-            league_id: 123,
-            post: [
-                'fixtures'    => [ 10 ],
-                'home_points' => [ 10 => 6 ],
-                'away_points' => [ 10 => 3 ],
-                'custom'      => [ 10 => [] ],
-                'round'       => 1,
-            ]
-        ) );
+        $result = $admin_service->update_final_results(
+            $this->create_draw_dto(
+                league_id: 123,
+                post: [
+                    'fixtures'    => [ 10 ],
+                    'home_points' => [ 10 => 6 ],
+                    'away_points' => [ 10 => 3 ],
+                    'custom'      => [ 10 => [] ],
+                    'round'       => 1,
+                ]
+            )
+        );
 
         self::assertSame( 'Updated Results of 1 fixtures', $result->message );
         self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
@@ -338,15 +352,17 @@ class Championship_Admin_Integration_Test extends TestCase {
             team_repository: $team_repository
         );
 
-        $result = $admin_service->handle_league_teams_action( $this->create_draw_dto(
-            league_id: 123,
-            season: 2024,
-            post: [
-                'action' => 'withdraw',
-                'season' => '2024',
-                'team'   => [ 456 ],
-            ]
-        ) );
+        $result = $admin_service->handle_league_teams_action(
+            $this->create_draw_dto(
+                league_id: 123,
+                season: 2024,
+                post: [
+                    'action' => 'withdraw',
+                    'season' => '2024',
+                    'team'   => [ 456 ],
+                ]
+            )
+        );
 
         self::assertSame( 'Team A withdrawn', $result->message );
         self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
@@ -367,16 +383,20 @@ class Championship_Admin_Integration_Test extends TestCase {
         $league_team_repository = $this->createMock( League_Team_Repository_Interface::class );
         $league_team_repository->expects( self::exactly( 2 ) )
             ->method( 'find_by_id' )
-            ->willReturnMap( [
-                [ 456, $first_league_team ],
-                [ 457, $second_league_team ],
-            ] );
+            ->willReturnMap(
+                [
+                    [ 456, $first_league_team ],
+                    [ 457, $second_league_team ],
+                ]
+            );
 
         $team_repository = $this->createMock( Team_Repository_Interface::class );
-        $team_repository->method( 'find_by_id' )->willReturnMap( [
-            [ 70, $first_team ],
-            [ 71, null ],
-        ] );
+        $team_repository->method( 'find_by_id' )->willReturnMap(
+            [
+                [ 70, $first_team ],
+                [ 71, null ],
+            ]
+        );
 
         $league_service = $this->createMock( League_Service::class );
         $league_service->expects( self::once() )
@@ -389,7 +409,7 @@ class Championship_Admin_Integration_Test extends TestCase {
                 function ( object $passed_league, int $team_id ) use ( $league ): void {
                     self::assertSame( $league, $passed_league );
                     if ( 71 === $team_id ) {
-                        throw new \RuntimeException( 'Cannot withdraw team' );
+                        throw new RuntimeException( 'Cannot withdraw team' );
                     }
                 }
             );
@@ -400,17 +420,19 @@ class Championship_Admin_Integration_Test extends TestCase {
             team_repository: $team_repository
         );
 
-        $result = $admin_service->handle_league_teams_action( $this->create_draw_dto(
-            league_id: 123,
-            season: 2024,
-            post: [
-                'action' => 'withdraw',
-                'season' => '2024',
-                'team'   => [ 456, 457 ],
-            ]
-        ) );
+        $result = $admin_service->handle_league_teams_action(
+            $this->create_draw_dto(
+                league_id: 123,
+                season: 2024,
+                post: [
+                    'action' => 'withdraw',
+                    'season' => '2024',
+                    'team'   => [ 456, 457 ],
+                ]
+            )
+        );
 
-        self::assertSame( "Team A withdrawn<br>Cannot withdraw team", $result->message );
+        self::assertSame( 'Team A withdrawn<br>Cannot withdraw team', $result->message );
         self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
     }
 
@@ -425,10 +447,12 @@ class Championship_Admin_Integration_Test extends TestCase {
         $fixture_service = $this->createMock( Fixture_Service::class );
         $fixture_service->expects( self::once() )
             ->method( 'create_fixture' )
-            ->willReturnCallback( function ( Fixture $f ) use ( &$created_fixtures ) {
-                $created_fixtures[] = $f;
-                return $f;
-            } );
+            ->willReturnCallback(
+                function ( Fixture $f ) use ( &$created_fixtures ) {
+                    $created_fixtures[] = $f;
+                    return $f;
+                }
+            );
 
         $admin_service = $this->create_admin_service(
             league_service: $league_service,
@@ -467,10 +491,12 @@ class Championship_Admin_Integration_Test extends TestCase {
         $fixture_service = $this->createMock( Fixture_Service::class );
         $fixture_service->expects( self::once() )
             ->method( 'create_fixture' )
-            ->willReturnCallback( function ( Fixture $f ) use ( &$created_fixtures ) {
-                $created_fixtures[] = $f;
-                return $f;
-            } );
+            ->willReturnCallback(
+                function ( Fixture $f ) use ( &$created_fixtures ) {
+                    $created_fixtures[] = $f;
+                    return $f;
+                }
+            );
 
         $admin_service = $this->create_admin_service(
             league_service: $league_service,
@@ -541,15 +567,19 @@ class Championship_Admin_Integration_Test extends TestCase {
         $fixture_service->expects( self::never() )->method( 'create_fixture' );
         $admin_service = $this->create_admin_service( league_service: $league_service, fixture_service: $fixture_service );
 
-        $result = $admin_service->manage_fixtures_in_league( $this->create_draw_dto( post: [
-            'mode'          => 'add',
-            'fixture'       => [ 0, 1 ],
-            'home_team'     => [ '1', '3' ],
-            'away_team'     => [ '2', '4' ],
-            'myDatePicker'  => [ '2026-05-15', '2026-02-31' ],
-            'begin_hour'    => [ '19', '18' ],
-            'begin_minutes' => [ '30', '00' ],
-        ] ) );
+        $result = $admin_service->manage_fixtures_in_league(
+            $this->create_draw_dto(
+                post: [
+                    'mode'          => 'add',
+                    'fixture'       => [ 0, 1 ],
+                    'home_team'     => [ '1', '3' ],
+                    'away_team'     => [ '2', '4' ],
+                    'myDatePicker'  => [ '2026-05-15', '2026-02-31' ],
+                    'begin_hour'    => [ '19', '18' ],
+                    'begin_minutes' => [ '30', '00' ],
+                ]
+            )
+        );
 
         self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
         self::assertStringContainsString( 'row 2', $result->message );
@@ -561,11 +591,11 @@ class Championship_Admin_Integration_Test extends TestCase {
         $league_service = $this->createMock( League_Service::class );
         $league_service->method( 'get_league' )->willReturn( $league );
         $fixtures = [
-            55 => \Racketmanager\Domain\Fixture\Fixture_Factory::from_object( (object) [ 'id' => 55, 'date' => '2026-05-01 19:30:00' ] ),
-            56 => \Racketmanager\Domain\Fixture\Fixture_Factory::from_object( (object) [ 'id' => 56, 'date' => '2026-05-02 19:30:00' ] ),
+            55 => Fixture_Factory::from_object( (object) [ 'id' => 55, 'date' => '2026-05-01 19:30:00' ] ),
+            56 => Fixture_Factory::from_object( (object) [ 'id' => 56, 'date' => '2026-05-02 19:30:00' ] ),
         ];
         $fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
-        $fixture_repository->method( 'find_by_id' )->willReturnCallback( static fn( int $id ) => $fixtures[$id] );
+        $fixture_repository->method( 'find_by_id' )->willReturnCallback( static fn( int $id ) => $fixtures[ $id ] );
         $fixture_service = $this->createMock( Fixture_Service::class );
         $fixture_service->expects( self::never() )->method( 'update_fixture' );
         $admin_service = $this->create_admin_service(
@@ -574,13 +604,17 @@ class Championship_Admin_Integration_Test extends TestCase {
             fixture_repository: $fixture_repository
         );
 
-        $result = $admin_service->manage_fixtures_in_league( $this->create_draw_dto( post: [
-            'mode'          => 'edit',
-            'fixture'       => [ 55, 56 ],
-            'myDatePicker'  => [ '2026-06-01', 'invalid-date' ],
-            'begin_hour'    => [ '18', '18' ],
-            'begin_minutes' => [ '30', '30' ],
-        ] ) );
+        $result = $admin_service->manage_fixtures_in_league(
+            $this->create_draw_dto(
+                post: [
+                    'mode'          => 'edit',
+                    'fixture'       => [ 55, 56 ],
+                    'myDatePicker'  => [ '2026-06-01', 'invalid-date' ],
+                    'begin_hour'    => [ '18', '18' ],
+                    'begin_minutes' => [ '30', '30' ],
+                ]
+            )
+        );
 
         self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
         self::assertStringContainsString( 'row 2', $result->message );
@@ -594,10 +628,12 @@ class Championship_Admin_Integration_Test extends TestCase {
         $league_service = $this->createMock( League_Service::class );
         $league_service->expects( self::once() )->method( 'get_league' )->with( 123 )->willReturn( $league );
 
-        $fixture = \Racketmanager\Domain\Fixture\Fixture_Factory::from_object( (object) [
-            'id'   => 55,
-            'date' => '2026-05-01 00:00:00',
-        ] );
+        $fixture = Fixture_Factory::from_object(
+            (object) [
+                'id'   => 55,
+                'date' => '2026-05-01 00:00:00',
+            ]
+        );
 
         $fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repository->expects( self::once() )->method( 'find_by_id' )->with( 55 )->willReturn( $fixture );
@@ -606,10 +642,12 @@ class Championship_Admin_Integration_Test extends TestCase {
         $fixture_service = $this->createMock( Fixture_Service::class );
         $fixture_service->expects( self::once() )
             ->method( 'update_fixture' )
-            ->willReturnCallback( function ( Fixture $f ) use ( &$updated_fixtures ) {
-                $updated_fixtures[] = $f;
-                return $f;
-            } );
+            ->willReturnCallback(
+                function ( Fixture $f ) use ( &$updated_fixtures ) {
+                    $updated_fixtures[] = $f;
+                    return $f;
+                }
+            );
 
         $admin_service = $this->create_admin_service(
             league_service: $league_service,
@@ -643,10 +681,12 @@ class Championship_Admin_Integration_Test extends TestCase {
         $league_service = $this->createMock( League_Service::class );
         $league_service->expects( self::once() )->method( 'get_league' )->with( 123 )->willReturn( $league );
 
-        $fixture = \Racketmanager\Domain\Fixture\Fixture_Factory::from_object( (object) [
-            'id'   => 55,
-            'date' => '2026-05-01 00:00:00',
-        ] );
+        $fixture = Fixture_Factory::from_object(
+            (object) [
+                'id'   => 55,
+                'date' => '2026-05-01 00:00:00',
+            ]
+        );
 
         $fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repository->expects( self::once() )->method( 'find_by_id' )->with( 55 )->willReturn( $fixture );
@@ -683,7 +723,7 @@ class Championship_Admin_Integration_Test extends TestCase {
         $championship = new Championship(
             123,
             false,
-            new \Racketmanager\Domain\Tournament\Championship_Settings(),
+            new Championship_Settings(),
             1,
             1,
             2,
@@ -705,22 +745,29 @@ class Championship_Admin_Integration_Test extends TestCase {
         ];
 
         $league_service = $this->createMock( League_Service::class );
-        $league_service->method( 'get_league' )->with( 123 )->willReturn( $league );
+        $league_service->expects( $this->once() )
+                       ->method( 'get_league' )
+                       ->willReturn( $league );
 
-        $fixture = \Racketmanager\Domain\Fixture\Fixture_Factory::from_object( (object) [
-            'id'        => 88,
-            'home_team' => '1_',
-            'away_team' => '2_',
-        ] );
+        $fixture = Fixture_Factory::from_object(
+            (object) [
+                'id'        => 88,
+                'home_team' => '1_',
+                'away_team' => '2_',
+            ]
+        );
 
         $fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repository->method( 'find_by_league_and_final' )->willReturn( [ $fixture ] );
-        $fixture_repository->method( 'find_by_id' )->with( 88 )->willReturn( $fixture );
+        $fixture_repository->expects( $this->exactly( 2 ) )
+                           ->method( 'find_by_id' )
+                           ->with( 88 )
+                           ->willReturn( $fixture );
         $fixture_repository->expects( self::once() )->method( 'save' )->with( $fixture );
 
-        $league_query_service = $this->createMock( \Racketmanager\Services\Competition\League_Query_Service::class );
+        $league_query_service = $this->createMock( League_Query_Service::class );
         $league_query_service->method( 'get_league_teams' )->willReturnCallback(
-            function( $l, array $args ) {
+            function ( $l, array $args ) {
                 $rank = (string) ( $args['rank'] ?? '' );
                 if ( '1' === $rank ) {
                     return [ (object) [ 'id' => 201 ] ];

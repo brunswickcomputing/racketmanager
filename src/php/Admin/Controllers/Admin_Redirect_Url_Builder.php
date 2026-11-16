@@ -509,6 +509,48 @@ final class Admin_Redirect_Url_Builder {
     }
 
     /**
+     * Build redirect URL that returns to the upgrade screen after a mutation.
+     *
+     * @param array<string, mixed> $query      Typically $_GET.
+     * @param array<string, mixed> $extra_args Additional parameters to append or override.
+     *
+     * @return string
+     */
+    public static function upgrade_screen( array $query = array(), array $extra_args = array() ): string {
+        $args = array(
+            'page' => isset( $query['page'] ) && '' !== strval( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager',
+        );
+
+        $args = array_merge( $args, $extra_args );
+
+        return add_query_arg( $args, admin_url( 'admin.php' ) );
+    }
+
+    /**
+     * Build redirect URL that returns to the championship screen after a mutation.
+     *
+     * @param array<string, mixed> $query      Typically $_GET.
+     * @param array<string, mixed> $extra_args Additional parameters to append or override.
+     *
+     * @return string
+     */
+    public static function championship_screen( array $query = array(), array $extra_args = array() ): string {
+        $args = array(
+            'page' => isset( $query['page'] ) && '' !== strval( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-cups',
+        );
+
+        foreach ( array( 'view', 'competition_id', 'league_id', 'league', 'tournament', 'season', 'tab', 'final' ) as $key ) {
+            if ( isset( $query[ $key ] ) && '' !== strval( $query[ $key ] ) ) {
+                $args[ $key ] = sanitize_text_field( wp_unslash( strval( $query[ $key ] ) ) );
+            }
+        }
+
+        $args = array_merge( $args, $extra_args );
+
+        return add_query_arg( $args, admin_url( 'admin.php' ) );
+    }
+
+    /**
      * Build redirect URL for teams list view mutations across contexts.
      *
      * @param array<string, mixed> $query

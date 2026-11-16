@@ -77,14 +77,25 @@ final class Admin_Result_Delivery_Test extends TestCase {
             }
         );
 
+        $option_service = $this->createStub( \Racketmanager\Infrastructure\Wordpress\Options\Option_Service::class );
+        $option_service->method( 'get_options' )->willReturnCallback(
+            fn( string|false $group = false ) => is_string( $group ) && isset( $this->plugin_options[ $group ] )
+                ? $this->plugin_options[ $group ]
+                : $this->plugin_options
+        );
+
         $container = $this->create_admin_delivery_container(
             services: array(
-                'competition_service' => $this->competition_service,
-                'season_service'      => $this->season_service,
-                'league_repository'   => $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class ),
-                'fixture_repository'  => $fixture_repo,
+                'competition_service'               => $this->competition_service,
+                'season_service'                    => $this->season_service,
+                'league_repository'                 => $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class ),
+                'fixture_repository'                => $fixture_repo,
+                'results_checker_action_dispatcher' => $this->dispatcher,
+                'option_service'                    => $option_service,
             ),
+            guard: new \Racketmanager\Services\Admin\Security\Wp_Action_Guard(),
             redirector: $this->redirector,
+            renderer: new \Racketmanager\Services\View\Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ),
             flash_store: $this->flash_store,
         );
 
@@ -96,14 +107,7 @@ final class Admin_Result_Delivery_Test extends TestCase {
         global $racketmanager;
         $racketmanager = $plugin;
 
-        $this->admin_result = new Admin_Result(
-            $plugin,
-            $action_adapter,
-            $this->dispatcher,
-            null,
-            null,
-            $fixture_repo
-        );
+        $this->admin_result = $container->get( Admin_Result::class );
     }
 
     protected function tearDown(): void {
@@ -127,19 +131,19 @@ final class Admin_Result_Delivery_Test extends TestCase {
         );
         $this->dispatcher->expects( $this->once() )
             ->method( 'handle' )
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing
             ->with( $_POST )
             ->willReturn( $result );
 
         $this->flash_store->expects( $this->once() )
             ->method( 'set' )
             ->with( 'Result check(s) approved', false );
-        $this->flash_store->expects( $this->never() )->method( 'pop' );
 
         $this->redirector->expects( $this->once() )
             ->method( 'redirect' )
             ->with(
                 $this->callback(
-                    function( string $url ): bool {
+                    function ( string $url ): bool {
                         return str_contains( $url, 'tab=resultschecker' )
                             && str_contains( $url, 'season=2024' )
                             && str_contains( $url, 'competition=5' )
@@ -176,7 +180,6 @@ final class Admin_Result_Delivery_Test extends TestCase {
         $this->flash_store->expects( $this->once() )
             ->method( 'set' )
             ->with( 'Security token invalid', true );
-        $this->flash_store->expects( $this->never() )->method( 'pop' );
 
         $this->redirector->expects( $this->once() )
             ->method( 'redirect' )
@@ -376,7 +379,6 @@ final class Admin_Result_Delivery_Test extends TestCase {
         $this->dispatcher->expects( $this->never() )->method( 'handle' );
         $this->redirector->expects( $this->never() )->method( 'redirect' );
         $this->flash_store->expects( $this->never() )->method( 'set' );
-        $this->flash_store->expects( $this->never() )->method( 'pop' );
 
         ob_start();
         try {
@@ -387,183 +389,6 @@ final class Admin_Result_Delivery_Test extends TestCase {
         }
 
         $this->assertStringContainsString( 'You do not have permission', $output );
-    }
-
-    public function test_constructor_throws_logic_exception_when_results_checker_presenter_is_not_registered(): void {
-        $container = $this->create_admin_delivery_container(
-            services: array(
-                'results_checker_presenter' => false,
-            ),
-            redirector: $this->redirector,
-            flash_store: $this->flash_store,
-        );
-
-        $plugin = $this->createStub( RacketManager::class );
-        $plugin->container = $container;
-
-        $this->expectException( \LogicException::class );
-        $this->expectExceptionMessage( 'The results checker presenter is not registered.' );
-
-        $this->assertInstanceOf( Admin_Result::class, new Admin_Result( $plugin ) );
-    }
-
-    public function test_constructor_throws_logic_exception_when_admin_results_match_presenter_is_not_registered(): void {
-        $container = $this->create_admin_delivery_container(
-            services: array(
-                'admin_results_match_presenter' => false,
-            ),
-            redirector: $this->redirector,
-            flash_store: $this->flash_store,
-        );
-
-        $plugin = $this->createStub( RacketManager::class );
-        $plugin->container = $container;
-
-        $this->expectException( \LogicException::class );
-        $this->expectExceptionMessage( 'The admin results match presenter is not registered.' );
-
-        $this->assertInstanceOf( Admin_Result::class, new Admin_Result( $plugin ) );
-    }
-
-    public function test_constructor_resolves_canonical_shared_instances_matching_string_keys(): void {
-        $container = $this->create_admin_delivery_container(
-            services: array(
-                'competition_service' => $this->competition_service,
-                'season_service'      => $this->season_service,
-                'league_repository'   => $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class ),
-                'fixture_repository'  => $this->createStub( Fixture_Repository_Interface::class ),
-            ),
-            redirector: $this->redirector,
-            flash_store: $this->flash_store,
-        );
-
-        $plugin            = $this->createStub( RacketManager::class );
-        $plugin->container = $container;
-
-        $admin_result = new Admin_Result( $plugin );
-
-        $match_prop   = new \ReflectionProperty( Admin_Result::class, 'results_match_presenter' );
-        $checker_prop = new \ReflectionProperty( Admin_Result::class, 'results_checker_presenter' );
-
-        $this->assertSame( $container->get( 'admin_results_match_presenter' ), $match_prop->getValue( $admin_result ) );
-        $this->assertSame( $container->get( 'results_checker_presenter' ), $checker_prop->getValue( $admin_result ) );
-    }
-
-    public function test_constructor_resolves_presenters_when_only_string_keys_are_registered_without_autowiring_duplicates(): void {
-        $container = $this->create_admin_delivery_container(
-            services: array(
-                'competition_service' => $this->competition_service,
-                'season_service'      => $this->season_service,
-                'league_repository'   => $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class ),
-                'fixture_repository'  => $this->createStub( Fixture_Repository_Interface::class ),
-            ),
-            redirector: $this->redirector,
-            flash_store: $this->flash_store,
-        );
-
-        $container->remove( \Racketmanager\Admin\Presenters\Admin_Results_Match_Presenter::class );
-        $container->remove( \Racketmanager\Presentation\Presenters\Results_Checker_Presenter::class );
-
-        $this->assertFalse( $container->has_definition( \Racketmanager\Admin\Presenters\Admin_Results_Match_Presenter::class ) );
-        $this->assertFalse( $container->has_definition( \Racketmanager\Presentation\Presenters\Results_Checker_Presenter::class ) );
-        $this->assertTrue( $container->has( 'admin_results_match_presenter' ) );
-        $this->assertTrue( $container->has( 'results_checker_presenter' ) );
-
-        $plugin            = $this->createStub( RacketManager::class );
-        $plugin->container = $container;
-
-        $admin_result = new Admin_Result( $plugin );
-
-        $match_prop   = new \ReflectionProperty( Admin_Result::class, 'results_match_presenter' );
-        $checker_prop = new \ReflectionProperty( Admin_Result::class, 'results_checker_presenter' );
-
-        $this->assertSame( $container->get( 'admin_results_match_presenter' ), $match_prop->getValue( $admin_result ) );
-        $this->assertSame( $container->get( 'results_checker_presenter' ), $checker_prop->getValue( $admin_result ) );
-    }
-
-    public function test_display_results_page_throws_logic_exception_when_dispatcher_is_not_registered_on_post(): void {
-        $_POST['doResultsChecker'] = '1';
-
-        $container = $this->create_admin_delivery_container(
-            services: array(
-                'competition_service'                => $this->competition_service,
-                'season_service'                     => $this->season_service,
-                'league_repository'                  => $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class ),
-                'fixture_repository'                 => $this->createStub( Fixture_Repository_Interface::class ),
-                'results_checker_action_dispatcher' => false,
-            ),
-            redirector: $this->redirector,
-            flash_store: $this->flash_store,
-        );
-
-        $plugin            = $this->createStub( RacketManager::class );
-        $plugin->container = $container;
-
-        $admin_result = new Admin_Result( $plugin );
-
-        $this->expectException( \LogicException::class );
-        $this->expectExceptionMessage( 'The results checker action dispatcher is not registered.' );
-
-        $admin_result->display_results_page();
-    }
-
-    public function test_display_results_page_uses_injected_presenter_and_ignores_global_racketmanager(): void {
-        $GLOBALS['racketmanager'] = (object) array( 'deliberately_different' => true );
-
-        $presenter = $this->createMock( \Racketmanager\Presentation\Presenters\Results_Checker_Presenter::class );
-        $viewModel = new \Racketmanager\Presentation\View_Models\Results_Checker_View_Model(
-            id: 99,
-            formatted_date: '2026-04-10',
-            match_link: 'https://example.test/match/123/',
-            match_title: 'Premier League Match',
-            team_title: 'Team A',
-            player_link: 'https://example.test/player/1/',
-            player_name: 'John Doe',
-            description: 'Custom Warning Presenter Check Output',
-            status_desc: 'Action Required',
-            tooltip: 'Updated on 2026-04-10',
-            show_status: true,
-        );
-
-        $presenter->expects( $this->once() )
-            ->method( 'present_collection' )
-            ->willReturn( array( $viewModel ) );
-
-        $fixture_repo = $this->createStub( Fixture_Repository_Interface::class );
-        $fixture_repo->method( 'find_all' )->willReturn( array() );
-
-        $container = $this->create_admin_delivery_container(
-            services: array(
-                'competition_service' => $this->competition_service,
-                'season_service'      => $this->season_service,
-                'league_repository'   => $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class ),
-                'fixture_repository'  => $fixture_repo,
-            ),
-            redirector: $this->redirector,
-            flash_store: $this->flash_store,
-        );
-
-        $plugin = $this->createStub( RacketManager::class );
-        $plugin->container = $container;
-        $plugin->method( 'get_result_warnings' )->willReturn( array() );
-        $plugin->method( 'get_options' )->willReturn( array() );
-
-        $admin_result = new Admin_Result(
-            plugin_instance: $plugin,
-            results_checker_presenter: $presenter,
-            fixture_repository: $fixture_repo,
-        );
-
-        ob_start();
-        try {
-            $admin_result->display_results_page();
-            $output = ob_get_contents();
-        } finally {
-            ob_end_clean();
-        }
-
-        $this->assertStringContainsString( 'Custom Warning Presenter Check Output', $output );
-        $this->assertStringContainsString( 'Action Required', $output );
     }
 
     /**

@@ -53,7 +53,7 @@ readonly class Notification_Presenter implements Notification_Presenter_Interfac
      * Mirrors logic in Email_Shortcode_Adapter::show_match_notification
      */
     public function present_match_notification( Fixture $fixture, array $args ): array {
-        $competition_type = $args['competition_type'] ?? '';
+        $competition_type = $this->normalize_competition_type( $args['competition_type'] ?? '' );
         $is_tournament    = 'tournament' === $competition_type;
 
         $league          = $this->competition_service->get_league_repository()->find_by_id( (int) $fixture->get_league_id() );
@@ -207,7 +207,7 @@ readonly class Notification_Presenter implements Notification_Presenter_Interfac
      * Prepare competition-specific data.
      */
     private function prepare_competition_data( Fixture $fixture, Fixture_Details_DTO $fixture_details, array $args ): array {
-        $competition_type  = $args['competition_type'] ?? '';
+        $competition_type  = $this->normalize_competition_type( $args['competition_type'] ?? '' );
         $tournament_id     = $args['tournament'] ?? false;
         $tournament_search = $args['tournament_search'] ?? 'id';
 
@@ -378,7 +378,7 @@ readonly class Notification_Presenter implements Notification_Presenter_Interfac
      */
     public function present_date_change_notification( Fixture $fixture, array $args ): array {
         $match_adapter    = $this->present_fixture( $fixture );
-        $competition_type = $args['competition_type'] ?? '';
+        $competition_type = $this->normalize_competition_type( $args['competition_type'] ?? '' );
         $tournament_id    = $args['tournament'] ?? false;
         $tournament_link  = '';
         $competition_link = '';
@@ -619,5 +619,19 @@ readonly class Notification_Presenter implements Notification_Presenter_Interfac
     private function present_fixture( Fixture $fixture ): Fixture_Presentation_Adapter {
         $this->load_rubbers( $fixture );
         return Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service, $this->fixture_link_service, $this->permission_service );
+    }
+
+    /**
+     * Normalise competition type to string value.
+     *
+     * @param mixed $type Competition type.
+     * @return string
+     */
+    private function normalize_competition_type( mixed $type ): string {
+        if ( $type instanceof \BackedEnum ) {
+            return (string) $type->value;
+        }
+
+        return (string) ( $type ?? '' );
     }
 }

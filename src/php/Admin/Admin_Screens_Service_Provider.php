@@ -13,6 +13,7 @@ namespace Racketmanager\Admin;
 
 use LogicException;
 use Racketmanager\Admin;
+use Racketmanager\Admin\Controllers\Championship_Admin_Controller;
 use Racketmanager\Admin\Controllers\Clubs_Admin_Controller;
 use Racketmanager\Admin\Controllers\Club_Admin_Controller;
 use Racketmanager\Admin\Controllers\Club_Players_Admin_Controller;
@@ -31,6 +32,8 @@ use Racketmanager\Admin\Controllers\Cup_Overview_Admin_Controller;
 use Racketmanager\Admin\Controllers\Cup_Plan_Admin_Controller;
 use Racketmanager\Admin\Controllers\Cup_Setup_Admin_Controller;
 use Racketmanager\Admin\Controllers\Cup_Setup_Event_Admin_Controller;
+use Racketmanager\Admin\Controllers\Import_Admin_Controller;
+use Racketmanager\Admin\Controllers\Index_Admin_Controller;
 use Racketmanager\Admin\Controllers\League_Competitions_Admin_Controller;
 use Racketmanager\Admin\Controllers\League_Constitution_Admin_Controller;
 use Racketmanager\Admin\Controllers\League_Event_Admin_Controller;
@@ -41,6 +44,11 @@ use Racketmanager\Admin\Controllers\League_Schedule_Admin_Controller;
 use Racketmanager\Admin\Controllers\League_Setup_Admin_Controller;
 use Racketmanager\Admin\Controllers\League_Setup_Event_Admin_Controller;
 use Racketmanager\Admin\Controllers\League_Standings_Admin_Controller;
+use Racketmanager\Admin\Controllers\Options_Admin_Controller;
+use Racketmanager\Admin\Controllers\Results_Admin_Controller;
+use Racketmanager\Admin\Controllers\Results_Checker_Tab_Handler;
+use Racketmanager\Admin\Controllers\Results_Fixtures_Tab_Handler;
+use Racketmanager\Admin\Controllers\Seasons_Admin_Controller;
 use Racketmanager\Admin\Controllers\Teams_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Competition_Config_Admin_Controller;
@@ -54,7 +62,30 @@ use Racketmanager\Admin\Controllers\Tournament_Setup_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Setup_Event_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Team_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Tournaments_Admin_Controller;
+use Racketmanager\Admin\Controllers\Upgrade_Admin_Controller;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
+use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
+use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
+use Racketmanager\Services\Admin\Admin_Message_Service;
+use Racketmanager\Services\Admin\Event\Event_Action_Dispatcher;
+use Racketmanager\Services\Admin\Import\Import_Action_Dispatcher_Interface;
+use Racketmanager\Services\Admin\Index\Index_Action_Dispatcher_Interface;
+use Racketmanager\Services\Admin\Options\Options_Action_Dispatcher_Interface;
+use Racketmanager\Services\Admin\Result\Results_Checker_Action_Dispatcher_Interface;
+use Racketmanager\Services\Admin\Season\Season_Action_Dispatcher;
+use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Services\Championship_Manager;
+use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Competition\Competition_Season_Service;
+use Racketmanager\Services\Competition_Service;
+use Racketmanager\Services\League_Service;
+use Racketmanager\Services\Season_Service;
+use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Admin\Presenters\Admin_Championship_Finals_Presenter;
 use Racketmanager\Admin\Presenters\Admin_Competition_Page_Presenter;
 use Racketmanager\Admin\Presenters\Admin_Date_Presenter;
@@ -64,6 +95,7 @@ use Racketmanager\Admin\Presenters\Admin_League_Schedule_Presenter;
 use Racketmanager\Admin\Presenters\Admin_Plan_Presenter;
 use Racketmanager\Admin\Presenters\Admin_Results_Match_Presenter;
 use Racketmanager\Admin\Presenters\Championship_Finals_Presenter_Interface;
+use Racketmanager\Presentation\Presenters\Results_Checker_Presenter;
 use Racketmanager\Services\Admin\Flash_Message_Store_Interface;
 use Racketmanager\Services\Admin\League_Team_Admin_Service;
 use Racketmanager\Admin\Controllers\Finances_Charge_Admin_Controller;
@@ -76,8 +108,6 @@ use Racketmanager\Admin\Controllers\Player_Errors_Admin_Controller;
 use Racketmanager\Admin\Controllers\Player_Requests_Admin_Controller;
 use Racketmanager\Admin\Controllers\Players_Admin_Controller;
 use Racketmanager\RacketManager;
-use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
-use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Container\Providers\Service_Provider_Interface;
 use Racketmanager\Services\Container\Simple_Container;
 
@@ -708,15 +738,19 @@ final readonly class Admin_Screens_Service_Provider implements Service_Provider_
         );
 
         $container->set(
-            'tournament_event_config_admin_controller',
+            Tournament_Event_Config_Admin_Controller::class,
             fn( Simple_Container $c ) => new Tournament_Event_Config_Admin_Controller(
-                $c->get( 'tournament_service' ),
-                $c->get( 'competition_service' ),
-                $c->get( 'competition_season_service' ),
-                $c->get( 'action_guard' ),
-                $c->get( 'event_repository' ),
-                $c->get( 'league_service' )
+                $c->get( Tournament_Service::class ),
+                $c->get( Competition_Service::class ),
+                $c->get( Action_Guard_Interface::class ),
+                $c->get( Event_Repository_Interface::class ),
+                $c->get( Event_Action_Dispatcher::class )
             )
+        );
+
+        $container->set(
+            'tournament_event_config_admin_controller',
+            fn( Simple_Container $c ) => $c->get( Tournament_Event_Config_Admin_Controller::class )
         );
 
         $container->set(
@@ -802,87 +836,271 @@ final readonly class Admin_Screens_Service_Provider implements Service_Provider_
         );
 
         $container->set(
-            'admin_club_screen',
+            Admin_Club::class,
             fn( Simple_Container $c ) => new Admin_Club(
                 $c,
-                $c->get( 'admin_message_service' ),
-                $c->get( 'admin_action_adapter' ),
-                $c->get( 'admin_screen_presenter' )
+                $c->get( Admin_Message_Service::class ),
+                $c->get( Admin_Action_Adapter::class ),
+                $c->get( Admin_Screen_Presenter::class )
             )
+        );
+        $container->set(
+            'admin_club_screen',
+            fn( Simple_Container $c ) => $c->get( Admin_Club::class )
         );
 
         $container->set(
-            'admin_finances_screen',
+            Admin_Finances::class,
             fn( Simple_Container $c ) => new Admin_Finances(
                 $c,
-                $c->get( 'admin_message_service' ),
-                $c->get( 'admin_action_adapter' ),
-                $c->get( 'admin_screen_presenter' )
+                $c->get( Admin_Message_Service::class ),
+                $c->get( Admin_Action_Adapter::class ),
+                $c->get( Admin_Screen_Presenter::class )
             )
+        );
+        $container->set(
+            'admin_finances_screen',
+            fn( Simple_Container $c ) => $c->get( Admin_Finances::class )
         );
 
         $container->set(
-            'admin_player_screen',
+            Admin_Player::class,
             fn( Simple_Container $c ) => new Admin_Player(
                 $c,
-                $c->get( 'admin_message_service' ),
-                $c->get( 'admin_action_adapter' ),
-                $c->get( 'admin_screen_presenter' )
+                $c->get( Admin_Message_Service::class ),
+                $c->get( Admin_Action_Adapter::class ),
+                $c->get( Admin_Screen_Presenter::class )
+            )
+        );
+        $container->set(
+            'admin_player_screen',
+            fn( Simple_Container $c ) => $c->get( Admin_Player::class )
+        );
+
+        $container->set(
+            Admin_Event::class,
+            fn( Simple_Container $c ) => new Admin_Event(
+                $c,
+                $c->get( Admin_Action_Adapter::class ),
+                $c->get( Admin_Screen_Presenter::class )
             )
         );
 
         $container->set(
             'admin_event_screen',
-            fn( Simple_Container $c ) => new Admin_Event(
-                $app ?? throw new LogicException( 'RacketManager instance required for admin_event_screen' ),
-                $c->get( 'admin_action_adapter' ),
-                $c->get( 'admin_screen_presenter' ),
-                $c->get( 'event_action_dispatcher' )
-            )
+            fn( Simple_Container $c ) => $c->get( Admin_Event::class )
         );
 
         $container->set(
-            'admin_league_screen',
+            Admin_League::class,
             fn( Simple_Container $c ) => new Admin_League(
                 $c,
-                $c->get( 'admin_message_service' ),
-                $c->get( 'admin_action_adapter' ),
-                $c->get( 'admin_screen_presenter' )
+                $c->get( Admin_Message_Service::class ),
+                $c->get( Admin_Action_Adapter::class ),
+                $c->get( Admin_Screen_Presenter::class )
             )
+        );
+        $container->set(
+            'admin_league_screen',
+            fn( Simple_Container $c ) => $c->get( Admin_League::class )
         );
 
         $container->set(
-            'admin_cup_screen',
+            Admin_Cup::class,
             fn( Simple_Container $c ) => new Admin_Cup(
                 $c,
-                $c->get( 'admin_message_service' ),
-                $c->get( 'admin_action_adapter' ),
-                $c->get( 'admin_screen_presenter' )
+                $c->get( Admin_Message_Service::class ),
+                $c->get( Admin_Action_Adapter::class ),
+                $c->get( Admin_Screen_Presenter::class )
+            )
+        );
+        $container->set(
+            'admin_cup_screen',
+            fn( Simple_Container $c ) => $c->get( Admin_Cup::class )
+        );
+
+        $container->set(
+            Admin_Tournament::class,
+            fn( Simple_Container $c ) => new Admin_Tournament(
+                $app ?? throw new LogicException( 'RacketManager instance required for Admin_Tournament' ),
+                $c->get( 'view_renderer' ),
+                $c->get( Admin_Message_Service::class ),
+                $c->get( Admin_Action_Adapter::class ),
+                $c->get( Admin_Screen_Presenter::class )
+            )
+        );
+        $container->set(
+            'admin_tournament_screen',
+            fn( Simple_Container $c ) => $c->get( Admin_Tournament::class )
+        );
+
+        $container->set(
+            Upgrade_Admin_Controller::class,
+            fn( Simple_Container $c ) => new Upgrade_Admin_Controller(
+                $app ?? throw new LogicException( 'RacketManager instance required for upgrade_admin_controller' ),
+                $c->get( Action_Guard_Interface::class ),
             )
         );
 
         $container->set(
-            'admin_tournament_screen',
-            fn( Simple_Container $c ) => new Admin_Tournament(
-                $app ?? throw new LogicException( 'RacketManager instance required for admin_tournament_screen' ),
-                $c->get( 'view_renderer' ),
-                $c->get( 'admin_message_service' ),
-                $c->get( 'admin_action_adapter' ),
-                $c->get( 'admin_screen_presenter' )
+            Seasons_Admin_Controller::class,
+            fn( Simple_Container $c ) => new Seasons_Admin_Controller(
+                $c->get( Season_Service::class ),
+                $c->get( Season_Action_Dispatcher::class ),
+                $c->get( Action_Guard_Interface::class ),
+            )
+        );
+
+        $container->set(
+            Admin_Upgrade::class,
+            fn( Simple_Container $c ) => new Admin_Upgrade(
+                $c,
+                $c->get( Admin_Message_Service::class ),
+                $c->get( Admin_Action_Adapter::class ),
+                $c->get( Admin_Screen_Presenter::class )
+            )
+        );
+
+        $container->set(
+            Admin_Season::class,
+            fn( Simple_Container $c ) => new Admin_Season(
+                $c,
+                $c->get( Admin_Message_Service::class ),
+                $c->get( Admin_Action_Adapter::class ),
+                $c->get( Admin_Screen_Presenter::class )
+            )
+        );
+
+        $container->set(
+            Options_Admin_Controller::class,
+            fn( Simple_Container $c ) => new Options_Admin_Controller(
+                $c->get( Option_Service::class ),
+                $c->get( Options_Action_Dispatcher_Interface::class ),
+                $c->get( Action_Guard_Interface::class ),
+            )
+        );
+
+        $container->set(
+            Import_Admin_Controller::class,
+            fn( Simple_Container $c ) => new Import_Admin_Controller(
+                $c->get( Club_Service::class ),
+                $c->get( Competition_Service::class ),
+                $c->get( Import_Action_Dispatcher_Interface::class ),
+                $c->get( Action_Guard_Interface::class ),
+            )
+        );
+
+        $container->set(
+            Championship_Admin_Controller::class,
+            fn( Simple_Container $c ) => new Championship_Admin_Controller(
+                $c->has_definition( Championship_Manager::class ) ? $c->get( Championship_Manager::class ) : null,
+                $c->get( League_Service::class ),
+                $c->get( Action_Guard_Interface::class ),
+            )
+        );
+
+        $container->set(
+            Admin_Options::class,
+            fn( Simple_Container $c ) => new Admin_Options(
+                $c,
+                $c->get( Admin_Message_Service::class ),
+                $c->get( Admin_Action_Adapter::class ),
+                $c->get( Admin_Screen_Presenter::class )
+            )
+        );
+
+        $container->set(
+            Admin_Import::class,
+            fn( Simple_Container $c ) => new Admin_Import(
+                $c,
+                $c->get( Admin_Message_Service::class ),
+                $c->get( Admin_Action_Adapter::class ),
+                $c->get( Admin_Screen_Presenter::class )
+            )
+        );
+
+        $container->set(
+            Admin_Championship::class,
+            fn( Simple_Container $c ) => new Admin_Championship(
+                $c,
+                $c->get( Admin_Message_Service::class ),
+                $c->get( Admin_Action_Adapter::class ),
+                $c->get( Admin_Screen_Presenter::class )
+            )
+        );
+
+        $container->set(
+            Index_Admin_Controller::class,
+            fn( Simple_Container $c ) => new Index_Admin_Controller(
+                $c->get( Competition_Service::class ),
+                $c->get( Index_Action_Dispatcher_Interface::class ),
+                $c->get( Action_Guard_Interface::class ),
+            )
+        );
+
+        $container->set(
+            Admin_Index::class,
+            fn( Simple_Container $c ) => new Admin_Index(
+                $c,
+                $c->get( Admin_Message_Service::class ),
+                $c->get( Admin_Action_Adapter::class ),
+                $c->get( Admin_Screen_Presenter::class )
+            )
+        );
+
+        $container->set(
+            Results_Checker_Tab_Handler::class,
+            fn( Simple_Container $c ) => new Results_Checker_Tab_Handler(
+                $c->get( Results_Checker_Repository_Interface::class ),
+                $c->get( Results_Checker_Presenter::class ),
+                $c->get( Competition_Service::class ),
+                $c->get( Season_Service::class ),
+                $c->get( Results_Checker_Action_Dispatcher_Interface::class ),
+            )
+        );
+
+        $container->set(
+            Results_Fixtures_Tab_Handler::class,
+            fn( Simple_Container $c ) => new Results_Fixtures_Tab_Handler(
+                $c->get( Fixture_Repository_Interface::class ),
+                $c->get( Admin_Results_Match_Presenter::class ),
+                $c->get( Option_Service::class ),
+            )
+        );
+
+        $container->set(
+            Results_Admin_Controller::class,
+            fn( Simple_Container $c ) => new Results_Admin_Controller(
+                $c->get( Results_Checker_Tab_Handler::class ),
+                $c->get( Results_Fixtures_Tab_Handler::class ),
+                $c->get( Action_Guard_Interface::class ),
+            )
+        );
+
+        $container->set(
+            Admin_Result::class,
+            fn( Simple_Container $c ) => new Admin_Result(
+                $c,
+                $c->get( Admin_Message_Service::class ),
+                $c->get( Admin_Action_Adapter::class ),
+                $c->get( Admin_Screen_Presenter::class )
             )
         );
 
         // Admin application core.
         $container->set(
-            'admin_display',
+            Admin_Page_Router::class,
             function ( Simple_Container $c ) use ( $app ) {
                 if ( null === $app ) {
-                    throw new LogicException( 'admin_display service requires a valid RacketManager application instance.' );
+                    throw new LogicException( 'Admin_Page_Router service requires a valid RacketManager application instance.' );
                 }
-                return new Admin_Display( $app, $c );
+                return new Admin_Page_Router(
+                    $c,
+                    $app,
+                    $c->get( Admin_Screen_Presenter::class )
+                );
             }
         );
-        $container->set( Admin_Display::class, fn( Simple_Container $c ) => $c->get( 'admin_display' ) );
 
         $container->set(
             'admin',
@@ -896,7 +1114,7 @@ final readonly class Admin_Screens_Service_Provider implements Service_Provider_
                 return new Admin(
                     $c,
                     $app,
-                    $c->get( 'admin_display' ),
+                    $c->get( Admin_Page_Router::class ),
                     $c->has( 'asset_manager' ) ? $c->get( 'asset_manager' ) : null,
                     $c->has( 'admin_ajax_controller' ) ? $c->get( 'admin_ajax_controller' ) : null,
                     $c->has( League_Repository_Interface::class ) ? $c->get( League_Repository_Interface::class ) : null,

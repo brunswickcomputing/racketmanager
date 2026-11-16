@@ -7,7 +7,19 @@ use Closure;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin;
-use Racketmanager\Admin\Admin_Display;
+use Racketmanager\Admin\Admin_Club;
+use Racketmanager\Admin\Admin_Cup;
+use Racketmanager\Admin\Admin_Finances;
+use Racketmanager\Admin\Admin_Import;
+use Racketmanager\Admin\Admin_Index;
+use Racketmanager\Admin\Admin_League;
+use Racketmanager\Admin\Admin_Options;
+use Racketmanager\Admin\Admin_Page_Router;
+use Racketmanager\Admin\Admin_Player;
+use Racketmanager\Admin\Admin_Result;
+use Racketmanager\Admin\Admin_Season;
+use Racketmanager\Admin\Admin_Tournament;
+use Racketmanager\Admin\Admin_Upgrade;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
@@ -71,11 +83,39 @@ final class Container_Resolution_Regression_Test extends TestCase {
         $option_service = $container->get( 'option_service' );
         $this->assertInstanceOf( Option_Service::class, $option_service );
 
-        $admin_display = $container->get( 'admin_display' );
-        $this->assertInstanceOf( Admin_Display::class, $admin_display );
+        $admin_router = $container->get( Admin_Page_Router::class );
+        $this->assertInstanceOf( Admin_Page_Router::class, $admin_router );
 
         $admin = $container->get( 'admin' );
         $this->assertInstanceOf( Admin::class, $admin );
+    }
+
+    /**
+     * @return array<string, array{0: class-string}>
+     */
+    public static function router_dispatch_targets(): array {
+        return array(
+            'router'     => array( Admin_Page_Router::class ),
+            'upgrade'    => array( Admin_Upgrade::class ),
+            'league'     => array( Admin_League::class ),
+            'cup'        => array( Admin_Cup::class ),
+            'tournament' => array( Admin_Tournament::class ),
+            'club'       => array( Admin_Club::class ),
+            'result'     => array( Admin_Result::class ),
+            'season'     => array( Admin_Season::class ),
+            'player'     => array( Admin_Player::class ),
+            'finances'   => array( Admin_Finances::class ),
+            'options'    => array( Admin_Options::class ),
+            'import'     => array( Admin_Import::class ),
+            'index'      => array( Admin_Index::class ),
+        );
+    }
+
+    #[DataProvider( 'router_dispatch_targets' )]
+    public function test_production_container_resolves_router_dispatch_targets( string $service_class ): void {
+        $container = Container_Bootstrap::boot( $this->app );
+
+        $this->assertInstanceOf( $service_class, $container->get( $service_class ) );
     }
 
     /**

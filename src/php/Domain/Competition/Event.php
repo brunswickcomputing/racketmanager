@@ -603,10 +603,25 @@ class Event {
 
     /**
      * Get a season by name (searches by season['name'])
+     *
+     * @param string|int $name Season name or year.
+     * @return array|null
      */
-    public function get_season_by_name( string $name ): ?array {
+    public function get_season_by_name( string|int $name ): ?array {
         $seasons = $this->get_seasons();
-        return $seasons[ $name ] ?? null;
+        if ( isset( $seasons[ $name ] ) && is_array( $seasons[ $name ] ) ) {
+            return $seasons[ $name ];
+        }
+        $name_str = (string) $name;
+        if ( isset( $seasons[ $name_str ] ) && is_array( $seasons[ $name_str ] ) ) {
+            return $seasons[ $name_str ];
+        }
+        foreach ( $seasons as $season ) {
+            if ( is_array( $season ) && isset( $season['name'] ) && (string) $season['name'] === $name_str ) {
+                return $season;
+            }
+        }
+        return null;
     }
 
     /**

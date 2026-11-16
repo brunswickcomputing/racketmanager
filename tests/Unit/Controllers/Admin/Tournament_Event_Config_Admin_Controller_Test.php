@@ -15,6 +15,7 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Season_Collection;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Services\Admin\Event\Event_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
@@ -31,8 +32,7 @@ use stdClass;
 require_once __DIR__ . '/../../../wp-stubs.php';
 
 #[AllowMockObjectsWithoutExpectations]
-final
-class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
+final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
     use Manages_Wordpress_Globals;
     use Creates_View_Renderer;
 
@@ -67,13 +67,20 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $racketmanager->container = $this->container;
         $GLOBALS['racketmanager'] = $racketmanager;
 
-        $this->controller = new Tournament_Event_Config_Admin_Controller(
-            $this->tournament_service,
+        $dispatcher = new Event_Action_Dispatcher(
             $this->competition_service,
             $this->competition_season_service,
             $this->guard,
             $this->event_repository,
             $this->league_service
+        );
+
+        $this->controller = new Tournament_Event_Config_Admin_Controller(
+            $this->tournament_service,
+            $this->competition_service,
+            $this->guard,
+            $this->event_repository,
+            $dispatcher
         );
     }
 
@@ -127,6 +134,9 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $_POST['addEventConfig'] = '1';
         $_POST['event_title']    = 'Men\'s Singles';
         $_POST['type']           = 'singles';
+        $_POST['age_limit']      = 'none';
+        $_POST['age_offset']     = '0';
+        $_POST['scoring']        = 'standard';
         $_POST['num_sets']       = '3';
         $_POST['num_rubbers']    = '1';
         $_GET['competition_id']  = '10';
@@ -164,9 +174,11 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
             ->method( 'update_settings_and_rules' )
             ->with(
                 42,
-                $this->callback( function ( array $settings ): bool {
-                    return isset( $settings['primary_league'] ) && 789 === $settings['primary_league'];
-                } ),
+                $this->callback(
+                    function ( array $settings ): bool {
+                        return isset( $settings['primary_league'] ) && 789 === $settings['primary_league'];
+                    }
+                ),
                 $this->anything(),
                 $this->anything(),
                 $this->anything()
@@ -175,13 +187,17 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $result = $this->controller->handle();
 
         $this->assertSame( 'Event added', $result['message'] );
-        $this->assertSame( 'success', $result['message_type'] );
+        $this->assertFalse( $result['message_type'] );
+        $this->assertArrayHasKey( 'redirect', $result );
     }
 
     public function test_handle_add_forwards_injected_season_service_to_add_season_to_event(): void {
         $_POST['addEventConfig'] = '1';
         $_POST['event_title']    = 'Men\'s Singles';
         $_POST['type']           = 'singles';
+        $_POST['age_limit']      = 'none';
+        $_POST['age_offset']     = '0';
+        $_POST['scoring']        = 'standard';
         $_POST['num_sets']       = '3';
         $_POST['num_rubbers']    = '1';
         $_GET['competition_id']  = '10';
@@ -227,12 +243,17 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
 
         $this->assertSame( [ '2025', '2026' ], $season_names );
         $this->assertSame( 'Event added', $result['message'] );
+        $this->assertFalse( $result['message_type'] );
+        $this->assertArrayHasKey( 'redirect', $result );
     }
 
     public function test_handle_add_creates_plate_league_for_championship_tournament(): void {
         $_POST['addEventConfig'] = '1';
         $_POST['event_title']    = 'Men\'s Doubles';
         $_POST['type']           = 'doubles';
+        $_POST['age_limit']      = 'none';
+        $_POST['age_offset']     = '0';
+        $_POST['scoring']        = 'standard';
         $_POST['num_sets']       = '3';
         $_POST['num_rubbers']    = '1';
         $_GET['competition_id']  = '10';
@@ -264,18 +285,22 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $plate_obj->id  = 790;
         $this->league_service->expects( $this->exactly( 2 ) )
             ->method( 'add_league_to_event' )
-            ->willReturnMap( [
-                [ 42, 'Men\'s Doubles', $league_obj ],
-                [ 42, 'Men\'s Doubles Plate', $plate_obj ],
-            ] );
+            ->willReturnMap(
+                [
+                    [ 42, 'Men\'s Doubles', $league_obj ],
+                    [ 42, 'Men\'s Doubles Plate', $plate_obj ],
+                ]
+            );
 
         $this->event_repository->expects( $this->once() )
             ->method( 'update_settings_and_rules' )
             ->with(
                 42,
-                $this->callback( function ( array $settings ): bool {
-                    return isset( $settings['primary_league'] ) && 789 === $settings['primary_league'];
-                } ),
+                $this->callback(
+                    function ( array $settings ): bool {
+                        return isset( $settings['primary_league'] ) && 789 === $settings['primary_league'];
+                    }
+                ),
                 $this->anything(),
                 $this->anything(),
                 $this->anything()
@@ -284,7 +309,8 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $result = $this->controller->handle();
 
         $this->assertSame( 'Event added', $result['message'] );
-        $this->assertSame( 'success', $result['message_type'] );
+        $this->assertFalse( $result['message_type'] );
+        $this->assertArrayHasKey( 'redirect', $result );
     }
 
     public function test_handle_update_preserves_primary_league_when_omitted_or_zero_in_post(): void {
@@ -292,6 +318,9 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $_POST['event_id']          = '456';
         $_POST['event_title']       = 'Men\'s Singles';
         $_POST['type']              = 'singles';
+        $_POST['age_limit']         = 'none';
+        $_POST['age_offset']        = '0';
+        $_POST['scoring']           = 'standard';
         $_POST['num_sets']          = '5'; // changed from 3
         $_POST['primary_league']    = '0'; // 0 sent from empty select
         $_GET['competition_id']     = '10';
@@ -329,9 +358,11 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
             ->method( 'update_settings_and_rules' )
             ->with(
                 456,
-                $this->callback( function ( array $settings ): bool {
-                    return isset( $settings['primary_league'] ) && 555 === $settings['primary_league'];
-                } ),
+                $this->callback(
+                    function ( array $settings ): bool {
+                        return isset( $settings['primary_league'] ) && 555 === $settings['primary_league'];
+                    }
+                ),
                 $this->anything(),
                 $this->anything(),
                 $this->anything()
@@ -339,8 +370,9 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
 
         $result = $this->controller->handle();
 
-        $this->assertSame( 'Event updated', $result['message'] );
-        $this->assertSame( 'success', $result['message_type'] );
+        $this->assertSame( 'Event config updated', $result['message'] );
+        $this->assertFalse( $result['message_type'] );
+        $this->assertArrayHasKey( 'redirect', $result );
         $this->assertSame( 555, $event->primary_league );
     }
 
@@ -349,6 +381,9 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $_POST['event_id']          = '456';
         $_POST['event_title']       = 'Men\'s Singles';
         $_POST['type']              = 'singles';
+        $_POST['age_limit']         = 'none';
+        $_POST['age_offset']        = '0';
+        $_POST['scoring']           = 'standard';
         $_POST['num_sets']          = '5';
         $_POST['primary_league']    = '0';
         $_GET['competition_id']     = '10';
@@ -389,9 +424,11 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
             ->method( 'update_settings_and_rules' )
             ->with(
                 456,
-                $this->callback( function ( array $settings ): bool {
-                    return isset( $settings['primary_league'] ) && 321 === $settings['primary_league'];
-                } ),
+                $this->callback(
+                    function ( array $settings ): bool {
+                        return isset( $settings['primary_league'] ) && 321 === $settings['primary_league'];
+                    }
+                ),
                 $this->anything(),
                 $this->anything(),
                 $this->anything()
@@ -399,8 +436,9 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
 
         $result = $this->controller->handle();
 
-        $this->assertSame( 'Event updated', $result['message'] );
-        $this->assertSame( 'success', $result['message_type'] );
+        $this->assertSame( 'Event config updated', $result['message'] );
+        $this->assertFalse( $result['message_type'] );
+        $this->assertArrayHasKey( 'redirect', $result );
         $this->assertSame( 321, $event->primary_league );
     }
 
@@ -409,6 +447,9 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $_POST['event_id']          = '456';
         $_POST['event_title']       = 'Men\'s Singles';
         $_POST['type']              = 'singles';
+        $_POST['age_limit']         = 'none';
+        $_POST['age_offset']        = '0';
+        $_POST['scoring']           = 'standard';
         $_POST['num_sets']          = '5';
         $_POST['primary_league']    = '777';
         $_GET['competition_id']     = '10';
@@ -446,9 +487,11 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
             ->method( 'update_settings_and_rules' )
             ->with(
                 456,
-                $this->callback( function ( array $settings ): bool {
-                    return isset( $settings['primary_league'] ) && 777 === $settings['primary_league'];
-                } ),
+                $this->callback(
+                    function ( array $settings ): bool {
+                        return isset( $settings['primary_league'] ) && 777 === $settings['primary_league'];
+                    }
+                ),
                 $this->anything(),
                 $this->anything(),
                 $this->anything()
@@ -456,8 +499,9 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
 
         $result = $this->controller->handle();
 
-        $this->assertSame( 'Event updated', $result['message'] );
-        $this->assertSame( 'success', $result['message_type'] );
+        $this->assertSame( 'Event config updated', $result['message'] );
+        $this->assertFalse( $result['message_type'] );
+        $this->assertArrayHasKey( 'redirect', $result );
         $this->assertSame( 777, $event->primary_league );
     }
 
@@ -466,6 +510,9 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $_POST['event_id']       = '';
         $_POST['event_title']    = 'Men\'s Singles';
         $_POST['type']           = 'singles';
+        $_POST['age_limit']      = 'none';
+        $_POST['age_offset']     = '0';
+        $_POST['scoring']        = 'standard';
         $_POST['num_sets']       = '3';
         $_GET['competition_id']  = '10';
 
@@ -474,6 +521,7 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
 
         $competition = $this->createMock( Competition::class );
         $competition->id = 10;
+        $competition->method( 'get_id' )->willReturn( 10 );
         $competition->is_tournament = true;
         $competition->is_championship = false;
         $competition->type = Competition_Type::TOURNAMENT;
@@ -490,6 +538,7 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
 
         $this->assertSame( 'Event already exists', $result['message'] );
         $this->assertTrue( $result['message_type'] );
+        $this->assertArrayHasKey( 'redirect', $result );
     }
 
     public function test_handle_populates_leagues_and_renders_championship_options_in_template(): void {
@@ -584,10 +633,15 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
 
         $result = $this->controller->handle();
 
-        $this->assertSame( 'Event name required', $result['message'] );
         $this->assertTrue( $result['message_type'] );
-        $this->assertArrayHasKey( 'view_model', $result );
-        $this->assertCount( 1, $result['view_model']->leagues );
+        $this->assertArrayHasKey( 'redirect', $result );
+        $this->assertArrayHasKey( 'flash_data', $result );
+
+        unset( $_POST['updateEventConfig'] );
+        $get_result = $this->controller->handle( flash_data: $result['flash_data'] );
+
+        $this->assertArrayHasKey( 'view_model', $get_result );
+        $this->assertCount( 1, $get_result['view_model']->leagues );
     }
 
     public function test_handle_non_championship_does_not_query_event_leagues(): void {
@@ -627,12 +681,15 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
     }
 
     public function test_handle_add_event_with_current_season_persists_season(): void {
-        $_GET['competition_id'] = '10';
+        $_GET['competition_id']  = '10';
         $_POST['addEventConfig'] = '1';
-        $_POST['event_title']   = 'Men\'s Singles';
-        $_POST['type']          = 'singles';
-        $_POST['num_sets']      = '3';
-        $_POST['num_rubbers']   = '1';
+        $_POST['event_title']    = 'Men\'s Singles';
+        $_POST['type']           = 'singles';
+        $_POST['age_limit']      = 'none';
+        $_POST['age_offset']     = '0';
+        $_POST['scoring']        = 'standard';
+        $_POST['num_sets']       = '3';
+        $_POST['num_rubbers']    = '1';
 
         $competition = Competition_Test_Factory::create(
             id: 10,
@@ -680,17 +737,21 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $result = $this->controller->handle();
 
         $this->assertSame( 'Event added', $result['message'] );
-        $this->assertSame( 'success', $result['message_type'] );
+        $this->assertFalse( $result['message_type'] );
+        $this->assertArrayHasKey( 'redirect', $result );
     }
 
     public function test_handle_returns_error_when_insert_event_fails(): void {
         $_POST['addEventConfig'] = '1';
-        $_POST['event_title']   = 'Men\'s Singles';
-        $_POST['type']          = 'singles';
-        $_POST['num_sets']      = '3';
-        $_POST['num_rubbers']   = '1';
-        $_GET['competition_id'] = '123';
-        $_GET['event_id']       = '0';
+        $_POST['event_title']    = 'Men\'s Singles';
+        $_POST['type']           = 'singles';
+        $_POST['age_limit']      = 'none';
+        $_POST['age_offset']     = '0';
+        $_POST['scoring']        = 'standard';
+        $_POST['num_sets']       = '3';
+        $_POST['num_rubbers']    = '1';
+        $_GET['competition_id']  = '123';
+        $_GET['event_id']        = '0';
 
         $competition = Competition_Test_Factory::create(
             id: 123,
@@ -716,6 +777,7 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $result = $this->controller->handle();
 
         $this->assertSame( 'Could not create event', $result['message'] );
-        $this->assertSame( 'error', $result['message_type'] );
+        $this->assertTrue( $result['message_type'] );
+        $this->assertArrayHasKey( 'redirect', $result );
     }
 }

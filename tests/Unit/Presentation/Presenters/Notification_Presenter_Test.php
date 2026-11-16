@@ -14,6 +14,7 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
     use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
     use PHPUnit\Framework\MockObject\MockObject;
     use PHPUnit\Framework\TestCase;
+    use Racketmanager\Domain\Competition\Competition_Type;
     use Racketmanager\Domain\Fixture\Fixture;
     use Racketmanager\Domain\Tournament\Tournament;
     use Racketmanager\Presentation\Presenters\Notification_Presenter;
@@ -343,6 +344,67 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
 
             $this->assertSame( 'https://example.com/league/group-a/round-2024-r1/', $vars['league_urls'][201] );
             $this->assertSame( $event, $vars['event'] );
+        }
+
+        #[AllowMockObjectsWithoutExpectations]
+        public function test_present_match_notification_accepts_competition_type_enum(): void {
+            $fixture = $this->createStub( Fixture::class );
+            $fixture->method( 'get_id' )->willReturn( 7 );
+            $fixture->method( 'get_league_id' )->willReturn( 10 );
+            $fixture->method( 'get_season' )->willReturn( '2026' );
+            $fixture->method( 'get_home_team' )->willReturn( '101' );
+            $fixture->method( 'get_away_team' )->willReturn( '102' );
+
+            $args = [
+                'competition_type'  => Competition_Type::TOURNAMENT,
+                'tournament'        => '123,2026',
+                'tournament_search' => 'shortcode',
+            ];
+
+            $tournament       = $this->createStub( Tournament::class );
+            $tournament->name = 'Championship Tournament';
+            $this->tournament_repository->expects( $this->once() )
+                ->method( 'find_by_id' )
+                ->with( '123,2026', 'shortcode' )
+                ->willReturn( $tournament );
+
+            $this->setup_notification_services( competition_name: 'Championship Event' );
+
+            $vars = $this->presenter->present_match_notification( $fixture, $args );
+
+            $this->assertSame( 'https://example.com/rules/tournament-rules/', $vars['rules_link'] );
+            $this->assertStringContainsString( 'Championship Tournament', $vars['tournament_link'] );
+        }
+
+        #[AllowMockObjectsWithoutExpectations]
+        public function test_present_date_change_notification_accepts_competition_type_enum(): void {
+            $fixture = $this->createStub( Fixture::class );
+            $fixture->method( 'get_id' )->willReturn( 8 );
+            $fixture->method( 'get_league_id' )->willReturn( 10 );
+            $fixture->method( 'get_season' )->willReturn( '2026' );
+            $fixture->method( 'get_home_team' )->willReturn( '101' );
+            $fixture->method( 'get_away_team' )->willReturn( '102' );
+            $fixture->method( 'get_date' )->willReturn( '2026-06-25 19:30:00' );
+            $fixture->method( 'get_date_original' )->willReturn( '2026-06-18 19:30:00' );
+
+            $this->setup_notification_services( competition_name: 'Championship Event' );
+
+            $args = [
+                'competition_type' => Competition_Type::TOURNAMENT,
+                'tournament'       => 50,
+            ];
+
+            $tournament       = $this->createStub( Tournament::class );
+            $tournament->name = 'Championship Tournament';
+            $this->tournament_repository->expects( $this->once() )
+                ->method( 'find_by_id' )
+                ->with( 50 )
+                ->willReturn( $tournament );
+
+            $vars = $this->presenter->present_date_change_notification( $fixture, $args );
+
+            $this->assertSame( 'https://example.com/rules/tournament-rules/', $vars['rules_link'] );
+            $this->assertStringContainsString( 'Championship Tournament', $vars['tournament_link'] );
         }
 
         protected function setUp(): void {

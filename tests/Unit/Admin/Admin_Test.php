@@ -9,9 +9,10 @@ use PHPUnit\Framework\Attributes\PreserveGlobalState;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin;
-use Racketmanager\Admin\Admin_Display;
+use Racketmanager\Admin\Admin_Page_Router;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
 use Racketmanager\Infrastructure\Wordpress\Assets\Asset_Manager;
 use Racketmanager\Infrastructure\Wordpress\Bootstrap\Plugin_Bootstrap;
 use Racketmanager\RacketManager;
@@ -159,7 +160,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             $league_repo,
@@ -210,7 +211,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             $league_repo,
@@ -253,7 +254,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             $league_repo,
@@ -276,7 +277,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -301,7 +302,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             $league_repo,
@@ -350,7 +351,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             $league_repo,
@@ -381,7 +382,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -402,7 +403,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -456,7 +457,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -498,7 +499,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -541,7 +542,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -562,7 +563,7 @@ final class Admin_Test extends TestCase {
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repo->expects( self::never() )->method( 'update_post_id' );
 
-        $admin = new Admin( null, null, $this->createStub( Admin_Display::class ), new Asset_Manager(), null, null, $fixture_repo );
+        $admin = new Admin( null, null, null, new Asset_Manager(), null, null, $fixture_repo );
 
         $_POST = [
             'post_ID'                          => '-77',
@@ -578,7 +579,7 @@ final class Admin_Test extends TestCase {
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repo->expects( self::never() )->method( 'update_post_id' );
 
-        $admin = new Admin( null, null, $this->createStub( Admin_Display::class ), new Asset_Manager(), null, null, $fixture_repo );
+        $admin = new Admin( null, null, null, new Asset_Manager(), null, null, $fixture_repo );
 
         $_POST = [
             'post_ID'                          => '77',
@@ -622,7 +623,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -650,7 +651,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -671,7 +672,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -699,7 +700,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -722,7 +723,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -744,7 +745,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -768,7 +769,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -794,7 +795,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -827,7 +828,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -850,7 +851,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -873,7 +874,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -908,7 +909,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -935,7 +936,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -973,7 +974,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -1027,7 +1028,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -1065,7 +1066,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -1089,7 +1090,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -1112,7 +1113,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             null,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             null,
             null,
@@ -1400,11 +1401,20 @@ final class Admin_Test extends TestCase {
     // =========================================================================
 
     public function test_menu_registers_top_level_page_with_expected_arguments_and_asset_hooks(): void {
-        $admin_display = $this->createStub( Admin_Display::class );
-        $admin         = new Admin(
-            new Simple_Container(),
+        $container    = new Simple_Container();
+        $presenter    = new Admin_Screen_Presenter(
+            $this->createStub( \Racketmanager\Services\View\View_Renderer_Interface::class ),
+            new \Racketmanager\Services\Admin\Admin_Message_Service( new \Racketmanager\Admin\Flash\Admin_Flash_Message_Store() )
+        );
+        $admin_router = new Admin_Page_Router(
+            $container,
+            $this->createStub( RacketManager::class ),
+            $presenter
+        );
+        $admin        = new Admin(
+            $container,
             null,
-            $admin_display,
+            $admin_router,
             new Asset_Manager()
         );
 
@@ -1418,7 +1428,7 @@ final class Admin_Test extends TestCase {
         self::assertSame( 'RacketManager', $top_page['menu_title'] );
         self::assertSame( 'racket_manager', $top_page['capability'] );
         self::assertSame( 'racketmanager', $top_page['menu_slug'] );
-        self::assertSame( [ $admin_display, 'display' ], $top_page['callback'] );
+        self::assertSame( [ $admin_router, 'display' ], $top_page['callback'] );
         self::assertStringStartsWith( 'data:image/svg+xml;base64,', $top_page['icon_url'] );
         self::assertSame( 2, $top_page['position'] );
 
@@ -1431,11 +1441,20 @@ final class Admin_Test extends TestCase {
     }
 
     public function test_menu_registers_all_twelve_submenus_in_exact_order_with_asset_hooks(): void {
-        $admin_display = $this->createStub( Admin_Display::class );
-        $admin         = new Admin(
-            new Simple_Container(),
+        $container    = new Simple_Container();
+        $presenter    = new Admin_Screen_Presenter(
+            $this->createStub( \Racketmanager\Services\View\View_Renderer_Interface::class ),
+            new \Racketmanager\Services\Admin\Admin_Message_Service( new \Racketmanager\Admin\Flash\Admin_Flash_Message_Store() )
+        );
+        $admin_router = new Admin_Page_Router(
+            $container,
+            $this->createStub( RacketManager::class ),
+            $presenter
+        );
+        $admin        = new Admin(
+            $container,
             null,
-            $admin_display,
+            $admin_router,
             new Asset_Manager()
         );
 
@@ -1540,7 +1559,7 @@ final class Admin_Test extends TestCase {
             self::assertSame( $expected['menu_title'], $actual['menu_title'], "Mismatch in menu_title at index $index" );
             self::assertSame( $expected['capability'], $actual['capability'], "Mismatch in capability at index $index" );
             self::assertSame( $expected['menu_slug'], $actual['menu_slug'], "Mismatch in menu_slug at index $index" );
-            self::assertSame( [ $admin_display, 'display' ], $actual['callback'], "Mismatch in callback at index $index" );
+            self::assertSame( [ $admin_router, 'display' ], $actual['callback'], "Mismatch in callback at index $index" );
 
             $hook = 'admin_print_scripts-racketmanager_page_' . $expected['menu_slug'];
             self::assertArrayHasKey( $hook, $actions, "Missing script/style hook $hook" );
@@ -1554,7 +1573,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             new Simple_Container(),
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager()
         );
 
@@ -1566,7 +1585,7 @@ final class Admin_Test extends TestCase {
         self::assertSame( [ $admin, 'plugin_actions' ], $filters[ $filter_tag ][0]['callback'] );
     }
 
-    public function test_menu_with_null_admin_display_registers_without_throwing(): void {
+    public function test_menu_with_null_admin_router_registers_without_throwing(): void {
         $admin = new Admin(
             new Simple_Container(),
             null,
@@ -1593,7 +1612,7 @@ final class Admin_Test extends TestCase {
         $admin = new Admin(
             new Simple_Container(),
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager()
         );
 

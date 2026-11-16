@@ -74,16 +74,16 @@ class Fixture {
     /**
      * Home team
      *
-     * @var string|null
+     * @var string|int|null
      */
-    public ?string $home_team = null;
+    public string|int|null $home_team = null;
 
     /**
      * Away team
      *
-     * @var string|null
+     * @var string|int|null
      */
-    public ?string $away_team = null;
+    public string|int|null $away_team = null;
 
     /**
      * Match day
@@ -533,28 +533,28 @@ class Fixture {
      * @return string|null
      */
     public function get_home_team(): ?string {
-        return $this->home_team;
+        return null !== $this->home_team ? (string) $this->home_team : null;
     }
 
     /**
-     * @param string|null $home_team
+     * @param string|int|null $home_team Home team id.
      */
-    public function set_home_team( ?string $home_team ): void {
-        $this->home_team = $home_team;
+    public function set_home_team( string|int|null $home_team ): void {
+        $this->home_team = null !== $home_team ? (string) $home_team : null;
     }
 
     /**
      * @return string|null
      */
     public function get_away_team(): ?string {
-        return $this->away_team;
+        return null !== $this->away_team ? (string) $this->away_team : null;
     }
 
     /**
-     * @param string|null $away_team
+     * @param string|int|null $away_team Away team id.
      */
-    public function set_away_team( ?string $away_team ): void {
-        $this->away_team = $away_team;
+    public function set_away_team( string|int|null $away_team ): void {
+        $this->away_team = null !== $away_team ? (string) $away_team : null;
     }
 
     /**

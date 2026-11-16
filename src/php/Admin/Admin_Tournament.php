@@ -21,7 +21,6 @@ use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Plan_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Setup_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model;
-use Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Team_Page_View_Model;
 use Racketmanager\Admin\View_Models\Teams_List_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Tournaments_Page_View_Model;
@@ -127,16 +126,7 @@ final readonly class Admin_Tournament {
      * @return void
      */
     public function display_event_config_page(): void {
-        $this->screens->apply_flash();
-
-        $controller = $this->racketmanager->container->get( 'tournament_event_config_admin_controller' );
-
-        $this->complete_request(
-            $controller->handle(),
-            Tournament_Event_Config_Page_View_Model::class,
-            'admin/includes/event-config',
-            strict: false
-        );
+        $this->racketmanager->container->get( Admin_Event::class )->display_config_page();
     }
 
     /**

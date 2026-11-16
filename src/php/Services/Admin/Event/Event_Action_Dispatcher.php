@@ -251,7 +251,24 @@ readonly final class Event_Action_Dispatcher {
             );
         }
 
-        $config    = $this->get_config_input( $post );
+        $config = $this->get_config_input( $post );
+
+        if ( empty( $config->primary_league ) || (int) $config->primary_league <= 0 ) {
+            $primary_league_id = ! empty( $event->primary_league ) ? (int) $event->primary_league : null;
+            if ( ! $primary_league_id && ! empty( $event->id ) ) {
+                $raw_leagues = $this->event_repository->query_leagues( (int) $event->id );
+                if ( is_array( $raw_leagues ) && ! empty( $raw_leagues ) ) {
+                    $first_league = reset( $raw_leagues );
+                    if ( is_object( $first_league ) && ! empty( $first_league->id ) ) {
+                        $primary_league_id = (int) $first_league->id;
+                    }
+                }
+            }
+            if ( $primary_league_id ) {
+                $config->primary_league = $primary_league_id;
+            }
+        }
+
         $validator = $this->handle_config_update( $config, $competition, false );
 
         if ( ! empty( $validator->error ) ) {
@@ -306,11 +323,18 @@ readonly final class Event_Action_Dispatcher {
     }
 
     /**
-     * @param array<string, mixed> $post
+     * Extract event configuration from POST payload.
+     *
+     * @param array<string, mixed> $post POST payload.
+     * @return stdClass
      */
     private function get_config_input( array $post ): stdClass {
-        $config                     = new stdClass();
-        $config->name               = isset( $post['event_name'] ) ? sanitize_text_field( wp_unslash( strval( $post['event_name'] ) ) ) : null;
+        $config = new stdClass();
+        $name   = isset( $post['event_name'] ) ? sanitize_text_field( wp_unslash( strval( $post['event_name'] ) ) ) : null;
+        if ( null === $name && isset( $post['event_title'] ) ) {
+            $name = sanitize_text_field( wp_unslash( strval( $post['event_title'] ) ) );
+        }
+        $config->name               = $name;
         $config->type               = isset( $post['type'] ) ? sanitize_text_field( wp_unslash( strval( $post['type'] ) ) ) : null;
         $config->age_limit          = isset( $post['age_limit'] ) ? sanitize_text_field( wp_unslash( strval( $post['age_limit'] ) ) ) : null;
         $config->age_offset         = isset( $post['age_offset'] ) ? sanitize_text_field( wp_unslash( strval( $post['age_offset'] ) ) ) : null;
@@ -352,9 +376,19 @@ readonly final class Event_Action_Dispatcher {
      */
     private function sanitize_form_data( array $post ): array {
         $whitelist = array(
-            'event_id', 'event_name', 'type', 'age_limit', 'age_offset',
-            'scoring', 'num_sets', 'num_rubbers', 'reverse_rubbers',
-            'match_days_allowed', 'offset', 'primary_league',
+            'event_id',
+            'event_name',
+            'event_title',
+            'type',
+            'age_limit',
+            'age_offset',
+            'scoring',
+            'num_sets',
+            'num_rubbers',
+            'reverse_rubbers',
+            'match_days_allowed',
+            'offset',
+            'primary_league',
         );
 
         $sanitized = array();
@@ -369,9 +403,12 @@ readonly final class Event_Action_Dispatcher {
     }
 
     /**
-     * @param object $config
-     * @param object $competition
-     * @param bool   $new
+     * Run configuration validation.
+     *
+     * @param object $config Configuration object.
+     * @param object $competition Competition entity.
+     * @param bool   $new Whether this is a new event.
+     * @return object
      */
     private function handle_config_update( object $config, object $competition, bool $new = false ): object {
         $validator = new Validator_Config();
@@ -389,6 +426,20 @@ readonly final class Event_Action_Dispatcher {
         }
         if ( ! empty( $competition->is_championship ) && ! $new ) {
             $validator = $validator->primary_league( $config->primary_league );
+        }
+
+        if ( $new && ! empty( $config->name ) ) {
+            $comp_id = ( method_exists( $competition, 'get_id' ) ? $competition->get_id() : null ) ?: ( $competition->id ?? null );
+            if ( $comp_id ) {
+                $events = $this->competition_service->get_events_for_competition( (int) $comp_id );
+                foreach ( $events as $event ) {
+                    if ( is_object( $event ) && isset( $event->name ) && $event->name === $config->name ) {
+                        $validator->set_errors( 'name', __( 'Event already exists', 'racketmanager' ) );
+                        $validator->msg = __( 'Event already exists', 'racketmanager' );
+                        break;
+                    }
+                }
+            }
         }
 
         return $validator->get_details();

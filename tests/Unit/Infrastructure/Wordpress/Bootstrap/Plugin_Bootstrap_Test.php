@@ -352,6 +352,15 @@ final class Plugin_Bootstrap_Test extends TestCase {
         $app->chase_pending_results( 'league' );
     }
 
+    public function test_plugin_textdomain_is_registered_on_init_action(): void {
+        $source = (string) file_get_contents( dirname( __DIR__, 5 ) . '/racketmanager.php' ); //phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+        self::assertMatchesRegularExpression(
+            '/add_action\(\s*\'init\'\s*,\s*static\s+function\s*\(\)\s*:\s*void\s*\{\s*load_plugin_textdomain\(\s*\'racketmanager\'\s*,\s*false\s*,\s*\'racketmanager\/languages\'\s*\);\s*}\s*\);/',
+            $source,
+            'racketmanager.php must register load_plugin_textdomain within an init action hook.'
+        );
+    }
+
     public function test_racketmanager_constructor_delegates_hook_registration_to_bootstrap(): void {
         $source = (string) file_get_contents( dirname( __DIR__, 5 ) . '/src/php/RacketManager.php' );
         preg_match( '/function __construct\(\) \{(.*?)\n    \}/s', $source, $constructor );

@@ -173,8 +173,7 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has_definition( 'draw_action_dispatcher' ) );
         $this->assertFalse( $container->has_definition( 'admin_flash_message_store' ) );
         $this->assertFalse( $container->has_definition( 'tournament_admin_controller' ) );
-        $this->assertFalse( $container->has_definition( 'admin_display' ) );
-        $this->assertFalse( $container->has_definition( \Racketmanager\Admin\Admin_Display::class ) );
+        $this->assertFalse( $container->has_definition( \Racketmanager\Admin\Admin_Page_Router::class ) );
         $this->assertFalse( $container->has_definition( 'admin' ) );
         $this->assertFalse( $container->has_definition( \Racketmanager\Admin::class ) );
     }
@@ -203,8 +202,7 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has( 'admin_plan_presenter' ) );
         $this->assertTrue( $container->has( 'admin_results_match_presenter' ) );
         $this->assertTrue( $container->has( 'tournament_admin_controller' ) );
-        $this->assertTrue( $container->has( 'admin_display' ) );
-        $this->assertTrue( $container->has( \Racketmanager\Admin\Admin_Display::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Admin_Page_Router::class ) );
         $this->assertTrue( $container->has( 'admin' ) );
         $this->assertTrue( $container->has( \Racketmanager\Admin::class ) );
     }
@@ -302,7 +300,7 @@ class Modular_Service_Providers_Test extends TestCase {
             'admin_plan_presenter'              => \Racketmanager\Admin\Presenters\Admin_Plan_Presenter::class,
             'admin_league_schedule_presenter'   => \Racketmanager\Admin\Presenters\Admin_League_Schedule_Presenter::class,
             'tournament_admin_controller'       => \Racketmanager\Admin\Controllers\Tournament_Admin_Controller::class,
-            'admin_display'                     => \Racketmanager\Admin\Admin_Display::class,
+            \Racketmanager\Admin\Admin_Page_Router::class => \Racketmanager\Admin\Admin_Page_Router::class,
             'admin'                             => \Racketmanager\Admin::class,
         ];
 

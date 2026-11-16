@@ -144,19 +144,8 @@ final class Admin_Array_Scope_Render_Test extends TestCase {
         self::assertStringNotContainsString( 'No seasons defined', $html );
     }
 
-    public function test_upgrade_templates_receive_array_data(): void {
+    public function test_upgrade_template_receives_array_data(): void {
         $html = $this->render_strict( 'admin/show-upgrade', [ 'installed' => '10.2.3' ] );
         self::assertStringContainsString( 'Current version 10.2.3', $html );
-
-        $upgrade = new class {
-            public int $calls = 0;
-
-            public function run(): void {
-                ++$this->calls;
-            }
-        };
-        $html = $this->render_strict( 'admin/upgrade/do-upgrade', [ 'upgrade' => $upgrade ] );
-        self::assertSame( 1, $upgrade->calls );
-        self::assertStringContainsString( 'Upgrade successful', $html );
     }
 }

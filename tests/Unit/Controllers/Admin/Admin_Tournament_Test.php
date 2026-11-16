@@ -12,7 +12,6 @@ use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Wp_Admin_Redirector;
 use Racketmanager\Admin\View_Models\Contact_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model;
-use Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Team_Page_View_Model;
 use Racketmanager\Admin\View_Models\Teams_List_Page_View_Model;
 use Racketmanager\Domain\Competition\Competition;
@@ -163,23 +162,17 @@ class Admin_Tournament_Test extends TestCase {
     }
 
     public function test_display_event_config_page_routes_correctly(): void {
-        $controller = $this->createMock( Admin_Controller_Mock_Interface::class );
+        $screen = new class() {
+            public bool $called = false;
 
-        $this->container->set( 'tournament_event_config_admin_controller', $controller );
-
-        $competition = $this->createStub( Competition::class );
-        $vm = new Tournament_Event_Config_Page_View_Model(
-            $competition,
-            new stdClass(),
-            null,
-            false
-        );
-
-        $controller->expects( self::once() )
-            ->method( 'handle' )
-            ->willReturn( [ 'view_model' => $vm ] );
+            public function display_config_page(): void {
+                $this->called = true;
+            }
+        };
+        $this->container->set( \Racketmanager\Admin\Admin_Event::class, $screen );
 
         $this->admin_tournament->display_event_config_page();
+        self::assertTrue( $screen->called );
     }
 
     public function test_display_team_page_routes_correctly(): void {

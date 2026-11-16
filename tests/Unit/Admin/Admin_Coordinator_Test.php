@@ -6,7 +6,7 @@ namespace Racketmanager\Tests\Unit\Admin;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin;
-use Racketmanager\Admin\Admin_Display;
+use Racketmanager\Admin\Admin_Page_Router;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Admin_Ajax_Controller;
 use Racketmanager\Infrastructure\Wordpress\Assets\Asset_Manager;
@@ -49,6 +49,19 @@ final class Admin_Coordinator_Test extends TestCase {
         parent::tearDown();
     }
 
+    private function create_router( ?Simple_Container $container = null, ?RacketManager $racketmanager = null ): Admin_Page_Router {
+        $c  = $container ?? new Simple_Container();
+        $rm = $racketmanager ?? ( new ReflectionClass( RacketManager::class ) )->newInstanceWithoutConstructor();
+        return new Admin_Page_Router(
+            $c,
+            $rm,
+            new \Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter(
+                $this->createStub( \Racketmanager\Services\View\View_Renderer_Interface::class ),
+                new \Racketmanager\Services\Admin\Admin_Message_Service( $this->createStub( \Racketmanager\Admin\Flash\Admin_Flash_Message_Store::class ) )
+            )
+        );
+    }
+
     public function test_admin_does_not_extend_racketmanager(): void {
         self::assertFalse(
             is_subclass_of( Admin::class, RacketManager::class ),
@@ -60,20 +73,20 @@ final class Admin_Coordinator_Test extends TestCase {
         $container     = new Simple_Container();
         $racketmanager = ( new ReflectionClass( RacketManager::class ) )->newInstanceWithoutConstructor();
         $asset_manager = new Asset_Manager( 'https://example.test/', '/tmp/test', '1.2.3' );
-        $admin_display = $this->createStub( Admin_Display::class );
+        $admin_router  = $this->create_router( $container, $racketmanager );
         $ajax_admin    = $this->createStub( Admin_Ajax_Controller::class );
 
         $admin = new Admin(
             $container,
             $racketmanager,
-            $admin_display,
+            $admin_router,
             $asset_manager,
             $ajax_admin
         );
 
         self::assertSame( $container, $admin->container );
         self::assertSame( $racketmanager, $admin->racketmanager );
-        self::assertSame( $admin_display, $admin->admin_display );
+        self::assertSame( $admin_router, $admin->admin_router );
         self::assertSame( $asset_manager, $admin->asset_manager );
         self::assertSame( $ajax_admin, $admin->ajax_admin );
         self::assertSame( $admin, Admin::get_instance() );
@@ -84,9 +97,9 @@ final class Admin_Coordinator_Test extends TestCase {
         $container     = new Simple_Container();
         $racketmanager = ( new ReflectionClass( RacketManager::class ) )->newInstanceWithoutConstructor();
         $asset_manager = new Asset_Manager();
-        $admin_display = $this->createStub( Admin_Display::class );
+        $admin_router  = $this->create_router( $container, $racketmanager );
 
-        $admin = new Admin( $container, $racketmanager, $admin_display, $asset_manager );
+        $admin = new Admin( $container, $racketmanager, $admin_router, $asset_manager );
 
         $actions = $GLOBALS['wp_stubs_added_actions'] ?? [];
 
@@ -122,9 +135,9 @@ final class Admin_Coordinator_Test extends TestCase {
 
         $app       = ( new ReflectionClass( RacketManager::class ) )->newInstanceWithoutConstructor();
         $container = new Simple_Container();
-        $display   = $this->createStub( Admin_Display::class );
-        $container->set( 'admin_display', fn() => $display );
-        $container->set( 'admin', fn( Simple_Container $c ) => new Admin( $c, $app, $display, new Asset_Manager() ) );
+        $router    = $this->create_router( $container, $app );
+        $container->set( Admin_Page_Router::class, fn() => $router );
+        $container->set( 'admin', fn( Simple_Container $c ) => new Admin( $c, $app, $router, new Asset_Manager() ) );
 
         $admin1 = Admin::get_instance( $container, $app );
         $admin2 = Admin::get_instance();
@@ -137,8 +150,8 @@ final class Admin_Coordinator_Test extends TestCase {
 
         // With a fresh container, get_instance creates and caches a fresh admin instance
         $container2 = new Simple_Container();
-        $container2->set( 'admin_display', fn() => $display );
-        $container2->set( 'admin', fn( Simple_Container $c ) => new Admin( $c, $app, $display, new Asset_Manager() ) );
+        $container2->set( Admin_Page_Router::class, fn() => $router );
+        $container2->set( 'admin', fn( Simple_Container $c ) => new Admin( $c, $app, $router, new Asset_Manager() ) );
         $admin3 = Admin::get_instance( $container2, $app );
 
         self::assertInstanceOf( Admin::class, $admin3 );
@@ -170,7 +183,7 @@ final class Admin_Coordinator_Test extends TestCase {
         $admin = new Admin(
             new Simple_Container(),
             $racketmanager,
-            $this->createStub( Admin_Display::class ),
+            null,
             $asset_manager
         );
 
@@ -196,7 +209,7 @@ final class Admin_Coordinator_Test extends TestCase {
         $admin = new Admin(
             $container,
             ( new ReflectionClass( RacketManager::class ) )->newInstanceWithoutConstructor(),
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager()
         );
 
@@ -208,7 +221,7 @@ final class Admin_Coordinator_Test extends TestCase {
         $admin = new Admin(
             new Simple_Container(),
             ( new ReflectionClass( RacketManager::class ) )->newInstanceWithoutConstructor(),
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager()
         );
 
@@ -223,7 +236,7 @@ final class Admin_Coordinator_Test extends TestCase {
         self::assertStringContainsString( 'admin.php?page=racketmanager-doc', $filtered['documentation'] );
     }
 
-    public function test_admin_service_provider_wires_admin_and_admin_display(): void {
+    public function test_admin_service_provider_wires_admin_and_admin_page_router(): void {
         $app = ( new ReflectionClass( RacketManager::class ) )->newInstanceWithoutConstructor();
         $app->options = [];
         $app->site_url = 'https://tennis.local';
@@ -235,23 +248,20 @@ final class Admin_Coordinator_Test extends TestCase {
 
         self::assertTrue( $container->has( 'admin' ) );
         self::assertTrue( $container->has( Admin::class ) );
-        self::assertTrue( $container->has( 'admin_display' ) );
-        self::assertTrue( $container->has( Admin_Display::class ) );
+        self::assertTrue( $container->has( Admin_Page_Router::class ) );
 
-        $admin1 = $container->get( 'admin' );
-        $admin2 = $container->get( Admin::class );
-        $display1 = $container->get( 'admin_display' );
-        $display2 = $container->get( Admin_Display::class );
+        $admin1  = $container->get( 'admin' );
+        $admin2  = $container->get( Admin::class );
+        $router1 = $container->get( Admin_Page_Router::class );
 
         self::assertInstanceOf( Admin::class, $admin1 );
         self::assertSame( $admin1, $admin2 );
-        self::assertInstanceOf( Admin_Display::class, $display1 );
-        self::assertSame( $display1, $display2 );
+        self::assertInstanceOf( Admin_Page_Router::class, $router1 );
 
         // Injected dependencies on Admin
         self::assertSame( $container, $admin1->container );
         self::assertSame( $app, $admin1->racketmanager );
-        self::assertSame( $display1, $admin1->admin_display );
+        self::assertSame( $router1, $admin1->admin_router );
         self::assertSame( $container->get( 'asset_manager' ), $admin1->asset_manager );
         self::assertSame( $container->get( 'admin_ajax_controller' ), $admin1->ajax_admin );
     }
@@ -329,7 +339,7 @@ final class Admin_Coordinator_Test extends TestCase {
         $admin = new Admin(
             $container,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager(),
             $ajax_controller
         );
@@ -367,7 +377,7 @@ final class Admin_Coordinator_Test extends TestCase {
         $admin = new Admin(
             $container,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager()
         );
 
@@ -394,7 +404,7 @@ final class Admin_Coordinator_Test extends TestCase {
         $admin = new Admin(
             $container,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager()
         );
 
@@ -415,7 +425,7 @@ final class Admin_Coordinator_Test extends TestCase {
         $admin = new Admin(
             new Simple_Container(),
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager()
         );
 
@@ -435,7 +445,7 @@ final class Admin_Coordinator_Test extends TestCase {
         $admin = new Admin(
             $container,
             null,
-            $this->createStub( Admin_Display::class ),
+            null,
             new Asset_Manager()
         );
 
@@ -448,18 +458,18 @@ final class Admin_Coordinator_Test extends TestCase {
         self::assertCount( 1, $GLOBALS['wp_stubs_added_actions']['admin_menu'] ?? [] );
     }
 
-    public function test_resolving_admin_or_admin_display_from_null_app_container_throws_exception(): void {
+    public function test_resolving_admin_or_admin_page_router_from_null_app_container_throws_exception(): void {
         $container = Container_Bootstrap::boot( null );
 
         $this->expectException( \LogicException::class );
         $container->get( 'admin' );
     }
 
-    public function test_resolving_admin_display_from_null_app_container_throws_exception(): void {
+    public function test_resolving_admin_page_router_from_null_app_container_throws_exception(): void {
         $container = Container_Bootstrap::boot( null );
 
         $this->expectException( \LogicException::class );
-        $container->get( 'admin_display' );
+        $container->get( Admin_Page_Router::class );
     }
 
     public function test_constructor_resolves_league_repository_from_explicit_parameter(): void {

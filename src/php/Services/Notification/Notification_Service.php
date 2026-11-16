@@ -483,13 +483,15 @@ class Notification_Service {
         $admin_email = $base_data['admin_email'];
         $headers     = $base_data['headers'];
 
+        $comp_type = $this->get_competition_type_string( $league->event->competition->type ?? 'league' );
+
         $message_args = array(
-            'competition_type' => $league->event->competition->type,
+            'competition_type' => $comp_type,
             'competition'      => $league->event->competition->name,
             'emailfrom'        => $admin_email,
         );
 
-        if ( 'tournament' === $league->event->competition->type ) {
+        if ( 'tournament' === $comp_type ) {
             $message_args['tournament']        = $league->event->competition_id . ',' . $fixture->get_season();
             $message_args['tournament_search'] = 'shortcode';
         }
@@ -638,19 +640,21 @@ class Notification_Service {
             $round_name = Util::get_final_name( $fixture->get_final() ) ? : '';
         }
 
+        $comp_type = $this->get_competition_type_string( $league->event->competition->type ?? 'league' );
+
         $message_args = array(
             'fixture'          => $fixture->get_id(),
             'round'            => $round_name,
             'new_date'         => $fixture->get_date(),
             'original_date'    => $fixture->get_date_original(),
-            'competition_type' => $league->event->competition->type,
+            'competition_type' => $comp_type,
             'emailfrom'        => $admin_email,
         );
 
-        if ( 'tournament' === $league->event->competition->type ) {
+        if ( 'tournament' === $comp_type ) {
             $message_args['tournament']        = $league->event->competition_id . ',' . $fixture->get_season();
             $message_args['tournament_search'] = 'shortcode';
-        } elseif ( 'cup' === $league->event->competition->type || 'league' === $league->event->competition->type ) {
+        } elseif ( 'cup' === $comp_type || 'league' === $comp_type ) {
             $message_args['competition'] = $league->event->competition->name;
         }
 
@@ -804,12 +808,12 @@ class Notification_Service {
     /**
      * Normalise the competition type to string value.
      *
-     * @param Competition_Type|string|null $type
+     * @param Competition_Type|string|null $type Competition type.
      * @return string
      */
     private function get_competition_type_string( mixed $type ): string {
-        if ( $type instanceof Competition_Type ) {
-            return $type->value;
+        if ( $type instanceof \BackedEnum ) {
+            return (string) $type->value;
         }
 
         return (string) ( $type ?? 'league' );

@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Presentation\Presenters;
 
+use BackedEnum;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Shared\Seo_Slug;
@@ -73,7 +74,7 @@ readonly class Email_Shortcode_Presenter implements Email_Shortcode_Presenter_In
      * @throws Tournament_Not_Found_Exception Tournament not found.
      */
     public function present_match_notification( Fixture $fixture, array $args ): array {
-        $competition_type = $args['competition_type'] ?? '';
+        $competition_type = $this->normalize_competition_type( $args['competition_type'] ?? '' );
         $match            = Fixture_Presentation_Adapter::from_fixture(
             $fixture,
             $this->competition_service,
@@ -232,7 +233,9 @@ readonly class Email_Shortcode_Presenter implements Email_Shortcode_Presenter_In
             $action_url .= '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $match->league->title ?? '' ) . '/' . $season_name . '/day' . ( $match->match_day ?? '' ) . '/' . sanitize_title( $match->teams['home']->title ?? '' ) . '-vs-' . sanitize_title( $match->teams['away']->title ?? '' );
         }
 
-        if ( empty( $template ) && isset( $match->league->event->competition->type ) && 'tournament' === $match->league->event->competition->type ) {
+        $raw_comp_type = $match->league->event->competition->type ?? '';
+        $comp_type     = $raw_comp_type instanceof BackedEnum ? $raw_comp_type->value : (string) $raw_comp_type;
+        if ( empty( $template ) && 'tournament' === $comp_type ) {
             $template = 'tournament';
         }
 
@@ -288,7 +291,7 @@ readonly class Email_Shortcode_Presenter implements Email_Shortcode_Presenter_In
             rubber_repository: $this->rubber_repository
         );
 
-        $competition_type = $args['competition_type'] ?? '';
+        $competition_type = $this->normalize_competition_type( $args['competition_type'] ?? '' );
         $tournament_param = $args['tournament'] ?? false;
         $tournament       = $tournament_param;
         $draw_link        = '';
@@ -555,5 +558,19 @@ readonly class Email_Shortcode_Presenter implements Email_Shortcode_Presenter_In
         $this->populate_team_attributes( $target_for_source_away, $source_away, $is_player_type );
 
         return $teams;
+    }
+
+    /**
+     * Normalise competition type to string value.
+     *
+     * @param mixed $type Competition type.
+     * @return string
+     */
+    private function normalize_competition_type( mixed $type ): string {
+        if ( $type instanceof BackedEnum ) {
+            return (string) $type->value;
+        }
+
+        return (string) ( $type ?? '' );
     }
 }

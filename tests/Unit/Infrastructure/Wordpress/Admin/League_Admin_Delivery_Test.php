@@ -5,42 +5,23 @@ namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Admin;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Admin\Admin_Display;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
+use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
 use Racketmanager\Services\Admin\Admin_Message_Service;
 use Racketmanager\Services\Admin\League\Event_Setup_Action_Dispatcher;
 use Racketmanager\Services\Admin\League\League_Setup_Action_Dispatcher;
 use Racketmanager\Services\Admin\League\Season_Delete_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Competition_Service;
+use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+use ReflectionProperty;
 
 require_once __DIR__ . '/../../../../wp-stubs.php';
-
-final class Testable_League_Admin_Display extends Admin_Display {
-    public function __construct( Admin_Action_Adapter $adapter, Admin_Message_Service $messages ) {
-        $this->admin_action_adapter  = $adapter;
-        $this->admin_message_service = $messages;
-        $this->message               = '';
-        $this->error                 = false;
-    }
-
-    public function expose_flash(): array {
-        return $this->apply_flash_message();
-    }
-
-    public function get_exposed_message(): string {
-        return $this->message;
-    }
-
-    public function get_exposed_error(): bool|string {
-        return $this->error;
-    }
-}
 
 final class In_Memory_Admin_Flash_Message_Store extends Admin_Flash_Message_Store {
     private ?array $data = null;
@@ -86,8 +67,7 @@ final class League_Admin_Delivery_Test extends TestCase {
     }
 
     public function test_flash_message_is_applied_on_get(): void {
-        $_SERVER['REQUEST_METHOD'] = 'GET';
-        $store                     = $this->createMock( Admin_Flash_Message_Store::class );
+        $store = $this->createMock( Admin_Flash_Message_Store::class );
         $store->expects( self::once() )->method( 'pop' )->willReturn(
             array(
                 'message'      => 'Season(s) deleted',
@@ -96,14 +76,22 @@ final class League_Admin_Delivery_Test extends TestCase {
         );
 
         $message_service = new Admin_Message_Service( $store );
-        $display         = new Testable_League_Admin_Display(
-            new Admin_Action_Adapter( $message_service, $this->createStub( Admin_Redirector_Interface::class ) ),
+        $presenter       = new Admin_Screen_Presenter(
+            $this->createStub( View_Renderer_Interface::class ),
             $message_service
         );
 
-        $display->expose_flash();
-        self::assertSame( 'Season(s) deleted', $display->get_exposed_message() );
-        self::assertFalse( $display->get_exposed_error() );
+        $flash = $presenter->apply_flash();
+
+        self::assertSame( 'Season(s) deleted', $flash['message'] ?? null );
+        self::assertFalse( $flash['message_type'] ?? true );
+        self::assertSame(
+            array(
+                'message' => 'Season(s) deleted',
+                'type'    => 'success',
+            ),
+            $this->current_message( $message_service )
+        );
     }
 
     public function test_flash_data_is_applied_and_pops_once(): void {
@@ -111,6 +99,10 @@ final class League_Admin_Delivery_Test extends TestCase {
         $redirector      = new In_Memory_Admin_Redirector();
         $message_service = new Admin_Message_Service( $store );
         $adapter         = new Admin_Action_Adapter( $message_service, $redirector );
+        $presenter       = new Admin_Screen_Presenter(
+            $this->createStub( View_Renderer_Interface::class ),
+            $message_service
+        );
 
         $report = array(
             'retry'             => 12,
@@ -131,16 +123,27 @@ final class League_Admin_Delivery_Test extends TestCase {
             )
         );
 
-        $_SERVER['REQUEST_METHOD'] = 'GET';
-        $display                   = new Testable_League_Admin_Display( $adapter, $message_service );
-        $flash                     = $display->expose_flash();
+        $flash = $presenter->apply_flash();
 
-        self::assertSame( 'Scheduling failed after 12 attempts', $display->get_exposed_message() );
-        self::assertSame( 'error', $display->get_exposed_error() );
+        self::assertSame( 'Scheduling failed after 12 attempts', $flash['message'] ?? null );
+        self::assertTrue( $flash['message_type'] ?? false );
         self::assertSame( $report, $flash['flash_data'] ?? null );
+        self::assertSame(
+            array(
+                'message' => 'Scheduling failed after 12 attempts',
+                'type'    => 'danger',
+            ),
+            $this->current_message( $message_service )
+        );
 
-        $second_display = new Testable_League_Admin_Display( $adapter, $message_service );
-        self::assertSame( array(), $second_display->expose_flash() );
+        self::assertSame( array(), $presenter->apply_flash() );
+    }
+
+    /**
+     * @return array{message:string, type:string}|null
+     */
+    private function current_message( Admin_Message_Service $message_service ): ?array {
+        return ( new ReflectionProperty( Admin_Message_Service::class, 'current_message' ) )->getValue( $message_service );
     }
 
     public function test_season_delete_dispatcher_success_returns_dto(): void {

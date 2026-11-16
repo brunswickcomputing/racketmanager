@@ -11,7 +11,7 @@ Admin (include/Admin/*.php)
 - include/Admin/class-admin-club.php — Racketmanager\admin\Admin_Club
 - include/Admin/class-admin-competition.php — Racketmanager\admin\Admin_Competition
 - include/Admin/class-admin-cup.php — Racketmanager\admin\Admin_Cup
-- include/Admin/class-admin-display.php — Racketmanager\admin\Admin_Display
+- include/Admin/class-admin-display.php — Racketmanager\admin\Admin_Display (**retired 2026-11:** replaced by `src/php/Admin/Admin_Page_Router.php`)
 - include/Admin/class-admin-event.php — Racketmanager\admin\Admin_Event
 - include/Admin/class-admin-finances.php — Racketmanager\admin\Admin_Finances
 - include/Admin/class-admin-import.php — Racketmanager\admin\Admin_Import

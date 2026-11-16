@@ -15,7 +15,7 @@ final class Season_Collection {
 	/**
 	 * Constructor
 	 *
-	 * @param array $seasons
+	 * @param array $seasons Seasons array.
 	 */
 	public function __construct( array $seasons ) {
 		$this->seasons = $seasons;
@@ -33,11 +33,11 @@ final class Season_Collection {
 	/**
 	 * Get a season by name.
 	 *
-	 * @param string $name
+	 * @param string|int $name Season name.
 	 * @return array|null
 	 */
-	public function get( string $name ): ?array {
-		return $this->seasons[ $name ] ?? null;
+	public function get( string|int $name ): ?array {
+		return $this->seasons[ $name ] ?? ( $this->seasons[ (string) $name ] ?? null );
 	}
 
 	/**
@@ -65,11 +65,11 @@ final class Season_Collection {
 	/**
 	 * Check if a season exists.
 	 *
-	 * @param string $name
+	 * @param string|int $name Season name.
 	 * @return bool
 	 */
-	public function has( string $name ): bool {
-		return isset( $this->seasons[ $name ] );
+	public function has( string|int $name ): bool {
+		return isset( $this->seasons[ $name ] ) || isset( $this->seasons[ (string) $name ] );
 	}
 
 	/**

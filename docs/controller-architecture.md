@@ -5,7 +5,7 @@ In a modern **Domain-Driven Design (DDD)** architecture, **Controllers** act as 
 #### 1. Current State (Pseudo-Controllers)
 The plugin currently handles requests through several components that effectively function as controllers:
 - **Public**: `Shortcodes_*` classes handle shortcode attributes, fetch data from services, and return rendered templates.
-- **Admin**: `Admin_Display` routes admin menu requests to domain-specific admin classes (e.g., `Admin_Club`, `Admin_League`), which handle POST/GET data and view rendering.
+- **Admin**: `Admin_Page_Router` routes admin menu requests to domain-specific admin screen bridges (e.g., `Admin_Club`, `Admin_League`), which complete POST/GET via `Completes_Admin_Requests`.
 - **AJAX**: `Ajax_Frontend` and `Ajax_Admin` register WordPress AJAX actions and process requests.
 
 #### 2. Formalizing the Controller Level
@@ -43,7 +43,7 @@ class Club_Public_Controller {
 ```
 
 ##### Admin Controller Example
-Admin controllers handle logic for processing form submissions and redirects, keeping the `Admin_Display` class focused on routing.
+Admin controllers handle logic for processing form submissions and redirects, keeping `Admin_Page_Router` focused on routing.
 
 ```php
 namespace Racketmanager\Admin\Controllers;
@@ -62,7 +62,7 @@ class Club_Admin_Controller {
 
 | Layer | Component | Responsibility |
 | :--- | :--- | :--- |
-| **Presentation** | `Shortcodes`, `Admin_Display`, `Ajax` | Entry point from WordPress hooks/actions. |
+| **Presentation** | `Shortcodes`, `Admin_Page_Router`, `Ajax` | Entry point from WordPress hooks/actions. |
 | **Controller** | `*_Controller` | Validates input, calls Services, prepares Presenters. |
 | **Application** | `*_Service` | Orchestrates business logic (agnostic of HTTP/WP state). |
 | **Domain** | Entities (`Club`, `League`), DTOs | Core business rules and data transfer structures. |
@@ -94,15 +94,17 @@ public function show_club( array $atts ): string {
 ```
 
 ##### B. Bridge from Admin Menu
-The `Admin_Display` class routes admin requests. It can instantiate the controller and call the relevant method based on the request.
+`Admin_Page_Router` routes admin requests to a `final readonly` screen bridge. The bridge resolves the per-view controller by `::class` and completes the request.
 
 ```php
-// src/php/Admin/Admin_Display.php
+// src/php/Admin/Admin_Page_Router.php
 
-public function handle_club_update() {
-    if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_club']) ) {
-        $controller = $this->racketmanager->container->get('club_admin_controller');
-        $controller->update_club(); // Controller handles validation, service call, and redirect
+public function display(): void {
+    $page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
+    $view = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] ) ) : '';
+
+    if ( 'racketmanager-clubs' === $page ) {
+        $this->container->get( Admin_Club::class )->handle_display( $view );
     }
 }
 ```

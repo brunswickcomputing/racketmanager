@@ -479,6 +479,7 @@ namespace {
             public $get_row_callback;
             public $update_callback;
             public $last_query;
+            public $last_error = "";
             public $insert_id = 0;
             private $data = [];
             private $last_id = 0;
@@ -654,6 +655,13 @@ namespace {
                 'after' => $after,
             );
             return true;
+        }
+    }
+
+    if ( ! function_exists( 'flush_rewrite_rules' ) ) {
+        function flush_rewrite_rules( bool $hard = true ): void {
+            $GLOBALS['wp_stubs_flushed_rewrite_rules']      = true;
+            $GLOBALS['wp_stubs_flushed_rewrite_rules_hard'] = $hard;
         }
     }
 

@@ -9,404 +9,177 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Admin\Controllers;
 
+use Racketmanager\Admin\Presenters\Admin_Message_Mapper;
+use Racketmanager\Admin\View_Models\Error_Bag;
 use Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model;
-use Racketmanager\Domain\Competition\Event;
-use Racketmanager\Domain\Competition\Event_Factory;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Services\Admin\Event\Event_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
-use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Tournament_Service;
-use Racketmanager\Services\Validator\Validator_Config;
 use stdClass;
 
-final class Tournament_Event_Config_Admin_Controller {
+/**
+ * Controller coordinating tournament and event configuration screen requests.
+ */
+final readonly class Tournament_Event_Config_Admin_Controller {
 
-    /**
-     * @param Tournament_Service $tournament_service
-     * @param Competition_Service $competition_service
-     * @param Competition_Season_Service $competition_season_service
-     * @param Action_Guard_Interface $action_guard
-     * @param Event_Repository_Interface $event_repository
-     * @param League_Service $league_service
-     */
-    public function __construct(
-        private readonly Tournament_Service $tournament_service,
-        private readonly Competition_Service $competition_service,
-        private readonly Competition_Season_Service $competition_season_service,
-        private readonly Action_Guard_Interface $action_guard,
-        private readonly Event_Repository_Interface $event_repository,
-        private readonly League_Service $league_service,
-    ) {
-    }
+	/**
+	 * Constructor.
+	 *
+	 * @param Tournament_Service         $tournament_service      Tournament service.
+	 * @param Competition_Service        $competition_service     Competition service.
+	 * @param Action_Guard_Interface     $action_guard            Security guard.
+	 * @param Event_Repository_Interface $event_repository        Event repository.
+	 * @param Event_Action_Dispatcher    $event_action_dispatcher Event action dispatcher.
+	 */
+	public function __construct(
+		private Tournament_Service $tournament_service,
+		private Competition_Service $competition_service,
+		private Action_Guard_Interface $action_guard,
+		private Event_Repository_Interface $event_repository,
+		private Event_Action_Dispatcher $event_action_dispatcher,
+	) {
+	}
 
-    /**
-     * Handle the display of the tournament event config page.
-     *
-     * @return array{view_model?:Tournament_Event_Config_Page_View_Model, message?:string, message_type?:bool|string, redirect?:string}
-     */
-    public function handle(): array {
-        try {
-            $this->action_guard->assert_capability( 'edit_leagues' );
-        } catch ( \Exception $e ) {
-            return array(
-                'message'      => $e->getMessage(),
-                'message_type' => true,
-            );
-        }
+	/**
+	 * Handle tournament event configuration screen requests.
+	 *
+	 * @param array<string, mixed> $query      Typically $_GET.
+	 * @param array<string, mixed> $post       Typically $_POST.
+	 * @param array<string, mixed> $flash_data Restored validation errors and form values.
+	 *
+	 * @return array{view_model?: Tournament_Event_Config_Page_View_Model, message?: string|null, message_type?: bool|string|null, redirect?: string, flash_data?: array<string, mixed>}
+	 */
+	public function handle( array $query = array(), array $post = array(), array $flash_data = array() ): array {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
+		$query = ! empty( $query ) ? $query : $_GET;
+		$post  = ! empty( $post ) ? $post : $_POST;
+		// phpcs:enable WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
 
-        $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
-        try {
-            $competition = $this->competition_service->get_by_id( $competition_id );
-        } catch ( Competition_Not_Found_Exception $e ) {
-            return array(
-                'message'      => $e->getMessage(),
-                'message_type' => true,
-            );
-        }
+		if ( isset( $post['addEventConfig'] ) || isset( $post['updateEventConfig'] ) ) {
+			$result = $this->event_action_dispatcher->handle( $query, $post );
 
-        $tournament_id = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
-        $tournament    = null;
-        if ( $tournament_id ) {
-            try {
-                $tournament = $this->tournament_service->get_tournament( $tournament_id );
-            } catch ( Tournament_Not_Found_Exception $e ) {
-                return array(
-                    'message'      => $e->getMessage(),
-                    'message_type' => true,
-                );
-            }
-        }
+			$extra_args = array_merge( array( 'view' => 'event-config' ), $result->query_params );
+			if ( null !== $result->tab_override && '' !== $result->tab_override ) {
+				$extra_args['tab'] = $result->tab_override;
+			} elseif ( ! isset( $query['tab'] ) && isset( $post['active-tab'] ) && is_string( $post['active-tab'] ) ) {
+				$extra_args['tab'] = sanitize_key( wp_unslash( $post['active-tab'] ) );
+			}
 
-        $event_id = isset( $_GET['event_id'] ) ? intval( $_GET['event_id'] ) : null;
-        if ( $event_id ) {
-            try {
-                $event     = $this->competition_service->get_event_by_id( $event_id );
-                $new_event = false;
-            } catch ( Event_Not_Found_Exception ) {
-                $event     = new stdClass();
-                $new_event = true;
-            }
-        } else {
-            $event     = new stdClass();
-            $new_event = true;
-        }
+			return array(
+				'redirect'     => Admin_Redirect_Url_Builder::event_screen( $query, $extra_args ),
+				'message'      => $result->message,
+				'message_type' => Admin_Message_Mapper::to_legacy( $result->message_type ),
+				'flash_data'   => $result->flash_data,
+			);
+		}
 
-        if ( $new_event ) {
-            if ( isset( $_POST['addEventConfig'] ) ) {
-                return $this->handle_add( $competition, $tournament );
-            }
-        } else {
-            $event->config              = (object) $event->settings;
-            $event->config->num_sets    = $event->num_sets;
-            $event->config->num_rubbers = $event->num_rubbers;
+		try {
+			$this->action_guard->assert_capability( 'edit_leagues' );
+		} catch ( \Exception $e ) {
+			return array(
+				'message'      => $e->getMessage(),
+				'message_type' => true,
+			);
+		}
 
-            if ( isset( $_POST['updateEventConfig'] ) ) {
-                return $this->handle_update( $event, $competition, $tournament );
-            }
-        }
+		$competition_id = isset( $query['competition_id'] ) ? intval( $query['competition_id'] ) : null;
+		try {
+			$competition = $this->competition_service->get_by_id( $competition_id );
+		} catch ( Competition_Not_Found_Exception $e ) {
+			return array(
+				'message'      => $e->getMessage(),
+				'message_type' => true,
+			);
+		}
 
-        return array(
-            'view_model' => new Tournament_Event_Config_Page_View_Model(
-                $competition,
-                $event,
-                $tournament,
-                $new_event,
-                leagues: $this->get_event_leagues( $competition, $event, $new_event )
-            ),
-        );
-    }
+		$tournament_id = isset( $query['tournament'] ) ? intval( $query['tournament'] ) : null;
+		$tournament    = null;
+		if ( $tournament_id ) {
+			try {
+				$tournament = $this->tournament_service->get_tournament( $tournament_id );
+			} catch ( Tournament_Not_Found_Exception $e ) {
+				return array(
+					'message'      => $e->getMessage(),
+					'message_type' => true,
+				);
+			}
+		}
 
-    /**
-     * Handle adding a new event.
-     *
-     * @param object $competition
-     * @param object|null $tournament
-     * @return array
-     */
-    private function handle_add( object $competition, ?object $tournament ): array {
-        try {
-            $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_manage-event-config', 'edit_leagues' );
-        } catch ( \Exception $e ) {
-            return array(
-                'message'      => $e->getMessage(),
-                'message_type' => true,
-            );
-        }
+		$event_id = isset( $query['event_id'] ) ? intval( $query['event_id'] ) : null;
+		if ( $event_id ) {
+			try {
+				$event     = $this->competition_service->get_event_by_id( $event_id );
+				$new_event = false;
+			} catch ( Event_Not_Found_Exception ) {
+				$event     = new stdClass();
+				$new_event = true;
+			}
+		} else {
+			$event     = new stdClass();
+			$new_event = true;
+		}
 
-        $event_id = isset( $_POST['event_id'] ) ? intval( $_POST['event_id'] ) : null;
-        if ( ! empty( $event_id ) ) {
-            return array(
-                'message'      => __( 'Event id invalid for new event', 'racketmanager' ),
-                'message_type' => true,
-            );
-        }
+		$errors = is_array( $flash_data['errors'] ?? null ) ? new Error_Bag( $flash_data['errors'] ) : new Error_Bag();
+		if ( is_array( $flash_data['form_data'] ?? null ) ) {
+			$form_data = $flash_data['form_data'];
+			$config    = $new_event ? new stdClass() : $event->config ?? (object) $event->settings;
+			foreach ( $form_data as $field => $value ) {
+				$config->{ 'event_name' === $field ? 'name' : $field } = $value;
+			}
+			$event->config = $config;
+			if ( isset( $form_data['event_name'] ) ) {
+				$event->name = strval( $form_data['event_name'] );
+			}
+			if ( isset( $form_data['type'] ) ) {
+				$event->type = strval( $form_data['type'] );
+			}
+			if ( isset( $form_data['num_sets'] ) ) {
+				$event->num_sets = intval( $form_data['num_sets'] );
+			}
+			if ( isset( $form_data['num_rubbers'] ) ) {
+				$event->num_rubbers = intval( $form_data['num_rubbers'] );
+			}
+		}
 
-        $config = $this->get_config_input();
-        
-        // Legacy validation and creation logic from Admin_Event::display_config_page
-        // Note: For now, we are keeping the logic similar to legacy for safety, but in a Controller.
-        $validator = new Validator_Config();
-        $validator = $this->handle_config_update_validation( $config, $competition, true );
+		if ( ! $new_event ) {
+			$event->config              = $event->config ?? (object) $event->settings;
+			$event->config->num_sets    = $event->num_sets;
+			$event->config->num_rubbers = $event->num_rubbers;
+		}
 
-        if ( ! empty( $validator->error ) ) {
-            $event_stub = (object) array( 'config' => $config );
-            return array(
-                'message'      => $validator->msg ?: __( 'Errors found', 'racketmanager' ),
-                'message_type' => true,
-                'view_model'   => new Tournament_Event_Config_Page_View_Model(
-                    $competition,
-                    $event_stub,
-                    $tournament,
-                    true,
-                    leagues: $this->get_event_leagues( $competition, $event_stub, true )
-                ),
-            );
-        }
+		return array(
+			'view_model' => new Tournament_Event_Config_Page_View_Model(
+				$competition,
+				$event,
+				$tournament,
+				$new_event,
+				errors: $errors,
+				tab: isset( $query['tab'] ) && is_string( $query['tab'] ) ? sanitize_key( wp_unslash( $query['tab'] ) ) : 'general',
+				leagues: $this->get_event_leagues( $competition, $event, $new_event )
+			),
+		);
+	}
 
-        // Concrete creation logic
-        $event_data = new stdClass();
-        $event_data->name           = $config->name;
-        $event_data->competition_id = $competition->id;
-        $event_data->num_sets       = $config->num_sets;
-        $event_data->num_rubbers    = $config->num_rubbers;
-        $event_data->type           = $config->type;
-        $event = Event_Factory::from_object( $event_data, $competition instanceof \Racketmanager\Domain\Competition\Competition ? $competition : null );
-        $event_id = $this->event_repository->insert_event( $event );
-        if ( ! $event_id ) {
-            return array(
-                'message'      => __( 'Could not create event', 'racketmanager' ),
-                'message_type' => 'error',
-            );
-        }
-        $event->set_id( (int) $event_id );
+	/**
+	 * Resolve leagues for event config view model.
+	 *
+	 * @param object $competition Current competition.
+	 * @param object $event       Current event.
+	 * @param bool   $new_event   Whether creating a new event.
+	 *
+	 * @return array<int, object>
+	 */
+	private function get_event_leagues( object $competition, object $event, bool $new_event ): array {
+		if ( $new_event || empty( $event->id ) || empty( $competition->is_championship ) ) {
+			return array();
+		}
 
-        // Add seasons
-        $add_season = false;
-        foreach ( $competition->get_seasons() as $competition_season ) {
-            if ( $competition_season['name'] === $competition->current_season['name'] ) {
-                $add_season = true;
-            }
-            if ( $add_season ) {
-                $event_season = array(
-                    'name'           => $competition_season['name'],
-                    'home_away'      => $competition_season['home_away'],
-                    'num_match_days' => $competition_season['num_match_days'],
-                    'match_dates'    => $competition_season['match_dates'],
-                );
-                $this->competition_season_service->add_season_to_event( $event, $event_season );
-            }
-        }
-
-        try {
-            $league    = $this->league_service->add_league_to_event( (int) $event->id, $event->name );
-            $league_id = $league->id ?? false;
-        } catch ( Event_Not_Found_Exception ) {
-            $league_id = false;
-        }
-        if ( $league_id ) {
-            $config->primary_league = $league_id;
-            if ( $competition->is_championship ) {
-                $league_title = $event->name . ' ' . __( 'Plate', 'racketmanager' );
-                try {
-                    $this->league_service->add_league_to_event( (int) $event->id, $league_title );
-                } catch ( Event_Not_Found_Exception ) {
-                    // Ignore plate league creation error if event not found.
-                }
-            }
-        }
-
-        $event->config = $config;
-        $updates       = $event->set_config( $config );
-        if ( $updates && ! empty( $event->id ) ) {
-            $this->event_repository->update_settings_and_rules(
-                (int) $event->id,
-                $event->settings,
-                $event->num_rubbers,
-                $event->num_sets,
-                $event->type
-            );
-            $this->event_repository->update_name( (int) $event->id, $event->name );
-        }
-
-        if ( $updates ) {
-            return array(
-                'message'      => __( 'Event added', 'racketmanager' ),
-                'message_type' => 'success',
-                'redirect'     => add_query_arg( array( 'event_id' => $event->id, 'message' => rawurlencode( __( 'Event added', 'racketmanager' ) ), 'message_type' => 'success' ) ),
-            );
-        } else {
-            return array(
-                'message'      => __( 'No updates', 'racketmanager' ),
-                'message_type' => 'warning',
-                'redirect'     => add_query_arg( array( 'event_id' => $event->id ) ),
-            );
-        }
-    }
-
-    /**
-     * Handle updating an existing event.
-     *
-     * @param Event $event
-     * @param object $competition
-     * @param object|null $tournament
-     * @return array
-     */
-    private function handle_update( Event $event, object $competition, ?object $tournament ): array {
-        try {
-            $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_manage-event-config', 'edit_leagues' );
-        } catch ( \Exception $e ) {
-            return array(
-                'message'      => $e->getMessage(),
-                'message_type' => true,
-            );
-        }
-
-        $event_id_passed = isset( $_POST['event_id'] ) ? intval( $_POST['event_id'] ) : null;
-        if ( $event_id_passed !== $event->id ) {
-            return array(
-                'message'      => __( 'Event mismatch', 'racketmanager' ),
-                'message_type' => true,
-                'view_model'   => new Tournament_Event_Config_Page_View_Model(
-                    $competition,
-                    $event,
-                    $tournament,
-                    false,
-                    leagues: $this->get_event_leagues( $competition, $event, false )
-                ),
-            );
-        }
-
-        $config = $this->get_config_input();
-        $validator = $this->handle_config_update_validation( $config, $competition );
-
-        if ( ! empty( $validator->error ) ) {
-            return array(
-                'message'      => $validator->msg ?: __( 'Errors found', 'racketmanager' ),
-                'message_type' => true,
-                'view_model'   => new Tournament_Event_Config_Page_View_Model(
-                    $competition,
-                    $event,
-                    $tournament,
-                    false,
-                    leagues: $this->get_event_leagues( $competition, $event, false )
-                ),
-            );
-        }
-
-        if ( empty( $config->primary_league ) || (int) $config->primary_league <= 0 ) {
-            $primary_league_id = ! empty( $event->primary_league ) ? (int) $event->primary_league : null;
-            if ( ! $primary_league_id && ! empty( $event->id ) ) {
-                $raw_leagues = $this->event_repository->query_leagues( (int) $event->id );
-                if ( is_array( $raw_leagues ) && ! empty( $raw_leagues ) ) {
-                    $first_league = reset( $raw_leagues );
-                    if ( is_object( $first_league ) && ! empty( $first_league->id ) ) {
-                        $primary_league_id = (int) $first_league->id;
-                    }
-                }
-            }
-            if ( $primary_league_id ) {
-                $config->primary_league = $primary_league_id;
-            }
-        }
-
-        $event->config = $config;
-        $updates       = $event->set_config( $config );
-        if ( $updates && ! empty( $event->id ) ) {
-            $this->event_repository->update_settings_and_rules(
-                (int) $event->id,
-                $event->settings,
-                $event->num_rubbers,
-                $event->num_sets,
-                $event->type
-            );
-            $this->event_repository->update_name( (int) $event->id, $event->name );
-        }
-
-        if ( $updates ) {
-            return array(
-                'message'      => __( 'Event updated', 'racketmanager' ),
-                'message_type' => 'success',
-                'redirect'     => add_query_arg( array( 'message' => rawurlencode( __( 'Event updated', 'racketmanager' ) ), 'message_type' => 'success' ) ),
-            );
-        } else {
-            return array(
-                'message'      => __( 'No updates', 'racketmanager' ),
-                'message_type' => 'warning',
-                'view_model'   => new Tournament_Event_Config_Page_View_Model(
-                    $competition,
-                    $event,
-                    $tournament,
-                    false,
-                    leagues: $this->get_event_leagues( $competition, $event, false )
-                ),
-            );
-        }
-    }
-
-    /**
-     * Get config input from POST.
-     *
-     * @return stdClass
-     */
-    private function get_config_input(): stdClass {
-        $config              = new stdClass();
-        $config->name        = isset( $_POST['event_title'] ) ? sanitize_text_field( wp_unslash( $_POST['event_title'] ) ) : null;
-        $config->type        = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : null;
-        $config->num_sets    = isset( $_POST['num_sets'] ) ? intval( $_POST['num_sets'] ) : null;
-        $config->num_rubbers = isset( $_POST['num_rubbers'] ) ? intval( $_POST['num_rubbers'] ) : null;
-        $config->is_active   = isset( $_POST['is_active'] ) ? filter_var( wp_unslash( $_POST['is_active'] ), FILTER_VALIDATE_BOOLEAN ) : null;
-        if ( ! empty( $_POST['primary_league'] ) && intval( $_POST['primary_league'] ) > 0 ) {
-            $config->primary_league = intval( $_POST['primary_league'] );
-        }
-        return $config;
-    }
-
-    /**
-     * Validation logic ported from Admin_Event::handle_config_update
-     *
-     * @param object $config
-     * @param object $competition
-     * @param bool $new
-     * @return Validator_Config
-     */
-    private function handle_config_update_validation( object $config, object $competition, bool $new = false ): Validator_Config {
-        $validator = new Validator_Config();
-        if ( empty( $config->name ) ) {
-            $validator->error = true;
-            $validator->msg   = __( 'Event name required', 'racketmanager' );
-        } elseif ( $new ) {
-            $events = $this->competition_service->get_events_for_competition( $competition->get_id() );
-            foreach ( $events as $event ) {
-                if ( is_object( $event ) && isset( $event->name ) && $event->name === $config->name ) {
-                    $validator->error = true;
-                    $validator->msg   = __( 'Event already exists', 'racketmanager' );
-                    break;
-                }
-            }
-        }
-        return $validator;
-    }
-
-    /**
-     * Resolve leagues for event config view model.
-     *
-     * @param object $competition
-     * @param object $event
-     * @param bool $new_event
-     * @return array
-     */
-    private function get_event_leagues( object $competition, object $event, bool $new_event ): array {
-        if ( $new_event || empty( $competition->is_championship ) || ! isset( $event->id ) ) {
-            return array();
-        }
-
-        $raw_leagues = $this->event_repository->query_leagues( (int) $event->id );
-
-        return is_array( $raw_leagues ) ? $raw_leagues : array();
-    }
+		$raw_leagues = $this->event_repository->query_leagues( (int) $event->id );
+		return is_array( $raw_leagues ) ? $raw_leagues : array();
+	}
 }

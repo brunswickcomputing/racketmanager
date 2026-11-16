@@ -111,8 +111,8 @@ final class Championship_Manager {
 
         foreach ( $matches as $match ) {
             $update = true;
-            $home   = explode( '_', $match->home_team );
-            $away   = explode( '_', $match->away_team );
+            $home   = explode( '_', (string) ( $match->home_team ?? '' ) );
+            $away   = explode( '_', (string) ( $match->away_team ?? '' ) );
 
             if ( is_array( $home ) && is_array( $away ) ) {
                 if ( $legs ) {
@@ -212,24 +212,24 @@ final class Championship_Manager {
     /**
      * Set teams for a match and linked match.
      *
-     * @param object|int $match match object or fixture ID.
-     * @param string|null $home_id home team id.
-     * @param string|null $away_id away team id.
+     * @param object|int      $match   match object or fixture ID.
+     * @param string|int|null $home_id home team id.
+     * @param string|int|null $away_id away team id.
      *
      * @return void
      */
-    public function set_teams( object|int $match, ?string $home_id, ?string $away_id ): void {
+    public function set_teams( object|int $match, string|int|null $home_id, string|int|null $away_id ): void {
         $fixture_id = is_object( $match ) ? (int) $match->id : (int) $match;
         $fixture    = $this->fixture_repository->find_by_id( $fixture_id );
         if ( ! $fixture ) {
             return;
         }
 
-        if ( null !== $home_id && '' !== $home_id ) {
-            $fixture->set_home_team( $home_id );
+        if ( null !== $home_id && '' !== (string) $home_id ) {
+            $fixture->set_home_team( (string) $home_id );
         }
-        if ( null !== $away_id && '' !== $away_id ) {
-            $fixture->set_away_team( $away_id );
+        if ( null !== $away_id && '' !== (string) $away_id ) {
+            $fixture->set_away_team( (string) $away_id );
         }
 
         $this->fixture_repository->save( $fixture );
@@ -244,11 +244,11 @@ final class Championship_Manager {
         if ( ! empty( $linked_fixture_id ) ) {
             $linked_fixture = $this->fixture_repository->find_by_id( (int) $linked_fixture_id );
             if ( $linked_fixture ) {
-                if ( null !== $home_id && '' !== $home_id ) {
-                    $linked_fixture->set_home_team( $home_id );
+                if ( null !== $home_id && '' !== (string) $home_id ) {
+                    $linked_fixture->set_home_team( (string) $home_id );
                 }
-                if ( null !== $away_id && '' !== $away_id ) {
-                    $linked_fixture->set_away_team( $away_id );
+                if ( null !== $away_id && '' !== (string) $away_id ) {
+                    $linked_fixture->set_away_team( (string) $away_id );
                 }
 
                 $this->fixture_repository->save( $linked_fixture );

@@ -5,14 +5,20 @@ namespace Racketmanager\Tests\Unit\Services;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Admin\Admin_Display;
 use Racketmanager\Admin\Admin_Upgrade;
+use Racketmanager\Admin\Controllers\Upgrade_Admin_Controller;
+use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
+use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
+use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
+use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
 use Racketmanager\RacketManager;
+use Racketmanager\Services\Admin\Admin_Message_Service;
+use Racketmanager\Services\Admin\Security\Wp_Action_Guard;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Upgrade;
+use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
-use ReflectionClass;
 use ReflectionProperty;
 use wpdb;
 
@@ -86,7 +92,7 @@ final class Upgrade_Test extends TestCase {
         ( new Upgrade( $plugin, $db ) )->run();
     }
 
-    public function test_admin_upgrade_page_runs_the_upgrade_through_the_template_with_the_global_connection(): void {
+    public function test_admin_upgrade_page_runs_the_upgrade_with_the_global_connection_and_flashes_its_output(): void {
         $_POST['doUpgrade']             = '1';
         $_REQUEST['racketmanager_nonce'] = 'nonce';
         $GLOBALS['wp_stubs_current_user_can']       = true;
@@ -94,26 +100,49 @@ final class Upgrade_Test extends TestCase {
 
         $db = $this->createMock( wpdb::class );
         $db->expects( self::once() )->method( 'show_errors' );
-        $db->expects( self::never() )->method( 'query' );
+        $db->postmeta    = 'wp_postmeta';
         $GLOBALS['wpdb'] = $db;
 
-        $plugin = $this->make_plugin( RACKETMANAGER_DBVERSION );
+        $plugin = $this->make_plugin( '10.0.17' );
         $plugin->expects( self::once() )
             ->method( 'update_plugin_options' )
             ->with( self::callback( static fn( array $options ): bool => RACKETMANAGER_DBVERSION === $options['dbversion'] ) );
 
-        $admin = ( new ReflectionClass( Admin_Upgrade::class ) )->newInstanceWithoutConstructor();
-        ( new ReflectionProperty( Admin_Display::class, 'racketmanager' ) )->setValue( $admin, $plugin );
+        $redirector = $this->createMock( Admin_Redirector_Interface::class );
+        $redirector->expects( self::once() )
+            ->method( 'redirect' )
+            ->with( self::stringContains( 'page=racketmanager' ) );
 
-        ob_start();
-        try {
-            $admin->handle_display();
-            $output = (string) ob_get_contents();
-        } finally {
-            ob_end_clean();
-        }
+        $flash_store = $this->createMock( Admin_Flash_Message_Store::class );
+        $flash_store->expects( self::once() )
+            ->method( 'set' )
+            ->with(
+                self::logicalAnd(
+                    self::stringStartsWith( 'Upgrade successful' ),
+                    self::stringContains( '<p>starting 10.0.18 upgrade</p>' )
+                ),
+                false
+            );
 
-        self::assertStringContainsString( 'Upgrade database structure...', $output );
-        self::assertStringContainsString( 'Upgrade successful', $output );
+        $message_service = new Admin_Message_Service( $flash_store );
+        $actions         = new Admin_Action_Adapter( $message_service, $redirector );
+        $guard           = new Wp_Action_Guard();
+
+        $controller = new Upgrade_Admin_Controller( $plugin, $guard );
+        $plugin->container->set( Upgrade_Admin_Controller::class, fn() => $controller );
+
+        $screens = new Admin_Screen_Presenter(
+            $this->createStub( View_Renderer_Interface::class ),
+            $message_service
+        );
+
+        $admin = new Admin_Upgrade(
+            $plugin->container,
+            $message_service,
+            $actions,
+            $screens
+        );
+
+        $admin->handle_display();
     }
 }

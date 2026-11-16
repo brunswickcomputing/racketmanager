@@ -466,6 +466,9 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         $updates       = false;
         $multiple_legs = false;
         $round_name    = $league->championship->get_final_keys( 1 );
+        if ( empty( $round_name ) || ! is_string( $round_name ) ) {
+            return false;
+        }
 
         $fixture_args = array(
             'final'            => $round_name,
@@ -480,9 +483,11 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         }
 
         $fixtures_list = array();
-        $fixtures = $this->fixture_repository->find_by_league_and_final(
-            $league->get_id(),
-            $league->get_season(),
+        $league_id     = method_exists( $league, 'get_id' ) ? (int) $league->get_id() : (int) ( $league->id ?? 0 );
+        $league_season = method_exists( $league, 'get_season' ) ? (string) $league->get_season() : (string) ( $league->season ?? '' );
+        $fixtures      = $this->fixture_repository->find_by_league_and_final(
+            $league_id,
+            $league_season,
             $round_name,
             $multiple_legs ? 1 : null
         );
@@ -493,7 +498,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
             $home_team = $this->resolve_final_team_slot( $league, $fixture, (string) $fixture->get_home_team(), 'home' );
             $away_team = $this->resolve_final_team_slot( $league, $fixture, (string) $fixture->get_away_team(), 'away' );
             if ( null !== $home_team && null !== $away_team ) {
-                $championship_manager->set_teams( $fixture, $home_team, $away_team );
+                $championship_manager->set_teams( $fixture, (string) $home_team, (string) $away_team );
                 $updates = true;
             }
         }
@@ -527,16 +532,21 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
             if ( ! $teams ) {
                 $resolved_team_id = - 1;
             } else {
-                $resolved_team_id = $teams[0]->id;
+                $resolved_team_id = (int) $teams[0]->id;
             }
+        } elseif ( is_numeric( $team_id ) ) {
+            $resolved_team_id = (int) $team_id;
         }
 
         if ( null !== $resolved_team_id && - 1 !== $resolved_team_id ) {
+            if ( ! is_array( $fixture->teams ) ) {
+                $fixture->teams = array();
+            }
             if ( 'home' === $side ) {
-                $fixture->home_team     = $resolved_team_id;
+                $fixture->home_team     = (string) $resolved_team_id;
                 $fixture->teams['home'] = $this->league_query_service->get_team_dtls( $league, $resolved_team_id );
             } else {
-                $fixture->away_team     = $resolved_team_id;
+                $fixture->away_team     = (string) $resolved_team_id;
                 $fixture->teams['away'] = $this->league_query_service->get_team_dtls( $league, $resolved_team_id );
             }
         }
@@ -593,7 +603,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         $input_rounds = $post['rounds'] ?? array();
         $action       = sanitize_text_field( wp_unslash( strval( $post['action'] ?? '' ) ) );
 
-        $event_season    = $league->event->get_season_by_name( $season );
+        $event_season    = ( isset( $league->event ) && method_exists( $league->event, 'get_season_by_name' ) ) ? ( $league->event->get_season_by_name( (string) $season ) ?? array() ) : array();
         $num_first_round = $league->championship->num_teams_first_round;
         $build           = $this->build_championship_rounds_and_fixtures( $league, $season, $input_rounds, $num_first_round );
         if ( ! $build['valid'] ) {
@@ -637,7 +647,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
                 continue;
             }
 
-            $teams       = $league->championship->get_final_teams( $round_key );
+            $teams       = $league->championship->get_final_teams( $round_key ) ?? array();
             $round_build = $this->build_fixtures_for_round(
                 $league,
                 $season,

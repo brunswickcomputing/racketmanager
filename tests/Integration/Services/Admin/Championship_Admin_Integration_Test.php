@@ -675,4 +675,116 @@ class Championship_Admin_Integration_Test extends TestCase {
         $result = $admin_service->manage_fixtures_in_league( $dto );
         self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
     }
+
+    /**
+     * Test start finals advances teams and assigns resolved team id without type error.
+     */
+    public function test_start_finals_advances_teams_and_assigns_resolved_team_id_without_type_error(): void {
+        $championship = new Championship(
+            123,
+            false,
+            new \Racketmanager\Domain\Tournament\Championship_Settings(),
+            1,
+            1,
+            2,
+            2,
+            0,
+            array( 1 => 'final' ),
+            array( 'final' => array() ),
+            array(),
+            'final'
+        );
+
+        $league = new stdClass();
+        $league->id = 123;
+        $league->championship = $championship;
+        $league->event = (object) [
+            'current_season' => [
+                'home_away' => false,
+            ],
+        ];
+
+        $league_service = $this->createMock( League_Service::class );
+        $league_service->method( 'get_league' )->with( 123 )->willReturn( $league );
+
+        $fixture = \Racketmanager\Domain\Fixture\Fixture_Factory::from_object( (object) [
+            'id'        => 88,
+            'home_team' => '1_',
+            'away_team' => '2_',
+        ] );
+
+        $fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
+        $fixture_repository->method( 'find_by_league_and_final' )->willReturn( [ $fixture ] );
+        $fixture_repository->method( 'find_by_id' )->with( 88 )->willReturn( $fixture );
+        $fixture_repository->expects( self::once() )->method( 'save' )->with( $fixture );
+
+        $league_query_service = $this->createMock( \Racketmanager\Services\Competition\League_Query_Service::class );
+        $league_query_service->method( 'get_league_teams' )->willReturnCallback(
+            function( $l, array $args ) {
+                $rank = (string) ( $args['rank'] ?? '' );
+                if ( '1' === $rank ) {
+                    return [ (object) [ 'id' => 201 ] ];
+                }
+                if ( '2' === $rank ) {
+                    return [ (object) [ 'id' => 202 ] ];
+                }
+                return [];
+            }
+        );
+        $league_query_service->method( 'get_team_dtls' )->willReturnCallback(
+            fn( $l, int $id ) => (object) [ 'id' => $id, 'title' => 'Team ' . $id ]
+        );
+
+        $championship_manager = new Championship_Manager(
+            $this->createStub( Result_Service::class ),
+            $fixture_repository,
+            $league_service,
+            $this->createStub( Event_Repository_Interface::class ),
+            $league_query_service
+        );
+
+        $admin_service = new Championship_Admin_Service(
+            $league_service,
+            $this->createStub( Fixture_Service::class ),
+            $this->createStub( Tournament_Service::class ),
+            $this->createStub( League_Team_Repository_Interface::class ),
+            $this->createStub( Team_Repository_Interface::class ),
+            $fixture_repository,
+            $championship_manager,
+            $this->createStub( Event_Repository_Interface::class ),
+            $league_query_service
+        );
+
+        $dto = $this->create_draw_dto(
+            league_id: 123,
+            season: 2026,
+            post: []
+        );
+
+        $result = $admin_service->start_finals( $dto );
+
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+        self::assertSame( '201', $fixture->get_home_team() );
+        self::assertSame( '202', $fixture->get_away_team() );
+        self::assertSame( '201', $fixture->home_team );
+        self::assertSame( '202', $fixture->away_team );
+    }
+
+    /**
+     * Test fixture accepts integer and string home and away teams.
+     */
+    public function test_fixture_accepts_integer_and_string_home_and_away_teams(): void {
+        $fixture = new Fixture();
+        $fixture->home_team = 501;
+        $fixture->away_team = 502;
+
+        self::assertSame( '501', $fixture->get_home_team() );
+        self::assertSame( '502', $fixture->get_away_team() );
+
+        $fixture->set_home_team( 601 );
+        $fixture->set_away_team( '602' );
+
+        self::assertSame( '601', $fixture->get_home_team() );
+        self::assertSame( '602', $fixture->get_away_team() );
+    }
 }

@@ -710,7 +710,7 @@ final class Layer_Rules {
                 [ self::ADMIN ],
                 Rule_Kind::FORBIDDEN_INCLUDE,
                 [ '*templates/admin/*' ],
-                Rule_Mode::RATCHET
+                Rule_Mode::STRICT
             ),
             new Layer_Rule(
                 'admin.no_admin_display_inheritance',
@@ -722,7 +722,7 @@ final class Layer_Rules {
                     'classes'  => [ 'Racketmanager\Admin\Admin_Display' ],
                     'contexts' => [ 'extends' ],
                 ],
-                Rule_Mode::RATCHET
+                Rule_Mode::STRICT
             ),
             new Layer_Rule(
                 'scanner.parse_error',

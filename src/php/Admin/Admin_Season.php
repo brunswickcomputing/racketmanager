@@ -11,14 +11,13 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Admin;
 
+use Racketmanager\Admin\Controllers\Seasons_Admin_Controller;
 use Racketmanager\Admin\View_Models\Seasons_Page_View_Model;
-use Racketmanager\Admin\View_Models\Error_Bag;
+use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
-use Racketmanager\RacketManager;
-use Racketmanager\Services\Admin\Season\Season_Action_Dispatcher;
+use Racketmanager\Services\Admin\Admin_Message_Service;
 use Racketmanager\Services\Container\Simple_Container;
-use Racketmanager\Services\Validator\Validator;
 
 /**
  * RacketManager Season Admin functions
@@ -28,86 +27,64 @@ use Racketmanager\Services\Validator\Validator;
  * @package RacketManager
  * @subpackage Admin/Season
  */
-class Admin_Season extends Admin_Display {
-
-    /**
-     * @var Admin_Action_Adapter|callable|mixed|object|Simple_Container admin action adapter.
-     */
-    private Admin_Action_Adapter $actions;
-    /**
-     * @var Admin_Screen_Presenter|callable|mixed|object|Simple_Container admin screen presenter.
-     */
-    private Admin_Screen_Presenter $screens;
-
+final readonly class Admin_Season {
+    use Completes_Admin_Requests;
 
     /**
      * Constructor.
      *
-     * @param Racketmanager                 $plugin_instance plugin instance.
-     * @param Admin_Action_Adapter|null     $actions admin action adapter.
-     * @param Admin_Screen_Presenter|null   $screens admin screen presenter.
-     * @param Season_Action_Dispatcher|null $dispatcher season action dispatcher.
+     * @param Simple_Container       $container       Service container (lazy controller lookup).
+     * @param Admin_Message_Service  $message_service Message service.
+     * @param Admin_Action_Adapter   $actions         POST delivery (PRG).
+     * @param Admin_Screen_Presenter $screens         GET delivery.
      */
     public function __construct(
-        $plugin_instance,
-        ?Admin_Action_Adapter $actions = null,
-        ?Admin_Screen_Presenter $screens = null,
-        ?Season_Action_Dispatcher $dispatcher = null,
+        private Simple_Container $container,
+        private Admin_Message_Service $message_service,
+        Admin_Action_Adapter $actions,
+        Admin_Screen_Presenter $screens,
     ) {
-        parent::__construct( $plugin_instance );
-        $c                                    = $this->racketmanager->container;
-        $this->actions                        = $actions ?? $c->get( 'admin_action_adapter' );
-        $this->screens                        = $screens ?? $c->get( 'admin_screen_presenter' );
-        $this->season_admin_action_dispatcher = $dispatcher ?? $c->get( 'season_action_dispatcher' );
-        $this->admin_action_adapter           = $this->actions;
+        $this->actions = $actions;
+        $this->screens = $screens;
     }
 
     /**
-     * Function to handle administration season displays
+     * Function to handle administration season displays.
      *
-     * @param string|null $view view.
+     * @param string|null $view Sub-view slug.
      *
      * @return void
      */
-    public function handle_display( ?string $view ): void {
+    public function handle_display( ?string $view = null ): void {
+        unset( $view );
         $this->display_seasons_page();
     }
 
     /**
-     * Display seasons page
+     * Display seasons page, or process a season mutation and redirect (Post-Redirect-Get).
+     *
+     * @return void
      */
     public function display_seasons_page(): void {
-        $flash       = $this->screens->apply_flash();
-        $flash_data  = $flash['flash_data'] ?? array();
-        $errors      = is_array( $flash_data['errors'] ?? null ) ? new Error_Bag( $flash_data['errors'] ) : new Error_Bag();
-        $season_name = isset( $flash_data['season_name'] ) ? strval( $flash_data['season_name'] ) : null;
+        $flash = $this->screens->apply_flash();
 
-        if ( isset( $_POST['addSeason'] ) || isset( $_POST['doSeasonDel'] ) ) {
-            $result = $this->season_admin_action_dispatcher->handle( $_GET, $_POST );
-            if ( $this->deliver_season_action_result( $result, $_GET ) ) {
-                return;
-            }
+        try {
+            /** @var Seasons_Admin_Controller $controller */
+            $controller = $this->container->get( Seasons_Admin_Controller::class );
+
+            // The season dispatcher verifies the nonce and capability for mutations.
+            // phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
+            $result = $controller->seasons_page( $_GET, $_POST, $flash['flash_data'] ?? array() );
+            // phpcs:enable WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
+
+            $this->complete_request(
+                $result,
+                Seasons_Page_View_Model::class,
+                'admin/show-seasons'
+            );
+        } catch ( Invalid_Status_Exception $e ) {
+            $this->message_service->set_message( $e->getMessage(), true );
+            $this->message_service->show_message();
         }
-
-        $validator = new Validator();
-        $validator = $validator->capability( 'edit_seasons' );
-        if ( ! empty( $validator->error ) ) {
-            $this->set_message( $validator->msg, true );
-            $this->show_message();
-            return;
-        }
-
-        $seasons = $this->season_service->get_all_seasons();
-        $vm      = new Seasons_Page_View_Model(
-            seasons: $seasons,
-            errors: $errors,
-            season_name: $season_name,
-        );
-
-        $this->screens->present(
-            array( 'view_model' => $vm ),
-            Seasons_Page_View_Model::class,
-            'admin/show-seasons'
-        );
     }
 }

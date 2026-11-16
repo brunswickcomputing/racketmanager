@@ -689,15 +689,21 @@ class Competition {
 
     /**
      * Get a season by name
+     *
+     * @param string|int $name Season name or year.
+     * @return array|null
      */
-    public function get_season_by_name( string $name ): ?array {
+    public function get_season_by_name( string|int $name ): ?array {
         return $this->seasons->get( $name );
     }
 
     /**
      * Has a specific season
+     *
+     * @param string|int $name Season name or year.
+     * @return bool
      */
-    public function has_season( string $name ): bool {
+    public function has_season( string|int $name ): bool {
         return $this->seasons->has( $name );
     }
 
@@ -713,10 +719,10 @@ class Competition {
     /**
      * Set current season
      *
-     * @param string $season season.
+     * @param string|int $season season.
      * @param boolean $force_overwrite force overwrite (deprecated).
      */
-    public function set_current_season( string $season = '', bool $force_overwrite = false ): void {
+    public function set_current_season( string|int $season = '', bool $force_overwrite = false ): void {
         $data = $this->resolve_season_data( $season );
         $this->apply_current_season( $data );
     }
@@ -743,10 +749,10 @@ class Competition {
     /**
      * Pure domain helper to resolve season data.
      *
-     * @param string $season
+     * @param string|int $season
      * @return array
      */
-    public function resolve_season_data( string $season = '' ): array {
+    public function resolve_season_data( string|int $season = '' ): array {
         $seasons = $this->seasons;
         $data    = null;
 

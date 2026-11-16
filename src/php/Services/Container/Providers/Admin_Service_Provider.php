@@ -513,6 +513,7 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
                 $c->get( 'league_service' )
             )
         );
+        $container->alias( Event_Action_Dispatcher::class, 'event_action_dispatcher' );
 
         $container->set(
             'generate_charge_invoices_handler',

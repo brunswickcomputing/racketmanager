@@ -12,8 +12,8 @@ declare( strict_types=1 );
 namespace Racketmanager;
 
 use LogicException;
-use Racketmanager\Admin\Admin_Display;
 use Racketmanager\Admin\Admin_Match_Report;
+use Racketmanager\Admin\Admin_Page_Router;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Admin_Ajax_Controller;
 use Racketmanager\Infrastructure\Wordpress\Assets\Asset_Manager;
 use Racketmanager\Infrastructure\Wordpress\Bootstrap\Plugin_Bootstrap;
@@ -56,11 +56,11 @@ class Admin {
     public ?Admin_Ajax_Controller $ajax_admin = null;
 
     /**
-     * Admin display coordinator.
+     * Admin router coordinator.
      *
-     * @var Admin_Display|null
+     * @var Admin_Page_Router|null
      */
-    public ?Admin_Display $admin_display = null;
+    public ?Admin_Page_Router $admin_router = null;
 
     /**
      * Service container instance.
@@ -116,7 +116,7 @@ class Admin {
      *
      * @param Simple_Container|null             $container          Service container instance.
      * @param RacketManager|null                $racketmanager      Plugin runtime instance.
-     * @param Admin_Display|null                $admin_display      Admin display coordinator.
+     * @param Admin_Page_Router|null            $admin_router       Admin router coordinator.
      * @param Asset_Manager|null                $asset_manager      Asset manager instance.
      * @param Admin_Ajax_Controller|null        $ajax_admin         Admin ajax controller instance.
      * @param League_Repository_Interface|null  $league_repository  League repository instance.
@@ -125,7 +125,7 @@ class Admin {
     public function __construct(
         ?Simple_Container $container = null,
         ?RacketManager $racketmanager = null,
-        ?Admin_Display $admin_display = null,
+        ?Admin_Page_Router $admin_router = null,
         ?Asset_Manager $asset_manager = null,
         ?Admin_Ajax_Controller $ajax_admin = null,
         ?League_Repository_Interface $league_repository = null,
@@ -136,7 +136,7 @@ class Admin {
         $this->container          = $container;
         $this->racketmanager      = $racketmanager;
         $this->asset_manager      = $asset_manager;
-        $this->admin_display      = $admin_display;
+        $this->admin_router       = $admin_router;
         $this->ajax_admin         = $ajax_admin;
         $this->league_repository  = $this->resolve_league_repository( $league_repository );
         $this->fixture_repository = $fixture_repository ?? ( $this->container?->has( Fixture_Repository_Interface::class ) ? $this->container->get( Fixture_Repository_Interface::class ) : null );
@@ -326,7 +326,7 @@ class Admin {
             __( 'RacketManager', 'racketmanager' ),
             'racket_manager',
             'racketmanager',
-            [ $this->admin_display, 'display' ],
+            [ $this->admin_router, 'display' ],
             'data:image/svg+xml;base64,' . base64_encode( $svg ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Used for admin menu SVG data URI.
             2
         );
@@ -339,84 +339,84 @@ class Admin {
                 'menu_title' => __( 'Competitions', 'racketmanager' ),
                 'capability' => 'racket_manager',
                 'menu_slug'  => 'racketmanager',
-                'callback'   => [ $this->admin_display, 'display' ],
+                'callback'   => [ $this->admin_router, 'display' ],
             ],
             [
                 'page_title' => __( 'Leagues', 'racketmanager' ),
                 'menu_title' => __( 'Leagues', 'racketmanager' ),
                 'capability' => 'racket_manager',
                 'menu_slug'  => 'racketmanager-leagues',
-                'callback'   => [ $this->admin_display, 'display' ],
+                'callback'   => [ $this->admin_router, 'display' ],
             ],
             [
                 'page_title' => __( 'Cups', 'racketmanager' ),
                 'menu_title' => __( 'Cups', 'racketmanager' ),
                 'capability' => 'racket_manager',
                 'menu_slug'  => 'racketmanager-cups',
-                'callback'   => [ $this->admin_display, 'display' ],
+                'callback'   => [ $this->admin_router, 'display' ],
             ],
             [
                 'page_title' => __( 'Tournaments', 'racketmanager' ),
                 'menu_title' => __( 'Tournaments', 'racketmanager' ),
                 'capability' => 'racket_manager',
                 'menu_slug'  => 'racketmanager-tournaments',
-                'callback'   => [ $this->admin_display, 'display' ],
+                'callback'   => [ $this->admin_router, 'display' ],
             ],
             [
                 'page_title' => __( 'Clubs', 'racketmanager' ),
                 'menu_title' => __( 'Clubs', 'racketmanager' ),
                 'capability' => 'racket_manager',
                 'menu_slug'  => 'racketmanager-clubs',
-                'callback'   => [ $this->admin_display, 'display' ],
+                'callback'   => [ $this->admin_router, 'display' ],
             ],
             [
                 'page_title' => __( 'Results', 'racketmanager' ),
                 'menu_title' => __( 'Results', 'racketmanager' ),
                 'capability' => 'racket_manager',
                 'menu_slug'  => 'racketmanager-results',
-                'callback'   => [ $this->admin_display, 'display' ],
+                'callback'   => [ $this->admin_router, 'display' ],
             ],
             [
                 'page_title' => __( 'Players', 'racketmanager' ),
                 'menu_title' => __( 'Players', 'racketmanager' ),
                 'capability' => 'racket_manager',
                 'menu_slug'  => 'racketmanager-players',
-                'callback'   => [ $this->admin_display, 'display' ],
+                'callback'   => [ $this->admin_router, 'display' ],
             ],
             [
                 'page_title' => __( 'Seasons', 'racketmanager' ),
                 'menu_title' => __( 'Seasons', 'racketmanager' ),
                 'capability' => 'racketmanager_settings',
                 'menu_slug'  => 'racketmanager-seasons',
-                'callback'   => [ $this->admin_display, 'display' ],
+                'callback'   => [ $this->admin_router, 'display' ],
             ],
             [
                 'page_title' => __( 'Finances', 'racketmanager' ),
                 'menu_title' => __( 'Finances', 'racketmanager' ),
                 'capability' => 'racket_manager',
                 'menu_slug'  => 'racketmanager-finances',
-                'callback'   => [ $this->admin_display, 'display' ],
+                'callback'   => [ $this->admin_router, 'display' ],
             ],
             [
                 'page_title' => __( 'Settings', 'racketmanager' ),
                 'menu_title' => __( 'Settings', 'racketmanager' ),
                 'capability' => 'racketmanager_settings',
                 'menu_slug'  => 'racketmanager-settings',
-                'callback'   => [ $this->admin_display, 'display' ],
+                'callback'   => [ $this->admin_router, 'display' ],
             ],
             [
                 'page_title' => __( 'Import', 'racketmanager' ),
                 'menu_title' => __( 'Import', 'racketmanager' ),
                 'capability' => 'import_leagues',
                 'menu_slug'  => 'racketmanager-import',
-                'callback'   => [ $this->admin_display, 'display' ],
+                'callback'   => [ $this->admin_router, 'display' ],
             ],
             [
                 'page_title' => __( 'Documentation', 'racketmanager' ),
                 'menu_title' => __( 'Documentation', 'racketmanager' ),
                 'capability' => 'view_leagues',
                 'menu_slug'  => 'racketmanager-doc',
-                'callback'   => [ $this->admin_display, 'display' ],
+                'callback'   => [ $this->admin_router, 'display' ],
             ],
         ];
 

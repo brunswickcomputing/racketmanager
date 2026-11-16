@@ -762,7 +762,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
                 $this->current_season = [];
             }
 
-            public function get_season_by_name( string $name ): ?array {
+            public function get_season_by_name( string|int $name ): ?array {
                 return [ 'name' => $name ];
             }
         };

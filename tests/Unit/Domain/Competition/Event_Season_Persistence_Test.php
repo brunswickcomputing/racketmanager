@@ -9,6 +9,8 @@ use Racketmanager\Application\Admin\Commands\League_Setup_Handler;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
+use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Domain\Tournament\Championship;
@@ -912,5 +914,112 @@ final class Event_Season_Persistence_Test extends TestCase {
 		$comp_service->delete_seasons( 10, array( 2026 => array( 'name' => '2026' ) ) );
 
 		$this->assertArrayNotHasKey( 2026, $event->get_seasons() );
+	}
+
+	public function test_event_get_season_by_name_accepts_integer_and_string(): void {
+		$event = $this->make_event(
+			50,
+			array(
+				'2025' => array( 'name' => '2025', 'num_match_days' => 5 ),
+				2026   => array( 'name' => '2026', 'num_match_days' => 6 ),
+			)
+		);
+
+		$season_by_int = $event->get_season_by_name( 2026 );
+		$this->assertNotNull( $season_by_int );
+		$this->assertSame( '2026', $season_by_int['name'] );
+
+		$season_by_str = $event->get_season_by_name( '2026' );
+		$this->assertNotNull( $season_by_str );
+		$this->assertSame( '2026', $season_by_str['name'] );
+
+		$season_2025_by_int = $event->get_season_by_name( 2025 );
+		$this->assertNotNull( $season_2025_by_int );
+		$this->assertSame( '2025', $season_2025_by_int['name'] );
+
+		$list_event = $this->make_event(
+			51,
+			array(
+				array( 'name' => '2027', 'num_match_days' => 7 ),
+			)
+		);
+		$this->assertNotNull( $list_event->get_season_by_name( 2027 ) );
+		$this->assertNotNull( $list_event->get_season_by_name( '2027' ) );
+		$this->assertNull( $list_event->get_season_by_name( 2099 ) );
+	}
+
+	public function test_championship_admin_service_set_championship_fixtures_resolves_season_with_integer(): void {
+		$event = $this->make_event(
+			60,
+			array(
+				2026 => array( 'name' => '2026', 'match_dates' => array() ),
+			)
+		);
+
+		$championship = new Championship(
+			25,
+			false,
+			new Championship_Settings(),
+			1,
+			1,
+			2,
+			2,
+			0,
+			array(),
+			array(),
+			array(),
+			'final'
+		);
+
+		$league               = $this->createStub( League::class );
+		$league->id           = 25;
+		$league->event_id     = 60;
+		$league->event        = $event;
+		$league->num_rubbers  = 2;
+		$league->championship = $championship;
+
+		$league_service = $this->createMock( League_Service::class );
+		$league_service->method( 'get_league' )->with( 25 )->willReturn( $league );
+
+		$fixture_service      = $this->createStub( Fixture_Service::class );
+		$tournament_service   = $this->createStub( Tournament_Service::class );
+		$league_team_repo     = $this->createStub( League_Team_Repository_Interface::class );
+		$team_repo            = $this->createStub( Team_Repository_Interface::class );
+		$fixture_repo         = $this->createStub( Fixture_Repository_Interface::class );
+		$championship_manager = ( new \ReflectionClass( Championship_Manager::class ) )->newInstanceWithoutConstructor();
+		$event_repo           = $this->createStub( Event_Repository_Interface::class );
+		$league_query_service = $this->createStub( \Racketmanager\Services\Competition\League_Query_Service::class );
+
+		$service = new Championship_Admin_Service(
+			$league_service,
+			$fixture_service,
+			$tournament_service,
+			$league_team_repo,
+			$team_repo,
+			$fixture_repo,
+			$championship_manager,
+			$event_repo,
+			$league_query_service
+		);
+
+		$dto = new Draw_Action_Request_DTO(
+			tournament_id: 1,
+			league_id: 25,
+			season: '2026',
+			post: array(
+				'action' => 'create',
+				'rounds' => array(
+					array(
+						'round'       => 1,
+						'key'         => 'final',
+						'match_date'  => '2026-06-20',
+						'num_matches' => 1,
+					),
+				),
+			)
+		);
+
+		$result = $service->set_championship_fixtures( $dto );
+		$this->assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
 	}
 }

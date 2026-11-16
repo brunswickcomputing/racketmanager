@@ -405,6 +405,29 @@ class Email_Shortcode_Presenter_Test extends TestCase {
         $this->assertSame( '', $vars['cup_link'] );
     }
 
+    public function test_present_match_notification_competition_type_enum(): void {
+        $fixture = $this->create_test_fixture(
+            [
+                'comp_type' => 'tournament',
+            ]
+        );
+
+        $tournament       = $this->createStub( Tournament::class );
+        $tournament->name = 'Singles Open';
+        $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
+
+        $vars = $this->presenter->present_match_notification(
+            $fixture,
+            [
+                'competition_type' => Competition_Type::TOURNAMENT,
+                'tournament'       => 'singles-open',
+            ]
+        );
+
+        $this->assertSame( 'https://example.com/rules/tournament-rules/', $vars['rules_link'] );
+        $this->assertStringContainsString( 'Singles Open', $vars['tournament_link'] );
+    }
+
     public function test_present_match_notification_player_team_type(): void {
         $player_1 = (object) [ 'name' => 'Alice' ];
         $player_2 = (object) [ 'name' => 'Bob' ];

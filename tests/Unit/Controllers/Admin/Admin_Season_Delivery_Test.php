@@ -12,7 +12,6 @@ use Racketmanager\Admin\View_Models\Seasons_Page_View_Model;
 use Racketmanager\Domain\Season\Season;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
-use Racketmanager\RacketManager;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Season_Service;
@@ -55,10 +54,7 @@ final class Admin_Season_Delivery_Test extends TestCase {
             flash_store: $this->flash_store,
         );
 
-        $racketmanager            = $this->createStub( RacketManager::class );
-        $racketmanager->container = $this->container;
-
-        $this->screen = new Admin_Season( $racketmanager );
+        $this->screen = $this->container->get( Admin_Season::class );
     }
 
     protected function tearDown(): void {
@@ -243,9 +239,12 @@ final class Admin_Season_Delivery_Test extends TestCase {
     }
 
     public function test_get_capability_failure_does_not_render_view_model(): void {
-        $_SERVER['REQUEST_METHOD']            = 'GET';
-        $GLOBALS['wp_stubs_current_user_can'] = false;
+        $_SERVER['REQUEST_METHOD'] = 'GET';
 
+        $this->guard->expects( self::once() )
+            ->method( 'assert_capability' )
+            ->with( 'edit_seasons' )
+            ->willThrowException( new Invalid_Status_Exception( 'You do not have permission to perform this task' ) );
         $this->season_service->expects( self::never() )
             ->method( 'get_all_seasons' );
 

@@ -22,6 +22,7 @@ trait Manages_Wordpress_Globals {
         'racketmanager_instance',
         'wp',
         'wpdb',
+        'EZSQL_ERROR',
         'query_vars',
         'wp_mail_calls',
         'wp_stubs_current_user_can',

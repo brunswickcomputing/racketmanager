@@ -195,7 +195,7 @@ class Notification_Service_Test extends TestCase {
         int $id = 456,
         string $title = 'Division 1',
         bool $is_championship = false,
-        string $comp_type = 'league',
+        string|Competition_Type $comp_type = 'league',
         ?string $comp_name = null,
         bool $is_tournament = false,
         int $competition_id = 123
@@ -611,6 +611,57 @@ class Notification_Service_Test extends TestCase {
         $this->assertCount(1, $GLOBALS['wp_mail_calls']);
         $mail = $GLOBALS['wp_mail_calls'][0];
         $this->assertStringContainsString('Semi Final', $mail['subject']);
+    }
+
+    public function test_send_next_fixture_notification_tournament_round_with_competition_type_enum(): void {
+        $fixture = $this->create_test_fixture( [ 'host' => 'home', 'final' => 'semi' ] );
+        $league  = $this->create_mock_league( 456, 'Tournament 1', false, Competition_Type::TOURNAMENT, 'Tournament Name' );
+        $league->method('get_competition_type')->willReturn('tournament');
+        $this->league_repository->method('find_by_id')->willReturn($league);
+
+        $this->option_service->method('get_confirmation_email')->willReturn('admin@example.com');
+        $this->app->method('get_from_user_email')->willReturn('From: Admin <admin@example.com>');
+
+        $player1 = $this->createMock(Player::class);
+        $player1->method('get_email')->willReturn('player1@example.com');
+        $player2 = $this->createMock(Player::class);
+        $player2->method('get_email')->willReturn('player2@example.com');
+        $this->player_repository->method('find_by_team')->willReturnMap([
+            [100, [$player1]],
+            [200, [$player2]]
+        ]);
+
+        $GLOBALS['wp_mail_calls'] = [];
+        $result = $this->service->send_next_fixture_notification($fixture);
+
+        $this->assertTrue($result);
+        $this->assertCount(1, $GLOBALS['wp_mail_calls']);
+        $mail = $GLOBALS['wp_mail_calls'][0];
+        $this->assertStringContainsString('Semi Final', $mail['subject']);
+    }
+
+    public function test_send_date_change_notification_with_competition_type_enum(): void {
+        $fixture = $this->create_test_fixture( [ 'date' => '2026-05-01', 'date_original' => '2026-04-01', 'final' => 'quarter' ] );
+        $league  = $this->create_mock_league( 456, 'Tournament 1', false, Competition_Type::TOURNAMENT, 'Tournament Name', true );
+        $this->league_repository->method('find_by_id')->willReturn($league);
+
+        $this->option_service->method('get_confirmation_email')->willReturn('admin@example.com');
+        $this->app->method('get_from_user_email')->willReturn('From: Admin <admin@example.com>');
+
+        $home_captain = $this->createStub(Player::class);
+        $home_captain->method('get_email')->willReturn('home@example.com');
+        $this->player_repository->method('find')->willReturn($home_captain);
+        $league_team_home = $this->createMock(League_Team::class);
+        $league_team_home->method('get_captain')->willReturn(1);
+        $this->league_team_repository->method('find_by_team_league_and_season')->willReturn($league_team_home);
+
+        $GLOBALS['wp_mail_calls'] = [];
+        $this->service->send_date_change_notification($fixture);
+
+        $this->assertCount(1, $GLOBALS['wp_mail_calls']);
+        $mail = $GLOBALS['wp_mail_calls'][0];
+        $this->assertStringContainsString('Quarter Final', $mail['subject']);
+        $this->assertStringContainsString('DELAY', $mail['subject']);
     }
 
     public function test_send_next_fixture_notification_no_host_returns_false(): void {

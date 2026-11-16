@@ -1010,12 +1010,13 @@ class League {
     /**
      * Check if season exists
      *
-     * @param string $season season.
+     * @param string|int $season season.
      *
      * @return boolean
      */
-    public function season_exists( string $season ): bool {
-        if ( ! empty( $this->seasons ) && ( isset( $this->seasons[ $season ] ) || in_array( $season, $this->seasons, true ) ) ) {
+    public function season_exists( string|int $season ): bool {
+        $season_str = (string) $season;
+        if ( ! empty( $this->seasons ) && ( isset( $this->seasons[ $season ] ) || isset( $this->seasons[ $season_str ] ) || in_array( $season, $this->seasons, true ) || in_array( $season_str, $this->seasons, true ) ) ) {
             return true;
         }
         if ( isset( $this->event ) && $this->event instanceof Event ) {
@@ -1044,11 +1045,12 @@ class League {
     /**
      * Set rounds function
      *
-     * @param string $season season name.
+     * @param string|int $season season name.
      * @param array $rounds round details.
      * @return void
      */
-    public function set_rounds( string $season, array $rounds ): void {
+    public function set_rounds( string|int $season, array $rounds ): void {
+        $season = (string) $season;
         if ( empty( $this->seasons[ $season ] ) ) {
             $this->seasons[ $season ] = array();
         }

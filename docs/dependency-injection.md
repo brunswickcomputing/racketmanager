@@ -34,9 +34,9 @@ This document describes the lightweight dependency injection (DI) container intr
   - Bootstraps the container via `Container_Bootstrap::boot($this)` after libraries load.
   - Resolves `player_service` from the container.
 
-- `Racketmanager\Admin\Admin_Display`
-  - Prefers resolving `Club_Service`, `Player_Service`, and `Registration_Service` from the container.
-  - Falls back to legacy direct instantiation when a container is not present (e.g., during gradual migration).
+- `Racketmanager\Admin\Admin_Page_Router`
+  - Resolves screen bridges (`Admin_League`, `Admin_Result`, …) from the container by `::class`.
+  - Injected into `Admin` and registered by `Admin_Screens_Service_Provider`.
 
 ---
 
@@ -147,4 +147,5 @@ if (isset($this->racketmanager->container)) {
 
 #### Changelog
 
-- 2025‑12‑05: Introduced `Simple_Container` and `Container_Bootstrap`. Migrated `RacketManager` and `Admin_Display` to prefer container‑based resolution.
+- 2025‑12‑05: Introduced `Simple_Container` and `Container_Bootstrap`. Migrated `RacketManager` to prefer container‑based resolution.
+- 2026‑11‑15: Replaced `Admin_Display` with `Admin_Page_Router`; screen bridges resolve by `::class`.

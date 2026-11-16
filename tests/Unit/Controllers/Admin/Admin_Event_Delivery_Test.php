@@ -10,6 +10,7 @@ use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
@@ -39,6 +40,7 @@ final class Admin_Event_Delivery_Test extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->backup_globals();
+        // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
         $GLOBALS['wpdb']                      = new class() {
             public int $insert_id = 5;
             public string $racketmanager_events = 'events';
@@ -81,7 +83,7 @@ final class Admin_Event_Delivery_Test extends TestCase {
         $racketmanager->container = $this->container;
         $GLOBALS['racketmanager'] = $racketmanager;
 
-        $this->screen = new Admin_Event( $racketmanager );
+        $this->screen = $this->container->get( Admin_Event::class );
     }
 
     private function make_league(): \Racketmanager\Domain\Competition\League {
@@ -186,6 +188,138 @@ final class Admin_Event_Delivery_Test extends TestCase {
         $_GET['competition_id'] = '1';
         $_GET['event_id']       = '10';
 
+        $this->screen->display_config_page();
+    }
+
+    public function test_invalid_event_config_redirects_with_field_errors_and_form_data(): void {
+        $competition                  = $this->createStub( Competition::class );
+        $competition->id              = 1;
+        $competition->is_tournament   = false;
+        $competition->is_championship = false;
+        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
+        $this->event_repository->expects( self::never() )->method( 'insert_event' );
+        $this->renderer->expects( self::never() )->method( 'render' );
+        $this->flash_store->expects( self::once() )->method( 'set' )
+            ->with(
+                self::isString(),
+                true,
+                self::callback( static fn( array $data ): bool => ! empty( $data['errors']['name'] ) && '' === $data['form_data']['event_name'] )
+            );
+        $this->redirector->expects( self::once() )->method( 'redirect' )
+            ->with( self::logicalAnd( self::stringContains( 'competition_id=1' ), self::stringContains( 'tab=fixtures' ) ) );
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_GET = array( 'page' => 'racketmanager-leagues', 'view' => 'event-config', 'competition_id' => '1', 'tab' => 'fixtures' );
+        $_POST = array( 'addEventConfig' => '1', 'event_name' => '', 'type' => 'singles' );
+        $this->screen->display_config_page();
+    }
+
+    public function test_get_restores_flash_field_errors_form_data_and_selected_tab(): void {
+        $competition     = $this->createStub( Competition::class );
+        $competition->id = 1;
+        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
+        $this->flash_store->method( 'pop' )->willReturn(
+            array(
+                'flash_data' => array(
+                    'errors'    => array( 'name' => 'Required' ),
+                    'form_data' => array( 'event_name' => 'Re-enter name', 'type' => 'doubles', 'num_sets' => '5', 'match_days_allowed' => array( 'mon' => '1' ) ),
+                ),
+            )
+        );
+        $matches = static function ( Tournament_Event_Config_Page_View_Model $vm ): bool {
+            return 'Required' === $vm->errors->message( 'name' )
+                && 'Re-enter name' === $vm->event->config->name
+                && 'Re-enter name' === $vm->event->name
+                && 'doubles' === $vm->event->type
+                && 5 === $vm->event->num_sets
+                && array( 'mon' => '1' ) === $vm->event->config->match_days_allowed
+                && 'fixtures' === $vm->tab;
+        };
+        $this->renderer->expects( self::once() )->method( 'render' )
+            ->with(
+                'admin/includes/event-config',
+                self::callback( $matches )
+            );
+
+        $_GET = array( 'competition_id' => '1', 'tab' => 'fixtures' );
+        $this->screen->display_config_page();
+    }
+
+    public function test_post_update_preserves_all_league_and_team_entry_settings(): void {
+        $competition                  = $this->createStub( Competition::class );
+        $competition->id              = 1;
+        $competition->is_league       = true;
+        $competition->is_team_entry   = true;
+        $competition->is_tournament   = false;
+        $competition->is_championship = false;
+
+        $event                 = new Event();
+        $event->id             = 10;
+        $event->competition_id = 1;
+        $event->competition    = $competition;
+        $event->name           = 'Men Singles';
+        $event->type           = 'singles';
+        $event->num_sets       = 3;
+        $event->num_rubbers    = 4;
+        $event->settings       = array();
+
+        $this->guard->expects( self::once() )->method( 'assert_allowed' );
+        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
+        $matches = static function ( array $settings ): bool {
+            return '40' === $settings['age_limit']
+                && '2' === $settings['age_offset']
+                && 'standard' === $settings['scoring']
+                && '3' === $settings['offset']
+                && 1 === $settings['reverse_rubbers']
+                && 1 === $settings['match_days_allowed'][0];
+        };
+        $this->event_repository->expects( self::once() )->method( 'update_settings_and_rules' )
+            ->with(
+                10,
+                self::callback( $matches ),
+                4,
+                3,
+                'singles'
+            );
+        $this->flash_store->expects( self::once() )->method( 'set' )->with( 'Event config updated', false );
+        $this->redirector->expects( self::once() )->method( 'redirect' )
+            ->with( self::logicalAnd( self::stringContains( 'event_id=10' ), self::stringContains( 'tab=general' ) ) );
+        $this->renderer->expects( self::never() )->method( 'render' );
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_GET = array( 'page' => 'racketmanager-leagues', 'view' => 'event-config', 'competition_id' => '1', 'event_id' => '10', 'tab' => 'general' );
+        $_POST = array(
+            'updateEventConfig'  => '1',
+            'event_id'           => '10',
+            'event_name'         => 'Men Singles',
+            'type'               => 'singles',
+            'age_limit'          => '40',
+            'age_offset'         => '2',
+            'scoring'            => 'standard',
+            'num_sets'           => '3',
+            'num_rubbers'        => '4',
+            'offset'             => '3',
+            'reverse_rubbers'    => '1',
+            'match_days_allowed' => array( '0' => '1' ),
+        );
+
+        $this->screen->display_config_page();
+    }
+
+    public function test_post_missing_competition_redirects_with_friendly_error(): void {
+        $this->guard->expects( self::once() )->method( 'assert_allowed' );
+        $this->competition_service->method( 'get_by_id' )
+            ->willThrowException( new Competition_Not_Found_Exception( 'Competition not found' ) );
+        $this->event_repository->expects( self::never() )->method( 'insert_event' );
+        $this->flash_store->expects( self::once() )->method( 'set' )->with( 'Competition not found', true );
+        $this->redirector->expects( self::once() )->method( 'redirect' )
+            ->with( self::stringContains( 'competition_id=999' ) );
+        $this->renderer->expects( self::never() )->method( 'render' );
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_GET = array( 'competition_id' => '999', 'view' => 'event-config' );
+        $_POST = array( 'addEventConfig' => '1' );
         $this->screen->display_config_page();
     }
 

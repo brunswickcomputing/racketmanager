@@ -4,17 +4,17 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Admin\Admin_Display;
-use Racketmanager\Admin\Admin_Result;
+use Racketmanager\Admin\Controllers\Results_Fixtures_Tab_Handler;
+use Racketmanager\Admin\Presenters\Admin_Date_Presenter;
+use Racketmanager\Admin\Presenters\Admin_Results_Match_Presenter;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\Presentation\View_Models\Order_Of_Play_Match_View_Model;
-use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
-use Racketmanager\Services\Container\Simple_Container;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Validator\Validator_Fixture;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
-use ReflectionClass;
-use ReflectionProperty;
+use ReflectionMethod;
 
 class Deprecation_And_Fixture_Migration_Test extends TestCase {
     use Manages_Wordpress_Globals;
@@ -78,42 +78,39 @@ class Deprecation_And_Fixture_Migration_Test extends TestCase {
         $repo = $this->createMock( Fixture_Repository_Interface::class );
         $repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $fixture );
 
-        $container = new Simple_Container();
-        $container->set( 'fixture_repository', fn() => $repo );
+        $handler = new Results_Fixtures_Tab_Handler(
+            $repo,
+            new Admin_Results_Match_Presenter(
+                new Admin_Date_Presenter(),
+                $this->createStub( League_Repository_Interface::class )
+            ),
+            $this->createStub( Option_Service::class )
+        );
 
-        $racketmanager            = $this->createStub( RacketManager::class );
-        $racketmanager->container = $container;
-
-        $admin_result = ( new ReflectionClass( Admin_Result::class ) )->newInstanceWithoutConstructor();
-        $this->set_racketmanager_property( $admin_result, $racketmanager );
-        $this->set_fixture_repository_property( $admin_result, $repo );
-
-        $method = new \ReflectionMethod( Admin_Result::class, 'hydrate_match' );
-        $method->setAccessible( true );
-        $hydrated = $method->invoke( $admin_result, 123 );
+        $method = new ReflectionMethod( Results_Fixtures_Tab_Handler::class, 'hydrate_match' );
+        $hydrated = $method->invoke( $handler, 123 );
 
         $this->assertSame( $fixture, $hydrated );
     }
 
     public function test_admin_result_hydrate_match_without_container(): void {
-        $racketmanager            = $this->createStub( RacketManager::class );
-        $racketmanager->container = new Simple_Container();
+        $repo = $this->createMock( Fixture_Repository_Interface::class );
+        $repo->expects( self::never() )->method( 'find_by_id' );
 
-        $admin_result = ( new ReflectionClass( Admin_Result::class ) )->newInstanceWithoutConstructor();
-        $this->set_racketmanager_property( $admin_result, $racketmanager );
+        $handler = new Results_Fixtures_Tab_Handler(
+            $repo,
+            new Admin_Results_Match_Presenter(
+                new Admin_Date_Presenter(),
+                $this->createStub( League_Repository_Interface::class )
+            ),
+            $this->createStub( Option_Service::class )
+        );
 
-        $method = new \ReflectionMethod( Admin_Result::class, 'hydrate_match' );
-        $method->setAccessible( true );
+        $method = new ReflectionMethod( Results_Fixtures_Tab_Handler::class, 'hydrate_match' );
         $raw_obj  = (object) [ 'title' => 'Raw match' ];
-        $hydrated = $method->invoke( $admin_result, $raw_obj );
+        $hydrated = $method->invoke( $handler, $raw_obj );
 
         $this->assertSame( $raw_obj, $hydrated );
-        try {
-            $method->invoke( $admin_result, 123 );
-            $this->fail( 'Expected a missing fixture repository to throw.' );
-        } catch ( \LogicException $exception ) {
-            $this->assertSame( 'The fixture repository is not registered.', $exception->getMessage() );
-        }
     }
 
     public function test_render_order_of_play_court_template(): void {
@@ -167,17 +164,5 @@ class Deprecation_And_Fixture_Migration_Test extends TestCase {
         }
 
         $this->assertStringContainsString( 'match-group__item-wrapper', $output );
-    }
-
-    private function set_racketmanager_property( Admin_Result $admin_result, RacketManager $racketmanager ): void {
-        $property = new ReflectionProperty( Admin_Display::class, 'racketmanager' );
-        $property->setAccessible( true );
-        $property->setValue( $admin_result, $racketmanager );
-    }
-
-    private function set_fixture_repository_property( Admin_Result $admin_result, Fixture_Repository_Interface $repository ): void {
-        $property = new ReflectionProperty( Admin_Result::class, 'fixture_repository' );
-        $property->setAccessible( true );
-        $property->setValue( $admin_result, $repository );
     }
 }

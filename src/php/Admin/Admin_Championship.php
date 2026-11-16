@@ -10,99 +10,80 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Admin;
 
-use Racketmanager\Domain\Competition\League;
-use Racketmanager\Services\Championship_Manager;
+use Racketmanager\Admin\Controllers\Championship_Admin_Controller;
+use Racketmanager\Exceptions\Invalid_Status_Exception;
+use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
+use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
+use Racketmanager\Services\Admin\Admin_Message_Service;
 use Racketmanager\Services\Container\Simple_Container;
-use Racketmanager\Services\Validator\Validator;
 
 /**
- * RacketManager Championship Admin functions
- * Class to implement RacketManager Admin Championship
- *
- * @author Paul Moffat
- * @package RacketManager
- * @subpackage Admin/Championship
+ * Screen bridge for managing tournament and cup championship finals and results.
  */
-class Admin_Championship extends Admin_Display {
+final readonly class Admin_Championship {
+	use Completes_Admin_Requests;
 
-    private ?Championship_Manager $championship_manager = null;
+	/**
+	 * Constructor.
+	 *
+	 * @param Simple_Container       $container       Dependency injection container.
+	 * @param Admin_Message_Service  $message_service Admin messaging service.
+	 * @param Admin_Action_Adapter   $actions         Action adapter for PRG redirects.
+	 * @param Admin_Screen_Presenter $screens         Screen presenter for view rendering.
+	 */
+	public function __construct(
+		private Simple_Container $container,
+		private Admin_Message_Service $message_service,
+		Admin_Action_Adapter $actions,
+		Admin_Screen_Presenter $screens,
+	) {
+		$this->actions = $actions;
+		$this->screens = $screens;
+	}
 
-    public function __construct(
-        $plugin_instance = null,
-        ?Simple_Container $container = null,
-        ?Championship_Manager $championship_manager = null,
-    ) {
-        parent::__construct( $plugin_instance, $container );
-        $c                          = $container ?? ( $this->racketmanager->container ?? null );
-        $manager_key                = ( $c instanceof Simple_Container )
-            ? ( $c->has_definition( Championship_Manager::class ) ? Championship_Manager::class : ( $c->has( 'championship_manager' ) ? 'championship_manager' : null ) )
-            : null;
-        $this->championship_manager = $championship_manager ?? ( ( $c instanceof Simple_Container && $manager_key ) ? $c->get( $manager_key ) : null );
-    }
+	/**
+	 * Function to handle administration championship displays.
+	 *
+	 * @param string|null $view Current view.
+	 *
+	 * @return void
+	 */
+	public function handle_display( ?string $view = null ): void {
+		unset( $view );
+		$this->handle_championship_admin_page();
+	}
 
-    /**
-     * Handle administration panel
-     *
-     * @param object|null $league league object.
-     */
-    public function handle_championship_admin_page( ?object $league = null ): string {
-        $validator = new Validator();
-        $tab       = 'finalResults'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-        if ( ! ( $league instanceof League ) ) {
-            $league = $this->racketmanager->container->get( 'league_service' )->get_league( $league->id ?? null );
-        }
-        if ( ! $league ) {
-            $this->set_message( __( 'League not found', 'racketmanager' ), true );
-            $this->show_message();
-            return $tab;
-        }
-        if ( isset( $_POST['action'] ) ) {
-            $action = sanitize_text_field( wp_unslash( $_POST['action'] ) );
-            if ( 'startFinals' === $action ) {
-                $validator = $validator->check_security_token( 'racketmanager_proceed_nonce', 'racketmanager_championship_proceed' );
-                if ( empty( $validator->error ) ) {
-                    $validator = $validator->capability( 'update_results');
-                }
-                if ( empty( $validator->error ) ) {
-                    //TODO: start final rounds now moved to championship admin service
-                    //$updates = $this->start_final_rounds( $league );
-                    $updates = false;
-                    if ( $updates ) {
-                        $this->set_message( __( 'First round started', 'racketmanager' ) );
-                    } else {
-                        $this->set_message( __( 'First round not started', 'racketmanager' ), true );
-                        $tab = 'preliminary'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-                    }
-                }
-            } elseif ( 'updateFinalResults' === $action ) {
-                $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_update-finals' );
-                if ( empty( $validator->error ) ) {
-                    $validator = $validator->capability( 'update_results' );
-                }
-                if ( empty( $validator->error ) ) {
-                    $custom      = $_POST['custom'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-                    $matches     = $_POST['matches'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-                    $home_points = $_POST['home_points'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-                    $away_points = $_POST['away_points'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-                    $round       = isset( $_POST['round'] ) ? intval( $_POST['round'] ) : null;
+	/**
+	 * Handle administration panel.
+	 *
+	 * @param object|null $league Target league entity or descriptor.
+	 *
+	 * @return string Active tab name.
+	 */
+	public function handle_championship_admin_page( ?object $league = null ): string {
+		try {
+			/** @var Championship_Admin_Controller $controller */
+			$controller = $this->container->get( Championship_Admin_Controller::class );
 
-                    $championship_manager = $this->championship_manager;
-                    if ( $championship_manager ) {
-                        $num_updated = $championship_manager->update_final_results( $league->championship, $matches, $home_points, $away_points, $custom, $round );
-                        $this->set_message( sprintf( __( 'Updated Results of %d fixtures', 'racketmanager' ), $num_updated ) );
-                    } else {
-                        $this->set_message( __( 'Championship manager not found', 'racketmanager' ), true );
-                    }
-                }
-                if ( ! empty( $validator->error ) ) {
-                    if ( empty( $validator->msg ) ) {
-                        $validator->msg = __( 'Errors found', 'racketmanager' );
-                    }
-                    $this->set_message( $validator->msg, true );
-                }
-            }
-            $this->show_message();
-        }
-        return $tab; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-    }
+			// phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
+			$result = $controller->handle_championship_page( $league, $_GET, $_POST );
+			// phpcs:enable WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
+
+			if ( ! empty( $result['redirect'] ) ) {
+				$this->actions->deliver_redirect( $result );
+				return $result['tab'] ?? 'finalResults';
+			}
+
+			if ( ! empty( $result['message'] ) ) {
+				$this->message_service->set_message( $result['message'], $result['message_type'] ?? false );
+				$this->message_service->show_message();
+			}
+
+			return $result['tab'] ?? 'finalResults';
+		} catch ( Invalid_Status_Exception $e ) {
+			$this->message_service->set_message( $e->getMessage(), true );
+			$this->message_service->show_message();
+			return 'finalResults';
+		}
+	}
 }

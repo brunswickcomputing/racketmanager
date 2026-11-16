@@ -12,7 +12,7 @@ namespace Racketmanager;
     <div class="module module--card">
         <div class="spinner-loading d-flex justify-content-center">
             <output class="spinner-border">
-                <span class="visually-hidden">Loading...</span>
+                <span class="visually-hidden"><?php esc_html_e( 'Loading...', 'racketmanager' ); ?></span>
             </output>
         </div>
     </div>

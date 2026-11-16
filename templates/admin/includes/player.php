@@ -10,10 +10,18 @@ namespace Racketmanager;
 
 use Racketmanager\Admin\View_Models\Error_Bag;
 use Racketmanager\Util\Util_Lookup;
+/** @var object|null $vm */
 /** @var object $player */
 /** @var array $error_fields */
 /** @var string $page_referrer */
 /** @var string $msg */
+$player        = $player ?? $vm->player ?? null;
+$errors        = $errors ?? $vm->errors ?? null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+$form_valid    = $form_valid ?? $vm->form_valid ?? true;
+$player_id     = $player_id ?? $vm->player_id ?? null;
+$club_id       = $club_id ?? $vm->club_id ?? null;
+$page_referrer = $page_referrer ?? $vm->page_referrer ?? null;
+
 if ( ! isset( $error_fields ) || ! is_array( $error_fields ) ) {
     $error_fields = array();
 }

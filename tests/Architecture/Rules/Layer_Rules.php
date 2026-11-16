@@ -269,6 +269,37 @@ final class Layer_Rules {
     ];
 
     /**
+     * Pure static fragments, modal shells, email boilerplate, and WordPress Core page/archive
+     * templates exempt from templates.require_vm because they consume no dynamic data.
+     */
+    public const array STATIC_AND_WP_TEMPLATES = [
+        self::TEMPLATES . 'admin/documentation.php',
+        self::TEMPLATES . 'admin/documentation/admin.php',
+        self::TEMPLATES . 'admin/documentation/clubs.php',
+        self::TEMPLATES . 'admin/documentation/competitions.php',
+        self::TEMPLATES . 'admin/documentation/cups.php',
+        self::TEMPLATES . 'admin/documentation/import.php',
+        self::TEMPLATES . 'admin/documentation/leagues.php',
+        self::TEMPLATES . 'admin/documentation/results.php',
+        self::TEMPLATES . 'admin/documentation/settings.php',
+        self::TEMPLATES . 'admin/documentation/tournaments.php',
+        self::TEMPLATES . 'email/components/hr.php',
+        self::TEMPLATES . 'email/div-bottom.php',
+        self::TEMPLATES . 'email/div-top.php',
+        self::TEMPLATES . 'event/teams-list.php',
+        self::TEMPLATES . 'includes/loading.php',
+        self::TEMPLATES . 'includes/match-modal.php',
+        self::TEMPLATES . 'includes/modal-loading.php',
+        self::TEMPLATES . 'includes/modal-score.php',
+        self::TEMPLATES . 'includes/nav-pills.php',
+        self::TEMPLATES . 'page_template/template-member-account.php',
+        self::TEMPLATES . 'page_template/template_notitle.php',
+        self::TEMPLATES . 'pages/category-how-to.php',
+        self::TEMPLATES . 'pages/category-rules.php',
+        self::TEMPLATES . 'tournament/match-unavailable.php',
+    ];
+
+    /**
      * Legacy helpers retired in v11.0: no caller may remain. Both the namespaced and the global
      * spelling are listed because no root function of these names exists, so either resolution is a bug.
      */
@@ -301,12 +332,14 @@ final class Layer_Rules {
         $rules = [];
         foreach ( [ ...self::domain(), ...self::application(), ...self::services_and_repositories(), ...self::cross_cutting() ] as $rule ) {
             if ( isset( $rules[ $rule->id ] ) ) {
+                // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
                 throw new InvalidArgumentException( sprintf( 'Duplicate architecture rule id `%s`.', $rule->id ) );
             }
             $rules[ $rule->id ] = $rule;
         }
 
-        return self::$rules = $rules;
+        self::$rules = $rules;
+        return self::$rules;
     }
 
     /**
@@ -332,6 +365,7 @@ final class Layer_Rules {
     }
 
     public static function get( string $id ): Layer_Rule {
+        // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
         return self::all()[ $id ] ?? throw new InvalidArgumentException( sprintf( 'Unknown architecture rule `%s`.', $id ) );
     }
 
@@ -701,7 +735,8 @@ final class Layer_Rules {
                 [ self::TEMPLATES ],
                 Rule_Kind::REQUIRE_VARIABLE,
                 [ 'vm' ],
-                Rule_Mode::RATCHET
+                Rule_Mode::STRICT,
+                self::STATIC_AND_WP_TEMPLATES
             ),
             new Layer_Rule(
                 'admin.no_template_require',

@@ -7,8 +7,13 @@
 
 namespace Racketmanager;
 
-/** @var array $finals */
-/** @var object $league */
+use Racketmanager\Presentation\View_Models\Draw_Round_View_Model;
+
+/** @var object|null $vm */
+/** @var array       $finals */
+/** @var object|null $league */
+$finals = $finals ?? $vm->finals ?? [];
+$league = $league ?? $vm->league ?? null;
 if ( ! $finals ) {
     return;
 }
@@ -21,14 +26,18 @@ if ( ! empty( $num_rounds ) ) {
 } else {
     $cols = 12;
 }
-$player_class = '';
+$player_class    = '';
 $is_player_entry = isset( $league->event->competition->is_player_entry )
     ? (bool) $league->event->competition->is_player_entry
     : (bool) ( $league->event->is_player_entry ?? false );
-$event_type = isset( $league->event->type ) ? (string) $league->event->type : '';
+$event_type      = isset( $league->event->type ) ? (string) $league->event->type : '';
 if ( $is_player_entry && 'D' === substr( $event_type, 1, 1 ) ) {
     $player_class = 'doubles';
 }
+// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- $vm is consumed within required round-draw.php
+$render_round = static function ( Draw_Round_View_Model $vm ): void {
+    require __DIR__ . '/round-draw.php';
+};
 ?>
 <div class="d-none d-md-block knockout-layout">
     <div class="knockout-carousel">
@@ -54,7 +63,14 @@ if ( $is_player_entry && 'D' === substr( $event_type, 1, 1 ) ) {
                     ?>
                     <div class="d-none d-md-flex column-<?php echo esc_attr( $f ); ?> knockout-tree__column x-swiper-slide col-12 col-md-<?php echo esc_html( $cols ); ?>">
                         <?php
-                        require 'round-draw.php';
+                        $render_round(
+                            new Draw_Round_View_Model(
+                                final: $final,
+                                f: $f,
+                                last_round: $last_round,
+                                player_class: $player_class,
+                            )
+                        );
                         ?>
                     </div>
                     <?php
@@ -80,8 +96,8 @@ if ( $is_player_entry && 'D' === substr( $event_type, 1, 1 ) ) {
         <div class="x-swiper-container knockout-carousel__draw-carousel carousel-inner">
             <div class="knockout-tree x-swiper-wrapper row">
                 <?php
-                $f     = 1;
-                $today = gmdate( 'Y-m-d' );
+                $f            = 1;
+                $today        = gmdate( 'Y-m-d' );
                 $carousel_set = false;
                 foreach ( $finals as $final ) {
                     $carousel_active = false;
@@ -92,10 +108,7 @@ if ( $is_player_entry && 'D' === substr( $event_type, 1, 1 ) ) {
                     }
                     if ( ! $carousel_set ) {
                         $round_date = $league->seasons[ $league->current_season['name'] ]['rounds'][ $final->key ]->date ?? null;
-                        if ( $round_date >= $today ) {
-                            $carousel_active = true;
-                            $carousel_set    = true;
-                        } elseif ( $last_round ) {
+                        if ( $round_date >= $today || $last_round ) {
                             $carousel_active = true;
                             $carousel_set    = true;
                         }
@@ -107,7 +120,14 @@ if ( $is_player_entry && 'D' === substr( $event_type, 1, 1 ) ) {
                         </div>
                         <div class="d-flex d-md-none column-<?php echo esc_attr( $f ); ?> knockout-tree__column x-swiper-slide col-12">
                             <?php
-                            require 'round-draw.php';
+                            $render_round(
+                                new Draw_Round_View_Model(
+                                    final: $final,
+                                    f: $f,
+                                    last_round: $last_round,
+                                    player_class: $player_class,
+                                )
+                            );
                             ?>
                         </div>
                     </div>

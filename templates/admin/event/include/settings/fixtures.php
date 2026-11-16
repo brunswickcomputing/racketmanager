@@ -7,12 +7,17 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model;
 use Racketmanager\Util\Util_Lookup;
 
+/** @var Tournament_Event_Config_Page_View_Model|null $vm */
 /** @var bool   $is_invalid */
 /** @var string $msg */
 /** @var object $competition */
-$tab_name = 'fixtures';
+/** @var object $event */
+$competition = $competition ?? $vm->competition ?? null;
+$event       = $event ?? $vm->event ?? null;
+$tab_name    = 'fixtures';
 ?>
 <div class="form-control">
     <?php

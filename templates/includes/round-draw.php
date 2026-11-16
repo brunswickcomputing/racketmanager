@@ -13,10 +13,13 @@
 namespace Racketmanager;
 
 use Racketmanager\Presentation\View_Models\Draw_Fixture_View_Model;
+use Racketmanager\Presentation\View_Models\Draw_Round_View_Model;
 
-/** @var object $final */
-/** @var int    $f */
-/** @var string $player_class */
+/** @var Draw_Round_View_Model $vm */
+$final        = $vm->final ?? null;
+$f            = $vm->f ?? null;
+$last_round   = $vm->last_round ?? false;
+$player_class = $vm->player_class ?? '';
 
 foreach ( ( $final->fixtures ?? [] ) as $fixture_row ) {
     if ( ! $fixture_row instanceof Draw_Fixture_View_Model || $fixture_row->skip_render ) {

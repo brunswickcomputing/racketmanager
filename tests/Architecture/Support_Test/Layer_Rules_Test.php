@@ -131,6 +131,7 @@ final class Layer_Rules_Test extends TestCase {
         $details = array_map( static fn( Violation $v ): string => $v->detail, $violations );
         self::assertTrue(
             [] !== array_filter( $details, static fn( string $d ): bool => str_contains( $d, $expected_detail ) ),
+            // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode
             sprintf( 'Rule `%s` reported %s, expected a detail containing `%s`.', $rule_id, json_encode( $details ), $expected_detail )
         );
     }
@@ -179,6 +180,7 @@ final class Layer_Rules_Test extends TestCase {
         yield 'all.no_literal_container_keys ignores ::class keys, non-container receivers and other methods' => [ 'all.no_literal_container_keys', 'src/php/Public/Shortcodes.php', "<?php\nnamespace Racketmanager\\Public;\nuse Racketmanager\\Services\\League_Service;\nclass Shortcodes { function f( \$c, \$request, \$container ) { \$c->get( League_Service::class ); \$container->set( League_Service::class, fn() => 1 ); \$this->container->has( League_Service::class ); \$request->get( 'id' ); \$this->settings->get( 'x' ); \$c->resolve( 'x' ); \$c->get( \$id ); } }" ];
         yield 'templates.require_vm accepts a template that uses $vm' => [ 'templates.require_vm', 'templates/league.php', "<?php\nnamespace Racketmanager;\n/** @var object \$vm */\necho esc_html( \$vm->title );" ];
         yield 'templates.require_vm does not apply to src' => [ 'templates.require_vm', 'src/php/Services/Team_Service.php', "<?php\nnamespace Racketmanager\\Services;\nclass Team_Service {}" ];
+        yield 'templates.require_vm does not apply to static templates' => [ 'templates.require_vm', 'templates/includes/loading.php', "<?php\nnamespace Racketmanager;\n?><div class=\"loading\"></div>" ];
         yield 'admin.no_admin_display_inheritance ignores imports, type hints and new' => [ 'admin.no_admin_display_inheritance', 'src/php/Admin/Admin_Screens_Service_Provider.php', "<?php\nnamespace Racketmanager\\Admin;\nuse Racketmanager\\Admin\\Admin_Display;\nclass P { function f( Admin_Display \$d ) { return new Admin_Display(); } }" ];
         yield 'admin.no_admin_display_inheritance ignores other parents' => [ 'admin.no_admin_display_inheritance', 'src/php/Admin/Admin_Result.php', "<?php\nnamespace Racketmanager\\Admin;\nfinal readonly class Admin_Result extends Admin_Bridge { use Completes_Admin_Requests; }" ];
     }
@@ -261,6 +263,7 @@ final class Layer_Rules_Test extends TestCase {
                 'templates.no_globals_or_db',
                 'templates.no_global_racketmanager',
                 'templates.no_legacy_helper_calls',
+                'templates.require_vm',
                 'admin.no_template_require',
                 'admin.no_admin_display_inheritance',
                 'scanner.parse_error',
@@ -383,6 +386,43 @@ final class Layer_Rules_Test extends TestCase {
 
             self::assertCount( 1, $violations, "Failed to catch from_array for entity {$entity_class}" );
             self::assertStringContainsString( "{$entity_class}::from_array()", $violations[0]->detail );
+        }
+    }
+
+    public function test_templates_require_vm_excludes_static_and_wp_templates_while_enforcing_dynamic(): void {
+        $rule = Layer_Rules::get( 'templates.require_vm' );
+
+        self::assertTrue( $rule->is_strict(), 'templates.require_vm must remain in strict mode.' );
+        self::assertCount( 24, Layer_Rules::STATIC_AND_WP_TEMPLATES );
+
+        foreach ( Layer_Rules::STATIC_AND_WP_TEMPLATES as $path ) {
+            self::assertFalse( $rule->applies_to( $path ), "Static template `$path` must be excluded from templates.require_vm." );
+        }
+
+        // Assert nearby dynamic templates in the same or sibling directories remain strictly governed.
+        $nearby_dynamic = [
+            'templates/admin/finances/show-charges.php',
+            'templates/admin/finances/show-invoices.php',
+            'templates/admin/players/show-players.php',
+            'templates/admin/players/show-errors.php',
+            'templates/admin/players/show-requests.php',
+            'templates/admin/event/include/settings/championship.php',
+            'templates/admin/event/include/settings/fixtures.php',
+            'templates/admin/event/include/settings/general.php',
+            'templates/admin/includes/player.php',
+            'templates/email/components/contact-urgent.php',
+            'templates/email/components/salutation.php',
+            'templates/includes/championship-draw.php',
+            'templates/includes/round-draw.php',
+            'templates/includes/matches-team-list.php',
+            'templates/includes/matches-team-list-group.php',
+            'templates/tournament/entry.php',
+            'templates/event/entry.php',
+            'templates/league.php',
+        ];
+
+        foreach ( $nearby_dynamic as $path ) {
+            self::assertTrue( $rule->applies_to( $path ), "Dynamic template `$path` must be covered by templates.require_vm." );
         }
     }
 }

@@ -7,11 +7,16 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model;
+
+/** @var Tournament_Event_Config_Page_View_Model|null $vm */
 /** @var object $event */
 /** @var array  $leagues */
 /** @var string $error_tab */
 /** @var bool   $is_invalid */
 /** @var string $msg */
+$event    = $event ?? $vm->event ?? null;
+$leagues  = $leagues ?? $vm->leagues ?? array();
 $tab_name = 'championship';
 if ( ! isset( $event->config ) || ! is_object( $event->config ) ) {
     $event->config = new \stdClass();
@@ -19,7 +24,6 @@ if ( ! isset( $event->config ) || ! is_object( $event->config ) ) {
 if ( ! isset( $event->config->primary_league ) ) {
     $event->config->primary_league = null;
 }
-$leagues = $leagues ?? array();
 ?>
 <div class="form-control">
     <div class="row">

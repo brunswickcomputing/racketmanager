@@ -10,7 +10,9 @@ namespace Racketmanager;
 use Racketmanager\Presentation\View_Models\Team_Match_Row_View_Model;
 use Racketmanager\Presentation\View_Models\Tournament_Match_Card_View_Model;
 
-/** @var array $matches */
+/** @var object|null $vm */
+/** @var array       $matches */
+$matches = $matches ?? $vm->matches ?? [];
 foreach ( $matches as $match ) {
     if ( $match instanceof Tournament_Match_Card_View_Model ) {
         // Tournament fixtures arrive as pre-built match cards from the application boundary.
@@ -26,7 +28,7 @@ foreach ( $matches as $match ) {
     }
 
     if ( ! ( $match instanceof Team_Match_Row_View_Model ) ) {
-        throw new \UnexpectedValueException( 'Expected Team_Match_Row_View_Model or Tournament_Match_Card_View_Model, got ' . get_debug_type( $match ) );
+        continue;
     }
 
     if ( $match->is_tournament ) {

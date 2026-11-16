@@ -1,6 +1,17 @@
+<?php
+/**
+ * Documentation: Settings
+ *
+ * @package RacketManager
+ * @subpackage Templates/Admin/Documentation
+ */
+
+namespace Racketmanager;
+
+?>
 <div class="container">
   <!--suppress HtmlUnknownAnchorTarget -->
-    <a href="#top" class="alignright top-link"><?php _e( 'Top', 'racketmanager' ) ?></a>
+    <a href="#top" class="alignright top-link"><?php esc_html_e( 'Top', 'racketmanager' ); ?></a>
   <p>The settings page holds the settings for the following:</p>
   <dl>
     <dt>Club Players</dt>

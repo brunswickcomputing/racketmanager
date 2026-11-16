@@ -1,6 +1,17 @@
+<?php
+/**
+ * Documentation: Import
+ *
+ * @package RacketManager
+ * @subpackage Templates/Admin/Documentation
+ */
+
+namespace Racketmanager;
+
+?>
 <div class="container">
   <!--suppress HtmlUnknownAnchorTarget -->
-    <a href="#top" class="alignright top-link"><?php _e( 'Top', 'racketmanager' ) ?></a>
+    <a href="#top" class="alignright top-link"><?php esc_html_e( 'Top', 'racketmanager' ); ?></a>
   <p>The import page allows data to be imported to the website from uploaded files. The types of data allowed are:</p>
   <dl>
     <dt>Table</dt>

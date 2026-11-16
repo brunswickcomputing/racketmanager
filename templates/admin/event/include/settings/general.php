@@ -7,12 +7,17 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model;
 use Racketmanager\Util\Util_Lookup;
 
+/** @var Tournament_Event_Config_Page_View_Model|null $vm */
 /** @var object $competition */
+/** @var object $event */
 /** @var bool   $is_invalid */
 /** @var string $msg */
-$tab_name = 'general';
+$competition = $competition ?? $vm->competition ?? null;
+$event       = $event ?? $vm->event ?? null;
+$tab_name    = 'general';
 ?>
 <div class="form-control">
     <div class="row gx-3 mb-3">
@@ -23,7 +28,7 @@ $tab_name = 'general';
                 $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                 $is_invalid = true;
                 $msg_id     = array_search( 'name', $validator->err_flds, true );
-                $msg        = $validator->err_msgs[$msg_id] ?? null;
+                $msg        = $validator->err_msgs[ $msg_id ] ?? null;
             }
             ?>
             <input type="text" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="event_name" id="event_name" value="<?php echo isset( $event->name ) ? esc_html( $event->name ) : null; ?>"  placeholder="<?php esc_html_e( 'Event name', 'racketmanager' ); ?>" />
@@ -47,7 +52,7 @@ $tab_name = 'general';
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
                     $msg_id     = array_search( 'type', $validator->err_flds, true );
-                    $msg        = $validator->err_msgs[$msg_id] ?? null;
+                    $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                 }
                 ?>
                 <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="type" id="type" data-action="set-event-name">
@@ -79,7 +84,7 @@ $tab_name = 'general';
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
                     $msg_id     = array_search( 'age_limit', $validator->err_flds, true );
-                    $msg        = $validator->err_msgs[$msg_id] ?? null;
+                    $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                 }
                 ?>
                 <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name='age_limit' id='age_limit' data-action="set-event-name">
@@ -110,7 +115,7 @@ $tab_name = 'general';
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
                     $msg_id     = array_search( 'age_offset', $validator->err_flds, true );
-                    $msg        = $validator->err_msgs[$msg_id] ?? null;
+                    $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                 }
                 ?>
                 <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="age_offset" id="age_offset" >
@@ -142,7 +147,7 @@ $tab_name = 'general';
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
                     $msg_id     = array_search( 'scoring', $validator->err_flds, true );
-                    $msg        = $validator->err_msgs[$msg_id] ?? null;
+                    $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                 }
                 ?>
                 <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name='scoring' id='scoring'>
@@ -179,7 +184,7 @@ $tab_name = 'general';
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
                     $msg_id     = array_search( 'num_sets', $validator->err_flds, true );
-                    $msg        = $validator->err_msgs[$msg_id] ?? null;
+                    $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                 }
                 ?>
                 <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_sets" id="num_sets" value="<?php echo isset( $num_sets ) ? esc_html( $num_sets ) : null; ?>" placeholder="<?php esc_html_e( 'Number of sets', 'racketmanager' ); ?>" />
@@ -212,7 +217,7 @@ $tab_name = 'general';
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
                         $msg_id     = array_search( 'num_rubbers', $validator->err_flds, true );
-                        $msg        = $validator->err_msgs[$msg_id] ?? null;
+                        $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                     }
                     ?>
                     <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_rubbers" id="num_rubbers" value="<?php echo isset( $num_rubbers ) ? esc_html( $num_rubbers ) : null; ?>" placeholder="<?php esc_html_e( 'Number of rubbers', 'racketmanager' ); ?>" />
@@ -238,7 +243,7 @@ $tab_name = 'general';
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
                         $msg_id     = array_search( 'reverse_rubbers', $validator->err_flds, true );
-                        $msg        = $validator->err_msgs[$msg_id] ?? null;
+                        $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                     }
                     ?>
                     <input type="checkbox" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="reverse_rubbers" id="reverse_rubbers" <?php checked( $reverse_rubbers, 1 ); ?> value="1" />

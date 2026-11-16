@@ -7,6 +7,9 @@
 
 namespace Racketmanager;
 
+/** @var object|null $vm */
+/** @var string|null $salutation_link */
+$salutation_link = $salutation_link ?? $vm->salutation_link ?? null;
 ?><!-- salutation -->
             <div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">
                 <table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">

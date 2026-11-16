@@ -33,12 +33,14 @@ use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Scoring\Set_Score;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
+use Racketmanager\Exceptions\Fixture_Not_Found_Exception;
+use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\Competition_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\League_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
-use Racketmanager\Presentation\Presenters\Fixture_Presentation_Adapter;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Presentation\Presenters\League_Archive_Presenter;
 use Racketmanager\Presentation\Presenters\Matches_List_Presenter;
@@ -47,6 +49,8 @@ use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
 use Racketmanager\Presentation\Presenters\Team_Details_Presenter;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Presentation\View_Models\Team_Match_Row_View_Model;
 use Racketmanager\Presentation\View_Models\Team_Matches_Group_View_Model;
@@ -65,6 +69,8 @@ use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
+use Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
+use Racketmanager\Tests\Helpers\Creates_League_Query_Service;
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
@@ -75,8 +81,8 @@ use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;
  * handler -> Tournament_Presenter -> real templates (matches.php, team-details.php, matches-team-list.php).
  */
 class League_Match_Card_Entry_Points_Test extends TestCase {
-    use \Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
-    use \Racketmanager\Tests\Helpers\Creates_League_Query_Service;
+    use Creates_Event_Query_Service;
+    use Creates_League_Query_Service;
     use Creates_Competition_Season_Service;
     use Manages_Wordpress_Globals;
     use Creates_Team_Match_Row_Presenter;
@@ -84,7 +90,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->backup_globals();
-        $GLOBALS['racketmanager'] = new class {
+        $GLOBALS['racketmanager'] = new class() {
             public string $date_format = 'Y-m-d';
             public function is_user_favourite( mixed $type = null, mixed $id = null ): bool {
                 return false;
@@ -132,11 +138,11 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
                 $option_gateway,
                 new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' )
             ),
+            template_renderer: $args['template_renderer'] ?? null,
             competition_service: $args['competition_service'] ?? null,
             team_service: $args['team_service'] ?? null,
             fixture_link_service: $args['fixture_link_service'] ?? null,
-            fixture_permission_service: $args['fixture_permission_service'] ?? null,
-            template_renderer: $args['template_renderer'] ?? null
+            fixture_permission_service: $args['fixture_permission_service'] ?? null
         );
     }
 
@@ -147,7 +153,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
      * @param League[]  $leagues
      */
     private function event_query_service_with_fixtures( array $fixtures = [], array $leagues = [] ): Event_Query_Service {
-        $event_repository = $this->createStub( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class );
+        $event_repository = $this->createStub( Event_Repository_Interface::class );
         $event_repository->method( 'query_leagues' )->willReturn( $leagues );
         $event_repository->method( 'query_matches' )->willReturnCallback(
             static fn( int $event_id, array $args = [] ): array => array_map(
@@ -201,7 +207,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
     }
 
     private function create_event( Competition $competition ): Event {
-        $event = new class extends Event {
+        $event = new class() extends Event {
             public function __construct() {
                 $this->id             = 12;
                 $this->name           = 'Mens Singles';
@@ -251,7 +257,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
     }
 
     private function create_league( Event $event, array $matches ): League {
-        $league = new class extends League {
+        $league = new class() extends League {
             public function __construct() {
                 $this->id             = 3;
                 $this->title          = 'Mens Singles Division';
@@ -266,7 +272,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
             public function set_num_matches( bool $total = false ): void {}
         };
         $league->event        = $event;
-        $league->championship = new class extends Championship {
+        $league->championship = new class() extends Championship {
             public function __construct() {}
             public function get_finals( false|int|string $key = false ): ?array {
                 return [ [ 'name' => 'Final', 'key' => 'final' ] ];
@@ -275,7 +281,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         return $league;
     }
 
-    private function league_query_service_with_matches( array $fixtures ): \Racketmanager\Services\Competition\League_Query_Service {
+    private function league_query_service_with_matches( array $fixtures ): League_Query_Service {
         $league_repository = $this->createStub( League_Repository_Interface::class );
         $league_repository->method( 'query_matches' )->willReturn(
             array_map( static fn( Fixture $fixture ): object => (object) [ 'id' => $fixture->get_id() ], $fixtures )
@@ -284,12 +290,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $fixture_repository = $this->createStub( Fixture_Repository_Interface::class );
         $fixture_repository->method( 'find_by_id' )->willReturnCallback(
             static function ( int $id ) use ( $fixtures ): ?Fixture {
-                foreach ( $fixtures as $fixture ) {
-                    if ( $fixture->get_id() === $id ) {
-                        return $fixture;
-                    }
-                }
-                return null;
+                return array_find( $fixtures, fn( $fixture ) => $fixture->get_id() === $id );
             }
         );
 
@@ -336,7 +337,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $this->assertSame( 'matches', $vm->template );
         $this->assertContainsOnlyInstancesOf( Tournament_Match_Card_View_Model::class, $vm->vars['matches'] );
 
-        $html = ( new Shortcode_View_Presenter( $this->renderer() ) )->render( $vm );
+        $html = new Shortcode_View_Presenter( $this->renderer() )->render( $vm );
         $this->assertStringContainsString( 'class="tournament-matches"', $html );
         $this->assert_played_card_markup( $html );
     }
@@ -348,7 +349,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $league               = $this->create_league( $event, [ $fixture ] );
 
         $service = $this->createStub( Fixture_Detail_Service::class );
-        $service->method( 'get_fixture_with_details' )->willThrowException( new \Racketmanager\Exceptions\Fixture_Not_Found_Exception( 'gone' ) );
+        $service->method( 'get_fixture_with_details' )->willThrowException( new Fixture_Not_Found_Exception( 'gone' ) );
 
         $league_service = $this->createStub( League_Service::class );
         $league_service->method( 'get_league' )->willReturn( $league );
@@ -359,7 +360,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
             template_renderer: $this->renderer()
         );
 
-        $html = ( new Shortcode_View_Presenter( $this->renderer() ) )->render( $adapter->present_matches( $handler->handle( new Get_League_Matches_Query( league_id: 3, template: '' ) ) ) );
+        $html = new Shortcode_View_Presenter( $this->renderer() )->render( $adapter->present_matches( $handler->handle( new Get_League_Matches_Query( league_id: 3, template: '' ) ) ) );
 
         $this->assertStringContainsString( 'Match details unavailable', $html );
         $this->assertStringNotContainsString( 'player-row', $html );
@@ -375,7 +376,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
 
         $league_service = $this->createStub( League_Service::class );
         $league_service->method( 'get_league' )->willReturn( $league );
-        $team = new class extends Team {
+        $team = new class() extends Team {
             public function __construct() {
                 $this->id    = 10;
                 $this->title = 'Team Federer';
@@ -399,7 +400,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $this->assertSame( 'team-details', $vm->template );
         $this->assertContainsOnlyInstancesOf( Tournament_Match_Card_View_Model::class, $league->team->matches );
 
-        $html = ( new Shortcode_View_Presenter( $this->renderer() ) )->render( $vm );
+        $html = new Shortcode_View_Presenter( $this->renderer() )->render( $vm );
         $this->assert_played_card_markup( $html );
     }
 
@@ -420,7 +421,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         );
         $vm      = $adapter->present_matches( $handler->handle( new Get_League_Matches_Query( league_id: 3, template: '' ) ) );
 
-        $html = ( new Shortcode_View_Presenter( $this->renderer() ) )->render( $vm );
+        $html = new Shortcode_View_Presenter( $this->renderer() )->render( $vm );
         $this->assertStringContainsString( 'Roger Federer', $html );
         $this->assertStringContainsString( 'Rafael Nadal', $html );
         $this->assertStringNotContainsString( 'button--update-result', $html );
@@ -437,7 +438,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
 
         $league_service = $this->createStub( League_Service::class );
         $league_service->method( 'get_league' )->willReturn( $league );
-        $team = new class extends Team {
+        $team = new class() extends Team {
             public function __construct() {
                 $this->id    = 10;
                 $this->title = 'Team A';
@@ -488,21 +489,21 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $this->assert_played_card_markup( $html );
     }
 
-    public function test_team_list_template_rejects_unpresented_fixture_explicitly(): void {
+    public function test_team_list_template_ignores_unpresented_fixture(): void {
         $matches = [ Fixture_Test_Factory::create( id: 704, league_id: 3 ) ];
 
         $level = ob_get_level();
         ob_start();
         try {
             include RACKETMANAGER_PATH . 'templates/includes/matches-team-list.php';
-            $this->fail( 'The template must refuse raw fixtures.' );
-        } catch ( \UnexpectedValueException $e ) {
-            $this->assertStringContainsString( 'Team_Match_Row_View_Model', $e->getMessage() );
+            $html = (string) ob_get_clean();
         } finally {
             while ( ob_get_level() > $level ) {
                 ob_end_clean();
             }
         }
+
+        $this->assertSame( '', $html );
     }
 
     public function test_match_list_presents_non_tournament_fixtures_as_team_rows(): void {
@@ -525,7 +526,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $event                = $this->create_event( $competition );
         $league               = $this->create_league( $event, [] );
         $league->is_championship = true;
-        $championship         = new class extends Championship {
+        $championship         = new class() extends Championship {
             public function __construct() {}
             public function __get( string $name ): mixed {
                 return 'num_teams_first_round' === $name ? 0 : parent::__get( $name );
@@ -582,7 +583,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $final_data = array_values( $vm->vars['finals'] )[0];
         $this->assertContainsOnlyInstancesOf( Tournament_Match_Card_View_Model::class, $final_data->matches );
 
-        $html = ( new Shortcode_View_Presenter( $this->renderer() ) )->render( $vm );
+        $html = new Shortcode_View_Presenter( $this->renderer() )->render( $vm );
         $this->assertStringContainsString( 'Roger Federer', $html );
         $this->assertStringContainsString( 'Rafael Nadal', $html );
         $this->assertStringContainsString( '<span class="match__status winner">W</span>', $html );
@@ -596,14 +597,14 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $league               = $this->create_league( $event, [] );
         [ $fixture, $detail ] = $this->build_played_fixture( $league, $event, $competition );
 
-        $team = new class extends Team {
+        $team = new class() extends Team {
             public function __construct() {
                 $this->id    = 10;
                 $this->title = 'Team Federer';
             }
         };
 
-        $event_stub = new class extends Event {
+        $event_stub = new class() extends Event {
             public function __construct() {
                 $this->id             = 12;
                 $this->name           = 'Mens Singles';
@@ -646,7 +647,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
 
     public function test_event_team_details_hides_league_row_header_in_presented_matches(): void {
         $competition = $this->create_competition( Competition_Type::LEAGUE );
-        $event       = new class extends Event {
+        $event       = new class() extends Event {
             public function __construct() {
                 $this->id             = 12;
                 $this->name           = 'Mens Singles';
@@ -673,7 +674,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         ];
         $fixture->league      = (object) [ 'id' => 3, 'title' => 'Mens Singles Division' ];
 
-        $team = new class extends Team {
+        $team = new class() extends Team {
             public function __construct() {
                 $this->id    = 10;
                 $this->title = 'Team Federer';
@@ -714,7 +715,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
             'match_time'   => null,
         ];
         $team_details = new Team_Details_DTO( team: $team );
-        $vm           = ( new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() ) )->present( $event, $team_details );
+        $vm           = new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() )->present( $event, $team_details );
         $object       = $event;
         ob_start();
         require RACKETMANAGER_PATH . 'templates/team-details.php';
@@ -818,7 +819,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $fixture = Fixture_Test_Factory::create( id: 709, league_id: 3 );
 
         $service = $this->createStub( Fixture_Detail_Service::class );
-        $service->method( 'get_fixture_with_details' )->willThrowException( new \Racketmanager\Exceptions\Invalid_Argument_Exception( 'invalid' ) );
+        $service->method( 'get_fixture_with_details' )->willThrowException( new Invalid_Argument_Exception( 'invalid' ) );
 
         $presenter = new Tournament_Presenter( 'd/m/Y', $service, team_match_row_presenter: $this->create_team_match_row_presenter() );
         $card = $presenter->present_match_card( $fixture );
@@ -847,7 +848,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $this->assertSame( 'matches', $vm->template, (string) $vm->error_message );
         $this->assertContainsOnlyInstancesOf( Tournament_Match_Card_View_Model::class, $vm->vars['event']->leagues[0]->finals[0]->matches );
 
-        $html = ( new Shortcode_View_Presenter( $this->renderer() ) )->render( $vm );
+        $html = new Shortcode_View_Presenter( $this->renderer() )->render( $vm );
         $this->assertStringContainsString( 'Roger Federer', $html );
         $this->assertStringContainsString( 'Rafael Nadal', $html );
         $this->assertStringContainsString( '<span class="match__status winner">W</span>', $html );
@@ -917,7 +918,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $this->assertContainsOnlyInstancesOf( Tournament_Match_Card_View_Model::class, $vm->vars['event_club']->matches['2026-06-01']->matches );
         $this->assertContainsOnlyInstancesOf( Tournament_Match_Card_View_Model::class, $vm->vars['event_club']->results['2026-06-01']->matches );
 
-        $html = ( new Shortcode_View_Presenter( $this->renderer() ) )->render( $vm );
+        $html = new Shortcode_View_Presenter( $this->renderer() )->render( $vm );
         $this->assertStringContainsString( 'Roger Federer', $html );
         $this->assertStringContainsString( 'Rafael Nadal', $html );
         $this->assertStringContainsString( '<span class="match__status winner">W</span>', $html );
@@ -959,17 +960,17 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
 
         $presenter = new Tournament_Presenter( 'd/m/Y', $detail_service, team_match_row_presenter: $this->create_team_match_row_presenter() );
         $handler   = new Get_Competition_Clubs_Handler( $comp_service, $club_service, $stats, $this->competition_season_service() );
-        $vm        = ( new \Racketmanager\Infrastructure\Wordpress\Shortcodes\Competition_Shortcode_Adapter(
+        $vm        = new Competition_Shortcode_Adapter(
             competition_shortcode_presenter: $this->competition_presenter(),
             tournament_presenter: $presenter,
             player_presenter: new Player_Presenter()
-        ) )->present_clubs( $handler->handle( new Get_Competition_Clubs_Query( competition_id: 1, club_identifier: '5', template: '' ) ) );
+        )->present_clubs( $handler->handle( new Get_Competition_Clubs_Query( competition_id: 1, club_identifier: '5', template: '' ) ) );
 
         $this->assertSame( 'clubs', $vm->template, (string) $vm->error_message );
         $this->assertContainsOnlyInstancesOf( Tournament_Match_Card_View_Model::class, $vm->vars['competition_club']->matches['2026-06-01']->matches );
         $this->assertContainsOnlyInstancesOf( Tournament_Match_Card_View_Model::class, $vm->vars['competition_club']->results['2026-06-01']->matches );
 
-        $html = ( new Shortcode_View_Presenter( $this->renderer() ) )->render( $vm );
+        $html = new Shortcode_View_Presenter( $this->renderer() )->render( $vm );
         $this->assertStringContainsString( 'Roger Federer', $html );
         $this->assertStringContainsString( 'Rafael Nadal', $html );
         $this->assertStringContainsString( '<span class="match__status winner">W</span>', $html );

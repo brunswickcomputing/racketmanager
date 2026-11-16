@@ -59,7 +59,7 @@ class Matches_Team_List_Template_Test extends TestCase {
         parent::setUp();
         $this->backup_globals();
         $this->template_path = dirname( __DIR__, 3 ) . '/templates/includes/matches-team-list.php';
-        $GLOBALS['racketmanager'] = new class {
+        $GLOBALS['racketmanager'] = new class() {
             public function is_user_favourite( string $type, int|string $id ): bool {
                 return false;
             }
@@ -82,7 +82,7 @@ class Matches_Team_List_Template_Test extends TestCase {
 
     public function test_renders_with_fixture_domain_objects() {
         global $racketmanager;
-        $racketmanager = new class {
+        $racketmanager = new class() {
             public string $date_format = 'Y-m-d';
             public function is_player_in_club( array $args ): bool {
                 return false;
@@ -209,10 +209,12 @@ class Matches_Team_List_Template_Test extends TestCase {
         $away_team->method( 'get_name' )->willReturn( 'Away Team' );
         $away_team->method( 'get_team_type' )->willReturn( 'T' );
         $resolver = $this->createStub( Fixture_Team_Resolver_Interface::class );
-        $resolver->method( 'get_team_details' )->willReturnMap( array(
-            array( 1, new Team_Details_DTO( $home_team ) ),
-            array( 2, new Team_Details_DTO( $away_team ) ),
-        ) );
+        $resolver->method( 'get_team_details' )->willReturnMap(
+            array(
+                array( 1, new Team_Details_DTO( $home_team ) ),
+                array( 2, new Team_Details_DTO( $away_team ) ),
+            )
+        );
 
         $fixture = Fixture_Test_Factory::create(
             id: 103,
@@ -505,7 +507,7 @@ class Matches_Team_List_Template_Test extends TestCase {
     }
 
     public function test_get_league_teams_handler_renders_team_details_with_wtn_and_precomputed_links(): void {
-        $GLOBALS['racketmanager'] = new class {
+        $GLOBALS['racketmanager'] = new class() {
             public function is_user_favourite( string $type, int|string $id ): bool {
                 return false;
             }
@@ -567,11 +569,13 @@ class Matches_Team_List_Template_Test extends TestCase {
         $league->event = $event;
         $league_query = $this->createStub( League_Query_Service::class );
         $league_query->method( 'get_team_dtls' )->willReturn( $team->info );
-        $league_query->method( 'get_league_team' )->willReturn( (object) [
-            'rank' => '1',
-            'done_matches' => 5,
-            'points_formatted' => [ 'primary' => '10' ],
-        ] );
+        $league_query->method( 'get_league_team' )->willReturn(
+            (object) [
+                'rank' => '1',
+                'done_matches' => 5,
+                'points_formatted' => [ 'primary' => '10' ],
+            ]
+        );
         $league_query->method( 'get_matches' )->willReturn( [] );
         $league_query->method( 'get_players' )->willReturn( [ $player ] );
 
@@ -587,9 +591,11 @@ class Matches_Team_List_Template_Test extends TestCase {
         $tournament_presenter = $this->createStub( Tournament_Presenter::class );
         $tournament_presenter->method( 'present_match_list' )->willReturn( [] );
 
-        $settings_service = new Settings_Service( [
-            'display' => [ 'wtn' => 1 ],
-        ] );
+        $settings_service = new Settings_Service(
+            [
+                'display' => [ 'wtn' => 1 ],
+            ]
+        );
 
         $team_details_presenter = new Team_Details_Presenter( new Wp_Option_Gateway(), $settings_service );
 
@@ -618,10 +624,13 @@ class Matches_Team_List_Template_Test extends TestCase {
         $this->assertEquals( '/league/division-1/2026/player/alice-walker/', $result->vars['vm']->player_links[55] );
 
         $warnings = [];
-        set_error_handler( function ( $errno, $errstr, $errfile, $errline ) use ( &$warnings ) {
-            $warnings[] = "$errstr on $errfile:$errline";
-            return true;
-        } );
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler -- Capturing PHP warnings for test assertion.
+        set_error_handler(
+            function ( $errno, $errstr, $errfile, $errline ) use ( &$warnings ) {
+                $warnings[] = "$errstr on $errfile:$errline";
+                return true;
+            }
+        );
 
         try {
             $renderer = new Php_View_Renderer( dirname( $this->template_path, 2 ) . '/' );
@@ -642,7 +651,7 @@ class Matches_Team_List_Template_Test extends TestCase {
     }
 
     public function test_get_league_teams_handler_renders_team_details_without_wtn_when_disabled(): void {
-        $GLOBALS['racketmanager'] = new class {
+        $GLOBALS['racketmanager'] = new class() {
             public function is_user_favourite( string $type, int|string $id ): bool {
                 return false;
             }
@@ -704,11 +713,13 @@ class Matches_Team_List_Template_Test extends TestCase {
         $league->event = $event;
         $league_query = $this->createStub( League_Query_Service::class );
         $league_query->method( 'get_team_dtls' )->willReturn( $team->info );
-        $league_query->method( 'get_league_team' )->willReturn( (object) [
-            'rank' => '1',
-            'done_matches' => 5,
-            'points_formatted' => [ 'primary' => '10' ],
-        ] );
+        $league_query->method( 'get_league_team' )->willReturn(
+            (object) [
+                'rank' => '1',
+                'done_matches' => 5,
+                'points_formatted' => [ 'primary' => '10' ],
+            ]
+        );
         $league_query->method( 'get_matches' )->willReturn( [] );
         $league_query->method( 'get_players' )->willReturn( [ $player ] );
 
@@ -724,9 +735,11 @@ class Matches_Team_List_Template_Test extends TestCase {
         $tournament_presenter = $this->createStub( Tournament_Presenter::class );
         $tournament_presenter->method( 'present_match_list' )->willReturn( [] );
 
-        $settings_service = new Settings_Service( [
-            'display' => [ 'wtn' => 0 ],
-        ] );
+        $settings_service = new Settings_Service(
+            [
+                'display' => [ 'wtn' => 0 ],
+            ]
+        );
 
         $team_details_presenter = new Team_Details_Presenter( new Wp_Option_Gateway(), $settings_service );
 
@@ -752,10 +765,13 @@ class Matches_Team_List_Template_Test extends TestCase {
         $this->assertNull( $result->vars['vm']->help_text );
 
         $warnings = [];
-        set_error_handler( function ( $errno, $errstr, $errfile, $errline ) use ( &$warnings ) {
-            $warnings[] = "$errstr on $errfile:$errline";
-            return true;
-        } );
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler -- Capturing PHP warnings for test assertion.
+        set_error_handler(
+            function ( $errno, $errstr, $errfile, $errline ) use ( &$warnings ) {
+                $warnings[] = "$errstr on $errfile:$errline";
+                return true;
+            }
+        );
 
         try {
             $renderer = new Php_View_Renderer( dirname( $this->template_path, 2 ) . '/' );
@@ -808,10 +824,13 @@ class Matches_Team_List_Template_Test extends TestCase {
         $matches = [ $vm ];
 
         $warnings = [];
-        set_error_handler( function ( $errno, $errstr, $errfile, $errline ) use ( &$warnings ) {
-            $warnings[] = "$errstr on $errfile:$errline";
-            return true;
-        } );
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler -- Capturing PHP warnings for test assertion.
+        set_error_handler(
+            function ( $errno, $errstr, $errfile, $errline ) use ( &$warnings ) {
+                $warnings[] = "$errstr on $errfile:$errline";
+                return true;
+            }
+        );
 
         try {
             ob_start();
@@ -854,10 +873,13 @@ class Matches_Team_List_Template_Test extends TestCase {
         $matches_list = [ $group ];
 
         $warnings = [];
-        set_error_handler( function ( $errno, $errstr, $errfile, $errline ) use ( &$warnings ) {
-            $warnings[] = "$errstr on $errfile:$errline";
-            return true;
-        } );
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler -- Capturing PHP warnings for test assertion.
+        set_error_handler(
+            function ( $errno, $errstr, $errfile, $errline ) use ( &$warnings ) {
+                $warnings[] = "$errstr on $errfile:$errline";
+                return true;
+            }
+        );
 
         try {
             ob_start();
@@ -872,6 +894,16 @@ class Matches_Team_List_Template_Test extends TestCase {
         $this->assertStringContainsString( 'Team Red', $output );
         $this->assertStringContainsString( 'Team Blue', $output );
         $this->assertStringContainsString( '19:30', $output );
+    }
+
+    public function test_matches_team_list_group_ignores_non_group_entry(): void {
+        $matches_list = [ (object) [ 'header' => 'Invalid group' ] ];
+
+        ob_start();
+        include dirname( $this->template_path ) . '/matches-team-list-group.php';
+        $output = ob_get_clean();
+
+        $this->assertSame( '', $output );
     }
 
     public function test_renders_club_matches_with_winner_loser_tie_badges(): void {
@@ -970,10 +1002,13 @@ class Matches_Team_List_Template_Test extends TestCase {
         $vm     = $row_vm;
 
         $warnings = [];
-        set_error_handler( function ( $errno, $errstr, $errfile, $errline ) use ( &$warnings ) {
-            $warnings[] = "$errstr on $errfile:$errline";
-            return true;
-        } );
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler -- Capturing PHP warnings for test assertion.
+        set_error_handler(
+            function ( $errno, $errstr, $errfile, $errline ) use ( &$warnings ) {
+                $warnings[] = "$errstr on $errfile:$errline";
+                return true;
+            }
+        );
 
         try {
             ob_start();

@@ -678,5 +678,71 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
         $this->assertFalse( $vm_empty->has_date_range );
         $this->assertNull( $vm_empty->date_start_display );
         $this->assertNull( $vm_empty->date_end_display );
+
+        // 5. DateTimeInterface dates (valid and reversed)
+        $season_datetime = [
+            'name'       => '2026',
+            'date_start' => new \DateTimeImmutable( '2026-05-01' ),
+            'date_end'   => new \DateTimeImmutable( '2026-08-31' ),
+        ];
+        $vm_dt = $presenter->present_header( $competition, $season_datetime, '2026', [], '', '', 'd/m/Y' );
+        $this->assertTrue( $vm_dt->has_date_range );
+        $this->assertSame( '01/05/2026', $vm_dt->date_start_display );
+        $this->assertSame( '31/08/2026', $vm_dt->date_end_display );
+
+        $season_dt_reversed = [
+            'name'       => '2026',
+            'date_start' => new \DateTime( '2026-09-01' ),
+            'date_end'   => new \DateTime( '2026-05-01' ),
+        ];
+        $vm_dt_rev = $presenter->present_header( $competition, $season_dt_reversed, '2026', [], '', '', 'd/m/Y' );
+        $this->assertTrue( $vm_dt_rev->has_date_range );
+        $this->assertSame( '01/09/2026', $vm_dt_rev->date_start_display );
+        $this->assertSame( '01/05/2026', $vm_dt_rev->date_end_display );
+    }
+
+    public function test_competition_shortcode_presenter_event_header_date_boundaries(): void {
+        $renderer  = $this->createStub( \Racketmanager\Application\Ports\View_Renderer_Interface::class );
+        $presenter = new Competition_Shortcode_Presenter( $renderer, new Club_Presenter(), new Player_Presenter() );
+
+        $build_event = static fn( mixed $start, mixed $end ) => (object) [
+            'name'        => 'Premier Division',
+            'competition' => (object) [
+                'type'           => 'league',
+                'current_season' => [
+                    'name'       => '2026',
+                    'date_start' => $start,
+                    'date_end'   => $end,
+                ],
+            ],
+        ];
+
+        // 1. Integer dates (e.g. timestamp or numeric year)
+        $event_int = $build_event( 20260501, 20260831 );
+        $vm_int    = $presenter->present_event_header( event: $event_int, date_format: 'Y-m-d' );
+        $this->assertTrue( $vm_int->has_date_range );
+        $this->assertSame( '2026-05-01', $vm_int->date_start_display );
+        $this->assertSame( '2026-08-31', $vm_int->date_end_display );
+
+        // 2. DateTime strings (Y-m-d H:i:s fallback)
+        $event_dt_str = $build_event( '2026-05-01 10:00:00', '2026-08-31 18:00:00' );
+        $vm_dt_str    = $presenter->present_event_header( event: $event_dt_str, date_format: 'd/m/Y' );
+        $this->assertTrue( $vm_dt_str->has_date_range );
+        $this->assertSame( '01/05/2026', $vm_dt_str->date_start_display );
+        $this->assertSame( '31/08/2026', $vm_dt_str->date_end_display );
+
+        // 3. Reversed dates
+        $event_rev = $build_event( '2026-09-01', '2026-05-01' );
+        $vm_rev    = $presenter->present_event_header( event: $event_rev, date_format: 'd/m/Y' );
+        $this->assertTrue( $vm_rev->has_date_range );
+        $this->assertSame( '01/09/2026', $vm_rev->date_start_display );
+        $this->assertSame( '01/05/2026', $vm_rev->date_end_display );
+
+        // 4. DateTimeInterface instances
+        $event_dt = $build_event( new \DateTimeImmutable( '2026-05-01' ), new \DateTime( '2026-08-31' ) );
+        $vm_dt    = $presenter->present_event_header( event: $event_dt, date_format: 'd/m/Y' );
+        $this->assertTrue( $vm_dt->has_date_range );
+        $this->assertSame( '01/05/2026', $vm_dt->date_start_display );
+        $this->assertSame( '31/08/2026', $vm_dt->date_end_display );
     }
 }

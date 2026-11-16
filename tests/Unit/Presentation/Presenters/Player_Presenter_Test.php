@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Club\Club_Player;
+use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
@@ -452,5 +453,143 @@ class Player_Presenter_Test extends TestCase {
         );
 
         $this->assertSame( [ 'x' ], $vm->player_competitions['league'] );
+    }
+
+    public function test_present_league_player_links_with_objects_and_enum_competition(): void {
+        $league = (object) [
+            'title'          => 'Premier Division',
+            'current_season' => [ 'name' => '2026' ],
+            'event'          => (object) [
+                'competition' => (object) [
+                    'type' => Competition_Type::LEAGUE,
+                ],
+            ],
+        ];
+
+        $player1 = (object) [
+            'id'        => 101,
+            'firstname' => 'Alice',
+            'surname'   => 'Smith',
+            'team'      => (object) [
+                'title' => 'St Saviours 1',
+            ],
+        ];
+
+        $player2 = (object) [
+            'ID'           => 102,
+            'display_name' => 'Bob Jones',
+            'team'         => (object) [
+                'title' => 'Westcliff 2',
+            ],
+        ];
+
+        $links = $this->presenter->present_league_player_links( $league, [ $player1, $player2 ] );
+
+        $this->assertArrayHasKey( 101, $links );
+        $this->assertArrayHasKey( 102, $links );
+        $this->assertSame( '/league/premier-division/2026/player/alice-smith/', $links[101]['player_link'] );
+        $this->assertSame( '/league/premier-division/2026/team/st-saviours-1/', $links[101]['team_link'] );
+        $this->assertSame( '/league/premier-division/2026/player/bob-jones/', $links[102]['player_link'] );
+        $this->assertSame( '/league/premier-division/2026/team/westcliff-2/', $links[102]['team_link'] );
+    }
+
+    public function test_present_league_player_links_with_getters_and_string_competition(): void {
+        $league = (object) [
+            'title'          => 'Cup Knockout',
+            'current_season' => [ 'name' => '2025-2026' ],
+            'event'          => (object) [
+                'competition' => (object) [
+                    'type' => 'cup',
+                ],
+            ],
+        ];
+
+        $player = new class() {
+            public function get_id(): int {
+                return 201;
+            }
+
+            public function get_fullname(): string {
+                return 'Charlie Brown';
+            }
+
+            public object $team;
+
+            public function __construct() {
+                $this->team = (object) [
+                    'name' => 'Hadleigh Park',
+                ];
+            }
+        };
+
+        $links = $this->presenter->present_league_player_links( $league, [ $player ] );
+
+        $this->assertArrayHasKey( 201, $links );
+        $this->assertSame( '/cup/cup-knockout/2025-2026/player/charlie-brown/', $links[201]['player_link'] );
+        $this->assertSame( '/cup/cup-knockout/2025-2026/team/hadleigh-park/', $links[201]['team_link'] );
+    }
+
+    public function test_present_league_player_links_with_arrays_and_fallback_competition(): void {
+        $league = (object) [
+            'title'          => 'Division 2',
+            'current_season' => [ 'name' => '2026' ],
+            'event'          => (object) [],
+        ];
+
+        $player1 = [
+            'id'       => 301,
+            'fullname' => 'David Miller',
+            'team'     => [
+                'title' => 'Thorpe Bay 1',
+            ],
+        ];
+
+        $player2 = [
+            'id'           => '302',
+            'display_name' => 'Emma Watson',
+            'team'         => [
+                'name' => 'Wickford 3',
+            ],
+        ];
+
+        $links = $this->presenter->present_league_player_links( $league, [ $player1, $player2 ] );
+
+        $this->assertArrayHasKey( 301, $links );
+        $this->assertArrayHasKey( 302, $links );
+        $this->assertSame( '/league/division-2/2026/player/david-miller/', $links[301]['player_link'] );
+        $this->assertSame( '/league/division-2/2026/team/thorpe-bay-1/', $links[301]['team_link'] );
+        $this->assertSame( '/league/division-2/2026/player/emma-watson/', $links[302]['player_link'] );
+        $this->assertSame( '/league/division-2/2026/team/wickford-3/', $links[302]['team_link'] );
+    }
+
+    public function test_present_league_player_links_handles_missing_team_and_empty_names(): void {
+        $league = (object) [];
+
+        $player1 = (object) [];
+        $player2 = [
+            'id'       => 402,
+            'fullname' => 'Frank Castle',
+        ];
+        $player3 = (object) [
+            'id'           => 403,
+            'display_name' => 'Grace Hopper',
+            'team'         => (object) [
+                'title' => '',
+            ],
+        ];
+
+        $links = $this->presenter->present_league_player_links( $league, [ $player1, $player2, $player3 ] );
+
+        $this->assertArrayHasKey( 0, $links );
+        $this->assertSame( '/league///player//', $links[0]['player_link'] );
+        $this->assertSame( '', $links[0]['team_link'] );
+
+        $this->assertArrayHasKey( 402, $links );
+        $this->assertSame( '/league///player/frank-castle/', $links[402]['player_link'] );
+        $this->assertSame( '', $links[402]['team_link'] );
+
+        $this->assertArrayHasKey( 403, $links );
+        $this->assertSame( '/league///player/grace-hopper/', $links[403]['player_link'] );
+        $this->assertSame( '', $links[403]['team_link'] );
     }
 }

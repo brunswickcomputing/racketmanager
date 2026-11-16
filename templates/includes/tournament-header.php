@@ -57,7 +57,7 @@ global $racketmanager;
                                 <span><?php esc_html_e( 'Enter', 'racketmanager' ); ?></span>
                             </a>
                             <?php
-                        } elseif ( ( $tournament->is_closed || $tournament->is_withdrawal ) && is_user_logged_in() ) {
+                        } elseif ( ( $tournament->is_closed || $tournament->is_withdrawal || $tournament->is_started ) && is_user_logged_in() ) {
                             $user_id          = get_current_user_id();
                             $tournament_entry = get_tournament_entry( $tournament->id . '_' . $user_id, 'key' );
                             if ( $tournament_entry && 3 !== (int) $tournament_entry->status ) {

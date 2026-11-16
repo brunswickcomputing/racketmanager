@@ -28,6 +28,8 @@ global $racketmanager;
 $withdrawal_allowed = false;
 $entry_option = false;
 $confirm_allowed = false;
+$alert_msg = [];
+$alert_class = '';
 $entered = ! empty( $player->entry );
 $entry_is_pending = empty( $player->tournament_entry ) || 0 === intval( $player->tournament_entry->status );
 
@@ -44,7 +46,7 @@ if ( get_current_user_id() !== intval( $player->id ) && ! current_user_can( 'man
         if ( $entered ) {
             $confirm_allowed = true;
         }
-    } elseif ( $tournament->is_withdrawal ) {
+    } elseif ( $tournament->is_withdrawal || $tournament->is_started ) {
         $withdrawal_allowed = false;
         if ( $entered ) {
             $confirm_allowed = true;
@@ -61,7 +63,7 @@ if ( $entered ) {
 }
 ?>
 <div class="container">
-    <?php require_once RACKETMANAGER_PATH . 'templates/includes/tournament-header.php'; ?>
+    <?php require RACKETMANAGER_PATH . 'templates/includes/tournament-header.php'; ?>
     <form id="form-entry" action="" method="post">
         <?php wp_nonce_field( 'tournament-entry' ); ?>
         <input type="hidden" name="tournamentId" id="tournamentId" value="<?php echo esc_html( $tournament->id ); ?>" />
@@ -92,7 +94,7 @@ if ( $entered ) {
                     <?php
                     if ( ! $changes_allowed ) {
                         if ( $tournament->is_closed ) {
-                            $alert_class = 'warning';
+                            $alert_class = 'info';
                             $alert_msg[] = __( 'Tournament entries are now closed.', 'racketmanager' );
                             if ( $confirm_allowed && $entry_is_pending ) {
                                 $alert_msg[] = __( 'You can still confirm your entry or withdraw from events.', 'racketmanager' );
@@ -100,8 +102,16 @@ if ( $entered ) {
                                 $alert_msg[] = __( 'You can still withdraw from events.', 'racketmanager' );
                             }
                         } elseif ( $tournament->is_withdrawal ) {
-                            $alert_class = 'warning';
+                            $alert_class = 'info';
                             $alert_msg[] = __( 'Tournament entries and withdrawals are now closed.', 'racketmanager' );
+                            if ( $confirm_allowed && $entry_is_pending ) {
+                                $alert_msg[] = __( 'You can still confirm your entry and pay any outstanding fees.', 'racketmanager' );
+                            } elseif ( $confirm_allowed ) {
+                                $alert_msg[] = __( 'You can still pay any outstanding fees.', 'racketmanager' );
+                            }
+                        } elseif ( $tournament->is_started ) {
+                            $alert_class = 'info';
+                            $alert_msg[] = __( 'Tournament has started. Entries and withdrawals are now closed.', 'racketmanager' );
                             if ( $confirm_allowed && $entry_is_pending ) {
                                 $alert_msg[] = __( 'You can still confirm your entry and pay any outstanding fees.', 'racketmanager' );
                             } elseif ( $confirm_allowed ) {

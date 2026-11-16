@@ -14,6 +14,7 @@
 # Test Suites & Build Artifacts
 /tests/*
 !/tests/test-competition-scheduler.php
+!/tests/test-stripe-checkout.js
 /my-tests
 *phpunit.*
 /bin/*

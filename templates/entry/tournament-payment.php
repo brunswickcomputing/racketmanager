@@ -93,6 +93,11 @@ if ( $payment_required ) {
                 if ( $payment_required ) {
                     ?>
                     <div class="row justify-content-center">
+                        <div class="col-auto">
+                            <button class="btn btn-primary btn-lg" id="checkout-cc-button"><?php esc_html_e( 'Pay by card', 'racketmanager' ); ?></button>
+                        </div>
+                    </div>
+                    <div class="row justify-content-center">
                         <div class="col-md-6">
                             <form id="payment-form" style="display:none;">
                                 <div id="payment-element" class="mb-3">

@@ -48,7 +48,8 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 == Changelog ==
 
 = 9.7.13 =
-BUGFIX: prevent tournament entry changes after closinge
+BUGFIX: prevent tournament entry changes after closing
+BUGFIX: improve tournament payment checkout and withdrawal handling
 
 = 9.7.12 =
 UPDATE: allow tournament entries to be confirmed after withdrawal close

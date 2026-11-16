@@ -427,10 +427,19 @@ class Ajax_Tournament extends Ajax {
                 $return->error  = true;
                 $return->msg    = __( 'Tournament not found', 'racketmanager' );
                 $return->status = 404;
+            } elseif ( get_current_user_id() !== $player_id && ! current_user_can( 'manage_racketmanager' ) ) {
+                $return->error  = true;
+                $return->msg    = __( 'You are not authorized to withdraw this player', 'racketmanager' );
+                $return->status = 403;
+            } elseif ( ! empty( $tournament->is_withdrawal ) || ! empty( $tournament->is_started ) || ! empty( $tournament->is_complete ) ) {
+                $return->error  = true;
+                $return->msg    = __( 'Tournament withdrawals are now closed', 'racketmanager' );
+                $return->status = 403;
             }
         }
         if ( ! empty( $return->error ) ) {
             wp_send_json_error( $return, $return->status );
+            return;
         }
         $refund_amount = $tournament->withdraw_player_entry( $player_id );
         if ( $refund_amount ) {
@@ -439,6 +448,7 @@ class Ajax_Tournament extends Ajax {
             $output = __( 'Tournament withdrawal successful', 'racketmanager' );
         }
         wp_send_json_success( $output );
+        return;
     }
     /**
      * Build screen to show team partner

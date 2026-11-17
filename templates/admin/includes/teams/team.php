@@ -27,11 +27,11 @@ $competition_type = $league && isset( $league->event->competition->type ) ? ( $l
 <div class="container league-block">
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
-            <a href="/wp-admin/admin.php?page=racketmanager"><?php esc_html_e( 'RacketManager', 'racketmanager' ); ?></a>
+            <a href="<?php echo esc_url( manage_url( 'competitions' ) ); ?>"><?php esc_html_e( 'RacketManager', 'racketmanager' ); ?></a>
                 <?php
                 if ( $league ) {
                     ?>
-                    &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition_type ); ?>s&amp;view=league&amp;league_id=<?php echo esc_html( $league->id ); ?>"><?php echo esc_html( $league->name ?? $league->title ); ?></a>
+                    &raquo; <a href="<?php echo esc_url( manage_url( $competition_type . 's', 'league', [ 'league_id' => (string) $league->id ] ) ); ?>"><?php echo esc_html( $league->name ?? $league->title ); ?></a>
                     <?php
                 }
                 ?>
@@ -49,15 +49,12 @@ $competition_type = $league && isset( $league->event->competition->type ) ? ( $l
         <?php
     }
     if ( $league ) {
-        $action_form = 'admin.php?page=racketmanager-' . $competition_type . 's&amp;view=league&amp;league_id=' . $league_id . '&amp;season=' . $season;
+        $action_form = manage_url( $competition_type . 's', 'league', [ 'league_id' => (string) $league_id, 'season' => (string) $season ] );
     } else {
-        $action_form = 'admin.php?page=racketmanager-clubs&amp;view=teams';
-        if ( $club_id ) {
-            $action_form .= '&amp;club_id=' . $club_id;
-        }
+        $action_form = manage_url( 'clubs', 'teams', $club_id ? [ 'club_id' => (string) $club_id ] : [] );
     }
     ?>
-    <form action="<?php echo esc_html( $action_form ); ?>" method="post" enctype="multipart/form-data" name="team_edit" class="form-control">
+    <form action="<?php echo esc_url( $action_form ); ?>" method="post" enctype="multipart/form-data" name="team_edit" class="form-control">
         <?php wp_nonce_field( 'racketmanager_manage-teams', 'racketmanager_nonce' ); ?>
         <div class="form-group">
             <label for="team"><?php esc_html_e( 'Team', 'racketmanager' ); ?></label>

@@ -18,14 +18,14 @@ $club_id = $vm->club_id;
 <div class="container">
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
-            <a href="/wp-admin/admin.php?page=racketmanager-clubs"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $club->shortcode ); ?>  &raquo; <?php esc_html_e( 'Teams', 'racketmanager' ); ?>
+            <a href="<?php echo esc_url( manage_url( 'clubs' ) ); ?>"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $club->shortcode ); ?>  &raquo; <?php esc_html_e( 'Teams', 'racketmanager' ); ?>
         </div>
     </div>
     <h1><?php esc_html_e( 'Teams', 'racketmanager' ); ?> - <?php echo esc_html( $club->name ); ?></h1>
 
     <!-- View Teams -->
     <div class="mb-3">
-        <form id="teams-filter" method="post" action="" class="form-control">
+        <form id="teams-filter" method="post" action="<?php echo esc_url( manage_url( 'clubs', 'teams', [ 'club_id' => (string) $club->id ] ) ); ?>" class="form-control">
             <?php wp_nonce_field( 'racketmanager_teams-bulk', 'racketmanager_nonce' ); ?>
             <div class="row gx-3 mb-3 align-items-center">
                 <!-- Bulk Actions -->
@@ -63,7 +63,7 @@ $club_id = $vm->club_id;
                             </td>
                             <td class="col-1 column-num"><?php echo esc_html( $team->id ); ?></td>
                             <td class="col-3 team-name">
-                                <a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=team&amp;edit=<?php echo esc_html( $team->id ); ?>&amp;club_id=<?php echo esc_html( $team->club_id ); ?>">
+                                <a href="<?php echo esc_url( manage_url( 'clubs', 'team', [ 'edit' => (string) $team->id, 'club_id' => (string) $team->club_id ] ) ); ?>">
                                     <?php echo esc_html( $team->title ); ?>
                                 </a>
                             </td>
@@ -82,7 +82,7 @@ $club_id = $vm->club_id;
     <!-- Add New Team -->
     <div class="mb-3">
         <h3><?php esc_html_e( 'Add Team', 'racketmanager' ); ?></h3>
-        <form action="" method="post" class="form-control">
+        <form action="<?php echo esc_url( manage_url( 'clubs', 'teams', [ 'club_id' => (string) $club->id ] ) ); ?>" method="post" class="form-control">
             <?php wp_nonce_field( 'racketmanager_add-team', 'racketmanager_nonce' ); ?>
             <div class="form-floating mb-3">
                 <select class="form-select" size='1' required="required" name='team_type' id='team_type'>

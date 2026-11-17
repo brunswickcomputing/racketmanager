@@ -39,7 +39,7 @@ $is_invalid_class = defined( 'RACKETMANAGER_IS_INVALID' ) ? RACKETMANAGER_IS_INV
     <div class="">
         <h3><?php esc_html_e( 'Add Competition', 'racketmanager' ); ?></h3>
         <!-- Add New Competition -->
-        <form action="" method="post" class="form-control">
+        <form action="<?php echo esc_url( manage_url( 'competitions' ) ); ?>" method="post" class="form-control">
             <?php wp_nonce_field( 'racketmanager_add-competition', 'racketmanager_nonce' ); ?>
             <div class="row gx-3 mb-3">
                 <div class="col-md-6">

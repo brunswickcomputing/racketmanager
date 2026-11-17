@@ -248,6 +248,36 @@ namespace Racketmanager {
         }
     }
 
+    if ( ! function_exists( 'Racketmanager\manage_url' ) ) {
+        function manage_url( string $section, string $view = '', array $query_args = [] ): string {
+            global $racketmanager;
+            if ( isset( $racketmanager->container ) && $racketmanager->container->has( \Racketmanager\Application\Ports\Manage_Url_Resolver_Interface::class ) ) {
+                return $racketmanager->container->get( \Racketmanager\Application\Ports\Manage_Url_Resolver_Interface::class )->get_url( $section, $view, $query_args );
+            }
+
+            $route_mapper = new \Racketmanager\Infrastructure\Wordpress\Routing\Manage_Route_Mapper();
+            $admin_page   = $route_mapper->section_to_admin_page( $section );
+            $query        = [ 'page' => $admin_page ];
+            if ( '' !== $view ) {
+                $query['view'] = $view;
+            }
+            $query = array_merge( $query, $query_args );
+
+            return admin_url( 'admin.php?' . http_build_query( $query ) );
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\is_manage_portal_context' ) ) {
+        function is_manage_portal_context(): bool {
+            global $racketmanager;
+            if ( isset( $racketmanager->container ) && $racketmanager->container->has( \Racketmanager\Application\Ports\Manage_Url_Resolver_Interface::class ) ) {
+                return $racketmanager->container->get( \Racketmanager\Application\Ports\Manage_Url_Resolver_Interface::class )->is_portal_context();
+            }
+
+            return false;
+        }
+    }
+
     if ( ! class_exists( 'Racketmanager\RacketManager' ) ) {
         eval('
             class RacketManager {

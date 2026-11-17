@@ -248,12 +248,12 @@ class Club_Service implements Club_Service_Interface {
      * Function to set a club role for a user
      *
      * @param int $club_id
-     * @param int $role_id
-     * @param int $user_id
+     * @param int|null $role_id
+     * @param int|null $user_id
      *
      * @return bool|Club_Role
      */
-    public function set_club_role( int $club_id, int $role_id, int $user_id ): bool|Club_Role {
+    public function set_club_role( int $club_id, ?int $role_id, ?int $user_id ): bool|Club_Role {
         $role_details = Util_Lookup::get_club_role( (string) $role_id );
         if ( $role_details ) {
             if ( 1 === $role_details->limit ) {

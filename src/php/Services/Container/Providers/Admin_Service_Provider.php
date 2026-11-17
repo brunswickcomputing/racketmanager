@@ -166,7 +166,7 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             Manage_Url_Resolver_Interface::class,
             fn( Simple_Container $c ): Manage_Url_Resolver_Interface => new Manage_Url_Resolver(
                 $c->get( Manage_Route_Mapper::class ),
-                $c->get( Query_Vars_Interface::class )
+                $c->has( Query_Vars_Interface::class ) ? $c->get( Query_Vars_Interface::class ) : null
             )
         );
         $container->alias( Manage_Url_Resolver::class, Manage_Url_Resolver_Interface::class );
@@ -195,7 +195,7 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
                 $c->get( Manage_Url_Resolver_Interface::class ),
                 $c->get( Portal_Auth_Guard::class ),
                 $c->get( Portal_Screen_Presenter::class ),
-                $c->get( Query_Vars_Interface::class )
+                $c->has( Query_Vars_Interface::class ) ? $c->get( Query_Vars_Interface::class ) : null
             )
         );
 

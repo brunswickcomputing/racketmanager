@@ -55,8 +55,8 @@ final class Portal_Section_Registry {
      */
     private function register_default_sections(): void {
         $defaults = [
-            new Portal_Section_Config( 'competitions', 'racketmanager', Admin_Index::class, 'racket_manager', 'competitions', false, 'Competitions' ),
-            new Portal_Section_Config( 'clubs', 'racketmanager-clubs', Admin_Club::class, 'racket_manager', 'clubs', false, 'Clubs' ),
+            new Portal_Section_Config( 'competitions', 'racketmanager', Admin_Index::class, 'racket_manager', 'competitions', true, 'Competitions' ),
+            new Portal_Section_Config( 'clubs', 'racketmanager-clubs', Admin_Club::class, 'racket_manager', 'clubs', true, 'Clubs' ),
             new Portal_Section_Config( 'leagues', 'racketmanager-leagues', Admin_League::class, 'racket_manager', 'leagues', false, 'Leagues' ),
             new Portal_Section_Config( 'cups', 'racketmanager-cups', Admin_Cup::class, 'racket_manager', 'cups', false, 'Cups' ),
             new Portal_Section_Config( 'tournaments', 'racketmanager-tournaments', Admin_Tournament::class, 'racket_manager', 'tournaments', false, 'Tournaments' ),
@@ -75,7 +75,11 @@ final class Portal_Section_Registry {
     }
 
     /**
-     * Normalize section slug alias.
+     * Normalise a slug for consistent lookup.
+     *
+     * @param string $slug Slug value to normalise.
+     *
+     * @return string Normalised slug value.
      */
     private function normalize_slug( string $slug ): string {
         $slug = strtolower( trim( $slug ) );
@@ -86,28 +90,44 @@ final class Portal_Section_Registry {
     }
 
     /**
-     * Register or replace a section configuration.
-     */
+     * Register a portal section configuration by its normalised slug.
+     *
+     * @param Portal_Section_Config $config Section configuration to register.
+     *
+     * @return void/**
+     * */
     public function register( Portal_Section_Config $config ): void {
         $this->sections[ $this->normalize_slug( $config->slug ) ] = $config;
     }
 
     /**
-     * Retrieve configuration for a section slug.
+     * Return the registered section for the given slug, if it exists.
+     *
+     * @param string $slug Section slug.
+     *
+     * @return Portal_Section_Config|null Matching section configuration, or null when not found.
      */
     public function get( string $slug ): ?Portal_Section_Config {
         return $this->sections[ $this->normalize_slug( $slug ) ] ?? null;
     }
 
     /**
-     * Check whether a section is registered.
+     * Determine whether a section is registered for the given slug.
+     *
+     * @param string $slug Section slug to check.
+     *
+     * @return bool True if the section exists, false otherwise.
      */
     public function has( string $slug ): bool {
         return isset( $this->sections[ $this->normalize_slug( $slug ) ] );
     }
 
     /**
-     * Check whether a section is marked ported to the frontend portal.
+     * Determine whether the configuration for the given slug is marked as ported.
+     *
+     * @param string $slug Configuration slug.
+     *
+     * @return bool True if the configuration exists and is ported, false otherwise.
      */
     public function is_ported( string $slug ): bool {
         $config = $this->get( $slug );
@@ -115,7 +135,12 @@ final class Portal_Section_Registry {
     }
 
     /**
-     * Enable or disable portal rendering for a specific section.
+     * Set whether the specified section has been ported.
+     *
+     * @param string $slug Section slug.
+     * @param bool   $is_ported Whether the section is ported.
+     *
+     * @return void
      */
     public function set_ported( string $slug, bool $is_ported ): void {
         $config = $this->get( $slug );

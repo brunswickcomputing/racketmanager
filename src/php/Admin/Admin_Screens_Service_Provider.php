@@ -13,6 +13,7 @@ namespace Racketmanager\Admin;
 
 use LogicException;
 use Racketmanager\Admin;
+use Racketmanager\Admin\Controllers\Admin_Redirect_Url_Builder;
 use Racketmanager\Admin\Controllers\Championship_Admin_Controller;
 use Racketmanager\Admin\Controllers\Clubs_Admin_Controller;
 use Racketmanager\Admin\Controllers\Club_Admin_Controller;
@@ -64,6 +65,7 @@ use Racketmanager\Admin\Controllers\Tournament_Team_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Tournaments_Admin_Controller;
 use Racketmanager\Admin\Controllers\Upgrade_Admin_Controller;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
+use Racketmanager\Application\Ports\Manage_Url_Resolver_Interface;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
@@ -81,7 +83,6 @@ use Racketmanager\Services\Admin\Season\Season_Action_Dispatcher;
 use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Championship_Manager;
 use Racketmanager\Services\Club_Service;
-use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Season_Service;
@@ -147,6 +148,12 @@ final readonly class Admin_Screens_Service_Provider implements Service_Provider_
      * @return void
      */
     private function register_infrastructure_and_presenters( Simple_Container $container ): void {
+        if ( $container->has( Manage_Url_Resolver_Interface::class ) ) {
+            Admin_Redirect_Url_Builder::set_resolver(
+                $container->get( Manage_Url_Resolver_Interface::class )
+            );
+        }
+
         // Flash message store.
         $container->set( 'admin_flash_message_store', fn(): Flash_Message_Store_Interface => new Admin_Flash_Message_Store() );
         $container->set( Flash_Message_Store_Interface::class, fn( Simple_Container $c ): Flash_Message_Store_Interface => $c->get( 'admin_flash_message_store' ) );

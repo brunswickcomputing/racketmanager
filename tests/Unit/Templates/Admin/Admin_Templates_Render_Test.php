@@ -871,7 +871,7 @@ final class Admin_Templates_Render_Test extends TestCase {
 
         self::assertEmpty( $warnings );
         self::assertStringContainsString( 'value="42"', $html );
-        self::assertStringContainsString( 'href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=club&amp;club_id=42 "', $html );
+        self::assertMatchesRegularExpression( '#page=racketmanager-clubs&(amp;)?view=club&(amp;)?club_id=42#', $html );
         self::assertStringContainsString( 'Leigh LTC', $html );
         self::assertStringContainsString( 'John Doe', $html );
         self::assertStringContainsString( 'Westcliff LTC', $html );

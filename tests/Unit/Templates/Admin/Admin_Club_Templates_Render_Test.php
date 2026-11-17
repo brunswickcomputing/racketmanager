@@ -66,8 +66,8 @@ final class Admin_Club_Templates_Render_Test extends TestCase {
         self::assertStringContainsString( 'Clubs', $html );
         self::assertStringContainsString( 'Leigh LTC', $html );
         self::assertStringContainsString( 'Kent Elms', $html );
-        self::assertStringContainsString( 'page=racketmanager-clubs&amp;view=club&amp;club_id=1', $html );
-        self::assertStringContainsString( 'page=racketmanager-clubs&amp;view=club&amp;club_id=2', $html );
+        self::assertMatchesRegularExpression( '/page=racketmanager-clubs&(amp;)?view=club&(amp;)?club_id=1/', $html );
+        self::assertMatchesRegularExpression( '/page=racketmanager-clubs&(amp;)?view=club&(amp;)?club_id=2/', $html );
         self::assertStringContainsString( 'doClubDel', $html );
     }
 
@@ -183,7 +183,7 @@ final class Admin_Club_Templates_Render_Test extends TestCase {
         self::assertStringContainsString( '12345678', $html );
         self::assertStringContainsString( 'value="101"', $html );
         self::assertStringContainsString( 'clubPlayer[101]', $html );
-        self::assertStringContainsString( 'page=racketmanager-clubs&amp;view=player&amp;club_id=10&amp;player_id=501', $html );
+        self::assertMatchesRegularExpression( '/page=racketmanager-clubs&(amp;)?view=player&(amp;)?club_id=10&(amp;)?player_id=501/', $html );
         self::assertStringContainsString( 'doClubPlayerDel', $html );
         self::assertStringContainsString( 'doPlayerRatings', $html );
     }
@@ -217,7 +217,7 @@ final class Admin_Club_Templates_Render_Test extends TestCase {
         self::assertStringContainsString( 'Court 1', $html );
         self::assertStringContainsString( 'value="201"', $html );
         self::assertStringContainsString( 'team[201]', $html );
-        self::assertStringContainsString( 'page=racketmanager-clubs&amp;view=team&amp;edit=201&amp;club_id=10', $html );
+        self::assertMatchesRegularExpression( '/page=racketmanager-clubs&(amp;)?view=team&(amp;)?edit=201&(amp;)?club_id=10/', $html );
         self::assertStringContainsString( 'doTeamDel', $html );
     }
 

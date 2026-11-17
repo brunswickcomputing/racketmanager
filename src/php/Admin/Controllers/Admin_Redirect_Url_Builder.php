@@ -11,11 +11,79 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Admin\Controllers;
 
+use Racketmanager\Application\Ports\Manage_Url_Resolver_Interface;
+use Racketmanager\Infrastructure\Wordpress\Routing\Manage_Route_Mapper;
+use Racketmanager\Infrastructure\Wordpress\Routing\Manage_Url_Resolver;
+
+/**
+ * Builds redirect URLs for RacketManager admin screens and portal-managed views.
+ *
+ * Provides a shared location for post/redirect/get URL construction, including
+ * tournament setup, draw, fixture, information, and related admin navigation
+ * targets. Uses an injectable manage URL resolver when portal routing is
+ * available, and falls back to WordPress admin URLs for standard admin context.
+ *
+ * @package RacketManager
+ * @subpackage Admin\Controllers
+ */
 final class Admin_Redirect_Url_Builder {
 
+    private static ?Manage_Url_Resolver_Interface $resolver = null;
+
     /**
-     * @param array<string, mixed> $query Typically $_GET
-     * @param array<string, mixed> $post  Typically $_POST
+     * Set the URL resolver instance.
+     *
+     * @param Manage_Url_Resolver_Interface|null $resolver URL resolver instance.
+     *
+     * @return void
+     */
+    public static function set_resolver( ?Manage_Url_Resolver_Interface $resolver ): void {
+        self::$resolver = $resolver;
+    }
+
+    /**
+     * Get the manage URL resolver instance.
+     *
+     * @return Manage_Url_Resolver_Interface
+     */
+    private static function get_resolver(): Manage_Url_Resolver_Interface {
+        if ( null === self::$resolver ) {
+            self::$resolver = new Manage_Url_Resolver( new Manage_Route_Mapper() );
+        }
+
+        return self::$resolver;
+    }
+
+    /**
+     * Resolve the target redirect URL using the URL resolver in portal context, or admin_url() in admin context.
+     *
+     * @param string               $section            Section slug.
+     * @param array<string, mixed> $args               Arguments including view and query parameters.
+     * @param string               $default_admin_page Default admin page slug.
+     *
+     * @return string
+     */
+    private static function resolve_screen_url( string $section, array $args, string $default_admin_page ): string {
+        $resolver = self::get_resolver();
+        if ( $resolver->is_portal_context() ) {
+            $view       = strval( $args['view'] ?? '' );
+            $query_args = $args;
+            unset( $query_args['page'], $query_args['view'] );
+            return $resolver->get_url( $section, $view, $query_args );
+        }
+
+        if ( ! isset( $args['page'] ) || '' === $args['page'] ) {
+            $args['page'] = $default_admin_page;
+        }
+
+        return add_query_arg( $args, admin_url( 'admin.php' ) );
+    }
+
+    /**
+     * Preserve optional context parameters from request data.
+     *
+     * @param array<string, mixed> $query Typically $_GET.
+     * @param array<string, mixed> $post  Typically $_POST.
      *
      * @return array<string, string>
      */
@@ -40,12 +108,12 @@ final class Admin_Redirect_Url_Builder {
     /**
      * Build redirect URL for tournament draw-like views.
      *
-     * @param array<string, mixed> $query Typically $_GET
-     * @param array<string, mixed> $post  Typically $_POST
-     * @param string               $view  'draw'|'setup-event'
-     * @param int|null             $tournament_id
-     * @param int|null             $league_id
-     * @param string               $tab
+     * @param array<string, mixed> $query Typically $_GET.
+     * @param array<string, mixed> $post  Typically $_POST.
+     * @param string               $view  'draw'|'setup-event'.
+     * @param int|null             $tournament_id Tournament ID.
+     * @param int|null             $league_id     League ID.
+     * @param string               $tab           Tab.
      *
      * @return string
      */
@@ -63,7 +131,7 @@ final class Admin_Redirect_Url_Builder {
             'view'       => $view,
             'tournament' => $tournament_id,
             'league'     => $league_id,
-            'tab' => $tab,
+            'tab'        => $tab,
         );
 
         $args = array_merge( $args, self::preserve_optional_context_params( $query, $post ) );
@@ -74,9 +142,9 @@ final class Admin_Redirect_Url_Builder {
     /**
      * Build redirect URL for the tournament setup view (admin.php?page=racketmanager-tournaments&view=setup).
      *
-     * @param array<string, mixed> $query Typically $_GET
-     * @param array<string, mixed> $post  Typically $_POST
-     * @param int|null             $tournament_id
+     * @param array<string, mixed> $query Typically $_GET.
+     * @param array<string, mixed> $post  Typically $_POST.
+     * @param int|null             $tournament_id Tournament ID.
      *
      * @return string
      */
@@ -97,14 +165,14 @@ final class Admin_Redirect_Url_Builder {
     }
 
     /**
-     * Build redirect URL for a tournament match edit view.
+     * Build redirect URL for tournament fixture match view.
      *
-     * @param array<string, mixed> $query
-     * @param array<string, mixed> $post
-     * @param int|null             $tournament_id
-     * @param int|null             $league_id
-     * @param string|null          $final_key
-     * @param int|null             $match_id
+     * @param array<string, mixed> $query query string.
+     * @param array<string, mixed> $post query string.
+     * @param int|null             $tournament_id tournament id.
+     * @param int|null             $league_id league id.
+     * @param string|null          $final_key final key.
+     * @param int|null             $match_id match id.
      *
      * @return string
      */
@@ -126,11 +194,11 @@ final class Admin_Redirect_Url_Builder {
     /**
      * Build redirect URL for a tournament fixtures list view.
      *
-     * @param array<string, mixed> $query
-     * @param array<string, mixed> $post
-     * @param int|null             $tournament_id
-     * @param int|null             $league_id
-     * @param string|null          $final_key
+     * @param array<string, mixed> $query query string.
+     * @param array<string, mixed> $post query string.
+     * @param int|null             $tournament_id tournament id.
+     * @param int|null             $league_id league id.
+     * @param string|null          $final_key final key.
      *
      * @return string
      */
@@ -151,9 +219,9 @@ final class Admin_Redirect_Url_Builder {
     /**
      * Build redirect URL for the tournament information view (admin.php?page=racketmanager-tournaments&view=information).
      *
-     * @param array<string, mixed> $query Typically $_GET
-     * @param array<string, mixed> $post  Typically $_POST
-     * @param int|null             $tournament_id
+     * @param array<string, mixed> $query Typically $_GET.
+     * @param array<string, mixed> $post  Typically $_POST.
+     * @param int|null             $tournament_id tournament id.
      *
      * @return string
      */
@@ -176,10 +244,10 @@ final class Admin_Redirect_Url_Builder {
     /**
      * Build redirect URL for the tournament plan view (admin.php?page=racketmanager-tournaments&view=plan).
      *
-     * @param array<string, mixed> $query Typically $_GET
-     * @param array<string, mixed> $post  Typically $_POST
-     * @param int|null             $tournament_id
-     * @param array<string, mixed> $flags
+     * @param array<string, mixed> $query Typically $_GET.
+     * @param array<string, mixed> $post  Typically $_POST.
+     * @param int|null             $tournament_id tournament id.
+     * @param array<string, mixed> $flags flags.
      *
      * @return string
      */
@@ -206,10 +274,10 @@ final class Admin_Redirect_Url_Builder {
     /**
      * Build redirect URL for tournament modify view.
      *
-     * @param array<string, mixed> $query
-     * @param array<string, mixed> $post
-     * @param int|null             $tournament_id
-     * @param array<string, mixed> $flags
+     * @param array<string, mixed> $query query string.
+     * @param array<string, mixed> $post query string.
+     * @param int|null             $tournament_id tournament id.
+     * @param array<string, mixed> $flags flags.
      *
      * @return string
      */
@@ -231,7 +299,7 @@ final class Admin_Redirect_Url_Builder {
      *
      * Only the identifying query args of the screen are carried over (page, view, league_id, competition_id, season).
      *
-     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $query Typically $_GET.
      * @param array<string, mixed> $extra_args Additional parameters to append or override (e.g. tab).
      *
      * @return string
@@ -253,7 +321,7 @@ final class Admin_Redirect_Url_Builder {
     /**
      * Build redirect URL that returns to the current club screen after a mutation.
      *
-     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $query Typically $_GET.
      * @param array<string, mixed> $extra_args Additional parameters to append or override.
      *
      * @return string
@@ -271,13 +339,13 @@ final class Admin_Redirect_Url_Builder {
 
         $args = array_merge( $args, $extra_args );
 
-        return add_query_arg( $args, admin_url( 'admin.php' ) );
+        return self::resolve_screen_url( 'clubs', $args, 'racketmanager-clubs' );
     }
 
     /**
      * Build redirect URL that returns to the current season screen after a mutation.
      *
-     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $query Typically $_GET.
      * @param array<string, mixed> $extra_args Additional parameters to append or override.
      *
      * @return string
@@ -301,7 +369,7 @@ final class Admin_Redirect_Url_Builder {
     /**
      * Build redirect URL that returns to the current competition screen after a mutation.
      *
-     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $query Typically $_GET.
      * @param array<string, mixed> $extra_args Additional parameters to append or override.
      *
      * @return string
@@ -325,7 +393,7 @@ final class Admin_Redirect_Url_Builder {
     /**
      * Build redirect URL that returns to the current event screen after a mutation.
      *
-     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $query Typically $_GET.
      * @param array<string, mixed> $extra_args Additional parameters to append or override.
      *
      * @return string
@@ -349,7 +417,7 @@ final class Admin_Redirect_Url_Builder {
     /**
      * Build redirect URL that returns to the current finances screen after a mutation.
      *
-     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $query Typically $_GET.
      * @param array<string, mixed> $extra_args Additional parameters to append or override.
      *
      * @return string
@@ -373,7 +441,7 @@ final class Admin_Redirect_Url_Builder {
     /**
      * Build redirect URL that returns to the current players screen after a mutation.
      *
-     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $query Typically $_GET.
      * @param array<string, mixed> $extra_args Additional parameters to append or override.
      *
      * @return string
@@ -397,7 +465,7 @@ final class Admin_Redirect_Url_Builder {
     /**
      * Build redirect URL that returns to the current cup screen after a mutation.
      *
-     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $query Typically $_GET.
      * @param array<string, mixed> $extra_args Additional parameters to append or override.
      *
      * @return string
@@ -421,7 +489,7 @@ final class Admin_Redirect_Url_Builder {
     /**
      * Build redirect URL that returns to the current results screen after a mutation.
      *
-     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $query Typically $_GET.
      * @param array<string, mixed> $extra_args Additional parameters to append or override.
      *
      * @return string
@@ -445,7 +513,7 @@ final class Admin_Redirect_Url_Builder {
     /**
      * Build redirect URL that returns to the current index (competitions) screen after a mutation.
      *
-     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $query Typically $_GET.
      * @param array<string, mixed> $extra_args Additional parameters to append or override.
      *
      * @return string
@@ -463,13 +531,13 @@ final class Admin_Redirect_Url_Builder {
 
         $args = array_merge( $args, $extra_args );
 
-        return add_query_arg( $args, admin_url( 'admin.php' ) );
+        return self::resolve_screen_url( 'competitions', $args, 'racketmanager' );
     }
 
     /**
      * Build redirect URL that returns to the current options screen after a mutation.
      *
-     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $query Typically $_GET.
      * @param array<string, mixed> $extra_args Additional parameters to append or override.
      *
      * @return string
@@ -493,7 +561,7 @@ final class Admin_Redirect_Url_Builder {
     /**
      * Build redirect URL that returns to the current import screen after a mutation.
      *
-     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $query Typically $_GET.
      * @param array<string, mixed> $extra_args Additional parameters to append or override.
      *
      * @return string
@@ -553,15 +621,15 @@ final class Admin_Redirect_Url_Builder {
     /**
      * Build redirect URL for teams list view mutations across contexts.
      *
-     * @param array<string, mixed> $query
-     * @param array<string, mixed> $post
-     * @param Admin_Page_Context   $context
-     * @param int|null             $league_id
-     * @param int|null             $tournament_id
-     * @param int|null             $event_id
-     * @param string|null          $season
-     * @param string|null          $type
-     * @param int|null             $competition_id
+     * @param array<string, mixed> $query Typically $_GET.
+     * @param array<string, mixed> $post Typically $_POST.
+     * @param Admin_Page_Context   $context page context.
+     * @param int|null             $league_id league ID.
+     * @param int|null             $tournament_id tournament ID.
+     * @param int|null             $event_id event ID.
+     * @param string|null          $season season.
+     * @param string|null          $type type.
+     * @param int|null             $competition_id competition ID.
      *
      * @return string
      */
@@ -619,12 +687,12 @@ final class Admin_Redirect_Url_Builder {
     /**
      * Build redirect URL for contact page mutations across contexts.
      *
-     * @param array<string, mixed> $query
-     * @param array<string, mixed> $post
-     * @param Admin_Page_Context   $context
-     * @param int|null             $object_id
-     * @param string|null          $object_name
-     * @param string|null          $season
+     * @param array<string, mixed> $query Typically $_GET.
+     * @param array<string, mixed> $post Typically $_POST.
+     * @param Admin_Page_Context   $context page context.
+     * @param int|null             $object_id object ID.
+     * @param string|null          $object_name object name.
+     * @param string|null          $season season.
      *
      * @return string
      */

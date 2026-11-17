@@ -25,8 +25,10 @@ if ( isset( $vm ) && ( $vm instanceof Index_Page_View_Model || $vm instanceof Co
 ?>
 <div class="container">
     <div class="row justify-content-between mb-3">
-        <form id="competitions-list-filter" method="get" action="" class="form-control">
-            <input type="hidden" name="page" value="<?php echo esc_attr( $page_name ); ?>" />
+        <form id="competitions-list-filter" method="get" action="<?php echo esc_url( manage_url( 'competitions' ) ); ?>" class="form-control">
+            <?php if ( ! is_manage_portal_context() ) : ?>
+                <input type="hidden" name="page" value="<?php echo esc_attr( $page_name ); ?>" />
+            <?php endif; ?>
             <div class="col-auto">
                 <label>
                     <select class="form-select-1" name="age_group" id="age_group">
@@ -46,7 +48,7 @@ if ( isset( $vm ) && ( $vm instanceof Index_Page_View_Model || $vm instanceof Co
     </div>
 </div>
 <div class="form-control" id="competitions">
-    <form id="competitions-filter" method="post" action="">
+    <form id="competitions-filter" method="post" action="<?php echo esc_url( manage_url( 'competitions' ) ); ?>">
         <?php wp_nonce_field( 'racketmanager_competitions-bulk', 'racketmanager_nonce' ); ?>
         <div class="row gx-3 mb-3 align-items-center">
             <!-- Bulk Actions -->
@@ -98,7 +100,7 @@ if ( isset( $vm ) && ( $vm instanceof Index_Page_View_Model || $vm instanceof Co
                             <?php echo esc_html( (string) $comp_id ); ?>
                         </td>
                         <td class="">
-                            <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( (string) $comp_type ); ?>s&amp;view=<?php echo esc_attr( $page_link ); ?>&amp;competition_id=<?php echo esc_html( (string) $comp_id ); ?>">
+                            <a href="<?php echo esc_url( manage_url( (string) $comp_type . 's', $page_link, [ 'competition_id' => (string) $comp_id ] ) ); ?>">
                                 <?php echo esc_html( (string) $comp_name ); ?>
                             </a>
                         </td>

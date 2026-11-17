@@ -20,7 +20,15 @@ $season      = $vm->season;
 $match_days  = $vm->match_days;
 $league_id   = isset( $vm->league->id ) ? $vm->league->id : '';
 $competition_type = $league && isset( $league->event->competition->type ) ? ( $league->event->competition->type instanceof \BackedEnum ? $league->event->competition->type->value : (string) $league->event->competition->type ) : '';
-$action_url = '/wp-admin/admin.php?page=racketmanager-' . $competition_type .'s&amp;view=draw&amp;tournament=' . ( $tournament->id ?? '' ) . '&amp;league=' . ( $league_id ?? '' ) . '&amp;season=' . ( $season ?? '' ) . '/';
+$action_url = manage_url(
+    $competition_type . 's',
+    'draw',
+    array_filter( [
+        'tournament' => $tournament->id ?? '',
+        'league'     => $league_id ?? '',
+        'season'     => $season ?? '',
+    ] )
+);
 $league_type = isset( $league->type ) ? ( $league->type instanceof \BackedEnum ? $league->type->value : (string) $league->type ) : '';
 $team_player = isset( $team->player ) && is_array( $team->player ) ? $team->player : array();
 $team_player_id = isset( $team->player_id ) && is_array( $team->player_id ) ? $team->player_id : array();
@@ -29,8 +37,8 @@ $clubs = is_iterable( $clubs ?? null ) ? $clubs : array();
 <div class="container league-block">
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
-            <a href="/wp-admin/admin.php?page=racketmanager-tournaments"><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a>
-             &raquo; <a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_attr( $tournament->id ?? '' ); ?>&amp;season=<?php echo esc_attr( $tournament->season ?? '' ); ?>"><?php echo esc_html( $tournament->name ?? '' ); ?></a>
+            <a href="<?php echo esc_url( manage_url( 'tournaments' ) ); ?>"><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a>
+             &raquo; <a href="<?php echo esc_url( manage_url( 'tournaments', 'tournament', array_filter( [ 'tournament' => $tournament->id ?? '', 'season' => $tournament->season ?? '' ] ) ) ); ?>"><?php echo esc_html( $tournament->name ?? '' ); ?></a>
              &raquo; <a href="<?php echo esc_url( $action_url ); ?>"><?php echo esc_html( $league->name ?? $league->title ?? '' ); ?></a>
              &raquo; <?php echo esc_html( $form_title ); ?>
         </div>

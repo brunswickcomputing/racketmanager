@@ -20,11 +20,11 @@ $club_id     = $vm->club_id;
 <div class="container league-block">
 	<div class="row justify-content-end">
 		<div class="col-auto racketmanager_breadcrumb">
-			<a href="/wp-admin/admin.php?page=racketmanager-clubs"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $form_title ); ?>
+			<a href="<?php echo esc_url( manage_url( 'clubs' ) ); ?>"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $form_title ); ?>
 		</div>
 	</div>
 	<h1><?php echo esc_html( $form_title ); ?></h1>
-	<form action="" method="post" enctype="multipart/form-data" name="club_edit" class="form-control">
+	<form action="<?php echo esc_url( manage_url( 'clubs', 'club', $club_id ? [ 'club_id' => (string) $club_id ] : [] ) ); ?>" method="post" enctype="multipart/form-data" name="club_edit" class="form-control">
 		<?php
         if ( $edit ) {
            wp_nonce_field( 'racketmanager_manage-club', 'racketmanager_nonce' );

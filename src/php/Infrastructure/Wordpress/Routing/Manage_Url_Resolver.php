@@ -21,9 +21,9 @@ use Racketmanager\Application\Ports\Query_Vars_Interface;
 final readonly class Manage_Url_Resolver implements Manage_Url_Resolver_Interface {
 
     /**
-     * @param Manage_Route_Mapper        $route_mapper         Route mapper for section and page slugs.
-     * @param Query_Vars_Interface|null  $query_vars           WordPress query variable accessor.
-     * @param bool|null                  $force_portal_context Explicit override for portal context (useful in tests).
+     * @param Manage_Route_Mapper       $route_mapper         Route mapper for section and page slugs.
+     * @param Query_Vars_Interface|null $query_vars           WordPress query variable accessor.
+     * @param bool|null                 $force_portal_context Explicit override for portal context (useful in tests).
      */
     public function __construct(
         private Manage_Route_Mapper $route_mapper,
@@ -33,7 +33,13 @@ final readonly class Manage_Url_Resolver implements Manage_Url_Resolver_Interfac
     }
 
     /**
-     * @inheritDoc
+     * Gets the URL for the specified section and view in the current context.
+     *
+     * @param string $section Section identifier to include in the generated URL.
+     * @param string $view Optional view identifier to include in the generated URL.
+     * @param array  $query_args Optional query arguments to append to the generated URL.
+     *
+     * @return string URL for the requested section and view.
      */
     public function get_url( string $section, string $view = '', array $query_args = [] ): string {
         if ( $this->is_portal_context() ) {
@@ -94,26 +100,34 @@ final readonly class Manage_Url_Resolver implements Manage_Url_Resolver_Interfac
     }
 
     /**
-     * @inheritDoc
+     * Determines whether the current request is being handled in the portal context.
+     *
+     * @return bool True when portal context is forced or detected from the current query variables, false otherwise.
      */
     public function is_portal_context(): bool {
         if ( null !== $this->force_portal_context ) {
             return $this->force_portal_context;
         }
 
+        $portal_context = false;
+
         if ( null !== $this->query_vars && ! empty( $this->query_vars->get( 'rm_manage' ) ) ) {
-            return true;
+            $portal_context = true;
         }
 
-        if ( function_exists( 'is_admin' ) && is_admin() ) {
-            return false;
+        if ( function_exists( 'get_query_var' ) && ! empty( get_query_var( 'rm_manage' ) ) ) {
+            $portal_context = true;
         }
 
-        return true;
+        return $portal_context;
     }
 
     /**
-     * Return a new instance configured with an explicit portal context flag.
+     * Creates a new instance with the portal context explicitly set.
+     *
+     * @param bool $is_portal Whether the new instance should operate in portal context.
+     *
+     * @return self New instance configured with the specified portal context.
      */
     public function with_portal_context( bool $is_portal ): self {
         return new self( $this->route_mapper, $this->query_vars, $is_portal );

@@ -366,4 +366,30 @@ final class Template_Tags_Decoupling_Test extends TestCase {
         $this->assertSame( 1, substr_count( $output, 'id="matchComments-home"' ) );
         $this->assertSame( 1, substr_count( $output, 'id="matchComments-away"' ) );
     }
+
+    public function test_manage_url_resolves_portal_or_admin_urls(): void {
+        // Without container: falls back to admin URL via route mapper.
+        $admin_url = \Racketmanager\manage_url( 'clubs', 'club', [ 'club_id' => 12 ] );
+        $this->assertStringContainsString( 'admin.php', $admin_url );
+        $this->assertStringContainsString( 'page=racketmanager-clubs', $admin_url );
+        $this->assertStringContainsString( 'view=club', $admin_url );
+        $this->assertStringContainsString( 'club_id=12', $admin_url );
+
+        // With container and portal resolver.
+        $container = new \Racketmanager\Services\Container\Simple_Container();
+        $resolver  = new \Racketmanager\Infrastructure\Wordpress\Routing\Manage_Url_Resolver(
+            new \Racketmanager\Infrastructure\Wordpress\Routing\Manage_Route_Mapper(),
+            force_portal_context: true
+        );
+        $container->set( \Racketmanager\Application\Ports\Manage_Url_Resolver_Interface::class, fn() => $resolver );
+
+        global $racketmanager;
+        $racketmanager = (object) [ 'container' => $container ];
+
+        $portal_url = \Racketmanager\manage_url( 'clubs', 'club', [ 'club_id' => 12 ] );
+        $this->assertSame( home_url( '/manage/clubs/club?club_id=12' ), $portal_url );
+
+        $portal_comp_url = \Racketmanager\manage_url( 'competitions' );
+        $this->assertSame( home_url( '/manage/competitions' ), $portal_comp_url );
+    }
 }

@@ -1125,3 +1125,47 @@ function withdrawn_team_email( array $args = array() ): string {
         $shortcode .= ']';
         return do_shortcode( $shortcode );
     }
+
+    if ( ! function_exists( 'Racketmanager\manage_url' ) ) {
+        /**
+         * Resolve management URL for administrative and portal sections.
+         *
+         * @param string               $section    Section identifier (e.g. 'clubs', 'competitions').
+         * @param string               $view       Optional subview (e.g. 'club', 'players').
+         * @param array<string, mixed> $query_args Optional query parameters.
+         *
+         * @return string
+         */
+        function manage_url( string $section, string $view = '', array $query_args = array() ): string {
+            global $racketmanager;
+            if ( isset( $racketmanager->container ) && $racketmanager->container->has( \Racketmanager\Application\Ports\Manage_Url_Resolver_Interface::class ) ) {
+                return $racketmanager->container->get( \Racketmanager\Application\Ports\Manage_Url_Resolver_Interface::class )->get_url( $section, $view, $query_args );
+            }
+
+            $route_mapper = new \Racketmanager\Infrastructure\Wordpress\Routing\Manage_Route_Mapper();
+            $admin_page   = $route_mapper->section_to_admin_page( $section );
+            $query        = array( 'page' => $admin_page );
+            if ( '' !== $view ) {
+                $query['view'] = $view;
+            }
+            $query = array_merge( $query, $query_args );
+
+            return admin_url( 'admin.php?' . http_build_query( $query ) );
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\is_manage_portal_context' ) ) {
+        /**
+         * Check whether the current request is executing within the frontend management portal context.
+         *
+         * @return bool
+         */
+        function is_manage_portal_context(): bool {
+            global $racketmanager;
+            if ( isset( $racketmanager->container ) && $racketmanager->container->has( \Racketmanager\Application\Ports\Manage_Url_Resolver_Interface::class ) ) {
+                return $racketmanager->container->get( \Racketmanager\Application\Ports\Manage_Url_Resolver_Interface::class )->is_portal_context();
+            }
+
+            return false;
+        }
+    }

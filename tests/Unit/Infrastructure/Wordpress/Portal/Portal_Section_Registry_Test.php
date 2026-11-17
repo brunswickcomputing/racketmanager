@@ -38,7 +38,11 @@ final class Portal_Section_Registry_Test extends TestCase {
             $config = $this->registry->get( $slug );
             $this->assertNotNull( $config );
             $this->assertSame( $slug, $config->slug );
-            $this->assertFalse( $config->is_ported, "Expected {$slug} to initially be unported" );
+            if ( in_array( $slug, [ 'competitions', 'clubs' ], true ) ) {
+                $this->assertTrue( $config->is_ported, "Expected {$slug} to be ported in Increment 1" );
+            } else {
+                $this->assertFalse( $config->is_ported, "Expected {$slug} to initially be unported" );
+            }
         }
     }
 
@@ -50,19 +54,19 @@ final class Portal_Section_Registry_Test extends TestCase {
     }
 
     public function test_toggles_ported_status(): void {
-        $this->assertFalse( $this->registry->is_ported( 'clubs' ) );
-        $this->assertEmpty( $this->registry->get_ported_sections() );
+        $this->assertFalse( $this->registry->is_ported( 'leagues' ) );
+        $initial_ported = $this->registry->get_ported_sections();
+        $this->assertArrayNotHasKey( 'leagues', $initial_ported );
 
-        $this->registry->set_ported( 'clubs', true );
-        $this->assertTrue( $this->registry->is_ported( 'clubs' ) );
+        $this->registry->set_ported( 'leagues', true );
+        $this->assertTrue( $this->registry->is_ported( 'leagues' ) );
 
         $ported = $this->registry->get_ported_sections();
-        $this->assertCount( 1, $ported );
-        $this->assertArrayHasKey( 'clubs', $ported );
+        $this->assertArrayHasKey( 'leagues', $ported );
 
-        $this->registry->set_ported( 'clubs', false );
-        $this->assertFalse( $this->registry->is_ported( 'clubs' ) );
-        $this->assertEmpty( $this->registry->get_ported_sections() );
+        $this->registry->set_ported( 'leagues', false );
+        $this->assertFalse( $this->registry->is_ported( 'leagues' ) );
+        $this->assertArrayNotHasKey( 'leagues', $this->registry->get_ported_sections() );
     }
 
     public function test_accepts_custom_sections(): void {

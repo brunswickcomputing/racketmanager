@@ -156,7 +156,7 @@ final class Admin_Index_Delivery_Test extends TestCase {
 
 		self::assertStringContainsString( 'Competition already exists', $output );
 		self::assertStringContainsString( 'Existing Junior League', $output );
-		self::assertStringContainsString( '/wp-admin/admin.php?page=racketmanager-leagues&amp;view=seasons&amp;competition_id=17', $output );
+		self::assertMatchesRegularExpression( '#/wp-admin/admin\.php\?page=racketmanager-leagues&(amp;)?view=seasons&(amp;)?competition_id=17#', $output );
 		$this->assert_competition_row( $output, 17, 'Existing Junior League', 'Junior', 'League', 2, 3 );
 		self::assertStringContainsString( 'name="competition_name"', $output );
 		self::assertStringContainsString( 'value="Summer Cup"', $output );
@@ -240,10 +240,10 @@ final class Admin_Index_Delivery_Test extends TestCase {
 
 		self::assertSame( array(), $render_errors, 'Template rendering must not emit PHP notices, warnings, or deprecations.' );
 		$this->assert_competition_row( $output, 101, 'Annual Open Tournament', '', 'Tournament', 1, 5 );
-		self::assertStringContainsString( '/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=config&amp;competition_id=101', $output );
+		self::assertMatchesRegularExpression( '#/wp-admin/admin\.php\?page=racketmanager-tournaments&(amp;)?view=config&(amp;)?competition_id=101#', $output );
 
 		$this->assert_competition_row( $output, 102, 'Legacy Cup Competition', 'Senior', 'Cup', 4, 2 );
-		self::assertStringContainsString( '/wp-admin/admin.php?page=racketmanager-cups&amp;view=seasons&amp;competition_id=102', $output );
+		self::assertMatchesRegularExpression( '#/wp-admin/admin\.php\?page=racketmanager-cups&(amp;)?view=seasons&(amp;)?competition_id=102#', $output );
 	}
 
 	public function test_view_index_denied_shows_alert_and_skips_dispatch_and_rendering(): void {

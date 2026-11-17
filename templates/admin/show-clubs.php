@@ -16,7 +16,7 @@ $clubs = $vm->clubs;
     <h1><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></h1>
 
     <div class="form-control mb-3">
-        <form id="clubs-filter" method="post" action="">
+        <form id="clubs-filter" method="post" action="<?php echo esc_url( manage_url( 'clubs' ) ); ?>">
             <?php wp_nonce_field( 'clubs-bulk', 'racketmanager_nonce' ); ?>
             <div class="row g-3 mb-3 align-items-center">
                 <!-- Bulk Actions -->
@@ -58,11 +58,11 @@ $clubs = $vm->clubs;
                                 <label for="club-<?php echo esc_attr( (string) $club_id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_attr( (string) $club_id ); ?>" name="club[<?php echo esc_attr( (string) $club_id ); ?>]" id="club-<?php echo esc_attr( (string) $club_id ); ?>" />
                             </td>
                             <td class="d-none d-md-table-cell column-num"><?php echo esc_html( (string) $club_id ); ?></td>
-                            <td class="club-name"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=club&amp;club_id=<?php echo esc_attr( (string) $club_id ); ?> "><?php echo esc_html( (string) ( $club->name ?? '' ) ); ?></a></td>
+                            <td class="club-name"><a href="<?php echo esc_url( manage_url( 'clubs', 'club', [ 'club_id' => (string) $club_id ] ) ); ?>"><?php echo esc_html( (string) ( $club->name ?? '' ) ); ?></a></td>
                             <td class="d-none d-md-table-cell"><?php echo isset( $club->match_secretary->display_name ) ? esc_html( (string) $club->match_secretary->display_name ) : null; ?></td>
-                            <td class="col-auto"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=players&amp;club_id=<?php echo esc_attr( (string) $club_id ); ?> " class="btn btn-secondary"><?php esc_html_e( 'Players', 'racketmanager' ); ?></a></td>
-                            <td class="col-auto"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=teams&amp;club_id=<?php echo esc_attr( (string) $club_id ); ?> " class="btn btn-secondary"><?php esc_html_e( 'Teams', 'racketmanager' ); ?></a></td>
-                            <td class="col-auto"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=roles&amp;club_id=<?php echo esc_attr( (string) $club_id ); ?> " class="btn btn-secondary"><?php esc_html_e( 'Roles', 'racketmanager' ); ?></a></td>
+                            <td class="col-auto"><a href="<?php echo esc_url( manage_url( 'clubs', 'players', [ 'club_id' => (string) $club_id ] ) ); ?>" class="btn btn-secondary"><?php esc_html_e( 'Players', 'racketmanager' ); ?></a></td>
+                            <td class="col-auto"><a href="<?php echo esc_url( manage_url( 'clubs', 'teams', [ 'club_id' => (string) $club_id ] ) ); ?>" class="btn btn-secondary"><?php esc_html_e( 'Teams', 'racketmanager' ); ?></a></td>
+                            <td class="col-auto"><a href="<?php echo esc_url( manage_url( 'clubs', 'roles', [ 'club_id' => (string) $club_id ] ) ); ?>" class="btn btn-secondary"><?php esc_html_e( 'Roles', 'racketmanager' ); ?></a></td>
                         </tr>
                         <?php
                     }
@@ -73,6 +73,6 @@ $clubs = $vm->clubs;
     </div>
     <div class="mb-3">
         <!-- Add New Club -->
-        <a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=club" class="btn btn-primary submit"><?php esc_html_e( 'Add Club', 'racketmanager' ); ?></a>
+        <a href="<?php echo esc_url( manage_url( 'clubs', 'club' ) ); ?>" class="btn btn-primary submit"><?php esc_html_e( 'Add Club', 'racketmanager' ); ?></a>
     </div>
 </div>

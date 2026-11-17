@@ -69,7 +69,9 @@ readonly class Portal_Screen_Presenter {
             }
 
             $is_active = ( $config->slug === $active_section );
-            $url       = $this->url_resolver->get_url( $config->slug );
+            $url       = $config->is_ported
+                ? $this->url_resolver->get_url( $config->slug )
+                : ( function_exists( 'admin_url' ) ? admin_url( 'admin.php?page=' . $config->admin_page ) : '/wp-admin/admin.php?page=' . $config->admin_page );
 
             $items[] = new Portal_Navigation_Item(
                 $config->slug,
@@ -121,11 +123,11 @@ readonly class Portal_Screen_Presenter {
      * Present a controller result view model inside the portal shell.
      *
      * @param array{view_model?:object,message?:string,message_type?:bool|string} $result           Controller result.
-     * @param class-string                                                         $view_model_class Expected view model class.
-     * @param string|Closure(object):string                                        $template         Template path or resolver.
-     * @param string                                                               $active_section   Current section slug.
-     * @param string                                                               $title            Optional explicit title.
-     * @param bool                                                                 $strict           Throw exception if view model is missing.
+     * @param class-string                                                        $view_model_class Expected view model class.
+     * @param string|Closure(object):string                                       $template         Template path or resolver.
+     * @param string                                                              $active_section   Current section slug.
+     * @param string                                                              $title            Optional explicit title.
+     * @param bool                                                                $strict           Throw exception if view model is missing.
      *
      * @throws Invalid_Status_Exception When strict and view model is missing or invalid.
      */
@@ -147,7 +149,7 @@ readonly class Portal_Screen_Presenter {
         $vm = $result['view_model'] ?? null;
         if ( ! ( $vm instanceof $view_model_class ) ) {
             if ( $strict ) {
-                throw new Invalid_Status_Exception( __( 'Invalid view model', 'racketmanager' ) );
+                throw new Invalid_Status_Exception( esc_html__( 'Invalid view model', 'racketmanager' ) );
             }
             return;
         }
@@ -160,7 +162,7 @@ readonly class Portal_Screen_Presenter {
     }
 
     /**
-     * Present an unauthorized 403 access denied view inside the portal shell.
+     * Present an unauthorised 403 access denied view inside the portal shell.
      *
      * @param string $active_section Section that was attempted.
      */

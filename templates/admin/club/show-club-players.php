@@ -20,7 +20,7 @@ $club_id = $vm->club_id;
 <div class="container">
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
-            <a href="/wp-admin/admin.php?page=racketmanager-clubs"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $club->shortcode ); ?>  &raquo;  <?php esc_html_e( 'Players', 'racketmanager' ); ?>
+            <a href="<?php echo esc_url( manage_url( 'clubs' ) ); ?>"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $club->shortcode ); ?>  &raquo;  <?php esc_html_e( 'Players', 'racketmanager' ); ?>
         </div>
     </div>
     <h1><?php esc_html_e( 'Players', 'racketmanager' ); ?> - <?php echo esc_html( $club->name ); ?></h1>
@@ -34,9 +34,11 @@ $club_id = $vm->club_id;
 
     <div class="mb-3">
         <h2><?php esc_html_e( 'View Players', 'racketmanager' ); ?></h2>
-        <form id="players-filter" method="get" action="" class="form-control mb-3">
-            <input type="hidden" name="page" value="<?php echo esc_html( 'racketmanager-clubs' ); ?>" />
-            <input type="hidden" name="view" value="<?php echo esc_html( 'players' ); ?>" />
+        <form id="players-filter" method="get" action="<?php echo esc_url( manage_url( 'clubs', 'players' ) ); ?>" class="form-control mb-3">
+            <?php if ( ! is_manage_portal_context() ) : ?>
+                <input type="hidden" name="page" value="<?php echo esc_html( 'racketmanager-clubs' ); ?>" />
+                <input type="hidden" name="view" value="<?php echo esc_html( 'players' ); ?>" />
+            <?php endif; ?>
             <input type="hidden" name="club_id" value="<?php echo esc_html( $club->id ); ?>" />
             <label for="activeFilter" class="visually-hidden"><?php esc_html_e( 'Player type', 'racketmanager' ); ?></label><select class="" name="active" id="activeFilter">
                 <option value="" <?php selected ( '', $active ); ?>><?php esc_html_e( 'All players', 'racketmanager' ); ?></option>
@@ -49,7 +51,7 @@ $club_id = $vm->club_id;
             </select>
             <button class="btn btn-secondary"><?php esc_html_e( 'Filter', 'racketmanager' ); ?></button>
         </form>
-        <form id="players-action" method="post" action="" class="form-control">
+        <form id="players-action" method="post" action="<?php echo esc_url( manage_url( 'clubs', 'players', [ 'club_id' => (string) $club->id ] ) ); ?>" class="form-control">
             <?php wp_nonce_field( 'racketmanager_club-players-bulk', 'racketmanager_nonce' ); ?>
             <div class="row gx-3 mb-3 align-items-center">
                 <!-- Bulk Actions -->
@@ -96,7 +98,7 @@ $club_id = $vm->club_id;
                             <td class="col-4 col-md-2">
                                 <?php
                                 if ( ! isset( $player->removal_date ) ) {
-                                    echo '<a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=player&amp;club_id=' . esc_html( $club->id ) . '&amp;player_id=' . esc_html( $player->user_id ) . '">';
+                                    echo '<a href="' . esc_url( manage_url( 'clubs', 'player', [ 'club_id' => (string) $club->id, 'player_id' => (string) $player->user_id ] ) ) . '">';
                                 }
                                 echo esc_html( $player->display_name );
                                 if ( ! isset( $player->removal_date ) ) {

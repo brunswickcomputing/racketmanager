@@ -35,8 +35,15 @@ if ( isset( $errors ) && $errors instanceof Error_Bag ) {
     }
 }
 $is_invalid = false;
+$player_action_url = '';
+if ( $club_id || isset( $club->id ) ) {
+    $cid = (string) ( $club_id ?? $club->id );
+    $player_action_url = $player_id ? manage_url( 'clubs', 'player', array( 'club_id' => $cid, 'player_id' => (string) $player_id ) ) : manage_url( 'clubs', 'players', array( 'club_id' => $cid ) );
+} elseif ( $player_id ) {
+    $player_action_url = manage_url( 'players', 'player', array( 'player_id' => (string) $player_id ) );
+}
 ?>
-<form action="" method="post">
+<form action="<?php echo esc_url( $player_action_url ); ?>" method="post">
     <?php wp_nonce_field( 'racketmanager_manage-player', 'racketmanager_nonce' ); ?>
     <fieldset class="border rounded-3 p-3 mb-4">
         <legend class="float-none w-auto px-2 fs-5 fw-semibold"><?php esc_html_e( 'Personal details', 'racketmanager' ); ?></legend>

@@ -19,14 +19,14 @@ $club_id      = $vm->club_id;
 <div class="container">
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
-            <a href="/wp-admin/admin.php?page=racketmanager-clubs"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $club->shortcode ); ?>  &raquo; <?php esc_html_e( 'Roles', 'racketmanager' ); ?>
+            <a href="<?php echo esc_url( manage_url( 'clubs' ) ); ?>"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $club->shortcode ); ?>  &raquo; <?php esc_html_e( 'Roles', 'racketmanager' ); ?>
         </div>
     </div>
     <h1><?php esc_html_e( 'Roles', 'racketmanager' ); ?> - <?php echo esc_html( $club->name ); ?></h1>
 
     <!-- View Roles -->
     <div class="mb-3">
-        <form id="roles-filter" method="post" action="" class="form-control">
+        <form id="roles-filter" method="post" action="<?php echo esc_url( manage_url( 'clubs', 'roles', [ 'club_id' => (string) $club->id ] ) ); ?>" class="form-control">
             <?php wp_nonce_field( 'racketmanager_roles-bulk', 'racketmanager_nonce' ); ?>
             <div class="row gx-3 mb-3 align-items-center">
                 <!-- Bulk Actions -->
@@ -79,7 +79,7 @@ $club_id      = $vm->club_id;
     <!-- Add New Role -->
     <div class="mb-3">
         <h3><?php esc_html_e( 'Add Role', 'racketmanager' ); ?></h3>
-        <form action="" method="post" class="form-control">
+        <form action="<?php echo esc_url( manage_url( 'clubs', 'roles', [ 'club_id' => (string) $club->id ] ) ); ?>" method="post" class="form-control">
             <?php wp_nonce_field( 'racketmanager_add-club-role', 'racketmanager_nonce' ); ?>
             <div class="row">
                 <div class="col-md-6">

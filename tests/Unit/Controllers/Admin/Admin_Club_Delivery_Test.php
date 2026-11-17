@@ -293,8 +293,8 @@ final class Admin_Club_Delivery_Test extends TestCase {
         $this->assertSame( array(), $warnings );
         $this->assertStringContainsString( 'Leigh LTC', $output );
         $this->assertStringContainsString( 'Kent Elms', $output );
-        $this->assertStringContainsString( 'page=racketmanager-clubs&amp;view=club&amp;club_id=1', $output );
-        $this->assertStringContainsString( 'page=racketmanager-clubs&amp;view=club&amp;club_id=2', $output );
+        $this->assertMatchesRegularExpression( '/page=racketmanager-clubs&(amp;)?view=club&(amp;)?club_id=1/', $output );
+        $this->assertMatchesRegularExpression( '/page=racketmanager-clubs&(amp;)?view=club&(amp;)?club_id=2/', $output );
     }
 
     public function test_display_team_page_renders_with_normalized_template_path(): void {

@@ -263,17 +263,19 @@ class Rest_Resources_Test extends TestCase {
 
         $league = League_Test_Factory::from_object( (object) array( 'id' => 3, 'title' => 'Division 1' ) );
         $match = new Fixture();
-        $match->id = 31;
-        $match->league_id = 3;
-        $match->league = (object) array( 'title' => 'Division 1' );
-        $match->teams = array(
-            'home' => (object) array( 'title' => 'Team A' ),
-            'away' => (object) array( 'title' => 'Team B' ),
+        $match->set_id( 31 );
+        $match->set_league_id( 3 );
+        $match->set_league( (object) array( 'title' => 'Division 1' ) );
+        $match->set_teams(
+            array(
+                'home' => (object) array( 'title' => 'Team A' ),
+                'away' => (object) array( 'title' => 'Team B' ),
+            )
         );
-        $match->date = '2026-05-10 14:00:00';
-        $match->start_time = '14:00';
-        $match->winner_id = 1;
-        $match->status = null;
+        $match->set_date( '2026-05-10 14:00:00' );
+        $match->set_start_time( '14:00' );
+        $match->set_winner_id( 1 );
+        $match->set_status( null );
 
         $league_repository = $this->createMock( League_Repository_Interface::class );
         $league_repository->expects( self::once() )
@@ -356,17 +358,17 @@ class Rest_Resources_Test extends TestCase {
         $container = $this->plugin->container;
         $container->set( 'team_repository', fn() => $team_repo );
 
-        $fixture              = new Fixture();
-        $fixture->id          = 42;
-        $fixture->league_id   = 3;
-        $fixture->home_team   = '5';
-        $fixture->away_team   = '6';
-        $fixture->winner_id   = 5;
-        $fixture->home_points = '6';
-        $fixture->away_points = '3';
-        $fixture->status      = 0;
-        $fixture->date        = '2026-05-01 19:30:00';
-        $fixture->start_time  = '19:30';
+        $fixture = new Fixture();
+        $fixture->set_id( 42 );
+        $fixture->set_league_id( 3 );
+        $fixture->set_home_team( '5' );
+        $fixture->set_away_team( '6' );
+        $fixture->set_winner_id( 5 );
+        $fixture->set_home_points( '6' );
+        $fixture->set_away_points( '3' );
+        $fixture->set_status( 0 );
+        $fixture->set_date( '2026-05-01 19:30:00' );
+        $fixture->set_start_time( '19:30' );
 
         $this->configure_league_match_fixtures( [ $fixture ], $league_repo );
         $GLOBALS['wp_stubs_leagues']['premier division'] = $league;
@@ -435,29 +437,29 @@ class Rest_Resources_Test extends TestCase {
         $container = $this->plugin->container;
         $container->set( 'team_repository', fn() => $team_repo );
 
-        $fixture1            = new Fixture();
-        $fixture1->id        = 1;
-        $fixture1->league_id = 3;
-        $fixture1->home_team = '5';
-        $fixture1->away_team = '6';
+        $fixture1 = new Fixture();
+        $fixture1->set_id( 1 );
+        $fixture1->set_league_id( 3 );
+        $fixture1->set_home_team( '5' );
+        $fixture1->set_away_team( '6' );
 
-        $fixture2            = new Fixture();
-        $fixture2->id        = 2;
-        $fixture2->league_id = 3;
-        $fixture2->home_team = '999';
-        $fixture2->away_team = '6';
+        $fixture2 = new Fixture();
+        $fixture2->set_id( 2 );
+        $fixture2->set_league_id( 3 );
+        $fixture2->set_home_team( '999' );
+        $fixture2->set_away_team( '6' );
 
-        $fixture3            = new Fixture();
-        $fixture3->id        = 3;
-        $fixture3->league_id = 3;
-        $fixture3->home_team = '888';
-        $fixture3->away_team = '5';
+        $fixture3 = new Fixture();
+        $fixture3->set_id( 3 );
+        $fixture3->set_league_id( 3 );
+        $fixture3->set_home_team( '888' );
+        $fixture3->set_away_team( '5' );
 
-        $fixture4            = new Fixture();
-        $fixture4->id        = 4;
-        $fixture4->league_id = 3;
-        $fixture4->home_team = '777';
-        $fixture4->away_team = 'Winner of Semi 1';
+        $fixture4 = new Fixture();
+        $fixture4->set_id( 4 );
+        $fixture4->set_league_id( 3 );
+        $fixture4->set_home_team( '777' );
+        $fixture4->set_away_team( 'Winner of Semi 1' );
 
         $this->configure_league_match_fixtures( [ $fixture1, $fixture2, $fixture3, $fixture4 ], $league_repo );
         $GLOBALS['wp_stubs_leagues']['division 1'] = $league;
@@ -521,10 +523,10 @@ class Rest_Resources_Test extends TestCase {
         $fixtures = array();
         for ( $i = 1; $i <= 5; $i++ ) {
             $f = new Fixture();
-            $f->id = $i;
-            $f->league_id = 100;
-            $f->home_team = '10';
-            $f->away_team = '20';
+            $f->set_id( $i );
+            $f->set_league_id( 100 );
+            $f->set_home_team( '10' );
+            $f->set_away_team( '20' );
             $fixtures[] = $f;
         }
 
@@ -565,11 +567,11 @@ class Rest_Resources_Test extends TestCase {
 
         // Second call: update team name and set fixture with team 30 to verify per-call cache reset
         $teams_data[10]    = 'Park Tennis Club Renamed';
-        $f_new             = new Fixture();
-        $f_new->id         = 6;
-        $f_new->league_id  = 100;
-        $f_new->home_team  = '10';
-        $f_new->away_team  = '30';
+        $f_new = new Fixture();
+        $f_new->set_id( 6 );
+        $f_new->set_league_id( 100 );
+        $f_new->set_home_team( '10' );
+        $f_new->set_away_team( '30' );
         $matches_to_return = array( $f_new );
 
         $response2 = $this->rest_resources->get_matches( $request );

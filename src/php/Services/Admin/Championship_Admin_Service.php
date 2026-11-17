@@ -437,14 +437,31 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
             }
         }
 
-        $fixture->league_id = $league->id;
-        $fixture->match_day = $this->match_day_from_post( $post, $i, null );
+        $league_id = $league->id;
+        $match_day = $this->match_day_from_post( $post, $i, null );
+        $host      = isset( $post['host'][ $i ] ) ? sanitize_text_field( wp_unslash( strval( $post['host'][ $i ] ) ) ) : null;
+        $home_team = isset( $post['home_team'][ $i ] ) ? sanitize_text_field( wp_unslash( strval( $post['home_team'][ $i ] ) ) ) : '';
+        $away_team = isset( $post['away_team'][ $i ] ) ? sanitize_text_field( wp_unslash( strval( $post['away_team'][ $i ] ) ) ) : '';
+        $location  = isset( $post['location'][ $i ] ) ? sanitize_text_field( wp_unslash( strval( $post['location'][ $i ] ) ) ) : null;
+        $final     = isset( $post['final'] ) ? sanitize_text_field( wp_unslash( strval( $post['final'] ) ) ) : null;
 
-        $fixture->host        = isset( $post['host'][ $i ] ) ? sanitize_text_field( wp_unslash( strval( $post['host'][ $i ] ) ) ) : null;
-        $fixture->home_team   = isset( $post['home_team'][ $i ] ) ? sanitize_text_field( wp_unslash( strval( $post['home_team'][ $i ] ) ) ) : '';
-        $fixture->away_team   = isset( $post['away_team'][ $i ] ) ? sanitize_text_field( wp_unslash( strval( $post['away_team'][ $i ] ) ) ) : '';
-        $fixture->location    = isset( $post['location'][ $i ] ) ? sanitize_text_field( wp_unslash( strval( $post['location'][ $i ] ) ) ) : null;
-        $fixture->final       = isset( $post['final'] ) ? sanitize_text_field( wp_unslash( strval( $post['final'] ) ) ) : null;
+        if ( $fixture instanceof Fixture ) {
+            $fixture->set_league_id( $league_id );
+            $fixture->set_match_day( $match_day );
+            $fixture->set_host( $host );
+            $fixture->set_home_team( $home_team );
+            $fixture->set_away_team( $away_team );
+            $fixture->set_location( $location );
+            $fixture->set_final( $final );
+        } else {
+            $fixture->league_id = $league_id;
+            $fixture->match_day = $match_day;
+            $fixture->host      = $host;
+            $fixture->home_team = $home_team;
+            $fixture->away_team = $away_team;
+            $fixture->location  = $location;
+            $fixture->final     = $final;
+        }
     }
 
     public function start_finals( Draw_Action_Request_DTO $dto ): Action_Result_DTO {
@@ -539,15 +556,26 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         }
 
         if ( null !== $resolved_team_id && - 1 !== $resolved_team_id ) {
-            if ( ! is_array( $fixture->teams ) ) {
-                $fixture->teams = array();
-            }
+            $teams     = is_array( $fixture->teams ) ? $fixture->teams : array();
+            $team_dtls = $this->league_query_service->get_team_dtls( $league, $resolved_team_id );
             if ( 'home' === $side ) {
-                $fixture->home_team     = (string) $resolved_team_id;
-                $fixture->teams['home'] = $this->league_query_service->get_team_dtls( $league, $resolved_team_id );
+                $teams['home'] = $team_dtls;
+                if ( $fixture instanceof Fixture ) {
+                    $fixture->set_home_team( (string) $resolved_team_id );
+                    $fixture->set_teams( $teams );
+                } else {
+                    $fixture->home_team = (string) $resolved_team_id;
+                    $fixture->teams     = $teams;
+                }
             } else {
-                $fixture->away_team     = (string) $resolved_team_id;
-                $fixture->teams['away'] = $this->league_query_service->get_team_dtls( $league, $resolved_team_id );
+                $teams['away'] = $team_dtls;
+                if ( $fixture instanceof Fixture ) {
+                    $fixture->set_away_team( (string) $resolved_team_id );
+                    $fixture->set_teams( $teams );
+                } else {
+                    $fixture->away_team = (string) $resolved_team_id;
+                    $fixture->teams     = $teams;
+                }
             }
         }
 

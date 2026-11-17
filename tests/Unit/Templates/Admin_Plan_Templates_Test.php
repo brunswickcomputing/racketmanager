@@ -946,9 +946,9 @@ class Admin_Plan_Templates_Test extends TestCase {
     private function make_fixture( int $id, string $home_team, string $away_team, ?string $home_club = null, ?string $away_club = null ): Fixture {
         $fixture            = new Fixture();
         $fixture->set_id( $id );
-        $fixture->home_team = $home_team;
-        $fixture->away_team = $away_team;
-        $fixture->season    = '2026';
+        $fixture->set_home_team( $home_team );
+        $fixture->set_away_team( $away_team );
+        $fixture->set_season( '2026' );
         // Production shape: Competition::get_matches() leaves teams unloaded; the presenter loads them.
         if ( is_numeric( $home_team ) ) {
             $this->team_clubs[ (int) $home_team ] = $home_club;
@@ -956,7 +956,7 @@ class Admin_Plan_Templates_Test extends TestCase {
         if ( is_numeric( $away_team ) ) {
             $this->team_clubs[ (int) $away_team ] = $away_club;
         }
-        $fixture->league    = (object) [ 'title' => 'Mens Open' ];
+        $fixture->set_league( (object) [ 'title' => 'Mens Open' ] );
 
         return $fixture;
     }
@@ -974,8 +974,8 @@ class Admin_Plan_Templates_Test extends TestCase {
     ): Fixture_Details_DTO {
         $fixture = new Fixture();
         $fixture->set_id( $id );
-        $fixture->home_team = $home_team;
-        $fixture->away_team = $away_team;
+        $fixture->set_home_team( $home_team );
+        $fixture->set_away_team( $away_team );
 
         $league        = $this->createStub( League::class );
         $league->title = 'Mens Open';

@@ -195,8 +195,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
 
     public function test_championship_draw_attaches_rubbers_to_plain_fixture(): void {
         $fixture = \Racketmanager\Domain\Fixture\Fixture_Factory::from_array( [ 'id' => 78, 'league_id' => 4, 'home_team' => '10', 'away_team' => '20' ] );
-        $rubber = ( new \ReflectionClass( \Racketmanager\Domain\Fixture\Rubber::class ) )->newInstanceWithoutConstructor();
-        $rubber->id = 91;
+        $rubber = \Racketmanager\Domain\Fixture\Rubber_Factory::from_object( (object) [ 'id' => 91 ] );
 
         $championship = $this->createStub( \Racketmanager\Domain\Tournament\Championship::class );
         $championship->method( '__get' )->willReturnMap( [
@@ -402,12 +401,14 @@ class League_Shortcode_Handlers_Test extends TestCase {
             public function set_template( string $type, string $template ): void {}
             public function set_group( string $group = '', bool $force_overwrite = false ): void {}
         };
-        $fixture         = Fixture_Test_Factory::create( id: 901, league_id: 1, home_team: 7, away_team: 8 );
-        $fixture->teams  = [
-            'home' => (object) [ 'id' => 7, 'title' => 'Westcliff 1', 'club' => (object) [ 'id' => 11 ] ],
-            'away' => (object) [ 'id' => 8, 'title' => 'Leigh 1', 'club' => (object) [ 'id' => 12 ] ],
-        ];
-        $fixture->league = (object) [ 'id' => 1, 'title' => 'Test League' ];
+        $fixture = Fixture_Test_Factory::create( id: 901, league_id: 1, home_team: 7, away_team: 8 );
+        $fixture->set_teams(
+            [
+                'home' => (object) [ 'id' => 7, 'title' => 'Westcliff 1', 'club' => (object) [ 'id' => 11 ] ],
+                'away' => (object) [ 'id' => 8, 'title' => 'Leigh 1', 'club' => (object) [ 'id' => 12 ] ],
+            ]
+        );
+        $fixture->set_league( (object) [ 'id' => 1, 'title' => 'Test League' ] );
         $stub_fixtures->exchangeArray( [ $fixture ] );
         $league_service->method( 'get_league' )->willReturn( $league_obj );
 
@@ -754,32 +755,33 @@ class League_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_last_5_handler_renders_unloaded_fixtures_with_team_names_and_no_warnings(): void {
-        $completed              = new Fixture();
-        $completed->id          = 101;
-        $completed->home_team   = '10';
-        $completed->away_team   = '20';
-        $completed->date        = '2026-10-06';
-        $completed->home_points = '6';
-        $completed->away_points = '0';
-        $completed->winner_id   = 10;
-        $completed->loser_id    = 20;
+        $completed = new Fixture();
+        $completed->set_id( 101 );
+        $completed->set_home_team( '10' );
+        $completed->set_away_team( '20' );
+        $completed->set_date( '2026-10-06' );
+        $completed->set_home_points( '6' );
+        $completed->set_away_points( '0' );
+        $completed->set_winner_id( 10 );
+        $completed->set_loser_id( 20 );
 
-        $titled                = new Fixture();
-        $titled->id            = 102;
-        $titled->home_team     = '20';
-        $titled->away_team     = '10';
-        $titled->date          = '2026-10-11';
-        $titled->home_points   = '3';
-        $titled->away_points   = '3';
-        $titled->fixture_title = 'Division final';
-        $titled->winner_id     = -1;
-        $titled->loser_id      = -1;
+        $titled = Fixture_Test_Factory::create(
+            id: 102,
+            home_team: '20',
+            away_team: '10',
+            date: '2026-10-11',
+            fixture_title: 'Division final',
+            winner_id: -1,
+            loser_id: -1,
+            home_points: '3',
+            away_points: '3'
+        );
 
-        $pending            = new Fixture();
-        $pending->id        = 103;
-        $pending->home_team = '10';
-        $pending->away_team = '20';
-        $pending->date      = '2026-10-20';
+        $pending = new Fixture();
+        $pending->set_id( 103 );
+        $pending->set_home_team( '10' );
+        $pending->set_away_team( '20' );
+        $pending->set_date( '2026-10-20' );
 
         $league = new class( [ $completed, $titled, $pending ] ) extends League {
             public function fixtures(): array { return $this->fixtures; }
@@ -846,31 +848,31 @@ class League_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_last_5_handler_caches_team_titles_per_league_and_season_and_handles_byes_and_unknowns(): void {
-        $f_normal            = new Fixture();
-        $f_normal->id        = 201;
-        $f_normal->home_team = '10';
-        $f_normal->away_team = '20';
-        $f_normal->date      = '2026-10-06';
-        $f_normal->home_points = '4';
-        $f_normal->away_points = '2';
-        $f_normal->winner_id = 10;
-        $f_normal->loser_id  = 20;
+        $f_normal = new Fixture();
+        $f_normal->set_id( 201 );
+        $f_normal->set_home_team( '10' );
+        $f_normal->set_away_team( '20' );
+        $f_normal->set_date( '2026-10-06' );
+        $f_normal->set_home_points( '4' );
+        $f_normal->set_away_points( '2' );
+        $f_normal->set_winner_id( 10 );
+        $f_normal->set_loser_id( 20 );
 
-        $f_bye            = new Fixture();
-        $f_bye->id        = 202;
-        $f_bye->home_team = '10';
-        $f_bye->away_team = '-1';
-        $f_bye->date      = '2026-10-13';
-        $f_bye->home_points = '6';
-        $f_bye->away_points = '0';
-        $f_bye->winner_id = 10;
-        $f_bye->loser_id  = -1;
+        $f_bye = new Fixture();
+        $f_bye->set_id( 202 );
+        $f_bye->set_home_team( '10' );
+        $f_bye->set_away_team( '-1' );
+        $f_bye->set_date( '2026-10-13' );
+        $f_bye->set_home_points( '6' );
+        $f_bye->set_away_points( '0' );
+        $f_bye->set_winner_id( 10 );
+        $f_bye->set_loser_id( -1 );
 
-        $f_unknown            = new Fixture();
-        $f_unknown->id        = 203;
-        $f_unknown->home_team = '999';
-        $f_unknown->away_team = '10';
-        $f_unknown->date      = '2026-10-20';
+        $f_unknown = new Fixture();
+        $f_unknown->set_id( 203 );
+        $f_unknown->set_home_team( '999' );
+        $f_unknown->set_away_team( '10' );
+        $f_unknown->set_date( '2026-10-20' );
 
         $league = new class( [ $f_normal, $f_bye, $f_unknown ] ) extends League {
             public function fixtures(): array { return $this->fixtures; }

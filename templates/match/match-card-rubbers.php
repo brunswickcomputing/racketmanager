@@ -54,10 +54,10 @@ $points_span = 2 + intval( $dto->league->num_sets );
                     <tbody class="" id="the-list-rubbers-<?php echo esc_html( $match->get_id() ); ?>" >
 
                         <?php
-                        $match->rubbers = $match->get_rubbers();
-                        $r              = 0;
+                        $rubbers = $match->get_rubbers() ?? array();
+                        $r       = 0;
 
-                        foreach ( $match->rubbers as $rubber ) {
+                        foreach ( $rubbers as $rubber ) {
                             ?>
                             <tr class="rtr">
                                 <td rowspan="3" class="rtd centered">

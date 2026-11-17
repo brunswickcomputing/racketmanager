@@ -283,7 +283,11 @@ class Shortcodes {
             if ( ! $match_league && ! empty( $match->league_id ) ) {
                 $match_league = isset( $this->competition_service ) ? $this->competition_service->get_league_repository()->find_by_id( (int) $match->league_id ) : $this->league_repository?->find_by_id( (int) $match->league_id );
                 if ( $match_league ) {
-                    $match->league = $match_league;
+                    if ( $match instanceof Fixture ) {
+                        $match->set_league( $match_league );
+                    } else {
+                        $match->league = $match_league;
+                    }
                 }
             }
             if ( is_object( $match_league ) ) {
@@ -482,7 +486,11 @@ class Shortcodes {
             if ( ! $match_league && ! empty( $match->league_id ) ) {
                 $match_league = isset( $this->competition_service ) ? $this->competition_service->get_league_repository()->find_by_id( (int) $match->league_id ) : $this->league_repository?->find_by_id( (int) $match->league_id );
                 if ( $match_league ) {
-                    $match->league = $match_league;
+                    if ( $match instanceof Fixture ) {
+                        $match->set_league( $match_league );
+                    } else {
+                        $match->league = $match_league;
+                    }
                 }
             }
             if ( is_object( $match_league ) ) {

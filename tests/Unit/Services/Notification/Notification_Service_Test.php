@@ -773,8 +773,7 @@ class Notification_Service_Test extends TestCase {
         $checker->description = 'Penalty for late result';
         $checker->league_id   = 456;
 
-        $fixture = $this->create_test_fixture( [ 'match_title' => 'Home v Away', 'home_team' => '100' ] );
-        $fixture->fixture_title = 'Home v Away';
+        $fixture = $this->create_test_fixture( [ 'fixture_title' => 'Home v Away', 'home_team' => '100' ] );
 
         $league = $this->create_mock_league();
         $this->league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 456 )->willReturn( $league );
@@ -830,13 +829,12 @@ class Notification_Service_Test extends TestCase {
         $checker->league_id   = 456;
 
         $fixture = $this->create_test_fixture( [
-            'match_title'  => 'Home v Away',
+            'fixture_title' => 'Home v Away',
             'home_captain' => 5,
             'home_team'    => null,
             'away_team'    => null,
             'season'       => null,
         ] );
-        $fixture->fixture_title = 'Home v Away';
 
         $league = $this->create_mock_league();
         $this->league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 456 )->willReturn( $league );

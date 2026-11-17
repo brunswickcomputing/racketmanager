@@ -89,12 +89,12 @@ final class Cup_Match_Admin_Controller_Test extends TestCase {
         $league->championship    = $champ_obj;
 
         $match = new Fixture();
-        $match->id = 50;
-        $match->league_id = 10;
-        $match->match_day = 2;
-        $match->final_round = 'final';
-        $match->home_team = '101';
-        $match->away_team = '102';
+        $match->set_id( 50 );
+        $match->set_league_id( 10 );
+        $match->set_match_day( 2 );
+        $match->set_final_round( 'final' );
+        $match->set_home_team( '101' );
+        $match->set_away_team( '102' );
 
         $competition_service = $this->createMock( Competition_Service::class );
         $competition_service->expects( self::once() )->method( 'get_competition' )->with( 1 )->willReturn( $competition );

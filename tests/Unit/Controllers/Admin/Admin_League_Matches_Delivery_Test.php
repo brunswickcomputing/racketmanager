@@ -57,13 +57,13 @@ final class Admin_League_Matches_Delivery_Test extends TestCase {
         $fixture_league     = $this->createStub( League::class );
         $fixture_league->id = 4;
 
-        $raw            = new Fixture();
-        $raw->id        = 77;
-        $raw->league_id = 4;
-        $raw->final     = 'final';
-        $raw->season    = '2026';
-        $raw->date      = '2026-05-09 11:00:00';
-        $raw->location  = 'Club Court';
+        $raw = new Fixture();
+        $raw->set_id( 77 );
+        $raw->set_league_id( 4 );
+        $raw->set_final( 'final' );
+        $raw->set_season( '2026' );
+        $raw->set_date( '2026-05-09 11:00:00' );
+        $raw->set_location( 'Club Court' );
 
         $home = $this->createStub( Team::class );
         $home->method( 'get_name' )->willReturn( 'Cup Home' );
@@ -126,8 +126,8 @@ final class Admin_League_Matches_Delivery_Test extends TestCase {
     }
 
     public function test_present_league_finals_skips_fixtures_that_cannot_be_hydrated(): void {
-        $raw     = new Fixture();
-        $raw->id = 78;
+        $raw = new Fixture();
+        $raw->set_id( 78 );
 
         $detail_service = $this->createStub( Fixture_Detail_Service::class );
         $detail_service->method( 'get_fixture_with_details' )->willThrowException( new \Racketmanager\Exceptions\Fixture_Not_Found_Exception( 'missing' ) );

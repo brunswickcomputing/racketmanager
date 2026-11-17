@@ -984,7 +984,7 @@ class League_Query_Service implements League_Query_Service_Interface {
                         $match = $fixture_repository->find_by_id( (int) $match->id );
                         $class = ( 'alternate' === $class ) ? '' : 'alternate';
                         if ( $match ) {
-                            $match->class = $class;
+                            $match->set_class( $class );
                         }
                         if ( $player && $match ) {
                             $rubber_repository = $this->optional_rubber_repository();

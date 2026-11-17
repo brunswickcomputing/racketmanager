@@ -80,14 +80,49 @@ class Result_Service_Test extends TestCase {
         $result  = $this->createMock(Result::class);
 
         $fixture->expects($this->once())
-                ->method('set_result')
+                ->method('record_result')
                 ->with($result);
+
+        $fixture->expects( $this->once() )
+                ->method( 'confirm_result' );
 
         $this->fixture_repository->expects($this->once())
                                  ->method('save')
                                  ->with($fixture);
 
         $this->service->apply_to_fixture($fixture, $result);
+    }
+
+    public function test_apply_to_fixture_supplies_site_local_timestamp_when_confirming(): void {
+        $GLOBALS['racketmanager_test_current_time'] = '2026-11-17 10:30:00';
+        try {
+            $fixture = $this->createMock( Fixture::class );
+            $result  = $this->createMock( Result::class );
+
+            $fixture->expects( $this->once() )
+                    ->method( 'confirm_result' )
+                    ->with( 'Y', '2026-11-17 10:30:00' );
+
+            $this->service->apply_to_fixture( $fixture, $result, 'Y' );
+        } finally {
+            unset( $GLOBALS['racketmanager_test_current_time'] );
+        }
+    }
+
+    public function test_apply_to_fixture_supplies_no_timestamp_when_not_confirming(): void {
+        $GLOBALS['racketmanager_test_current_time'] = '2026-11-17 10:30:00';
+        try {
+            $fixture = $this->createMock( Fixture::class );
+            $result  = $this->createMock( Result::class );
+
+            $fixture->expects( $this->once() )
+                    ->method( 'confirm_result' )
+                    ->with( 'P', null );
+
+            $this->service->apply_to_fixture( $fixture, $result, 'P' );
+        } finally {
+            unset( $GLOBALS['racketmanager_test_current_time'] );
+        }
     }
 
     public function test_apply_to_fixture_sets_confirmed_to_null_on_reset(): void {

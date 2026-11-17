@@ -509,11 +509,13 @@ class Event_Query_Service_Test extends TestCase {
             ->with( 133 )
             ->willReturn( null );
 
-        $fixture        = Fixture_Factory::from_object( (object) [ 'id' => 250 ] );
-        $fixture->teams = [
-            'home' => (object) [ 'title' => 'Home Club' ],
-            'away' => (object) [ 'title' => 'Away Club' ],
-        ];
+        $fixture = Fixture_Factory::from_object( (object) [ 'id' => 250 ] );
+        $fixture->set_teams(
+            [
+                'home' => (object) [ 'title' => 'Home Club' ],
+                'away' => (object) [ 'title' => 'Away Club' ],
+            ]
+        );
         $fixture_repository->expects( $this->once() )
             ->method( 'find_by_id_with_relations' )
             ->with( 250 )

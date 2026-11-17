@@ -512,32 +512,36 @@ final class Public_Links_Modernization_Test extends TestCase {
 
     public function test_last_5_matches_template_renders_with_real_fixture_and_tooltips_with_zero_warnings(): void {
         $fixture1 = new \Racketmanager\Domain\Fixture\Fixture();
-        $fixture1->id = 101;
-        $fixture1->home_team = '1';
-        $fixture1->away_team = '2';
-        $fixture1->date = '2024-05-10';
-        $fixture1->home_points = '6';
-        $fixture1->away_points = '0';
-        $fixture1->winner_id = 1;
-        $fixture1->loser_id = 2;
-        $fixture1->teams = [
-            'home' => (object) [ 'title' => 'Red Team' ],
-            'away' => (object) [ 'title' => 'Blue Team' ],
-        ];
+        $fixture1->set_id( 101 );
+        $fixture1->set_home_team( '1' );
+        $fixture1->set_away_team( '2' );
+        $fixture1->set_date( '2024-05-10' );
+        $fixture1->set_home_points( '6' );
+        $fixture1->set_away_points( '0' );
+        $fixture1->set_winner_id( 1 );
+        $fixture1->set_loser_id( 2 );
+        $fixture1->set_teams(
+            [
+                'home' => (object) [ 'title' => 'Red Team' ],
+                'away' => (object) [ 'title' => 'Blue Team' ],
+            ]
+        );
 
         $fixture2 = new \Racketmanager\Domain\Fixture\Fixture();
-        $fixture2->id = 102;
-        $fixture2->home_team = '2';
-        $fixture2->away_team = '1';
-        $fixture2->date = '2024-05-17';
-        $fixture2->home_points = '0';
-        $fixture2->away_points = '6';
-        $fixture2->winner_id = 1;
-        $fixture2->loser_id = 2;
-        $fixture2->teams = [
-            'home' => (object) [ 'title' => 'Blue Team' ],
-            'away' => (object) [ 'title' => 'Red Team' ],
-        ];
+        $fixture2->set_id( 102 );
+        $fixture2->set_home_team( '2' );
+        $fixture2->set_away_team( '1' );
+        $fixture2->set_date( '2024-05-17' );
+        $fixture2->set_home_points( '0' );
+        $fixture2->set_away_points( '6' );
+        $fixture2->set_winner_id( 1 );
+        $fixture2->set_loser_id( 2 );
+        $fixture2->set_teams(
+            [
+                'home' => (object) [ 'title' => 'Blue Team' ],
+                'away' => (object) [ 'title' => 'Red Team' ],
+            ]
+        );
 
         $fixture_presenter = new \Racketmanager\Presentation\Presenters\Fixture_Presenter(
             link_service: $this->createStub( \Racketmanager\Services\Fixture\Fixture_Link_Service::class ),

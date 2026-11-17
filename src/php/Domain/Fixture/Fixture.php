@@ -27,343 +27,350 @@ class Fixture {
      *
      * @var string|null
      */
-    public ?string $fixture_title = null;
+    public private(set) ?string $fixture_title = null;
 
     /**
      * Match title (alias for backwards compatibility)
      *
      * @var string|null
      */
-    public ?string $match_title = null;
+    public private(set) ?string $match_title = null;
 
     /**
      * Link
      *
      * @var string|null
      */
-    public ?string $link = null;
+    public private(set) ?string $link = null;
 
     /**
      * Id
      *
      * @var int|null
      */
-    public ?int $id = null;
+    public private(set) ?int $id = null;
 
     /**
      * Group
      *
      * @var string|null
      */
-    public ?string $group = null;
+    public private(set) ?string $group = null;
 
     /**
      * Date
      *
      * @var string|null
      */
-    public ?string $date = null;
+    public private(set) ?string $date = null;
 
     /**
      * Date original
      *
      * @var string|null
      */
-    public ?string $date_original = null;
+    public private(set) ?string $date_original = null;
 
     /**
      * Home team
      *
      * @var string|int|null
      */
-    public string|int|null $home_team = null;
+    public private(set) string|int|null $home_team = null;
 
     /**
      * Away team
      *
      * @var string|int|null
      */
-    public string|int|null $away_team = null;
+    public private(set) string|int|null $away_team = null;
 
     /**
      * Match day
      *
      * @var int|null
      */
-    public ?int $match_day = null;
+    public private(set) ?int $match_day = null;
 
     /**
      * Location
      *
      * @var string|null
      */
-    public ?string $location = null;
+    public private(set) ?string $location = null;
 
     /**
      * Host
      *
      * @var string|null
      */
-    public ?string $host = null;
+    public private(set) ?string $host = null;
 
     /**
      * League id
      *
      * @var int|null
      */
-    public ?int $league_id = null;
+    public private(set) ?int $league_id = null;
 
     /**
      * Season
      *
      * @var string|null
      */
-    public ?string $season = null;
+    public private(set) ?string $season = null;
 
     /**
      * Home points
      *
      * @var string|null
      */
-    public ?string $home_points = null;
+    public private(set) ?string $home_points = null;
 
     /**
      * Away points
      *
      * @var string|null
      */
-    public ?string $away_points = null;
+    public private(set) ?string $away_points = null;
 
     /**
      * Winner id
      *
      * @var int|null
      */
-    public ?int $winner_id = null;
+    public private(set) ?int $winner_id = null;
 
     /**
      * Loser id
      *
      * @var int|null
      */
-    public ?int $loser_id = null;
+    public private(set) ?int $loser_id = null;
 
     /**
      * Status
      *
      * @var int|null
      */
-    public ?int $status = null;
+    public private(set) ?int $status = null;
 
     /**
      * Linked fixture
      *
      * @var int|null
      */
-    public ?int $linked_fixture = null;
+    public private(set) ?int $linked_fixture = null;
 
     /**
      * Leg
      *
      * @var int|null
      */
-    public ?int $leg = null;
+    public private(set) ?int $leg = null;
 
     /**
      * Winner id tie
      *
      * @var int|null
      */
-    public ?int $winner_id_tie = null;
+    public private(set) ?int $winner_id_tie = null;
 
     /**
      * Loser id tie
      *
      * @var int|null
      */
-    public ?int $loser_id_tie = null;
+    public private(set) ?int $loser_id_tie = null;
 
     /**
      * Home points tie
      *
      * @var float|null
      */
-    public ?float $home_points_tie = null;
+    public private(set) ?float $home_points_tie = null;
 
     /**
      * Away points tie
      *
      * @var float|null
      */
-    public ?float $away_points_tie = null;
+    public private(set) ?float $away_points_tie = null;
 
     /**
      * Post id
      *
      * @var int|null
      */
-    public ?int $post_id = null;
+    public private(set) ?int $post_id = null;
 
     /**
      * Final
      *
      * @var string|null
      */
-    public ?string $final = null;
+    public private(set) ?string $final = null;
 
     /**
      * Final round
      *
      * @var string|null
      */
-    public ?string $final_round = null;
+    public private(set) ?string $final_round = null;
 
     /**
      * Custom
      *
      * @var array|null
      */
-    public ?array $custom = null;
+    public private(set) ?array $custom = null;
 
     /**
      * Updated user
      *
      * @var int|null
      */
-    public ?int $updated_user = null;
+    public private(set) ?int $updated_user = null;
 
     /**
      * Updated
      *
      * @var string|null
      */
-    public ?string $updated = null;
+    public private(set) ?string $updated = null;
 
     /**
      * Date result entered
      *
      * @var string|null
      */
-    public ?string $date_result_entered = null;
+    public private(set) ?string $date_result_entered = null;
+
+    /**
+     * Date result confirmed
+     *
+     * @var string|null
+     */
+    public private(set) ?string $date_result_confirmed = null;
 
     /**
      * Confirmed
      *
      * @var string|null
      */
-    public ?string $confirmed = null;
+    public private(set) ?string $confirmed = null;
 
     /**
      * Home captain
      *
      * @var int|null
      */
-    public ?int $home_captain = null;
+    public private(set) ?int $home_captain = null;
 
     /**
      * Away captain
      *
      * @var int|null
      */
-    public ?int $away_captain = null;
+    public private(set) ?int $away_captain = null;
 
     /**
      * Comments
      *
      * @var array|null
      */
-    public ?array $comments = null;
+    public private(set) ?array $comments = null;
 
     /**
      * Updated by
      *
      * @var string|null
      */
-    public ?string $updated_by = null;
+    public private(set) ?string $updated_by = null;
 
     /**
      * Start time
      *
      * @var string|null
      */
-    public ?string $start_time = null;
+    public private(set) ?string $start_time = null;
 
     /**
      * Is walkover?
      *
      * @var bool
      */
-    public bool $is_walkover = false;
+    public private(set) bool $is_walkover = false;
 
     /**
      * Is retired
      *
      * @var bool
      */
-    public bool $is_retired = false;
+    public private(set) bool $is_retired = false;
 
     /**
      * Is shared
      *
      * @var bool
      */
-    public bool $is_shared = false;
+    public private(set) bool $is_shared = false;
 
     /**
      * Is withdrawn
      *
      * @var bool
      */
-    public bool $is_withdrawn = false;
+    public private(set) bool $is_withdrawn = false;
 
     /**
      * Is abandoned
      *
      * @var bool
      */
-    public bool $is_abandoned = false;
+    public private(set) bool $is_abandoned = false;
 
     /**
      * Is cancelled
      *
      * @var bool
      */
-    public bool $is_cancelled = false;
+    public private(set) bool $is_cancelled = false;
 
     /**
      * Is pending
      *
      * @var bool
      */
-    public bool $is_pending = false;
+    public private(set) bool $is_pending = false;
 
     /**
      * Rubbers
      *
      * @var array|null
      */
-    public ?array $rubbers = null;
+    public private(set) ?array $rubbers = null;
 
     /**
      * Teams
      *
      * @var array|null
      */
-    public ?array $teams = null;
+    public private(set) ?array $teams = null;
 
     /**
      * League
      *
      * @var mixed
      */
-    public mixed $league = null;
+    public private(set) mixed $league = null;
 
     /**
      * Display CSS class
      *
      * @var string|null
      */
-    public ?string $class = null;
+    public private(set) ?string $class = null;
 
     /**
      * Fixture constructor.
@@ -377,44 +384,45 @@ class Fixture {
             return;
         }
 
-        $this->id                  = $dto->id;
-        $this->fixture_title       = $dto->fixture_title;
-        $this->final_round         = $dto->final;
-        $this->link                = $dto->link;
-        $this->group               = $dto->group;
-        $this->date                = $dto->date;
-        $this->date_original       = $dto->date_original;
-        $this->home_team           = $dto->home_team;
-        $this->away_team           = $dto->away_team;
-        $this->match_day           = $dto->match_day;
-        $this->location            = $dto->location;
-        $this->host                = $dto->host;
-        $this->league_id           = $dto->league_id;
-        $this->season              = $dto->season;
-        $this->home_points         = $dto->home_points;
-        $this->away_points         = $dto->away_points;
-        $this->winner_id           = $dto->winner_id;
-        $this->loser_id            = $dto->loser_id;
-        $this->status              = $dto->status;
-        $this->linked_fixture      = $dto->linked_fixture;
-        $this->leg                 = $dto->leg;
-        $this->winner_id_tie       = $dto->winner_id_tie;
-        $this->loser_id_tie        = $dto->loser_id_tie;
-        $this->home_points_tie     = $dto->home_points_tie;
-        $this->away_points_tie     = $dto->away_points_tie;
-        $this->post_id             = $dto->post_id;
-        $this->final               = $dto->final;
-        $this->custom              = $dto->custom;
-        $this->updated_user        = $dto->updated_user;
-        $this->updated             = $dto->updated;
-        $this->date_result_entered = $dto->date_result_entered;
-        $this->confirmed           = $dto->confirmed;
-        $this->home_captain        = $dto->home_captain;
-        $this->away_captain        = $dto->away_captain;
-        $this->comments            = $dto->comments;
-        $this->updated_by          = $dto->updated_by;
-        $this->start_time          = $dto->start_time;
-        $this->rubbers             = $dto->rubbers;
+        $this->id                    = $dto->id;
+        $this->fixture_title         = $dto->fixture_title;
+        $this->final_round           = $dto->final;
+        $this->link                  = $dto->link;
+        $this->group                 = $dto->group;
+        $this->date                  = $dto->date;
+        $this->date_original         = $dto->date_original;
+        $this->home_team             = $dto->home_team;
+        $this->away_team             = $dto->away_team;
+        $this->match_day             = $dto->match_day;
+        $this->location              = $dto->location;
+        $this->host                  = $dto->host;
+        $this->league_id             = $dto->league_id;
+        $this->season                = $dto->season;
+        $this->home_points           = $dto->home_points;
+        $this->away_points           = $dto->away_points;
+        $this->winner_id             = $dto->winner_id;
+        $this->loser_id              = $dto->loser_id;
+        $this->status                = $dto->status;
+        $this->linked_fixture        = $dto->linked_fixture;
+        $this->leg                   = $dto->leg;
+        $this->winner_id_tie         = $dto->winner_id_tie;
+        $this->loser_id_tie          = $dto->loser_id_tie;
+        $this->home_points_tie       = $dto->home_points_tie;
+        $this->away_points_tie       = $dto->away_points_tie;
+        $this->post_id               = $dto->post_id;
+        $this->final                 = $dto->final;
+        $this->custom                = $dto->custom;
+        $this->updated_user          = $dto->updated_user;
+        $this->updated               = $dto->updated;
+        $this->date_result_entered   = $dto->date_result_entered;
+        $this->date_result_confirmed = $dto->date_result_confirmed;
+        $this->confirmed             = $dto->confirmed;
+        $this->home_captain          = $dto->home_captain;
+        $this->away_captain          = $dto->away_captain;
+        $this->comments              = $dto->comments;
+        $this->updated_by            = $dto->updated_by;
+        $this->start_time            = $dto->start_time;
+        $this->rubbers               = $dto->rubbers;
 
         // Reconcile an explicit/direct start_time with the date. Derived or equal times leave the date untouched.
         if ( null !== $this->date && Fixture_Time_Parser::extract_time_from_datetime( $this->date ) !== $this->start_time ) {
@@ -975,6 +983,21 @@ class Fixture {
     /**
      * @return string|null
      */
+    public function get_date_result_confirmed(): ?string {
+        return $this->date_result_confirmed;
+    }
+
+    /**
+     * @param string|null $date_result_confirmed Confirmation timestamp (site-local YYYY-MM-DD HH:MM:SS) or null.
+     * @return void
+     */
+    public function set_date_result_confirmed( ?string $date_result_confirmed ): void {
+        $this->date_result_confirmed = $date_result_confirmed;
+    }
+
+    /**
+     * @return string|null
+     */
     public function get_confirmed(): ?string {
         return $this->confirmed;
     }
@@ -1169,7 +1192,15 @@ class Fixture {
      * @return void
      */
     public function set_status_flags(): void {
-        Fixture_Status_Policy::apply_to_fixture( $this );
+        $flags = Fixture_Status_Policy::calculate_status_flags( $this->status, $this->winner_id );
+
+        $this->is_walkover  = $flags['is_walkover'];
+        $this->is_retired   = $flags['is_retired'];
+        $this->is_shared    = $flags['is_shared'];
+        $this->is_abandoned = $flags['is_abandoned'];
+        $this->is_withdrawn = $flags['is_withdrawn'];
+        $this->is_cancelled = $flags['is_cancelled'];
+        $this->is_pending   = $flags['is_pending'];
     }
 
     /**
@@ -1211,7 +1242,15 @@ class Fixture {
         return $update;
     }
 
-    public function set_result( Result $result ): void {
+    /**
+     * Record fixture result from Result value object.
+     *
+     * Synchronizes home/away points, winner, loser, status, custom sets, and status flags atomically.
+     *
+     * @param Result $result Result value object.
+     * @return void
+     */
+    public function record_result( Result $result ): void {
         $this->home_points = (string) $result->get_home_points();
         $this->away_points = (string) $result->get_away_points();
         $this->winner_id   = $result->get_winner_id();
@@ -1227,20 +1266,82 @@ class Fixture {
     }
 
     /**
+     * Set result (backwards-compatible alias for record_result).
+     *
+     * @param Result $result Result value object.
+     * @return void
+     */
+    public function set_result( Result $result ): void {
+        $this->record_result( $result );
+    }
+
+    /**
+     * Confirm fixture result with status and optional confirmation timestamp.
+     *
+     * The aggregate never reads the clock: the caller supplies the confirmation timestamp
+     * (site-local, YYYY-MM-DD HH:MM:SS). When confirming ('Y') without a date, any existing
+     * timestamp is kept. Any other status (including null) clears the timestamp.
+     *
+     * @param string|null $confirmed Confirmation status ('Y', 'N', 'P', 'A', 'C', or null). Defaults to 'Y'.
+     * @param string|null $date      Optional confirmation date/time string (YYYY-MM-DD HH:MM:SS).
+     * @return void
+     */
+    public function confirm_result( ?string $confirmed = 'Y', ?string $date = null ): void {
+        $this->confirmed = $confirmed;
+
+        if ( 'Y' !== $confirmed ) {
+            $this->date_result_confirmed = null;
+        } elseif ( null !== $date ) {
+            $this->date_result_confirmed = $date;
+        }
+    }
+
+    /**
+     * Reschedule fixture to a new date, optional start time, and optional location.
+     *
+     * @param string      $date     Fixture date string.
+     * @param string|null $time     Optional start time.
+     * @param string|null $location Optional location.
+     * @return void
+     */
+    public function reschedule( string $date, ?string $time = null, ?string $location = null ): void {
+        $this->set_date( $date );
+        if ( null !== $time ) {
+            $this->set_start_time( $time );
+        }
+        if ( null !== $location ) {
+            $this->set_location( $location );
+        }
+    }
+
+    /**
+     * Assign home and away teams to this fixture.
+     *
+     * @param string|int|null $home_team Home team id.
+     * @param string|int|null $away_team Away team id.
+     * @return void
+     */
+    public function assign_teams( string|int|null $home_team, string|int|null $away_team ): void {
+        $this->set_home_team( $home_team );
+        $this->set_away_team( $away_team );
+    }
+
+    /**
      * Reset the fixture result and status.
      *
      * @return void
      */
     public function reset_result(): void {
-        $this->home_points  = null;
-        $this->away_points  = null;
-        $this->winner_id    = 0;
-        $this->loser_id     = 0;
-        $this->status       = null;
-        $this->custom       = array();
-        $this->confirmed    = null;
-        $this->home_captain = null;
-        $this->away_captain = null;
+        $this->home_points           = null;
+        $this->away_points           = null;
+        $this->winner_id             = 0;
+        $this->loser_id              = 0;
+        $this->status                = null;
+        $this->custom                = array();
+        $this->confirmed             = null;
+        $this->date_result_confirmed = null;
+        $this->home_captain          = null;
+        $this->away_captain          = null;
 
         if ( ! empty( $this->leg ) && 2 === $this->leg ) {
             $this->home_points_tie = null;
@@ -1253,6 +1354,16 @@ class Fixture {
     }
     public function get_link(): ?string {
         return $this->link;
+    }
+
+    /**
+     * Set match link.
+     *
+     * @param string|null $link Match link.
+     * @return void
+     */
+    public function set_link( ?string $link ): void {
+        $this->link = $link;
     }
 
     /**
@@ -1284,9 +1395,40 @@ class Fixture {
     /**
      * Attach rubbers to this fixture.
      *
-     * @param array|null $rubbers
+     * @param array|null $rubbers Rubbers array.
+     * @return void
      */
     public function set_rubbers( ?array $rubbers ): void {
         $this->rubbers = $rubbers;
+    }
+
+    /**
+     * Set CSS class.
+     *
+     * @param string|null $class_name CSS class.
+     * @return void
+     */
+    public function set_class( ?string $class_name ): void {
+        $this->class = $class_name;
+    }
+
+    /**
+     * Set final round.
+     *
+     * @param string|null $final_round Final round identifier.
+     * @return void
+     */
+    public function set_final_round( ?string $final_round ): void {
+        $this->final_round = $final_round;
+    }
+
+    /**
+     * Set match title.
+     *
+     * @param string|null $match_title Match title.
+     * @return void
+     */
+    public function set_match_title( ?string $match_title ): void {
+        $this->match_title = $match_title;
     }
 }

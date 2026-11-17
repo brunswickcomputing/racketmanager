@@ -111,10 +111,10 @@ final class League_Match_Admin_Controller_Test extends TestCase {
     public function test_get_edit_single_fixture_returns_view_model(): void {
         $league = $this->create_league( 42 );
 
-        $fixture            = new Fixture();
-        $fixture->id        = 123;
-        $fixture->league_id = 42;
-        $fixture->match_day = 3;
+        $fixture = new Fixture();
+        $fixture->set_id( 123 );
+        $fixture->set_league_id( 42 );
+        $fixture->set_match_day( 3 );
 
         $fixture_repo = $this->createStub( Fixture_Repository_Interface::class );
         $fixture_repo->method( 'find_by_id' )->willReturn( $fixture );

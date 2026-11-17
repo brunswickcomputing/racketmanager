@@ -292,15 +292,17 @@ class Event_Matches_Hydration_Test extends TestCase {
 		$away_team_obj        = new stdClass();
 		$away_team_obj->title = 'Beta';
 
-		$fixture->teams = array(
-			'home' => $home_team_obj,
-			'away' => $away_team_obj,
+		$fixture->set_teams(
+			array(
+				'home' => $home_team_obj,
+				'away' => $away_team_obj,
+			)
 		);
 
 		$this->assertSame( 'Alpha - Beta', $fixture->get_title() );
 
 		// Modify team titles and verify get_title reflects the change dynamically
-		$fixture->teams['home']->title = 'Gamma';
+		$home_team_obj->title = 'Gamma';
 		$this->assertSame( 'Gamma - Beta', $fixture->get_title() );
 	}
 
@@ -370,7 +372,7 @@ class Event_Matches_Hydration_Test extends TestCase {
 		$league->num_rubbers       = 5;
 		$league->num_sets          = 3;
 		$league->expects( $this->once() )->method( 'get_point_rule' )->willReturn( array() );
-		$fixture->league = $league;
+		$fixture->set_league( $league );
 
 		$this->assertSame( 'Final', $fixture->final_round );
 		$scoring_context = Scoring_Context::from_legacy_match( $fixture );
@@ -387,7 +389,7 @@ class Event_Matches_Hydration_Test extends TestCase {
 				'away_team' => '2',
 			)
 		);
-		$fixture->league = null;
+		$fixture->set_league( null );
 
 		$player               = $this->getMockBuilder( Player::class )
 			->disableOriginalConstructor()
@@ -432,15 +434,17 @@ class Event_Matches_Hydration_Test extends TestCase {
 			),
 		);
 
-		$rubber          = Rubber::from_object( $rubber_raw );
-		$rubber->title   = 'Rubber 1';
-		$rubber->players = array(
-			'home' => array(
-				'1' => (object) array( 'display_name' => 'Test Player' ),
-			),
-			'away' => array(
-				'1' => (object) array( 'display_name' => 'Opponent Player' ),
-			),
+		$rubber = Rubber::from_object( $rubber_raw );
+		$rubber->set_title( 'Rubber 1' );
+		$rubber->set_players(
+			array(
+				'home' => array(
+					'1' => (object) array( 'display_name' => 'Test Player' ),
+				),
+				'away' => array(
+					'1' => (object) array( 'display_name' => 'Opponent Player' ),
+				),
+			)
 		);
 
 		$fixture = Fixture_Factory::from_array( array(

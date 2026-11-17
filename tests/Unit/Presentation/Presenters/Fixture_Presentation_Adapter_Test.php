@@ -17,6 +17,7 @@ use Racketmanager\Domain\Enums\Club_Role;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Fixture\Rubber;
+use Racketmanager\Domain\Fixture\Rubber_Factory;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Presentation\Presenters\Fixture_Presentation_Adapter;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
@@ -90,8 +91,7 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
             ]
         );
 
-        $rubber = new ReflectionClass( Rubber::class )->newInstanceWithoutConstructor();
-        $rubber->id = 1;
+        $rubber = Rubber_Factory::from_object( (object) [ 'id' => 1 ] );
         $rubber_repository = $this->createMock( Rubber_Repository_Interface::class );
         $rubber_repository->expects( $this->once() )->method( 'find_by_fixture_id' )->with( 101 )->willReturn( [ $rubber ] );
 
@@ -886,7 +886,7 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
         $direct_league->name  = 'Direct League';
         $direct_league->event = $direct_event;
 
-        $fixture_direct->league = $direct_league;
+        $fixture_direct->set_league( $direct_league );
 
         $adapter_direct = Fixture_Presentation_Adapter::from_fixture(
             $fixture_direct,
@@ -992,7 +992,7 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
             ->method( 'get_fixture_link' )
             ->willReturn( 'https://example.com/service-link' );
 
-        $fixture_1->league = $league;
+        $fixture_1->set_league( $league );
         $adapter_1         = Fixture_Presentation_Adapter::from_fixture(
             $fixture_1,
             $comp_service,
@@ -1071,7 +1071,7 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
         $data_7            = new stdClass();
         $data_7->id        = 134;
         $fixture_7         = Fixture_Factory::from_object( $data_7 );
-        $fixture_7->league = $league;
+        $fixture_7->set_league( $league );
 
         $link_service_7 = $this->createMock( Fixture_Link_Service::class );
         $link_service_7->expects( $this->once() )
@@ -1105,8 +1105,7 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
         $comp_service = $this->createMock( Competition_Service::class );
         $team_service = $this->createMock( Team_Service::class );
 
-        $rubber     = ( new ReflectionClass( Rubber::class ) )->newInstanceWithoutConstructor();
-        $rubber->id = 88;
+        $rubber = Rubber_Factory::from_object( (object) [ 'id' => 88 ] );
 
         // Condition 1: rubber repository is null -> no loading attempted.
         $data_1    = new stdClass();
@@ -1122,8 +1121,8 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
         $this->assertSame( array(), $adapter_1->get_rubbers() );
 
         // Condition 2: fixture rubbers already loaded (non-null) -> repo never called.
-        $fixture_2          = Fixture_Factory::from_object( $data_1 );
-        $fixture_2->rubbers = array( $rubber );
+        $fixture_2 = Fixture_Factory::from_object( $data_1 );
+        $fixture_2->set_rubbers( array( $rubber ) );
 
         $repo_2 = $this->createMock( Rubber_Repository_Interface::class );
         $repo_2->expects( $this->never() )->method( 'find_by_fixture_id' );
@@ -1160,7 +1159,7 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
         $league_zero_rubbers              = new stdClass();
         $league_zero_rubbers->id          = 15;
         $league_zero_rubbers->num_rubbers = 0;
-        $fixture_4->league                = $league_zero_rubbers;
+        $fixture_4->set_league( $league_zero_rubbers );
 
         $repo_4 = $this->createMock( Rubber_Repository_Interface::class );
         $repo_4->expects( $this->never() )->method( 'find_by_fixture_id' );
@@ -1201,7 +1200,7 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
         $league_with_rubbers              = new stdClass();
         $league_with_rubbers->id          = 16;
         $league_with_rubbers->num_rubbers = 4;
-        $fixture_6->league                = $league_with_rubbers;
+        $fixture_6->set_league( $league_with_rubbers );
 
         $repo_6 = $this->createMock( Rubber_Repository_Interface::class );
         $repo_6->expects( $this->once() )

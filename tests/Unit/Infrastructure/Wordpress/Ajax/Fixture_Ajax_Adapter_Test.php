@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Ajax;
 
@@ -160,7 +161,9 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
             'matchId'             => 123,
         ];
 
-        $fixture = $this->createMock( Fixture::class );
+        $fixture = $this->getMockBuilder( Fixture::class )
+            ->onlyMethods( [ 'get_date', 'get_rubbers' ] )
+            ->getMock();
         $fixture->method( 'get_date' )->willReturn( '2026-10-18 19:30:00' );
         $fixture->expects( $this->once() )->method( 'get_rubbers' )->willReturn( [ 'rubber1' ] );
 
@@ -373,8 +376,8 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
             'modal'     => 'rubberStatusModal',
         ];
 
-        $rubber           = new \Racketmanager\Domain\Fixture\Rubber();
-        $rubber->match_id = 123;
+        $rubber = new \Racketmanager\Domain\Fixture\Rubber();
+        $rubber->set_match_id( 123 );
         $rubber_repo      = $this->createMock( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );
         $rubber_repo->expects( $this->once() )->method( 'find_by_id' )->with( 456 )->willReturn( $rubber );
         $this->container->set( 'rubber_repository', $rubber_repo );
@@ -474,9 +477,9 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
             'modal'     => 'someModal',
         ];
 
-        $rubber                      = new \Racketmanager\Domain\Fixture\Rubber();
-        $rubber->match_id            = 123;
-        $rubber_repo                 = $this->createMock( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );
+        $rubber = new \Racketmanager\Domain\Fixture\Rubber();
+        $rubber->set_match_id( 123 );
+        $rubber_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );
         $rubber_repo->expects( $this->once() )->method( 'find_by_id' )->with( 456 )->willReturn( $rubber );
         $this->container->set( 'rubber_repository', $rubber_repo );
 
@@ -505,9 +508,9 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
             'modal'     => 'someModal',
         ];
 
-        $rubber                      = new \Racketmanager\Domain\Fixture\Rubber();
-        $rubber->match_id            = 123;
-        $rubber_repo                 = $this->createMock( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );
+        $rubber = new \Racketmanager\Domain\Fixture\Rubber();
+        $rubber->set_match_id( 123 );
+        $rubber_repo = $this->createMock( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );
         $rubber_repo->expects( $this->once() )->method( 'find_by_id' )->with( 456 )->willReturn( $rubber );
         $this->container->set( 'rubber_repository', $rubber_repo );
 
@@ -712,9 +715,9 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
             'schedule-date'       => '2023-10-10',
         ];
 
-        $match        = $this->getMockBuilder( Fixture::class )->disableOriginalConstructor()->getMock();
-        $match->id    = 123;
-        $match->method( 'get_date' )->willReturn( '2023-10-09' );
+        $match = new Fixture();
+        $match->set_id( 123 );
+        $match->set_date( '2023-10-09' );
 
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $match );
@@ -745,9 +748,9 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
             'schedule-date'       => '2026-10-10 19:30:00',
         ];
 
-        $match        = $this->getMockBuilder( Fixture::class )->disableOriginalConstructor()->getMock();
-        $match->id    = 123;
-        $match->method( 'get_date' )->willReturn( '2026-10-09 18:00:00' );
+        $match = new Fixture();
+        $match->set_id( 123 );
+        $match->set_date( '2026-10-09 18:00:00' );
 
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $match );
@@ -777,9 +780,9 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
             'schedule-date'       => '2026-10-10 19:30:00',
         ];
 
-        $match     = $this->getMockBuilder( Fixture::class )->disableOriginalConstructor()->getMock();
-        $match->id = 123;
-        $match->method( 'get_date' )->willReturn( '2026-10-09 18:00:00' );
+        $match = new Fixture();
+        $match->set_id( 123 );
+        $match->set_date( '2026-10-09 18:00:00' );
 
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $match );
@@ -825,9 +828,9 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
             'schedule-date'       => '2023-10-10',
         ];
 
-        $match     = $this->getMockBuilder( Fixture::class )->disableOriginalConstructor()->getMock();
-        $match->id = 123;
-        $match->method( 'get_date' )->willReturn( '2023-10-10 00:00:00' );
+        $match = new Fixture();
+        $match->set_id( 123 );
+        $match->set_date( '2023-10-10 00:00:00' );
 
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $match );
@@ -851,9 +854,9 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
             'schedule-date'       => '2026-10-10T19:30',
         ];
 
-        $match     = $this->getMockBuilder( Fixture::class )->disableOriginalConstructor()->getMock();
-        $match->id = 123;
-        $match->method( 'get_date' )->willReturn( '2026-10-10 19:30:00' );
+        $match = new Fixture();
+        $match->set_id( 123 );
+        $match->set_date( '2026-10-10 19:30:00' );
 
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $match );
@@ -1002,9 +1005,9 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
             'modal'               => 'test-modal',
         ];
 
-        $fixture = $this->getMockBuilder( Fixture::class )->disableOriginalConstructor()->onlyMethods( [ 'get_id' ] )->getMock();
-        $fixture->method( 'get_id' )->willReturn( 123 );
-        $fixture->league_id = 1;
+        $fixture = new Fixture();
+        $fixture->set_id( 123 );
+        $fixture->set_league_id( 1 );
 
         $fixture_repo    = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $fixture );
@@ -1031,9 +1034,9 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
             'updateRubber'        => 'results',
         ];
 
-        $fixture = $this->getMockBuilder( Fixture::class )->disableOriginalConstructor()->onlyMethods( [ 'get_id' ] )->getMock();
-        $fixture->method( 'get_id' )->willReturn( 123 );
-        $fixture->league_id = 1;
+        $fixture = new Fixture();
+        $fixture->set_id( 123 );
+        $fixture->set_league_id( 1 );
 
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $fixture );

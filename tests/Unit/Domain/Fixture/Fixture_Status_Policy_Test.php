@@ -29,8 +29,8 @@ class Fixture_Status_Policy_Test extends TestCase {
 
 	public function test_apply_to_fixture(): void {
 		$fixture = new Fixture();
-		$fixture->status = 2; // Retired
-		$fixture->winner_id = 5;
+		$fixture->set_status( 2 ); // Retired
+		$fixture->set_winner_id( 5 );
 
 		Fixture_Status_Policy::apply_to_fixture( $fixture );
 

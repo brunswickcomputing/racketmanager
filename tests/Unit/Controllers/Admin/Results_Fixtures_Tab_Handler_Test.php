@@ -128,10 +128,10 @@ final class Results_Fixtures_Tab_Handler_Test extends TestCase {
         $this->option_service->method( 'get_options' )
             ->willReturn( array() );
 
-        $hydrated_match              = new Fixture();
-        $hydrated_match->id          = 42;
-        $hydrated_match->match_title = 'Hydrated Match';
-        $hydrated_match->link        = 'https://example.test/match/42/';
+        $hydrated_match = new Fixture();
+        $hydrated_match->set_id( 42 );
+        $hydrated_match->set_match_title( 'Hydrated Match' );
+        $hydrated_match->set_link( 'https://example.test/match/42/' );
 
         $queries = array();
         $this->fixture_repository->method( 'find_all' )
@@ -169,10 +169,10 @@ final class Results_Fixtures_Tab_Handler_Test extends TestCase {
         $this->option_service->method( 'get_options' )
             ->willReturn( array() );
 
-        $hydrated_match              = new Fixture();
-        $hydrated_match->id          = 77;
-        $hydrated_match->match_title = 'Partially Hydrated Match';
-        $hydrated_match->link        = 'https://example.test/match/77/';
+        $hydrated_match = new Fixture();
+        $hydrated_match->set_id( 77 );
+        $hydrated_match->set_match_title( 'Partially Hydrated Match' );
+        $hydrated_match->set_link( 'https://example.test/match/77/' );
 
         $this->fixture_repository->method( 'find_all' )
             ->willReturnCallback(
@@ -196,9 +196,9 @@ final class Results_Fixtures_Tab_Handler_Test extends TestCase {
     }
 
     public function test_hydrate_match_resolves_object_with_id_and_fetches_from_repository(): void {
-        $hydrated_match              = new Fixture();
-        $hydrated_match->id          = 15;
-        $hydrated_match->match_title = 'Fixture 15';
+        $hydrated_match = new Fixture();
+        $hydrated_match->set_id( 15 );
+        $hydrated_match->set_match_title( 'Fixture 15' );
 
         $this->fixture_repository->expects( self::once() )
             ->method( 'find_by_id' )
@@ -212,8 +212,8 @@ final class Results_Fixtures_Tab_Handler_Test extends TestCase {
     }
 
     public function test_hydrate_match_resolves_numeric_id_and_numeric_string(): void {
-        $hydrated_match     = new Fixture();
-        $hydrated_match->id = 25;
+        $hydrated_match = new Fixture();
+        $hydrated_match->set_id( 25 );
 
         $this->fixture_repository->expects( self::exactly( 2 ) )
             ->method( 'find_by_id' )

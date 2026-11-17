@@ -147,8 +147,8 @@ final class Repository_League_Name_Standardization_Test extends TestCase {
 		$this->db->get_results_return = array( $winner_row );
 
 		$fixture_repo   = $this->createStub( Fixture_Repository_Interface::class );
-		$fixture        = $this->createStub( Fixture::class );
-		$fixture->teams = array( 'home' => (object) array(), 'away' => (object) array() );
+        $fixture = new Fixture();
+        $fixture->set_teams( array( 'home' => (object) array(), 'away' => (object) array() ) );
 		$fixture_repo->method( 'find_by_id' )->willReturn( $fixture );
 
 		$repo    = new Competition_Repository( $fixture_repo );

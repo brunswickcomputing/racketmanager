@@ -457,11 +457,13 @@ class League_Team_Repository_Test extends TestCase {
             };
         };
 
-        $fixture        = Fixture_Factory::from_object( (object) [ 'id' => 250 ] );
-        $fixture->teams = [
-            'home' => (object) [ 'title' => 'Alpha' ],
-            'away' => (object) [ 'title' => 'Beta' ],
-        ];
+        $fixture = Fixture_Factory::from_object( (object) [ 'id' => 250 ] );
+        $fixture->set_teams(
+            [
+                'home' => (object) [ 'title' => 'Alpha' ],
+                'away' => (object) [ 'title' => 'Beta' ],
+            ]
+        );
 
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repo->expects( $this->once() )
@@ -484,11 +486,13 @@ class League_Team_Repository_Test extends TestCase {
     }
 
     public function test_hydrate_resolves_lazy_fixture_repository_closure_only_once(): void {
-        $fixture        = Fixture_Factory::from_object( (object) [ 'id' => 250 ] );
-        $fixture->teams = [
-            'home' => (object) [ 'title' => 'Alpha' ],
-            'away' => (object) [ 'title' => 'Beta' ],
-        ];
+        $fixture = Fixture_Factory::from_object( (object) [ 'id' => 250 ] );
+        $fixture->set_teams(
+            [
+                'home' => (object) [ 'title' => 'Alpha' ],
+                'away' => (object) [ 'title' => 'Beta' ],
+            ]
+        );
 
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repo->expects( $this->exactly( 2 ) )
@@ -555,11 +559,13 @@ class League_Team_Repository_Test extends TestCase {
                     'team_ref' => '1_semi_250',
                 ];
                 $repo->hydrate( $recursive_row );
-                $fixture        = Fixture_Factory::from_object( (object) [ 'id' => 250 ] );
-                $fixture->teams = [
-                    'home' => (object) [ 'title' => 'Alpha' ],
-                    'away' => (object) [ 'title' => 'Beta' ],
-                ];
+                $fixture = Fixture_Factory::from_object( (object) [ 'id' => 250 ] );
+                $fixture->set_teams(
+                    [
+                        'home' => (object) [ 'title' => 'Alpha' ],
+                        'away' => (object) [ 'title' => 'Beta' ],
+                    ]
+                );
                 return $fixture;
             } );
 

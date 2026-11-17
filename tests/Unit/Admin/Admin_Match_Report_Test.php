@@ -9,6 +9,7 @@ use Racketmanager\Admin;
 use Racketmanager\Admin\Admin_Match_Report;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
@@ -99,8 +100,7 @@ final class Admin_Match_Report_Test extends TestCase {
     public function test_admin_forwards_edit_match_report_to_match_report(): void {
         $GLOBALS['wp_stubs_current_user_can'] = true;
 
-        $curr_fixture     = $this->createStub( Fixture::class );
-        $curr_fixture->id = 88;
+        $curr_fixture = Fixture_Factory::from_object( (object) [ 'id' => 88 ] );
 
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repo->expects( self::once() )
@@ -108,8 +108,7 @@ final class Admin_Match_Report_Test extends TestCase {
             ->with( 60 )
             ->willReturn( $curr_fixture );
 
-        $target_fixture          = $this->createStub( Fixture::class );
-        $target_fixture->post_id = 0;
+        $target_fixture = Fixture_Factory::from_object( (object) [ 'id' => 102, 'post_id' => 0 ] );
 
         $fixture_repo->expects( self::once() )
             ->method( 'find_by_id' )
@@ -215,10 +214,7 @@ final class Admin_Match_Report_Test extends TestCase {
             ->with( 10 )
             ->willReturn( $league );
 
-        $fixture            = $this->createStub( Fixture::class );
-        $fixture->id        = 99;
-        $fixture->league_id = 10;
-        $fixture->season    = '2026';
+        $fixture = Fixture_Factory::from_object( (object) [ 'id' => 99, 'league_id' => 10, 'season' => '2026' ] );
 
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repo->expects( self::once() )
@@ -281,8 +277,7 @@ final class Admin_Match_Report_Test extends TestCase {
             ->with( 55 )
             ->willReturn( null );
 
-        $target_fixture          = $this->createStub( Fixture::class );
-        $target_fixture->post_id = 0;
+        $target_fixture = Fixture_Factory::from_object( (object) [ 'id' => 101, 'post_id' => 0 ] );
 
         $fixture_repo->expects( self::once() )
             ->method( 'find_by_id' )
@@ -309,8 +304,7 @@ final class Admin_Match_Report_Test extends TestCase {
     }
 
     public function test_edit_match_report_detaches_previous_fixture_when_switching(): void {
-        $curr_fixture     = $this->createStub( Fixture::class );
-        $curr_fixture->id = 88;
+        $curr_fixture = Fixture_Factory::from_object( (object) [ 'id' => 88 ] );
 
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repo->expects( self::once() )
@@ -318,8 +312,7 @@ final class Admin_Match_Report_Test extends TestCase {
             ->with( 60 )
             ->willReturn( $curr_fixture );
 
-        $target_fixture          = $this->createStub( Fixture::class );
-        $target_fixture->post_id = 0;
+        $target_fixture = Fixture_Factory::from_object( (object) [ 'id' => 102, 'post_id' => 0 ] );
 
         $fixture_repo->expects( self::once() )
             ->method( 'find_by_id' )

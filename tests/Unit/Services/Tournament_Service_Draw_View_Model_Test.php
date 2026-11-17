@@ -114,13 +114,13 @@ final class Tournament_Service_Draw_View_Model_Test extends TestCase {
         $fixture_league     = $this->createStub( League::class );
         $fixture_league->id = 55;
 
-        $raw_fixture            = new Fixture();
-        $raw_fixture->id        = 101;
-        $raw_fixture->league_id = 55;
-        $raw_fixture->final     = 'final';
-        $raw_fixture->season    = '2026';
-        $raw_fixture->date      = '2026-07-25 15:30:00';
-        $raw_fixture->location  = 'Court 1';
+        $raw_fixture = new Fixture();
+        $raw_fixture->set_id( 101 );
+        $raw_fixture->set_league_id( 55 );
+        $raw_fixture->set_final( 'final' );
+        $raw_fixture->set_season( '2026' );
+        $raw_fixture->set_date( '2026-07-25 15:30:00' );
+        $raw_fixture->set_location( 'Court 1' );
 
         $home_team = $this->createStub( Team::class );
         $home_team->method( 'get_name' )->willReturn( 'Carlos Alcaraz' );

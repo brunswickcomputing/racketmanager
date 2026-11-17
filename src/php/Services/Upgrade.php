@@ -71,6 +71,7 @@ class Upgrade {
         $this->v10_0_16();
         $this->v10_0_17();
         $this->v10_0_18();
+        $this->v10_0_19();
         /*
         * Update version and dbversion
         */
@@ -600,6 +601,24 @@ class Upgrade {
                         $old_slug
                     )
                 );
+            }
+        }
+    }
+
+    /**
+     * Upgrade to 10.0.19
+     * Add result confirmation timestamp to matches
+     *
+     * @return void
+     */
+    private function v10_0_19(): void {
+        $version = '10.0.19';
+        if ( version_compare( $this->installed, $version, '<' ) ) {
+            $this->show_upgrade_step( $version );
+            $table  = $this->wpdb->prefix . 'racketmanager_matches';
+            $exists = $this->wpdb->get_var( "SHOW COLUMNS FROM `$table` LIKE 'date_result_confirmed'" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared -- internal table name.
+            if ( empty( $exists ) ) {
+                $this->wpdb->query( "ALTER TABLE `$table` ADD `date_result_confirmed` DATETIME NULL DEFAULT NULL AFTER `date_result_entered`;" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared -- internal table name.
             }
         }
     }

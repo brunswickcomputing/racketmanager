@@ -969,7 +969,7 @@ class Fixture_Result_Manager implements Fixture_Result_Manager_Interface {
      * @throws League_Not_Found_Exception
      */
     private function apply_confirmation_to_fixture( Fixture $fixture, Fixture_Confirmation_Context $context, ?League_Repository_Interface $league_repository = null ): Fixture_Update_Response {
-        $fixture->set_confirmed( $context->status );
+        $fixture->confirm_result( $context->status, 'Y' === $context->status ? current_time( 'mysql' ) : null );
 
         $comments = $fixture->get_comments();
         if ( ! is_array( $comments ) ) {

@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Integration\Services\Fixture;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\League_Service;
@@ -677,14 +678,16 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
             ->with( 123 )
             ->willReturn( [ $player_warning ] );
 
-        $rubber = $this->createMock( \Racketmanager\Domain\Fixture\Rubber::class );
-        $rubber->rubber_number = 1;
-        $rubber->players = [
-            'home' => [
-                '1' => (object) [ 'id' => 5 ],
-                '2' => (object) [ 'id' => 6 ],
+        $rubber_data = (object) [
+            'rubber_number' => 1,
+            'players'       => [
+                'home' => [
+                    '1' => (object) [ 'id' => 5 ],
+                    '2' => (object) [ 'id' => 6 ],
+                ],
             ],
         ];
+        $rubber = Rubber::from_object( $rubber_data );
 
         $this->rubber_repository->expects( $this->once() )
             ->method( 'find_by_id' )

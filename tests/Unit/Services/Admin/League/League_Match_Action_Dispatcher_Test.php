@@ -214,8 +214,8 @@ final class League_Match_Action_Dispatcher_Test extends TestCase {
 
     public function test_edit_matches_success(): void {
         $existing_match = new Fixture();
-        $existing_match->id = 55;
-        $existing_match->league_id = 5;
+        $existing_match->set_id( 55 );
+        $existing_match->set_league_id( 5 );
 
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repo->expects( self::once() )
@@ -321,8 +321,8 @@ final class League_Match_Action_Dispatcher_Test extends TestCase {
 
     public function test_edit_matches_midnight_clears_start_time(): void {
         $existing_match = new Fixture();
-        $existing_match->id = 56;
-        $existing_match->league_id = 5;
+        $existing_match->set_id( 56 );
+        $existing_match->set_league_id( 5 );
         $existing_match->set_date( '2026-05-15 19:30:00' );
         self::assertSame( '19:30', $existing_match->get_start_time() );
 

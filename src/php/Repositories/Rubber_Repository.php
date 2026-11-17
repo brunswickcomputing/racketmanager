@@ -116,7 +116,7 @@ class Rubber_Repository implements Rubber_Repository_Interface {
                 return null;
             }
             $rubber = Rubber_Factory::from_object( $rubber );
-            $rubber->players = $this->find_players_by_rubber_id( (int) $rubber->get_id() );
+            $rubber->set_players( $this->find_players_by_rubber_id( (int) $rubber->get_id() ) );
 
             wp_cache_set( (int) $rubber->get_id(), $rubber, 'rubbers' );
         }
@@ -152,7 +152,7 @@ class Rubber_Repository implements Rubber_Repository_Interface {
         if ( is_array( $results ) ) {
             foreach ( $results as $row ) {
                 $rubber = Rubber_Factory::from_object( $row );
-                $rubber->players = $this->find_players_by_rubber_id( (int) $rubber->get_id() );
+                $rubber->set_players( $this->find_players_by_rubber_id( (int) $rubber->get_id() ) );
                 $rubbers[] = $rubber;
             }
         }

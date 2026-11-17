@@ -155,17 +155,18 @@ class Result_Reporting_Service_Test extends TestCase {
 		$player1 = (object) [ 'display_name' => 'Rubber Winner', 'btm' => '111' ];
 		$player2 = (object) [ 'display_name' => 'Rubber Loser', 'btm' => '222' ];
 
-		$rubber = $this->createStub( Rubber::class );
-		$rubber->method('get_id')->willReturn(101);
-		$rubber->method('get_winner_id')->willReturn(1);
-		$rubber->method('get_loser_id')->willReturn(2);
-		$rubber->method('get_status')->willReturn(1);
-		$rubber->method('is_walkover')->willReturn(false);
-		$rubber->method('is_shared')->willReturn(false);
-		$rubber->players = [
-			'home' => ['1' => $player1],
-			'away' => ['1' => $player2],
-		];
+		$rubber = Rubber::from_object(
+			(object) [
+				'id'        => 101,
+				'winner_id' => 1,
+				'loser_id'  => 2,
+				'status'    => null,
+				'players'   => [
+					'home' => [ '1' => $player1 ],
+					'away' => [ '1' => $player2 ],
+				],
+			]
+		);
 
 		$repository_provider = $this->setup_repository_provider_mock( $league, $event, $competition, null, null, [ $rubber ] );
 		$service = new Result_Reporting_Service( $repository_provider, $this->create_option_gateway() );
@@ -387,20 +388,19 @@ class Result_Reporting_Service_Test extends TestCase {
 	}
 
 	private function create_rubber_entity( int $id, int $status ): Rubber {
-		return new class( $id, $status ) extends Rubber {
-			public function __construct( int $id, int $status ) {
-				parent::__construct();
-				$this->id        = $id;
-				$this->status    = $status;
-				$this->winner_id = 1;
-				$this->loser_id  = 2;
-				$this->custom    = [ 'sets' => [ 1 => [ 'player1' => 6, 'player2' => 4 ] ] ];
-				$this->players   = [
+		return Rubber::from_object(
+			(object) [
+				'id'        => $id,
+				'status'    => $status,
+				'winner_id' => 1,
+				'loser_id'  => 2,
+				'custom'    => [ 'sets' => [ 1 => [ 'player1' => 6, 'player2' => 4 ] ] ],
+				'players'   => [
 					'home' => [ '1' => (object) [ 'display_name' => 'Rubber Winner' ] ],
 					'away' => [ '1' => (object) [ 'display_name' => 'Rubber Loser' ] ],
-				];
-			}
-		};
+				],
+			]
+		);
 	}
 
 	private function setup_repository_provider_mock($league, $event, $competition, $home_team = null, $away_team = null, array $rubbers = []): Repository_Provider {

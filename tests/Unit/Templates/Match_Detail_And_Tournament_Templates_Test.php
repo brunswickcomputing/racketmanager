@@ -17,6 +17,7 @@ use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Rubber;
+use Racketmanager\Domain\Fixture\Rubber_Factory;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Player\Player_Factory;
 use Racketmanager\Domain\Scoring\Set_Score;
@@ -25,7 +26,6 @@ use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Infrastructure\Wordpress\Request\Fixture\Fixture_Option_Request;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
-use ReflectionClass;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
@@ -93,24 +93,23 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 	}
 
 	private function make_rubber( int $id, int $number, string $type, array $players, int $winner_id = 10 ): Rubber {
-		$rubber = ( new ReflectionClass( Rubber::class ) )->newInstanceWithoutConstructor();
-		$rubber->id            = $id;
-		$rubber->rubber_number = $number;
-		$rubber->type          = $type;
-		$rubber->players       = $players;
-		$rubber->winner_id     = $winner_id;
-		$rubber->loser_id      = 20;
-		$rubber->date          = '2026-10-15';
-		$rubber->sets          = [
-			1 => new Set_Score( home_games: 6, away_games: 4 ),
-			2 => new Set_Score( home_games: 6, away_games: 2 ),
-		];
-		$rubber->is_abandoned  = false;
-		$rubber->is_walkover   = false;
-		$rubber->is_invalid    = false;
-		$rubber->is_retired    = false;
-		$rubber->is_shared     = false;
-		return $rubber;
+		return Rubber_Factory::from_object(
+			(object) [
+				'id'            => $id,
+				'rubber_number' => $number,
+				'type'          => $type,
+				'players'       => $players,
+				'winner_id'     => $winner_id,
+				'loser_id'      => 20,
+				'date'          => '2026-10-15',
+				'custom'        => [
+					'sets' => [
+						1 => new Set_Score( home_games: 6, away_games: 4 ),
+						2 => new Set_Score( home_games: 6, away_games: 2 ),
+					],
+				],
+			]
+		);
 	}
 
 	public function test_fixture_presenter_date_and_time_format_with_gateway(): void {
@@ -166,8 +165,8 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 			final: 'final',
 			league_id: 202
 		);
-		$fixture->start_time = '09:05';
-		$fixture->season     = '2026';
+		$fixture->set_start_time( '09:05' );
+		$fixture->set_season( '2026' );
 
 		$league                  = $this->createStub( League::class );
 		$league->title           = 'Championship Singles';
@@ -270,8 +269,8 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$team2   = Team::from_object( (object) [ 'id' => 20, 'title' => 'Rafael Nadal', 'players' => [ $player2 ] ] );
 
 		$fixture = Fixture_Test_Factory::create( id: 555, home_team: '10', away_team: '20', date: '2026-07-05 09:05:00', final: 'final', league_id: 202 );
-		$fixture->start_time = '09:05';
-		$fixture->season     = '2026';
+		$fixture->set_start_time( '09:05' );
+		$fixture->set_season( '2026' );
 
 		$league                  = $this->createStub( League::class );
 		$league->title           = 'Championship Singles';
@@ -368,8 +367,8 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 			final: 'round-2',
 			league_id: 303
 		);
-		$fixture->start_time = '';
-		$fixture->season     = '2';
+		$fixture->set_start_time( '' );
+		$fixture->set_season( '2' );
 
 		$league                  = $this->createStub( League::class );
 		$league->title           = 'Box Division 1';
@@ -455,14 +454,16 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 			date: '2026-10-15',
 			league_id: 404
 		);
-		$fixture->season = '2026';
-		$fixture->custom = [
-			'comments' => [
-				'result' => 'Great match played in good spirits',
-			],
-		];
-		$fixture->home_captain = 101;
-		$fixture->away_captain = 202;
+		$fixture->set_season( '2026' );
+		$fixture->set_custom(
+			[
+				'comments' => [
+					'result' => 'Great match played in good spirits',
+				],
+			]
+		);
+		$fixture->set_home_captain( 101 );
+		$fixture->set_away_captain( 202 );
 
 		$home_team = Team::from_object( (object) [ 'id' => 10, 'title' => 'Leigh 1' ] );
 		$away_team = Team::from_object( (object) [ 'id' => 20, 'title' => 'Westcliff 1' ] );
@@ -577,7 +578,7 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 			date: '2026-10-15',
 			league_id: 404
 		);
-		$fixture->season = '2026';
+		$fixture->set_season( '2026' );
 
 		$home_team = Team::from_object( (object) [ 'id' => 10, 'title' => 'Leigh 1' ] );
 		$away_team = Team::from_object( (object) [ 'id' => 20, 'title' => 'Westcliff 1' ] );
@@ -707,7 +708,7 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 			final: 'final',
 			league_id: 202
 		);
-		$fixture->start_time = '09:05';
+		$fixture->set_start_time( '09:05' );
 
 		$league                  = $this->createStub( League::class );
 		$league->title           = 'Championship Singles';

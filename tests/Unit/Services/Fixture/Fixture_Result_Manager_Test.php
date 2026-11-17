@@ -169,6 +169,22 @@ class Fixture_Result_Manager_Test extends TestCase {
         $this->manager->handle_fixture_result_update( $fixture, $request );
     }
 
+    public function test_confirm_result_supplies_site_local_confirmation_timestamp(): void {
+        $GLOBALS['racketmanager_test_current_time'] = '2026-11-17 10:30:00';
+        try {
+            $fixture = $this->createMock( Fixture::class );
+            $fixture->method( 'get_id' )->willReturn( 100 );
+            $fixture->method( 'get_confirmed' )->willReturn( 'Y' );
+            $fixture->expects( $this->once() )->method( 'confirm_result' )->with( 'Y', '2026-11-17 10:30:00' );
+
+            $this->result_reporting_service->method( 'report_result' )->willReturn( (object) [ 'some' => 'data' ] );
+
+            $this->manager->confirm_result( $fixture, 'admin' );
+        } finally {
+            unset( $GLOBALS['racketmanager_test_current_time'] );
+        }
+    }
+
     public function test_confirm_result_manages_results_report(): void {
         $fixture = $this->createMock( Fixture::class );
         $fixture->method( 'get_id' )->willReturn( 100 );

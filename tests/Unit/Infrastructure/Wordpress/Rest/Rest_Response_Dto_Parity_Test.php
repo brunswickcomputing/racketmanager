@@ -141,13 +141,13 @@ final class Rest_Response_Dto_Parity_Test extends TestCase {
     }
 
     public function test_fixture_entity_serialises_derived_score_and_status(): void {
-        $fixture              = new Fixture();
-        $fixture->winner_id   = 10;
-        $fixture->home_points = '6';
-        $fixture->away_points = '3';
-        $fixture->status      = 0;
-        $fixture->date        = '2026-05-01 19:30:00';
-        $fixture->start_time  = '19:30';
+        $fixture = new Fixture();
+        $fixture->set_winner_id( 10 );
+        $fixture->set_home_points( '6' );
+        $fixture->set_away_points( '3' );
+        $fixture->set_status( 0 );
+        $fixture->set_date( '2026-05-01 19:30:00' );
+        $fixture->set_start_time( '19:30' );
 
         $payload = $this->adapter->build_match_response( $fixture )->to_array();
 

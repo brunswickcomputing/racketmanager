@@ -62,11 +62,11 @@ class Results_Checker_Presenter_Test extends TestCase {
         $checker->player_id = 101;
 
         $match = new \Racketmanager\Domain\Fixture\Fixture();
-        $match->date = '2026-04-01';
-        $match->league_id = 1;
-        $match->home_team = '10';
-        $match->away_team = '20';
-        $match->season = '2026';
+        $match->set_date( '2026-04-01' );
+        $match->set_league_id( 1 );
+        $match->set_home_team( '10' );
+        $match->set_away_team( '20' );
+        $match->set_season( '2026' );
 
         $team_obj = new stdClass();
         $team_obj->title = 'Team A';
@@ -134,12 +134,12 @@ class Results_Checker_Presenter_Test extends TestCase {
 
     public function test_get_match_link_for_standard_league(): void {
         $match = new \Racketmanager\Domain\Fixture\Fixture();
-        $match->id = 100;
-        $match->league_id = 1;
-        $match->home_team = '10';
-        $match->away_team = '20';
-        $match->season = '2026';
-        $match->match_day = 5;
+        $match->set_id( 100 );
+        $match->set_league_id( 1 );
+        $match->set_home_team( '10' );
+        $match->set_away_team( '20' );
+        $match->set_season( '2026' );
+        $match->set_match_day( 5 );
 
         $competition = $this->createStub(\Racketmanager\Domain\Competition\Competition::class);
         $event = $this->createStub(\Racketmanager\Domain\Competition\Event::class);
@@ -187,8 +187,8 @@ class Results_Checker_Presenter_Test extends TestCase {
 
     public function test_get_match_link_for_box_league(): void {
         $match = new \Racketmanager\Domain\Fixture\Fixture();
-        $match->id = 100;
-        $match->league_id = 1;
+        $match->set_id( 100 );
+        $match->set_league_id( 1 );
 
         $event = $this->createStub(\Racketmanager\Domain\Competition\Event::class);
         $event->is_box = true;

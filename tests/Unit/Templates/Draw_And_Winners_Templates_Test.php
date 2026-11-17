@@ -18,7 +18,9 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
+use Racketmanager\Domain\Enums\Fixture_Status;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Team\Team;
@@ -293,12 +295,7 @@ class Draw_And_Winners_Templates_Test extends TestCase {
     }
 
     private function make_fixture( array $props ): Fixture {
-        $fixture = $this->createStub( Fixture::class );
-        foreach ( $props as $key => $value ) {
-            $fixture->$key = $value;
-        }
-
-        return $fixture;
+        return Fixture_Factory::from_object( (object) $props );
     }
 
     public function test_event_draw_handler_resolves_raw_fixtures_and_renders_team_entry_points_legs_and_byes(): void {
@@ -407,15 +404,18 @@ class Draw_And_Winners_Templates_Test extends TestCase {
     }
 
     public function test_draw_presenter_renders_rubber_sets_with_legacy_tiebreak_markers(): void {
-        $rubber = $this->createStub( Rubber::class );
-        $rubber->method( 'get_custom' )->willReturn( [
-            'sets' => [
-                [ 'player1' => '7', 'player2' => '6', 'tiebreak' => '3' ],
-                [ 'player1' => '2', 'player2' => '6', 'tiebreak' => null ],
-                [ 'player1' => '', 'player2' => '', 'tiebreak' => '' ],
-            ],
-        ] );
-        $fixture = $this->make_fixture( [ 'id' => 901, 'home_team' => '31', 'away_team' => '32', 'winner_id' => 32, 'rubbers' => [ $rubber ], 'is_retired' => true ] );
+        $rubber = Rubber::from_object(
+            (object) [
+                'custom' => [
+                    'sets' => [
+                        [ 'player1' => '7', 'player2' => '6', 'tiebreak' => '3' ],
+                        [ 'player1' => '2', 'player2' => '6', 'tiebreak' => null ],
+                        [ 'player1' => '', 'player2' => '', 'tiebreak' => '' ],
+                    ],
+                ],
+            ]
+        );
+        $fixture = $this->make_fixture( [ 'id' => 901, 'home_team' => '31', 'away_team' => '32', 'winner_id' => 32, 'rubbers' => [ $rubber ], 'status' => Fixture_Status::RETIRED->value ] );
         $details = (object) [
             'fixture'   => $fixture,
             'home_team' => new Team_Details_DTO( $this->make_team( 31, 'Home Pair' ) ),
@@ -441,7 +441,7 @@ class Draw_And_Winners_Templates_Test extends TestCase {
         $away = new Team_Details_DTO( $this->make_team( 42, 'Beta' ) );
 
         $walkover = Draw_Presenter::present_fixture( (object) [
-            'fixture'   => $this->make_fixture( [ 'id' => 1, 'home_team' => '41', 'away_team' => '42', 'winner_id' => 41, 'is_walkover' => true ] ),
+            'fixture'   => $this->make_fixture( [ 'id' => 1, 'home_team' => '41', 'away_team' => '42', 'winner_id' => 41, 'status' => Fixture_Status::WALKOVER->value ] ),
             'home_team' => $home,
             'away_team' => $away,
         ] );
@@ -517,20 +517,23 @@ class Draw_And_Winners_Templates_Test extends TestCase {
         $team2->method( 'get_id' )->willReturn( 102 );
         $team2->players = [ $p3, $p4 ];
 
-        $fixture = $this->createStub( Fixture::class );
-        $fixture->id = 159507;
-        $fixture->home_team = '101';
-        $fixture->away_team = '102';
-        $fixture->winner_id = 101;
         // Persisted set shape (custom['sets'] arrays keyed player1/player2/tiebreak), as stored for fixture 159507.
-        $fixture->custom = [
-            'sets' => [
-                1 => [ 'player1' => '6', 'player2' => '7', 'tiebreak' => '6', 'completed' => '1', 'settype' => 'MTB' ],
-                2 => [ 'player1' => '6', 'player2' => '3', 'tiebreak' => '', 'completed' => '1', 'settype' => 'MTB' ],
-                3 => [ 'player1' => '7', 'player2' => '6', 'tiebreak' => '4', 'completed' => '1', 'settype' => 'MTB' ],
-                4 => [ 'player1' => '', 'player2' => '', 'tiebreak' => '', 'completed' => '', 'settype' => 'null' ],
-            ],
-        ];
+        $fixture = Fixture_Factory::from_object(
+            (object) [
+                'id'        => 159507,
+                'home_team' => '101',
+                'away_team' => '102',
+                'winner_id' => 101,
+                'custom'    => [
+                    'sets' => [
+                        1 => [ 'player1' => '6', 'player2' => '7', 'tiebreak' => '6', 'completed' => '1', 'settype' => 'MTB' ],
+                        2 => [ 'player1' => '6', 'player2' => '3', 'tiebreak' => '', 'completed' => '1', 'settype' => 'MTB' ],
+                        3 => [ 'player1' => '7', 'player2' => '6', 'tiebreak' => '4', 'completed' => '1', 'settype' => 'MTB' ],
+                        4 => [ 'player1' => '', 'player2' => '', 'tiebreak' => '', 'completed' => '', 'settype' => 'null' ],
+                    ],
+                ],
+            ]
+        );
 
         // Intentionally generic/fallback link in DTO
         $generic_link = '/league/mens-doubles/match/159507/';

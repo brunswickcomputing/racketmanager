@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Racketmanager\Tests\Unit\Services\Export;
 
@@ -86,10 +87,10 @@ class Export_Service_Test extends TestCase {
     #[AllowMockObjectsWithoutExpectations]
     public function test_calendar_returns_ics_format() {
         $criteria = new Export_Criteria( array( 'league_id' => 1 ) );
-        $fixture = $this->createStub( Fixture::class );
-        $fixture->id = 123;
-        $fixture->date = '2026-04-13 12:00:00';
-        $fixture->location = 'Center Court';
+        $fixture = new Fixture();
+        $fixture->set_id( 123 );
+        $fixture->set_date( '2026-04-13 12:00:00' );
+        $fixture->set_location( 'Center Court' );
 
         $this->fixture_repository->method( 'find_by_criteria' )->willReturn( array( $fixture ) );
         $this->fixture_detail_service->method( 'get_fixture_with_details' )
@@ -106,10 +107,10 @@ class Export_Service_Test extends TestCase {
     #[AllowMockObjectsWithoutExpectations]
     public function test_calendar_handles_missing_details() {
         $criteria = new Export_Criteria( array( 'league_id' => 1 ) );
-        $fixture = $this->createStub( Fixture::class );
-        $fixture->id = 123;
-        $fixture->date = '2026-04-13 12:00:00';
-        $fixture->location = 'Center Court';
+        $fixture = new Fixture();
+        $fixture->set_id( 123 );
+        $fixture->set_date( '2026-04-13 12:00:00' );
+        $fixture->set_location( 'Center Court' );
 
         $this->fixture_repository->method( 'find_by_criteria' )->willReturn( array( $fixture ) );
         $this->fixture_detail_service->method( 'get_fixture_with_details' )->willReturn( null );
@@ -122,10 +123,10 @@ class Export_Service_Test extends TestCase {
     #[AllowMockObjectsWithoutExpectations]
     public function test_results_returns_json_format_by_default() {
         $criteria = new Export_Criteria( array( 'league_id' => 1 ) );
-        $fixture = $this->createStub( Fixture::class );
-        $fixture->date = '2026-04-13 12:00:00';
-        $fixture->start_time = '12:00';
-        $fixture->winner_id = 1;
+        $fixture = new Fixture();
+        $fixture->set_date( '2026-04-13 12:00:00' );
+        $fixture->set_start_time( '12:00' );
+        $fixture->set_winner_id( 1 );
 
         $this->fixture_repository->method( 'find_by_criteria' )->willReturn( array( $fixture ) );
         $this->fixture_detail_service->method( 'get_fixture_with_details' )
@@ -140,10 +141,10 @@ class Export_Service_Test extends TestCase {
     #[AllowMockObjectsWithoutExpectations]
     public function test_results_returns_csv_format() {
         $criteria = new Export_Criteria( array( 'league_id' => 1, 'format' => 'csv' ) );
-        $fixture = $this->createStub( Fixture::class );
-        $fixture->date = '2026-04-13 12:00:00';
-        $fixture->start_time = '12:00';
-        $fixture->winner_id = 1;
+        $fixture = new Fixture();
+        $fixture->set_date( '2026-04-13 12:00:00' );
+        $fixture->set_start_time( '12:00' );
+        $fixture->set_winner_id( 1 );
 
         $this->fixture_repository->method( 'find_by_criteria' )->willReturn( array( $fixture ) );
         $this->fixture_detail_service->method( 'get_fixture_with_details' )
@@ -157,9 +158,9 @@ class Export_Service_Test extends TestCase {
     #[AllowMockObjectsWithoutExpectations]
     public function test_results_handles_missing_details() {
         $criteria = new Export_Criteria( array( 'league_id' => 1 ) );
-        $fixture = $this->createStub( Fixture::class );
-        $fixture->date = '2026-04-13 12:00:00';
-        $fixture->start_time = '12:00';
+        $fixture = new Fixture();
+        $fixture->set_date( '2026-04-13 12:00:00' );
+        $fixture->set_start_time( '12:00' );
 
         $this->fixture_repository->method( 'find_by_criteria' )->willReturn( array( $fixture ) );
         $this->fixture_detail_service->method( 'get_fixture_with_details' )->willReturn( null );
@@ -173,9 +174,9 @@ class Export_Service_Test extends TestCase {
     #[AllowMockObjectsWithoutExpectations]
     public function test_results_omits_score_without_winner() {
         $criteria = new Export_Criteria( array( 'league_id' => 1 ) );
-        $fixture = $this->createStub( Fixture::class );
-        $fixture->date = '2026-04-13 12:00:00';
-        $fixture->winner_id = null;
+        $fixture = new Fixture();
+        $fixture->set_date( '2026-04-13 12:00:00' );
+        $fixture->set_winner_id( null );
 
         $this->fixture_repository->method( 'find_by_criteria' )->willReturn( array( $fixture ) );
         
@@ -187,8 +188,8 @@ class Export_Service_Test extends TestCase {
     #[AllowMockObjectsWithoutExpectations]
     public function test_results_populates_club_shortcode_from_repository() {
         $criteria = new Export_Criteria( array( 'club_id' => 5 ) );
-        $fixture = $this->createStub( Fixture::class );
-        $fixture->date = '2026-04-13 12:00:00';
+        $fixture = new Fixture();
+        $fixture->set_date( '2026-04-13 12:00:00' );
 
         $this->fixture_repository->method( 'find_by_criteria' )->willReturn( array( $fixture ) );
 
@@ -204,8 +205,8 @@ class Export_Service_Test extends TestCase {
     #[AllowMockObjectsWithoutExpectations]
     public function test_results_handles_missing_club() {
         $criteria = new Export_Criteria( array( 'club_id' => 999 ) );
-        $fixture = $this->createStub( Fixture::class );
-        $fixture->date = '2026-04-13 12:00:00';
+        $fixture = new Fixture();
+        $fixture->set_date( '2026-04-13 12:00:00' );
 
         $this->fixture_repository->method( 'find_by_criteria' )->willReturn( array( $fixture ) );
         $this->club_repository->method( 'find_by_id' )->willReturn( null );
@@ -218,9 +219,9 @@ class Export_Service_Test extends TestCase {
     #[AllowMockObjectsWithoutExpectations]
     public function test_fixtures_delegates_to_results() {
         $criteria = new Export_Criteria( array( 'league_id' => 1 ) );
-        $fixture = $this->createStub( Fixture::class );
-        $fixture->date = '2026-04-13 12:00:00';
-        $fixture->winner_id = 1;
+        $fixture = new Fixture();
+        $fixture->set_date( '2026-04-13 12:00:00' );
+        $fixture->set_winner_id( 1 );
 
         $this->fixture_repository->method( 'find_by_criteria' )->willReturn( array( $fixture ) );
         $this->fixture_detail_service->method( 'get_fixture_with_details' )
@@ -234,8 +235,8 @@ class Export_Service_Test extends TestCase {
     #[AllowMockObjectsWithoutExpectations]
     public function test_results_handles_missing_teams() {
         $criteria = new Export_Criteria( array( 'league_id' => 1 ) );
-        $fixture = $this->createStub( Fixture::class );
-        $fixture->date = '2026-04-13 12:00:00';
+        $fixture = new Fixture();
+        $fixture->set_date( '2026-04-13 12:00:00' );
 
         $this->fixture_repository->method( 'find_by_criteria' )->willReturn( array( $fixture ) );
         $this->fixture_detail_service->method( 'get_fixture_with_details' )

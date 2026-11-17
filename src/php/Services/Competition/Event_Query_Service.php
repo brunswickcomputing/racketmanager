@@ -254,17 +254,17 @@ class Event_Query_Service implements Event_Query_Service_Interface {
             if ( ! $fixture ) {
                 continue;
             }
-            $class          = ( 'alternate' === $class ) ? '' : 'alternate';
-            $fixture->class = $class;
+            $class = ( 'alternate' === $class ) ? '' : 'alternate';
+            $fixture->set_class( $class );
             if ( $player && $rubber_repo ) {
                 $fixture->set_rubbers( $rubber_repo->find_by_fixture_id( (int) $fixture->get_id(), (int) $player ) );
             }
             if ( ! empty( $fixture->date ) && 19 === strlen( (string) $fixture->date ) && preg_match( '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', (string) $fixture->date ) ) {
-                $fixture->date = substr( (string) $fixture->date, 0, 16 );
+                $fixture->set_date( substr( (string) $fixture->date, 0, 16 ) );
             }
             $fixture->get_league();
             if ( empty( $fixture->match_title ) ) {
-                $fixture->match_title = $fixture->get_title( __( 'Bye', 'racketmanager' ), __( 'Unknown', 'racketmanager' ) );
+                $fixture->set_match_title( $fixture->get_title( __( 'Bye', 'racketmanager' ), __( 'Unknown', 'racketmanager' ) ) );
             }
             $hydrated_matches[] = $fixture;
         }

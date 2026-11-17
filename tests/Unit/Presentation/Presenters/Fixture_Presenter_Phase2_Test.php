@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Racketmanager\Tests\Unit\Presentation\Presenters;
 
@@ -122,7 +123,7 @@ class Fixture_Presenter_Phase2_Test extends TestCase {
                 1 => ['player1' => 6, 'player2' => 4]
             ]
         ];
-        $fixture->rubbers = [$rubber];
+        $fixture->method( 'get_rubbers' )->willReturn( [ $rubber ] );
         $fixture->method('get_custom')->willReturn(['stats' => ['rubbers' => ['home' => 0, 'away' => 0]], 'comments' => ['home' => 'Home comment', 'away' => 'Away comment', 'result' => 'General comment']]);
         $fixture->method('get_comments')->willReturn(['home' => 'Home comment', 'away' => 'Away comment', 'result' => 'General comment']);
 

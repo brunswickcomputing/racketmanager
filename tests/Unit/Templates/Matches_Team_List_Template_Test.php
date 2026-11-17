@@ -97,20 +97,24 @@ class Matches_Team_List_Template_Test extends TestCase {
             league_id: 5,
             start_time: '14:00',
         );
-        $fixture->teams = [
-            'home' => (object) [ 'id' => 1, 'title' => 'Team A', 'club' => (object) [ 'id' => 10 ] ],
-            'away' => (object) [ 'id' => 2, 'title' => 'Team B', 'club' => (object) [ 'id' => 20 ] ],
-        ];
-        $fixture->league = (object) [
-            'id'    => 5,
-            'title' => 'Division 1',
-            'event' => (object) [
-                'id'          => 3,
-                'competition' => (object) [
-                    'type' => Competition_Type::LEAGUE,
+        $fixture->set_teams(
+            [
+                'home' => (object) [ 'id' => 1, 'title' => 'Team A', 'club' => (object) [ 'id' => 10 ] ],
+                'away' => (object) [ 'id' => 2, 'title' => 'Team B', 'club' => (object) [ 'id' => 20 ] ],
+            ]
+        );
+        $fixture->set_league(
+            (object) [
+                'id'    => 5,
+                'title' => 'Division 1',
+                'event' => (object) [
+                    'id'          => 3,
+                    'competition' => (object) [
+                        'type' => Competition_Type::LEAGUE,
+                    ],
                 ],
-            ],
-        ];
+            ]
+        );
 
         // Permission is resolved by the application service, not the entity.
         $this->assertFalse( method_exists( $fixture, 'is_update_allowed' ) );
@@ -149,17 +153,21 @@ class Matches_Team_List_Template_Test extends TestCase {
             league_id: 5,
             start_time: '14:00',
         );
-        $fixture->teams  = array(
-            'home' => (object) array( 'id' => 1, 'title' => 'Team A', 'club' => (object) array( 'id' => 10 ) ),
-            'away' => (object) array( 'id' => 2, 'title' => 'Team B', 'club' => (object) array( 'id' => 20 ) ),
+        $fixture->set_teams(
+            array(
+                'home' => (object) array( 'id' => 1, 'title' => 'Team A', 'club' => (object) array( 'id' => 10 ) ),
+                'away' => (object) array( 'id' => 2, 'title' => 'Team B', 'club' => (object) array( 'id' => 20 ) ),
+            )
         );
-        $fixture->league = (object) array(
-            'id'    => 5,
-            'title' => 'Division 1',
-            'event' => (object) array(
-                'id'          => 3,
-                'competition' => (object) array( 'type' => Competition_Type::LEAGUE ),
-            ),
+        $fixture->set_league(
+            (object) array(
+                'id'    => 5,
+                'title' => 'Division 1',
+                'event' => (object) array(
+                    'id'          => 3,
+                    'competition' => (object) array( 'type' => Competition_Type::LEAGUE ),
+                ),
+            )
         );
 
         return array( $fixture, $calls );
@@ -917,10 +925,12 @@ class Matches_Team_List_Template_Test extends TestCase {
             home_points: '4',
             away_points: '2'
         );
-        $fixture_win->teams = [
-            'home' => (object) [ 'id' => 10, 'title' => 'Club Team A', 'club' => (object) [ 'id' => 100 ] ],
-            'away' => (object) [ 'id' => 20, 'title' => 'Club Team B', 'club' => (object) [ 'id' => 200 ] ],
-        ];
+        $fixture_win->set_teams(
+            [
+                'home' => (object) [ 'id' => 10, 'title' => 'Club Team A', 'club' => (object) [ 'id' => 100 ] ],
+                'away' => (object) [ 'id' => 20, 'title' => 'Club Team B', 'club' => (object) [ 'id' => 200 ] ],
+            ]
+        );
 
         $fixture_loss = Fixture_Test_Factory::create(
             id: 302,
@@ -932,10 +942,12 @@ class Matches_Team_List_Template_Test extends TestCase {
             home_points: '1',
             away_points: '5'
         );
-        $fixture_loss->teams = [
-            'home' => (object) [ 'id' => 10, 'title' => 'Club Team A', 'club' => (object) [ 'id' => 100 ] ],
-            'away' => (object) [ 'id' => 20, 'title' => 'Club Team B', 'club' => (object) [ 'id' => 200 ] ],
-        ];
+        $fixture_loss->set_teams(
+            [
+                'home' => (object) [ 'id' => 10, 'title' => 'Club Team A', 'club' => (object) [ 'id' => 100 ] ],
+                'away' => (object) [ 'id' => 20, 'title' => 'Club Team B', 'club' => (object) [ 'id' => 200 ] ],
+            ]
+        );
 
         $fixture_tie = Fixture_Test_Factory::create(
             id: 303,
@@ -947,10 +959,12 @@ class Matches_Team_List_Template_Test extends TestCase {
             home_points: '3',
             away_points: '3'
         );
-        $fixture_tie->teams = [
-            'home' => (object) [ 'id' => 10, 'title' => 'Club Team A', 'club' => (object) [ 'id' => 100 ] ],
-            'away' => (object) [ 'id' => 20, 'title' => 'Club Team B', 'club' => (object) [ 'id' => 200 ] ],
-        ];
+        $fixture_tie->set_teams(
+            [
+                'home' => (object) [ 'id' => 10, 'title' => 'Club Team A', 'club' => (object) [ 'id' => 100 ] ],
+                'away' => (object) [ 'id' => 20, 'title' => 'Club Team B', 'club' => (object) [ 'id' => 200 ] ],
+            ]
+        );
 
         // Render with current_club = 100
         $current_club = 100;

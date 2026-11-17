@@ -815,11 +815,11 @@ final class Admin_Cup_Delivery_Test extends TestCase {
         $league_repository->method( 'find_by_id' )->willReturn( $league );
         $this->bind_league_repository( $league_repository );
 
-        $fixture            = new \Racketmanager\Domain\Fixture\Fixture();
-        $fixture->id        = 101;
-        $fixture->home_team = 'W1';
-        $fixture->away_team = 'W2';
-        $fixture->date      = '2024-05-01';
+        $fixture = new \Racketmanager\Domain\Fixture\Fixture();
+        $fixture->set_id( 101 );
+        $fixture->set_home_team( 'W1' );
+        $fixture->set_away_team( 'W2' );
+        $fixture->set_date( '2024-05-01' );
 
         $fixture_repo = $this->createStub( \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class );
         $fixture_repo->method( 'find_by_id' )->willReturn( $fixture );

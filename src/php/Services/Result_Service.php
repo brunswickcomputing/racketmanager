@@ -98,8 +98,8 @@ class Result_Service {
         }
 
         // 1. Update the fixture object with the result details
-        $fixture->set_result( $result );
-        $fixture->set_confirmed( $confirmed );
+        $fixture->record_result( $result );
+        $fixture->confirm_result( $confirmed, 'Y' === $confirmed ? current_time( 'mysql' ) : null );
 
         // 2. Persist to database (via Repository)
         $this->fixture_repository->save( $fixture );

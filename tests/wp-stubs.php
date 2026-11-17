@@ -799,6 +799,9 @@ namespace {
 
     if ( ! function_exists( 'current_time' ) ) {
         function current_time( string $type, $gmt = 0 ): string {
+            if ( isset( $GLOBALS['racketmanager_test_current_time'] ) ) {
+                return (string) $GLOBALS['racketmanager_test_current_time'];
+            }
             return date( 'Y-m-d H:i:s' );
         }
     }
@@ -2304,7 +2307,7 @@ namespace {
         define( 'RACKETMANAGER_VERSION', '1.0.0' );
     }
     if ( ! defined( 'RACKETMANAGER_DBVERSION' ) ) {
-        define( 'RACKETMANAGER_DBVERSION', '10.0.18' );
+        define( 'RACKETMANAGER_DBVERSION', '10.0.19' );
     }
     if ( ! defined( 'WP_CONTENT_DIR' ) ) {
         define( 'WP_CONTENT_DIR', sys_get_temp_dir() . '/wp-content' );

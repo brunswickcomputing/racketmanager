@@ -13,6 +13,7 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
+use Racketmanager\Domain\Enums\Fixture_Status;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Domain\DTO\Rubber\Rubber_Update_Request;
@@ -89,7 +90,23 @@ class Rubber_Result_Manager_Test extends TestCase {
 
         $this->rubber_repository->expects($this->once())->method('save')->with($rubber_mock);
         $this->rubber_repository->expects($this->once())->method('save_players')->with(10, $request->players);
-        $rubber_mock->expects($this->once())->method('set_players');
+        $rubber_mock->expects( $this->once() )->method( 'record_result' )
+            ->with(
+                2.0,
+                0.0,
+                1,
+                2,
+                Fixture_Status::COMPLETE->value,
+                $this->callback(
+                    function ( $custom ) {
+                        return is_array( $custom )
+                            && isset( $custom['sets'], $custom['stats'] )
+                            && [] === $custom['sets']
+                            && [] === $custom['stats'];
+                    }
+                )
+            );
+        $rubber_mock->expects( $this->once() )->method( 'assign_players' )->with( $request->players );
 
         $result = $this->manager->handle_rubber_update($fixture, $request);
 
@@ -98,6 +115,85 @@ class Rubber_Result_Manager_Test extends TestCase {
         $this->assertEquals(0.0, $result->away_points);
         $this->assertEquals(1, $result->winner_id);
 
+    }
+
+    public function test_handle_rubber_update_with_walkover_status_maps_arguments_and_custom_flag(): void {
+        $fixture_data            = new stdClass();
+        $fixture_data->id        = 123;
+        $fixture_data->league_id = 456;
+        $fixture_data->home_team = 1;
+        $fixture_data->away_team = 2;
+        $fixture                 = Fixture_Factory::from_object( $fixture_data );
+
+        $league = $this->createMock( League::class );
+        $league->method( 'get_id' )->willReturn( 456 );
+        $league->method( 'get_point_rule' )->willReturn( [ 'match_result' => 'sets' ] );
+        $league->num_sets_to_win = 2;
+        $league->num_sets        = 3;
+        $this->league_service->expects( $this->once() )->method( 'get_league' )->with( 456 )->willReturn( $league );
+
+        $rubber_mock = $this->createMock( Rubber::class );
+        $rubber_mock->method( 'get_id' )->willReturn( 10 );
+        $rubber_mock->expects( $this->once() )->method( 'calculate_result' )
+            ->with(
+                [ 'home' => [ 'walkover' => 1, 'team' => '1' ], 'away' => [ 'team' => '2' ] ],
+                [ 'match_result' => 'sets' ],
+                3
+            )
+            ->willReturn(
+                (object) [
+                    'home'   => 0.0,
+                    'away'   => 2.0,
+                    'winner' => 2,
+                    'loser'  => 1,
+                ]
+            );
+        $this->rubber_repository->expects( $this->once() )->method( 'find_by_id' )->with( 10 )->willReturn( $rubber_mock );
+
+        $request = new Rubber_Update_Request(
+            rubber_id: 10,
+            rubber_type: 'S',
+            rubber_number: 1,
+            players: [ 'home' => [ 1 => 10 ], 'away' => [ 1 => 20 ] ],
+            sets: [],
+            rubber_status: 'walkover_player1'
+        );
+
+        $this->score_validator->method( 'get_error' )->willReturn( false );
+        $this->score_validator->method( 'get_sets' )->willReturn( [] );
+        $this->score_validator->method( 'get_stats' )->willReturn( [] );
+        $this->score_validator->method( 'get_points' )->willReturn( [ 'home' => [ 'walkover' => 1 ] ] );
+
+        $this->player_validator->method( 'apply_dummy_players' )->willReturn( $request->players );
+
+        $this->rubber_repository->expects( $this->once() )->method( 'save' )->with( $rubber_mock );
+        $this->rubber_repository->expects( $this->once() )->method( 'save_players' )->with( 10, $request->players );
+        $rubber_mock->expects( $this->once() )
+            ->method( 'record_result' )
+            ->with(
+                0.0,
+                2.0,
+                2,
+                1,
+                Fixture_Status::WALKOVER->value,
+                $this->callback(
+                    function ( $custom ) {
+                        return is_array( $custom )
+                            && isset( $custom['sets'], $custom['stats'], $custom['walkover'] )
+                            && 'home' === $custom['walkover'];
+                    }
+                )
+            );
+        $rubber_mock->expects( $this->once() )->method( 'assign_players' )->with( $request->players );
+
+        $result = $this->manager->handle_rubber_update( $fixture, $request );
+
+        $this->assertEquals( 10, $result->rubber_id );
+        $this->assertEquals( 0.0, $result->home_points );
+        $this->assertEquals( 2.0, $result->away_points );
+        $this->assertEquals( 2, $result->winner_id );
+        $this->assertEquals( Fixture_Status::WALKOVER->value, $result->status );
+        $this->assertEquals( 'home', $result->custom['walkover'] );
     }
 
     public function test_handle_rubber_update_passes_rubber_and_league_type_to_validator(): void {

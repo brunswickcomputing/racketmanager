@@ -108,36 +108,37 @@ class Fixture_Repository implements Fixture_Repository_Interface {
     public function save( object $entity ): bool|int {
         /** @var Fixture $entity */
         $data = array(
-            'group'           => $entity->get_group(),
-            'date'            => Fixture_Time_Parser::to_mysql_datetime( $entity->get_date() ),
-            'date_original'   => Fixture_Time_Parser::to_mysql_datetime( $entity->get_date_original() ),
-            'home_team'       => $entity->get_home_team(),
-            'away_team'       => $entity->get_away_team(),
-            'match_day'       => $entity->get_match_day(),
-            'location'        => $entity->get_location(),
-            'host'            => $entity->get_host(),
-            'league_id'       => $entity->get_league_id(),
-            'season'          => $entity->get_season(),
-            'home_points'     => $entity->get_home_points(),
-            'away_points'     => $entity->get_away_points(),
-            'winner_id'       => $entity->get_winner_id(),
-            'loser_id'        => $entity->get_loser_id(),
-            'status'          => $entity->get_status(),
-            'linked_match'    => $entity->get_linked_fixture(),
-            'leg'             => $entity->get_leg(),
-            'winner_id_tie'   => $entity->get_winner_id_tie(),
-            'loser_id_tie'    => $entity->get_loser_id_tie(),
-            'home_points_tie' => $entity->get_home_points_tie(),
-            'away_points_tie' => $entity->get_away_points_tie(),
-            'post_id'         => $entity->get_post_id(),
-            'final'           => $entity->get_final(),
-            'custom'          => maybe_serialize( $entity->get_custom() ),
-            'confirmed'       => $entity->get_confirmed(),
-            'home_captain'    => $entity->get_home_approver(),
-            'away_captain'    => $entity->get_away_approver(),
-            'comments'        => maybe_serialize( $entity->get_comments() ),
-            'updated'         => current_time( 'mysql' ),
-            'updated_user'    => get_current_user_id(),
+            'group'                 => $entity->get_group(),
+            'date'                  => Fixture_Time_Parser::to_mysql_datetime( $entity->get_date() ),
+            'date_original'         => Fixture_Time_Parser::to_mysql_datetime( $entity->get_date_original() ),
+            'home_team'             => $entity->get_home_team(),
+            'away_team'             => $entity->get_away_team(),
+            'match_day'             => $entity->get_match_day(),
+            'location'              => $entity->get_location(),
+            'host'                  => $entity->get_host(),
+            'league_id'             => $entity->get_league_id(),
+            'season'                => $entity->get_season(),
+            'home_points'           => $entity->get_home_points(),
+            'away_points'           => $entity->get_away_points(),
+            'winner_id'             => $entity->get_winner_id(),
+            'loser_id'              => $entity->get_loser_id(),
+            'status'                => $entity->get_status(),
+            'linked_match'          => $entity->get_linked_fixture(),
+            'leg'                   => $entity->get_leg(),
+            'winner_id_tie'         => $entity->get_winner_id_tie(),
+            'loser_id_tie'          => $entity->get_loser_id_tie(),
+            'home_points_tie'       => $entity->get_home_points_tie(),
+            'away_points_tie'       => $entity->get_away_points_tie(),
+            'post_id'               => $entity->get_post_id(),
+            'final'                 => $entity->get_final(),
+            'custom'                => maybe_serialize( $entity->get_custom() ),
+            'confirmed'             => $entity->get_confirmed(),
+            'date_result_confirmed' => $entity->get_date_result_confirmed(),
+            'home_captain'          => $entity->get_home_approver(),
+            'away_captain'          => $entity->get_away_approver(),
+            'comments'              => maybe_serialize( $entity->get_comments() ),
+            'updated'               => current_time( 'mysql' ),
+            'updated_user'          => get_current_user_id(),
         );
 
         if ( ! empty( $entity->get_home_points() ) || ! empty( $entity->get_away_points() ) ) {
@@ -170,6 +171,7 @@ class Fixture_Repository implements Fixture_Repository_Interface {
             '%s', // final.
             '%s', // custom.
             '%s', // confirmed.
+            '%s', // date_result_confirmed.
             '%d', // home_captain.
             '%d', // away_captain.
             '%s', // comments.
@@ -299,7 +301,7 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         if ( ! $fixture ) {
             $select = '*';
             if ( $legacy ) {
-                $select = "`final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(`date_original`, '%Y-%m-%d %H:%i') AS date_original, DATE_FORMAT(`date`, '%e') AS day, DATE_FORMAT(`date`, '%c') AS month, DATE_FORMAT(`date`, '%Y') AS year, DATE_FORMAT(`date`, '%H') AS `hour`, DATE_FORMAT(`date`, '%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `custom`, `updated`, `updated_user`, `confirmed`, `home_captain`, `away_captain`, `comments`, `status`, `host`, `linked_match`, `leg`, `winner_id_tie`, `loser_id_tie`, `home_points_tie`, `away_points_tie`, `updated`, `date_result_entered`";
+                $select = "`final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(`date_original`, '%Y-%m-%d %H:%i') AS date_original, DATE_FORMAT(`date`, '%e') AS day, DATE_FORMAT(`date`, '%c') AS month, DATE_FORMAT(`date`, '%Y') AS year, DATE_FORMAT(`date`, '%H') AS `hour`, DATE_FORMAT(`date`, '%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `custom`, `updated`, `updated_user`, `confirmed`, `date_result_confirmed`, `home_captain`, `away_captain`, `comments`, `status`, `host`, `linked_match`, `leg`, `winner_id_tie`, `loser_id_tie`, `home_points_tie`, `away_points_tie`, `updated`, `date_result_entered`";
             }
 
             $query = $this->wpdb->prepare(

@@ -822,8 +822,8 @@ class Championship_Admin_Integration_Test extends TestCase {
      */
     public function test_fixture_accepts_integer_and_string_home_and_away_teams(): void {
         $fixture = new Fixture();
-        $fixture->home_team = 501;
-        $fixture->away_team = 502;
+        $fixture->set_home_team( 501 );
+        $fixture->set_away_team( 502 );
 
         self::assertSame( '501', $fixture->get_home_team() );
         self::assertSame( '502', $fixture->get_away_team() );

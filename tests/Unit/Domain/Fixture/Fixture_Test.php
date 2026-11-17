@@ -326,18 +326,16 @@ final class Fixture_Test extends TestCase {
     }
 
     public function test_get_start_time_normalizes_empty_and_midnight_values(): void {
-        $fixture = new Fixture();
-
-        $fixture->start_time = '00:00:00';
+        $fixture = Fixture_Factory::from_array( [ 'start_time' => '00:00:00' ] );
         $this->assertNull( $fixture->get_start_time() );
 
-        $fixture->start_time = '00:00';
+        $fixture = Fixture_Factory::from_array( [ 'start_time' => '00:00' ] );
         $this->assertNull( $fixture->get_start_time() );
 
-        $fixture->start_time = '';
+        $fixture = Fixture_Factory::from_array( [ 'start_time' => '' ] );
         $this->assertNull( $fixture->get_start_time() );
 
-        $fixture->start_time = '19:45:00';
+        $fixture = Fixture_Factory::from_array( [ 'start_time' => '19:45:00' ] );
         $this->assertSame( '19:45', $fixture->get_start_time() );
     }
 
@@ -412,5 +410,278 @@ final class Fixture_Test extends TestCase {
 
         $this->expectException( \InvalidArgumentException::class );
         $fixture_with_time->set_start_time( '7pm' );
+    }
+
+    public function test_asymmetric_visibility_rejects_external_writes(): void {
+        $fixture = new Fixture();
+
+        $this->expectException( \Error::class );
+        $this->expectExceptionMessageMatches( '/Cannot modify private\(set\) property/' );
+
+        /** @phpstan-ignore-next-line */
+        $fixture->date = '2026-12-01 10:00:00';
+    }
+
+    public function test_asymmetric_visibility_rejects_indirect_array_modification(): void {
+        $fixture = new Fixture();
+        $fixture->set_teams( array( 'home' => 'Team A' ) );
+
+        $this->expectException( \Error::class );
+        $this->expectExceptionMessageMatches( '/Cannot indirectly modify private\(set\) property/' );
+
+        /** @phpstan-ignore-next-line */
+        $fixture->teams['home'] = 'Team B';
+    }
+
+    public function test_set_class_and_set_match_title_accessors(): void {
+        $fixture = new Fixture();
+        $this->assertNull( $fixture->class );
+        $this->assertNull( $fixture->match_title );
+
+        $fixture->set_class( 'alternate' );
+        $fixture->set_match_title( 'Finals Match' );
+
+        $this->assertSame( 'alternate', $fixture->class );
+        $this->assertSame( 'Finals Match', $fixture->match_title );
+    }
+
+    public function test_set_final_round_updates_fixture_property(): void {
+        $fixture = new Fixture();
+
+        $fixture->set_final_round( 'Semi-final' );
+        $this->assertSame( 'Semi-final', $fixture->final_round );
+
+        $fixture->set_final_round( null );
+        $this->assertNull( $fixture->final_round );
+    }
+
+    public function test_properties_are_readable_natively_after_hydration(): void {
+        $dto = new Fixture_Hydration_DTO(
+            id: 42,
+            date: '2026-06-15 19:30:00',
+            home_team: 'Home Club',
+            away_team: 'Away Club',
+            status: 1,
+            winner_id: 10,
+            home_points: '4',
+            away_points: '2',
+        );
+        $fixture = new Fixture( $dto );
+
+        $this->assertSame( 42, $fixture->id );
+        $this->assertSame( '2026-06-15 19:30:00', $fixture->date );
+        $this->assertSame( 'Home Club', $fixture->home_team );
+        $this->assertSame( 'Away Club', $fixture->away_team );
+        $this->assertSame( 1, $fixture->status );
+        $this->assertSame( 10, $fixture->winner_id );
+        $this->assertSame( '4', $fixture->home_points );
+        $this->assertSame( '2', $fixture->away_points );
+    }
+
+    public function test_record_result_synchronizes_state_atomically(): void {
+        $fixture = Fixture_Factory::from_object( (object) [ 'id' => 1 ] );
+
+        $result = new Result(
+            home_points: 4.5,
+            away_points: 2.5,
+            winner_id: 11,
+            loser_id: 22,
+            status: 1, // Walkover
+            sets: [ [ 'p1' => 6, 'p2' => 0 ] ],
+            custom: [ 'notes' => 'Match completed under walkover rule' ]
+        );
+
+        $fixture->record_result( $result );
+
+        $this->assertSame( '4.5', $fixture->home_points );
+        $this->assertSame( '2.5', $fixture->away_points );
+        $this->assertSame( 11, $fixture->winner_id );
+        $this->assertSame( 22, $fixture->loser_id );
+        $this->assertSame( 1, $fixture->status );
+        $this->assertTrue( $fixture->is_walkover );
+        $this->assertTrue( $fixture->is_walkover() );
+        $this->assertFalse( $fixture->is_pending );
+        $this->assertSame( [ [ 'p1' => 6, 'p2' => 0 ] ], $fixture->custom['sets'] );
+        $this->assertSame( 'Match completed under walkover rule', $fixture->custom['notes'] );
+    }
+
+    public function test_confirm_result_with_default_arguments(): void {
+        $fixture = new Fixture();
+        $this->assertNull( $fixture->confirmed );
+        $this->assertNull( $fixture->date_result_entered );
+        $this->assertNull( $fixture->date_result_confirmed );
+
+        $fixture->confirm_result();
+
+        $this->assertSame( 'Y', $fixture->confirmed );
+        $this->assertNull( $fixture->date_result_confirmed, 'domain must not read the clock' );
+        $this->assertNull( $fixture->date_result_entered, 'date_result_entered must not be touched' );
+    }
+
+    public function test_confirm_result_sets_supplied_timestamp(): void {
+        $fixture = new Fixture();
+        $fixture->confirm_result( 'Y', '2026-11-17 12:00:00' );
+
+        $this->assertSame( 'Y', $fixture->confirmed );
+        $this->assertSame( '2026-11-17 12:00:00', $fixture->date_result_confirmed );
+        $this->assertNull( $fixture->date_result_entered );
+    }
+
+    public function test_confirm_result_without_date_keeps_existing_timestamp(): void {
+        $fixture = new Fixture();
+        $fixture->confirm_result( 'Y', '2026-11-17 12:00:00' );
+        $fixture->confirm_result( 'Y' );
+
+        $this->assertSame( '2026-11-17 12:00:00', $fixture->date_result_confirmed );
+
+        $fixture->confirm_result( 'Y', '2026-11-18 09:15:00' );
+        $this->assertSame( '2026-11-18 09:15:00', $fixture->date_result_confirmed );
+    }
+
+    public function test_confirm_result_non_confirmed_status_clears_timestamp(): void {
+        $fixture = new Fixture();
+        $fixture->confirm_result( 'Y', '2026-11-17 12:00:00' );
+
+        $fixture->confirm_result( 'P' );
+        $this->assertSame( 'P', $fixture->confirmed );
+        $this->assertNull( $fixture->date_result_confirmed );
+
+        $fixture->confirm_result( 'Y', '2026-11-17 13:00:00' );
+        $fixture->confirm_result( 'N', '2026-11-17 14:00:00' );
+        $this->assertSame( 'N', $fixture->confirmed );
+        $this->assertNull( $fixture->date_result_confirmed, 'explicit date is ignored when not confirming' );
+
+        $fixture->confirm_result( 'Y', '2026-11-17 15:00:00' );
+        $fixture->confirm_result( null );
+        $this->assertNull( $fixture->confirmed );
+        $this->assertNull( $fixture->date_result_confirmed );
+    }
+
+    public function test_reset_result_clears_date_result_confirmed(): void {
+        $fixture = new Fixture();
+        $fixture->confirm_result( 'Y', '2026-11-17 12:00:00' );
+        $this->assertSame( '2026-11-17 12:00:00', $fixture->date_result_confirmed );
+
+        $fixture->reset_result();
+        $this->assertNull( $fixture->date_result_confirmed );
+        $this->assertNull( $fixture->confirmed );
+    }
+
+    public function test_hydration_populates_date_result_confirmed(): void {
+        $fixture = Fixture_Factory::from_object(
+            (object) [
+                'id'                    => 1,
+                'date_result_confirmed' => '2026-11-17 14:30:00',
+            ]
+        );
+
+        $this->assertSame( '2026-11-17 14:30:00', $fixture->date_result_confirmed );
+    }
+
+    public function test_record_result_with_empty_sets(): void {
+        $fixture = Fixture_Factory::from_object( (object) [ 'id' => 1 ] );
+
+        $result = new Result(
+            home_points: 3.0,
+            away_points: 1.0,
+            winner_id: 5,
+            loser_id: 6,
+            status: 0,
+            sets: [],
+            custom: [ 'notes' => 'No sets recorded' ]
+        );
+
+        $fixture->record_result( $result );
+
+        $this->assertSame( '3', $fixture->home_points );
+        $this->assertSame( '1', $fixture->away_points );
+        $this->assertSame( 5, $fixture->winner_id );
+        $this->assertSame( 6, $fixture->loser_id );
+        $this->assertArrayNotHasKey( 'sets', $fixture->custom );
+        $this->assertSame( 'No sets recorded', $fixture->custom['notes'] );
+    }
+
+    public function test_record_result_repeated_overwrites_previous_result_and_flags(): void {
+        $fixture = Fixture_Factory::from_object( (object) [ 'id' => 1 ] );
+
+        // First: Walkover result
+        $result_walkover = new Result(
+            home_points: 4.0,
+            away_points: 0.0,
+            winner_id: 11,
+            loser_id: 22,
+            status: 1, // Walkover
+            sets: [ [ 'p1' => 6, 'p2' => 0 ] ],
+            custom: [ 'walkover' => true ]
+        );
+        $fixture->record_result( $result_walkover );
+
+        $this->assertTrue( $fixture->is_walkover );
+        $this->assertSame( '4', $fixture->home_points );
+        $this->assertSame( 11, $fixture->winner_id );
+
+        // Second: Overwrite with completed result
+        $result_complete = new Result(
+            home_points: 2.0,
+            away_points: 3.0,
+            winner_id: 22,
+            loser_id: 11,
+            status: 0, // Complete
+            sets: [ [ 'p1' => 4, 'p2' => 6 ], [ 'p1' => 2, 'p2' => 6 ] ],
+            custom: []
+        );
+        $fixture->record_result( $result_complete );
+
+        $this->assertFalse( $fixture->is_walkover );
+        $this->assertSame( '2', $fixture->home_points );
+        $this->assertSame( '3', $fixture->away_points );
+        $this->assertSame( 22, $fixture->winner_id );
+        $this->assertSame( 11, $fixture->loser_id );
+        $this->assertSame( 0, $fixture->status );
+        $this->assertSame( [ [ 'p1' => 4, 'p2' => 6 ], [ 'p1' => 2, 'p2' => 6 ] ], $fixture->custom['sets'] );
+    }
+
+    public function test_reschedule_with_empty_and_zero_date(): void {
+        $fixture = new Fixture();
+        $fixture->reschedule( '2026-11-25 18:30:00' );
+        $this->assertSame( '18:30', $fixture->get_start_time() );
+
+        // Reschedule to empty string
+        $fixture->reschedule( '' );
+        $this->assertSame( '', $fixture->date );
+        $this->assertNull( $fixture->get_start_time() );
+
+        // Reschedule to zero date
+        $fixture->reschedule( '0000-00-00 00:00:00' );
+        $this->assertSame( '0000-00-00 00:00:00', $fixture->date );
+        $this->assertNull( $fixture->get_start_time() );
+    }
+
+    public function test_reschedule_updates_date_time_and_location(): void {
+        $fixture = new Fixture();
+        $fixture->reschedule( '2026-11-25', '18:30', 'Court 3' );
+
+        $this->assertSame( '2026-11-25 18:30:00', $fixture->date );
+        $this->assertSame( '18:30', $fixture->get_start_time() );
+        $this->assertSame( 'Court 3', $fixture->location );
+    }
+
+    public function test_reschedule_preserves_location_when_omitted(): void {
+        $fixture = new Fixture();
+        $fixture->set_location( 'Original Venue' );
+
+        $fixture->reschedule( '2026-12-05 14:00:00' );
+
+        $this->assertSame( '2026-12-05 14:00:00', $fixture->date );
+        $this->assertSame( '14:00', $fixture->get_start_time() );
+        $this->assertSame( 'Original Venue', $fixture->location );
+    }
+
+    public function test_assign_teams_updates_both_teams(): void {
+        $fixture = new Fixture();
+        $fixture->assign_teams( 101, '202' );
+
+        $this->assertSame( '101', $fixture->home_team );
+        $this->assertSame( '202', $fixture->away_team );
     }
 }

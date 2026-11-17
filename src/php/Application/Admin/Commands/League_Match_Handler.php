@@ -232,21 +232,38 @@ final readonly class League_Match_Handler {
                     $match->date = $date;
                 }
             }
-            $match->league_id = isset( $league->id ) ? intval( $league->id ) : $match->league_id;
-            $match->match_day = null;
+            $league_id = isset( $league->id ) ? intval( $league->id ) : $match->league_id;
+            $match_day = null;
             if ( isset( $command->match_day ) ) {
                 if ( is_array( $command->match_day ) ) {
-                    $match->match_day = isset( $command->match_day[ $i ] ) ? intval( $command->match_day[ $i ] ) : null;
+                    $match_day = isset( $command->match_day[ $i ] ) ? intval( $command->match_day[ $i ] ) : null;
                 } elseif ( ! empty( $command->match_day ) ) {
-                    $match->match_day = intval( $command->match_day );
+                    $match_day = intval( $command->match_day );
                 }
             }
 
-            $match->host        = isset( $command->host[ $i ] ) ? $command->host[ $i ] : null;
-            $match->home_team   = isset( $command->home_team[ $i ] ) ? $command->home_team[ $i ] : '';
-            $match->away_team   = isset( $command->away_team[ $i ] ) ? $command->away_team[ $i ] : '';
-            $match->location    = isset( $command->location[ $i ] ) ? $command->location[ $i ] : null;
-            $match->final_round = isset( $command->final ) ? $command->final : null;
+            $host        = isset( $command->host[ $i ] ) ? $command->host[ $i ] : null;
+            $home_team   = isset( $command->home_team[ $i ] ) ? $command->home_team[ $i ] : '';
+            $away_team   = isset( $command->away_team[ $i ] ) ? $command->away_team[ $i ] : '';
+            $location    = isset( $command->location[ $i ] ) ? $command->location[ $i ] : null;
+            $final_round = isset( $command->final ) ? $command->final : null;
+
+            if ( $match instanceof Fixture ) {
+                $match->set_league_id( $league_id );
+                $match->set_match_day( $match_day );
+                $match->set_host( $host );
+                $match->assign_teams( $home_team, $away_team );
+                $match->set_location( $location );
+                $match->set_final_round( $final_round );
+            } else {
+                $match->league_id   = $league_id;
+                $match->match_day   = $match_day;
+                $match->host        = $host;
+                $match->home_team   = $home_team;
+                $match->away_team   = $away_team;
+                $match->location    = $location;
+                $match->final_round = $final_round;
+            }
 
             $this->fixture_service->update_match( $match );
         }

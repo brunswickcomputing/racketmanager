@@ -370,11 +370,11 @@ final class Player_Query_Service_Test extends TestCase {
 
 		$fixture = new Fixture();
 		$fixture->set_id( 101 );
-		$fixture->home_team = '10';
-		$fixture->away_team = '20';
-		$fixture->winner_id = 10;
-		$fixture->season    = '2026';
-		$fixture->league    = (object) array(
+		$fixture->set_home_team( '10' );
+		$fixture->set_away_team( '20' );
+		$fixture->set_winner_id( 10 );
+		$fixture->set_season( '2026' );
+		$league_data = (object) array(
 			'title'       => 'Division 2',
 			'num_rubbers' => 3,
 			'event'       => (object) array(
@@ -382,6 +382,7 @@ final class Player_Query_Service_Test extends TestCase {
 				'reverse_rubbers' => false,
 			),
 		);
+		$fixture->set_league( $league_data );
 		$this->assertNull( $fixture->rubbers );
 
 		$competition_repository = $this->createMock( Competition_Repository_Interface::class );
@@ -431,11 +432,11 @@ final class Player_Query_Service_Test extends TestCase {
 
 		$fixture = new Fixture();
 		$fixture->set_id( 102 );
-		$fixture->home_team = '10';
-		$fixture->away_team = '20';
-		$fixture->winner_id = 10;
-		$fixture->season    = '2026';
-		$fixture->league    = (object) array(
+		$fixture->set_home_team( '10' );
+		$fixture->set_away_team( '20' );
+		$fixture->set_winner_id( 10 );
+		$fixture->set_season( '2026' );
+		$league_data = (object) array(
 			'title'       => 'Division 2',
 			'num_rubbers' => 1,
 			'event'       => (object) array(
@@ -443,6 +444,7 @@ final class Player_Query_Service_Test extends TestCase {
 				'reverse_rubbers' => false,
 			),
 		);
+		$fixture->set_league( $league_data );
 		$fixture->set_rubbers( array( $rubber ) );
 
 		$competition_repository = $this->createMock( Competition_Repository_Interface::class );
@@ -474,11 +476,11 @@ final class Player_Query_Service_Test extends TestCase {
 
 		$fixture = new Fixture();
 		$fixture->set_id( 103 );
-		$fixture->home_team = '10';
-		$fixture->away_team = '20';
-		$fixture->winner_id = 10;
-		$fixture->season    = '2026';
-		$fixture->league    = (object) array(
+		$fixture->set_home_team( '10' );
+		$fixture->set_away_team( '20' );
+		$fixture->set_winner_id( 10 );
+		$fixture->set_season( '2026' );
+		$league_data = (object) array(
 			'title'       => 'Division 2',
 			'num_rubbers' => 1,
 			'event'       => (object) array(
@@ -486,6 +488,7 @@ final class Player_Query_Service_Test extends TestCase {
 				'reverse_rubbers' => false,
 			),
 		);
+		$fixture->set_league( $league_data );
 		$fixture->set_rubbers( array() );
 
 		$competition_repository = $this->createMock( Competition_Repository_Interface::class );
@@ -517,11 +520,11 @@ final class Player_Query_Service_Test extends TestCase {
 
 		$fixture = new Fixture();
 		$fixture->set_id( 104 );
-		$fixture->home_team = '10';
-		$fixture->away_team = '20';
-		$fixture->winner_id = 10;
-		$fixture->season    = '2026';
-		$fixture->league    = (object) array(
+		$fixture->set_home_team( '10' );
+		$fixture->set_away_team( '20' );
+		$fixture->set_winner_id( 10 );
+		$fixture->set_season( '2026' );
+		$league_data = (object) array(
 			'title'       => 'Division 2',
 			'num_rubbers' => 1,
 			'event'       => (object) array(
@@ -529,6 +532,7 @@ final class Player_Query_Service_Test extends TestCase {
 				'reverse_rubbers' => false,
 			),
 		);
+		$fixture->set_league( $league_data );
 
 		$competition_repository = $this->createMock( Competition_Repository_Interface::class );
 		$competition_repository->expects( $this->once() )
@@ -563,11 +567,11 @@ final class Player_Query_Service_Test extends TestCase {
 		// Fixture 101 in Premier Division: player 7 participated in rubber 1.
 		$fixture_101 = new Fixture();
 		$fixture_101->set_id( 101 );
-		$fixture_101->home_team = '10';
-		$fixture_101->away_team = '20';
-		$fixture_101->winner_id = 10;
-		$fixture_101->season    = '2026';
-		$fixture_101->league    = (object) array(
+		$fixture_101->set_home_team( '10' );
+		$fixture_101->set_away_team( '20' );
+		$fixture_101->set_winner_id( 10 );
+		$fixture_101->set_season( '2026' );
+		$league_data = (object) array(
 			'title'       => 'Premier Division',
 			'num_rubbers' => 2,
 			'event'       => (object) array(
@@ -575,15 +579,16 @@ final class Player_Query_Service_Test extends TestCase {
 				'reverse_rubbers' => false,
 			),
 		);
+		$fixture_101->set_league( $league_data );
 
 		// Fixture 201 in Division 1: player 7 participated in rubber 1.
 		$fixture_201 = new Fixture();
 		$fixture_201->set_id( 201 );
-		$fixture_201->home_team = '30';
-		$fixture_201->away_team = '40';
-		$fixture_201->winner_id = 40;
-		$fixture_201->season    = '2026';
-		$fixture_201->league    = (object) array(
+		$fixture_201->set_home_team( '30' );
+		$fixture_201->set_away_team( '40' );
+		$fixture_201->set_winner_id( 40 );
+		$fixture_201->set_season( '2026' );
+		$league_data = (object) array(
 			'title'       => 'Division 1',
 			'num_rubbers' => 2,
 			'event'       => (object) array(
@@ -591,6 +596,7 @@ final class Player_Query_Service_Test extends TestCase {
 				'reverse_rubbers' => false,
 			),
 		);
+		$fixture_201->set_league( $league_data );
 
 		// Rubber for Fixture 101: MD won by home team (Query Player is home #1).
 		$rubber_101 = $this->make_rubber(

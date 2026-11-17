@@ -43,6 +43,7 @@ readonly class Fixture_Hydration_DTO {
      * @param int|null $updated_user
      * @param string|null $updated
      * @param string|null $date_result_entered
+     * @param string|null $date_result_confirmed Result confirmation timestamp.
      * @param string|null $confirmed
      * @param int|null $home_captain
      * @param int|null $away_captain
@@ -83,6 +84,7 @@ readonly class Fixture_Hydration_DTO {
         public ?int $updated_user = null,
         public ?string $updated = null,
         public ?string $date_result_entered = null,
+        public ?string $date_result_confirmed = null,
         public ?string $confirmed = null,
         public ?int $home_captain = null,
         public ?int $away_captain = null,
@@ -168,6 +170,7 @@ readonly class Fixture_Hydration_DTO {
             updated_user: isset( $data->updated_user ) ? (int) $data->updated_user : null,
             updated: isset( $data->updated ) ? (string) $data->updated : null,
             date_result_entered: isset( $data->date_result_entered ) ? (string) $data->date_result_entered : null,
+            date_result_confirmed: isset( $data->date_result_confirmed ) ? (string) $data->date_result_confirmed : null,
             confirmed: isset( $data->confirmed ) ? (string) $data->confirmed : null,
             home_captain: isset( $data->home_captain ) ? (int) $data->home_captain : null,
             away_captain: isset( $data->away_captain ) ? (int) $data->away_captain : null,

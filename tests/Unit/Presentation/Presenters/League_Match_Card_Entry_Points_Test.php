@@ -512,7 +512,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $presenter = new Tournament_Presenter( 'd/m/Y', $service, team_match_row_presenter: $this->create_team_match_row_presenter() );
 
         $league_fixture         = Fixture_Test_Factory::create( id: 705 );
-        $league_fixture->league = (object) [ 'event' => (object) [ 'competition' => (object) [ 'type' => 'league' ] ] ];
+        $league_fixture->set_league( (object) [ 'event' => (object) [ 'competition' => (object) [ 'type' => 'league' ] ] ] );
 
         $matches = $presenter->present_match_list( [ $league_fixture ] );
 
@@ -668,11 +668,13 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
             home_points: '4',
             away_points: '2'
         );
-        $fixture->teams = [
-            'home' => (object) [ 'id' => 10, 'title' => 'Team Federer', 'club' => (object) [ 'id' => 50 ] ],
-            'away' => (object) [ 'id' => 20, 'title' => 'Team Nadal', 'club' => (object) [ 'id' => 60 ] ],
-        ];
-        $fixture->league      = (object) [ 'id' => 3, 'title' => 'Mens Singles Division' ];
+        $fixture->set_teams(
+            [
+                'home' => (object) [ 'id' => 10, 'title' => 'Team Federer', 'club' => (object) [ 'id' => 50 ] ],
+                'away' => (object) [ 'id' => 20, 'title' => 'Team Nadal', 'club' => (object) [ 'id' => 60 ] ],
+            ]
+        );
+        $fixture->set_league( (object) [ 'id' => 3, 'title' => 'Mens Singles Division' ] );
 
         $team = new class() extends Team {
             public function __construct() {
@@ -731,10 +733,12 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $league      = $this->create_league( $event, [] );
         [ $fixture ] = $this->build_played_fixture( $league, $event, $competition );
         $fixture->set_league( $league );
-        $fixture->teams = [
-            'home' => (object) [ 'id' => 10, 'title' => 'Team Federer', 'club' => (object) [ 'id' => 50 ] ],
-            'away' => (object) [ 'id' => 20, 'title' => 'Team Nadal', 'club' => (object) [ 'id' => 60 ] ],
-        ];
+        $fixture->set_teams(
+            [
+                'home' => (object) [ 'id' => 10, 'title' => 'Team Federer', 'club' => (object) [ 'id' => 50 ] ],
+                'away' => (object) [ 'id' => 20, 'title' => 'Team Nadal', 'club' => (object) [ 'id' => 60 ] ],
+            ]
+        );
 
         $competition_service = $this->createStub( Competition_Service::class );
         $competition_service->method( 'get_event_by_id' )->willReturn( $event );
@@ -883,7 +887,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $fixture->set_league( $league );
 
         // Event_Query_Service::get_club() groups the matches/results returned by the event repository by date.
-        $fixture->date = '2026-06-01 10:00:00';
+        $fixture->set_date( '2026-06-01 10:00:00' );
 
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
@@ -931,7 +935,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $league               = $this->create_league( $event, [] );
         [ $fixture, $detail ] = $this->build_played_fixture( $league, $event, $competition );
         $fixture->set_league( $league );
-        $fixture->date        = '2026-06-01 10:00:00';
+        $fixture->set_date( '2026-06-01 10:00:00' );
 
         $club            = $this->createStub( Club::class );
         $club->id        = 5;

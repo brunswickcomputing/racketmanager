@@ -359,9 +359,9 @@ final class Admin_Coordinator_Test extends TestCase {
         $league_repository->expects( self::once() )->method( 'find_names' )->willReturn( array( (object) array( 'id' => 42, 'name' => 'Division 1' ) ) );
 
         $fixture            = new \Racketmanager\Domain\Fixture\Fixture();
-        $fixture->id        = 77;
-        $fixture->league_id = 42;
-        $fixture->season    = '2026';
+        $fixture->set_id( 77 );
+        $fixture->set_league_id( 42 );
+        $fixture->set_season( '2026' );
 
         $fixture_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class );
         $fixture_repository->expects( self::once() )->method( 'find_by_post' )->with( 5 )->willReturn( $fixture );

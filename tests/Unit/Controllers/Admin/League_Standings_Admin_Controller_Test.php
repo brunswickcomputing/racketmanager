@@ -173,13 +173,13 @@ final class League_Standings_Admin_Controller_Test extends TestCase {
     public function test_get_championship_league_uses_finals_presenter_and_empty_matches(): void {
         $league = $this->create_league( 42, true );
 
-        $raw            = new Fixture();
-        $raw->id        = 77;
-        $raw->league_id = 42;
-        $raw->final     = 'semi';
-        $raw->season    = '2026';
-        $raw->date      = '2026-05-09 11:00:00';
-        $raw->location  = 'Club Court';
+        $raw = new Fixture();
+        $raw->set_id( 77 );
+        $raw->set_league_id( 42 );
+        $raw->set_final( 'semi' );
+        $raw->set_season( '2026' );
+        $raw->set_date( '2026-05-09 11:00:00' );
+        $raw->set_location( 'Club Court' );
 
         $home = $this->createStub( Team::class );
         $home->method( 'get_name' )->willReturn( 'Cup Home' );

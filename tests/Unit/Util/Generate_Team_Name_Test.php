@@ -28,11 +28,12 @@ final class Generate_Team_Name_Test extends TestCase {
 	}
 
 	public function test_generate_team_name_uses_fixture_relations_for_placeholder_title(): void {
-		$fixture         = Fixture_Factory::from_object( (object) array( 'id' => 145957 ) );
-		$fixture->teams  = array(
+		$fixture = Fixture_Factory::from_object( (object) array( 'id' => 145957 ) );
+		$teams   = array(
 			'home' => (object) array( 'title' => 'Westcliff Lawn Mixed 1' ),
 			'away' => (object) array( 'title' => 'Rayleigh Mixed 1' ),
 		);
+		$fixture->set_teams( $teams );
 
 		$fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
 		$fixture_repository->expects( $this->once() )
@@ -49,11 +50,12 @@ final class Generate_Team_Name_Test extends TestCase {
 	}
 
 	public function test_generate_team_name_winner_placeholder_title(): void {
-		$fixture        = Fixture_Factory::from_object( (object) array( 'id' => 145958 ) );
-		$fixture->teams = array(
+		$fixture = Fixture_Factory::from_object( (object) array( 'id' => 145958 ) );
+		$teams   = array(
 			'home' => (object) array( 'title' => 'Team Alpha' ),
 			'away' => (object) array( 'title' => 'Team Beta' ),
 		);
+		$fixture->set_teams( $teams );
 
 		$fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
 		$fixture_repository->expects( $this->once() )
@@ -112,11 +114,12 @@ final class Generate_Team_Name_Test extends TestCase {
 		$this->assertSame( 'Vainqueur de', Util::get_placeholder_team_title( '1_semi_1' ) );
 		$this->assertSame( 'Perdant de', Util::get_placeholder_team_title( '2_final_2' ) );
 
-		$fixture        = Fixture_Factory::from_object( (object) array( 'id' => 145959 ) );
-		$fixture->teams = array(
+		$fixture = Fixture_Factory::from_object( (object) array( 'id' => 145959 ) );
+		$teams   = array(
 			'home' => (object) array( 'title' => 'Alpha' ),
 			'away' => (object) array( 'title' => 'Beta' ),
 		);
+		$fixture->set_teams( $teams );
 		$fixture_repo_with_match = $this->createMock( Fixture_Repository_Interface::class );
 		$fixture_repo_with_match->expects( $this->once() )
 			->method( 'find_by_id_with_relations' )
@@ -137,11 +140,12 @@ final class Generate_Team_Name_Test extends TestCase {
 			->willReturnCallback( function ( int $id ) use ( $fixture_repository ) {
 				// Re-entrant call while resolving fixture 200 (cycle scenario)
 				$inner_title = Util::generate_team_name( '1_semi_200', $fixture_repository );
-				$fixture        = Fixture_Factory::from_object( (object) array( 'id' => 200 ) );
-				$fixture->teams = array(
+				$fixture = Fixture_Factory::from_object( (object) array( 'id' => 200 ) );
+				$teams   = array(
 					'home' => (object) array( 'title' => $inner_title ),
 					'away' => (object) array( 'title' => 'Team Gamma' ),
 				);
+				$fixture->set_teams( $teams );
 				return $fixture;
 			} );
 

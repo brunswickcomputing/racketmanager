@@ -198,9 +198,9 @@ final class Admin_Test extends TestCase {
             ->willReturn( $league );
 
         $fixture            = new Fixture();
-        $fixture->id        = 99;
-        $fixture->league_id = 10;
-        $fixture->season    = '2026';
+        $fixture->set_id( 99 );
+        $fixture->set_league_id( 10 );
+        $fixture->set_season( '2026' );
 
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repo->expects( self::once() )
@@ -338,9 +338,9 @@ final class Admin_Test extends TestCase {
             ->willReturn( $league );
 
         $fixture            = new Fixture();
-        $fixture->id        = 99;
-        $fixture->league_id = 10;
-        $fixture->season    = '2026';
+        $fixture->set_id( 99 );
+        $fixture->set_league_id( 10 );
+        $fixture->set_season( '2026' );
 
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repo->expects( self::once() )
@@ -425,12 +425,12 @@ final class Admin_Test extends TestCase {
         $calls        = [];
 
         $existing_match          = new Fixture();
-        $existing_match->id      = 101;
-        $existing_match->post_id = 77;
+        $existing_match->set_id( 101 );
+        $existing_match->set_post_id( 77 );
 
         $target_match          = new Fixture();
-        $target_match->id      = 202;
-        $target_match->post_id = 0;
+        $target_match->set_id( 202 );
+        $target_match->set_post_id( 0 );
 
         $fixture_repo->expects( self::once() )
             ->method( 'find_by_post' )
@@ -520,12 +520,12 @@ final class Admin_Test extends TestCase {
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
 
         $existing_match          = new Fixture();
-        $existing_match->id      = 101;
-        $existing_match->post_id = 77;
+        $existing_match->set_id( 101 );
+        $existing_match->set_post_id( 77 );
 
         $target_match          = new Fixture();
-        $target_match->id      = 202;
-        $target_match->post_id = 99;
+        $target_match->set_id( 202 );
+        $target_match->set_post_id( 99 );
 
         $fixture_repo->expects( self::once() )
             ->method( 'find_by_post' )
@@ -611,7 +611,7 @@ final class Admin_Test extends TestCase {
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
 
         $fixture = new Fixture();
-        $fixture->id = 202;
+        $fixture->set_id( 202 );
 
         $fixture_repo->expects( self::once() )
             ->method( 'find_by_post' )
@@ -642,7 +642,7 @@ final class Admin_Test extends TestCase {
 
     public function test_edit_match_report_rejects_malformed_current_match_id(): void {
         $existing_fixture = new Fixture();
-        $existing_fixture->id = 101;
+        $existing_fixture->set_id( 101 );
 
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repo->method( 'find_by_post' )->willReturn( $existing_fixture );
@@ -900,7 +900,7 @@ final class Admin_Test extends TestCase {
 
     public function test_edit_match_report_prevents_malicious_cross_post_detachment_when_existing_match_mismatches(): void {
         $existing_match     = new Fixture();
-        $existing_match->id = 101;
+        $existing_match->set_id( 101 );
 
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repo->expects( self::once() )->method( 'find_by_post' )->with( 77 )->willReturn( $existing_match );
@@ -956,8 +956,8 @@ final class Admin_Test extends TestCase {
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
 
         $target_match          = new Fixture();
-        $target_match->id      = 202;
-        $target_match->post_id = 99;
+        $target_match->set_id( 202 );
+        $target_match->set_post_id( 99 );
 
         $fixture_repo->expects( self::once() )
             ->method( 'find_by_post' )
@@ -996,12 +996,12 @@ final class Admin_Test extends TestCase {
         $calls        = [];
 
         $existing_match          = new Fixture();
-        $existing_match->id      = 101;
-        $existing_match->post_id = 77;
+        $existing_match->set_id( 101 );
+        $existing_match->set_post_id( 77 );
 
         $target_match          = new Fixture();
-        $target_match->id      = 202;
-        $target_match->post_id = 77;
+        $target_match->set_id( 202 );
+        $target_match->set_post_id( 77 );
 
         $fixture_repo->expects( self::once() )
             ->method( 'find_by_post' )

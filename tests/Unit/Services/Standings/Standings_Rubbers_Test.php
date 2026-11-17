@@ -35,13 +35,16 @@ class Standings_Rubbers_Test extends TestCase {
             'id' => 70, 'home_team' => '10', 'away_team' => '20',
             'winner_id' => 10, 'loser_id' => 20, 'home_points' => '2', 'away_points' => '0',
         ] );
-        $rubber = ( new \ReflectionClass( Rubber::class ) )->newInstanceWithoutConstructor();
-        $rubber->id = 71;
-        $rubber->winner_id = 10;
-        $rubber->loser_id = 20;
-        $rubber->home_points = 2;
-        $rubber->away_points = 0;
-        $rubber->sets = [ 1 => [ 'player1' => 6, 'player2' => 2 ], 2 => [ 'player1' => 6, 'player2' => 3 ] ];
+        $rubber = Rubber::from_object(
+            (object) [
+                'id'          => 71,
+                'winner_id'   => 10,
+                'loser_id'    => 20,
+                'home_points' => 2,
+                'away_points' => 0,
+                'custom'      => [ 'sets' => [ 1 => [ 'player1' => 6, 'player2' => 2 ], 2 => [ 'player1' => 6, 'player2' => 3 ] ] ],
+            ]
+        );
 
         $league = League_Test_Factory::from_object( (object) [ 'title' => 'Division 1' ] );
         $league->id = 12;

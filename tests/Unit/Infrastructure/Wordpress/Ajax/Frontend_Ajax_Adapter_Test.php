@@ -211,9 +211,12 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
     }
 
     private function create_rubber_with_recorder( int $rubber_number, ?array &$recorded_players, int $id = 1 ): Rubber {
-        $rubber = $this->createStub( Rubber::class );
+        $rubber = $this->getMockBuilder( Rubber::class )
+            ->disableOriginalConstructor()
+            ->onlyMethods( [ 'get_id', 'set_players' ] )
+            ->getMock();
         $rubber->method( 'get_id' )->willReturn( $id );
-        $rubber->rubber_number = $rubber_number;
+        $rubber->set_rubber_number( $rubber_number );
         $rubber->method( 'set_players' )->willReturnCallback(
             static function ( array $players ) use ( &$recorded_players ): void {
                 $recorded_players = $players;
@@ -635,10 +638,13 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
             2 => $this->create_player_dto( 10.0 ),
         ] );
 
-        $match = $this->createStub( Fixture::class );
-        $match->home_team = '100';
-        $match->away_team = '200';
-        $match->method( 'get_rubbers' )->willReturn( [] );
+        $match = Fixture_Factory::from_array(
+            [
+                'id'        => 555,
+                'home_team' => '100',
+                'away_team' => '200',
+            ]
+        );
 
         $this->setup_fixture_repo_for_match( 555, $match );
         $this->adapter = $this->make_adapter();

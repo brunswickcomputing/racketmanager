@@ -20,7 +20,7 @@ use wpdb;
 require_once __DIR__ . '/../../../wp-stubs.php';
 
 if ( ! defined( 'RACKETMANAGER_DBVERSION' ) ) {
-    define( 'RACKETMANAGER_DBVERSION', '10.0.18' );
+    define( 'RACKETMANAGER_DBVERSION', '10.0.19' );
 }
 
 #[AllowMockObjectsWithoutExpectations]
@@ -118,7 +118,7 @@ final class Upgrade_Admin_Controller_Test extends TestCase {
         self::assertSame( $level, ob_get_level() );
         self::assertFalse( $result['message_type'] );
         self::assertStringStartsWith( 'Upgrade successful', $result['message'] );
-        self::assertStringContainsString( '<p>starting 10.0.18 upgrade</p>', $result['message'] );
+        self::assertStringContainsString( '<p>starting 10.0.19 upgrade</p>', $result['message'] );
     }
 
     public function test_post_upgrade_reports_database_errors_instead_of_success(): void {
@@ -131,7 +131,7 @@ final class Upgrade_Admin_Controller_Test extends TestCase {
         self::assertStringContainsString( 'Upgrade failed', $result['message'] );
         self::assertStringContainsString( 'Duplicate column name', $result['message'] );
         self::assertStringNotContainsString( 'Upgrade successful', $result['message'] );
-        self::assertStringContainsString( '<p>starting 10.0.18 upgrade</p>', $result['message'] );
+        self::assertStringContainsString( '<p>starting 10.0.19 upgrade</p>', $result['message'] );
     }
 
     public function test_post_upgrade_reports_exceptions_and_restores_output_buffer(): void {

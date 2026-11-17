@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Racketmanager\Tests\Unit\Repositories;
 
@@ -59,6 +60,74 @@ class Fixture_Repository_Save_Test extends TestCase {
             ->willReturn(1);
 
         $this->repository->save($fixture);
+    }
+
+    public function test_save_persists_date_result_confirmed(): void {
+        $fixture = Fixture_Factory::from_object(
+            (object) [
+                'id'                    => 123,
+                'confirmed'             => 'Y',
+                'date_result_confirmed' => '2026-11-17 10:30:00',
+            ]
+        );
+
+        $this->wpdb->expects( $this->once() )
+            ->method( 'update' )
+            ->with(
+                'wp_racketmanager_matches',
+                $this->callback(
+                    function ( $data ) {
+                        return array_key_exists( 'date_result_confirmed', $data )
+                            && '2026-11-17 10:30:00' === $data['date_result_confirmed'];
+                    }
+                ),
+                [ 'id' => 123 ],
+                $this->anything(),
+                [ '%d' ]
+            )
+            ->willReturn( 1 );
+
+        $this->repository->save( $fixture );
+    }
+
+    public function test_save_writes_null_date_result_confirmed_when_unconfirmed(): void {
+        $fixture = Fixture_Factory::from_object( (object) [ 'id' => 123 ] );
+
+        $this->wpdb->expects( $this->once() )
+            ->method( 'update' )
+            ->with(
+                'wp_racketmanager_matches',
+                $this->callback( fn( $data ) => array_key_exists( 'date_result_confirmed', $data ) && null === $data['date_result_confirmed'] ),
+                [ 'id' => 123 ],
+                $this->anything(),
+                [ '%d' ]
+            )
+            ->willReturn( 1 );
+
+        $this->repository->save( $fixture );
+    }
+
+    public function test_save_data_and_format_arrays_stay_aligned(): void {
+        $fixture = Fixture_Factory::from_object( (object) [ 'id' => 123, 'date_result_confirmed' => '2026-11-17 10:30:00' ] );
+        $captured = [];
+
+        $this->wpdb->expects( $this->once() )
+            ->method( 'update' )
+            ->willReturnCallback(
+                function ( $table, $data, $where, $format ) use ( &$captured ) {
+                    $captured = [ $data, $format ];
+                    return 1;
+                }
+            );
+
+        $this->repository->save( $fixture );
+
+        [ $data, $format ] = $captured;
+        $keys = array_keys( $data );
+        $this->assertSame( count( $keys ), count( $format ) );
+        $this->assertSame( '%s', $format[ array_search( 'date_result_confirmed', $keys, true ) ] );
+        $this->assertSame( '%s', $format[ array_search( 'confirmed', $keys, true ) ] );
+        $this->assertSame( '%d', $format[ array_search( 'home_captain', $keys, true ) ] );
     }
 
     public function test_save_canonicalizes_datetimes(): void {

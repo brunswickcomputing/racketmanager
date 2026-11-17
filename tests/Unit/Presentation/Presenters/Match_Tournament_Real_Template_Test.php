@@ -406,7 +406,6 @@ class Match_Tournament_Real_Template_Test extends TestCase {
             loser_id: 20,
             status: 1
         );
-        $walkover_fixture->is_walkover = true;
 
         $league = $this->createStub( League::class );
         $league->title = 'Open';
@@ -434,7 +433,6 @@ class Match_Tournament_Real_Template_Test extends TestCase {
             loser_id: 20,
             status: 2
         );
-        $retired_fixture->is_retired = true;
 
         $detail_retired = new Fixture_Details_DTO(
             fixture: $retired_fixture,

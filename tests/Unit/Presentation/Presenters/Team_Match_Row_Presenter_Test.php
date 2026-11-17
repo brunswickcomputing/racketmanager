@@ -43,11 +43,13 @@ class Team_Match_Row_Presenter_Test extends TestCase {
             away_points: $away_points,
             status: $status,
         );
-        $fixture->teams = [
-            'home' => (object) [ 'id' => 1, 'title' => 'Team A', 'club' => (object) [ 'id' => 10 ] ],
-            'away' => (object) [ 'id' => 2, 'title' => 'Team B', 'club' => (object) [ 'id' => 20 ] ],
-        ];
-        $fixture->league = (object) [ 'id' => 5, 'title' => 'Division 1' ];
+        $fixture->set_teams(
+            [
+                'home' => (object) [ 'id' => 1, 'title' => 'Team A', 'club' => (object) [ 'id' => 10 ] ],
+                'away' => (object) [ 'id' => 2, 'title' => 'Team B', 'club' => (object) [ 'id' => 20 ] ],
+            ]
+        );
+        $fixture->set_league( (object) [ 'id' => 5, 'title' => 'Division 1' ] );
 
         return $fixture;
     }
@@ -56,11 +58,13 @@ class Team_Match_Row_Presenter_Test extends TestCase {
         $loader = $this->createMock( Fixture_Relation_Loader::class );
         $loader->expects( $this->once() )->method( 'load' )->willReturnCallback(
             static function ( Fixture $fixture ): Fixture {
-                $fixture->teams  = [
-                    'home' => (object) [ 'id' => 1, 'title' => 'Loaded Home', 'club' => (object) [ 'id' => 10 ] ],
-                    'away' => (object) [ 'id' => 2, 'title' => 'Loaded Away', 'club' => (object) [ 'id' => 20 ] ],
-                ];
-                $fixture->league = (object) [ 'id' => 5, 'title' => 'Loaded League' ];
+                $fixture->set_teams(
+                    [
+                        'home' => (object) [ 'id' => 1, 'title' => 'Loaded Home', 'club' => (object) [ 'id' => 10 ] ],
+                        'away' => (object) [ 'id' => 2, 'title' => 'Loaded Away', 'club' => (object) [ 'id' => 20 ] ],
+                    ]
+                );
+                $fixture->set_league( (object) [ 'id' => 5, 'title' => 'Loaded League' ] );
 
                 return $fixture;
             }
@@ -119,11 +123,13 @@ class Team_Match_Row_Presenter_Test extends TestCase {
 
     public function test_pending_match_without_start_time_defaults_to_vs(): void {
         $fixture = Fixture_Test_Factory::create( id: 504, date: '2026-10-12 00:00:00' );
-        $fixture->teams = [
-            'home' => (object) [ 'id' => 1, 'title' => 'Team A', 'club' => (object) [ 'id' => 10 ] ],
-            'away' => (object) [ 'id' => 2, 'title' => 'Team B', 'club' => (object) [ 'id' => 20 ] ],
-        ];
-        $fixture->league = (object) [ 'id' => 5, 'title' => 'Division 1' ];
+        $fixture->set_teams(
+            [
+                'home' => (object) [ 'id' => 1, 'title' => 'Team A', 'club' => (object) [ 'id' => 10 ] ],
+                'away' => (object) [ 'id' => 2, 'title' => 'Team B', 'club' => (object) [ 'id' => 20 ] ],
+            ]
+        );
+        $fixture->set_league( (object) [ 'id' => 5, 'title' => 'Division 1' ] );
 
         $row = $this->create_team_match_row_presenter()->present( $fixture );
 
@@ -181,8 +187,13 @@ class Team_Match_Row_Presenter_Test extends TestCase {
     }
 
     public function test_withdrawn_team_title_uses_team_name(): void {
-        $fixture                 = $this->loaded_fixture( 9 );
-        $fixture->teams['home']->is_withdrawn = true;
+        $fixture = $this->loaded_fixture( 9 );
+        $fixture->set_teams(
+            [
+                'home' => (object) [ 'id' => 1, 'title' => 'Team A', 'club' => (object) [ 'id' => 10 ], 'is_withdrawn' => true ],
+                'away' => (object) [ 'id' => 2, 'title' => 'Team B', 'club' => (object) [ 'id' => 20 ] ],
+            ]
+        );
 
         $row = $this->create_team_match_row_presenter()->present( $fixture );
 

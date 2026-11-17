@@ -25,7 +25,7 @@ use wpdb;
 require_once __DIR__ . '/../../wp-stubs.php';
 
 if ( ! defined( 'RACKETMANAGER_DBVERSION' ) ) {
-    define( 'RACKETMANAGER_DBVERSION', '10.0.18' );
+    define( 'RACKETMANAGER_DBVERSION', '10.0.19' );
 }
 
 final class Upgrade_Test extends TestCase {
@@ -92,6 +92,41 @@ final class Upgrade_Test extends TestCase {
         ( new Upgrade( $plugin, $db ) )->run();
     }
 
+    public function test_v10_0_19_adds_date_result_confirmed_column_when_missing(): void {
+        $db         = $this->createMock( wpdb::class );
+        $db->prefix = 'wp_';
+        $db->expects( self::once() )
+            ->method( 'get_var' )
+            ->with( "SHOW COLUMNS FROM `wp_racketmanager_matches` LIKE 'date_result_confirmed'" )
+            ->willReturn( null );
+        $db->expects( self::once() )
+            ->method( 'query' )
+            ->with( self::stringContains( 'ALTER TABLE `wp_racketmanager_matches` ADD `date_result_confirmed` DATETIME NULL DEFAULT NULL AFTER `date_result_entered`' ) );
+
+        $plugin = $this->make_plugin( '10.0.18' );
+        $plugin->expects( self::once() )
+            ->method( 'update_plugin_options' )
+            ->with( [ 'dbversion' => RACKETMANAGER_DBVERSION, 'keep' => 'me' ] );
+
+        $this->expectOutputString( '<p>starting 10.0.19 upgrade</p>' );
+
+        ( new Upgrade( $plugin, $db ) )->run();
+    }
+
+    public function test_v10_0_19_skips_alter_when_column_already_exists(): void {
+        $db         = $this->createMock( wpdb::class );
+        $db->prefix = 'wp_';
+        $db->expects( self::once() )->method( 'get_var' )->willReturn( 'date_result_confirmed' );
+        $db->expects( self::never() )->method( 'query' );
+
+        $plugin = $this->make_plugin( '10.0.18' );
+        $plugin->expects( self::once() )->method( 'update_plugin_options' );
+
+        $this->expectOutputString( '<p>starting 10.0.19 upgrade</p>' );
+
+        ( new Upgrade( $plugin, $db ) )->run();
+    }
+
     public function test_admin_upgrade_page_runs_the_upgrade_with_the_global_connection_and_flashes_its_output(): void {
         $_POST['doUpgrade']             = '1';
         $_REQUEST['racketmanager_nonce'] = 'nonce';
@@ -119,7 +154,7 @@ final class Upgrade_Test extends TestCase {
             ->with(
                 self::logicalAnd(
                     self::stringStartsWith( 'Upgrade successful' ),
-                    self::stringContains( '<p>starting 10.0.18 upgrade</p>' )
+                    self::stringContains( '<p>starting 10.0.19 upgrade</p>' )
                 ),
                 false
             );

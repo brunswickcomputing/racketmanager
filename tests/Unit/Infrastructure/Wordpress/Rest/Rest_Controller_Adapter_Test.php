@@ -295,17 +295,17 @@ final class Rest_Controller_Adapter_Test extends TestCase {
             competition_service: $comp_service
         );
 
-        $fixture              = new Fixture();
-        $fixture->id          = 99;
-        $fixture->league_id   = 7;
-        $fixture->home_team   = '10';
-        $fixture->away_team   = '20';
-        $fixture->winner_id   = 10;
-        $fixture->home_points = '5.5';
-        $fixture->away_points = '3.5';
-        $fixture->status      = 0;
-        $fixture->date        = '2026-07-01 18:00:00';
-        $fixture->start_time  = '18:00';
+        $fixture = new Fixture();
+        $fixture->set_id( 99 );
+        $fixture->set_league_id( 7 );
+        $fixture->set_home_team( '10' );
+        $fixture->set_away_team( '20' );
+        $fixture->set_winner_id( 10 );
+        $fixture->set_home_points( '5.5' );
+        $fixture->set_away_points( '3.5' );
+        $fixture->set_status( 0 );
+        $fixture->set_date( '2026-07-01 18:00:00' );
+        $fixture->set_start_time( '18:00' );
 
         $dto = $adapter->build_match_response( $fixture );
 
@@ -349,16 +349,16 @@ final class Rest_Controller_Adapter_Test extends TestCase {
         $adapter = new Rest_Controller_Adapter( team_repository: $team_repo );
 
         $f1 = new Fixture();
-        $f1->home_team = '10';
-        $f1->away_team = '999';
+        $f1->set_home_team( '10' );
+        $f1->set_away_team( '999' );
 
         $dto1 = $adapter->build_match_response( $f1 );
         self::assertSame( 'Park Tennis Club', $dto1->home_team );
         self::assertSame( '', $dto1->away_team );
 
         $f2 = new Fixture();
-        $f2->home_team = '10';
-        $f2->away_team = '999';
+        $f2->set_home_team( '10' );
+        $f2->set_away_team( '999' );
 
         $dto2 = $adapter->build_match_response( $f2 );
         self::assertSame( 'Park Tennis Club', $dto2->home_team );
@@ -369,8 +369,8 @@ final class Rest_Controller_Adapter_Test extends TestCase {
 
         // Test empty title team safely resolves without throwing undefined get_title()
         $f3 = new Fixture();
-        $f3->home_team = '777';
-        $f3->away_team = 'Winner of Match 4';
+        $f3->set_home_team( '777' );
+        $f3->set_away_team( 'Winner of Match 4' );
 
         $dto3 = $adapter->build_match_response( $f3 );
         self::assertSame( '', $dto3->home_team );
@@ -390,8 +390,8 @@ final class Rest_Controller_Adapter_Test extends TestCase {
 
         $adapter = new Rest_Controller_Adapter( competition_service: $comp_service );
 
-        $f1            = new Fixture();
-        $f1->league_id = 7;
+        $f1 = new Fixture();
+        $f1->set_league_id( 7 );
 
         self::assertSame( 'Division 1', $adapter->build_match_response( $f1 )->league );
     }
@@ -406,10 +406,10 @@ final class Rest_Controller_Adapter_Test extends TestCase {
 
         $adapter = new Rest_Controller_Adapter( $league_repo );
 
-        $f1            = new Fixture();
-        $f1->league_id = 7;
-        $f2            = new Fixture();
-        $f2->league_id = 7;
+        $f1 = new Fixture();
+        $f1->set_league_id( 7 );
+        $f2 = new Fixture();
+        $f2->set_league_id( 7 );
 
         self::assertSame( 'Men\'s Division 2', $adapter->build_match_response( $f1 )->league );
         // Second match with the same league id is served from the memo, not the repository.
@@ -422,10 +422,10 @@ final class Rest_Controller_Adapter_Test extends TestCase {
 
         $adapter = new Rest_Controller_Adapter( $league_repo );
 
-        $f1            = new Fixture();
-        $f1->league_id = 7;
-        $f2            = new Fixture();
-        $f2->league_id = 7;
+        $f1 = new Fixture();
+        $f1->set_league_id( 7 );
+        $f2 = new Fixture();
+        $f2->set_league_id( 7 );
 
         self::assertSame( '', $adapter->build_match_response( $f1 )->league );
         // The miss is memoized too.
@@ -438,8 +438,8 @@ final class Rest_Controller_Adapter_Test extends TestCase {
 
         $adapter = new Rest_Controller_Adapter( $league_repo );
 
-        $zero            = new Fixture();
-        $zero->league_id = 0;
+        $zero = new Fixture();
+        $zero->set_league_id( 0 );
         self::assertSame( '', $adapter->build_match_response( $zero )->league );
 
         $non_numeric            = new \stdClass();
@@ -450,22 +450,22 @@ final class Rest_Controller_Adapter_Test extends TestCase {
     }
 
     public function test_build_match_response_without_repository_leaves_league_title_empty(): void {
-        $adapter       = new Rest_Controller_Adapter();
-        $f1            = new Fixture();
-        $f1->league_id = 7;
+        $adapter = new Rest_Controller_Adapter();
+        $f1      = new Fixture();
+        $f1->set_league_id( 7 );
 
         self::assertSame( '', $adapter->build_match_response( $f1 )->league );
     }
 
     public function test_build_match_response_with_unplayed_fixture_omits_score_and_status(): void {
-        $fixture             = new Fixture();
-        $fixture->id         = 100;
-        $fixture->league_id  = null;
-        $fixture->home_team  = 'Club A';
-        $fixture->away_team  = 'Club B';
-        $fixture->winner_id  = null;
-        $fixture->date       = '2026-08-10 10:00:00';
-        $fixture->start_time = '10:00';
+        $fixture = new Fixture();
+        $fixture->set_id( 100 );
+        $fixture->set_league_id( null );
+        $fixture->set_home_team( 'Club A' );
+        $fixture->set_away_team( 'Club B' );
+        $fixture->set_winner_id( null );
+        $fixture->set_date( '2026-08-10 10:00:00' );
+        $fixture->set_start_time( '10:00' );
 
         $dto = $this->adapter->build_match_response( $fixture );
 

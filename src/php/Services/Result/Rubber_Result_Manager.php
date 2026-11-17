@@ -166,16 +166,18 @@ class Rubber_Result_Manager {
         $points['away']['team'] = $fixture->get_away_team();
         $calc_result            = $rubber->calculate_result( $points, $league->get_point_rule(), (int) $league->num_sets );
 
-        $rubber->set_home_points( (float) $calc_result->home );
-        $rubber->set_away_points( (float) $calc_result->away );
-        $rubber->set_winner_id( (int) $calc_result->winner );
-        $rubber->set_loser_id( (int) $calc_result->loser );
-        $rubber->set_custom( $custom );
-        $rubber->set_status( $status );
+        $rubber->record_result(
+            (float) $calc_result->home,
+            (float) $calc_result->away,
+            (int) $calc_result->winner,
+            (int) $calc_result->loser,
+            $status,
+            $custom
+        );
+        $rubber->assign_players( $players );
 
         $this->rubber_repository->save( $rubber );
         $this->rubber_repository->save_players( (int) $rubber->get_id(), $players );
-        $rubber->set_players( $players );
 
         return new Rubber_Update_Result(
             rubber_id: $request->rubber_id,

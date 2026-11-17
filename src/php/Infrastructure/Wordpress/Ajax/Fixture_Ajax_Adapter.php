@@ -90,8 +90,8 @@ readonly class Fixture_Ajax_Adapter {
             $match    = $dto->fixture;
             $template = 'match/match-card';
             if ( ! empty( $dto->league->num_rubbers ) ) {
-                $match->rubbers = $match->get_rubbers();
-                $template       = 'match/match-card-rubbers';
+                $match->set_rubbers( $match->get_rubbers() );
+                $template = 'match/match-card-rubbers';
             }
 
             $vars = $this->presenter->map_to_match_card_vars( $dto, $match );

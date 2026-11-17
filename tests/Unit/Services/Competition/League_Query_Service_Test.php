@@ -330,11 +330,15 @@ class League_Query_Service_Test extends TestCase {
 			->with( 42, 10, '2026' )
 			->willReturn( $team_details );
 
-		$fixture        = \Racketmanager\Domain\Fixture\Fixture_Factory::from_object( (object) array( 'id' => 145 ) );
-		$fixture->teams = array(
-			'home' => (object) array( 'title' => 'Alpha Team' ),
-			'away' => (object) array( 'title' => 'Beta Team' ),
+		$fixture = \Racketmanager\Domain\Fixture\Fixture_Factory::from_object(
+			(object) array( 'id' => 145 )
 		);
+        $fixture->set_teams(
+            array(
+                'home' => (object) array( 'title' => 'Alpha Team' ),
+                'away' => (object) array( 'title' => 'Beta Team' ),
+            )
+        );
 		$this->fixture_repository->expects( $this->once() )
 			->method( 'find_by_id_with_relations' )
 			->with( 145 )

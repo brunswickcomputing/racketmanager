@@ -44,15 +44,7 @@ final class Fixture_Status_Policy {
 	 * @return void
 	 */
 	public static function apply_to_fixture( Fixture $fixture ): void {
-		$flags = self::calculate_status_flags( $fixture->status, $fixture->winner_id );
-
-		$fixture->is_walkover  = $flags['is_walkover'];
-		$fixture->is_retired   = $flags['is_retired'];
-		$fixture->is_shared    = $flags['is_shared'];
-		$fixture->is_abandoned = $flags['is_abandoned'];
-		$fixture->is_withdrawn = $flags['is_withdrawn'];
-		$fixture->is_cancelled = $flags['is_cancelled'];
-		$fixture->is_pending   = $flags['is_pending'];
+		$fixture->set_status_flags();
 	}
 
 	public static function is_walkover( ?int $status ): bool {

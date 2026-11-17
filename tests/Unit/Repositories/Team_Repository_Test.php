@@ -447,11 +447,13 @@ final class Team_Repository_Test extends TestCase {
 			};
 		};
 
-		$fixture        = Fixture_Factory::from_object( (object) array( 'id' => 250 ) );
-		$fixture->teams = array(
-			'home' => (object) array( 'title' => 'Alpha' ),
-			'away' => (object) array( 'title' => 'Beta' ),
-		);
+        $fixture = Fixture_Factory::from_object( (object) array( 'id' => 250 ) );
+        $fixture->set_teams(
+            array(
+                'home' => (object) array( 'title' => 'Alpha' ),
+                'away' => (object) array( 'title' => 'Beta' ),
+            )
+        );
 
 		$fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
 		$fixture_repo->expects( $this->once() )
@@ -474,11 +476,13 @@ final class Team_Repository_Test extends TestCase {
 	}
 
 	public function test_find_by_id_resolves_lazy_fixture_repository_closure_only_once(): void {
-		$fixture        = Fixture_Factory::from_object( (object) array( 'id' => 250 ) );
-		$fixture->teams = array(
-			'home' => (object) array( 'title' => 'Alpha' ),
-			'away' => (object) array( 'title' => 'Beta' ),
-		);
+        $fixture = Fixture_Factory::from_object( (object) array( 'id' => 250 ) );
+        $fixture->set_teams(
+            array(
+                'home' => (object) array( 'title' => 'Alpha' ),
+                'away' => (object) array( 'title' => 'Beta' ),
+            )
+        );
 
 		$fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
 		$fixture_repo->expects( $this->exactly( 2 ) )
@@ -566,11 +570,13 @@ final class Team_Repository_Test extends TestCase {
 				);
 				$repo->find_by_id( 12 );
 
-				$fixture        = Fixture_Factory::from_object( (object) array( 'id' => 250 ) );
-				$fixture->teams = array(
-					'home' => (object) array( 'title' => 'Alpha' ),
-					'away' => (object) array( 'title' => 'Beta' ),
-				);
+                $fixture = Fixture_Factory::from_object( (object) array( 'id' => 250 ) );
+                $fixture->set_teams(
+                    array(
+                        'home' => (object) array( 'title' => 'Alpha' ),
+                        'away' => (object) array( 'title' => 'Beta' ),
+                    )
+                );
 				return $fixture;
 			} );
 

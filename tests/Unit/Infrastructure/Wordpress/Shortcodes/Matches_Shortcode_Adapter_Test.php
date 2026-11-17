@@ -360,9 +360,12 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
 
     public function test_show_match_detail_passes_round_type_and_player_as_template_vars_without_mutating_fixture(): void {
         $fixture = \Racketmanager\Domain\Fixture\Fixture_Factory::from_array( [ 'id' => 42, 'final' => 'semi' ] );
-        $rubber = ( new \ReflectionClass( \Racketmanager\Domain\Fixture\Rubber::class ) )->newInstanceWithoutConstructor();
-        $rubber->id = 101;
-        $rubber->players = [ 'home' => [ 1 => (object) [ 'user_id' => 9 ] ] ];
+        $rubber = \Racketmanager\Domain\Fixture\Rubber_Factory::from_object(
+            (object) [
+                'id'      => 101,
+                'players' => [ 'home' => [ 1 => (object) [ 'user_id' => 9 ] ] ],
+            ]
+        );
         $rubbers = $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );
         $league              = $this->createStub( League::class );
         $league->num_rubbers = 4;

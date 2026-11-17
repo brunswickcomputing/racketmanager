@@ -26,13 +26,26 @@ final class Rewrite_Rules_Test extends TestCase {
 		$this->assertInstanceOf( Rewrite_Rules::class, $rewrites );
 
 		$added_rules = $GLOBALS['wp_rewrite_rules_added'] ?? array();
-		$this->assertCount( 152, $added_rules );
+		$this->assertCount( 155, $added_rules );
 
 		$rules_by_regex = array();
 		foreach ( $added_rules as $rule ) {
 			$this->assertSame( 'top', $rule['after'], 'All rewrite rules are expected to be registered at top priority' );
 			$rules_by_regex[ $rule['regex'] ] = $rule['query'];
 		}
+
+		$this->assertSame(
+			'index.php?rm_manage=1',
+			$rules_by_regex['manage/?$'] ?? null
+		);
+		$this->assertSame(
+			'index.php?rm_manage=1&rm_section=$matches[1]',
+			$rules_by_regex['manage/([^/]+)/?$'] ?? null
+		);
+		$this->assertSame(
+			'index.php?rm_manage=1&rm_section=$matches[1]&rm_view=$matches[2]',
+			$rules_by_regex['manage/([^/]+)/([^/]+)/?$'] ?? null
+		);
 
 		$this->assertSame(
 			'index.php?pagename=competitions&type=league',

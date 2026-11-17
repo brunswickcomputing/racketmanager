@@ -36,6 +36,15 @@ use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Admin\Admin_Message_Service;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
 use Racketmanager\Application\Admin\Ports\Draw_Action_Handler_Interface;
+use Racketmanager\Application\Ports\Manage_Url_Resolver_Interface;
+use Racketmanager\Application\Ports\Query_Vars_Interface;
+use Racketmanager\Application\Ports\View_Renderer_Interface;
+use Racketmanager\Infrastructure\Wordpress\Portal\Portal_Auth_Guard;
+use Racketmanager\Infrastructure\Wordpress\Portal\Portal_Page_Router;
+use Racketmanager\Infrastructure\Wordpress\Portal\Portal_Screen_Presenter;
+use Racketmanager\Infrastructure\Wordpress\Portal\Portal_Section_Registry;
+use Racketmanager\Infrastructure\Wordpress\Routing\Manage_Route_Mapper;
+use Racketmanager\Infrastructure\Wordpress\Routing\Manage_Url_Resolver;
 use Racketmanager\Services\Admin\Championship_Admin_Service;
 use Racketmanager\Services\Admin\Club\Club_Action_Dispatcher;
 use Racketmanager\Services\Admin\Club\Club_Player_Action_Dispatcher;
@@ -134,6 +143,46 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             )
         );
         $container->alias( Admin_Screen_Presenter::class, 'admin_screen_presenter' );
+
+        // Management portal routing and presentation infrastructure.
+        $container->set( Manage_Route_Mapper::class, fn(): Manage_Route_Mapper => new Manage_Route_Mapper() );
+
+        $container->set(
+            Manage_Url_Resolver_Interface::class,
+            fn( Simple_Container $c ): Manage_Url_Resolver_Interface => new Manage_Url_Resolver(
+                $c->get( Manage_Route_Mapper::class ),
+                $c->get( Query_Vars_Interface::class )
+            )
+        );
+        $container->alias( Manage_Url_Resolver::class, Manage_Url_Resolver_Interface::class );
+
+        $container->set( Portal_Section_Registry::class, fn(): Portal_Section_Registry => new Portal_Section_Registry() );
+
+        $container->set( Portal_Auth_Guard::class, fn(): Portal_Auth_Guard => new Portal_Auth_Guard() );
+
+        $container->set(
+            Portal_Screen_Presenter::class,
+            fn( Simple_Container $c ): Portal_Screen_Presenter => new Portal_Screen_Presenter(
+                $c->get( View_Renderer_Interface::class ),
+                $c->get( Admin_Message_Service::class ),
+                $c->get( Portal_Section_Registry::class ),
+                $c->get( Manage_Url_Resolver_Interface::class ),
+                $c->get( Portal_Auth_Guard::class )
+            )
+        );
+
+        $container->set(
+            Portal_Page_Router::class,
+            fn( Simple_Container $c ): Portal_Page_Router => new Portal_Page_Router(
+                $c,
+                $c->get( Portal_Section_Registry::class ),
+                $c->get( Manage_Route_Mapper::class ),
+                $c->get( Manage_Url_Resolver_Interface::class ),
+                $c->get( Portal_Auth_Guard::class ),
+                $c->get( Portal_Screen_Presenter::class ),
+                $c->get( Query_Vars_Interface::class )
+            )
+        );
 
         // Guards & Handlers.
         $container->set( 'wp_action_guard', fn() => new Wp_Action_Guard() );

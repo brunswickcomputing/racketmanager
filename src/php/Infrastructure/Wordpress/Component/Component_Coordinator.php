@@ -6,6 +6,7 @@ namespace Racketmanager\Infrastructure\Wordpress\Component;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Ajax_Registry;
 use Racketmanager\Infrastructure\Wordpress\Auth\Login_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Export\Export_Delivery_Adapter;
+use Racketmanager\Infrastructure\Wordpress\Portal\Portal_Page_Router;
 use Racketmanager\Infrastructure\Wordpress\Rewrites\Rewrite_Rules;
 use Racketmanager\Public\Shortcodes;
 use Racketmanager\RacketManager;
@@ -17,15 +18,26 @@ use Racketmanager\Services\Container\Simple_Container;
  */
 final readonly class Component_Coordinator implements Component_Coordinator_Interface {
 
+    /**
+     * Create the service with its dependency container and AJAX registry.
+     *
+     * @param Simple_Container $container simple container.
+     * @param Ajax_Registry    $ajax_registry ajax registry.
+     *
+     * @return void
+     */
     public function __construct(
         private Simple_Container $container,
         private Ajax_Registry $ajax_registry
     ) {}
 
     /**
-     * Initialize all components, AJAX actions, REST routes, and shortcode adapters.
+     * Initialises the application components, including shortcode adapters, rewrite rules,
+     * login handling, optional portal page routing, REST routes, AJAX actions, and exports.
      *
-     * @param RacketManager $app
+     * @param RacketManager $app Application instance to receive initialized components.
+     *
+     * @return void
      */
     public function init_components( RacketManager $app ): void {
         $app->shortcodes             = new Shortcodes( $app );
@@ -42,13 +54,17 @@ final readonly class Component_Coordinator implements Component_Coordinator_Inte
         $app->rewrites               = $this->container->get( Rewrite_Rules::class );
         $app->login                  = $this->container->get( Login_Action_Adapter::class );
 
+        if ( $this->container->has_definition( Portal_Page_Router::class ) ) {
+            $this->container->get( Portal_Page_Router::class )->register_hooks();
+        }
+
         Rest_Routes::single( $app );
         $this->register_ajax_actions();
         $this->handle_exports( $app );
     }
 
     /**
-     * Register AJAX actions using the centralized registry.
+     * Register AJAX actions using the centralised registry.
      */
     private function register_ajax_actions(): void {
         $registry   = $this->ajax_registry;
@@ -79,10 +95,10 @@ final readonly class Component_Coordinator implements Component_Coordinator_Inte
     /**
      * Handle export requests if present in query parameters.
      *
-     * @param RacketManager $app
+     * @param RacketManager $app plugin.
      */
     public function handle_exports( RacketManager $app ): void {
-        if ( isset( $_GET['racketmanager_export'] ) ) {
+        if ( isset( $_GET['racketmanager_export'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $controller = $this->container->has( 'export_delivery_adapter' )
                 ? $this->container->get( 'export_delivery_adapter' )
                 : new Export_Delivery_Adapter( $app );

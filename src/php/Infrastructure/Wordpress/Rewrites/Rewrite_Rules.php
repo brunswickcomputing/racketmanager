@@ -67,12 +67,43 @@ class Rewrite_Rules {
         $this->competition_event_season_player_tab = 'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&tab=players';
         $this->competition_event_season_team       = 'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&team=$matches[3]';
         $this->competition_event_season_team_tab   = 'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&tab=teams';
+        if ( function_exists( 'add_filter' ) ) {
+            add_filter( 'query_vars', [ $this, 'register_query_vars' ] );
+        }
         $this->racketmanager_rewrites();
+    }
+    /**
+     * Register public query variables for management portal.
+     *
+     * @param array<int, string> $vars Registered public query variables.
+     * @return array<int, string>
+     */
+    public function register_query_vars( array $vars ): array {
+        $vars[] = 'rm_manage';
+        $vars[] = 'rm_section';
+        $vars[] = 'rm_view';
+        return $vars;
     }
     /**
      * Create formatted url
      */
     public function racketmanager_rewrites(): void {
+        // Frontend management portal.
+        add_rewrite_rule(
+            'manage/?$',
+            'index.php?rm_manage=1',
+            'top'
+        );
+        add_rewrite_rule(
+            'manage/([^/]+)/?$',
+            'index.php?rm_manage=1&rm_section=$matches[1]',
+            'top'
+        );
+        add_rewrite_rule(
+            'manage/([^/]+)/([^/]+)/?$',
+            'index.php?rm_manage=1&rm_section=$matches[1]&rm_view=$matches[2]',
+            'top'
+        );
         // competition list.
         add_rewrite_rule(
             'leagues/?$',

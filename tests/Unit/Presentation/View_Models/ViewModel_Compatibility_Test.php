@@ -3,13 +3,13 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Presentation\View_Models;
 
+use ArgumentCountError;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\View_Models\Plan_Final_Card_View_Model;
 use Racketmanager\Admin\View_Models\League_Event_Page_View_Model;
 use Racketmanager\Presentation\View_Models\League_Archive_View_Model;
 use Racketmanager\Presentation\View_Models\Team_Match_Row_View_Model;
 use Racketmanager\Presentation\View_Models\Tournament_Match_Card_View_Model;
-use Racketmanager\Application\League\DTOs\League_View_State;
 
 final class ViewModel_Compatibility_Test extends TestCase {
 
@@ -38,13 +38,13 @@ final class ViewModel_Compatibility_Test extends TestCase {
     }
 
     public function test_league_event_page_vm_compatibility(): void {
-        $vm = new League_Event_Page_View_Model( event: (object)[], season: '2026', league_name: 'Div 1' );
+        $vm = new League_Event_Page_View_Model( event: (object) [], season: '2026', league_name: 'Div 1' );
         $this->assertSame( 'Div 1', $vm->league_name );
         $this->assertSame( 'Div 1', $vm->league_title );
     }
 
     public function test_plan_final_card_vm_requires_args(): void {
-        $this->expectException( \ArgumentCountError::class );
-        new Plan_Final_Card_View_Model( id: 1 );
+        $this->expectException( ArgumentCountError::class );
+        $this->assertInstanceOf( Plan_Final_Card_View_Model::class, new Plan_Final_Card_View_Model( id: 1 ) );
     }
 }

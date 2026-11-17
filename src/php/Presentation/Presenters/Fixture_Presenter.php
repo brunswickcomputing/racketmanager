@@ -794,27 +794,60 @@ readonly class Fixture_Presenter {
 
         $opponents        = [ 'home', 'away' ];
         $mapped_opponents = [];
+        $rubber_type      = strtoupper( (string) ( $rubber->type ?? '' ) );
+        $rubber_title     = strtoupper( (string) ( $rubber->title ?? ( $rubber_type . ( $rubber->rubber_number ?? '' ) ) ) );
+
         foreach ( $opponents as $opponent ) {
             $team             = 'home' === $opponent ? $home_team_dto : $away_team_dto;
             $players          = [];
             $opponent_players = $rubber->players[ $opponent ] ?? [];
-            foreach ( $opponent_players as $player_detail ) {
-                $p_id = $player_detail->id ?? 0;
+            foreach ( $opponent_players as $player_key => $player_detail ) {
+                $is_obj = is_object( $player_detail );
+                $p_id   = $is_obj ? ( $player_detail->id ?? 0 ) : ( $player_detail['id'] ?? 0 );
                 // Use registration_id for dropdown selection consistency
-                if ( ! empty( $player_detail->registration_id ) ) {
-                    $p_id = (int) $player_detail->registration_id;
-                } elseif ( ! empty( $player_detail->id ) ) {
-                    $p_id = (int) $player_detail->id;
+                $reg_id = $is_obj ? ( $player_detail->registration_id ?? null ) : ( $player_detail['registration_id'] ?? null );
+                if ( ! empty( $reg_id ) ) {
+                    $p_id = (int) $reg_id;
+                } elseif ( ! empty( $p_id ) ) {
+                    $p_id = (int) $p_id;
                 }
+
+                $slot_num = count( $players ) + 1;
+                $pref     = $is_obj ? ( $player_detail->player_ref ?? null ) : ( $player_detail['player_ref'] ?? null );
+                if ( ! empty( $pref ) ) {
+                    $slot_num = (int) $pref;
+                } elseif ( 2 === $player_key || '2' === $player_key ) {
+                    $slot_num = 2;
+                } elseif ( 1 === $player_key || '1' === $player_key ) {
+                    $slot_num = isset( $opponent_players[0] ) ? 2 : 1;
+                } elseif ( 0 === $player_key || '0' === $player_key ) {
+                    $slot_num = 1;
+                }
+
+                $default_gender = 'm';
+                if ( str_starts_with( $rubber_type, 'X' ) || str_starts_with( $rubber_title, 'X' ) ) {
+                    $default_gender = ( 2 === $slot_num ) ? 'f' : 'm';
+                } elseif ( str_starts_with( $rubber_type, 'W' ) || str_starts_with( $rubber_type, 'G' ) || str_starts_with( $rubber_title, 'W' ) || str_starts_with( $rubber_title, 'G' ) ) {
+                    $default_gender = 'f';
+                } elseif ( str_starts_with( $rubber_type, 'M' ) || str_starts_with( $rubber_type, 'B' ) || str_starts_with( $rubber_title, 'M' ) || str_starts_with( $rubber_title, 'B' ) ) {
+                    $default_gender = 'm';
+                }
+
+                $p_gender  = $is_obj ? ( $player_detail->gender ?? null ) : ( $player_detail['gender'] ?? null );
+                $p_name    = $is_obj ? ( $player_detail->display_name ?? '' ) : ( $player_detail['display_name'] ?? ( $player_detail['name'] ?? '' ) );
+                $p_sys_rec = $is_obj ? ( ! empty( $player_detail->system_record ) ) : ( ! empty( $player_detail['system_record'] ) );
+                $p_class   = $is_obj ? ( $player_detail->class ?? '' ) : ( $player_detail['class'] ?? '' );
+                $p_desc    = $is_obj ? ( $player_detail->description ?? '' ) : ( $player_detail['description'] ?? '' );
 
                 $players[] = [
                     'id'               => $p_id,
-                    'gender'           => $player_detail->gender ?? 'm',
-                    'name'             => $player_detail->display_name ?? '',
-                    'url'              => empty( $player_detail->system_record ) ? '/' . $competition->get_type() . 's/' . Seo_Slug::encode( $event->name ) . '/' . $dto->fixture->get_season() . '/player/' . Seo_Slug::encode( $player_detail->display_name ?? '' ) . '/' : null,
-                    'class'            => $player_detail->class ?? '',
-                    'description'      => $player_detail->description ?? '',
-                    'is_system_record' => ! empty( $player_detail->system_record ),
+                    'slot'             => $slot_num,
+                    'gender'           => ! empty( $p_gender ) ? $p_gender : $default_gender,
+                    'name'             => $p_name,
+                    'url'              => empty( $p_sys_rec ) ? '/' . $competition->get_type() . 's/' . Seo_Slug::encode( $event->name ) . '/' . $dto->fixture->get_season() . '/player/' . Seo_Slug::encode( $p_name ) . '/' : null,
+                    'class'            => $p_class,
+                    'description'      => $p_desc,
+                    'is_system_record' => $p_sys_rec,
                 ];
             }
 
@@ -823,8 +856,8 @@ readonly class Fixture_Presenter {
                 $gender_short = $players[0]['gender'];
             } else {
                 // Determine gender from rubber type if no players present
-                $type_char = substr( $rubber->type, 0, 1 );
-                if ( in_array( $type_char, [ 'W', 'G' ] ) ) {
+                $type_char = substr( $rubber_type, 0, 1 );
+                if ( in_array( $type_char, [ 'W', 'G' ], true ) ) {
                     $gender_short = 'f';
                 }
             }

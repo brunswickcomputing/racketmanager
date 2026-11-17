@@ -376,4 +376,50 @@ class Fixture_Presenter_Test extends TestCase {
         $this->assertSame( 'date', $vars_date_only['date_input_type'] );
         $this->assertSame( '2026-10-18', $vars_date_only['date_input'] );
     }
+
+    public function test_map_rubber_mixed_doubles_preserves_explicit_gender_and_assigns_slot(): void {
+        $fixture = $this->createStub( Fixture::class );
+        $fixture->method( 'get_id' )->willReturn( 100 );
+        $fixture->method( 'get_home_team' )->willReturn( '1' );
+        $fixture->method( 'get_away_team' )->willReturn( '2' );
+        $fixture->method( 'get_season' )->willReturn( '2026' );
+
+        $rubber = (object) [
+            'id'            => 201,
+            'type'          => 'XD',
+            'rubber_number' => 1,
+            'winner_id'     => 0,
+            'players'       => [
+                'home' => [
+                    0 => [ 'id' => 11, 'display_name' => 'Player M', 'gender' => 'm' ],
+                    1 => [ 'id' => 12, 'display_name' => 'Player F', 'gender' => 'f' ],
+                ],
+            ],
+            'sets'          => [],
+        ];
+
+        $dto               = new \Racketmanager\Application\Fixture\DTOs\Fixture_Details_DTO( fixture: $fixture );
+        $event             = $this->createStub( \Racketmanager\Domain\Competition\Event::class );
+        $event->method( 'get_num_sets' )->willReturn( 3 );
+        $event->name       = 'Mixed League';
+        $dto->event        = $event;
+        $competition       = $this->createStub( \Racketmanager\Domain\Competition\Competition::class );
+        $competition->method( 'get_type' )->willReturn( 'league' );
+        $competition->type = \Racketmanager\Domain\Competition\Competition_Type::LEAGUE;
+        $dto->competition  = $competition;
+
+        $reflection = new ReflectionClass( Fixture_Presenter::class );
+        $method     = $reflection->getMethod( 'map_rubber' );
+        $method->setAccessible( true );
+
+        $mapped = $method->invoke( $this->presenter, $rubber, $dto );
+
+        $this->assertSame( 'XD1', $mapped['title'] );
+        $home_players = $mapped['opponents']['home']['players'];
+        $this->assertCount( 2, $home_players );
+        $this->assertSame( 1, $home_players[0]['slot'] );
+        $this->assertSame( 'm', $home_players[0]['gender'] );
+        $this->assertSame( 2, $home_players[1]['slot'] );
+        $this->assertSame( 'f', $home_players[1]['gender'] );
+    }
 }

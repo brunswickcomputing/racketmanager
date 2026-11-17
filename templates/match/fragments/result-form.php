@@ -245,22 +245,62 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;
                                                                         <?php echo esc_html( $opponent['team_name'] ); ?>
                                                                     </div>
                                                                     <?php
-                                                                    $players_to_render = $opponent['players'];
-                                                                    if ( empty( $players_to_render ) ) {
-                                                                        $num_players       = ( str_contains( $rubber['title'], 'D' ) || str_contains( $rubber['title'], 'X' ) ) ? 2 : 1;
-                                                                        $players_to_render = array_fill(
-                                                                            0,
-                                                                            $num_players,
-                                                                            [
-                                                                                'id' => 0,
-                                                                                'gender' => $opponent['gender'],
-                                                                            ]
-                                                                        );
+                                                                    $rubber_type  = strtoupper( (string) ( $rubber['type'] ?? '' ) );
+                                                                    $rubber_title = strtoupper( (string) ( $rubber['title'] ?? '' ) );
+                                                                    $is_doubles   = str_contains( $rubber_type, 'D' ) || str_starts_with( $rubber_type, 'X' ) || str_contains( $rubber_title, 'D' ) || str_contains( $rubber_title, 'X' );
+                                                                    $num_players  = $is_doubles ? 2 : 1;
+
+                                                                    $players_to_render = [];
+                                                                    for ( $p_index = 0; $p_index < $num_players; $p_index++ ) {
+                                                                        $p_num = $p_index + 1;
+
+                                                                        if ( str_starts_with( $rubber_type, 'X' ) || str_starts_with( $rubber_title, 'X' ) ) {
+                                                                            $slot_gender = ( 2 === $p_num ) ? 'f' : 'm';
+                                                                        } elseif ( str_starts_with( $rubber_type, 'W' ) || str_starts_with( $rubber_type, 'G' ) || str_starts_with( $rubber_title, 'W' ) || str_starts_with( $rubber_title, 'G' ) ) {
+                                                                            $slot_gender = 'f';
+                                                                        } elseif ( str_starts_with( $rubber_type, 'M' ) || str_starts_with( $rubber_type, 'B' ) || str_starts_with( $rubber_title, 'M' ) || str_starts_with( $rubber_title, 'B' ) ) {
+                                                                            $slot_gender = 'm';
+                                                                        } else {
+                                                                            $slot_gender = strtolower( (string) ( $opponent['gender'] ?? 'm' ) );
+                                                                        }
+
+                                                                        $matched_player = null;
+                                                                        if ( ! empty( $opponent['players'] ) ) {
+                                                                            foreach ( $opponent['players'] as $candidate ) {
+                                                                                if ( isset( $candidate['slot'] ) && (int) $candidate['slot'] === $p_num ) {
+                                                                                    $matched_player = $candidate;
+                                                                                    break;
+                                                                                }
+                                                                            }
+
+                                                                            if ( null === $matched_player ) {
+                                                                                if ( array_key_exists( 0, $opponent['players'] ) ) {
+                                                                                    if ( isset( $opponent['players'][ $p_index ] ) ) {
+                                                                                        $candidate = $opponent['players'][ $p_index ];
+                                                                                        if ( ! isset( $candidate['slot'] ) || (int) $candidate['slot'] === $p_num ) {
+                                                                                            $matched_player = $candidate;
+                                                                                        }
+                                                                                    }
+                                                                                } elseif ( isset( $opponent['players'][ $p_num ] ) ) {
+                                                                                    $candidate = $opponent['players'][ $p_num ];
+                                                                                    if ( ! isset( $candidate['slot'] ) || (int) $candidate['slot'] === $p_num ) {
+                                                                                        $matched_player = $candidate;
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+
+                                                                        $player_item           = $matched_player ?? [ 'id' => 0 ];
+                                                                        $player_item['id']     = $player_item['id'] ?? 0;
+                                                                        $player_item['gender'] = $slot_gender;
+                                                                        $player_item['slot']   = $p_num;
+                                                                        $players_to_render[]   = $player_item;
                                                                     }
+
                                                                     foreach ( $players_to_render as $p_index => $player ) {
                                                                         $p_num          = $p_index + 1;
                                                                         $select_name    = "players[{$rubber['number']}][$opponent_key][$p_num]";
-                                                                        $gender         = strtolower( $opponent['gender'] ) ?? 'm';
+                                                                        $gender         = $player['gender'];
                                                                         $player_id_link = 'players_' . $rubber['number'] . '_' . $opponent_key . '_' . $p_num;
                                                                         ?>
                                                                         <div class="match__row-title-value">

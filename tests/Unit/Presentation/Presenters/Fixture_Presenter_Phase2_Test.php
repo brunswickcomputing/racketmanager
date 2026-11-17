@@ -258,6 +258,109 @@ class Fixture_Presenter_Phase2_Test extends TestCase {
         $this->assertEquals('', $mapped['sets'][3]['home']);
     }
 
+    public function test_map_rubber_mixed_doubles_assigns_slot_numbers_and_fallback_genders(): void {
+        $fixture = $this->createStub( Fixture::class );
+        $fixture->method( 'get_id' )->willReturn( 123 );
+        $fixture->method( 'get_home_team' )->willReturn( '1' );
+        $fixture->method( 'get_away_team' )->willReturn( '2' );
+        $fixture->method( 'get_season' )->willReturn( '2024' );
+
+        $rubber = (object) [
+            'id'            => 456,
+            'type'          => 'XD',
+            'rubber_number' => 1,
+            'winner_id'     => 0,
+            'players'       => [
+                'home' => [
+                    1 => (object) [ 'display_name' => 'Male Player 1', 'system_record' => false ],
+                    2 => (object) [ 'display_name' => 'Female Player 2', 'system_record' => false ],
+                ],
+                'away' => [
+                    // Sparse array: only slot 2 provided with player_ref 2
+                    2 => (object) [ 'display_name' => 'Female Away 2', 'player_ref' => 2, 'system_record' => false ],
+                ],
+            ],
+            'sets'          => [],
+        ];
+
+        $dto               = new Fixture_Details_DTO( fixture: $fixture );
+        $dto->fixture      = $fixture;
+        $event             = $this->createStub( Event::class );
+        $event->method( 'get_num_sets' )->willReturn( 3 );
+        $event->name       = 'Event';
+        $dto->event        = $event;
+        $competition       = $this->createStub( Competition::class );
+        $competition->method( 'get_type' )->willReturn( 'league' );
+        $competition->type = Competition_Type::LEAGUE;
+        $dto->competition  = $competition;
+
+        $reflection = new \ReflectionClass( Fixture_Presenter::class );
+        $method     = $reflection->getMethod( 'map_rubber' );
+        $method->setAccessible( true );
+
+        $mapped = $method->invoke( $this->presenter, $rubber, $dto );
+
+        // Home team: 2 players, slot 1 defaults to 'm', slot 2 defaults to 'f'
+        $home_players = $mapped['opponents']['home']['players'];
+        $this->assertCount( 2, $home_players );
+        $this->assertSame( 1, $home_players[0]['slot'] );
+        $this->assertSame( 'm', $home_players[0]['gender'] );
+        $this->assertSame( 2, $home_players[1]['slot'] );
+        $this->assertSame( 'f', $home_players[1]['gender'] );
+
+        // Away team: sparse player with player_ref 2
+        $away_players = $mapped['opponents']['away']['players'];
+        $this->assertCount( 1, $away_players );
+        $this->assertSame( 2, $away_players[0]['slot'] );
+        $this->assertSame( 'f', $away_players[0]['gender'] );
+    }
+
+    public function test_map_rubber_ladies_doubles_assigns_female_fallback_gender_to_all_slots(): void {
+        $fixture = $this->createStub( Fixture::class );
+        $fixture->method( 'get_id' )->willReturn( 123 );
+        $fixture->method( 'get_home_team' )->willReturn( '1' );
+        $fixture->method( 'get_away_team' )->willReturn( '2' );
+        $fixture->method( 'get_season' )->willReturn( '2024' );
+
+        $rubber = (object) [
+            'id'            => 789,
+            'type'          => 'WD',
+            'rubber_number' => 1,
+            'winner_id'     => 0,
+            'players'       => [
+                'home' => [
+                    1 => (object) [ 'display_name' => 'Ladies 1', 'system_record' => false ],
+                    2 => (object) [ 'display_name' => 'Ladies 2', 'system_record' => false ],
+                ],
+            ],
+            'sets'          => [],
+        ];
+
+        $dto               = new Fixture_Details_DTO( fixture: $fixture );
+        $dto->fixture      = $fixture;
+        $event             = $this->createStub( Event::class );
+        $event->method( 'get_num_sets' )->willReturn( 3 );
+        $event->name       = 'Event';
+        $dto->event        = $event;
+        $competition       = $this->createStub( Competition::class );
+        $competition->method( 'get_type' )->willReturn( 'league' );
+        $competition->type = Competition_Type::LEAGUE;
+        $dto->competition  = $competition;
+
+        $reflection = new \ReflectionClass( Fixture_Presenter::class );
+        $method     = $reflection->getMethod( 'map_rubber' );
+        $method->setAccessible( true );
+
+        $mapped = $method->invoke( $this->presenter, $rubber, $dto );
+
+        $home_players = $mapped['opponents']['home']['players'];
+        $this->assertCount( 2, $home_players );
+        $this->assertSame( 1, $home_players[0]['slot'] );
+        $this->assertSame( 'f', $home_players[0]['gender'] );
+        $this->assertSame( 2, $home_players[1]['slot'] );
+        $this->assertSame( 'f', $home_players[1]['gender'] );
+    }
+
     public function test_map_to_detail_read_model_approvals_logic(): void {
         $fixture = $this->createStub( Fixture::class );
         $fixture->method( 'get_comments' )->willReturn( [ 'home' => 'Home comment', 'away' => 'Away comment', 'result' => 'General comment' ] );

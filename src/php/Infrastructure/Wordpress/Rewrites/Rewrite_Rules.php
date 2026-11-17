@@ -88,22 +88,7 @@ class Rewrite_Rules {
      * Create formatted url
      */
     public function racketmanager_rewrites(): void {
-        // Frontend management portal.
-        add_rewrite_rule(
-            'manage/?$',
-            'index.php?rm_manage=1',
-            'top'
-        );
-        add_rewrite_rule(
-            'manage/([^/]+)/?$',
-            'index.php?rm_manage=1&rm_section=$matches[1]',
-            'top'
-        );
-        add_rewrite_rule(
-            'manage/([^/]+)/([^/]+)/?$',
-            'index.php?rm_manage=1&rm_section=$matches[1]&rm_view=$matches[2]',
-            'top'
-        );
+        $this->rewrite_management_portal();
         // competition list.
         add_rewrite_rule(
             'leagues/?$',
@@ -1066,6 +1051,29 @@ class Rewrite_Rules {
         add_rewrite_rule(
             'tournaments/(.+?)/(.+?)-(.+?)-(.+?)/?$',
             'index.php?pagename=tournaments%2F$matches[1]%2F$matches[2]-$matches[3]-$matches[4]',
+            'top'
+        );
+    }
+
+    /**
+     * Rewrite management portal URLs.
+     *
+     * @return void
+     */
+    private function rewrite_management_portal(): void {
+        add_rewrite_rule(
+            'manage/?$',
+            'index.php?rm_manage=1',
+            'top'
+        );
+        add_rewrite_rule(
+            'manage/([^/]+)/?$',
+            'index.php?rm_manage=1&rm_section=$matches[1]',
+            'top'
+        );
+        add_rewrite_rule(
+            'manage/([^/]+)/([^/]+)/?$',
+            'index.php?rm_manage=1&rm_section=$matches[1]&rm_view=$matches[2]',
             'top'
         );
     }

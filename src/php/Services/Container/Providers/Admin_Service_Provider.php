@@ -111,8 +111,23 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
      * @return void
      */
     public function register( Simple_Container $container ): void {
-        $app = $this->app;
+        $this->register_infrastructure_and_guards( $container );
+        $this->register_tournament_and_cup_dispatchers( $container );
+        $this->register_league_services_and_dispatchers( $container );
+        $this->register_club_dispatchers( $container );
+        $this->register_competition_and_finance_dispatchers( $container );
+        $this->register_player_and_general_dispatchers( $container );
+        $this->register_ajax_controllers( $container );
+    }
 
+    /**
+     * Registers message services, redirectors, presentation and portal routing infrastructure, and action guards.
+     *
+     * @param Simple_Container $container Container used to define services and aliases.
+     *
+     * @return void
+     */
+    private function register_infrastructure_and_guards( Simple_Container $container ): void {
         // Message & Redirector infrastructure.
         $container->set(
             'admin_message_service',
@@ -200,7 +215,16 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             }
         );
         $container->alias( Action_Guard_Interface::class, 'action_guard' );
+    }
 
+    /**
+     * Registers championship services, draw action handlers/dispatchers, tournament services, and cup dispatchers.
+     *
+     * @param Simple_Container $container Container used to define services and aliases.
+     *
+     * @return void
+     */
+    private function register_tournament_and_cup_dispatchers( Simple_Container $container ): void {
         $container->set(
             'championship_admin_service',
             fn( Simple_Container $c ) => new Championship_Admin_Service(
@@ -239,7 +263,6 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             )
         );
 
-        // Admin Services.
         $container->set(
             'tournament_matches_admin_service',
             fn( Simple_Container $c ) => new Tournament_Fixtures_Admin_Service(
@@ -252,21 +275,6 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
         );
         $container->alias( Tournament_Fixtures_Admin_Service::class, 'tournament_matches_admin_service' );
 
-        $container->set(
-            'league_schedule_service',
-            fn( Simple_Container $c ) => new League_Schedule_Service(
-                $c->get( 'fixture_maintenance_service' ),
-                $c->get( 'competition_schedule_service' ),
-                $c->get( 'event_repository' ),
-                $c->get( 'league_repository' ),
-                $c->get( 'league_team_repository' ),
-                $c->get( 'event_query_service' ),
-                $c->get( 'league_query_service' )
-            )
-        );
-        $container->alias( League_Schedule_Service::class, 'league_schedule_service' );
-
-        // Action Dispatchers.
         $container->set(
             'tournament_action_dispatcher',
             fn( Simple_Container $c ) => new Tournament_Action_Dispatcher(
@@ -298,6 +306,47 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
                 $c->get( 'action_guard' )
             )
         );
+
+        $container->set(
+            'cup_setup_action_dispatcher',
+            fn( Simple_Container $c ) => new Cup_Setup_Action_Dispatcher(
+                $c->get( 'competition_service' ),
+                $c->get( 'draw_action_handler' ),
+                $c->get( 'action_guard' ),
+                $c->get( 'generate_tournament_bracket_handler' )
+            )
+        );
+
+        $container->set(
+            'cup_plan_action_dispatcher',
+            fn( Simple_Container $c ) => new Cup_Plan_Action_Dispatcher(
+                $c->get( 'competition_service' ),
+                $c->get( 'action_guard' )
+            )
+        );
+    }
+
+    /**
+     * Registers league services, handlers, and league action dispatchers.
+     *
+     * @param Simple_Container $container Container used to define services and aliases.
+     *
+     * @return void
+     */
+    private function register_league_services_and_dispatchers( Simple_Container $container ): void {
+        $container->set(
+            'league_schedule_service',
+            fn( Simple_Container $c ) => new League_Schedule_Service(
+                $c->get( 'fixture_maintenance_service' ),
+                $c->get( 'competition_schedule_service' ),
+                $c->get( 'event_repository' ),
+                $c->get( 'league_repository' ),
+                $c->get( 'league_team_repository' ),
+                $c->get( 'event_query_service' ),
+                $c->get( 'league_query_service' )
+            )
+        );
+        $container->alias( League_Schedule_Service::class, 'league_schedule_service' );
 
         $container->set(
             'league_contact_action_dispatcher',
@@ -431,7 +480,16 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
                 $c->get( 'action_guard' )
             )
         );
+    }
 
+    /**
+     * Registers club handlers and club action dispatchers.
+     *
+     * @param Simple_Container $container Container used to define services and aliases.
+     *
+     * @return void
+     */
+    private function register_club_dispatchers( Simple_Container $container ): void {
         $container->set(
             'club_handler',
             fn( Simple_Container $c ) => new Club_Handler(
@@ -502,7 +560,16 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
                 commands: $c->get( 'club_role_handler' )
             )
         );
+    }
 
+    /**
+     * Registers competition, season, and finance handlers and action dispatchers.
+     *
+     * @param Simple_Container $container Container used to define services and aliases.
+     *
+     * @return void
+     */
+    private function register_competition_and_finance_dispatchers( Simple_Container $container ): void {
         $container->set(
             'season_action_dispatcher',
             fn( Simple_Container $c ) => new Season_Action_Dispatcher(
@@ -597,7 +664,16 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
                 $c->get( 'action_invoice_handler' )
             )
         );
+    }
 
+    /**
+     * Registers player action dispatchers, results checker, and general admin action dispatchers.
+     *
+     * @param Simple_Container $container Container used to define services and aliases.
+     *
+     * @return void
+     */
+    private function register_player_and_general_dispatchers( Simple_Container $container ): void {
         $container->set(
             'player_action_dispatcher',
             fn( Simple_Container $c ) => new Player_Action_Dispatcher(
@@ -680,26 +756,18 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
         );
         $container->alias( Options_Action_Dispatcher_Interface::class, 'options_action_dispatcher' );
         $container->alias( Options_Action_Dispatcher::class, 'options_action_dispatcher' );
+    }
 
-        $container->set(
-            'cup_setup_action_dispatcher',
-            fn( Simple_Container $c ) => new Cup_Setup_Action_Dispatcher(
-                $c->get( 'competition_service' ),
-                $c->get( 'draw_action_handler' ),
-                $c->get( 'action_guard' ),
-                $c->get( 'generate_tournament_bracket_handler' )
-            )
-        );
+    /**
+     * Registers admin and frontend AJAX controllers and adapters.
+     *
+     * @param Simple_Container $container Container used to define services and aliases.
+     *
+     * @return void
+     */
+    private function register_ajax_controllers( Simple_Container $container ): void {
+        $app = $this->app;
 
-        $container->set(
-            'cup_plan_action_dispatcher',
-            fn( Simple_Container $c ) => new Cup_Plan_Action_Dispatcher(
-                $c->get( 'competition_service' ),
-                $c->get( 'action_guard' )
-            )
-        );
-
-        // Admin & Delivery AJAX.
         $container->set(
             'admin_ajax_adapter',
             fn( Simple_Container $c ) => new Admin_Ajax_Adapter(

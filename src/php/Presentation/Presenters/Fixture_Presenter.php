@@ -66,7 +66,9 @@ readonly class Fixture_Presenter {
     }
 
     public function map_to_status_read_model(
-        Fixture $fixture, Fixture_Status_Update_Request $request, int $num_rubbers = 0
+        Fixture $fixture,
+        Fixture_Status_Update_Request $request,
+        int $num_rubbers = 0
     ): Fixture_Status_Read_Model {
         $status_dtls = $this->get_status_details( (string) $request->match_status, (int) $fixture->get_home_team(), (int) $fixture->get_away_team() );
 
@@ -77,8 +79,8 @@ readonly class Fixture_Presenter {
      * Function to set match or rubber status details
      *
      * @param string $status status value.
-     * @param int $home_team home team id.
-     * @param int $away_team away_team id.
+     * @param int    $home_team home team id.
+     * @param int    $away_team away_team id.
      */
     public function get_status_details( string $status, int $home_team, int $away_team ): object {
         $status_message = array();
@@ -191,7 +193,7 @@ readonly class Fixture_Presenter {
     }
 
     private function build_status_options( Fixture_Details_DTO $dto ): array {
-        $select = [];
+        $select                    = [];
         [ $home_name, $away_name ] = $this->get_team_names( $dto );
 
         $this->add_walkover_options( $select, $home_name, $away_name );
@@ -242,9 +244,12 @@ readonly class Fixture_Presenter {
     }
 
     public function map_to_rubber_status_options(
-        Fixture_Details_DTO $dto, object $rubber, ?string $status, ?string $modal
+        Fixture_Details_DTO $dto,
+        object $rubber,
+        ?string $status,
+        ?string $modal
     ): array {
-        $select = [];
+        $select                    = [];
         [ $home_name, $away_name ] = $this->get_team_names( $dto );
 
         $this->add_walkover_options( $select, $home_name, $away_name );
@@ -364,7 +369,11 @@ readonly class Fixture_Presenter {
     }
 
     public function map_to_fixture_option_vars(
-        Fixture_Details_DTO $dto, Fixture_Option_Request $request, string $title, string $button, string $action
+        Fixture_Details_DTO $dto,
+        Fixture_Option_Request $request,
+        string $title,
+        string $button,
+        string $action
     ): array {
         $match           = $dto->fixture;
         $date_input_type = 'date';
@@ -386,7 +395,13 @@ readonly class Fixture_Presenter {
         return array(
             'dto'             => $dto,
             'match'           => $dto->fixture,
-            'vm'              => $this->present_team_match_row( $dto, [ 'show_header' => true, 'allow_user_update' => false ] ),
+            'vm'              => $this->present_team_match_row(
+                $dto,
+                [
+                    'show_header'       => true,
+                    'allow_user_update' => false,
+                ]
+            ),
             'title'           => $title,
             'modal'           => $request->modal,
             'option'          => $request->option,
@@ -420,7 +435,9 @@ readonly class Fixture_Presenter {
     }
 
     public function map_to_result_read_model(
-        Fixture $fixture, Fixture_Update_Response $response, Fixture_Result_Update_Request $request
+        Fixture $fixture,
+        Fixture_Update_Response $response,
+        Fixture_Result_Update_Request $request
     ): Fixture_Result_Read_Model {
         $home_points = $fixture->get_home_points();
         $away_points = $fixture->get_away_points();
@@ -454,7 +471,8 @@ readonly class Fixture_Presenter {
     }
 
     public function map_to_date_update_read_model(
-        Fixture_Date_Update_Request $request, string $formatted_date
+        Fixture_Date_Update_Request $request,
+        string $formatted_date
     ): Fixture_Date_Update_Read_Model {
         return new Fixture_Date_Update_Read_Model( msg: __( 'Match schedule updated', 'racketmanager' ), match_id: $request->match_id, schedule_date: (string) $request->schedule_date, schedule_date_formated: $formatted_date, modal: $request->modal );
     }
@@ -509,13 +527,17 @@ readonly class Fixture_Presenter {
     public function map_to_header_read_model( Application_Fixture_Details_DTO|Fixture_Details_DTO $dto, bool $edit_mode = false, bool $is_shortcode = false ): Fixture_Header_Read_Model {
         $fixture = $dto->fixture;
 
-        $is_update_allowed = $dto->is_update_allowed ?? (object) [ 'user_can_update' => false, 'match_approval_mode' => false, 'user_type' => '' ];
-        $event = $dto->event ?? (object) [ 'name' => '' ];
-        $competition = $dto->competition ?? (object) [ 'type' => 'league' ];
-        $league = $dto->league ?? (object) [ 'title' => '' ];
-        $home_team_dto = $dto->home_team ?? null;
-        $away_team_dto = $dto->away_team ?? null;
-        $link = $dto->link ?? '';
+        $is_update_allowed = $dto->is_update_allowed ?? (object) [
+            'user_can_update'     => false,
+            'match_approval_mode' => false,
+            'user_type'           => '',
+        ];
+        $event             = $dto->event ?? (object) [ 'name' => '' ];
+        $competition       = $dto->competition ?? (object) [ 'type' => 'league' ];
+        $league            = $dto->league ?? (object) [ 'title' => '' ];
+        $home_team_dto     = $dto->home_team ?? null;
+        $away_team_dto     = $dto->away_team ?? null;
+        $link              = $dto->link ?? '';
 
         $allow_schedule_match     = false;
         $allow_switch_match       = false;
@@ -636,7 +658,7 @@ readonly class Fixture_Presenter {
         $fixture       = $dto->fixture;
         $home_team_dto = $dto->home_team ?? null;
         $away_team_dto = $dto->away_team ?? null;
-        
+
         $rubbers = [];
 
         foreach ( $dto->rubbers as $rubber ) {
@@ -648,31 +670,35 @@ readonly class Fixture_Presenter {
         $approvals = [];
         $opponents = [ 'home', 'away' ];
         foreach ( $opponents as $opponent ) {
-            $team = 'home' === $opponent ? $home_team_dto : $away_team_dto;
-            $approver_name = 'home' === $opponent ? $dto->home_approver_name : $dto->away_approver_name;
+            $team                   = 'home' === $opponent ? $home_team_dto : $away_team_dto;
+            $approver_name          = 'home' === $opponent ? $dto->home_approver_name : $dto->away_approver_name;
             $approvals[ $opponent ] = [
-                'team_name' => $team ? $team->team->get_name() : '',
+                'team_name'     => $team ? $team->team->get_name() : '',
                 'approver_name' => $approver_name,
-                'comment' => $comments[ $opponent ] ?? null,
+                'comment'       => $comments[ $opponent ] ?? null,
             ];
         }
 
-        $location = null;
-        $host_key = empty( $fixture->get_host() ) ? 'home' : $fixture->get_host();
+        $location      = null;
+        $host_key      = empty( $fixture->get_host() ) ? 'home' : $fixture->get_host();
         $host_team_dto = 'home' === $host_key ? $home_team_dto : $away_team_dto;
 
         if ( $host_team_dto && $host_team_dto->club ) {
             $location = [
-                'club_name' => $host_team_dto->club->get_name(),
-                'address' => $host_team_dto->club->get_address(),
-                'match_secretary_name' => $host_team_dto->match_secretary ? $host_team_dto->match_secretary->get_fullname() : '',
+                'club_name'                 => $host_team_dto->club->get_name(),
+                'address'                   => $host_team_dto->club->get_address(),
+                'match_secretary_name'      => $host_team_dto->match_secretary ? $host_team_dto->match_secretary->get_fullname() : '',
                 'match_secretary_contactno' => $host_team_dto->match_secretary ? $host_team_dto->match_secretary->get_contactno() : '',
-                'match_secretary_email' => $host_team_dto->match_secretary ? $host_team_dto->match_secretary->get_email() : '',
-                'website' => $host_team_dto->club->get_website(),
+                'match_secretary_email'     => $host_team_dto->match_secretary ? $host_team_dto->match_secretary->get_email() : '',
+                'website'                   => $host_team_dto->club->get_website(),
             ];
         }
 
-        $is_update_allowed = $dto->is_update_allowed ?? (object) [ 'user_can_update' => false, 'match_approval_mode' => false, 'user_type' => '' ];
+        $is_update_allowed = $dto->is_update_allowed ?? (object) [
+            'user_can_update'     => false,
+            'match_approval_mode' => false,
+            'user_type'           => '',
+        ];
 
         $match_status = null;
         if ( ! empty( $fixture->get_walkover() ) ) {
@@ -690,13 +716,13 @@ readonly class Fixture_Presenter {
             $team_dto = 'home' === $opponent ? $home_team_dto : $away_team_dto;
             if ( $team_dto ) {
                 $captain_name = 'home' === $opponent ? $dto->home_captain_name : $dto->away_captain_name;
-                $contactno = 'home' === $opponent ? $dto->home_captain_contactno : $dto->away_captain_contactno;
+                $contactno    = 'home' === $opponent ? $dto->home_captain_contactno : $dto->away_captain_contactno;
                 $contactemail = 'home' === $opponent ? $dto->home_captain_email : $dto->away_captain_email;
 
                 $teams[ $opponent ] = [
                     'captain_name' => $captain_name,
-                    'team_name' => $team_dto->team->get_name(),
-                    'contactno' => $contactno,
+                    'team_name'    => $team_dto->team->get_name(),
+                    'contactno'    => $contactno,
                     'contactemail' => $contactemail,
                 ];
             }
@@ -712,16 +738,16 @@ readonly class Fixture_Presenter {
             show_print_button: ! $is_editing && ! $fixture->get_winner_id(),
             show_edit_button: ! $is_editing && $is_update_allowed->user_can_update,
             match_id: (int) $fixture->get_id(),
-            edit_url: $dto->link ? $dto->link . 'result/' : "",
+            edit_url: $dto->link ? $dto->link . 'result/' : '',
             is_editing: $is_editing,
             club_players: $dto->club_players,
             match_status: $match_status,
             permissions: [
-                'user_can_update' => (bool) $is_update_allowed->user_can_update,
+                'user_can_update'     => (bool) $is_update_allowed->user_can_update,
                 'match_approval_mode' => (bool) $is_update_allowed->match_approval_mode,
-                'user_type' => $is_update_allowed->user_type ?? '',
-                'user_team' => $is_update_allowed->user_team ?? '',
-                'match_update' => $is_update_allowed->match_update ?? false,
+                'user_type'           => $is_update_allowed->user_type ?? '',
+                'user_team'           => $is_update_allowed->user_team ?? '',
+                'match_update'        => $is_update_allowed->match_update ?? false,
             ],
             num_sets: $dto->event ? $dto->event->get_num_sets() : 3,
             scoring_info: $this->get_match_scoring_info( $dto )
@@ -730,19 +756,19 @@ readonly class Fixture_Presenter {
 
     private function get_match_scoring_info( Application_Fixture_Details_DTO $dto ): array {
         $scoring_info = [];
-        $num_sets = $dto->event ? $dto->event->get_num_sets() : 3;
-        $scoring = $dto->event->scoring ?? '';
+        $num_sets     = $dto->event ? $dto->event->get_num_sets() : 3;
+        $scoring      = $dto->event->scoring ?? '';
         foreach ( $dto->rubbers as $rubber ) {
             $rubber_scoring = [];
             for ( $i = 1; $i <= $num_sets; $i++ ) {
-                $set_type = Util::get_set_type( $scoring, $dto->fixture->final, $num_sets, $i, $rubber->rubber_number, $dto->event->num_rubbers, $dto->fixture->leg );
-                $set_info = Util::get_set_info( $set_type );
+                $set_type             = Util::get_set_type( $scoring, $dto->fixture->final, $num_sets, $i, $rubber->rubber_number, $dto->event->num_rubbers, $dto->fixture->leg );
+                $set_info             = Util::get_set_info( $set_type );
                 $rubber_scoring[ $i ] = [
-                    'set_type' => $set_type,
-                    'max_win' => $set_info->max_win,
-                    'max_loss' => $set_info->max_loss,
-                    'min_win' => $set_info->min_win,
-                    'min_loss' => $set_info->min_loss,
+                    'set_type'     => $set_type,
+                    'max_win'      => $set_info->max_win,
+                    'max_loss'     => $set_info->max_loss,
+                    'min_win'      => $set_info->min_win,
+                    'min_loss'     => $set_info->min_loss,
                     'tiebreak_set' => $set_info->tiebreak_set,
                 ];
             }
@@ -754,8 +780,8 @@ readonly class Fixture_Presenter {
     private function map_rubber( object $rubber, Application_Fixture_Details_DTO $dto ): array {
         $home_team_dto = $dto->home_team ?? null;
         $away_team_dto = $dto->away_team ?? null;
-        $event = $dto->event ?? (object) [ 'name' => '' ];
-        $competition = $dto->competition ?? (object) [ 'type' => 'league' ];
+        $event         = $dto->event ?? (object) [ 'name' => '' ];
+        $competition   = $dto->competition ?? (object) [ 'type' => 'league' ];
 
         $winner = null;
         if ( ! empty( $rubber->winner_id ) ) {
@@ -766,11 +792,11 @@ readonly class Fixture_Presenter {
             }
         }
 
-        $opponents = [ 'home', 'away' ];
+        $opponents        = [ 'home', 'away' ];
         $mapped_opponents = [];
         foreach ( $opponents as $opponent ) {
-            $team = 'home' === $opponent ? $home_team_dto : $away_team_dto;
-            $players = [];
+            $team             = 'home' === $opponent ? $home_team_dto : $away_team_dto;
+            $players          = [];
             $opponent_players = $rubber->players[ $opponent ] ?? [];
             foreach ( $opponent_players as $player_detail ) {
                 $p_id = $player_detail->id ?? 0;
@@ -780,14 +806,14 @@ readonly class Fixture_Presenter {
                 } elseif ( ! empty( $player_detail->id ) ) {
                     $p_id = (int) $player_detail->id;
                 }
-                
+
                 $players[] = [
-                    'id' => $p_id,
-                    'gender' => $player_detail->gender ?? 'm',
-                    'name' => $player_detail->display_name ?? '',
-                    'url' => empty( $player_detail->system_record ) ? '/' . $competition->get_type() . 's/' . Seo_Slug::encode( $event->name ) . '/' . $dto->fixture->get_season() . '/player/' . Seo_Slug::encode( $player_detail->display_name ?? '' ) . '/' : null,
-                    'class' => $player_detail->class ?? '',
-                    'description' => $player_detail->description ?? '',
+                    'id'               => $p_id,
+                    'gender'           => $player_detail->gender ?? 'm',
+                    'name'             => $player_detail->display_name ?? '',
+                    'url'              => empty( $player_detail->system_record ) ? '/' . $competition->get_type() . 's/' . Seo_Slug::encode( $event->name ) . '/' . $dto->fixture->get_season() . '/player/' . Seo_Slug::encode( $player_detail->display_name ?? '' ) . '/' : null,
+                    'class'            => $player_detail->class ?? '',
+                    'description'      => $player_detail->description ?? '',
                     'is_system_record' => ! empty( $player_detail->system_record ),
                 ];
             }
@@ -803,18 +829,18 @@ readonly class Fixture_Presenter {
                 }
             }
 
-            $message = null;
-            $status_text = null;
+            $message      = null;
+            $status_text  = null;
             $status_class = null;
 
             if ( $winner === $opponent ) {
-                $status_text = 'W';
+                $status_text  = 'W';
                 $status_class = 'winner';
                 if ( ! empty( $rubber->is_abandoned ) ) {
                     $message = __( 'Abandoned', 'racketmanager' );
                 }
             } elseif ( $winner ) {
-                $status_text = 'L';
+                $status_text  = 'L';
                 $status_class = 'loser';
                 if ( ! empty( $rubber->is_walkover ) ) {
                     $message = __( 'Walkover', 'racketmanager' );
@@ -826,7 +852,7 @@ readonly class Fixture_Presenter {
                     $message = __( 'Abandoned', 'racketmanager' );
                 }
             } elseif ( ! empty( $rubber->winner_id ) && '-1' == $rubber->winner_id ) {
-                $status_text = 'T';
+                $status_text  = 'T';
                 $status_class = 'tie';
                 if ( ! empty( $rubber->is_walkover ) ) {
                     $message = __( 'Walkover', 'racketmanager' );
@@ -841,23 +867,21 @@ readonly class Fixture_Presenter {
 
             if ( $team ) {
                 $team_name = $team->team->get_name();
-            } else {
-                if ( 'home' === $opponent ) {
+            } elseif ( 'home' === $opponent ) {
                     $team_name = $dto->prev_home_fixture_title ?? $dto->enriched_data['prev_home_fixture_title'] ?? '';
-                } else {
-                    $team_name = $dto->prev_away_fixture_title ?? $dto->enriched_data['prev_away_fixture_title'] ?? '';
-                }
+            } else {
+                $team_name = $dto->prev_away_fixture_title ?? $dto->enriched_data['prev_away_fixture_title'] ?? '';
             }
 
             $mapped_opponents[ $opponent ] = [
-                'team_id' => 'home' === $opponent ? $dto->fixture->get_home_team() : $dto->fixture->get_away_team(),
-                'team_name' => $team_name,
-                'players' => $players,
-                'message' => $message,
-                'status_text' => $status_text,
+                'team_id'      => 'home' === $opponent ? $dto->fixture->get_home_team() : $dto->fixture->get_away_team(),
+                'team_name'    => $team_name,
+                'players'      => $players,
+                'message'      => $message,
+                'status_text'  => $status_text,
                 'status_class' => $status_class,
-                'is_winner' => $winner === $opponent,
-                'gender' => $gender_short,
+                'is_winner'    => $winner === $opponent,
+                'gender'       => $gender_short,
             ];
         }
 
@@ -880,13 +904,13 @@ readonly class Fixture_Presenter {
 
                 if ( ! empty( $p1 ) || ! empty( $p2 ) ) {
                     $sets[ $s_count ] = [
-                        'home' => $p1,
-                        'away' => $p2,
+                        'home'     => $p1,
+                        'away'     => $p2,
                         'tiebreak' => $tb,
                         'home_won' => (int) $p1 > (int) $p2,
                         'away_won' => (int) $p2 > (int) $p1,
                     ];
-                    $s_count++;
+                    ++$s_count;
                 }
             }
         }
@@ -902,8 +926,8 @@ readonly class Fixture_Presenter {
         if ( empty( $sets ) ) {
             for ( $i = 1; $i <= $num_sets; $i++ ) {
                 $sets[ $i ] = [
-                    'home' => '',
-                    'away' => '',
+                    'home'     => '',
+                    'away'     => '',
                     'tiebreak' => '',
                     'home_won' => false,
                     'away_won' => false,
@@ -912,13 +936,13 @@ readonly class Fixture_Presenter {
         }
 
         return [
-            'id' => $rubber->id,
-            'number' => $rubber->rubber_number,
-            'type' => $rubber->type,
+            'id'         => $rubber->id,
+            'number'     => $rubber->rubber_number,
+            'type'       => $rubber->type,
             'status_key' => $rubber->status ?? null,
-            'title' => $rubber->type . $rubber->rubber_number,
-            'opponents' => $mapped_opponents,
-            'sets' => $sets,
+            'title'      => $rubber->type . $rubber->rubber_number,
+            'opponents'  => $mapped_opponents,
+            'sets'       => $sets,
         ];
     }
 }

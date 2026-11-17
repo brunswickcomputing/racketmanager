@@ -14,6 +14,15 @@ use function shortcode_atts;
  * Adapter for the [fixture] and [match] shortcodes.
  */
 readonly class Fixture_Shortcode_Adapter implements Shortcode_Adapter_Interface {
+    /**
+     * Initialise the fixture details shortcode with its handler, presenter, and optional query variables provider.
+     *
+     * @param Get_Fixture_Details_Handler $handler Fixture details handler.
+     * @param Fixture_Presenter           $presenter Fixture presenter.
+     * @param Query_Vars_Interface|null   $query_vars Optional query variables provider.
+     *
+     * @return void
+     */
     public function __construct(
         private Get_Fixture_Details_Handler $handler,
         private Fixture_Presenter $presenter,
@@ -32,7 +41,7 @@ readonly class Fixture_Shortcode_Adapter implements Shortcode_Adapter_Interface 
         $fixture_id = $params['fixture_id'];
         $action     = $params['action'];
 
-        // If no ID is provided, try to resolve via slug criteria from URL
+        // If no ID is provided, try to resolve via slug criteria from URL.
         $slug_criteria = [];
         if ( ! $fixture_id ) {
             $slug_criteria = $this->get_slug_criteria();
@@ -95,7 +104,7 @@ readonly class Fixture_Shortcode_Adapter implements Shortcode_Adapter_Interface 
     /**
      * Render the fixture response.
      *
-     * @param mixed $dto Fixture details DTO.
+     * @param mixed  $dto Fixture details DTO.
      * @param string $action Current action.
      *
      * @return string

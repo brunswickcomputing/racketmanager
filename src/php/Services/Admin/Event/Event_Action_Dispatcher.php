@@ -19,6 +19,7 @@ use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
+use Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface;
 use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\League_Service;
@@ -36,6 +37,7 @@ readonly final class Event_Action_Dispatcher {
         private Action_Guard_Interface $action_guard,
         private Event_Repository_Interface $event_repository,
         private League_Service $league_service,
+        private Event_Query_Service_Interface $event_query_service,
     ) {
     }
 
@@ -254,16 +256,7 @@ readonly final class Event_Action_Dispatcher {
         $config = $this->get_config_input( $post );
 
         if ( empty( $config->primary_league ) || (int) $config->primary_league <= 0 ) {
-            $primary_league_id = ! empty( $event->primary_league ) ? (int) $event->primary_league : null;
-            if ( ! $primary_league_id && ! empty( $event->id ) ) {
-                $raw_leagues = $this->event_repository->query_leagues( (int) $event->id );
-                if ( is_array( $raw_leagues ) && ! empty( $raw_leagues ) ) {
-                    $first_league = reset( $raw_leagues );
-                    if ( is_object( $first_league ) && ! empty( $first_league->id ) ) {
-                        $primary_league_id = (int) $first_league->id;
-                    }
-                }
-            }
+            $primary_league_id = $this->event_query_service->get_primary_league_id( $event );
             if ( $primary_league_id ) {
                 $config->primary_league = $primary_league_id;
             }

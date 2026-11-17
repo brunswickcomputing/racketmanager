@@ -36,7 +36,7 @@ $vm = $archive_vm ?? $vm;
                     </svg>
                 </div>
                 <div class="media__content">
-                    <h1 class="media__title"><?php echo esc_html( $vm->league_title ); ?></h1>
+                    <h1 class="media__title"><?php echo esc_html( $vm->league_name ?? $vm->league_title ?? '' ); ?></h1>
                     <div class="media__content-subinfo">
                         <?php if ( ! empty( $vm->event_name ) ) : ?>
                             <small class="media__subheading">

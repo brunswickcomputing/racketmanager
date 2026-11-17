@@ -15,7 +15,7 @@ $season             = $vm->season;
 $leagues            = $vm->leagues;
 $league_matches_map = $vm->league_matches_map;
 $league_id          = $vm->league_id;
-$league_title       = $vm->league_title;
+$league_name        = $vm->league_name ?? $vm->league_title ?? '';
 $league_edit        = $vm->league_edit;
 $tab                = $vm->tab;
 ?>

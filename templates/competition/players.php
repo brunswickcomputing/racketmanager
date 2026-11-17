@@ -53,12 +53,12 @@ if ( empty( $competition->player ) ) {
                                         <?php if ( '' !== $league_link ) : ?>
                                             <a href="<?php echo esc_attr( $league_link ); ?>">
                                                 <span class="nav-link__value">
-                                                    <?php echo esc_html( $league->title ); ?>
+                                                    <?php echo esc_html( $league->name ?? $league->title ?? '' ); ?>
                                                 </span>
                                             </a>
                                         <?php else : ?>
                                             <span class="nav-link__value">
-                                                <?php echo esc_html( $league->title ); ?>
+                                                <?php echo esc_html( $league->name ?? $league->title ?? '' ); ?>
                                             </span>
                                         <?php endif; ?>
                                     </span>

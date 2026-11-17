@@ -209,12 +209,25 @@ class League_Repository implements League_Repository_Interface {
     }
 
     /**
+     * Find a league by its title (legacy alias to find_by_name).
+     *
+     * @param string $title The league title.
+     * @return ?League The league object or null if not found.
+     */
+    public function find_by_title( string $title ): ?League {
+        return $this->find_by_name( $title );
+    }
+
+    /**
      * Hydrate a League entity from a database row.
      *
      * @param object $row Database row object.
      * @return ?League Hydrated League entity or null.
      */
     private function hydrate_league( object $row ): ?League {
+        if ( isset( $row->title ) && ! isset( $row->name ) ) {
+            $row->name = $row->title;
+        }
         $event = null;
         if ( ! empty( $row->event_id ) ) {
             if ( $this->event_repository instanceof Closure ) {
@@ -293,7 +306,7 @@ class League_Repository implements League_Repository_Interface {
             }
             $query = $this->wpdb->prepare(
                 // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name and pre-prepared subquery interpolation.
-                "SELECT * FROM $this->table_name WHERE `event_id` = %d $search ORDER BY `title`",
+                "SELECT *, `title` AS `name`, `title` AS `league_name`, `title` AS `league_title` FROM $this->table_name WHERE `event_id` = %d $search ORDER BY `title`",
                 $event_id
             );
             $leagues = $this->wpdb->get_results( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Pre-prepared query.
@@ -912,6 +925,7 @@ class League_Repository implements League_Repository_Interface {
             'limit'            => 99999999,
             'competition_type' => false,
             'name'             => false,
+            'league_name'      => false,
             'season'           => false,
             'orderby'          => array( 'title' => 'ASC' ),
         );
@@ -919,10 +933,14 @@ class League_Repository implements League_Repository_Interface {
         $offset           = $args['offset'];
         $limit            = $args['limit'];
         $competition_type = $args['competition_type'];
-        $name             = $args['name'];
+        $name             = $args['league_name'] ?: $args['name'];
         $season           = $args['season'];
         $orderby          = $args['orderby'];
-        $search_terms     = array();
+
+        if ( is_array( $orderby ) ) {
+            $orderby = $this->normalise_orderby( $orderby );
+        }
+        $search_terms = array();
         if ( $name ) {
             $escaped_name   = method_exists( $this->wpdb, 'esc_like' ) ? $this->wpdb->esc_like( stripslashes( $name ) ) : addcslashes( stripslashes( $name ), '_%\\' );
             $search_terms[] = $this->wpdb->prepare( '`title` like %s', $escaped_name . '%' );
@@ -962,6 +980,25 @@ class League_Repository implements League_Repository_Interface {
             }
         }
         return $hydrated_leagues;
+    }
+
+    /**
+     * Normalise order-by field names to match expected query fields.
+     *
+     * @param array $orderby The order-by fields and directions.
+     *
+     * @return array The normalized order-by fields and directions.
+     */
+    private function normalise_orderby( array $orderby ): array {
+        $normalized_orderby = array();
+        foreach ( $orderby as $key => $direction ) {
+            if ( in_array( $key, array( 'league_name', 'name', 'league_title' ), true ) ) {
+                $normalized_orderby['title'] = $direction;
+            } else {
+                $normalized_orderby[ $key ] = $direction;
+            }
+        }
+        return $normalized_orderby;
     }
 
     /**

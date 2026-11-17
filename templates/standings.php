@@ -20,7 +20,7 @@ $is_column_visible = fn( string $key ): bool => isset( $vm ) && $vm instanceof L
 if ( count( $league->teams ) ) {
     ?>
     <div class="table-responsive">
-        <table class="table table-striped table-borderless" aria-label="<?php esc_html_e( 'League Standings', 'racketmanager' ); ?>" aria-describedby="<?php echo esc_attr( sprintf( __( 'Standings %s', 'racketmanager' ), $league->title ) ); ?>">
+        <table class="table table-striped table-borderless" aria-label="<?php esc_html_e( 'League Standings', 'racketmanager' ); ?>" aria-describedby="<?php echo esc_attr( sprintf( __( 'Standings %s', 'racketmanager' ), $league->name ?? $league->title ?? '' ) ); ?>">
             <thead class="">
                 <tr>
                     <th class="num">

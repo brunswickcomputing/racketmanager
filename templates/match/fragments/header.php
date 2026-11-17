@@ -35,11 +35,11 @@ if ( $vm->is_shortcode ) {
                     <span class="nav-link__value"><?php echo esc_html( $vm->event_name ); ?></span>
                 </a>
                 <?php
-                if ( $vm->league_title ) {
+                if ( $vm->league_name ?? $vm->league_title ?? '' ) {
                     ?>
                     &nbsp;&#8226;&nbsp;
                     <a href="<?php echo esc_url( $vm->league_url ); ?>">
-                        <span class="nav-link__value"><?php echo esc_html( $vm->league_title ); ?></span>
+                        <span class="nav-link__value"><?php echo esc_html( $vm->league_name ?? $vm->league_title ?? '' ); ?></span>
                     </a>
                     <?php
                 }

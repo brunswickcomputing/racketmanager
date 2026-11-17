@@ -297,7 +297,7 @@ class Competition_Service implements Competition_Service_Interface {
         return $this->competition_repository->find_by( array( 'type' => 'tournament' ) );
     }
 
-    public function find_competitions_with_summary( ?string $age_group, ?string $type ): array {
+    public function find_competitions_with_summary( ?string $age_group = null, ?string $type = null ): array {
         return $this->competition_repository->find_competitions_with_summary( $age_group, $type );
     }
 

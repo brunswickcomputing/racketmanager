@@ -28,7 +28,7 @@ $crosstable_cells   = $crosstable_cells ?? $vars['crosstable_cells'] ?? $vm->cro
             } else {
                 ?>
                 <div class="table-responsive">
-                    <table class='table table-striped table-borderless align-middle' aria-describedby='<?php esc_html_e( 'Crosstable', 'racketmanager' ); ?> <?php echo esc_html( $league->title ); ?>'>
+                    <table class='table table-striped table-borderless align-middle' aria-describedby='<?php esc_html_e( 'Crosstable', 'racketmanager' ); ?> <?php echo esc_html( $league->name ?? $league->title ?? '' ); ?>'>
                         <thead class="">
                             <tr>
                                 <th colspan='2' class="team" scope="col"><?php esc_html_e( 'Team', 'racketmanager' ); ?></th>

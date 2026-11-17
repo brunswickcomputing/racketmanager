@@ -239,7 +239,7 @@ final class Frontend_Modals_And_Partials_Render_Test extends TestCase {
     public function test_order_of_play_renders_strictly(): void {
         $match_vm = new Order_Of_Play_Match_View_Model(
             id: 1,
-            league_title: 'Championship Final',
+            league_name: 'Championship Final',
             home_match_title: 'Player A',
             away_match_title: 'Player B',
             is_home_pending: false,

@@ -19,7 +19,7 @@ require 'email-header.php';
 $paragraph_text = __( 'Dear Captain', 'racketmanager' );
 require $paragraph;
 /* translators: %1$s: team name %2$s: league name */
-$paragraph_text = sprintf( __( 'Unfortunately %1$s have withdrawn from the %2$s league.', 'racketmanager' ), $team->title, $league->title );
+$paragraph_text = sprintf( __( 'Unfortunately %1$s have withdrawn from the %2$s league.', 'racketmanager' ), $team->title, $league?->name ?? $league?->title ?? '' );
 require $paragraph;
 /* translators: %s: team name */
 $paragraph_text = sprintf( __( 'All unplayed matches involving %s have been cancelled.', 'racketmanager' ), $team->title );

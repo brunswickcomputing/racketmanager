@@ -10,7 +10,7 @@ namespace Racketmanager;
 /** @var string $competition_name */
 /** @var object $match */
 $match            = $match ?? $vm->match ?? null;
-$competition_name = $competition_name ?? $vm->competition_name ?? ( $match?->league?->title ?? '' );
+$competition_name = $competition_name ?? $vm->competition_name ?? ( $match?->league_name ?? $match?->league?->name ?? $match?->league?->title ?? '' );
 ?><!-- match heading -->
             <div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">
                 <table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">

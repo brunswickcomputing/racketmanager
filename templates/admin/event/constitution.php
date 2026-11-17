@@ -135,14 +135,14 @@ if ( empty( $event->is_box ) && empty( $seasons ) ) {
                                 <input type="hidden" name="table_id[<?php echo esc_html( $team->table_id ); ?>]" value="<?php echo esc_html( $team->table_id ); ?>" />
                             </th>
                             <td>
-                                <?php echo esc_html( $team->old_league_title ); ?>
+                                <?php echo esc_html( $team->old_league_name ?? $team->old_league_title ?? '' ); ?>
                                 <input type="hidden" name="original_league_id[<?php echo esc_html( $team->table_id ); ?>]" value=<?php echo esc_html( $team->old_league_id ); ?> />
                             </td>
                             <td>
                                 <label>
                                     <select size=1 name="league_id[<?php echo esc_html( $team->table_id ); ?>]">
                                         <?php foreach ( $leagues as $league ) { ?>
-                                            <option value="<?php echo esc_html( $league->id ); ?>" <?php selected( $league->id, $team->league_id ); ?>><?php echo esc_html( $league->title ); ?></option>
+                                            <option value="<?php echo esc_html( $league->id ); ?>" <?php selected( $league->id, $team->league_id ); ?>><?php echo esc_html( $league->name ?? $league->title ?? '' ); ?></option>
                                         <?php } ?>
                                     </select>
                                 </label>

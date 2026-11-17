@@ -259,7 +259,7 @@ class Competition_Repository implements Competition_Repository_Interface {
      *
      * @return Competition_Summary_DTO[]
      */
-    public function find_competitions_with_summary( $age_group = null, $type = null ): array {
+    public function find_competitions_with_summary( ?string $age_group = null, ?string $type = null ): array {
         $params     = [];
         $conditions = []; // Use an array instead of a string
 
@@ -368,7 +368,7 @@ class Competition_Repository implements Competition_Repository_Interface {
      */
     public function get_league_winners( int $competition_id, ?int $season = null ): array {
         $query = $this->wpdb->prepare(
-            "SELECT l.`title` ,wt.`title` AS `winner` ,e.`type`, e.`name` AS `event_name`, e.`id` AS `event_id` FROM $this->league_teams_table t, $this->leagues_table l, $this->teams_table wt, $this->events_table e WHERE t.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.`competition_id` = %d AND t.`season` = %d AND t.rank = 1 AND t.team_id = wt.id order by e.`name`, l.`title`",
+            "SELECT l.`title` AS `league_name`, l.`title` AS `league_title`, l.`title`, wt.`title` AS `winner` ,e.`type`, e.`name` AS `event_name`, e.`id` AS `event_id` FROM $this->league_teams_table t, $this->leagues_table l, $this->teams_table wt, $this->events_table e WHERE t.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.`competition_id` = %d AND t.`season` = %d AND t.rank = 1 AND t.team_id = wt.id order by e.`name`, l.`title`",
             $competition_id,
             $season
         );
@@ -385,180 +385,203 @@ class Competition_Repository implements Competition_Repository_Interface {
      */
     public function get_championship_winners( int $competition_id, ?int $season = null ): array {
         $query = $this->wpdb->prepare(
-            "SELECT l.`title` ,wt.`title` AS `winner` ,lt.`title` AS `loser`, m.`id`, m.`home_team`, m.`away_team`, m.`winner_id` AS `winner_id`, m.`loser_id` AS `loser_id`, e.`type`, e.`name` AS `event_name`, e.`id` AS `event_id`, wt.`status` AS `team_type` FROM $this->fixtures_table m, $this->leagues_table l, $this->teams_table wt, $this->teams_table lt, $this->events_table e WHERE `league_id` = l.`id` AND l.`event_id` = e.`id` AND e.`competition_id` = %d AND m.`final` = 'FINAL' AND m.`season` = %d AND m.`winner_id` = wt.`id` AND m.`loser_id` = lt.`id` order by e.`name`, l.`title`",
+            "SELECT l.`title` AS `league_name`, l.`title` AS `league_title`, l.`title`, wt.`title` AS `winner` ,lt.`title` AS `loser`, m.`id`, m.`home_team`, m.`away_team`, m.`winner_id` AS `winner_id`, m.`loser_id` AS `loser_id`, e.`type`, e.`name` AS `event_name`, e.`id` AS `event_id`, wt.`status` AS `team_type` FROM $this->fixtures_table m, $this->leagues_table l, $this->teams_table wt, $this->teams_table lt, $this->events_table e WHERE `league_id` = l.`id` AND l.`event_id` = e.`id` AND e.`competition_id` = %d AND m.`final` = 'FINAL' AND m.`season` = %d AND m.`winner_id` = wt.`id` AND m.`loser_id` = lt.`id` order by e.`name`, l.`title`",
             $competition_id,
             $season
         );
         return $this->wpdb->get_results( $query );
     }
 
-	/**
-	 * Find a competition by its name.
-	 *
-	 * @param string $name
-	 * @return Competition|null
-	 */
-	public function find_by_name( string $name ): ?Competition {
-		if ( empty( $name ) ) {
-			return null;
-		}
+    /**
+     * Find a competition by its name.
+     *
+     * @param string $name
+     * @return Competition|null
+     */
+    public function find_by_name( string $name ): ?Competition {
+        if ( empty( $name ) ) {
+            return null;
+        }
 
-		$row = $this->wpdb->get_row(
-			$this->wpdb->prepare(
-				"SELECT `name`, `id`, `type`, `settings`, `seasons`, `age_group` FROM $this->table_name WHERE `name` = %s LIMIT 1",
-				$name
-			)
-		);
+        $row = $this->wpdb->get_row(
+            $this->wpdb->prepare(
+                "SELECT `name`, `id`, `type`, `settings`, `seasons`, `age_group` FROM $this->table_name WHERE `name` = %s LIMIT 1",
+                $name
+            )
+        );
 
-		if ( ! $row ) {
-			return null;
-		}
+        if ( ! $row ) {
+            return null;
+        }
 
-		$competition = Competition_Factory::from_object( $row );
-		return $this->hydrate_competition( $competition );
-	}
+        $competition = Competition_Factory::from_object( $row );
+        return $this->hydrate_competition( $competition );
+    }
 
-	/**
-	 * Get teams from database for a competition.
-	 *
-	 * @param int $competition_id
-	 * @param array $args
-	 * @return array|int
-	 */
-	public function find_teams( int $competition_id, array $args = [] ): array|int {
-		$defaults = [
-			'offset'  => 0,
-			'limit'   => 99999999,
-			'season'  => false,
-			'orderby' => [
-				'league_title' => 'ASC',
-				'name'         => 'ASC',
-			],
-			'club'    => false,
-			'status'  => false,
-			'count'   => false,
-			'name'    => false,
-		];
-		$args     = array_merge( $defaults, $args );
-		$offset   = $args['offset'];
-		$limit    = $args['limit'];
-		$season   = $args['season'];
-		$orderby  = $args['orderby'];
-		$club     = $args['club'];
-		$status   = $args['status'];
-		$count    = $args['count'];
-		$name     = $args['name'];
+    /**
+     * Get teams from database for a competition.
+     *
+     * @param int $competition_id
+     * @param array $args
+     * @return array|int
+     */
+    public function find_teams( int $competition_id, array $args = [] ): array|int {
+        $defaults = [
+            'offset'  => 0,
+            'limit'   => 99999999,
+            'season'  => false,
+            'orderby' => [
+                'league_name' => 'ASC',
+                'name'        => 'ASC',
+            ],
+            'club'    => false,
+            'status'  => false,
+            'count'   => false,
+            'name'    => false,
+        ];
+        $args     = array_merge( $defaults, $args );
+        $offset   = $args['offset'];
+        $limit    = $args['limit'];
+        $season   = $args['season'];
+        $orderby  = $args['orderby'];
+        $club     = $args['club'];
+        $status   = $args['status'];
+        $count    = $args['count'];
+        $name     = $args['name'];
 
-		$search_terms   = [];
-		$search_terms[] = $this->wpdb->prepare( 'e.`competition_id` = %d', $competition_id );
+        if ( is_array( $orderby ) ) {
+            $normalized_orderby = [];
+            foreach ( $orderby as $key => $direction ) {
+                if ( 'league_title' === $key ) {
+                    $normalized_orderby['league_name'] = $direction;
+                } else {
+                    $normalized_orderby[ $key ] = $direction;
+                }
+            }
+            $orderby = $normalized_orderby;
+        }
 
-		if ( $season ) {
-			$search_terms[] = $this->wpdb->prepare( 't1.`season` = %s', $season );
-		}
+        $search_terms   = [];
+        $search_terms[] = $this->wpdb->prepare( 'e.`competition_id` = %d', $competition_id );
 
-		if ( $club ) {
-			$search_terms[] = $this->wpdb->prepare( 't2.`club_id` = %d', intval( $club ) );
-		}
+        if ( $season ) {
+            $search_terms[] = $this->wpdb->prepare( 't1.`season` = %s', $season );
+        }
 
-		if ( $status ) {
-			$search_terms[] = $this->wpdb->prepare( 't1.`profile` = %d', intval( $status ) );
-		}
-		if ( $name ) {
-			$search_terms[] = $this->wpdb->prepare( 't2.`title` like %s', '%' . $name . '%' );
-		}
+        if ( $club ) {
+            $search_terms[] = $this->wpdb->prepare( 't2.`club_id` = %d', intval( $club ) );
+        }
 
-		$search = \Racketmanager\Util\Util::search_string( $search_terms );
-		if ( $count ) {
-			$sql = 'SELECT COUNT(*)';
-		} else {
-			$sql = 'SELECT `l`.`title` AS `league_title`, l.`id` AS `league_id`, t2.`id` AS `team_id`, t1.`id` AS `table_id`, `t2`.`title` as `name`,`t1`.`rank`, l.`id`, t1.`status`, t1.`profile`, t1.`group`, t2.`roster`, t2.`club_id`, t2.`status` AS `team_type`, e.`name` AS `event_name`';
-		}
-		$sql .= " FROM {$this->events_table} e, {$this->leagues_table} l, {$this->teams_table} t2, {$this->league_teams_table} t1 WHERE e.`id` = l.`event_id` AND t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` " . $search;
+        if ( $status ) {
+            $search_terms[] = $this->wpdb->prepare( 't1.`profile` = %d', intval( $status ) );
+        }
+        if ( $name ) {
+            $search_terms[] = $this->wpdb->prepare( 't2.`title` like %s', '%' . $name . '%' );
+        }
 
-		if ( $count ) {
-			$result = $this->wpdb->get_var( $sql );
-			return null !== $result ? (int) $result : 0;
-		}
-		$sql .= \Racketmanager\Util\Util::order_by_string( $orderby );
-		$sql  = $this->wpdb->prepare(
-			$sql . ' LIMIT %d, %d',
-			intval( $offset ),
-			intval( $limit )
-		);
-		$teams = wp_cache_get( md5( $sql ), 'teams' );
-		if ( ! $teams ) {
-			$teams = $this->wpdb->get_results( $sql );
-			wp_cache_set( md5( $sql ), $teams, 'teams' );
-		}
-		foreach ( $teams as $i => $team ) {
-			$team->roster       = maybe_unserialize( $team->roster );
-			$team->club         = empty( $team->club_id ) ? null : $this->get_club_repository()->find_by_id( $team->club_id );
-			$team->title        = $team->name;
-			$team->player_count = $this->find_players(
-				$competition_id,
-				[
-					'season' => $season,
-					'team'   => $team->team_id,
-					'count'  => true,
-				]
-			);
-		}
-		return $teams;
-	}
+        $search = \Racketmanager\Util\Util::search_string( $search_terms );
+        if ( $count ) {
+            $sql = 'SELECT COUNT(*)';
+        } else {
+            $sql = 'SELECT `l`.`title` AS `league_name`, `l`.`title` AS `league_title`, l.`id` AS `league_id`, t2.`id` AS `team_id`, t1.`id` AS `table_id`, `t2`.`title` as `name`,`t1`.`rank`, l.`id`, t1.`status`, t1.`profile`, t1.`group`, t2.`roster`, t2.`club_id`, t2.`status` AS `team_type`, e.`name` AS `event_name`';
+        }
+        $sql .= " FROM {$this->events_table} e, {$this->leagues_table} l, {$this->teams_table} t2, {$this->league_teams_table} t1 WHERE e.`id` = l.`event_id` AND t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` " . $search;
 
-	/**
-	 * Get players from database for a competition.
-	 *
-	 * @param int $competition_id
-	 * @param array $args
-	 * @return array|int
-	 */
-	public function find_players( int $competition_id, array $args = [] ): array|int {
-		$defaults = [
-			'offset'  => 0,
-			'limit'   => 99999999,
-			'season'  => false,
-			'orderby' => 'name',
-			'order'   => 'ASC',
-			'team'    => false,
-			'club'    => false,
-			'count'   => false,
-			'stats'   => false,
-		];
-		$args     = array_merge( $defaults, $args );
-		$offset   = $args['offset'];
-		$limit    = $args['limit'];
-		$season   = $args['season'];
-		$orderby  = $args['orderby'];
-		$order    = $args['order'];
-		$team     = $args['team'];
-		$club     = $args['club'];
-		$count    = $args['count'];
+        if ( $count ) {
+            $result = $this->wpdb->get_var( $sql );
+            return null !== $result ? (int) $result : 0;
+        }
+        $sql .= \Racketmanager\Util\Util::order_by_string( $orderby );
+        $sql  = $this->wpdb->prepare(
+            $sql . ' LIMIT %d, %d',
+            intval( $offset ),
+            intval( $limit )
+        );
+        $teams = wp_cache_get( md5( $sql ), 'teams' );
+        if ( ! $teams ) {
+            $teams = $this->wpdb->get_results( $sql );
+            wp_cache_set( md5( $sql ), $teams, 'teams' );
+        }
+        foreach ( $teams as $i => $team ) {
+            $team->roster       = maybe_unserialize( $team->roster );
+            $team->club         = empty( $team->club_id ) ? null : $this->get_club_repository()->find_by_id( $team->club_id );
+            $team->title        = $team->name;
+            $team->player_count = $this->find_players(
+                $competition_id,
+                [
+                    'season' => $season,
+                    'team'   => $team->team_id,
+                    'count'  => true,
+                ]
+            );
+        }
+        return $teams;
+    }
 
-		$search_terms   = [];
-		$search_terms[] = $this->wpdb->prepare( 'e.`competition_id` = %d', $competition_id );
+    /**
+     * Query teams for a competition (alias to find_teams).
+     *
+     * @param int $competition_id
+     * @param array $args
+     * @return array|int
+     */
+    public function query_teams( int $competition_id, array $args = [] ): array|int {
+        return $this->find_teams( $competition_id, $args );
+    }
 
-		if ( $season ) {
-			$search_terms[] = $this->wpdb->prepare( 'lt.`season` = %s', $season );
-		}
+    /**
+     * Get players from database for a competition.
+     *
+     * @param int $competition_id
+     * @param array $args
+     * @return array|int
+     */
+    public function find_players( int $competition_id, array $args = [] ): array|int {
+        $defaults = [
+            'offset'  => 0,
+            'limit'   => 99999999,
+            'season'  => false,
+            'orderby' => 'name',
+            'order'   => 'ASC',
+            'team'    => false,
+            'club'    => false,
+            'count'   => false,
+            'stats'   => false,
+        ];
+        $args     = array_merge( $defaults, $args );
+        $offset   = $args['offset'];
+        $limit    = $args['limit'];
+        $season   = $args['season'];
+        $orderby  = $args['orderby'];
+        $order    = $args['order'];
+        $team     = $args['team'];
+        $club     = $args['club'];
+        $count    = $args['count'];
 
-		if ( $team ) {
-			$search_terms[] = $this->wpdb->prepare( 't.`id` = %d', intval( $team ) );
-		}
+        $search_terms   = [];
+        $search_terms[] = $this->wpdb->prepare( 'e.`competition_id` = %d', $competition_id );
 
-		if ( $club ) {
-			$search_terms[] = $this->wpdb->prepare( 't.`club_id` = %d', intval( $club ) );
-		}
+        if ( $season ) {
+            $search_terms[] = $this->wpdb->prepare( 'lt.`season` = %s', $season );
+        }
 
-		$search = \Racketmanager\Util\Util::search_string( $search_terms );
+        if ( $team ) {
+            $search_terms[] = $this->wpdb->prepare( 't.`id` = %d', intval( $team ) );
+        }
 
-		if ( $count ) {
-			$sql = 'SELECT COUNT(DISTINCT rp.`player_id`)';
-		} else {
-			$sql = 'SELECT DISTINCT rp.`player_id` as id';
-		}
+        if ( $club ) {
+            $search_terms[] = $this->wpdb->prepare( 't.`club_id` = %d', intval( $club ) );
+        }
 
-		$sql .= " FROM {$this->events_table} e
+        $search = \Racketmanager\Util\Util::search_string( $search_terms );
+
+        if ( $count ) {
+            $sql = 'SELECT COUNT(DISTINCT rp.`player_id`)';
+        } else {
+            $sql = 'SELECT DISTINCT rp.`player_id` as id';
+        }
+
+        $sql .= " FROM {$this->events_table} e
                   INNER JOIN {$this->leagues_table} l ON e.id = l.event_id
                   INNER JOIN {$this->league_teams_table} lt ON l.id = lt.league_id
                   INNER JOIN {$this->teams_table} t ON lt.team_id = t.id
@@ -567,333 +590,335 @@ class Competition_Repository implements Competition_Repository_Interface {
                   INNER JOIN {$this->rubber_players_table} rp ON r.id = rp.rubber_id
                   WHERE ( (rp.player_team = 'home' AND m.home_team = t.id) OR (rp.player_team = 'away' AND m.away_team = t.id) ) " . str_replace( 'WHERE', 'AND', $search );
 
-		if ( $count ) {
-			$result = $this->wpdb->get_var( $sql );
-			return null !== $result ? (int) $result : 0;
-		}
+        if ( $count ) {
+            $result = $this->wpdb->get_var( $sql );
+            return null !== $result ? (int) $result : 0;
+        }
 
-		$sql .= " ORDER BY $orderby $order LIMIT $offset, $limit";
-		$rows = $this->wpdb->get_results( $sql );
+        $sql .= " ORDER BY $orderby $order LIMIT $offset, $limit";
+        $rows = $this->wpdb->get_results( $sql );
 
-		return array_map(
-			function ( $row ) {
-				$id = (int) $row->id;
-				return $id > 0 ? $this->get_player_repository()->find( $id ) : null;
-			},
-			$rows
-		);
-	}
+        return array_map(
+            function ( $row ) {
+                $id = (int) $row->id;
+                return $id > 0 ? $this->get_player_repository()->find( $id ) : null;
+            },
+            $rows
+        );
+    }
 
-	/**
-	 * Get events from database for a competition.
-	 *
-	 * @param int $competition_id
-	 * @param array $args
-	 * @return array
-	 */
-	public function find_events( int $competition_id, array $args = [] ): array {
-		$defaults = [
-			'season' => false,
-		];
-		$args     = array_merge( $defaults, $args );
-		$season   = $args['season'];
+    /**
+     * Get events from database for a competition.
+     *
+     * @param int $competition_id
+     * @param array $args
+     * @return array
+     */
+    public function find_events( int $competition_id, array $args = [] ): array {
+        $defaults = [
+            'season' => false,
+        ];
+        $args     = array_merge( $defaults, $args );
+        $season   = $args['season'];
 
-		$query = "SELECT * FROM {$this->wpdb->prefix}racketmanager_events WHERE `competition_id` = %d";
-		$params = [ $competition_id ];
+        $query = "SELECT * FROM {$this->wpdb->prefix}racketmanager_events WHERE `competition_id` = %d";
+        $params = [ $competition_id ];
 
-		if ( $season ) {
-			$query .= " AND `id` IN (SELECT `event_id` FROM {$this->leagues_table} WHERE `id` IN (SELECT `league_id` FROM {$this->league_teams_table} WHERE `season` = %s))";
-			$params[] = $season;
-		}
+        if ( $season ) {
+            $query .= " AND `id` IN (SELECT `event_id` FROM {$this->leagues_table} WHERE `id` IN (SELECT `league_id` FROM {$this->league_teams_table} WHERE `season` = %s))";
+            $params[] = $season;
+        }
 
-		$query .= ' ORDER BY `name`';
-		$rows = $this->wpdb->get_results( $this->wpdb->prepare( $query, ...$params ) );
+        $query .= ' ORDER BY `name`';
+        $rows = $this->wpdb->get_results( $this->wpdb->prepare( $query, ...$params ) );
 
-		return array_map(
-			function ( $row ) {
-				$id = (int) $row->id;
-				return $id > 0 ? $this->get_event_repository()->find_by_id( $id ) : null;
-			},
-			$rows
-		);
-	}
+        return array_map(
+            function ( $row ) {
+                $id = (int) $row->id;
+                return $id > 0 ? $this->get_event_repository()->find_by_id( $id ) : null;
+            },
+            $rows
+        );
+    }
 
-	/**
-	 * Get matches from database for a competition.
-	 *
-	 * @param int $competition_id
-	 * @param array $args
-	 * @return array|int
-	 */
-	public function find_matches( int $competition_id, array $args = [] ): array|int {
-		$defaults = [
-			'offset'    => 0,
-			'limit'     => 99999999,
-			'season'    => false,
-			'orderby'   => [
-				'league_id' => 'ASC',
-				'id'        => 'ASC',
-			],
-			'count'     => false,
-			'player'    => false,
-			'player_id' => false,
-		];
-		$args     = array_merge( $defaults, $args );
-		$offset   = $args['offset'];
-		$limit    = $args['limit'];
-		$season   = $args['season'];
-		$orderby  = $args['orderby'];
-		$count    = $args['count'];
+    /**
+     * Get matches from database for a competition.
+     *
+     * @param int $competition_id
+     * @param array $args
+     * @return array|int
+     */
+    public function find_matches( int $competition_id, array $args = [] ): array|int {
+        $defaults = [
+            'offset'    => 0,
+            'limit'     => 99999999,
+            'season'    => false,
+            'orderby'   => [
+                'league_id' => 'ASC',
+                'id'        => 'ASC',
+            ],
+            'count'     => false,
+            'player'    => false,
+            'player_id' => false,
+        ];
+        $args     = array_merge( $defaults, $args );
+        $offset   = $args['offset'];
+        $limit    = $args['limit'];
+        $season   = $args['season'];
+        $orderby  = $args['orderby'];
+        $count    = $args['count'];
 
-		$player_arg = false;
-		if ( array_key_exists( 'player_id', $args ) && false !== $args['player_id'] && null !== $args['player_id'] ) {
-			$player_arg = $args['player_id'];
-		} elseif ( array_key_exists( 'player', $args ) && false !== $args['player'] && null !== $args['player'] ) {
-			$player_arg = $args['player'];
-		}
+        $player_arg = false;
+        if ( array_key_exists( 'player_id', $args ) && false !== $args['player_id'] && null !== $args['player_id'] ) {
+            $player_arg = $args['player_id'];
+        } elseif ( array_key_exists( 'player', $args ) && false !== $args['player'] && null !== $args['player'] ) {
+            $player_arg = $args['player'];
+        }
 
-		$player_id = null;
-		if ( false !== $player_arg ) {
-			if ( is_numeric( $player_arg ) && (int) $player_arg > 0 ) {
-				$player_id = (int) $player_arg;
-			} else {
-				return $count ? 0 : [];
-			}
-		}
+        $player_id = null;
+        if ( false !== $player_arg ) {
+            if ( is_numeric( $player_arg ) && (int) $player_arg > 0 ) {
+                $player_id = (int) $player_arg;
+            } else {
+                return $count ? 0 : [];
+            }
+        }
 
-		$search_terms   = [];
-		$search_terms[] = $this->wpdb->prepare( 'e.`competition_id` = %d', $competition_id );
+        $search_terms   = [];
+        $search_terms[] = $this->wpdb->prepare( 'e.`competition_id` = %d', $competition_id );
 
-		if ( $season ) {
-			$search_terms[] = $this->wpdb->prepare( 'm.`season` = %s', $season );
-		}
+        if ( $season ) {
+            $search_terms[] = $this->wpdb->prepare( 'm.`season` = %s', $season );
+        }
 
-		if ( $player_id ) {
-			$search_terms[] = $this->wpdb->prepare( 'rp.`player_id` = %d', $player_id );
-		}
+        if ( $player_id ) {
+            $search_terms[] = $this->wpdb->prepare( 'rp.`player_id` = %d', $player_id );
+        }
 
-		$search = \Racketmanager\Util\Util::search_string( $search_terms, true );
+        $search = \Racketmanager\Util\Util::search_string( $search_terms, true );
 
-		$order_clauses = [];
-		$select_fields = [ 'm.id' ];
+        $order_clauses = [];
+        $select_fields = [ 'm.id' ];
 
-		if ( is_array( $orderby ) ) {
-			foreach ( $orderby as $field => $direction ) {
-				$direction = strtoupper( (string) $direction );
-				if ( ! in_array( $direction, [ 'ASC', 'DESC' ], true ) ) {
-					$direction = 'ASC';
-				}
+        if ( is_array( $orderby ) ) {
+            foreach ( $orderby as $field => $direction ) {
+                $direction = strtoupper( (string) $direction );
+                if ( ! in_array( $direction, [ 'ASC', 'DESC' ], true ) ) {
+                    $direction = 'ASC';
+                }
 
-				if ( ! preg_match( '/^[a-zA-Z0-9_.]+$/', (string) $field ) ) {
-					continue;
-				}
+                if ( ! preg_match( '/^[a-zA-Z0-9_.]+$/', (string) $field ) ) {
+                    continue;
+                }
 
-				if ( str_contains( (string) $field, '.' ) ) {
-					$parts     = explode( '.', (string) $field, 2 );
-					$qualified = $parts[0] . '.`' . $parts[1] . '`';
-				} else {
-					$qualified = 'm.`' . $field . '`';
-				}
+                if ( str_contains( (string) $field, '.' ) ) {
+                    $parts     = explode( '.', (string) $field, 2 );
+                    $qualified = $parts[0] . '.`' . $parts[1] . '`';
+                } else {
+                    $qualified = 'm.`' . $field . '`';
+                }
 
-				$order_clauses[] = $qualified . ' ' . $direction;
-				if ( ! in_array( $qualified, $select_fields, true ) ) {
-					$select_fields[] = $qualified;
-				}
-			}
-		}
+                $order_clauses[] = $qualified . ' ' . $direction;
+                if ( ! in_array( $qualified, $select_fields, true ) ) {
+                    $select_fields[] = $qualified;
+                }
+            }
+        }
 
-		if ( $count ) {
-			$sql = $player_id ? 'SELECT COUNT(DISTINCT m.id)' : 'SELECT COUNT(*)';
-		} elseif ( $player_id ) {
-			$sql = 'SELECT DISTINCT ' . implode( ', ', $select_fields );
-		} else {
-			$sql = 'SELECT m.id';
-		}
+        if ( $count ) {
+            $sql = $player_id ? 'SELECT COUNT(DISTINCT m.id)' : 'SELECT COUNT(*)';
+        } elseif ( $player_id ) {
+            $sql = 'SELECT DISTINCT ' . implode( ', ', $select_fields );
+        } else {
+            $sql = 'SELECT m.id';
+        }
 
-		$sql .= " FROM {$this->fixtures_table} m
+        $sql .= " FROM {$this->fixtures_table} m
                   INNER JOIN {$this->leagues_table} l ON m.league_id = l.id
                   INNER JOIN {$this->events_table} e ON l.event_id = e.id";
 
-		if ( $player_id ) {
-			$sql .= " INNER JOIN {$this->rubbers_table} r ON m.id = r.match_id
+        if ( $player_id ) {
+            $sql .= " INNER JOIN {$this->rubbers_table} r ON m.id = r.match_id
                   INNER JOIN {$this->rubber_players_table} rp ON r.id = rp.rubber_id";
-		}
+        }
 
-		$sql .= $search;
+        $sql .= $search;
 
-		if ( $count ) {
-			$result = $this->wpdb->get_var( $sql );
-			return null !== $result ? (int) $result : 0;
-		}
+        if ( $count ) {
+            $result = $this->wpdb->get_var( $sql );
+            return null !== $result ? (int) $result : 0;
+        }
 
-		if ( ! empty( $order_clauses ) ) {
-			$sql .= ' ORDER BY ' . implode( ', ', $order_clauses );
-		}
-		$sql .= $this->wpdb->prepare( ' LIMIT %d, %d', $offset, $limit );
+        if ( ! empty( $order_clauses ) ) {
+            $sql .= ' ORDER BY ' . implode( ', ', $order_clauses );
+        }
+        $sql .= $this->wpdb->prepare( ' LIMIT %d, %d', $offset, $limit );
 
-		$rows = $this->wpdb->get_results( $sql );
+        $rows = $this->wpdb->get_results( $sql );
 
-		$fixture_repo    = $this->get_fixture_repository();
-		$relation_loader = $this->get_fixture_relation_loader();
-		if ( ! $relation_loader ) {
-			throw new LogicException( 'Competition match queries require a fixture relation loader.' );
-		}
+        $fixture_repo    = $this->get_fixture_repository();
+        $relation_loader = $this->get_fixture_relation_loader();
+        if ( ! $relation_loader ) {
+            throw new LogicException( 'Competition match queries require a fixture relation loader.' );
+        }
 
-		$rubber_repo = $player_id ? $this->get_rubber_repository() : null;
+        $rubber_repo = $player_id ? $this->get_rubber_repository() : null;
 
-		$fixtures = array_map(
-			function ( $row ) use ( $fixture_repo, $relation_loader, $rubber_repo, $player_id ): ?Fixture {
-				$fixture = $fixture_repo->find_by_id( (int) $row->id );
-				if ( ! $fixture ) {
-					return null;
-				}
+        $fixtures = array_map(
+            function ( $row ) use ( $fixture_repo, $relation_loader, $rubber_repo, $player_id ): ?Fixture {
+                $fixture = $fixture_repo->find_by_id( (int) $row->id );
+                if ( ! $fixture ) {
+                    return null;
+                }
 
-				$fixture = $relation_loader->load_league( $fixture );
-				if ( $rubber_repo && $player_id ) {
-					$fixture->set_rubbers( $rubber_repo->find_by_fixture_id( (int) $fixture->get_id(), $player_id ) );
-				}
+                $fixture = $relation_loader->load_league( $fixture );
+                if ( $rubber_repo && $player_id ) {
+                    $fixture->set_rubbers( $rubber_repo->find_by_fixture_id( (int) $fixture->get_id(), $player_id ) );
+                }
 
-				return $fixture;
-			},
-			$rows
-		);
+                return $fixture;
+            },
+            $rows
+        );
 
-		return array_values( array_filter( $fixtures, static fn( ?Fixture $fixture ): bool => null !== $fixture ) );
-	}
+        return array_values( array_filter( $fixtures, static fn( ?Fixture $fixture ): bool => null !== $fixture ) );
+    }
 
-	/**
-	 * Show winners
-	 *
-	 * @param string $season season.
-	 * @param int $competition_id competition id.
-	 * @param string $competition_type competition type.
-	 * @param boolean $group_by group by type.
-	 *
-	 * @return array|false of winners|false.
-	 */
-	public function get_winners( string $season, int $competition_id, string $competition_type = 'tournament', bool $group_by = false ): false|array {
-		$winners = $this->wpdb->get_results(
-			$this->wpdb->prepare(
-				"SELECT l.`title` ,wt.`title` AS `winner` ,lt.`title` AS `loser`, m.`id`, m.`home_team`, m.`away_team`, m.`winner_id` AS `winner_id`, m.`loser_id` AS `loser_id`, e.`type`, e.`name` AS `event_name`, e.`id` AS `event_id`, c.`name` AS `competition_name`, c.`id` AS `competition_id`, wt.`status` AS `team_type` FROM {$this->fixtures_table} m, {$this->leagues_table} l, {$this->table_name} c, {$this->teams_table} wt, {$this->teams_table} lt, {$this->events_table} e WHERE `league_id` = l.`id` AND l.`event_id` = e.`id` AND e.`competition_id` = c.`id` AND c.`type` = %s AND c.`id` = %d AND m.`final` = 'FINAL' AND m.`season` = %d AND m.`winner_id` = wt.`id` AND m.`loser_id` = lt.`id` order by c.`type`, l.`title`",
-				$competition_type,
-				$competition_id,
-				$season
-			)
-		);
+    /**
+     * Show winners
+     *
+     * @param string $season season.
+     * @param int $competition_id competition id.
+     * @param string $competition_type competition type.
+     * @param boolean $group_by group by type.
+     *
+     * @return array|false of winners|false.
+     */
+    public function get_winners( string $season, int $competition_id, string $competition_type = 'tournament', bool $group_by = false ): false|array {
+        $winners = $this->wpdb->get_results(
+            $this->wpdb->prepare(
+                "SELECT l.`title` AS `league_name`, l.`title` AS `league_title`, l.`title` ,wt.`title` AS `winner` ,lt.`title` AS `loser`, m.`id`, m.`home_team`, m.`away_team`, m.`winner_id` AS `winner_id`, m.`loser_id` AS `loser_id`, e.`type`, e.`name` AS `event_name`, e.`id` AS `event_id`, c.`name` AS `competition_name`, c.`id` AS `competition_id`, wt.`status` AS `team_type` FROM {$this->fixtures_table} m, {$this->leagues_table} l, {$this->table_name} c, {$this->teams_table} wt, {$this->teams_table} lt, {$this->events_table} e WHERE `league_id` = l.`id` AND l.`event_id` = e.`id` AND e.`competition_id` = c.`id` AND c.`type` = %s AND c.`id` = %d AND m.`final` = 'FINAL' AND m.`season` = %d AND m.`winner_id` = wt.`id` AND m.`loser_id` = lt.`id` order by c.`type`, l.`title`",
+                $competition_type,
+                $competition_id,
+                $season
+            )
+        );
 
-		if ( ! $winners ) {
-			return false;
-		}
+        if ( ! $winners ) {
+            return false;
+        }
 
-		$return = array();
-		foreach ( $winners as $winner ) {
-			$fixture_repo = $this->get_fixture_repository();
-			$match        = $fixture_repo->find_by_id( (int) $winner->id );
-			if ( $winner->winner_id === $winner->home_team ) {
-				$winner_club = isset( $match->teams['home']->club ) ? $match->teams['home']->club->shortcode : null;
-			} else {
-				$winner_club = isset( $match->teams['away']->club ) ? $match->teams['away']->club->shortcode : null;
-			}
-			if ( $winner->loser_id === $winner->home_team ) {
-				$loser_club = isset( $match->teams['home']->club ) ? $match->teams['home']->club->shortcode : null;
-			} else {
-				$loser_club = isset( $match->teams['away']->club ) ? $match->teams['away']->club->shortcode : null;
-			}
-			$winner->league      = $winner->title;
-			$winner->winner_club = $winner_club;
-			$winner->loser_club  = $loser_club;
-			if ( $group_by ) {
-				$key = strtoupper( $winner->type );
-				if ( false === array_key_exists( $key, $return ) ) {
-					$return[ $key ] = array();
-				}
-				$return[ $key ][] = $winner;
-			} else {
-				$return[] = $winner;
-			}
-		}
+        $return = array();
+        foreach ( $winners as $winner ) {
+            $fixture_repo = $this->get_fixture_repository();
+            $match        = $fixture_repo->find_by_id( (int) $winner->id );
+            if ( $winner->winner_id === $winner->home_team ) {
+                $winner_club = isset( $match->teams['home']->club ) ? $match->teams['home']->club->shortcode : null;
+            } else {
+                $winner_club = isset( $match->teams['away']->club ) ? $match->teams['away']->club->shortcode : null;
+            }
+            if ( $winner->loser_id === $winner->home_team ) {
+                $loser_club = isset( $match->teams['home']->club ) ? $match->teams['home']->club->shortcode : null;
+            } else {
+                $loser_club = isset( $match->teams['away']->club ) ? $match->teams['away']->club->shortcode : null;
+            }
+            $winner->league       = $winner->title;
+            $winner->league_name  = $winner->title;
+            $winner->league_title = $winner->title;
+            $winner->winner_club  = $winner_club;
+            $winner->loser_club   = $loser_club;
+            if ( $group_by ) {
+                $key = strtoupper( $winner->type );
+                if ( false === array_key_exists( $key, $return ) ) {
+                    $return[ $key ] = array();
+                }
+                $return[ $key ][] = $winner;
+            } else {
+                $return[] = $winner;
+            }
+        }
 
-		return $return;
-	}
+        return $return;
+    }
 
-	/**
-	 * Resolve the fixture repository lazily.
-	 *
-	 * @return Fixture_Repository_Interface
-	 */
-	private function get_fixture_repository(): Fixture_Repository_Interface {
-		if ( null === $this->fixture_repository && null !== $this->fixture_repository_resolver ) {
-			$resolved = ( $this->fixture_repository_resolver )();
-			if ( $resolved instanceof Fixture_Repository_Interface ) {
-				$this->fixture_repository = $resolved;
-			}
-		}
-		if ( ! $this->fixture_repository instanceof Fixture_Repository_Interface ) {
-			throw new LogicException( 'Competition repository requires a fixture repository.' );
-		}
-		return $this->fixture_repository;
-	}
+    /**
+     * Resolve the fixture repository lazily.
+     *
+     * @return Fixture_Repository_Interface
+     */
+    private function get_fixture_repository(): Fixture_Repository_Interface {
+        if ( null === $this->fixture_repository && null !== $this->fixture_repository_resolver ) {
+            $resolved = ( $this->fixture_repository_resolver )();
+            if ( $resolved instanceof Fixture_Repository_Interface ) {
+                $this->fixture_repository = $resolved;
+            }
+        }
+        if ( ! $this->fixture_repository instanceof Fixture_Repository_Interface ) {
+            throw new LogicException( 'Competition repository requires a fixture repository.' );
+        }
+        return $this->fixture_repository;
+    }
 
-	/**
-	 * Resolve the club repository lazily (defaults to a fresh Club_Repository, as the legacy helper did).
-	 */
-	private function get_club_repository(): Club_Repository_Interface {
-		if ( null === $this->club_repository ) {
-			$resolved              = $this->club_repository_resolver ? ( $this->club_repository_resolver )() : null;
-			$this->club_repository = $resolved instanceof Club_Repository_Interface ? $resolved : new Club_Repository();
-		}
-		return $this->club_repository;
-	}
+    /**
+     * Resolve the club repository lazily (defaults to a fresh Club_Repository, as the legacy helper did).
+     */
+    private function get_club_repository(): Club_Repository_Interface {
+        if ( null === $this->club_repository ) {
+            $resolved              = $this->club_repository_resolver ? ( $this->club_repository_resolver )() : null;
+            $this->club_repository = $resolved instanceof Club_Repository_Interface ? $resolved : new Club_Repository();
+        }
+        return $this->club_repository;
+    }
 
-	/**
-	 * Resolve the player repository lazily (defaults to a fresh Player_Repository, as the legacy helper did).
-	 */
-	private function get_player_repository(): Player_Repository_Interface {
-		if ( null === $this->player_repository ) {
-			$resolved                = $this->player_repository_resolver ? ( $this->player_repository_resolver )() : null;
-			$this->player_repository = $resolved instanceof Player_Repository_Interface ? $resolved : new Player_Repository();
-		}
-		return $this->player_repository;
-	}
+    /**
+     * Resolve the player repository lazily (defaults to a fresh Player_Repository, as the legacy helper did).
+     */
+    private function get_player_repository(): Player_Repository_Interface {
+        if ( null === $this->player_repository ) {
+            $resolved                = $this->player_repository_resolver ? ( $this->player_repository_resolver )() : null;
+            $this->player_repository = $resolved instanceof Player_Repository_Interface ? $resolved : new Player_Repository();
+        }
+        return $this->player_repository;
+    }
 
-	/**
-	 * Resolve the event repository lazily (defaults to an Event_Repository bound to this competition repository).
-	 */
-	private function get_event_repository(): Event_Repository_Interface {
-		if ( null === $this->event_repository ) {
-			$resolved               = $this->event_repository_resolver ? ( $this->event_repository_resolver )() : null;
-			$this->event_repository = $resolved instanceof Event_Repository_Interface ? $resolved : new Event_Repository( null, $this );
-		}
-		return $this->event_repository;
-	}
+    /**
+     * Resolve the event repository lazily (defaults to an Event_Repository bound to this competition repository).
+     */
+    private function get_event_repository(): Event_Repository_Interface {
+        if ( null === $this->event_repository ) {
+            $resolved               = $this->event_repository_resolver ? ( $this->event_repository_resolver )() : null;
+            $this->event_repository = $resolved instanceof Event_Repository_Interface ? $resolved : new Event_Repository( null, $this );
+        }
+        return $this->event_repository;
+    }
 
-	/**
-	 * Resolve the fixture relation loader lazily.
-	 *
-	 * @return Fixture_Relation_Loader|null
-	 */
-	private function get_fixture_relation_loader(): ?Fixture_Relation_Loader {
-		if ( null === $this->fixture_relation_loader && null !== $this->fixture_relation_loader_resolver ) {
-			$resolved = ( $this->fixture_relation_loader_resolver )();
-			if ( $resolved instanceof Fixture_Relation_Loader ) {
-				$this->fixture_relation_loader = $resolved;
-			}
-		}
-		return $this->fixture_relation_loader;
-	}
+    /**
+     * Resolve the fixture relation loader lazily.
+     *
+     * @return Fixture_Relation_Loader|null
+     */
+    private function get_fixture_relation_loader(): ?Fixture_Relation_Loader {
+        if ( null === $this->fixture_relation_loader && null !== $this->fixture_relation_loader_resolver ) {
+            $resolved = ( $this->fixture_relation_loader_resolver )();
+            if ( $resolved instanceof Fixture_Relation_Loader ) {
+                $this->fixture_relation_loader = $resolved;
+            }
+        }
+        return $this->fixture_relation_loader;
+    }
 
-	/**
-	 * Resolve the rubber repository lazily.
-	 *
-	 * @return Rubber_Repository_Interface|null
-	 */
-	private function get_rubber_repository(): ?Rubber_Repository_Interface {
-		if ( null === $this->rubber_repository && null !== $this->rubber_repository_resolver ) {
-			$resolved = ( $this->rubber_repository_resolver )();
-			if ( $resolved instanceof Rubber_Repository_Interface ) {
-				$this->rubber_repository = $resolved;
-			}
-		}
-		return $this->rubber_repository;
-	}
+    /**
+     * Resolve the rubber repository lazily.
+     *
+     * @return Rubber_Repository_Interface|null
+     */
+    private function get_rubber_repository(): ?Rubber_Repository_Interface {
+        if ( null === $this->rubber_repository && null !== $this->rubber_repository_resolver ) {
+            $resolved = ( $this->rubber_repository_resolver )();
+            if ( $resolved instanceof Rubber_Repository_Interface ) {
+                $this->rubber_repository = $resolved;
+            }
+        }
+        return $this->rubber_repository;
+    }
 }

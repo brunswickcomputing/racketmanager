@@ -44,6 +44,14 @@ interface League_Repository_Interface extends Repository_Interface {
     public function find_by_name( string $name ): ?League;
 
     /**
+     * Find a league by its title (legacy alias to find_by_name).
+     *
+     * @param string $title The league title.
+     * @return League|null The league object or null if not found.
+     */
+    public function find_by_title( string $title ): ?League;
+
+    /**
      * Find the next sequence number for a league within an event.
      *
      * @param string $event_name The event name.

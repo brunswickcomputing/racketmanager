@@ -36,7 +36,7 @@ $email_subject    = $email_subject ?? $vm->email_subject ?? null;
 $match_date       = $match_date ?? $vm->match_date ?? null;
 $match_time       = $match_time ?? $vm->match_time ?? null;
 
-$competition_name = (string) ( $competition_name ?? ( $competition ?? ( $match->league->title ?? '' ) ) );
+$competition_name = (string) ( $competition_name ?? ( $competition ?? ( $match?->league_name ?? $match?->league?->name ?? $match?->league?->title ?? '' ) ) );
 $round_label      = (string) ( $round ?? '' );
 $match_date       = (string) ( $match_date ?? ( $match->match_date ?? '' ) );
 $match_time       = (string) ( $match_time ?? ( $match->match_time ?? '' ) );
@@ -45,7 +45,7 @@ require 'email-header.php';
 $title_text = sprintf(
     /* translators: %1$s: competition name %2$s: round name */
     __( '%1$s %2$s Match Confirmation', 'racketmanager' ),
-    $match->league->title ?? $competition_name,
+    $match?->league_name ?? $match?->league?->name ?? $match?->league?->title ?? $competition_name ?? '',
     $round_label,
 );
 $title_level = '1';

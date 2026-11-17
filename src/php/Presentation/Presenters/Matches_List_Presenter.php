@@ -162,10 +162,12 @@ readonly class Matches_List_Presenter {
      * @return string
      */
     private function league_key( Fixture_Presentation_Adapter $match ): string {
-        $title = (string) ( $match->league->title ?? '' );
+        $title = (string) ( ( isset( $match->league ) && method_exists( $match->league, 'get_name' ) )
+            ? $match->league->get_name()
+            : ( $match->league->name ?? $match->league->title ?? '' ) );
         if ( '' === $title && ! empty( $match->league_id ) ) {
             $league = $this->competition_service->get_league_repository()->find_by_id( (int) $match->league_id );
-            $title  = $this->league_title( $league );
+            $title  = $this->league_name( $league );
         }
 
         return $title;
@@ -183,13 +185,13 @@ readonly class Matches_List_Presenter {
     }
 
     /**
-     * Resolve a league display title from a league object (or non-object), falling back to ''.
+     * Resolve a league display name from a league object (or non-object), falling back to ''.
      *
      * @param mixed $league League entity, legacy object, or null.
      *
      * @return string
      */
-    private function league_title( mixed $league ): string {
+    private function league_name( mixed $league ): string {
         if ( ! is_object( $league ) ) {
             return '';
         }
@@ -197,6 +199,10 @@ readonly class Matches_List_Presenter {
             return (string) $league->get_name();
         }
 
-        return $league->title ?? '';
+        return (string) ( $league->name ?? $league->title ?? '' );
+    }
+
+    private function league_title( mixed $league ): string {
+        return $this->league_name( $league );
     }
 }

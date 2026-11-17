@@ -64,7 +64,7 @@ $league_active_teams = $league_active_teams ?? array();
                         ?>
                         <div class="row">
                             <div class="col-6 col-md-3">
-                                <?php echo esc_html( $league->title ); ?>
+                                <?php echo esc_html( $league->name ?? $league->title ); ?>
                             </div>
                             <div class="col-4 col-md-1 text-end">
                                 <?php echo esc_html( $active_teams ); ?>

@@ -458,10 +458,10 @@ readonly class Player_Presenter implements Player_Presenter_Interface {
      */
     private function build_league_base_url( object $league ): string {
         $competition_type = $this->resolve_competition_type( $league );
-        $league_title     = (string) ( $league->title ?? '' );
+        $league_name      = (string) ( ( is_object( $league ) && method_exists( $league, 'get_name' ) ) ? $league->get_name() : ( $league->name ?? $league->title ?? '' ) );
         $season_name      = (string) ( $league->current_season['name'] ?? '' );
 
-        return '/' . Util::seo_url( $competition_type ) . '/' . Util::seo_url( $league_title ) . '/' . $season_name . '/';
+        return '/' . Util::seo_url( $competition_type ) . '/' . Util::seo_url( $league_name ) . '/' . $season_name . '/';
     }
 
     /**

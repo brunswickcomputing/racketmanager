@@ -30,7 +30,7 @@ $model = $card;
             <?php if ( $model->show_draw_link ) : ?>
                 <li class="match__header-title-item">
                     <a href="<?php echo esc_url( $model->draw_link ); ?>">
-                        <?php echo esc_html( $model->league_title ); ?>
+                        <?php echo esc_html( $model->league_name ?? $model->league_title ?? '' ); ?>
                     </a>
                 </li>
             <?php elseif ( $model->show_header_date ) : ?>

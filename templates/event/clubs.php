@@ -199,10 +199,10 @@ if ( empty( $event_club ) ) {
                                     <div class="col-5">
                                         <?php if ( '' !== $league_link ) : ?>
                                             <a href="<?php echo esc_attr( $league_link ); ?>">
-                                                <?php echo esc_html( $team->league_title ); ?>
+                                                <?php echo esc_html( $team->league_name ?? $team->league_title ?? '' ); ?>
                                             </a>
                                         <?php else : ?>
-                                            <?php echo esc_html( $team->league_title ); ?>
+                                            <?php echo esc_html( $team->league_name ?? $team->league_title ?? '' ); ?>
                                         <?php endif; ?>
                                     </div>
                                     <div class="col-1 text-end">

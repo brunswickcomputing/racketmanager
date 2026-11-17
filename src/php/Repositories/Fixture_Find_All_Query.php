@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Repositories;
 
+use LogicException;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
@@ -95,6 +96,7 @@ class Fixture_Find_All_Query {
             'history'             => false,
             'club'                => false,
             'league_name'         => false,
+            'league_title'        => false,
             'team'                => false,
             'team_name'           => false,
             'home_team'           => false,
@@ -261,8 +263,9 @@ class Fixture_Find_All_Query {
         if ( $args['leagueId'] ) {
             $sql .= " AND `league_id`  = '" . $args['leagueId'] . "'";
         }
-        if ( $args['league_name'] ) {
-            $sql .= " AND `league_id` in (select `id` from $leagues_table WHERE `title` = '" . $args['league_name'] . "')";
+        $league_name = $args['league_name'] ?: ( $args['league_title'] ?? false );
+        if ( $league_name ) {
+            $sql .= " AND `league_id` in (select `id` from $leagues_table WHERE `title` = '" . $league_name . "')";
         }
         if ( $args['season'] ) {
             $sql .= " AND `season`  = '" . $args['season'] . "'";
@@ -461,6 +464,7 @@ class Fixture_Find_All_Query {
      * @param array $matches Database rows or match IDs.
      * @param mixed $player  Optional player ID filter.
      * @return Fixture[] Hydrated fixture objects.
+     * @throws LogicException Fixture player queries require a rubber repository.
      */
     private function hydrate_find_all_matches( array $matches, mixed $player ): array {
         $hydrated_matches = array();
@@ -469,7 +473,7 @@ class Fixture_Find_All_Query {
             $fixture  = $this->fixture_repository->find_by_id( $match_id );
             if ( $player && $fixture ) {
                 if ( null === $this->rubber_repository ) {
-                    throw new \LogicException( 'Fixture player queries require a rubber repository.' );
+                    throw new LogicException( 'Fixture player queries require a rubber repository.' );
                 }
                 $fixture->set_rubbers( $this->rubber_repository->find_by_fixture_id( (int) $fixture->get_id(), (int) $player ) );
             }

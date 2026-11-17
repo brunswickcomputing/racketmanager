@@ -41,7 +41,7 @@ $matches = $matches ?? $vars['matches'] ?? $vm->matches;
                 <td></td>
                 <td><?php echo esc_html( $match->date ); ?></td>
                 <td><?php echo esc_html( $match->match_title ); ?></td>
-                <td><?php echo esc_html( $match->league->title ?? '' ); ?></td>
+                <td><?php echo esc_html( $match->league->name ?? $match->league->title ?? '' ); ?></td>
             </tr>
             <?php
         }

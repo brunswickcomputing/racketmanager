@@ -13,7 +13,7 @@ final class Admin_Results_Templates_Test extends TestCase {
     private function row( string $referrer = 'pending-results', ?string $result_link = null, string $tooltip = '' ): Admin_Results_Match_View_Model {
         return new Admin_Results_Match_View_Model(
             league_id: 12,
-            league_title: 'Division 1',
+            league_name: 'Division 1',
             formatted_date: '2026-04-04',
             match_title: 'Home vs Away',
             match_link: "https://example.test/match/home-vs-away/?referrer={$referrer}",

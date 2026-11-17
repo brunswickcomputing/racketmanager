@@ -26,7 +26,7 @@ $original_date    = $original_date ?? $vm->original_date ?? null;
 $new_date         = $new_date ?? $vm->new_date ?? null;
 $from_email       = $from_email ?? $vm->from_email ?? null;
 
-$competition_name = (string) ( $competition_name ?? ( $match->league->title ?? '' ) );
+$competition_name = (string) ( $competition_name ?? ( $match?->league_name ?? $match?->league?->name ?? $match?->league?->title ?? '' ) );
 $match_date       = (string) ( $match_date ?? ( $new_date ?? ( $match->match_date ?? '' ) ) );
 $original_date    = (string) ( $original_date ?? ( $match->original_date ?? '' ) );
 $delay            = ! empty( $delay );

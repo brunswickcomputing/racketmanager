@@ -790,7 +790,7 @@ class Matches_Team_List_Template_Test extends TestCase {
             id: 999,
             is_selected: true,
             show_header: true,
-            league_title: 'Premier Division',
+            league_name: 'Premier Division',
             match_link: 'https://example.test/match/999/',
             final_name: 'Cup Final',
             match_day: 1,

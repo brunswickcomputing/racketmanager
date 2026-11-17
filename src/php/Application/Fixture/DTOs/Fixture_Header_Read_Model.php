@@ -7,11 +7,18 @@ namespace Racketmanager\Application\Fixture\DTOs;
  * The read model for the fixture header fragment.
  */
 class Fixture_Header_Read_Model {
+    /**
+     * Backward-compatible property hook for legacy callers reading $model->league_title.
+     */
+    public string $league_title {
+        final get => $this->league_name;
+    }
+
     public function __construct(
         public int $id,
         public string $event_name,
         public string $event_url,
-        public string $league_title,
+        public string $league_name,
         public string $league_url,
         public string $season,
         public ?string $round_name,

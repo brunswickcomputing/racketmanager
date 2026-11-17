@@ -10,6 +10,14 @@ use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 
 class Fixture_Details_DTO {
+    public string $league_name {
+        final get => $this->league?->name ?? '';
+    }
+
+    public string $league_title {
+        final get => $this->league?->title ?? '';
+    }
+
     public Fixture $fixture;
     public ?int $focus_player_id;
     public ?int $focus_team_id;

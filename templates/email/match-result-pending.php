@@ -21,7 +21,7 @@ $timeout          = $timeout ?? $vm->timeout ?? null;
 $penalty          = $penalty ?? $vm->penalty ?? null;
 $from_email       = $from_email ?? $vm->from_email ?? null;
 $organisation     = $organisation ?? $vm->organisation ?? '';
-$competition_name = $match?->league?->title ?? '';
+$competition_name = $match?->league_name ?? $match?->league?->name ?? $match?->league?->title ?? '';
 $match_date       = $match?->match_date ?? '';
 $email_subject    = __( 'Match Result Pending', 'racketmanager' ) . ' - ' . $competition_name . ' - ' . $organisation;
 require 'email-header.php';

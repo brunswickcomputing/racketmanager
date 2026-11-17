@@ -17,6 +17,7 @@ use Racketmanager\Application\Admin\Commands\Results_Checker_Handler;
 use Racketmanager\Application\Club\Ports\Club_Validator_Factory_Interface;
 use Racketmanager\Application\Competition\Ports\Competition_Season_Service_Interface;
 use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
+use Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface;
 use Racketmanager\Application\Finance\Commands\Action_Invoice_Handler;
 use Racketmanager\Application\Finance\Commands\Generate_Charge_Invoices_Handler;
 use Racketmanager\Application\Ports\Competition_Config_Validator_Factory_Interface;
@@ -510,7 +511,8 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
                 $c->get( 'competition_season_service' ),
                 $c->get( 'action_guard' ),
                 $c->get( 'event_repository' ),
-                $c->get( 'league_service' )
+                $c->get( 'league_service' ),
+                $c->get( Event_Query_Service_Interface::class )
             )
         );
         $container->alias( Event_Action_Dispatcher::class, 'event_action_dispatcher' );

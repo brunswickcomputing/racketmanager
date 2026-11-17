@@ -734,7 +734,7 @@ class Event_Repository implements Event_Repository_Interface {
         if ( $count ) {
             $sql = 'SELECT COUNT(*)';
         } else {
-            $sql = 'SELECT `l`.`title` AS `league_title`, l.`id` AS `league_id`, ot.`league_id` AS old_league_id, t2.`id` AS `team_id`, t1.`id` AS `table_id`, `t2`.`title`,`t1`.`rank`,`ot`.`rank` AS old_rank, l.`id`, ot.`points_plus`, ot.`add_points`, t1.`status`, t1.`profile`, t1.`rating`';
+            $sql = 'SELECT `l`.`title` AS `league_name`, `l`.`title` AS `league_title`, l.`id` AS `league_id`, ot.`league_id` AS old_league_id, t2.`id` AS `team_id`, t1.`id` AS `table_id`, `t2`.`title`,`t1`.`rank`,`ot`.`rank` AS old_rank, l.`id`, ot.`points_plus`, ot.`add_points`, t1.`status`, t1.`profile`, t1.`rating`';
         }
         $sql .= " FROM $leagues_table l, $teams_table t2, $league_teams_table t1 LEFT OUTER JOIN $league_teams_table ot ON `ot`.`season` = %s and `ot`.`team_id` = `t1`.`team_id` and ot.league_id in (select id from $leagues_table ol where ol.`event_id` = %d) WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` $search ";
         $sql  = $this->wpdb->prepare(
@@ -759,6 +759,10 @@ class Event_Repository implements Event_Repository_Interface {
         }
 
         return $constitutions ?: [];
+    }
+
+    public function query_constitutions( int $event_id, array $args = [] ): array|int {
+        return $this->query_constitution( $event_id, $args );
     }
 
     public function build_constitution( int $event_id, array $args = [] ): array {
@@ -794,7 +798,7 @@ class Event_Repository implements Event_Repository_Interface {
 
         $search = Util::search_string( $search_terms );
         $sql    = $this->wpdb->prepare(
-            "SELECT `l`.`title` AS `old_league_title`, l.`id` AS `old_league_id`, t2.`id` AS `team_id`, t1.`id` AS `table_id`, `t2`.`title`,`t1`.`rank` AS old_rank, l.`id`, t1.`points_plus`, t1.`add_points`, t1.`status`, t1.`profile`, t1.captain, t1.match_day, t1.match_time FROM $leagues_table l, $league_teams_table t1, $teams_table t2 WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` $search ORDER BY l.`title` ASC, t1.`rank` ASC LIMIT %d, %d",
+            "SELECT `l`.`title` AS `old_league_name`, `l`.`title` AS `old_league_title`, l.`id` AS `old_league_id`, t2.`id` AS `team_id`, t1.`id` AS `table_id`, `t2`.`title`,`t1`.`rank` AS old_rank, l.`id`, t1.`points_plus`, t1.`add_points`, t1.`status`, t1.`profile`, t1.captain, t1.match_day, t1.match_time FROM $leagues_table l, $league_teams_table t1, $teams_table t2 WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` $search ORDER BY l.`title` ASC, t1.`rank` ASC LIMIT %d, %d",
             intval( $offset ),
             intval( $limit )
         );
@@ -881,8 +885,8 @@ class Event_Repository implements Event_Repository_Interface {
             'limit'   => 99999999,
             'season'  => false,
             'orderby' => array(
-                'league_title' => 'ASC',
-                'name'         => 'ASC',
+                'league_name' => 'ASC',
+                'name'        => 'ASC',
             ),
             'club'    => false,
             'league'  => false,
@@ -904,6 +908,18 @@ class Event_Repository implements Event_Repository_Interface {
         $name     = $args['name'];
         $player   = $args['player'];
         $partner  = $args['partner'];
+
+        if ( is_array( $orderby ) ) {
+            $normalized_orderby = array();
+            foreach ( $orderby as $key => $direction ) {
+                if ( 'league_title' === $key ) {
+                    $normalized_orderby['league_name'] = $direction;
+                } else {
+                    $normalized_orderby[ $key ] = $direction;
+                }
+            }
+            $orderby = $normalized_orderby;
+        }
 
         $leagues_table      = $this->get_leagues_table();
         $teams_table        = $this->table( 'racketmanager_teams' );
@@ -938,7 +954,7 @@ class Event_Repository implements Event_Repository_Interface {
         if ( $count ) {
             $sql = 'SELECT COUNT(distinct(`team_id`))';
         } else {
-            $sql = 'SELECT `l`.`title` AS `league_title`, l.`id` AS `league_id`, t2.`id` AS `team_id`, t1.`id` AS `table_id`, `t2`.`title` as `name`,`t1`.`rank`, l.`id`, t1.`status`, t1.`profile`, t1.`group`, t2.`roster`, t2.`club_id`, t2.`team_type` AS `team_type`, t1.`rating`';
+            $sql = 'SELECT `l`.`title` AS `league_name`, `l`.`title` AS `league_title`, l.`id` AS `league_id`, t2.`id` AS `team_id`, t1.`id` AS `table_id`, `t2`.`title` as `name`,`t1`.`rank`, l.`id`, t1.`status`, t1.`profile`, t1.`group`, t2.`roster`, t2.`club_id`, t2.`team_type` AS `team_type`, t1.`rating`';
         }
         $sql .= " FROM $leagues_table l, $teams_table t2, $league_teams_table t1 WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` " . $search;
 

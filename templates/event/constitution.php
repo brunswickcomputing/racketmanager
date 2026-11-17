@@ -27,10 +27,10 @@ require RACKETMANAGER_PATH . 'templates/email/div-top.php';
             <h2 class="header">
                 <?php if ( '' !== $href ) : ?>
                     <a href="<?php echo esc_url( $href ); ?>">
-                        <?php echo esc_html( $league->title ); ?>
+                        <?php echo esc_html( $league->name ?? $league->title ?? '' ); ?>
                     </a>
                 <?php else : ?>
-                    <?php echo esc_html( $league->title ); ?>
+                    <?php echo esc_html( $league->name ?? $league->title ?? '' ); ?>
                 <?php endif; ?>
             </h2>
             <?php

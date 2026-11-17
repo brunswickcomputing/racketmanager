@@ -88,7 +88,7 @@ readonly class Email_Shortcode_Presenter implements Email_Shortcode_Presenter_In
         $comp_context = $this->build_competition_context( $match, $competition_type, $args['tournament'] ?? false );
         $teams        = $this->build_teams_presentation( $match, $comp_context['home_title'], $comp_context['away_title'] );
         $formatter    = $this->date_formatter();
-        $comp_name    = ( $args['competition'] ?? '' ) ?: ( $match->league->title ?? '' );
+        $comp_name    = ( $args['competition'] ?? '' ) ?: $this->league_name( $match->league ?? null );
 
         return [
             'template'         => $comp_context['template'] ?: ( $args['template'] ?? '' ),
@@ -175,13 +175,14 @@ readonly class Email_Shortcode_Presenter implements Email_Shortcode_Presenter_In
 
         $action_url  = $this->site_url;
         $season_name = $match->league->current_season['name'] ?? '';
+        $league_name = $this->league_name( $match->league ?? null );
         if ( isset( $match->league->event->competition->is_championship ) && $match->league->event->competition->is_championship ) {
-            $action_url .= '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $match->league->title ?? '' ) . '/' . $season_name . '/' . ( $match->final_round ?? '' ) . '/' . sanitize_title( $match->teams['home']->title ?? '' ) . '-vs-' . sanitize_title( $match->teams['away']->title ?? '' ) . '/';
+            $action_url .= '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $league_name ) . '/' . $season_name . '/' . ( $match->final_round ?? '' ) . '/' . sanitize_title( $match->teams['home']->title ?? '' ) . '-vs-' . sanitize_title( $match->teams['away']->title ?? '' ) . '/';
             if ( ! empty( $match->leg ) ) {
                 $action_url .= 'leg-' . $match->leg . '/';
             }
         } else {
-            $action_url .= '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $match->league->title ?? '' ) . '/' . $season_name . '/day' . ( $match->match_day ?? '' ) . '/' . sanitize_title( $match->teams['home']->title ?? '' ) . '-vs-' . sanitize_title( $match->teams['away']->title ?? '' ) . '/';
+            $action_url .= '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $league_name ) . '/' . $season_name . '/day' . ( $match->match_day ?? '' ) . '/' . sanitize_title( $match->teams['home']->title ?? '' ) . '-vs-' . sanitize_title( $match->teams['away']->title ?? '' ) . '/';
         }
         $action_url .= 'result/';
 
@@ -222,15 +223,16 @@ readonly class Email_Shortcode_Presenter implements Email_Shortcode_Presenter_In
         $action_url  = $this->site_url;
         $template    = $args['template'] ?? '';
         $season_name = $match->league->current_season['name'] ?? '';
+        $league_name = $this->league_name( $match->league ?? null );
 
         if ( isset( $match->league->event->competition->is_cup ) && $match->league->event->competition->is_cup ) {
-            $action_url .= '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $match->league->title ?? '' ) . '/' . $season_name . '/' . ( $match->final_round ?? '' ) . '/' . sanitize_title( $match->teams['home']->title ?? '' ) . '-vs-' . sanitize_title( $match->teams['away']->title ?? '' );
+            $action_url .= '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $league_name ) . '/' . $season_name . '/' . ( $match->final_round ?? '' ) . '/' . sanitize_title( $match->teams['home']->title ?? '' ) . '-vs-' . sanitize_title( $match->teams['away']->title ?? '' );
         } elseif ( isset( $match->league->event->competition->is_tournament ) && $match->league->event->competition->is_tournament ) {
             $tournament_code = ( $match->league->event->competition->id ?? '' ) . ',' . ( $match->season ?? '' );
             $tournament      = $this->tournament_service->get_tournament( $tournament_code, 'shortcode' );
             $action_url     .= '/' . __( 'tournament', 'racketmanager' ) . '/' . sanitize_title( $tournament->name ) . '/' . __( 'match', 'racketmanager' ) . '/' . $match->id . '/';
         } else {
-            $action_url .= '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $match->league->title ?? '' ) . '/' . $season_name . '/day' . ( $match->match_day ?? '' ) . '/' . sanitize_title( $match->teams['home']->title ?? '' ) . '-vs-' . sanitize_title( $match->teams['away']->title ?? '' );
+            $action_url .= '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $league_name ) . '/' . $season_name . '/day' . ( $match->match_day ?? '' ) . '/' . sanitize_title( $match->teams['home']->title ?? '' ) . '-vs-' . sanitize_title( $match->teams['away']->title ?? '' );
         }
 
         $raw_comp_type = $match->league->event->competition->type ?? '';
@@ -300,20 +302,22 @@ readonly class Email_Shortcode_Presenter implements Email_Shortcode_Presenter_In
         $tournament_link  = '';
         $rules_link       = $this->site_url . '/rules/' . $competition_type . '-rules/';
 
+        $league_name = $this->league_name( $match->league ?? null );
+
         if ( 'tournament' === $competition_type ) {
             $tournament      = $this->tournament_service->get_tournament( $tournament_param );
             $tournament_path = new Tournament_Presenter()->get_link( $tournament );
             $tournament_link = '<a href="' . $this->site_url . $tournament_path . '">' . $tournament->name . '</a>';
             $draw_link       = '<a href="' . $this->site_url . $tournament_path . 'draw/' . Seo_Slug::encode( $match->league->event->name ?? '' ) . '/">' . ( $match->league->event->name ?? '' ) . '</a>';
-            $match_link      = $this->site_url . $tournament_path . 'match/' . Seo_Slug::encode( $match->league->title ?? '' ) . '/' . Seo_Slug::encode( $match->teams['home']->title ?? '' ) . '-vs-' . Seo_Slug::encode( $match->teams['away']->title ?? '' ) . '/' . $match->id . '/';
+            $match_link      = $this->site_url . $tournament_path . 'match/' . Seo_Slug::encode( $league_name ) . '/' . Seo_Slug::encode( $match->teams['home']->title ?? '' ) . '-vs-' . Seo_Slug::encode( $match->teams['away']->title ?? '' ) . '/' . $match->id . '/';
         } elseif ( 'cup' === $competition_type ) {
-            $competition_link = '<a href="' . $this->site_url . '/cups/' . Seo_Slug::encode( $match->league->title ?? '' ) . '/' . ( $match->season ?? '' ) . '/">' . ( $match->league->title ?? '' ) . '</a>';
+            $competition_link = '<a href="' . $this->site_url . '/cups/' . Seo_Slug::encode( $league_name ) . '/' . ( $match->season ?? '' ) . '/">' . $league_name . '</a>';
             $match_link       = $this->site_url . ( $match->link ?? '' );
             if ( ! empty( $match->leg ) ) {
                 $match_link .= 'leg-' . $match->leg . '/';
             }
         } elseif ( 'league' === $competition_type ) {
-            $competition_link = '<a href="' . $this->site_url . '/leagues/' . Seo_Slug::encode( $match->league->event->name ?? '' ) . '/' . ( $match->season ?? '' ) . '/">' . ( $match->league->title ?? '' ) . '</a>';
+            $competition_link = '<a href="' . $this->site_url . '/leagues/' . Seo_Slug::encode( $match->league->event->name ?? '' ) . '/' . ( $match->season ?? '' ) . '/">' . $league_name . '</a>';
             $match_link       = $this->site_url . ( $match->link ?? '' );
         }
 
@@ -323,7 +327,7 @@ readonly class Email_Shortcode_Presenter implements Email_Shortcode_Presenter_In
         $raw_original_date = ! empty( $args['original_date'] ) ? (string) $args['original_date'] : $fixture->get_date_original();
         $match_date        = $formatter->date_change( $raw_new_date );
         $original_date     = $formatter->date_change( $raw_original_date );
-        $comp_name         = ( $args['competition'] ?? '' ) ?: ( $match->league->title ?? '' );
+        $comp_name         = ( $args['competition'] ?? '' ) ?: $league_name;
 
         return [
             'tournament'       => $tournament,
@@ -438,12 +442,14 @@ readonly class Email_Shortcode_Presenter implements Email_Shortcode_Presenter_In
         $home_title      = null;
         $away_title      = null;
 
+        $league_name = $this->league_name( $match->league ?? null );
+
         if ( 'tournament' === $competition_type ) {
             $tournament      = $this->tournament_service->get_tournament( $tournament_param );
             $tournament_path = new Tournament_Presenter()->get_link( $tournament );
             $tournament_link = '<a href="' . $this->site_url . $tournament_path . '">' . $tournament->name . '</a>';
             $draw_link       = '<a href="' . $this->site_url . $tournament_path . 'draw/' . Seo_Slug::encode( $match->league->event->name ?? '' ) . '/">' . ( $match->league->event->name ?? '' ) . '</a>';
-            $action_url      = $this->site_url . $tournament_path . 'match/' . Seo_Slug::encode( $match->league->title ?? '' ) . '/' . Seo_Slug::encode( $match->teams['home']->title ?? '' ) . '-vs-' . Seo_Slug::encode( $match->teams['away']->title ?? '' ) . '/' . $match->id . '/';
+            $action_url      = $this->site_url . $tournament_path . 'match/' . Seo_Slug::encode( $league_name ) . '/' . Seo_Slug::encode( $match->teams['home']->title ?? '' ) . '-vs-' . Seo_Slug::encode( $match->teams['away']->title ?? '' ) . '/' . $match->id . '/';
 
             if ( $this->is_doubles_league( $match->league->type ?? '' ) ) {
                 $home_title         = __( 'Home Players', 'racketmanager' );
@@ -457,7 +463,7 @@ readonly class Email_Shortcode_Presenter implements Email_Shortcode_Presenter_In
                 $away_dtls['title'] = 'Away Player';
             }
         } elseif ( 'cup' === $competition_type ) {
-            $cup_link   = '<a href="' . $this->site_url . '/cups/' . Seo_Slug::encode( $match->league->title ?? '' ) . '/' . ( $match->season ?? '' ) . '/">' . ( $match->league->title ?? '' ) . '</a>';
+            $cup_link   = '<a href="' . $this->site_url . '/cups/' . Seo_Slug::encode( $league_name ) . '/' . ( $match->season ?? '' ) . '/">' . $league_name . '</a>';
             $action_url = $this->site_url . ( $match->link ?? '' );
             if ( ! empty( $match->leg ) ) {
                 $action_url .= 'leg-' . $match->leg . '/';
@@ -572,5 +578,19 @@ readonly class Email_Shortcode_Presenter implements Email_Shortcode_Presenter_In
         }
 
         return (string) ( $type ?? '' );
+    }
+
+    /**
+     * Resolve league name string from league object or array.
+     */
+    private function league_name( mixed $league ): string {
+        if ( is_object( $league ) ) {
+            return method_exists( $league, 'get_name' ) ? (string) $league->get_name() : (string) ( $league->name ?? $league->title ?? '' );
+        }
+        if ( is_array( $league ) ) {
+            return (string) ( $league['name'] ?? $league['title'] ?? '' );
+        }
+
+        return '';
     }
 }

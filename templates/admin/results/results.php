@@ -32,7 +32,7 @@ $prev_league              = 0;
                 if ( $prev_league !== $row->league_id ) {
                     $prev_league = $row->league_id;
                     ?>
-                    <tr><td colspan="5" class="fw-bold fst-italic"><?php echo esc_html( $row->league_title ); ?></td></tr>
+                    <tr><td colspan="5" class="fw-bold fst-italic"><?php echo esc_html( $row->league_name ?? $row->league_title ?? '' ); ?></td></tr>
                     <?php
                 }
                 ?>

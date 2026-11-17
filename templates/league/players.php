@@ -23,7 +23,7 @@ if ( empty( $league ) ) {
 }
     if ( $league->players ) {
         ?>
-        <table class='racketmanager player stats table' title='<?php echo __( 'Player Stats', 'racketmanager' ) . ' ' . $league->title; ?>'>
+        <table class='racketmanager player stats table' title='<?php echo __( 'Player Stats', 'racketmanager' ) . ' ' . ( $league->name ?? $league->title ?? '' ); ?>'>
             <thead>
                 <tr>
                     <th class='player' scope="col"><?php _e( 'Player', 'racketmanager' ); ?></th>

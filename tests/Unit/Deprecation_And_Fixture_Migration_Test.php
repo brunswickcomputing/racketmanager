@@ -116,7 +116,7 @@ class Deprecation_And_Fixture_Migration_Test extends TestCase {
     public function test_render_order_of_play_court_template(): void {
         $match_vm = new Order_Of_Play_Match_View_Model(
             id: 10,
-            league_title: 'Division 1',
+            league_name: 'Division 1',
             home_match_title: 'Home Team',
             away_match_title: 'Away Team',
             is_home_pending: false,

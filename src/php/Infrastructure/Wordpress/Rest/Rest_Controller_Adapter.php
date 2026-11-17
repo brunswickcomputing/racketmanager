@@ -29,11 +29,11 @@ use WP_REST_Server;
 class Rest_Controller_Adapter {
 
     /**
-     * Memoized league titles keyed by league ID.
+     * Memoized league names keyed by league ID.
      *
      * @var array<string, string>
      */
-    private array $league_title_cache = array();
+    private array $league_name_cache = array();
 
     /**
      * Memoized team titles keyed by team ID.
@@ -60,8 +60,8 @@ class Rest_Controller_Adapter {
      * @return void
      */
     public function clear_title_caches(): void {
-        $this->league_title_cache = array();
-        $this->team_title_cache   = array();
+        $this->league_name_cache = array();
+        $this->team_title_cache  = array();
     }
 
     /**
@@ -236,7 +236,7 @@ class Rest_Controller_Adapter {
      * @return Rest_Match_Response
      */
     public function build_match_response( object $match ): Rest_Match_Response {
-        $league_title = $this->resolve_league_title( $match );
+        $league_name = $this->resolve_league_name( $match );
 
         $teams = null;
         if ( isset( $match->teams ) && is_array( $match->teams ) && ! empty( $match->teams ) ) {
@@ -280,7 +280,7 @@ class Rest_Controller_Adapter {
         $raw_time = $match->start_time ?? ( $match->time ?? ( method_exists( $match, 'get_start_time' ) ? $match->get_start_time() : '' ) );
 
         return new Rest_Match_Response(
-            league: str_replace( '"', '', (string) $league_title ),
+            league: str_replace( '"', '', (string) $league_name ),
             home_team: str_replace( '"', '', (string) $home_title ),
             away_team: str_replace( '"', '', (string) $away_title ),
             match_date: substr( (string) ( $raw_date ?? '' ), 0, 10 ),
@@ -292,12 +292,12 @@ class Rest_Controller_Adapter {
     }
 
     /**
-     * Resolve and memoize the league title for a match.
+     * Resolve and memoize the league name for a match.
      *
      * @param object $match
      * @return string
      */
-    protected function resolve_league_title( object $match ): string {
+    protected function resolve_league_name( object $match ): string {
         $league_obj = $match->league ?? null;
         if ( is_string( $league_obj ) && '' !== $league_obj ) {
             return str_replace( '"', '', $league_obj );
@@ -305,15 +305,15 @@ class Rest_Controller_Adapter {
 
         if ( is_object( $league_obj ) ) {
             $name  = method_exists( $league_obj, 'get_name' ) ? $league_obj->get_name() : '';
-            $title = '' !== $name ? $name : ( $league_obj->title ?? ( method_exists( $league_obj, 'get_title' ) ? $league_obj->get_title() : '' ) );
+            $title = '' !== $name ? $name : $this->legacy_league_name( $league_obj );
             return str_replace( '"', '', (string) $title );
         }
 
         $league_id = method_exists( $match, 'get_league_id' ) ? $match->get_league_id() : ( $match->league_id ?? null );
         if ( null !== $league_id && '' !== (string) $league_id ) {
             $cache_key = (string) $league_id;
-            if ( isset( $this->league_title_cache[ $cache_key ] ) ) {
-                return $this->league_title_cache[ $cache_key ];
+            if ( isset( $this->league_name_cache[ $cache_key ] ) ) {
+                return $this->league_name_cache[ $cache_key ];
             }
 
             if ( null !== $this->competition_service ) {
@@ -323,9 +323,9 @@ class Rest_Controller_Adapter {
                         $league = $league_repo->find_by_id( (int) $league_id );
                         if ( $league ) {
                             $name  = method_exists( $league, 'get_name' ) ? $league->get_name() : '';
-                            $title = '' !== $name ? $name : ( $league->title ?? ( method_exists( $league, 'get_title' ) ? $league->get_title() : '' ) );
+                            $title = '' !== $name ? $name : $this->legacy_league_name( $league );
                             $title = str_replace( '"', '', (string) $title );
-                            $this->league_title_cache[ $cache_key ] = $title;
+                            $this->league_name_cache[ $cache_key ] = $title;
                             return $title;
                         }
                     }
@@ -339,9 +339,9 @@ class Rest_Controller_Adapter {
                     $league = $match->get_league();
                     if ( is_object( $league ) ) {
                         $name  = method_exists( $league, 'get_name' ) ? $league->get_name() : '';
-                        $title = '' !== $name ? $name : ( $league->title ?? ( method_exists( $league, 'get_title' ) ? $league->get_title() : '' ) );
+                        $title = '' !== $name ? $name : $this->legacy_league_name( $league );
                         $title = str_replace( '"', '', (string) $title );
-                        $this->league_title_cache[ $cache_key ] = $title;
+                        $this->league_name_cache[ $cache_key ] = $title;
                         return $title;
                     }
                 } catch ( League_Not_Found_Exception | Invalid_Argument_Exception ) {
@@ -353,14 +353,14 @@ class Rest_Controller_Adapter {
                 $league = $this->league_repository->find_by_id( (int) $league_id );
                 if ( is_object( $league ) ) {
                     $name  = method_exists( $league, 'get_name' ) ? $league->get_name() : '';
-                    $title = '' !== $name ? $name : ( $league->title ?? ( method_exists( $league, 'get_title' ) ? $league->get_title() : '' ) );
+                    $title = '' !== $name ? $name : $this->legacy_league_name( $league );
                     $title = str_replace( '"', '', (string) $title );
-                    $this->league_title_cache[ $cache_key ] = $title;
+                    $this->league_name_cache[ $cache_key ] = $title;
                     return $title;
                 }
             }
 
-            $this->league_title_cache[ $cache_key ] = '';
+            $this->league_name_cache[ $cache_key ] = '';
             return '';
         }
 
@@ -369,7 +369,7 @@ class Rest_Controller_Adapter {
                 $league = $match->get_league();
                 if ( is_object( $league ) ) {
                     $name  = method_exists( $league, 'get_name' ) ? $league->get_name() : '';
-                    $title = '' !== $name ? $name : ( $league->title ?? ( method_exists( $league, 'get_title' ) ? $league->get_title() : '' ) );
+                    $title = '' !== $name ? $name : $this->legacy_league_name( $league );
                     return str_replace( '"', '', (string) $title );
                 }
             } catch ( League_Not_Found_Exception | Invalid_Argument_Exception ) {
@@ -378,6 +378,35 @@ class Rest_Controller_Adapter {
         }
 
         return '';
+    }
+
+    /**
+     * Resolve a legacy league name from name/title/get_title, skipping empty values.
+     *
+     * @param object $league
+     * @return string
+     */
+    private function legacy_league_name( object $league ): string {
+        $name = (string) ( $league->name ?? '' );
+        if ( '' === $name ) {
+            $name = (string) ( $league->title ?? '' );
+        }
+        if ( '' === $name && method_exists( $league, 'get_title' ) ) {
+            $name = (string) $league->get_title();
+        }
+
+        return $name;
+    }
+
+    /**
+     * Resolve and memoize the league title for a match (legacy alias).
+     *
+     * @param object $match
+     * @return string
+     * @deprecated Use resolve_league_name() instead.
+     */
+    protected function resolve_league_title( object $match ): string {
+        return $this->resolve_league_name( $match );
     }
 
     /**

@@ -183,7 +183,7 @@ interface Competition_Service_Interface {
      * @param string|null $type      Competition type.
      * @return array
      */
-    public function find_competitions_with_summary( ?string $age_group, ?string $type ): array;
+    public function find_competitions_with_summary( ?string $age_group = null, ?string $type = null ): array;
 
     /**
      * Get competition overview DTO.

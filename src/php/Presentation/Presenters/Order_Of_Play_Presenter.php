@@ -90,7 +90,7 @@ final readonly class Order_Of_Play_Presenter {
 
                 $final_match = new Order_Of_Play_Match_View_Model(
                     id: (int) $match_id,
-                    league_title: $league_title,
+                    league_name: $league_title,
                     home_match_title: $home_title,
                     away_match_title: $away_title,
                     is_home_pending: $is_home_pending,

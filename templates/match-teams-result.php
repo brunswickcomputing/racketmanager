@@ -50,7 +50,7 @@ $resolve_user_display_name = static function ( mixed $user_id ): string {
     return ( is_object( $user ) && isset( $user->display_name ) ) ? $user->display_name : '';
 };
 $tournament_link           = empty( $tournament ) ? null : new Tournament_Presenter()->get_link( $tournament );
-$league_slug               = Util::seo_url( (string) ( $match->league->title ?? '' ) );
+$league_slug               = Util::seo_url( (string) ( $match->league->name ?? $match->league->title ?? '' ) );
 $event_slug                = Util::seo_url( (string) ( $match->league->event->name ?? '' ) );
 $user_can_update           = $is_update_allowed->user_can_update ?? false;
 $user_type                 = $is_update_allowed->user_type ?? '';

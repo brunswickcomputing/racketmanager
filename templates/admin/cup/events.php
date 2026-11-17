@@ -46,7 +46,7 @@ $draw_sizes_map     = $draw_sizes ?? $vars['draw_sizes'] ?? ( isset( $vm ) ? ( $
                             $league_id = $league->id ?? '';
                             ?>
                             <tr>
-                                <td><a href="/wp-admin/admin.php?page=racketmanager-cups&view=draw&competition_id=<?php echo esc_attr( (string) ( $competition->id ?? '' ) ); ?>&league=<?php echo esc_attr( (string) $league_id ); ?>&season=<?php echo esc_attr( (string) $season ); ?>"><?php echo esc_html( (string) ( $league->title ?? '' ) ); ?></a></td>
+                                <td><a href="/wp-admin/admin.php?page=racketmanager-cups&view=draw&competition_id=<?php echo esc_attr( (string) ( $competition->id ?? '' ) ); ?>&league=<?php echo esc_attr( (string) $league_id ); ?>&season=<?php echo esc_attr( (string) $season ); ?>"><?php echo esc_html( (string) ( $league->name ?? $league->title ?? '' ) ); ?></a></td>
                                 <td><?php echo esc_html( (string) ( $league->num_teams_total ?? '' ) ); ?></td>
                                 <td><?php echo esc_html( (string) ( $draw_sizes_map[ $league_id ] ?? ( $league->draw_size ?? '' ) ) ); ?></td>
                             </tr>

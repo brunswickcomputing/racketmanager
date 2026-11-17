@@ -13,7 +13,7 @@ $league = $league ?? $vm->league ?? ( is_array( $vars ?? null ) ? ( $vars['leagu
 $teams  = $teams ?? $vm->teams ?? ( is_array( $vars ?? null ) ? ( $vars['teams'] ?? [] ) : [] );
 if ( ! empty( $teams ) ) {
     ?>
-    <table class="table table-striped table-borderless" aria-describedby="<?php esc_html_e( 'Standing table', 'racketmanager' ); ?>" title="<?php echo esc_html__( 'Standings', 'racketmanager' ) . ' ' . esc_html( $league->title ); ?>">
+    <table class="table table-striped table-borderless" aria-describedby="<?php esc_html_e( 'Standing table', 'racketmanager' ); ?>" title="<?php echo esc_html__( 'Standings', 'racketmanager' ) . ' ' . esc_html( $league->name ?? $league->title ?? '' ); ?>">
         <thead class="">
         <tr>
             <th><?php esc_html_e( 'Team', 'racketmanager' ); ?></th>

@@ -29,11 +29,11 @@ $header = $model;
                 <span class="nav-link__value"><?php echo esc_html( $header->event_name ); ?></span>
             </a>
             <?php
-            if ( ! empty( $header->league_title ) ) {
+            if ( ! empty( $header->league_name ?? $header->league_title ?? '' ) ) {
                 ?>
                 &nbsp;&#8226;&nbsp;
                 <a href="<?php echo esc_url( $header->league_url ); ?>">
-                    <span class="nav-link__value"><?php echo esc_html( $header->league_title ); ?></span>
+                    <span class="nav-link__value"><?php echo esc_html( $header->league_name ?? $header->league_title ?? '' ); ?></span>
                 </a>
                 <?php
             }

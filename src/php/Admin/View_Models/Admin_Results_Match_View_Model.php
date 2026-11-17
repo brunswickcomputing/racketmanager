@@ -13,18 +13,25 @@ namespace Racketmanager\Admin\View_Models;
 /**
  * Preformatted match row for admin results tabs.
  */
-final readonly class Admin_Results_Match_View_Model {
+final class Admin_Results_Match_View_Model {
+
+    /**
+     * Backward-compatible property hook for legacy callers reading $row->league_title.
+     */
+    public string $league_title {
+        final get => $this->league_name;
+    }
 
     public function __construct(
-        public int $league_id,
-        public string $league_title,
-        public string $formatted_date,
-        public string $match_title,
-        public string $match_link,
-        public string $result_link,
-        public string $confirmed_display,
-        public string $score,
-        public string $tooltip,
+        public readonly int $league_id,
+        public readonly string $league_name,
+        public readonly string $formatted_date,
+        public readonly string $match_title,
+        public readonly string $match_link,
+        public readonly string $result_link,
+        public readonly string $confirmed_display,
+        public readonly string $score,
+        public readonly string $tooltip,
     ) {
     }
 }

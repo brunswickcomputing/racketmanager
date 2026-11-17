@@ -22,12 +22,12 @@ if ( isset( $vm ) && $vm instanceof Team_Match_Row_View_Model ) {
 ?>
 <div class="match match--team-match <?php echo $row_vm->is_selected ? 'is-selected' : ''; ?>">
     <?php
-    if ( $row_vm->show_header && '' !== $row_vm->league_title ) {
+    if ( $row_vm->show_header && '' !== ( $row_vm->league_name ?? $row_vm->league_title ?? '' ) ) {
         ?>
         <div class="match__header match__header--up">
             <div class="match__header-title">
                 <div class="match__header-title-main">
-                    <span><?php echo esc_html( $row_vm->league_title ); ?></span>
+                    <span><?php echo esc_html( $row_vm->league_name ?? $row_vm->league_title ?? '' ); ?></span>
                 </div>
             </div>
         </div>

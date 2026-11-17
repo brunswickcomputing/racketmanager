@@ -312,7 +312,54 @@ class Event_Query_Service_Test extends TestCase {
 
         $result = $service->get_constitution( $this->event(), [ 'season' => '2026' ] );
         $this->assertCount( 1, $result );
+        $this->assertSame( 'Division One', $result[0]->old_league_name );
         $this->assertSame( 'Division One', $result[0]->old_league_title );
+    }
+
+    public function test_get_constitution_enriches_old_league_name_from_name_property_and_handles_null_league(): void {
+        $event_repository  = $this->createMock( Event_Repository_Interface::class );
+        $league_repository = $this->createMock( League_Repository_Interface::class );
+
+        $row1 = (object) [ 'old_league_id' => 50 ];
+        $row2 = (object) [ 'old_league_id' => 51 ];
+        $row3 = (object) []; // Missing old_league_id
+
+        $event_repository->expects( $this->once() )
+            ->method( 'query_constitution' )
+            ->with( 93, $this->anything() )
+            ->willReturn( [ $row1, $row2, $row3 ] );
+
+        $league = $this->createMock( League::class );
+        $league->name = 'Premier League';
+
+        $league_repository->expects( $this->exactly( 2 ) )
+            ->method( 'find_by_id' )
+            ->willReturnCallback( function ( int $id ) use ( $league ) {
+                if ( 50 === $id ) {
+                    return $league;
+                }
+                return null;
+            } );
+
+        $service = new Event_Query_Service(
+            $event_repository,
+            league_repository: $league_repository
+        );
+
+        $result = $service->get_constitution( $this->event(), [ 'season' => '2026' ] );
+        $this->assertCount( 3, $result );
+
+        // Row 1: found league with name
+        $this->assertSame( 'Premier League', $result[0]->old_league_name );
+        $this->assertSame( 'Premier League', $result[0]->old_league_title );
+
+        // Row 2: league not found (null)
+        $this->assertSame( '', $result[1]->old_league_name );
+        $this->assertSame( '', $result[1]->old_league_title );
+
+        // Row 3: no old_league_id
+        $this->assertSame( '', $result[2]->old_league_name );
+        $this->assertSame( '', $result[2]->old_league_title );
     }
 
     public function test_get_club_enriches_club_with_teams_and_players(): void {

@@ -38,7 +38,7 @@ if ( isset( $league->event->competition->type ) ) {
         ? $league->event->competition->type->value
         : (string) $league->event->competition->type;
 }
-$event_name     = $league->event->name ?? ( $league->title ?? ( $league->name ?? '' ) );
+$event_name     = $league->event->name ?? ( $league->name ?? ( $league->title ?? '' ) );
 $event_slug     = Util::seo_url( (string) $event_name );
 $season_str     = (string) ( $season ?? '' );
 $home_team_name = is_object( $home_team ?? null ) ? ( $home_team->name ?? $home_team->title ?? '' ) : (string) ( $home_team ?? '' );

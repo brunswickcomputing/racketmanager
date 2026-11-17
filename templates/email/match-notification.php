@@ -40,7 +40,7 @@ require 'email-header.php';
 $title_text = sprintf(
     /* translators: %1$s: league name %2$s: round name */
     __( '%1$s %2$s Match Confirmation', 'racketmanager' ),
-    $match->league->title,
+    $match?->league_name ?? $match?->league?->name ?? $match?->league?->title ?? '',
     $round,
 );
 $title_level = '1';

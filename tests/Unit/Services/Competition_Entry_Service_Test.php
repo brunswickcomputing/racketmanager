@@ -12,6 +12,7 @@ use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Competition\Season_Collection;
 use Racketmanager\Domain\Enums\Team_Profile;
@@ -68,6 +69,7 @@ class Competition_Entry_Service_Test extends TestCase {
     private Event_Query_Service $event_query_service;
     private Team_Repository|MockObject $team_repository;
     private Club_Repository $club_repository;
+    private League_Repository $league_repository;
     private League_Team_Repository|MockObject $league_team_repository;
     private Tournament_Entry_Repository|MockObject $tournament_entry_repository;
     private Player_Service|MockObject $player_service;
@@ -99,11 +101,22 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->competition_to_return = null;
         $this->competition_service->method( 'get_by_id' )->willReturnCallback( fn() => $this->competition_to_return );
         $this->event_repository = $this->createMock( Event_Repository_Interface::class );
+        $this->league_repository = $this->createStub( League_Repository::class );
+        $this->league_repository->method( 'find_by_id' )->willReturnCallback(
+            function ( $id ) {
+                if ( ! $id ) {
+                    return null;
+                }
+                $league     = new League();
+                $league->id = (int) $id;
+                return $league;
+            }
+        );
         $this->event_query_service = new Event_Query_Service(
             $this->event_repository,
             null,
             null,
-            $this->createStub( League_Repository::class )
+            $this->league_repository
         );
         $this->team_repository = $this->createMock( Team_Repository::class );
         $this->club_repository = $this->createMock( Club_Repository::class );
@@ -146,7 +159,7 @@ class Competition_Entry_Service_Test extends TestCase {
         return new Competition_Entry_Service(
             plugin_instance: $this->plugin,
             club_repository: $this->club_repository,
-            league_repository: $this->createStub( League_Repository::class ),
+            league_repository: $this->league_repository,
             league_team_repository: $this->league_team_repository,
             team_repository: $this->team_repository,
             tournament_repository: $this->tournament_repository,

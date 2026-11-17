@@ -15,7 +15,7 @@ $leagues = $vars['leagues'] ?? $vm->leagues ?? [];
     <?php
     foreach ( $leagues as $league ) {
         ?>
-        <option value=<?php echo esc_html( $league->id ); ?>><?php echo esc_html( $league->title ); ?></option>
+        <option value=<?php echo esc_html( $league->id ); ?>><?php echo esc_html( $league->name ?? $league->title ?? '' ); ?></option>
         <?php
     }
     ?>

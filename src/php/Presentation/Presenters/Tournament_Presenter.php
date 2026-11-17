@@ -745,10 +745,12 @@ readonly class Tournament_Presenter {
         $user_can_update = false;
         $match_link      = null;
 
+        $league_name = $this->resolve_league_name( $league );
+
         if ( $home_team && $away_team ) {
             $home_name    = method_exists( $home_team, 'get_name' ) ? $home_team->get_name() : ( $home_team->name ?? '' );
             $away_name    = method_exists( $away_team, 'get_name' ) ? $away_team->get_name() : ( $away_team->name ?? '' );
-            $league_title = $league->title ?? ( is_object( $league ) && method_exists( $league, 'get_name' ) ? $league->get_name() : ( $league->name ?? '' ) );
+            $league_title = $league_name;
             $fixture_id   = $fixture ? ( method_exists( $fixture, 'get_id' ) ? $fixture->get_id() : ( $fixture->id ?? 0 ) ) : 0;
             $season       = $fixture ? ( method_exists( $fixture, 'get_season' ) ? $fixture->get_season() : ( $fixture->season ?? '' ) ) : '';
 
@@ -834,7 +836,7 @@ readonly class Tournament_Presenter {
             $show_draw_link  = true;
         }
 
-        $league_title = $league->title ?? ( is_object( $league ) && method_exists( $league, 'get_name' ) ? $league->get_name() : ( $league->name ?? '' ) );
+        $league_title = $league_name;
 
         $fixture_date          = $fixture ? ( method_exists( $fixture, 'get_date' ) ? $fixture->get_date() : ( $fixture->date ?? null ) ) : null;
         $start_time            = $fixture ? ( method_exists( $fixture, 'get_start_time' ) ? $fixture->get_start_time() : ( $fixture->start_time ?? null ) ) : null;
@@ -1019,7 +1021,7 @@ readonly class Tournament_Presenter {
 			selected_class: $match_selected ? 'is-selected' : '',
 			final_name: $final_name,
 			draw_link: $draw_link,
-			league_title: (string) $league_title,
+			league_name: (string) $league_name,
 			show_draw_link: $show_draw_link,
 			show_header_date: $show_header_date,
 			header_play_by: $header_play_by,
@@ -1100,6 +1102,21 @@ readonly class Tournament_Presenter {
         }
 
         return $presented_draw;
+    }
+
+    private function resolve_league_name( mixed $league ): string {
+        if ( ! is_object( $league ) ) {
+            return '';
+        }
+        $league_name = method_exists( $league, 'get_name' ) ? (string) $league->get_name() : '';
+        if ( '' === $league_name ) {
+            $league_name = (string) ( $league->name ?? '' );
+        }
+        if ( '' === $league_name ) {
+            $league_name = (string) ( $league->title ?? '' );
+        }
+
+        return $league_name;
     }
 
     private function format( ?string $date, string $fallback ): string {

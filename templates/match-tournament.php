@@ -331,7 +331,7 @@ $match                    = $fixture;
                         }
                         ?>
                         <li class="match__header-title-item">
-                            <?php echo esc_html( $league->title ); ?>
+                            <?php echo esc_html( $league->name ?? $league->title ?? '' ); ?>
                         </li>
                     </ul>
                     <?php

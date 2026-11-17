@@ -134,7 +134,7 @@ jQuery(document).ready(function(){
                         <div class="col-3 mb-3">
                             <div class="btn btn-<?php echo esc_attr( $card->btn_type ); ?> finals-match" name="match-<?php echo esc_html( $card->id ); ?>" id="match-<?php echo esc_html( $card->id ); ?>" draggable="true">
                                 <div class="fw-bold">
-                                    <?php echo esc_html( $card->league_title ); ?>
+                                    <?php echo esc_html( $card->league_name ?? $card->league_title ?? '' ); ?>
                                 </div>
                                 <div <?php echo $card->is_home_pending ? 'class="fst-italic"' : null; ?>>
                                     <?php echo esc_html( $card->home_title ); ?>

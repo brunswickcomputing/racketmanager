@@ -12,7 +12,7 @@ namespace Racketmanager;
 /** @var int    $league_id */
 /** @var int    $event_id */
 /** @var object $league_edit */
-/** @var string $league_title */
+/** @var string $league_name */
 /** @var array  $leagues */
 /** @var array  $league_matches_map */
 $event = $event ?? $vars['event'] ?? ( isset( $vm ) ? ( $vm->event ?? null ) : null );
@@ -23,7 +23,7 @@ $season             = $season ?? $vars['season'] ?? ( isset( $vm ) ? ( $vm->seas
 $competition_type   = $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
 $leagues            = $leagues ?? $vars['leagues'] ?? ( isset( $vm ) ? ( $vm->leagues ?? array() ) : array() );
 $league_matches_map = $league_matches_map ?? $vars['league_matches_map'] ?? ( isset( $vm ) ? ( $vm->league_matches_map ?? array() ) : array() );
-$league_title       = $league_title ?? $vars['league_title'] ?? ( isset( $vm ) ? ( $vm->league_title ?? '' ) : '' );
+$league_name        = $league_name ?? $vars['league_name'] ?? $vars['league_title'] ?? $vm->league_name ?? $vm->league_title ?? '';
 $league_id          = $league_id ?? $vars['league_id'] ?? ( isset( $vm ) ? ( $vm->league_id ?? null ) : null );
 $event_id           = $event_id ?? $vars['event_id'] ?? ( isset( $vm ) ? ( $vm->event_id ?? ( $event->id ?? null ) ) : ( $event->id ?? null ) );
 $league_edit        = $league_edit ?? $vars['league_edit'] ?? ( isset( $vm ) ? ( $vm->league_edit ?? null ) : null );
@@ -93,7 +93,7 @@ $tournament         = $tournament ?? $vars['tournament'] ?? ( isset( $vm ) ? ( $
                                     <label for="league-<?php echo esc_html( $league->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $league->id ); ?>" name="league[<?php echo esc_html( $league->id ); ?>]" id="league-<?php echo esc_html( $league->id ); ?>" />
                                 </td>
                                 <td class="">
-                                    <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition_type ); ?>s&amp;view=league&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;season=<?php echo esc_html( $season ); ?>"><?php echo esc_html( $league->title ); ?></a>
+                                    <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition_type ); ?>s&amp;view=league&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;season=<?php echo esc_html( $season ); ?>"><?php echo esc_html( $league->name ?? $league->title ?? '' ); ?></a>
                                 </td>
                                 <td class="">
                                     <?php echo esc_html( $league->num_teams_total ); ?>
@@ -146,7 +146,7 @@ $tournament         = $tournament ?? $vars['tournament'] ?? ( isset( $vm ) ? ( $
                 if ( $league_id ) {
                     ?>
                     <div class="form-floating mb-3">
-                        <input type="hidden" name="league_title" value="<?php echo esc_html( $league_title ); ?>" />
+                        <input type="hidden" name="league_title" value="<?php echo esc_html( $league_name ); ?>" />
                         <input type="text" class="form-control" required="required" placeholder="<?php esc_html_e( 'Enter new league name', 'racketmanager' ); ?>" name="sequence" id="sequence" value="<?php echo esc_html( $league_edit->sequence ); ?>" />
                         <label for="sequence"><?php esc_html_e( 'League sequence', 'racketmanager' ); ?></label>
                     </div>
@@ -160,7 +160,7 @@ $tournament         = $tournament ?? $vars['tournament'] ?? ( isset( $vm ) ? ( $
             } else {
                 ?>
                 <div class="form-floating mb-3">
-                    <input type="text" class="form-control" required="required" placeholder="<?php esc_html_e( 'Enter new league name', 'racketmanager' ); ?>" name="league_title" id="league_title" value="<?php echo esc_html( $league_title ); ?>" />
+                    <input type="text" class="form-control" required="required" placeholder="<?php esc_html_e( 'Enter new league name', 'racketmanager' ); ?>" name="league_title" id="league_title" value="<?php echo esc_html( $league_name ); ?>" />
                     <label for="league_title"><?php esc_html_e( 'League name', 'racketmanager' ); ?></label>
                 </div>
                 <?php

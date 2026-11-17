@@ -78,7 +78,7 @@ final class Order_Of_Play_Court_Relations_Test extends TestCase {
 	public function test_order_of_play_court_shows_real_team_names_and_league_title(): void {
 		$court_times = array( array( new Order_Of_Play_Match_View_Model(
 			id: 998124,
-			league_title: 'Division 1',
+			league_name: 'Division 1',
 			home_match_title: 'Westcliff Men 1',
 			away_match_title: 'Leigh Men 1',
 			home_team: '10',
@@ -111,7 +111,7 @@ final class Order_Of_Play_Court_Relations_Test extends TestCase {
 
 		$match_vm = new Order_Of_Play_Match_View_Model(
 			id: 101,
-			league_title: 'Championship Final',
+			league_name: 'Championship Final',
 			home_match_title: 'Winner Semi 1',
 			away_match_title: 'Westcliff 1',
 			is_home_pending: true,

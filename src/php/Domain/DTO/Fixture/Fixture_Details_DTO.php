@@ -19,20 +19,28 @@ use Racketmanager\Domain\Competition\League;
 /**
  * Class to implement the Fixture Details Data Transfer Object
  */
-readonly class Fixture_Details_DTO {
-    public Fixture $fixture;
-    public League $league;
-    public Event $event;
-    public Competition $competition;
-    public ?Team_Details_DTO $home_team;
-    public ?Team_Details_DTO $away_team;
-    public ?string $prev_home_fixture_title;
-    public ?string $prev_away_fixture_title;
-    public ?object $is_update_allowed;
-    public string $link;
-    public ?string $score_display;
-    public array $status_flags;
-    public string $fixture_title;
+class Fixture_Details_DTO {
+    public string $league_name {
+        final get => $this->league->name;
+    }
+
+    public string $league_title {
+        final get => $this->league->title;
+    }
+
+    public readonly Fixture $fixture;
+    public readonly League $league;
+    public readonly Event $event;
+    public readonly Competition $competition;
+    public readonly ?Team_Details_DTO $home_team;
+    public readonly ?Team_Details_DTO $away_team;
+    public readonly ?string $prev_home_fixture_title;
+    public readonly ?string $prev_away_fixture_title;
+    public readonly ?object $is_update_allowed;
+    public readonly string $link;
+    public readonly ?string $score_display;
+    public readonly array $status_flags;
+    public readonly string $fixture_title;
 
     /**
      * Fixture_Details_DTO constructor.

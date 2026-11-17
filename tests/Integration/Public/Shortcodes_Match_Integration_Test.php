@@ -73,6 +73,7 @@ namespace Racketmanager\Tests\Integration\Public {
 
             $this->assertEquals( 'header_html', $result );
             $this->assertSame( 'match/match-header', $this->rendered['path'] );
+            $this->assertSame( 'Premier League', $this->rendered['vars']['model']->league_name );
             $this->assertSame( 'Premier League', $this->rendered['vars']['model']->league_title );
             $this->assertSame( 123, $this->rendered['vars']['model']->id );
             $this->assertInstanceOf( Fixture_Details_DTO::class, $this->rendered['vars']['dto'] );

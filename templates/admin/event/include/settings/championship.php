@@ -43,7 +43,7 @@ if ( ! isset( $event->config->primary_league ) ) {
                         <?php
                         foreach ( $leagues as $league ) {
                             ?>
-                            <option value="<?php echo esc_html( $league->id ); ?>" <?php selected( $event->config->primary_league, $league->id ); ?> ><?php echo esc_html( $league->title ); ?></option>
+                            <option value="<?php echo esc_html( $league->id ); ?>" <?php selected( $event->config->primary_league, $league->id ); ?> ><?php echo esc_html( $league->name ?? $league->title ?? '' ); ?></option>
                             <?php
                         }
                         ?>

@@ -75,14 +75,15 @@ final readonly class League_Event_Admin_Controller {
             throw new Event_Not_Found_Exception( __( 'Event not found', 'racketmanager' ) );
         }
 
-        $league_id    = null;
-        $league_edit  = null;
-        $league_title = '';
+        $league_id   = null;
+        $league_edit = null;
+        $league_name = '';
         if ( isset( $query['edit_league'] ) ) {
             $league_id   = intval( $query['edit_league'] );
             $league_edit = $this->league_service->get_league( $league_id );
             if ( $league_edit ) {
-                $league_title = (string) $league_edit->title;
+                $name        = ( is_object( $league_edit ) && method_exists( $league_edit, 'get_name' ) ) ? (string) $league_edit->get_name() : '';
+                $league_name = '' !== $name ? $name : (string) ( $league_edit->name ?? $league_edit->title ?? '' );
             }
         }
 
@@ -109,7 +110,7 @@ final readonly class League_Event_Admin_Controller {
             leagues: $leagues,
             league_matches_map: $league_matches_map,
             league_id: $league_id,
-            league_title: $league_title,
+            league_name: $league_name,
             league_edit: $league_edit,
             tab: 'leagues',
         );

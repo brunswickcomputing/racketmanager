@@ -29,17 +29,23 @@ class League {
     public ?int $id = null;
 
     /**
-     * League title
-     *
-     * @var string
-     */
-    public string $title = '';
-    /**
      * League name
      *
      * @var string
      */
     public string $name = '';
+
+    /**
+     * League title (legacy alias mirroring $name)
+     *
+     * @var string
+     */
+    public string $title {
+        final get => $this->name;
+        final set {
+            $this->name = $value;
+        }
+    }
 
     /**
      * Seasons data
@@ -474,15 +480,17 @@ class League {
         }
         $columns = array(
             'id'       => $dto->id,
-            'title'    => $dto->title,
-            'name'     => $dto->title,
+            'name'     => $dto->name,
             'event_id' => $dto->event_id,
             'sequence' => $dto->sequence,
             'settings' => $dto->settings,
             'seasons'  => $dto->seasons,
         );
 
-        foreach ( array_merge( $columns, $dto->settings ) as $key => $value ) {
+        $settings = $dto->settings;
+        unset( $settings['title'], $settings['name'] );
+
+        foreach ( array_merge( $columns, $settings ) as $key => $value ) {
             if ( 'event' === $key ) {
                 continue;
             }
@@ -500,12 +508,7 @@ class League {
             $this->event_id = (int) $dto->event_id;
         }
 
-        $this->title = stripslashes( $this->title ?? '' );
-        if ( empty( $this->name ) ) {
-            $this->name = $this->title;
-        } else {
-            $this->name = stripslashes( $this->name );
-        }
+        $this->name = stripslashes( $this->name ?? '' );
 
         // set seasons.
         if ( empty( $this->seasons ) ) {
@@ -596,7 +599,16 @@ class League {
      * @return string
      */
     public function get_name(): string {
-        return $this->title;
+        return $this->name;
+    }
+
+    /**
+     * Get the title (legacy proxy for get_name())
+     *
+     * @return string
+     */
+    public function get_title(): string {
+        return $this->get_name();
     }
 
     /**
@@ -640,12 +652,11 @@ class League {
     /**
      * Edit League
      *
-     * @param string $title title.
-     * @param string|null $sequence sequence.
+     * @param string      $name     League name.
+     * @param string|null $sequence Sequence.
      */
-    public function update( string $title, ?string $sequence = null ): void {
-        $this->title = $title;
-        $this->name  = $title;
+    public function update( string $name, ?string $sequence = null ): void {
+        $this->name = $name;
         if ( ! empty( $sequence ) ) {
             $this->sequence = $sequence;
         }

@@ -11,6 +11,7 @@ use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface;
 use Racketmanager\Services\Admin\Event\Event_Action_Dispatcher;
 use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Competition\Competition_Season_Service;
@@ -124,14 +125,16 @@ final class Event_Action_Dispatcher_Test extends TestCase {
         Action_Guard_Interface $guard,
         ?Event_Repository_Interface $event_repository = null,
         ?League_Service $league_service = null,
-        ?Competition_Season_Service $competition_season_service = null
+        ?Competition_Season_Service $competition_season_service = null,
+        ?Event_Query_Service_Interface $event_query_service = null
     ): Event_Action_Dispatcher {
         return new Event_Action_Dispatcher(
             $competition_service,
             $competition_season_service ?? $this->createStub( Competition_Season_Service::class ),
             $guard,
             $event_repository ?? $this->make_event_repository(),
-            $league_service ?? $this->createStub( League_Service::class )
+            $league_service ?? $this->createStub( League_Service::class ),
+            $event_query_service ?? $this->createStub( Event_Query_Service_Interface::class )
         );
     }
 
@@ -478,6 +481,209 @@ final class Event_Action_Dispatcher_Test extends TestCase {
         self::assertSame( 'No updates', $result->message );
         self::assertSame( Admin_Message_Type::WARNING, $result->message_type );
         self::assertSame( array( 'event_id' => 10, 'view' => 'event-config' ), $result->query_params );
+    }
+
+    public function test_update_event_config_delegates_fallback_resolution_to_query_service_and_persists_primary_league(): void {
+        $competition_service = $this->createMock( Competition_Service::class );
+        $guard               = $this->createStub( Action_Guard_Interface::class );
+        $competition         = $this->make_competition();
+
+        $event                 = $this->createMock( Event::class );
+        $event->id             = 10;
+        $event->competition_id = 1;
+        $event->settings       = array();
+        $event->num_rubbers    = 1;
+        $event->num_sets       = 3;
+        $event->type           = 'doubles';
+        $event->name           = 'Men Doubles';
+
+        $captured_config = null;
+        $event->expects( self::once() )
+            ->method( 'set_config' )
+            ->willReturnCallback(
+                static function ( \stdClass $config ) use ( &$captured_config, $event ): bool {
+                    $captured_config                   = $config;
+                    $event->settings['primary_league'] = $config->primary_league;
+                    return true;
+                }
+            );
+
+        $competition_service->expects( self::once() )
+            ->method( 'get_event_by_id' )
+            ->with( 10 )
+            ->willReturn( $event );
+        $competition_service->expects( self::once() )
+            ->method( 'get_by_id' )
+            ->with( 1 )
+            ->willReturn( $competition );
+
+        $event_query_service = $this->createMock( Event_Query_Service_Interface::class );
+        $event_query_service->expects( self::once() )
+            ->method( 'get_primary_league_id' )
+            ->with( $event )
+            ->willReturn( 88 );
+
+        $event_repository = $this->make_event_repository();
+        $event_repository->expects( self::never() )->method( 'query_leagues' );
+        $captured_saved_settings = null;
+        $event_repository->expects( self::once() )
+            ->method( 'update_settings_and_rules' )
+            ->with(
+                10,
+                self::callback(
+                    function ( array $settings ) use ( &$captured_saved_settings ): bool {
+                        $captured_saved_settings = $settings;
+                        return isset( $settings['primary_league'] ) && 88 === $settings['primary_league'];
+                    }
+                ),
+                self::anything(),
+                self::anything(),
+                self::anything()
+            );
+
+        $dispatcher = $this->make_dispatcher(
+            $competition_service,
+            $guard,
+            event_repository: $event_repository,
+            event_query_service: $event_query_service
+        );
+
+        $result = $dispatcher->handle(
+            array( 'competition_id' => '1', 'event_id' => '10' ),
+            $this->create_event_payload(
+                array(
+                    'event_id'       => '10',
+                    'primary_league' => '0',
+                ),
+                'updateEventConfig'
+            )
+        );
+
+        self::assertSame( 'Event config updated', $result->message );
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+        self::assertNotNull( $captured_config );
+        self::assertSame( 88, $captured_config->primary_league );
+        self::assertNotNull( $captured_saved_settings );
+        self::assertSame( 88, $captured_saved_settings['primary_league'] );
+    }
+
+    public function test_update_event_config_bypasses_query_service_when_primary_league_is_explicitly_submitted(): void {
+        $competition_service = $this->createMock( Competition_Service::class );
+        $guard               = $this->createStub( Action_Guard_Interface::class );
+        $competition         = $this->make_competition();
+
+        $event                 = $this->createMock( Event::class );
+        $event->id             = 10;
+        $event->competition_id = 1;
+
+        $captured_config = null;
+        $event->expects( self::once() )
+            ->method( 'set_config' )
+            ->willReturnCallback(
+                static function ( \stdClass $config ) use ( &$captured_config ): bool {
+                    $captured_config = $config;
+                    return true;
+                }
+            );
+
+        $competition_service->expects( self::once() )
+            ->method( 'get_event_by_id' )
+            ->with( 10 )
+            ->willReturn( $event );
+        $competition_service->expects( self::once() )
+            ->method( 'get_by_id' )
+            ->with( 1 )
+            ->willReturn( $competition );
+
+        $event_query_service = $this->createMock( Event_Query_Service_Interface::class );
+        $event_query_service->expects( self::never() )->method( 'get_primary_league_id' );
+
+        $event_repository = $this->make_event_repository();
+        $event_repository->expects( self::never() )->method( 'query_leagues' );
+
+        $dispatcher = $this->make_dispatcher(
+            $competition_service,
+            $guard,
+            event_repository: $event_repository,
+            event_query_service: $event_query_service
+        );
+
+        $result = $dispatcher->handle(
+            array( 'competition_id' => '1', 'event_id' => '10' ),
+            $this->create_event_payload(
+                array(
+                    'event_id'       => '10',
+                    'primary_league' => '42',
+                ),
+                'updateEventConfig'
+            )
+        );
+
+        self::assertSame( 'Event config updated', $result->message );
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+        self::assertNotNull( $captured_config );
+        self::assertSame( 42, $captured_config->primary_league );
+    }
+
+    public function test_update_event_config_retains_empty_when_fallback_query_service_returns_null(): void {
+        $competition_service = $this->createMock( Competition_Service::class );
+        $guard               = $this->createStub( Action_Guard_Interface::class );
+        $competition         = $this->make_competition();
+
+        $event                 = $this->createMock( Event::class );
+        $event->id             = 10;
+        $event->competition_id = 1;
+
+        $captured_config = null;
+        $event->expects( self::once() )
+            ->method( 'set_config' )
+            ->willReturnCallback(
+                static function ( \stdClass $config ) use ( &$captured_config ): bool {
+                    $captured_config = $config;
+                    return true;
+                }
+            );
+
+        $competition_service->expects( self::once() )
+            ->method( 'get_event_by_id' )
+            ->with( 10 )
+            ->willReturn( $event );
+        $competition_service->expects( self::once() )
+            ->method( 'get_by_id' )
+            ->with( 1 )
+            ->willReturn( $competition );
+
+        $event_query_service = $this->createMock( Event_Query_Service_Interface::class );
+        $event_query_service->expects( self::once() )
+            ->method( 'get_primary_league_id' )
+            ->with( $event )
+            ->willReturn( null );
+
+        $event_repository = $this->make_event_repository();
+        $event_repository->expects( self::never() )->method( 'query_leagues' );
+
+        $dispatcher = $this->make_dispatcher(
+            $competition_service,
+            $guard,
+            event_repository: $event_repository,
+            event_query_service: $event_query_service
+        );
+
+        $result = $dispatcher->handle(
+            array( 'competition_id' => '1', 'event_id' => '10' ),
+            $this->create_event_payload(
+                array(
+                    'event_id'       => '10',
+                    'primary_league' => '0',
+                ),
+                'updateEventConfig'
+            )
+        );
+
+        self::assertSame( 'Event config updated', $result->message );
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+        self::assertNotNull( $captured_config );
+        self::assertSame( 0, $captured_config->primary_league );
     }
 
     public function test_add_event_config_league_creation_failure_returns_error_with_context(): void {

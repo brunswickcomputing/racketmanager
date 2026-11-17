@@ -25,7 +25,7 @@ if ( ! $dto || ! $match ) {
 ?>
 <div id="matchRubbers" class="rubber-block">
     <div id="matchHeader">
-        <div class="leagueTitle"><?php echo esc_html( $dto->league->title ); ?></div>
+        <div class="leagueTitle"><?php echo esc_html( $dto->league_name ?? $dto->league->name ?? $dto->league->title ?? '' ); ?></div>
         <div class="matchDate"><?php echo esc_html( (string) ( $date_display ?? '' ) ); ?></div>
         <div class="matchday">
             <?php

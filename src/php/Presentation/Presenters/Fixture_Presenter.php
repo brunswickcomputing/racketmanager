@@ -589,7 +589,7 @@ readonly class Fixture_Presenter {
             id: (int) $fixture->get_id(),
             event_name: $event->name,
             event_url: '/' . $comp_type . 's/' . Seo_Slug::encode( $event->name ) . '/' . $fixture->get_season() . '/',
-            league_title: ( 'cup' === $comp_type ) ? '' : ( $league->title ?? '' ),
+            league_name: ( 'cup' === $comp_type ) ? '' : ( $league->name ?? $league->title ?? '' ),
             league_url: '/' . $comp_type . '/' . Seo_Slug::encode( $league->title ?? '' ) . '/' . $fixture->get_season() . '/',
             season: $fixture->get_season(),
             round_name: $fixture->get_final() ? Util::get_final_name( $fixture->get_final() ) : null,

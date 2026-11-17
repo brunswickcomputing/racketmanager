@@ -75,7 +75,7 @@ class Event_Primary_League_Test extends TestCase {
     public function test_get_primary_league_id_falls_back_to_in_memory_leagues_array(): void {
         $this->event->primary_league = 0;
 
-        $league = new stdClass();
+        $league = $this->createMock( League::class );
         $league->id = 55;
         $this->event->leagues = [ $league ];
 
@@ -91,6 +91,13 @@ class Event_Primary_League_Test extends TestCase {
             ->method( 'query_leagues' )
             ->with( 42, $this->anything() )
             ->willReturn( [ $league_db_record ] );
+
+        $hydrated_league = $this->createMock( League::class );
+        $hydrated_league->id = 77;
+        $this->league_repository->expects( $this->once() )
+            ->method( 'find_by_id' )
+            ->with( 77 )
+            ->willReturn( $hydrated_league );
 
         $this->assertSame( 77, $this->event_query_service->get_primary_league_id( $this->event ) );
     }
@@ -117,6 +124,143 @@ class Event_Primary_League_Test extends TestCase {
 
         $result = $this->event_query_service->get_primary_league( $this->event );
         $this->assertSame( $league, $result );
+    }
+
+    public function test_get_primary_league_returns_cached_primary_league_obj(): void {
+        $event = new class() extends Event {
+            public ?League $primary_league_obj = null;
+            public function __construct() {}
+        };
+        $league = $this->createMock( League::class );
+        $league->id = 73;
+        $event->primary_league_obj = $league;
+        $event->primary_league = 0;
+
+        $this->assertSame( $league, $this->event_query_service->get_primary_league( $event ) );
+        $this->assertSame( 73, $this->event_query_service->get_primary_league_id( $event ) );
+    }
+
+    public function test_get_primary_league_falls_back_to_first_hydrated_league_directly(): void {
+        $this->event->primary_league = 0;
+
+        $league1 = $this->createMock( League::class );
+        $league1->id = 12;
+        $league2 = $this->createMock( League::class );
+        $league2->id = 14;
+
+        $this->event->leagues = [ $league1, $league2 ];
+
+        $this->league_repository->expects( $this->never() )->method( 'find_by_id' );
+
+        $this->assertSame( $league1, $this->event_query_service->get_primary_league( $this->event ) );
+        $this->assertSame( 12, $this->event_query_service->get_primary_league_id( $this->event ) );
+    }
+
+    public function test_get_primary_league_hydrates_first_league_when_it_is_stdclass(): void {
+        $this->event->primary_league = 0;
+
+        $league_record = (object) [ 'id' => 99 ];
+        $this->event->leagues = [ $league_record ];
+
+        $hydrated_league = $this->createMock( League::class );
+        $hydrated_league->id = 99;
+
+        $this->league_repository->expects( $this->once() )
+            ->method( 'find_by_id' )
+            ->with( 99 )
+            ->willReturn( $hydrated_league );
+
+        $this->assertSame( $hydrated_league, $this->event_query_service->get_primary_league( $this->event ) );
+        $this->assertSame( 99, $this->event_query_service->get_primary_league_id( $this->event ) );
+    }
+
+    public function test_get_primary_league_recovers_from_stale_league_index(): void {
+        $this->event->primary_league = 55;
+
+        $league44 = $this->createMock( League::class );
+        $league44->id = 44;
+        $league55 = $this->createMock( League::class );
+        $league55->id = 55;
+
+        $this->event->leagues = [ $league44, $league55 ];
+        $this->event->league_index = [ 55 => 0 ];
+
+        $result = $this->event_query_service->get_primary_league( $this->event );
+        $this->assertSame( $league55, $result );
+    }
+
+    public function test_get_primary_league_recovers_from_stale_league_index_with_stdclass_rows_without_corrupting_collection(): void {
+        $this->event->primary_league = 55;
+
+        $row44 = (object) [ 'id' => 44 ];
+        $row55 = (object) [ 'id' => 55 ];
+
+        $this->event->leagues = [ $row44, $row55 ];
+        $this->event->league_index = [ 55 => 0 ];
+
+        $hydrated55 = $this->createMock( League::class );
+        $hydrated55->id = 55;
+
+        $this->league_repository->expects( $this->once() )
+            ->method( 'find_by_id' )
+            ->with( 55 )
+            ->willReturn( $hydrated55 );
+
+        $result = $this->event_query_service->get_primary_league( $this->event );
+
+        $this->assertSame( $hydrated55, $result );
+        $this->assertSame( [ $row44, $row55 ], $this->event->leagues );
+        $this->assertSame( $row44, $this->event->leagues[0] );
+        $this->assertSame( $row55, $this->event->leagues[1] );
+    }
+
+    public function test_get_primary_league_throws_logic_exception_when_league_repository_is_not_configured(): void {
+        $service_without_repo = new Event_Query_Service( $this->event_repository );
+        $this->event->primary_league = 99;
+        $this->event->leagues = [];
+
+        $this->expectException( \LogicException::class );
+        $this->expectExceptionMessage( 'League_Repository_Interface is required by Event_Query_Service but was not configured.' );
+
+        $service_without_repo->get_primary_league( $this->event );
+    }
+
+    public function test_get_primary_league_resolves_via_linear_scan_when_league_index_is_missing(): void {
+        $this->event->primary_league = 66;
+
+        $league66 = $this->createMock( League::class );
+        $league66->id = 66;
+
+        $this->event->leagues = [ $league66 ];
+        $this->event->league_index = [];
+
+        $result = $this->event_query_service->get_primary_league( $this->event );
+        $this->assertSame( $league66, $result );
+    }
+
+    public function test_get_primary_league_hydrates_from_repository_when_explicit_league_is_not_in_memory(): void {
+        $this->event->primary_league = 77;
+        $this->event->leagues = [];
+
+        $hydrated_league = $this->createMock( League::class );
+        $hydrated_league->id = 77;
+
+        $this->league_repository->expects( $this->once() )
+            ->method( 'find_by_id' )
+            ->with( 77 )
+            ->willReturn( $hydrated_league );
+
+        $result = $this->event_query_service->get_primary_league( $this->event );
+        $this->assertSame( $hydrated_league, $result );
+    }
+
+    public function test_get_primary_league_id_fast_path_does_not_call_repository_or_query(): void {
+        $this->event->primary_league = 88;
+
+        $this->league_repository->expects( $this->never() )->method( $this->anything() );
+        $this->event_repository->expects( $this->never() )->method( $this->anything() );
+
+        $this->assertSame( 88, $this->event_query_service->get_primary_league_id( $this->event ) );
     }
 
     public function test_get_primary_league_returns_null_when_primary_id_is_null(): void {
@@ -221,5 +365,27 @@ class Event_Primary_League_Test extends TestCase {
         $this->assertTrue( $updated );
         $this->assertSame( 3, $this->event->offset );
         $this->assertSame( 3, $this->event->settings['offset'] );
+    }
+
+    public function test_get_primary_league_returns_null_for_unpersisted_event_without_id(): void {
+        $event_raw                 = new stdClass();
+        $event_raw->competition_id = 1;
+        $event_raw->name           = 'Unpersisted Event';
+        $event_raw->type           = 'singles';
+        $event_raw->num_sets       = 3;
+        $event_raw->num_rubbers    = 1;
+        $event_raw->seasons        = '["2026"]';
+        $event_raw->settings       = [];
+
+        $event = Event::from_object( $event_raw, $this->competition );
+        unset( $event->id );
+        $event->primary_league = 0;
+        $event->leagues        = [];
+
+        $this->event_repository->expects( $this->never() )->method( 'query_leagues' );
+        $this->league_repository->expects( $this->never() )->method( 'find_by_id' );
+
+        $this->assertNull( $this->event_query_service->get_primary_league( $event ) );
+        $this->assertNull( $this->event_query_service->get_primary_league_id( $event ) );
     }
 }

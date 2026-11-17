@@ -69,10 +69,10 @@ $titles = $vm->titles ?? ( $titles ?? [] );
                                                 <span class="media__title">
                                                     <?php if ( '' !== $match_draw_url ) : ?>
                                                         <a class="nav--link media__link" href="<?php echo esc_url( $match_draw_url ); ?>">
-                                                            <span class="nav-link__value"><?php echo esc_html( $match->title ); ?></span>
+                                                            <span class="nav-link__value"><?php echo esc_html( $match->league_name ?? $match->title ?? '' ); ?></span>
                                                         </a>
                                                     <?php else : ?>
-                                                        <span class="nav-link__value"><?php echo esc_html( $match->title ); ?></span>
+                                                        <span class="nav-link__value"><?php echo esc_html( $match->league_name ?? $match->title ?? '' ); ?></span>
                                                     <?php endif; ?>
                                                 </span>
                                             </div>

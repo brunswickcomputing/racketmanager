@@ -710,7 +710,7 @@ class Admin_Plan_Templates_Test extends TestCase {
     public function test_order_of_play_court_renders_handler_match_view_model_with_placeholder(): void {
         $match_vm = new Order_Of_Play_Match_View_Model(
             id: 99,
-            league_title: 'Championship Semi Final',
+            league_name: 'Championship Semi Final',
             home_match_title: self::SEMI_FINAL_1_HOME,
             away_match_title: 'Westcliff 1',
             is_home_pending: true,

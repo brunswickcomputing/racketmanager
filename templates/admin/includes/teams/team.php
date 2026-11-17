@@ -31,7 +31,7 @@ $competition_type = $league && isset( $league->event->competition->type ) ? ( $l
                 <?php
                 if ( $league ) {
                     ?>
-                    &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition_type ); ?>s&amp;view=league&amp;league_id=<?php echo esc_html( $league->id ); ?>"><?php echo esc_html( $league->title ); ?></a>
+                    &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition_type ); ?>s&amp;view=league&amp;league_id=<?php echo esc_html( $league->id ); ?>"><?php echo esc_html( $league->name ?? $league->title ); ?></a>
                     <?php
                 }
                 ?>
@@ -41,7 +41,7 @@ $competition_type = $league && isset( $league->event->competition->type ) ? ( $l
     <?php
     if ( $league ) {
         ?>
-        <h1><?php echo esc_html( $league->title ) . ' - ' . esc_html( $form_title ); ?></h1>
+        <h1><?php echo esc_html( $league->name ?? $league->title ) . ' - ' . esc_html( $form_title ); ?></h1>
         <?php
     } else {
         ?>

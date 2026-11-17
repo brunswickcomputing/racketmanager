@@ -1297,10 +1297,10 @@ readonly class Competition_Shortcode_Presenter {
      */
     private function extract_club_team_group_title( mixed $team, bool $is_championship ): string {
         if ( is_object( $team ) ) {
-            return $is_championship ? ( $team->event_name ?? '' ) : ( $team->league_title ?? '' );
+            return $is_championship ? ( $team->event_name ?? '' ) : ( $team->league_name ?? $team->league_title ?? '' );
         }
         if ( is_array( $team ) ) {
-            return (string) ( $is_championship ? ( $team['event_name'] ?? '' ) : ( $team['league_title'] ?? '' ) );
+            return (string) ( $is_championship ? ( $team['event_name'] ?? '' ) : ( $team['league_name'] ?? $team['league_title'] ?? '' ) );
         }
 
         return '';
@@ -1407,10 +1407,10 @@ readonly class Competition_Shortcode_Presenter {
      */
     private static function extract_league_title( mixed $league ): string {
         if ( is_object( $league ) ) {
-            return $league->title ?? '';
+            return method_exists( $league, 'get_name' ) ? $league->get_name() : ( $league->name ?? $league->title ?? '' );
         }
         if ( is_array( $league ) ) {
-            return (string) ( $league['title'] ?? '' );
+            return (string) ( $league['name'] ?? $league['title'] ?? '' );
         }
 
         return '';
@@ -1468,12 +1468,12 @@ readonly class Competition_Shortcode_Presenter {
                 $league_comp  = $league->event->competition ?? null;
                 $comp_type    = $this->resolve_competition_type( $league_comp );
                 $event_name   = $league->event->name ?? '';
-                $league_title = $league->title ?? '';
+                $league_name  = ( is_object( $league ) && method_exists( $league, 'get_name' ) ) ? $league->get_name() : ( $league->name ?? $league->title ?? '' );
                 $season       = $league->season ?? '';
 
                 $links[ (string) $key ] = [
                     'event_link'  => '/' . $comp_type . 's/' . Util::seo_url( $event_name ) . '/' . $season . '/',
-                    'league_link' => '/' . $comp_type . '/' . Util::seo_url( $league_title ) . '/' . $season . '/',
+                    'league_link' => '/' . $comp_type . '/' . Util::seo_url( $league_name ) . '/' . $season . '/',
                 ];
             }
         }

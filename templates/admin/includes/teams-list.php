@@ -34,7 +34,7 @@ if ( 'constitution' === $action_type ) {
     $link_ref   = 'admin.php?page=racketmanager-leagues&view=constitution&amp;event_id=' . $league->event_id . '&amp;season=' . $season;
 } else {
     $page_title = __( 'Add Teams to League', 'racketmanager' );
-    $page_link  = $league->title;
+    $page_link  = $league->name ?? $league->title ?? '';
     $breadcrumb = 'show-league&amp;league_id=' . $league->id;
     $link_ref   = 'admin.php?page=racketmanager-' . $competition_type . 's&amp;season=' . $season;
     $link_ref  .= match ( $competition_type ) {
@@ -57,7 +57,7 @@ $main_title = $page_link . ' - ' . $page_title;
                     break;
                 case 'tournament':
                     ?>
-                    <a href="/wp-admin/admin.php?page=racketmanager-tournaments"><?php esc_html_e( 'Tournaments', 'racketmanager' ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>"><?php echo esc_html( $tournament->name ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=draw&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>&amp;league=<?php echo esc_attr( $league->id ); ?>"><?php echo esc_html( $league->title ); ?></a> &raquo; <?php echo esc_html( $page_title ); ?>
+                    <a href="/wp-admin/admin.php?page=racketmanager-tournaments"><?php esc_html_e( 'Tournaments', 'racketmanager' ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>"><?php echo esc_html( $tournament->name ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=draw&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>&amp;league=<?php echo esc_attr( $league->id ); ?>"><?php echo esc_html( $league->name ?? $league->title ?? '' ); ?></a> &raquo; <?php echo esc_html( $page_title ); ?>
                     <?php
                     break;
                 default:

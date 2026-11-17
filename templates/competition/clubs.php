@@ -219,10 +219,10 @@ if ( empty( $competition_club ) ) {
                                     <div class="col-5">
                                         <?php if ( '' !== $league_or_event_link ) : ?>
                                             <a href="<?php echo esc_attr( $league_or_event_link ); ?>">
-                                                <?php echo esc_html( ! empty( $competition->is_championship ) ? $team->event_name : $team->league_title ); ?>
+                                                <?php echo esc_html( ! empty( $competition->is_championship ) ? $team->event_name : $team->league_name ?? $team->league_title ?? '' ); ?>
                                             </a>
                                         <?php else : ?>
-                                            <?php echo esc_html( ! empty( $competition->is_championship ) ? $team->event_name : $team->league_title ); ?>
+                                            <?php echo esc_html( ! empty( $competition->is_championship ) ? $team->event_name : $team->league_name ?? $team->league_title ?? '' ); ?>
                                         <?php endif; ?>
                                     </div>
                                     <?php

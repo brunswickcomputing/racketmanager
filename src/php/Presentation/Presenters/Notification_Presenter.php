@@ -88,7 +88,8 @@ readonly class Notification_Presenter implements Notification_Presenter_Interfac
         $match_adapter    = new Fixture_Presentation_Adapter( $fixture, $league, $event, $competition_obj, $home_team_dtls, $away_team_dtls, $link, $is_update_allowed, $prev_home_fixture_title, $prev_away_fixture_title, $this->option_gateway );
 
         $formatter     = $this->date_formatter();
-        $comp_name     = ( $args['competition'] ?? '' ) ?: ( $match_adapter->league->title ?? '' );
+        $league_name   = ( is_object( $match_adapter->league ?? null ) && method_exists( $match_adapter->league, 'get_name' ) ) ? $match_adapter->league->get_name() : ( $match_adapter->league->name ?? $match_adapter->league->title ?? '' );
+        $comp_name     = ( $args['competition'] ?? '' ) ?: (string) $league_name;
         $match_date    = $formatter->date( $fixture->get_date() );
         $match_time    = $formatter->time( $fixture->get_date() );
 
@@ -358,7 +359,8 @@ readonly class Notification_Presenter implements Notification_Presenter_Interfac
      * Build championship action URL.
      */
     private function build_championship_action_url( Fixture_Presentation_Adapter $match ): string {
-        $url = '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $match->league->title ) . '/' . $match->league->current_season['name'] . '/' . $match->final_round . '/' . sanitize_title( $match->teams['home']->title ) . '-vs-' . sanitize_title( $match->teams['away']->title ) . '/';
+        $league_name = ( is_object( $match->league ?? null ) && method_exists( $match->league, 'get_name' ) ) ? $match->league->get_name() : ( $match->league->name ?? $match->league->title ?? '' );
+        $url = '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( (string) $league_name ) . '/' . $match->league->current_season['name'] . '/' . $match->final_round . '/' . sanitize_title( $match->teams['home']->title ) . '-vs-' . sanitize_title( $match->teams['away']->title ) . '/';
         if ( ! empty( $match->leg ) ) {
             $url .= 'leg-' . $match->leg . '/';
         }
@@ -370,7 +372,8 @@ readonly class Notification_Presenter implements Notification_Presenter_Interfac
      * Build standard action URL.
      */
     private function build_standard_action_url( Fixture_Presentation_Adapter $match ): string {
-        return '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $match->league->title ) . '/' . $match->league->current_season['name'] . '/day' . $match->match_day . '/' . sanitize_title( $match->teams['home']->title ) . '-vs-' . sanitize_title( $match->teams['away']->title ) . '/';
+        $league_name = ( is_object( $match->league ?? null ) && method_exists( $match->league, 'get_name' ) ) ? $match->league->get_name() : ( $match->league->name ?? $match->league->title ?? '' );
+        return '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( (string) $league_name ) . '/' . $match->league->current_season['name'] . '/day' . $match->match_day . '/' . sanitize_title( $match->teams['home']->title ) . '-vs-' . sanitize_title( $match->teams['away']->title ) . '/';
     }
 
     /**
@@ -386,22 +389,24 @@ readonly class Notification_Presenter implements Notification_Presenter_Interfac
         $match_link       = '';
         $rules_link       = $this->site_url . '/rules/' . $competition_type . '-rules/';
 
+        $league_name      = (string) ( ( is_object( $match_adapter->league ?? null ) && method_exists( $match_adapter->league, 'get_name' ) ) ? $match_adapter->league->get_name() : ( $match_adapter->league->name ?? $match_adapter->league->title ?? '' ) );
+
         if ( 'tournament' === $competition_type && $tournament_id ) {
             $tournament = $this->tournament_repository->find_by_id( $tournament_id );
             if ( $tournament ) {
                 $tournament_path = ( new Tournament_Presenter() )->get_link( (object) $tournament );
                 $tournament_link = '<a href="' . $this->site_url . $tournament_path . '">' . $tournament->name . '</a>';
                 $draw_link       = '<a href="' . $this->site_url . $tournament_path . 'draw/' . Seo_Slug::encode( $match_adapter->league->event->name ?? '' ) . '/">' . ( $match_adapter->league->event->name ?? '' ) . '</a>';
-                $match_link      = $this->site_url . $tournament_path . 'match/' . Seo_Slug::encode( $match_adapter->league->title ?? '' ) . '/' . Seo_Slug::encode( $match_adapter->teams['home']->title ?? '' ) . '-vs-' . Seo_Slug::encode( $match_adapter->teams['away']->title ?? '' ) . '/' . $fixture->get_id() . '/';
+                $match_link      = $this->site_url . $tournament_path . 'match/' . Seo_Slug::encode( $league_name ) . '/' . Seo_Slug::encode( $match_adapter->teams['home']->title ?? '' ) . '-vs-' . Seo_Slug::encode( $match_adapter->teams['away']->title ?? '' ) . '/' . $fixture->get_id() . '/';
             }
         } elseif ( 'cup' === $competition_type ) {
-            $competition_link = '<a href="' . $this->site_url . '/cups/' . Seo_Slug::encode( $match_adapter->league->title ?? '' ) . '/' . $match_adapter->season . '/">' . ( $match_adapter->league->title ?? '' ) . '</a>';
+            $competition_link = '<a href="' . $this->site_url . '/cups/' . Seo_Slug::encode( $league_name ) . '/' . $match_adapter->season . '/">' . $league_name . '</a>';
             $match_link       = $this->site_url . $match_adapter->link;
             if ( ! empty( $match_adapter->leg ) ) {
                 $match_link .= 'leg-' . $match_adapter->leg . '/';
             }
         } elseif ( 'league' === $competition_type ) {
-            $competition_link = '<a href="' . $this->site_url . '/leagues/' . Seo_Slug::encode( $match_adapter->league->event->name ?? '' ) . '/' . $match_adapter->season . '/">' . ( $match_adapter->league->title ?? '' ) . '</a>';
+            $competition_link = '<a href="' . $this->site_url . '/leagues/' . Seo_Slug::encode( $match_adapter->league->event->name ?? '' ) . '/' . $match_adapter->season . '/">' . $league_name . '</a>';
             $match_link       = $this->site_url . $match_adapter->link;
         }
 
@@ -411,7 +416,7 @@ readonly class Notification_Presenter implements Notification_Presenter_Interfac
         $raw_orig_date = ! empty( $args['original_date'] ) ? (string) $args['original_date'] : $fixture->get_date_original();
         $match_date    = $formatter->date_change( $raw_new_date );
         $original_date = $formatter->date_change( $raw_orig_date );
-        $comp_name     = ( $args['competition'] ?? '' ) ?: ( $match_adapter->league->title ?? '' );
+        $comp_name     = ( $args['competition'] ?? '' ) ?: $league_name;
 
         return array_merge( $args, array(
             'match'            => $match_adapter,

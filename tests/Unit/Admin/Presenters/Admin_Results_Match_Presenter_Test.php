@@ -35,6 +35,7 @@ final class Admin_Results_Match_Presenter_Test extends TestCase {
         $row = $this->presenter->present( $match, 'pending-results', true, 'Result pending' );
 
         $this->assertSame( 12, $row->league_id );
+        $this->assertSame( 'Division 1', $row->league_name );
         $this->assertSame( 'Division 1', $row->league_title );
         $this->assertSame( '2026-04-04', $row->formatted_date );
         $this->assertSame( 'Home vs Away', $row->match_title );
@@ -117,6 +118,7 @@ final class Admin_Results_Match_Presenter_Test extends TestCase {
 
         $row = $presenter->present( $match, 'results' );
 
+        $this->assertSame( 'Division 1', $row->league_name );
         $this->assertSame( 'Division 1', $row->league_title );
     }
 
@@ -134,7 +136,9 @@ final class Admin_Results_Match_Presenter_Test extends TestCase {
         $rows = $presenter->present_collection( array( $fixture, $fixture ), 'results' );
 
         $this->assertSame( 7, $rows[0]->league_id );
+        $this->assertSame( 'Division 7', $rows[0]->league_name );
         $this->assertSame( 'Division 7', $rows[0]->league_title );
+        $this->assertSame( 'Division 7', $rows[1]->league_name );
         $this->assertSame( 'Division 7', $rows[1]->league_title );
     }
 }

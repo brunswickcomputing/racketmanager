@@ -27,7 +27,7 @@ if ( ( $view_state?->show_match_day_selection ?? false ) && ! $league->event->co
             <div class="row g-1 align-items-center">
                 <input type="hidden" name="page_id" value="<?php echo esc_attr( (string) ( $post_id ?? 0 ) ); ?>" />
                 <input type="hidden" name="season" value="<?php echo esc_attr( $season ); ?>" />
-                <input type="hidden" name="league_id" value="<?php echo esc_attr( $league->title ); ?>" />
+                <input type="hidden" name="league_id" value="<?php echo esc_attr( $league->name ?? $league->title ?? '' ); ?>" />
                 <input type="hidden" id="leagueId" value="<?php echo esc_attr( $league->id ); ?>" />
 
                 <?php

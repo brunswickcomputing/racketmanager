@@ -32,10 +32,10 @@ if ( ! $event ) {
                         <h4 class="header">
                             <?php if ( '' !== $href ) : ?>
                                 <a href="<?php echo esc_url( $href ); ?>">
-                                    <?php echo esc_html( $league->title ); ?>
+                                    <?php echo esc_html( $league->name ?? $league->title ?? '' ); ?>
                                 </a>
                             <?php else : ?>
-                                <?php echo esc_html( $league->title ); ?>
+                                <?php echo esc_html( $league->name ?? $league->title ?? '' ); ?>
                             <?php endif; ?>
                             <?php
                             $favourite_type = 'league';

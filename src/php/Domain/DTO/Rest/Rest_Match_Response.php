@@ -18,18 +18,32 @@ use stdClass;
  * Serialises to the legacy JSON shape: league, home_team, away_team, match_date, match_time
  * and, only when the match has a result (winner set), score and status.
  */
-final readonly class Rest_Match_Response {
+final class Rest_Match_Response {
 
     public function __construct(
-        public string $league,
-        public string $home_team,
-        public string $away_team,
-        public string $match_date,
-        public int|float|string|bool|null $match_time,
-        public bool $has_result = false,
-        public ?string $score = null,
-        public ?string $status = null,
+        public readonly string $league,
+        public readonly string $home_team,
+        public readonly string $away_team,
+        public readonly string $match_date,
+        public readonly int|float|string|bool|null $match_time,
+        public readonly bool $has_result = false,
+        public readonly ?string $score = null,
+        public readonly ?string $status = null,
     ) {
+    }
+
+    /**
+     * Canonical league name accessor.
+     */
+    public string $league_name {
+        final get => $this->league;
+    }
+
+    /**
+     * Legacy league title accessor.
+     */
+    public string $league_title {
+        final get => $this->league;
     }
 
     /**

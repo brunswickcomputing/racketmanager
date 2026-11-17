@@ -428,7 +428,14 @@ class Player_Query_Service implements Player_Query_Service_Interface {
         if ( ! empty( $match_league->is_championship ) ) {
             $league_no = 1;
         } else {
-            $league_title = explode( ' ', $match_league->title ?? '' );
+            $league_name_str = '';
+            if ( is_object( $match_league ) ) {
+                $league_name_str = method_exists( $match_league, 'get_name' ) ? (string) $match_league->get_name() : '';
+                if ( '' === $league_name_str ) {
+                    $league_name_str = (string) ( $match_league->name ?? $match_league->title ?? '' );
+                }
+            }
+            $league_title = explode( ' ', $league_name_str );
             $league_no    = end( $league_title );
         }
 
@@ -453,12 +460,15 @@ class Player_Query_Service implements Player_Query_Service_Interface {
         }
 
         $match_league = method_exists( $match, 'get_league' ) ? $match->get_league() : ( $match->league ?? null );
-        if ( $match_league && isset( $match_league->title ) ) {
-            $key = $match_league->title;
-        } elseif ( $match_league && method_exists( $match_league, 'get_name' ) ) {
-            $key = $match_league->get_name();
-        } else {
-            $key = $match->league->title ?? '';
+        $key          = '';
+        if ( is_object( $match_league ) ) {
+            $key = method_exists( $match_league, 'get_name' ) ? (string) $match_league->get_name() : '';
+            if ( '' === $key ) {
+                $key = (string) ( $match_league->name ?? $match_league->title ?? '' );
+            }
+        }
+        if ( '' === $key ) {
+            $key = (string) ( $match->league->name ?? $match->league->title ?? '' );
         }
 
         if ( false === array_key_exists( $key, $player->matches ) ) {

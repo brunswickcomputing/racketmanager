@@ -44,11 +44,13 @@ final class Admin_Results_Match_Presenter {
     }
 
     public function present( object $match, string $referrer, bool $include_result_path = true, string $default_tooltip = '', mixed $result_pending = null ): Admin_Results_Match_View_Model {
-        $league = $this->resolve_league( $match );
+        $league            = $this->resolve_league( $match );
+        $match_league_name = (string) ( $match->league_name ?? $match->league_title ?? '' );
+        $league_name       = '' !== $match_league_name ? $match_league_name : $this->league_name( $league );
 
         return new Admin_Results_Match_View_Model(
             league_id: (int) ( $match->league_id ?? ( is_object( $league ) ? ( $league->id ?? 0 ) : 0 ) ),
-            league_title: $this->league_title( $league ),
+            league_name: $league_name,
             formatted_date: $this->date_presenter->format_date( isset( $match->date ) ? (string) $match->date : null, 'Y-m-d' ),
             match_title: (string) ( $match->match_title ?? $match->fixture_title ?? '' ),
             match_link: $this->build_link( (string) ( $match->link ?? '' ), $referrer, false ),
@@ -81,12 +83,21 @@ final class Admin_Results_Match_Presenter {
         return null;
     }
 
-    private function league_title( ?object $league ): string {
+    private function league_name( ?object $league ): string {
         if ( ! $league ) {
             return '';
         }
 
-        return (string) ( $league->title ?? $league->name ?? '' );
+        $name = method_exists( $league, 'get_name' ) ? (string) $league->get_name() : '';
+        if ( '' !== $name ) {
+            return $name;
+        }
+
+        return (string) ( $league->name ?? $league->title ?? '' );
+    }
+
+    private function league_title( ?object $league ): string {
+        return $this->league_name( $league );
     }
 
     private function build_link( string $link, string $referrer, bool $include_result_path ): string {

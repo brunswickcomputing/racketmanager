@@ -319,9 +319,14 @@ final readonly class Admin_Plan_Presenter {
             $away_club  = $away_set ? ( $teams['away']->club->shortcode ?? null ) : null;
         }
 
+        $league_name = ( is_object( $league ) && method_exists( $league, 'get_name' ) ) ? (string) $league->get_name() : '';
+        if ( '' === $league_name && is_object( $league ) ) {
+            $league_name = (string) ( $league->name ?? $league->title ?? '' );
+        }
+
         return new Plan_Final_Card_View_Model(
             id: (int) $fixture->get_id(),
-            league_title: (string) ( $league->title ?? '' ),
+            league_name: $league_name,
             btn_type: ( $home_set && $away_set ) ? 'success' : 'warning',
             home_title: (string) $home_title,
             away_title: (string) $away_title,

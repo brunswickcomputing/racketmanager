@@ -126,24 +126,23 @@ class League_Cache_Invalidator_Test extends TestCase {
 	}
 
 	/**
-	 * Test capture_snapshot does not fall back to name when title is empty on cached League.
+	 * Test capture_snapshot uses canonical name on cached League.
 	 */
-	public function test_capture_snapshot_from_cached_league_ignores_name_when_title_empty(): void {
-		$league        = new League();
-		$league->id    = 22;
-		$league->title = '';
-		$league->name  = 'Championship Name';
+	public function test_capture_snapshot_from_cached_league_uses_canonical_name(): void {
+		$league       = new League();
+		$league->id   = 22;
+		$league->name = 'Championship Name';
 		wp_cache_set( 22, $league, 'leagues' );
 
 		$invalidator = new League_Cache_Invalidator( $this->wpdb, 'wp_racketmanager_leagues' );
 		$snapshot    = $invalidator->capture_snapshot( 22 );
 
-		$this->assertNull( $snapshot['title'] );
+		$this->assertSame( 'Championship Name', $snapshot['title'] );
 
 		$invalidator->invalidate_after_delete( 22, $snapshot );
-		$this->assertNotContains( array( 'Championship Name', 'leagues' ), $this->deleted_keys() );
+		$this->assertContains( array( 'Championship Name', 'leagues' ), $this->deleted_keys() );
 		$invalidator->invalidate_after_update_title( 22, 'New Title', $snapshot );
-		$this->assertNotContains( array( 'Championship Name', 'leagues' ), $this->deleted_keys() );
+		$this->assertContains( array( 'Championship Name', 'leagues' ), $this->deleted_keys() );
 	}
 
 	/**

@@ -15,6 +15,7 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Season_Collection;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface;
 use Racketmanager\Services\Admin\Event\Event_Action_Dispatcher;
 use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Competition\Competition_Season_Service;
@@ -44,18 +45,20 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
     private $event_repository;
     private $league_service;
     private $competition_season_service;
+    private $event_query_service;
 
     protected function setUp(): void {
         parent::setUp();
         $this->backup_globals();
 
-        $this->container              = new Simple_Container();
-        $this->tournament_service     = $this->createStub( Tournament_Service::class );
-        $this->competition_service    = $this->createMock( Competition_Service::class );
-        $this->guard                  = $this->createStub( Action_Guard_Interface::class );
-        $this->event_repository       = $this->createMock( Event_Repository_Interface::class );
-        $this->league_service         = $this->createMock( League_Service::class );
+        $this->container                  = new Simple_Container();
+        $this->tournament_service         = $this->createStub( Tournament_Service::class );
+        $this->competition_service        = $this->createMock( Competition_Service::class );
+        $this->guard                      = $this->createStub( Action_Guard_Interface::class );
+        $this->event_repository           = $this->createMock( Event_Repository_Interface::class );
+        $this->league_service             = $this->createMock( League_Service::class );
         $this->competition_season_service = $this->createMock( Competition_Season_Service::class );
+        $this->event_query_service        = $this->createMock( Event_Query_Service_Interface::class );
 
         $this->container->set( 'competition_service', $this->competition_service );
         $this->container->set( 'event_repository', $this->event_repository );
@@ -72,7 +75,8 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
             $this->competition_season_service,
             $this->guard,
             $this->event_repository,
-            $this->league_service
+            $this->league_service,
+            $this->event_query_service
         );
 
         $this->controller = new Tournament_Event_Config_Admin_Controller(
@@ -354,6 +358,10 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $event = Event::from_object( $event_raw );
         $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
 
+        $this->event_query_service->expects( $this->once() )->method( 'get_primary_league_id' )
+            ->with( $event )
+            ->willReturn( 555 );
+
         $this->event_repository->expects( $this->once() )
             ->method( 'update_settings_and_rules' )
             ->with(
@@ -417,8 +425,10 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $event = Event::from_object( $event_raw );
         $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $this->event_repository->expects( $this->atLeastOnce() )->method( 'query_leagues' )
-            ->willReturn( [ (object) [ 'id' => 321 ] ] );
+        $this->event_query_service->expects( $this->once() )->method( 'get_primary_league_id' )
+            ->with( $event )
+            ->willReturn( 321 );
+        $this->event_repository->expects( $this->never() )->method( 'query_leagues' );
 
         $this->event_repository->expects( $this->once() )
             ->method( 'update_settings_and_rules' )
@@ -482,6 +492,8 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
 
         $event = Event::from_object( $event_raw );
         $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
+
+        $this->event_query_service->expects( $this->never() )->method( 'get_primary_league_id' );
 
         $this->event_repository->expects( $this->once() )
             ->method( 'update_settings_and_rules' )

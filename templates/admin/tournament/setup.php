@@ -63,17 +63,17 @@ if ( empty( $league ) ) {
                 <?php
             } else {
                 ?>
-                <a href="/wp-admin/admin.php?page=racketmanager-tournaments"><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>"><?php echo esc_html( $tournament->name ); ?></a>  &raquo; <a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=draw&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>&amp;league=<?php echo esc_attr( $league->id ); ?>"><?php echo esc_html( $league->title ); ?></a> &raquo; <?php esc_html_e( 'Setup', 'racketmanager' ); ?>
+                <a href="/wp-admin/admin.php?page=racketmanager-tournaments"><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>"><?php echo esc_html( $tournament->name ); ?></a>  &raquo; <a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=draw&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>&amp;league=<?php echo esc_attr( $league->id ); ?>"><?php echo esc_html( $league->name ?? $league->title ?? '' ); ?></a> &raquo; <?php esc_html_e( 'Setup', 'racketmanager' ); ?>
                 <?php
             }
             ?>
         </div>
     </div>
-    <h1><?php esc_html_e( 'Setup', 'racketmanager' ); ?> <?php echo empty( $league ) ? null : ' - ' . esc_html( $league->title ); ?> - <?php echo esc_html( $tournament->name ); ?></h1>
+    <h1><?php esc_html_e( 'Setup', 'racketmanager' ); ?> <?php echo empty( $league ) ? null : ' - ' . esc_html( $league->name ?? $league->title ?? '' ); ?> - <?php echo esc_html( $tournament->name ); ?></h1>
     <?php
     if ( ! empty( $league ) ) {
         ?>
-        <h2><?php echo esc_html( $league->title ) . ' - ' . esc_html( $season ); ?></h2>
+        <h2><?php echo esc_html( $league->name ?? $league->title ?? '' ) . ' - ' . esc_html( $season ); ?></h2>
         <div class="row mb-3">
             <div class="col-4"><?php esc_html_e( 'Entries', 'racketmanager' ); ?></div>
             <div class="col-auto"><?php echo esc_html( $league->num_teams_total ); ?></div>

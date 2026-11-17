@@ -29,7 +29,7 @@ $complete              = $complete ?? $vm->complete ?? null;
 $challenge             = $challenge ?? $vm->challenge ?? null;
 $from_email            = $from_email ?? $vm->from_email ?? null;
 
-$competition_name = $match?->league?->title ?? '';
+$competition_name = $match?->league_name ?? $match?->league?->name ?? $match?->league?->title ?? '';
 $match_date       = $match?->match_date ?? '';
 $email_subject    = __( 'Match Result', 'racketmanager' ) . ' - ' . $competition_name;
 require 'email-header.php';

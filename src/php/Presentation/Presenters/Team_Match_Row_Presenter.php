@@ -101,7 +101,8 @@ final readonly class Team_Match_Row_Presenter {
         $away_points = $fixture->get_away_points();
         $status      = (int) $fixture->get_status();
 
-        $league_title = $this->get_league_title( $league, $fixture );
+        $league_name  = $this->get_league_name( $league, $fixture );
+        $league_title = $league_name;
 
         $final_round = $fixture->get_final();
         $final_name  = $final_round ? ( Util::get_final_name( (string) $final_round ) ?: (string) $final_round ) : null;
@@ -174,7 +175,7 @@ final readonly class Team_Match_Row_Presenter {
             id: $id,
             is_selected: $is_selected,
             show_header: $show_header,
-            league_title: $league_title,
+            league_name: $league_name,
             match_link: $link ? (string) $link : null,
             final_name: $final_name,
             match_day: $match_day ? (int) $match_day : null,
@@ -310,16 +311,20 @@ final readonly class Team_Match_Row_Presenter {
         return $fallback_title ?? __( 'Unknown', 'racketmanager' );
     }
 
-    private function get_league_title( ?object $league, Fixture $fixture ): string {
-        $title = $this->league_name( $league );
-        if ( '' !== $title ) {
-            return $title;
+    public function get_league_name( ?object $league, Fixture $fixture ): string {
+        $name = $this->league_name( $league );
+        if ( '' !== $name ) {
+            return $name;
         }
         $league_id = $fixture->get_league_id();
         if ( ! empty( $league_id ) ) {
             return $this->league_name( $this->league_repository->find_by_id( (int) $league_id ) );
         }
         return '';
+    }
+
+    private function get_league_title( ?object $league, Fixture $fixture ): string {
+        return $this->get_league_name( $league, $fixture );
     }
 
     private function league_name( ?object $league ): string {

@@ -311,7 +311,7 @@ final class Standings_Templates_Render_Test extends TestCase {
     public function test_archive_template_passes_vm_template_override_to_dispatched_tag(): void {
         $vm = new \Racketmanager\Presentation\View_Models\League_Archive_View_Model(
             league_id: 10,
-            league_title: 'Division 1',
+            league_name: 'Division 1',
             league_seo_name: 'division-1',
             competition_type: 'league',
             icon_path: '',
@@ -346,7 +346,7 @@ final class Standings_Templates_Render_Test extends TestCase {
 
         $vm = new \Racketmanager\Presentation\View_Models\League_Archive_View_Model(
             league_id: 10,
-            league_title: 'Division 1',
+            league_name: 'Division 1',
             league_seo_name: 'division-1',
             competition_type: 'league',
             icon_path: '',

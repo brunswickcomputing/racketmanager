@@ -39,6 +39,14 @@ class Tournament_Repository implements Tournament_Repository_Interface {
     private string $competition_table;
     private Competition_Service|Closure|null $competition_service = null;
 
+    /**
+     * Initialises the Tournament repository
+     *
+     * @param wpdb|null                        $db database access.
+     * @param Competition_Service|Closure|null $competition_service competition service.
+     *
+     * @return void
+     */
     public function __construct(
         ?wpdb $db = null,
         Competition_Service|Closure|null $competition_service = null
@@ -50,21 +58,31 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         $this->competition_service = $competition_service;
     }
 
+    /**
+     * @param Tournament $tournament Tournament object.
+     *
+     * @return void
+     */
     public function wire_tournament_collaborators( Tournament $tournament ): void {
         if ( null === $tournament->get_competition() && ! empty( $tournament->competition_id ) ) {
             $comp_svc = $this->resolve_competition_service();
             if ( $comp_svc ) {
                 try {
                     $competition = $comp_svc->get_by_id( (int) $tournament->competition_id );
-                    if ( $competition ) {
-                        $tournament->set_competition( $competition );
-                    }
-                } catch ( \Throwable ) {
+                    $tournament->set_competition( $competition );
+                } catch ( Throwable ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
                 }
             }
         }
     }
 
+    /**
+     * Hydrates a tournament from a row object and wires its collaborators.
+     *
+     * @param object $row row object.
+     *
+     * @return Tournament
+     */
     private function hydrate_tournament( object $row ): Tournament {
         $tournament = Tournament_Factory::from_object( $row );
         $this->wire_tournament_collaborators( $tournament );
@@ -72,6 +90,11 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         return $tournament;
     }
 
+    /**
+     * @param mixed $collaborator collaborator object.
+     *
+     * @return mixed
+     */
     private function resolve_collaborator( mixed &$collaborator ): mixed {
         if ( $collaborator instanceof Closure ) {
             $collaborator = $collaborator();
@@ -79,6 +102,11 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         return $collaborator;
     }
 
+    /**
+     * Resolves the configured competition service collaborator.
+     *
+     * @return Competition_Service|null
+     */
     private function resolve_competition_service(): ?Competition_Service {
         $resolved = $this->resolve_collaborator( $this->competition_service );
         return $resolved instanceof Competition_Service ? $resolved : null;
@@ -91,11 +119,12 @@ class Tournament_Repository implements Tournament_Repository_Interface {
      * whole transaction was rolled back; `charge` is `null` when the tournament
      * save failed so the charge was never attempted.
      *
-     * @param Tournament                  $tournament
-     * @param Charge                      $charge
-     * @param Charge_Repository_Interface $charge_repository
+     * @param Tournament                  $tournament Tournament object.
+     * @param Charge                      $charge Charge object.
+     * @param Charge_Repository_Interface $charge_repository Charge repository object.
      *
-     * @return array{tournament: bool|int, charge: bool|int|null}
+     * @return array{tournament: Tournament|false, charge: Charge|false|null}
+     * @throws Throwable Exception thrown if the transaction fails.
      */
     public function save_with_charge( Tournament $tournament, Charge $charge, Charge_Repository_Interface $charge_repository ): array {
         $this->begin_transaction();
@@ -130,6 +159,13 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         );
     }
 
+    /**
+     * Saves a tournament entity.
+     *
+     * @param object $entity Tournament entity to save.
+     *
+     * @return bool|int Inserted tournament ID on creation, true on successful update, or false on failure.
+     */
     public function save( object $entity ): bool|int {
         /** @var Tournament $entity */
         $data        = array(
@@ -149,7 +185,7 @@ class Tournament_Repository implements Tournament_Repository_Interface {
             'starttime'        => $entity->get_start_time(),
             'timeincrement'    => $entity->get_time_increment(),
             'orderofplay'      => maybe_serialize( $entity->get_order_of_play() ),
-            'information'      => json_encode( $entity->get_information() ),
+            'information'      => wp_json_encode( $entity->get_information() ),
         );
         $data_format = array(
             '%s',
@@ -182,17 +218,28 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         } else {
             wp_cache_set( $entity->get_id(), $entity, 'tournaments' );
 
-            return $this->wpdb->update( $this->table_name, $data, // Data to update
+            return $this->wpdb->update(
+                $this->table_name,
+                $data, // Data to update.
                 array(
-                    'id' => $entity->get_id()
-                ), // Where clause
-                $data_format, array(
-                    '%d'
-                ) // Where format
+                    'id' => $entity->get_id(),
+                ), // Where clause.
+                $data_format,
+                array(
+                    '%d',
+                ) // Where format.
             ) !== false;
         }
     }
 
+    /**
+     * Finds a tournament by ID, shortcode, or name.
+     *
+     * @param int|string|null $id Tournament identifier, shortcode value, or name.
+     * @param string          $search_term Search field to use.
+     *
+     * @return Tournament|null
+     */
     public function find_by_id( int|string|null $id, string $search_term = 'id' ): ?Tournament {
         if ( ! $id ) {
             return null;
@@ -215,8 +262,9 @@ class Tournament_Repository implements Tournament_Repository_Interface {
             return $tournament;
         }
 
-        $row = $this->wpdb->get_row( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            "SELECT * FROM `$this->table_name` WHERE $search" );
+        $row = $this->wpdb->get_row(
+            "SELECT * FROM `$this->table_name` WHERE $search" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        );
         if ( ! $row ) {
             return null;
         }
@@ -226,12 +274,21 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         return $tournament;
     }
 
+    /**
+     * Find tournament overview.
+     *
+     * @param int $tournament_id tournament identifier.
+     *
+     * @return stdClass|null
+     */
     public function find_tournament_overview( int $tournament_id ): ?stdclass {
         $clubs_table              = $this->wpdb->prefix . 'racketmanager_clubs';
         $events_table             = $this->wpdb->prefix . 'racketmanager_events';
         $tournament_entries_table = $this->wpdb->prefix . 'racketmanager_tournament_entries';
 
-        return $this->wpdb->get_row( $this->wpdb->prepare( "
+        return $this->wpdb->get_row(
+            $this->wpdb->prepare(
+                "
                     SELECT t.id,
                     t.name as tournament_name,
                     t.season,
@@ -260,7 +317,10 @@ class Tournament_Repository implements Tournament_Repository_Interface {
                     LEFT JOIN `$events_table` e ON e.competition_id = c2.id
                     LEFT JOIN `$tournament_entries_table` te ON te.tournament_id = t.id
                     WHERE t.id = %d
-                    GROUP BY t.id", $tournament_id ) );
+                    GROUP BY t.id",
+                $tournament_id
+            )
+        );
     }
 
     public function find_active( ?string $age_group = null ): ?Tournament {
@@ -270,7 +330,8 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         }
 
         $row = $this->wpdb->get_row( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            "SELECT * FROM `$this->table_name` WHERE `date_end` >= CURDATE() AND `date_start` <= CURDATE() $search LIMIT 1" );
+            "SELECT * FROM `$this->table_name` WHERE `date_end` >= CURDATE() AND `date_start` <= CURDATE() $search LIMIT 1"
+        );
         if ( ! $row ) {
             return null;
         }
@@ -370,14 +431,17 @@ class Tournament_Repository implements Tournament_Repository_Interface {
            AND um_optin.meta_value = '1'
         ";
         if ( $entered ) {
-            $sql .= $this->wpdb->prepare( "
+            $sql .= $this->wpdb->prepare(
+                "
             AND u.ID NOT IN (
                 SELECT player_id
                 FROM `$tournament_entries_table`
                 WHERE tournament_id = %d
-            )", $tournament_id );
+            )",
+                $tournament_id
+            );
         }
-        $sql .= " ORDER BY u.display_name";
+        $sql .= ' ORDER BY u.display_name';
 
         $query    = $this->wpdb->prepare( $sql, $tournament_id, $tournament_id, $limit );
         $cachekey = md5( $sql );
@@ -401,7 +465,9 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         $league_teams_table = $this->wpdb->prefix . 'racketmanager_league_teams';
         $teams_table        = $this->wpdb->prefix . 'racketmanager_teams';
 
-        return $this->wpdb->get_results( $this->wpdb->prepare( "
+        return $this->wpdb->get_results(
+            $this->wpdb->prepare(
+                "
                     SELECT e.id,
                     e.name,
                     COUNT(DISTINCT lt.team_id) as num_teams
@@ -414,7 +480,10 @@ class Tournament_Repository implements Tournament_Repository_Interface {
                     AND lt.season = t.season
                     AND ((t2.team_type IS NULL OR t2.team_type = 'P') OR t2.team_type != 'S')
                     GROUP BY e.id
-                    ORDER BY e.name", $tournament_id ) );
+                    ORDER BY e.name",
+                $tournament_id
+            )
+        );
     }
 
     /**
@@ -431,7 +500,8 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         $leagues_table      = $this->wpdb->prefix . 'racketmanager_leagues';
         $league_teams_table = $this->wpdb->prefix . 'racketmanager_league_teams';
         $users_table        = $this->wpdb->prefix . 'users';
-        $query              = $this->wpdb->prepare( "SELECT
+        $query              = $this->wpdb->prepare(
+            "SELECT
             lt.id AS team_id,
             u.ID AS partner_id,
             u.display_name AS partner_name,
@@ -446,7 +516,11 @@ class Tournament_Repository implements Tournament_Repository_Interface {
            AND l.event_id = %d
            AND lt.season = %d
            AND lt.profile != 3
-         LIMIT 1", $player_id, $event_id, $season );
+         LIMIT 1",
+            $player_id,
+            $event_id,
+            $season
+        );
 
         return $this->wpdb->get_row( $query );
     }
@@ -467,7 +541,8 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         $league_teams_table = $this->wpdb->prefix . 'racketmanager_league_teams';
         $users_table        = $this->wpdb->prefix . 'users';
 
-        $query = $this->wpdb->prepare( "SELECT DISTINCT
+        $query = $this->wpdb->prepare(
+            "SELECT DISTINCT
             e.id AS event_id,
             e.name AS event_name,
             u.ID AS partner_id,
@@ -483,7 +558,10 @@ class Tournament_Repository implements Tournament_Repository_Interface {
          WHERE tp_primary.player_id = %d
            AND t.id = %d
            AND t.season = lt.season
-           AND lt.profile != 3", $player_id, $tournament_id );
+           AND lt.profile != 3",
+            $player_id,
+            $tournament_id
+        );
 
         return $this->wpdb->get_results( $query );
     }
@@ -497,7 +575,8 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         $team_players_table = $this->wpdb->prefix . 'racketmanager_team_players';
         $players_table      = $this->wpdb->prefix . 'users';
 
-        $query = $this->wpdb->prepare( "SELECT
+        $query = $this->wpdb->prepare(
+            "SELECT
             t2.id AS team_id,
             t2.title AS team_name,
             lt.status,
@@ -517,7 +596,10 @@ class Tournament_Repository implements Tournament_Repository_Interface {
            AND lt.season = t.season
            AND lt.rating IS NOT NULL
          GROUP BY t2.id,t2.title,lt.status,lt.rating,lt.profile,lt.rank
-         ORDER BY lt.rank", $tournament_id, $event_id );
+         ORDER BY lt.rank",
+            $tournament_id,
+            $event_id
+        );
 
         return $this->wpdb->get_results( $query );
     }
@@ -527,17 +609,21 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         $events_table      = $this->wpdb->prefix . 'racketmanager_events';
 
         if ( is_numeric( $event_id ) ) {
-            $search = " e.id = %d";
+            $search = ' e.id = %d';
         } else {
-            $search = " e.name = %s";
+            $search = ' e.name = %s';
         }
-        $query = $this->wpdb->prepare( "SELECT e.*
+        $query = $this->wpdb->prepare(
+            "SELECT e.*
          FROM `$tournaments_table` t
              JOIN `$events_table` e ON e.competition_id = t.competition_id
          WHERE t.id = %d
            AND $search
          LIMIT 1
-            ", $tournament_id, $event_id );
+            ",
+            $tournament_id,
+            $event_id
+        );
         $row   = $this->wpdb->get_row( $query );
         if ( $row ) {
             $competition = null;
@@ -545,7 +631,7 @@ class Tournament_Repository implements Tournament_Repository_Interface {
             if ( $comp_svc && ! empty( $row->competition_id ) ) {
                 try {
                     $competition = $comp_svc->get_by_id( $row->competition_id );
-                } catch ( \Throwable $e ) {
+                } catch ( Throwable ) {
                     $competition = null;
                 }
             }
@@ -562,7 +648,8 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         $leagues_table      = $this->wpdb->prefix . 'racketmanager_leagues';
         $team_players_table = $this->wpdb->prefix . 'racketmanager_team_players';
         $players_table      = $this->wpdb->prefix . 'users';
-        $query              = $this->wpdb->prepare( "
+        $query              = $this->wpdb->prepare(
+            "
                 SELECT p.ID as player_id,
                        p.display_name,
                        p.user_email as email
@@ -589,7 +676,10 @@ class Tournament_Repository implements Tournament_Repository_Interface {
                   and f.final = 'final'
                   and t.id = %d
                 order by 1
-                ", $tournament_id, $tournament_id );
+                ",
+            $tournament_id,
+            $tournament_id
+        );
         $results            = $this->wpdb->get_results( $query );
 
         return array_map( fn( $row ) => new Players_List_DTO( $row ), $results );
@@ -604,7 +694,8 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         $team_players_table       = $this->wpdb->prefix . 'racketmanager_team_players';
         $players_table            = $this->wpdb->prefix . 'users';
         $clubs_table              = $this->wpdb->prefix . 'racketmanager_clubs';
-        $query                    = $this->wpdb->prepare( "
+        $query                    = $this->wpdb->prepare(
+            "
                 SELECT f.id as match_id,
                        e.id as event_id,
                        e.name as event_name,
@@ -633,7 +724,9 @@ class Tournament_Repository implements Tournament_Repository_Interface {
                   and t.id = %d
                 GROUP BY f.id
                 ORDER BY l.title
-                ", $tournament_id );
+                ",
+            $tournament_id
+        );
 
         return $this->wpdb->get_results( $query );
     }
@@ -643,7 +736,8 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         $tournaments_table = $this->wpdb->prefix . 'racketmanager_tournaments';
         $events_table      = $this->wpdb->prefix . 'racketmanager_events';
         $leagues_table     = $this->wpdb->prefix . 'racketmanager_leagues';
-        $query             = $this->wpdb->prepare( "
+        $query             = $this->wpdb->prepare(
+            "
                 SELECT DISTINCT DATE_FORMAT(f.`date`, %s) AS `match_date`
                 FROM `$fixtures_table` f
                     join `$leagues_table` l on f.league_id = l.id
@@ -652,13 +746,16 @@ class Tournament_Repository implements Tournament_Repository_Interface {
                 WHERE f.season = t.season
                   and t.id = %d
                 ORDER BY f.`date`
-            ", '%Y-%m-%d', $tournament_id );
+            ",
+            '%Y-%m-%d',
+            $tournament_id
+        );
 
         return $this->wpdb->get_results( $query );
     }
 
     /**
-     * @param int $tournament_id
+     * @param int    $tournament_id
      * @param string $match_date
      *
      * @return Fixture[]
@@ -668,7 +765,8 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         $tournaments_table = $this->wpdb->prefix . 'racketmanager_tournaments';
         $events_table      = $this->wpdb->prefix . 'racketmanager_events';
         $leagues_table     = $this->wpdb->prefix . 'racketmanager_leagues';
-        $query             = $this->wpdb->prepare( "
+        $query             = $this->wpdb->prepare(
+            "
                 SELECT f.*
                 FROM `$fixtures_table` f
                     join `$leagues_table` l on f.league_id = l.id
@@ -679,7 +777,10 @@ class Tournament_Repository implements Tournament_Repository_Interface {
                   AND DATEDIFF(%s, f.`date`) = 0
                 ORDER BY f.`date`,
                          f.location
-            ", $tournament_id, $match_date );
+            ",
+            $tournament_id,
+            $match_date
+        );
         $results           = $this->wpdb->get_results( $query );
 
         return array_map( fn( $row ) => Fixture_Factory::from_object( $row ), $results );
@@ -696,7 +797,8 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         $tournaments_table = $this->wpdb->prefix . 'racketmanager_tournaments';
         $events_table      = $this->wpdb->prefix . 'racketmanager_events';
         $leagues_table     = $this->wpdb->prefix . 'racketmanager_leagues';
-        $query             = $this->wpdb->prepare( "
+        $query             = $this->wpdb->prepare(
+            "
                 SELECT f.*
                 FROM `$fixtures_table` f
                     join `$leagues_table` l on f.league_id = l.id
@@ -706,7 +808,10 @@ class Tournament_Repository implements Tournament_Repository_Interface {
                   AND t.id = %d
                   AND e.id = %d
                 ORDER BY f.`id`
-            ", $tournament_id, $event_id );
+            ",
+            $tournament_id,
+            $event_id
+        );
         $results           = $this->wpdb->get_results( $query );
 
         return array_map( fn( $row ) => Fixture_Factory::from_object( $row ), $results );
@@ -724,7 +829,8 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         $leagues_table      = $this->wpdb->prefix . 'racketmanager_leagues';
         $team_players_table = $this->wpdb->prefix . 'racketmanager_team_players';
         $players_table      = $this->wpdb->prefix . 'users';
-        $query              = $this->wpdb->prepare( "
+        $query              = $this->wpdb->prepare(
+            "
                 SELECT p.ID as player_id,
                        p.display_name,
                        p.user_email as email
@@ -751,7 +857,10 @@ class Tournament_Repository implements Tournament_Repository_Interface {
                   and f.winner_id = 0
                   and t.id = %d
                 order by 1
-                ", $tournament_id, $tournament_id );
+                ",
+            $tournament_id,
+            $tournament_id
+        );
         $results            = $this->wpdb->get_results( $query );
 
         return array_map( fn( $row ) => new Players_List_DTO( $row ), $results );
@@ -762,13 +871,15 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         $events_table       = $this->wpdb->prefix . 'racketmanager_events';
         $leagues_table      = $this->wpdb->prefix . 'racketmanager_leagues';
         $league_teams_table = $this->wpdb->prefix . 'racketmanager_league_teams';
-        $query              = $this->wpdb->prepare( "
+        $query              = $this->wpdb->prepare(
+            "
             SELECT
                 e.id as event_id,
                 e.type as event_type,
                 e.name as event_name,
                 l.id as league_id,
                 l.title as league_name,
+                l.title as league_title,
                 (
                     SELECT COUNT(*)
                     FROM `$league_teams_table` lt
@@ -781,20 +892,25 @@ class Tournament_Repository implements Tournament_Repository_Interface {
             JOIN `$tournaments_table` t ON t.competition_id = e.competition_id
             WHERE t.id = %d
             ORDER BY e.type, e.name, l.title
-            ", $tournament_id );
+            ",
+            $tournament_id
+        );
 
         return $this->wpdb->get_results( $query );
     }
 
     /**
-     * @param $player_id
+     * Find tournaments by player.
+     *
+     * @param int $player_id player id.
      *
      * @return Tournament[]
      */
-    public function find_by_player( $player_id ): array {
+    public function find_by_player( int $player_id ): array {
         $tournament_entries_table = $this->wpdb->prefix . 'racketmanager_tournament_entries';
 
-        $query   = $this->wpdb->prepare( "
+        $query   = $this->wpdb->prepare(
+            "
             SELECT t.*
             FROM `$this->table_name` t
                 JOIN `$tournament_entries_table` te ON t.id = te.tournament_id
@@ -807,5 +923,4 @@ class Tournament_Repository implements Tournament_Repository_Interface {
 
         return array_map( fn( $row ) => $this->hydrate_tournament( $row ), $results );
     }
-
 }

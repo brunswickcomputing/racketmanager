@@ -89,10 +89,10 @@ if ( ! $event ) {
                             <div class="col-3" name="<?php esc_html_e( 'league', 'racketmanager' ); ?>">
                                 <?php if ( '' !== $league_link ) : ?>
                                     <a href="<?php echo esc_attr( $league_link ); ?>">
-                                        <?php echo esc_html( $team->league_title ); ?>
+                                        <?php echo esc_html( $team->league_name ?? $team->league_title ?? '' ); ?>
                                     </a>
                                 <?php else : ?>
-                                    <?php echo esc_html( $team->league_title ); ?>
+                                    <?php echo esc_html( $team->league_name ?? $team->league_title ?? '' ); ?>
                                 <?php endif; ?>
                             </div>
                             <?php

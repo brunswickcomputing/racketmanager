@@ -646,7 +646,7 @@ class Player_Repository implements Player_Repository_Interface {
         $tournaments_table  = $this->wpdb->prefix . 'racketmanager_tournaments';
 
         $sql     = $this->wpdb->prepare(
-            "SELECT m.`season`, t.`name` as `tournament`, e.`name` as `draw`, l.`title` as `title`, tp.`team_id`, m.`winner_id`, m.`loser_id` FROM $team_players_table tp, $matches_table m, $leagues_table l, $events_table e, $competitions_table c, $tournaments_table t WHERE tp.`player_id` = %d AND (tp.`team_id` = m.`winner_id` OR tp.`team_id` = m.`loser_id`) AND m.`final` = 'final' AND m.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.competition_id = c.`id` AND t.`competition_id` = c.`id` AND t.`season` = m.`season` ORDER BY m.`season` DESC, t.`name`",
+            "SELECT m.`season`, t.`name` as `tournament`, e.`name` as `draw`, l.`title` as `league_name`, l.`title` as `title`, tp.`team_id`, m.`winner_id`, m.`loser_id` FROM $team_players_table tp, $matches_table m, $leagues_table l, $events_table e, $competitions_table c, $tournaments_table t WHERE tp.`player_id` = %d AND (tp.`team_id` = m.`winner_id` OR tp.`team_id` = m.`loser_id`) AND m.`final` = 'final' AND m.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.competition_id = c.`id` AND t.`competition_id` = c.`id` AND t.`season` = m.`season` ORDER BY m.`season` DESC, t.`name`",
             $player_id,
         );
         $matches = wp_cache_get( md5( $sql ), 'player_finals' );

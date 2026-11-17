@@ -20,7 +20,7 @@ foreach ( $court_times as $matches ) {
         if ( ! ( $final_match instanceof Order_Of_Play_Match_View_Model ) ) {
             continue;
         }
-        $league_title     = $final_match->league_title;
+        $league_title     = $final_match->league_name ?? $final_match->league_title ?? '';
         $home_match_title = $final_match->home_match_title;
         $away_match_title = $final_match->away_match_title;
         $is_home_pending  = $final_match->is_home_pending;

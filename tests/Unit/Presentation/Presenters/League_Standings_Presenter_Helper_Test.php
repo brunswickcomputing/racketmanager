@@ -252,7 +252,7 @@ final class League_Standings_Presenter_Helper_Test extends TestCase {
     public function test_archive_view_model_get_template_filename(): void {
         $vm = new League_Archive_View_Model(
             league_id: 1,
-            league_title: 'Premier League',
+            league_name: 'Premier League',
             league_seo_name: 'premier-league',
             competition_type: 'league',
             icon_path: '',

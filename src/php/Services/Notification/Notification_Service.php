@@ -3,12 +3,14 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Notification;
 
+use BackedEnum;
 use Closure;
 use LogicException;
 use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Application\Notification\Ports\Notification_Presenter_Interface;
 use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Domain\Competition\Competition_Type;
+use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Domain\Shared\Seo_Slug;
@@ -104,6 +106,15 @@ class Notification_Service {
     /**
      * Constructor.
      *
+     * @param Repository_Provider               $repository_provider Repository provider.
+     * @param Settings_Service                  $settings_service Settings service.
+     * @param Notification_Presenter_Interface  $presenter Notification presenter.
+     * @param View_Renderer_Interface           $view_renderer View renderer.
+     * @param RacketManager                     $app RacketManager application.
+     * @param Mailer_Interface                  $mailer Mailer gateway.
+     * @param Option_Service                    $option_service Option service.
+     * @param Event_Query_Service|null          $event_query_service Event query service.
+     * @param League_Query_Service|Closure|null $league_query_service League query service.
      */
     public function __construct(
         private readonly Repository_Provider $repository_provider,
@@ -129,6 +140,11 @@ class Notification_Service {
         $this->mailer                 = $mailer;
     }
 
+    /**
+     * Get the event query service instance, initialising it when needed.
+     *
+     * @return Event_Query_Service
+     */
     private function event_query(): Event_Query_Service {
         if ( null === $this->event_query_service ) {
             $this->event_query_service = new Event_Query_Service(
@@ -142,6 +158,13 @@ class Notification_Service {
         return $this->event_query_service;
     }
 
+    /**
+     * Get the configured league query service instance.
+     *
+     * @return League_Query_Service
+     *
+     * @throws LogicException If the league query service has not been configured.
+     */
     private function league_query(): League_Query_Service {
         if ( $this->league_query_service instanceof Closure ) {
             $this->league_query_service = ( $this->league_query_service )();
@@ -154,12 +177,14 @@ class Notification_Service {
     }
 
     /**
-     * Send result notification for a fixture.
+     * Send a result notification email for a fixture.
      *
-     * @param Fixture $fixture
-     * @param string $fixture_status
-     * @param string $fixture_message
-     * @param string|false $fixture_updated_by
+     * @param Fixture      $fixture Fixture associated with the result notification.
+     * @param string       $fixture_status Current fixture status.
+     * @param string       $fixture_message Message describing the fixture result update.
+     * @param string|false $fixture_updated_by User or source that updated the fixture, or false if unavailable.
+     *
+     * @return void
      */
     public function send_result_notification( Fixture $fixture, string $fixture_status, string $fixture_message, string|false $fixture_updated_by = false ): void {
         $league = $this->league_repository->find_by_id( $fixture->get_league_id() );
@@ -189,12 +214,12 @@ class Notification_Service {
         }
 
         $headers = array();
-        // Fixture title construction
+        // Fixture title construction.
         $home_team     = $this->team_repository->find_by_id( (int) $fixture->get_home_team() );
         $away_team     = $this->team_repository->find_by_id( (int) $fixture->get_away_team() );
         $fixture_title = $this->get_fixture_title( $home_team, $away_team );
 
-        $subject = $this->app->site_name . ' - ' . $league->title . ' - ' . $fixture_title . ' - ' . $fixture_message;
+        $subject = $this->app->site_name . ' - ' . $this->get_league_name( $league ) . ' - ' . $fixture_title . ' - ' . $fixture_message;
 
         $confirmation_email = $this->get_confirmation_email( $fixture, $fixture_status, (string) $fixture_updated_by, $result_notification );
 
@@ -218,7 +243,7 @@ class Notification_Service {
                 // For now, let's see if we can use the fixture status or similar.
                 // In legacy, it checked a separate results_checker table.
                 $message_args['complete'] = true;
-                $subject                  .= ' - ' . __( 'Fixture complete', 'racketmanager' );
+                $subject                 .= ' - ' . __( 'Fixture complete', 'racketmanager' );
             } elseif ( 'C' === $fixture_status ) {
                 $message_args['challenge'] = true;
             }
@@ -230,14 +255,14 @@ class Notification_Service {
     }
 
     /**
-     * Resolve confirmation email recipient.
+     * Gets the confirmation email address for the opponent team based on match status and notification settings.
      *
-     * @param Fixture $fixture
-     * @param string $match_status
-     * @param string $match_updated_by
-     * @param string $result_notification_setting
+     * @param Fixture $fixture Fixture used to determine opponent team, league, and season details.
+     * @param string  $match_status Current match status used to determine whether confirmation is required.
+     * @param string  $match_updated_by Team side that updated the match result, or 'both' when both teams updated it.
+     * @param string  $result_notification_setting Recipient type for the confirmation email, such as 'captain' or 'secretary'.
      *
-     * @return string|null
+     * @return string|null Confirmation email address for the configured opponent recipient, or null when no email should be sent.
      */
     private function get_confirmation_email( Fixture $fixture, string $match_status, string $match_updated_by, string $result_notification_setting ): ?string {
         if ( 'P' !== $match_status && 'both' !== $match_updated_by ) {
@@ -254,13 +279,13 @@ class Notification_Service {
     }
 
     /**
-     * Get the email address of the team captain for a specific league and season.
+     * Retrieves the email address of the captain for a team in a specific league and season.
      *
-     * @param int $team_id
-     * @param int $league_id
-     * @param int $season_id
+     * @param int $team_id Team identifier used to locate the league team record.
+     * @param int $league_id League identifier used to locate the league team record.
+     * @param int $season_id Season identifier used to locate the league team record.
      *
-     * @return string|null
+     * @return string|null Captain email address when available, or null if no captain or email is found.
      */
     private function get_team_captain_email( int $team_id, int $league_id, int $season_id ): ?string {
         $league_team = $this->league_team_repository->find_by_team_league_and_season( $team_id, $league_id, $season_id );
@@ -274,11 +299,11 @@ class Notification_Service {
     }
 
     /**
-     * Get the email address of the club match secretary for a team.
+     * Retrieves the match secretary email address for the club associated with a team.
      *
-     * @param int $team_id
+     * @param int $team_id Team ID used to locate the league team and associated club.
      *
-     * @return string|null
+     * @return string|null Match secretary email address, or null if the team, club, or email is unavailable.
      */
     private function get_club_secretary_email( int $team_id ): ?string {
         $league_team = $this->league_team_repository->find_by_id( $team_id );
@@ -292,23 +317,25 @@ class Notification_Service {
     }
 
     /**
-     * Get match title.
+     * Builds the fixture title from the home and away team names.
      *
-     * @param object|null $home_team
-     * @param object|null $away_team
+     * @param object|null $home_team Home team object used to retrieve the home team name.
+     * @param object|null $away_team Away team object used to retrieve the away team name.
      *
-     * @return string
+     * @return string Fixture title in home versus away format, or an empty string when either team is missing.
      */
     private function get_fixture_title( ?object $home_team, ?object $away_team ): string {
         return ( $home_team && $away_team ) ? $home_team->get_name() . ' v ' . $away_team->get_name() : '';
     }
 
     /**
-     * Send a result error/penalty notification.
+     * Send a result error notification for a fixture and applied penalty.
      *
-     * @param Results_Checker $checker
-     * @param Fixture $fixture
-     * @param float $penalty
+     * @param Results_Checker $checker Result checker containing the error description.
+     * @param Fixture         $fixture Fixture whose result has been flagged.
+     * @param float           $penalty Penalty points applied for the result error.
+     *
+     * @return void
      */
     public function send_result_error_notification( Results_Checker $checker, Fixture $fixture, float $penalty ): void {
         $organisation_name = $this->app->site_name;
@@ -355,10 +382,12 @@ class Notification_Service {
     }
 
     /**
-     * Send chase result notification for a fixture.
+     * Sends a chase notification for a fixture result that is still pending.
      *
-     * @param Fixture $fixture
-     * @param array $args
+     * @param Fixture $fixture Fixture requiring a pending result notification.
+     * @param array   $args Additional arguments used to prepare and render the notification.
+     *
+     * @return void
      */
     public function send_chase_result_notification( Fixture $fixture, array $args ): void {
         $data = $this->prepare_chase_notification( $fixture, $args );
@@ -380,7 +409,7 @@ class Notification_Service {
         }
 
         if ( ! empty( $email_to ) ) {
-            $email_subject = __( 'Fixture result pending', 'racketmanager' ) . ' - ' . $data['fixture_title'] . ' - ' . $data['league']->title;
+            $email_subject = __( 'Fixture result pending', 'racketmanager' ) . ' - ' . $data['fixture_title'] . ' - ' . $this->get_league_name( $data['league'] );
             $vars          = $this->presenter->present_result_outstanding_notification( $fixture, $args );
             $email_message = $this->view_renderer->render_to_string( 'email/match-result-pending', $vars );
             $this->mailer->send( $email_to, $email_subject, $email_message, $data['headers'] );
@@ -388,12 +417,12 @@ class Notification_Service {
     }
 
     /**
-     * Prepare common data for chase notifications.
+     * Prepare the data required to send a chase notification for a fixture.
      *
-     * @param Fixture $fixture
-     * @param array $args
+     * @param Fixture $fixture Fixture to prepare the chase notification for.
+     * @param array   $args Optional notification arguments, including a from_email override.
      *
-     * @return array|null
+     * @return array|null Notification data, or null when the league or admin email cannot be resolved.
      */
     private function prepare_chase_notification( Fixture $fixture, array $args ): ?array {
         $league = $this->league_repository->find_by_id( $fixture->get_league_id() );
@@ -426,10 +455,12 @@ class Notification_Service {
     }
 
     /**
-     * Send chase approval notification for a fixture.
+     * Send a fixture result approval chase notification to the opposing team captain.
      *
-     * @param Fixture $fixture
-     * @param array $args
+     * @param Fixture $fixture Fixture requiring result approval.
+     * @param array   $args Notification context and presentation arguments.
+     *
+     * @return void
      */
     public function send_chase_approval_notification( Fixture $fixture, array $args ): void {
         $data = $this->prepare_chase_notification( $fixture, $args );
@@ -455,7 +486,7 @@ class Notification_Service {
         }
 
         if ( ! empty( $email_to ) ) {
-            $email_subject = __( 'Fixture result approval', 'racketmanager' ) . ' - ' . $data['fixture_title'] . ' - ' . $data['league']->title;
+            $email_subject = __( 'Fixture result approval', 'racketmanager' ) . ' - ' . $data['fixture_title'] . ' - ' . $this->get_league_name( $data['league'] );
             $vars          = $this->presenter->present_captain_result_approval_notification( $fixture, $args );
             $email_message = $this->view_renderer->render_to_string( 'email/result-notification', $vars );
             $this->mailer->send( $email_to, $email_subject, $email_message, $data['headers'] );
@@ -463,11 +494,11 @@ class Notification_Service {
     }
 
     /**
-     * Notify teams when their next match is confirmed (e.g. in knockout draws).
+     * Sends the next fixture notification email for the specified fixture.
      *
-     * @param Fixture $fixture
+     * @param Fixture $fixture Fixture used to build notification data, render the email message, and determine subject details.
      *
-     * @return bool
+     * @return bool True when the notification email is prepared and sent, false when required notification data or fixture host is missing.
      */
     public function send_next_fixture_notification( Fixture $fixture ): bool {
         $base_data = $this->prepare_notification_base_data( $fixture );
@@ -512,7 +543,7 @@ class Notification_Service {
         if ( $fixture->get_leg() ) {
             $subject .= ' - ' . __( 'Leg', 'racketmanager' ) . ' ' . $fixture->get_leg();
         }
-        $subject .= ' - ' . $league->title;
+        $subject .= ' - ' . $this->get_league_name( $league );
 
         $this->mailer->send( $email_to, $subject, $email_message, $headers );
 
@@ -520,11 +551,11 @@ class Notification_Service {
     }
 
     /**
-     * Prepare common notification data like league, emails, and headers.
+     * Prepares the base data required to send fixture notifications.
      *
-     * @param Fixture $fixture
+     * @param Fixture $fixture Fixture used to resolve league details, recipients, sender address, and email headers.
      *
-     * @return array|null Returns array containing [league, email_to, admin_email, headers] or null on failure.
+     * @return array|null Notification base data containing the league, recipient emails, admin email, and headers, or null when required data is unavailable.
      */
     private function prepare_notification_base_data( Fixture $fixture ): ?array {
         $league   = $this->league_repository->find_by_id( $fixture->get_league_id() );
@@ -551,12 +582,12 @@ class Notification_Service {
     }
 
     /**
-     * Get the email addresses for a team or both teams in a fixture.
+     * Retrieves the unique email addresses associated with the selected fixture team target.
      *
-     * @param Fixture $fixture
-     * @param string $target 'home', 'away', or 'both'
+     * @param Fixture $fixture Fixture used to determine the league, competition type, and team email recipients.
+     * @param string  $target Team target to retrieve emails for: 'home', 'away', or 'both'.
      *
-     * @return array
+     * @return array Unique list of email addresses for the requested fixture team target.
      */
     public function get_fixture_emails( Fixture $fixture, string $target = 'both' ): array {
         $league        = $this->league_repository->find_by_id( (int) $fixture->get_league_id() );
@@ -575,13 +606,13 @@ class Notification_Service {
     }
 
     /**
-     * Get the email addresses for a team.
+     * Retrieves email recipients for a team based on the fixture competition type.
      *
-     * @param int $team_id
-     * @param Fixture $fixture
-     * @param bool $is_tournament
+     * @param int     $team_id Team identifier used to retrieve the relevant recipients.
+     * @param Fixture $fixture Fixture used to determine league and season context for non-tournament captain lookup.
+     * @param bool    $is_tournament Whether the fixture belongs to a tournament competition.
      *
-     * @return array
+     * @return array List of team player emails for tournaments, or the team captain email for non-tournament fixtures when available.
      */
     private function get_team_emails( int $team_id, Fixture $fixture, bool $is_tournament ): array {
         if ( $is_tournament ) {
@@ -594,11 +625,11 @@ class Notification_Service {
     }
 
     /**
-     * Get the email addresses for all players in a team.
+     * Retrieves email addresses for players assigned to the specified team.
      *
-     * @param int $team_id
+     * @param int $team_id Team identifier used to find assigned players.
      *
-     * @return array
+     * @return array List of player email addresses for the team.
      */
     private function get_team_player_emails( int $team_id ): array {
         $players = $this->player_repository->find_by_team( $team_id );
@@ -615,9 +646,9 @@ class Notification_Service {
     }
 
     /**
-     * Notify teams when a fixture date or time has changed.
+     * Sends an email notification when a fixture date has changed.
      *
-     * @param Fixture $fixture
+     * @param Fixture $fixture Fixture containing the updated and original date details used to build the notification.
      *
      * @return void
      */
@@ -675,7 +706,7 @@ class Notification_Service {
         if ( $fixture->get_leg() ) {
             $subject .= ' - ' . __( 'Leg', 'racketmanager' ) . ' ' . $fixture->get_leg();
         }
-        $subject .= ' - ' . $league->title;
+        $subject .= ' - ' . $this->get_league_name( $league );
 
         $message_args['email_subject'] = $subject;
         $vars                          = $this->presenter->present_date_change_notification( $fixture, $message_args );
@@ -685,10 +716,12 @@ class Notification_Service {
     }
 
     /**
-     * Notify opponents when a team is withdrawn.
+     * Notifies the opposing team captain when a team withdraws from a fixture.
      *
-     * @param Fixture $fixture
-     * @param int $team_id The withdrawn team ID
+     * @param Fixture $fixture Fixture containing the league, season, and home and away team details.
+     * @param int     $team_id ID of the team that has withdrawn from the fixture.
+     *
+     * @return void
      */
     public function notify_team_withdrawal( Fixture $fixture, int $team_id ): void {
         $league = $this->league_repository->find_by_id( $fixture->get_league_id() );
@@ -710,7 +743,7 @@ class Notification_Service {
         }
 
         $fixture_title = $home_team->get_name() . ' v ' . $away_team->get_name();
-        $subject       = $this->app->site_name . ' - ' . $league->title . ' - ' . $fixture_title . ' - ' . __( 'Team withdrawn', 'racketmanager' );
+        $subject       = $this->app->site_name . ' - ' . $this->get_league_name( $league ) . ' - ' . $fixture_title . ' - ' . __( 'Team withdrawn', 'racketmanager' );
         $headers       = array();
         $headers[]     = $this->app->get_from_user_email();
         $headers[]     = RACKETMANAGER_CC_EMAIL . ucfirst( $comp_type ) . ' Secretary <' . $admin_email . '>';
@@ -720,7 +753,7 @@ class Notification_Service {
             'team_id' => $team_id,
         );
 
-        // Determine who to notify (the opponent of the withdrawn team)
+        // Determine who to notify (the opponent of the withdrawn team).
         if ( $home_team->get_id() === $team_id ) {
             $email_to = $this->get_team_captain_email( (int) $away_team->get_id(), (int) $fixture->get_league_id(), (int) $fixture->get_season() );
         } else {
@@ -735,12 +768,13 @@ class Notification_Service {
     }
 
     /**
-     * Send event fixtures notification to team captains and match secretaries.
+     * Sends fixture emails for all teams in the leagues associated with an event.
      *
-     * @param object $event
-     * @return bool
+     * @param Event $event Event containing competition details and league associations used to build fixture notifications.
+     *
+     * @return bool True if at least one fixture email was sent, false otherwise.
      */
-    public function send_event_fixtures( object $event ): bool {
+    public function send_event_fixtures( Event $event ): bool {
         $message_sent      = false;
         $comp_type         = $this->get_competition_type_string( $event->competition->type ?? 'league' );
         $from_email        = $this->option_service->get_confirmation_email( $comp_type );
@@ -760,21 +794,28 @@ class Notification_Service {
                     continue;
                 }
 
-                $matches = $this->league_query()->get_matches( $league, [ 'final' => '', 'team_id' => $team->id ] );
+                $matches = $this->league_query()->get_matches(
+                    $league,
+                    [
+                        'final'   => '',
+                        'team_id' => $team->id,
+                    ]
+                );
 
-                $headers   = [];
-                $headers[] = 'From: ' . ucfirst( $comp_type ) . ' Secretary <' . $from_email . '>';
-                $headers[] = 'cc: ' . ucfirst( $comp_type ) . ' Secretary <' . $from_email . '>';
-                $email_subject = $organisation_name . ' - ' . ( $league->title ?? '' ) . ' - Season ' . ( $team->season ?? '' ) . ' - Fixtures - ' . ( $team->title ?? '' );
+                $headers       = [];
+                $headers[]     = 'From: ' . ucfirst( $comp_type ) . ' Secretary <' . $from_email . '>';
+                $headers[]     = 'cc: ' . ucfirst( $comp_type ) . ' Secretary <' . $from_email . '>';
+                $league_name   = $this->get_league_name( $league );
+                $email_subject = $organisation_name . ' - ' . $league_name . ' - Season ' . ( $team->season ?? '' ) . ' - Fixtures - ' . ( $team->title ?? '' );
                 $captain_name  = (string) ( $team->captain_name ?? '' );
-                $email_to  = $captain_name . ' <' . $team->contactemail . '>';
+                $email_to      = $captain_name . ' <' . $team->contactemail . '>';
 
                 $club = isset( $team->club_id ) ? $this->club_repository->find_by_id( (int) $team->club_id ) : null;
                 if ( isset( $club->match_secretary->email ) ) {
                     $headers[] = 'cc: ' . $club->match_secretary->display_name . ' <' . $club->match_secretary->email . '>';
                 }
 
-                $league_title_slug = Seo_Slug::encode( $league->title ?? '' );
+                $league_title_slug = Seo_Slug::encode( $league_name );
                 $team_title_slug   = Seo_Slug::encode( $team->title ?? '' );
                 $team_label        = __( 'team', 'racketmanager' );
                 $action_url        = ( $this->app->site_url ?? '' ) . '/' . $comp_type . '/' . $league_title_slug . '/' . ( $team->season ?? '' ) . '/' . $team_label . '/' . $team_title_slug;
@@ -813,10 +854,33 @@ class Notification_Service {
      * @return string
      */
     private function get_competition_type_string( mixed $type ): string {
-        if ( $type instanceof \BackedEnum ) {
+        if ( $type instanceof BackedEnum ) {
             return (string) $type->value;
         }
 
         return (string) ( $type ?? 'league' );
+    }
+
+    /**
+     * Retrieves the league name from an object or array value.
+     *
+     * @param mixed $league League data source containing a name or title value.
+     *
+     * @return string League name, or an empty string when no name can be determined.
+     */
+    private function get_league_name( mixed $league ): string {
+        if ( is_object( $league ) ) {
+            $league_name = method_exists( $league, 'get_name' ) ? (string) $league->get_name() : '';
+            if ( '' === $league_name ) {
+                $league_name = $league->name ?? $league->title ?? '';
+            }
+
+            return $league_name;
+        }
+        if ( is_array( $league ) ) {
+            return (string) ( $league['name'] ?? $league['title'] ?? '' );
+        }
+
+        return '';
     }
 }

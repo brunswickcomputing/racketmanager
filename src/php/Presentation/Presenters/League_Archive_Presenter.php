@@ -41,8 +41,9 @@ class League_Archive_Presenter {
             : (string) ( $event->competition->type ?? 'league' );
 
         $league_id       = $league->id ?? 0;
-        $league_title    = (string) ( $league->title ?? '' );
-        $league_seo_name = Util::seo_url( $league_title );
+        $league_name     = (string) ( ( is_object( $league ) && method_exists( $league, 'get_name' ) ) ? $league->get_name() : ( $league->name ?? $league->title ?? '' ) );
+        $league_title    = $league_name;
+        $league_seo_name = Util::seo_url( $league_name );
         $pagename        = '/' . $competition_type . '/' . $league_seo_name . '/';
 
         $icon_path = match ( $competition_type ) {
@@ -161,7 +162,7 @@ class League_Archive_Presenter {
 
         return new League_Archive_View_Model(
             league_id: $league_id,
-            league_title: $league_title,
+            league_name: $league_name,
             league_seo_name: $league_seo_name,
             competition_type: $competition_type,
             icon_path: $icon_path,

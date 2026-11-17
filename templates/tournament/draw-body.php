@@ -34,7 +34,7 @@ if ( ! $draw ) {
                             ?>
                             <div>
                                 <h4 class="header">
-                                    <?php echo esc_html( $league->title ); ?>
+                                    <?php echo esc_html( $league->name ?? $league->title ?? '' ); ?>
                                 </h4>
                                 <?php
                                 $finals   = $league->finals;

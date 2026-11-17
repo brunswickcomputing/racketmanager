@@ -13,10 +13,10 @@ interface Registration_Service_Interface {
     /**
      * Get registration by ID.
      *
-     * @param mixed $registration_id Registration ID.
+     * @param int $registration_id Registration ID.
      * @return Club_Player_DTO
      */
-    public function get_registration( mixed $registration_id ): Club_Player_DTO;
+    public function get_registration( int $registration_id ): Club_Player_DTO;
 
     /**
      * Register a player to a club.

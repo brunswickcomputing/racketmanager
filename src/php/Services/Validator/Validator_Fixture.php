@@ -475,7 +475,7 @@ class Validator_Fixture extends Validator {
             }
 
             try {
-                $club_player = $this->registration_service->get_registration( $player_ref );
+                $club_player = $this->registration_service->get_registration( (int) $player_ref );
                 if ( ! ( $club_player->system_record ?? false ) ) {
                     $this->validate_player_eligibility( $player_ref, $rubber, $opponent, $player_number, $playoff, $reverse_rubber, $type, $is_singles_doubles_setup );
                 }

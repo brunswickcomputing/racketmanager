@@ -78,11 +78,11 @@ class Registration_Service implements Registration_Service_Interface {
     /**
      * Get registration details
      *
-     * @param $registration_id
+     * @param int $registration_id
      *
      * @return Club_Player_DTO
      */
-    public function get_registration( $registration_id ): Club_Player_DTO {
+    public function get_registration( int $registration_id ): Club_Player_DTO {
         $registration = $this->club_player_repository->find( $registration_id );
         if ( ! $registration ) {
             throw new Registration_Not_Found_Exception( __( 'Registration not found', 'racketmanager' ) );

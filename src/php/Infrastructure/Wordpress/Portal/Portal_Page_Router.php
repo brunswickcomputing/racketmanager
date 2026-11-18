@@ -11,6 +11,7 @@ namespace Racketmanager\Infrastructure\Wordpress\Portal;
 
 use Racketmanager\Admin\Admin_Index;
 use Racketmanager\Admin\View_Models\Documentation_Page_View_Model;
+use Racketmanager\Admin\View_Models\Overview_Page_View_Model;
 use Racketmanager\Application\Ports\Manage_Url_Resolver_Interface;
 use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Infrastructure\Wordpress\Routing\Manage_Route_Mapper;
@@ -90,7 +91,7 @@ class Portal_Page_Router {
 
         // 2. Resolve section.
         $raw_section = $this->query_vars->get( 'rm_section' );
-        $section     = ! empty( $raw_section ) ? strval( $raw_section ) : 'competitions';
+        $section     = ! empty( $raw_section ) ? strval( $raw_section ) : 'overview';
         $normalized  = $this->route_mapper->normalize_section( $section );
 
         if ( ! $this->section_registry->has( $normalized ) ) {
@@ -147,6 +148,17 @@ class Portal_Page_Router {
     public function dispatch_screen( Portal_Section_Config $config ): void {
         $raw_view  = $this->query_vars->get( 'rm_view' );
         $view_name = ! empty( $raw_view ) ? strval( $raw_view ) : $config->default_view;
+
+        if ( 'overview' === $config->slug || Overview_Page_View_Model::class === $config->screen_class ) {
+            $this->screen_presenter->present(
+                [ 'view_model' => new Overview_Page_View_Model() ],
+                Overview_Page_View_Model::class,
+                'portal/overview',
+                $config->slug,
+                $config->title
+            );
+            return;
+        }
 
         if ( 'documentation' === $config->slug || Documentation_Page_View_Model::class === $config->screen_class ) {
             $this->screen_presenter->present(

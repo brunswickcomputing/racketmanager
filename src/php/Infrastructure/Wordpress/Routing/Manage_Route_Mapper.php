@@ -21,6 +21,7 @@ use Racketmanager\Admin\Admin_Result;
 use Racketmanager\Admin\Admin_Season;
 use Racketmanager\Admin\Admin_Tournament;
 use Racketmanager\Admin\View_Models\Documentation_Page_View_Model;
+use Racketmanager\Admin\View_Models\Overview_Page_View_Model;
 
 /**
  * Class Manage_Route_Mapper
@@ -35,6 +36,7 @@ final readonly class Manage_Route_Mapper {
      * @var array<string, string>
      */
     private const array SECTION_TO_ADMIN_PAGE = [
+        'overview'      => 'racketmanager-overview',
         'competitions'  => 'racketmanager',
         'clubs'         => 'racketmanager-clubs',
         'leagues'       => 'racketmanager-leagues',
@@ -56,6 +58,7 @@ final readonly class Manage_Route_Mapper {
      * @var array<string, string>
      */
     private const array ADMIN_PAGE_TO_SECTION = [
+        'racketmanager-overview'      => 'overview',
         'racketmanager'               => 'competitions',
         'racketmanager-clubs'         => 'clubs',
         'racketmanager-leagues'       => 'leagues',
@@ -77,6 +80,7 @@ final readonly class Manage_Route_Mapper {
      * @var array<string, class-string>
      */
     private const array SECTION_TO_SCREEN_CLASS = [
+        'overview'      => Overview_Page_View_Model::class,
         'competitions'  => Admin_Index::class,
         'clubs'         => Admin_Club::class,
         'leagues'       => Admin_League::class,
@@ -94,6 +98,10 @@ final readonly class Manage_Route_Mapper {
 
     /**
      * Normalize section slug alias (e.g. 'doc' -> 'documentation').
+     *
+     * @param string $section Section slug.
+     *
+     * @return string
      */
     public function normalize_section( string $section ): string {
         $section = strtolower( trim( $section ) );
@@ -105,6 +113,10 @@ final readonly class Manage_Route_Mapper {
 
     /**
      * Map a section slug to its legacy wp-admin page slug.
+     *
+     * @param string $section Section slug.
+     *
+     * @return string
      */
     public function section_to_admin_page( string $section ): string {
         $normalized = $this->normalize_section( $section );
@@ -113,6 +125,10 @@ final readonly class Manage_Route_Mapper {
 
     /**
      * Map a wp-admin page slug to its clean section slug.
+     *
+     * @param string $admin_page Admin page slug.
+     *
+     * @return string
      */
     public function admin_page_to_section( string $admin_page ): string {
         $page = strtolower( trim( $admin_page ) );
@@ -121,6 +137,8 @@ final readonly class Manage_Route_Mapper {
 
     /**
      * Get the screen class associated with a section slug.
+     *
+     * @param string $section Section slug.
      *
      * @return class-string|null
      */
@@ -131,6 +149,10 @@ final readonly class Manage_Route_Mapper {
 
     /**
      * Check whether a section slug is recognized.
+     *
+     * @param string $section Section slug.
+     *
+     * @return bool
      */
     public function is_valid_section( string $section ): bool {
         $normalized = $this->normalize_section( $section );

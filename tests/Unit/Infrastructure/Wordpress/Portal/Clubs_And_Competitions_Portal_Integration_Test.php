@@ -69,6 +69,7 @@ final class Clubs_And_Competitions_Portal_Integration_Test extends TestCase {
     }
 
     public function test_clubs_and_competitions_are_enabled_in_section_registry(): void {
+        $this->assertTrue( $this->registry->is_ported( 'overview' ) );
         $this->assertTrue( $this->registry->is_ported( 'clubs' ) );
         $this->assertTrue( $this->registry->is_ported( 'competitions' ) );
         $this->assertTrue( $this->registry->is_ported( 'leagues' ) );
@@ -80,6 +81,7 @@ final class Clubs_And_Competitions_Portal_Integration_Test extends TestCase {
         $this->assertTrue( $this->registry->is_ported( 'finances' ) );
 
         $ported = $this->registry->get_ported_sections();
+        $this->assertArrayHasKey( 'overview', $ported );
         $this->assertArrayHasKey( 'clubs', $ported );
         $this->assertArrayHasKey( 'competitions', $ported );
         $this->assertArrayHasKey( 'leagues', $ported );
@@ -89,7 +91,7 @@ final class Clubs_And_Competitions_Portal_Integration_Test extends TestCase {
         $this->assertArrayHasKey( 'players', $ported );
         $this->assertArrayHasKey( 'seasons', $ported );
         $this->assertArrayHasKey( 'finances', $ported );
-        $this->assertCount( 12, $ported );
+        $this->assertCount( 13, $ported );
     }
 
     public function test_dispatches_clubs_subviews_to_admin_club_screen(): void {
@@ -164,6 +166,39 @@ final class Clubs_And_Competitions_Portal_Integration_Test extends TestCase {
         $this->assertSame( 'competitions', $invoked_view );
     }
 
+    public function test_dispatches_overview_screen_by_default(): void {
+        $query_vars = $this->createStub( Query_Vars_Interface::class );
+        $query_vars->method( 'get' )->willReturnCallback(
+            fn( string $key ) => match ( $key ) {
+                'rm_manage'  => '1',
+                'rm_section' => '',
+                'rm_view'    => '',
+                default      => '',
+            }
+        );
+
+        $auth_guard = $this->createStub( Portal_Auth_Guard::class );
+        $auth_guard->method( 'is_authenticated' )->willReturn( true );
+        $auth_guard->method( 'user_can' )->willReturn( true );
+
+        $presenter = $this->createMock( Portal_Screen_Presenter::class );
+        $presenter->expects( $this->once() )
+            ->method( 'present' )
+            ->with(
+                $this->callback(
+                    fn( $result ) => isset( $result['view_model'] )
+                        && $result['view_model'] instanceof \Racketmanager\Admin\View_Models\Overview_Page_View_Model
+                ),
+                \Racketmanager\Admin\View_Models\Overview_Page_View_Model::class,
+                'portal/overview',
+                'overview',
+                'Overview'
+            );
+
+        $router = $this->create_router( $query_vars, $auth_guard, $presenter );
+        $router->handle_template_redirect();
+    }
+
     public function test_requires_racket_manager_capability_for_clubs_and_competitions(): void {
         $query_vars = $this->createStub( Query_Vars_Interface::class );
         $query_vars->method( 'get' )->willReturnCallback(
@@ -199,6 +234,10 @@ final class Clubs_And_Competitions_Portal_Integration_Test extends TestCase {
         }
 
         // Ported sections
+        $this->assertTrue( $items_by_slug['overview']->is_ported );
+        $this->assertSame( home_url( '/manage/overview' ), $items_by_slug['overview']->url );
+        $this->assertFalse( $items_by_slug['overview']->is_active );
+
         $this->assertTrue( $items_by_slug['clubs']->is_ported );
         $this->assertSame( home_url( '/manage/clubs' ), $items_by_slug['clubs']->url );
         $this->assertTrue( $items_by_slug['clubs']->is_active );

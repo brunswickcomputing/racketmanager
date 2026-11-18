@@ -193,7 +193,7 @@ final class Portal_Templates_Render_Test extends TestCase {
         $html = $this->renderer->render_to_string( 'portal/layout', $layout_vm );
 
         // Defaults when URLs/site name are empty
-        self::assertStringContainsString( 'href="/manage/competitions"', $html );
+        self::assertStringContainsString( 'href="/manage/overview"', $html );
         self::assertStringContainsString( 'Manage - RacketManager', $html );
         self::assertStringContainsString( 'href="/"', $html );
 

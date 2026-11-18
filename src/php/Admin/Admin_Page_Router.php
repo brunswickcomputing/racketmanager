@@ -10,6 +10,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Admin;
 
 use Racketmanager\Admin\View_Models\Documentation_Page_View_Model;
+use Racketmanager\Admin\View_Models\Overview_Page_View_Model;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Container\Simple_Container;
@@ -58,6 +59,13 @@ final readonly class Admin_Page_Router {
         $view = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] ) ) : ''; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
         switch ( $page ) {
+            case 'racketmanager-overview':
+                $this->screen_presenter->present(
+                    array( 'view_model' => new Overview_Page_View_Model() ),
+                    Overview_Page_View_Model::class,
+                    'portal/overview'
+                );
+                break;
             case 'racketmanager-documentation':
             case 'racketmanager-doc':
                 $this->screen_presenter->present(

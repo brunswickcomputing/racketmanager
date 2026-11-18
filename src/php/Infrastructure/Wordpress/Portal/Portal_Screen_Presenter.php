@@ -121,7 +121,7 @@ readonly class Portal_Screen_Presenter {
         }
 
         $site_url        = function_exists( 'home_url' ) ? home_url( '/' ) : '/';
-        $portal_home_url = $this->url_resolver->get_url( 'competitions' );
+        $portal_home_url = $this->url_resolver->get_url( 'overview' );
 
         $layout_vm = new Portal_Layout_View_Model(
             $title,
@@ -187,7 +187,7 @@ readonly class Portal_Screen_Presenter {
      * @param string $active_section Section that was attempted.
      */
     public function present_unauthorized( string $active_section = '' ): void {
-        $dashboard_url = $this->url_resolver->get_url( 'competitions' );
+        $dashboard_url = $this->url_resolver->get_url( 'overview' );
         $redirect_to   = function_exists( 'home_url' )
             ? home_url( '/manage/' . $active_section )
             : '/manage/' . $active_section;

@@ -21,6 +21,7 @@ use Racketmanager\Admin\Admin_Result;
 use Racketmanager\Admin\Admin_Season;
 use Racketmanager\Admin\Admin_Tournament;
 use Racketmanager\Admin\View_Models\Documentation_Page_View_Model;
+use Racketmanager\Admin\View_Models\Overview_Page_View_Model;
 
 /**
  * Class Portal_Section_Registry
@@ -55,6 +56,7 @@ final class Portal_Section_Registry {
      */
     private function register_default_sections(): void {
         $defaults = [
+            new Portal_Section_Config( 'overview', 'racketmanager-overview', Overview_Page_View_Model::class, 'racket_manager', 'overview', true, 'Overview' ),
             new Portal_Section_Config( 'competitions', 'racketmanager', Admin_Index::class, 'racket_manager', 'competitions', true, 'Competitions' ),
             new Portal_Section_Config( 'clubs', 'racketmanager-clubs', Admin_Club::class, 'racket_manager', 'clubs', true, 'Clubs' ),
             new Portal_Section_Config( 'leagues', 'racketmanager-leagues', Admin_League::class, 'racket_manager', 'leagues', true, 'Leagues' ),

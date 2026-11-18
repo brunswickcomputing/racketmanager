@@ -16,8 +16,9 @@ final class Portal_Section_Registry_Test extends TestCase {
         $this->registry = new Portal_Section_Registry();
     }
 
-    public function test_registers_twelve_default_sections(): void {
+    public function test_registers_thirteen_default_sections(): void {
         $expected_slugs = [
+            'overview',
             'competitions',
             'clubs',
             'leagues',
@@ -32,7 +33,7 @@ final class Portal_Section_Registry_Test extends TestCase {
             'documentation',
         ];
 
-        $this->assertCount( 12, $this->registry->all() );
+        $this->assertCount( 13, $this->registry->all() );
         foreach ( $expected_slugs as $slug ) {
             $this->assertTrue( $this->registry->has( $slug ), "Expected section {$slug} to be registered" );
             $config = $this->registry->get( $slug );

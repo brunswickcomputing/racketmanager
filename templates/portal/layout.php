@@ -28,7 +28,7 @@ use Racketmanager\Infrastructure\Wordpress\Portal\Portal_Layout_View_Model;
 
     <div class="rm-portal-wrapper">
         <header class="rm-portal-header">
-            <a href="<?php echo esc_url( ! empty( $vm->portal_home_url ) ? $vm->portal_home_url : '/manage/competitions' ); ?>" class="rm-portal-header__brand">
+            <a href="<?php echo esc_url( ! empty( $vm->portal_home_url ) ? $vm->portal_home_url : '/manage/overview' ); ?>" class="rm-portal-header__brand">
                 <?php echo esc_html__( 'Manage - ', 'racketmanager' ); ?><?php echo esc_html( ! empty( $vm->site_name ) ? $vm->site_name : 'RacketManager' ); ?>
             </a>
             <div class="rm-portal-header__actions rm-portal-header__user">

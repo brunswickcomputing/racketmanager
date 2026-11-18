@@ -10,6 +10,7 @@ use Racketmanager\Admin\Admin_Options;
 use Racketmanager\Admin\Admin_Season;
 use Racketmanager\Admin\Controllers\Admin_Redirect_Url_Builder;
 use Racketmanager\Admin\View_Models\Documentation_Page_View_Model;
+use Racketmanager\Admin\View_Models\Overview_Page_View_Model;
 use Racketmanager\Application\Admin\Ports\Flash_Message_Store_Interface;
 use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Application\Ports\View_Renderer_Interface;
@@ -80,8 +81,9 @@ final class Administration_And_Final_Cutover_Portal_Integration_Test extends Tes
         );
     }
 
-    public function test_all_twelve_sections_are_enabled_in_section_registry(): void {
+    public function test_all_thirteen_sections_are_enabled_in_section_registry(): void {
         $expected = [
+            'overview',
             'competitions',
             'clubs',
             'leagues',
@@ -96,13 +98,13 @@ final class Administration_And_Final_Cutover_Portal_Integration_Test extends Tes
             'documentation',
         ];
 
-        $this->assertCount( 12, $this->registry->all() );
+        $this->assertCount( 13, $this->registry->all() );
         foreach ( $expected as $slug ) {
             $this->assertTrue( $this->registry->is_ported( $slug ), "Expected section {$slug} to be ported" );
         }
 
         $ported = $this->registry->get_ported_sections();
-        $this->assertCount( 12, $ported );
+        $this->assertCount( 13, $ported );
     }
 
     public function test_dispatches_seasons_to_admin_season_screen(): void {
@@ -278,7 +280,40 @@ final class Administration_And_Final_Cutover_Portal_Integration_Test extends Tes
         $this->assertSame( 'admin/documentation', $rendered_template );
     }
 
-    public function test_portal_navigation_renders_all_twelve_sections_with_portal_routes(): void {
+    public function test_dispatches_overview_screen(): void {
+        $query_vars = $this->createStub( Query_Vars_Interface::class );
+        $query_vars->method( 'get' )->willReturnCallback(
+            fn( string $key ) => match ( $key ) {
+                'rm_manage'  => '1',
+                'rm_section' => 'overview',
+                'rm_view'    => 'overview',
+                default      => '',
+            }
+        );
+
+        $auth_guard = $this->createStub( Portal_Auth_Guard::class );
+        $auth_guard->method( 'is_authenticated' )->willReturn( true );
+        $auth_guard->method( 'user_can' )->willReturn( true );
+
+        $rendered_template = null;
+        $renderer          = $this->createStub( View_Renderer_Interface::class );
+        $renderer->method( 'render_to_string' )->willReturnCallback(
+            function ( string $template, object $vm ) use ( &$rendered_template ) {
+                $rendered_template = $template;
+                $this->assertInstanceOf( Overview_Page_View_Model::class, $vm );
+                return '<div>Overview Content</div>';
+            }
+        );
+
+        $presenter = $this->create_presenter( $auth_guard, $renderer );
+        $router    = $this->create_router( $query_vars, $auth_guard, $presenter );
+
+        $router->handle_template_redirect();
+
+        $this->assertSame( 'portal/overview', $rendered_template );
+    }
+
+    public function test_portal_navigation_renders_all_thirteen_sections_with_portal_routes(): void {
         $auth_guard = $this->createStub( Portal_Auth_Guard::class );
         $auth_guard->method( 'user_can' )->willReturn( true );
 
@@ -291,6 +326,7 @@ final class Administration_And_Final_Cutover_Portal_Integration_Test extends Tes
         }
 
         $all_slugs = [
+            'overview',
             'competitions',
             'clubs',
             'leagues',
@@ -305,7 +341,7 @@ final class Administration_And_Final_Cutover_Portal_Integration_Test extends Tes
             'documentation',
         ];
 
-        $this->assertCount( 12, $items_by_slug );
+        $this->assertCount( 13, $items_by_slug );
 
         foreach ( $all_slugs as $slug ) {
             $this->assertArrayHasKey( $slug, $items_by_slug );
@@ -335,6 +371,7 @@ final class Administration_And_Final_Cutover_Portal_Integration_Test extends Tes
             $items_by_slug[ $item->slug ] = $item;
         }
 
+        $this->assertArrayHasKey( 'overview', $items_by_slug );
         $this->assertArrayHasKey( 'clubs', $items_by_slug );
         $this->assertArrayHasKey( 'competitions', $items_by_slug );
         $this->assertArrayHasKey( 'leagues', $items_by_slug );

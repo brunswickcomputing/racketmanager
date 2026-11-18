@@ -110,7 +110,7 @@ final class Portal_Screen_Presenter_Test extends TestCase {
                         && 'clubs' === $vm->active_section
                         && 'RacketManager' === $vm->site_name
                         && 'https://example.test/' === $vm->site_url
-                        && 'https://example.test/manage/competitions' === $vm->portal_home_url
+                        && 'https://example.test/manage/overview' === $vm->portal_home_url
                 )
             );
 
@@ -135,7 +135,7 @@ final class Portal_Screen_Presenter_Test extends TestCase {
                     fn( $vm ) => $vm instanceof Portal_Layout_View_Model
                         && 'Leigh and Westcliff Tennis' === $vm->site_name
                         && 'https://example.test/' === $vm->site_url
-                        && 'https://example.test/manage/competitions' === $vm->portal_home_url
+                        && 'https://example.test/manage/overview' === $vm->portal_home_url
                 )
             );
 
@@ -160,7 +160,7 @@ final class Portal_Screen_Presenter_Test extends TestCase {
                     fn( $vm ) => $vm instanceof Portal_Layout_View_Model
                         && 'Leigh & Westcliff Tennis' === $vm->site_name
                         && 'https://example.test/' === $vm->site_url
-                        && 'https://example.test/manage/competitions' === $vm->portal_home_url
+                        && 'https://example.test/manage/overview' === $vm->portal_home_url
                 )
             );
 
@@ -185,7 +185,7 @@ final class Portal_Screen_Presenter_Test extends TestCase {
                     fn( $vm ) => $vm instanceof Portal_Layout_View_Model
                         && 'RacketManager' === $vm->site_name
                         && 'https://example.test/' === $vm->site_url
-                        && 'https://example.test/manage/competitions' === $vm->portal_home_url
+                        && 'https://example.test/manage/overview' === $vm->portal_home_url
                 )
             );
 

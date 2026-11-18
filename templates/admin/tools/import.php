@@ -23,7 +23,7 @@ $competitions = $competitions ?? array();
 
 	<p><?php esc_html_e( 'Choose a file to upload and import data from', 'racketmanager' ); ?></p>
 
-	<form action="" method="post" enctype="multipart/form-data">
+	<form action="<?php echo esc_url( manage_url( 'import' ) ); ?>" method="post" enctype="multipart/form-data">
 		<?php wp_nonce_field( 'racketmanager_import-datasets', 'racketmanager_nonce' ); ?>
 
 		<div class="form-group mb-3">
@@ -94,6 +94,6 @@ $competitions = $competitions ?? array();
 		</div>
 	</form>
 	<p>
-		<?php echo esc_html__( 'The required structure of the file to import is described in the', 'racketmanager' ) . ' <a href="../../../../../../wp-admin/admin.php?page=racketmanager-doc"> ' . esc_html__( 'Documentation', 'racketmanager' ) . '</a>'; ?>
+		<?php echo esc_html__( 'The required structure of the file to import is described in the', 'racketmanager' ) . ' <a href="' . esc_url( manage_url( 'documentation' ) ) . '"> ' . esc_html__( 'Documentation', 'racketmanager' ) . '</a>'; ?>
     </p>
 </div>

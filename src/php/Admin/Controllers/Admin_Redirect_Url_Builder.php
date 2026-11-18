@@ -388,7 +388,7 @@ final class Admin_Redirect_Url_Builder {
 
         $args = array_merge( $args, $extra_args );
 
-        return add_query_arg( $args, admin_url( 'admin.php' ) );
+        return self::resolve_screen_url( 'seasons', $args, 'racketmanager-seasons' );
     }
 
     /**
@@ -470,7 +470,7 @@ final class Admin_Redirect_Url_Builder {
 
         $args = array_merge( $args, $extra_args );
 
-        return add_query_arg( $args, admin_url( 'admin.php' ) );
+        return self::resolve_screen_url( 'finances', $args, 'racketmanager-finances' );
     }
 
     /**
@@ -590,7 +590,7 @@ final class Admin_Redirect_Url_Builder {
 
         $args = array_merge( $args, $extra_args );
 
-        return add_query_arg( $args, admin_url( 'admin.php' ) );
+        return self::resolve_screen_url( 'settings', $args, 'racketmanager-settings' );
     }
 
     /**
@@ -608,7 +608,7 @@ final class Admin_Redirect_Url_Builder {
 
         $args = array_merge( $args, $extra_args );
 
-        return add_query_arg( $args, admin_url( 'admin.php' ) );
+        return self::resolve_screen_url( 'import', $args, 'racketmanager-import' );
     }
 
     /**

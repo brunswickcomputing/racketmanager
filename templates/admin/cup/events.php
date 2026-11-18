@@ -43,23 +43,18 @@ $draw_sizes_map     = $draw_sizes ?? $vars['draw_sizes'] ?? ( isset( $vm ) ? ( $
                         }
                         foreach ( $event->leagues as $league ) {
                             $league_id = $league->id ?? '';
+                            $draw_url  = manage_url(
+                                'cups',
+                                'draw',
+                                array(
+                                    'competition_id' => $competition->id ?? '',
+                                    'league'         => $league_id,
+                                    'season'         => $season,
+                                )
+                            );
                             ?>
                             <tr>
-                                <td><a href="
-                                <?php
-                                echo esc_url(
-                                    manage_url(
-                                        'cups',
-                                        'draw',
-                                        [
-                                            'competition_id' => $competition->id ?? '',
-                                            'league' => $league_id,
-                                            'season' => $season,
-                                        ]
-                                    )
-                                );
-                                ?>
-                                                "><?php echo esc_html( $league->name ?? $league->title ?? '' ); ?></a></td>
+                                <td><a href="<?php echo esc_url( $draw_url ); ?>"><?php echo esc_html( $league->name ?? $league->title ?? '' ); ?></a></td>
                                 <td><?php echo esc_html( $league->num_teams_total ?? '' ); ?></td>
                                 <td><?php echo esc_html( (string) ( $draw_sizes_map[ $league_id ] ?? ( $league->draw_size ?? '' ) ) ); ?></td>
                             </tr>

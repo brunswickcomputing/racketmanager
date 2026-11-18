@@ -14,14 +14,39 @@ namespace Racketmanager\Admin\Controllers;
 use Racketmanager\Admin\View_Models\Teams_List_Page_View_Model;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
-use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\League_Team_Admin_Service;
 use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Tournament_Service;
 
+/**
+ * Controller for the admin teams management screen.
+ *
+ * Coordinates access control, request handling, league and tournament lookup,
+ * team addition, redirect generation, and view model creation for screens that
+ * allow administrators to add teams to a league-based competition context.
+ *
+ * Supports GET requests by returning a teams list view model containing the
+ * league, season, tournament context, and teams that can be added. Supports
+ * POST requests by validating the action, adding the selected teams through the
+ * league team administration service, and returning a post-redirect-get response
+ * payload with a status message.
+ *
+ * @package RacketManager
+ * @subpackage Admin\Controllers
+ */
 final readonly class Teams_Admin_Controller {
 
+    /**
+     * Initialises the service with required tournament, league, team administration, and action guard dependencies.
+     *
+     * @param Tournament_Service        $tournament_service Tournament service dependency.
+     * @param League_Service            $league_service League service dependency.
+     * @param League_Team_Admin_Service $league_team_admin_service League team administration service dependency.
+     * @param Action_Guard_Interface    $action_guard Action guard dependency.
+     *
+     * @return void
+     */
     public function __construct(
         private Tournament_Service $tournament_service,
         private League_Service $league_service,
@@ -31,14 +56,14 @@ final readonly class Teams_Admin_Controller {
     }
 
     /**
-     * @param array              $query   Typically $_GET
-     * @param array              $post    Typically $_POST
-     * @param Admin_Page_Context $context Screen context (tournament, league or cup).
+     * Handles the teams administration page by validating access, processing bulk team additions, or preparing the teams list view model.
      *
-     * @return array{view_model?:Teams_List_Page_View_Model, redirect?:string, message?:string, message_type?:bool|string}
+     * @param array              $query Request query parameters used to resolve league, season, tournament, event, and type context.
+     * @param array              $post Posted form data used when adding selected teams to the league.
+     * @param Admin_Page_Context $context Administrative page context used when building redirect URLs.
      *
-     * @throws Invalid_Status_Exception
-     * @throws Tournament_Not_Found_Exception
+     * @return array Response data containing either redirect and status message details after a POST request, or a view model for rendering the page.
+     * @throws Invalid_Status_Exception If the league is not found.
      */
     public function teams_page( array $query, array $post, Admin_Page_Context $context ): array {
         $this->action_guard->assert_capability( 'edit_teams' );
@@ -53,12 +78,12 @@ final readonly class Teams_Admin_Controller {
         $type          = isset( $query['type'] ) ? sanitize_text_field( wp_unslash( strval( $query['type'] ) ) ) : null;
 
         if ( ! $league_id ) {
-            throw new Invalid_Status_Exception( __( 'League not found', 'racketmanager' ) );
+            throw new Invalid_Status_Exception( esc_html__( 'League not found', 'racketmanager' ) );
         }
 
         $league = $this->league_service->get_league( $league_id );
         if ( ! $league instanceof League ) {
-            throw new Invalid_Status_Exception( __( 'League not found', 'racketmanager' ) );
+            throw new Invalid_Status_Exception( esc_html__( 'League not found', 'racketmanager' ) );
         }
 
         $tournament = null;
@@ -95,9 +120,9 @@ final readonly class Teams_Admin_Controller {
             }
 
             return array(
-                'redirect' => $redirect,
+                'redirect'     => $redirect,
                 /* translators: %d: number of teams */
-                'message' => sprintf( _n( '%d team added', '%d teams added', $outcome['count'], 'racketmanager' ), $outcome['count'] ),
+                'message'      => sprintf( _n( '%d team added', '%d teams added', $outcome['count'], 'racketmanager' ), $outcome['count'] ),
                 'message_type' => false,
             );
         }

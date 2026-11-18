@@ -140,4 +140,118 @@ final class Admin_Redirect_Url_Builder_Test extends TestCase {
 
         $this->assertSame( home_url( '/manage/results?tab=resultschecker' ), $url );
     }
+
+    public function test_season_screen_in_admin_context(): void {
+        $resolver = new Manage_Url_Resolver( new Manage_Route_Mapper(), force_portal_context: false );
+        Admin_Redirect_Url_Builder::set_resolver( $resolver );
+
+        $url = Admin_Redirect_Url_Builder::season_screen(
+            [
+                'page' => 'racketmanager-seasons',
+            ]
+        );
+
+        $this->assertStringContainsString( 'admin.php', $url );
+        $this->assertStringContainsString( 'page=racketmanager-seasons', $url );
+    }
+
+    public function test_season_screen_in_portal_context(): void {
+        $resolver = new Manage_Url_Resolver( new Manage_Route_Mapper(), force_portal_context: true );
+        Admin_Redirect_Url_Builder::set_resolver( $resolver );
+
+        $url = Admin_Redirect_Url_Builder::season_screen(
+            [
+                'page' => 'racketmanager-seasons',
+            ]
+        );
+
+        $this->assertSame( home_url( '/manage/seasons' ), $url );
+    }
+
+    public function test_finances_screen_in_admin_context(): void {
+        $resolver = new Manage_Url_Resolver( new Manage_Route_Mapper(), force_portal_context: false );
+        Admin_Redirect_Url_Builder::set_resolver( $resolver );
+
+        $url = Admin_Redirect_Url_Builder::finances_screen(
+            [
+                'page' => 'racketmanager-finances',
+                'view' => 'charges',
+            ]
+        );
+
+        $this->assertStringContainsString( 'admin.php', $url );
+        $this->assertStringContainsString( 'page=racketmanager-finances', $url );
+        $this->assertStringContainsString( 'view=charges', $url );
+    }
+
+    public function test_finances_screen_in_portal_context(): void {
+        $resolver = new Manage_Url_Resolver( new Manage_Route_Mapper(), force_portal_context: true );
+        Admin_Redirect_Url_Builder::set_resolver( $resolver );
+
+        $url = Admin_Redirect_Url_Builder::finances_screen(
+            [
+                'page' => 'racketmanager-finances',
+                'view' => 'charges',
+            ]
+        );
+
+        $this->assertSame( home_url( '/manage/finances/charges' ), $url );
+    }
+
+    public function test_options_screen_in_admin_context(): void {
+        $resolver = new Manage_Url_Resolver( new Manage_Route_Mapper(), force_portal_context: false );
+        Admin_Redirect_Url_Builder::set_resolver( $resolver );
+
+        $url = Admin_Redirect_Url_Builder::options_screen(
+            [
+                'page' => 'racketmanager-settings',
+                'tab'  => 'billing',
+            ]
+        );
+
+        $this->assertStringContainsString( 'admin.php', $url );
+        $this->assertStringContainsString( 'page=racketmanager-settings', $url );
+        $this->assertStringContainsString( 'tab=billing', $url );
+    }
+
+    public function test_options_screen_in_portal_context(): void {
+        $resolver = new Manage_Url_Resolver( new Manage_Route_Mapper(), force_portal_context: true );
+        Admin_Redirect_Url_Builder::set_resolver( $resolver );
+
+        $url = Admin_Redirect_Url_Builder::options_screen(
+            [
+                'page' => 'racketmanager-settings',
+                'tab'  => 'billing',
+            ]
+        );
+
+        $this->assertSame( home_url( '/manage/settings?tab=billing' ), $url );
+    }
+
+    public function test_import_screen_in_admin_context(): void {
+        $resolver = new Manage_Url_Resolver( new Manage_Route_Mapper(), force_portal_context: false );
+        Admin_Redirect_Url_Builder::set_resolver( $resolver );
+
+        $url = Admin_Redirect_Url_Builder::import_screen(
+            [
+                'page' => 'racketmanager-import',
+            ]
+        );
+
+        $this->assertStringContainsString( 'admin.php', $url );
+        $this->assertStringContainsString( 'page=racketmanager-import', $url );
+    }
+
+    public function test_import_screen_in_portal_context(): void {
+        $resolver = new Manage_Url_Resolver( new Manage_Route_Mapper(), force_portal_context: true );
+        Admin_Redirect_Url_Builder::set_resolver( $resolver );
+
+        $url = Admin_Redirect_Url_Builder::import_screen(
+            [
+                'page' => 'racketmanager-import',
+            ]
+        );
+
+        $this->assertSame( home_url( '/manage/import' ), $url );
+    }
 }

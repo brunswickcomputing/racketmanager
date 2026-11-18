@@ -131,6 +131,8 @@ final class Portal_Page_Router_Test extends TestCase {
     }
 
     public function test_seamlessly_redirects_unported_section_to_wp_admin(): void {
+        $this->registry->set_ported( 'seasons', false );
+
         $query_vars = $this->createStub( Query_Vars_Interface::class );
         $query_vars->method( 'get' )->willReturnCallback(
             fn( string $key ) => match ( $key ) {

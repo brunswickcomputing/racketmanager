@@ -17,7 +17,7 @@ $seasons = $vm->seasons;
     <h1><?php esc_html_e( 'Seasons', 'racketmanager' ); ?></h1>
 
     <div class="mb-3">
-        <form id="seasons-filter" method="post" action="" class="form-control">
+        <form id="seasons-filter" method="post" action="<?php echo esc_url( manage_url( 'seasons' ) ); ?>" class="form-control">
             <?php wp_nonce_field( 'racketmanager_seasons-bulk', 'racketmanager_nonce' ); ?>
             <div class="row g-3 mb-3 align-items-center">
                 <!-- Bulk Actions -->
@@ -63,7 +63,7 @@ $seasons = $vm->seasons;
     </div>
     <!-- Add New Season -->
     <h2><?php esc_html_e( 'Add Season', 'racketmanager' ); ?></h2>
-    <form action="" method="post" class="form-control">
+    <form action="<?php echo esc_url( manage_url( 'seasons' ) ); ?>" method="post" class="form-control">
         <?php wp_nonce_field( 'racketmanager_add-season', 'racketmanager_nonce' ); ?>
         <div class="form-floating mb-3">
             <?php

@@ -656,7 +656,7 @@ class Finance_Templates_Test extends TestCase {
         $this->assertStringContainsString( 'value="final"', $html );
         $this->assertStringContainsString( 'selected="selected">Final</option>', $html );
         $this->assertStringContainsString( 'test-invoice-rendered-output', $html );
-        $this->assertStringContainsString( 'href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=club-invoices"', $html );
+        $this->assertStringContainsString( 'admin.php?page=racketmanager-finances&view=club-invoices', $html );
     }
 
     public function test_admin_show_charges_and_show_invoices_tab_templates_render(): void {

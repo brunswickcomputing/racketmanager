@@ -7,8 +7,9 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Error_Bag;
 use Racketmanager\Admin\View_Models\Finances_Charge_Page_View_Model;
-use Racketmanager\Domain\Season\Season;
+use stdClass;
 
 /** @var Finances_Charge_Page_View_Model $vm */
 $charge                = $vm->charge;
@@ -18,13 +19,13 @@ $form_action           = $vm->form_action;
 $club_charges          = $vm->club_charges;
 $competitions          = $vm->competitions;
 $racketmanager_seasons = $vm->seasons;
-$errors                = $vm->errors;
+$errors                = $vm->errors; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 if ( ! isset( $validator ) ) {
-    $validator           = new \stdClass();
+    $validator           = new stdClass();
     $validator->err_flds = array();
     $validator->err_msgs = array();
 }
-if ( isset( $errors ) && $errors instanceof \Racketmanager\Admin\View_Models\Error_Bag ) {
+if ( isset( $errors ) && $errors instanceof Error_Bag ) {
     foreach ( $errors->all() as $err_fld => $err_msg ) {
         $validator->err_flds[] = $err_fld;
         $validator->err_msgs[] = $err_msg;
@@ -36,12 +37,12 @@ $msg        = null;
 <div class="container">
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
-            <a href="/wp-admin/admin.php?page=racketmanager-finances"><?php esc_html_e( 'RacketManager Finances', 'racketmanager' ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=charges"><?php esc_html_e( 'Charges', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $form_title ); ?>
+            <a href="<?php echo esc_url( manage_url( 'finances' ) ); ?>"><?php esc_html_e( 'RacketManager Finances', 'racketmanager' ); ?></a> &raquo; <a href="<?php echo esc_url( manage_url( 'finances', 'charges' ) ); ?>"><?php esc_html_e( 'Charges', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $form_title ); ?>
         </div>
     </div>
     <div class="row mb-3">
         <h1><?php echo esc_html( $form_title ); ?></h1>
-        <form method="post" enctype="multipart/form-data" name="charges_edit" class="form-control">
+        <form method="post" action="<?php echo esc_url( manage_url( 'finances', 'charge', ! empty( $charge->id ) ? array( 'charges' => (string) $charge->id ) : array() ) ); ?>" enctype="multipart/form-data" name="charges_edit" class="form-control">
             <?php wp_nonce_field( 'racketmanager_manage-charges', 'racketmanager_nonce' ); ?>
             <fieldset class="row gx-3 mb-3">
                 <legend><?php esc_html_e( 'Competition', 'racketmanager' ); ?></legend>
@@ -51,7 +52,7 @@ $msg        = null;
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'competition', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'competition', $validator->err_flds, true );
-                            $msg        = $validator->err_msgs[$msg_id] ?? null;
+                            $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                         }
                         ?>
                         <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" size="1" name="competition_id" id="competition_id" >
@@ -82,7 +83,7 @@ $msg        = null;
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'season', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'season', $validator->err_flds, true );
-                            $msg        = $validator->err_msgs[$msg_id] ?? null;
+                            $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                         }
                         ?>
                         <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" size="1" name="season" id="season" >
@@ -90,7 +91,7 @@ $msg        = null;
                             <?php
                             foreach ( $racketmanager_seasons as $racketmanager_season ) {
                                 ?>
-                                <option value="<?php echo esc_html( $racketmanager_season->name ); ?>" <?php selected( $racketmanager_season->name, $charge->season ?? ''); ?>><?php echo esc_html( $racketmanager_season->name ); ?></option>
+                                <option value="<?php echo esc_html( $racketmanager_season->name ); ?>" <?php selected( $racketmanager_season->name, $charge->season ?? '' ); ?>><?php echo esc_html( $racketmanager_season->name ); ?></option>
                                 <?php
                             }
                             ?>
@@ -116,7 +117,7 @@ $msg        = null;
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'status', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'status', $validator->err_flds, true );
-                            $msg        = $validator->err_msgs[$msg_id] ?? null;
+                            $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                         }
                         ?>
                         <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" size="1" name="status" id="status" >
@@ -142,7 +143,7 @@ $msg        = null;
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'date', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'date', $validator->err_flds, true );
-                            $msg        = $validator->err_msgs[$msg_id] ?? null;
+                            $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                         }
                         ?>
                         <input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="date" id="date" value="<?php echo empty( $charge->date ) ? null : esc_html( $charge->date ); ?>" />
@@ -167,7 +168,7 @@ $msg        = null;
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'feeClub', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'feeClub', $validator->err_flds, true );
-                            $msg        = $validator->err_msgs[$msg_id] ?? null;
+                            $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                         }
                         ?>
                         <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="feeClub" id="feeClub" value="<?php echo empty( $charge->fee_competition ) ? null : esc_html( $charge->fee_competition ); ?>" />
@@ -189,7 +190,7 @@ $msg        = null;
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'feeTeam', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'feeTeam', $validator->err_flds, true );
-                            $msg        = $validator->err_msgs[$msg_id] ?? null;
+                            $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                         }
                         ?>
                         <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="feeTeam" id="feeTeam" value="<?php echo empty( $charge->fee_event ) ? null : esc_html( $charge->fee_event ); ?>" />
@@ -233,9 +234,11 @@ $msg        = null;
             <?php
             if ( $club_charges ) {
                 ?>
-                <form action="/wp-admin/admin.php?page=racketmanager-finances&view=charge&charges=<?php echo esc_attr( $charge->id ); ?>" method="post" enctype="multipart/form-data" name="clubcharges" class="form-control">
+                <form action="<?php echo esc_url( manage_url( 'finances', 'charge', array( 'charges' => (string) $charge->id ) ) ); ?>" method="post" enctype="multipart/form-data" name="clubcharges" class="form-control">
                     <?php wp_nonce_field( 'racketmanager_charges-bulk', 'racketmanager_nonce' ); ?>
-                    <input type="hidden" name="view" value="charge" />
+                    <?php if ( ! is_manage_portal_context() ) : ?>
+                        <input type="hidden" name="view" value="charge" />
+                    <?php endif; ?>
                     <div class="row fw-bold">
                         <div class="col-5"><?php esc_html_e( 'Club', 'racketmanager' ); ?></div>
                         <div class="col-2"><?php esc_html_e( 'Number of Teams', 'racketmanager' ); ?></div>
@@ -274,6 +277,6 @@ $msg        = null;
         ?>
     </div>
     <div class="mb-3">
-        <a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=charges" class="btn btn-secondary"><?php esc_html_e( 'Back to charges', 'racketmanager' ); ?></a>
+        <a href="<?php echo esc_url( manage_url( 'finances', 'charges' ) ); ?>" class="btn btn-secondary"><?php esc_html_e( 'Back to charges', 'racketmanager' ); ?></a>
     </div>
 </div>

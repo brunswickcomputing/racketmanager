@@ -16,7 +16,7 @@ $tab_title         = $vm->tab_title;
 ?>
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
-            <a href="/wp-admin/admin.php?page=racketmanager-finances"><?php esc_html_e( 'RacketManager Finances', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $tab_title ); ?>
+            <a href="<?php echo esc_url( manage_url( 'finances' ) ); ?>"><?php esc_html_e( 'RacketManager Finances', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $tab_title ); ?>
         </div>
     </div>
     <h1><?php echo esc_html( $tab_title ); ?></h1>
@@ -32,7 +32,7 @@ $tab_title         = $vm->tab_title;
                         <?php
                     } else {
                         ?>
-                        <a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=charges" class="nav-link" id="charges-tab" type="button" role="tab" aria-selected="false"><?php esc_html_e( 'Charges', 'racketmanager' ); ?></a>
+                        <a href="<?php echo esc_url( manage_url( 'finances', 'charges' ) ); ?>" class="nav-link" id="charges-tab" type="button" role="tab" aria-selected="false"><?php esc_html_e( 'Charges', 'racketmanager' ); ?></a>
                         <?php
                     }
                     ?>
@@ -45,7 +45,7 @@ $tab_title         = $vm->tab_title;
                         <?php
                     } else {
                         ?>
-                        <a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=club-invoices" class="nav-link" id="invoices-tab" type="button" role="tab" aria-selected="false"><?php esc_html_e( 'Club Invoices', 'racketmanager' ); ?></a>
+                        <a href="<?php echo esc_url( manage_url( 'finances', 'club-invoices' ) ); ?>" class="nav-link" id="invoices-tab" type="button" role="tab" aria-selected="false"><?php esc_html_e( 'Club Invoices', 'racketmanager' ); ?></a>
                         <?php
                     }
                     ?>
@@ -58,7 +58,7 @@ $tab_title         = $vm->tab_title;
                         <?php
                     } else {
                         ?>
-                        <a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=player-invoices" class="nav-link" id="payments-tab" type="button" role="tab" aria-selected="false"><?php esc_html_e( 'Tournament Invoices', 'racketmanager' ); ?></a>
+                        <a href="<?php echo esc_url( manage_url( 'finances', 'player-invoices' ) ); ?>" class="nav-link" id="payments-tab" type="button" role="tab" aria-selected="false"><?php esc_html_e( 'Tournament Invoices', 'racketmanager' ); ?></a>
                         <?php
                     }
                     ?>

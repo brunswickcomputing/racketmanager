@@ -62,11 +62,11 @@ final class Portal_Section_Registry {
             new Portal_Section_Config( 'tournaments', 'racketmanager-tournaments', Admin_Tournament::class, 'racket_manager', 'tournaments', true, 'Tournaments' ),
             new Portal_Section_Config( 'results', 'racketmanager-results', Admin_Result::class, 'racket_manager', 'results', true, 'Results' ),
             new Portal_Section_Config( 'players', 'racketmanager-players', Admin_Player::class, 'racket_manager', 'players', true, 'Players' ),
-            new Portal_Section_Config( 'seasons', 'racketmanager-seasons', Admin_Season::class, 'racketmanager_settings', 'seasons', false, 'Seasons' ),
-            new Portal_Section_Config( 'finances', 'racketmanager-finances', Admin_Finances::class, 'racket_manager', 'finances', false, 'Finances' ),
-            new Portal_Section_Config( 'settings', 'racketmanager-settings', Admin_Options::class, 'racketmanager_settings', 'settings', false, 'Settings' ),
-            new Portal_Section_Config( 'import', 'racketmanager-import', Admin_Import::class, 'import_leagues', 'import', false, 'Import' ),
-            new Portal_Section_Config( 'documentation', 'racketmanager-doc', Documentation_Page_View_Model::class, 'view_leagues', 'documentation', false, 'Documentation' ),
+            new Portal_Section_Config( 'seasons', 'racketmanager-seasons', Admin_Season::class, 'racketmanager_settings', 'seasons', true, 'Seasons' ),
+            new Portal_Section_Config( 'finances', 'racketmanager-finances', Admin_Finances::class, 'racket_manager', 'finances', true, 'Finances' ),
+            new Portal_Section_Config( 'settings', 'racketmanager-settings', Admin_Options::class, 'racketmanager_settings', 'settings', true, 'Settings' ),
+            new Portal_Section_Config( 'import', 'racketmanager-import', Admin_Import::class, 'import_leagues', 'import', true, 'Import' ),
+            new Portal_Section_Config( 'documentation', 'racketmanager-doc', Documentation_Page_View_Model::class, 'view_leagues', 'documentation', true, 'Documentation' ),
         ];
 
         foreach ( $defaults as $config ) {

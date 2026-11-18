@@ -20,10 +20,16 @@ $charges           = $vm->charges;
 ?>
 <div class="container">
     <div class="row gx-3 align-items-center mb-3">
-        <form id="invoices-filter" method="get" action="" class="form-control">
-            <input type="hidden" name="page" value="racketmanager-finances" />
-            <input type="hidden" name="tab" value="charges" />
-            <input type="hidden" name="view" value="charges" />
+        <form id="invoices-filter" method="get" action="<?php echo esc_url( manage_url( 'finances', 'charges' ) ); ?>" class="form-control">
+            <?php
+            if ( ! is_manage_portal_context() ) {
+                ?>
+                <input type="hidden" name="page" value="racketmanager-finances" />
+                <input type="hidden" name="tab" value="charges" />
+                <input type="hidden" name="view" value="charges" />
+                <?php
+            }
+            ?>
             <div class="row gx-3 align-items-center">
                 <div class="col-12 col-md-4 col-lg-auto mb-3 mb-md-0">
                     <label>
@@ -60,7 +66,7 @@ $charges           = $vm->charges;
         </form>
     </div>
     <div class="row gx-3 align-items-center mb-3">
-        <form id="charges-action" method="post" action="" class="form-control mb-3">
+        <form id="charges-action" method="post" action="<?php echo esc_url( manage_url( 'finances', 'charges' ) ); ?>" class="form-control mb-3">
             <?php wp_nonce_field( 'racketmanager_charges-bulk', 'racketmanager_nonce' ); ?>
             <div class="row g-3 mb-3 align-items-center">
                 <!-- Bulk Actions -->
@@ -124,7 +130,7 @@ $charges           = $vm->charges;
     <div class="row gx-3 align-items-center mb-3">
         <div class="mb-3">
             <!-- Add New Charge -->
-            <a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=charge" class="btn btn-primary submit"><?php esc_html_e( 'Add Charge', 'racketmanager' ); ?></a>
+            <a href="<?php echo esc_url( manage_url( 'finances', 'charge' ) ); ?>" class="btn btn-primary submit"><?php esc_html_e( 'Add Charge', 'racketmanager' ); ?></a>
         </div>
     </div>
 </div>

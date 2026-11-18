@@ -10,6 +10,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Infrastructure\Wordpress\Portal;
 
 use Racketmanager\Admin\Admin_Index;
+use Racketmanager\Admin\View_Models\Documentation_Page_View_Model;
 use Racketmanager\Application\Ports\Manage_Url_Resolver_Interface;
 use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Infrastructure\Wordpress\Routing\Manage_Route_Mapper;
@@ -140,10 +141,23 @@ class Portal_Page_Router {
 
     /**
      * Dispatch request to screen bridge and render output within the portal shell.
+     *
+     * @param Portal_Section_Config $config Section configuration.
      */
     public function dispatch_screen( Portal_Section_Config $config ): void {
         $raw_view  = $this->query_vars->get( 'rm_view' );
         $view_name = ! empty( $raw_view ) ? strval( $raw_view ) : $config->default_view;
+
+        if ( 'documentation' === $config->slug || Documentation_Page_View_Model::class === $config->screen_class ) {
+            $this->screen_presenter->present(
+                [ 'view_model' => new Documentation_Page_View_Model() ],
+                Documentation_Page_View_Model::class,
+                'admin/documentation',
+                $config->slug,
+                $config->title
+            );
+            return;
+        }
 
         $screen = $this->container->get( $config->screen_class );
 
@@ -160,6 +174,10 @@ class Portal_Page_Router {
 
     /**
      * Template include filter hook fallback.
+     *
+     * @param string $template Current template file.
+     *
+     * @return string
      */
     public function handle_template_include( string $template ): string {
         if ( ! $this->is_portal_request() ) {

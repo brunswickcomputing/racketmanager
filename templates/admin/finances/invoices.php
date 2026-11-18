@@ -14,7 +14,7 @@ use Racketmanager\Admin\View_Models\Finances_Invoices_Page_View_Model;
 $invoices          = $vm->invoices;
 $club_id           = $vm->club_id;
 $charge_id         = $vm->charge_id;
-$status            = $vm->status;
+$status            = $vm->status; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 $clubs             = $vm->clubs;
 $charges           = $vm->charges;
 $racketmanager_tab = $vm->racketmanager_tab;
@@ -22,10 +22,12 @@ $billable_type     = $vm->billable_type;
 ?>
 <div class="container">
     <div class="row gx-3 align-items-center mb-3">
-        <form id="invoices-filter" method="get" action="" class="form-control">
-            <input type="hidden" name="page" value="racketmanager-finances" />
-            <input type="hidden" name="view" value="<?php echo esc_attr( $racketmanager_tab ); ?>" />
-            <input type="hidden" name="tab" value="<?php echo esc_attr( $racketmanager_tab ); ?>" />
+        <form id="invoices-filter" method="get" action="<?php echo esc_url( manage_url( 'finances', $racketmanager_tab ) ); ?>" class="form-control">
+            <?php if ( ! is_manage_portal_context() ) : ?>
+                <input type="hidden" name="page" value="racketmanager-finances" />
+                <input type="hidden" name="view" value="<?php echo esc_attr( $racketmanager_tab ); ?>" />
+                <input type="hidden" name="tab" value="<?php echo esc_attr( $racketmanager_tab ); ?>" />
+            <?php endif; ?>
             <div class="row gx-3 align-items-center">
                 <div class="col-12 col-md-4 col-lg-auto mb-3 mb-md-0">
                     <label>
@@ -81,7 +83,7 @@ $billable_type     = $vm->billable_type;
         <?php
         if ( ! empty( $invoices ) ) {
             ?>
-            <form id="invoices-action" method="post" action="" class="form-control">
+            <form id="invoices-action" method="post" action="<?php echo esc_url( manage_url( 'finances', $racketmanager_tab ) ); ?>" class="form-control">
                 <?php wp_nonce_field( 'racketmanager_invoices-bulk', 'racketmanager_nonce' ); ?>
                 <div class="row gx-3 mb-3 align-items-center">
                     <!-- Bulk Actions -->

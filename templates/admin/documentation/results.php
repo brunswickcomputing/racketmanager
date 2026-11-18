@@ -24,7 +24,7 @@ namespace Racketmanager;
     <div class="tab-pane active show fade" id="resultschecker" role="tabpanel" aria-labelledby="resultschecker-tab">
       <h3 class="header"><?php esc_html_e( 'Results Checker', 'racketmanager' ); ?></h3>
       <p>The results checker page of Racketmanager shows any player checks that have been failed whenever a match result is input.</p>
-      <p>For any of these checks to be applied, the relevant <a href="<?php echo esc_url( get_admin_url() ); ?>admin.php?page=racketmanager-settings">setting</a> must be entered on the "Player Checks" tab.</p>
+      <p>For any of these checks to be applied, the relevant <a href="<?php echo esc_url( manage_url( 'settings' ) ); ?>"><?php esc_html_e( 'setting', 'racketmanager' ); ?></a> must be entered on the "Player Checks" tab.</p>
       <dl>
         <dt><?php esc_html_e( 'Player Registration lead time', 'racketmanager' ); ?></dt>
         <dd>This checks how long a player must be registered before they are eligible to play.</dd>
@@ -43,7 +43,7 @@ namespace Racketmanager;
       <!--suppress HtmlUnknownAnchorTarget -->
         <a href="#top" class="alignright top-link"><?php esc_html_e( 'Top', 'racketmanager' ); ?></a>
       <p>The results page of Racketmanager shows any results that have been entered by users that need administration approval.</p>
-      <p>The ability for users to enter match results themselves is controlled by the <a href="<?php echo esc_url( get_admin_url() ); ?>admin.php?page=racketmanager-settings">settings</a> on the "Match Results" tab.</p>
+      <p>The ability for users to enter match results themselves is controlled by the <a href="<?php echo esc_url( manage_url( 'settings' ) ); ?>"><?php esc_html_e( 'settings', 'racketmanager' ); ?></a> on the "Match Results" tab.</p>
       <p>If an email address is set on this screen, an email notification will be sent to this address whenever a match result is entered by users.</p>
       <dl>
         <dt><?php esc_html_e( 'Minimum level to update results', 'racketmanager' ); ?></dt>

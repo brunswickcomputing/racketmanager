@@ -9,16 +9,17 @@ declare( strict_types=1 );
 namespace Racketmanager;
 
 use Racketmanager\Admin\View_Models\Options_Page_View_Model;
+use stdClass;
 
-/** @var Options_Page_View_Model|\stdClass $vm */
+/** @var Options_Page_View_Model|stdClass $vm */
 if ( isset( $vm ) && $vm instanceof Options_Page_View_Model ) {
-    $tab     = $vm->tab;
+    $tab     = $vm->tab; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
     $options = $vm->options;
 } else {
-    $tab     = $tab ?? $vars['tab'] ?? $vm->tab ?? 'club-players';
+    $tab     = $tab ?? $vars['tab'] ?? $vm->tab ?? 'club-players'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
     $options = $options ?? $vars['options'] ?? $vm->options ?? array();
 }
-$menu_page_url = admin_url( 'options-general.php?page=racketmanager-settings' );
+$menu_page_url = manage_url( 'settings' );
 ?>
 <script type='text/javascript'>
 jQuery(document).ready(function(){
@@ -28,7 +29,7 @@ jQuery(document).ready(function(){
 <div class='container'>
     <h1><?php esc_html_e( 'Racketmanager Global Settings', 'racketmanager' ); ?></h1>
 
-    <form action='' method='post' name='settings'>
+    <form action='<?php echo esc_url( manage_url( 'settings' ) ); ?>' method='post' name='settings'>
         <?php wp_nonce_field( 'racketmanager_manage-global-league-options', 'racketmanager_nonce' ); ?>
 
         <input type="hidden" class="active-tab" name="active-tab" value="<?php echo esc_html( $tab ); ?>" />

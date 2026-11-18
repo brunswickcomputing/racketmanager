@@ -7,41 +7,51 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Error_Bag;
 use Racketmanager\Admin\View_Models\Finances_Invoice_Page_View_Model;
+use stdClass;
 
 /** @var Finances_Invoice_Page_View_Model $vm */
-$errors         = $vm->errors;
+$errors         = $vm->errors; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 $view           = $vm->view;
 $breadcrumb     = $vm->breadcrumb;
-$title          = $vm->title;
+$title          = $vm->title; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 $subtitle       = $vm->subtitle;
 $invoice_status = $vm->invoice_status;
 $purchase_order = $vm->purchase_order;
 $invoice_id     = $vm->invoice_id;
 $invoice_view   = $vm->invoice_view;
 if ( ! isset( $validator ) ) {
-    $validator           = new \stdClass();
+    $validator           = new stdClass();
     $validator->err_flds = array();
     $validator->err_msgs = array();
 }
-if ( isset( $errors ) && $errors instanceof \Racketmanager\Admin\View_Models\Error_Bag ) {
+if ( isset( $errors ) && $errors instanceof Error_Bag ) {
     foreach ( $errors->all() as $err_fld => $err_msg ) {
         $validator->err_flds[] = $err_fld;
         $validator->err_msgs[] = $err_msg;
     }
 }
+$invoice_form_action = manage_url(
+    'finances',
+    'invoice',
+    array(
+        'invoice' => (string) $invoice_id,
+        'view'    => $view,
+    )
+);
 ?>
 <div class="container">
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
-            <a href="/wp-admin/admin.php?page=racketmanager-finances"><?php esc_html_e( 'RacketManager Finances', 'racketmanager' ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=<?php echo esc_attr( $view ); ?>"><?php echo esc_html( $breadcrumb ); ?></a> &raquo; <?php esc_html_e( 'View Invoice', 'racketmanager' ); ?>
+            <a href="<?php echo esc_url( manage_url( 'finances' ) ); ?>"><?php esc_html_e( 'RacketManager Finances', 'racketmanager' ); ?></a> &raquo; <a href="<?php echo esc_url( manage_url( 'finances', $view ) ); ?>"><?php echo esc_html( $breadcrumb ); ?></a> &raquo; <?php esc_html_e( 'View Invoice', 'racketmanager' ); ?>
         </div>
     </div>
     <div class="row mb-3">
         <h1><?php echo esc_html( $title ); ?></h1>
         <h2><?php echo esc_html( $subtitle ); ?></h2>
     </div>
-    <form method="post" enctype="multipart/form-data" name="invoice_edit" class="form-control mb-3">
+    <form method="post" action="<?php echo esc_url( $invoice_form_action ); ?>" enctype="multipart/form-data" name="invoice_edit" class="form-control mb-3">
         <?php wp_nonce_field( 'racketmanager_manage-invoice', 'racketmanager_nonce' ); ?>
         <div class="row justify-content-start align-items-center mb-3">
             <h2><?php esc_html_e( 'Amend', 'racketmanager' ); ?></h2>
@@ -87,6 +97,6 @@ if ( isset( $errors ) && $errors instanceof \Racketmanager\Admin\View_Models\Err
         <?php echo $invoice_view; // phpcs:ignore WordPress.Security.EscapeOutput ?>
     </div>
     <div class="mb-3">
-        <a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=<?php echo esc_attr( $view ); ?>" class="btn btn-secondary"><?php esc_html_e( 'Back to finances', 'racketmanager' ); ?></a>
+        <a href="<?php echo esc_url( manage_url( 'finances', $view ) ); ?>" class="btn btn-secondary"><?php esc_html_e( 'Back to finances', 'racketmanager' ); ?></a>
     </div>
 </div>

@@ -230,9 +230,9 @@ final class Competitive_Play_Portal_Integration_Test extends TestCase {
         $this->assertSame( home_url( '/manage/tournaments' ), $items_by_slug['tournaments']->url );
         $this->assertFalse( $items_by_slug['tournaments']->is_active );
 
-        // Seasons is not yet ported in Increment 3, so its URL remains wp-admin
-        $this->assertFalse( $items_by_slug['seasons']->is_ported );
-        $this->assertStringContainsString( 'wp-admin/admin.php?page=racketmanager-seasons', $items_by_slug['seasons']->url );
+        // Seasons is ported in final cutover
+        $this->assertTrue( $items_by_slug['seasons']->is_ported );
+        $this->assertSame( home_url( '/manage/seasons' ), $items_by_slug['seasons']->url );
     }
 
     public function test_redirect_url_builder_preserves_portal_routes_for_competitive_play(): void {

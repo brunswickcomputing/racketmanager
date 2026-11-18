@@ -26,7 +26,13 @@
   },
   "scripts": {
     "phpcs": "phpcs -p",
-    "phpcbf": "phpcbf"
+    "phpcbf": "phpcbf",
+    "test": "vendor/bin/phpunit",
+    "test:coverage": "vendor/bin/phpunit --coverage-text --coverage-clover build/logs/clover.xml --coverage-html build/coverage"
+  },
+  "scripts-descriptions": {
+    "test": "Run the test suite",
+    "test:coverage": "Run the test suite with code coverage (requires PCOV or Xdebug extension)"
   },
   "config": {
     "optimize-autoloader": true,

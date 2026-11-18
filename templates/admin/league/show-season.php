@@ -26,7 +26,7 @@ jQuery(document).ready(function(){
 <div class='container'>
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
-            <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->get_type() ); ?>s"><?php echo esc_html( ucfirst( $competition->get_type() ) ); ?>s</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->get_type() ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>"><?php echo esc_html( $competition->name ); ?></a> &raquo; <?php echo esc_html( $season ); ?>
+            <a href="<?php echo esc_url( manage_url( $competition->get_type() . 's' ) ); ?>"><?php echo esc_html( ucfirst( $competition->get_type() ) ); ?>s</a> &raquo; <a href="<?php echo esc_url( manage_url( $competition->get_type() . 's', 'seasons', [ 'competition_id' => (string) $competition->id ] ) ); ?>"><?php echo esc_html( $competition->name ); ?></a> &raquo; <?php echo esc_html( $season ); ?>
         </div>
     </div>
     <h1><?php echo esc_html( $competition->name ); ?> - <?php echo esc_html( $season ); ?></h1>
@@ -47,13 +47,13 @@ jQuery(document).ready(function(){
                         <button class="nav-link" id="entries-tab" data-bs-toggle="tab" data-bs-target="#entries" type="button" role="tab" aria-controls="entries" aria-selected="true"><?php esc_html_e( 'Entries', 'racketmanager' ); ?></button>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" id="plan-tab" href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->get_type() ); ?>s&view=plan&competition_id=<?php echo esc_attr( $competition->id ); ?>&season=<?php echo esc_attr( $season ); ?>" type="button" role="tab"><?php esc_html_e( 'Schedule', 'racketmanager' ); ?></a>
+                        <a class="nav-link" id="plan-tab" href="<?php echo esc_url( manage_url( $competition->get_type() . 's', 'plan', [ 'competition_id' => (string) $competition->id, 'season' => (string) $season ] ) ); ?>" type="button" role="tab"><?php esc_html_e( 'Schedule', 'racketmanager' ); ?></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->get_type() ); ?>s&view=setup&competition_id=<?php echo esc_attr( $competition->id ); ?>&season=<?php echo esc_attr( $season ); ?>" type="button" role="tab"><?php esc_html_e( 'Setup', 'racketmanager' ); ?></a>
+                        <a class="nav-link" href="<?php echo esc_url( manage_url( $competition->get_type() . 's', 'setup', [ 'competition_id' => (string) $competition->id, 'season' => (string) $season ] ) ); ?>" type="button" role="tab"><?php esc_html_e( 'Setup', 'racketmanager' ); ?></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->get_type() ); ?>s&view=contact&competition_id=<?php echo esc_attr( $competition->id ); ?>&season=<?php echo esc_attr( $season ); ?>" type="button" role="tab"><?php esc_html_e( 'Contact', 'racketmanager' ); ?></a>
+                        <a class="nav-link" href="<?php echo esc_url( manage_url( $competition->get_type() . 's', 'contact', [ 'competition_id' => (string) $competition->id, 'season' => (string) $season ] ) ); ?>" type="button" role="tab"><?php esc_html_e( 'Contact', 'racketmanager' ); ?></a>
                     </li>
                 </ul>
             </div>

@@ -11,13 +11,13 @@ use Racketmanager\Admin\View_Models\Cup_Overview_Page_View_Model;
 
 /** @var Cup_Overview_Page_View_Model $vm */
 $competition          = $vm->competition;
-$season               = (string) $vm->season;
+$season               = $vm->season;
 $cup_season           = $vm->cup_season;
 $competition_overview = $vm->competition_overview;
 $competition_events   = $vm->competition_events;
 $draw_sizes           = $vm->draw_sizes;
 $entry_urls           = $vm->entry_urls;
-$tab                  = $vm->tab;
+$tab                  = $vm->tab; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
 /** @var string $tab */
 /** @var object $competition */
@@ -32,7 +32,7 @@ jQuery(document).ready(function(){
 <div class='container'>
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
-            <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->get_type() ); ?>s"><?php echo esc_html( ucfirst( $competition->get_type() ) ); ?>s</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->get_type() ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>"><?php echo esc_html( $competition->name ); ?></a> &raquo; <?php echo esc_html( $season ); ?>
+            <a href="<?php echo esc_url( manage_url( $competition->get_type() . 's' ) ); ?>"><?php echo esc_html( ucfirst( $competition->get_type() ) ); ?>s</a> &raquo; <a href="<?php echo esc_url( manage_url( $competition->get_type() . 's', 'seasons', [ 'competition_id' => (string) $competition->id ] ) ); ?>"><?php echo esc_html( $competition->name ); ?></a> &raquo; <?php echo esc_html( $season ); ?>
         </div>
     </div>
     <h1><?php echo esc_html( $competition->name ); ?> - <?php echo esc_html( $season ); ?></h1>
@@ -56,13 +56,39 @@ jQuery(document).ready(function(){
                     if ( $cup_season->is_active ) {
                         ?>
                         <li class="nav-item">
-                            <a class="nav-link" id="plan-tab" href="/wp-admin/admin.php?page=racketmanager-cups&view=plan&competition_id=<?php echo esc_attr( $competition->id ); ?>&season=<?php echo esc_attr( $season ); ?>" type="button" role="tab"><?php esc_html_e( 'Plan', 'racketmanager' ); ?></a>
+                            <a class="nav-link" id="plan-tab" href="
+                            <?php
+                            echo esc_url(
+                                manage_url(
+                                    'cups',
+                                    'plan',
+                                    [
+                                        'competition_id' => (string) $competition->id,
+                                        'season'         => $season,
+                                    ]
+                                )
+                            );
+                            ?>
+                                                                    " type="button" role="tab"><?php esc_html_e( 'Plan', 'racketmanager' ); ?></a>
                         </li>
                         <?php
                     }
                     ?>
                     <li class="nav-item">
-                        <a class="nav-link" href="/wp-admin/admin.php?page=racketmanager-cups&view=setup&competition_id=<?php echo esc_attr( $competition->id ); ?>&season=<?php echo esc_attr( $season ); ?>" type="button" role="tab"><?php esc_html_e( 'Setup', 'racketmanager' ); ?></a>
+                        <a class="nav-link" href="
+                        <?php
+                        echo esc_url(
+                            manage_url(
+                                'cups',
+                                'setup',
+                                [
+                                    'competition_id' => (string) $competition->id,
+                                    'season'         => $season,
+                                ]
+                            )
+                        );
+                        ?>
+                        " type="button" role="tab"><?php esc_html_e( 'Setup', 'racketmanager' ); ?></a>
                     </li>
                 </ul>
             </div>

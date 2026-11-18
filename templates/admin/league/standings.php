@@ -31,7 +31,26 @@ $teams = $teams ?? $vars['teams'] ?? $vm->teams;
 /** @var string $season */
 /** @var array $teams */
 ?>
-<form id="teams-filter" action="" method="post" name="standings">
+<?php
+$competition_type = ( isset( $league->event->competition->type ) && $league->event->competition->type instanceof BackedEnum )
+    ? $league->event->competition->type->value
+    : (string) ( $league->event->competition->type ?? '' );
+$standings_action_args = [];
+if ( isset( $league->id ) ) {
+    $standings_action_args['league_id'] = (string) $league->id;
+}
+if ( isset( $season ) ) {
+    $standings_action_args['season'] = (string) $season;
+}
+if ( isset( $tournament ) && ! empty( $tournament->id ) ) {
+    $standings_action_args['tournament'] = (string) $tournament->id;
+    $standings_action_url = manage_url( 'tournaments', 'draw', $standings_action_args );
+} else {
+    $section = $competition_type ? $competition_type . 's' : 'leagues';
+    $standings_action_url = manage_url( $section, 'league', $standings_action_args );
+}
+?>
+<form id="teams-filter" action="<?php echo esc_url( $standings_action_url ); ?>" method="post" name="standings">
     <input type="hidden" name="js-active" value="0" class="js-active" />
     <input type="hidden" name="tab" value="preliminary" />
     <input type="hidden" name="season" value="<?php echo esc_html( $season ); ?>" />
@@ -127,15 +146,19 @@ $teams = $teams ?? $vars['teams'] ?? $vm->teams;
             $competition_type = $league->event->competition->type instanceof BackedEnum ? $league->event->competition->type->value : (string) ( $league->event->competition->type ?? '' );
             foreach ( $teams as $i => $team ) {
                 $class     = null;
-                $team_link = '/wp-admin/admin.php?page=racketmanager-' . $competition_type . 's&amp;view=team&amp;league_id=' . $league->id . '&amp;edit=' . $team->id;
+                $team_args = [
+                    'league_id' => (string) $league->id,
+                    'edit'      => (string) $team->id,
+                ];
                 if ( $league->is_championship ) {
                     if ( $i < $league->championship->num_seeds ) {
                         $class = 'seeded';
                     }
-                    if ( $league->event->competition->is_player_entry ) {
-                        $team_link .= '&amp;tournament=' . $tournament->id;
+                    if ( $league->event->competition->is_player_entry && isset( $tournament ) && $tournament ) {
+                        $team_args['tournament'] = (string) $tournament->id;
                     }
                 }
+                $team_link = manage_url( $competition_type . 's', 'team', $team_args );
                 ?>
                 <tr class="<?php echo esc_html( $class ); ?>" id="team_<?php echo esc_html( $team->id ); ?>">
                     <th scope="row" class="check-column">

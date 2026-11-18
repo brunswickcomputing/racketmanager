@@ -22,7 +22,7 @@ if ( isset( $vm ) && $vm instanceof Competitions_Page_View_Model ) {
     if ( isset( $tournament ) ) {
         ?>
         <div class="mt-3">
-            <a class="btn btn-secondary" href="/wp-admin/admin.php?page=racketmanager-admin&amp;view=competitions&amp;season=<?php echo esc_html( $tournament->season ); ?>&amp;type=tournament&amp;tournamenttype=<?php echo esc_html( $tournament->type ); ?>&amp;tournament=<?php echo esc_html( $tournament->id ); ?>"><?php esc_html_e( 'Add Competitions', 'racketmanager' ); ?></a>
+            <a class="btn btn-secondary" href="<?php echo esc_url( manage_url( 'competitions', 'competitions', [ 'season' => (string) $tournament->season, 'type' => 'tournament', 'tournamenttype' => (string) $tournament->type, 'tournament' => (string) $tournament->id ] ) ); ?>"><?php esc_html_e( 'Add Competitions', 'racketmanager' ); ?></a>
         </div>
         <?php
     }

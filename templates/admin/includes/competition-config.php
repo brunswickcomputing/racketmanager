@@ -30,11 +30,12 @@ if ( isset( $vm->errors ) && $vm->errors instanceof \Racketmanager\Admin\View_Mo
     }
 }
 
+$comp_type = $vm->competition->get_type() . 's';
 if ( empty( $tournament ) ) {
-    $breadcrumb_link = '<a href="/wp-admin/admin.php?page=racketmanager-' . $vm->competition->get_type() . 's&amp;view=seasons&amp;competition_id=' . $vm->competition->id . '">' . $vm->competition->name . '</a>';
+    $breadcrumb_link = '<a href="' . esc_url( manage_url( $comp_type, 'seasons', [ 'competition_id' => (string) $vm->competition->id ] ) ) . '">' . esc_html( $vm->competition->name ) . '</a>';
     $add_link        = '';
 } else {
-    $breadcrumb_link = '<a href="/wp-admin/admin.php?page=racketmanager-' . $vm->competition->get_type() . 's&amp;view=tournament&amp;tournament=' . $tournament->id . '">' . $tournament->name . '</a>';
+    $breadcrumb_link = '<a href="' . esc_url( manage_url( 'tournaments', 'tournament', [ 'tournament' => (string) $tournament->id ] ) ) . '">' . esc_html( $tournament->name ) . '</a>';
     $add_link        = '&amp;tournament=' . $tournament->id;
 }
 ?>
@@ -48,7 +49,7 @@ if ( empty( $tournament ) ) {
 <div class="container">
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
-            <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $vm->competition->get_type() ); ?>s"><?php echo esc_html( ucfirst( $vm->competition->get_type() ) ); ?>s</a> &raquo; <?php echo $breadcrumb_link; ?> &raquo; <?php esc_html_e( 'Configuration', 'racketmanager' ); ?>
+            <a href="<?php echo esc_url( manage_url( $comp_type ) ); ?>"><?php echo esc_html( ucfirst( $vm->competition->get_type() ) ); ?>s</a> &raquo; <?php echo $breadcrumb_link; ?> &raquo; <?php esc_html_e( 'Configuration', 'racketmanager' ); ?>
         </div>
     </div>
     <div class="row justify-content-between">
@@ -56,7 +57,18 @@ if ( empty( $tournament ) ) {
             <h1><?php echo esc_html( $title ); ?></h1>
         </div>
         <div class="">
-            <form action="" method="post" class="">
+            <?php
+            $config_action_args = [
+                'competition_id' => (string) $vm->competition->id,
+            ];
+            if ( ! empty( $tournament ) ) {
+                $config_action_args['tournament'] = (string) $tournament->id;
+                $config_action_url = manage_url( 'tournaments', 'config', $config_action_args );
+            } else {
+                $config_action_url = manage_url( $comp_type, 'config', $config_action_args );
+            }
+            ?>
+            <form action="<?php echo esc_url( $config_action_url ); ?>" method="post" class="">
                 <?php wp_nonce_field( 'racketmanager_manage-competition-config', 'racketmanager_nonce' ); ?>
                 <input type="hidden" class="active-tab" name="active-tab" value="<?php echo esc_attr( $vm->tab ); ?>" />
                 <input type="hidden" class="mode" name="mode" value="<?php echo esc_attr( $mode ); ?>" />

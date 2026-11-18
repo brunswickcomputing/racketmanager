@@ -379,4 +379,59 @@ final class Admin_Redirect_Url_Builder_Test extends TestCase {
         self::assertStringContainsString( 'mode=edit', $with_params );
         self::assertStringContainsString( 'leg=2', $with_params );
     }
+
+    public function test_competitive_play_redirects_in_portal_context(): void {
+        $resolver = new \Racketmanager\Infrastructure\Wordpress\Routing\Manage_Url_Resolver(
+            new \Racketmanager\Infrastructure\Wordpress\Routing\Manage_Route_Mapper(),
+            null,
+            true
+        );
+        Admin_Redirect_Url_Builder::set_resolver( $resolver );
+
+        try {
+            $league = Admin_Redirect_Url_Builder::league_screen(
+                [ 'view' => 'overview', 'league_id' => '5', 'season' => '2026' ]
+            );
+            self::assertStringContainsString( '/manage/leagues/overview?', $league );
+            self::assertStringContainsString( 'league_id=5', $league );
+            self::assertStringContainsString( 'season=2026', $league );
+
+            $cup = Admin_Redirect_Url_Builder::cup_screen(
+                [ 'view' => 'draw', 'league' => '12', 'season' => '2026' ]
+            );
+            self::assertStringContainsString( '/manage/cups/draw?', $cup );
+            self::assertStringContainsString( 'league=12', $cup );
+
+            $tournament = Admin_Redirect_Url_Builder::tournament_draw_view(
+                [],
+                [],
+                'draw',
+                10,
+                20,
+                'fixtures'
+            );
+            self::assertStringContainsString( '/manage/tournaments/draw?', $tournament );
+            self::assertStringContainsString( 'tournament=10', $tournament );
+            self::assertStringContainsString( 'league=20', $tournament );
+
+            $championship = Admin_Redirect_Url_Builder::championship_screen(
+                [ 'view' => 'draw', 'competition_id' => '8', 'final' => '1' ]
+            );
+            self::assertStringContainsString( '/manage/cups/draw?', $championship );
+            self::assertStringContainsString( 'competition_id=8', $championship );
+
+            $contact = Admin_Redirect_Url_Builder::contact_view(
+                [],
+                [],
+                Admin_Page_Context::tournament(),
+                15,
+                'tournament_id',
+                '2026'
+            );
+            self::assertStringContainsString( '/manage/tournaments/contact?', $contact );
+            self::assertStringContainsString( 'tournament=15', $contact );
+        } finally {
+            Admin_Redirect_Url_Builder::set_resolver( null );
+        }
+    }
 }

@@ -32,8 +32,10 @@ $seasons              = $seasons ?? $vars['seasons'] ?? $vm->seasons;
 
 <div class="container">
     <div class="row justify-content-between mb-3">
-        <form id="results-checker-filter" method="get" action="" class="form-control">
-            <input type="hidden" name="page" value="<?php echo esc_html( 'racketmanager-results' ); ?>" />
+        <form id="results-checker-filter" method="get" action="<?php echo esc_url( manage_url( 'results' ) ); ?>" class="form-control">
+            <?php if ( ! is_manage_portal_context() ) : ?>
+                <input type="hidden" name="page" value="<?php echo esc_html( 'racketmanager-results' ); ?>" />
+            <?php endif; ?>
             <input type="hidden" name="tab" value="<?php echo esc_html( 'resultschecker' ); ?>" />
             <div class="col-auto">
                 <label for="season" class="visually-hidden"><?php esc_html_e( 'Select season', 'racketmanager' ); ?></label><select class="form-select-1" size="1" name="season" id="season">
@@ -80,7 +82,7 @@ $seasons              = $seasons ?? $vars['seasons'] ?? $vm->seasons;
         </form>
     </div>
     <div class="row">
-        <form id="results-checker-action" method="post" action="" class="form-control">
+        <form id="results-checker-action" method="post" action="<?php echo esc_url( manage_url( 'results' ) ); ?>" class="form-control">
             <?php wp_nonce_field( 'results-checker-bulk' ); ?>
             <div class="row gx-3 mb-3 align-items-center">
                 <!-- Bulk Actions -->

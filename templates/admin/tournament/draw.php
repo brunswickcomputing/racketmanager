@@ -35,7 +35,7 @@ jQuery(document).ready(function(){
 <div class="container">
     <div class='row justify-content-end'>
         <div class='col-auto racketmanager_breadcrumb'>
-            <a href="/wp-admin/admin.php?page=racketmanager-tournaments"><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>"><?php echo esc_html( $tournament->name ); ?></a> &raquo; <?php echo esc_html( $league->name ?? $league->title ?? '' ); ?>
+            <a href="<?php echo esc_url( manage_url( 'tournaments' ) ); ?>"><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <a href="<?php echo esc_url( manage_url( 'tournaments', 'tournament', [ 'tournament' => (string) $tournament->id, 'season' => (string) $tournament->season ] ) ); ?>"><?php echo esc_html( $tournament->name ); ?></a> &raquo; <?php echo esc_html( $league->name ?? $league->title ?? '' ); ?>
         </div>
     </div>
     <h1><?php echo esc_html( $league->name ?? $league->title ?? '' ); ?> - <?php echo esc_html( $tournament->name ); ?></h1>

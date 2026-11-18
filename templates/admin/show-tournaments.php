@@ -35,8 +35,10 @@ if ( $vm ) {
     <h1><?php esc_html_e( 'Tournaments', 'racketmanager' ); ?></h1>
     <div class="container">
         <div class="row justify-content-between mb-3">
-            <form id="tournaments-list-filter" method="get" action="" class="form-control">
-                <input type="hidden" name="page" value="<?php echo esc_html( 'racketmanager-tournaments' ); ?>" />
+            <form id="tournaments-list-filter" method="get" action="<?php echo esc_url( manage_url( 'tournaments' ) ); ?>" class="form-control">
+                <?php if ( ! is_manage_portal_context() ) : ?>
+                    <input type="hidden" name="page" value="<?php echo esc_html( 'racketmanager-tournaments' ); ?>" />
+                <?php endif; ?>
                 <div class="col-auto">
                     <label for="season" class="visually-hidden"><?php esc_html_e( 'Select season', 'racketmanager' ); ?></label><select class="form-select-1" size="1" name="season" id="season">
                         <option value=""><?php esc_html_e( 'All seasons', 'racketmanager' ); ?></option>
@@ -80,7 +82,7 @@ if ( $vm ) {
         </div>
     </div>
     <div class="form-control mb-3">
-        <form id="tournaments-filter" method="post" action="">
+        <form id="tournaments-filter" method="post" action="<?php echo esc_url( manage_url( 'tournaments' ) ); ?>">
             <?php wp_nonce_field( 'racketmanager_tournaments-bulk', 'racketmanager_nonce' ); ?>
             <div class="mb-2">
                 <!-- Bulk Actions -->
@@ -109,7 +111,7 @@ if ( $vm ) {
                         ?>
                         <tr>
                             <td class="check-column"><label for="tournament-<?php echo esc_html( $tournament->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $tournament->id ); ?>" name="tournament[<?php echo esc_html( $tournament->id ); ?>]" id="tournament-<?php echo esc_html( $tournament->id ); ?>" /></td>
-                            <td><a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_html( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?> "><?php echo esc_html( $tournament->name ); ?></a></td>
+                            <td><a href="<?php echo esc_url( manage_url( 'tournaments', 'tournament', [ 'tournament' => (string) $tournament->id, 'season' => (string) $tournament->season ] ) ); ?>"><?php echo esc_html( $tournament->name ); ?></a></td>
                             <td class="d-none d-md-table-cell"><?php echo esc_html( $tournament->season ); ?></td>
                             <td><?php echo esc_html( $tournament->get_meta( 'venue_name' ) ); ?></td>
                             <td class="d-none d-md-table-cell"><?php echo esc_html( $tournament->date_end ); ?></td>
@@ -123,6 +125,6 @@ if ( $vm ) {
     </div>
     <div class="mb-3">
         <!-- Add New Tournament -->
-        <a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=modify" class="btn btn-primary submit"><?php esc_html_e( 'Add Tournament', 'racketmanager' ); ?></a>
+        <a href="<?php echo esc_url( manage_url( 'tournaments', 'modify' ) ); ?>" class="btn btn-primary submit"><?php esc_html_e( 'Add Tournament', 'racketmanager' ); ?></a>
     </div>
 </div>

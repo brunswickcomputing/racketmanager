@@ -8,7 +8,9 @@ declare( strict_types=1 );
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\League_Constitution_Page_View_Model;
 use Racketmanager\Util\Util_Lookup;
+use stdClass;
 
 /** @var object $event */
 /** @var array  $seasons */
@@ -22,7 +24,7 @@ use Racketmanager\Util\Util_Lookup;
 /** @var bool   $constitution_exists */
 /** @var bool   $updates_allowed */
 /** @var array  $standing_status */
-/** @var \Racketmanager\Admin\View_Models\League_Constitution_Page_View_Model|\stdClass $vm */
+/** @var League_Constitution_Page_View_Model|stdClass $vm */
 $event         = $event ?? $vars['event'] ?? $vm->event;
 $seasons       = $seasons ?? $vars['seasons'] ?? $vm->seasons;
 $event_seasons = $event_seasons ?? $vars['event_seasons'] ?? $vm->event_seasons ?? array();
@@ -52,13 +54,41 @@ if ( empty( $event->is_box ) && empty( $seasons ) ) {
     $standing_status     = $standing_status ?? $vars['standing_status'] ?? $vm->standing_status ?? Util_Lookup::get_standing_statuses();
     ?>
     <h2 class="header"><?php esc_html_e( 'Constitution', 'racketmanager' ); ?> - <?php echo esc_html( $latest_season ); ?></h2>
-    <form id="teams-filter" method="post" action="">
+    <form id="teams-filter" method="post" action="
+    <?php
+    echo esc_url(
+        manage_url(
+            'leagues',
+            'constitution',
+            [
+                'competition_id' => $event->competition->id ?? '',
+                'event_id'       => (string) $event_id,
+                'season'         => $latest_season,
+            ]
+        )
+    );
+    ?>
+                                                    ">
         <div class="mb-3">
             <?php
             if ( $updates_allowed ) {
                 ?>
                 <input type="submit" value="<?php esc_html_e( 'Save', 'racketmanager' ); ?>" name="saveConstitution" id="saveConstitution" class="btn btn-primary action" />
-                <a id="addTeams" class="btn btn-secondary" href="/wp-admin/admin.php?page=racketmanager-leagues&amp;view=teams&amp;league_id=<?php echo esc_html( end( $leagues )->id ); ?>&amp;season=<?php echo esc_html( $latest_season ); ?>&amp;type=constitution"><?php esc_html_e( 'Add Teams', 'racketmanager' ); ?></a>
+                <a id="addTeams" class="btn btn-secondary" href="
+                <?php
+                echo esc_url(
+                    manage_url(
+                        'leagues',
+                        'teams',
+                        [
+                            'league_id' => (string) end( $leagues )->id,
+                            'season'    => $latest_season,
+                            'type'      => 'constitution',
+                        ]
+                    )
+                );
+                ?>
+                                                                    "><?php esc_html_e( 'Add Teams', 'racketmanager' ); ?></a>
                 <?php
             }
             ?>

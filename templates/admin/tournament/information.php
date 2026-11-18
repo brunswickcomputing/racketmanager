@@ -16,11 +16,11 @@ $vm = isset( $vm ) && ( $vm instanceof Tournament_Information_Page_View_Model ) 
 <div class='container'>
     <div class='row justify-content-end'>
         <div class='col-auto racketmanager_breadcrumb'>
-            <a href="/wp-admin/admin.php?page=racketmanager-tournaments"><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_attr( $vm->tournament->id ); ?>&amp;season=<?php echo esc_attr( $vm->tournament->season ); ?>"><?php echo esc_html( $vm->tournament->name ); ?></a> &raquo <?php esc_html_e( 'Information', 'racketmanager' ); ?>
+            <a href="<?php echo esc_url( manage_url( 'tournaments' ) ); ?>"><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <a href="<?php echo esc_url( manage_url( 'tournaments', 'tournament', [ 'tournament' => (string) $vm->tournament->id, 'season' => (string) $vm->tournament->season ] ) ); ?>"><?php echo esc_html( $vm->tournament->name ); ?></a> &raquo; <?php esc_html_e( 'Information', 'racketmanager' ); ?>
         </div>
     </div>
     <h1><?php esc_html_e( 'Information', 'racketmanager' ); ?></h1>
-    <form action="" method='post' enctype='multipart/form-data' name='tournament_information'>
+    <form action="<?php echo esc_url( manage_url( 'tournaments', 'information', [ 'tournament' => (string) $vm->tournament->id ] ) ); ?>" method='post' enctype='multipart/form-data' name='tournament_information'>
         <?php
         wp_nonce_field( 'racketmanager_tournament-information', 'racketmanager_nonce' );
         ?>

@@ -71,13 +71,23 @@ final class Clubs_And_Competitions_Portal_Integration_Test extends TestCase {
     public function test_clubs_and_competitions_are_enabled_in_section_registry(): void {
         $this->assertTrue( $this->registry->is_ported( 'clubs' ) );
         $this->assertTrue( $this->registry->is_ported( 'competitions' ) );
-        $this->assertFalse( $this->registry->is_ported( 'leagues' ) );
-        $this->assertFalse( $this->registry->is_ported( 'cups' ) );
+        $this->assertTrue( $this->registry->is_ported( 'leagues' ) );
+        $this->assertTrue( $this->registry->is_ported( 'cups' ) );
+        $this->assertTrue( $this->registry->is_ported( 'tournaments' ) );
+        $this->assertTrue( $this->registry->is_ported( 'results' ) );
+        $this->assertTrue( $this->registry->is_ported( 'players' ) );
+        $this->assertFalse( $this->registry->is_ported( 'seasons' ) );
+        $this->assertFalse( $this->registry->is_ported( 'finances' ) );
 
         $ported = $this->registry->get_ported_sections();
         $this->assertArrayHasKey( 'clubs', $ported );
         $this->assertArrayHasKey( 'competitions', $ported );
-        $this->assertCount( 2, $ported );
+        $this->assertArrayHasKey( 'leagues', $ported );
+        $this->assertArrayHasKey( 'cups', $ported );
+        $this->assertArrayHasKey( 'tournaments', $ported );
+        $this->assertArrayHasKey( 'results', $ported );
+        $this->assertArrayHasKey( 'players', $ported );
+        $this->assertCount( 7, $ported );
     }
 
     public function test_dispatches_clubs_subviews_to_admin_club_screen(): void {
@@ -196,11 +206,11 @@ final class Clubs_And_Competitions_Portal_Integration_Test extends TestCase {
         $this->assertFalse( $items_by_slug['competitions']->is_active );
 
         // Unported sections link to wp-admin
-        $this->assertFalse( $items_by_slug['leagues']->is_ported );
-        $this->assertStringContainsString( 'admin.php?page=racketmanager-leagues', $items_by_slug['leagues']->url );
+        $this->assertFalse( $items_by_slug['seasons']->is_ported );
+        $this->assertStringContainsString( 'admin.php?page=racketmanager-seasons', $items_by_slug['seasons']->url );
 
-        $this->assertFalse( $items_by_slug['cups']->is_ported );
-        $this->assertStringContainsString( 'admin.php?page=racketmanager-cups', $items_by_slug['cups']->url );
+        $this->assertFalse( $items_by_slug['finances']->is_ported );
+        $this->assertStringContainsString( 'admin.php?page=racketmanager-finances', $items_by_slug['finances']->url );
     }
 
     private function presenter_build_navigation( string $active_section ): \Racketmanager\Infrastructure\Wordpress\Portal\Portal_Navigation_View_Model {

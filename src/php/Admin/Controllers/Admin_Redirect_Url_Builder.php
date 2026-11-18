@@ -80,6 +80,31 @@ final class Admin_Redirect_Url_Builder {
     }
 
     /**
+     * Map an admin page slug to a portal section slug.
+     *
+     * @param string $page            Admin page slug.
+     * @param string $default_section Default section slug.
+     *
+     * @return string
+     */
+    private static function section_from_page( string $page, string $default_section = 'leagues' ): string {
+        return match ( $page ) {
+            'racketmanager-tournaments' => 'tournaments',
+            'racketmanager-cups'        => 'cups',
+            'racketmanager-clubs'       => 'clubs',
+            'racketmanager'             => 'competitions',
+            'racketmanager-results'     => 'results',
+            'racketmanager-players'     => 'players',
+            'racketmanager-seasons'     => 'seasons',
+            'racketmanager-finances'    => 'finances',
+            'racketmanager-settings'    => 'settings',
+            'racketmanager-import'      => 'import',
+            'racketmanager-doc'         => 'documentation',
+            default                     => $default_section,
+        };
+    }
+
+    /**
      * Preserve optional context parameters from request data.
      *
      * @param array<string, mixed> $query Typically $_GET.
@@ -136,7 +161,7 @@ final class Admin_Redirect_Url_Builder {
 
         $args = array_merge( $args, self::preserve_optional_context_params( $query, $post ) );
 
-        return add_query_arg( $args, admin_url( 'admin.php' ) );
+        return self::resolve_screen_url( 'tournaments', $args, 'racketmanager-tournaments' );
     }
 
     /**
@@ -161,7 +186,7 @@ final class Admin_Redirect_Url_Builder {
         );
 
         $args = array_merge( $args, self::preserve_optional_context_params( $query, $post ) );
-        return add_query_arg( $args, admin_url( 'admin.php' ) );
+        return self::resolve_screen_url( 'tournaments', $args, 'racketmanager-tournaments' );
     }
 
     /**
@@ -188,7 +213,7 @@ final class Admin_Redirect_Url_Builder {
 
         $args = array_merge( $args, self::preserve_optional_context_params( $query, $post ) );
 
-        return add_query_arg( $args, admin_url( 'admin.php' ) );
+        return self::resolve_screen_url( 'tournaments', $args, 'racketmanager-tournaments' );
     }
 
     /**
@@ -213,7 +238,7 @@ final class Admin_Redirect_Url_Builder {
 
         $args = array_merge( $args, self::preserve_optional_context_params( $query, $post ) );
 
-        return add_query_arg( $args, admin_url( 'admin.php' ) );
+        return self::resolve_screen_url( 'tournaments', $args, 'racketmanager-tournaments' );
     }
 
     /**
@@ -238,7 +263,7 @@ final class Admin_Redirect_Url_Builder {
         );
 
         $args = array_merge( $args, self::preserve_optional_context_params( $query, $post ) );
-        return add_query_arg( $args, admin_url( 'admin.php' ) );
+        return self::resolve_screen_url( 'tournaments', $args, 'racketmanager-tournaments' );
     }
 
     /**
@@ -268,7 +293,7 @@ final class Admin_Redirect_Url_Builder {
 
         $args = array_merge( $args, self::preserve_optional_context_params( $query, $post ) );
 
-        return add_query_arg( $args, admin_url( 'admin.php' ) );
+        return self::resolve_screen_url( 'tournaments', $args, 'racketmanager-tournaments' );
     }
 
     /**
@@ -291,7 +316,7 @@ final class Admin_Redirect_Url_Builder {
             $flags
         );
 
-        return add_query_arg( $args, admin_url( 'admin.php' ) );
+        return self::resolve_screen_url( 'tournaments', $args, 'racketmanager-tournaments' );
     }
 
     /**
@@ -315,7 +340,7 @@ final class Admin_Redirect_Url_Builder {
 
         $args = array_merge( $args, $extra_args );
 
-        return add_query_arg( $args, admin_url( 'admin.php' ) );
+        return self::resolve_screen_url( 'leagues', $args, 'racketmanager-leagues' );
     }
 
     /**
@@ -375,8 +400,12 @@ final class Admin_Redirect_Url_Builder {
      * @return string
      */
     public static function competition_screen( array $query = array(), array $extra_args = array() ): string {
+        $page = isset( $query['page'] ) && '' !== strval( $query['page'] )
+            ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) )
+            : strval( $extra_args['page'] ?? 'racketmanager-leagues' );
+
         $args = array(
-            'page' => isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-leagues',
+            'page' => $page,
         );
 
         foreach ( array( 'view', 'competition_id', 'season', 'tournament', 'tab' ) as $key ) {
@@ -387,7 +416,8 @@ final class Admin_Redirect_Url_Builder {
 
         $args = array_merge( $args, $extra_args );
 
-        return add_query_arg( $args, admin_url( 'admin.php' ) );
+        $section = self::section_from_page( strval( $args['page'] ?? $page ), 'leagues' );
+        return self::resolve_screen_url( $section, $args, 'racketmanager-leagues' );
     }
 
     /**
@@ -399,8 +429,12 @@ final class Admin_Redirect_Url_Builder {
      * @return string
      */
     public static function event_screen( array $query = array(), array $extra_args = array() ): string {
+        $page = isset( $query['page'] ) && '' !== strval( $query['page'] )
+            ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) )
+            : strval( $extra_args['page'] ?? 'racketmanager-leagues' );
+
         $args = array(
-            'page' => isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-leagues',
+            'page' => $page,
         );
 
         foreach ( array( 'view', 'competition_id', 'event_id', 'season', 'tournament', 'tab' ) as $key ) {
@@ -411,7 +445,8 @@ final class Admin_Redirect_Url_Builder {
 
         $args = array_merge( $args, $extra_args );
 
-        return add_query_arg( $args, admin_url( 'admin.php' ) );
+        $section = self::section_from_page( strval( $args['page'] ?? $page ), 'leagues' );
+        return self::resolve_screen_url( $section, $args, 'racketmanager-leagues' );
     }
 
     /**
@@ -459,7 +494,7 @@ final class Admin_Redirect_Url_Builder {
 
         $args = array_merge( $args, $extra_args );
 
-        return add_query_arg( $args, admin_url( 'admin.php' ) );
+        return self::resolve_screen_url( 'players', $args, 'racketmanager-players' );
     }
 
     /**
@@ -483,7 +518,7 @@ final class Admin_Redirect_Url_Builder {
 
         $args = array_merge( $args, $extra_args );
 
-        return add_query_arg( $args, admin_url( 'admin.php' ) );
+        return self::resolve_screen_url( 'cups', $args, 'racketmanager-cups' );
     }
 
     /**
@@ -507,7 +542,7 @@ final class Admin_Redirect_Url_Builder {
 
         $args = array_merge( $args, $extra_args );
 
-        return add_query_arg( $args, admin_url( 'admin.php' ) );
+        return self::resolve_screen_url( 'results', $args, 'racketmanager-results' );
     }
 
     /**
@@ -603,8 +638,12 @@ final class Admin_Redirect_Url_Builder {
      * @return string
      */
     public static function championship_screen( array $query = array(), array $extra_args = array() ): string {
+        $page = isset( $query['page'] ) && '' !== strval( $query['page'] )
+            ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) )
+            : strval( $extra_args['page'] ?? 'racketmanager-cups' );
+
         $args = array(
-            'page' => isset( $query['page'] ) && '' !== strval( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-cups',
+            'page' => $page,
         );
 
         foreach ( array( 'view', 'competition_id', 'league_id', 'league', 'tournament', 'season', 'tab', 'final' ) as $key ) {
@@ -615,7 +654,8 @@ final class Admin_Redirect_Url_Builder {
 
         $args = array_merge( $args, $extra_args );
 
-        return add_query_arg( $args, admin_url( 'admin.php' ) );
+        $section = self::section_from_page( strval( $args['page'] ?? $page ), 'cups' );
+        return self::resolve_screen_url( $section, $args, 'racketmanager-cups' );
     }
 
     /**
@@ -724,6 +764,7 @@ final class Admin_Redirect_Url_Builder {
 
         $args = array_merge( $args, self::preserve_optional_context_params( $query, $post ) );
 
-        return add_query_arg( $args, admin_url( 'admin.php' ) );
+        $section = self::section_from_page( $page, 'leagues' );
+        return self::resolve_screen_url( $section, $args, $page );
     }
 }

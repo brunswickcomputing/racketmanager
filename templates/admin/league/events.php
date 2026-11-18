@@ -50,7 +50,7 @@ $competition_events = $competition_events ?? $vars['competition_events'] ?? $vm-
                         }
                         ?>
                         <tr>
-                            <td><a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->get_type() ); ?>s&view=event&competition_id=<?php echo esc_attr( $competition->id ); ?>&event_id=<?php echo esc_attr( $event->event_id ); ?>&season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $event->event_name ); ?></a></td>
+                            <td><a href="<?php echo esc_url( manage_url( $competition->get_type() . 's', 'event', [ 'competition_id' => (string) $competition->id, 'event_id' => (string) $event->event_id, 'season' => (string) $season ] ) ); ?>"><?php echo esc_html( $event->event_name ); ?></a></td>
                             <td><?php echo esc_html( Util_Lookup::get_event_type( $event->format ) ); ?></td>
                             <td><?php echo esc_html( Util_Lookup::get_age_limit( $age_limit ) ) . esc_html( $age_offset ); ?></td>
                             <td class="text-end"><?php echo esc_html( $event->num_leagues ); ?></td>

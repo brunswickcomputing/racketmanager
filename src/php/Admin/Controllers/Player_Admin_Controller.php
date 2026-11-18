@@ -84,8 +84,14 @@ final readonly class Player_Admin_Controller {
         $page_referrer = $flash_data['form_data']['page_referrer'] ?? ( function_exists( 'wp_get_referer' ) ? wp_get_referer() : null );
         if ( ! $page_referrer ) {
             $page_referrer = empty( $club_id )
-                ? 'admin.php?page=racketmanager-players&tab=players'
-                : 'admin.php?page=racketmanager-clubs&view=players&club_id=' . $club_id;
+                ? Admin_Redirect_Url_Builder::players_screen( array(), array( 'view' => 'players' ) )
+                : Admin_Redirect_Url_Builder::club_screen(
+                    array(),
+                    array(
+                        'view'    => 'players',
+                        'club_id' => (string) $club_id,
+                    )
+                );
         }
 
         $player = $this->player_service->get_player( $player_id );

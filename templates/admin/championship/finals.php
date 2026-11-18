@@ -10,8 +10,10 @@ namespace Racketmanager;
 use Racketmanager\Admin\View_Models\Cup_Draw_Page_View_Model;
 use Racketmanager\Admin\View_Models\League_Standings_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
+use Racketmanager\Domain\Scoring\Set_Score;
+use stdClass;
 
-/** @var Tournament_Draw_Page_View_Model|Cup_Draw_Page_View_Model|League_Standings_Page_View_Model|\stdClass $vm */
+/** @var Tournament_Draw_Page_View_Model|Cup_Draw_Page_View_Model|League_Standings_Page_View_Model|stdClass $vm */
 // Read page and view generically from $vm or $vars before narrowing $vm.
 $page = $vm->page ?? ( $page ?? ( $vars['page'] ?? null ) ); //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 $view = $vm->view ?? ( $view ?? ( $vars['view'] ?? null ) );
@@ -31,7 +33,15 @@ if ( $draw_vm ) {
 }
 
 // Presented finals: from the draw view model, or supplied as $finals by the cup/league admin screens.
-$finals_list = $draw_vm ? $draw_vm->finals : ( $vm->finals ?? ( isset( $finals ) && is_array( $finals ) ? $finals : array() ) );
+if ( ! empty( $draw_vm ) ) {
+    $finals_list = $draw_vm->finals;
+} elseif ( ! empty( $vm->finals ) ) {
+    $finals_list = $vm->finals;
+} elseif ( ! empty( $finals ) && is_array( $finals ) ) {
+    $finals_list = $finals;
+} else {
+    $finals_list = array();
+}
 
 /** @var object $league */
 /** @var object $tournament */
@@ -39,21 +49,30 @@ $finals_list = $draw_vm ? $draw_vm->finals : ( $vm->finals ?? ( isset( $finals )
 /** @var string|null $page */
 /** @var string|null $view */
 ?>
+<?php
+$finals_section = 'cups';
+if ( ! empty( $tournament ) || 'racketmanager-tournaments' === $page ) {
+    $finals_section = 'tournaments';
+} elseif ( ! empty( $league->event->competition->is_league ) ) {
+    $finals_section = 'leagues';
+}
+?>
 <div class="championship-block">
     <div class="row justify-content-start gx-3 mb-3">
         <div class="col-auto mb-3 mb-md-0">
-            <form action="" method="get" class="form-control">
-                <input type="hidden" name="page" value="<?php echo esc_html( $page ); ?>" />
+            <form action="<?php echo esc_url( manage_url( $finals_section, $view ?? 'draw' ) ); ?>" method="get" class="form-control">
+                <?php if ( ! is_manage_portal_context() ) : ?>
+                    <input type="hidden" name="page" value="<?php echo esc_html( $page ); ?>" />
+                    <input type="hidden" name="view" value="<?php echo esc_html( $view ); ?>" />
+                <?php endif; ?>
                 <?php
                 if ( empty( $tournament ) ) {
                     ?>
-                    <input type="hidden" name="view" value="<?php echo esc_html( $view ); ?>" />
                     <input type="hidden" name="competition_id" value="<?php echo esc_attr( $league->event->competition->id ); ?>" />
                     <input type="hidden" name="league" value="<?php echo esc_html( $league->id ); ?>" />
                     <?php
                 } else {
                     ?>
-                    <input type="hidden" name="view" value="<?php echo esc_html( $view ); ?>" />
                     <input type="hidden" name="tournament" value="<?php echo esc_attr( $tournament->id ); ?>" />
                     <input type="hidden" name="league" value="<?php echo esc_html( $league->id ); ?>" />
                     <?php
@@ -61,7 +80,7 @@ $finals_list = $draw_vm ? $draw_vm->finals : ( $vm->finals ?? ( isset( $finals )
                 ?>
                 <input type="hidden" name="season" value="<?php echo esc_html( $league->current_season['name'] ); ?>" />
 
-                <label for="final" class="visually-hidden"><?php esc_html_e( 'Round', 'racketmanager'); ?></label><select size="1" name="final" id="final">
+                <label for="final" class="visually-hidden"><?php esc_html_e( 'Round', 'racketmanager' ); ?></label><select size="1" name="final" id="final">
                     <?php
                     foreach ( $finals_list as $final ) {
                         $final = (array) $final;
@@ -76,17 +95,18 @@ $finals_list = $draw_vm ? $draw_vm->finals : ( $vm->finals ?? ( isset( $finals )
             </form>
         </div>
         <div class="col-12 col-md-auto">
-            <form action="" method="get" class="form-control">
-                <input type="hidden" name="page" value="<?php echo esc_html( $page ); ?>" />
+            <form action="<?php echo esc_url( manage_url( $finals_section, 'fixtures' ) ); ?>" method="get" class="form-control">
+                <?php if ( ! is_manage_portal_context() ) : ?>
+                    <input type="hidden" name="page" value="<?php echo esc_html( $page ); ?>" />
+                    <input type="hidden" name="view" value="fixtures" />
+                <?php endif; ?>
                 <?php
                 if ( empty( $tournament ) ) {
                     ?>
-                    <input type="hidden" name="view" value="fixtures" />
                     <input type="hidden" name="competition_id" value="<?php echo esc_attr( $league->event->competition->id ); ?>" />
                     <?php
                 } else {
                     ?>
-                    <input type="hidden" name="view" value="fixtures" />
                     <input type="hidden" name="tournament" value="<?php echo esc_attr( $tournament->id ); ?>" />
                     <?php
                 }
@@ -131,10 +151,21 @@ $finals_list = $draw_vm ? $draw_vm->finals : ( $vm->finals ?? ( isset( $finals )
     }
     ?>
     <?php
-    $fixtures = $final['fixtures'] ?? array();
+    $fixtures         = $final['fixtures'] ?? array();
+    $finals_post_args = [
+        'league_id' => (string) $league->id,
+        'season'    => (string) $league->current_season['name'],
+    ];
+    if ( 'tournaments' === $finals_section && ! empty( $tournament ) ) {
+        $finals_post_args['tournament'] = (string) $tournament->id;
+        $finals_post_args['league']     = (string) $league->id;
+    } elseif ( 'cups' === $finals_section && isset( $league->event->competition->id ) ) {
+        $finals_post_args['competition_id'] = (string) $league->event->competition->id;
+        $finals_post_args['league']         = (string) $league->id;
+    }
     ?>
 
-    <form method="post" action="">
+    <form method="post" action="<?php echo esc_url( manage_url( $finals_section, $view ?? 'draw', $finals_post_args ) ); ?>">
         <?php wp_nonce_field( 'racketmanager_update-finals', 'racketmanager_nonce' ); ?>
         <input type="hidden" name="league_id" value="<?php echo esc_html( $league->id ); ?>" />
         <input type="hidden" name="season" value="<?php echo esc_html( $league->current_season['name'] ); ?>" />
@@ -227,13 +258,13 @@ $finals_list = $draw_vm ? $draw_vm->finals : ( $vm->finals ?? ( isset( $finals )
                                 </td>
                                 <?php
                             } else {
-                                $sets = empty( $match->custom[ 'sets' ] ) ? array() : $match->custom[ 'sets' ];
+                                $sets = empty( $match->custom['sets'] ) ? array() : $match->custom['sets'];
                                 for ( $i = 1; $i <= $league->num_sets; $i++ ) {
                                     $set = $sets[ $i ] ?? array();
-                                    $p1 = '';
-                                    $p2 = '';
-                                    $tb = '';
-                                    if ( $set instanceof \Racketmanager\Domain\Scoring\Set_Score ) {
+                                    $p1  = '';
+                                    $p2  = '';
+                                    $tb  = '';
+                                    if ( $set instanceof Set_Score ) {
                                         $p1 = $set->get_home_games();
                                         $p2 = $set->get_away_games();
                                         $tb = $set->get_home_tiebreak() ?? $set->get_away_tiebreak() ?? '';

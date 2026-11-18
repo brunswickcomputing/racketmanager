@@ -135,13 +135,13 @@ final class Portal_Page_Router_Test extends TestCase {
         $query_vars->method( 'get' )->willReturnCallback(
             fn( string $key ) => match ( $key ) {
                 'rm_manage'  => '1',
-                'rm_section' => 'leagues',
-                'rm_view'    => 'league',
+                'rm_section' => 'seasons',
+                'rm_view'    => 'seasons',
                 default      => '',
             }
         );
 
-        $_GET['league_id'] = '42';
+        $_GET['season_id'] = '42';
 
         $auth_guard = $this->createStub( Portal_Auth_Guard::class );
         $auth_guard->method( 'is_authenticated' )->willReturn( true );
@@ -152,14 +152,14 @@ final class Portal_Page_Router_Test extends TestCase {
         $router = $this->create_router( $query_vars, $auth_guard, $presenter );
         $router->handle_template_redirect();
 
-        $expected_redirect = admin_url( 'admin.php?page=racketmanager-leagues&view=league&league_id=42' );
+        $expected_redirect = admin_url( 'admin.php?page=racketmanager-seasons&view=seasons&season_id=42' );
         $this->assertSame(
             $expected_redirect,
             $GLOBALS['wp_stubs_last_redirect']['location'] ?? null
         );
         $this->assertSame( 302, $GLOBALS['wp_stubs_last_redirect']['status'] ?? null );
 
-        unset( $_GET['league_id'] );
+        unset( $_GET['season_id'] );
     }
 
     public function test_dispatches_ported_section_to_screen(): void {
@@ -179,7 +179,7 @@ final class Portal_Page_Router_Test extends TestCase {
         $auth_guard->method( 'is_authenticated' )->willReturn( true );
         $auth_guard->method( 'user_can' )->willReturn( true );
 
-        $fake_screen = new class {
+        $fake_screen = new class() {
             public bool $displayed = false;
             public function handle_display( string $view ): void {
                 $this->displayed = true;

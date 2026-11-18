@@ -40,18 +40,18 @@ if ( $vm ) {
 <div class='container'>
     <div class='row justify-content-end'>
         <div class='col-auto racketmanager_breadcrumb'>
-            <a href="/wp-admin/admin.php?page=racketmanager-tournaments"><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <?php echo empty( $edit ) ? '' : '<a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=' . esc_attr( $tournament->get_id() ) . '&amp;season=' . esc_attr( $tournament->get_season() ) . '">' . esc_html( $tournament->get_name() ) . '</a> &raquo '; ?><?php echo esc_html( $form_title ); ?>
+            <a href="<?php echo esc_url( manage_url( 'tournaments' ) ); ?>"><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <?php echo empty( $edit ) ? '' : '<a href="' . esc_url( manage_url( 'tournaments', 'tournament', [ 'tournament' => (string) $tournament->get_id(), 'season' => (string) $tournament->get_season() ] ) ) . '">' . esc_html( $tournament->get_name() ) . '</a> &raquo; '; ?><?php echo esc_html( $form_title ); ?>
         </div>
     </div>
     <h1><?php echo esc_html( $form_title ); ?></h1>
     <?php
-    if ( empty( $tournament->get_id() ) ) {
-        $action_form = 'admin.php?page=racketmanager-tournaments&amp;view=modify';
-    } else {
-        $action_form = 'admin.php?page=racketmanager-tournaments&amp;view=modify&amp;tournament=' . $tournament->get_id();
+    $action_form_args = array();
+    if ( ! empty( $tournament->get_id() ) ) {
+        $action_form_args['tournament'] = (string) $tournament->get_id();
     }
+    $action_form = manage_url( 'tournaments', 'modify', $action_form_args );
     ?>
-    <form action="<?php echo esc_html( $action_form ); ?>" method='post' enctype='multipart/form-data' name='tournament_edit'>
+    <form action="<?php echo esc_url( $action_form ); ?>" method='post' enctype='multipart/form-data' name='tournament_edit'>
         <?php
         if ( $edit ) {
             wp_nonce_field( 'racketmanager_manage-tournament', 'racketmanager_nonce' );

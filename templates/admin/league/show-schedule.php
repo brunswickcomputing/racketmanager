@@ -25,7 +25,7 @@ $has_schedule_report  = $report_conflicts || $report_alerts || $report_pairings;
 <div class="container">
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
-            <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->get_type() ); ?>s"><?php echo esc_html( ucfirst( $competition->get_type() ) ); ?>s</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->get_type() ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>"><?php echo esc_html( $competition->name ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->get_type() ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <?php esc_html_e( 'Schedule', 'racketmanager' ); ?>
+            <a href="<?php echo esc_url( manage_url( $competition->get_type() . 's' ) ); ?>"><?php echo esc_html( ucfirst( $competition->get_type() ) ); ?>s</a> &raquo; <a href="<?php echo esc_url( manage_url( $competition->get_type() . 's', 'seasons', [ 'competition_id' => (string) $competition->id ] ) ); ?>"><?php echo esc_html( $competition->name ); ?></a> &raquo; <a href="<?php echo esc_url( manage_url( $competition->get_type() . 's', 'overview', [ 'competition_id' => (string) $competition->id, 'season' => (string) $season ] ) ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <?php esc_html_e( 'Schedule', 'racketmanager' ); ?>
         </div>
     </div>
     <div class="row justify-content-between">
@@ -131,7 +131,7 @@ $has_schedule_report  = $report_conflicts || $report_alerts || $report_pairings;
         </div>
     <?php } ?>
     <div id="">
-        <form id='schedule-filter' method='post' action='' class='form-control mb-3'>
+        <form id='schedule-filter' method='post' action='<?php echo esc_url( manage_url( 'leagues', 'plan', [ 'competition_id' => (string) $competition->id, 'season' => (string) $season ] ) ); ?>' class='form-control mb-3'>
             <?php wp_nonce_field( 'racketmanager_schedule-matches', 'racketmanager_nonce' ); ?>
 
             <input type="hidden" name="competition_id" value="<?php echo esc_html( $competition_id ); ?>" />

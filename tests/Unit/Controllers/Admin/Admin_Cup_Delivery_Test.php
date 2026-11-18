@@ -557,7 +557,7 @@ final class Admin_Cup_Delivery_Test extends TestCase {
         $this->assertStringContainsString( 'page=racketmanager-cups', $output );
         $this->assertStringContainsString( 'Cup League', $output );
         $this->assertStringContainsString( 'Quarter Final', $output );
-        $this->assertStringContainsString( 'view=draw&amp;competition_id=5&amp;season=2024&amp;league=12', $output );
+        $this->assertMatchesRegularExpression( '#view=draw&(amp;)?competition_id=5&(amp;)?season=2024&(amp;)?league=12#', $output );
     }
 
     public function test_display_cup_plan_page_renders_with_season_and_flash_errors(): void {
@@ -842,7 +842,7 @@ final class Admin_Cup_Delivery_Test extends TestCase {
 
         $this->assertSame( array(), $warnings );
         $this->assertStringContainsString( 'Edit Match', $output );
-        $this->assertStringContainsString( 'action="/wp-admin/admin.php?page=racketmanager-cups&amp;view=draw&amp;competition_id=5&amp;league=12&amp;season=2024', $output );
+        $this->assertMatchesRegularExpression( '#action="[^"]*page=racketmanager-cups&(amp;)?view=draw&(amp;)?[^"]*competition_id=5[^"]*league=12#', $output );
     }
 
     public function test_handle_display_routes_teams_page(): void {

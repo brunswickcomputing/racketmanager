@@ -44,15 +44,16 @@ if ( $new_event ) {
 } else {
     $page_title = $event->name . ' - ' . __( 'config', 'racketmanager' );
 }
+$comp_type = $competition->get_type() . 's';
 if ( empty( $tournament ) ) {
     if ( $new_event ) {
-        $breadcrumb_link = '<a href="/wp-admin/admin.php?page=racketmanager-' . $competition->get_type() . 's&amp;view=seasons&amp;competition_id=' . $competition->id . '">' . $competition->name . '</a> &raquo; ' . __( 'New event', 'racketmanager' );
+        $breadcrumb_link = '<a href="' . esc_url( manage_url( $comp_type, 'seasons', [ 'competition_id' => (string) $competition->id ] ) ) . '">' . esc_html( $competition->name ) . '</a> &raquo; ' . __( 'New event', 'racketmanager' );
     } else {
-        $breadcrumb_link = '<a href="/wp-admin/admin.php?page=racketmanager-' . $competition->get_type() . 's&amp;view=seasons&amp;competition_id=' . $competition->id . '">' . $competition->name . '</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-' . $competition->get_type() . 's&amp;view=event&amp;competition_id=' . $competition->id . '&amp;event_id=' . $event->id . '&amp;season=' . $season . '">' . $event->name . '</a>';
+        $breadcrumb_link = '<a href="' . esc_url( manage_url( $comp_type, 'seasons', [ 'competition_id' => (string) $competition->id ] ) ) . '">' . esc_html( $competition->name ) . '</a> &raquo; <a href="' . esc_url( manage_url( $comp_type, 'event', [ 'competition_id' => (string) $competition->id, 'event_id' => (string) $event->id, 'season' => (string) $season ] ) ) . '">' . esc_html( $event->name ) . '</a>';
     }
     $add_link        = '';
 } else {
-    $breadcrumb_link = '<a href="/wp-admin/admin.php?page=racketmanager-' . $competition->get_type() . 's&amp;view=config&amp;competition_id=' . $competition->id . '&amp;tab=events&amp;tournament=' . $tournament->id . '">' . $tournament->name . '</a>';
+    $breadcrumb_link = '<a href="' . esc_url( manage_url( 'tournaments', 'config', [ 'competition_id' => (string) $competition->id, 'tab' => 'events', 'tournament' => (string) $tournament->id ] ) ) . '">' . esc_html( $tournament->name ) . '</a>';
     $add_link        = '&amp;tournament=' . $tournament->id;
 }
 ?>
@@ -66,7 +67,7 @@ if ( empty( $tournament ) ) {
 <div class="container">
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
-            <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->get_type() ); ?>s"><?php echo esc_html( ucfirst( $competition->get_type() ) ); ?>s</a> &raquo; <?php echo $breadcrumb_link; ?> &raquo; <?php esc_html_e( 'Configuration', 'racketmanager' ); ?>
+            <a href="<?php echo esc_url( manage_url( $comp_type ) ); ?>"><?php echo esc_html( ucfirst( $competition->get_type() ) ); ?>s</a> &raquo; <?php echo $breadcrumb_link; ?> &raquo; <?php esc_html_e( 'Configuration', 'racketmanager' ); ?>
         </div>
     </div>
     <div class="row justify-content-between">
@@ -74,7 +75,24 @@ if ( empty( $tournament ) ) {
             <h1><?php echo esc_html( $page_title ); ?></h1>
         </div>
         <div class="">
-            <form action="" method="post" class="">
+            <?php
+            $event_cfg_action_args = [];
+            if ( ! empty( $event->id ) ) {
+                $event_cfg_action_args['event_id'] = (string) $event->id;
+            }
+            if ( ! empty( $tournament ) ) {
+                $event_cfg_action_args['tournament'] = (string) $tournament->id;
+                $event_cfg_action_args['competition_id'] = (string) $competition->id;
+                $event_cfg_url = manage_url( 'tournaments', 'event-config', $event_cfg_action_args );
+            } else {
+                $event_cfg_action_args['competition_id'] = (string) $competition->id;
+                if ( $season ) {
+                    $event_cfg_action_args['season'] = (string) $season;
+                }
+                $event_cfg_url = manage_url( $comp_type, 'event-config', $event_cfg_action_args );
+            }
+            ?>
+            <form action="<?php echo esc_url( $event_cfg_url ); ?>" method="post" class="">
                 <?php wp_nonce_field( 'racketmanager_manage-event-config', 'racketmanager_nonce' ); ?>
                 <input type="hidden" class="active-tab" name="active-tab" value="<?php echo esc_html( $tab ); ?>" />
                 <div class="mb-3">

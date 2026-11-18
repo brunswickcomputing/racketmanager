@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+use BackedEnum;
 use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
@@ -17,10 +18,17 @@ use Racketmanager\Util\Util_Lookup;
 /** @var Event[] $events */
 /** @var int    $competition_id */
 /** @var string $add_link */
-$competition_type = $vm->competition->type instanceof \BackedEnum ? $vm->competition->type->value : (string) ( $vm->competition->type ?? '' );
+$competition_type  = $vm->competition->type instanceof BackedEnum ? $vm->competition->type->value : (string) ( $vm->competition->type ?? '' );
+$event_section     = 'tournament' === $competition_type ? 'tournaments' : $competition_type . 's';
+$config_event_args = [
+    'competition_id' => (string) $vm->competition->id,
+];
+if ( 'tournament' === $competition_type && ! empty( $vm->tournament ) ) {
+    $config_event_args['tournament'] = (string) $vm->tournament->id;
+}
 ?>
 <div class="mb-3 form-control">
-    <form id='events-action' method='post' action='' class='form-control mb-3'>
+    <form id='events-action' method='post' action='<?php echo esc_url( manage_url( $event_section, 'config', $config_event_args ) ); ?>' class='form-control mb-3'>
         <?php wp_nonce_field( 'racketmanager_events-bulk', 'racketmanager_event_nonce' ); ?>
         <input type="hidden" name="competition_id" value="<?php echo esc_html( $vm->competition->get_id() ); ?>" />
         <div class="row gx-3 mb-3 align-items-center">
@@ -51,11 +59,19 @@ $competition_type = $vm->competition->type instanceof \BackedEnum ? $vm->competi
                 ?>
                 <tbody>
                 <?php
-                foreach( $vm->events as $event ) {
+                foreach ( $vm->events as $event ) {
+                    $event_link_args = [
+                        'event_id'       => (string) $event->id,
+                        'competition_id' => (string) $vm->competition->id,
+                    ];
+                    if ( 'tournament' === $competition_type && ! empty( $vm->tournament ) ) {
+                        $event_link_args['tournament'] = (string) $vm->tournament->id;
+                    }
+                    $event_url = manage_url( $event_section, 'event', $event_link_args );
                     ?>
                     <tr>
                         <td class="check-column"><input type="checkbox" id="event-select-<?php echo esc_attr( $event->id ); ?>" value="<?php echo esc_html( $event->id ); ?>" name="event[<?php echo esc_html( $event->id ); ?>]" /><label for="event-select-<?php echo esc_attr( $event->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label></td>
-                        <td class=""><a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition_type ); ?>s&amp;view=event&amp;event_id=<?php echo esc_html( $event->id ); ?>&competition_id=<?php echo esc_attr( $vm->competition->id ); ?><?php echo esc_attr( $add_link ); ?>"><?php echo esc_html( $event->name ); ?></a></td>
+                        <td class=""><a href="<?php echo esc_url( $event_url ); ?>"><?php echo esc_html( $event->name ); ?></a></td>
                         <td class=""><?php echo esc_html( Util_Lookup::get_event_type( $event->type ) ); ?></td>
                         <td class=""><?php echo esc_html( Util_Lookup::get_age_limit( $event->age_limit ) ); ?></td>
                     </tr>
@@ -71,5 +87,5 @@ $competition_type = $vm->competition->type instanceof \BackedEnum ? $vm->competi
 </div>
 <div class="mb-3">
     <!-- Add New Event -->
-    <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition_type ); ?>s&amp;view=event-config&competition_id=<?php echo esc_attr( $vm->competition->id ); ?><?php echo esc_attr( $add_link ); ?>" class="btn btn-primary submit"><?php esc_html_e( 'Add Event', 'racketmanager' ); ?></a>
+    <a href="<?php echo esc_url( manage_url( $event_section, 'event-config', $config_event_args ) ); ?>" class="btn btn-primary submit"><?php esc_html_e( 'Add Event', 'racketmanager' ); ?></a>
 </div>

@@ -50,13 +50,13 @@ if ( $draw_vm ) {
         if ( $league->event->competition->is_tournament && ! empty( $tournament ) ) {
             ?>
             <li class="nav-item">
-                <a class="nav-link" href="/wp-admin/admin.php?page=racketmanager-tournaments&view=setup-event&tournament=<?php echo esc_attr( $tournament->id ); ?>&league=<?php echo esc_attr( $league->id ); ?>&season=<?php echo esc_attr( $tournament->season ); ?>" type="button" role="tab"><?php esc_html_e( 'Setup', 'racketmanager' ); ?></a>
+                <a class="nav-link" href="<?php echo esc_url( manage_url( 'tournaments', 'setup-event', [ 'tournament' => (string) $tournament->id, 'league' => (string) $league->id, 'season' => (string) $tournament->season ] ) ); ?>" type="button" role="tab"><?php esc_html_e( 'Setup', 'racketmanager' ); ?></a>
             </li>
             <?php
         } elseif ( $league->event->competition->is_cup ) {
             ?>
             <li class="nav-item">
-                <a class="nav-link" href="/wp-admin/admin.php?page=racketmanager-cups&view=setup-event&competition_id=<?php echo esc_attr( $league->event->competition->id ); ?>&league=<?php echo esc_attr( $league->id ); ?>&season=<?php echo esc_attr( $season ); ?>" type="button" role="tab"><?php esc_html_e( 'Setup', 'racketmanager' ); ?></a>
+                <a class="nav-link" href="<?php echo esc_url( manage_url( 'cups', 'setup-event', [ 'competition_id' => (string) $league->event->competition->id, 'league' => (string) $league->id, 'season' => (string) $season ] ) ); ?>" type="button" role="tab"><?php esc_html_e( 'Setup', 'racketmanager' ); ?></a>
             </li>
             <?php
         }

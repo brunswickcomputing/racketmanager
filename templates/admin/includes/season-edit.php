@@ -32,11 +32,12 @@ if ( isset( $form_errors ) && $form_errors instanceof Error_Bag ) {
     }
 }
 $is_invalid = false;
-$breadcrumb = '<a href="admin.php?page=racketmanager-' . $competition->get_type() . 's">' . ucfirst( $competition->get_type() ) . 's</a> &raquo; <a href="admin.php?page=racketmanager-' . $competition->get_type() . 's&amp;view=seasons&amp;competition_id=' . $competition->id . '">' . $competition->name . '</a> &raquo; ';
+$comp_type  = $competition->get_type() . 's';
+$breadcrumb = '<a href="' . esc_url( manage_url( $comp_type ) ) . '">' . esc_html( ucfirst( $competition->get_type() ) . 's' ) . '</a> &raquo; <a href="' . esc_url( manage_url( $comp_type, 'seasons', [ 'competition_id' => (string) $competition->id ] ) ) . '">' . esc_html( $competition->name ) . '</a> &raquo; ';
 if ( empty( $edit_mode ) ) {
     $add_season    = true;
     $modify_season = false;
-    $action_form   = 'admin.php?page=racketmanager-' . $competition->get_type() . 's&amp;view=modify&amp;competition_id=' . $competition->id;
+    $action_form   = manage_url( $comp_type, 'modify', [ 'competition_id' => (string) $competition->id ] );
     $action_text   = __( 'Add season', 'racketmanager' );
     /* translators: %s: competition name */
     $form_title  = sprintf( __( 'Add season to %s', 'racketmanager' ), $competition->name );
@@ -44,9 +45,9 @@ if ( empty( $edit_mode ) ) {
 } else {
     $add_season    = false;
     $modify_season = true;
-    $action_form   = 'admin.php?page=racketmanager-' . $competition->get_type() . 's&amp;view=modify&amp;competition_id=' . $competition->id . '&amp;season=' . $current_season->name;
+    $action_form   = manage_url( $comp_type, 'modify', [ 'competition_id' => (string) $competition->id, 'season' => (string) $current_season->name ] );
     $action_text   = __( 'Modify season', 'racketmanager' );
-    $breadcrumb   .= '<a href="admin.php?page=racketmanager-' . $competition->get_type() . 's&amp;view=overview&amp;competition_id=' . $competition->id . '&amp;season=' . $season . '">' . $season . '</a> &raquo; ';
+    $breadcrumb   .= '<a href="' . esc_url( manage_url( $comp_type, 'overview', [ 'competition_id' => (string) $competition->id, 'season' => (string) $season ] ) ) . '">' . esc_html( (string) $season ) . '</a> &raquo; ';
     /* translators: %s: competition name */
     $form_title  = sprintf( __( 'Modify season for %s', 'racketmanager' ), $competition->name );
     $form_action = __( 'Update', 'racketmanager' );

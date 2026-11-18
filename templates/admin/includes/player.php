@@ -41,6 +41,8 @@ if ( $club_id || isset( $club->id ) ) {
     $player_action_url = $player_id ? manage_url( 'clubs', 'player', array( 'club_id' => $cid, 'player_id' => (string) $player_id ) ) : manage_url( 'clubs', 'players', array( 'club_id' => $cid ) );
 } elseif ( $player_id ) {
     $player_action_url = manage_url( 'players', 'player', array( 'player_id' => (string) $player_id ) );
+} else {
+    $player_action_url = manage_url( 'players', 'players' );
 }
 ?>
 <form action="<?php echo esc_url( $player_action_url ); ?>" method="post">

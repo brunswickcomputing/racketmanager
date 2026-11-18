@@ -26,7 +26,7 @@ jQuery(document).ready(function(){
 <div class="container">
     <div class='row justify-content-end'>
         <div class='col-auto racketmanager_breadcrumb'>
-            <a href="/wp-admin/admin.php?page=racketmanager-tournaments"><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_attr( $tournament->get_id() ); ?>&amp;season=<?php echo esc_attr( $tournament->get_season() ); ?>"><?php echo esc_html( $tournament->get_name() ); ?></a> &raquo; <?php esc_html_e( 'Tournament Planner', 'racketmanager' ); ?>
+            <a href="<?php echo esc_url( manage_url( 'tournaments' ) ); ?>"><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <a href="<?php echo esc_url( manage_url( 'tournaments', 'tournament', [ 'tournament' => (string) $tournament->get_id(), 'season' => (string) $tournament->get_season() ] ) ); ?>"><?php echo esc_html( $tournament->get_name() ); ?></a> &raquo; <?php esc_html_e( 'Tournament Planner', 'racketmanager' ); ?>
         </div>
     </div>
     <h1><?php echo esc_html( $tournament->get_name() ); ?> - <?php esc_html_e( 'Plan', 'racketmanager' ); ?></h1>
@@ -60,7 +60,7 @@ jQuery(document).ready(function(){
     </ul>
     <div class="tab-content">
         <div class="tab-pane fade" id="config" role="tabpanel" aria-labelledby="config-tab">
-            <form id="tournamentDetails" class="form-control" method="POST">
+            <form id="tournamentDetails" class="form-control" method="POST" action="<?php echo esc_url( manage_url( 'tournaments', 'plan', [ 'tournament' => (string) $tournament->get_id() ] ) ); ?>">
                 <?php wp_nonce_field( 'racketmanager_tournament-finals-config', 'racketmanager_nonce' ); ?>
                 <input type="hidden" name="tournamentId" value="<?php echo esc_attr( $tournament->get_id() ); ?>" />
                 <div class="row g-3">
@@ -170,7 +170,7 @@ jQuery(document).ready(function(){
             if ( $max_schedules ) {
                 ?>
                 <h2><?php esc_html_e( 'Schedule', 'racketmanager' ); ?></h2>
-                <form id="tournament-planner" method="post" action="">
+                <form id="tournament-planner" method="post" action="<?php echo esc_url( manage_url( 'tournaments', 'plan', [ 'tournament' => (string) $tournament->get_id() ] ) ); ?>">
                     <?php wp_nonce_field( 'racketmanager_tournament-planner', 'racketmanager_nonce' ); ?>
                     <input type="hidden" name="numFinals" value="<?php echo esc_attr( count( $vm->final_matches ) ); ?>" />
                     <input type="hidden" name="numCourts" value="<?php echo esc_attr( $tournament->get_num_courts() ); ?>" />

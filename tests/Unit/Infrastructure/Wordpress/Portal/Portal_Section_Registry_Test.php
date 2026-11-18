@@ -38,8 +38,8 @@ final class Portal_Section_Registry_Test extends TestCase {
             $config = $this->registry->get( $slug );
             $this->assertNotNull( $config );
             $this->assertSame( $slug, $config->slug );
-            if ( in_array( $slug, [ 'competitions', 'clubs' ], true ) ) {
-                $this->assertTrue( $config->is_ported, "Expected {$slug} to be ported in Increment 1" );
+            if ( in_array( $slug, [ 'competitions', 'clubs', 'leagues', 'cups', 'tournaments', 'results', 'players' ], true ) ) {
+                $this->assertTrue( $config->is_ported, "Expected {$slug} to be ported in Increment 3" );
             } else {
                 $this->assertFalse( $config->is_ported, "Expected {$slug} to initially be unported" );
             }
@@ -54,19 +54,19 @@ final class Portal_Section_Registry_Test extends TestCase {
     }
 
     public function test_toggles_ported_status(): void {
-        $this->assertFalse( $this->registry->is_ported( 'leagues' ) );
+        $this->assertFalse( $this->registry->is_ported( 'seasons' ) );
         $initial_ported = $this->registry->get_ported_sections();
-        $this->assertArrayNotHasKey( 'leagues', $initial_ported );
+        $this->assertArrayNotHasKey( 'seasons', $initial_ported );
 
-        $this->registry->set_ported( 'leagues', true );
-        $this->assertTrue( $this->registry->is_ported( 'leagues' ) );
+        $this->registry->set_ported( 'seasons', true );
+        $this->assertTrue( $this->registry->is_ported( 'seasons' ) );
 
         $ported = $this->registry->get_ported_sections();
-        $this->assertArrayHasKey( 'leagues', $ported );
+        $this->assertArrayHasKey( 'seasons', $ported );
 
-        $this->registry->set_ported( 'leagues', false );
-        $this->assertFalse( $this->registry->is_ported( 'leagues' ) );
-        $this->assertArrayNotHasKey( 'leagues', $this->registry->get_ported_sections() );
+        $this->registry->set_ported( 'seasons', false );
+        $this->assertFalse( $this->registry->is_ported( 'seasons' ) );
+        $this->assertArrayNotHasKey( 'seasons', $this->registry->get_ported_sections() );
     }
 
     public function test_accepts_custom_sections(): void {

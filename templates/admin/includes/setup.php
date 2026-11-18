@@ -44,13 +44,14 @@ if ( empty( $league ) ) {
     <div class='row justify-content-end'>
         <div class='col-auto racketmanager_breadcrumb'>
             <?php
+            $comp_type = $competition->get_type() . 's';
             if ( ! empty( $event ) ) {
                 ?>
-                <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->get_type() ); ?>s"><?php echo esc_html( ucfirst( $competition->get_type() ) ); ?>s</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->get_type() ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>"><?php echo esc_html( $competition->name ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->get_type() ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->get_type() ); ?>s&amp;view=event&amp;event_id=<?php echo esc_attr( $event->id );  ?>&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $event->name ); ?></a> &raquo; <?php esc_html_e( 'Setup', 'racketmanager' ); ?>
+                <a href="<?php echo esc_url( manage_url( $comp_type ) ); ?>"><?php echo esc_html( ucfirst( $competition->get_type() ) ); ?>s</a> &raquo; <a href="<?php echo esc_url( manage_url( $comp_type, 'seasons', [ 'competition_id' => (string) $competition->id ] ) ); ?>"><?php echo esc_html( $competition->name ); ?></a> &raquo; <a href="<?php echo esc_url( manage_url( $comp_type, 'overview', [ 'competition_id' => (string) $competition->id, 'season' => (string) $season ] ) ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <a href="<?php echo esc_url( manage_url( $comp_type, 'event', [ 'event_id' => (string) $event->id, 'competition_id' => (string) $competition->id, 'season' => (string) $season ] ) ); ?>"><?php echo esc_html( $event->name ); ?></a> &raquo; <?php esc_html_e( 'Setup', 'racketmanager' ); ?>
                 <?php
             } else {
                 ?>
-                <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->get_type() ); ?>s"><?php echo esc_html( ucfirst( $competition->get_type() ) ); ?>s</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->get_type() ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>"><?php echo esc_html( $competition->name ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->get_type() ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <?php esc_html_e( 'Setup', 'racketmanager' ); ?>
+                <a href="<?php echo esc_url( manage_url( $comp_type ) ); ?>"><?php echo esc_html( ucfirst( $competition->get_type() ) ); ?>s</a> &raquo; <a href="<?php echo esc_url( manage_url( $comp_type, 'seasons', [ 'competition_id' => (string) $competition->id ] ) ); ?>"><?php echo esc_html( $competition->name ); ?></a> &raquo; <a href="<?php echo esc_url( manage_url( $comp_type, 'overview', [ 'competition_id' => (string) $competition->id, 'season' => (string) $season ] ) ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <?php esc_html_e( 'Setup', 'racketmanager' ); ?>
                 <?php
             }
             ?>
@@ -63,8 +64,19 @@ if ( empty( $league ) ) {
         <h2><?php echo esc_html( $event->name ); ?></h2>
         <?php
     }
+    $setup_args = [
+        'season' => (string) $season,
+    ];
+    if ( ! empty( $event ) ) {
+        $setup_args['event_id']       = (string) $event->id;
+        $setup_args['competition_id'] = (string) $competition->id;
+        $setup_form_action = manage_url( $comp_type, 'setup-event', $setup_args );
+    } else {
+        $setup_args['competition_id'] = (string) $competition->id;
+        $setup_form_action = manage_url( $comp_type, 'setup', $setup_args );
+    }
     ?>
-    <form method="post" class="form-control mb-3">
+    <form method="post" action="<?php echo esc_url( $setup_form_action ); ?>" class="form-control mb-3">
         <?php wp_nonce_field( 'racketmanager_add_championship-fixtures', 'racketmanager_nonce' ); ?>
         <?php
         if ( ! empty( $event ) ) {
@@ -127,7 +139,7 @@ if ( empty( $league ) ) {
     <?php
     if ( empty( $event ) ) {
         ?>
-        <form method="post" class="mb-3">
+        <form method="post" action="<?php echo esc_url( manage_url( $comp_type, 'setup', [ 'competition_id' => (string) $competition->id, 'season' => (string) $season ] ) ); ?>" class="mb-3">
             <?php wp_nonce_field( 'racketmanager_calculate_ratings', 'racketmanager_nonce' ); ?>
             <input type="hidden" name="season" value="<?php echo esc_attr( $season ); ?>" />
             <input type="hidden" name="competition_id" value="<?php echo esc_attr( $competition->id ); ?>" />

@@ -17,9 +17,11 @@ $errors          = $vm->errors;
 $tooltip_left = 'data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="';
 ?>
 <!-- Club Player Request Filter -->
-<form id="club-player-request-selection" method="get" action="" class="form-control mb-3">
-    <input type="hidden" name="page" value="racketmanager-players" />
-    <input type="hidden" name="view" value="requests" />
+<form id="club-player-request-selection" method="get" action="<?php echo esc_url( manage_url( 'players', 'requests' ) ); ?>" class="form-control mb-3">
+    <?php if ( ! is_manage_portal_context() ) : ?>
+        <input type="hidden" name="page" value="racketmanager-players" />
+        <input type="hidden" name="view" value="requests" />
+    <?php endif; ?>
     <div class="col-auto">
         <label for="club" class="visually-hidden"><?php esc_html_e( 'Club selection', 'racketmanager' ); ?></label>
         <select class="select" name="club" id="club">
@@ -41,7 +43,7 @@ $tooltip_left = 'data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title
     </div>
 </form>
 
-<form id="club-player-request-filter" method="post" action="" class="form-control">
+<form id="club-player-request-filter" method="post" action="<?php echo esc_url( manage_url( 'players', 'requests' ) ); ?>" class="form-control">
     <?php wp_nonce_field( 'racketmanager_club-player-request-bulk', 'racketmanager_nonce' ); ?>
 
     <div class="mb-3">

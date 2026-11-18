@@ -28,11 +28,11 @@ foreach ( $errors->all() as $err_fld => $err_msg ) {
             <?php
             if ( isset( $club_id ) && ! empty( $club ) ) {
                 ?>
-                <a href="/wp-admin/admin.php?page=racketmanager-clubs"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-clubs&view=players&club_id=<?php echo esc_attr( $club_id ); ?>"><?php echo esc_html( $club->shortcode ?? '' ); ?></a> &raquo; <?php esc_html_e( 'Players', 'racketmanager' ); ?>
+                <a href="<?php echo esc_url( manage_url( 'clubs' ) ); ?>"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></a> &raquo; <a href="<?php echo esc_url( manage_url( 'clubs', 'players', array( 'club_id' => (string) $club_id ) ) ); ?>"><?php echo esc_html( $club->shortcode ?? '' ); ?></a> &raquo; <?php esc_html_e( 'Players', 'racketmanager' ); ?>
                 <?php
             } else {
                 ?>
-                <a href="/wp-admin/admin.php?page=racketmanager-players"><?php esc_html_e( 'Players', 'racketmanager' ); ?></a>
+                <a href="<?php echo esc_url( manage_url( 'players' ) ); ?>"><?php esc_html_e( 'Players', 'racketmanager' ); ?></a>
                 <?php
             }
             ?>
@@ -48,7 +48,7 @@ foreach ( $errors->all() as $err_fld => $err_msg ) {
     if ( isset( $player_id ) ) {
         ?>
         <div class="">
-            <a href="<?php echo esc_url( $page_referrer ?? 'admin.php?page=racketmanager-players&tab=players' ); ?>" class="button button-secondary"><?php esc_html_e( 'Back', 'racketmanager' ); ?></a>
+            <a href="<?php echo esc_url( $page_referrer ?? manage_url( 'players', 'players' ) ); ?>" class="button button-secondary"><?php esc_html_e( 'Back', 'racketmanager' ); ?></a>
         </div>
         <?php
     }

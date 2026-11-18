@@ -59,11 +59,11 @@ if ( empty( $league ) ) {
             <?php
             if ( empty( $league ) ) {
                 ?>
-                <a href="/wp-admin/admin.php?page=racketmanager-tournaments"><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>"><?php echo esc_html( $tournament->name ); ?></a> &raquo; <?php esc_html_e( 'Setup', 'racketmanager' ); ?>
+                <a href="<?php echo esc_url( manage_url( 'tournaments' ) ); ?>"><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <a href="<?php echo esc_url( manage_url( 'tournaments', 'tournament', [ 'tournament' => (string) $tournament->id, 'season' => (string) $tournament->season ] ) ); ?>"><?php echo esc_html( $tournament->name ); ?></a> &raquo; <?php esc_html_e( 'Setup', 'racketmanager' ); ?>
                 <?php
             } else {
                 ?>
-                <a href="/wp-admin/admin.php?page=racketmanager-tournaments"><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>"><?php echo esc_html( $tournament->name ); ?></a>  &raquo; <a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=draw&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>&amp;league=<?php echo esc_attr( $league->id ); ?>"><?php echo esc_html( $league->name ?? $league->title ?? '' ); ?></a> &raquo; <?php esc_html_e( 'Event Setup', 'racketmanager' ); ?>
+                <a href="<?php echo esc_url( manage_url( 'tournaments' ) ); ?>"><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <a href="<?php echo esc_url( manage_url( 'tournaments', 'tournament', [ 'tournament' => (string) $tournament->id, 'season' => (string) $tournament->season ] ) ); ?>"><?php echo esc_html( $tournament->name ); ?></a>  &raquo; <a href="<?php echo esc_url( manage_url( 'tournaments', 'draw', [ 'tournament' => (string) $tournament->id, 'season' => (string) $tournament->season, 'league' => (string) $league->id ] ) ); ?>"><?php echo esc_html( $league->name ?? $league->title ?? '' ); ?></a> &raquo; <?php esc_html_e( 'Event Setup', 'racketmanager' ); ?>
                 <?php
             }
             ?>
@@ -85,7 +85,16 @@ if ( empty( $league ) ) {
         <?php
     }
     ?>
-    <form method="post" class="form-control mb-3">
+    <?php
+    $setup_action_args = [
+        'tournament' => (string) $tournament->id,
+        'season'     => (string) $season,
+    ];
+    if ( ! empty( $league ) ) {
+        $setup_action_args['league'] = (string) $league->id;
+    }
+    ?>
+    <form method="post" action="<?php echo esc_url( manage_url( 'tournaments', 'setup-event', $setup_action_args ) ); ?>" class="form-control mb-3">
         <?php wp_nonce_field( 'racketmanager_add_championship-fixtures', 'racketmanager_nonce' ); ?>
         <?php
         if ( empty( $league ) ) {
@@ -159,7 +168,7 @@ if ( empty( $league ) ) {
     <?php
     if ( empty( $league ) ) {
         ?>
-        <form method="post" class="mb-3">
+        <form method="post" action="<?php echo esc_url( manage_url( 'tournaments', 'setup-event', [ 'tournament' => (string) $tournament->id, 'season' => (string) $season ] ) ); ?>" class="mb-3">
             <?php wp_nonce_field( 'racketmanager_calculate_ratings', 'racketmanager_nonce' ); ?>
             <input type="hidden" name="season" value="<?php echo esc_attr( $season ); ?>" />
             <input type="hidden" name="tournament_id" value="<?php echo esc_attr( $tournament->id ); ?>" />

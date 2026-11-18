@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+use BackedEnum;
+
 /** @var object $event */
 /** @var string $season */
 /** @var int    $league_id */
@@ -20,7 +22,7 @@ if ( empty( $event ) ) {
     return;
 }
 $season             = $season ?? $vars['season'] ?? ( isset( $vm ) ? ( $vm->season ?? '' ) : '' );
-$competition_type   = $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
+$competition_type   = $event->competition->type instanceof BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
 $leagues            = $leagues ?? $vars['leagues'] ?? ( isset( $vm ) ? ( $vm->leagues ?? array() ) : array() );
 $league_matches_map = $league_matches_map ?? $vars['league_matches_map'] ?? ( isset( $vm ) ? ( $vm->league_matches_map ?? array() ) : array() );
 $league_name        = $league_name ?? $vars['league_name'] ?? $vars['league_title'] ?? $vm->league_name ?? $vm->league_title ?? '';
@@ -31,7 +33,21 @@ $tournament         = $tournament ?? $vars['tournament'] ?? ( isset( $vm ) ? ( $
 ?>
 <div class>
     <div class="row gx-3 align-items-center mb-3">
-        <form id="leagues-filter" method="post" action="" class="form-control">
+        <form id="leagues-filter" method="post" action="
+        <?php
+        echo esc_url(
+            manage_url(
+                $competition_type . 's',
+                'event',
+                [
+                    'event_id'       => (string) ( $event->id ?? '' ),
+                    'competition_id' => (string) ( $event->competition->id ?? '' ),
+                    'season'         => $season,
+                ]
+            )
+        );
+        ?>
+        " class="form-control">
             <?php wp_nonce_field( 'leagues-bulk', 'racketmanager_nonce' ); ?>
             <div class="row gx-3 mb-3 align-items-center">
                 <!-- Bulk Actions -->
@@ -93,7 +109,20 @@ $tournament         = $tournament ?? $vars['tournament'] ?? ( isset( $vm ) ? ( $
                                     <label for="league-<?php echo esc_html( $league->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $league->id ); ?>" name="league[<?php echo esc_html( $league->id ); ?>]" id="league-<?php echo esc_html( $league->id ); ?>" />
                                 </td>
                                 <td class="">
-                                    <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition_type ); ?>s&amp;view=league&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;season=<?php echo esc_html( $season ); ?>"><?php echo esc_html( $league->name ?? $league->title ?? '' ); ?></a>
+                                    <a href="
+                                    <?php
+                                    echo esc_url(
+                                        manage_url(
+                                            $competition_type . 's',
+                                            'league',
+                                            [
+                                                'league_id' => (string) $league->id,
+                                                'season' => $season,
+                                            ]
+                                        )
+                                    );
+                                    ?>
+                                                "><?php echo esc_html( $league->name ?? $league->title ?? '' ); ?></a>
                                 </td>
                                 <td class="">
                                     <?php echo esc_html( $league->num_teams_total ); ?>
@@ -112,7 +141,22 @@ $tournament         = $tournament ?? $vars['tournament'] ?? ( isset( $vm ) ? ( $
                                     ?>
                                 </td>
                                 <td class="">
-                                    <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition_type ); ?>s&amp;view=event&amp;event_id=<?php echo esc_html( $event->id ); ?>&amp;edit_league=<?php echo esc_html( $league->id ); ?>"><?php esc_html_e( 'Edit', 'racketmanager' ); ?></a>
+                                    <a href="
+                                    <?php
+                                    echo esc_url(
+                                        manage_url(
+                                            $competition_type . 's',
+                                            'event',
+                                            [
+                                                'event_id' => (string) ( $event->id ?? '' ),
+                                                'competition_id' => (string) ( $event->competition->id ?? '' ),
+                                                'season'   => $season,
+                                                'edit_league' => (string) $league->id,
+                                            ]
+                                        )
+                                    );
+                                    ?>
+                                                "><?php esc_html_e( 'Edit', 'racketmanager' ); ?></a>
                                 </td>
                             </tr>
                             <?php
@@ -130,14 +174,24 @@ $tournament         = $tournament ?? $vars['tournament'] ?? ( isset( $vm ) ? ( $
         ?>
         <!-- Add New League -->
             <?php
-        if ( ! $league_id ) {
+            if ( ! $league_id ) {
                 $form_action = __( 'Add League', 'racketmanager' );
             } else {
                 $form_action = __( 'Update League', 'racketmanager' );
             }
             ?>
         <h3><?php echo esc_html( $form_action ); ?></h3>
-        <form action="" method="post" class="form-control">
+        <?php
+        $add_league_args = [
+            'event_id'       => (string) $event_id,
+            'competition_id' => (string) ( $event->competition->id ?? '' ),
+            'season'         => $season,
+        ];
+        if ( $league_id ) {
+            $add_league_args['edit_league'] = (string) $league_id;
+        }
+        ?>
+        <form action="<?php echo esc_url( manage_url( $competition_type . 's', 'event', $add_league_args ) ); ?>" method="post" class="form-control">
             <?php wp_nonce_field( 'racketmanager_add-league', 'racketmanager_nonce' ); ?>
             <input type="hidden" name="event_id" value="<?php echo esc_html( $event_id ); ?>" />
             <input type="hidden" name="league_id" value="<?php echo esc_html( $league_id ); ?>" />

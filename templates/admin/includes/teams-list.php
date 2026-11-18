@@ -31,16 +31,15 @@ if ( 'constitution' === $action_type ) {
     $page_title = __( 'Add Teams to Constitution', 'racketmanager' );
     $page_link  = $league->event->name;
     $breadcrumb = 'show-event&amp;event_id=' . $league->event_id;
-    $link_ref   = 'admin.php?page=racketmanager-leagues&view=constitution&amp;event_id=' . $league->event_id . '&amp;season=' . $season;
+    $link_ref   = manage_url( 'leagues', 'constitution', [ 'event_id' => (string) $league->event_id, 'season' => (string) $season ] );
 } else {
     $page_title = __( 'Add Teams to League', 'racketmanager' );
     $page_link  = $league->name ?? $league->title ?? '';
     $breadcrumb = 'show-league&amp;league_id=' . $league->id;
-    $link_ref   = 'admin.php?page=racketmanager-' . $competition_type . 's&amp;season=' . $season;
-    $link_ref  .= match ( $competition_type ) {
-        'cup' => '&amp;competition_id=' . $league->event->competition->id . '&amp;view=draw&amp;league=' . $league->id,
-        'tournament' => '&amp;tournament=' . $tournament_id . '&amp;view=draw&amp;league=' . $league->id,
-        default => '&view=league&amp;league_id=' . $league->id,
+    $link_ref   = match ( $competition_type ) {
+        'cup' => manage_url( 'cups', 'draw', [ 'competition_id' => (string) $league->event->competition->id, 'league' => (string) $league->id, 'season' => (string) $season ] ),
+        'tournament' => manage_url( 'tournaments', 'draw', [ 'tournament' => (string) $tournament_id, 'league' => (string) $league->id, 'season' => (string) $season ] ),
+        default => manage_url( 'leagues', 'league', [ 'league_id' => (string) $league->id, 'season' => (string) $season ] ),
     };
 }
 $main_title = $page_link . ' - ' . $page_title;
@@ -52,17 +51,17 @@ $main_title = $page_link . ' - ' . $page_title;
             switch ( $competition_type ) {
                 case 'cup':
                     ?>
-                    <a href="/wp-admin/admin.php?page=racketmanager-"><?php esc_html_e( 'RacketManager', 'racketmanager' ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager&amp;subpage=<?php echo esc_html( $breadcrumb ); ?>"><?php echo esc_html( $page_link ); ?></a> &raquo; <?php echo esc_html( $page_title ); ?>
+                    <a href="<?php echo esc_url( manage_url( 'cups' ) ); ?>"><?php esc_html_e( 'Cups', 'racketmanager' ); ?></a> &raquo; <a href="<?php echo esc_url( manage_url( 'cups', 'draw', [ 'competition_id' => (string) $league->event->competition->id, 'league' => (string) $league->id, 'season' => (string) $season ] ) ); ?>"><?php echo esc_html( $page_link ); ?></a> &raquo; <?php echo esc_html( $page_title ); ?>
                     <?php
                     break;
                 case 'tournament':
                     ?>
-                    <a href="/wp-admin/admin.php?page=racketmanager-tournaments"><?php esc_html_e( 'Tournaments', 'racketmanager' ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>"><?php echo esc_html( $tournament->name ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=draw&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>&amp;league=<?php echo esc_attr( $league->id ); ?>"><?php echo esc_html( $league->name ?? $league->title ?? '' ); ?></a> &raquo; <?php echo esc_html( $page_title ); ?>
+                    <a href="<?php echo esc_url( manage_url( 'tournaments' ) ); ?>"><?php esc_html_e( 'Tournaments', 'racketmanager' ); ?></a> &raquo; <a href="<?php echo esc_url( manage_url( 'tournaments', 'tournament', [ 'tournament' => (string) $tournament->id, 'season' => (string) $tournament->season ] ) ); ?>"><?php echo esc_html( $tournament->name ); ?></a> &raquo; <a href="<?php echo esc_url( manage_url( 'tournaments', 'draw', [ 'tournament' => (string) $tournament->id, 'season' => (string) $tournament->season, 'league' => (string) $league->id ] ) ); ?>"><?php echo esc_html( $league->name ?? $league->title ?? '' ); ?></a> &raquo; <?php echo esc_html( $page_title ); ?>
                     <?php
                     break;
                 default:
                     ?>
-                    <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition_type ); ?>s"><?php echo esc_html( ucfirst( $competition_type ) ); ?>s</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition_type ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_html( $league->event->competition->id ); ?>"><?php echo esc_html( $league->event->competition->name ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition_type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $league->event->competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition_type ); ?>s&amp;view=constitution&amp;event_id=<?php echo esc_html( $league->event_id ); ?>"><?php echo esc_html( $league->event->name ); ?></a> &raquo; <?php echo esc_html( $page_title ); ?>
+                    <a href="<?php echo esc_url( manage_url( $competition_type . 's' ) ); ?>"><?php echo esc_html( ucfirst( $competition_type ) ); ?>s</a> &raquo; <a href="<?php echo esc_url( manage_url( $competition_type . 's', 'seasons', [ 'competition_id' => (string) $league->event->competition->id ] ) ); ?>"><?php echo esc_html( $league->event->competition->name ); ?></a> &raquo; <a href="<?php echo esc_url( manage_url( $competition_type . 's', 'overview', [ 'competition_id' => (string) $league->event->competition->id, 'season' => (string) $season ] ) ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <a href="<?php echo esc_url( manage_url( $competition_type . 's', 'constitution', [ 'event_id' => (string) $league->event_id, 'season' => (string) $season ] ) ); ?>"><?php echo esc_html( $league->event->name ); ?></a> &raquo; <?php echo esc_html( $page_title ); ?>
                     <?php
                     break;
             }
@@ -70,7 +69,7 @@ $main_title = $page_link . ' - ' . $page_title;
         </div>
     </div>
     <h1><?php echo esc_html( $main_title ); ?></h1>
-    <form id="teams-filter" action="<?php echo esc_html( $link_ref ); ?>" method="post" enctype="multipart/form-data" name="teams_add">
+    <form id="teams-filter" action="<?php echo esc_url( $link_ref ); ?>" method="post" enctype="multipart/form-data" name="teams_add">
         <?php wp_nonce_field( 'racketmanager_add-teams-bulk', 'racketmanager_nonce' ); ?>
         <input type="hidden" name="event_id" value="<?php echo esc_html( $league->event->id ); ?>" />
         <input type="hidden" name="league_id" value="<?php echo esc_html( $league_id ); ?>" />

@@ -27,7 +27,8 @@ if ( isset( $vm ) && $vm instanceof Competition_Seasons_Page_View_Model ) {
     <div class="container">
         <div class="row justify-content-end">
             <div class="col-auto racketmanager_breadcrumb">
-                <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->get_type() ); ?>s"><?php echo esc_html( ucfirst( $competition->get_type() ) ); ?>s</a> &raquo; <?php echo esc_html( $competition->name ); ?>
+                <?php $comp_type = $competition->get_type() . 's'; ?>
+                <a href="<?php echo esc_url( manage_url( $comp_type ) ); ?>"><?php echo esc_html( ucfirst( $competition->get_type() ) ); ?>s</a> &raquo; <?php echo esc_html( $competition->name ); ?>
             </div>
         </div>
         <div class="row justify-content-between">
@@ -42,13 +43,13 @@ if ( isset( $vm ) && $vm instanceof Competition_Seasons_Page_View_Model ) {
                         <div class="nav-link active" href="#" role="tab"><?php esc_html_e( 'Seasons', 'racketmanager' ); ?></div>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->get_type() ); ?>s&view=config&competition_id=<?php echo esc_attr( $competition->id ); ?>" type="button" role="tab"><?php esc_html_e( 'Configuration', 'racketmanager' ); ?></a>
+                        <a class="nav-link" href="<?php echo esc_url( manage_url( $comp_type, 'config', [ 'competition_id' => (string) $competition->id ] ) ); ?>" type="button" role="tab"><?php esc_html_e( 'Configuration', 'racketmanager' ); ?></a>
                     </li>
                 </ul>
             </nav>
         </div>
     </div>
-    <form id="seasons-filter" action="" method="post" class="form-control mb-3">
+    <form id="seasons-filter" action="<?php echo esc_url( manage_url( $comp_type, 'seasons', [ 'competition_id' => (string) $competition->id ] ) ); ?>" method="post" class="form-control mb-3">
         <?php wp_nonce_field( 'seasons-bulk', 'racketmanager_nonce' ); ?>
         <input type="hidden" name="competition_id" value="<?php echo esc_html( $competition_id ); ?>" />
         <div class="row gx-3 mb-3 align-items-center">
@@ -83,7 +84,7 @@ if ( isset( $vm ) && $vm instanceof Competition_Seasons_Page_View_Model ) {
                     ?>
                     <tr>
                         <td class="check-column"><label for="del_season-<?php echo esc_html( $key ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $key ); ?>" name="del_season[<?php echo esc_html( $key ); ?>]" id="del_season-<?php echo esc_html( $key ); ?>" /></td>
-                        <td><a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->get_type() ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_html( $competition->id ); ?>&amp;season=<?php echo esc_html( $key ); ?>"><?php echo esc_html( $season['name'] ); ?></a></td>
+                        <td><a href="<?php echo esc_url( manage_url( $comp_type, 'overview', [ 'competition_id' => (string) $competition->id, 'season' => (string) $key ] ) ); ?>"><?php echo esc_html( $season['name'] ); ?></a></td>
                         <td><?php echo empty( $season['date_start'] ) ? null : esc_html( $season['date_start'] ); ?></td>
                         <td><?php echo empty( $season['date_end'] ) ? null : esc_html( $season['date_end'] ); ?></td>
                         <td>
@@ -122,7 +123,7 @@ if ( isset( $vm ) && $vm instanceof Competition_Seasons_Page_View_Model ) {
     </form>
     <div class="mb-3">
         <!-- Add New Season -->
-        <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->get_type() ); ?>s&amp;view=modify&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>" class="btn btn-primary submit"><?php esc_html_e( 'Add Season', 'racketmanager' ); ?></a>
+        <a href="<?php echo esc_url( manage_url( $comp_type, 'modify', [ 'competition_id' => (string) $competition->id ] ) ); ?>" class="btn btn-primary submit"><?php esc_html_e( 'Add Season', 'racketmanager' ); ?></a>
     </div>
 </div>
 <script type="text/javascript">

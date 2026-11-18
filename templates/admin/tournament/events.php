@@ -50,7 +50,7 @@ if ( $vm ) {
                         foreach ( $event as $league ) {
                             ?>
                             <tr>
-                                <td><a href="/wp-admin/admin.php?page=racketmanager-tournaments&view=draw&tournament=<?php echo esc_attr( $tournament->id ); ?>&league=<?php echo esc_attr( $league->league_id ); ?>&season=<?php echo esc_attr( $tournament->season ); ?>"><?php echo esc_html( $league->league_name ); ?></a></td>
+                                <td><a href="<?php echo esc_url( manage_url( 'tournaments', 'draw', [ 'tournament' => (string) $tournament->id, 'league' => (string) $league->league_id, 'season' => (string) $tournament->season ] ) ); ?>"><?php echo esc_html( $league->league_name ); ?></a></td>
                                 <td><?php echo esc_html( $league->total_entries ); ?></td>
                                 <td>
                                     <?php

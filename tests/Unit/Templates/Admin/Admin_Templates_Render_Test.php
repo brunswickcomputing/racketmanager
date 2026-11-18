@@ -837,7 +837,7 @@ final class Admin_Templates_Render_Test extends TestCase {
         );
 
         self::assertEmpty( $warnings );
-        self::assertStringContainsString( 'href="/wp-admin/admin.php?page=racketmanager-cups&view=draw&competition_id=12&league=101&season=2026"', $html );
+        self::assertMatchesRegularExpression( '#href="https?://[^"]*page=racketmanager-cups&(amp;)?view=draw&(amp;)?competition_id=12&(amp;)?league=101&(amp;)?season=2026"#', $html );
         self::assertStringContainsString( 'Men Championship Draw', $html );
         self::assertMatchesRegularExpression( '#<td>\s*16\s*</td>#', $html );
         self::assertMatchesRegularExpression( '#<td>\s*8\s*</td>#', $html );

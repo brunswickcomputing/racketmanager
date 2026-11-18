@@ -87,7 +87,7 @@ $competition_overview = $competition_overview ?? $vars['competition_overview'] ?
     </div>
     <div class="row mb-3">
         <div class="col-auto">
-            <a role="button" class="btn btn-primary" href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->get_type() ); ?>s&amp;view=modify&amp;competition_id=<?php echo esc_html( $competition->id ); ?>&season=<?php echo esc_html( $season ); ?>"><?php esc_html_e( 'Edit season', 'racketmanager' ); ?></a>
+            <a role="button" class="btn btn-primary" href="<?php echo esc_url( manage_url( $competition->get_type() . 's', 'modify', [ 'competition_id' => (string) $competition->id, 'season' => (string) $season ] ) ); ?>"><?php esc_html_e( 'Edit season', 'racketmanager' ); ?></a>
             <?php
 //            if ( $current_season->is_open ) {
                 ?>

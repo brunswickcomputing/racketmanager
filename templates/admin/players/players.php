@@ -26,9 +26,11 @@ foreach ( $errors->all() as $err_fld => $err_msg ) {
     <?php require RACKETMANAGER_PATH . 'templates/admin/includes/player.php'; ?>
 </div>
 <div class="mb-3">
-    <form id="player-filter" method="get">
-        <input type="hidden" name="page" value="racketmanager-players" />
-        <input type="hidden" name="view" value="players" />
+    <form id="player-filter" method="get" action="<?php echo esc_url( manage_url( 'players', 'players' ) ); ?>">
+        <?php if ( ! is_manage_portal_context() ) : ?>
+            <input type="hidden" name="page" value="racketmanager-players" />
+            <input type="hidden" name="view" value="players" />
+        <?php endif; ?>
         <div class="row g-3 mb-3 align-items-center">
             <div class="col-auto">
                 <div class="form-floating">
@@ -41,7 +43,7 @@ foreach ( $errors->all() as $err_fld => $err_msg ) {
             </div>
         </div>
     </form>
-    <form id="player-action" method="post" action="" class="form-control">
+    <form id="player-action" method="post" action="<?php echo esc_url( manage_url( 'players', 'players' ) ); ?>" class="form-control">
         <?php wp_nonce_field( 'racketmanager_player-bulk', 'racketmanager_nonce' ); ?>
         <div class="row g-3 mb-3 align-items-center">
             <!-- Bulk Actions -->
@@ -84,7 +86,7 @@ foreach ( $errors->all() as $err_fld => $err_msg ) {
                             <?php } ?>
                         </div>
                         <div class="col-2 col-md-1 column-num"><?php echo esc_html( $player->id ); ?></div>
-                        <div class="col-4 col-md-2"><a href="/wp-admin/admin.php?page=racketmanager-players&amp;view=player&amp;player_id=<?php echo esc_html( $player->id ); ?>"><?php echo esc_html( $player->fullname ); ?></a></div>
+                        <div class="col-4 col-md-2"><a href="<?php echo esc_url( manage_url( 'players', 'player', array( 'player_id' => (string) $player->id ) ) ); ?>"><?php echo esc_html( $player->fullname ); ?></a></div>
                         <div class="col-2 col-md-1">
                             <button type="button" class="btn btn-secondary player-clubs" id="linkedClubs_<?php echo esc_html( $player->id ); ?>" data-bs-toggle="popover" data-bs-placement="left" data-bs-html="true">
                                 <svg width="16" height="16" class="icon icon-white" aria-label="club-link">

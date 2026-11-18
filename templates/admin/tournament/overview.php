@@ -70,7 +70,7 @@ if ( $vm ) {
     </div>
     <div class="row mb-3">
         <div class="col-auto">
-            <a class="btn btn-primary" href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=modify&amp;tournament=<?php echo esc_html( $overview->id ); ?> "><?php esc_html_e( 'Edit tournament', 'racketmanager' ); ?></a>
+            <a class="btn btn-primary" href="<?php echo esc_url( manage_url( 'tournaments', 'modify', [ 'tournament' => (string) $overview->id ] ) ); ?>"><?php esc_html_e( 'Edit tournament', 'racketmanager' ); ?></a>
             <?php
             if ( 'open' === $overview->phase ) {
                 ?>

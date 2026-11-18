@@ -33,9 +33,11 @@ $competition_type   = $league->event->competition->type instanceof BackedEnum ? 
 ?>
 <div class="row gx-3 justify-content-between mb-3">
     <div class="col-auto mb-3 mb-md-0">
-        <form id="matches-filter" method="get" class="form-control">
-            <input type="hidden" name="page" value="racketmanager-<?php echo esc_attr( $competition_type ); ?>s" />
-            <input type="hidden" name="view" value="league" />
+        <form id="matches-filter" method="get" action="<?php echo esc_url( manage_url( $competition_type . 's', 'league' ) ); ?>" class="form-control">
+            <?php if ( ! is_manage_portal_context() ) : ?>
+                <input type="hidden" name="page" value="racketmanager-<?php echo esc_attr( $competition_type ); ?>s" />
+                <input type="hidden" name="view" value="league" />
+            <?php endif; ?>
             <input type="hidden" name="league_id" value="<?php echo esc_attr( $league->id ); ?>" />
             <input type="hidden" name="season" value="<?php echo esc_html( $season ); ?>" />
             <div class="row gx-3 align-items-center">
@@ -89,9 +91,11 @@ $competition_type   = $league->event->competition->type instanceof BackedEnum ? 
         if ( ! empty( $league->current_season['num_match_days'] ) ) {
             ?>
             <!-- Bulk Editing of Matches -->
-            <form action="/admin.php" method="get" class="form-control">
-                <input type="hidden" name="page" value="racketmanager-<?php echo esc_attr( $competition_type ); ?>s" />
-                <input type="hidden" name="view" value="match" />
+            <form action="<?php echo esc_url( manage_url( $competition_type . 's', 'match' ) ); ?>" method="get" class="form-control">
+                <?php if ( ! is_manage_portal_context() ) : ?>
+                    <input type="hidden" name="page" value="racketmanager-<?php echo esc_attr( $competition_type ); ?>s" />
+                    <input type="hidden" name="view" value="match" />
+                <?php endif; ?>
                 <input type="hidden" name="league_id" value="<?php echo esc_attr( $league->id ); ?>" />
                 <input type="hidden" name="season" value="<?php echo esc_html( $league->current_season['name'] ); ?>" />
                 <input type="hidden" name="group" value="<?php echo esc_html( $group ); ?>" />
@@ -126,7 +130,7 @@ $competition_type   = $league->event->competition->type instanceof BackedEnum ? 
     </div>
 </div>
 
-<form id="matches-action" action="" method="post">
+<form id="matches-action" action="<?php echo esc_url( manage_url( $competition_type . 's', 'league', [ 'league_id' => (string) $league->id, 'season' => (string) $season ] ) ); ?>" method="post">
     <?php wp_nonce_field( 'racketmanager_matches-bulk', 'racketmanager_nonce' ); ?>
     <input type="hidden" name="current_match_day" value="<?php echo esc_html( $match_day ); ?>" />
     <input type="hidden" name="tab" value="matches" />

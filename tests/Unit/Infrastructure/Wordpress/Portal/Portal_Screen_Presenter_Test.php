@@ -11,6 +11,7 @@ use Racketmanager\Application\Ports\Manage_Url_Resolver_Interface;
 use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Infrastructure\Wordpress\Portal\Portal_Auth_Guard;
 use Racketmanager\Infrastructure\Wordpress\Portal\Portal_Layout_View_Model;
+use Racketmanager\Infrastructure\Wordpress\Portal\Portal_Navigation_Item;
 use Racketmanager\Infrastructure\Wordpress\Portal\Portal_Navigation_View_Model;
 use Racketmanager\Infrastructure\Wordpress\Portal\Portal_Screen_Presenter;
 use Racketmanager\Infrastructure\Wordpress\Portal\Portal_Section_Registry;
@@ -58,11 +59,110 @@ final class Portal_Screen_Presenter_Test extends TestCase {
                 $found_clubs = true;
                 $this->assertTrue( $item->is_active );
                 $this->assertSame( 'https://example.test/manage/clubs', $item->url );
+                $this->assertSame( 'Organizations', $item->group );
             } else {
                 $this->assertFalse( $item->is_active );
             }
         }
         $this->assertTrue( $found_clubs );
+    }
+
+    public function test_builds_navigation_with_expected_groups_and_slugs(): void {
+        $presenter = $this->create_presenter();
+        $nav_vm    = $presenter->build_navigation( 'leagues' );
+
+        // 12 visible sections (competitions has in_navigation: false).
+        $this->assertCount( 12, $nav_vm->items );
+
+        $slugs_and_groups = array_map(
+            static fn( $item ) => [ 'slug' => $item->slug, 'group' => $item->group ],
+            $nav_vm->items
+        );
+
+        $expected = [
+            [ 'slug' => 'overview', 'group' => '' ],
+            [ 'slug' => 'leagues', 'group' => 'Competitions' ],
+            [ 'slug' => 'cups', 'group' => 'Competitions' ],
+            [ 'slug' => 'tournaments', 'group' => 'Competitions' ],
+            [ 'slug' => 'clubs', 'group' => 'Organizations' ],
+            [ 'slug' => 'players', 'group' => 'Organizations' ],
+            [ 'slug' => 'results', 'group' => 'Audits & Operations' ],
+            [ 'slug' => 'seasons', 'group' => 'Administration' ],
+            [ 'slug' => 'finances', 'group' => 'Administration' ],
+            [ 'slug' => 'settings', 'group' => 'Administration' ],
+            [ 'slug' => 'import', 'group' => 'Administration' ],
+            [ 'slug' => 'documentation', 'group' => 'Administration' ],
+        ];
+
+        $this->assertSame( $expected, $slugs_and_groups );
+
+        // Test get_groups() DTO list structure and ordering
+        $groups = $nav_vm->get_groups();
+        $this->assertCount( 5, $groups );
+        $this->assertSame( '', $groups[0]->label );
+        $this->assertCount( 1, $groups[0]->items );
+        $this->assertSame( 'Competitions', $groups[1]->label );
+        $this->assertCount( 3, $groups[1]->items );
+        $this->assertSame( 'Organizations', $groups[2]->label );
+        $this->assertCount( 2, $groups[2]->items );
+        $this->assertSame( 'Audits & Operations', $groups[3]->label );
+        $this->assertCount( 1, $groups[3]->items );
+        $this->assertSame( 'Administration', $groups[4]->label );
+        $this->assertCount( 5, $groups[4]->items );
+    }
+
+    public function test_builds_navigation_merges_custom_registered_sections_into_matching_groups(): void {
+        // Register custom section into 'Competitions' after defaults
+        $this->registry->register(
+            new \Racketmanager\Infrastructure\Wordpress\Portal\Portal_Section_Config(
+                slug: 'custom-comp',
+                admin_page: 'racketmanager-custom-comp',
+                screen_class: \Racketmanager\Admin\View_Models\Overview_Page_View_Model::class,
+                capability: 'racket_manager',
+                default_view: 'custom-comp',
+                is_ported: true,
+                title: 'Custom Comp',
+                group: 'Competitions'
+            )
+        );
+        // Register custom ungrouped section
+        $this->registry->register(
+            new \Racketmanager\Infrastructure\Wordpress\Portal\Portal_Section_Config(
+                slug: 'custom-ungrouped',
+                admin_page: 'racketmanager-custom-ungrouped',
+                screen_class: \Racketmanager\Admin\View_Models\Overview_Page_View_Model::class,
+                capability: 'racket_manager',
+                default_view: 'custom-ungrouped',
+                is_ported: true,
+                title: 'Custom Ungrouped',
+                group: ''
+            )
+        );
+
+        $presenter = $this->create_presenter();
+        $nav_vm    = $presenter->build_navigation( 'overview' );
+
+        $groups = $nav_vm->get_groups();
+        // The first group (ungrouped) should contain overview AND custom-ungrouped
+        $this->assertSame( '', $groups[0]->label );
+        $ungrouped_slugs = array_map( static fn( $i ) => $i->slug, $groups[0]->items );
+        $this->assertSame( [ 'overview', 'custom-ungrouped' ], $ungrouped_slugs );
+
+        // The Competitions group should contain leagues, cups, tournaments, and custom-comp
+        $this->assertSame( 'Competitions', $groups[1]->label );
+        $comp_slugs = array_map( static fn( $i ) => $i->slug, $groups[1]->items );
+        $this->assertSame( [ 'leagues', 'cups', 'tournaments', 'custom-comp' ], $comp_slugs );
+    }
+
+    public function test_navigation_groups_preserve_numeric_string_labels(): void {
+        $item = new Portal_Navigation_Item( 'custom', 'Custom', 'https://example.test/manage/custom', group: '2024' );
+        $nav_vm = new Portal_Navigation_View_Model( [ $item ] );
+
+        $groups = $nav_vm->get_groups();
+
+        $this->assertCount( 1, $groups );
+        $this->assertSame( '2024', $groups[0]->label );
+        $this->assertSame( [ $item ], $groups[0]->items );
     }
 
     public function test_builds_navigation_for_unported_sections(): void {

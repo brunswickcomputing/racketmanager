@@ -16,8 +16,11 @@ Jobs:
 - Composer Autoload Smoke Test (Plugin)
 - PHPUnit (Tests)
   - Full suite with `--display-all-issues --fail-on-all-issues`
-  - Coverage disabled (`coverage: none`)
+  - Coverage enabled via PCOV (`coverage: pcov`) emitting console text summary and Clover XML (`build/logs/clover.xml`)
+  - Informational report uploaded as workflow artifact (`php-coverage-report`)
 - Jest (JavaScript Tests)
+  - Full suite with coverage reporting enabled (`npm run test:coverage`) emitting console summary table and LCOV/Clover reports
+  - Informational report uploaded as workflow artifact (`js-coverage-report`)
 - Qodana PHP (Static Analysis) — commented out in `ci.yml`; does not run
   - Linter (if re-enabled): jetbrains/qodana-php:2025.3
   - Config: qodana.yaml
@@ -53,6 +56,19 @@ Notes:
 ---
 
 ### How to use
+
+Local Testing:
+- Run PHP test suite without coverage:
+  - `composer run test` (or `vendor/bin/phpunit`)
+- Run PHP tests with code coverage (requires PCOV or Xdebug extension):
+  - `composer run test:coverage`
+  - Generates console text summary, Clover XML (`build/logs/clover.xml`), and HTML report (`build/coverage/index.html`).
+  - Driver installation note: If no coverage driver is installed in local PHP, install PCOV via PECL (`pecl install pcov`) and ensure `extension=pcov.so` is enabled in `php.ini`.
+- Run JavaScript tests without coverage:
+  - `npm test`
+- Run JavaScript tests with code coverage:
+  - `npm run test:coverage`
+  - Generates console summary table, LCOV report (`coverage/lcov.info`), Clover XML (`coverage/clover.xml`), and HTML report (`coverage/lcov-report/index.html`).
 
 CI:
 - Open a PR – Composer smoke, PHPUnit, and Jest jobs run. Qodana and PHPCS jobs are commented out in `ci.yml` and do not run.

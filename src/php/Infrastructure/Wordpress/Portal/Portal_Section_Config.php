@@ -23,6 +23,7 @@ final readonly class Portal_Section_Config {
      * @param bool   $is_ported     Whether the section is ported to the frontend portal shell.
      * @param string $title         Human-readable title for navigation.
      * @param bool   $in_navigation Whether to display this section in the primary portal navigation bar.
+     * @param string $group         Optional functional cluster / group label for navigation.
      */
     public function __construct(
         public string $slug,
@@ -33,11 +34,16 @@ final readonly class Portal_Section_Config {
         public bool $is_ported = false,
         public string $title = '',
         public bool $in_navigation = true,
+        public string $group = '',
     ) {
     }
 
     /**
-     * Return a new instance with the ported flag updated.
+     * Creates a copy of this configuration with the frontend portal ported flag updated.
+     *
+     * @param bool $is_ported Whether the section is ported to the frontend portal shell.
+     *
+     * @return self New instance with the updated ported state.
      */
     public function with_ported( bool $is_ported ): self {
         return new self(
@@ -48,7 +54,8 @@ final readonly class Portal_Section_Config {
             $this->default_view,
             $is_ported,
             $this->title,
-            $this->in_navigation
+            $this->in_navigation,
+            $this->group
         );
     }
 }

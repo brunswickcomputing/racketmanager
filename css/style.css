@@ -6017,6 +6017,39 @@ body.racketmanager-portal-shell.admin-bar .rm-portal-header {
 	padding: 0;
 }
 
+.rm-portal-nav__group {
+	margin-top: 1.25rem;
+	margin-bottom: 0.25rem;
+	padding-top: 0.5rem;
+	list-style: none;
+	border-top: 1px solid #e2e8f0;
+}
+
+.rm-portal-nav__group:first-child {
+	margin-top: 0;
+	padding-top: 0;
+	border-top: none;
+}
+
+.rm-portal-nav__group-list {
+	list-style: none;
+	margin: 0.25rem 0 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.rm-portal-nav__group-title {
+	display: block;
+	font-size: 0.6875rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: #64748b;
+	padding: 0 0.875rem 0.25rem;
+}
+
 .rm-portal-nav__link {
 	display: flex;
 	align-items: center;
@@ -6175,6 +6208,26 @@ body.racketmanager-portal-shell.admin-bar .rm-portal-header {
 	.rm-portal-nav__item {
 		flex: 0 0 auto;
 		margin-bottom: 0;
+	}
+
+	.rm-portal-nav__group {
+		display: contents;
+	}
+
+	.rm-portal-nav__group-list {
+		display: contents;
+	}
+
+	.rm-portal-nav__group-title {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
 	}
 
 	.rm-portal-nav__link {

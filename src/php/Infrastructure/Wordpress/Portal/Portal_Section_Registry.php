@@ -57,18 +57,18 @@ final class Portal_Section_Registry {
     private function register_default_sections(): void {
         $defaults = [
             new Portal_Section_Config( 'overview', 'racketmanager-overview', Overview_Page_View_Model::class, 'racket_manager', 'overview', true, 'Overview' ),
-            new Portal_Section_Config( 'competitions', 'racketmanager', Admin_Index::class, 'racket_manager', 'competitions', true, 'Competitions', in_navigation: false ),
-            new Portal_Section_Config( 'clubs', 'racketmanager-clubs', Admin_Club::class, 'racket_manager', 'clubs', true, 'Clubs' ),
-            new Portal_Section_Config( 'leagues', 'racketmanager-leagues', Admin_League::class, 'racket_manager', 'leagues', true, 'Leagues' ),
-            new Portal_Section_Config( 'cups', 'racketmanager-cups', Admin_Cup::class, 'racket_manager', 'cups', true, 'Cups' ),
-            new Portal_Section_Config( 'tournaments', 'racketmanager-tournaments', Admin_Tournament::class, 'racket_manager', 'tournaments', true, 'Tournaments' ),
-            new Portal_Section_Config( 'results', 'racketmanager-results', Admin_Result::class, 'racket_manager', 'results', true, 'Results' ),
-            new Portal_Section_Config( 'players', 'racketmanager-players', Admin_Player::class, 'racket_manager', 'players', true, 'Players' ),
-            new Portal_Section_Config( 'seasons', 'racketmanager-seasons', Admin_Season::class, 'racketmanager_settings', 'seasons', true, 'Seasons' ),
-            new Portal_Section_Config( 'finances', 'racketmanager-finances', Admin_Finances::class, 'racket_manager', 'finances', true, 'Finances' ),
-            new Portal_Section_Config( 'settings', 'racketmanager-settings', Admin_Options::class, 'racketmanager_settings', 'settings', true, 'Settings' ),
-            new Portal_Section_Config( 'import', 'racketmanager-import', Admin_Import::class, 'import_leagues', 'import', true, 'Import' ),
-            new Portal_Section_Config( 'documentation', 'racketmanager-doc', Documentation_Page_View_Model::class, 'view_leagues', 'documentation', true, 'Documentation' ),
+            new Portal_Section_Config( 'competitions', 'racketmanager', Admin_Index::class, 'racket_manager', 'competitions', true, 'Competitions', in_navigation: false, group: 'Competitions' ),
+            new Portal_Section_Config( 'leagues', 'racketmanager-leagues', Admin_League::class, 'racket_manager', 'leagues', true, 'Leagues', group: 'Competitions' ),
+            new Portal_Section_Config( 'cups', 'racketmanager-cups', Admin_Cup::class, 'racket_manager', 'cups', true, 'Cups', group: 'Competitions' ),
+            new Portal_Section_Config( 'tournaments', 'racketmanager-tournaments', Admin_Tournament::class, 'racket_manager', 'tournaments', true, 'Tournaments', group: 'Competitions' ),
+            new Portal_Section_Config( 'clubs', 'racketmanager-clubs', Admin_Club::class, 'racket_manager', 'clubs', true, 'Clubs', group: 'Organizations' ),
+            new Portal_Section_Config( 'players', 'racketmanager-players', Admin_Player::class, 'racket_manager', 'players', true, 'Players', group: 'Organizations' ),
+            new Portal_Section_Config( 'results', 'racketmanager-results', Admin_Result::class, 'racket_manager', 'results', true, 'Results', group: 'Audits & Operations' ),
+            new Portal_Section_Config( 'seasons', 'racketmanager-seasons', Admin_Season::class, 'racketmanager_settings', 'seasons', true, 'Seasons', group: 'Administration' ),
+            new Portal_Section_Config( 'finances', 'racketmanager-finances', Admin_Finances::class, 'racket_manager', 'finances', true, 'Finances', group: 'Administration' ),
+            new Portal_Section_Config( 'settings', 'racketmanager-settings', Admin_Options::class, 'racketmanager_settings', 'settings', true, 'Settings', group: 'Administration' ),
+            new Portal_Section_Config( 'import', 'racketmanager-import', Admin_Import::class, 'import_leagues', 'import', true, 'Import', group: 'Administration' ),
+            new Portal_Section_Config( 'documentation', 'racketmanager-doc', Documentation_Page_View_Model::class, 'view_leagues', 'documentation', true, 'Documentation', group: 'Administration' ),
         ];
 
         foreach ( $defaults as $config ) {

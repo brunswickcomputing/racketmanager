@@ -24,23 +24,12 @@ foreach ( $vm->options as $option ) {
     <div class="card mb-4 border-0 shadow-sm">
         <div class="card-body p-4">
             <div class="row align-items-center">
-                <div class="col-12 col-lg-8">
+                <div class="col-12">
                     <span class="badge bg-primary text-uppercase mb-2"><?php echo esc_html__( 'Management Portal', 'racketmanager' ); ?></span>
                     <h1 class="h2 mb-3"><?php echo esc_html( $vm->service_name ); ?> &mdash; <?php echo esc_html( $vm->title ); ?></h1>
-                    <p class="lead text-secondary mb-3">
+                    <p class="lead text-secondary mb-0">
                         <?php echo esc_html( $vm->service_summary ); ?>
                     </p>
-                </div>
-                <div class="col-12 col-lg-4 text-lg-end mt-3 mt-lg-0">
-                    <div class="p-3 bg-light rounded border text-start">
-                        <h2 class="h6 text-uppercase fw-bold text-muted mb-2"><?php echo esc_html__( 'Quick Start', 'racketmanager' ); ?></h2>
-                        <p class="small text-muted mb-2">
-                            <?php echo esc_html__( 'Select an option below or use the sidebar navigation to manage competitions, results, and clubs.', 'racketmanager' ); ?>
-                        </p>
-                        <a href="<?php echo esc_url( function_exists( 'manage_url' ) ? manage_url( 'competitions' ) : '/manage/competitions' ); ?>" class="btn btn-outline-primary btn-sm w-100">
-                            <?php echo esc_html__( 'View Competitions &rarr;', 'racketmanager' ); ?>
-                        </a>
-                    </div>
                 </div>
             </div>
         </div>

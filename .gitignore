@@ -49,10 +49,13 @@ node_modules/
 vendor/
 dist/
 build/
+build/coverage/
+build/logs/
 coverage/
 .cache/
 .phpunit.cache/
 .tmp/
+clover.xml
 
 # Local binaries/output
 /bin/*

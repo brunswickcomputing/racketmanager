@@ -85,12 +85,12 @@ final class Administration_And_Final_Cutover_Portal_Integration_Test extends Tes
         $expected = [
             'overview',
             'competitions',
-            'clubs',
             'leagues',
             'cups',
             'tournaments',
-            'results',
+            'clubs',
             'players',
+            'results',
             'seasons',
             'finances',
             'settings',
@@ -99,6 +99,7 @@ final class Administration_And_Final_Cutover_Portal_Integration_Test extends Tes
         ];
 
         $this->assertCount( 13, $this->registry->all() );
+        $this->assertSame( $expected, array_keys( $this->registry->all() ) );
         foreach ( $expected as $slug ) {
             $this->assertTrue( $this->registry->is_ported( $slug ), "Expected section {$slug} to be ported" );
         }

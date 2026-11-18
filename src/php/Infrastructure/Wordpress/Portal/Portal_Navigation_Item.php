@@ -20,6 +20,7 @@ final readonly class Portal_Navigation_Item {
      * @param string $url       Target URL.
      * @param bool   $is_active Whether this item corresponds to the active section.
      * @param bool   $is_ported Whether this section is rendered in the portal or links to wp-admin.
+     * @param string $group     Optional functional cluster / group label for navigation.
      */
     public function __construct(
         public string $slug,
@@ -27,6 +28,7 @@ final readonly class Portal_Navigation_Item {
         public string $url,
         public bool $is_active = false,
         public bool $is_ported = false,
+        public string $group = '',
     ) {
     }
 }

@@ -8,6 +8,7 @@
 namespace Racketmanager;
 
 use Racketmanager\Application\League\DTOs\League_View_State;
+use Racketmanager\Application\Ports\Manage_Url_Resolver_Interface;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\Presentation\Formatters\Currency_Formatter;
 use Racketmanager\Presentation\Formatters\Date_Time_Formatter;
@@ -47,12 +48,12 @@ function show_standings( string $key ): bool {
  * @param mixed $start_time start time.
  * @category template-tags
  */
-function the_match_time( $start_time ): void {
-    echo Date_Time_Formatter::format_match_time( $start_time );
+function the_match_time( mixed $start_time ): void {
+    echo esc_html( Date_Time_Formatter::format_match_time( $start_time ) );
 }
 
 /**
- * Get formatted currency function
+ * Print formatted currency function
  *
  * @param string|null $amount amount to be formatted.
  *
@@ -70,7 +71,7 @@ function get_currency_amount( ?string $amount ): string {
  * @return void
  */
 function the_currency_amount( ?string $amount ): void {
-    echo get_currency_amount( $amount );
+    echo esc_html( get_currency_amount( $amount ) );
 }
     /**
      * Wrapper tags
@@ -79,7 +80,7 @@ function the_currency_amount( ?string $amount ): void {
     /**
      * Display one club
      *
-     * @param int $club_id club.
+     * @param int   $club_id club.
      * @param array $args additional arguments as associative array (optional).
      *
      * @category template-tags
@@ -99,28 +100,28 @@ function club( int $club_id, array $args = array() ): void {
     /**
      * Display player list
      *
-     * @param int $team_id team.
+     * @param int   $team_id team.
      * @param array $args additional arguments as associative array (optional).
      *
      * @category template-tags
      */
-    function show_team_edit_modal( int $team_id, array $args = array() ): string {
-        $args['id'] = $team_id;
-        $shortcode  = '[team-edit';
-        foreach ( $args as $key => $value ) {
-            $shortcode .= ' ' . $key . "='" . $value . "'";
-        }
-        $shortcode .= ']';
-        return do_shortcode( $shortcode );
+function show_team_edit_modal( int $team_id, array $args = array() ): string {
+    $args['id'] = $team_id;
+    $shortcode  = '[team-edit';
+    foreach ( $args as $key => $value ) {
+        $shortcode .= ' ' . $key . "='" . $value . "'";
     }
+    $shortcode .= ']';
+    return do_shortcode( $shortcode );
+}
     /**
- * Display player list
- *
- * @param int|string $league_id league.
- * @param array $args additional arguments as associative array (optional).
- *
- * @category template-tags
- */
+     * Display player list
+     *
+     * @param int|string $league_id league.
+     * @param array      $args additional arguments as associative array (optional).
+     *
+     * @category template-tags
+     */
 function league_players( int|string $league_id, array $args = array() ): void {
     $defaults          = array(
         'season'   => false,
@@ -140,7 +141,7 @@ function league_players( int|string $league_id, array $args = array() ): void {
     /**
      * Display standings table
      *
-     * @param int $league_id League ID.
+     * @param int   $league_id League ID.
      * @param array $args associative array of parameters, see default values (optional).
      *
      * @category template-tags
@@ -166,7 +167,7 @@ function league_standings( int $league_id, array $args = array() ): void {
     /**
      * Display crosstable table
      *
-     * @param int $league_id league.
+     * @param int   $league_id league.
      * @param array $args associative array of parameters, see default values (optional).
      *
      * @category template-tags
@@ -192,7 +193,7 @@ function league_crosstable( int $league_id, array $args = array() ): void {
     /**
      * Display matches table
      *
-     * @param int $league_id league.
+     * @param int   $league_id league.
      * @param array $args associative array of parameters, see default values (optional).
      *
      * @category template-tags
@@ -227,7 +228,7 @@ function league_matches( int $league_id, array $args = array() ): void {
     /**
      * Display tournament match
      *
-     * @param int $match_id match.
+     * @param int   $match_id match.
      * @param array $args additional arguments as associative array (optional).
      *
      * @category template-tags
@@ -247,28 +248,28 @@ function tournament_match( int $match_id, array $args = array() ): void {
     /**
      * Display match detail
      *
-     * @param int $match_id match.
+     * @param int      $match_id match.
      * @param int|null $player_id player.
      *
      * @category template-tags
      */
-    function match_detail( int $match_id, ?int $player_id = null ): string {
-        $args['id'] = $match_id;
-        if ( $player_id ) {
-            $args['player'] = $player_id;
-        }
-        $shortcode = '[match-detail';
-        foreach ( $args as $key => $value ) {
-            $shortcode .= ' ' . $key . "='" . $value . "'";
-        }
-        $shortcode .= ']';
-        return do_shortcode( $shortcode );
+function match_detail( int $match_id, ?int $player_id = null ): string {
+    $args['id'] = $match_id;
+    if ( $player_id ) {
+        $args['player'] = $player_id;
     }
+    $shortcode = '[match-detail';
+    foreach ( $args as $key => $value ) {
+        $shortcode .= ' ' . $key . "='" . $value . "'";
+    }
+    $shortcode .= ']';
+    return do_shortcode( $shortcode );
+}
 
     /**
      * Display team list
      *
-     * @param int $league_id league.
+     * @param int   $league_id league.
      * @param array $args additional arguments as associative array (optional).
      *
      * @category template-tags
@@ -292,7 +293,7 @@ function league_teams( int $league_id, array $args = array() ): void {
     /**
      * Display championship manually
      *
-     * @param int $league_id league.
+     * @param int   $league_id league.
      * @param array $args additional arguments as associative array (optional).
      *
      * @return void
@@ -316,7 +317,7 @@ function championship( int $league_id, array $args = array() ): void {
     /**
      * Display championship manually
      *
-     * @param int $league_id league.
+     * @param int   $league_id league.
      * @param array $args additional arguments as associative array (optional).
      *
      * @return void
@@ -336,58 +337,58 @@ function archive( int $league_id, array $args = array() ): void {
     /**
      * Display season dropdown
      *
-     * @param int $league_id league.
+     * @param int   $league_id league.
      * @param array $args additional arguments as associative array (optional).
      *
      * @return string
      */
-    function season_dropdown( int $league_id, array $args = array() ): string {
-        $args['id'] = $league_id;
-        $shortcode = '[season-dropdown';
-        foreach ( $args as $key => $value ) {
-            $shortcode .= ' ' . $key . "='" . $value . "'";
-        }
-        $shortcode .= ']';
-        return do_shortcode( $shortcode );
+function season_dropdown( int $league_id, array $args = array() ): string {
+    $args['id'] = $league_id;
+    $shortcode  = '[season-dropdown';
+    foreach ( $args as $key => $value ) {
+        $shortcode .= ' ' . $key . "='" . $value . "'";
     }
+    $shortcode .= ']';
+    return do_shortcode( $shortcode );
+}
     /**
      * Display match dropdown
      *
-     * @param int $league_id league.
+     * @param int   $league_id league.
      * @param array $args additional arguments as associative array (optional).
      *
      * @return string
      */
-    function match_dropdown( int $league_id, array $args = array() ): string {
-        $args['id'] = $league_id;
-        $shortcode = '[match-dropdown';
-        foreach ( $args as $key => $value ) {
-            $shortcode .= ' ' . $key . "='" . $value . "'";
-        }
-        $shortcode .= ']';
-        return do_shortcode( $shortcode );
+function match_dropdown( int $league_id, array $args = array() ): string {
+    $args['id'] = $league_id;
+    $shortcode  = '[match-dropdown';
+    foreach ( $args as $key => $value ) {
+        $shortcode .= ' ' . $key . "='" . $value . "'";
     }
+    $shortcode .= ']';
+    return do_shortcode( $shortcode );
+}
     /**
      * Display last 5 match details
      *
-     * @param int $league_id league.
+     * @param int   $league_id league.
      * @param array $args additional arguments as associative array (optional).
      *
      * @return string
      */
-    function last_5_matches( int $league_id, array $args = array() ): string {
-        $args['id'] = $league_id;
-        $shortcode = '[last-5';
-        foreach ( $args as $key => $value ) {
-            $shortcode .= ' ' . $key . "='" . $value . "'";
-        }
-        $shortcode .= ']';
-        return do_shortcode( $shortcode );
+function last_5_matches( int $league_id, array $args = array() ): string {
+    $args['id'] = $league_id;
+    $shortcode  = '[last-5';
+    foreach ( $args as $key => $value ) {
+        $shortcode .= ' ' . $key . "='" . $value . "'";
     }
+    $shortcode .= ']';
+    return do_shortcode( $shortcode );
+}
     /**
      * Display results table
      *
-     * @param int $club_id affiliated Club id club.
+     * @param int   $club_id affiliated Club id club.
      * @param array $args associative array of parameters, see default values (optional).
      *
      * @category template-tags
@@ -406,7 +407,7 @@ function latest_results( int $club_id, array $args = array() ): void {
     /**
      * Display match email
      *
-     * @param int $match_id match id match.
+     * @param int   $match_id match id match.
      * @param array $args associative array of parameters, see default values (optional).
      *
      * @category template-tags
@@ -425,7 +426,7 @@ function match_notification( int $match_id, array $args = array() ): string {
     /**
      * Display result email
      *
-     * @param int $match_id match id match.
+     * @param int   $match_id match id match.
      * @param array $args associative array of parameters, see default values (optional).
      *
      * @category template-tags
@@ -443,7 +444,7 @@ function result_notification( int $match_id, array $args = array() ): string {
 /**
  * Match date change notification function
  *
- * @param int $match_id match id.
+ * @param int   $match_id match id.
  * @param array $args array of arguments.
  *
  * @return string
@@ -461,7 +462,7 @@ function match_date_change_notification( int $match_id, array $args = array() ):
     /**
      * Display result email for captain
      *
-     * @param int $match_id match id match.
+     * @param int   $match_id match id match.
      * @param array $args associative array of parameters, see default values (optional).
      *
      * @category template-tags
@@ -480,7 +481,7 @@ function captain_result_notification( int $match_id, array $args = array() ): st
     /**
      * Display result outstanding email for captain
      *
-     * @param int $match_id match id match.
+     * @param int   $match_id match id match.
      * @param array $args associative array of parameters, see default values (optional).
      *
      * @category template-tags
@@ -498,37 +499,37 @@ function result_outstanding_notification( int $match_id, array $args = array() )
     /**
      * Show score
      *
-     * @param int $match_id match id match.
+     * @param int   $match_id match id match.
      * @param array $args associative array of parameters, see default values (optional).
      *
      * @category template-tags
      */
-    function show_score( int $match_id, array $args = array() ): string {
-        $args['id'] = $match_id;
-        $shortcode = '[score';
-        foreach ( $args as $key => $value ) {
-            $shortcode .= ' ' . $key . "='" . $value . "'";
-        }
-        $shortcode .= ']';
-        return do_shortcode( $shortcode );
+function show_score( int $match_id, array $args = array() ): string {
+    $args['id'] = $match_id;
+    $shortcode  = '[score';
+    foreach ( $args as $key => $value ) {
+        $shortcode .= ' ' . $key . "='" . $value . "'";
     }
+    $shortcode .= ']';
+    return do_shortcode( $shortcode );
+}
     /**
      * Show match header
      *
-     * @param int $match_id match id match.
+     * @param int   $match_id match id match.
      * @param array $args associative array of parameters, see default values (optional).
      *
      * @category template-tags
      */
-    function match_header( int $match_id, array $args = array() ): string {
-        $args['id'] = $match_id;
-        $shortcode = '[match-header';
-        foreach ( $args as $key => $value ) {
-            $shortcode .= ' ' . $key . "='" . $value . "'";
-        }
-        $shortcode .= ']';
-        return do_shortcode( $shortcode );
+function match_header( int $match_id, array $args = array() ): string {
+    $args['id'] = $match_id;
+    $shortcode  = '[match-header';
+    foreach ( $args as $key => $value ) {
+        $shortcode .= ' ' . $key . "='" . $value . "'";
     }
+    $shortcode .= ']';
+    return do_shortcode( $shortcode );
+}
     /**
      * Display club player request email
      *
@@ -548,7 +549,7 @@ function club_players_notification( array $args = array() ): string {
     /**
      * Display constitution email
      *
-     * @param int $event_id event id.
+     * @param int   $event_id event id.
      * @param array $args associative array of parameters, see default values (optional).
      *
      * @category template-tags
@@ -567,7 +568,7 @@ function constitution_notification( int $event_id, array $args = array() ): stri
 /**
  * Display tournament overview function
  *
- * @param int $tournament_id tournament.
+ * @param int   $tournament_id tournament.
  * @param array $args array of arguments.
  */
 function tournament_overview( int $tournament_id, array $args = array() ): void {
@@ -582,7 +583,7 @@ function tournament_overview( int $tournament_id, array $args = array() ): void 
 /**
  * Display tournament events function
  *
- * @param int $tournament_id tournament.
+ * @param int   $tournament_id tournament.
  * @param array $args array of arguments.
  */
 function tournament_events( int $tournament_id, array $args = array() ): void {
@@ -597,7 +598,7 @@ function tournament_events( int $tournament_id, array $args = array() ): void {
 /**
  * Display tournament draws function
  *
- * @param int $tournament_id tournament.
+ * @param int   $tournament_id tournament.
  * @param array $args array of arguments.
  */
 function tournament_draws( int $tournament_id, array $args = array() ): void {
@@ -612,7 +613,7 @@ function tournament_draws( int $tournament_id, array $args = array() ): void {
 /**
  * Display tournament players function
  *
- * @param int $tournament_id tournament.
+ * @param int   $tournament_id tournament.
  * @param array $args array of arguments.
  */
 function tournament_players( int $tournament_id, array $args = array() ): void {
@@ -627,7 +628,7 @@ function tournament_players( int $tournament_id, array $args = array() ): void {
 /**
  * Display tournament matches function
  *
- * @param int $tournament_id tournament.
+ * @param int   $tournament_id tournament.
  * @param array $args array of arguments.
  */
 function tournament_matches( int $tournament_id, array $args = array() ): void {
@@ -645,7 +646,7 @@ function tournament_matches( int $tournament_id, array $args = array() ): void {
 /**
  * Display tournament order of play function
  *
- * @param int $tournament_id tournament.
+ * @param int   $tournament_id tournament.
  * @param array $args array of arguments.
  */
 function tournament_order_of_play( int $tournament_id, array $args = array() ): void {
@@ -660,7 +661,7 @@ function tournament_order_of_play( int $tournament_id, array $args = array() ): 
 /**
  * Display tournament winners function
  *
- * @param int $tournament_id tournament.
+ * @param int   $tournament_id tournament.
  * @param array $args array of arguments.
  */
 function tournament_winners( int $tournament_id, array $args = array() ): void {
@@ -675,40 +676,40 @@ function tournament_winners( int $tournament_id, array $args = array() ): void {
     /**
      * Display tournament withdrawal modal function
      *
-     * @param int $tournament_id tournament.
+     * @param int   $tournament_id tournament.
      * @param array $args array of arguments.
      */
-    function tournament_withdrawal_modal( int $tournament_id, array $args = array() ): string {
-        $args['id'] = $tournament_id;
-        $shortcode  = '[tournament-withdrawal';
-        foreach ( $args as $key => $value ) {
-            $shortcode .= ' ' . $key . "='" . $value . "'";
-        }
-        $shortcode .= ']';
-        return do_shortcode( $shortcode );
+function tournament_withdrawal_modal( int $tournament_id, array $args = array() ): string {
+    $args['id'] = $tournament_id;
+    $shortcode  = '[tournament-withdrawal';
+    foreach ( $args as $key => $value ) {
+        $shortcode .= ' ' . $key . "='" . $value . "'";
     }
+    $shortcode .= ']';
+    return do_shortcode( $shortcode );
+}
     /**
      * Display event partner modal function
      *
-     * @param int $event_id event.
+     * @param int   $event_id event.
      * @param array $args array of arguments.
      */
-    function event_partner_modal( int $event_id, array $args = array() ): string {
-        $args['id'] = $event_id;
-        $shortcode  = '[event-partner';
-        foreach ( $args as $key => $value ) {
-            $shortcode .= ' ' . $key . "='" . $value . "'";
-        }
-        $shortcode .= ']';
-        return do_shortcode( $shortcode );
+function event_partner_modal( int $event_id, array $args = array() ): string {
+    $args['id'] = $event_id;
+    $shortcode  = '[event-partner';
+    foreach ( $args as $key => $value ) {
+        $shortcode .= ' ' . $key . "='" . $value . "'";
     }
+    $shortcode .= ']';
+    return do_shortcode( $shortcode );
+}
 
     /**
- * Display competition overview function
- *
- * @param int $competition_id competition.
- * @param array $args array of arguments.
- */
+     * Display competition overview function
+     *
+     * @param int   $competition_id competition.
+     * @param array $args array of arguments.
+     */
 function competition_overview( int $competition_id, array $args = array() ): void {
     $args['id'] = $competition_id;
     $shortcode  = '[competition-overview';
@@ -721,7 +722,7 @@ function competition_overview( int $competition_id, array $args = array() ): voi
 /**
  * Display competition events function
  *
- * @param int $competition_id competition.
+ * @param int   $competition_id competition.
  * @param array $args array of arguments.
  */
 function competition_events( int $competition_id, array $args = array() ): void {
@@ -736,7 +737,7 @@ function competition_events( int $competition_id, array $args = array() ): void 
 /**
  * Display competition clubs function
  *
- * @param int $competition_id competition.
+ * @param int   $competition_id competition.
  * @param array $args array of arguments.
  */
 function competition_clubs( int $competition_id, array $args = array() ): void {
@@ -751,7 +752,7 @@ function competition_clubs( int $competition_id, array $args = array() ): void {
 /**
  * Display competition teams function
  *
- * @param int $competition_id competition.
+ * @param int   $competition_id competition.
  * @param array $args array of arguments.
  */
 function competition_teams( int $competition_id, array $args = array() ): void {
@@ -766,7 +767,7 @@ function competition_teams( int $competition_id, array $args = array() ): void {
 /**
  * Display competition players function
  *
- * @param int $competition_id competition.
+ * @param int   $competition_id competition.
  * @param array $args array of arguments.
  */
 function competition_players( int $competition_id, array $args = array() ): void {
@@ -781,12 +782,12 @@ function competition_players( int $competition_id, array $args = array() ): void
 /**
  * Display competition order of play function
  *
- * @param int $competition_id competition.
+ * @param int   $competition_id competition.
  * @param array $args array of arguments.
  */
 function competition_order_of_play( int $competition_id, array $args = array() ): void {
     $args['competition_id'] = $competition_id;
-    $shortcode  = '[orderofplay';
+    $shortcode              = '[orderofplay';
     foreach ( $args as $key => $value ) {
         $shortcode .= ' ' . $key . "='" . $value . "'";
     }
@@ -797,7 +798,7 @@ function competition_order_of_play( int $competition_id, array $args = array() )
 /**
  * Display event standings function
  *
- * @param int $event_id event.
+ * @param int   $event_id event.
  * @param array $args array of arguments.
  */
 function event_standings( int $event_id, array $args = array() ): void {
@@ -812,7 +813,7 @@ function event_standings( int $event_id, array $args = array() ): void {
 /**
  * Display event draw function
  *
- * @param int $event_id event.
+ * @param int   $event_id event.
  * @param array $args array of arguments.
  */
 function event_draw( int $event_id, array $args = array() ): void {
@@ -827,7 +828,7 @@ function event_draw( int $event_id, array $args = array() ): void {
 /**
  * Display event matches function
  *
- * @param int $event_id event.
+ * @param int   $event_id event.
  * @param array $args array of arguments.
  */
 function event_matches( int $event_id, array $args = array() ): void {
@@ -842,7 +843,7 @@ function event_matches( int $event_id, array $args = array() ): void {
 /**
  * Display event clubs function
  *
- * @param int $event_id event.
+ * @param int   $event_id event.
  * @param array $args array of arguments.
  */
 function event_clubs( int $event_id, array $args = array() ): void {
@@ -857,7 +858,7 @@ function event_clubs( int $event_id, array $args = array() ): void {
 /**
  * Display event teams function
  *
- * @param int $event_id event.
+ * @param int   $event_id event.
  * @param array $args array of arguments.
  */
 function event_teams( int $event_id, array $args = array() ): void {
@@ -872,7 +873,7 @@ function event_teams( int $event_id, array $args = array() ): void {
 /**
  * Display event players function
  *
- * @param int $event_id event.
+ * @param int   $event_id event.
  * @param array $args array of arguments.
  */
 function event_players( int $event_id, array $args = array() ): void {
@@ -887,68 +888,68 @@ function event_players( int $event_id, array $args = array() ): void {
     /**
      * Display event team matches function
      *
-     * @param int $event_id event.
+     * @param int   $event_id event.
      * @param array $args array of arguments.
      */
-    function event_team_match_dropdown( int $event_id, array $args = array() ): string {
-        $args['id'] = $event_id;
-        $shortcode  = '[event-team-matches';
-        foreach ( $args as $key => $value ) {
-            $shortcode .= ' ' . $key . "='" . $value . "'";
-        }
-        $shortcode .= ']';
-        return do_shortcode( $shortcode );
+function event_team_match_dropdown( int $event_id, array $args = array() ): string {
+    $args['id'] = $event_id;
+    $shortcode  = '[event-team-matches';
+    foreach ( $args as $key => $value ) {
+        $shortcode .= ' ' . $key . "='" . $value . "'";
     }
+    $shortcode .= ']';
+    return do_shortcode( $shortcode );
+}
     /**
      * Display event dropdown function
      *
-     * @param int $competition_id event.
+     * @param int   $competition_id event.
      * @param array $args array of arguments.
      */
-    function event_dropdown( int $competition_id, array $args = array() ): string {
-        $args['id'] = $competition_id;
-        $shortcode  = '[event-dropdown';
-        foreach ( $args as $key => $value ) {
-            $shortcode .= ' ' . $key . "='" . $value . "'";
-        }
-        $shortcode .= ']';
-        return do_shortcode( $shortcode );
+function event_dropdown( int $competition_id, array $args = array() ): string {
+    $args['id'] = $competition_id;
+    $shortcode  = '[event-dropdown';
+    foreach ( $args as $key => $value ) {
+        $shortcode .= ' ' . $key . "='" . $value . "'";
     }
+    $shortcode .= ']';
+    return do_shortcode( $shortcode );
+}
     /**
      * Display league dropdown function
      *
      * @param int   $event_id event.
      * @param array $args array of arguments.
      */
-    function league_dropdown( int $event_id, array $args = array() ): string {
-        $args['id'] = $event_id;
-        $shortcode  = '[league-dropdown';
-        foreach ( $args as $key => $value ) {
-            $shortcode .= ' ' . $key . "='" . $value . "'";
-        }
-        $shortcode .= ']';
-        return do_shortcode( $shortcode );
+function league_dropdown( int $event_id, array $args = array() ): string {
+    $args['id'] = $event_id;
+    $shortcode  = '[league-dropdown';
+    foreach ( $args as $key => $value ) {
+        $shortcode .= ' ' . $key . "='" . $value . "'";
     }
+    $shortcode .= ']';
+    return do_shortcode( $shortcode );
+}
     /**
      * Display team order players function
      *
-     * @param int $event_id event.
+     * @param int   $event_id event.
      * @param array $args array of arguments.
      */
-    function team_order_players( int $event_id, array $args = array() ): string {
-        $args['id'] = $event_id;
-        $shortcode  = '[team-order-players';
-        foreach ( $args as $key => $value ) {
-            $shortcode .= ' ' . $key . "='" . $value . "'";
-        }
-        $shortcode .= ']';
-        return do_shortcode( $shortcode );
+function team_order_players( int $event_id, array $args = array() ): string {
+    $args['id'] = $event_id;
+    $shortcode  = '[team-order-players';
+    foreach ( $args as $key => $value ) {
+        $shortcode .= ' ' . $key . "='" . $value . "'";
     }
+    $shortcode .= ']';
+    return do_shortcode( $shortcode );
+}
 
 /**
  * Display competition matches function
  *
- * @param int $competition_id competition.
+ * @param int   $competition_id competition.
  * @param array $args array of arguments.
  */
 function competition_matches( int $competition_id, array $args = array() ): void {
@@ -963,7 +964,7 @@ function competition_matches( int $competition_id, array $args = array() ): void
 /**
  * Display competition winners function
  *
- * @param int $competition_id competition.
+ * @param int   $competition_id competition.
  * @param array $args array of arguments.
  */
 function competition_winners( int $competition_id, array $args = array() ): void {
@@ -979,7 +980,7 @@ function competition_winners( int $competition_id, array $args = array() ): void
  * Display player search function
  *
  * @param string $search_string search string.
- * @param array $args array of arguments.
+ * @param array  $args array of arguments.
  */
 function player_search( string $search_string, array $args = array() ): string {
     $args['search'] = $search_string;
@@ -1003,169 +1004,173 @@ function withdrawn_team_email( array $args = array() ): string {
     $shortcode .= ']';
     return do_shortcode( $shortcode );
 }
-    /**
-     * Display match with withdrawn team email
-     *
-     * @param array $args array of arguments.
-     */
-    function match_team_withdrawn_notification( int $match_id, array $args = array() ): string {
-        $shortcode  = '[withdrawn-team-match';
-        $args['id'] = $match_id;
-        foreach ( $args as $key => $value ) {
-            $shortcode .= ' ' . $key . "='" . $value . "'";
-        }
-        $shortcode .= ']';
-        return do_shortcode( $shortcode );
+
+/**
+ * Generate the withdrawn team notification for a match.
+ *
+ * @param int   $match_id Match identifier.
+ * @param array $args Additional shortcode arguments.
+ *
+ * @return string Rendered withdrawn team match notification.
+ */
+function match_team_withdrawn_notification( int $match_id, array $args = array() ): string {
+    $shortcode  = '[withdrawn-team-match';
+    $args['id'] = $match_id;
+    foreach ( $args as $key => $value ) {
+        $shortcode .= ' ' . $key . "='" . $value . "'";
     }
+    $shortcode .= ']';
+    return do_shortcode( $shortcode );
+}
     /**
      * Display message
      *
-     * @param int $message_id id of message.
+     * @param int   $message_id id of message.
      * @param array $args array of arguments.
      */
-    function show_message( int $message_id, array $args = array() ): string {
-        $args['id'] = $message_id;
-        $shortcode  = '[show-message';
-        foreach ( $args as $key => $value ) {
-            $shortcode .= ' ' . $key . "='" . $value . "'";
-        }
-        $shortcode .= ']';
-        return do_shortcode( $shortcode );
+function show_message( int $message_id, array $args = array() ): string {
+    $args['id'] = $message_id;
+    $shortcode  = '[show-message';
+    foreach ( $args as $key => $value ) {
+        $shortcode .= ' ' . $key . "='" . $value . "'";
     }
+    $shortcode .= ']';
+    return do_shortcode( $shortcode );
+}
     /**
      * Display alert
      *
-     * @param string $message message.
-     * @param string $type alert type.
+     * @param string      $message message.
+     * @param string      $type alert type.
      * @param string|null $template modal or null.
      */
-    function show_alert( string $message, string $type, ?string $template = null ): string {
-        $args['msg']      = $message;
-        $args['type']     = $type;
-        $args['template'] = $template;
-        $shortcode  = '[show-alert';
-        foreach ( $args as $key => $value ) {
-            $shortcode .= ' ' . $key . "='" . $value . "'";
-        }
-        $shortcode .= ']';
-        return do_shortcode( $shortcode );
+function show_alert( string $message, string $type, ?string $template = null ): string {
+    $args['msg']      = $message;
+    $args['type']     = $type;
+    $args['template'] = $template;
+    $shortcode        = '[show-alert';
+    foreach ( $args as $key => $value ) {
+        $shortcode .= ' ' . $key . "='" . $value . "'";
     }
+    $shortcode .= ']';
+    return do_shortcode( $shortcode );
+}
     /**
      * Display invoice
      *
      * @param int   $invoice_id invoice id.
      * @param array $args array of arguments.
      */
-    function show_invoice( int $invoice_id, array $args = array()  ): string {
-        $args['id']      = $invoice_id;
-        $shortcode  = '[invoice';
-        foreach ( $args as $key => $value ) {
-            $shortcode .= ' ' . $key . "='" . $value . "'";
-        }
-        $shortcode .= ']';
-        return do_shortcode( $shortcode );
+function show_invoice( int $invoice_id, array $args = array() ): string {
+    $args['id'] = $invoice_id;
+    $shortcode  = '[invoice';
+    foreach ( $args as $key => $value ) {
+        $shortcode .= ' ' . $key . "='" . $value . "'";
     }
+    $shortcode .= ']';
+    return do_shortcode( $shortcode );
+}
     /**
      * Get tab
-     *
      */
-    function get_tab(): ?string {
-        return Util_Lookup::get_tab();
-    }
+function get_tab(): ?string {
+    return Util_Lookup::get_tab();
+}
 
     /**
      * Function to determine if LTA tennis number required
+     *
      * @return bool
      */
-    function is_lta_number_required(): bool {
-        global $racketmanager;
-        if ( isset( $racketmanager->option_service ) && $racketmanager->option_service instanceof Option_Service ) {
-            return $racketmanager->option_service->is_lta_number_required();
-        }
-        if ( isset( $racketmanager->container ) && $racketmanager->container->has( Option_Service::class ) ) {
-            $service = $racketmanager->container->get( Option_Service::class );
-            if ( $service instanceof Option_Service ) {
-                return $service->is_lta_number_required();
-            }
-        }
-        $options = $racketmanager?->get_options( 'rosters' );
-        return is_array( $options ) && ! empty( $options['btm'] );
+function is_lta_number_required(): bool {
+    global $racketmanager;
+    if ( isset( $racketmanager->option_service ) && $racketmanager->option_service instanceof Option_Service ) {
+        return $racketmanager->option_service->is_lta_number_required();
     }
+    if ( isset( $racketmanager->container ) && $racketmanager->container->has( Option_Service::class ) ) {
+        $service = $racketmanager->container->get( Option_Service::class );
+        if ( $service instanceof Option_Service ) {
+            return $service->is_lta_number_required();
+        }
+    }
+    $options = $racketmanager?->get_options( 'rosters' );
+    return is_array( $options ) && ! empty( $options['btm'] );
+}
     /**
      * Display purchase order modal
      *
-     * @param int $invoice_id invoice.
+     * @param int   $invoice_id invoice.
      * @param array $args additional arguments as associative array (optional).
      *
      * @category template-tags
      */
-    function show_purchase_order_modal( int $invoice_id, array $args = array() ): string {
-        $args['id'] = $invoice_id;
-        $shortcode  = '[purchase-order';
-        foreach ( $args as $key => $value ) {
-            $shortcode .= ' ' . $key . "='" . $value . "'";
-        }
-        $shortcode .= ']';
-        return do_shortcode( $shortcode );
+function show_purchase_order_modal( int $invoice_id, array $args = array() ): string {
+    $args['id'] = $invoice_id;
+    $shortcode  = '[purchase-order';
+    foreach ( $args as $key => $value ) {
+        $shortcode .= ' ' . $key . "='" . $value . "'";
     }
+    $shortcode .= ']';
+    return do_shortcode( $shortcode );
+}
     /**
      * Display club role modal
      *
-     * @param int $club_role_id club role.
+     * @param int   $club_role_id club role.
      * @param array $args additional arguments as associative array (optional).
      *
      * @category template-tags
      */
-    function show_club_role_modal( int $club_role_id, array $args = array() ): string {
-        $args['id'] = $club_role_id;
-        $shortcode  = '[club-role-modal';
-        foreach ( $args as $key => $value ) {
-            $shortcode .= ' ' . $key . "='" . $value . "'";
-        }
-        $shortcode .= ']';
-        return do_shortcode( $shortcode );
+function show_club_role_modal( int $club_role_id, array $args = array() ): string {
+    $args['id'] = $club_role_id;
+    $shortcode  = '[club-role-modal';
+    foreach ( $args as $key => $value ) {
+        $shortcode .= ' ' . $key . "='" . $value . "'";
     }
+    $shortcode .= ']';
+    return do_shortcode( $shortcode );
+}
 
-    if ( ! function_exists( 'Racketmanager\manage_url' ) ) {
-        /**
-         * Resolve management URL for administrative and portal sections.
-         *
-         * @param string               $section    Section identifier (e.g. 'clubs', 'competitions').
-         * @param string               $view       Optional subview (e.g. 'club', 'players').
-         * @param array<string, mixed> $query_args Optional query parameters.
-         *
-         * @return string
-         */
-        function manage_url( string $section, string $view = '', array $query_args = array() ): string {
-            global $racketmanager;
-            if ( isset( $racketmanager->container ) && $racketmanager->container->has( \Racketmanager\Application\Ports\Manage_Url_Resolver_Interface::class ) ) {
-                return $racketmanager->container->get( \Racketmanager\Application\Ports\Manage_Url_Resolver_Interface::class )->get_url( $section, $view, $query_args );
-            }
-
-            $route_mapper = new \Racketmanager\Infrastructure\Wordpress\Routing\Manage_Route_Mapper();
-            $admin_page   = $route_mapper->section_to_admin_page( $section );
-            $query        = array( 'page' => $admin_page );
-            if ( '' !== $view ) {
-                $query['view'] = $view;
-            }
-            $query = array_merge( $query, $query_args );
-
-            return admin_url( 'admin.php?' . http_build_query( $query ) );
+if ( ! function_exists( 'Racketmanager\manage_url' ) ) {
+    /**
+     * Resolve management URL for administrative and portal sections.
+     *
+     * @param string               $section    Section identifier (e.g. 'clubs', 'competitions').
+     * @param string               $view       Optional subview (e.g. 'club', 'players').
+     * @param array<string, mixed> $query_args Optional query parameters.
+     *
+     * @return string
+     */
+    function manage_url( string $section, string $view = '', array $query_args = array() ): string {
+        global $racketmanager;
+        if ( isset( $racketmanager->container ) && $racketmanager->container->has( Manage_Url_Resolver_Interface::class ) ) {
+            return $racketmanager->container->get( Manage_Url_Resolver_Interface::class )->get_url( $section, $view, $query_args );
         }
-    }
 
-    if ( ! function_exists( 'Racketmanager\is_manage_portal_context' ) ) {
-        /**
-         * Check whether the current request is executing within the frontend management portal context.
-         *
-         * @return bool
-         */
-        function is_manage_portal_context(): bool {
-            global $racketmanager;
-            if ( isset( $racketmanager->container ) && $racketmanager->container->has( \Racketmanager\Application\Ports\Manage_Url_Resolver_Interface::class ) ) {
-                return $racketmanager->container->get( \Racketmanager\Application\Ports\Manage_Url_Resolver_Interface::class )->is_portal_context();
-            }
-
-            return false;
+        $route_mapper = new \Racketmanager\Infrastructure\Wordpress\Routing\Manage_Route_Mapper();
+        $admin_page   = $route_mapper->section_to_admin_page( $section );
+        $query        = array( 'page' => $admin_page );
+        if ( '' !== $view ) {
+            $query['view'] = $view;
         }
+        $query = array_merge( $query, $query_args );
+
+        return admin_url( 'admin.php?' . http_build_query( $query ) );
     }
+}
+
+if ( ! function_exists( 'Racketmanager\is_manage_portal_context' ) ) {
+    /**
+     * Check whether the current request is executing within the frontend management portal context.
+     *
+     * @return bool
+     */
+    function is_manage_portal_context(): bool {
+        global $racketmanager;
+        if ( isset( $racketmanager->container ) && $racketmanager->container->has( Manage_Url_Resolver_Interface::class ) ) {
+            return $racketmanager->container->get( Manage_Url_Resolver_Interface::class )->is_portal_context();
+        }
+
+        return false;
+    }
+}

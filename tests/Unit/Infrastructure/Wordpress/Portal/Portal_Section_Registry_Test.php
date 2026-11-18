@@ -20,12 +20,12 @@ final class Portal_Section_Registry_Test extends TestCase {
         $expected_slugs = [
             'overview',
             'competitions',
-            'clubs',
             'leagues',
             'cups',
             'tournaments',
-            'results',
+            'clubs',
             'players',
+            'results',
             'seasons',
             'finances',
             'settings',
@@ -34,6 +34,7 @@ final class Portal_Section_Registry_Test extends TestCase {
         ];
 
         $this->assertCount( 13, $this->registry->all() );
+        $this->assertSame( $expected_slugs, array_keys( $this->registry->all() ) );
         foreach ( $expected_slugs as $slug ) {
             $this->assertTrue( $this->registry->has( $slug ), "Expected section {$slug} to be registered" );
             $config = $this->registry->get( $slug );
@@ -66,13 +67,38 @@ final class Portal_Section_Registry_Test extends TestCase {
 
     public function test_accepts_custom_sections(): void {
         $custom   = [
-            'custom' => new Portal_Section_Config( 'custom', 'custom-page', 'Custom_Class', 'read', 'default', true, 'Custom' ),
+            'custom' => new Portal_Section_Config( 'custom', 'custom-page', 'Custom_Class', 'read', 'default', true, 'Custom', group: 'Custom Group' ),
         ];
         $registry = new Portal_Section_Registry( $custom );
 
         $this->assertCount( 1, $registry->all() );
         $this->assertTrue( $registry->has( 'custom' ) );
         $this->assertTrue( $registry->is_ported( 'custom' ) );
+        $this->assertSame( 'Custom Group', $registry->get( 'custom' )->group );
         $this->assertFalse( $registry->has( 'clubs' ) );
+    }
+
+    public function test_default_sections_have_expected_admin_group_mappings(): void {
+        $expected_groups = [
+            'overview'      => '',
+            'competitions'  => 'Competitions',
+            'leagues'       => 'Competitions',
+            'cups'          => 'Competitions',
+            'tournaments'   => 'Competitions',
+            'clubs'         => 'Organizations',
+            'players'       => 'Organizations',
+            'results'       => 'Audits & Operations',
+            'seasons'       => 'Administration',
+            'finances'      => 'Administration',
+            'settings'      => 'Administration',
+            'import'        => 'Administration',
+            'documentation' => 'Administration',
+        ];
+
+        foreach ( $expected_groups as $slug => $group ) {
+            $config = $this->registry->get( $slug );
+            $this->assertNotNull( $config, "Expected {$slug} to exist" );
+            $this->assertSame( $group, $config->group, "Mismatch group for section {$slug}" );
+        }
     }
 }

@@ -86,7 +86,8 @@ readonly class Portal_Screen_Presenter {
                 $config->title,
                 $url,
                 $is_active,
-                $config->is_ported
+                $config->is_ported,
+                $config->group
             );
         }
 

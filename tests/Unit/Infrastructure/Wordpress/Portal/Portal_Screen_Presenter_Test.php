@@ -3,12 +3,15 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Portal;
 
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Admin\Ports\Flash_Message_Store_Interface;
 use Racketmanager\Application\Ports\Manage_Url_Resolver_Interface;
 use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Infrastructure\Wordpress\Portal\Portal_Auth_Guard;
 use Racketmanager\Infrastructure\Wordpress\Portal\Portal_Layout_View_Model;
+use Racketmanager\Infrastructure\Wordpress\Portal\Portal_Navigation_View_Model;
 use Racketmanager\Infrastructure\Wordpress\Portal\Portal_Screen_Presenter;
 use Racketmanager\Infrastructure\Wordpress\Portal\Portal_Section_Registry;
 use Racketmanager\Services\Admin\Admin_Message_Service;
@@ -62,6 +65,22 @@ final class Portal_Screen_Presenter_Test extends TestCase {
         $this->assertTrue( $found_clubs );
     }
 
+    public function test_builds_navigation_for_unported_sections(): void {
+        $this->registry->set_ported( 'clubs', false );
+        $presenter = $this->create_presenter();
+        $nav_vm    = $presenter->build_navigation( 'clubs' );
+
+        $found_clubs = false;
+        foreach ( $nav_vm->items as $item ) {
+            if ( 'clubs' === $item->slug ) {
+                $found_clubs = true;
+                $this->assertFalse( $item->is_ported );
+                $this->assertSame( 'https://example.test/wp-admin/admin.php?page=racketmanager-clubs', $item->url );
+            }
+        }
+        $this->assertTrue( $found_clubs );
+    }
+
     public function test_filters_out_unauthorized_navigation_sections(): void {
         $auth_guard = $this->createStub( Portal_Auth_Guard::class );
         $auth_guard->method( 'user_can' )->willReturnCallback(
@@ -89,11 +108,133 @@ final class Portal_Screen_Presenter_Test extends TestCase {
                         && 'Clubs Title' === $vm->title
                         && '<div>Content</div>' === $vm->content
                         && 'clubs' === $vm->active_section
+                        && 'RacketManager' === $vm->site_name
+                        && 'https://example.test/' === $vm->site_url
+                        && 'https://example.test/manage/competitions' === $vm->portal_home_url
                 )
             );
 
         $presenter = $this->create_presenter( $renderer );
         $presenter->render_layout( 'Clubs Title', '<div>Content</div>', 'clubs' );
+    }
+
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState( false )]
+    public function test_renders_layout_shell_with_site_name_from_get_bloginfo(): void {
+        if ( ! function_exists( 'get_bloginfo' ) ) {
+            // phpcs:ignore Squiz.PHP.Eval.Discouraged
+            eval( 'function get_bloginfo( $show = "" ) { return "Leigh and Westcliff Tennis"; }' );
+        }
+
+        $renderer = $this->createMock( View_Renderer_Interface::class );
+        $renderer->expects( $this->once() )
+            ->method( 'render' )
+            ->with(
+                'portal/layout',
+                $this->callback(
+                    fn( $vm ) => $vm instanceof Portal_Layout_View_Model
+                        && 'Leigh and Westcliff Tennis' === $vm->site_name
+                        && 'https://example.test/' === $vm->site_url
+                        && 'https://example.test/manage/competitions' === $vm->portal_home_url
+                )
+            );
+
+        $presenter = $this->create_presenter( $renderer );
+        $presenter->render_layout( 'Clubs Title', '<div>Content</div>', 'clubs' );
+    }
+
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState( false )]
+    public function test_renders_layout_shell_decodes_html_entities_in_site_name(): void {
+        if ( ! function_exists( 'get_bloginfo' ) ) {
+            // phpcs:ignore Squiz.PHP.Eval.Discouraged
+            eval( 'function get_bloginfo( $show = "" ) { return "Leigh &amp; Westcliff Tennis"; }' );
+        }
+
+        $renderer = $this->createMock( View_Renderer_Interface::class );
+        $renderer->expects( $this->once() )
+            ->method( 'render' )
+            ->with(
+                'portal/layout',
+                $this->callback(
+                    fn( $vm ) => $vm instanceof Portal_Layout_View_Model
+                        && 'Leigh & Westcliff Tennis' === $vm->site_name
+                        && 'https://example.test/' === $vm->site_url
+                        && 'https://example.test/manage/competitions' === $vm->portal_home_url
+                )
+            );
+
+        $presenter = $this->create_presenter( $renderer );
+        $presenter->render_layout( 'Clubs Title', '<div>Content</div>', 'clubs' );
+    }
+
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState( false )]
+    public function test_renders_layout_shell_falls_back_when_get_bloginfo_returns_empty_string(): void {
+        if ( ! function_exists( 'get_bloginfo' ) ) {
+            // phpcs:ignore Squiz.PHP.Eval.Discouraged
+            eval( 'function get_bloginfo( $show = "" ) { return ""; }' );
+        }
+
+        $renderer = $this->createMock( View_Renderer_Interface::class );
+        $renderer->expects( $this->once() )
+            ->method( 'render' )
+            ->with(
+                'portal/layout',
+                $this->callback(
+                    fn( $vm ) => $vm instanceof Portal_Layout_View_Model
+                        && 'RacketManager' === $vm->site_name
+                        && 'https://example.test/' === $vm->site_url
+                        && 'https://example.test/manage/competitions' === $vm->portal_home_url
+                )
+            );
+
+        $presenter = $this->create_presenter( $renderer );
+        $presenter->render_layout( 'Clubs Title', '<div>Content</div>', 'clubs' );
+    }
+
+    public function test_layout_view_model_constructor_compatibility_with_defaults(): void {
+        $nav_vm = new Portal_Navigation_View_Model( [] );
+        $vm     = new Portal_Layout_View_Model(
+            'Test Title',
+            '<p>Test Content</p>',
+            'clubs',
+            $nav_vm
+        );
+
+        $this->assertSame( 'Test Title', $vm->title );
+        $this->assertSame( '<p>Test Content</p>', $vm->content );
+        $this->assertSame( 'clubs', $vm->active_section );
+        $this->assertSame( $nav_vm, $vm->navigation );
+        $this->assertSame( '', $vm->user_name );
+        $this->assertSame( '', $vm->logout_url );
+        $this->assertSame( [], $vm->flash );
+        $this->assertSame( '', $vm->site_name );
+        $this->assertSame( '', $vm->site_url );
+        $this->assertSame( '', $vm->portal_home_url );
+    }
+
+    public function test_layout_view_model_constructor_accepts_all_properties(): void {
+        $nav_vm = new Portal_Navigation_View_Model( [] );
+        $vm     = new Portal_Layout_View_Model(
+            'Test Title',
+            '<p>Test Content</p>',
+            'clubs',
+            $nav_vm,
+            'John Doe',
+            'https://example.test/logout',
+            [ 'message' => 'Saved' ],
+            'Custom Site',
+            'https://example.test/',
+            'https://example.test/manage/competitions'
+        );
+
+        $this->assertSame( 'Custom Site', $vm->site_name );
+        $this->assertSame( 'https://example.test/', $vm->site_url );
+        $this->assertSame( 'https://example.test/manage/competitions', $vm->portal_home_url );
+        $this->assertSame( 'John Doe', $vm->user_name );
+        $this->assertSame( 'https://example.test/logout', $vm->logout_url );
+        $this->assertSame( [ 'message' => 'Saved' ], $vm->flash );
     }
 
     public function test_present_unauthorized_renders_access_denied(): void {

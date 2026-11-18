@@ -1121,6 +1121,31 @@ namespace {
         }
     }
 
+    if ( ! function_exists( 'language_attributes' ) ) {
+        function language_attributes( $doctype = 'html' ): void {
+            echo 'lang="en-GB"';
+        }
+    }
+
+    if ( ! function_exists( 'wp_head' ) ) {
+        function wp_head(): void {}
+    }
+
+    if ( ! function_exists( 'body_class' ) ) {
+        function body_class( $class = '' ): void {
+            $classes = is_array( $class ) ? implode( ' ', $class ) : (string) $class;
+            echo 'class="' . ( $classes ? esc_attr( $classes ) : '' ) . '"';
+        }
+    }
+
+    if ( ! function_exists( 'wp_body_open' ) ) {
+        function wp_body_open(): void {}
+    }
+
+    if ( ! function_exists( 'wp_footer' ) ) {
+        function wp_footer(): void {}
+    }
+
     if ( ! function_exists( 'get_current_screen' ) ) {
         function get_current_screen() {
             return $GLOBALS['wp_stubs_current_screen'] ?? null;

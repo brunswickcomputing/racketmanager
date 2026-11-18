@@ -206,14 +206,16 @@ table.racketmanager a {
 }
 
 .standingstable .rank {
-	display: block;
-	margin: auto;
-	text-align: center;
-	padding: 5px;
-	-moz-border-radius: 4px;
-	-webkit-border-radius: 4px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 1.75rem;
+	height: 1.75rem;
+	padding: 0 0.375rem;
 	border-radius: 4px;
-	font-weight: bold;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
 }
 
 /*--- Crosstable Popup ---*/
@@ -353,19 +355,13 @@ div.tm-team-content .prev_match .header,
 div.tm-team-content .next_match .header {
 	margin: 0;
 	color: #cccccc;
-	-moz-border-radius: 0;
 	padding: 0.5em;
-	-moz-border-top-left-radius: 4px;
-	-moz-border-top-right-radius: 4px;
 	-webkit-border-radius: 4px 4px 0 0;
 	border-radius: 4px 4px 0 0;
 	border: 1px solid;
 	border-bottom: 0;
 	font-weight: bold;
 	-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 1);
-		-moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 1);
-		-ms-box-shadow: 0 1px 1px rgba(0, 0, 0, 1);
-		-o-box-shadow: 0 1px 1px rgba(0, 0, 0, 1);
 		box-shadow: 0 1px 1px rgba(0, 0, 0, 1);
 }
 
@@ -2753,16 +2749,6 @@ ul.match-points {
 	transform: translateY(-50%)
 }
 
-@-webkit-keyframes point-up {
-	0% {
-		background-color: rgba(74, 191, 51, .3)
-	}
-
-	to {
-		background-color: rgba(74, 191, 51, 0)
-	}
-}
-
 @keyframes point-up {
 	0% {
 		background-color: rgba(74, 191, 51, .3)
@@ -2923,7 +2909,7 @@ ul.match-points {
 	align-self: center;
 }
 
-.match__btn svg.icon, svg.icon,icin-white {
+.match__btn svg.icon, svg.icon.icon-white {
 	fill: white;
 }
 
@@ -5799,4 +5785,413 @@ input[type="number"].event-price {
 	justify-content: space-around;
 	align-self: center;
 	width: 5rem;
+}
+
+/*
+ * @section: Management Portal
+ * Persistent sticky header, left sidebar navigation, and responsive body layout.
+ */
+
+/* Base Portal Shell & Custom Properties */
+body.racketmanager-portal-shell {
+	--rm-portal-header-height: 58px;
+	--rm-portal-adminbar-height: 0px;
+	margin: 0;
+	padding: 0;
+	background-color: #f8fafc;
+	color: #1e293b;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	font-size: 1rem;
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+}
+
+body.racketmanager-portal-shell.admin-bar {
+	--rm-portal-adminbar-height: 32px;
+}
+
+@media screen and (max-width: 782px) {
+	body.racketmanager-portal-shell.admin-bar {
+		--rm-portal-adminbar-height: 46px;
+	}
+}
+
+@media screen and (max-width: 600px) {
+	body.racketmanager-portal-shell.admin-bar {
+		--rm-portal-adminbar-height: 0px;
+	}
+}
+
+body.racketmanager-portal-shell *,
+body.racketmanager-portal-shell *::before,
+body.racketmanager-portal-shell *::after {
+	box-sizing: border-box;
+}
+
+/* Accessibility: Visually Hidden Screen Reader Text */
+.racketmanager-portal-shell .screen-reader-text {
+	border: 0;
+	clip: rect(1px, 1px, 1px, 1px);
+	-webkit-clip-path: inset(50%);
+	clip-path: inset(50%);
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	width: 1px;
+	word-wrap: normal;
+}
+
+/* Accessibility: Skip Link Focus Reveal */
+.racketmanager-portal-shell .skip-link:focus,
+.racketmanager-portal-shell .rm-portal-skip-link:focus {
+	background-color: #ffffff;
+	border: 2px solid #0369a1;
+	border-radius: 4px;
+	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+	clip: auto;
+	-webkit-clip-path: none;
+	clip-path: none;
+	color: #0369a1;
+	display: block;
+	font-size: 0.875rem;
+	font-weight: 600;
+	height: auto;
+	left: 1rem;
+	line-height: normal;
+	padding: 0.75rem 1.25rem;
+	text-decoration: none;
+	top: 1rem;
+	width: auto;
+	z-index: 100000;
+}
+
+/* Top-level Layout Wrapper */
+.rm-portal-wrapper {
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+}
+
+/* Sticky Header */
+.rm-portal-header {
+	position: sticky;
+    top: var(--rm-portal-adminbar-height, 0);
+	z-index: 1020;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 0.75rem 1.5rem;
+	padding: 0.875rem 1.5rem;
+	background-color: #1e293b;
+	color: #f8fafc;
+	border-bottom: 1px solid #0f172a;
+	box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+}
+
+body.racketmanager-portal-shell.admin-bar .rm-portal-header {
+    top: var(--rm-portal-adminbar-height, 32px);
+}
+
+@media screen and (max-width: 782px) {
+	body.racketmanager-portal-shell.admin-bar .rm-portal-header {
+        top: var(--rm-portal-adminbar-height, 46px);
+	}
+}
+
+@media screen and (max-width: 600px) {
+	body.racketmanager-portal-shell.admin-bar .rm-portal-header {
+        top: var(--rm-portal-adminbar-height, 0);
+	}
+}
+
+.rm-portal-header__brand {
+	font-size: 1.125rem;
+	font-weight: 700;
+	color: #ffffff;
+	text-decoration: none;
+	letter-spacing: -0.01em;
+	display: inline-flex;
+	align-items: center;
+	white-space: nowrap;
+	min-width: 0;
+}
+
+.rm-portal-header__brand:hover,
+.rm-portal-header__brand:focus {
+	color: #38bdf8;
+	text-decoration: none;
+}
+
+.rm-portal-header__actions {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.75rem 1.25rem;
+	font-size: 0.875rem;
+}
+
+.rm-portal-header__site-link {
+	color: #94a3b8;
+	text-decoration: none;
+	padding: 0.25rem 0.5rem;
+	border-radius: 4px;
+	transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.rm-portal-header__site-link:hover,
+.rm-portal-header__site-link:focus {
+	color: #ffffff;
+	background-color: #334155;
+	text-decoration: none;
+}
+
+.rm-portal-header__username {
+	font-weight: 600;
+	color: #e2e8f0;
+}
+
+.rm-portal-header__logout {
+	color: #f87171;
+	text-decoration: none;
+	padding: 0.25rem 0.5rem;
+	border-radius: 4px;
+	transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.rm-portal-header__logout:hover,
+.rm-portal-header__logout:focus {
+	color: #fca5a5;
+	background-color: #334155;
+	text-decoration: none;
+}
+
+/* Two-Column Portal Body Container */
+.rm-portal-body {
+	display: flex;
+	flex: 1 1 auto;
+	min-height: 0;
+	background-color: #f8fafc;
+}
+
+/* Left-hand Navigation Sidebar */
+.rm-portal-sidebar {
+	width: 240px;
+	flex: 0 0 240px;
+	background-color: #ffffff;
+	border-right: 1px solid #e2e8f0;
+	padding: 1.25rem 0.75rem;
+}
+
+@media (min-width: 769px) {
+	.rm-portal-sidebar {
+		position: sticky;
+		top: calc(var(--rm-portal-header-height, 58px) + var(--rm-portal-adminbar-height, 0px));
+		align-self: flex-start;
+		max-height: calc(100vh - var(--rm-portal-header-height, 58px) - var(--rm-portal-adminbar-height, 0px));
+		overflow-y: auto;
+	}
+}
+
+/* Navigation List */
+.rm-portal-nav {
+	width: 100%;
+}
+
+.rm-portal-nav__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.rm-portal-nav__list--vertical {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.rm-portal-nav__item {
+	margin: 0;
+	padding: 0;
+}
+
+.rm-portal-nav__link {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	padding: 0.625rem 0.875rem;
+	color: #475569;
+	font-size: 0.9375rem;
+	font-weight: 500;
+	text-decoration: none;
+	border-radius: 6px;
+	border-left: 3px solid transparent;
+    transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.rm-portal-nav__link:hover,
+.rm-portal-nav__link:focus {
+	color: #0f172a;
+	background-color: #f1f5f9;
+	text-decoration: none;
+}
+
+.rm-portal-nav__link.is-active,
+.rm-portal-nav__item--active .rm-portal-nav__link {
+	color: #0369a1;
+	background-color: #e0f2fe;
+	font-weight: 600;
+	border-left-color: #0284c7;
+}
+
+.rm-portal-nav__badge {
+	display: inline-block;
+	padding: 0.125rem 0.375rem;
+	font-size: 0.6875rem;
+	font-weight: 600;
+	line-height: 1;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: #475569;
+	background-color: #e2e8f0;
+	border: 1px solid #cbd5e1;
+	border-radius: 4px;
+	vertical-align: middle;
+}
+
+.rm-portal-nav__link.is-active .rm-portal-nav__badge,
+.rm-portal-nav__item--active .rm-portal-nav__badge {
+	color: #075985;
+	background-color: #bae6fd;
+	border-color: #7dd3fc;
+}
+
+/* Main Content Area */
+.rm-portal-main {
+	flex: 1 1 auto;
+	min-width: 0;
+	padding: 1.5rem 2rem;
+	display: flex;
+	flex-direction: column;
+}
+
+.rm-portal-content-body {
+	flex: 1 0 auto;
+}
+
+/* Flash Notices (Scoped to Portal Main) */
+.rm-portal-main .rm-alert {
+	padding: 0.875rem 1.25rem;
+	margin-bottom: 1.5rem;
+	border-radius: 6px;
+	border: 1px solid transparent;
+	font-size: 0.9375rem;
+}
+
+.rm-portal-main .rm-alert p {
+	margin: 0;
+}
+
+.rm-portal-main .rm-alert--success {
+	color: #166534;
+	background-color: #f0fdf4;
+	border-color: #bbf7d0;
+}
+
+.rm-portal-main .rm-alert--error {
+	color: #991b1b;
+	background-color: #fef2f2;
+	border-color: #fecaca;
+}
+
+/* Footer */
+.rm-portal-footer {
+	margin-top: 3rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid #e2e8f0;
+	color: #64748b;
+	font-size: 0.8125rem;
+}
+
+.rm-portal-footer p {
+	margin: 0;
+}
+
+/* Focus Visibility */
+.rm-portal-header a:focus-visible,
+.rm-portal-nav a:focus-visible,
+.rm-portal-main a:focus-visible {
+	outline: 2px solid #0284c7;
+	outline-offset: 2px;
+}
+
+/* Responsive Styles for Mobile and Tablet (<= 768px) */
+@media (max-width: 768px) {
+	.rm-portal-header {
+		padding: 0.75rem 1rem;
+		gap: 0.5rem 1rem;
+	}
+
+	.rm-portal-header__brand {
+		white-space: normal;
+		overflow-wrap: anywhere;
+		max-width: 100%;
+		line-height: 1.3;
+	}
+
+	.rm-portal-header__actions {
+		width: 100%;
+		justify-content: space-between;
+	}
+
+	.rm-portal-body {
+		flex-direction: column;
+	}
+
+	.rm-portal-sidebar {
+		width: 100%;
+		flex: 0 0 auto;
+		position: static;
+		max-height: none;
+		border-right: none;
+		border-bottom: 1px solid #e2e8f0;
+		padding: 0.5rem 0.75rem;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.rm-portal-nav__list.rm-portal-nav__list--vertical {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		gap: 0.5rem;
+		overflow-x: visible;
+		padding-bottom: 0.25rem;
+	}
+
+	.rm-portal-nav__item {
+		flex: 0 0 auto;
+		margin-bottom: 0;
+	}
+
+	.rm-portal-nav__link {
+		white-space: nowrap;
+		padding: 0.5rem 0.75rem;
+		border-radius: 6px;
+		border-left: none;
+		border-bottom: 2px solid transparent;
+	}
+
+	.rm-portal-nav__link.is-active,
+	.rm-portal-nav__item--active .rm-portal-nav__link {
+		border-left: none;
+		border-bottom-color: #0284c7;
+	}
+
+	.rm-portal-main {
+		padding: 1rem;
+	}
 }

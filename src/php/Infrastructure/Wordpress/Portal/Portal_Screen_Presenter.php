@@ -69,9 +69,13 @@ readonly class Portal_Screen_Presenter {
             }
 
             $is_active = ( $config->slug === $active_section );
-            $url       = $config->is_ported
-                ? $this->url_resolver->get_url( $config->slug )
-                : ( function_exists( 'admin_url' ) ? admin_url( 'admin.php?page=' . $config->admin_page ) : '/wp-admin/admin.php?page=' . $config->admin_page );
+            if ( $config->is_ported ) {
+                $url = $this->url_resolver->get_url( $config->slug );
+            } elseif ( function_exists( 'admin_url' ) ) {
+                $url = admin_url( 'admin.php?page=' . $config->admin_page );
+            } else {
+                $url = '/wp-admin/admin.php?page=' . $config->admin_page;
+            }
 
             $items[] = new Portal_Navigation_Item(
                 $config->slug,
@@ -100,11 +104,24 @@ readonly class Portal_Screen_Presenter {
             $user_name    = $current_user->display_name ?? '';
         }
 
-        $logout_url = function_exists( 'wp_logout_url' )
-            ? wp_logout_url( function_exists( 'home_url' ) ? home_url() : '/' )
+        $logout_redirect = function_exists( 'home_url' ) ? home_url() : '/';
+        $logout_url      = function_exists( 'wp_logout_url' )
+            ? wp_logout_url( $logout_redirect )
             : '';
 
         $flash = $this->apply_flash();
+
+        $site_name = function_exists( 'get_bloginfo' ) ? strval( get_bloginfo( 'name' ) ) : 'RacketManager';
+        if ( '' === $site_name ) {
+            $site_name = 'RacketManager';
+        } elseif ( function_exists( 'wp_specialchars_decode' ) ) {
+            $site_name = wp_specialchars_decode( $site_name, ENT_QUOTES );
+        } else {
+            $site_name = html_entity_decode( $site_name, ENT_QUOTES, 'UTF-8' );
+        }
+
+        $site_url        = function_exists( 'home_url' ) ? home_url( '/' ) : '/';
+        $portal_home_url = $this->url_resolver->get_url( 'competitions' );
 
         $layout_vm = new Portal_Layout_View_Model(
             $title,
@@ -113,7 +130,10 @@ readonly class Portal_Screen_Presenter {
             $navigation,
             $user_name,
             $logout_url,
-            $flash
+            $flash,
+            $site_name,
+            $site_url,
+            $portal_home_url
         );
 
         $this->renderer->render( 'portal/layout', $layout_vm );

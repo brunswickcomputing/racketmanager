@@ -332,7 +332,7 @@ final class Admin_Redirect_Url_Builder {
     public static function league_screen( array $query, array $extra_args = array() ): string {
         $args = array();
 
-        foreach ( array( 'page', 'view', 'league_id', 'competition_id', 'event_id', 'season', 'group', 'match_day', 'team_id', 'match_paged', 'standingstable' ) as $key ) {
+        foreach ( array( 'page', 'view', 'league_id', 'competition_id', 'event_id', 'season', 'group', 'match_day', 'team_id', 'match_paged', 'standingstable', 'age_group' ) as $key ) {
             if ( isset( $query[ $key ] ) && '' !== strval( $query[ $key ] ) ) {
                 $args[ $key ] = sanitize_text_field( wp_unslash( strval( $query[ $key ] ) ) );
             }
@@ -510,7 +510,7 @@ final class Admin_Redirect_Url_Builder {
             'page' => isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-cups',
         );
 
-        foreach ( array( 'view', 'competition_id', 'league_id', 'league', 'season', 'tab', 'final', 'edit' ) as $key ) {
+        foreach ( array( 'view', 'competition_id', 'league_id', 'league', 'season', 'tab', 'final', 'edit', 'age_group' ) as $key ) {
             if ( isset( $query[ $key ] ) && '' !== strval( $query[ $key ] ) ) {
                 $args[ $key ] = sanitize_text_field( wp_unslash( strval( $query[ $key ] ) ) );
             }
@@ -519,6 +519,31 @@ final class Admin_Redirect_Url_Builder {
         $args = array_merge( $args, $extra_args );
 
         return self::resolve_screen_url( 'cups', $args, 'racketmanager-cups' );
+    }
+
+    /**
+     * Build redirect URL that returns to the tournament competitions screen after a mutation.
+     *
+     * @param array<string, mixed> $query Typically $_GET.
+     * @param array<string, mixed> $extra_args Additional parameters to append or override.
+     *
+     * @return string
+     */
+    public static function tournament_competitions_screen( array $query = array(), array $extra_args = array() ): string {
+        $args = array(
+            'page' => isset( $query['page'] ) && '' !== strval( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-tournaments',
+            'view' => 'competitions',
+        );
+
+        foreach ( array( 'age_group' ) as $key ) {
+            if ( isset( $query[ $key ] ) && '' !== strval( $query[ $key ] ) ) {
+                $args[ $key ] = sanitize_text_field( wp_unslash( strval( $query[ $key ] ) ) );
+            }
+        }
+
+        $args = array_merge( $args, $extra_args );
+
+        return self::resolve_screen_url( 'tournaments', $args, 'racketmanager-tournaments' );
     }
 
     /**

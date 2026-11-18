@@ -313,7 +313,7 @@ final class Administration_And_Final_Cutover_Portal_Integration_Test extends Tes
         $this->assertSame( 'portal/overview', $rendered_template );
     }
 
-    public function test_portal_navigation_renders_all_thirteen_sections_with_portal_routes(): void {
+    public function test_portal_navigation_renders_all_twelve_navigation_sections_with_portal_routes(): void {
         $auth_guard = $this->createStub( Portal_Auth_Guard::class );
         $auth_guard->method( 'user_can' )->willReturn( true );
 
@@ -327,7 +327,6 @@ final class Administration_And_Final_Cutover_Portal_Integration_Test extends Tes
 
         $all_slugs = [
             'overview',
-            'competitions',
             'clubs',
             'leagues',
             'cups',
@@ -341,7 +340,7 @@ final class Administration_And_Final_Cutover_Portal_Integration_Test extends Tes
             'documentation',
         ];
 
-        $this->assertCount( 13, $items_by_slug );
+        $this->assertCount( 12, $items_by_slug );
 
         foreach ( $all_slugs as $slug ) {
             $this->assertArrayHasKey( $slug, $items_by_slug );
@@ -349,6 +348,7 @@ final class Administration_And_Final_Cutover_Portal_Integration_Test extends Tes
             $this->assertSame( home_url( '/manage/' . $slug ), $items_by_slug[ $slug ]->url );
         }
 
+        $this->assertArrayNotHasKey( 'competitions', $items_by_slug );
         $this->assertTrue( $items_by_slug['settings']->is_active );
         $this->assertFalse( $items_by_slug['seasons']->is_active );
     }
@@ -373,7 +373,7 @@ final class Administration_And_Final_Cutover_Portal_Integration_Test extends Tes
 
         $this->assertArrayHasKey( 'overview', $items_by_slug );
         $this->assertArrayHasKey( 'clubs', $items_by_slug );
-        $this->assertArrayHasKey( 'competitions', $items_by_slug );
+        $this->assertArrayNotHasKey( 'competitions', $items_by_slug );
         $this->assertArrayHasKey( 'leagues', $items_by_slug );
         $this->assertArrayHasKey( 'cups', $items_by_slug );
         $this->assertArrayHasKey( 'tournaments', $items_by_slug );

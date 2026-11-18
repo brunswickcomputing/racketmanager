@@ -115,6 +115,7 @@ if ( $vm ) {
                             <?php
                         }
                         ?>
+                        <div class="form-text"><a href="<?php echo esc_url( manage_url( 'tournaments', 'competitions' ) ); ?>"><?php esc_html_e( '+ Add tournament competition', 'racketmanager' ); ?></a></div>
                     </div>
                 </div>
                 <div class="col-md-6">

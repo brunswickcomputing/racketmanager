@@ -60,15 +60,6 @@ final readonly class Overview_Page_View_Model {
     private function build_default_options(): array {
         return [
             new Overview_Option_Item(
-                'competitions',
-                'Competitions',
-                'Competition Management',
-                'Configure tournament and league competitions, modes of play, entry specifications, and demographic categories.',
-                $this->resolve_url( 'competitions' ),
-                'Core',
-                [ 'Championship, League & Cup modes', 'Club & individual entry levels', 'Demographic age groupings' ]
-            ),
-            new Overview_Option_Item(
                 'leagues',
                 'Leagues',
                 'Competition Management',

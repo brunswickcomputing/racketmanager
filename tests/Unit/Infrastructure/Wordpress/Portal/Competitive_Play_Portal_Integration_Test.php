@@ -165,7 +165,7 @@ final class Competitive_Play_Portal_Integration_Test extends TestCase {
     }
 
     public function test_dispatches_tournaments_subviews_to_admin_tournament_screen(): void {
-        $subviews = [ 'tournaments', 'tournament', 'draw', 'fixtures', 'plan', 'setup', 'information', 'modify' ];
+        $subviews = [ 'tournaments', 'tournament', 'draw', 'fixtures', 'plan', 'setup', 'information', 'modify', 'competitions' ];
 
         foreach ( $subviews as $subview ) {
             $query_vars = $this->createStub( Query_Vars_Interface::class );

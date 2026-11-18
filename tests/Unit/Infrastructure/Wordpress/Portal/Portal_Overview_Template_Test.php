@@ -43,10 +43,9 @@ final class Portal_Overview_Template_Test extends TestCase {
         $this->assertSame( 'RacketManager', $vm->service_name );
         $this->assertNotEmpty( $vm->service_summary );
         $this->assertCount( 4, $vm->service_pillars );
-        $this->assertCount( 12, $vm->options );
+        $this->assertCount( 11, $vm->options );
 
         $expected_slugs = [
-            'competitions',
             'leagues',
             'cups',
             'tournaments',
@@ -99,7 +98,6 @@ final class Portal_Overview_Template_Test extends TestCase {
         $this->assertStringContainsString( 'Financial Operations', $html );
 
         // Options check
-        $this->assertStringContainsString( 'Competitions', $html );
         $this->assertStringContainsString( 'Leagues', $html );
         $this->assertStringContainsString( 'Cups', $html );
         $this->assertStringContainsString( 'Tournaments', $html );
@@ -113,7 +111,6 @@ final class Portal_Overview_Template_Test extends TestCase {
         $this->assertStringContainsString( 'Documentation', $html );
 
         // URLs check
-        $this->assertStringContainsString( home_url( '/manage/competitions' ), $html );
         $this->assertStringContainsString( home_url( '/manage/leagues' ), $html );
         $this->assertStringContainsString( home_url( '/manage/cups' ), $html );
         $this->assertStringContainsString( home_url( '/manage/tournaments' ), $html );

@@ -205,6 +205,46 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has( \Racketmanager\Admin\Admin_Page_Router::class ) );
         $this->assertTrue( $container->has( 'admin' ) );
         $this->assertTrue( $container->has( \Racketmanager\Admin::class ) );
+
+        // Screen class keys.
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Admin_Club::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Admin_Finances::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Admin_Player::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Admin_Event::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Admin_League::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Admin_Cup::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Admin_Tournament::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Admin_Upgrade::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Admin_Season::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Admin_Options::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Admin_Import::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Admin_Championship::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Admin_Index::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Admin_Result::class ) );
+
+        // Admin_Competition is registered only by string key.
+        $this->assertTrue( $container->has_definition( 'admin_competition_screen' ) );
+        $this->assertFalse( $container->has_definition( \Racketmanager\Admin\Admin_Competition::class ) );
+
+        // Screens without legacy string aliases.
+        $this->assertFalse( $container->has( 'admin_upgrade_screen' ) );
+        $this->assertFalse( $container->has( 'admin_season_screen' ) );
+        $this->assertFalse( $container->has( 'admin_options_screen' ) );
+        $this->assertFalse( $container->has( 'admin_import_screen' ) );
+        $this->assertFalse( $container->has( 'admin_championship_screen' ) );
+        $this->assertFalse( $container->has( 'admin_index_screen' ) );
+        $this->assertFalse( $container->has( 'admin_result_screen' ) );
+
+        // Secondary controllers and tab handlers.
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Controllers\Upgrade_Admin_Controller::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Controllers\Seasons_Admin_Controller::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Controllers\Options_Admin_Controller::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Controllers\Import_Admin_Controller::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Controllers\Championship_Admin_Controller::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Controllers\Index_Admin_Controller::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Controllers\Results_Checker_Tab_Handler::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Controllers\Results_Fixtures_Tab_Handler::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Admin\Controllers\Results_Admin_Controller::class ) );
     }
 
     public function test_presentation_service_provider_registers_expected_keys(): void {

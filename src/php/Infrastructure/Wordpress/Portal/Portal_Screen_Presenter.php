@@ -64,6 +64,10 @@ readonly class Portal_Screen_Presenter {
         $items = [];
 
         foreach ( $this->section_registry->all() as $config ) {
+            if ( ! $config->in_navigation ) {
+                continue;
+            }
+
             if ( ! $this->auth_guard->user_can( $config->capability ) ) {
                 continue;
             }

@@ -53,6 +53,7 @@ use Racketmanager\Admin\Controllers\Seasons_Admin_Controller;
 use Racketmanager\Admin\Controllers\Teams_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Competition_Config_Admin_Controller;
+use Racketmanager\Admin\Controllers\Tournament_Competitions_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Draw_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Event_Config_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Fixtures_Admin_Controller;
@@ -118,7 +119,9 @@ use Racketmanager\Services\Container\Simple_Container;
 final readonly class Admin_Screens_Service_Provider implements Service_Provider_Interface {
 
     /**
-     * @param RacketManager|null $app racketmanager app.
+     * @param RacketManager|null $app application instance.
+     *
+     * @return void
      */
     public function __construct(
         private ?RacketManager $app = null
@@ -708,6 +711,15 @@ final readonly class Admin_Screens_Service_Provider implements Service_Provider_
         );
 
         $container->set(
+            Tournament_Competitions_Admin_Controller::class,
+            fn( Simple_Container $c ) => new Tournament_Competitions_Admin_Controller(
+                $c->get( Competition_Service::class ),
+                $c->get( Action_Guard_Interface::class ),
+                $c->get( Index_Action_Dispatcher_Interface::class )
+            )
+        );
+
+        $container->set(
             'tournament_overview_admin_controller',
             fn( Simple_Container $c ) => new Tournament_Overview_Admin_Controller(
                 $c->get( 'tournament_service' ),
@@ -830,6 +842,41 @@ final readonly class Admin_Screens_Service_Provider implements Service_Provider_
      * @return void
      */
     private function register_admin_screens_and_core( Simple_Container $container ): void {
+        $this->register_admin_screens( $container );
+        $this->register_admin_secondary_controllers( $container );
+        $this->register_admin_core( $container );
+    }
+
+    /**
+     * Register standard admin screen with standard constructor signature.
+     *
+     * @param Simple_Container $container    Container.
+     * @param class-string     $screen_class Screen class name.
+     *
+     * @return void
+     */
+    private function register_standard_screen( Simple_Container $container, string $screen_class ): void {
+        $container->set(
+            $screen_class,
+            fn( Simple_Container $c ) => new $screen_class(
+                $c,
+                $c->get( Admin_Message_Service::class ),
+                $c->get( Admin_Action_Adapter::class ),
+                $c->get( Admin_Screen_Presenter::class )
+            )
+        );
+    }
+
+    /**
+     * Register admin screen services.
+     *
+     * @param Simple_Container $container Container.
+     *
+     * @throws LogicException If application instance is missing for Admin_Tournament.
+     *
+     * @return void
+     */
+    private function register_admin_screens( Simple_Container $container ): void {
         $app = $this->app;
 
         $container->set(
@@ -842,47 +889,14 @@ final readonly class Admin_Screens_Service_Provider implements Service_Provider_
             )
         );
 
-        $container->set(
-            Admin_Club::class,
-            fn( Simple_Container $c ) => new Admin_Club(
-                $c,
-                $c->get( Admin_Message_Service::class ),
-                $c->get( Admin_Action_Adapter::class ),
-                $c->get( Admin_Screen_Presenter::class )
-            )
-        );
-        $container->set(
-            'admin_club_screen',
-            fn( Simple_Container $c ) => $c->get( Admin_Club::class )
-        );
+        $this->register_standard_screen( $container, Admin_Club::class );
+        $container->set( 'admin_club_screen', fn( Simple_Container $c ) => $c->get( Admin_Club::class ) );
 
-        $container->set(
-            Admin_Finances::class,
-            fn( Simple_Container $c ) => new Admin_Finances(
-                $c,
-                $c->get( Admin_Message_Service::class ),
-                $c->get( Admin_Action_Adapter::class ),
-                $c->get( Admin_Screen_Presenter::class )
-            )
-        );
-        $container->set(
-            'admin_finances_screen',
-            fn( Simple_Container $c ) => $c->get( Admin_Finances::class )
-        );
+        $this->register_standard_screen( $container, Admin_Finances::class );
+        $container->set( 'admin_finances_screen', fn( Simple_Container $c ) => $c->get( Admin_Finances::class ) );
 
-        $container->set(
-            Admin_Player::class,
-            fn( Simple_Container $c ) => new Admin_Player(
-                $c,
-                $c->get( Admin_Message_Service::class ),
-                $c->get( Admin_Action_Adapter::class ),
-                $c->get( Admin_Screen_Presenter::class )
-            )
-        );
-        $container->set(
-            'admin_player_screen',
-            fn( Simple_Container $c ) => $c->get( Admin_Player::class )
-        );
+        $this->register_standard_screen( $container, Admin_Player::class );
+        $container->set( 'admin_player_screen', fn( Simple_Container $c ) => $c->get( Admin_Player::class ) );
 
         $container->set(
             Admin_Event::class,
@@ -892,39 +906,13 @@ final readonly class Admin_Screens_Service_Provider implements Service_Provider_
                 $c->get( Admin_Screen_Presenter::class )
             )
         );
+        $container->set( 'admin_event_screen', fn( Simple_Container $c ) => $c->get( Admin_Event::class ) );
 
-        $container->set(
-            'admin_event_screen',
-            fn( Simple_Container $c ) => $c->get( Admin_Event::class )
-        );
+        $this->register_standard_screen( $container, Admin_League::class );
+        $container->set( 'admin_league_screen', fn( Simple_Container $c ) => $c->get( Admin_League::class ) );
 
-        $container->set(
-            Admin_League::class,
-            fn( Simple_Container $c ) => new Admin_League(
-                $c,
-                $c->get( Admin_Message_Service::class ),
-                $c->get( Admin_Action_Adapter::class ),
-                $c->get( Admin_Screen_Presenter::class )
-            )
-        );
-        $container->set(
-            'admin_league_screen',
-            fn( Simple_Container $c ) => $c->get( Admin_League::class )
-        );
-
-        $container->set(
-            Admin_Cup::class,
-            fn( Simple_Container $c ) => new Admin_Cup(
-                $c,
-                $c->get( Admin_Message_Service::class ),
-                $c->get( Admin_Action_Adapter::class ),
-                $c->get( Admin_Screen_Presenter::class )
-            )
-        );
-        $container->set(
-            'admin_cup_screen',
-            fn( Simple_Container $c ) => $c->get( Admin_Cup::class )
-        );
+        $this->register_standard_screen( $container, Admin_Cup::class );
+        $container->set( 'admin_cup_screen', fn( Simple_Container $c ) => $c->get( Admin_Cup::class ) );
 
         $container->set(
             Admin_Tournament::class,
@@ -936,10 +924,28 @@ final readonly class Admin_Screens_Service_Provider implements Service_Provider_
                 $c->get( Admin_Screen_Presenter::class )
             )
         );
-        $container->set(
-            'admin_tournament_screen',
-            fn( Simple_Container $c ) => $c->get( Admin_Tournament::class )
-        );
+        $container->set( 'admin_tournament_screen', fn( Simple_Container $c ) => $c->get( Admin_Tournament::class ) );
+
+        $this->register_standard_screen( $container, Admin_Upgrade::class );
+        $this->register_standard_screen( $container, Admin_Season::class );
+        $this->register_standard_screen( $container, Admin_Options::class );
+        $this->register_standard_screen( $container, Admin_Import::class );
+        $this->register_standard_screen( $container, Admin_Championship::class );
+        $this->register_standard_screen( $container, Admin_Index::class );
+        $this->register_standard_screen( $container, Admin_Result::class );
+    }
+
+    /**
+     * Register secondary controllers and tab handlers used within admin screens.
+     *
+     * @param Simple_Container $container Container.
+     *
+     * @throws LogicException If application instance is missing for Upgrade_Admin_Controller.
+     *
+     * @return void
+     */
+    private function register_admin_secondary_controllers( Simple_Container $container ): void {
+        $app = $this->app;
 
         $container->set(
             Upgrade_Admin_Controller::class,
@@ -955,26 +961,6 @@ final readonly class Admin_Screens_Service_Provider implements Service_Provider_
                 $c->get( Season_Service::class ),
                 $c->get( Season_Action_Dispatcher::class ),
                 $c->get( Action_Guard_Interface::class ),
-            )
-        );
-
-        $container->set(
-            Admin_Upgrade::class,
-            fn( Simple_Container $c ) => new Admin_Upgrade(
-                $c,
-                $c->get( Admin_Message_Service::class ),
-                $c->get( Admin_Action_Adapter::class ),
-                $c->get( Admin_Screen_Presenter::class )
-            )
-        );
-
-        $container->set(
-            Admin_Season::class,
-            fn( Simple_Container $c ) => new Admin_Season(
-                $c,
-                $c->get( Admin_Message_Service::class ),
-                $c->get( Admin_Action_Adapter::class ),
-                $c->get( Admin_Screen_Presenter::class )
             )
         );
 
@@ -1007,51 +993,11 @@ final readonly class Admin_Screens_Service_Provider implements Service_Provider_
         );
 
         $container->set(
-            Admin_Options::class,
-            fn( Simple_Container $c ) => new Admin_Options(
-                $c,
-                $c->get( Admin_Message_Service::class ),
-                $c->get( Admin_Action_Adapter::class ),
-                $c->get( Admin_Screen_Presenter::class )
-            )
-        );
-
-        $container->set(
-            Admin_Import::class,
-            fn( Simple_Container $c ) => new Admin_Import(
-                $c,
-                $c->get( Admin_Message_Service::class ),
-                $c->get( Admin_Action_Adapter::class ),
-                $c->get( Admin_Screen_Presenter::class )
-            )
-        );
-
-        $container->set(
-            Admin_Championship::class,
-            fn( Simple_Container $c ) => new Admin_Championship(
-                $c,
-                $c->get( Admin_Message_Service::class ),
-                $c->get( Admin_Action_Adapter::class ),
-                $c->get( Admin_Screen_Presenter::class )
-            )
-        );
-
-        $container->set(
             Index_Admin_Controller::class,
             fn( Simple_Container $c ) => new Index_Admin_Controller(
                 $c->get( Competition_Service::class ),
                 $c->get( Index_Action_Dispatcher_Interface::class ),
                 $c->get( Action_Guard_Interface::class ),
-            )
-        );
-
-        $container->set(
-            Admin_Index::class,
-            fn( Simple_Container $c ) => new Admin_Index(
-                $c,
-                $c->get( Admin_Message_Service::class ),
-                $c->get( Admin_Action_Adapter::class ),
-                $c->get( Admin_Screen_Presenter::class )
             )
         );
 
@@ -1083,18 +1029,20 @@ final readonly class Admin_Screens_Service_Provider implements Service_Provider_
                 $c->get( Action_Guard_Interface::class ),
             )
         );
+    }
 
-        $container->set(
-            Admin_Result::class,
-            fn( Simple_Container $c ) => new Admin_Result(
-                $c,
-                $c->get( Admin_Message_Service::class ),
-                $c->get( Admin_Action_Adapter::class ),
-                $c->get( Admin_Screen_Presenter::class )
-            )
-        );
+    /**
+     * Register admin core application and router.
+     *
+     * @param Simple_Container $container Container.
+     *
+     * @throws LogicException If application instance is missing.
+     *
+     * @return void
+     */
+    private function register_admin_core( Simple_Container $container ): void {
+        $app = $this->app;
 
-        // Admin application core.
         $container->set(
             Admin_Page_Router::class,
             function ( Simple_Container $c ) use ( $app ) {

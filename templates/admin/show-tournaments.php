@@ -123,8 +123,10 @@ if ( $vm ) {
             </table>
         </form>
     </div>
-    <div class="mb-3">
+    <div class="mb-3 d-flex gap-2">
         <!-- Add New Tournament -->
         <a href="<?php echo esc_url( manage_url( 'tournaments', 'modify' ) ); ?>" class="btn btn-primary submit"><?php esc_html_e( 'Add Tournament', 'racketmanager' ); ?></a>
+        <!-- Add Tournament Competition -->
+        <a href="<?php echo esc_url( manage_url( 'tournaments', 'competitions' ) ); ?>" class="btn btn-secondary"><?php esc_html_e( 'Add Tournament Competition', 'racketmanager' ); ?></a>
     </div>
 </div>

@@ -132,7 +132,7 @@ final class Clubs_And_Competitions_Portal_Integration_Test extends TestCase {
         }
     }
 
-    public function test_dispatches_competitions_to_admin_index_screen(): void {
+    public function test_redirects_competitions_to_leagues_screen(): void {
         $query_vars = $this->createStub( Query_Vars_Interface::class );
         $query_vars->method( 'get' )->willReturnCallback(
             fn( string $key ) => match ( $key ) {
@@ -147,23 +147,13 @@ final class Clubs_And_Competitions_Portal_Integration_Test extends TestCase {
         $auth_guard->method( 'is_authenticated' )->willReturn( true );
         $auth_guard->method( 'user_can' )->willReturn( true );
 
-        $invoked_view = null;
-        $dummy_screen = new class( $invoked_view ) {
-            public function __construct( public ?string &$invoked_view ) {}
-            public function handle_display( ?string $view = null ): void {
-                $this->invoked_view = $view;
-            }
-        };
-
-        $container = new Simple_Container();
-        $container->set( Admin_Index::class, fn() => $dummy_screen );
-
         $presenter = $this->createStub( Portal_Screen_Presenter::class );
 
-        $router = $this->create_router( $query_vars, $auth_guard, $presenter, $container );
+        $router = $this->create_router( $query_vars, $auth_guard, $presenter );
         $router->handle_template_redirect();
 
-        $this->assertSame( 'competitions', $invoked_view );
+        $this->assertSame( home_url( '/manage/leagues' ), $GLOBALS['wp_stubs_last_redirect']['location'] ?? null );
+        $this->assertSame( 302, $GLOBALS['wp_stubs_last_redirect']['status'] ?? null );
     }
 
     public function test_dispatches_overview_screen_by_default(): void {
@@ -242,9 +232,10 @@ final class Clubs_And_Competitions_Portal_Integration_Test extends TestCase {
         $this->assertSame( home_url( '/manage/clubs' ), $items_by_slug['clubs']->url );
         $this->assertTrue( $items_by_slug['clubs']->is_active );
 
-        $this->assertTrue( $items_by_slug['competitions']->is_ported );
-        $this->assertSame( home_url( '/manage/competitions' ), $items_by_slug['competitions']->url );
-        $this->assertFalse( $items_by_slug['competitions']->is_active );
+        $this->assertArrayNotHasKey( 'competitions', $items_by_slug );
+        $this->assertTrue( $items_by_slug['leagues']->is_ported );
+        $this->assertSame( home_url( '/manage/leagues' ), $items_by_slug['leagues']->url );
+        $this->assertFalse( $items_by_slug['leagues']->is_active );
 
         // All sections are ported in final cutover
         $this->assertTrue( $items_by_slug['seasons']->is_ported );

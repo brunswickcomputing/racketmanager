@@ -16,18 +16,25 @@ if ( isset( $vm ) && ( $vm instanceof Index_Page_View_Model || $vm instanceof Co
     $age_groups       = $vm->age_groups;
     $age_group_select = $vm->age_group_select;
     $page_name        = $vm->page_name;
+    $action_url       = $vm instanceof Competitions_Page_View_Model ? $vm->action_url : '';
+    $view_name        = $vm instanceof Competitions_Page_View_Model ? $vm->view_name : '';
 } else {
     $competitions     = $competitions ?? ( $vm->competitions ?? ( $vars['competitions'] ?? array() ) );
     $age_groups       = $age_groups ?? ( $vm->age_groups ?? ( $vars['age_groups'] ?? Util_Lookup::get_age_groups() ) );
     $age_group_select = $age_group_select ?? ( $vm->age_group_select ?? ( $vars['age_group_select'] ?? '' ) );
     $page_name        = $page_name ?? ( $vm->page_name ?? ( $vars['page_name'] ?? 'racketmanager' ) );
+    $action_url       = $action_url ?? '';
+    $view_name        = $view_name ?? '';
 }
 ?>
 <div class="container">
     <div class="row justify-content-between mb-3">
-        <form id="competitions-list-filter" method="get" action="<?php echo esc_url( manage_url( 'competitions' ) ); ?>" class="form-control">
+        <form id="competitions-list-filter" method="get" action="<?php echo esc_url( ! empty( $action_url ) ? $action_url : manage_url( 'competitions' ) ); ?>" class="form-control">
             <?php if ( ! is_manage_portal_context() ) : ?>
                 <input type="hidden" name="page" value="<?php echo esc_attr( $page_name ); ?>" />
+                <?php if ( 'competitions' === $view_name ) : ?>
+                    <input type="hidden" name="view" value="competitions" />
+                <?php endif; ?>
             <?php endif; ?>
             <div class="col-auto">
                 <label>
@@ -48,7 +55,7 @@ if ( isset( $vm ) && ( $vm instanceof Index_Page_View_Model || $vm instanceof Co
     </div>
 </div>
 <div class="form-control" id="competitions">
-    <form id="competitions-filter" method="post" action="<?php echo esc_url( manage_url( 'competitions' ) ); ?>">
+    <form id="competitions-filter" method="post" action="<?php echo esc_url( ! empty( $action_url ) ? $action_url : manage_url( 'competitions' ) ); ?>">
         <?php wp_nonce_field( 'racketmanager_competitions-bulk', 'racketmanager_nonce' ); ?>
         <div class="row gx-3 mb-3 align-items-center">
             <!-- Bulk Actions -->

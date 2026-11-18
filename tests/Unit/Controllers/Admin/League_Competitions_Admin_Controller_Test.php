@@ -53,4 +53,20 @@ final class League_Competitions_Admin_Controller_Test extends TestCase {
         self::assertArrayNotHasKey( 'view_model', $result );
         self::assertStringContainsString( 'page=racketmanager-leagues', $result['redirect'] );
     }
+
+    public function test_post_add_competition_redirects_back_to_the_league_screen(): void {
+        $controller = $this->resolve_controller( 'league_competitions_admin_controller' );
+
+        $result = $controller->competitions_page(
+            array( 'page' => 'racketmanager-leagues' ),
+            array(
+                'addCompetition'   => '1',
+                'competition_name' => 'Summer League 2026',
+                'age_group'        => 'open',
+            )
+        );
+
+        self::assertArrayNotHasKey( 'view_model', $result );
+        self::assertStringContainsString( 'page=racketmanager-leagues', $result['redirect'] );
+    }
 }

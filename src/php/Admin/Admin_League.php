@@ -56,6 +56,16 @@ use Racketmanager\Services\Container\Simple_Container;
 final readonly class Admin_League {
     use Completes_Admin_Requests;
 
+    /**
+     * Initialises the admin controller with its container, messaging, action, and screen dependencies.
+     *
+     * @param Simple_Container       $container Service container used to resolve admin dependencies.
+     * @param Admin_Message_Service  $message_service Service used to manage admin messages.
+     * @param Admin_Action_Adapter   $actions Adapter used to register and handle admin actions.
+     * @param Admin_Screen_Presenter $screens Presenter used to manage admin screens.
+     *
+     * @return void
+     */
     public function __construct(
         private Simple_Container $container,
         private Admin_Message_Service $message_service,
@@ -102,123 +112,212 @@ final readonly class Admin_League {
         }
     }
 
+    /**
+     * Displays the leagues administration page using request data and available flash data.
+     *
+     * @return void
+     */
     public function display_leagues_page(): void {
-        $this->screens->apply_flash();
+        $flash      = $this->screens->apply_flash();
+        $flash_data = is_array( $flash['flash_data'] ?? null ) ? $flash['flash_data'] : array();
 
         /** @var League_Competitions_Admin_Controller $controller */
         $controller = $this->container->get( 'league_competitions_admin_controller' );
-        $this->complete_request( $controller->competitions_page( $_GET, $_POST ), Competitions_Page_View_Model::class, 'admin/show-competitions' );
+        $this->complete_request( $controller->competitions_page( $_GET, $_POST, $flash_data ), Competitions_Page_View_Model::class, 'admin/show-competitions' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
     }
 
+    /**
+     * Displays the league overview page through the overview admin controller.
+     *
+     * @return void
+     */
     public function display_overview_page(): void {
         $this->screens->apply_flash();
 
         /** @var League_Overview_Admin_Controller $controller */
         $controller = $this->container->get( 'league_overview_admin_controller' );
-        $this->complete_request( $controller->overview_page( $_GET, $_POST ), League_Overview_Page_View_Model::class, 'admin/league/show-season' );
+        $this->complete_request( $controller->overview_page( $_GET, $_POST ), League_Overview_Page_View_Model::class, 'admin/league/show-season' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
     }
 
+    /**
+     * Displays the league setup page after applying any pending admin flash messages.
+     *
+     * @return void
+     */
     public function display_setup_page(): void {
         $this->screens->apply_flash();
 
         /** @var League_Setup_Admin_Controller $controller */
         $controller = $this->container->get( 'league_setup_admin_controller' );
-        $this->complete_request( $controller->setup_page( $_GET, $_POST ), Setup_Page_View_Model::class, 'admin/includes/setup' );
+        $this->complete_request( $controller->setup_page( $_GET, $_POST ), Setup_Page_View_Model::class, 'admin/includes/setup' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
     }
 
+    /**
+     * Displays the league setup event page and completes the setup request workflow.
+     *
+     * @return void
+     */
     public function display_setup_event_page(): void {
         $this->screens->apply_flash();
 
         /** @var League_Setup_Event_Admin_Controller $controller */
         $controller = $this->container->get( 'league_setup_event_admin_controller' );
-        $this->complete_request( $controller->setup_event_page( $_GET, $_POST ), Setup_Page_View_Model::class, 'admin/includes/setup' );
+        $this->complete_request( $controller->setup_event_page( $_GET, $_POST ), Setup_Page_View_Model::class, 'admin/includes/setup' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
     }
 
+    /**
+     * Displays the league event page after applying flash messages and resolving the admin controller.
+     *
+     * @return void
+     */
     public function display_event_page(): void {
         $this->screens->apply_flash();
 
         /** @var League_Event_Admin_Controller $controller */
         $controller = $this->container->get( 'league_event_admin_controller' );
-        $this->complete_request( $controller->event_page( $_GET, $_POST ), League_Event_Page_View_Model::class, 'admin/event/show-leagues' );
+        $this->complete_request( $controller->event_page( $_GET, $_POST ), League_Event_Page_View_Model::class, 'admin/event/show-leagues' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
     }
 
+    /**
+     * Displays the league constitution page through the constitution admin controller.
+     *
+     * @return void
+     */
     public function display_constitution_page(): void {
         $this->screens->apply_flash();
 
         /** @var League_Constitution_Admin_Controller $controller */
         $controller = $this->container->get( 'league_constitution_admin_controller' );
-        $this->complete_request( $controller->constitution_page( $_GET, $_POST ), League_Constitution_Page_View_Model::class, 'admin/league/show-constitution' );
+        $this->complete_request( $controller->constitution_page( $_GET, $_POST ), League_Constitution_Page_View_Model::class, 'admin/league/show-constitution' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
     }
 
+    /**
+     * Displays the league page through the league standings admin controller.
+     *
+     * @return void
+     */
     public function display_league_page(): void {
         $this->screens->apply_flash();
 
         /** @var League_Standings_Admin_Controller $controller */
         $controller = $this->container->get( 'league_standings_admin_controller' );
-        $this->complete_request( $controller->league_page( $_GET, $_POST ), League_Standings_Page_View_Model::class, 'admin/show-league' );
+        $this->complete_request( $controller->league_page( $_GET, $_POST ), League_Standings_Page_View_Model::class, 'admin/show-league' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
     }
 
+    /**
+     * Displays the league matches administration page.
+     *
+     * @return void
+     */
     public function display_matches_page(): void {
         $this->screens->apply_flash();
 
         /** @var League_Matches_Admin_Controller $controller */
         $controller = $this->container->get( 'league_matches_admin_controller' );
-        $this->complete_request( $controller->matches_page( $_GET, $_POST ), League_Matches_Page_View_Model::class, 'admin/event/show-matches' );
+        $this->complete_request( $controller->matches_page( $_GET, $_POST ), League_Matches_Page_View_Model::class, 'admin/event/show-matches' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
     }
 
+    /**
+     * Displays the match administration page through the league match controller.
+     *
+     * @return void
+     */
     public function display_match_page(): void {
         $this->screens->apply_flash();
 
         /** @var League_Match_Admin_Controller $controller */
         $controller = $this->container->get( 'league_match_admin_controller' );
-        $this->complete_request( $controller->match_page( $_GET, $_POST ), Tournament_Fixtures_Page_View_Model::class, 'admin/includes/match' );
+        $this->complete_request( $controller->match_page( $_GET, $_POST ), Tournament_Fixtures_Page_View_Model::class, 'admin/includes/match' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
     }
 
+    /**
+     * Displays the league schedule page using request data and available flash data.
+     *
+     * @return void
+     */
     public function display_schedule_page(): void {
         $flash = $this->screens->apply_flash();
 
         /** @var League_Schedule_Admin_Controller $controller */
         $controller = $this->container->get( 'league_schedule_admin_controller' );
         $flash_data = is_array( $flash['flash_data'] ?? null ) ? $flash['flash_data'] : array();
-        $this->complete_request( $controller->schedule_page( $_GET, $_POST, $flash_data ), Admin_League_Schedule_Page_View_Model::class, 'admin/league/show-schedule' );
+        $this->complete_request( $controller->schedule_page( $_GET, $_POST, $flash_data ), Admin_League_Schedule_Page_View_Model::class, 'admin/league/show-schedule' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
     }
 
+    /**
+     * Displays the teams administration page for the league context.
+     *
+     * @return void
+     */
     public function display_teams_page(): void {
         $this->screens->apply_flash();
 
         /** @var Teams_Admin_Controller $controller */
         $controller = $this->container->get( 'teams_admin_controller' );
-        $this->complete_request( $controller->teams_page( $_GET, $_POST, Admin_Page_Context::league() ), Teams_List_Page_View_Model::class, 'admin/includes/teams-list' );
+        $this->complete_request( $controller->teams_page( $_GET, $_POST, Admin_Page_Context::league() ), Teams_List_Page_View_Model::class, 'admin/includes/teams-list' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
     }
 
+    /**
+     * Displays the contact administration page for the league context.
+     *
+     * @return void
+     */
     public function display_contact_page(): void {
         $this->screens->apply_flash();
 
         /** @var Contact_Admin_Controller $controller */
         $controller = $this->container->get( 'contact_admin_controller' );
-        $this->complete_request( $controller->contact_page( $_GET, $_POST, Admin_Page_Context::league() ), Contact_Page_View_Model::class, 'admin/includes/contact' );
+        $this->complete_request( $controller->contact_page( $_GET, $_POST, Admin_Page_Context::league() ), Contact_Page_View_Model::class, 'admin/includes/contact' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
     }
 
+    /**
+     * Displays the competition seasons administration page.
+     *
+     * Applies pending flash messages, retrieves the seasons admin controller, and
+     * completes the request using the seasons page view model and template.
+     *
+     * @return void
+     */
     public function display_seasons_page(): void {
         $this->screens->apply_flash();
 
         /** @var Competition_Seasons_Admin_Controller $controller */
         $controller = $this->container->get( 'competition_seasons_admin_controller' );
-        $this->complete_request( $controller->seasons_page( $_GET, $_POST ), Competition_Seasons_Page_View_Model::class, 'admin/includes/show-seasons' );
+        $this->complete_request( $controller->seasons_page( $_GET, $_POST ), Competition_Seasons_Page_View_Model::class, 'admin/includes/show-seasons' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
     }
 
+    /**
+     * Displays the competition modification page through the admin competition screen service.
+     *
+     * @return void
+     */
     public function display_modify_page(): void {
         $this->container->get( 'admin_competition_screen' )->handle_display( 'modify' );
     }
 
+    /**
+     * Displays the competition configuration page through the admin competition screen service.
+     *
+     * @return void
+     */
     public function display_config_page(): void {
         $this->container->get( 'admin_competition_screen' )->handle_display( 'config' );
     }
 
+    /**
+     * Displays the team page through the admin club screen service.
+     *
+     * @return void
+     */
     public function display_team_page(): void {
         $this->container->get( 'admin_club_screen' )->handle_display( 'team' );
     }
 
+    /**
+     * Displays the event configuration page through the admin event screen service.
+     *
+     * @return void
+     */
     public function display_event_config_page(): void {
         $this->container->get( 'admin_event_screen' )->display_config_page();
     }

@@ -6,10 +6,13 @@ namespace Racketmanager\Tests\Unit\Controllers\Admin;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Admin_Tournament;
+use Racketmanager\Admin\Controllers\Tournament_Competitions_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Information_Admin_Controller;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
+use Racketmanager\Admin\View_Models\Competitions_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Information_Page_View_Model;
+use Racketmanager\Application\Admin\Ports\Index_Action_Dispatcher_Interface;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
@@ -19,6 +22,7 @@ use Racketmanager\RacketManager;
 use Racketmanager\Services\Admin\Admin_Message_Service;
 use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Admin\Tournament\Tournament_Information_Action_Dispatcher;
+use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Application\Ports\View_Renderer_Interface;
@@ -203,5 +207,30 @@ final class Admin_Tournament_Delivery_Test extends TestCase {
         $this->renderer->expects( self::never() )->method( 'render' );
 
         $this->run_screen( 'draw' );
+    }
+
+    public function test_display_competitions_page_resolves_controller_from_container_and_renders(): void {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+
+        $comp_service = $this->createMock( Competition_Service::class );
+        $comp_service->method( 'find_competitions_with_summary' )->willReturn( array() );
+        $action_guard = $this->createMock( Action_Guard_Interface::class );
+        $dispatcher   = $this->createMock( Index_Action_Dispatcher_Interface::class );
+
+        $controller = new Tournament_Competitions_Admin_Controller(
+            $comp_service,
+            $action_guard,
+            $dispatcher
+        );
+        $this->container->set( Tournament_Competitions_Admin_Controller::class, $controller );
+
+        $this->renderer->expects( self::once() )
+            ->method( 'render' )
+            ->with(
+                'admin/show-competitions',
+                self::callback( static fn( object $vm ): bool => $vm instanceof Competitions_Page_View_Model && 'tournament' === $vm->competition_type )
+            );
+
+        $this->run_screen( 'competitions' );
     }
 }

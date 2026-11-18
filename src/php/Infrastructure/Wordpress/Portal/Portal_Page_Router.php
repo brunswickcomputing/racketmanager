@@ -94,6 +94,16 @@ class Portal_Page_Router {
         $section     = ! empty( $raw_section ) ? strval( $raw_section ) : 'overview';
         $normalized  = $this->route_mapper->normalize_section( $section );
 
+        if ( 'competitions' === $normalized ) {
+            $passthrough_args = $this->extract_passthrough_query_args();
+            $target_url       = $this->url_resolver->get_url( 'leagues', '', $passthrough_args );
+            if ( function_exists( 'wp_redirect' ) ) {
+                wp_redirect( $target_url, 302 );
+            }
+            $this->terminate();
+            return;
+        }
+
         if ( ! $this->section_registry->has( $normalized ) ) {
             if ( function_exists( 'status_header' ) ) {
                 status_header( 404 );

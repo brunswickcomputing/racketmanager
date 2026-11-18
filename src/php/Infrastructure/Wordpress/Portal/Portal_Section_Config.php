@@ -15,13 +15,14 @@ namespace Racketmanager\Infrastructure\Wordpress\Portal;
 final readonly class Portal_Section_Config {
 
     /**
-     * @param string $slug         URL slug for frontend management (e.g. 'clubs').
-     * @param string $admin_page   Legacy wp-admin page slug (e.g. 'racketmanager-clubs').
-     * @param string $screen_class Handling screen class or view model.
-     * @param string $capability   Required WordPress user capability.
-     * @param string $default_view Default subview when not specified.
-     * @param bool   $is_ported    Whether the section is ported to the frontend portal shell.
-     * @param string $title        Human-readable title for navigation.
+     * @param string $slug          URL slug for frontend management (e.g. 'clubs').
+     * @param string $admin_page    Legacy wp-admin page slug (e.g. 'racketmanager-clubs').
+     * @param string $screen_class  Handling screen class or view model.
+     * @param string $capability    Required WordPress user capability.
+     * @param string $default_view  Default subview when not specified.
+     * @param bool   $is_ported     Whether the section is ported to the frontend portal shell.
+     * @param string $title         Human-readable title for navigation.
+     * @param bool   $in_navigation Whether to display this section in the primary portal navigation bar.
      */
     public function __construct(
         public string $slug,
@@ -31,6 +32,7 @@ final readonly class Portal_Section_Config {
         public string $default_view,
         public bool $is_ported = false,
         public string $title = '',
+        public bool $in_navigation = true,
     ) {
     }
 
@@ -45,7 +47,8 @@ final readonly class Portal_Section_Config {
             $this->capability,
             $this->default_view,
             $is_ported,
-            $this->title
+            $this->title,
+            $this->in_navigation
         );
     }
 }

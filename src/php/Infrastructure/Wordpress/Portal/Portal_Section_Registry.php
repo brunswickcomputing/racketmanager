@@ -57,7 +57,7 @@ final class Portal_Section_Registry {
     private function register_default_sections(): void {
         $defaults = [
             new Portal_Section_Config( 'overview', 'racketmanager-overview', Overview_Page_View_Model::class, 'racket_manager', 'overview', true, 'Overview' ),
-            new Portal_Section_Config( 'competitions', 'racketmanager', Admin_Index::class, 'racket_manager', 'competitions', true, 'Competitions' ),
+            new Portal_Section_Config( 'competitions', 'racketmanager', Admin_Index::class, 'racket_manager', 'competitions', true, 'Competitions', in_navigation: false ),
             new Portal_Section_Config( 'clubs', 'racketmanager-clubs', Admin_Club::class, 'racket_manager', 'clubs', true, 'Clubs' ),
             new Portal_Section_Config( 'leagues', 'racketmanager-leagues', Admin_League::class, 'racket_manager', 'leagues', true, 'Leagues' ),
             new Portal_Section_Config( 'cups', 'racketmanager-cups', Admin_Cup::class, 'racket_manager', 'cups', true, 'Cups' ),

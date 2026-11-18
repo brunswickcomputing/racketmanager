@@ -54,4 +54,20 @@ final class Cup_Competitions_Admin_Controller_Test extends TestCase {
         self::assertArrayNotHasKey( 'view_model', $result );
         self::assertStringContainsString( 'page=racketmanager-cups', $result['redirect'] );
     }
+
+    public function test_post_add_competition_redirects_back_to_the_cup_screen(): void {
+        $controller = $this->resolve_controller( 'cup_competitions_admin_controller' );
+
+        $result = $controller->competitions_page(
+            array( 'page' => 'racketmanager-cups' ),
+            array(
+                'addCompetition'   => '1',
+                'competition_name' => 'Summer Cup 2026',
+                'age_group'        => 'open',
+            )
+        );
+
+        self::assertArrayNotHasKey( 'view_model', $result );
+        self::assertStringContainsString( 'page=racketmanager-cups', $result['redirect'] );
+    }
 }
